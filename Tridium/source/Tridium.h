@@ -2,8 +2,10 @@
 
 // For use by Tridium Applications
 
-#include <stdio.h>
 #include "Tridium/Application.h"
+#include "Tridium/Layer.h"
+#include "Tridium/Todo.h"
+#include "Tridium/Log.h"
 
 // ===== Entry Point =====
 #include "Tridium/EntryPoint.h"

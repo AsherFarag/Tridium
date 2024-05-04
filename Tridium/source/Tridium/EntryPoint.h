@@ -6,6 +6,9 @@ extern Tridium::Application* Tridium::CreateApplication();
 
 int main(int argc, char** argv)
 { 
+	Tridium::Log::Init();
+	TRI_CORE_WARN( "Initialised Log!" );
+
 	auto app = Tridium::CreateApplication();
 	app->Run();
 	delete app;

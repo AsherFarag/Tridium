@@ -1,36 +1,81 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{2AC788B4-1694-E3BF-3FAD-D1672BD9184E}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{64FBD71A-50F4-F66C-7926-DCF1657ED678}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Tridium">
+      <UniqueIdentifier>{63556C57-CF34-EBF2-D84C-76C944AB5154}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tridium\Core">
+      <UniqueIdentifier>{9B4FD10B-87B2-60B0-3038-99661C7A2C33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tridium\Events">
+      <UniqueIdentifier>{E7B3854A-D381-7950-BC15-EA76A88255B5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\Tridium\Core.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="source\Platform\Windows\WindowsWindow.h">
+      <Filter>Platform\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="source\Tridium.h" />
     <ClInclude Include="source\Tridium\Application.h">
-      <Filter>Header Files</Filter>
+      <Filter>Tridium</Filter>
     </ClInclude>
-    <ClInclude Include="source\Tridium.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="source\Tridium\Core\Core.h">
+      <Filter>Tridium\Core</Filter>
     </ClInclude>
     <ClInclude Include="source\Tridium\EntryPoint.h">
-      <Filter>Header Files</Filter>
+      <Filter>Tridium</Filter>
     </ClInclude>
+    <ClInclude Include="source\Tridium\Events\ApplicationEvent.h">
+      <Filter>Tridium\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Tridium\Events\Event.h">
+      <Filter>Tridium\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Tridium\Events\KeyEvent.h">
+      <Filter>Tridium\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Tridium\Events\MouseEvent.h">
+      <Filter>Tridium\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Tridium\Layer.h">
+      <Filter>Tridium</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Tridium\LayerStack.h">
+      <Filter>Tridium</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Tridium\Log.h">
+      <Filter>Tridium</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Tridium\Todo.h">
+      <Filter>Tridium</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Tridium\Window.h">
+      <Filter>Tridium</Filter>
+    </ClInclude>
+    <ClInclude Include="source\tripch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\Tridium\Application.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="source\Platform\Windows\WindowsWindow.cpp">
+      <Filter>Platform\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="source\Tridium\Application.cpp">
+      <Filter>Tridium</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Tridium\Layer.cpp">
+      <Filter>Tridium</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Tridium\LayerStack.cpp">
+      <Filter>Tridium</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Tridium\Log.cpp">
+      <Filter>Tridium</Filter>
+    </ClCompile>
+    <ClCompile Include="source\tripch.cpp" />
   </ItemGroup>
 </Project>
