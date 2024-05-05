@@ -12,10 +12,11 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 -- Include directories relative to root folder (solution directory)
 IncludeDir = {}
-IncludeDir["spdlog"] = "Tridium/Dependencies/spdlog/include"
 IncludeDir["GLFW"] = "Tridium/Dependencies/GLFW/include"
+IncludeDir["glad"] = "Tridium/Dependencies/glad/include"
 
 include "Tridium/Dependencies/GLFW"
+include "Tridium/Dependencies/glad"
 
 project "Tridium"
 	location "Tridium"
@@ -36,19 +37,16 @@ project "Tridium"
 
 	includedirs
 	{
-		"%{IncludeDir.spdlog}",
+		"%{prj.name}/Dependencies/spdlog/include",
 		"%{prj.name}/source",
-		"%{IncludeDir.GLFW}"
-	}
-
-	libdirs 
-	{
-		"%{prj.name}/Dependencies/GLFW/bin/Debug-windows-x86_64/GLFW"
+		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.glad}"
 	}
 
 	links
 	{
-		"GLFW.lib",
+		"GLFW",
+		"glad",
 		"opengl32.lib"
 	}
 
@@ -60,7 +58,8 @@ project "Tridium"
 		defines
 		{
 				"TRI_PLATFORM_WINDOWS",
-				"TRI_BUILD_DLL"
+				"TRI_BUILD_DLL",
+				"GLFW_INCLUDE_NONE"
 		}
 
 		postbuildcommands

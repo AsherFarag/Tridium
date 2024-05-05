@@ -13,8 +13,7 @@ public:
 
 	void OnEvent( Tridium::Event& event ) override
 	{
-		auto s = event.ToString();
-		LOG_INFO( "{0}", s.c_str() );
+		LOG_INFO( "{0}", event.GetName() );
 	}
 };
 
