@@ -7,6 +7,8 @@
 #include "Tridium/Todo.h"
 #include "Tridium/Log.h"
 
+#include "Tridium/ImGui/ImGuiLayer.h"
+
 // ===== Entry Point =====
 #include "Tridium/EntryPoint.h"
 // =======================

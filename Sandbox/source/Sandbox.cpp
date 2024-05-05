@@ -13,7 +13,7 @@ public:
 
 	void OnEvent( Tridium::Event& event ) override
 	{
-		LOG_INFO( "{0}", event.GetName() );
+		//LOG_INFO( "{0}", event.GetName() );
 	}
 };
 
@@ -22,7 +22,7 @@ class Sandbox : public Tridium::Application
 public:
 	Sandbox()
 	{
-		PushLayer( new ExampleLayer() );
+		PushLayer( new Tridium::ImGuiLayer() );
 	}
 
 	~Sandbox()

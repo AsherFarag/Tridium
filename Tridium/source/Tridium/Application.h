@@ -21,12 +21,17 @@ namespace Tridium
 		void PushLayer( Layer* layer );
 		void PushOverlay( Layer* overlay );
 
+		static Application& Get() { return *s_Instance; }
+		Window& GetWindow() { return *m_Window; }
 	private:
 		bool OnWindowClosed( WindowCloseEvent& e );
 
 		std::unique_ptr<Window> m_Window;
 		bool m_Running;
 		LayerStack m_LayerStack;
+
+	private:
+		static Application* s_Instance;
 	};
 
 	// To be defined in CLIENT

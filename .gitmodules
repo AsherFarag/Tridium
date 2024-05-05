@@ -4,3 +4,6 @@
 [submodule "Tridium/Dependencies/GLFW"]
 	path = Tridium/Dependencies/GLFW
 	url = https://github.com/TheCherno/glfw
+[submodule "Tridium/Dependencies/ImGui"]
+	path = Tridium/Dependencies/ImGui
+	url = https://github.com/TheCherno/imgui

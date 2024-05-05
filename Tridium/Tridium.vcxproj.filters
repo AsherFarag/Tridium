@@ -16,6 +16,12 @@
     <Filter Include="Tridium\Events">
       <UniqueIdentifier>{E7B3854A-D381-7950-BC15-EA76A88255B5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Tridium\ImGui">
+      <UniqueIdentifier>{676bdcce-774c-430b-bc4d-b7837bc5d996}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\OpenGL">
+      <UniqueIdentifier>{30520d10-6f0f-46c6-ad8b-bf118f55b52e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\Platform\Windows\WindowsWindow.h">
@@ -59,6 +65,12 @@
       <Filter>Tridium</Filter>
     </ClInclude>
     <ClInclude Include="source\tripch.h" />
+    <ClInclude Include="source\Tridium\ImGui\ImGuiLayer.h">
+      <Filter>Tridium\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Platform\OpenGL\ImGuiOpenGLRenderer.h">
+      <Filter>Platform\OpenGL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Platform\Windows\WindowsWindow.cpp">
@@ -77,5 +89,11 @@
       <Filter>Tridium</Filter>
     </ClCompile>
     <ClCompile Include="source\tripch.cpp" />
+    <ClCompile Include="source\Tridium\ImGui\ImGuiLayer.cpp">
+      <Filter>Tridium\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Platform\OpenGL\ImGuiOpenGLRenderer.cpp">
+      <Filter>Platform\OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

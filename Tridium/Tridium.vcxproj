@@ -80,7 +80,7 @@
       <PrecompiledHeaderFile>tripch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>TRI_PLATFORM_WINDOWS;TRI_BUILD_DLL;GLFW_INCLUDE_NONE;TRI_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>Dependencies\spdlog\include;source;Dependencies\GLFW\include;Dependencies\glad\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Dependencies\spdlog\include;source;Dependencies\GLFW\include;Dependencies\glad\include;Dependencies\ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -104,7 +104,7 @@
       <PrecompiledHeaderFile>tripch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>TRI_PLATFORM_WINDOWS;TRI_BUILD_DLL;GLFW_INCLUDE_NONE;TRI_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>Dependencies\spdlog\include;source;Dependencies\GLFW\include;Dependencies\glad\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Dependencies\spdlog\include;source;Dependencies\GLFW\include;Dependencies\glad\include;Dependencies\ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -132,7 +132,7 @@
       <PrecompiledHeaderFile>tripch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>TRI_PLATFORM_WINDOWS;TRI_BUILD_DLL;GLFW_INCLUDE_NONE;TRI_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>Dependencies\spdlog\include;source;Dependencies\GLFW\include;Dependencies\glad\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Dependencies\spdlog\include;source;Dependencies\GLFW\include;Dependencies\glad\include;Dependencies\ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -155,6 +155,8 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="source\Platform\OpenGL\ImGuiOpenGLRenderer.h" />
+    <ClInclude Include="source\Tridium\ImGui\ImGuiLayer.h" />
     <ClInclude Include="source\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="source\Tridium.h" />
     <ClInclude Include="source\Tridium\Application.h" />
@@ -172,6 +174,8 @@
     <ClInclude Include="source\tripch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\Platform\OpenGL\ImGuiOpenGLRenderer.cpp" />
+    <ClCompile Include="source\Tridium\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="source\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="source\Tridium\Application.cpp" />
     <ClCompile Include="source\Tridium\Layer.cpp" />
@@ -187,6 +191,9 @@
     </ProjectReference>
     <ProjectReference Include="Dependencies\glad\glad.vcxproj">
       <Project>{DD62977C-C999-980D-7286-7E105E9C140F}</Project>
+    </ProjectReference>
+    <ProjectReference Include="Dependencies\ImGui\ImGui.vcxproj">
+      <Project>{C0FF640D-2C14-8DBE-F595-301E616989EF}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

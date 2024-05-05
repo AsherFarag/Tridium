@@ -14,9 +14,11 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = {}
 IncludeDir["GLFW"] = "Tridium/Dependencies/GLFW/include"
 IncludeDir["glad"] = "Tridium/Dependencies/glad/include"
+IncludeDir["ImGui"] = "Tridium/Dependencies/ImGui"
 
 include "Tridium/Dependencies/GLFW"
 include "Tridium/Dependencies/glad"
+include "Tridium/Dependencies/ImGui"
 
 project "Tridium"
 	location "Tridium"
@@ -40,13 +42,15 @@ project "Tridium"
 		"%{prj.name}/Dependencies/spdlog/include",
 		"%{prj.name}/source",
 		"%{IncludeDir.GLFW}",
-		"%{IncludeDir.glad}"
+		"%{IncludeDir.glad}",
+		"%{IncludeDir.ImGui}"
 	}
 
 	links
 	{
 		"GLFW",
 		"glad",
+		"ImGui",
 		"opengl32.lib"
 	}
 
