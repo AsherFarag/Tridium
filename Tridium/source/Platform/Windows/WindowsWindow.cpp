@@ -13,12 +13,12 @@ namespace Tridium {
 
 	static void GLFWErrorCallback( int error, const char* description )
 	{
-		TRI_CORE_ERROR( "GLFW Error ({0}): {1}", error, description );
+		TE_CORE_ERROR( "GLFW Error ({0}): {1}", error, description );
 	}
 
-	Window* Window::Create( const WindowProps& props )
+	UniquePtr<Window> Window::Create( const WindowProps& props )
 	{
-		return new WindowsWindow( props );
+		return MakeUnique<WindowsWindow>( props );
 	}
 
 	Tridium::WindowsWindow::WindowsWindow( const WindowProps& props )
@@ -58,13 +58,13 @@ namespace Tridium {
 		m_Data.Width = props.Width;
 		m_Data.Height = props.Height;
 
-		TRI_CORE_INFO( "Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height );
+		TE_CORE_INFO( "Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height );
 
 		// Only initializes GLFW once
 		if ( !s_GLFWInitialized )
 		{
 			int success = glfwInit();
-			TRI_CORE_ASSERT( success, "Could not initialize GLFW!" );
+			TE_CORE_ASSERT( success, "Could not initialize GLFW!" );
 			glfwSetErrorCallback( GLFWErrorCallback );
 			s_GLFWInitialized = true;
 		}
@@ -74,12 +74,13 @@ namespace Tridium {
 
 		// - Glad Initialization -
 		int status = gladLoadGLLoader( (GLADloadproc)glfwGetProcAddress );
-		TRI_CORE_ASSERT( status, "Failed to initialize glad!" );
+		TE_CORE_ASSERT( status, "Failed to initialize glad!" );
 
 		glfwSetWindowUserPointer( m_Window, &m_Data );
 		SetVSync( true );
 
-		// Set GLFW callbacks
+		// - Set GLFW callbacks -
+
 		glfwSetWindowSizeCallback( m_Window, []( GLFWwindow* window, int width, int height )
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer( window );
@@ -105,24 +106,31 @@ namespace Tridium {
 			{
 				case GLFW_PRESS:
 				{
-					KeyPressedEvent event( key, 0 );
+					KeyPressedEvent event( (Input::KeyCode)key, 0 );
 					data.EventCallback( event );
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					KeyReleasedEvent event( key );
+					KeyReleasedEvent event( (Input::KeyCode)key );
 					data.EventCallback( event );
 					break;
 				}
 				case GLFW_REPEAT:
 				{
-					KeyPressedEvent event( key, 1 );
+					KeyPressedEvent event( (Input::KeyCode)key, 1 );
 					data.EventCallback( event );
 					break;
 				}
 			}
 		});
+
+		glfwSetCharCallback( m_Window, []( GLFWwindow* window, unsigned int character )
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer( window );
+			KeyTypedEvent event( (Input::KeyCode) character );
+			data.EventCallback( event );
+		} );
 
 		glfwSetMouseButtonCallback( m_Window, []( GLFWwindow* window, int button, int action, int mods )
 		{

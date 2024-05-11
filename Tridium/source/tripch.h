@@ -12,8 +12,10 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <Tridium/Log.h>
+#include <Tridium/Utils/Log.h>
+#include <Tridium/Utils/Todo.h>
+#include <Tridium/Math/Math.h>
 
-#ifdef TRI_PLATFORM_WINDOWS
+#ifdef TE_PLATFORM_WINDOWS
 	#include <Windows.h>
-#endif // TRI_PLATFORM_WINDOWS
+#endif // TE_PLATFORM_WINDOWS

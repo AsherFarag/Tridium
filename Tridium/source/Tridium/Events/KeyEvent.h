@@ -2,24 +2,26 @@
 
 #include "Tridium/Events/Event.h"
 
+#include "Tridium/Input/Input.h"
+
 namespace Tridium {
 
 	class KeyEvent : public Event
 	{
 	public:
-		inline int GetKeyCode() const { return m_KeyCode; }
+		inline Input::KeyCode GetKeyCode() const { return m_KeyCode; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 	protected:
-		KeyEvent(int a_Keycode) : m_KeyCode(a_Keycode) {}
+		KeyEvent( Input::KeyCode a_Keycode) : m_KeyCode(a_Keycode) {}
 
-		int m_KeyCode;
+		Input::KeyCode m_KeyCode;
 	};
 
 	class KeyPressedEvent : public KeyEvent
 	{
 	public:
-		KeyPressedEvent( int a_Keycode, int a_RepeatCount )
+		KeyPressedEvent( Input::KeyCode a_Keycode, int a_RepeatCount )
 			: KeyEvent( a_Keycode ), m_RepeatCount( a_RepeatCount ) {}
 
 		inline int GetRepeatCount() const { return m_KeyCode; }
@@ -39,7 +41,7 @@ namespace Tridium {
 	class KeyReleasedEvent : public KeyEvent
 	{
 	public:
-		KeyReleasedEvent( int a_Keycode )
+		KeyReleasedEvent( Input::KeyCode a_Keycode )
 			: KeyEvent( a_Keycode ) {}
 
 		std::string ToString() const override
@@ -55,7 +57,7 @@ namespace Tridium {
 	class KeyTypedEvent : public KeyEvent
 	{
 	public:
-		KeyTypedEvent( int a_Keycode )
+		KeyTypedEvent( Input::KeyCode a_Keycode )
 			: KeyEvent( a_Keycode ) {}
 
 		std::string ToString() const override

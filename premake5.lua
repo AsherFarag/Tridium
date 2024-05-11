@@ -8,13 +8,14 @@ workspace "Tridium"
 		"Dist"
 	}
 
-outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+outputdir = "%{cfg.buildcfg}/%{cfg.system}-%{cfg.architecture}"
 
 -- Include directories relative to root folder (solution directory)
 IncludeDir = {}
 IncludeDir["GLFW"] = "Tridium/Dependencies/GLFW/include"
 IncludeDir["glad"] = "Tridium/Dependencies/glad/include"
 IncludeDir["ImGui"] = "Tridium/Dependencies/ImGui"
+IncludeDir["glm"] = "Tridium/Dependencies/glm"
 
 include "Tridium/Dependencies/GLFW"
 include "Tridium/Dependencies/glad"
@@ -25,25 +26,28 @@ project "Tridium"
 	kind "SharedLib"
 	language "C++"
 
-	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("intermediate/" .. outputdir .. "/%{prj.name}")
+	targetdir ("Bin/%{prj.name}/" .. outputdir)
+	objdir ("Bin-Int/%{prj.name}/" .. outputdir)
 
 	pchheader "tripch.h"
-	pchsource "Tridium/source/tripch.cpp"
+	pchsource "Tridium/Source/tripch.cpp"
 
 	files
 	{
-		"%{prj.name}/source/**.h",
-		"%{prj.name}/source/**.cpp"
+		"%{prj.name}/Source/**.h",
+		"%{prj.name}/Source/**.cpp",
+		"%{prj.name}/Dependencies/glm/glm/**.inl",
+		"%{prj.name}/Dependencies/glm/glm/**.hpp"
 	}
 
 	includedirs
 	{
 		"%{prj.name}/Dependencies/spdlog/include",
-		"%{prj.name}/source",
+		"%{prj.name}/Source",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.glad}",
-		"%{IncludeDir.ImGui}"
+		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.glm}"
 	}
 
 	links
@@ -61,14 +65,14 @@ project "Tridium"
 
 		defines
 		{
-				"TRI_PLATFORM_WINDOWS",
-				"TRI_BUILD_DLL",
+				"TE_PLATFORM_WINDOWS",
+				"TE_BUILD_DLL",
 				"GLFW_INCLUDE_NONE"
 		}
 
 		postbuildcommands
 		{
-			("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox")
+			("{COPY} %{cfg.buildtarget.relpath} ../Bin/Sandbox/".. outputdir)
 		}
 
 	filter "configurations:Debug"
@@ -93,44 +97,49 @@ project "Sandbox"
 	kind "ConsoleApp"
 	language "C++"
 
-	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("intermediate/" .. outputdir .. "/%{prj.name}")
+	targetdir ("Bin/%{prj.name}/" .. outputdir)
+	objdir ("Bin-Int/%{prj.name}/" .. outputdir)
 
 	files
 	{
-		"%{prj.name}/source/**.h",
-		"%{prj.name}/source/**.cpp"
+		"%{prj.name}/Source/**.h",
+		"%{prj.name}/Source/**.cpp"
 	}
 
 	includedirs
 	{
 		"Tridium/Dependencies/spdlog/include",
-		"Tridium/source"
+		"Tridium/Source",
+		"Tridium/Dependencies",
+		"%{IncludeDir.glm}"
 	}
 
 	links
 	{
-		"Tridium"
+		"Tridium",
+		"ImGui"
 	}
 
 	filter "system:windows"
 		cppdialect "C++17"
-		staticruntime "On"
 		systemversion "latest"
 
 		defines
 		{
-				"TRI_PLATFORM_WINDOWS"
+				"TE_PLATFORM_WINDOWS"
 		}
 
 	filter "configurations:Debug"
 		defines "TRI_DEBUG"
+		runtime "Debug"
 		symbols "On"
 
 	filter "configurations:Release"
 		defines "TRI_RELEASE"
+		runtime "Release"
 		optimize "On"
 
 	filter "configurations:Dist"
 		defines "TRI_DIST"
+		runtime "Release"
 		optimize "On"

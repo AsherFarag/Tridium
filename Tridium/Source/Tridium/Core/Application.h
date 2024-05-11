@@ -1,10 +1,12 @@
 #pragma once
 
-#include "Core/Core.h"
-#include "Window.h"
+#include <Tridium/Core/Core.h>
 
-#include <Tridium/LayerStack.h>
+#include <Tridium/Core/Window.h>
+#include <Tridium/Core/LayerStack.h>
 #include <Tridium/Events/ApplicationEvent.h>
+
+#include <Tridium/ImGui/ImGuiLayer.h>
 
 namespace Tridium
 {
@@ -26,7 +28,8 @@ namespace Tridium
 	private:
 		bool OnWindowClosed( WindowCloseEvent& e );
 
-		std::unique_ptr<Window> m_Window;
+		UniquePtr<Window> m_Window;
+		ImGuiLayer* m_ImGuiLayer;
 		bool m_Running;
 		LayerStack m_LayerStack;
 

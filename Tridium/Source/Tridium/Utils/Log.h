@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Core.h"
+#include "Tridium/Core/Core.h"
 #include "spdlog/spdlog.h"
 
 namespace Tridium {
@@ -21,11 +21,11 @@ namespace Tridium {
 }
 
 // - Core Log Macros -
-#define TRI_CORE_TRACE(...) ::Tridium::Log::GetCoreLogger()->trace(__VA_ARGS__)
-#define TRI_CORE_INFO(...)  ::Tridium::Log::GetCoreLogger()->info(__VA_ARGS__)
-#define TRI_CORE_WARN(...)  ::Tridium::Log::GetCoreLogger()->warn(__VA_ARGS__)
-#define TRI_CORE_ERROR(...) ::Tridium::Log::GetCoreLogger()->error(__VA_ARGS__)
-#define TRI_CORE_FATAL(...) ::Tridium::Log::GetCoreLogger()->fatal(__VA_ARGS__)
+#define TE_CORE_TRACE(...) ::Tridium::Log::GetCoreLogger()->trace(__VA_ARGS__)
+#define TE_CORE_INFO(...)  ::Tridium::Log::GetCoreLogger()->info(__VA_ARGS__)
+#define TE_CORE_WARN(...)  ::Tridium::Log::GetCoreLogger()->warn(__VA_ARGS__)
+#define TE_CORE_ERROR(...) ::Tridium::Log::GetCoreLogger()->error(__VA_ARGS__)
+#define TE_CORE_FATAL(...) ::Tridium::Log::GetCoreLogger()->fatal(__VA_ARGS__)
 
 // - Client Log Macros - 
 #define LOG_TRACE(...)      ::Tridium::Log::GetClientLogger()->trace(__VA_ARGS__)

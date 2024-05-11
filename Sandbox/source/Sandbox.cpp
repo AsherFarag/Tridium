@@ -1,5 +1,7 @@
 #include <Tridium.h>
 
+#include "ImGui/imgui.h"
+
 class ExampleLayer : public Tridium::Layer
 {
 public:
@@ -11,9 +13,16 @@ public:
 		//LOG_INFO( "ExampleLayer:Update" );
 	}
 
+	virtual void OnImGuiDraw() override
+	{
+		ImGui::Begin( "Test" );
+		ImGui::Text( "Hi!" );
+		ImGui::End();
+	}
+
 	void OnEvent( Tridium::Event& event ) override
 	{
-		//LOG_INFO( "{0}", event.GetName() );
+		LOG_WARN( "{0}", event.ToString() );
 	}
 };
 
@@ -22,7 +31,7 @@ class Sandbox : public Tridium::Application
 public:
 	Sandbox()
 	{
-		PushLayer( new Tridium::ImGuiLayer() );
+		PushLayer( new ExampleLayer() );
 	}
 
 	~Sandbox()

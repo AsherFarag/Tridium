@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Tridium/Core/Core.h>
-#include <Tridium/Layer.h>
+#include <Tridium/Core/Layer.h>
 
 namespace Tridium {
 
@@ -21,7 +21,7 @@ namespace Tridium {
 
 	private:
 		std::vector<Layer*> m_Layers;
-		std::vector<Layer*>::iterator m_LayerInsert;
+		unsigned int m_LayerInsertIndex = 0;
 	};
 
 }

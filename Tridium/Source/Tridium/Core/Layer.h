@@ -14,6 +14,7 @@ namespace Tridium {
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
 		virtual void OnUpdate() {}
+		virtual void OnImGuiDraw() {}
 		virtual void OnEvent(Event& e) {}
 
 		const auto& GetName() const { return m_DebugName; }
