@@ -22,7 +22,7 @@ public:
 
 	void OnEvent( Tridium::Event& event ) override
 	{
-		LOG_WARN( "{0}", event.ToString() );
+		LOG_TRACE( "{0}", event.ToString() );
 	}
 };
 
