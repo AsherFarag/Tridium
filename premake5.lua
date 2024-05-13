@@ -16,6 +16,8 @@ IncludeDir["GLFW"] = "Tridium/Dependencies/GLFW/include"
 IncludeDir["glad"] = "Tridium/Dependencies/glad/include"
 IncludeDir["ImGui"] = "Tridium/Dependencies/ImGui"
 IncludeDir["glm"] = "Tridium/Dependencies/glm"
+IncludeDir["lua"] = "Tridium/Dependencies/lua/x64"
+IncludeDir["sol2"] = "Tridium/Dependencies/sol2"
 
 include "Tridium/Dependencies/GLFW"
 include "Tridium/Dependencies/glad"
@@ -49,7 +51,14 @@ project "Tridium"
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.glad}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.glm}"
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.lua}/include",
+		"%{IncludeDir.sol2}/include"
+	}
+
+	libdirs
+	{
+		"%{IncludeDir.lua}"
 	}
 
 	links
@@ -57,6 +66,7 @@ project "Tridium"
 		"GLFW",
 		"glad",
 		"ImGui",
+		"lua54",
 		"opengl32.lib"
 	}
 
@@ -104,6 +114,8 @@ project "Sandbox"
 		"Tridium/Dependencies/spdlog/include",
 		"Tridium/Source",
 		"Tridium/Dependencies",
+		"%{IncludeDir.lua}/include",
+		"%{IncludeDir.sol2}/include",
 		"%{IncludeDir.glm}"
 	}
 

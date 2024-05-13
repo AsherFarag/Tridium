@@ -25,9 +25,14 @@ namespace Tridium {
 	void Application::Run()
 	{
 		m_Running = true;
-	
+
 		while ( m_Running )
 		{
+			if ( Input::IsKeyPressed( Input::KEY_ESCAPE ) )
+			{
+				m_Running = false;
+			}
+
 			glClearColor( 0.2, 0.5, 1.0, 1.0 );
 			glClear( GL_COLOR_BUFFER_BIT );
 
