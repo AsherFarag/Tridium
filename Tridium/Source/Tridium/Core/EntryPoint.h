@@ -7,7 +7,7 @@ extern Tridium::Application* Tridium::CreateApplication();
 int main(int argc, char** argv)
 { 
 	Tridium::Log::Init();
-	TE_CORE_INFO( "Initialised Log!" );
+	TE_CORE_INFO( " - Initialised Log - " );
 
 	TE_CORE_TRACE( "TRACE" );
 	TE_CORE_DEBUG( "DEBUG" );

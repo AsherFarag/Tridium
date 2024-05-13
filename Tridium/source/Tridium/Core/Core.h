@@ -1,11 +1,17 @@
 #pragma once
 
 #ifdef TE_PLATFORM_WINDOWS
-	#ifdef TE_BUILD_DLL
-		#define TRIDIUM_API __declspec(dllexport)
+
+	#ifdef TE_DLL
+		#ifdef TE_BUILD_DLL
+			#define TRIDIUM_API __declspec(dllexport)
+		#else
+			#define TRIDIUM_API __declspec(dllimport)
+		#endif // TE_BUILD_DLL
 	#else
-		#define TRIDIUM_API __declspec(dllimport)
-	#endif // TE_BUILD_DLL
+		#define TRIDIUM_API
+	#endif // TE_DLL
+
 #else
 	#error Tridium currently only supports Windows!
 #endif // TE_PLATFORM_WINDOWS
@@ -29,6 +35,7 @@
 #include <memory>
 
 namespace Tridium {
+
 	template <typename T>
 	using UniquePtr = std::unique_ptr<T>;
 
@@ -46,4 +53,5 @@ namespace Tridium {
 	{
 		return std::make_shared<T>( std::forward<Args>( args )... );
 	}
+
 }

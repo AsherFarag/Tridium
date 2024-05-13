@@ -23,8 +23,10 @@ include "Tridium/Dependencies/ImGui"
 
 project "Tridium"
 	location "Tridium"
-	kind "SharedLib"
+	kind "StaticLib"
+	staticruntime "On"
 	language "C++"
+	cppdialect "C++17"
 
 	targetdir ("Bin/%{prj.name}/" .. outputdir)
 	objdir ("Bin-Int/%{prj.name}/" .. outputdir)
@@ -59,35 +61,24 @@ project "Tridium"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
-		staticruntime "On"
 		systemversion "latest"
 
 		defines
 		{
-				"TE_PLATFORM_WINDOWS",
-				"TE_BUILD_DLL",
-				"GLFW_INCLUDE_NONE"
-		}
-
-		postbuildcommands
-		{
-			("{COPY} %{cfg.buildtarget.relpath} ../Bin/Sandbox/".. outputdir)
+			"TE_PLATFORM_WINDOWS",
+			"GLFW_INCLUDE_NONE"
 		}
 
 	filter "configurations:Debug"
 		defines "TRI_DEBUG"
-		buildoptions "/MDd"
 		symbols "On"
 
 	filter "configurations:Release"
 		defines "TRI_RELEASE"
-		buildoptions "/MD"
 		optimize "On"
 
 	filter "configurations:Dist"
 		defines "TRI_DIST"
-		buildoptions "/MD"
 		optimize "On"
 
 
@@ -95,7 +86,9 @@ project "Tridium"
 project "Sandbox"
 	location "Tridium"
 	kind "ConsoleApp"
+	staticruntime "On"
 	language "C++"
+	cppdialect "C++17"
 
 	targetdir ("Bin/%{prj.name}/" .. outputdir)
 	objdir ("Bin-Int/%{prj.name}/" .. outputdir)
@@ -116,30 +109,25 @@ project "Sandbox"
 
 	links
 	{
-		"Tridium",
-		"ImGui"
+		"Tridium"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		systemversion "latest"
 
 		defines
 		{
-				"TE_PLATFORM_WINDOWS"
+			"TE_PLATFORM_WINDOWS"
 		}
 
 	filter "configurations:Debug"
 		defines "TRI_DEBUG"
-		runtime "Debug"
 		symbols "On"
 
 	filter "configurations:Release"
 		defines "TRI_RELEASE"
-		runtime "Release"
 		optimize "On"
 
 	filter "configurations:Dist"
 		defines "TRI_DIST"
-		runtime "Release"
 		optimize "On"
