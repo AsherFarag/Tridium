@@ -1362,6 +1362,9 @@
     <ClInclude Include="Source\tripch.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="Delegate.h">
+      <Filter>Source\Tridium\Events</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Platform\Windows\WindowsInput.cpp">
