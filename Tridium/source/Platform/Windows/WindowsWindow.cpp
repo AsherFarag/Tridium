@@ -5,7 +5,7 @@
 #include <Tridium/Events/ApplicationEvent.h>
 #include <Tridium/Events/MouseEvent.h>
 
-#include <glad/glad.h>
+#include <Platform/OpenGL/OpenGLContext.h>
 
 namespace Tridium {
 
@@ -34,7 +34,7 @@ namespace Tridium {
 	void Tridium::WindowsWindow::OnUpdate()
 	{
 		glfwPollEvents();
-		glfwSwapBuffers( m_Window );
+		m_RenderingContext->SwapBuffers();
 	}
 
 	void Tridium::WindowsWindow::SetVSync( bool enabled )
@@ -72,9 +72,10 @@ namespace Tridium {
 		m_Window = glfwCreateWindow( (int)props.Width, (int)props.Height, props.Title.c_str(), nullptr, nullptr );
 		glfwMakeContextCurrent( m_Window );
 
-		// - Glad Initialization -
-		int status = gladLoadGLLoader( (GLADloadproc)glfwGetProcAddress );
-		TE_CORE_ASSERT( status, "Failed to initialize glad!" );
+		// - Rendering Context Initialisation -
+		TODO( "Make this API dependent!" );
+		m_RenderingContext = new OpenGLContext(m_Window);
+		m_RenderingContext->Init();
 
 		glfwSetWindowUserPointer( m_Window, &m_Data );
 		SetVSync( true );

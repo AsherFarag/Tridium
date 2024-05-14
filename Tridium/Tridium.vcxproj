@@ -146,7 +146,11 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Delegate.h" />
+    <ClInclude Include="OpenGLRenderingAPI.h" />
+    <ClInclude Include="Source\Platform\OpenGL\OpenGLContext.h" />
+    <ClInclude Include="Source\Tridium\Rendering\RenderingAPI.h" />
+    <ClInclude Include="Source\Tridium\Rendering\RenderingContext.h" />
+    <ClInclude Include="Source\Tridium\Utils\Delegate.h" />
     <ClInclude Include="Dependencies\glm\glm\common.hpp" />
     <ClInclude Include="Dependencies\glm\glm\detail\_features.hpp" />
     <ClInclude Include="Dependencies\glm\glm\detail\_fixes.hpp" />
@@ -585,6 +589,8 @@
     <ClInclude Include="Source\tripch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="OpenGLRenderingAPI.cpp" />
+    <ClCompile Include="Source\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="Source\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="Source\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="Source\Tridium\Core\Application.cpp" />

@@ -1362,9 +1362,13 @@
     <ClInclude Include="Source\tripch.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Delegate.h">
+    <ClInclude Include="Source\Tridium\Utils\Delegate.h">
       <Filter>Source\Tridium\Events</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Tridium\Rendering\RenderingContext.h" />
+    <ClInclude Include="Source\Platform\OpenGL\OpenGLContext.h" />
+    <ClInclude Include="Source\Tridium\Rendering\RenderingAPI.h" />
+    <ClInclude Include="OpenGLRenderingAPI.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Platform\Windows\WindowsInput.cpp">
@@ -1394,5 +1398,7 @@
     <ClCompile Include="Source\tripch.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Platform\OpenGL\OpenGLContext.cpp" />
+    <ClCompile Include="OpenGLRenderingAPI.cpp" />
   </ItemGroup>
 </Project>

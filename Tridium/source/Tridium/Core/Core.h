@@ -32,6 +32,8 @@
 
 #define TE_BIND_EVENT_FN(fn, ...) std::bind( &fn, this, __VA_ARGS__ )
 
+typedef unsigned int uint32_t;
+
 #include <memory>
 
 namespace Tridium {
@@ -53,5 +55,14 @@ namespace Tridium {
 	{
 		return std::make_shared<T>( std::forward<Args>( args )... );
 	}
+
+	template<typename T>
+	using WeakPtr = std::weak_ptr<T>;
+
+	//template<typename T>
+	//constexpr WeakPtr<T> MakeWeak( Args&& ... args )
+	//{
+	//	return std::M<T>( std::forward<Args>( args )... );
+	//}
 
 }

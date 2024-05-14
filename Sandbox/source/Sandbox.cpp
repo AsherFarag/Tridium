@@ -37,6 +37,7 @@ public:
 
 	void OnEvent( Tridium::Event& event ) override
 	{
+		LOG_INFO( "{0}", event.ToString() );
 	}
 };
 

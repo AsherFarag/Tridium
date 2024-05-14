@@ -1,1 +1,1 @@
-print( 'My lua value is: ' .. math.sin(1) .. ' Yay ' )
+print( 'My lua value is: ' .. math.sin(1000) .. ' aiufdaiufiaufa ' )

@@ -2,6 +2,7 @@
 #include <Tridium/Core/Window.h>
 
 #include <GLFW/glfw3.h>
+#include <Tridium/Rendering/RenderingContext.h>
 
 namespace Tridium {
 
@@ -40,6 +41,7 @@ namespace Tridium {
         };
 
         WindowData m_Data;
+        RenderingContext* m_RenderingContext;
     };
 
 }
