@@ -1,5 +1,9 @@
 #pragma once
 
+// - Common Includes -
+#include <Tridium/Math/Math.h>
+#include <memory>
+
 #ifdef TE_PLATFORM_WINDOWS
 
 	#ifdef TE_DLL
@@ -30,11 +34,14 @@
 
 #define BIT(x) (1 << x)
 
+#define Stringize( x ) #x 
+#define WRAP( m, x ) m(x)
+#define PRAGMA(p) _Pragma(#p)
+#define EXPAND(x) x
+
+#define SELECT_MACRO_2(_1, _2, x, ...) x
+
 #define TE_BIND_EVENT_FN(fn, ...) std::bind( &fn, this, __VA_ARGS__ )
-
-typedef unsigned int uint32_t;
-
-#include <memory>
 
 namespace Tridium {
 
@@ -48,21 +55,23 @@ namespace Tridium {
 	}
 
 	template<typename T>
-	using SharedPtr = std::shared_ptr<T>;
+	using Ref = std::shared_ptr<T>;
 
 	template<typename T, typename ... Args>
-	constexpr SharedPtr<T> MakeShared( Args&& ... args )
+	constexpr Ref<T> MakeRef( Args&& ... args )
 	{
 		return std::make_shared<T>( std::forward<Args>( args )... );
 	}
 
+	// Type alias for std::weak_ptr
 	template<typename T>
-	using WeakPtr = std::weak_ptr<T>;
+	using WeakRef = std::weak_ptr<T>;
 
-	//template<typename T>
-	//constexpr WeakPtr<T> MakeWeak( Args&& ... args )
-	//{
-	//	return std::M<T>( std::forward<Args>( args )... );
-	//}
+	// Function to convert std::shared_ptr to std::weak_ptr
+	template<typename T>
+	constexpr WeakRef<T> MakeWeakRef( const std::shared_ptr<T>& sharedPtr )
+	{
+		return WeakRef<T>( sharedPtr );
+	}
 
 }

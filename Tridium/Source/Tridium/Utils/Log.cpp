@@ -6,8 +6,8 @@
 
 namespace Tridium {
 
-	SharedPtr<spdlog::logger> Log::s_CoreLogger;
-	SharedPtr<spdlog::logger> Log::s_ClientLogger;
+	Ref<spdlog::logger> Log::s_CoreLogger;
+	Ref<spdlog::logger> Log::s_ClientLogger;
 
 	void Log::Init()
 	{
@@ -17,7 +17,7 @@ namespace Tridium {
 		auto BLUE = FOREGROUND_RED;
 
 		// Create a color sink
-		auto color_sink = MakeShared<spdlog::sinks::stdout_color_sink_mt>();
+		auto color_sink = MakeRef<spdlog::sinks::stdout_color_sink_mt>();
 		color_sink->set_pattern( "%^[%T] %n: %v%$" );
 		// For some reason console colours on home machine are different
 		//color_sink->set_color( spdlog::level::trace, RED | GREEN | BLUE ); // White
@@ -25,14 +25,14 @@ namespace Tridium {
 		//color_sink->set_color( spdlog::level::info, GREEN ); // Green
 		//color_sink->set_color( spdlog::level::warn, BLUE ); // Somehow yellow
 		//color_sink->set_color( spdlog::level::err, RED ); // Red
-		//color_sink->set_color( spdlog::level::critical, RED | GREEN | BLUE | BACKGROUND_BLUE ); // White Text, Red Background
+		color_sink->set_color( spdlog::level::critical, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | BACKGROUND_BLUE ); // White Text, Red Background
 
 		// Core Logger
-		s_CoreLogger = MakeShared<spdlog::logger>( "TRIDIUM", color_sink );
+		s_CoreLogger = MakeRef<spdlog::logger>( "TRIDIUM", color_sink );
 		s_CoreLogger->set_level( spdlog::level::trace );
 
 		// Client Logger
-		s_ClientLogger = MakeShared<spdlog::logger>( "APP", color_sink );
+		s_ClientLogger = MakeRef<spdlog::logger>( "APP", color_sink );
 		s_ClientLogger->set_level( spdlog::level::trace );
 	}
 }

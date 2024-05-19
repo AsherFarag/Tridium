@@ -77,7 +77,7 @@
       <PrecompiledHeaderFile>tripch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>TE_PLATFORM_WINDOWS;GLFW_INCLUDE_NONE;TRI_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>Dependencies\spdlog\include;Source;Dependencies\GLFW\include;Dependencies\glad\include;Dependencies\ImGui;Dependencies\glm;Dependencies\lua\x64\include;Dependencies\sol2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Dependencies\spdlog\include;Source;Dependencies\GLFW\include;Dependencies\glad\include;Dependencies\ImGui;Dependencies\glm;Dependencies\lua\x64\include;Dependencies\sol2\include;Dependencies\entt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -99,7 +99,7 @@
       <PrecompiledHeaderFile>tripch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>TE_PLATFORM_WINDOWS;GLFW_INCLUDE_NONE;TRI_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>Dependencies\spdlog\include;Source;Dependencies\GLFW\include;Dependencies\glad\include;Dependencies\ImGui;Dependencies\glm;Dependencies\lua\x64\include;Dependencies\sol2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Dependencies\spdlog\include;Source;Dependencies\GLFW\include;Dependencies\glad\include;Dependencies\ImGui;Dependencies\glm;Dependencies\lua\x64\include;Dependencies\sol2\include;Dependencies\entt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -125,7 +125,7 @@
       <PrecompiledHeaderFile>tripch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>TE_PLATFORM_WINDOWS;GLFW_INCLUDE_NONE;TRI_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>Dependencies\spdlog\include;Source;Dependencies\GLFW\include;Dependencies\glad\include;Dependencies\ImGui;Dependencies\glm;Dependencies\lua\x64\include;Dependencies\sol2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Dependencies\spdlog\include;Source;Dependencies\GLFW\include;Dependencies\glad\include;Dependencies\ImGui;Dependencies\glm;Dependencies\lua\x64\include;Dependencies\sol2\include;Dependencies\entt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -146,11 +146,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="OpenGLRenderingAPI.h" />
-    <ClInclude Include="Source\Platform\OpenGL\OpenGLContext.h" />
-    <ClInclude Include="Source\Tridium\Rendering\RenderingAPI.h" />
-    <ClInclude Include="Source\Tridium\Rendering\RenderingContext.h" />
-    <ClInclude Include="Source\Tridium\Utils\Delegate.h" />
     <ClInclude Include="Dependencies\glm\glm\common.hpp" />
     <ClInclude Include="Dependencies\glm\glm\detail\_features.hpp" />
     <ClInclude Include="Dependencies\glm\glm\detail\_fixes.hpp" />
@@ -567,6 +562,19 @@
     <ClInclude Include="Dependencies\glm\glm\vec3.hpp" />
     <ClInclude Include="Dependencies\glm\glm\vec4.hpp" />
     <ClInclude Include="Dependencies\glm\glm\vector_relational.hpp" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\FlyCameraComponent.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\TagComponent.h" />
+    <ClInclude Include="Source\Tridium\ECS\EntityComponentSystem.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\CameraComponent.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\TransformComponent.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Component.h" />
+    <ClInclude Include="Source\Tridium\Scene\Scene.h" />
+    <ClInclude Include="Source\Platform\OpenGL\OpenGLBuffer.h" />
+    <ClInclude Include="Source\Platform\OpenGL\OpenGLContext.h" />
+    <ClInclude Include="Source\Platform\OpenGL\OpenGLRenderingAPI.h" />
+    <ClInclude Include="Source\Platform\OpenGL\OpenGLShader.h" />
+    <ClInclude Include="Source\Platform\OpenGL\OpenGLVertexArray.h" />
     <ClInclude Include="Source\Platform\Windows\WindowsInput.h" />
     <ClInclude Include="Source\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="Source\Tridium.h" />
@@ -584,13 +592,28 @@
     <ClInclude Include="Source\Tridium\ImGui\ImGuiLayer.h" />
     <ClInclude Include="Source\Tridium\Input\Input.h" />
     <ClInclude Include="Source\Tridium\Math\Math.h" />
+    <ClInclude Include="Source\Tridium\Rendering\Buffer.h" />
+    <ClInclude Include="Source\Tridium\Rendering\RenderCommand.h" />
+    <ClInclude Include="Source\Tridium\Rendering\Renderer.h" />
+    <ClInclude Include="Source\Tridium\Rendering\RenderingAPI.h" />
+    <ClInclude Include="Source\Tridium\Rendering\RenderingContext.h" />
+    <ClInclude Include="Source\Tridium\Rendering\Shader.h" />
+    <ClInclude Include="Source\Tridium\Rendering\VertexArray.h" />
+    <ClInclude Include="Source\Tridium\ECS\GameObject.h" />
+    <ClInclude Include="Source\Tridium\Utils\Delegate.h" />
     <ClInclude Include="Source\Tridium\Utils\Log.h" />
     <ClInclude Include="Source\Tridium\Utils\Todo.h" />
     <ClInclude Include="Source\tripch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="OpenGLRenderingAPI.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\CameraComponent.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\TransformComponent.cpp" />
+    <ClCompile Include="Source\Tridium\Scene\Scene.cpp" />
+    <ClCompile Include="Source\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="Source\Platform\OpenGL\OpenGLContext.cpp" />
+    <ClCompile Include="Source\Platform\OpenGL\OpenGLRenderingAPI.cpp" />
+    <ClCompile Include="Source\Platform\OpenGL\OpenGLShader.cpp" />
+    <ClCompile Include="Source\Platform\OpenGL\OpenGLVertexArray.cpp" />
     <ClCompile Include="Source\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="Source\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="Source\Tridium\Core\Application.cpp" />
@@ -598,6 +621,13 @@
     <ClCompile Include="Source\Tridium\Core\LayerStack.cpp" />
     <ClCompile Include="Source\Tridium\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="Source\Tridium\ImGui\ImGuiLayer.cpp" />
+    <ClCompile Include="Source\Tridium\Rendering\Buffer.cpp" />
+    <ClCompile Include="Source\Tridium\Rendering\RenderCommand.cpp" />
+    <ClCompile Include="Source\Tridium\Rendering\Renderer.cpp" />
+    <ClCompile Include="Source\Tridium\Rendering\RenderingAPI.cpp" />
+    <ClCompile Include="Source\Tridium\Rendering\Shader.cpp" />
+    <ClCompile Include="Source\Tridium\Rendering\VertexArray.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\GameObject.cpp" />
     <ClCompile Include="Source\Tridium\Utils\Log.cpp" />
     <ClCompile Include="Source\tripch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

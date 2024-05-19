@@ -16,8 +16,8 @@ namespace Tridium {
 		void PopLayer( Layer* layer );
 		void PopOverlay( Layer* overlay );
 
-		auto begin() { return m_Layers.begin(); }
-		auto end() { return m_Layers.end(); }
+		inline auto begin() { return m_Layers.begin(); }
+		inline auto end() { return m_Layers.end(); }
 
 	private:
 		std::vector<Layer*> m_Layers;

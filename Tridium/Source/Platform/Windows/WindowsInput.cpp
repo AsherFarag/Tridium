@@ -22,7 +22,7 @@ namespace Tridium {
 		return state == GLFW_PRESS;
 	}
 
-	std::pair<float, float> WindowsInput::GetMousePositionImpl()
+	Vector2 WindowsInput::GetMousePositionImpl()
 	{
 		auto window = static_cast<GLFWwindow*>( Application::Get().GetWindow().GetNativeWindow() );
 		double xpos, ypos;
@@ -32,14 +32,12 @@ namespace Tridium {
 
 	float WindowsInput::GetMouseXImpl()
 	{
-		auto [x, y] = GetMousePositionImpl();
-		return x;
+		return GetMousePositionImpl().x;
 	}
 
 	float WindowsInput::GetMouseYImpl()
 	{
-		auto [x, y] = GetMousePositionImpl();
-		return y;
+		return GetMousePositionImpl().y;
 	}
 
 }

@@ -28,6 +28,9 @@
     <Filter Include="Source\Platform">
       <UniqueIdentifier>{6A48A913-D6D3-16D8-DFE4-99CC4BEF72D8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Platform\OpenGL">
+      <UniqueIdentifier>{5E160775-4A10-30C7-337D-C6D71F169633}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source\Platform\Windows">
       <UniqueIdentifier>{A4BC056E-10F4-4D05-19FE-B12885B474FE}</UniqueIdentifier>
     </Filter>
@@ -48,6 +51,15 @@
     </Filter>
     <Filter Include="Source\Tridium\Math">
       <UniqueIdentifier>{5CB1D51D-C812-B32B-5180-F9DDBDE0E9EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Rendering">
+      <UniqueIdentifier>{B05F4EEA-9C84-9D6A-C5CF-82FAB1539C88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Scene">
+      <UniqueIdentifier>{004AF9D8-ECD8-82A2-95F7-969D81659348}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Scene\Main">
+      <UniqueIdentifier>{74EDD5FD-E0AF-0988-2960-98149561E265}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Tridium\Utils">
       <UniqueIdentifier>{43DE26D9-2F6D-B0A2-D88B-C49DC4F9C048}</UniqueIdentifier>
@@ -1302,6 +1314,21 @@
     <ClInclude Include="Dependencies\glm\glm\vector_relational.hpp">
       <Filter>Dependencies\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Platform\OpenGL\OpenGLBuffer.h">
+      <Filter>Source\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Platform\OpenGL\OpenGLContext.h">
+      <Filter>Source\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Platform\OpenGL\OpenGLRenderingAPI.h">
+      <Filter>Source\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Platform\OpenGL\OpenGLShader.h">
+      <Filter>Source\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Platform\OpenGL\OpenGLVertexArray.h">
+      <Filter>Source\Platform\OpenGL</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Platform\Windows\WindowsInput.h">
       <Filter>Source\Platform\Windows</Filter>
     </ClInclude>
@@ -1353,6 +1380,33 @@
     <ClInclude Include="Source\Tridium\Math\Math.h">
       <Filter>Source\Tridium\Math</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Tridium\Rendering\Buffer.h">
+      <Filter>Source\Tridium\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tridium\Rendering\RenderCommand.h">
+      <Filter>Source\Tridium\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tridium\Rendering\Renderer.h">
+      <Filter>Source\Tridium\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tridium\Rendering\RenderingAPI.h">
+      <Filter>Source\Tridium\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tridium\Rendering\RenderingContext.h">
+      <Filter>Source\Tridium\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tridium\Rendering\Shader.h">
+      <Filter>Source\Tridium\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tridium\Rendering\VertexArray.h">
+      <Filter>Source\Tridium\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tridium\ECS\GameObject.h">
+      <Filter>Source\Tridium\Scene\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tridium\Utils\Delegate.h">
+      <Filter>Source\Tridium\Utils</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Tridium\Utils\Log.h">
       <Filter>Source\Tridium\Utils</Filter>
     </ClInclude>
@@ -1362,15 +1416,31 @@
     <ClInclude Include="Source\tripch.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Tridium\Utils\Delegate.h">
-      <Filter>Source\Tridium\Events</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Tridium\Rendering\RenderingContext.h" />
-    <ClInclude Include="Source\Platform\OpenGL\OpenGLContext.h" />
-    <ClInclude Include="Source\Tridium\Rendering\RenderingAPI.h" />
-    <ClInclude Include="OpenGLRenderingAPI.h" />
+    <ClInclude Include="Source\Tridium\Scene\Scene.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Component.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\TransformComponent.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\CameraComponent.h" />
+    <ClInclude Include="Source\Tridium\ECS\EntityComponentSystem.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\TagComponent.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\FlyCameraComponent.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Platform\OpenGL\OpenGLBuffer.cpp">
+      <Filter>Source\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Platform\OpenGL\OpenGLContext.cpp">
+      <Filter>Source\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Platform\OpenGL\OpenGLRenderingAPI.cpp">
+      <Filter>Source\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Platform\OpenGL\OpenGLShader.cpp">
+      <Filter>Source\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Platform\OpenGL\OpenGLVertexArray.cpp">
+      <Filter>Source\Platform\OpenGL</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Platform\Windows\WindowsInput.cpp">
       <Filter>Source\Platform\Windows</Filter>
     </ClCompile>
@@ -1392,13 +1462,35 @@
     <ClCompile Include="Source\Tridium\ImGui\ImGuiLayer.cpp">
       <Filter>Source\Tridium\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Tridium\Rendering\Buffer.cpp">
+      <Filter>Source\Tridium\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tridium\Rendering\RenderCommand.cpp">
+      <Filter>Source\Tridium\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tridium\Rendering\Renderer.cpp">
+      <Filter>Source\Tridium\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tridium\Rendering\RenderingAPI.cpp">
+      <Filter>Source\Tridium\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tridium\Rendering\Shader.cpp">
+      <Filter>Source\Tridium\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tridium\Rendering\VertexArray.cpp">
+      <Filter>Source\Tridium\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tridium\ECS\GameObject.cpp">
+      <Filter>Source\Tridium\Scene\Main</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Tridium\Utils\Log.cpp">
       <Filter>Source\Tridium\Utils</Filter>
     </ClCompile>
     <ClCompile Include="Source\tripch.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Platform\OpenGL\OpenGLContext.cpp" />
-    <ClCompile Include="OpenGLRenderingAPI.cpp" />
+    <ClCompile Include="Source\Tridium\Scene\Scene.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\TransformComponent.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\CameraComponent.cpp" />
   </ItemGroup>
 </Project>

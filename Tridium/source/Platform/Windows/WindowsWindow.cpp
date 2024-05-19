@@ -7,6 +7,8 @@
 
 #include <Platform/OpenGL/OpenGLContext.h>
 
+#include <Tridium/Rendering/RenderCommand.h>
+
 namespace Tridium {
 
 	static bool s_GLFWInitialized = false;
@@ -21,23 +23,23 @@ namespace Tridium {
 		return MakeUnique<WindowsWindow>( props );
 	}
 
-	Tridium::WindowsWindow::WindowsWindow( const WindowProps& props )
+	WindowsWindow::WindowsWindow( const WindowProps& props )
 	{
 		Init( props );
 	}
 
-	Tridium::WindowsWindow::~WindowsWindow()
+	WindowsWindow::~WindowsWindow()
 	{
 		Shutdown();
 	}
 
-	void Tridium::WindowsWindow::OnUpdate()
+	void WindowsWindow::OnUpdate()
 	{
 		glfwPollEvents();
 		m_RenderingContext->SwapBuffers();
 	}
 
-	void Tridium::WindowsWindow::SetVSync( bool enabled )
+	void WindowsWindow::SetVSync( bool enabled )
 	{
 		if ( enabled )
 			glfwSwapInterval( 1 );
@@ -47,12 +49,12 @@ namespace Tridium {
 		m_Data.VSync = enabled;
 	}
 
-	bool Tridium::WindowsWindow::IsVSync() const
+	bool WindowsWindow::IsVSync() const
 	{
 		return m_Data.VSync;
 	}
 
-	void Tridium::WindowsWindow::Init( const WindowProps& props )
+	void WindowsWindow::Init( const WindowProps& props )
 	{
 		m_Data.Title = props.Title;
 		m_Data.Width = props.Width;
@@ -84,6 +86,8 @@ namespace Tridium {
 
 		glfwSetWindowSizeCallback( m_Window, []( GLFWwindow* window, int width, int height )
 		{
+			RenderCommand::SetViewport( 0, 0, width, height );
+
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer( window );
 			data.Width = width;
 			data.Height = height;
@@ -169,7 +173,7 @@ namespace Tridium {
 		});
 	}
 
-	void Tridium::WindowsWindow::Shutdown()
+	void WindowsWindow::Shutdown()
 	{
 		glfwDestroyWindow( m_Window );
 	}

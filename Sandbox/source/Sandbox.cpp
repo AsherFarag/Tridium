@@ -14,7 +14,6 @@ public:
 
 	void OnUpdate() override
 	{
-		//LOG_INFO( "ExampleLayer:Update" );
 	}
 
 	sol::state lua;
@@ -27,17 +26,17 @@ public:
 
 	virtual void OnImGuiDraw() override
 	{
-		ImGui::Begin( "Lua" );
+		ImGui::Begin( "Lua");
 		if ( ImGui::Button( "Recompile Lua Scripts" ) )
 		{
-			lua.do_file( "Testlua.lua", sol::load_mode::text );
+			lua.do_file( "Content/Scripts/Testlua.lua", sol::load_mode::text );
 		}
 		ImGui::End();
 	}
 
 	void OnEvent( Tridium::Event& event ) override
 	{
-		LOG_INFO( "{0}", event.ToString() );
+		//LOG_INFO( "{0}", event.ToString() );
 	}
 };
 
