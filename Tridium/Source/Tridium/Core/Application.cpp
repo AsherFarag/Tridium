@@ -181,7 +181,7 @@ namespace Tridium {
 		// TEMP
 		auto& go = m_Scene.InstantiateGameObject();
 		go.AddComponent<CameraComponent>();
-		go.GetComponent<TransformComponent>().Translation = Vector3( 1, 0, 0 );
+		go.GetComponent<TransformComponent>().Translation = Vector3( 0, 0, 0 );
 		auto& t = go.GetComponent<TransformComponent>();
 		//go.AddComponent<CameraComponent>();
 
@@ -239,7 +239,7 @@ namespace Tridium {
 					float PitchDelta = MouseDeltaY * m_LookSensitivity * DeltaTime;
 					float YawDelta = MouseDeltaX * m_LookSensitivity * DeltaTime;
 
-					Quaternion Quat = glm::normalize( glm::cross( glm::angleAxis( -PitchDelta, right ), glm::angleAxis( -YawDelta, Vector3( 0, 1, 0 ) ) ) );
+					Quaternion Quat = glm::normalize( glm::cross( glm::angleAxis( -PitchDelta, t.GetForward() ), glm::angleAxis( -YawDelta, Vector3( 0, 1, 0 ) ) ) );
 					t.Rotation = Vector3( Quat.x * Quat.w, Quat.y * Quat.w, Quat.z * Quat.w );
 				}
 			}
