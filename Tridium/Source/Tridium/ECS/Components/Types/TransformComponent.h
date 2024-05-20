@@ -8,17 +8,16 @@ namespace Tridium {
 	public:
 		TransformComponent() = default;
 		TransformComponent( const TransformComponent& ) = default;
-		TransformComponent( const Vector3& a_Translation );
+		TransformComponent( const Vector3& a_Position );
 
 		operator Matrix4&() { return GetTransform(); }
 		operator const Matrix4&() const { return GetTransform(); }
 
 		Matrix4 GetTransform() const;
-
 		Vector3 GetForward() const;
 
 	public:
-		Vector3 Translation = Vector3( 0.0f );
+		Vector3 Position = Vector3( 0.0f );
 		Vector3 Rotation = Vector3( 0.0f );
 		Vector3 Scale = Vector3( 1.0f );
 

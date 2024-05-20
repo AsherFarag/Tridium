@@ -172,13 +172,14 @@ namespace Tridium {
 				//aColor = vec4( vPosition.x * 0.5 + 0.5, vPosition.y * 0.5 + 0.5, 1 - (vPosition.x * 0.5 + 0.5) - (vPosition.y * 0.5 + 0.5 ), 1 );
 				//aColor = vec4(vPosition.y, vPosition.y, vPosition.y, 0.5) * 0.5 + 0.5;
 				//aColor = vec4(0,1,0,1);
-				aColor = vColor;
+				aColor = (vColor * uColour);
 			}
 		)";
 
 		m_Shader = Shader::Create( vertexSrc, fragSrc );
 
 #pragma endregion
+
 	}
 	
 	Application::~Application()
@@ -211,7 +212,13 @@ namespace Tridium {
 				m_Running = false;
 			}
 
+
+
+			// Update Loop ========================================================================================
+
 			m_Scene.Update();
+
+			// ====================================================================================================
 
 
 
@@ -220,7 +227,7 @@ namespace Tridium {
 			RenderCommand::SetClearColor( { 0.1, 0.1, 0.1, 1.0 } );
 			RenderCommand::Clear();
 
-			Renderer::BeginScene( go.GetComponent<CameraComponent>(), go.GetComponent<TransformComponent>() );
+			Renderer::BeginScene( go.GetComponent<CameraComponent>().SceneCamera, go.GetComponent<TransformComponent>() );
 
 			m_Shader->Bind();
 			Vector4 colour = Vector4( (float)( glm::sin( glfwGetTime() + 10.f ) * 0.5f + 0.5f ),

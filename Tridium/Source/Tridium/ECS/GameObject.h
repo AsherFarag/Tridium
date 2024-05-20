@@ -77,7 +77,7 @@ namespace Tridium {
 	template <typename T>
 	bool GameObject::HasComponent() const
 	{
-		return Application::GetScene().m_Registry.has<T>( m_ID );
+		return Application::GetScene().m_Registry.try_get<T>( m_ID ) != nullptr;
 	}
 
 #pragma endregion

@@ -1444,6 +1444,7 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="Source\Tridium\Core\Time.h" />
+    <ClInclude Include="Source\Tridium\Rendering\Camera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Platform\OpenGL\OpenGLBuffer.cpp">
@@ -1521,5 +1522,6 @@
     <ClCompile Include="Source\Tridium\ECS\Components\Component.cpp" />
     <ClCompile Include="Source\Tridium\ECS\Components\Types\FlyCameraComponent.cpp" />
     <ClCompile Include="Source\Tridium\Core\Time.cpp" />
+    <ClCompile Include="Source\Tridium\Rendering\Camera.cpp" />
   </ItemGroup>
 </Project>

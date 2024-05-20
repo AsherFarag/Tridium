@@ -19,37 +19,38 @@ namespace Tridium {
 		if ( !m_Transform )
 			return;
 		float dt = Time::DeltaTime();
-		auto forward = m_Transform->GetForward();
-		auto right = glm::cross( m_Transform->GetForward(), Vector3( 0, 1, 0 ) );
+		auto up = GetUpDirection();
+		auto forward = GetForwardDirection();
+		auto right = GetRightDirection();
 
 		if ( Input::IsKeyPressed( Input::KEY_W ) )
 		{
-			m_Transform->Translation += forward * Speed * dt;
+			m_Transform->Position += forward * Speed * dt;
 		}
 
 		if ( Input::IsKeyPressed( Input::KEY_S ) )
 		{
-			m_Transform->Translation -= forward * Speed * dt;
+			m_Transform->Position -= forward * Speed * dt;
 		}
 
 		if ( Input::IsKeyPressed( Input::KEY_A ) )
 		{
-			m_Transform->Translation -= right * Speed * dt;
+			m_Transform->Position -= right * Speed * dt;
 		}
 
 		if ( Input::IsKeyPressed( Input::KEY_D ) )
 		{
-			m_Transform->Translation += right * Speed * dt;
+			m_Transform->Position += right * Speed * dt;
 		}
 
 		if ( Input::IsKeyPressed( Input::KEY_UP ) )
 		{
-			m_Transform->Translation.y += Speed * dt;
+			m_Transform->Position.y += Speed * dt;
 		}
 
 		if ( Input::IsKeyPressed( Input::KEY_DOWN ) )
 		{
-			m_Transform->Translation.y -= Speed * dt;
+			m_Transform->Position.y -= Speed * dt;
 		}
 
 		// Rotation
@@ -68,18 +69,39 @@ namespace Tridium {
 			float MouseDeltaX = Input::GetMouseX() - m_LastMousePos.x;
 			float MouseDeltaY = Input::GetMouseY() - m_LastMousePos.y;
 
+
+
 			if ( MouseDeltaX != 0.f || MouseDeltaY != 0.f )
 			{
 				float PitchDelta = glm::radians(MouseDeltaY * Sensitivity);
 				float YawDelta = glm::radians( MouseDeltaX * Sensitivity);
 
-				Quaternion Quat = glm::normalize( glm::cross( glm::angleAxis( PitchDelta, Vector3( 0, 0, 1 ) ), glm::angleAxis( YawDelta, Vector3(0,1,0) ) ) );
+				Quaternion Quat = glm::normalize( glm::cross( glm::angleAxis( -PitchDelta, right ), glm::angleAxis( -YawDelta, up ) ) );
 				m_Transform->Rotation += glm::eulerAngles(Quat);
 
 			}
 		}
 
 		m_LastMousePos = Input::GetMousePosition();
+	}
+	Vector3 FlyCameraComponent::GetUpDirection() const
+	{
+		return glm::rotate( GetOrientation(), Vector3( 0.0f, 1.0f, 0.0f ) );
+	}
+
+	Vector3 FlyCameraComponent::GetRightDirection() const
+	{
+		return glm::rotate( GetOrientation(), Vector3( 1.0f, 0.0f, 0.0f ) );
+	}
+
+	Vector3 FlyCameraComponent::GetForwardDirection() const
+	{
+		return glm::rotate( GetOrientation(), Vector3( 0.0f, 0.0f, -1.0f ) );
+	}
+
+	Quaternion FlyCameraComponent::GetOrientation() const
+	{
+		return Quaternion( Vector3( m_Transform->Rotation.x, m_Transform->Rotation.y, 0.f ) );
 	}
 
 }

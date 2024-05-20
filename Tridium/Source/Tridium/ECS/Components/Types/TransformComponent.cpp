@@ -4,7 +4,7 @@
 namespace Tridium {
 
 	TransformComponent::TransformComponent( const Vector3& a_Translation )
-		: Translation( a_Translation ) {}
+		: Position( a_Translation ) {}
 
 	Matrix4 TransformComponent::GetTransform() const
 	{
@@ -12,15 +12,15 @@ namespace Tridium {
 
 		constexpr Matrix4 identity = Matrix4( 1.0f );
 
-		return glm::translate( identity, Translation )
+		return glm::translate( identity, Position )
 			* rotationMatrix
 			* glm::scale( identity, Scale );
 	}
 
 	Vector3 TransformComponent::GetForward() const
 	{
-		const Matrix4 inverted = glm::inverse( GetTransform() );
-		return normalize( glm::vec3( inverted[ 2 ] ) ); // Forward Vector
+		auto orientation = Quaternion( Vector3( Rotation.x, Rotation.y, 0 ) );
+		return glm::rotate( orientation, Vector3(0.0f, 0.0f, -1.0f));
 	}
 
 }

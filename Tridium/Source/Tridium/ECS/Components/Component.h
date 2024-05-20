@@ -10,7 +10,7 @@ namespace Tridium {
 		friend class GameObject;
 	public:
 		Component() {}
-		~Component() = default;
+		virtual ~Component() = default;
 
 		const GameObject GetGameObject() const { return m_GameObject; }
 
@@ -28,7 +28,7 @@ namespace Tridium {
 		friend class Scene;
 		friend class GameObject;
 	public:
-		ScriptableComponent();
+		ScriptableComponent() {}
 		~ScriptableComponent();
 
 		virtual void OnUpdate() {}

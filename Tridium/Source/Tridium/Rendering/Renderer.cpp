@@ -8,9 +8,9 @@ namespace Tridium {
 	
 	Renderer::SceneData* Renderer::m_SceneData = new Renderer::SceneData();
 
-	void Renderer::BeginScene( const CameraComponent& a_Camera, const TransformComponent& a_CameraTransform )
+	void Renderer::BeginScene( const Camera& a_Camera, const TransformComponent& a_CameraTransform )
 	{
-		Matrix4 ViewMatrix = glm::lookAt( a_CameraTransform.Translation, a_CameraTransform.Translation + a_CameraTransform.GetForward(), Vector3(0, 1, 0));
+		Matrix4 ViewMatrix = glm::lookAt( a_CameraTransform.Position, a_CameraTransform.Position + a_CameraTransform.GetForward(), Vector3(0, 1, 0));
 		//Matrix4 ViewMatrix = glm::inverse( a_CameraTransform.GetTransform() );
 		m_SceneData->ViewProjectionMatrix = a_Camera.GetProjection() * ViewMatrix;
 	}

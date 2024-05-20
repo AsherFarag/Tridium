@@ -146,6 +146,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Tridium\Rendering\Camera.h" />
     <ClInclude Include="Dependencies\glm\glm\common.hpp" />
     <ClInclude Include="Dependencies\glm\glm\detail\_features.hpp" />
     <ClInclude Include="Dependencies\glm\glm\detail\_fixes.hpp" />
@@ -606,6 +607,7 @@
     <ClInclude Include="Source\tripch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Tridium\Rendering\Camera.cpp" />
     <ClCompile Include="Source\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="Source\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="Source\Platform\OpenGL\OpenGLRenderingAPI.cpp" />

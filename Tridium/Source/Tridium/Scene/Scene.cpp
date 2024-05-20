@@ -1,6 +1,7 @@
 #include "tripch.h"
 #include "Scene.h"
 #include <Tridium/ECS/GameObject.h>
+#include <Tridium/ECS/Components/Component.h>
 #include <Tridium/ECS/Components/Types.h>
 
 namespace Tridium {
@@ -16,11 +17,22 @@ namespace Tridium {
 
 	void Scene::Update()
 	{
-		auto& view = m_Registry.view<FlyCameraComponent>();
-
-		for ( auto& flyCamera : view )
+		for ( const auto& Storage : m_Registry.storage() )
 		{
-			m_Registry.get<FlyCameraComponent>( flyCamera ).OnUpdate();
+			// Nothing to iterate through, Continue
+			if ( Storage.second.size() == 0 )
+				continue;
+
+			// We know that the data will always be inherited from Component
+			void* data = Storage.second.value( Storage.second[ 0 ] );
+			Component* component = (Component*)data;
+
+			// If the type is not inherited from ScriptableComponent, continue 
+			if ( dynamic_cast<ScriptableComponent*>( component ) == nullptr )
+				continue;
+
+			for ( auto entity : Storage.second )
+				static_cast<ScriptableComponent*>( Storage.second.value( entity ) )->OnUpdate();
 		}
 	}
 
