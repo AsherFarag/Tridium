@@ -4,11 +4,25 @@
 
 namespace Tridium {
 
-    GameObject::GameObject( EntityID a_ID, const std::string& name )
+    GameObject::GameObject( EntityID a_ID )
         : m_ID( a_ID )
+    {
+    }
+
+    void GameObject::Init( const std::string& name )
     {
         AddComponent<TagComponent>( name );
         AddComponent<TransformComponent>();
+    }
+
+    std::string& GameObject::GetTag() const
+    {
+        return GetComponent<TagComponent>().Tag;
+    }
+
+    TransformComponent& GameObject::GetTransform() const
+    {
+        return GetComponent<TransformComponent>();
     }
 
 }

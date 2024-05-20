@@ -1,7 +1,5 @@
 #pragma once
-
 #include "entt.hpp"
-#include <Tridium/ECS/EntityComponentSystem.h>
 
 namespace Tridium {
 
@@ -13,6 +11,8 @@ namespace Tridium {
 		Scene();
 		~Scene();
 
+		void Update();
+
 		GameObject InstantiateGameObject( const std::string& name = std::string() );
 
 	private:
@@ -20,6 +20,7 @@ namespace Tridium {
 	};
 
 #pragma region Scene Template Definitions
+
 
 #pragma endregion
 

@@ -562,14 +562,6 @@
     <ClInclude Include="Dependencies\glm\glm\vec3.hpp" />
     <ClInclude Include="Dependencies\glm\glm\vec4.hpp" />
     <ClInclude Include="Dependencies\glm\glm\vector_relational.hpp" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Types.h" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\FlyCameraComponent.h" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\TagComponent.h" />
-    <ClInclude Include="Source\Tridium\ECS\EntityComponentSystem.h" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\CameraComponent.h" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\TransformComponent.h" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Component.h" />
-    <ClInclude Include="Source\Tridium\Scene\Scene.h" />
     <ClInclude Include="Source\Platform\OpenGL\OpenGLBuffer.h" />
     <ClInclude Include="Source\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="Source\Platform\OpenGL\OpenGLRenderingAPI.h" />
@@ -581,9 +573,17 @@
     <ClInclude Include="Source\Tridium\Core\Application.h" />
     <ClInclude Include="Source\Tridium\Core\Core.h" />
     <ClInclude Include="Source\Tridium\Core\EntryPoint.h" />
+    <ClInclude Include="Source\Tridium\Core\Time.h" />
     <ClInclude Include="Source\Tridium\Core\Layer.h" />
     <ClInclude Include="Source\Tridium\Core\LayerStack.h" />
     <ClInclude Include="Source\Tridium\Core\Window.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Component.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\CameraComponent.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\FlyCameraComponent.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\TagComponent.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\TransformComponent.h" />
+    <ClInclude Include="Source\Tridium\ECS\GameObject.h" />
     <ClInclude Include="Source\Tridium\Events\ApplicationEvent.h" />
     <ClInclude Include="Source\Tridium\Events\Event.h" />
     <ClInclude Include="Source\Tridium\Events\Eventsfwd.h" />
@@ -599,16 +599,13 @@
     <ClInclude Include="Source\Tridium\Rendering\RenderingContext.h" />
     <ClInclude Include="Source\Tridium\Rendering\Shader.h" />
     <ClInclude Include="Source\Tridium\Rendering\VertexArray.h" />
-    <ClInclude Include="Source\Tridium\ECS\GameObject.h" />
+    <ClInclude Include="Source\Tridium\Scene\Scene.h" />
     <ClInclude Include="Source\Tridium\Utils\Delegate.h" />
     <ClInclude Include="Source\Tridium\Utils\Log.h" />
     <ClInclude Include="Source\Tridium\Utils\Todo.h" />
     <ClInclude Include="Source\tripch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Tridium\ECS\Components\Types\CameraComponent.cpp" />
-    <ClCompile Include="Source\Tridium\ECS\Components\Types\TransformComponent.cpp" />
-    <ClCompile Include="Source\Tridium\Scene\Scene.cpp" />
     <ClCompile Include="Source\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="Source\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="Source\Platform\OpenGL\OpenGLRenderingAPI.cpp" />
@@ -619,6 +616,12 @@
     <ClCompile Include="Source\Tridium\Core\Application.cpp" />
     <ClCompile Include="Source\Tridium\Core\Layer.cpp" />
     <ClCompile Include="Source\Tridium\Core\LayerStack.cpp" />
+    <ClCompile Include="Source\Tridium\Core\Time.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\Components\Component.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\CameraComponent.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\FlyCameraComponent.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\TransformComponent.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\GameObject.cpp" />
     <ClCompile Include="Source\Tridium\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="Source\Tridium\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="Source\Tridium\Rendering\Buffer.cpp" />
@@ -627,7 +630,7 @@
     <ClCompile Include="Source\Tridium\Rendering\RenderingAPI.cpp" />
     <ClCompile Include="Source\Tridium\Rendering\Shader.cpp" />
     <ClCompile Include="Source\Tridium\Rendering\VertexArray.cpp" />
-    <ClCompile Include="Source\Tridium\ECS\GameObject.cpp" />
+    <ClCompile Include="Source\Tridium\Scene\Scene.cpp" />
     <ClCompile Include="Source\Tridium\Utils\Log.cpp" />
     <ClCompile Include="Source\tripch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

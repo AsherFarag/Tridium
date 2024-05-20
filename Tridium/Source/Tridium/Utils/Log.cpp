@@ -25,7 +25,7 @@ namespace Tridium {
 		//color_sink->set_color( spdlog::level::info, GREEN ); // Green
 		//color_sink->set_color( spdlog::level::warn, BLUE ); // Somehow yellow
 		//color_sink->set_color( spdlog::level::err, RED ); // Red
-		color_sink->set_color( spdlog::level::critical, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | BACKGROUND_BLUE ); // White Text, Red Background
+		//color_sink->set_color( spdlog::level::critical, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | BACKGROUND_BLUE ); // White Text, Red Background
 
 		// Core Logger
 		s_CoreLogger = MakeRef<spdlog::logger>( "TRIDIUM", color_sink );

@@ -4,6 +4,10 @@
 #include "glad/glad.h"
 
 namespace Tridium {
+	void OpenGLRenderingAPI::Init()
+	{
+		glEnable( GL_DEPTH_TEST );
+	}
 
 	void OpenGLRenderingAPI::SetViewport( uint32_t x, uint32_t y, uint32_t width, uint32_t height )
 	{

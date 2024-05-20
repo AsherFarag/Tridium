@@ -6,6 +6,7 @@ namespace Tridium {
 
 	class Input
 	{
+		friend class Application;
 	public:
 		// Returns true if this key is down this frame
 		inline static bool IsKeyPressed( int keycode ) { return s_Instance->IsKeyPressedImpl( keycode ); }

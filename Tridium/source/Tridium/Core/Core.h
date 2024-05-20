@@ -2,6 +2,7 @@
 
 // - Common Includes -
 #include <Tridium/Math/Math.h>
+#include <Tridium/Core/Time.h>
 #include <memory>
 
 #ifdef TE_PLATFORM_WINDOWS

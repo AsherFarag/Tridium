@@ -20,7 +20,7 @@ namespace Tridium {
 	Vector3 TransformComponent::GetForward() const
 	{
 		const Matrix4 inverted = glm::inverse( GetTransform() );
-		return normalize( glm::vec3( inverted[ 0 ] ) ); // Forward Vector
+		return normalize( glm::vec3( inverted[ 2 ] ) ); // Forward Vector
 	}
 
 }

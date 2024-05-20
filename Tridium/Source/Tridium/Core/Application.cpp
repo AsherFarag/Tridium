@@ -9,7 +9,7 @@
 #include <Tridium/ECS/GameObject.h>
 #include <Tridium/ECS/Components/Types.h>
 #include "GLFW/glfw3.h"
-#include <Tridium/Math/Math.h>
+#include "imgui.h"
 
 namespace Tridium {
 
@@ -24,6 +24,8 @@ namespace Tridium {
 
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay( m_ImGuiLayer );
+
+		RenderCommand::Init();
 
 		#pragma region Temp Graphics Stuff
 
@@ -80,10 +82,12 @@ namespace Tridium {
 
 		VBO = VertexBuffer::Create( vertices, sizeof( vertices ));
 
-		BufferLayout layout = {
+		BufferLayout layout = 
+		{
 			{ ShaderDataType::Float3, "aPosition" },
 			{ ShaderDataType::Float4, "aColor" }
 		};
+
 		VBO->SetLayout( layout );
 		VAO->AddVertexBuffer( VBO );
 
@@ -131,37 +135,44 @@ namespace Tridium {
 
 
 		std::string vertexSrc =
-			R"(
+		R"(
 			#version 410
 
 			layout(location = 0) in vec3 aPosition;
+			layout(location = 1) in vec4 aColor;
 			
 			out vec4 vPosition;
-			
+			out vec4 vColor;			
+
 			uniform mat4 uPVM;
 			
 			void main()
 			{	
-			      gl_Position = uPVM * vec4(aPosition, 1);
+				gl_Position = uPVM * vec4(aPosition, 1);
+				vPosition =  vec4(aPosition, 1);
+				vColor = aColor;
 			}
 		)";
 
 		std::string fragSrc =
-			R"(
+		R"(
 			#version 410 core
 			
 			layout(location = 0) out vec4 aColor;
-			in vec4 vPosition;			
+
+			in vec4 vPosition;
+			in vec4 vColor;						
 			
 			uniform vec4 uColour;
 
 			void main()
 			{
-				//vColor = vec4( 0.3, 0.35, 1, 1 );
-				//vColor = vec4( vPosition * 0.5 + 0.5, 1 );
-				//vColor = vec4( vPosition.x * 0.5 + 0.5, vPosition.y * 0.5 + 0.5, 1 - (vPosition.x * 0.5 + 0.5) - (vPosition.y * 0.5 + 0.5 ), 1 );
-				aColor = vec4(0,1,0,1);
-				aColor = uColour;
+				//aColor = vec4( 0.3, 0.35, 1, 1 );
+				//aColor = vec4( vPosition * 0.5 + 0.5, 1 );
+				//aColor = vec4( vPosition.x * 0.5 + 0.5, vPosition.y * 0.5 + 0.5, 1 - (vPosition.x * 0.5 + 0.5) - (vPosition.y * 0.5 + 0.5 ), 1 );
+				//aColor = vec4(vPosition.y, vPosition.y, vPosition.y, 0.5) * 0.5 + 0.5;
+				//aColor = vec4(0,1,0,1);
+				aColor = vColor;
 			}
 		)";
 
@@ -181,72 +192,33 @@ namespace Tridium {
 		// TEMP
 		auto& go = m_Scene.InstantiateGameObject();
 		go.AddComponent<CameraComponent>();
-		go.GetComponent<TransformComponent>().Translation = Vector3( 0, 0, 0 );
+		go.AddComponent<FlyCameraComponent>();
 		auto& t = go.GetComponent<TransformComponent>();
-		//go.AddComponent<CameraComponent>();
-
-		TE_CORE_DEBUG( "GameObject has Transform Component: {0}", go.HasComponent<TransformComponent>() );
-		TE_CORE_DEBUG( "GameObject has Tag Component: {0}", go.HasComponent<TagComponent>() );
-		TE_CORE_DEBUG( "GameObject has Camera Component: {0}", go.HasComponent<CameraComponent>() );
 
 		Matrix4 quadTransform = glm::translate( Matrix4(1), Vector3( 0 ) )
 			* glm::toMat4( Quaternion( Vector3(0) ) )
 			* glm::scale( Matrix4( 1 ), Vector3(1) );
 
+		auto prevTime = glfwGetTime();
+
 		while ( m_Running )
 		{
+			Time::s_DeltaTime = glfwGetTime() - prevTime;
+			prevTime = glfwGetTime();
+
 			if ( Input::IsKeyPressed( Input::KEY_ESCAPE ) )
 			{
 				m_Running = false;
 			}
 
+			m_Scene.Update();
+
+
+
+			// Rendering ==========================================================================================
+
 			RenderCommand::SetClearColor( { 0.1, 0.1, 0.1, 1.0 } );
 			RenderCommand::Clear();
-
-			#pragma region Input
-
-			auto right = glm::cross( t.GetForward(), Vector3(0,1,0) );
-
-			if ( Input::IsKeyPressed( Input::KEY_W ) )
-			{
-				t.Translation += t.GetForward() * 0.1f;
-			}
-
-			if ( Input::IsKeyPressed( Input::KEY_S ) )
-			{
-				t.Translation -= t.GetForward() * 0.1f;
-			}
-
-			if ( Input::IsKeyPressed( Input::KEY_A ) )
-			{
-				t.Translation -= right * 0.1f;
-			}
-
-			if ( Input::IsKeyPressed( Input::KEY_D ) )
-			{
-				t.Translation += right * 0.1f;
-			}
-
-			float MouseDeltaX = Input::GetMouseX() - m_LastMousePosition.x;
-			float MouseDeltaY = Input::GetMouseY() - m_LastMousePosition.y;
-			float DeltaTime = 1.f / 60.f;
-			float m_LookSensitivity = 1.f;
-			// Rotation
-			if ( Input::IsMouseButtonPressed( Input::MOUSE_BUTTON_RIGHT ) )
-			{
-				if ( MouseDeltaX != 0.f || MouseDeltaY != 0.f )
-				{
-					float PitchDelta = MouseDeltaY * m_LookSensitivity * DeltaTime;
-					float YawDelta = MouseDeltaX * m_LookSensitivity * DeltaTime;
-
-					Quaternion Quat = glm::normalize( glm::cross( glm::angleAxis( -PitchDelta, t.GetForward() ), glm::angleAxis( -YawDelta, Vector3( 0, 1, 0 ) ) ) );
-					t.Rotation = Vector3( Quat.x * Quat.w, Quat.y * Quat.w, Quat.z * Quat.w );
-				}
-			}
-
-			m_LastMousePosition = Input::GetMousePosition();
-
-#pragma endregion
 
 			Renderer::BeginScene( go.GetComponent<CameraComponent>(), go.GetComponent<TransformComponent>() );
 
@@ -261,6 +233,12 @@ namespace Tridium {
 
 			Renderer::EndScene();
 
+			// ====================================================================================================
+
+
+
+			// Layers =============================================================================================
+
 			for ( Layer* layer : m_LayerStack )
 				layer->OnUpdate();
 
@@ -270,6 +248,8 @@ namespace Tridium {
 				layer->OnImGuiDraw();
 
 			m_ImGuiLayer->End();
+			
+			// ====================================================================================================
 
 			m_Window->OnUpdate();
 		}

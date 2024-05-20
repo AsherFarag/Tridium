@@ -6,7 +6,8 @@ namespace Tridium {
 	DEFINE_COMPONENT( TagComponent )
 	{
 	public:
-		TagComponent() = default;
+		TagComponent()
+			: Tag("Default") {}
 		TagComponent( const TagComponent& ) = default;
 		TagComponent( const std::string & a_Tag )
 			: Tag( a_Tag ) {}

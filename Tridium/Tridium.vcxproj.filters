@@ -40,6 +40,15 @@
     <Filter Include="Source\Tridium\Core">
       <UniqueIdentifier>{DB70D01D-47D2-AD2B-D03F-F4DD3CA0E4EA}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Tridium\ECS">
+      <UniqueIdentifier>{6D3CA908-5920-6A5E-C280-64B1AE8354E0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\ECS\Components">
+      <UniqueIdentifier>{6263B7EB-CE7B-9E15-9728-2EAF030033AF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\ECS\Components\Types">
+      <UniqueIdentifier>{86A8174A-F261-82F4-7BC1-9CCEE7793864}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source\Tridium\Events">
       <UniqueIdentifier>{2725D2D8-9391-8DD3-5C85-2531C8B0AF3B}</UniqueIdentifier>
     </Filter>
@@ -57,9 +66,6 @@
     </Filter>
     <Filter Include="Source\Tridium\Scene">
       <UniqueIdentifier>{004AF9D8-ECD8-82A2-95F7-969D81659348}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Tridium\Scene\Main">
-      <UniqueIdentifier>{74EDD5FD-E0AF-0988-2960-98149561E265}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Tridium\Utils">
       <UniqueIdentifier>{43DE26D9-2F6D-B0A2-D88B-C49DC4F9C048}</UniqueIdentifier>
@@ -1356,6 +1362,27 @@
     <ClInclude Include="Source\Tridium\Core\Window.h">
       <Filter>Source\Tridium\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Tridium\ECS\Components\Component.h">
+      <Filter>Source\Tridium\ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tridium\ECS\Components\Types.h">
+      <Filter>Source\Tridium\ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\CameraComponent.h">
+      <Filter>Source\Tridium\ECS\Components\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\FlyCameraComponent.h">
+      <Filter>Source\Tridium\ECS\Components\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\TagComponent.h">
+      <Filter>Source\Tridium\ECS\Components\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\TransformComponent.h">
+      <Filter>Source\Tridium\ECS\Components\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tridium\ECS\GameObject.h">
+      <Filter>Source\Tridium\ECS</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Tridium\Events\ApplicationEvent.h">
       <Filter>Source\Tridium\Events</Filter>
     </ClInclude>
@@ -1401,8 +1428,8 @@
     <ClInclude Include="Source\Tridium\Rendering\VertexArray.h">
       <Filter>Source\Tridium\Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Tridium\ECS\GameObject.h">
-      <Filter>Source\Tridium\Scene\Main</Filter>
+    <ClInclude Include="Source\Tridium\Scene\Scene.h">
+      <Filter>Source\Tridium\Scene</Filter>
     </ClInclude>
     <ClInclude Include="Source\Tridium\Utils\Delegate.h">
       <Filter>Source\Tridium\Utils</Filter>
@@ -1416,14 +1443,7 @@
     <ClInclude Include="Source\tripch.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Tridium\Scene\Scene.h" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Component.h" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\TransformComponent.h" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\CameraComponent.h" />
-    <ClInclude Include="Source\Tridium\ECS\EntityComponentSystem.h" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\TagComponent.h" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\FlyCameraComponent.h" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Types.h" />
+    <ClInclude Include="Source\Tridium\Core\Time.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Platform\OpenGL\OpenGLBuffer.cpp">
@@ -1456,6 +1476,15 @@
     <ClCompile Include="Source\Tridium\Core\LayerStack.cpp">
       <Filter>Source\Tridium\Core</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\CameraComponent.cpp">
+      <Filter>Source\Tridium\ECS\Components\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\TransformComponent.cpp">
+      <Filter>Source\Tridium\ECS\Components\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tridium\ECS\GameObject.cpp">
+      <Filter>Source\Tridium\ECS</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Tridium\ImGui\ImGuiBuild.cpp">
       <Filter>Source\Tridium\ImGui</Filter>
     </ClCompile>
@@ -1480,8 +1509,8 @@
     <ClCompile Include="Source\Tridium\Rendering\VertexArray.cpp">
       <Filter>Source\Tridium\Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Tridium\ECS\GameObject.cpp">
-      <Filter>Source\Tridium\Scene\Main</Filter>
+    <ClCompile Include="Source\Tridium\Scene\Scene.cpp">
+      <Filter>Source\Tridium\Scene</Filter>
     </ClCompile>
     <ClCompile Include="Source\Tridium\Utils\Log.cpp">
       <Filter>Source\Tridium\Utils</Filter>
@@ -1489,8 +1518,8 @@
     <ClCompile Include="Source\tripch.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Tridium\Scene\Scene.cpp" />
-    <ClCompile Include="Source\Tridium\ECS\Components\Types\TransformComponent.cpp" />
-    <ClCompile Include="Source\Tridium\ECS\Components\Types\CameraComponent.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\Components\Component.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\FlyCameraComponent.cpp" />
+    <ClCompile Include="Source\Tridium\Core\Time.cpp" />
   </ItemGroup>
 </Project>
