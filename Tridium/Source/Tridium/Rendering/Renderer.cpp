@@ -2,17 +2,15 @@
 #include "Renderer.h"
 
 #include "RenderCommand.h"
-#include <Tridium/ECS/Components/Types.h>
+#include "Camera.h"
 
 namespace Tridium {
 	
 	Renderer::SceneData* Renderer::m_SceneData = new Renderer::SceneData();
 
-	void Renderer::BeginScene( const Camera& a_Camera, const TransformComponent& a_CameraTransform )
+	void Renderer::BeginScene( const Camera& a_Camera, const Matrix4& a_ViewMatrix )
 	{
-		Matrix4 ViewMatrix = glm::lookAt( a_CameraTransform.Position, a_CameraTransform.Position + a_CameraTransform.GetForward(), Vector3(0, 1, 0));
-		//Matrix4 ViewMatrix = glm::inverse( a_CameraTransform.GetTransform() );
-		m_SceneData->ViewProjectionMatrix = a_Camera.GetProjection() * ViewMatrix;
+		m_SceneData->ViewProjectionMatrix = a_Camera.GetProjection() * a_ViewMatrix;
 	}
 
 	void Renderer::EndScene()
@@ -22,7 +20,7 @@ namespace Tridium {
 	void Renderer::Submit( const Ref<Shader>& a_Shader, const Ref<VertexArray>& a_VertexArray, const Matrix4& a_Transform )
 	{
 		a_Shader->Bind();
-		a_Shader->SetMatrix4( "uPVM", m_SceneData->ViewProjectionMatrix );
+		a_Shader->SetMatrix4( "uPVM", m_SceneData->ViewProjectionMatrix * a_Transform );
 
 		a_VertexArray->Bind();
 

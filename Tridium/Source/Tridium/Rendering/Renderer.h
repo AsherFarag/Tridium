@@ -10,7 +10,7 @@ namespace Tridium {
 	class Renderer
 	{
 	public:
-		static void BeginScene( const Camera& a_Camera, const TransformComponent& a_CameraTransform );
+		static void BeginScene( const Camera& a_Camera, const Matrix4& a_ViewMatrix );
 		static void EndScene();
 
 		static void Submit( const Ref<Shader>& a_Shader, const Ref<VertexArray>& a_VertexArray, const Matrix4& a_Transform );

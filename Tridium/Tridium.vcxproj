@@ -146,6 +146,10 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Tridium\Scripting\ScriptEngine.h" />
+    <ClInclude Include="Source\Tridium\Scripting\Script.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\Common\LuaScriptComponent.h" />
+    <ClInclude Include="Source\Tridium\Editor\EditorCamera.h" />
     <ClInclude Include="Source\Tridium\Rendering\Camera.h" />
     <ClInclude Include="Dependencies\glm\glm\common.hpp" />
     <ClInclude Include="Dependencies\glm\glm\detail\_features.hpp" />
@@ -580,10 +584,9 @@
     <ClInclude Include="Source\Tridium\Core\Window.h" />
     <ClInclude Include="Source\Tridium\ECS\Components\Component.h" />
     <ClInclude Include="Source\Tridium\ECS\Components\Types.h" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\CameraComponent.h" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\FlyCameraComponent.h" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\TagComponent.h" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\TransformComponent.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\Rendering\CameraComponent.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\Common\TagComponent.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\Common\TransformComponent.h" />
     <ClInclude Include="Source\Tridium\ECS\GameObject.h" />
     <ClInclude Include="Source\Tridium\Events\ApplicationEvent.h" />
     <ClInclude Include="Source\Tridium\Events\Event.h" />
@@ -607,6 +610,10 @@
     <ClInclude Include="Source\tripch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Tridium\Scripting\ScriptEngine.cpp" />
+    <ClCompile Include="Source\Tridium\Scripting\Script.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\Common\LuaScriptComponent.cpp" />
+    <ClCompile Include="Source\Tridium\Editor\EditorCamera.cpp" />
     <ClCompile Include="Source\Tridium\Rendering\Camera.cpp" />
     <ClCompile Include="Source\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="Source\Platform\OpenGL\OpenGLContext.cpp" />
@@ -620,9 +627,8 @@
     <ClCompile Include="Source\Tridium\Core\LayerStack.cpp" />
     <ClCompile Include="Source\Tridium\Core\Time.cpp" />
     <ClCompile Include="Source\Tridium\ECS\Components\Component.cpp" />
-    <ClCompile Include="Source\Tridium\ECS\Components\Types\CameraComponent.cpp" />
-    <ClCompile Include="Source\Tridium\ECS\Components\Types\FlyCameraComponent.cpp" />
-    <ClCompile Include="Source\Tridium\ECS\Components\Types\TransformComponent.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\Rendering\CameraComponent.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\Common\TransformComponent.cpp" />
     <ClCompile Include="Source\Tridium\ECS\GameObject.cpp" />
     <ClCompile Include="Source\Tridium\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="Source\Tridium\ImGui\ImGuiLayer.cpp" />

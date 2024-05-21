@@ -6,10 +6,10 @@
 #include <Tridium/Rendering/RenderCommand.h>
 
 // TEMP
+#include "GLFW/glfw3.h"
 #include <Tridium/ECS/GameObject.h>
 #include <Tridium/ECS/Components/Types.h>
-#include "GLFW/glfw3.h"
-#include "imgui.h"
+#include <Tridium/Scripting/Script.h>
 
 namespace Tridium {
 
@@ -143,7 +143,7 @@ namespace Tridium {
 			
 			out vec4 vPosition;
 			out vec4 vColor;			
-
+			
 			uniform mat4 uPVM;
 			
 			void main()
@@ -190,33 +190,38 @@ namespace Tridium {
 	{
 		m_Running = true;
 
-		// TEMP
-		auto& go = m_Scene.InstantiateGameObject();
-		go.AddComponent<CameraComponent>();
-		go.AddComponent<FlyCameraComponent>();
-		auto& t = go.GetComponent<TransformComponent>();
+		//auto script = Script::Create( "Content/Scripts/Testlua.lua", "Testlua" );
 
-		Matrix4 quadTransform = glm::translate( Matrix4(1), Vector3( 0 ) )
-			* glm::toMat4( Quaternion( Vector3(0) ) )
-			* glm::scale( Matrix4( 1 ), Vector3(1) );
+		//auto& scriptGO1 = m_Scene.InstantiateGameObject();
+		//scriptGO1.AddComponent<LuaScriptComponent>( script );
 
-		auto prevTime = glfwGetTime();
+		//auto& scriptGO2 = m_Scene.InstantiateGameObject();
+		//scriptGO2.AddComponent<LuaScriptComponent>( script );
+
+		//auto& scriptGO3 = m_Scene.InstantiateGameObject();
+		//scriptGO3.AddComponent<LuaScriptComponent>( script );
 
 		while ( m_Running )
 		{
-			Time::s_DeltaTime = glfwGetTime() - prevTime;
-			prevTime = glfwGetTime();
+			Time::Update();
 
 			if ( Input::IsKeyPressed( Input::KEY_ESCAPE ) )
-			{
 				m_Running = false;
-			}
 
 
 
 			// Update Loop ========================================================================================
 
 			m_Scene.Update();
+
+			m_EditorCamera.OnUpdate();
+
+			//float rot = script->Environment()[ "rotation" ];
+			//TE_CORE_INFO( "{0}", rot );
+
+			Matrix4 quadTransform = glm::translate( Matrix4( 1 ), Vector3( 0 ) )
+				* glm::toMat4( Quaternion( Vector3( 0 )))
+				* glm::scale( Matrix4( 1 ), Vector3( 1 ) );
 
 			// ====================================================================================================
 
@@ -227,7 +232,7 @@ namespace Tridium {
 			RenderCommand::SetClearColor( { 0.1, 0.1, 0.1, 1.0 } );
 			RenderCommand::Clear();
 
-			Renderer::BeginScene( go.GetComponent<CameraComponent>().SceneCamera, go.GetComponent<TransformComponent>() );
+			Renderer::BeginScene( m_EditorCamera, m_EditorCamera.GetViewMatrix() );
 
 			m_Shader->Bind();
 			Vector4 colour = Vector4( (float)( glm::sin( glfwGetTime() + 10.f ) * 0.5f + 0.5f ),

@@ -1368,16 +1368,13 @@
     <ClInclude Include="Source\Tridium\ECS\Components\Types.h">
       <Filter>Source\Tridium\ECS\Components</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\CameraComponent.h">
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\Rendering\CameraComponent.h">
       <Filter>Source\Tridium\ECS\Components\Types</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\FlyCameraComponent.h">
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\Common\TagComponent.h">
       <Filter>Source\Tridium\ECS\Components\Types</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\TagComponent.h">
-      <Filter>Source\Tridium\ECS\Components\Types</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\TransformComponent.h">
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\Common\TransformComponent.h">
       <Filter>Source\Tridium\ECS\Components\Types</Filter>
     </ClInclude>
     <ClInclude Include="Source\Tridium\ECS\GameObject.h">
@@ -1445,6 +1442,10 @@
     </ClInclude>
     <ClInclude Include="Source\Tridium\Core\Time.h" />
     <ClInclude Include="Source\Tridium\Rendering\Camera.h" />
+    <ClInclude Include="Source\Tridium\Editor\EditorCamera.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\Common\LuaScriptComponent.h" />
+    <ClInclude Include="Source\Tridium\Scripting\Script.h" />
+    <ClInclude Include="Source\Tridium\Scripting\ScriptEngine.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Platform\OpenGL\OpenGLBuffer.cpp">
@@ -1477,10 +1478,10 @@
     <ClCompile Include="Source\Tridium\Core\LayerStack.cpp">
       <Filter>Source\Tridium\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Tridium\ECS\Components\Types\CameraComponent.cpp">
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\Rendering\CameraComponent.cpp">
       <Filter>Source\Tridium\ECS\Components\Types</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Tridium\ECS\Components\Types\TransformComponent.cpp">
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\Common\TransformComponent.cpp">
       <Filter>Source\Tridium\ECS\Components\Types</Filter>
     </ClCompile>
     <ClCompile Include="Source\Tridium\ECS\GameObject.cpp">
@@ -1520,8 +1521,11 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Source\Tridium\ECS\Components\Component.cpp" />
-    <ClCompile Include="Source\Tridium\ECS\Components\Types\FlyCameraComponent.cpp" />
     <ClCompile Include="Source\Tridium\Core\Time.cpp" />
     <ClCompile Include="Source\Tridium\Rendering\Camera.cpp" />
+    <ClCompile Include="Source\Tridium\Editor\EditorCamera.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\Common\LuaScriptComponent.cpp" />
+    <ClCompile Include="Source\Tridium\Scripting\Script.cpp" />
+    <ClCompile Include="Source\Tridium\Scripting\ScriptEngine.cpp" />
   </ItemGroup>
 </Project>

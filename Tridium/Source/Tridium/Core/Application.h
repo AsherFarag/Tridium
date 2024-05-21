@@ -10,6 +10,9 @@
 
 #include <Tridium/Scene/Scene.h>
 
+// TEMP ?
+#include <Tridium/Editor/EditorCamera.h>
+
 // TEMP
 #include <Tridium/Rendering/Shader.h>
 #include <Tridium/Rendering/Buffer.h>
@@ -47,8 +50,11 @@ namespace Tridium
 
 		Scene m_Scene;
 
+		// TEMP ?
+		EditorCamera m_EditorCamera;
+
 		// TEMP
-		Vector2 m_LastMousePosition = Vector2();
+		Vector2 m_LastMousePosition = Vector2(0.f);
 		Ref<Shader> m_Shader;
 		Ref<VertexArray> VAO;
 		Ref<VertexBuffer> VBO;

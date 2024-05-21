@@ -22,12 +22,17 @@ namespace Tridium {
 	{
 		friend class Application;
 	public:
-		static const double DeltaTime() { return s_DeltaTime; }
-		static const Timestep GetTimestep() { return s_TimeStep; }
+		static const double& Get() { return s_Time; } // Returns the time since this application was first executed.
+		static const double DeltaTime() { return s_DeltaTime; } // Returns the time it took to do the previous frame.
+		static const Timestep GetTimestep() { return s_TimeStep; } // Returns the desired, constant Delta Time. It never changes;
 
 	private:
+		static void Update();
+
+	private:
+		static double s_Time;
 		static double s_DeltaTime;
-		static Timestep s_TimeStep;
+		static const Timestep s_TimeStep;
 	};
 
 }

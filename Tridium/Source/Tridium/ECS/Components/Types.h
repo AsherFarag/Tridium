@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Types/TagComponent.h"
-#include "Types/TransformComponent.h"
-#include "Types/CameraComponent.h"
-#include "Types/FlyCameraComponent.h"
+// - Common -
+#include "Types/Common/TagComponent.h"
+#include "Types/Common/TransformComponent.h"
+#include "Types/Common/LuaScriptComponent.h"
+
+// - Rendering -
+#include "Types/Rendering/CameraComponent.h"
