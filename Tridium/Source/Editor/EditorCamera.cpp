@@ -1,8 +1,11 @@
 #include "tripch.h"
+#ifdef IS_EDITOR
+
 #include "EditorCamera.h"
 #include <Tridium/Input/Input.h>
+#include <Tridium/Core/Application.h>
 
-namespace Tridium {
+namespace Tridium::Editor {
 
 	void EditorCamera::OnUpdate()
 	{
@@ -96,3 +99,5 @@ namespace Tridium {
 	}
 
 }
+
+#endif // IS_EDITOR

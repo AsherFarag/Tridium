@@ -15,6 +15,7 @@ namespace Tridium {
 
 		Matrix4 GetTransform() const;
 		Vector3 GetForward() const;
+		Quaternion GetOrientation() const;
 
 	public:
 		Vector3 Position = Vector3( 0.0f );

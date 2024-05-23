@@ -68,5 +68,4 @@ namespace Tridium {
 
 		virtual uint32_t GetCount() const = 0;
 	};
-
 }

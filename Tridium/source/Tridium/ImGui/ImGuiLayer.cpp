@@ -39,6 +39,9 @@ namespace Tridium {
 			style.Colors[ ImGuiCol_WindowBg ].w = 1.f;
 		}
 
+		// - Set Default Font -
+		io.Fonts->AddFontFromFileTTF( "Dependencies/ImGui/misc/fonts/DroidSans.ttf", 15 );
+
 		Application& app = Application::Get();
 		GLFWwindow* window = static_cast<GLFWwindow*>( app.GetWindow().GetNativeWindow() );
 
@@ -83,8 +86,6 @@ namespace Tridium {
 
 	void ImGuiLayer::OnImGuiDraw()
 	{
-		static bool show = true;
-		ImGui::ShowDemoWindow( &show );
 	}
 
 	ImGuiKey ImGuiLayer::TridiumToImGuiKey( Input::KeyCode key )

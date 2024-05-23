@@ -1,7 +1,9 @@
 #pragma once
+#ifdef IS_EDITOR
+
 #include <Tridium/Rendering/Camera.h>
 
-namespace Tridium {
+namespace Tridium::Editor {
 
     class EditorCamera final : public Camera
     {
@@ -42,3 +44,4 @@ namespace Tridium {
     };
 
 }
+#endif // IS_EDITOR

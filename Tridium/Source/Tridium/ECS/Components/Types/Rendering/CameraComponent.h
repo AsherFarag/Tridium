@@ -10,8 +10,6 @@ namespace Tridium {
 		CameraComponent() = default;
 		~CameraComponent() = default;
 
-		const Matrix4& GetViewMatrix() const;
-
 		Camera SceneCamera;
 	};
 

@@ -15,7 +15,7 @@ namespace Tridium {
 		const GameObject GetGameObject() const { return m_GameObject; }
 
 	private:
-		GameObject m_GameObject = (EntityID)0u;
+		GameObject m_GameObject;
 	};
 
 #define DEFINE_BASE_COMPONENT( x ) class x : public Component

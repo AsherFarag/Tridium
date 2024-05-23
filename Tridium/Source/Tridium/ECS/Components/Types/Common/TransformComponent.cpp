@@ -1,6 +1,8 @@
 #include "tripch.h"
 #include "TransformComponent.h"
-
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 namespace Tridium {
 
 	TransformComponent::TransformComponent( const Vector3& a_Translation )
@@ -19,8 +21,12 @@ namespace Tridium {
 
 	Vector3 TransformComponent::GetForward() const
 	{
-		auto orientation = Quaternion( Vector3( Rotation.x, Rotation.y, 0 ) );
-		return glm::rotate( orientation, Vector3(0.0f, 0.0f, -1.0f));
+		return glm::rotate( GetOrientation(), Vector3( 0.0f, 0.0f, -1.0f ) );
+	}
+
+	Quaternion TransformComponent::GetOrientation() const
+	{
+		return Quaternion( Vector3( -Rotation.x, -Rotation.y, 0.f ) );
 	}
 
 }

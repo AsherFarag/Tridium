@@ -82,7 +82,11 @@ project "Tridium"
 		}
 
 	filter "configurations:Debug"
-		defines "TRI_DEBUG"
+		defines
+		{ 
+			"TRI_DEBUG",
+			"IS_EDITOR"
+		}
 		symbols "On"
 
 	filter "configurations:Release"
@@ -136,7 +140,11 @@ project "Sandbox"
 		}
 
 	filter "configurations:Debug"
-		defines "TRI_DEBUG"
+		defines
+		{ 
+			"TRI_DEBUG",
+			"IS_EDITOR"
+		}
 		symbols "On"
 
 	filter "configurations:Release"

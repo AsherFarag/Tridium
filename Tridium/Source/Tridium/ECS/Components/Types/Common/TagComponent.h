@@ -7,7 +7,7 @@ namespace Tridium {
 	{
 	public:
 		TagComponent()
-			: Tag("Default") {}
+			: Tag("Tag") {}
 		TagComponent( const TagComponent& ) = default;
 		TagComponent( const std::string & a_Tag )
 			: Tag( a_Tag ) {}
@@ -15,6 +15,8 @@ namespace Tridium {
 		operator std::string& ( ) { return Tag; }
 		operator const std::string& ( ) const { return Tag; }
 		bool operator ==( const TagComponent & other ) const { return other.Tag == Tag; }
+
+		static inline const uint32_t MaxSize() { return 256u; }
 
 	public:
 		std::string Tag;

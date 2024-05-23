@@ -5,21 +5,15 @@
 #include <Tridium/Core/Window.h>
 #include <Tridium/Core/LayerStack.h>
 #include <Tridium/Events/ApplicationEvent.h>
-
 #include <Tridium/ImGui/ImGuiLayer.h>
-
 #include <Tridium/Scene/Scene.h>
-
-// TEMP ?
-#include <Tridium/Editor/EditorCamera.h>
-
-// TEMP
-#include <Tridium/Rendering/Shader.h>
-#include <Tridium/Rendering/Buffer.h>
-#include <Tridium/Rendering/VertexArray.h>
 
 namespace Tridium
 {
+#ifdef IS_EDITOR
+	namespace Editor { class EditorLayer; }
+#endif // IS_EDITOR
+
 	class Application
 	{
 	public:
@@ -37,7 +31,7 @@ namespace Tridium
 		Window& GetWindow() { return *m_Window; }
 
 		// - Scene -
-		static Scene& GetScene() { return s_Instance->m_Scene; }
+		static Ref<Scene> GetScene() { return s_Instance->m_ActiveScene; }
 
 	private:
 		bool OnWindowClosed( WindowCloseEvent& e );
@@ -48,17 +42,14 @@ namespace Tridium
 		ImGuiLayer* m_ImGuiLayer;
 		LayerStack m_LayerStack;
 
-		Scene m_Scene;
+		Ref<Scene> m_ActiveScene;
 
-		// TEMP ?
-		EditorCamera m_EditorCamera;
+	#ifdef IS_EDITOR
+		
+		Editor::EditorLayer* m_EditorLayer;
 
-		// TEMP
-		Vector2 m_LastMousePosition = Vector2(0.f);
-		Ref<Shader> m_Shader;
-		Ref<VertexArray> VAO;
-		Ref<VertexBuffer> VBO;
-		Ref<IndexBuffer> IBO;
+	#endif // IS_EDITOR
+
 
 	private:
 		static Application* s_Instance;

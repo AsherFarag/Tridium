@@ -1,6 +1,10 @@
 #include "tripch.h"
 #include "Application.h"
 
+#ifdef IS_EDITOR
+#include <Editor/EditorLayer.h>
+#endif // IS_EDITOR
+
 // TEMP ?
 #include <Tridium/Rendering/Renderer.h>
 #include <Tridium/Rendering/RenderCommand.h>
@@ -22,164 +26,64 @@ namespace Tridium {
 		m_Window = Window::Create();
 		m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, std::placeholders::_1 ) );
 
+		// Initialise ImGui
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay( m_ImGuiLayer );
 
+#ifdef IS_EDITOR
+
+		m_EditorLayer = new Editor::EditorLayer();
+		PushOverlay( m_EditorLayer );
+
+#endif // IS_EDITOR
+
+
+		// Initialise the render pipeline
 		RenderCommand::Init();
 
-		#pragma region Temp Graphics Stuff
-
-		VAO = VertexArray::Create();
-
-		// TRI
-		//float vertices[ 3 * 3 + 3 * 4 ] = {
-		//	0.f, 0.5f, 0.f,		 0.2f, 0.2f, 1.0f, 1,
-		//	0.5f, -0.5f, 0.f,	 0.2f, 1.0f, 0.2f, 1,
-		//	-0.5f, -0.5f, 0.f,	 1.0f, 0.2f, 0.2f, 1,
-		//};
-
-		//// QUAD
-		//float vertices[ 6 * 3 + 6 * 4 ] = {
-		//	-1, -1,  0,		 0.4f, 0.4f, 1.0f, 1,
-		//	-1,  1,  0,		 0.4f, 1.0f, 0.4f, 1,
-		//	 1, -1,  0,		 1.0f, 0.4f, 0.4f, 1,
-		//	 1,  1,  0,		 1.0f, 1.0f, 0.4f, 1
-		//};
-
-		float vertices[] = {
-			// Position         // Color
-			-1, -1,  1,         0.4f, 0.4f, 1.0f, 1,
-			 1, -1,  1,         0.4f, 1.0f, 0.4f, 1,
-			 1,  1,  1,         1.0f, 0.4f, 0.4f, 1,
-			-1,  1,  1,         1.0f, 1.0f, 0.4f, 1,
-			-1, -1, -1,         1.0f, 0.4f, 0.4f, 1,
-			 1, -1, -1,         0.4f, 1.0f, 0.4f, 1,
-			 1,  1, -1,         0.4f, 0.4f, 1.0f, 1,
-			-1,  1, -1,         1.0f, 1.0f, 0.4f, 1
-		};
-
-		// Indices for the cube
-		unsigned int indices[] = {
-			// Front face
-			0, 1, 2,
-			2, 3, 0,
-			// Back face
-			4, 5, 6,
-			6, 7, 4,
-			// Left face
-			4, 0, 3,
-			3, 7, 4,
-			// Right face
-			1, 5, 6,
-			6, 2, 1,
-			// Top face
-			3, 2, 6,
-			6, 7, 3,
-			// Bottom face
-			4, 5, 1,
-			1, 0, 4
-		};
-
-		VBO = VertexBuffer::Create( vertices, sizeof( vertices ));
-
-		BufferLayout layout = 
-		{
-			{ ShaderDataType::Float3, "aPosition" },
-			{ ShaderDataType::Float4, "aColor" }
-		};
-
-		VBO->SetLayout( layout );
-		VAO->AddVertexBuffer( VBO );
-
-		//uint32_t indicies[ 3 ] = { 0,1,2 };
-		//uint32_t indicies[ 6 ] = { 0,1,2,3,1,2 };
-		IBO = IndexBuffer::Create( indices, sizeof( indices ) / sizeof(uint32_t) );
-		VAO->SetIndexBuffer( IBO );
-
-		//std::string vertexSrc =
-		//R"(
-		//	#version 410 core
-		//	
-		//	layout(location = 0) in vec3 aPosition;
-		//	layout(location = 1) in vec4 aColor;
-		//	out vec3 vPosition;
-		//	out vec4 vColor;			
-
-		//	void main()
-		//	{
-		//		vPosition = aPosition;
-		//		vColor = aColor;
-		//		gl_Position = vec4( aPosition, 1 );
-		//	}
-		//)";
-
-		//std::string fragSrc =
-		//R"(
-		//	#version 410 core
-		//	
-		//	layout(location = 0) out vec4 aColor;
-		//	in vec3 vPosition;
-		//	in vec4 vColor;			
-		//	
-		//	uniform vec4 FColour;
-
-		//	void main()
-		//	{
-		//		//vColor = vec4( 0.3, 0.35, 1, 1 );
-		//		//vColor = vec4( vPosition * 0.5 + 0.5, 1 );
-		//		//vColor = vec4( vPosition.x * 0.5 + 0.5, vPosition.y * 0.5 + 0.5, 1 - (vPosition.x * 0.5 + 0.5) - (vPosition.y * 0.5 + 0.5 ), 1 );
-		//		//aColor = vColor;
-		//		aColor = FColour;
-		//	}
-		//)";
-
-
 		std::string vertexSrc =
-		R"(
-			#version 410
+			R"(
+						#version 410
 
-			layout(location = 0) in vec3 aPosition;
-			layout(location = 1) in vec4 aColor;
-			
-			out vec4 vPosition;
-			out vec4 vColor;			
-			
-			uniform mat4 uPVM;
-			
-			void main()
-			{	
-				gl_Position = uPVM * vec4(aPosition, 1);
-				vPosition =  vec4(aPosition, 1);
-				vColor = aColor;
-			}
-		)";
+						layout(location = 0) in vec3 aPosition;
+						layout(location = 1) in vec4 aColor;
+						
+						out vec4 vPosition;
+						out vec4 vColor;			
+						
+						uniform mat4 uPVM;
+						
+						void main()
+						{	
+							gl_Position = uPVM * vec4(aPosition, 1);
+							vPosition =  vec4(aPosition, 1);
+							vColor = aColor;
+						}
+					)";
 
 		std::string fragSrc =
-		R"(
-			#version 410 core
-			
-			layout(location = 0) out vec4 aColor;
+			R"(
+						#version 410 core
+						
+						layout(location = 0) out vec4 aColor;
 
-			in vec4 vPosition;
-			in vec4 vColor;						
-			
-			uniform vec4 uColour;
+						in vec4 vPosition;
+						in vec4 vColor;						
+						
+						uniform vec4 uColour;
 
-			void main()
-			{
-				//aColor = vec4( 0.3, 0.35, 1, 1 );
-				//aColor = vec4( vPosition * 0.5 + 0.5, 1 );
-				//aColor = vec4( vPosition.x * 0.5 + 0.5, vPosition.y * 0.5 + 0.5, 1 - (vPosition.x * 0.5 + 0.5) - (vPosition.y * 0.5 + 0.5 ), 1 );
-				//aColor = vec4(vPosition.y, vPosition.y, vPosition.y, 0.5) * 0.5 + 0.5;
-				//aColor = vec4(0,1,0,1);
-				aColor = (vColor * uColour);
-			}
-		)";
+						void main()
+						{
+							//aColor = vec4( 0.3, 0.35, 1, 1 );
+							//aColor = vec4( vPosition * 0.5 + 0.5, 1 );
+							//aColor = vec4( vPosition.x * 0.5 + 0.5, vPosition.y * 0.5 + 0.5, 1 - (vPosition.x * 0.5 + 0.5) - (vPosition.y * 0.5 + 0.5 ), 1 );
+							//aColor = vec4(vPosition.y, vPosition.y, vPosition.y, 0.5) * 0.5 + 0.5;
+							//aColor = vec4(0,1,0,1);
+							aColor = (vColor * uColour);
+						}
+					)";
 
-		m_Shader = Shader::Create( vertexSrc, fragSrc );
-
-#pragma endregion
-
+		Shader::Create( vertexSrc, fragSrc, "Default" );
 	}
 	
 	Application::~Application()
@@ -190,61 +94,30 @@ namespace Tridium {
 	{
 		m_Running = true;
 
-		//auto script = Script::Create( "Content/Scripts/Testlua.lua", "Testlua" );
+		m_ActiveScene = MakeRef<Scene>();
 
-		//auto& scriptGO1 = m_Scene.InstantiateGameObject();
-		//scriptGO1.AddComponent<LuaScriptComponent>( script );
+		auto& go1 = m_ActiveScene->InstantiateGameObject();
+		go1.AddComponent<MeshComponent>();
+		go1.GetTag() = "Cube";
 
-		//auto& scriptGO2 = m_Scene.InstantiateGameObject();
-		//scriptGO2.AddComponent<LuaScriptComponent>( script );
-
-		//auto& scriptGO3 = m_Scene.InstantiateGameObject();
-		//scriptGO3.AddComponent<LuaScriptComponent>( script );
+		auto& go2 = m_ActiveScene->InstantiateGameObject();
+		go2.AddComponent<CameraComponent>();
+		go2.AddComponent<CameraControllerComponent>();
+		go2.GetTag() = "Scene Camera";
 
 		while ( m_Running )
 		{
 			Time::Update();
 
-			if ( Input::IsKeyPressed( Input::KEY_ESCAPE ) )
-				m_Running = false;
-
-
-
 			// Update Loop ========================================================================================
 
-			m_Scene.Update();
-
-			m_EditorCamera.OnUpdate();
-
-			//float rot = script->Environment()[ "rotation" ];
-			//TE_CORE_INFO( "{0}", rot );
-
-			Matrix4 quadTransform = glm::translate( Matrix4( 1 ), Vector3( 0 ) )
-				* glm::toMat4( Quaternion( Vector3( 0 )))
-				* glm::scale( Matrix4( 1 ), Vector3( 1 ) );
+			m_ActiveScene->Update();
 
 			// ====================================================================================================
 
 
 
-			// Rendering ==========================================================================================
-
-			RenderCommand::SetClearColor( { 0.1, 0.1, 0.1, 1.0 } );
-			RenderCommand::Clear();
-
-			Renderer::BeginScene( m_EditorCamera, m_EditorCamera.GetViewMatrix() );
-
-			m_Shader->Bind();
-			Vector4 colour = Vector4( (float)( glm::sin( glfwGetTime() + 10.f ) * 0.5f + 0.5f ),
-				(float)( glm::sin( glfwGetTime() ) * 0.5f + 0.5f ),
-				(float)( glm::sin( glfwGetTime() - 10.f ) * 0.5f + 0.5f ), 1.0 );
-
-
-			m_Shader->SetFloat4( "uColour", colour );
-			Renderer::Submit( m_Shader, VAO, quadTransform );
-
-			Renderer::EndScene();
-
+			// Render Loop ========================================================================================
 			// ====================================================================================================
 
 

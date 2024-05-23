@@ -34,7 +34,7 @@ namespace Tridium {
 	class Shader
 	{
 	public:
-		static Ref<Shader> Create( const std::string& vertex, const std::string& frag );
+		static Ref<Shader> Create( const std::string& vertex, const std::string& frag, const std::string& name );
 		virtual ~Shader() = default;
 
 		virtual void Bind() const = 0;
@@ -76,10 +76,14 @@ namespace Tridium {
 
 	class ShaderLibrary
 	{
+		friend Shader;
+
 	public:
+		static ShaderLibrary* Get();
+		static Ref<Shader> GetShader( const std::string& name );
 
 	private:
-		std::unordered_map<std::string, Shader> m_Shaders;
+		std::unordered_map<std::string, Ref<Shader>> m_Shaders;
 	};
 
 }

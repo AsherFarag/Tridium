@@ -25,6 +25,9 @@
     <Filter Include="Source">
       <UniqueIdentifier>{56EB95D1-428D-C0A7-2B48-D4FB178947F8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Editor">
+      <UniqueIdentifier>{CC4BAF2E-380C-2B65-0147-74E26DC66F41}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source\Platform">
       <UniqueIdentifier>{6A48A913-D6D3-16D8-DFE4-99CC4BEF72D8}</UniqueIdentifier>
     </Filter>
@@ -49,6 +52,12 @@
     <Filter Include="Source\Tridium\ECS\Components\Types">
       <UniqueIdentifier>{86A8174A-F261-82F4-7BC1-9CCEE7793864}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Tridium\ECS\Components\Types\Common">
+      <UniqueIdentifier>{FE22B1CE-EA8A-779C-53F6-8BB23F7D8E88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\ECS\Components\Types\Rendering">
+      <UniqueIdentifier>{53514400-BFC1-4679-88E0-C001F40F7F7A}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source\Tridium\Events">
       <UniqueIdentifier>{2725D2D8-9391-8DD3-5C85-2531C8B0AF3B}</UniqueIdentifier>
     </Filter>
@@ -66,6 +75,9 @@
     </Filter>
     <Filter Include="Source\Tridium\Scene">
       <UniqueIdentifier>{004AF9D8-ECD8-82A2-95F7-969D81659348}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Scripting">
+      <UniqueIdentifier>{650BA2C6-5130-F146-7A7B-D6D666FFEF64}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Tridium\Utils">
       <UniqueIdentifier>{43DE26D9-2F6D-B0A2-D88B-C49DC4F9C048}</UniqueIdentifier>
@@ -1320,6 +1332,9 @@
     <ClInclude Include="Dependencies\glm\glm\vector_relational.hpp">
       <Filter>Dependencies\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Editor\EditorCamera.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Platform\OpenGL\OpenGLBuffer.h">
       <Filter>Source\Platform\OpenGL</Filter>
     </ClInclude>
@@ -1359,6 +1374,9 @@
     <ClInclude Include="Source\Tridium\Core\LayerStack.h">
       <Filter>Source\Tridium\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Tridium\Core\Time.h">
+      <Filter>Source\Tridium\Core</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Tridium\Core\Window.h">
       <Filter>Source\Tridium\Core</Filter>
     </ClInclude>
@@ -1368,14 +1386,17 @@
     <ClInclude Include="Source\Tridium\ECS\Components\Types.h">
       <Filter>Source\Tridium\ECS\Components</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\Rendering\CameraComponent.h">
-      <Filter>Source\Tridium\ECS\Components\Types</Filter>
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\Common\LuaScriptComponent.h">
+      <Filter>Source\Tridium\ECS\Components\Types\Common</Filter>
     </ClInclude>
     <ClInclude Include="Source\Tridium\ECS\Components\Types\Common\TagComponent.h">
-      <Filter>Source\Tridium\ECS\Components\Types</Filter>
+      <Filter>Source\Tridium\ECS\Components\Types\Common</Filter>
     </ClInclude>
     <ClInclude Include="Source\Tridium\ECS\Components\Types\Common\TransformComponent.h">
-      <Filter>Source\Tridium\ECS\Components\Types</Filter>
+      <Filter>Source\Tridium\ECS\Components\Types\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\Rendering\CameraComponent.h">
+      <Filter>Source\Tridium\ECS\Components\Types\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Source\Tridium\ECS\GameObject.h">
       <Filter>Source\Tridium\ECS</Filter>
@@ -1407,6 +1428,9 @@
     <ClInclude Include="Source\Tridium\Rendering\Buffer.h">
       <Filter>Source\Tridium\Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Tridium\Rendering\Camera.h">
+      <Filter>Source\Tridium\Rendering</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Tridium\Rendering\RenderCommand.h">
       <Filter>Source\Tridium\Rendering</Filter>
     </ClInclude>
@@ -1428,6 +1452,12 @@
     <ClInclude Include="Source\Tridium\Scene\Scene.h">
       <Filter>Source\Tridium\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Tridium\Scripting\Script.h">
+      <Filter>Source\Tridium\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tridium\Scripting\ScriptEngine.h">
+      <Filter>Source\Tridium\Scripting</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Tridium\Utils\Delegate.h">
       <Filter>Source\Tridium\Utils</Filter>
     </ClInclude>
@@ -1440,14 +1470,20 @@
     <ClInclude Include="Source\tripch.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Tridium\Core\Time.h" />
-    <ClInclude Include="Source\Tridium\Rendering\Camera.h" />
-    <ClInclude Include="Source\Tridium\Editor\EditorCamera.h" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\Common\LuaScriptComponent.h" />
-    <ClInclude Include="Source\Tridium\Scripting\Script.h" />
-    <ClInclude Include="Source\Tridium\Scripting\ScriptEngine.h" />
+    <ClInclude Include="Source\Editor\EditorLayer.h" />
+    <ClInclude Include="Source\Tridium\Rendering\framebuffer.h" />
+    <ClInclude Include="Source\Platform\OpenGL\OpenGLframebuffer.h" />
+    <ClInclude Include="Source\Editor\ContentBrowser.h" />
+    <ClInclude Include="Source\Editor\Panel.h" />
+    <ClInclude Include="Source\Editor\EditorPreferences.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\Rendering\MeshComponent.h" />
+    <ClInclude Include="Source\Editor\SceneHeirarchy.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\Common\CameraControllerComponent.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Editor\EditorCamera.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Platform\OpenGL\OpenGLBuffer.cpp">
       <Filter>Source\Platform\OpenGL</Filter>
     </ClCompile>
@@ -1478,11 +1514,20 @@
     <ClCompile Include="Source\Tridium\Core\LayerStack.cpp">
       <Filter>Source\Tridium\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Tridium\ECS\Components\Types\Rendering\CameraComponent.cpp">
-      <Filter>Source\Tridium\ECS\Components\Types</Filter>
+    <ClCompile Include="Source\Tridium\Core\Time.cpp">
+      <Filter>Source\Tridium\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tridium\ECS\Components\Component.cpp">
+      <Filter>Source\Tridium\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\Common\LuaScriptComponent.cpp">
+      <Filter>Source\Tridium\ECS\Components\Types\Common</Filter>
     </ClCompile>
     <ClCompile Include="Source\Tridium\ECS\Components\Types\Common\TransformComponent.cpp">
-      <Filter>Source\Tridium\ECS\Components\Types</Filter>
+      <Filter>Source\Tridium\ECS\Components\Types\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\Rendering\CameraComponent.cpp">
+      <Filter>Source\Tridium\ECS\Components\Types\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Source\Tridium\ECS\GameObject.cpp">
       <Filter>Source\Tridium\ECS</Filter>
@@ -1494,6 +1539,9 @@
       <Filter>Source\Tridium\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="Source\Tridium\Rendering\Buffer.cpp">
+      <Filter>Source\Tridium\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tridium\Rendering\Camera.cpp">
       <Filter>Source\Tridium\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Source\Tridium\Rendering\RenderCommand.cpp">
@@ -1514,18 +1562,25 @@
     <ClCompile Include="Source\Tridium\Scene\Scene.cpp">
       <Filter>Source\Tridium\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Tridium\Scripting\Script.cpp">
+      <Filter>Source\Tridium\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tridium\Scripting\ScriptEngine.cpp">
+      <Filter>Source\Tridium\Scripting</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Tridium\Utils\Log.cpp">
       <Filter>Source\Tridium\Utils</Filter>
     </ClCompile>
     <ClCompile Include="Source\tripch.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Tridium\ECS\Components\Component.cpp" />
-    <ClCompile Include="Source\Tridium\Core\Time.cpp" />
-    <ClCompile Include="Source\Tridium\Rendering\Camera.cpp" />
-    <ClCompile Include="Source\Tridium\Editor\EditorCamera.cpp" />
-    <ClCompile Include="Source\Tridium\ECS\Components\Types\Common\LuaScriptComponent.cpp" />
-    <ClCompile Include="Source\Tridium\Scripting\Script.cpp" />
-    <ClCompile Include="Source\Tridium\Scripting\ScriptEngine.cpp" />
+    <ClCompile Include="Source\Editor\EditorLayer.cpp" />
+    <ClCompile Include="Source\Tridium\Rendering\framebuffer.cpp" />
+    <ClCompile Include="Source\Platform\OpenGL\OpenGLframebuffer.cpp" />
+    <ClCompile Include="Source\Editor\ContentBrowser.cpp" />
+    <ClCompile Include="Source\Editor\SceneHeirarchy.cpp" />
+    <ClCompile Include="Source\Editor\EditorPreferences.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\Rendering\MeshComponent.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\Common\CameraControllerComponent.cpp" />
   </ItemGroup>
 </Project>
