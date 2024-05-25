@@ -109,6 +109,8 @@ namespace Tridium {
 		{
 			Time::Update();
 
+			m_FPS = (uint32_t)( 1.0 / Time::DeltaTime() );
+
 			// Update Loop ========================================================================================
 
 			m_ActiveScene->Update();

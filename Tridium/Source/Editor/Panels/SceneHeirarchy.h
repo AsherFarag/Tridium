@@ -38,7 +38,7 @@ namespace Tridium::Editor {
 		}
 
 	private:
-		Ref<Scene> m_Context;
+		Ref<Scene> m_Context = nullptr;
 		GameObject m_SelectedGameObject;
 	};
 }

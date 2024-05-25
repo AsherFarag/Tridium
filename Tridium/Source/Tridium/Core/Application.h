@@ -33,6 +33,8 @@ namespace Tridium
 		// - Scene -
 		static Ref<Scene> GetScene() { return s_Instance->m_ActiveScene; }
 
+		uint32_t GetFPS() const { return m_FPS; }
+
 	private:
 		bool OnWindowClosed( WindowCloseEvent& e );
 
@@ -43,6 +45,8 @@ namespace Tridium
 		LayerStack m_LayerStack;
 
 		Ref<Scene> m_ActiveScene;
+
+		uint32_t m_FPS = 0u;
 
 	#ifdef IS_EDITOR
 		

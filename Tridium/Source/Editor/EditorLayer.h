@@ -9,8 +9,9 @@
 #include <Tridium/Rendering/framebuffer.h>
 
 #include "EditorCamera.h"
-#include "ContentBrowser.h"
-#include "SceneHeirarchy.h"
+#include "Panels/ContentBrowser.h"
+#include "Panels/SceneHeirarchy.h"
+#include "Panels/ScriptEditor.h"
 
 namespace Tridium::Editor {
 
@@ -36,8 +37,11 @@ namespace Tridium::Editor {
 		EditorCamera m_EditorCamera;
 		Ref<Framebuffer> m_EditorCameraFBO;
 		Vector2 m_ViewportSize;
-		ContentBrowser m_ContentBrowser;
-		SceneHeirarchy m_SceneHeirarchy;
+
+		PanelStack m_PanelStack;
+
+		ContentBrowser* m_ContentBrowser;
+		SceneHeirarchy* m_SceneHeirarchy;
 	};
 
 }

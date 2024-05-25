@@ -146,12 +146,13 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Editor\SceneHeirarchy.h" />
+    <ClInclude Include="Source\Editor\Panels\ScriptEditor.h" />
+    <ClInclude Include="Source\Editor\Panels\SceneHeirarchy.h" />
     <ClInclude Include="Source\Tridium\ECS\Components\Types\Common\CameraControllerComponent.h" />
     <ClInclude Include="Source\Tridium\ECS\Components\Types\Rendering\MeshComponent.h" />
-    <ClInclude Include="Source\Editor\EditorPreferences.h" />
-    <ClInclude Include="Source\Editor\Panel.h" />
-    <ClInclude Include="Source\Editor\ContentBrowser.h" />
+    <ClInclude Include="Source\Editor\Panels\EditorPreferences.h" />
+    <ClInclude Include="Source\Editor\Panels\Panel.h" />
+    <ClInclude Include="Source\Editor\Panels\ContentBrowser.h" />
     <ClInclude Include="Dependencies\glm\glm\common.hpp" />
     <ClInclude Include="Dependencies\glm\glm\detail\_features.hpp" />
     <ClInclude Include="Dependencies\glm\glm\detail\_fixes.hpp" />
@@ -619,11 +620,13 @@
     <ClInclude Include="Source\tripch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Editor\Panels\Panel.cpp" />
+    <ClCompile Include="Source\Editor\Panels\ScriptEditor.cpp" />
     <ClCompile Include="Source\Tridium\ECS\Components\Types\Common\CameraControllerComponent.cpp" />
     <ClCompile Include="Source\Tridium\ECS\Components\Types\Rendering\MeshComponent.cpp" />
-    <ClCompile Include="Source\Editor\EditorPreferences.cpp" />
-    <ClCompile Include="Source\Editor\SceneHeirarchy.cpp" />
-    <ClCompile Include="Source\Editor\ContentBrowser.cpp" />
+    <ClCompile Include="Source\Editor\Panels\EditorPreferences.cpp" />
+    <ClCompile Include="Source\Editor\Panels\SceneHeirarchy.cpp" />
+    <ClCompile Include="Source\Editor\Panels\ContentBrowser.cpp" />
     <ClCompile Include="Source\Platform\OpenGL\OpenGLFrameBuffer.cpp" />
     <ClCompile Include="Source\Tridium\Rendering\FrameBuffer.cpp" />
     <ClCompile Include="Source\Editor\EditorLayer.cpp" />

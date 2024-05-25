@@ -82,7 +82,7 @@ namespace Tridium {
 	template <typename T>
 	bool GameObject::HasComponent() const
 	{
-		return Application::GetScene()->m_Registry.try_get<T>( m_ID ) != nullptr;
+		return Application::GetScene()->m_Registry.any_of<T>( m_ID );
 	}
 
 	template <typename T>

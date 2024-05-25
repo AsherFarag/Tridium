@@ -9,61 +9,61 @@
 #include <Tridium/Core/Application.h>
 #include <Tridium/ECS/Components/Types.h>
 
-namespace Tridium::Editor {
+namespace ImGui {
+	static void DrawVec3Control( const std::string& label, Vector3& values, float speed, const char* format = "%.2f" )
+	{
+		float itemWidth = ImGui::GetContentRegionAvail().x / 3.f - 30;
 
-	namespace Utils {
-		static void DrawVec3Control( const std::string& label, Vector3& values, float resetValue = 0.0f, float columnWidth = 100.0f )
+		ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 1 );
+
+		ImGui::BeginGroup();
+		ImGui::PushID( label.c_str() );
 		{
-			float itemWidth = ImGui::GetContentRegionAvail().x / 3.f - 30 ;
+			ImGui::PushItemWidth( itemWidth );
 
-			ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 1 );
-
-			ImGui::BeginGroup();
-			ImGui::PushID( label.c_str() );
-			{
-				ImGui::PushItemWidth( itemWidth );
-
-				// x
-				ImGui::PushStyleColor( ImGuiCol_Border, ImVec4( 0.9f, 0.5f, 0.5f, 0.9f ) );
-				ImGui::PushID( 0 );
-				ImGui::DragFloat( "", &values.x );
-				ImGui::PopID();
-				ImGui::PopStyleColor();
-
-				ImGui::SameLine();
-
-				// y
-				//ImGui::PushItemWidth( itemWidth );
-				ImGui::PushStyleColor( ImGuiCol_Border, ImVec4( 0.5f, 0.9f, 0.5f, 0.9f ) );
-				ImGui::PushID( 1 );
-				ImGui::DragFloat( "", &values.y );
-				ImGui::PopID();
-				ImGui::PopStyleColor();
-
-				ImGui::SameLine();
-
-				// z
-				ImGui::PushStyleColor( ImGuiCol_Border, ImVec4( 0.5f, 0.5f, 0.9f, 0.9f ) );
-				ImGui::PushID( 2 );
-				ImGui::DragFloat( "", &values.z );
-				ImGui::PopID();
-				ImGui::PopStyleColor();
-
-				ImGui::PopItemWidth();
-			}
+			// x
+			ImGui::PushStyleColor( ImGuiCol_Border, ImVec4( 0.9f, 0.5f, 0.5f, 0.9f ) );
+			ImGui::PushID( 0 );
+			ImGui::DragFloat( "", &values.x, speed, 0, 0, format );
 			ImGui::PopID();
-			ImGui::EndGroup();
-
-			ImGui::PopStyleVar();
+			ImGui::PopStyleColor();
 
 			ImGui::SameLine();
-			ImGui::Text( label.c_str() );
+
+			// y
+			//ImGui::PushItemWidth( itemWidth );
+			ImGui::PushStyleColor( ImGuiCol_Border, ImVec4( 0.5f, 0.9f, 0.5f, 0.9f ) );
+			ImGui::PushID( 1 );
+			ImGui::DragFloat( "", &values.y, speed, 0, 0, format );
+			ImGui::PopID();
+			ImGui::PopStyleColor();
+
+			ImGui::SameLine();
+
+			// z
+			ImGui::PushStyleColor( ImGuiCol_Border, ImVec4( 0.5f, 0.5f, 0.9f, 0.9f ) );
+			ImGui::PushID( 2 );
+			ImGui::DragFloat( "", &values.z, speed, 0, 0, format );
+			ImGui::PopID();
+			ImGui::PopStyleColor();
+
+			ImGui::PopItemWidth();
 		}
-	}	
+		ImGui::PopID();
+		ImGui::EndGroup();
+
+		ImGui::PopStyleVar();
+
+		ImGui::SameLine();
+		ImGui::Text( label.c_str() );
+	}
+}
+
+namespace Tridium::Editor {
 
 	SceneHeirarchy::SceneHeirarchy()
 	{
-		m_Context = Application::GetScene();
+
 	}
 
 	void SceneHeirarchy::OnImGuiDraw()
@@ -74,13 +74,15 @@ namespace Tridium::Editor {
 
 	void SceneHeirarchy::DrawSceneHeirarchy()
 	{
+		m_Context = Application::GetScene();
+		if ( m_Context == nullptr )
+			return;
+
 		ImGui::PushStyleVar( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2( 1, 1 ) );
 
 		if ( ImGui::Begin( "Scene Heirarchy" ) )
 		{
-			ImGui::PopStyleVar();
-
-			auto gameObjects = Application::GetScene()->GetRegistry().view<TagComponent>();
+			auto gameObjects = m_Context->GetRegistry().view<TagComponent>();
 			ImGui::Text( "Game Objects: %i", gameObjects.size() );
 
 			ImGui::SameLine();
@@ -90,8 +92,29 @@ namespace Tridium::Editor {
 			// Align the button to the right
 			float addGameObjectButtonWidth = ImGui::CalcTextSize( "+" ).x + ImGui::GetStyle().FramePadding.x * 2.f;
 			ImGui::SetCursorPosX( ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - addGameObjectButtonWidth - 5 );
+
 			if ( ImGui::Button( "+" ) )
-				Application::GetScene()->InstantiateGameObject();
+				ImGui::OpenPopup( "AddGameObject" );
+
+			if ( ImGui::BeginPopup("AddGameObject" ) )
+			{
+				if ( ImGui::MenuItem( "Game Object" ) )
+				{
+					auto go = m_Context->InstantiateGameObject();
+					SetSelectedGameObject(go);
+				}
+
+				ImGui::Separator();
+
+				if ( ImGui::MenuItem( "Cube" ) )
+				{
+					auto go = m_Context->InstantiateGameObject( "Cube" );
+					go.AddComponent<MeshComponent>();
+					SetSelectedGameObject( go );
+				}
+
+				ImGui::EndMenu();
+			}
 
 			#pragma endregion
 
@@ -117,6 +140,7 @@ namespace Tridium::Editor {
 
 			ImGui::End();
 		}
+		ImGui::PopStyleVar();
 	}
 
 	void SceneHeirarchy::DrawInspector()
@@ -149,8 +173,9 @@ namespace Tridium::Editor {
 		if ( ImGui::BeginPopup( "AddComponent" ) )
 		{
 			if ( ImGui::MenuItem( "Transform" ) ) AddComponentToSelectedGameObject<TransformComponent>();
-			if ( ImGui::MenuItem( "Camera" ) ) AddComponentToSelectedGameObject<CameraComponent>();
 			if ( ImGui::MenuItem( "Mesh" ) ) AddComponentToSelectedGameObject<MeshComponent>();
+			if ( ImGui::MenuItem( "Camera" ) ) AddComponentToSelectedGameObject<CameraComponent>();
+			if ( ImGui::MenuItem( "Camera Controller" ) ) AddComponentToSelectedGameObject<CameraControllerComponent>();
 
 			ImGui::EndMenu();
 		}
@@ -167,18 +192,20 @@ namespace Tridium::Editor {
 	template<typename T, typename UIFunction>
 	static void DrawComponent( const std::string& name, GameObject gameObject, UIFunction uiFunction )
 	{
-		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+
+		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_AllowItemOverlap;
 		if ( gameObject.HasComponent<T>() )
 		{
 			auto& component = gameObject.GetComponent<T>();
-			ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
 
-			ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2{ 1, 1 } );
 			ImGui::Separator();
 			bool open = ImGui::TreeNodeEx( ( void* )typeid( T ).hash_code(), treeNodeFlags, name.c_str() );
-			ImGui::PopStyleVar();
+
 			ImGui::SameLine();
 
+			// Align the button to the right
+			float addGameObjectButtonWidth = ImGui::CalcTextSize( "+" ).x + ImGui::GetStyle().FramePadding.x * 2.f;
+			ImGui::SetCursorPosX( ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - addGameObjectButtonWidth - 5 );
 			if ( ImGui::Button( "+" ) )
 			{
 				ImGui::OpenPopup( "ComponentSettings" );
@@ -211,13 +238,34 @@ namespace Tridium::Editor {
 		auto& tag = m_SelectedGameObject.GetComponent<TagComponent>();
 		ImGui::InputText( "Tag", (char*)tag.Tag.c_str(), tag.MaxSize() );
 
+
 		DrawComponent<TransformComponent>( "Transform", gameObject, []( auto& component )
 			{
-				Utils::DrawVec3Control( "Position", component.Position );
+				ImGui::DrawVec3Control( "Position", component.Position, 0.01f );
 				Vector3 rotation = glm::degrees( component.Rotation );
-				Utils::DrawVec3Control( "Rotation", rotation );
+				ImGui::DrawVec3Control( "Rotation", rotation, 1.f );
 				component.Rotation = glm::radians( rotation );
-				Utils::DrawVec3Control( "Scale", component.Scale, 1.0f );
+				ImGui::DrawVec3Control( "Scale", component.Scale, 0.01f );
+			} );
+
+		DrawComponent<MeshComponent>( "Mesh", gameObject, []( auto& component )
+			{
+			} );
+
+		DrawComponent<CameraComponent>( "Camera", gameObject, []( auto& component )
+			{
+				int currentItem = (int)component.SceneCamera.GetProjectionType();
+				Camera::ProjectionType projType = component.SceneCamera.GetProjectionType();
+				const char* const items[2] = {"Perspective", "Orthographic"};
+
+				ImGui::Combo( "Perspective", &currentItem, items, 2, -1 );
+				component.SceneCamera.SetProjectionType( (Camera::ProjectionType)currentItem );
+			} );
+
+		DrawComponent<CameraControllerComponent>( "Camera Controller", gameObject, []( auto& component )
+			{
+				ImGui::DragFloat( "Speed", &component.Speed, 0.1f );
+				ImGui::DragFloat( "Look Sensitivity", &component.LookSensitivity, 0.1f );
 			} );
 	}
 
