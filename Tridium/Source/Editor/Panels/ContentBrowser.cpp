@@ -9,10 +9,9 @@ namespace Tridium::Editor {
 
 	void ContentBrowser::OnImGuiDraw()
 	{
-		if ( !ImGui::Begin( "Content Browser" ) )
-			return;
+		ImGuiBegin();
 
-		ImGui::End();
+		ImGuiEnd();
 	}
 
 }

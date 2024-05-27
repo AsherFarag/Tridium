@@ -11,22 +11,26 @@ namespace Tridium::Editor {
 	class SceneHeirarchy final : public Panel
 	{
 	public:
-		SceneHeirarchy();
+		SceneHeirarchy() : Panel("Scene Heirarchy") {}
 		virtual ~SceneHeirarchy() = default;
 
+		virtual void OnEvent( Event& e ) override;
 		virtual void OnImGuiDraw() override;
 
 		GameObject GetSelectedGameObject() const { return m_SelectedGameObject; }
 		void SetSelectedGameObject( GameObject gameObject ) { m_SelectedGameObject = gameObject; }
 
 	private:
+		bool OnKeyPressed( KeyPressedEvent& e );
+
+	private:
 		void DrawSceneHeirarchy();
 		void DrawInspector();
 
-		void DrawComponents( GameObject gameObject );
+		void InspectGameObject( GameObject gameObject );
 
-		template <typename T>
-		void AddComponentToSelectedGameObject()
+		template <typename T, typename... Args>
+		void AddComponentToSelectedGameObject( Args&&... args )
 		{
 			if ( m_SelectedGameObject.HasComponent<T>() )
 			{
@@ -34,7 +38,7 @@ namespace Tridium::Editor {
 				return;
 			}
 
-			m_SelectedGameObject.AddComponent<T>();
+			m_SelectedGameObject.AddComponent<T>( std::forward<Args>( args )... );
 		}
 
 	private:

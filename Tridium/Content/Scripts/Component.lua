@@ -1,3 +1,3 @@
-local function OnUpdate( deltaTime )
-	print(deltaTime)
+function OnUpdate( deltaTime )
+	print("Hi12")
 end

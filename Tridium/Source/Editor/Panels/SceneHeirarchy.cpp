@@ -61,15 +61,41 @@ namespace ImGui {
 
 namespace Tridium::Editor {
 
-	SceneHeirarchy::SceneHeirarchy()
+	void SceneHeirarchy::OnEvent( Event& e )
 	{
-
+		if ( m_IsFocused )
+		{
+			EventDispatcher dispatcher( e );
+			dispatcher.Dispatch<KeyPressedEvent>( TE_BIND_EVENT_FN( SceneHeirarchy::OnKeyPressed, std::placeholders::_1 ) );
+		}
 	}
 
 	void SceneHeirarchy::OnImGuiDraw()
 	{
 		DrawSceneHeirarchy();
 		DrawInspector();
+	}
+
+	bool SceneHeirarchy::OnKeyPressed( KeyPressedEvent& e )
+	{
+		if ( e.IsRepeat() )
+			return false;
+
+		bool control = Input::IsKeyPressed( Input::KEY_LEFT_CONTROL );
+		bool alt = Input::IsKeyPressed( Input::KEY_LEFT_ALT );
+
+		switch ( e.GetKeyCode() )
+		{
+		case Input::KEY_DELETE:
+		{
+			if ( m_SelectedGameObject.IsValid() )
+			{
+				m_SelectedGameObject.Destroy();
+				return true;
+			}
+			break;
+		}
+		}
 	}
 
 	void SceneHeirarchy::DrawSceneHeirarchy()
@@ -123,6 +149,8 @@ namespace Tridium::Editor {
 			// Create a list box of all game objects in the scene
 			if ( ImGui::BeginListBox( "Game Objects", ImGui::GetContentRegionAvail() ) )
 			{
+				m_IsFocused = ImGui::IsWindowFocused() || ImGui::IsItemFocused();
+
 				for ( int i = 0; i < gameObjects.size(); ++i )
 				{
 					auto go = gameObjects[ i ];
@@ -140,6 +168,7 @@ namespace Tridium::Editor {
 
 			ImGui::End();
 		}
+
 		ImGui::PopStyleVar();
 	}
 
@@ -153,7 +182,7 @@ namespace Tridium::Editor {
 		}
 
 		// - Draw Components -
-		DrawComponents( m_SelectedGameObject );
+		InspectGameObject( m_SelectedGameObject );
 
 		ImGui::Separator();
 
@@ -172,10 +201,11 @@ namespace Tridium::Editor {
 
 		if ( ImGui::BeginPopup( "AddComponent" ) )
 		{
-			if ( ImGui::MenuItem( "Transform" ) ) AddComponentToSelectedGameObject<TransformComponent>();
-			if ( ImGui::MenuItem( "Mesh" ) ) AddComponentToSelectedGameObject<MeshComponent>();
-			if ( ImGui::MenuItem( "Camera" ) ) AddComponentToSelectedGameObject<CameraComponent>();
+			if ( ImGui::MenuItem( "Transform" ) )		  AddComponentToSelectedGameObject<TransformComponent>();
+			if ( ImGui::MenuItem( "Mesh" ) )			  AddComponentToSelectedGameObject<MeshComponent>();
+			if ( ImGui::MenuItem( "Camera" ) )			  AddComponentToSelectedGameObject<CameraComponent>();
 			if ( ImGui::MenuItem( "Camera Controller" ) ) AddComponentToSelectedGameObject<CameraControllerComponent>();
+			if ( ImGui::MenuItem( "Lua Script" ) )		  AddComponentToSelectedGameObject<LuaScriptComponent>(ScriptLibrary::Get("Test"));
 
 			ImGui::EndMenu();
 		}
@@ -202,7 +232,7 @@ namespace Tridium::Editor {
 			bool open = ImGui::TreeNodeEx( ( void* )typeid( T ).hash_code(), treeNodeFlags, name.c_str() );
 
 			ImGui::SameLine();
-
+			
 			// Align the button to the right
 			float addGameObjectButtonWidth = ImGui::CalcTextSize( "+" ).x + ImGui::GetStyle().FramePadding.x * 2.f;
 			ImGui::SetCursorPosX( ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - addGameObjectButtonWidth - 5 );
@@ -233,11 +263,16 @@ namespace Tridium::Editor {
 		}
 	}
 
-	void SceneHeirarchy::DrawComponents( GameObject gameObject )
+	void SceneHeirarchy::InspectGameObject( GameObject gameObject )
 	{
 		auto& tag = m_SelectedGameObject.GetComponent<TagComponent>();
 		ImGui::InputText( "Tag", (char*)tag.Tag.c_str(), tag.MaxSize() );
 
+		ImGui::SameLine();
+
+		ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Button, ImVec4( 1, 0.2, 0.2, 1 ) );
+		if ( ImGui::Button( "Destroy" ) ) { gameObject.Destroy(); }
+		ImGui::PopStyleColor();
 
 		DrawComponent<TransformComponent>( "Transform", gameObject, []( auto& component )
 			{

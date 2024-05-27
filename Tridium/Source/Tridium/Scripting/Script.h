@@ -3,8 +3,6 @@
 
 namespace Tridium {
 
-	typedef sol::protected_function LuaFunc;
-
 	class Script
 	{
 	public:
@@ -15,9 +13,9 @@ namespace Tridium {
 		void BindFunctions();
 		auto& Environment() const { return m_Environment; }
 	public:
-		LuaFunc LuaFunc_OnConstruct;
-		LuaFunc LuaFunc_OnDestroy;
-		LuaFunc LuaFunc_OnUpdate;
+		sol::protected_function Lua_OnConstruct;
+		sol::protected_function Lua_OnDestroy;
+		sol::protected_function Lua_OnUpdate;
 
 	private:
 		Script( sol::state& a_State, const std::string& a_FilePath );
@@ -34,6 +32,7 @@ namespace Tridium {
 		friend Script;
 	public:
 		static Ref<Script> Get( const std::string& a_Name );
+		static bool Has( const std::string& a_Name );
 
 	private:
 		static void Add( const Ref<Script>& a_Script, const std::string& a_Name );

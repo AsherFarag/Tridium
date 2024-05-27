@@ -9,7 +9,7 @@ namespace Tridium::Editor {
 	class ContentBrowser final : public Panel
 	{
 	public:
-		ContentBrowser() = default;
+		ContentBrowser() : Panel("Content Browser") {}
 		virtual ~ContentBrowser() = default;
 
 		virtual void OnImGuiDraw() override;

@@ -1,8 +1,6 @@
 #pragma once
 #include "entt.hpp"
 
-
-
 // TEMP ?
 #include <Tridium/Core/Application.h>
 
@@ -33,6 +31,7 @@ namespace Tridium {
 		template <typename T>
 		inline void RemoveComponent();
 
+		inline void Destroy() { Application::GetScene()->m_Registry.destroy( m_ID ); }
 		inline bool IsValid() const { return Application::GetScene()->m_Registry.valid( m_ID ); }
 
 		std::string& GetTag() const;
@@ -57,15 +56,12 @@ namespace Tridium {
 		entt::registry& registry = Application::GetScene()->m_Registry;
 
 		T& component = registry.emplace<T>( m_ID, std::forward<Args>( args )... );
-		// T should always be a child class of Component.
+		// T will always be a derived class of Component.
 		// Set the GameObject ID to this GameObject
 		static_cast<Component*>(&component)->m_GameObject = m_ID;
 
 		if constexpr ( std::is_base_of_v<ScriptableComponent, T> )
 		{
-			//registry.on_construct<ScriptableComponent>().connect<&ScriptableComponent::OnConstruct>( &component );
-			//registry.on_destroy<ScriptableComponent>().connect<&ScriptableComponent::OnDestroy>( &component );
-			//registry.on_update<ScriptableComponent>().connect<&ScriptableComponent::OnUpdate>( &component );
 			static_cast<ScriptableComponent*>( &component )->OnConstruct();
 		}
 
@@ -88,9 +84,6 @@ namespace Tridium {
 	template <typename T>
 	inline void GameObject::RemoveComponent()
 	{
-		//if constexpr ( std::is_class_v( TagComponent, T ) || std::is_class_v( TransformComponent, T ) )
-		//	return;
-
 		if ( HasComponent<T>() )
 			Application::GetScene()->m_Registry.remove<T>( m_ID );
 	}

@@ -36,10 +36,24 @@ namespace Tridium::Editor {
     class ScriptEditor : public Panel
     {
     public:
+        ScriptEditor() : Panel("Script Editor") {}
+
+        virtual void OnEvent( Event& e ) override;
         virtual void OnImGuiDraw() override;
 
     private:
+        bool OnKeyPressed( KeyPressedEvent& e );
+
+        bool DisplayFileContents( ScriptTextFile& file );
+
+        void CloseFile( uint32_t index );
+        void SaveCurrentFile();
+        void SaveAllFiles();
+        void OpenFile( const std::string& a_FilePath );
+
+    private:
         std::vector<ScriptTextFile> m_ScriptTextFiles;
+        ScriptTextFile* m_CurrentTextFile = nullptr;
     };
 
 }

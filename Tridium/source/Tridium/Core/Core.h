@@ -46,6 +46,8 @@
 
 namespace Tridium {
 
+#pragma region Memory
+
 	template <typename T>
 	using UniquePtr = std::unique_ptr<T>;
 
@@ -74,5 +76,7 @@ namespace Tridium {
 	{
 		return WeakRef<T>( sharedPtr );
 	}
+
+#pragma endregion
 
 }

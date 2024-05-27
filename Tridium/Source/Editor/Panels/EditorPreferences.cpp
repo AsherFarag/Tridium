@@ -99,7 +99,9 @@ namespace Tridium::Editor {
 
 	void EditorPreferences::OnImGuiDraw()
 	{
-		ImGui::Begin( "Editor Preferences", &m_Open );
+		if ( !ImGuiBegin() )
+			return;
+
 		if ( ImGui::BeginMenu( "Set Editor Style" ) )
 		{
 			if ( ImGui::MenuItem( "Classic" ) ) ImGui::StyleColorsClassic();
@@ -112,10 +114,7 @@ namespace Tridium::Editor {
 
 		ImGui::Separator();
 
-		ImGui::End();
-
-		if ( m_Open == false )
-			Close();
+		ImGuiEnd();
 	}
 }
 

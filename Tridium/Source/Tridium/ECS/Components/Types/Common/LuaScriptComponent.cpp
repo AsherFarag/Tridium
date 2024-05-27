@@ -15,20 +15,23 @@ namespace Tridium {
 
 	void LuaScriptComponent::OnUpdate()
 	{
-		(*LuaFunc_OnUpdate)( (float)Time::DeltaTime() );
+		if ( Lua_OnUpdate->valid() )
+			(*Lua_OnUpdate)( (float)Time::DeltaTime() );
+		else
+			TE_CORE_ERROR( "Lua: On Update is invalid!" );
 	}
 
 	void LuaScriptComponent::OnConstruct()
 	{
-		LuaFunc_OnConstruct = &m_Script->LuaFunc_OnConstruct;
-		LuaFunc_OnDestroy = &m_Script->LuaFunc_OnDestroy;
-		LuaFunc_OnUpdate = &m_Script->LuaFunc_OnUpdate;
+		Lua_OnConstruct = &m_Script->Lua_OnConstruct;
+		Lua_OnDestroy = &m_Script->Lua_OnDestroy;
+		Lua_OnUpdate = &m_Script->Lua_OnUpdate;
 
-		(*LuaFunc_OnConstruct)( );
+		(*Lua_OnConstruct)( );
 	}
 
 	void LuaScriptComponent::OnDestroy()
 	{
-		(*LuaFunc_OnDestroy)( );
+		(*Lua_OnDestroy)( );
 	}
 }

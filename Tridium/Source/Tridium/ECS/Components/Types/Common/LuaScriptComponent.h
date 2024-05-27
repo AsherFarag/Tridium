@@ -19,9 +19,9 @@ namespace Tridium {
 	private:
 		Ref<Script> m_Script;
 
-		LuaFunc* LuaFunc_OnConstruct;
-		LuaFunc* LuaFunc_OnDestroy;
-		LuaFunc* LuaFunc_OnUpdate;
+		sol::protected_function* Lua_OnConstruct;
+		sol::protected_function* Lua_OnDestroy;
+		sol::protected_function* Lua_OnUpdate;
 	};
 
 }

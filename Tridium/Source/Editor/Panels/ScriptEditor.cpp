@@ -7,47 +7,13 @@
 
 namespace Tridium::Editor {
 
-	static bool DisplayContents( ScriptTextFile& file )
-	{
-		ImGuiTabItemFlags tabFlags = file.Modified ? ImGuiTabItemFlags_UnsavedDocument : ImGuiTabItemFlags_None;
-		bool isOpen = true;
-		if ( !ImGui::BeginTabItem( file.GetFileName().c_str(), &isOpen, tabFlags ) )
-			return isOpen;
-
-		if ( ImGui::IsItemHovered() )
-		{
-			ImGui::BeginTooltip();
-			ImGui::Text( file.GetFilePath().c_str() );
-			ImGui::EndTooltip();
-		}
-
-		ImGuiInputTextFlags textInputFlags = ImGuiInputTextFlags_AllowTabInput;
-
-		ImVec2 textBoxSize = ImGui::GetContentRegionAvail();
-		textBoxSize.y -= ImGui::GetTextLineHeight() * 1.75;
-
-		// Display the text editor
-		bool wasModified = ImGui::InputTextMultiline( "##source",
-			&file.GetContent()[0],
-			file.GetContent().capacity(),
-			textBoxSize,
-			textInputFlags );
-
-		if ( wasModified )
-			file.Modified = true;
-
-		if ( ImGui::Button( "Save" ) )
-			file.SaveFile();
-
-		ImGui::EndTabItem();
-
-		return isOpen;
-	}
+#pragma region Script Editor
 
 	void ScriptEditor::OnImGuiDraw()
 	{
-		if ( !ImGui::Begin( "Script Editor", &m_Open, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse) )
-			return;
+		ImGuiBegin( ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse );
+
+		m_IsFocused = ImGui::IsWindowFocused();
 
 		static bool newFilePopUp = false;
 		static bool openFilePopUp = false;
@@ -59,8 +25,14 @@ namespace Tridium::Editor {
 				if ( ImGui::MenuItem( "New" ) ) newFilePopUp = true;
 				if ( ImGui::MenuItem( "Open" ) ) openFilePopUp = true;
 
+				ImGui::Separator();
+
+				if ( ImGui::MenuItem( "Save", "Ctrl + S" ) ) SaveCurrentFile();
+				if ( ImGui::MenuItem( "Save All", "Ctrl + Alt + S" ) ) SaveAllFiles();
+
 				ImGui::EndMenu();
 			}
+
 			ImGui::EndMenuBar();
 		}
 
@@ -83,8 +55,7 @@ namespace Tridium::Editor {
 				std::ofstream newFile( filePath, std::ios::out | std::ios::app );
 				newFile.close();
 
-				if ( m_ScriptTextFiles.emplace_back().LoadFile( filePath ) == false )
-					m_ScriptTextFiles.pop_back();
+				OpenFile( filePath );
 
 				ImGui::CloseCurrentPopup();
 			}
@@ -101,7 +72,6 @@ namespace Tridium::Editor {
 
 		#pragma endregion
 
-
 		#pragma region Open File Pop Up
 
 		if ( openFilePopUp )
@@ -116,8 +86,7 @@ namespace Tridium::Editor {
 			if ( ImGui::Button( "Open" ) )
 			{
 				openFilePopUp = false;
-				if ( m_ScriptTextFiles.emplace_back().LoadFile( filePath ) == false )
-					m_ScriptTextFiles.pop_back();
+				OpenFile( filePath );
 
 				ImGui::CloseCurrentPopup();
 			}
@@ -142,25 +111,25 @@ namespace Tridium::Editor {
 			for ( int i = m_ScriptTextFiles.size() - 1; i >= 0; --i )
 			{
 				auto& file = m_ScriptTextFiles[ i ];
-				if ( DisplayContents( file ) )
+				if ( DisplayFileContents( file ) )
 					continue;
 
 				// If the file has been modified and the user has requested to close this file,
 				// open an 'Are you sure?' prompt. 
 				if ( file.Modified )
 				{
-					ImGui::OpenPopup( "AreYouSure?" );
+					ImGui::OpenPopup( "Are You Sure? ##CloseTab" );
 					fileToClose = i;
 				}
 
 				// Else, remove the file immediately
 				else
 				{
-					m_ScriptTextFiles.erase( m_ScriptTextFiles.begin() + i );
+					CloseFile( i );
 				}
 			}
 
-			if ( ImGui::BeginPopupModal( "AreYouSure?", nullptr, ImGuiWindowFlags_NoResize ) )
+			if ( ImGui::BeginPopupModal( "Are You Sure? ##CloseTab", nullptr, ImGuiWindowFlags_NoResize ) )
 			{
 				ImGui::Text( "Are you sure you want to close this script without saving?" );
 
@@ -170,7 +139,7 @@ namespace Tridium::Editor {
 
 				if ( ImGui::Button( "Yes", buttonSize ) )
 				{
-					m_ScriptTextFiles.erase( m_ScriptTextFiles.begin() + fileToClose );
+					CloseFile( fileToClose );
 					ImGui::CloseCurrentPopup();
 				}
 
@@ -191,10 +160,162 @@ namespace Tridium::Editor {
 
 		ImGui::End();
 
-		if ( m_Open == false )
-			Close();
+		if ( !m_Open )
+		{
+			bool isAFileModified = false;
+			for ( auto& file : m_ScriptTextFiles )
+				if ( file.Modified ) isAFileModified = true;
+
+			if ( !isAFileModified )
+			{
+				Close();
+				return;
+			}
+
+			m_Open = true;
+			ImGui::OpenPopup( "Are You Sure? ##CloseWindow" );
+		}
+
+		if ( ImGui::BeginPopupModal( "Are You Sure? ##CloseWindow", nullptr, ImGuiWindowFlags_NoResize ) )
+		{
+			ImGui::Text( "Are you sure you want to close without saving?" );
+
+			const ImVec2 buttonSize = ImVec2( 30, 20 );
+
+			ImGui::SetCursorPosX( ImGui::GetContentRegionAvail().x / 2 - buttonSize.x + 5 );
+
+			if ( ImGui::Button( "Yes", buttonSize ) )
+			{
+				Close();
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::SameLine();
+
+			if ( ImGui::Button( "No", buttonSize ) )
+			{
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
 	}
 
+	void ScriptEditor::OnEvent( Event& e )
+	{
+		if ( m_IsFocused )
+		{
+			EventDispatcher dispatcher( e );
+			dispatcher.Dispatch<KeyPressedEvent>( TE_BIND_EVENT_FN( ScriptEditor::OnKeyPressed, std::placeholders::_1 ) );
+		}
+	}
+
+	bool ScriptEditor::OnKeyPressed( KeyPressedEvent& e )
+	{
+		if ( e.IsRepeat() )
+			return false;
+
+		bool control = Input::IsKeyPressed( Input::KEY_LEFT_CONTROL );
+		bool alt = Input::IsKeyPressed( Input::KEY_LEFT_ALT );
+
+		switch ( e.GetKeyCode() )
+		{
+			case Input::KEY_S:
+			{
+				if ( control && alt )
+				{
+					SaveAllFiles();
+					return true;
+				}
+				if ( control )
+				{
+					SaveCurrentFile();
+					return true;
+				}
+				break;
+			}
+		}
+	}
+
+	bool ScriptEditor::DisplayFileContents( ScriptTextFile& file )
+	{
+		ImGuiTabItemFlags tabFlags = file.Modified ? ImGuiTabItemFlags_UnsavedDocument : ImGuiTabItemFlags_None;
+		bool isOpen = true;
+		if ( !ImGui::BeginTabItem( ( file.GetFileName() + "##" + file.GetFilePath() ).c_str(), &isOpen, tabFlags) )
+			return isOpen;
+
+		m_CurrentTextFile = &file;
+
+		if ( ImGui::IsItemHovered() )
+		{
+			ImGui::BeginTooltip();
+			ImGui::Text( file.GetFilePath().c_str());
+			ImGui::EndTooltip();
+		}
+
+		ImGuiInputTextFlags textInputFlags = ImGuiInputTextFlags_AllowTabInput;
+
+		ImVec2 textBoxSize = ImGui::GetContentRegionAvail();
+		textBoxSize.y -= ImGui::GetTextLineHeight() * 1.75;
+
+		// Display the text editor
+		bool wasModified = ImGui::InputTextMultiline( "##source",
+			&file.GetContent()[ 0 ],
+			file.GetContent().capacity(),
+			textBoxSize,
+			textInputFlags );
+
+		if ( wasModified )
+			file.Modified = true;
+
+		ImGui::EndTabItem();
+
+		return isOpen;
+	}
+
+	void ScriptEditor::SaveAllFiles()
+	{
+		for ( auto& file : m_ScriptTextFiles )
+		{
+			file.SaveFile();
+		}
+	}
+
+	void ScriptEditor::OpenFile( const std::string& a_FilePath )
+	{
+		// Ensure this file isn't already open
+		for ( auto& file : m_ScriptTextFiles )
+		{
+			if ( file.GetFilePath() == a_FilePath )
+				return;
+		}
+
+		bool success = m_ScriptTextFiles.emplace_back().LoadFile( a_FilePath );
+
+		if ( !success )
+			m_ScriptTextFiles.pop_back();
+	}
+
+	void ScriptEditor::SaveCurrentFile()
+	{
+		if ( m_CurrentTextFile )
+			m_CurrentTextFile->SaveFile();
+	}
+
+	void ScriptEditor::CloseFile( uint32_t index )
+	{
+		if ( index >= m_ScriptTextFiles.size() )
+			return;
+
+		if ( &m_ScriptTextFiles[ index ] == m_CurrentTextFile )
+			m_CurrentTextFile == nullptr;
+
+		m_ScriptTextFiles.erase( m_ScriptTextFiles.begin() + index );
+	}
+
+#pragma endregion
+
+#pragma region File
 
 	ScriptTextFile::ScriptTextFile( const std::string& a_FilePath )
 	{
@@ -271,6 +392,8 @@ namespace Tridium::Editor {
 		TE_CORE_WARN( "[{0}] does not contain a file name!", a_FilePath );
 		return a_FilePath;  // or return "" if no file name found
 	}
+
+#pragma endregion
 
 }
 #endif // IS_EDITOR

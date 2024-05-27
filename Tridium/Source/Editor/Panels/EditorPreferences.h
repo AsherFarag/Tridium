@@ -7,6 +7,7 @@ namespace Tridium::Editor {
     class EditorPreferences : public Panel
     {
 	public:
+		EditorPreferences() : Panel( "Editor Preferences" ) {}
 		virtual ~EditorPreferences() = default;
 
 		virtual void OnImGuiDraw() override;

@@ -6,6 +6,22 @@
 #include "Panels/EditorPreferences.h"
 
 namespace Tridium::Editor {
+	
+	// TEMP
+	class Stats : public Panel
+	{
+	public:
+		Stats() : Panel( "Stats" ) {}
+
+		virtual void OnImGuiDraw()
+		{
+			if ( ImGuiBegin() );
+			{
+				ImGui::Text( "FPS: %i", Application::Get().GetFPS() );
+				ImGuiEnd();
+			}
+		}
+	};
 
 	EditorLayer::EditorLayer( const std::string& name )
 	{
@@ -20,10 +36,9 @@ namespace Tridium::Editor {
 		FBOspecification.Height = 720;
 		m_EditorCameraFBO = Framebuffer::Create( FBOspecification );
 
-		m_SceneHeirarchy = new SceneHeirarchy();
-		m_ContentBrowser = new ContentBrowser();
-		m_PanelStack.PushPanel( m_SceneHeirarchy );
-		m_PanelStack.PushPanel( m_ContentBrowser );
+		m_SceneHeirarchy = m_PanelStack.PushPanel<SceneHeirarchy>();
+		m_ContentBrowser = m_PanelStack.PushPanel<ContentBrowser>();
+		m_PanelStack.PushPanel<Stats>();
 	}
 
 	void EditorLayer::OnDetach()
@@ -76,20 +91,22 @@ namespace Tridium::Editor {
 			DrawMenuBar();
 			DrawEditorCameraViewPort();
 
-			for ( int i = m_PanelStack.size() - 1; i >= 0; --i )
+			for ( auto& it = m_PanelStack.rbegin(); it != m_PanelStack.rend(); it++ )
 			{
-				m_PanelStack[ i ]->OnImGuiDraw();
+				it->second->OnImGuiDraw();
 			}
-
-			ImGui::Begin( "Stats" );
-			ImGui::Text( "FPS: %i", Application::Get().GetFPS() );
-			ImGui::End();
 		}
 		ImGui::End();
 	}
 
 	void EditorLayer::OnEvent( Event& e )
 	{
+		for ( auto it = m_PanelStack.end(); it != m_PanelStack.begin(); )
+		{
+			( *--it ).second->OnEvent( e );
+			if ( e.Handled )
+				break;
+		}
 	}
 
 	void EditorLayer::DrawMenuBar()
@@ -129,13 +146,19 @@ namespace Tridium::Editor {
 		if ( ImGui::BeginMenu( "Edit" ) )
 		{
 			if ( ImGui::MenuItem( "Editor Preferences" ) )
-				m_PanelStack.PushPanel( new EditorPreferences() );
+				m_PanelStack.PushPanel<EditorPreferences>();
 
 			ImGui::EndMenu();
 		}
 
 		if ( ImGui::BeginMenu( "View" ) )
 		{
+			if ( ImGui::BeginMenu( "Panels" ) )
+			{
+				if ( ImGui::MenuItem( "Content Browser" ) ) m_PanelStack.PushPanel<ContentBrowser>();
+
+				ImGui::EndMenu();
+			}
 
 			ImGui::EndMenu();
 		}
@@ -143,7 +166,7 @@ namespace Tridium::Editor {
 		if ( ImGui::BeginMenu( "Script" ) )
 		{
 			if ( ImGui::MenuItem( "Open Script Editor" ) )
-				m_PanelStack.PushPanel( new ScriptEditor() );
+				m_PanelStack.PushPanel<ScriptEditor>();
 
 			if ( ImGui::MenuItem( "Recompile", "Ctrl+R" ) )
 				TE_CORE_INFO( "Not Implemented!" );

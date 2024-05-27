@@ -4,9 +4,33 @@
 
 namespace Tridium::Editor {
 
+	bool Panel::ImGuiBegin( ImGuiWindowFlags a_WindowFlags )
+	{
+		bool isCollapsed = !ImGui::Begin( m_Name.c_str(), &m_Open, a_WindowFlags );
+
+		if ( !m_Open )
+			Close();
+
+		return !isCollapsed;
+	}
+
+	void Panel::ImGuiEnd()
+	{
+		ImGui::End();
+
+		if ( !m_Open )
+			Close();
+	}
+
 	void Panel::Close()
 	{
-		m_Owner->DestroyPanel( this );
+		if ( OnClose() )
+		{
+			TE_ASSERT( m_Owner, "Panel does not have an owner!" );
+			m_Owner->DestroyPanel( this );
+		}
+		else
+			m_Open = true;
 	}
 
 
@@ -15,25 +39,15 @@ namespace Tridium::Editor {
 
 	PanelStack::~PanelStack()
 	{
-		for ( Panel* panel : m_Panels )
-			delete panel;
-	}
-
-	bool PanelStack::PushPanel( Panel* a_Panel )
-	{
-		if ( a_Panel->m_Owner )
-			return false;
-
-		m_Panels.push_back( a_Panel );
-		a_Panel->m_Owner = this;
-		return true;
+		for ( auto panel : m_Panels )
+			delete panel.second;
 	}
 
 	Panel* PanelStack::PullPanel( Panel* a_Panel )
 	{
 		for ( auto it = m_Panels.begin(); it != m_Panels.end(); it++ )
 		{
-			if ( *it == a_Panel )
+			if ( it->second == a_Panel )
 			{
 				m_Panels.erase( it );
 				a_Panel->m_Owner = nullptr;

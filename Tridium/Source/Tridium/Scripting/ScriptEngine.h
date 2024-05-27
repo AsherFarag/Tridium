@@ -16,13 +16,10 @@ namespace Tridium {
 
 		void Init();
 
-		static inline sol::state& GetState() { return Get()->m_State; }
+		static inline sol::state& GetLuaState() { return Get()->m_LuaState; }
 
 	private:
-		sol::state m_State;
-
-	private:
-		static ScriptEngine* s_Instance;
+		sol::state m_LuaState;
 	};
 
 }

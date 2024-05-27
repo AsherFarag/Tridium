@@ -41,6 +41,7 @@ namespace Tridium {
 			for ( auto entity : storage.second )
 				static_cast<ScriptableComponent*>( storage.second.value( entity ) )->OnUpdate();
 		}
+
 		// Render all Scene Cameras
 		auto& cameras = m_Registry.view<CameraComponent, TransformComponent>();
 		cameras.each( [&]( auto entity, CameraComponent& camera, TransformComponent& transform )

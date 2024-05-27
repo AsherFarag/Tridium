@@ -41,6 +41,7 @@ namespace Tridium {
 		// Initialise the render pipeline
 		RenderCommand::Init();
 
+		// TEMP
 		std::string vertexSrc =
 			R"(
 						#version 410
@@ -105,6 +106,8 @@ namespace Tridium {
 		go2.AddComponent<CameraControllerComponent>();
 		go2.GetTag() = "Scene Camera";
 
+		Script::Create( "Content/Scripts/Component.lua", "Test" );
+
 		while ( m_Running )
 		{
 			Time::Update();
@@ -129,12 +132,14 @@ namespace Tridium {
 			for ( Layer* layer : m_LayerStack )
 				layer->OnUpdate();
 
+			// - ImGui -
 			m_ImGuiLayer->Begin();
 
 			for ( Layer* layer : m_LayerStack )
 				layer->OnImGuiDraw();
 
 			m_ImGuiLayer->End();
+			// ---------
 			
 			// ====================================================================================================
 

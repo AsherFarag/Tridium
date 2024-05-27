@@ -21,21 +21,21 @@ namespace Tridium {
 	class KeyPressedEvent : public KeyEvent
 	{
 	public:
-		KeyPressedEvent( Input::KeyCode a_Keycode, int a_RepeatCount )
-			: KeyEvent( a_Keycode ), m_RepeatCount( a_RepeatCount ) {}
+		KeyPressedEvent( Input::KeyCode a_Keycode, bool a_Repeat )
+			: KeyEvent( a_Keycode ), m_IsRepeat( a_Repeat ) {}
 
-		inline int GetRepeatCount() const { return m_KeyCode; }
+		inline bool IsRepeat() const { return m_IsRepeat; }
 
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "KeyPressedEvent: " << m_KeyCode << " (repeat = " << m_RepeatCount << ")";
+			ss << "KeyPressedEvent: " << m_KeyCode << " (repeat = " << m_IsRepeat << ")";
 			return ss.str();
 		}
 
 		EVENT_CLASS_TYPE(KeyPressed)
 	private:
-		int m_RepeatCount;
+		bool m_IsRepeat;
 	};
 
 	class KeyReleasedEvent : public KeyEvent

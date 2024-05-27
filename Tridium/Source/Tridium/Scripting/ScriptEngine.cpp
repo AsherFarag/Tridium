@@ -1,12 +1,14 @@
 #include "tripch.h"
 #include "ScriptEngine.h"
 
-namespace Tridium {
+#include <Tridium/ECS/Components/Types.h>
 
-    ScriptEngine* ScriptEngine::s_Instance = new ScriptEngine();
+namespace Tridium {
 
     ScriptEngine* ScriptEngine::Get()
     {
+        static ScriptEngine* s_Instance = new ScriptEngine();
+
         return s_Instance;
     }
 
@@ -21,7 +23,19 @@ namespace Tridium {
 
     void ScriptEngine::Init()
     {
-        m_State.open_libraries( sol::lib::base, sol::lib::math, sol::lib::package );
+        m_LuaState.open_libraries( sol::lib::base, sol::lib::math, sol::lib::package );
+
+        m_LuaState.new_usertype<Vector3>( 
+            sol::constructors<Vector3()>(),
+            "x", sol::property( &Vector3::x ),
+            "y", sol::property( & Vector3::y ),
+            "z", sol::property( &Vector3::z ) );
+
+        m_LuaState.new_usertype<TransformComponent>(
+            sol::constructors<TransformComponent()>(),
+            "Position", sol::property( &TransformComponent::Position ),
+            "Rotation", sol::property( &TransformComponent::Position ),
+            "Scale", sol::property( &TransformComponent::Position ) );
     }
 
 }
