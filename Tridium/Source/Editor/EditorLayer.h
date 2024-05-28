@@ -28,6 +28,8 @@ namespace Tridium::Editor {
 		virtual void OnEvent( Event& e ) override;
 
 	private:
+		bool OnKeyPressed( KeyPressedEvent& e );
+
 		// - ImGui Editor -
 		void DrawMenuBar();
 		void DrawEditorCameraViewPort();

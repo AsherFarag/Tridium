@@ -5,7 +5,7 @@ namespace Tridium {
 
 	ScriptableComponent::~ScriptableComponent()
 	{
-		OnDestroy();
+		//OnDestroy();
 	}
 
 }

@@ -71,6 +71,7 @@ namespace Tridium {
 
 		const GameObject GetGameObject() const { return m_GameObject; }
 
+		static void DeclareUserType() {}
 		static void OnReflect( Reflector& reflector );
 	private:
 		GameObject m_GameObject;
@@ -84,7 +85,7 @@ namespace Tridium {
 		DEFINE_COMPONENT_BODY( ScriptableComponent );
 
 		ScriptableComponent() {}
-		~ScriptableComponent();
+		virtual ~ScriptableComponent();
 
 		virtual void OnUpdate() {}
 

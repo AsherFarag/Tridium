@@ -5,33 +5,29 @@ namespace Tridium {
 
 	class Script
 	{
+		friend class ScriptEngine;
 	public:
 		static Ref<Script> Create( const std::string& a_FilePath, const std::string& a_Name );
 		~Script() = default;
 
-		void Recompile();
-		void BindFunctions();
-		auto& Environment() const { return m_Environment; }
-	public:
-		sol::protected_function Lua_OnConstruct;
-		sol::protected_function Lua_OnDestroy;
-		sol::protected_function Lua_OnUpdate;
+		const std::string& GetFilePath() const { return m_FilePath; }
 
 	private:
 		Script( sol::state& a_State, const std::string& a_FilePath );
 
 	private:
 		std::string m_FilePath;
-		sol::environment m_Environment;
 	};
 
 
 
 	class ScriptLibrary
 	{
+		friend class ScriptEngine;
 		friend Script;
 	public:
-		static Ref<Script> Get( const std::string& a_Name );
+		static ScriptLibrary* Get();
+		static Ref<Script> GetScript( const std::string& a_Name );
 		static bool Has( const std::string& a_Name );
 
 	private:
@@ -39,9 +35,6 @@ namespace Tridium {
 
 	private:
 		std::unordered_map<std::string, Ref<Script>> m_Library;
-
-	private:
-		static ScriptLibrary* s_Instance;
 	};
 
 }

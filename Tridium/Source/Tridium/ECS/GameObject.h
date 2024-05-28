@@ -11,11 +11,14 @@ namespace Tridium {
 
 	typedef entt::entity EntityID;
 
+#define INVALID_GAMEOBJECT (EntityID)UINT32_MAX
+
+
 	class GameObject
 	{
 		friend class Scene;
 	public:
-		GameObject( EntityID id = (EntityID)UINT32_MAX );
+		GameObject( EntityID id = INVALID_GAMEOBJECT );
 		operator EntityID ( ) { return m_ID; }
 		operator const EntityID( ) const { return m_ID; }
 
@@ -34,6 +37,7 @@ namespace Tridium {
 		inline void Destroy() { Application::GetScene()->m_Registry.destroy( m_ID ); }
 		inline bool IsValid() const { return Application::GetScene()->m_Registry.valid( m_ID ); }
 
+		const inline EntityID ID() const { return m_ID; }
 		std::string& GetTag() const;
 		TransformComponent& GetTransform() const;
 
@@ -62,7 +66,10 @@ namespace Tridium {
 
 		if constexpr ( std::is_base_of_v<ScriptableComponent, T> )
 		{
-			static_cast<ScriptableComponent*>( &component )->OnConstruct();
+			auto scriptable = static_cast<ScriptableComponent*>( &component );
+			Application::GetScene()->GetRegistry().on_destroy<ScriptableComponent>().connect<&ScriptableComponent::OnDestroy>( *scriptable );
+
+			scriptable->OnConstruct();
 		}
 
 		return component;

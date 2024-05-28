@@ -43,17 +43,25 @@ namespace Tridium::Editor {
 
 		if ( ImGui::BeginPopupModal( "NewFile" ) )
 		{
-			static char filePath[ 1024 ] = { "Content/Scripts/Component.lua" };
+			static char filePath[ 1024 ] = { "Content/Scripts/ComponentTemplate.lua" };
 			ImGui::InputText( "File Path", filePath, 1024 );
 
 			ImGui::SameLine();
-			if ( ImGui::Button( "Open" ) )
+			if ( ImGui::Button( "New" ) )
 			{
 				newFilePopUp = false;
 
-				// Make a new file
-				std::ofstream newFile( filePath, std::ios::out | std::ios::app );
-				newFile.close();
+				std::ifstream existingFile( filePath );
+				// If there is no file at the filePath,
+				// make a new file.
+				if ( !existingFile )
+				{
+					std::ofstream newFile( filePath, std::ios::out | std::ios::app );
+					// Create a new file and write in a component template
+					newFile << "function OnConstruct()\nend\n\nfunction OnUpdate( deltaTime )\nend\n\nfunction OnDestroy()\nend\n"; 
+					newFile.close();
+				}
+				existingFile.close();
 
 				OpenFile( filePath );
 
@@ -79,7 +87,7 @@ namespace Tridium::Editor {
 
 		if ( ImGui::BeginPopupModal( "OpenFile" ) )
 		{
-			static char filePath[ 1024 ] = { "Content/Scripts/Component.lua" };
+			static char filePath[ 1024 ] = { "Content/Scripts/ComponentTemplate.lua" };
 			ImGui::InputText( "File Path", filePath, 1024 );
 
 			ImGui::SameLine();
@@ -235,6 +243,8 @@ namespace Tridium::Editor {
 				break;
 			}
 		}
+
+		return false;
 	}
 
 	bool ScriptEditor::DisplayFileContents( ScriptTextFile& file )

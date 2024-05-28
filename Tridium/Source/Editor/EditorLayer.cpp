@@ -4,6 +4,7 @@
 #include "EditorLayer.h"
 #include "imgui.h"
 #include "Panels/EditorPreferences.h"
+#include <Tridium/Scripting/ScriptEngine.h>
 
 namespace Tridium::Editor {
 	
@@ -101,12 +102,39 @@ namespace Tridium::Editor {
 
 	void EditorLayer::OnEvent( Event& e )
 	{
+		EventDispatcher dispatcher( e );
+		dispatcher.Dispatch<KeyPressedEvent>( TE_BIND_EVENT_FN( EditorLayer::OnKeyPressed, std::placeholders::_1 ) );
+
 		for ( auto it = m_PanelStack.end(); it != m_PanelStack.begin(); )
 		{
 			( *--it ).second->OnEvent( e );
 			if ( e.Handled )
 				break;
 		}
+	}
+
+	bool EditorLayer::OnKeyPressed( KeyPressedEvent& e )
+	{
+		if ( e.IsRepeat() )
+			return false;
+
+		bool control = Input::IsKeyPressed( Input::KEY_LEFT_CONTROL );
+		bool alt = Input::IsKeyPressed( Input::KEY_LEFT_ALT );
+
+		switch ( e.GetKeyCode() )
+		{
+		case Input::KEY_R:
+		{
+			if ( control )
+			{
+				ScriptEngine::Recompile();
+				return true;
+			}
+			break;
+		}
+		}
+
+		return false;
 	}
 
 	void EditorLayer::DrawMenuBar()
@@ -169,7 +197,7 @@ namespace Tridium::Editor {
 				m_PanelStack.PushPanel<ScriptEditor>();
 
 			if ( ImGui::MenuItem( "Recompile", "Ctrl+R" ) )
-				TE_CORE_INFO( "Not Implemented!" );
+				ScriptEngine::Recompile();
 
 			ImGui::EndMenu();
 		}

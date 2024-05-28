@@ -76,6 +76,15 @@ namespace Tridium::Editor {
 		DrawInspector();
 	}
 
+	void SceneHeirarchy::SetSelectedGameObject( GameObject gameObject )
+	{
+		m_SelectedGameObject = gameObject;
+		// Since a game object was selected, bring the Inspector into focus.
+		ImGui::SetWindowFocus( "Inspector" );
+		ImGui::SetWindowFocus( "Scene Heirarchy" );
+	}
+	
+
 	bool SceneHeirarchy::OnKeyPressed( KeyPressedEvent& e )
 	{
 		if ( e.IsRepeat() )
@@ -159,7 +168,9 @@ namespace Tridium::Editor {
 
 					// We must append the Tag with ##id so ImGui can have a unique identifier for this selectable.
 					if ( ImGui::Selectable( ( goTag + "##" + std::to_string( (uint32_t)go ) ).c_str(), selected ) )
+					{
 						SetSelectedGameObject( go );
+					}
 				}
 				ImGui::EndListBox();
 			}
@@ -205,7 +216,7 @@ namespace Tridium::Editor {
 			if ( ImGui::MenuItem( "Mesh" ) )			  AddComponentToSelectedGameObject<MeshComponent>();
 			if ( ImGui::MenuItem( "Camera" ) )			  AddComponentToSelectedGameObject<CameraComponent>();
 			if ( ImGui::MenuItem( "Camera Controller" ) ) AddComponentToSelectedGameObject<CameraControllerComponent>();
-			if ( ImGui::MenuItem( "Lua Script" ) )		  AddComponentToSelectedGameObject<LuaScriptComponent>(ScriptLibrary::Get("Test"));
+			if ( ImGui::MenuItem( "Lua Script" ) )		  AddComponentToSelectedGameObject<LuaScriptComponent>(ScriptLibrary::GetScript("Test"));
 
 			ImGui::EndMenu();
 		}
@@ -301,6 +312,10 @@ namespace Tridium::Editor {
 			{
 				ImGui::DragFloat( "Speed", &component.Speed, 0.1f );
 				ImGui::DragFloat( "Look Sensitivity", &component.LookSensitivity, 0.1f );
+			} );
+
+		DrawComponent<LuaScriptComponent>( "Lua Script Component", gameObject, []( auto& component )
+			{
 			} );
 	}
 

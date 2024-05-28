@@ -18,7 +18,7 @@ namespace Tridium {
 
 		GameObject InstantiateGameObject( const std::string& name = "GameObject" );
 
-		auto& GetRegistry() const { return m_Registry; }
+		auto& GetRegistry() { return m_Registry; }
 
 	private:
 		entt::registry m_Registry;

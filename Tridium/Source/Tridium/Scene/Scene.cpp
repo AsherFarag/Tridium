@@ -14,7 +14,6 @@ namespace Tridium {
 
 	Scene::Scene()
 	{
-
 	}
 
 	Scene::~Scene()

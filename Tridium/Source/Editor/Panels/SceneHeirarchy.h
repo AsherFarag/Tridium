@@ -18,10 +18,10 @@ namespace Tridium::Editor {
 		virtual void OnImGuiDraw() override;
 
 		GameObject GetSelectedGameObject() const { return m_SelectedGameObject; }
-		void SetSelectedGameObject( GameObject gameObject ) { m_SelectedGameObject = gameObject; }
 
 	private:
 		bool OnKeyPressed( KeyPressedEvent& e );
+		void SetSelectedGameObject( GameObject gameObject );
 
 	private:
 		void DrawSceneHeirarchy();

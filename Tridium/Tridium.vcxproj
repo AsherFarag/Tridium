@@ -146,13 +146,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Editor\Panels\ScriptEditor.h" />
-    <ClInclude Include="Source\Editor\Panels\SceneHeirarchy.h" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\Common\CameraControllerComponent.h" />
-    <ClInclude Include="Source\Tridium\ECS\Components\Types\Rendering\MeshComponent.h" />
-    <ClInclude Include="Source\Editor\Panels\EditorPreferences.h" />
-    <ClInclude Include="Source\Editor\Panels\Panel.h" />
-    <ClInclude Include="Source\Editor\Panels\ContentBrowser.h" />
     <ClInclude Include="Dependencies\glm\glm\common.hpp" />
     <ClInclude Include="Dependencies\glm\glm\detail\_features.hpp" />
     <ClInclude Include="Dependencies\glm\glm\detail\_fixes.hpp" />
@@ -569,12 +562,16 @@
     <ClInclude Include="Dependencies\glm\glm\vec3.hpp" />
     <ClInclude Include="Dependencies\glm\glm\vec4.hpp" />
     <ClInclude Include="Dependencies\glm\glm\vector_relational.hpp" />
-    <ClInclude Include="Source\Platform\OpenGL\OpenGLFrameBuffer.h" />
-    <ClInclude Include="Source\Tridium\Rendering\FrameBuffer.h" />
-    <ClInclude Include="Source\Editor\EditorLayer.h" />
     <ClInclude Include="Source\Editor\EditorCamera.h" />
+    <ClInclude Include="Source\Editor\EditorLayer.h" />
+    <ClInclude Include="Source\Editor\Panels\ContentBrowser.h" />
+    <ClInclude Include="Source\Editor\Panels\EditorPreferences.h" />
+    <ClInclude Include="Source\Editor\Panels\Panel.h" />
+    <ClInclude Include="Source\Editor\Panels\SceneHeirarchy.h" />
+    <ClInclude Include="Source\Editor\Panels\ScriptEditor.h" />
     <ClInclude Include="Source\Platform\OpenGL\OpenGLBuffer.h" />
     <ClInclude Include="Source\Platform\OpenGL\OpenGLContext.h" />
+    <ClInclude Include="Source\Platform\OpenGL\OpenGLFrameBuffer.h" />
     <ClInclude Include="Source\Platform\OpenGL\OpenGLRenderingAPI.h" />
     <ClInclude Include="Source\Platform\OpenGL\OpenGLShader.h" />
     <ClInclude Include="Source\Platform\OpenGL\OpenGLVertexArray.h" />
@@ -590,10 +587,12 @@
     <ClInclude Include="Source\Tridium\Core\Window.h" />
     <ClInclude Include="Source\Tridium\ECS\Components\Component.h" />
     <ClInclude Include="Source\Tridium\ECS\Components\Types.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\Common\CameraControllerComponent.h" />
     <ClInclude Include="Source\Tridium\ECS\Components\Types\Common\LuaScriptComponent.h" />
     <ClInclude Include="Source\Tridium\ECS\Components\Types\Common\TagComponent.h" />
     <ClInclude Include="Source\Tridium\ECS\Components\Types\Common\TransformComponent.h" />
     <ClInclude Include="Source\Tridium\ECS\Components\Types\Rendering\CameraComponent.h" />
+    <ClInclude Include="Source\Tridium\ECS\Components\Types\Rendering\MeshComponent.h" />
     <ClInclude Include="Source\Tridium\ECS\GameObject.h" />
     <ClInclude Include="Source\Tridium\Events\ApplicationEvent.h" />
     <ClInclude Include="Source\Tridium\Events\Event.h" />
@@ -605,6 +604,7 @@
     <ClInclude Include="Source\Tridium\Math\Math.h" />
     <ClInclude Include="Source\Tridium\Rendering\Buffer.h" />
     <ClInclude Include="Source\Tridium\Rendering\Camera.h" />
+    <ClInclude Include="Source\Tridium\Rendering\FrameBuffer.h" />
     <ClInclude Include="Source\Tridium\Rendering\RenderCommand.h" />
     <ClInclude Include="Source\Tridium\Rendering\Renderer.h" />
     <ClInclude Include="Source\Tridium\Rendering\RenderingAPI.h" />
@@ -620,19 +620,16 @@
     <ClInclude Include="Source\tripch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Editor\Panels\Panel.cpp" />
-    <ClCompile Include="Source\Editor\Panels\ScriptEditor.cpp" />
-    <ClCompile Include="Source\Tridium\ECS\Components\Types\Common\CameraControllerComponent.cpp" />
-    <ClCompile Include="Source\Tridium\ECS\Components\Types\Rendering\MeshComponent.cpp" />
-    <ClCompile Include="Source\Editor\Panels\EditorPreferences.cpp" />
-    <ClCompile Include="Source\Editor\Panels\SceneHeirarchy.cpp" />
-    <ClCompile Include="Source\Editor\Panels\ContentBrowser.cpp" />
-    <ClCompile Include="Source\Platform\OpenGL\OpenGLFrameBuffer.cpp" />
-    <ClCompile Include="Source\Tridium\Rendering\FrameBuffer.cpp" />
-    <ClCompile Include="Source\Editor\EditorLayer.cpp" />
     <ClCompile Include="Source\Editor\EditorCamera.cpp" />
+    <ClCompile Include="Source\Editor\EditorLayer.cpp" />
+    <ClCompile Include="Source\Editor\Panels\ContentBrowser.cpp" />
+    <ClCompile Include="Source\Editor\Panels\EditorPreferences.cpp" />
+    <ClCompile Include="Source\Editor\Panels\Panel.cpp" />
+    <ClCompile Include="Source\Editor\Panels\SceneHeirarchy.cpp" />
+    <ClCompile Include="Source\Editor\Panels\ScriptEditor.cpp" />
     <ClCompile Include="Source\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="Source\Platform\OpenGL\OpenGLContext.cpp" />
+    <ClCompile Include="Source\Platform\OpenGL\OpenGLFrameBuffer.cpp" />
     <ClCompile Include="Source\Platform\OpenGL\OpenGLRenderingAPI.cpp" />
     <ClCompile Include="Source\Platform\OpenGL\OpenGLShader.cpp" />
     <ClCompile Include="Source\Platform\OpenGL\OpenGLVertexArray.cpp" />
@@ -643,14 +640,17 @@
     <ClCompile Include="Source\Tridium\Core\LayerStack.cpp" />
     <ClCompile Include="Source\Tridium\Core\Time.cpp" />
     <ClCompile Include="Source\Tridium\ECS\Components\Component.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\Common\CameraControllerComponent.cpp" />
     <ClCompile Include="Source\Tridium\ECS\Components\Types\Common\LuaScriptComponent.cpp" />
     <ClCompile Include="Source\Tridium\ECS\Components\Types\Common\TransformComponent.cpp" />
     <ClCompile Include="Source\Tridium\ECS\Components\Types\Rendering\CameraComponent.cpp" />
+    <ClCompile Include="Source\Tridium\ECS\Components\Types\Rendering\MeshComponent.cpp" />
     <ClCompile Include="Source\Tridium\ECS\GameObject.cpp" />
     <ClCompile Include="Source\Tridium\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="Source\Tridium\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="Source\Tridium\Rendering\Buffer.cpp" />
     <ClCompile Include="Source\Tridium\Rendering\Camera.cpp" />
+    <ClCompile Include="Source\Tridium\Rendering\FrameBuffer.cpp" />
     <ClCompile Include="Source\Tridium\Rendering\RenderCommand.cpp" />
     <ClCompile Include="Source\Tridium\Rendering\Renderer.cpp" />
     <ClCompile Include="Source\Tridium\Rendering\RenderingAPI.cpp" />
