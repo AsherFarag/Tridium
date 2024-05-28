@@ -66,8 +66,19 @@ namespace Tridium {
 
 		if constexpr ( std::is_base_of_v<ScriptableComponent, T> )
 		{
+			TODO("Implement a proper Component Initializer")
+			static bool SetupScriptableComponent = [] {
+
+				const auto OnDestroyScriptableObject = +[]( entt::registry& a_Registry, entt::entity a_ID )
+				{
+					a_Registry.get< T >( a_ID ).OnDestroy();
+				};
+				Application::GetScene()->m_Registry.on_destroy<T>().connect<OnDestroyScriptableObject>();
+				return true;
+			}();
+
+
 			auto scriptable = static_cast<ScriptableComponent*>( &component );
-			Application::GetScene()->GetRegistry().on_destroy<ScriptableComponent>().connect<&ScriptableComponent::OnDestroy>( *scriptable );
 
 			scriptable->OnConstruct();
 		}
