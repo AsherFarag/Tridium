@@ -20,9 +20,4 @@ namespace Tridium {
         return GetComponent<TagComponent>().Tag;
     }
 
-    TransformComponent& GameObject::GetTransform() const
-    {
-        return GetComponent<TransformComponent>();
-    }
-
 }

@@ -23,7 +23,7 @@ namespace Tridium {
 
     void ScriptEngine::Init()
     {
-        m_LuaState.open_libraries( sol::lib::base, sol::lib::math, sol::lib::package );
+        m_LuaState.open_libraries( sol::lib::base, sol::lib::math, sol::lib::package, sol::lib::io, sol::lib::debug );
 
         #pragma region Maths
 
@@ -44,9 +44,11 @@ namespace Tridium {
 
         m_LuaState.new_usertype<GameObject>(
             "GameObject",
-            sol::no_constructor,
+            sol::factories( [](){ return Application::GetScene()->InstantiateGameObject(); } ),
             "ID", sol::property( &GameObject::ID ),
-            "GetTransform", &GameObject::GetTransform );
+            "GetTransform", &GameObject::GetComponent<TransformComponent> );
+
+        m_LuaState["GameObject"]["Destroy"] = []( GameObject& go ) { go.Destroy(); };
 
         m_LuaState.new_usertype<Component>(
             "Component",
@@ -60,23 +62,6 @@ namespace Tridium {
             "Position", sol::property( &TransformComponent::Position, &TransformComponent::Position ),
             "Rotation", sol::property( &TransformComponent::Rotation, &TransformComponent::Rotation ),
             "Scale", sol::property( &TransformComponent::Scale, &TransformComponent::Scale ) );
-
-        //m_LuaState.script( "function Vector3:print() print('x: '.. self.x .. ' y: '.. self.y .. ' z: '.. self.z) end" );
-        //m_LuaState.script( "local vec = Vector3.new(1.1, 1.2, 1.3) \n vec:print()" );
-
-        //m_LuaState.script( "function Vector2:print() print('x: '.. self.x .. ' y: '.. self.y) end" );
-        //m_LuaState.script( "local vec = Vector2.new(5.1, 2.2) \n vec:print()" );
-
-        //m_LuaState[ "go" ] = Application::GetScene()->InstantiateGameObject();
-        //m_LuaState.script( "go:GetTransform().Position.x = 1" );
-
-        //// runtime additions: through the sol API
-        //m_LuaState[ "Vector3" ][ "func" ] = []( Vector3& v ) { return v.x; };
-        //// runtime additions: through a lua script
-        //m_LuaState.script( "function object:print () print(self:func()) end" );
-
-        //// see it work
-        //m_LuaState.script( "local obj = object.new() \n obj:print()" );
     }
 
     void ScriptEngine::Recompile()
@@ -88,11 +73,6 @@ namespace Tridium {
             {
                 sc.Compile( lua );
             } );
-
-        //for ( auto& script : scriptLib->m_Library )
-        //{
-        //    script.second->Recompile();
-        //}
     }
 
 }

@@ -6,7 +6,11 @@
 namespace Tridium {
 	void CameraControllerComponent::OnUpdate()
 	{
-		auto& transform = GetGameObject().GetTransform();
+		auto& go = GetGameObject();
+		if ( !go.HasComponent<TransformComponent>() )
+			return;
+
+		auto& transform = GetGameObject().GetComponent<TransformComponent>();
 
 		float dt = Time::DeltaTime();
 

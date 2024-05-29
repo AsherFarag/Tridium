@@ -39,7 +39,6 @@ namespace Tridium {
 
 		const inline EntityID ID() const { return m_ID; }
 		std::string& GetTag() const;
-		TransformComponent& GetTransform() const;
 
 	private:
 		void Init( const std::string& name );

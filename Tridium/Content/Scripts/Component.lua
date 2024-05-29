@@ -1,9 +1,20 @@
+health = 10
+
 function OnConstruct()
 end
 
 function OnUpdate( deltaTime )
-	gameObject:GetTransform().Position.x = (1.0 * deltaTime)  * gameObject:GetTransform().Position.y + gameObject:GetTransform().Position.x
+	if gameObject:GetTransform().Position.y < 0 then
+		health = health - deltaTime * 3
+	end
+	
+	print(health)
+
+	if health < 0 then
+		gameObject:Destroy()
+	end 
 end
 
 function OnDestroy()
+	print("Destroyed")
 end

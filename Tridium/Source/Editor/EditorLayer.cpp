@@ -24,9 +24,18 @@ namespace Tridium::Editor {
 		}
 	};
 
-	EditorLayer::EditorLayer( const std::string& name )
-	{
+	EditorLayer* EditorLayer::s_Instance = nullptr;
 
+	EditorLayer::EditorLayer( const std::string& name )
+		: Layer( name )
+	{
+		TE_CORE_ASSERT( s_Instance == nullptr, "An instance of the editor layer already exists!" );
+		s_Instance = this;
+	}
+
+	EditorLayer::~EditorLayer()
+	{
+		s_Instance = nullptr;
 	}
 
 	void EditorLayer::OnAttach()

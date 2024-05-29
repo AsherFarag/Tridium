@@ -4,6 +4,8 @@
 
 #include "Panel.h"
 
+#include <filesystem>
+
 namespace Tridium::Editor {
 
 	class ContentBrowser final : public Panel
@@ -13,6 +15,9 @@ namespace Tridium::Editor {
 		virtual ~ContentBrowser() = default;
 
 		virtual void OnImGuiDraw() override;
+
+	private:
+		std::filesystem::path m_CurrentDirectory;
 	};
 
 }

@@ -5,6 +5,8 @@
 #include "SceneHeirarchy.h"
 #include "imgui.h"
 
+#include <Editor/EditorLayer.h>
+
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Core/Application.h>
 #include <Tridium/ECS/Components/Types.h>
@@ -31,7 +33,6 @@ namespace ImGui {
 			ImGui::SameLine();
 
 			// y
-			//ImGui::PushItemWidth( itemWidth );
 			ImGui::PushStyleColor( ImGuiCol_Border, ImVec4( 0.5f, 0.9f, 0.5f, 0.9f ) );
 			ImGui::PushID( 1 );
 			ImGui::DragFloat( "", &values.y, speed, 0, 0, format );
@@ -90,21 +91,45 @@ namespace Tridium::Editor {
 		if ( e.IsRepeat() )
 			return false;
 
+		bool shift = Input::IsKeyPressed(Input::KEY_LEFT_SHIFT);
 		bool control = Input::IsKeyPressed( Input::KEY_LEFT_CONTROL );
 		bool alt = Input::IsKeyPressed( Input::KEY_LEFT_ALT );
 
 		switch ( e.GetKeyCode() )
 		{
-		case Input::KEY_DELETE:
-		{
-			if ( m_SelectedGameObject.IsValid() )
+			case Input::KEY_DELETE:
 			{
-				m_SelectedGameObject.Destroy();
-				return true;
+				// Delete
+				// Destroys the selected game object
+				if ( m_SelectedGameObject.IsValid() )
+				{
+					m_SelectedGameObject.Destroy();
+					return true;
+				}
+				break;
 			}
-			break;
+			case Input::KEY_F:
+			{
+				// Shift + F
+				// Make Editor Camera find the selected game object
+				if ( shift )
+				{
+					if ( m_SelectedGameObject.IsValid() )
+					{
+						if ( m_SelectedGameObject.HasComponent<TransformComponent>() )
+						{
+							auto& goTransform = m_SelectedGameObject.GetComponent<TransformComponent>();
+							auto& editorCam = EditorLayer::Get().GetEditorCamera();
+							editorCam.Position = goTransform.Position - (editorCam.GetForwardDirection() * 5.f);
+							return true;
+						}
+					}
+				}
+				break;
+			}
 		}
-		}
+
+		return false;
 	}
 
 	void SceneHeirarchy::DrawSceneHeirarchy()
@@ -115,72 +140,77 @@ namespace Tridium::Editor {
 
 		ImGui::PushStyleVar( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2( 1, 1 ) );
 
-		if ( ImGui::Begin( "Scene Heirarchy" ) )
+		if ( !ImGui::Begin("Scene Heirarchy") )
 		{
-			auto gameObjects = m_Context->GetRegistry().view<TagComponent>();
-			ImGui::Text( "Game Objects: %i", gameObjects.size() );
-
-			ImGui::SameLine();
-
-			#pragma region Add-GameObject Button
-
-			// Align the button to the right
-			float addGameObjectButtonWidth = ImGui::CalcTextSize( "+" ).x + ImGui::GetStyle().FramePadding.x * 2.f;
-			ImGui::SetCursorPosX( ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - addGameObjectButtonWidth - 5 );
-
-			if ( ImGui::Button( "+" ) )
-				ImGui::OpenPopup( "AddGameObject" );
-
-			if ( ImGui::BeginPopup("AddGameObject" ) )
-			{
-				if ( ImGui::MenuItem( "Game Object" ) )
-				{
-					auto go = m_Context->InstantiateGameObject();
-					SetSelectedGameObject(go);
-				}
-
-				ImGui::Separator();
-
-				if ( ImGui::MenuItem( "Cube" ) )
-				{
-					auto go = m_Context->InstantiateGameObject( "Cube" );
-					go.AddComponent<MeshComponent>();
-					SetSelectedGameObject( go );
-				}
-
-				ImGui::EndMenu();
-			}
-
-			#pragma endregion
-
-			#pragma region GamesObjects List
-
-			// Create a list box of all game objects in the scene
-			if ( ImGui::BeginListBox( "Game Objects", ImGui::GetContentRegionAvail() ) )
-			{
-				m_IsFocused = ImGui::IsWindowFocused() || ImGui::IsItemFocused();
-
-				for ( int i = 0; i < gameObjects.size(); ++i )
-				{
-					auto go = gameObjects[ i ];
-					bool selected = go == m_SelectedGameObject;
-					auto& goTag = gameObjects.get<TagComponent>( go ).Tag;
-
-					// We must append the Tag with ##id so ImGui can have a unique identifier for this selectable.
-					if ( ImGui::Selectable( ( goTag + "##" + std::to_string( (uint32_t)go ) ).c_str(), selected ) )
-					{
-						SetSelectedGameObject( go );
-					}
-				}
-				ImGui::EndListBox();
-			}
-
-			#pragma endregion
-
+			m_IsFocused = false;
+			ImGui::PopStyleVar();
 			ImGui::End();
+			return;
 		}
 
+		m_IsFocused = ImGui::IsWindowFocused() || ImGui::IsItemFocused();
+
 		ImGui::PopStyleVar();
+
+		auto gameObjects = m_Context->GetRegistry().view<TagComponent>();
+		ImGui::Text( "Game Objects: %i", gameObjects.size() );
+
+		ImGui::SameLine();
+
+		#pragma region Add-GameObject Button
+
+		// Align the button to the right
+		float addGameObjectButtonWidth = ImGui::CalcTextSize( "+" ).x + ImGui::GetStyle().FramePadding.x * 2.f;
+		ImGui::SetCursorPosX( ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - addGameObjectButtonWidth - 5 );
+
+		if ( ImGui::Button( "+" ) )
+			ImGui::OpenPopup( "AddGameObject" );
+
+		if ( ImGui::BeginPopup("AddGameObject" ) )
+		{
+			if ( ImGui::MenuItem( "Game Object" ) )
+			{
+				auto go = m_Context->InstantiateGameObject();
+				SetSelectedGameObject(go);
+			}
+
+			ImGui::Separator();
+
+			if ( ImGui::MenuItem( "Cube" ) )
+			{
+				auto go = m_Context->InstantiateGameObject( "Cube" );
+				go.AddComponent<MeshComponent>();
+				SetSelectedGameObject( go );
+			}
+
+			ImGui::EndMenu();
+		}
+
+		#pragma endregion
+
+		#pragma region GamesObjects List
+
+		// Create a list box of all game objects in the scene
+		if ( ImGui::BeginListBox( "Game Objects", ImGui::GetContentRegionAvail() ) )
+		{
+			for ( int i = 0; i < gameObjects.size(); ++i )
+			{
+				auto go = gameObjects[ i ];
+				bool selected = go == m_SelectedGameObject;
+				auto& goTag = gameObjects.get<TagComponent>( go ).Tag;
+
+				// We must append the Tag with ##id so ImGui can have a unique identifier for this selectable.
+				if ( ImGui::Selectable( ( goTag + "##" + std::to_string( (uint32_t)go ) ).c_str(), selected ) )
+				{
+					SetSelectedGameObject( go );
+				}
+			}
+			ImGui::EndListBox();
+		}
+
+		#pragma endregion
+
+		ImGui::End();
 	}
 
 	void SceneHeirarchy::DrawInspector()
@@ -277,7 +307,10 @@ namespace Tridium::Editor {
 	void SceneHeirarchy::InspectGameObject( GameObject gameObject )
 	{
 		auto& tag = m_SelectedGameObject.GetComponent<TagComponent>();
-		ImGui::InputText( "Tag", (char*)tag.Tag.c_str(), tag.MaxSize() );
+		if ( ImGui::InputText( "Tag", (char*)tag.Tag.c_str(), tag.MaxSize() ) )
+		{
+
+		}
 
 		ImGui::SameLine();
 

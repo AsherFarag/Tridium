@@ -249,7 +249,9 @@ namespace Tridium::Editor {
 
 	bool ScriptEditor::DisplayFileContents( ScriptTextFile& file )
 	{
-		ImGuiTabItemFlags tabFlags = file.Modified ? ImGuiTabItemFlags_UnsavedDocument : ImGuiTabItemFlags_None;
+		ImGuiTabItemFlags tabFlags = ImGuiTabItemFlags_None;
+		tabFlags |= file.Modified ? ImGuiTabItemFlags_UnsavedDocument : 0;
+
 		bool isOpen = true;
 		if ( !ImGui::BeginTabItem( ( file.GetFileName() + "##" + file.GetFilePath() ).c_str(), &isOpen, tabFlags) )
 			return isOpen;
@@ -268,15 +270,12 @@ namespace Tridium::Editor {
 		ImVec2 textBoxSize = ImGui::GetContentRegionAvail();
 		textBoxSize.y -= ImGui::GetTextLineHeight() * 1.75;
 
-		// Display the text editor
-		bool wasModified = ImGui::InputTextMultiline( "##source",
-			&file.GetContent()[ 0 ],
+			// Display the text editor
+		file.Modified |= ImGui::InputTextMultiline("##source",
+			&file.GetContent()[0],
 			file.GetContent().capacity(),
 			textBoxSize,
-			textInputFlags );
-
-		if ( wasModified )
-			file.Modified = true;
+			textInputFlags);
 
 		ImGui::EndTabItem();
 

@@ -19,13 +19,18 @@ namespace Tridium::Editor {
 	{
 	public:
 		EditorLayer( const std::string& name = "EditorLayer" );
-		virtual ~EditorLayer() = default;
+		virtual ~EditorLayer();
 
+		// Layer Overrides
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
 		virtual void OnUpdate() override;
 		virtual void OnImGuiDraw() override;
 		virtual void OnEvent( Event& e ) override;
+
+		static EditorLayer& Get() { return *s_Instance; }
+		EditorCamera& GetEditorCamera() { return m_EditorCamera; }
+		
 
 	private:
 		bool OnKeyPressed( KeyPressedEvent& e );
@@ -44,6 +49,9 @@ namespace Tridium::Editor {
 
 		ContentBrowser* m_ContentBrowser;
 		SceneHeirarchy* m_SceneHeirarchy;
+
+	private:
+		static EditorLayer* s_Instance;
 	};
 
 }

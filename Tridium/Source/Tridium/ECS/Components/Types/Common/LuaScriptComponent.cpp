@@ -6,14 +6,14 @@
 namespace Tridium {
 
 	LuaScriptComponent::LuaScriptComponent( const Ref<Script>& a_Script )
-		: m_Environment( ScriptEngine::GetLuaState(), sol::create)
+		: m_Environment( ScriptEngine::GetLuaState(), sol::create, ScriptEngine::GetLuaState().globals() )
 	{
 		m_Script = a_Script;
 	}
 
 	LuaScriptComponent::~LuaScriptComponent()
 	{
-
+		m_Environment.reset();
 	}
 
 	void LuaScriptComponent::Compile()
@@ -23,7 +23,11 @@ namespace Tridium {
 
 	void LuaScriptComponent::Compile( sol::state& lua )
 	{
-		lua.script_file( m_Script->GetFilePath(), m_Environment);
+		if ( !lua.safe_script_file( m_Script->GetFilePath(), m_Environment, &sol::script_pass_on_error ).valid() )
+		{
+			TE_CORE_ERROR( "Failed to compile script [{0}]!", m_Script->GetFilePath() );
+			return;
+		}
 
 		m_Environment[ "gameObject" ] = GetGameObject();
 
