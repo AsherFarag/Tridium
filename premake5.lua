@@ -12,7 +12,7 @@ outputdir = "%{cfg.buildcfg}/%{cfg.system}-%{cfg.architecture}"
 
 -- Include directories relative to root folder (solution directory)
 IncludeDir = {}
-IncludeDir["GLFW"] = "Tridium/Dependencies/GLFW/include"
+IncludeDir["glfw"] = "Tridium/Dependencies/glfw/include"
 IncludeDir["glad"] = "Tridium/Dependencies/glad/include"
 IncludeDir["ImGui"] = "Tridium/Dependencies/ImGui"
 IncludeDir["glm"] = "Tridium/Dependencies/glm"
@@ -20,7 +20,7 @@ IncludeDir["lua"] = "Tridium/Dependencies/lua/x64"
 IncludeDir["sol2"] = "Tridium/Dependencies/sol2"
 IncludeDir["entt"] = "Tridium/Dependencies/entt/include"
 
-include "Tridium/Dependencies/GLFW"
+include "Tridium/Dependencies/glfw"
 include "Tridium/Dependencies/glad"
 include "Tridium/Dependencies/ImGui"
 
@@ -49,7 +49,7 @@ project "Tridium"
 	{
 		"%{prj.name}/Dependencies/spdlog/include",
 		"%{prj.name}/Source",
-		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.glfw}",
 		"%{IncludeDir.glad}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
@@ -65,7 +65,7 @@ project "Tridium"
 
 	links
 	{
-		"GLFW",
+		"glfw",
 		"glad",
 		"ImGui",
 		"lua54",
