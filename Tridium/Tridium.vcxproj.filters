@@ -1371,6 +1371,9 @@
     <ClInclude Include="Source\Platform\OpenGL\OpenGLShader.h">
       <Filter>Source\Platform\OpenGL</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Platform\OpenGL\OpenGLTexture.h">
+      <Filter>Source\Platform\OpenGL</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Platform\OpenGL\OpenGLVertexArray.h">
       <Filter>Source\Platform\OpenGL</Filter>
     </ClInclude>
@@ -1396,6 +1399,9 @@
       <Filter>Source\Tridium\Core</Filter>
     </ClInclude>
     <ClInclude Include="Source\Tridium\Core\LayerStack.h">
+      <Filter>Source\Tridium\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Tridium\Core\Project.h">
       <Filter>Source\Tridium\Core</Filter>
     </ClInclude>
     <ClInclude Include="Source\Tridium\Core\Time.h">
@@ -1479,6 +1485,9 @@
     <ClInclude Include="Source\Tridium\Rendering\Shader.h">
       <Filter>Source\Tridium\Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Tridium\Rendering\Texture.h">
+      <Filter>Source\Tridium\Rendering</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Tridium\Rendering\VertexArray.h">
       <Filter>Source\Tridium\Rendering</Filter>
     </ClInclude>
@@ -1503,6 +1512,8 @@
     <ClInclude Include="Source\tripch.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Editor\SceneManager.h" />
+    <ClInclude Include="Source\Tridium\ImGui\ImGuiUtil.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Editor\EditorCamera.cpp">
@@ -1541,6 +1552,9 @@
     <ClCompile Include="Source\Platform\OpenGL\OpenGLShader.cpp">
       <Filter>Source\Platform\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Platform\OpenGL\OpenGLTexture.cpp">
+      <Filter>Source\Platform\OpenGL</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Platform\OpenGL\OpenGLVertexArray.cpp">
       <Filter>Source\Platform\OpenGL</Filter>
     </ClCompile>
@@ -1557,6 +1571,9 @@
       <Filter>Source\Tridium\Core</Filter>
     </ClCompile>
     <ClCompile Include="Source\Tridium\Core\LayerStack.cpp">
+      <Filter>Source\Tridium\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tridium\Core\Project.cpp">
       <Filter>Source\Tridium\Core</Filter>
     </ClCompile>
     <ClCompile Include="Source\Tridium\Core\Time.cpp">
@@ -1608,6 +1625,9 @@
       <Filter>Source\Tridium\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Source\Tridium\Rendering\Shader.cpp">
+      <Filter>Source\Tridium\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Tridium\Rendering\Texture.cpp">
       <Filter>Source\Tridium\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Source\Tridium\Rendering\VertexArray.cpp">

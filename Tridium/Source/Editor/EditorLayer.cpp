@@ -57,13 +57,32 @@ namespace Tridium::Editor {
 
 	void EditorLayer::OnUpdate()
 	{
-		m_EditorCamera.OnUpdate();
-
-		m_EditorCameraFBO->Bind();
+		switch ( CurrentSceneState )
 		{
+		case SceneState::Edit:
+		{
+			m_EditorCamera.OnUpdate();
+
+			m_EditorCameraFBO->Bind();
 			Application::GetScene()->Render( m_EditorCamera, m_EditorCamera.GetViewMatrix() );
+			m_EditorCameraFBO->Unbind();
+			break;
 		}
-		m_EditorCameraFBO->Unbind();
+		case SceneState::Play:
+		{
+			m_EditorCamera.OnUpdate();
+
+			if ( !Application::GetScene()->IsPaused() )
+			{
+				Application::GetScene()->Update();
+			}
+
+			m_EditorCameraFBO->Bind();
+			Application::GetScene()->Render( m_EditorCamera, m_EditorCamera.GetViewMatrix() );
+			m_EditorCameraFBO->Unbind();
+			break;
+		}
+		}
 	}
 
 	void EditorLayer::OnImGuiDraw()
@@ -99,6 +118,7 @@ namespace Tridium::Editor {
 			ImGui::DockSpace( dockspace_id, ImVec2( 0.0f, 0.0f ), dockspace_flags );
 
 			DrawMenuBar();
+			m_UIToolBar.OnImGuiDraw();
 			DrawEditorCameraViewPort();
 
 			for ( auto& it = m_PanelStack.rbegin(); it != m_PanelStack.rend(); it++ )
@@ -224,7 +244,7 @@ namespace Tridium::Editor {
 			Vector2 regionAvail = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
 
 			uint64_t textureID = m_EditorCameraFBO->GetColorAttachmentID();
-			ImGui::Image( reinterpret_cast<void*>( textureID ), ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
+			ImGui::Image( (void*)textureID, ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
 
 			if ( m_ViewportSize != regionAvail )
 			{
@@ -237,8 +257,56 @@ namespace Tridium::Editor {
 		ImGui::PopStyleVar();
 	}
 
-	void EditorLayer::DrawSceneToolBar()
+	UIToolBar::UIToolBar()
 	{
+		fs::path iconFolder( "Content/Engine/Editor/Icons" );
+
+		PlayButtonIcon = Texture2D::Create( ( iconFolder / "PlayButton.png" ).string() );
+		StopButtonIcon = Texture2D::Create( ( iconFolder / "StopButton.png" ).string() );
+		PauseButtonIcon = Texture2D::Create( ( iconFolder / "PauseButton.png" ).string() );
+	}
+
+	void UIToolBar::OnImGuiDraw()
+	{
+		ImVec2 buttonSize( 30, 30 );
+
+		ImGui::Begin( "##UIToolBar", nullptr, 
+			ImGuiWindowFlags_NoDecoration 
+			| ImGuiWindowFlags_NoScrollbar 
+			| ImGuiWindowFlags_NoScrollWithMouse 
+			| ImGuiWindowFlags_NoResize 
+			| ImGuiWindowFlags_NoMove
+			| ImGuiWindowFlags_NoTitleBar );
+
+		EditorLayer& editor = EditorLayer::Get();
+		SceneState& sceneState = EditorLayer::Get().CurrentSceneState;
+
+		if ( ImGui::ImageButton( "PlayButton", (ImTextureID)PlayButtonIcon->GetRendererID(),
+			buttonSize, { 0,1 }, { 1,0 },
+			{ 0,0,0,0 }, { 0.5f, 1.0f, 0.5f, 1.0f } ) )
+		{
+			Application::GetScene()->SetPaused( false );
+			sceneState = SceneState::Play;
+		}
+		ImGui::SameLine();
+
+		if ( ImGui::ImageButton( "PauseButton", (ImTextureID)PauseButtonIcon->GetRendererID(),
+			buttonSize, { 0,1 }, { 1,0 },
+			{ 0,0,0,0 } ) )
+		{
+			Application::GetScene()->SetPaused( true );
+		}
+		ImGui::SameLine();
+
+		if ( ImGui::ImageButton( "StopButton", (ImTextureID)StopButtonIcon->GetRendererID(),
+			buttonSize, { 0,1 }, { 1,0 },
+			{ 0,0,0,0 }, { 1.0f, 0.5f, 0.5f, 1.0f } ) )
+		{
+			sceneState = SceneState::Edit;
+		}
+		ImGui::SameLine();
+
+		ImGui::End();
 	}
 }
 

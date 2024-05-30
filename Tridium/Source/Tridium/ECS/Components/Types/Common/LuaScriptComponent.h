@@ -10,13 +10,15 @@ namespace Tridium {
 		friend class GameObject;
 
 	public:
+		LuaScriptComponent() = default;
 		LuaScriptComponent(const Ref<Script>& a_Script);
 		~LuaScriptComponent();
 
 		virtual void OnUpdate() override;
 
-		inline void Compile();
-		void Compile( sol::state& lua );
+		void Compile();
+		Ref<Script>& GetScript() { return m_Script; }
+		void SetScript( const Ref<Script>&a_Script );
 
 	protected:
 		virtual void OnConstruct() override;
@@ -25,6 +27,9 @@ namespace Tridium {
 		template <typename... Args>
 		bool CallLuaFunction( sol::protected_function & func, Args&&... args )
 		{
+			if ( !m_Script )
+				return false;
+
 			if ( func.valid() )
 			{
 				func( std::forward<Args>( args )... );

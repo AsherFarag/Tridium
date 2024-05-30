@@ -66,13 +66,16 @@ namespace Tridium {
 
     void ScriptEngine::Recompile()
     {
-        auto& lua = GetLuaState();
+        auto start = std::chrono::high_resolution_clock::now();
 
         auto& scriptComponents = Application::GetScene()->GetRegistry().view<LuaScriptComponent>();
-        scriptComponents.each( [&]( auto entity, LuaScriptComponent& sc )
+        scriptComponents.each( []( auto entity, LuaScriptComponent& sc )
             {
-                sc.Compile( lua );
+                sc.Compile();
             } );
+
+        std::chrono::duration<double> elapsed_seconds = std::chrono::high_resolution_clock::now() - start;
+        TE_CORE_INFO( "SCRIPTS RECOMPILED - Time Taken: {0} seconds", elapsed_seconds.count() < 0.01 ? 0.0 : elapsed_seconds.count() );
     }
 
 }

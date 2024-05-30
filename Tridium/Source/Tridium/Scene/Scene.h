@@ -18,10 +18,14 @@ namespace Tridium {
 
 		GameObject InstantiateGameObject( const std::string& name = "GameObject" );
 
+		void SetPaused( bool newPaused ) { m_Paused = newPaused; }
+		bool IsPaused() const { return m_Paused; }
 		auto& GetRegistry() { return m_Registry; }
 
 	private:
 		entt::registry m_Registry;
+
+		bool m_Paused = false;
 	};
 
 #pragma region Scene Template Definitions

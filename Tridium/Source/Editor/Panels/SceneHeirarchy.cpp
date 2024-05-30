@@ -190,6 +190,8 @@ namespace Tridium::Editor {
 
 		#pragma region GamesObjects List
 
+		ImGui::Separator();
+
 		// Create a list box of all game objects in the scene
 		if ( ImGui::BeginListBox( "Game Objects", ImGui::GetContentRegionAvail() ) )
 		{
@@ -239,6 +241,15 @@ namespace Tridium::Editor {
 
 		if ( ImGui::Button( "Add Component" ) )
 			ImGui::OpenPopup( "AddComponent" );
+
+		if ( ImGui::BeginDragDropTarget() )
+		{
+			if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( "ContentBrowserItem" ) )
+			{
+				AddComponentToSelectedGameObject<LuaScriptComponent>( Script::Create( static_cast<const char*>( payload->Data ) ) );
+			}
+			ImGui::EndDragDropTarget();
+		}
 
 		if ( ImGui::BeginPopup( "AddComponent" ) )
 		{
@@ -307,10 +318,7 @@ namespace Tridium::Editor {
 	void SceneHeirarchy::InspectGameObject( GameObject gameObject )
 	{
 		auto& tag = m_SelectedGameObject.GetComponent<TagComponent>();
-		if ( ImGui::InputText( "Tag", (char*)tag.Tag.c_str(), tag.MaxSize() ) )
-		{
-
-		}
+		ImGui::InputText( "Tag", (char*)tag.Tag.c_str(), tag.MaxSize() );
 
 		ImGui::SameLine();
 
@@ -349,6 +357,21 @@ namespace Tridium::Editor {
 
 		DrawComponent<LuaScriptComponent>( "Lua Script Component", gameObject, []( auto& component )
 			{
+				ImGui::Text( "Script: " );
+				ImGui::SameLine();
+				if ( component.GetScript() )
+					ImGui::TextColored( { 0.85, 0.65, 0.1, 0.9 }, component.GetScript()->GetFilePath().string().c_str() );
+				else
+					ImGui::TextColored( { 0.85, 0.65, 0.1, 0.9 }, "Empty");
+
+				if ( ImGui::BeginDragDropTarget() )
+				{
+					if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( "ContentBrowserItem" ) )
+					{
+						component.SetScript( Script::Create( static_cast<const char*>( payload->Data ) ) );
+					}
+					ImGui::EndDragDropTarget();
+				}
 			} );
 	}
 

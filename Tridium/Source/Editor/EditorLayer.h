@@ -15,6 +15,26 @@
 
 namespace Tridium::Editor {
 
+	enum class SceneState
+	{
+		None = 0,
+		Edit,		// The scene does not update but the Editor Camera can move and interact with the scene
+		Simulate,	// The scene updates and the Editor Camera can move and interact with the scene
+		Play		// The scene updates and runs from the scenes main camera
+	};
+
+	struct UIToolBar
+	{
+		Ref<Texture2D> PlayButtonIcon;
+		Ref<Texture2D> PauseButtonIcon;
+		Ref<Texture2D> StopButtonIcon;
+		Ref<Texture2D> StepOnceButtonIcon;
+		Ref<Texture2D> SimulateButtonIcon;
+
+		UIToolBar();
+		void OnImGuiDraw();
+	};
+
 	class EditorLayer final : public Layer
 	{
 	public:
@@ -28,9 +48,14 @@ namespace Tridium::Editor {
 		virtual void OnImGuiDraw() override;
 		virtual void OnEvent( Event& e ) override;
 
+		template <typename T, typename... Args>
+		inline T* PushPanel( Args&&... args ) { return m_PanelStack.PushPanel<T>( std::forward<Args>( args )... ); }
+
 		static EditorLayer& Get() { return *s_Instance; }
 		EditorCamera& GetEditorCamera() { return m_EditorCamera; }
-		
+
+	public:
+		SceneState CurrentSceneState = SceneState::Edit;
 
 	private:
 		bool OnKeyPressed( KeyPressedEvent& e );
@@ -49,6 +74,8 @@ namespace Tridium::Editor {
 
 		ContentBrowser* m_ContentBrowser;
 		SceneHeirarchy* m_SceneHeirarchy;
+
+		UIToolBar m_UIToolBar;
 
 	private:
 		static EditorLayer* s_Instance;

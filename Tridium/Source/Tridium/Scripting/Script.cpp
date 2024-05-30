@@ -4,17 +4,20 @@
 
 namespace Tridium {
 
-	Script::Script( sol::state& a_State, const std::string& a_FilePath )
+	Script::Script( const fs::path& a_FilePath )
 		: m_FilePath( a_FilePath )
 	{
 	}
 
-	Ref<Script> Script::Create( const std::string& a_FilePath, const std::string& a_Name )
+	Ref<Script> Script::Create( const fs::path& a_FilePath )
 	{
-		TE_ASSERT( !ScriptLibrary::Has( a_Name ), "A script already exists with name {0}", a_Name );
 
-		auto script = Ref<Script>( new Script( ScriptEngine::GetLuaState(), a_FilePath ) );
-		ScriptLibrary::Add( script, a_Name );
+		Ref<Script> foundScript = ScriptLibrary::GetScript( a_FilePath.string() );
+		if ( foundScript )
+			return foundScript;
+
+		auto script = Ref<Script>( new Script( a_FilePath ) );
+		ScriptLibrary::Add( script, a_FilePath.string() );
 		return script;
 	}
 
@@ -26,19 +29,20 @@ namespace Tridium {
 		return s_Instance;
 	}
 
-	Ref<Script> ScriptLibrary::GetScript( const std::string& a_Name )
+	Ref<Script> ScriptLibrary::GetScript( const std::string& a_Path )
 	{
-		return Get()->m_Library.find(a_Name)->second;
+		auto it = Get()->m_Library.find( a_Path );
+		return it != Get()->m_Library.end() ? it->second : nullptr;
 	}
 
-	bool ScriptLibrary::Has( const std::string& a_Name )
+	bool ScriptLibrary::Has( const std::string& a_Path )
 	{
-		return Get()->m_Library.find(a_Name) != Get()->m_Library.end();
+		return Get()->m_Library.find( a_Path ) != Get()->m_Library.end();
 	}
 
-	void ScriptLibrary::Add( const Ref<Script>& a_Script, const std::string& a_Name )
+	void ScriptLibrary::Add( const Ref<Script>& a_Script, const std::string& a_Path )
 	{
-		Get()->m_Library.emplace( a_Name, a_Script );
+		Get()->m_Library.emplace( a_Path, a_Script );
 	}
 
 }

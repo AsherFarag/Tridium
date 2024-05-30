@@ -113,7 +113,7 @@ namespace Tridium::Editor {
 
 		#pragma region Draw Open Files
 
-		if ( ImGui::BeginTabBar("Script File Tabs") )
+		if ( ImGui::BeginTabBar("Script File Tabs", ImGuiTabBarFlags_AutoSelectNewTabs ) )
 		{
 			static int fileToClose = -1;
 			for ( int i = m_ScriptTextFiles.size() - 1; i >= 0; --i )
@@ -253,7 +253,7 @@ namespace Tridium::Editor {
 		tabFlags |= file.Modified ? ImGuiTabItemFlags_UnsavedDocument : 0;
 
 		bool isOpen = true;
-		if ( !ImGui::BeginTabItem( ( file.GetFileName() + "##" + file.GetFilePath() ).c_str(), &isOpen, tabFlags) )
+		if ( !ImGui::BeginTabItem( ( file.GetFileName() + "##" + file.GetPath().string() ).c_str(), &isOpen, tabFlags) )
 			return isOpen;
 
 		m_CurrentTextFile = &file;
@@ -261,7 +261,7 @@ namespace Tridium::Editor {
 		if ( ImGui::IsItemHovered() )
 		{
 			ImGui::BeginTooltip();
-			ImGui::Text( file.GetFilePath().c_str());
+			ImGui::Text( file.GetPath().string().c_str());
 			ImGui::EndTooltip();
 		}
 
@@ -290,12 +290,12 @@ namespace Tridium::Editor {
 		}
 	}
 
-	void ScriptEditor::OpenFile( const std::string& a_FilePath )
+	void ScriptEditor::OpenFile( const  fs::path& a_FilePath )
 	{
 		// Ensure this file isn't already open
 		for ( auto& file : m_ScriptTextFiles )
 		{
-			if ( file.GetFilePath() == a_FilePath )
+			if ( file.GetPath() == a_FilePath )
 				return;
 		}
 
@@ -326,23 +326,22 @@ namespace Tridium::Editor {
 
 #pragma region File
 
-	ScriptTextFile::ScriptTextFile( const std::string& a_FilePath )
+	ScriptTextFile::ScriptTextFile( const fs::path& a_FilePath )
 	{
 		LoadFile( a_FilePath );
 	}
 
-	bool ScriptTextFile::LoadFile( const std::string& a_FilePath )
+	bool ScriptTextFile::LoadFile( const  fs::path& a_FilePath )
 	{
 		// Open a read file stream
 		std::fstream file( a_FilePath, std::ios::in );
 		if ( !file.is_open() )
 		{
-			TE_CORE_ERROR( "Failed to load file at: {0}", a_FilePath );
+			TE_CORE_ERROR( "Failed to load file at: {0}", a_FilePath.string() );
 			return false;
 		}
 
-		m_DirectoryPath = GetDirectoryPath( a_FilePath );
-		m_FileName = GetFileName( a_FilePath );
+		m_Path = a_FilePath;
 
 		std::stringstream buffer;
 		buffer << file.rdbuf();
@@ -350,7 +349,7 @@ namespace Tridium::Editor {
 		file.close();
 
 		if ( !file )
-			TE_CORE_ERROR( "Fail occured when closing file [{0}]", a_FilePath );
+			TE_CORE_ERROR( "Fail occured when closing file [{0}]", a_FilePath.string() );
 
 		if ( m_Content.capacity() < 1024 * 16 )
 			m_Content.reserve( 1024 * 16 );
@@ -358,16 +357,16 @@ namespace Tridium::Editor {
 		return true;
 	}
 
-	bool ScriptTextFile::SaveFile( const std::string& a_FilePath )
+	bool ScriptTextFile::SaveFile( const  fs::path& a_FilePath )
 	{
 		// Check if this file needs to be saved
-		if ( GetFilePath() == a_FilePath && !Modified )
+		if ( GetPath() == a_FilePath && !Modified )
 			return false;
 
 		std::fstream file( a_FilePath, std::ios::out );
 		if ( !file ) 
 		{
-			TE_CORE_WARN( "Could not open [{0}] for writing!", a_FilePath );
+			TE_CORE_WARN( "Could not open [{0}] for writing!", a_FilePath.string() );
 			return false;
 		}
 
@@ -377,7 +376,7 @@ namespace Tridium::Editor {
 		Modified = false;
 
 		if ( !file )
-			TE_CORE_ERROR( "Fail occured when closing file [{0}]", a_FilePath );
+			TE_CORE_ERROR( "Fail occured when closing file [{0}]", a_FilePath.string() );
 
 		return true;
 	}

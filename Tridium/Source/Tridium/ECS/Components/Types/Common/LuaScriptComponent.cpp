@@ -18,14 +18,13 @@ namespace Tridium {
 
 	void LuaScriptComponent::Compile()
 	{
-		Compile( ScriptEngine::GetLuaState() );
-	}
+		if ( !m_Script )
+			return;
 
-	void LuaScriptComponent::Compile( sol::state& lua )
-	{
-		if ( !lua.safe_script_file( m_Script->GetFilePath(), m_Environment, &sol::script_pass_on_error ).valid() )
+		sol::state& lua = ScriptEngine::GetLuaState();
+		if ( !lua.safe_script_file( m_Script->GetFilePath().string(), m_Environment, &sol::script_pass_on_error).valid() )
 		{
-			TE_CORE_ERROR( "Failed to compile script [{0}]!", m_Script->GetFilePath() );
+			TE_CORE_ERROR( "Failed to compile script [{0}]!", m_Script->GetFilePath().string() );
 			return;
 		}
 
@@ -34,6 +33,13 @@ namespace Tridium {
 		Lua_OnConstruct = m_Environment[ "OnConstruct" ];
 		Lua_OnUpdate = m_Environment[ "OnUpdate" ];
 		Lua_OnDestroy = m_Environment[ "OnDestroy" ];
+	}
+
+
+	void LuaScriptComponent::SetScript( const Ref<Script>& a_Script )
+	{
+		m_Script = a_Script;
+		Compile();
 	}
 
 	void LuaScriptComponent::OnUpdate()

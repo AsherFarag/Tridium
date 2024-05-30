@@ -1,6 +1,9 @@
 #pragma once
 #ifdef IS_EDITOR
 #include "Panel.h"
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 namespace Tridium::Editor {
 
@@ -8,16 +11,16 @@ namespace Tridium::Editor {
     {
     public:
         ScriptTextFile() = default;
-        ScriptTextFile( const std::string& a_FilePath );
+        ScriptTextFile( const  fs::path& a_FilePath );
 
         std::string& GetContent() { return m_Content; }
 
-        const std::string& GetFileName() const { return m_FileName; }
-        inline std::string GetFilePath() { return m_DirectoryPath + '/' + m_FileName; }
+        inline std::string GetFileName() { return m_Path.filename().string(); }
+        inline auto& GetPath() { return m_Path; }
 
-        bool LoadFile( const std::string& a_FilePath );
-        bool SaveFile( const std::string& a_FilePath );
-        bool SaveFile() { return SaveFile( GetFilePath() ); }
+        bool LoadFile( const fs::path& a_FilePath );
+        bool SaveFile( const fs::path& a_FilePath );
+        bool SaveFile() { return SaveFile( GetPath().string() ); }
 
     public:
         bool Modified = false;
@@ -27,9 +30,7 @@ namespace Tridium::Editor {
         static std::string GetFileName( const std::string& a_FilePath );
 
     private:
-        std::string m_DirectoryPath;
-        std::string m_FileName;
-
+        fs::path m_Path;
         std::string m_Content;
     };
 
@@ -41,6 +42,8 @@ namespace Tridium::Editor {
         virtual void OnEvent( Event& e ) override;
         virtual void OnImGuiDraw() override;
 
+        void OpenFile( const fs::path& a_FilePath );
+
     private:
         bool OnKeyPressed( KeyPressedEvent& e );
 
@@ -49,7 +52,6 @@ namespace Tridium::Editor {
         void CloseFile( uint32_t index );
         void SaveCurrentFile();
         void SaveAllFiles();
-        void OpenFile( const std::string& a_FilePath );
 
     private:
         std::vector<ScriptTextFile> m_ScriptTextFiles;

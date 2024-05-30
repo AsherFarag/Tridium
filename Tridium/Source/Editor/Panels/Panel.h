@@ -18,6 +18,7 @@ namespace Tridium::Editor {
 		virtual void OnEvent( Event& e ) {}
 		virtual void OnImGuiDraw() = 0;
 
+		inline const void Focus() const { ImGui::SetWindowFocus( m_Name.c_str() ); }
 		bool IsFocused() const { return m_IsFocused; }
 
 	protected:

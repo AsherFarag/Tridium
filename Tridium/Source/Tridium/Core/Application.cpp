@@ -32,6 +32,8 @@ namespace Tridium {
 
 #ifdef IS_EDITOR
 
+		m_Window->SetIcon( "Content/Engine/Editor/Icons/EngineIcon.png" );
+
 		m_EditorLayer = new Editor::EditorLayer();
 		PushOverlay( m_EditorLayer );
 
@@ -106,7 +108,7 @@ namespace Tridium {
 		go2.AddComponent<CameraControllerComponent>();
 		go2.GetTag() = "Scene Camera";
 
-		Script::Create( "Content/Scripts/Component.lua", "Test" );
+		Script::Create( "Content/Scripts/Component.lua" );
 
 		while ( m_Running )
 		{
@@ -114,9 +116,14 @@ namespace Tridium {
 
 			m_FPS = (uint32_t)( 1.0 / Time::DeltaTime() );
 
+
 			// Update Loop ========================================================================================
 
+			#ifndef IS_EDITOR
+
 			m_ActiveScene->Update();
+
+			#endif // IS_EDITOR
 
 			// ====================================================================================================
 

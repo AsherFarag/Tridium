@@ -23,12 +23,11 @@ namespace Tridium::Editor {
 		bool OnKeyPressed( KeyPressedEvent& e );
 		void SetSelectedGameObject( GameObject gameObject );
 
-	private:
 		void DrawSceneHeirarchy();
 		void DrawInspector();
 
+		// Inspector
 		void InspectGameObject( GameObject gameObject );
-
 		template <typename T, typename... Args>
 		void AddComponentToSelectedGameObject( Args&&... args )
 		{

@@ -1,22 +1,25 @@
 #pragma once
 #include "sol/sol.hpp"
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 namespace Tridium {
 
 	class Script
 	{
 		friend class ScriptEngine;
 	public:
-		static Ref<Script> Create( const std::string& a_FilePath, const std::string& a_Name );
+		static Ref<Script> Create( const fs::path& a_FilePath );
 		~Script() = default;
 
-		const std::string& GetFilePath() const { return m_FilePath; }
+		const fs::path& GetFilePath() const { return m_FilePath; }
 
 	private:
-		Script( sol::state& a_State, const std::string& a_FilePath );
+		Script( const fs::path& a_FilePath );
 
 	private:
-		std::string m_FilePath;
+		fs::path m_FilePath;
 	};
 
 
@@ -27,14 +30,14 @@ namespace Tridium {
 		friend Script;
 	public:
 		static ScriptLibrary* Get();
-		static Ref<Script> GetScript( const std::string& a_Name );
-		static bool Has( const std::string& a_Name );
+		static Ref<Script> GetScript( const std::string& a_Path );
+		static bool Has( const std::string& a_Path );
 
 	private:
-		static void Add( const Ref<Script>& a_Script, const std::string& a_Name );
+		static void Add( const Ref<Script>& a_Script, const std::string& a_Path );
 
 	private:
-		std::unordered_map<std::string, Ref<Script>> m_Library;
+		std::unordered_map<fs::path, Ref<Script>> m_Library;
 	};
 
 }
