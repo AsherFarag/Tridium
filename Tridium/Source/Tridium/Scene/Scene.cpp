@@ -20,7 +20,11 @@ namespace Tridium {
 	{
 	}
 
-	void Scene::Update()
+	void Scene::OnBegin()
+	{
+	}
+
+	void Scene::OnUpdate()
 	{
 		// Update scriptable objects
 		for ( const auto& storage : m_Registry.storage() )
@@ -41,6 +45,7 @@ namespace Tridium {
 				static_cast<ScriptableComponent*>( storage.second.value( entity ) )->OnUpdate();
 		}
 
+		TODO( "Make this only happen if the camera is shown!" );
 		// Render all Scene Cameras
 		auto& cameras = m_Registry.view<CameraComponent, TransformComponent>();
 		cameras.each( [&]( auto entity, CameraComponent& camera, TransformComponent& transform )
@@ -74,6 +79,10 @@ namespace Tridium {
 			} );
 
 		Renderer::EndScene();
+	}
+
+	void Scene::OnEnd()
+	{
 	}
 
 	GameObject Scene::InstantiateGameObject( const std::string& a_Name )

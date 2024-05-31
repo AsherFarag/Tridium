@@ -26,6 +26,9 @@ namespace Tridium {
 		m_Window = Window::Create();
 		m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, std::placeholders::_1 ) );
 
+		TODO( "Setup a proper scene initialiser!" );
+		m_ActiveScene = MakeRef<Scene>();
+
 		// Initialise ImGui
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay( m_ImGuiLayer );
@@ -35,6 +38,7 @@ namespace Tridium {
 		m_Window->SetIcon( "Content/Engine/Editor/Icons/EngineIcon.png" );
 
 		m_EditorLayer = new Editor::EditorLayer();
+		m_EditorLayer->SetActiveScene( m_ActiveScene );
 		PushOverlay( m_EditorLayer );
 
 #endif // IS_EDITOR
@@ -97,8 +101,6 @@ namespace Tridium {
 	{
 		m_Running = true;
 
-		m_ActiveScene = MakeRef<Scene>();
-
 		auto& go1 = m_ActiveScene->InstantiateGameObject();
 		go1.AddComponent<MeshComponent>();
 		go1.GetTag() = "Cube";
@@ -107,8 +109,6 @@ namespace Tridium {
 		go2.AddComponent<CameraComponent>();
 		go2.AddComponent<CameraControllerComponent>();
 		go2.GetTag() = "Scene Camera";
-
-		Script::Create( "Content/Scripts/Component.lua" );
 
 		while ( m_Running )
 		{

@@ -15,11 +15,11 @@
 
 namespace Tridium::Editor {
 
-	enum class SceneState
+	enum class SceneState : BYTE
 	{
 		None = 0,
 		Edit,		// The scene does not update but the Editor Camera can move and interact with the scene
-		Simulate,	// The scene updates and the Editor Camera can move and interact with the scene
+		//Simulate,	// The scene updates and the Editor Camera can move and interact with the scene
 		Play		// The scene updates and runs from the scenes main camera
 	};
 
@@ -54,27 +54,32 @@ namespace Tridium::Editor {
 		static EditorLayer& Get() { return *s_Instance; }
 		EditorCamera& GetEditorCamera() { return m_EditorCamera; }
 
+		void SetActiveScene( const Ref<Scene>& a_Scene ) { m_ActiveScene = a_Scene; }
+		Ref<Scene> GetActiveScene() const { return m_ActiveScene; }
+		void OnBeginScene();
+		void OnEndScene();
+
 	public:
 		SceneState CurrentSceneState = SceneState::Edit;
 
 	private:
 		bool OnKeyPressed( KeyPressedEvent& e );
 
-		// - ImGui Editor -
+		// - ImGui -
 		void DrawMenuBar();
 		void DrawEditorCameraViewPort();
 		void DrawSceneToolBar();
 
 	private:
+		Ref<Scene> m_ActiveScene;
+
 		EditorCamera m_EditorCamera;
 		Ref<Framebuffer> m_EditorCameraFBO;
 		Vector2 m_ViewportSize;
 
 		PanelStack m_PanelStack;
-
 		ContentBrowser* m_ContentBrowser;
 		SceneHeirarchy* m_SceneHeirarchy;
-
 		UIToolBar m_UIToolBar;
 
 	private:

@@ -59,6 +59,11 @@ namespace Tridium::Editor {
 			return;
 		}
 
+		// If the directory was deleted while we are in it,
+		// Goto to the main content directory.
+		if ( !fs::exists( m_CurrentDirectory ) )
+			m_CurrentDirectory = "Content";
+
 		DrawDirectoryPath( m_CurrentDirectory );
 
 		static float padding = 16.0f;
@@ -98,11 +103,10 @@ namespace Tridium::Editor {
 
 	ContentType ContentBrowser::GetContentType( const fs::path& a_FilePath )
 	{
-		if ( !a_FilePath.has_extension() )
+		if ( fs::is_directory( a_FilePath ) )
 			return ContentType::Folder;
 
 		std::string ext = a_FilePath.extension().string();
-
 		if ( ext == ".lua" ) { return ContentType::Lua; }
 		if ( ext == ".png") { return ContentType::Texture; }
 

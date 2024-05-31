@@ -13,8 +13,10 @@ namespace Tridium {
 		Scene();
 		~Scene();
 
-		void Update();
+		void OnBegin();
+		void OnUpdate();
 		void Render( const Camera& camera, const Matrix4& viewMatrix );
+		void OnEnd();
 
 		GameObject InstantiateGameObject( const std::string& name = "GameObject" );
 

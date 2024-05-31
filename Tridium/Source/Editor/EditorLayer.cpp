@@ -57,31 +57,35 @@ namespace Tridium::Editor {
 
 	void EditorLayer::OnUpdate()
 	{
-		switch ( CurrentSceneState )
+		if ( m_ActiveScene )
 		{
-		case SceneState::Edit:
-		{
-			m_EditorCamera.OnUpdate();
 
-			m_EditorCameraFBO->Bind();
-			Application::GetScene()->Render( m_EditorCamera, m_EditorCamera.GetViewMatrix() );
-			m_EditorCameraFBO->Unbind();
-			break;
-		}
-		case SceneState::Play:
-		{
-			m_EditorCamera.OnUpdate();
-
-			if ( !Application::GetScene()->IsPaused() )
+			switch ( CurrentSceneState )
 			{
-				Application::GetScene()->Update();
-			}
+			case SceneState::Edit:
+			{
+				m_EditorCamera.OnUpdate();
 
-			m_EditorCameraFBO->Bind();
-			Application::GetScene()->Render( m_EditorCamera, m_EditorCamera.GetViewMatrix() );
-			m_EditorCameraFBO->Unbind();
-			break;
-		}
+				m_EditorCameraFBO->Bind();
+				m_ActiveScene->Render( m_EditorCamera, m_EditorCamera.GetViewMatrix() );
+				m_EditorCameraFBO->Unbind();
+				break;
+			}
+			case SceneState::Play:
+			{
+				m_EditorCamera.OnUpdate();
+
+				if ( !m_ActiveScene->IsPaused() )
+				{
+					m_ActiveScene->OnUpdate();
+				}
+
+				m_EditorCameraFBO->Bind();
+				m_ActiveScene->Render( m_EditorCamera, m_EditorCamera.GetViewMatrix() );
+				m_EditorCameraFBO->Unbind();
+				break;
+			}
+			}
 		}
 	}
 
@@ -140,6 +144,21 @@ namespace Tridium::Editor {
 			if ( e.Handled )
 				break;
 		}
+	}
+
+	void EditorLayer::OnBeginScene()
+	{
+		m_ActiveScene->OnBegin();
+		m_ActiveScene->SetPaused( false );
+
+		CurrentSceneState = SceneState::Play;
+	}
+
+	void EditorLayer::OnEndScene()
+	{
+		m_ActiveScene->OnEnd();
+
+		CurrentSceneState = SceneState::Edit;
 	}
 
 	bool EditorLayer::OnKeyPressed( KeyPressedEvent& e )
@@ -257,6 +276,8 @@ namespace Tridium::Editor {
 		ImGui::PopStyleVar();
 	}
 
+#pragma region - UIToolBar -
+
 	UIToolBar::UIToolBar()
 	{
 		fs::path iconFolder( "Content/Engine/Editor/Icons" );
@@ -268,7 +289,8 @@ namespace Tridium::Editor {
 
 	void UIToolBar::OnImGuiDraw()
 	{
-		ImVec2 buttonSize( 30, 30 );
+		constexpr ImVec2 buttonSize( 25, 25 );
+		constexpr ImVec2 buttonPadding( 5, 5 );
 
 		ImGui::Begin( "##UIToolBar", nullptr, 
 			ImGuiWindowFlags_NoDecoration 
@@ -279,35 +301,59 @@ namespace Tridium::Editor {
 			| ImGuiWindowFlags_NoTitleBar );
 
 		EditorLayer& editor = EditorLayer::Get();
-		SceneState& sceneState = EditorLayer::Get().CurrentSceneState;
+		SceneState sceneState = EditorLayer::Get().CurrentSceneState;
 
-		if ( ImGui::ImageButton( "PlayButton", (ImTextureID)PlayButtonIcon->GetRendererID(),
-			buttonSize, { 0,1 }, { 1,0 },
-			{ 0,0,0,0 }, { 0.5f, 1.0f, 0.5f, 1.0f } ) )
-		{
-			Application::GetScene()->SetPaused( false );
-			sceneState = SceneState::Play;
-		}
-		ImGui::SameLine();
+		bool hasPlayButton = ( sceneState == SceneState::Edit ) || ( sceneState == SceneState::Play && editor.GetActiveScene()->IsPaused() );
+		bool hasPauseButton = ( sceneState == SceneState::Play ) && ( !editor.GetActiveScene()->IsPaused() );
+		bool hasStopButton = sceneState == SceneState::Play;
 
-		if ( ImGui::ImageButton( "PauseButton", (ImTextureID)PauseButtonIcon->GetRendererID(),
-			buttonSize, { 0,1 }, { 1,0 },
-			{ 0,0,0,0 } ) )
-		{
-			Application::GetScene()->SetPaused( true );
-		}
-		ImGui::SameLine();
+		float totalButtonSizeX = buttonSize.x + ( buttonPadding.x * 2.f );
+		float groupSizeX = ( totalButtonSizeX * hasPlayButton ) + ( totalButtonSizeX * hasPauseButton ) + ( totalButtonSizeX * hasStopButton );
+		ImGui::SetCursorPosX( ( ImGui::GetWindowContentRegionMax().x * 0.5f ) - groupSizeX );
 
-		if ( ImGui::ImageButton( "StopButton", (ImTextureID)StopButtonIcon->GetRendererID(),
-			buttonSize, { 0,1 }, { 1,0 },
-			{ 0,0,0,0 }, { 1.0f, 0.5f, 0.5f, 1.0f } ) )
+		ImGui::BeginGroup();
 		{
-			sceneState = SceneState::Edit;
+			ImGui::ScopedStyleVar padding( ImGuiStyleVar_FramePadding, buttonPadding );
+
+			if ( hasPlayButton )
+			{
+				if ( ImGui::ImageButton( "PlayButton", (ImTextureID)PlayButtonIcon->GetRendererID(),
+					buttonSize, { 0,1 }, { 1,0 },
+					{ 0,0,0,0 }, { 0.5f, 1.0f, 0.5f, 1.0f } ) )
+				{
+					editor.OnBeginScene();
+				}
+			}
+
+			if ( hasPauseButton )
+			{
+				if ( ImGui::ImageButton( "PauseButton", (ImTextureID)PauseButtonIcon->GetRendererID(),
+					buttonSize, { 0,1 }, { 1,0 },
+					{ 0,0,0,0 } ) )
+				{
+					editor.GetActiveScene()->SetPaused( true );
+				}
+			}
+
+			ImGui::SameLine();
+
+			if ( hasStopButton )
+			{
+				if ( ImGui::ImageButton( "StopButton", (ImTextureID)StopButtonIcon->GetRendererID(),
+					buttonSize, { 0,1 }, { 1,0 },
+					{ 0,0,0,0 }, { 1.0f, 0.5f, 0.5f, 1.0f } ) )
+				{
+					editor.OnEndScene();
+				}
+			}
 		}
-		ImGui::SameLine();
+		ImGui::EndGroup();
 
 		ImGui::End();
 	}
+
+#pragma endregion
+
 }
 
 #endif // IS_EDITOR

@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef IS_EDITOR
-#include "imgui.h"
+#include <Tridium/ImGui/ImGui.h>
 #include <Tridium/Events/Eventsfwd.h>
 
 namespace Tridium::Editor {
