@@ -7,6 +7,7 @@
 #include <Tridium/Events/ApplicationEvent.h>
 #include <Tridium/ImGui/ImGuiLayer.h>
 #include <Tridium/Scene/Scene.h>
+#include <Tridium/Project/Project.h>
 
 namespace Tridium
 {
@@ -21,6 +22,7 @@ namespace Tridium
 		virtual ~Application();
 
 		void Run();
+		static void Quit();
 
 		void OnEvent( Event& e );
 
@@ -28,12 +30,13 @@ namespace Tridium
 		void PushOverlay( Layer* overlay );
 
 		static Application& Get() { return *s_Instance; }
+		static const fs::path& GetAssetDirectory() { return Project::GetAssetDirectory(); }
+
 		Window& GetWindow() { return *m_Window; }
+		uint32_t GetFPS() const { return m_FPS; }
 
 		// - Scene -
 		static Ref<Scene> GetScene() { return s_Instance->m_ActiveScene; }
-
-		uint32_t GetFPS() const { return m_FPS; }
 
 	private:
 		bool OnWindowClosed( WindowCloseEvent& e );

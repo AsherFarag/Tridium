@@ -1,6 +1,7 @@
 #include "tripch.h"
 #ifdef IS_EDITOR
 #include "ScriptEditor.h"
+#include <Tridium/Core/Application.h>
 
 #include <fstream>
 #include <sstream>
@@ -87,7 +88,7 @@ namespace Tridium::Editor {
 
 		if ( ImGui::BeginPopupModal( "OpenFile" ) )
 		{
-			static char filePath[ 1024 ] = { "Content/Scripts/ComponentTemplate.lua" };
+			static char filePath[ 1024 ] = { (char)(Application::GetAssetDirectory() / "Scripts/ComponentTemplate.lua" ).string().c_str() };
 			ImGui::InputText( "File Path", filePath, 1024 );
 
 			ImGui::SameLine();

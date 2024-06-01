@@ -30,10 +30,10 @@ namespace Tridium::Editor {
 		virtual bool OnClose() { return true; }
 
 	protected:
+		std::string m_Name;
 		PanelStack* m_Owner = nullptr;
 		bool m_Open = true;
 		bool m_IsFocused = false;
-		std::string m_Name;
 	};
 
 	// Wrapper for a list of panels

@@ -22,6 +22,7 @@ namespace Tridium {
 
 	void Scene::OnBegin()
 	{
+		// Can call 'OnBegin' on all game objects or something
 	}
 
 	void Scene::OnUpdate()

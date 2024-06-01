@@ -16,11 +16,11 @@ namespace Tridium::Editor {
 
 		virtual void OnImGuiDraw()
 		{
-			if ( ImGuiBegin() );
-			{
-				ImGui::Text( "FPS: %i", Application::Get().GetFPS() );
-				ImGuiEnd();
-			}
+			//if ( ImGuiBegin() )
+			//{
+			//	ImGui::Text( "FPS: %i", Application::Get().GetFPS() );
+			//	ImGuiEnd();
+			//}
 		}
 	};
 
@@ -262,7 +262,7 @@ namespace Tridium::Editor {
 			m_EditorCamera.Focused = ImGui::IsWindowFocused();
 			Vector2 regionAvail = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
 
-			uint64_t textureID = m_EditorCameraFBO->GetColorAttachmentID();
+			uint32_t textureID = m_EditorCameraFBO->GetColorAttachmentID();
 			ImGui::Image( (void*)textureID, ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
 
 			if ( m_ViewportSize != regionAvail )

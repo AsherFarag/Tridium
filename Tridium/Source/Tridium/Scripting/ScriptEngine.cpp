@@ -62,6 +62,8 @@ namespace Tridium {
             "Position", sol::property( &TransformComponent::Position, &TransformComponent::Position ),
             "Rotation", sol::property( &TransformComponent::Rotation, &TransformComponent::Rotation ),
             "Scale", sol::property( &TransformComponent::Scale, &TransformComponent::Scale ) );
+
+        m_LuaState[ "Quit" ] = [] { Application::Quit(); };
     }
 
     void ScriptEngine::Recompile()

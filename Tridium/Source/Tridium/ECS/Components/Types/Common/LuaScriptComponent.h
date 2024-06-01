@@ -16,13 +16,21 @@ namespace Tridium {
 
 		virtual void OnUpdate() override;
 
-		void Compile();
 		Ref<Script>& GetScript() { return m_Script; }
 		void SetScript( const Ref<Script>&a_Script );
 
-	protected:
+		template <typename T>
+		auto operator[]( T&& key )& { return m_Environment[ key ]; }
+		template <typename T>
+		auto operator[]( T&& key ) const& { return m_Environment[ key ]; }
+		template <typename T>
+		auto operator[]( T&& key )&& { return m_Environment[ key ]; }
+
+	private:
 		virtual void OnConstruct() override;
 		virtual void OnDestroy() override;
+
+		void Compile();
 
 		template <typename... Args>
 		bool CallLuaFunction( sol::protected_function & func, Args&&... args )

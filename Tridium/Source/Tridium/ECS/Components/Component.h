@@ -22,6 +22,14 @@
 //		 {}
 //	}
 //};
+//template <>
+//struct PropertyDrawer<Tridium::ScriptableComponent>
+//{
+//	void OnImGui() override
+//	{
+//
+//	}
+//};
 
 
 namespace Tridium {
@@ -79,11 +87,12 @@ namespace Tridium {
 
 	DEFINE_COMPONENT( ScriptableComponent )
 	{
-		friend class Scene;
-		friend class GameObject;
-	public:
 		DEFINE_COMPONENT_BODY( ScriptableComponent );
 
+		friend class Scene;
+		friend class GameObject;
+
+	public:
 		ScriptableComponent() {}
 		virtual ~ScriptableComponent();
 
@@ -94,13 +103,3 @@ namespace Tridium {
 		virtual void OnDestroy() {}
 	};
 }
-
-
-//template <>
-//struct PropertyDrawer<Tridium::ScriptableComponent>
-//{
-//	void OnImGui() override
-//	{
-//
-//	}
-//};

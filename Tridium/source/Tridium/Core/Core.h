@@ -4,6 +4,8 @@
 #include <Tridium/Math/Math.h>
 #include <Tridium/Core/Time.h>
 #include <memory>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 #define BIT(x) (1 << x)
 

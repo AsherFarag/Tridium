@@ -18,5 +18,4 @@ namespace ImGui {
 		ScopedStyleCol( ImGuiCol styleCol, ImU32 col ) { ImGui::PushStyleColor( styleCol, col ); }
 		~ScopedStyleCol() { ImGui::PopStyleColor(); }
 	};
-
 }

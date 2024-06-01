@@ -101,15 +101,6 @@ namespace Tridium {
 	{
 		m_Running = true;
 
-		auto& go1 = m_ActiveScene->InstantiateGameObject();
-		go1.AddComponent<MeshComponent>();
-		go1.GetTag() = "Cube";
-
-		auto& go2 = m_ActiveScene->InstantiateGameObject();
-		go2.AddComponent<CameraComponent>();
-		go2.AddComponent<CameraControllerComponent>();
-		go2.GetTag() = "Scene Camera";
-
 		while ( m_Running )
 		{
 			Time::Update();
@@ -121,7 +112,7 @@ namespace Tridium {
 
 			#ifndef IS_EDITOR
 
-			m_ActiveScene->Update();
+			m_ActiveScene->OnUpdate();
 
 			#endif // IS_EDITOR
 
@@ -153,6 +144,11 @@ namespace Tridium {
 			m_Window->OnUpdate();
 		}
 	}
+
+	void Application::Quit()
+	{
+		Get().m_Running = false;
+	}
 	
 	void Application::OnEvent( Event& e )
 	{
@@ -179,7 +175,7 @@ namespace Tridium {
 	
 	bool Application::OnWindowClosed( WindowCloseEvent& e )
 	{
-		m_Running = false;
+		Quit();
 		return true;
 	}
 

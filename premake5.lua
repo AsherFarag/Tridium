@@ -124,6 +124,7 @@ project "Sandbox"
 		"Tridium/Dependencies",
 		"%{IncludeDir.lua}/include",
 		"%{IncludeDir.sol2}/include",
+		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.stbi}"

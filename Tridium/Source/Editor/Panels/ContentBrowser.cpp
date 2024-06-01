@@ -11,9 +11,7 @@ namespace Tridium::Editor {
 	{
 		TODO( "Make proper Icon Assets" );
 		// TEMP
-
 		fs::path iconFolder( "Content/Engine/Editor/Icons" );
-
 		m_DefaultIcon = Texture2D::Create( ( iconFolder / "file.png" ).string() );
 		m_FolderIcon = Texture2D::Create( ( iconFolder / "folder.png" ).string() );
 		m_LuaIcon = Texture2D::Create( ( iconFolder / "file-code.png" ).string() );
@@ -75,7 +73,7 @@ namespace Tridium::Editor {
 		if ( columnCount < 1 )
 			columnCount = 1;
 
-		if ( ImGui::BeginTable( "Folder Contents", columnCount ) )
+		if ( ImGui::BeginTable( "Folder Contents Items", columnCount ) )
 		{
 			for ( auto& directoryEntry : std::filesystem::directory_iterator( m_CurrentDirectory ) )
 			{
@@ -84,14 +82,12 @@ namespace Tridium::Editor {
 
 				ContentType type = GetContentType( path );
 
-				ImGui::PushStyleVar( ImGuiStyleVar_::ImGuiStyleVar_FrameRounding, 10 );
 				ContentItemOnImGuiDraw( type, path, { thumbnailSize, thumbnailSize } );
-				ImGui::PopStyleVar();
 
 
 				if ( ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left ) )
 				{
-					ContentOnClicked( type, path );
+					ContentOnOpened( type, path );
 				}
 			}
 
@@ -115,7 +111,7 @@ namespace Tridium::Editor {
 
 	bool ContentBrowser::ContentItemOnImGuiDraw( const ContentType type, const fs::path& a_FilePath, const ImVec2& size )
 	{
-		Ref<Texture2D> icon = nullptr;
+		Ref<Texture2D> icon;
 
 		// Set Icon
 		switch ( type )
@@ -140,6 +136,7 @@ namespace Tridium::Editor {
 			break;
 		}
 
+		// Create an Image Button with the file name at the bottom
 		ImGui::BeginGroup();
 			float paddingX = 25.f;
 			float paddingY = 25.f;
@@ -177,10 +174,9 @@ namespace Tridium::Editor {
 		ImGui::EndGroup();
 
 		return result;
-		//return ImGui::Button( a_FilePath.filename().string().c_str(), size );
 	}
 
-	void ContentBrowser::ContentOnClicked( const ContentType type, const fs::path& a_FilePath )
+	void ContentBrowser::ContentOnOpened( const ContentType type, const fs::path& a_FilePath )
 	{
 		switch ( type )
 		{

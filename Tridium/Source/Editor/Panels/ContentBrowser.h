@@ -3,8 +3,6 @@
 #ifdef IS_EDITOR
 
 #include "Panel.h"
-
-#include <Tridium/Core/Project.h>
 #include <Tridium/Rendering/Texture.h>
 
 namespace Tridium::Editor {
@@ -25,7 +23,7 @@ namespace Tridium::Editor {
 	private:
 		static ContentType GetContentType( const fs::path& a_FilePath );
 		bool ContentItemOnImGuiDraw( const ContentType a_Type, const fs::path& a_FilePath, const ImVec2& a_Size );
-		void ContentOnClicked( const ContentType a_Type, const fs::path& a_FilePath );
+		void ContentOnOpened( const ContentType a_Type, const fs::path& a_FilePath );
 
 	private:
 		fs::path m_CurrentDirectory;
