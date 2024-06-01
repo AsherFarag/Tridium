@@ -162,6 +162,8 @@ namespace Tridium::Editor {
 		m_ActiveScene->SetPaused( false );
 
 		CurrentSceneState = SceneState::Play;
+
+		Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled );
 	}
 
 	void EditorLayer::OnEndScene()
@@ -169,6 +171,8 @@ namespace Tridium::Editor {
 		m_ActiveScene->OnEnd();
 
 		CurrentSceneState = SceneState::Edit;
+
+		Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Normal );
 	}
 
 	bool EditorLayer::OnKeyPressed( KeyPressedEvent& e )

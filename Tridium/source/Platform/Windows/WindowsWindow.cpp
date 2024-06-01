@@ -174,6 +174,7 @@ namespace Tridium {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer( window );
 			MouseScrolledEvent event( (float)xOffset, (float)yOffset );
 			data.EventCallback( event );
+			Input::_SetMouseScrollOffset( (int)xOffset, (int)yOffset );
 		});
 
 		glfwSetCursorPosCallback( m_Window, []( GLFWwindow* window, double xPos, double yPos )

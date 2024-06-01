@@ -40,4 +40,62 @@ namespace Tridium {
 		return GetMousePositionImpl().y;
 	}
 
+	void WindowsInput::SetInputModeImpl( EInputMode a_Mode, EInputModeValue a_Value )
+	{
+		int mode;
+		switch ( a_Mode )
+		{
+		case EInputMode::Cursor:
+			mode = GLFW_CURSOR;
+			break;
+		case EInputMode::Sticky_Keys:
+			mode = GLFW_STICKY_KEYS;
+			break;
+		case EInputMode::Sticky_Mouse_Buttons:
+			mode = GLFW_STICKY_MOUSE_BUTTONS;
+			break;
+		case EInputMode::Lock_Key_Mods:
+			mode = GLFW_LOCK_KEY_MODS;
+			break;
+		case EInputMode::Raw_Mouse_Motion:
+			mode = GLFW_RAW_MOUSE_MOTION;
+			break;
+		case EInputMode::Unlimited_Mouse_Buttons:
+			mode = GLFW_UNLIMITED_MOUSE_BUTTONS;
+			break;
+		default:
+			mode = GLFW_INVALID_ENUM;
+			break;
+		}
+
+		int value;
+		switch ( a_Value )
+		{
+		case EInputModeValue::False:
+			value = GLFW_FALSE;
+			break;
+		case EInputModeValue::True:
+			value = GLFW_TRUE;
+			break;
+		case EInputModeValue::Cursor_Normal:
+			value = GLFW_CURSOR_NORMAL;
+			break;
+		case EInputModeValue::Cursor_Hidden:
+			value = GLFW_CURSOR_HIDDEN;
+			break;
+		case EInputModeValue::Cursor_Disabled:
+			value = GLFW_CURSOR_DISABLED;
+			break;
+		case EInputModeValue::Cursor_Captured:
+			value = GLFW_CURSOR_CAPTURED;
+			break;
+		default:
+			value = GLFW_INVALID_ENUM;
+			break;
+		}
+
+		auto window = static_cast<GLFWwindow*>( Application::Get().GetWindow().GetNativeWindow() );
+		glfwSetInputMode( window, mode, value );
+	}
+
 }

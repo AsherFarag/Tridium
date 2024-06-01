@@ -4,10 +4,33 @@
 
 namespace Tridium {
 
+	enum class EInputMode
+	{
+		None = 0,
+		Cursor,
+		Sticky_Keys,
+		Sticky_Mouse_Buttons,
+		Lock_Key_Mods,
+		Raw_Mouse_Motion,
+		Unlimited_Mouse_Buttons
+	};
+
+	TODO( "Finish the rest of these!" );
+	enum class EInputModeValue
+	{
+		False = 0,
+		True = 1,
+		Cursor_Normal,
+		Cursor_Hidden,
+		Cursor_Disabled,
+		Cursor_Captured,
+	};
+
 	class Input
 	{
 		friend class Application;
 	public:
+
 		// Returns true if this key is down this frame
 		inline static bool IsKeyPressed( int keycode ) { return s_Instance->IsKeyPressedImpl( keycode ); }
 
@@ -15,6 +38,13 @@ namespace Tridium {
 		inline static Vector2 GetMousePosition() { return s_Instance->GetMousePositionImpl(); }
 		inline static float GetMouseX() { return s_Instance->GetMouseXImpl(); }
 		inline static float GetMouseY() { return s_Instance->GetMouseYImpl(); }
+		inline static void SetInputMode( EInputMode mode, EInputModeValue value ) { s_Instance->SetInputModeImpl( mode, value ); }
+		inline static int GetMouseScrollXOffset() { return s_Instance->m_MouseScrollXOffset; }
+		inline static int GetMouseScrollYOffset() { return s_Instance->m_MouseScrollYOffset; }
+
+		// DO NOT USE!
+		// For internal use only.
+		inline static void _SetMouseScrollOffset( int x, int y ) { s_Instance->m_MouseScrollXOffset += x; s_Instance->m_MouseScrollYOffset += y; }
 
 	protected:
 		virtual bool IsKeyPressedImpl( int keycode ) = 0;
@@ -23,8 +53,12 @@ namespace Tridium {
 		virtual Vector2 GetMousePositionImpl() = 0;
 		virtual float GetMouseXImpl() = 0;
 		virtual float GetMouseYImpl() = 0;
+		virtual void SetInputModeImpl( EInputMode mode, EInputModeValue value ) = 0;
 
 	private:
+		int m_MouseScrollXOffset = 0;
+		int m_MouseScrollYOffset = 0;
+
 		static Input* s_Instance;
 
 	public:

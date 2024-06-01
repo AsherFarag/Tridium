@@ -1,10 +1,10 @@
 #include <Tridium.h>
 using namespace Tridium;
 
-class ExampleLayer : public Tridium::Layer
+class PlayerUI : public Tridium::Layer
 {
 public:
-	ExampleLayer()
+	PlayerUI()
 		: Layer( "Example" ) {}
 
 	void OnUpdate() override
@@ -35,6 +35,22 @@ public:
 			ImGui::ProgressBar( playerCurrentHealth.get<float>() / playerMaxHealth.get<float>() );
 			ImGui::End();
 		}
+		Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled );
+	}
+
+	virtual void OnEvent( Event& e )
+	{
+		EventDispatcher dispatcher( e );
+		dispatcher.Dispatch<KeyPressedEvent>( TE_BIND_EVENT_FN( PlayerUI::OnKeyPressed, std::placeholders::_1 ) );
+	}
+
+	bool OnKeyPressed( KeyPressedEvent& e )
+	{
+		if ( e.GetKeyCode() == Input::KEY_ESCAPE )
+		{
+			Application::Quit();
+			return true;
+		}
 	}
 
 	GameObject Player;
@@ -45,7 +61,7 @@ class Sandbox : public Tridium::Application
 public:
 	Sandbox()
 	{
-		auto gameUI = new ExampleLayer();
+		auto gameUI = new PlayerUI();
 		PushOverlay( gameUI );
 
 		auto& dangerCube = GetScene()->InstantiateGameObject( "Cube" );
@@ -57,6 +73,7 @@ public:
 		player.AddComponent<LuaScriptComponent>( Script::Create( Application::GetAssetDirectory() / "Scripts/Player.lua" ) );
 
 		gameUI->Player = player;
+
 	}
 
 	~Sandbox()

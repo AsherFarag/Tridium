@@ -16,6 +16,7 @@ namespace Tridium {
 
 	private:
 		Vector2 m_LastMousePos;
+		int m_LastMouseScroll = 0;
 	};
 
 }

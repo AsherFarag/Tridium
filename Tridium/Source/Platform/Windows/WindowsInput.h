@@ -12,6 +12,7 @@ namespace Tridium {
 		virtual Vector2 GetMousePositionImpl() override;
 		virtual float GetMouseXImpl() override;
 		virtual float GetMouseYImpl() override;
+		virtual void SetInputModeImpl( EInputMode mode, EInputModeValue value ) override;
 	};
 
 }
