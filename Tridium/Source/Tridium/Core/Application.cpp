@@ -147,7 +147,11 @@ namespace Tridium {
 
 	void Application::Quit()
 	{
-		Get().m_Running = false;
+	#ifdef IS_EDITOR
+		Get().m_EditorLayer->OnEndScene();
+	#else
+		Get().Shutdown();
+	#endif // IS_EDITOR
 	}
 	
 	void Application::OnEvent( Event& e )
@@ -175,8 +179,13 @@ namespace Tridium {
 	
 	bool Application::OnWindowClosed( WindowCloseEvent& e )
 	{
-		Quit();
+		Shutdown();
 		return true;
+	}
+
+	void Application::Shutdown()
+	{
+		m_Running = false;
 	}
 
 }

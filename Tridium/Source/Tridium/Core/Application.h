@@ -41,6 +41,8 @@ namespace Tridium
 	private:
 		bool OnWindowClosed( WindowCloseEvent& e );
 
+		void Shutdown();
+
 	private:
 		bool m_Running;
 		UniquePtr<Window> m_Window;

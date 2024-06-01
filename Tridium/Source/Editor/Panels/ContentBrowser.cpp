@@ -163,9 +163,13 @@ namespace Tridium::Editor {
 				ImGui::Image( (ImTextureID)icon->GetRendererID(),
 					{ size.x - paddingX * 2, size.y - paddingY * 2 },
 					{ 0,1 }, { 1,0 } );
+
+				ImGui::PushTextWrapPos( size.x - paddingX * 2 );
+				ImGui::Text( a_FilePath.filename().string().c_str() );
+				ImGui::PopTextWrapPos();
+
 				ImGui::EndDragDropSource();
 			}
-
 
 			ImGui::PushTextWrapPos( ImGui::GetCursorPosX() + size.x );
 			ImGui::Text( a_FilePath.filename().string().c_str() );

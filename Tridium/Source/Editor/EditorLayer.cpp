@@ -5,6 +5,7 @@
 #include "imgui.h"
 #include "Panels/EditorPreferences.h"
 #include <Tridium/Scripting/ScriptEngine.h>
+#include <Tridium/ECS/Components/Types.h>
 
 namespace Tridium::Editor {
 	
@@ -73,16 +74,25 @@ namespace Tridium::Editor {
 			}
 			case SceneState::Play:
 			{
-				m_EditorCamera.OnUpdate();
-
 				if ( !m_ActiveScene->IsPaused() )
 				{
 					m_ActiveScene->OnUpdate();
 				}
 
-				m_EditorCameraFBO->Bind();
-				m_ActiveScene->Render( m_EditorCamera, m_EditorCamera.GetViewMatrix() );
-				m_EditorCameraFBO->Unbind();
+				CameraComponent* mainCam = m_ActiveScene->GetMainCamera();
+				if ( mainCam )
+				{
+					m_EditorCameraFBO->Bind();
+					mainCam->SceneCamera.SetViewportSize( m_ViewportSize.x, m_ViewportSize.y );
+					m_ActiveScene->Render( *mainCam );
+					m_EditorCameraFBO->Unbind();
+				}
+				else
+				{
+					m_EditorCameraFBO->Bind();
+					m_ActiveScene->Render( m_EditorCamera, m_EditorCamera.GetViewMatrix() );
+					m_EditorCameraFBO->Unbind();
+				}
 				break;
 			}
 			}
@@ -289,7 +299,7 @@ namespace Tridium::Editor {
 
 	void UIToolBar::OnImGuiDraw()
 	{
-		constexpr ImVec2 buttonSize( 25, 25 );
+		constexpr ImVec2 buttonSize( 20, 20 );
 		constexpr ImVec2 buttonPadding( 5, 5 );
 
 		ImGui::Begin( "##UIToolBar", nullptr, 

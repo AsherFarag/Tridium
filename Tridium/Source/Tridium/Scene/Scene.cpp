@@ -82,6 +82,16 @@ namespace Tridium {
 		Renderer::EndScene();
 	}
 
+	void Scene::Render( const CameraComponent& camera )
+	{
+		auto& transform = camera.GetGameObject().GetComponent<TransformComponent>();
+		auto orientation = Quaternion( Vector3( -transform.Rotation.x, -transform.Rotation.y, 0.f ) );
+		Matrix4 viewMatrix = glm::translate( Matrix4( 1.f ), transform.Position ) * glm::toMat4( orientation );
+		viewMatrix = glm::inverse( viewMatrix );
+
+		Render( camera.SceneCamera, viewMatrix );
+	}
+
 	void Scene::OnEnd()
 	{
 	}
@@ -91,6 +101,22 @@ namespace Tridium {
 		auto go = GameObject( m_Registry.create() );
 		go.Init( a_Name );
 		return go;
+	}
+
+	CameraComponent* Scene::GetMainCamera()
+	{
+		// If the scene doesn't have a main camera,
+		// get the first camera in the scene
+		if ( !m_Registry.valid( m_MainCamera ) )
+		{
+			auto cameras = m_Registry.view<CameraComponent>();
+			// Return nullptr as there are no cameras in the scene
+			if ( cameras.empty() )
+				return nullptr;
+
+			m_MainCamera = cameras.front();
+		}
+		return m_Registry.try_get<CameraComponent>( m_MainCamera );
 	}
 
 }

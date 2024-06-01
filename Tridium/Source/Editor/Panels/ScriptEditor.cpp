@@ -12,7 +12,7 @@ namespace Tridium::Editor {
 
 	void ScriptEditor::OnImGuiDraw()
 	{
-		ImGuiBegin( ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse );
+		ImGuiBegin( ImGuiWindowFlags_MenuBar );
 
 		m_IsFocused = ImGui::IsWindowFocused();
 

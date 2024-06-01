@@ -29,6 +29,9 @@ namespace Tridium {
 		inline T& GetComponent() const;
 
 		template <typename T>
+		inline T* TryGetComponent() const;
+
+		template <typename T>
 		inline bool HasComponent() const;
 
 		template <typename T>
@@ -90,6 +93,12 @@ namespace Tridium {
 	{
 		TE_CORE_ASSERT( HasComponent<T>(), "GameObject does not have this component!" );
 		return Application::GetScene()->m_Registry.get<T>( m_ID );
+	}
+
+	template <typename T>
+	inline T* GameObject::TryGetComponent() const
+	{
+		return Application::GetScene()->m_Registry.try_get<T>( m_ID );
 	}
 
 	template <typename T>

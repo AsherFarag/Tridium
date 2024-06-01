@@ -51,7 +51,7 @@ public:
 		auto& dangerCube = GetScene()->InstantiateGameObject( "Cube" );
 		dangerCube.AddComponent<MeshComponent>();
 
-		auto& player = GetScene()->InstantiateGameObject( "Scene Camera" );
+		auto& player = GetScene()->InstantiateGameObject( "Player" );
 		player.AddComponent<CameraComponent>();
 		player.AddComponent<CameraControllerComponent>();
 		player.AddComponent<LuaScriptComponent>( Script::Create( Application::GetAssetDirectory() / "Scripts/Player.lua" ) );
