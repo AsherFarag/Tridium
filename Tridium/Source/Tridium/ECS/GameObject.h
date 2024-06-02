@@ -11,14 +11,11 @@ namespace Tridium {
 
 	typedef entt::entity EntityID;
 
-#define INVALID_GAMEOBJECT (EntityID)UINT32_MAX
-
-
 	class GameObject
 	{
 		friend class Scene;
 	public:
-		GameObject( EntityID id = INVALID_GAMEOBJECT );
+		GameObject( EntityID id = entt::null );
 		operator EntityID ( ) { return m_ID; }
 		operator const EntityID( ) const { return m_ID; }
 

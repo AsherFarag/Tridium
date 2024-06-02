@@ -100,7 +100,10 @@ namespace Tridium::Editor {
 	void EditorPreferences::OnImGuiDraw()
 	{
 		if ( !ImGuiBegin() )
+		{
+			ImGui::End();
 			return;
+		}
 
 		if ( ImGui::BeginMenu( "Set Editor Style" ) )
 		{
