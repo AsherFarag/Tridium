@@ -68,7 +68,6 @@ namespace Tridium::Editor {
 		// - ImGui -
 		void DrawMenuBar();
 		void DrawEditorCameraViewPort();
-		void DrawSceneToolBar();
 
 	private:
 		Ref<Scene> m_ActiveScene;

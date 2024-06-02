@@ -3,9 +3,11 @@ workspace "Tridium"
 
 	configurations
 	{
+		"Debug-Editor",
+		"Release-Editor",
 		"Debug",
 		"Release",
-		"Dist"
+		"Shipping"
 	}
 
 outputdir = "%{cfg.buildcfg}/%{cfg.system}-%{cfg.architecture}"
@@ -82,21 +84,33 @@ project "Tridium"
 			"TE_PLATFORM_WINDOWS",
 			"GLFW_INCLUDE_NONE"
 		}
-
-	filter "configurations:Debug"
+	
+	filter "configurations:Debug-Editor"
 		defines
 		{ 
-			"TRI_DEBUG",
+			"TE_DEBUG",
 			"IS_EDITOR"
 		}
 		symbols "On"
 
+	filter "configurations:Release-Editor"
+		defines
+		{ 
+			"TE_RELEASE",
+			"IS_EDITOR"
+		}
+		symbols "On"
+
+	filter "configurations:Debug"
+		defines "TE_DEBUG"
+		symbols "On"
+
 	filter "configurations:Release"
-		defines "TRI_RELEASE"
+		defines "TE_RELEASE"
 		optimize "On"
 
-	filter "configurations:Dist"
-		defines "TRI_DIST"
+	filter "configurations:Shipping"
+		defines "TE_SHIPPING"
 		optimize "On"
 
 
@@ -143,18 +157,30 @@ project "Sandbox"
 			"TE_PLATFORM_WINDOWS"
 		}
 
-	filter "configurations:Debug"
+	filter "configurations:Debug-Editor"
 		defines
 		{ 
-			"TRI_DEBUG",
+			"TE_DEBUG",
 			"IS_EDITOR"
 		}
 		symbols "On"
 
+	filter "configurations:Release-Editor"
+		defines
+		{ 
+			"TE_RELEASE",
+			"IS_EDITOR"
+		}
+		symbols "On"
+
+	filter "configurations:Debug"
+		defines "TE_DEBUG"
+		symbols "On"
+
 	filter "configurations:Release"
-		defines "TRI_RELEASE"
+		defines "TE_RELEASE"
 		optimize "On"
 
-	filter "configurations:Dist"
-		defines "TRI_DIST"
+	filter "configurations:Shipping"
+		defines "TE_SHIPPING"
 		optimize "On"

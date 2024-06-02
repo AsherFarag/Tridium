@@ -46,7 +46,6 @@ namespace fs = std::filesystem;
 	#define TE_ASSERT(x, ...)
 	#define TE_CORE_ASSERT(x, ...)
 #endif // TE_ENABLE_ASSERTS
-
 namespace Tridium {
 
 #pragma region Memory

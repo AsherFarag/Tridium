@@ -24,7 +24,6 @@ namespace Tridium {
     void ScriptEngine::Init()
     {
         m_LuaState.open_libraries( sol::lib::base, sol::lib::math, sol::lib::package, sol::lib::io, sol::lib::debug );
-
         #pragma region Maths
 
         m_LuaState.new_usertype<Vector2>(
@@ -41,6 +40,11 @@ namespace Tridium {
             "z", sol::property( &Vector3::z, &Vector3::z ) );
 
         #pragma endregion
+
+        m_LuaState.new_usertype<Application>(
+            "App",
+            sol::no_constructor);
+        m_LuaState[ "App" ][ "Quit" ] = []{ Application::Quit(); };
 
         m_LuaState.new_usertype<GameObject>(
             "GameObject",
@@ -62,8 +66,6 @@ namespace Tridium {
             "Position", sol::property( &TransformComponent::Position, &TransformComponent::Position ),
             "Rotation", sol::property( &TransformComponent::Rotation, &TransformComponent::Rotation ),
             "Scale", sol::property( &TransformComponent::Scale, &TransformComponent::Scale ) );
-
-        m_LuaState[ "Quit" ] = [] { Application::Quit(); };
     }
 
     void ScriptEngine::Recompile()

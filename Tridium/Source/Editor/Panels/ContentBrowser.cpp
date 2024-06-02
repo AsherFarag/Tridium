@@ -7,7 +7,7 @@
 namespace Tridium::Editor {
 
 	ContentBrowser::ContentBrowser()
-		: Panel( "Content Browser" ), m_CurrentDirectory( Project::GetAssetDirectory() )
+		: Panel( "Content Browser" ), m_CurrentDirectory( Application::GetAssetDirectory() )
 	{
 		TODO( "Make proper Icon Assets" );
 		// TEMP
@@ -51,9 +51,13 @@ namespace Tridium::Editor {
 
 	void ContentBrowser::OnImGuiDraw()
 	{
-		if ( !ImGui::Begin( m_Name.c_str() ) )
+		if ( !ImGui::Begin( m_Name.c_str(), &m_Open ) )
 		{
 			ImGui::End();
+
+			if ( !m_Open )
+				Close();
+
 			return;
 		}
 
@@ -95,6 +99,9 @@ namespace Tridium::Editor {
 		}
 
 		ImGui::End();
+
+		if ( !m_Open )
+			Close();
 	}
 
 	ContentType ContentBrowser::GetContentType( const fs::path& a_FilePath )

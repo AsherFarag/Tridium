@@ -23,5 +23,5 @@ end
 
 function OnDestroy()
 	print("Game Over!")
-	Quit()
+	App.Quit()
 end

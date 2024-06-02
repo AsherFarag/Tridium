@@ -17,11 +17,12 @@ namespace Tridium::Editor {
 
 		virtual void OnImGuiDraw()
 		{
-			//if ( ImGuiBegin() )
-			//{
-			//	ImGui::Text( "FPS: %i", Application::Get().GetFPS() );
-			//	ImGuiEnd();
-			//}
+			if ( ImGuiBegin() )
+			{
+				ImGui::Text( "FPS: %i", Application::Get().GetFPS() );
+			}
+
+			ImGuiEnd();
 		}
 	};
 
@@ -246,6 +247,7 @@ namespace Tridium::Editor {
 			if ( ImGui::BeginMenu( "Panels" ) )
 			{
 				if ( ImGui::MenuItem( "Content Browser" ) ) m_PanelStack.PushPanel<ContentBrowser>();
+				if ( ImGui::MenuItem( "Stats" ) ) m_PanelStack.PushPanel<Stats>();
 
 				ImGui::EndMenu();
 			}
@@ -270,14 +272,14 @@ namespace Tridium::Editor {
 
 	void EditorLayer::DrawEditorCameraViewPort()
 	{
-		ImGui::PushStyleVar( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2(2.f, 2.f) );
+		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2(2.f, 2.f) );
+
 		ImGui::Begin( "Viewport ##" );
 		{
 			m_EditorCamera.Focused = ImGui::IsWindowFocused();
 			Vector2 regionAvail = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
 
-			uint32_t textureID = m_EditorCameraFBO->GetColorAttachmentID();
-			ImGui::Image( (void*)textureID, ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
+			ImGui::Image( (ImTextureID)m_EditorCameraFBO->GetColorAttachmentID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
 
 			if ( m_ViewportSize != regionAvail )
 			{
@@ -287,7 +289,6 @@ namespace Tridium::Editor {
 			}
 		}
 		ImGui::End();
-		ImGui::PopStyleVar();
 	}
 
 #pragma region - UIToolBar -

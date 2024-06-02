@@ -7,21 +7,35 @@ namespace Tridium {
 		std::string Name = "Untitled";
 		fs::path AssetDirectory = "Content"; // TEMP
 		fs::path StartScene;
+
+		ProjectConfiguration() = default;
+		ProjectConfiguration( const std::string& a_Name, const fs::path& a_AssetDirectory, const fs::path& a_StartScene )
+			: Name( a_Name ), AssetDirectory( a_AssetDirectory ), StartScene( a_StartScene ) {}
 	};
 
 	class Project
 	{
+		friend class ProjectSerializer;
+
 	public:
-		static Ref<Project> GetActiveProject()		    { TE_CORE_ASSERT( s_ActiveProject ); return s_ActiveProject; }
-		static const fs::path& GetAssetDirectory()	    { TE_CORE_ASSERT( s_ActiveProject ); return s_ActiveProject->m_ProjectConfig.AssetDirectory; }
-		static const fs::path& GetStartSceneDirectory() { TE_CORE_ASSERT( s_ActiveProject ); return s_ActiveProject->m_ProjectConfig.StartScene; }
+		Project() = default;
+		Project( const std::string& a_Name, const fs::path& a_AssetDirectory, const fs::path& a_StartScene );
+		~Project();
+
+		const std::string& GetName() const { return m_ProjectConfig.Name; }
+		const fs::path& GetAssetDirectory() const { return m_ProjectConfig.AssetDirectory; }
+		const fs::path& GetStartSceneDirectory() const { return m_ProjectConfig.StartScene; }
 
 
 	private:
 		ProjectConfiguration m_ProjectConfig;
+	};
 
-	private:
-		static Ref<Project> s_ActiveProject;
+	class ProjectSerializer
+	{
+	public:
+		static void Serialize( const Project& a_Project, const std::string& a_FilePath );
+		static Project* Deserialize( const std::string& a_FilePath );
 	};
 
 }

@@ -33,6 +33,8 @@ namespace Tridium {
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay( m_ImGuiLayer );
 
+		m_Project.reset(ProjectSerializer::Deserialize("Content/Untitled.TEproject"));
+
 #ifdef IS_EDITOR
 
 		m_Window->SetIcon( "Content/Engine/Editor/Icons/EngineIcon.png" );

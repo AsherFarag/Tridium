@@ -5,6 +5,7 @@
 #include <Tridium/ECS/Components/Types/Rendering/CameraComponent.h>
 
 namespace Tridium {
+
 	void CameraControllerComponent::OnUpdate()
 	{
 		auto& go = GetGameObject();
@@ -53,6 +54,12 @@ namespace Tridium {
 		float yawSign = up.y < 0 ? -1.0f : 1.0f;
 		transform.Rotation.y += yawSign * glm::radians( mouseDelta.x ) * LookSensitivity;
 		transform.Rotation.x += glm::radians( mouseDelta.y ) * LookSensitivity;
+
+		constexpr float clampZone = glm::radians( 89.f );
+		if ( transform.Rotation.x < -clampZone )
+			transform.Rotation.x = -clampZone;
+		else if ( transform.Rotation.x > clampZone )
+			transform.Rotation.x = clampZone;
 
 		m_LastMousePos = Input::GetMousePosition();
 		m_LastMouseScroll = Input::GetMouseScrollYOffset();
