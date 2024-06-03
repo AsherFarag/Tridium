@@ -12,6 +12,7 @@ namespace Tridium {
 	public:
 		LuaScriptComponent() = default;
 		LuaScriptComponent(const Ref<Script>& a_Script);
+		LuaScriptComponent( const std::string& a_Script );
 		~LuaScriptComponent();
 
 		virtual void OnUpdate() override;

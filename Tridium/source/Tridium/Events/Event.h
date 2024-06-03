@@ -58,7 +58,6 @@ namespace Tridium {
 	public:
 		EventDispatcher(Event& event) : m_Event(event) {}
 		
-		// F will be deduced by the compiler
 		template<typename T, typename F>
 		bool Dispatch(const F& func)
 		{

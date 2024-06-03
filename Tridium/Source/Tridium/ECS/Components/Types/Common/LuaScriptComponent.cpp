@@ -11,6 +11,12 @@ namespace Tridium {
 		m_Script = a_Script;
 	}
 
+	LuaScriptComponent::LuaScriptComponent( const std::string& a_Script )
+		: m_Environment( ScriptEngine::GetLuaState(), sol::create, ScriptEngine::GetLuaState().globals() )
+	{
+		m_Script = Script::Create( a_Script );
+	}
+
 	LuaScriptComponent::~LuaScriptComponent()
 	{
 		m_Environment.reset();
