@@ -15,7 +15,8 @@ namespace Tridium::Editor {
 		m_DefaultIcon = Texture2D::Create( ( iconFolder / "file.png" ).string() );
 		m_FolderIcon = Texture2D::Create( ( iconFolder / "folder.png" ).string() );
 		m_LuaIcon = Texture2D::Create( ( iconFolder / "file-code.png" ).string() );
-		m_TextureIcon = Texture2D::Create( ( iconFolder / "file-media.png" ).string() );
+		m_ImageMediaIcon = Texture2D::Create( ( iconFolder / "file-media.png" ).string() );
+		m_TridiumProjectIcon = Texture2D::Create( ( iconFolder / "EngineIcon.png" ).string() );
 	}
 
 	static void DrawDirectoryPath( fs::path& a_Path )
@@ -111,6 +112,7 @@ namespace Tridium::Editor {
 
 		std::string ext = a_FilePath.extension().string();
 		if ( ext == ".lua" ) { return ContentType::Lua; }
+		if ( ext == ".TEproject" ) { return ContentType::Tridium_Project; }
 		if ( ext == ".png") { return ContentType::Texture; }
 
 		return ContentType::None;
@@ -135,7 +137,12 @@ namespace Tridium::Editor {
 			}
 			case ContentType::Texture:
 			{
-				icon = m_TextureIcon;
+				icon = m_ImageMediaIcon;
+				break;
+			}
+			case ContentType::Tridium_Project:
+			{
+				icon = m_TridiumProjectIcon;
 				break;
 			}
 		default:

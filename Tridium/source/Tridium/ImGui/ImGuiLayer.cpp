@@ -40,18 +40,20 @@ namespace Tridium {
 		}
 
 		// - Set Default Font -
-		io.Fonts->AddFontFromFileTTF( "Dependencies/ImGui/misc/fonts/DroidSans.ttf", 15 );
+		io.Fonts->AddFontFromFileTTF( ( Application::GetAssetDirectory() / "Engine/Fonts/DroidSans.ttf" ).string().c_str(), 15);
 
 		Application& app = Application::Get();
 		GLFWwindow* window = static_cast<GLFWwindow*>( app.GetWindow().GetNativeWindow() );
 
 		// Set up Platform/Render bindings
+		TODO( "Make this API specific!" );
 		ImGui_ImplGlfw_InitForOpenGL( window, true );
 		ImGui_ImplOpenGL3_Init( "#version 410" );
 	}
 
 	void ImGuiLayer::OnDetach()
 	{
+		TODO( "Make this API specific!" );
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
@@ -59,6 +61,7 @@ namespace Tridium {
 
 	void ImGuiLayer::Begin()
 	{
+		TODO( "Make this API specific!" );
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
@@ -73,11 +76,13 @@ namespace Tridium {
 
 		// Rendering
 		ImGui::Render();
+		TODO( "Make this API specific!" );
 		ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
 
 		if ( io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable )
 		{
 			GLFWwindow* backup_current_context = glfwGetCurrentContext();
+			TODO( "Make this API specific!" );
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
 			glfwMakeContextCurrent( backup_current_context );

@@ -35,6 +35,12 @@ public:
 			ImGui::ProgressBar( playerCurrentHealth.get<float>() / playerMaxHealth.get<float>() );
 			ImGui::End();
 		}
+
+	#ifndef IS_EDITOR
+		Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled );
+	#endif // IS_EDITOR
+
+
 	}
 
 	virtual void OnEvent( Event& e )

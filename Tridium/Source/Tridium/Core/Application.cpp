@@ -33,7 +33,8 @@ namespace Tridium {
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay( m_ImGuiLayer );
 
-		m_Project.reset(ProjectSerializer::Deserialize("Content/Untitled.TEproject"));
+		//m_Project = new Project("Sandbox", "Content", "Content");
+		ProjectSerializer::Deserialize( m_Project, "Content/Sandbox.TEproject" );
 
 #ifdef IS_EDITOR
 

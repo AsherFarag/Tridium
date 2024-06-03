@@ -9,7 +9,7 @@ namespace Tridium::Editor {
 
 	enum class ContentType : BYTE
 	{
-		None = 0, Folder, Lua, Texture
+		None = 0, Folder, Lua, Texture, Tridium_Project
 	};
 
 	class ContentBrowser final : public Panel
@@ -31,7 +31,8 @@ namespace Tridium::Editor {
 		Ref<Texture2D> m_DefaultIcon;
 		Ref<Texture2D> m_FolderIcon;
 		Ref<Texture2D> m_LuaIcon;
-		Ref<Texture2D> m_TextureIcon;
+		Ref<Texture2D> m_ImageMediaIcon;
+		Ref<Texture2D> m_TridiumProjectIcon;
 	};
 }
 

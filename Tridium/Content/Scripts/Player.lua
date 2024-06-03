@@ -13,7 +13,7 @@ function OnUpdate( deltaTime )
 	if ( Pos.x >= -0.5 and Pos.x <= 0.5 and
 	    Pos.y >= -0.5 and Pos.y <= 0.5  and
 	    Pos.z >= -0.5 and Pos.z <= 0.5 )  then
-		CurrentHealth = CurrentHealth - deltaTime * 10
+		CurrentHealth = CurrentHealth - deltaTime * 1
 	end
 
 	if CurrentHealth < 0.0 then

@@ -6,7 +6,7 @@ namespace Tridium {
 	{
 		std::string Name = "Untitled";
 		fs::path AssetDirectory = "Content"; // TEMP
-		fs::path StartScene;
+		fs::path StartScene = "Content";
 
 		ProjectConfiguration() = default;
 		ProjectConfiguration( const std::string& a_Name, const fs::path& a_AssetDirectory, const fs::path& a_StartScene )
@@ -36,6 +36,7 @@ namespace Tridium {
 	public:
 		static void Serialize( const Project& a_Project, const std::string& a_FilePath );
 		static Project* Deserialize( const std::string& a_FilePath );
+		static bool Deserialize( Project& a_Project, const std::string& a_FilePath );
 	};
 
 }
