@@ -259,6 +259,7 @@ namespace Tridium::Editor {
 			if ( ImGui::MenuItem( "Camera Controller" ) ) AddComponentToSelectedGameObject<CameraControllerComponent>();
 			if ( ImGui::MenuItem( "Lua Script" ) )		  AddComponentToSelectedGameObject<LuaScriptComponent>(ScriptLibrary::GetScript("Test"));
 			if ( ImGui::MenuItem( "Sprite" ) )		      AddComponentToSelectedGameObject<SpriteComponent>();
+			if ( ImGui::MenuItem( "Sphere Collider" ) )   AddComponentToSelectedGameObject<SphereColliderComponent>();
 
 			ImGui::EndMenu();
 		}
@@ -401,6 +402,11 @@ namespace Tridium::Editor {
 
 					ImGui::TreePop();
 				}
+			} );
+
+		DrawComponent<SphereColliderComponent>( "Sphere Collider Component", gameObject, []( auto& component )
+			{
+				ImGui::DragFloat( "Radius", &component.Radius );
 			} );
 	}
 

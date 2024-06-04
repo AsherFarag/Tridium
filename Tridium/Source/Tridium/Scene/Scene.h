@@ -35,6 +35,10 @@ namespace Tridium {
 		bool m_Paused = false;
 
 		EntityID m_MainCamera;
+
+		// Game
+	private:
+		void PhysicsTick();
 	};
 
 #pragma region Scene Template Definitions

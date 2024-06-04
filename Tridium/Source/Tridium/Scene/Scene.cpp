@@ -28,6 +28,8 @@ namespace Tridium {
 
 	void Scene::OnUpdate()
 	{
+		PhysicsTick();
+
 		// Update scriptable objects
 		for ( const auto& storage : m_Registry.storage() )
 		{
@@ -135,6 +137,29 @@ namespace Tridium {
 			m_MainCamera = cameras.front();
 		}
 		return m_Registry.try_get<CameraComponent>( m_MainCamera );
+	}
+
+	void Scene::PhysicsTick()
+	{
+
+		auto colliders = m_Registry.view<SphereColliderComponent, TransformComponent>();
+		colliders.each( [ & ]( auto entity, SphereColliderComponent& sphere, TransformComponent& transform )
+			{
+				sphere.IsColliding = false;
+				colliders.each( [ & ]( auto entity, SphereColliderComponent& otherSphere, TransformComponent& otherTransform )
+					{
+						if ( otherTransform.GetGameObject() != transform.GetGameObject() )
+						{
+
+							float distance = glm::distance( transform.Position, otherTransform.Position );
+							float combinedRadius = sphere.Radius + otherSphere.Radius;
+							if ( distance < combinedRadius )
+							{
+								sphere.IsColliding = true;
+							}
+						}
+					} );
+			} );
 	}
 
 }

@@ -65,7 +65,7 @@ public:
 
 
 		auto& background = GetScene()->InstantiateGameObject( "Background" );
-		background.AddComponent<SpriteComponent>();
+		background.AddComponent<SpriteComponent>( Texture2D::Create( ( Application::GetAssetDirectory() / "Engine/Editor/Icons/Background.png" ).string() ));
 		background.TryGetComponent<TransformComponent>()->Position.z = -30;
 		//background.TryGetComponent<TransformComponent>()->Rotation.y = glm::radians( 90.f );
 		background.TryGetComponent<TransformComponent>()->Scale = Vector3(15);
@@ -78,6 +78,7 @@ public:
 		auto& player = GetScene()->InstantiateGameObject( "Player" );
 		player.AddComponent<CameraComponent>();
 		player.AddComponent<LuaScriptComponent>( Script::Create( Application::GetAssetDirectory() / "Scripts/Game/Player.lua" ) );
+		player.AddComponent<SphereColliderComponent>();
 
 		gameUI->Player = player;
 

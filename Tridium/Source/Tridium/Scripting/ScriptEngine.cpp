@@ -51,11 +51,12 @@ namespace Tridium {
             sol::factories( [](){ return Application::GetScene()->InstantiateGameObject(); } ),
             "ID", sol::property( &GameObject::ID ),
             "GetTransform", &GameObject::GetComponent<TransformComponent>,
+			"GetSphereCollider", &GameObject::GetComponent<SphereColliderComponent>,
             "AddScript", []( GameObject& go, std::string& scriptPath ) { go.AddComponent<LuaScriptComponent>( scriptPath ); } );
 
-        //m_LuaState.set_function( "AddScript", &GameObject::AddComponent<LuaScriptComponent> );
         m_LuaState[ "GameObject" ][ "AddMesh" ] = []( GameObject& go ) { go.AddComponent<MeshComponent>(); };
-        m_LuaState["GameObject"]["Destroy"] = []( GameObject& go ) { go.Destroy(); };
+		m_LuaState[ "GameObject" ][ "AddSphereCollider" ] = []( GameObject& go ) { go.AddComponent<SphereColliderComponent>(); };
+		m_LuaState[ "GameObject" ][ "Destroy" ] = []( GameObject& go ) { go.Destroy(); };
 
         m_LuaState.new_usertype<Component>(
             "Component",
@@ -69,6 +70,13 @@ namespace Tridium {
             "Position", sol::property( &TransformComponent::Position, &TransformComponent::Position ),
             "Rotation", sol::property( &TransformComponent::Rotation, &TransformComponent::Rotation ),
             "Scale", sol::property( &TransformComponent::Scale, &TransformComponent::Scale ) );
+
+		m_LuaState.new_usertype<SphereColliderComponent>(
+			"SphereCollider",
+			sol::no_constructor,
+			sol::base_classes, sol::bases<Component>(),
+			"Radius", sol::property( &SphereColliderComponent::Radius, &SphereColliderComponent::Radius ),
+			"IsColliding", sol::property( &SphereColliderComponent::IsColliding, &SphereColliderComponent::IsColliding ) );
 
         m_LuaState.new_usertype<LuaScriptComponent>(
             "Script",

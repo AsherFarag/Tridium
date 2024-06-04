@@ -10,9 +10,7 @@ end
 
 function OnUpdate( deltaTime )
 	Pos = gameObject:GetTransform().Position
-	if ( Pos.x >= -0.5 and Pos.x <= 0.5 and
-	    Pos.y >= -0.5 and Pos.y <= 0.5  and
-	    Pos.z >= -0.5 and Pos.z <= 0.5 )  then
+	if (  gameObject:GetSphereCollider.IsColliding  )  then
 		CurrentHealth = CurrentHealth - deltaTime * 1
 	end
 
