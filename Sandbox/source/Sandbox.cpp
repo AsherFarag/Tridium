@@ -50,6 +50,8 @@ public:
 			Application::Quit();
 			return true;
 		}
+
+		return false;
 	}
 
 	GameObject Player;
