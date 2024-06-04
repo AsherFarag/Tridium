@@ -24,6 +24,26 @@ namespace Tridium::Editor {
 		auto forward = GetForwardDirection();
 		auto right = GetRightDirection();
 
+		bool shift = Input::IsKeyPressed( Input::KEY_LEFT_SHIFT );
+		if ( shift != m_WasLeftShiftPressed )
+		{
+			if ( shift )
+				Speed *= 5.f;
+			else
+				Speed /= 5.f;
+		}
+		m_WasLeftShiftPressed = shift;
+
+		bool ctrl = Input::IsKeyPressed( Input::KEY_LEFT_CONTROL );
+		if ( ctrl != m_WasLeftCtrlPressed )
+		{
+			if ( ctrl )
+				Speed /= 5.f;
+			else
+				Speed *= 5.f;
+		}
+		m_WasLeftCtrlPressed = ctrl;
+
 		MoveForward( Input::IsKeyPressed( Input::KEY_W ) - Input::IsKeyPressed( Input::KEY_S ) );
 		MoveSideways( Input::IsKeyPressed( Input::KEY_D ) - Input::IsKeyPressed( Input::KEY_A ) );
 

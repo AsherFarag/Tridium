@@ -258,6 +258,7 @@ namespace Tridium::Editor {
 			if ( ImGui::MenuItem( "Camera" ) )			  AddComponentToSelectedGameObject<CameraComponent>();
 			if ( ImGui::MenuItem( "Camera Controller" ) ) AddComponentToSelectedGameObject<CameraControllerComponent>();
 			if ( ImGui::MenuItem( "Lua Script" ) )		  AddComponentToSelectedGameObject<LuaScriptComponent>(ScriptLibrary::GetScript("Test"));
+			if ( ImGui::MenuItem( "Sprite" ) )		      AddComponentToSelectedGameObject<SpriteComponent>();
 
 			ImGui::EndMenu();
 		}
@@ -371,6 +372,34 @@ namespace Tridium::Editor {
 						component.SetScript( Script::Create( static_cast<const char*>( payload->Data ) ) );
 					}
 					ImGui::EndDragDropTarget();
+				}
+			} );
+
+		DrawComponent<SpriteComponent>( "Sprite Component", gameObject, []( auto& component )
+			{
+				ImGui::Text( "Sprite: " );
+				ImGui::SameLine();
+				if ( component.GetTexture() )
+					ImGui::TextColored( { 0.85, 0.65, 0.1, 0.9 }, component.GetTexture()->GetPath().c_str() );
+				else
+					ImGui::TextColored( { 0.85, 0.65, 0.1, 0.9 }, "Empty" );
+
+				if ( ImGui::BeginDragDropTarget() )
+				{
+					if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( "ContentBrowserItem" ) )
+					{
+						component.SetTexture( Texture2D::Create( static_cast<const char*>( payload->Data ) ) );
+					}
+					ImGui::EndDragDropTarget();
+				}
+
+				if ( component.GetTexture() && ImGui::TreeNode( "Preview:" ) )
+				{
+					ImGui::Image( (ImTextureID)component.GetTexture()->GetRendererID(),
+						{ 100, 100 },
+						{ 0, 1 }, { 1, 0 } );
+
+					ImGui::TreePop();
 				}
 			} );
 	}

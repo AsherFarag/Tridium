@@ -35,12 +35,6 @@ public:
 			ImGui::ProgressBar( playerCurrentHealth.get<float>() / playerMaxHealth.get<float>() );
 			ImGui::End();
 		}
-
-	#ifndef IS_EDITOR
-		Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled );
-	#endif // IS_EDITOR
-
-
 	}
 
 	virtual void OnEvent( Event& e )
@@ -69,13 +63,21 @@ public:
 		auto gameUI = new PlayerUI();
 		PushOverlay( gameUI );
 
-		auto& dangerCube = GetScene()->InstantiateGameObject( "Cube" );
-		dangerCube.AddComponent<MeshComponent>();
+
+		auto& background = GetScene()->InstantiateGameObject( "Background" );
+		background.AddComponent<SpriteComponent>();
+		background.TryGetComponent<TransformComponent>()->Position.z = -30;
+		//background.TryGetComponent<TransformComponent>()->Rotation.y = glm::radians( 90.f );
+		background.TryGetComponent<TransformComponent>()->Scale = Vector3(15);
+
+		auto& obstacleSpawner = GetScene()->InstantiateGameObject( "Obstacle Spawner" );
+		obstacleSpawner.AddComponent<MeshComponent>();
+		obstacleSpawner.AddComponent<LuaScriptComponent>( Script::Create( Application::GetAssetDirectory() / "Scripts/Game/ObstacleSpawner.lua" ) );
+		obstacleSpawner.TryGetComponent<TransformComponent>()->Position.z = -20;
 
 		auto& player = GetScene()->InstantiateGameObject( "Player" );
 		player.AddComponent<CameraComponent>();
-		player.AddComponent<CameraControllerComponent>();
-		player.AddComponent<LuaScriptComponent>( Script::Create( Application::GetAssetDirectory() / "Scripts/Player.lua" ) );
+		player.AddComponent<LuaScriptComponent>( Script::Create( Application::GetAssetDirectory() / "Scripts/Game/Player.lua" ) );
 
 		gameUI->Player = player;
 

@@ -52,4 +52,19 @@ namespace Tridium {
 		static Ref<Texture2D> Create( const std::string& path );
 	};
 
+	class Texture2DLibrary
+	{
+		friend Texture2D;
+	public:
+		static Texture2DLibrary* Get();
+		static Ref<Texture2D> GetTexture( const std::string& a_Path );
+		static bool Has( const std::string& a_Path );
+
+	private:
+		static void Add( const Ref<Texture2D>& a_Texture, const std::string& a_Path );
+
+	private:
+		std::unordered_map<std::string, Ref<Texture2D>> m_Library;
+	};
+
 }

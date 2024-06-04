@@ -8,6 +8,7 @@
 #include <Tridium/Rendering/Renderer.h>
 #include <Tridium/Rendering/RenderCommand.h>
 #include <Tridium/Rendering/Shader.h>
+#include <Tridium/Rendering/Texture.h>
 #include <Tridium/ECS/Components/Types/Rendering/MeshComponent.h>
 
 namespace Tridium {
@@ -67,6 +68,7 @@ namespace Tridium {
 		Renderer::BeginScene( camera, viewMatrix );
 
 		auto meshComponents = m_Registry.view<MeshComponent, TransformComponent>();
+
 		meshComponents.each( [&]( auto entity, MeshComponent& mesh, TransformComponent& transform )
 			{
 				mesh.GetShader()->Bind();
@@ -77,6 +79,22 @@ namespace Tridium {
 
 				mesh.GetShader()->SetFloat4( "uColour", colour );
 				Renderer::Submit( mesh.GetShader(), mesh.GetMesh().VAO, transform.GetTransform() );
+			} );
+
+
+		auto spriteComponents = m_Registry.view<SpriteComponent, TransformComponent>();
+
+		spriteComponents.each( [ & ]( auto entity, SpriteComponent& sprite, TransformComponent& transform )
+			{
+				sprite.GetShader()->Bind();
+				float oldY = transform.Scale.y;
+				if ( sprite.GetTexture() )
+				{
+					sprite.GetTexture()->Bind();
+					transform.Scale.y *= (float)sprite.GetTexture()->GetHeight() / (float)sprite.GetTexture()->GetWidth();
+				}
+				Renderer::Submit( sprite.GetShader(), sprite.GetMesh().VAO, transform.GetTransform() );
+				transform.Scale.y = oldY;
 			} );
 
 		Renderer::EndScene();

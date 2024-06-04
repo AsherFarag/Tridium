@@ -39,8 +39,10 @@ namespace Tridium::Editor {
 
     private:
         Matrix4 m_View;
-
         Vector2 m_LastMousePos;
+
+        bool m_WasLeftShiftPressed = false;
+        bool m_WasLeftCtrlPressed = false;
     };
 
 }

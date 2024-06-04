@@ -94,6 +94,46 @@ namespace Tridium {
 					)";
 
 		Shader::Create( vertexSrc, fragSrc, "Default" );
+
+		// TEMP
+		vertexSrc =
+			R"(
+						#version 410
+
+						layout(location = 0) in vec3 aPosition;
+						layout(location = 1) in vec2 aTextureCoords;
+						
+						out vec4 vPosition;
+						out vec2 vTextureCoords;			
+						
+						uniform mat4 uPVM;
+						
+						void main()
+						{	
+							gl_Position = uPVM * vec4(aPosition, 1);
+							vPosition =  vec4(aPosition, 1);
+							vTextureCoords = aTextureCoords;
+						}
+					)";
+
+		fragSrc =
+			R"(
+						#version 410 core
+
+						out vec4 aFragColour;
+
+						in vec4 vPosition;
+						in vec2 vTextureCoords;						
+						
+						uniform sampler2D uTexture;
+
+						void main()
+						{
+							aFragColour = vec4(texture(uTexture, vTextureCoords).rgb, 1);
+						}
+					)";
+
+		Shader::Create( vertexSrc, fragSrc, "Texture" );
 	}
 	
 	Application::~Application()

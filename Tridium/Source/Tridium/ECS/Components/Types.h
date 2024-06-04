@@ -9,3 +9,4 @@
 // - Rendering -
 #include "Types/Rendering/CameraComponent.h"
 #include "Types/Rendering/MeshComponent.h"
+#include "Types/Rendering/SpriteComponent.h"
