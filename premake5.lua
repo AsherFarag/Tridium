@@ -22,6 +22,7 @@ IncludeDir["lua"] = "Tridium/Dependencies/lua/x64"
 IncludeDir["sol2"] = "Tridium/Dependencies/sol2"
 IncludeDir["entt"] = "Tridium/Dependencies/entt/include"
 IncludeDir["stbi"] = "Tridium/Dependencies/stbi/include"
+IncludeDir["refl"] = "Tridium/Dependencies/refl/include"
 
 include "Tridium/Dependencies/glfw"
 include "Tridium/Dependencies/glad"
@@ -59,7 +60,8 @@ project "Tridium"
 		"%{IncludeDir.lua}/include",
 		"%{IncludeDir.sol2}/include",
 		"%{IncludeDir.entt}",
-		"%{IncludeDir.stbi}"
+		"%{IncludeDir.stbi}",
+		"%{IncludeDir.refl}"
 	}
 
 	libdirs
