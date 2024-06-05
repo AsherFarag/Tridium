@@ -22,11 +22,11 @@ namespace Tridium {
 		void OnEnd();
 
 		GameObject InstantiateGameObject( const std::string& name = "GameObject" );
+		auto& GetRegistry() { return m_Registry; }
+		void Clear();
 
 		void SetPaused( bool newPaused ) { m_Paused = newPaused; }
 		bool IsPaused() const { return m_Paused; }
-		auto& GetRegistry() { return m_Registry; }
-
 		CameraComponent* GetMainCamera();
 		void SetMainCamera( const EntityID& a_Camera ) { m_MainCamera = a_Camera; }
 

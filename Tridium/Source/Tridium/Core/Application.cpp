@@ -84,11 +84,6 @@ namespace Tridium {
 
 						void main()
 						{
-							//aColor = vec4( 0.3, 0.35, 1, 1 );
-							//aColor = vec4( vPosition * 0.5 + 0.5, 1 );
-							//aColor = vec4( vPosition.x * 0.5 + 0.5, vPosition.y * 0.5 + 0.5, 1 - (vPosition.x * 0.5 + 0.5) - (vPosition.y * 0.5 + 0.5 ), 1 );
-							//aColor = vec4(vPosition.y, vPosition.y, vPosition.y, 0.5) * 0.5 + 0.5;
-							//aColor = vec4(0,1,0,1);
 							aColor = (vColor * uColour);
 						}
 					)";

@@ -52,6 +52,7 @@ namespace Tridium {
 	public:
 		SpriteComponent();
 		SpriteComponent(const Ref<Texture2D>& a_Texture);
+		SpriteComponent( const std::string& a_TexturePath );
 		~SpriteComponent() = default;
 
 		inline Quad& GetMesh() { return m_Mesh; }

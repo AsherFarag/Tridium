@@ -93,8 +93,14 @@ namespace Tridium {
 					sprite.GetTexture()->Bind();
 					transform.Scale.y *= (float)sprite.GetTexture()->GetHeight() / (float)sprite.GetTexture()->GetWidth();
 				}
+
 				Renderer::Submit( sprite.GetShader(), sprite.GetMesh().VAO, transform.GetTransform() );
 				transform.Scale.y = oldY;
+
+				if ( sprite.GetTexture() )
+				{
+					sprite.GetTexture()->Unbind();
+				}
 			} );
 
 		Renderer::EndScene();
@@ -119,6 +125,11 @@ namespace Tridium {
 		auto go = GameObject( m_Registry.create() );
 		go.Init( a_Name );
 		return go;
+	}
+
+	void Scene::Clear()
+	{
+		m_Registry.clear();
 	}
 
 	CameraComponent* Scene::GetMainCamera()

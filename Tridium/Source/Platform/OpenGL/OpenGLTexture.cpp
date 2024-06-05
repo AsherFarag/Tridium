@@ -116,4 +116,8 @@ namespace Tridium {
 	{
 		glBindTextureUnit( slot, m_RendererID );
 	}
+	void OpenGLTexture2D::Unbind( uint32_t slot ) const
+	{
+		glBindTextureUnit( slot, 0 );
+	}
 }
