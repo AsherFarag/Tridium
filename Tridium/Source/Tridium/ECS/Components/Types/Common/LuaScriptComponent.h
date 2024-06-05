@@ -17,6 +17,7 @@ namespace Tridium {
 
 		virtual void OnUpdate() override;
 
+		auto& GetEnvironment() { return m_Environment; }
 		Ref<Script>& GetScript() { return m_Script; }
 		void SetScript( const Ref<Script>&a_Script );
 
