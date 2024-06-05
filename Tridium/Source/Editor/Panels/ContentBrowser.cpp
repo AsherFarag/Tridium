@@ -3,6 +3,8 @@
 
 #include "ContentBrowser.h"
 #include "Editor/EditorLayer.h"
+#include <fstream>
+
 
 namespace Tridium::Editor {
 
@@ -48,6 +50,12 @@ namespace Tridium::Editor {
 		}
 
 		ImGui::PopStyleVar();
+	}
+
+	void ContentBrowser::OnEvent( Event& e )
+	{
+		EventDispatcher dispatcher( e );
+		dispatcher.Dispatch<MouseButtonPressedEvent>( TE_BIND_EVENT_FN( ContentBrowser::OnMouseButtonPressed, std::placeholders::_1 ) );
 	}
 
 	void ContentBrowser::OnImGuiDraw()
@@ -99,6 +107,41 @@ namespace Tridium::Editor {
 			ImGui::EndTable();
 		}
 
+		// TEMP
+		TODO("Set up a PopUpModal system!")
+		ImGui::OpenPopupOnItemClick( "NewFile" );
+		// If the folder is right clicked, open a prompt to make a new file
+		if ( ImGui::BeginPopupModal( "NewFile" ) )
+		{
+			char fileName[ 1024 ] = { "ComponentTemplate.lua" };
+			ImGui::InputText( "File Name", fileName, 1024 );
+
+			ImGui::SameLine();
+			if ( ImGui::Button( "New" ) )
+			{
+				std::string filePath = ( m_CurrentDirectory / fileName ).string();
+				std::ifstream existingFile( filePath );
+				// If there is no file at the filePath,
+				// make a new file.
+				if ( !existingFile )
+				{
+					std::ofstream newFile( filePath, std::ios::out | std::ios::app );
+					// Create a new file and write in a component template
+					newFile << "function OnConstruct()\nend\n\nfunction OnUpdate( deltaTime )\nend\n\nfunction OnDestroy()\nend\n";
+					newFile.close();
+				}
+				existingFile.close();
+
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::SameLine();
+			if ( ImGui::Button( "Cancel" ) )
+				ImGui::CloseCurrentPopup();
+
+			ImGui::EndPopup();
+		}
+
 		ImGui::End();
 
 		if ( !m_Open )
@@ -116,6 +159,11 @@ namespace Tridium::Editor {
 		if ( ext == ".png") { return ContentType::Texture; }
 
 		return ContentType::None;
+	}
+
+	bool ContentBrowser::OnMouseButtonPressed( MouseButtonPressedEvent& e )
+	{
+		return false;
 	}
 
 	bool ContentBrowser::ContentItemOnImGuiDraw( const ContentType type, const fs::path& a_FilePath, const ImVec2& size )

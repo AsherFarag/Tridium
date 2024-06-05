@@ -142,15 +142,17 @@ namespace Tridium::Editor {
 
 		if ( !ImGui::Begin("Scene Heirarchy") )
 		{
+			ImGui::PopStyleVar();
+
 			m_IsFocused = false;
 			ImGui::PopStyleVar();
 			ImGui::End();
 			return;
 		}
 
-		m_IsFocused = ImGui::IsWindowFocused() || ImGui::IsItemFocused();
-
 		ImGui::PopStyleVar();
+
+		m_IsFocused = ImGui::IsWindowFocused() || ImGui::IsItemFocused();
 
 		auto gameObjects = m_Context->GetRegistry().view<TagComponent>();
 		ImGui::Text( "Game Objects: %i", gameObjects.size() );
@@ -182,6 +184,19 @@ namespace Tridium::Editor {
 				go.AddComponent<MeshComponent>();
 				SetSelectedGameObject( go );
 			}
+
+			if ( ImGui::MenuItem( "Sprite" ) )
+			{
+				auto go = m_Context->InstantiateGameObject( "Sprite" );
+				go.AddComponent<SpriteComponent>();
+				SetSelectedGameObject( go );
+			}
+
+			ImGui::Separator();
+
+			ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Text, { 0.8, 0.1, 0.1, 0.8 } );
+			if ( ImGui::MenuItem( " - Remove All - " ) ) m_Context->Clear();
+			ImGui::PopStyleColor();
 
 			ImGui::EndMenu();
 		}
@@ -396,8 +411,9 @@ namespace Tridium::Editor {
 
 				if ( component.GetTexture() && ImGui::TreeNode( "Preview:" ) )
 				{
+					float yScale = (float)component.GetTexture()->GetHeight() / (float)component.GetTexture()->GetWidth();
 					ImGui::Image( (ImTextureID)component.GetTexture()->GetRendererID(),
-						{ 100, 100 },
+						{ 200.f, yScale * 200.f },
 						{ 0, 1 }, { 1, 0 } );
 
 					ImGui::TreePop();

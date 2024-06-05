@@ -50,6 +50,8 @@ public:
 			Application::Quit();
 			return true;
 		}
+
+		return false;
 	}
 
 	GameObject Player;
@@ -60,15 +62,23 @@ class Sandbox : public Tridium::Application
 public:
 	Sandbox()
 	{
-		auto gameUI = new PlayerUI();
-		PushOverlay( gameUI );
+		GameUI = new PlayerUI();
+		PushOverlay( GameUI );
 
+		SetScene();
+	}
 
+	~Sandbox()
+	{
+
+	}
+
+	void SetScene()
+	{
 		auto& background = GetScene()->InstantiateGameObject( "Background" );
-		background.AddComponent<SpriteComponent>( Texture2D::Create( ( Application::GetAssetDirectory() / "Engine/Editor/Icons/Background.png" ).string() ));
+		background.AddComponent<SpriteComponent>( ( Application::GetAssetDirectory() / "Engine/Editor/Icons/DeleteThisLater.png" ).string() );
 		background.TryGetComponent<TransformComponent>()->Position.z = -30;
-		//background.TryGetComponent<TransformComponent>()->Rotation.y = glm::radians( 90.f );
-		background.TryGetComponent<TransformComponent>()->Scale = Vector3(15);
+		background.TryGetComponent<TransformComponent>()->Scale = Vector3( 15 );
 
 		auto& obstacleSpawner = GetScene()->InstantiateGameObject( "Obstacle Spawner" );
 		obstacleSpawner.AddComponent<MeshComponent>();
@@ -80,14 +90,10 @@ public:
 		player.AddComponent<LuaScriptComponent>( Script::Create( Application::GetAssetDirectory() / "Scripts/Game/Player.lua" ) );
 		player.AddComponent<SphereColliderComponent>();
 
-		gameUI->Player = player;
-
+		GameUI->Player = player;
 	}
 
-	~Sandbox()
-	{
-
-	}
+	PlayerUI* GameUI = nullptr;
 };
 
 Tridium::Application* Tridium::CreateApplication()

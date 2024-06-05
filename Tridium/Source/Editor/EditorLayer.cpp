@@ -208,25 +208,25 @@ namespace Tridium::Editor {
 		if ( ImGui::BeginMenu( "File" ) )
 		{
 			// Project
-			if ( ImGui::MenuItem( "New Project" ) )
+			if ( ImGui::MenuItem( "New Project", nullptr, nullptr, false ) )
 				TE_CORE_INFO( "New Project" );
 
-			if ( ImGui::MenuItem( "Open Project" ) )
+			if ( ImGui::MenuItem( "Open Project", nullptr, nullptr, false ) )
 				TE_CORE_INFO( "Open Project" );
 
-			if ( ImGui::MenuItem( "Save Project" ) )
+			if ( ImGui::MenuItem( "Save Project", nullptr, nullptr, false ) )
 				TE_CORE_INFO( "Save Project" );
 
 			ImGui::Separator();
 
 			// Scene
-			if ( ImGui::MenuItem( "New Scene" ) )
+			if ( ImGui::MenuItem( "New Scene", nullptr, nullptr, false ) )
 				TE_CORE_INFO( "New Scene" );
 
-			if ( ImGui::MenuItem( "Open Scene" ) )
+			if ( ImGui::MenuItem( "Open Scene", nullptr, nullptr, false ) )
 				TE_CORE_INFO( "Open Scene" );
 
-			if ( ImGui::MenuItem( "Save Scene" ) )
+			if ( ImGui::MenuItem( "Save Scene", nullptr, nullptr, false ) )
 				TE_CORE_INFO( "Save Scene" );
 
 			ImGui::EndMenu();
@@ -267,7 +267,6 @@ namespace Tridium::Editor {
 		}
 
 		ImGui::EndMenuBar();
-		
 	}
 
 	void EditorLayer::DrawEditorCameraViewPort()
