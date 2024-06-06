@@ -18,9 +18,10 @@ namespace Tridium {
 		void SetPerspective( float FOV, float nearClip, float farClip );
 		void SetOrthographic( float size, float nearClip, float farClip );
 
+		float GetAspectRatio() const { return m_AspectRatio; }
 		void SetViewportSize( uint32_t width, uint32_t height );
 
-		float GetPerspectiveFOV() const { return m_Perspective.FOV; }
+		float GetPerspectiveFOV() const { return m_Perspective.FOV; } 
 		void SetPerspectiveFOV( float FOV ) { m_Perspective.FOV = FOV; RecalculateProjection(); }
 		float GetPerspectiveNearClip() const { return m_Perspective.Near; }
 		void SetPerspectiveNearClip( float nearClip ) { m_Perspective.Near = nearClip; RecalculateProjection(); }
@@ -46,7 +47,7 @@ namespace Tridium {
 
 		struct PerspectiveData
 		{
-			float FOV = glm::radians( 45.0f );
+			float FOV = 45.0f;
 			float Near = 0.01f, Far = 1000.0f;
 		} m_Perspective;
 

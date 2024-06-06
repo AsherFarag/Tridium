@@ -47,7 +47,7 @@ namespace Tridium {
 	{
 		if ( m_ProjectionType == ProjectionType::Perspective )
 		{
-			m_Projection = glm::perspective( m_Perspective.FOV, m_AspectRatio, m_Perspective.Near, m_Perspective.Far );
+			m_Projection = glm::perspective( glm::radians( m_Perspective.FOV ), m_AspectRatio, m_Perspective.Near, m_Perspective.Far );
 		}
 		else // Orthographic
 		{

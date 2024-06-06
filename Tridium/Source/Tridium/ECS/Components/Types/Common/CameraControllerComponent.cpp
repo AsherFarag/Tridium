@@ -45,7 +45,7 @@ namespace Tridium {
 				else if ( fov > 150.f )
 					fov = 150.f;
 
-				cam->SceneCamera.SetPerspectiveFOV( glm::radians( fov ) );
+				cam->SceneCamera.SetPerspectiveFOV( fov );
 			}
 		}
 

@@ -87,15 +87,25 @@ namespace Tridium {
 		spriteComponents.each( [ & ]( auto entity, SpriteComponent& sprite, TransformComponent& transform )
 			{
 				sprite.GetShader()->Bind();
-				float oldY = transform.Scale.y;
+				Vector3 oldScale = transform.Scale;
+
 				if ( sprite.GetTexture() )
 				{
 					sprite.GetTexture()->Bind();
-					transform.Scale.y *= (float)sprite.GetTexture()->GetHeight() / (float)sprite.GetTexture()->GetWidth();
+
+					Vector2 textureSize( sprite.GetTexture()->GetWidth(), sprite.GetTexture()->GetHeight() );
+					if ( textureSize.x > textureSize.y )
+					{
+						transform.Scale.y *= textureSize.y / textureSize.x;
+					}
+					else
+					{
+						transform.Scale.x *= textureSize.x / textureSize.y;
+					}
 				}
 
 				Renderer::Submit( sprite.GetShader(), sprite.GetMesh().VAO, transform.GetTransform() );
-				transform.Scale.y = oldY;
+				transform.Scale = oldScale;
 
 				if ( sprite.GetTexture() )
 				{

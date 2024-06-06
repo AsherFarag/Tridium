@@ -361,8 +361,45 @@ namespace Tridium::Editor {
 				Camera::ProjectionType projType = component.SceneCamera.GetProjectionType();
 				const char* const items[2] = {"Perspective", "Orthographic"};
 
+				auto& camera = component.SceneCamera;
+
 				ImGui::Combo( "Perspective", &currentItem, items, 2, -1 );
-				component.SceneCamera.SetProjectionType( (Camera::ProjectionType)currentItem );
+				camera.SetProjectionType( (Camera::ProjectionType)currentItem );
+
+				ImGui::Text( "%f : Aspect Ratio", camera.GetAspectRatio() );
+
+				if ( camera.GetProjectionType() == Camera::ProjectionType::Perspective )
+				{
+					float fov = camera.GetPerspectiveFOV();
+					if ( ImGui::DragFloat( "FOV", &fov, 1.f, 0, 0, "%.0f" ) )
+						camera.SetPerspectiveFOV( fov );
+
+					float nearClip = camera.GetPerspectiveNearClip();
+					if ( ImGui::DragFloat( "Near Clip", &nearClip, 1.f, 0, 0, "%.1f" ) )
+						camera.SetPerspectiveNearClip( nearClip );
+
+					float farClip = camera.GetPerspectiveFarClip();
+					if ( ImGui::DragFloat( "Far Clip", &farClip, 1.f, 0, 0, "%.1f" ) )
+						camera.SetPerspectiveFarClip( farClip );
+
+				}
+				// Orthographic
+				else
+				{
+					float size = camera.GetOrthographicSize();
+					if ( ImGui::DragFloat( "Size", &size, 1.f, 0, 0, "%.1f" ) )
+						camera.SetOrthographicSize( size );
+
+					float nearClip = camera.GetOrthographicNearClip();
+					if ( ImGui::DragFloat( "Near Clip", &nearClip, 1.f, 0, 0, "%.1f" ) )
+						camera.SetOrthographicNearClip( nearClip );
+
+					float farClip = camera.GetOrthographicFarClip();
+					if ( ImGui::DragFloat( "Far Clip", &farClip, 1.f, 0, 0, "%.1f" ) )
+						camera.SetOrthographicFarClip( farClip );
+				}
+
+
 			} );
 
 		DrawComponent<CameraControllerComponent>( "Camera Controller", gameObject, []( auto& component )
@@ -410,9 +447,27 @@ namespace Tridium::Editor {
 
 				if ( component.GetTexture() && ImGui::TreeNode( "Preview:" ) )
 				{
-					float yScale = (float)component.GetTexture()->GetHeight() / (float)component.GetTexture()->GetWidth();
+					Vector2 textureSize( component.GetTexture()->GetWidth(), component.GetTexture()->GetHeight() );
+					ImVec2 previewSize;
+					ImVec2 regionAvail = ImGui::GetContentRegionAvail();
+					// Centres the image so that there will never be less padding on the right side than the left.
+					regionAvail.x -= ImGui::GetContentRegionMax().x - regionAvail.x;
+
+					if ( textureSize.x > textureSize.y )
+					{
+						float yScale = textureSize.y / textureSize.x;
+						previewSize.x = regionAvail.x;
+						previewSize.y = previewSize.x * yScale;
+					}
+					else
+					{
+						float xScale = textureSize.x / textureSize.y;
+						previewSize.y = regionAvail.y;
+						previewSize.x = previewSize.y * xScale;
+					}
+
 					ImGui::Image( (ImTextureID)component.GetTexture()->GetRendererID(),
-						{ 200.f, yScale * 200.f },
+						previewSize,
 						{ 0, 1 }, { 1, 0 } );
 
 					ImGui::TreePop();
