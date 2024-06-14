@@ -5,7 +5,6 @@
 namespace Tridium {
 
 	class Camera;
-	class TransformComponent;
 
 	class Renderer
 	{

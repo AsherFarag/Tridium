@@ -28,5 +28,12 @@ namespace Tridium {
 	{
 		return Quaternion( Vector3( -Rotation.x, -Rotation.y, 0.f ) );
 	}
+	
+	START_REFLECT( TransformComponent )
+		PROPERTY( TransformComponent, Position )
+		PROPERTY( TransformComponent, Rotation )
+		PROPERTY( TransformComponent, Scale )
+		FUNCTION( TransformComponent, GetForward )
+	END_REFLECT
 
 }

@@ -7,6 +7,8 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
+#pragma region Macro Helpers
+
 #define BIT(x) (1 << x)
 
 #define Stringize( x ) #x 
@@ -14,9 +16,23 @@ namespace fs = std::filesystem;
 #define PRAGMA(p) _Pragma(#p)
 #define EXPAND(x) x
 
-#define SELECT_MACRO_2(_1, _2, x, ...) x
-
 #define TE_BIND_EVENT_FN(fn, ...) std::bind( &fn, this, __VA_ARGS__ )
+
+#pragma region Selectors
+
+#define SELECT_MACRO_2(_1, _2, x, ...) x
+#define SELECT_MACRO_3(_1, _2, _3, x, ...) x
+#define SELECT_MACRO_4(_1, _2, _3, _4, x, ...) x
+#define SELECT_MACRO_5(_1, _2, _3, _4, _5, x, ...) x
+#define SELECT_MACRO_6(_1, _2, _3, _4, _5, _6, x, ...) x
+#define SELECT_MACRO_7(_1, _2, _3, _4, _5, _6, _7, x, ...) x
+#define SELECT_MACRO_8(_1, _2, _3, _4, _5, _6, _7, _8, x, ...) x
+#define SELECT_MACRO_9(_1, _2, _3, _4, _5, _6, _7, _8, _9, x, ...) x
+#define SELECT_MACRO_10(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, x, ...) x
+
+#pragma endregion
+
+#pragma endregion
 
 #ifdef TE_PLATFORM_WINDOWS
 
@@ -46,6 +62,7 @@ namespace fs = std::filesystem;
 	#define TE_ASSERT(x, ...)
 	#define TE_CORE_ASSERT(x, ...)
 #endif // TE_ENABLE_ASSERTS
+
 namespace Tridium {
 
 #pragma region Memory

@@ -145,7 +145,6 @@ namespace Tridium::Editor {
 			ImGui::PopStyleVar();
 
 			m_IsFocused = false;
-			ImGui::PopStyleVar();
 			ImGui::End();
 			return;
 		}
@@ -453,7 +452,7 @@ namespace Tridium::Editor {
 					// Centres the image so that there will never be less padding on the right side than the left.
 					regionAvail.x -= ImGui::GetContentRegionMax().x - regionAvail.x;
 
-					if ( textureSize.x > textureSize.y )
+					if ( textureSize.x >= textureSize.y )
 					{
 						float yScale = textureSize.y / textureSize.x;
 						previewSize.x = regionAvail.x;
@@ -465,10 +464,11 @@ namespace Tridium::Editor {
 						previewSize.y = regionAvail.y;
 						previewSize.x = previewSize.y * xScale;
 					}
-
+					ImGui::PushStyleVar( ImGuiStyleVar_::ImGuiStyleVar_FrameRounding, 5 );
 					ImGui::Image( (ImTextureID)component.GetTexture()->GetRendererID(),
 						previewSize,
 						{ 0, 1 }, { 1, 0 } );
+					ImGui::PopStyleVar();
 
 					ImGui::TreePop();
 				}

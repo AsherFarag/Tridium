@@ -10,6 +10,7 @@
 #include <Tridium/Rendering/RenderCommand.h>
 
 // TEMP
+using namespace entt::literals;
 #include "GLFW/glfw3.h"
 #include <Tridium/ECS/GameObject.h>
 #include <Tridium/ECS/Components/Types.h>
@@ -51,84 +52,11 @@ namespace Tridium {
 		RenderCommand::Init();
 
 		// TEMP
-		std::string vertexSrc =
-			R"(
-						#version 410
-
-						layout(location = 0) in vec3 aPosition;
-						layout(location = 1) in vec4 aColor;
-						
-						out vec4 vPosition;
-						out vec4 vColor;			
-						
-						uniform mat4 uPVM;
-						
-						void main()
-						{	
-							gl_Position = uPVM * vec4(aPosition, 1);
-							vPosition =  vec4(aPosition, 1);
-							vColor = aColor;
-						}
-					)";
-
-		std::string fragSrc =
-			R"(
-						#version 410 core
-						
-						layout(location = 0) out vec4 aColor;
-
-						in vec4 vPosition;
-						in vec4 vColor;						
-						
-						uniform vec4 uColour;
-
-						void main()
-						{
-							aColor = (vColor * uColour);
-						}
-					)";
-
-		Shader::Create( vertexSrc, fragSrc, "Default" );
-
-		// TEMP
-		vertexSrc =
-			R"(
-						#version 410
-
-						layout(location = 0) in vec3 aPosition;
-						layout(location = 1) in vec2 aTextureCoords;
-						
-						out vec4 vPosition;
-						out vec2 vTextureCoords;			
-						
-						uniform mat4 uPVM;
-						
-						void main()
-						{	
-							gl_Position = uPVM * vec4(aPosition, 1);
-							vPosition =  vec4(aPosition, 1);
-							vTextureCoords = aTextureCoords;
-						}
-					)";
-
-		fragSrc =
-			R"(
-						#version 410 core
-
-						out vec4 aFragColour;
-
-						in vec4 vPosition;
-						in vec2 vTextureCoords;						
-						
-						uniform sampler2D uTexture;
-
-						void main()
-						{
-							aFragColour = vec4(texture(uTexture, vTextureCoords).rgb, 1);
-						}
-					)";
-
-		Shader::Create( vertexSrc, fragSrc, "Texture" );
+		// entt meta demo
+		entt::meta<TransformComponent>()
+			.data<&TransformComponent::Position>( "Position"_hs )
+			.data<&TransformComponent::Rotation>( "Rotation"_hs )
+			.data<&TransformComponent::Scale>( "Scale"_hs );
 	}
 	
 	Application::~Application()
@@ -139,12 +67,16 @@ namespace Tridium {
 	{
 		m_Running = true;
 
+		// TEMP
+		// entt meta demo
+		auto data = entt::resolve<TransformComponent>().data( "Position"_hs );
+		TE_CORE_DEBUG( data.type().info().name() );
+
 		while ( m_Running )
 		{
 			Time::Update();
 
 			m_FPS = (uint32_t)( 1.0 / Time::DeltaTime() );
-
 
 			// Update Loop ========================================================================================
 

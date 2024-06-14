@@ -1,9 +1,11 @@
 local Time = 0.0
-local SpawnRate = 2.0
+local SpawnTimer = 0.0
+local SpawnRate = 0.0
 
 local function SpawnObstacle()
 	go = GameObject.new()
-	go:AddMesh()
+	--go:AddMesh()
+	go:AddSprite("Content/Engine/Editor/Icons/Alpha.png")
 	go:AddScript("Content/Scripts/Game/Obstacle.lua")
 
 	go:GetTransform().Position = gameObject:GetTransform().Position
@@ -14,8 +16,11 @@ end
 
 function OnUpdate( deltaTime )
 	Time = Time + deltaTime
-	if Time >= SpawnRate then
-		Time = Time - SpawnRate
+	gameObject:GetTransform().Position.x = math.sin(Time)
+
+	SpawnTimer = SpawnTimer + deltaTime
+	if SpawnTimer >= SpawnRate then
+		SpawnTimer = SpawnTimer - SpawnRate
 		SpawnObstacle()
 	end
 end

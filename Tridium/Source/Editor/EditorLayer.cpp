@@ -303,7 +303,7 @@ namespace Tridium::Editor {
 
 	void UIToolBar::OnImGuiDraw()
 	{
-		constexpr ImVec2 buttonSize( 20, 20 );
+		constexpr ImVec2 buttonSize( 22, 22 );
 		constexpr ImVec2 buttonPadding( 5, 5 );
 
 		ImGui::Begin( "##UIToolBar", nullptr, 

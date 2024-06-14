@@ -5,7 +5,10 @@ namespace Tridium {
 
 	DEFINE_COMPONENT( TransformComponent )
 	{
+		REFLECT;
+
 	public:
+
 		TransformComponent() = default;
 		TransformComponent( const TransformComponent& ) = default;
 		TransformComponent( const Vector3& a_Position );
@@ -17,7 +20,6 @@ namespace Tridium {
 		Vector3 GetForward() const;
 		Quaternion GetOrientation() const;
 
-	public:
 		Vector3 Position = Vector3( 0.0f );
 		Vector3 Rotation = Vector3( 0.0f );
 		Vector3 Scale = Vector3( 1.0f );
@@ -28,5 +30,4 @@ namespace Tridium {
 		TransformComponent* Owner = nullptr; // The gameobject that owns this, m_Owner has no parent gameobject.
 		std::unordered_map<std::string, TransformComponent*> Children;
 	};
-
 }

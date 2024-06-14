@@ -34,12 +34,14 @@ namespace Tridium {
 	class Shader
 	{
 	public:
-		static Ref<Shader> Create( const std::string& vertex, const std::string& frag, const std::string& name );
+		static Ref<Shader> Create( const std::string& filePath );
+		static Ref<Shader> Create( const std::string& name, const std::string& vertex, const std::string& frag );
 		virtual ~Shader() = default;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 
+		virtual const std::string& GetName() const = 0;
 
 		// - SINGULAR -
 

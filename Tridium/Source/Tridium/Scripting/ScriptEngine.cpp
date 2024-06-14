@@ -51,6 +51,7 @@ namespace Tridium {
             sol::factories( [](){ return Application::GetScene()->InstantiateGameObject(); } ),
             "ID", sol::property( &GameObject::ID ),
             "GetTransform", &GameObject::GetComponent<TransformComponent>,
+			"AddSprite", []( GameObject& go, std::string& spritePath ) { go.AddComponent<SpriteComponent>( spritePath ); },
             "AddScript", []( GameObject& go, std::string& scriptPath ) { go.AddComponent<LuaScriptComponent>( scriptPath ); } );
 
         //m_LuaState.set_function( "AddScript", &GameObject::AddComponent<LuaScriptComponent> );
@@ -218,7 +219,7 @@ namespace Tridium {
             } );
 
         std::chrono::duration<double> elapsed_seconds = std::chrono::high_resolution_clock::now() - start;
-        TE_CORE_INFO( "SCRIPTS RECOMPILED - Time Taken: {0} seconds", elapsed_seconds.count() < 0.01 ? 0.0 : elapsed_seconds.count() );
+        TE_CORE_INFO( "SCRIPTS RECOMPILED - Time Taken: {0} seconds", elapsed_seconds.count() /*< 0.01 ? 0.0 : elapsed_seconds.count()*/ );
     }
 
 }

@@ -1,32 +1,17 @@
 #pragma once
 
-template <typename Signature>
-class Delegate;
-
-template <typename returnT, typename... Args >
-class Delegate<returnT(Args...)>
-{
-	typedef returnT( *Func )( Args... );
-
-public:
-	Delegate() {}
-
-	template<typename &func>
-	void Bind( Func a_Func ) { m_Func = a_Func; }
-	/* Calls the binded function */
-	returnT Call( Args&&... a_Args ) { return m_Func( std::forward< Args >( a_Args )... ); }
-
-private:
-
-	Func m_Func;
-};
-
-class MultiCastDelegate
+template <typename ReturnT, typename... Args >
+class Delegate
 {
 public:
-	void Bind() {}
-	/* Calls the binded functions */
-	void Broadcast() {}
+	Delegate() : m_Functor(nullptr), m_Object(nullptr) {}
+
+	ReturnT operator()(const Args&... args)
+	{
+		return m_Object->m_Functor( std::forward::<Args>( args )... );
+	}
 
 private:
+	void* m_Functor;
+	void* m_Object;
 };

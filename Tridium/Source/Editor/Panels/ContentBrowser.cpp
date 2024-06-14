@@ -108,8 +108,8 @@ namespace Tridium::Editor {
 		}
 
 		// TEMP
-		TODO("Set up a PopUpModal system!")
-		ImGui::OpenPopupOnItemClick( "NewFile" );
+		TODO( "Set up a PopUpModal system!" )
+		ImGui::OpenPopupOnItemClick( "NewFile",ImGuiPopupFlags_::ImGuiPopupFlags_MouseButtonRight );
 		// If the folder is right clicked, open a prompt to make a new file
 		if ( ImGui::BeginPopupModal( "NewFile" ) )
 		{

@@ -43,8 +43,13 @@ namespace Tridium {
 			if ( dynamic_cast<ScriptableComponent*>( component ) == nullptr )
 				continue;
 
+			auto before = std::chrono::high_resolution_clock::now();
+
 			for ( auto entity : storage.second )
-				static_cast<ScriptableComponent*>( storage.second.value( entity ) )->OnUpdate();
+				reinterpret_cast<ScriptableComponent*>( storage.second.value( entity ) )->OnUpdate();
+
+			std::chrono::duration<double> elapsed_seconds = std::chrono::high_resolution_clock::now() - before;
+			TE_CORE_DEBUG( "{0}", elapsed_seconds.count() * 1000.0 );
 		}
 
 		TODO( "Make this only happen if the camera is shown!" );
@@ -69,15 +74,22 @@ namespace Tridium {
 
 		auto meshComponents = m_Registry.view<MeshComponent, TransformComponent>();
 
+		Ref<Shader> currentShader = nullptr;
+
 		meshComponents.each( [&]( auto entity, MeshComponent& mesh, TransformComponent& transform )
 			{
-				mesh.GetShader()->Bind();
+				if ( mesh.GetShader() != currentShader )
+				{
+					currentShader = mesh.GetShader();
+					currentShader->Bind();
+				}
+
 				Vector4 colour = Vector4( (float)( glm::sin( Time::Get() + 10.f ) * 0.5f + 0.5f ),
 					(float)( glm::sin( Time::Get() ) * 0.5f + 0.5f ),
 					(float)( glm::sin( Time::Get() - 10.f ) * 0.5f + 0.5f ), 1.0 );
 
 
-				mesh.GetShader()->SetFloat4( "uColour", colour );
+				currentShader->SetFloat4( "uColour", colour );
 				Renderer::Submit( mesh.GetShader(), mesh.GetMesh().VAO, transform.GetTransform() );
 			} );
 
@@ -86,7 +98,12 @@ namespace Tridium {
 
 		spriteComponents.each( [ & ]( auto entity, SpriteComponent& sprite, TransformComponent& transform )
 			{
-				sprite.GetShader()->Bind();
+				if ( sprite.GetShader() != currentShader )
+				{
+					currentShader = sprite.GetShader();
+					currentShader->Bind();
+				}
+
 				Vector3 oldScale = transform.Scale;
 
 				if ( sprite.GetTexture() )

@@ -8,4 +8,12 @@ namespace Tridium {
 		//OnDestroy();
 	}
 
+	void Component::OnReflect()
+	{
+		BEGIN_REFLECT( Component )
+			PROPERTY( &Component::m_GameObject, "GameObject" )
+			FUNCTION( &Component::GetGameObject)
+		END_REFLECT
+	}
+
 }

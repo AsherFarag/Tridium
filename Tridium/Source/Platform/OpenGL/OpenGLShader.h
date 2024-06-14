@@ -5,14 +5,19 @@
 
 namespace Tridium {
 
+    using ShaderSources = std::unordered_map<GLenum, std::string>;
+
     class OpenGLShader : public Shader
     {
     public:
-        OpenGLShader( const std::string& vertex, const std::string& frag );
+        OpenGLShader( const std::string& filePath );
+        OpenGLShader( const std::string& name, const std::string& vertex, const std::string& frag );
         virtual ~OpenGLShader();
 
         virtual void Bind() const override;
         virtual void Unbind() const override;
+
+        virtual const std::string& GetName() const override { return m_Name; }
 
         virtual bool SetInt( const char* name, const int val ) override;
         virtual bool SetInt2( const char* name, const iVector2& val ) override;
@@ -38,7 +43,13 @@ namespace Tridium {
         virtual bool SetMatrix4( const char* name, const uint32_t count, const Matrix4* val ) override;
 
     private:
+        std::string ReadFile( const std::string& filePath );
+        ShaderSources PreProcess( const std::string& source );
+        void Compile(const ShaderSources& shaderSources );
+
+    private:
         uint32_t m_RendererID;
+        std::string m_Name;
     };
 
 }
