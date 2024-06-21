@@ -5,34 +5,6 @@
 #include "entt.hpp"
 #include <Tridium/ECS/Reflection.h>
 
-//struct IPropertyDrawer
-//{
-//	virtual void OnImGui()
-//	{
-//
-//	}
-//};
-//
-//template < typename T >
-//struct PropertyDrawer
-//{
-//	void OnImGui() override
-//	{
-//		 entt::resolve< T >().fields();
-//		 for ( field : fields )
-//		 {}
-//	}
-//};
-//template <>
-//struct PropertyDrawer<Tridium::ScriptableComponent>
-//{
-//	void OnImGui() override
-//	{
-//
-//	}
-//};
-
-
 namespace Tridium {
 
 	class Component
@@ -41,9 +13,9 @@ namespace Tridium {
 	public:
 		Component() {}
 		virtual ~Component() = default;
+		virtual void OnDestroy() {}
 
 		const GameObject GetGameObject() const { return m_GameObject; }
-		static void OnReflect();
 
 	private:
 		GameObject m_GameObject;
@@ -65,12 +37,12 @@ namespace Tridium {
 
 	public:
 		ScriptableComponent() {}
-		virtual ~ScriptableComponent();
+		virtual ~ScriptableComponent() = default;
+		virtual void OnDestroy() {}
 
 		virtual void OnUpdate() {}
 
 	protected:
 		virtual void OnConstruct() {}
-		virtual void OnDestroy() {}
 	};
 }

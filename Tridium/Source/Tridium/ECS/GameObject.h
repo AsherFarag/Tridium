@@ -16,8 +16,12 @@ namespace Tridium {
 		friend class Scene;
 	public:
 		GameObject( EntityID id = entt::null );
-		operator EntityID ( ) { return m_ID; }
-		operator const EntityID( ) const { return m_ID; }
+		operator uint32_t () { return (uint32_t)m_ID; }
+		operator const uint32_t() const { return (uint32_t)m_ID; }
+		operator EntityID () { return m_ID; }
+		operator const EntityID() const { return m_ID; }
+		bool operator ==( const GameObject& other ) const { return m_ID == other.m_ID; }
+		bool operator !=( const GameObject& other ) const { return m_ID != other.m_ID; }
 
 		template <typename T, typename... Args>
 		T& AddComponent( Args&&... args );
@@ -34,11 +38,25 @@ namespace Tridium {
 		template <typename T>
 		inline void RemoveComponent();
 
+		static inline GameObject Create() { return Application::GetScene()->InstantiateGameObject(); }
+		static inline GameObject Create( const std::string& a_Name ) { return Application::GetScene()->InstantiateGameObject( a_Name ); }
 		inline void Destroy() { Application::GetScene()->m_Registry.destroy( m_ID ); }
 		inline bool IsValid() const { return Application::GetScene()->m_Registry.valid( m_ID ); }
 
 		const inline EntityID ID() const { return m_ID; }
 		std::string& GetTag() const;
+		TransformComponent& GetTransform() const;
+		Matrix4 GetWorldTransform() const;
+		Matrix4 GetLocalTransform() const;
+
+		bool HasParent() const;
+		GameObject GetParent() const;
+		void AttachToParent( GameObject a_Parent );
+		void DetachFromParent();
+		void AttachChild( GameObject a_Child );
+		void DetachChild( GameObject a_Child );
+		GameObject GetChild( const std::string& a_Tag ) const; /* Slow operation, avoid if possible. */
+		std::vector<GameObject>& GetChildren();
 
 	private:
 		void Init( const std::string& name );
@@ -63,20 +81,18 @@ namespace Tridium {
 		// Set the GameObject ID to this GameObject
 		static_cast<Component*>(&component)->m_GameObject = m_ID;
 
+		TODO( "Implement a proper Component Initializer" )
+		static bool SetupComponent = []{
+			const auto OnDestroyComponent = +[]( entt::registry& a_Registry, entt::entity a_ID )
+			{
+				a_Registry.get< T >( a_ID ).OnDestroy();
+			};
+			Application::GetScene()->m_Registry.on_destroy<T>().connect<OnDestroyComponent>();
+			return true;
+		}();
+
 		if constexpr ( std::is_base_of_v<ScriptableComponent, T> )
 		{
-			TODO("Implement a proper Component Initializer")
-			static bool SetupScriptableComponent = [] {
-
-				const auto OnDestroyScriptableObject = +[]( entt::registry& a_Registry, entt::entity a_ID )
-				{
-					a_Registry.get< T >( a_ID ).OnDestroy();
-				};
-				Application::GetScene()->m_Registry.on_destroy<T>().connect<OnDestroyScriptableObject>();
-				return true;
-			}();
-
-
 			auto scriptable = static_cast<ScriptableComponent*>( &component );
 
 			scriptable->OnConstruct();
@@ -112,5 +128,15 @@ namespace Tridium {
 	}
 
 #pragma endregion
+}
 
+namespace std {
+	template<>
+	struct hash<Tridium::GameObject>
+	{
+		size_t operator()( const Tridium::GameObject& go ) const 
+		{
+			return (size_t)go.ID();
+		}
+	};
 }

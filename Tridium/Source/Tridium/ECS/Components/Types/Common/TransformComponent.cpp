@@ -5,10 +5,35 @@
 #include <glm/gtc/matrix_transform.hpp>
 namespace Tridium {
 
+	START_REFLECT( TransformComponent )
+		PROPERTY( TransformComponent, Position )
+		PROPERTY( TransformComponent, Rotation )
+		PROPERTY( TransformComponent, Scale )
+		FUNCTION( TransformComponent, GetForward )
+	END_REFLECT
+
 	TransformComponent::TransformComponent( const Vector3& a_Translation )
 		: Position( a_Translation ) {}
 
-	Matrix4 TransformComponent::GetTransform() const
+	void TransformComponent::OnDestroy()
+	{
+		DetachFromParent();
+
+		for ( auto child : m_Children )
+		{
+			DetachChild( child );
+		}
+	}
+
+	Matrix4 TransformComponent::GetWorldTransform() const
+	{
+		if ( m_Parent.IsValid() )
+			return m_Parent.GetWorldTransform() * GetLocalTransform();
+		else
+			return GetLocalTransform();
+	}
+
+	Matrix4 TransformComponent::GetLocalTransform() const
 	{
 		Matrix4 rotationMatrix = glm::toMat4( Quaternion( Rotation ) );
 
@@ -28,12 +53,54 @@ namespace Tridium {
 	{
 		return Quaternion( Vector3( -Rotation.x, -Rotation.y, 0.f ) );
 	}
-	
-	START_REFLECT( TransformComponent )
-		PROPERTY( TransformComponent, Position )
-		PROPERTY( TransformComponent, Rotation )
-		PROPERTY( TransformComponent, Scale )
-		FUNCTION( TransformComponent, GetForward )
-	END_REFLECT
 
+	void TransformComponent::AttachToParent( GameObject a_Parent )
+	{
+		a_Parent.GetTransform().AttachChild(GetGameObject());
+	}
+
+	void TransformComponent::DetachFromParent()
+	{
+		if ( HasParent() )
+			GetParent().GetTransform().DetachChild(GetGameObject());
+	}
+
+	void TransformComponent::AttachChild( GameObject a_Child )
+	{
+		auto& childTransform = a_Child.GetTransform();
+		if ( childTransform.GetParent() != GetGameObject() )
+		{
+			childTransform.DetachFromParent();
+			childTransform.SetParent( GetGameObject() );
+			m_Children.push_back( a_Child );
+		}
+	}
+
+	void TransformComponent::DetachChild( GameObject a_Child )
+	{
+		auto& childTransform = a_Child.GetTransform();
+		if ( childTransform.GetParent() == GetGameObject() )
+		{
+			childTransform.SetParent();
+			RemoveChild( a_Child );
+		}
+	}
+
+	GameObject TransformComponent::GetChild( const std::string& a_Tag ) const
+	{
+		for ( GameObject child : m_Children )
+		{
+			if ( child.GetTag() == a_Tag )
+			{
+				return child;
+			}
+		}
+
+		return GameObject();
+	}
+
+	void TransformComponent::RemoveChild( GameObject a_Child )
+	{
+		m_Children.erase( std::find( m_Children.begin(), m_Children.end(), a_Child ) );
+	}
 }

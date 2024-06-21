@@ -24,7 +24,8 @@ namespace Tridium {
 	public:
 		static const double& Get() { return s_Time; } // Returns the time since this application was first executed.
 		static const double DeltaTime() { return s_DeltaTime; } // Returns the time it took to do the previous frame.
-		static const Timestep GetTimestep() { return s_TimeStep; } // Returns the desired, constant Delta Time. It never changes;
+		static const Timestep GetTimestep() { return s_TimeStep; }
+		static const void SetTimestep(Timestep a_NewTimestep ) { s_TimeStep = a_NewTimestep; }
 
 	private:
 		static void Update();
@@ -32,7 +33,7 @@ namespace Tridium {
 	private:
 		static double s_Time;
 		static double s_DeltaTime;
-		static const Timestep s_TimeStep;
+		static Timestep s_TimeStep;
 	};
 
 }

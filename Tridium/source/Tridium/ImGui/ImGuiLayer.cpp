@@ -40,7 +40,7 @@ namespace Tridium {
 		}
 
 		// - Set Default Font -
-		io.Fonts->AddFontFromFileTTF( ( Application::GetAssetDirectory() / "Engine/Fonts/DroidSans.ttf" ).string().c_str(), 15);
+		io.Fonts->AddFontFromFileTTF( ( Application::Get().GetAssetDirectory() / "Engine/Fonts/DroidSans.ttf" ).string().c_str(), 15);
 
 		Application& app = Application::Get();
 		GLFWwindow* window = static_cast<GLFWwindow*>( app.GetWindow().GetNativeWindow() );

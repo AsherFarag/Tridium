@@ -26,6 +26,9 @@ namespace Tridium::Editor {
 		void DrawSceneHeirarchy();
 		void DrawInspector();
 
+		// Scene Heirarchy List
+		void DrawSceneNode( GameObject go );
+
 		// Inspector
 		void InspectGameObject( GameObject gameObject );
 		template <typename T, typename... Args>

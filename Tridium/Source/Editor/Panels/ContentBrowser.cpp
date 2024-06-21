@@ -9,7 +9,7 @@
 namespace Tridium::Editor {
 
 	ContentBrowser::ContentBrowser()
-		: Panel( "Content Browser" ), m_CurrentDirectory( Application::GetAssetDirectory() )
+		: Panel( "Content Browser" ), m_CurrentDirectory( Application::Get().GetAssetDirectory() )
 	{
 		TODO( "Make proper Icon Assets" );
 		// TEMP
@@ -210,11 +210,11 @@ namespace Tridium::Editor {
 			ImGui::PushStyleColor( ImGuiCol_ButtonActive, ImVec4( 1.f, 1.f, 1.f, 1.f ) );
 			ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 1.f, 1.f, 1.f, 0.5f ) );
 
-				bool result = ImGui::ImageButton(
-					a_FilePath.string().c_str(),
-					(ImTextureID)icon->GetRendererID(),
-					{ size.x - paddingX * 2, size.y - paddingY * 2 },
-					{ 0,1 }, { 1,0 } );
+			bool result = ImGui::ImageButton(
+				a_FilePath.string().c_str(),
+				(ImTextureID)icon->GetRendererID(),
+				{ size.x - paddingX * 2, size.y - paddingY * 2 },
+				{ 0,1 }, { 1,0 } );
 
 			ImGui::PopStyleVar();
 			ImGui::PopStyleColor(3);

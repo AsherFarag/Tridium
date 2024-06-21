@@ -84,49 +84,49 @@ namespace Tridium::Editor {
 		ImGui::SetWindowFocus( "Inspector" );
 		ImGui::SetWindowFocus( "Scene Heirarchy" );
 	}
-	
+
 
 	bool SceneHeirarchy::OnKeyPressed( KeyPressedEvent& e )
 	{
 		if ( e.IsRepeat() )
 			return false;
 
-		bool shift = Input::IsKeyPressed(Input::KEY_LEFT_SHIFT);
+		bool shift = Input::IsKeyPressed( Input::KEY_LEFT_SHIFT );
 		bool control = Input::IsKeyPressed( Input::KEY_LEFT_CONTROL );
 		bool alt = Input::IsKeyPressed( Input::KEY_LEFT_ALT );
 
 		switch ( e.GetKeyCode() )
 		{
-			case Input::KEY_DELETE:
+		case Input::KEY_DELETE:
+		{
+			// Delete
+			// Destroys the selected game object
+			if ( m_SelectedGameObject.IsValid() )
 			{
-				// Delete
-				// Destroys the selected game object
+				m_SelectedGameObject.Destroy();
+				return true;
+			}
+			break;
+		}
+		case Input::KEY_F:
+		{
+			// Shift + F
+			// Make Editor Camera find the selected game object
+			if ( shift )
+			{
 				if ( m_SelectedGameObject.IsValid() )
 				{
-					m_SelectedGameObject.Destroy();
-					return true;
-				}
-				break;
-			}
-			case Input::KEY_F:
-			{
-				// Shift + F
-				// Make Editor Camera find the selected game object
-				if ( shift )
-				{
-					if ( m_SelectedGameObject.IsValid() )
+					if ( m_SelectedGameObject.HasComponent<TransformComponent>() )
 					{
-						if ( m_SelectedGameObject.HasComponent<TransformComponent>() )
-						{
-							auto& goTransform = m_SelectedGameObject.GetComponent<TransformComponent>();
-							auto& editorCam = EditorLayer::Get().GetEditorCamera();
-							editorCam.Position = goTransform.Position - (editorCam.GetForwardDirection() * 5.f);
-							return true;
-						}
+						auto& goTransform = m_SelectedGameObject.GetComponent<TransformComponent>();
+						auto& editorCam = EditorLayer::Get().GetEditorCamera();
+						editorCam.Position = goTransform.Position - ( editorCam.GetForwardDirection() * 5.f );
+						return true;
 					}
 				}
-				break;
 			}
+			break;
+		}
 		}
 
 		return false;
@@ -154,79 +154,136 @@ namespace Tridium::Editor {
 		m_IsFocused = ImGui::IsWindowFocused() || ImGui::IsItemFocused();
 
 		auto gameObjects = m_Context->GetRegistry().view<TagComponent>();
-		ImGui::Text( "Game Objects: %i", gameObjects.size() );
+		//ImGui::Text( "Game Objects: %i", gameObjects.size() );
 
-		ImGui::SameLine();
+		//ImGui::SameLine();
 
-		#pragma region Add-GameObject Button
+		//#pragma region Draw Add-GameObject Button
 
-		// Align the button to the right
-		float addGameObjectButtonWidth = ImGui::CalcTextSize( "+" ).x + ImGui::GetStyle().FramePadding.x * 2.f;
-		ImGui::SetCursorPosX( ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - addGameObjectButtonWidth - 5 );
+		//// Align the button to the right
+		//float addGameObjectButtonWidth = ImGui::CalcTextSize( "+" ).x + ImGui::GetStyle().FramePadding.x * 2.f;
+		//ImGui::SetCursorPosX( ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - addGameObjectButtonWidth - 5 );
 
-		if ( ImGui::Button( "+" ) )
-			ImGui::OpenPopup( "AddGameObject" );
+		//if ( ImGui::Button( "+" ) )
+		//	ImGui::OpenPopup( "AddGameObject" );
 
-		if ( ImGui::BeginPopup("AddGameObject" ) )
+		//if ( ImGui::BeginPopup("AddGameObject" ) )
+		//{
+		//	if ( ImGui::MenuItem( "Game Object" ) )
+		//	{
+		//		auto go = m_Context->InstantiateGameObject();
+		//		SetSelectedGameObject(go);
+		//	}
+
+		//	ImGui::Separator();
+
+		//	if ( ImGui::MenuItem( "Cube" ) )
+		//	{
+		//		auto go = m_Context->InstantiateGameObject( "Cube" );
+		//		go.AddComponent<MeshComponent>();
+		//		SetSelectedGameObject( go );
+		//	}
+
+		//	if ( ImGui::MenuItem( "Sprite" ) )
+		//	{
+		//		auto go = m_Context->InstantiateGameObject( "Sprite" );
+		//		go.AddComponent<SpriteComponent>();
+		//		SetSelectedGameObject( go );
+		//	}
+
+		//	ImGui::Separator();
+
+		//	ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Text, { 0.8, 0.1, 0.1, 0.8 } );
+		//	if ( ImGui::MenuItem( " - Remove All - " ) ) m_Context->Clear();
+		//	ImGui::PopStyleColor();
+
+		//	ImGui::EndMenu();
+		//}
+
+		//#pragma endregion
+
+		//#pragma region GamesObjects List
+
+		//ImGui::Separator();
+
+		for ( int i = 0; i < gameObjects.size(); ++i )
 		{
-			if ( ImGui::MenuItem( "Game Object" ) )
-			{
-				auto go = m_Context->InstantiateGameObject();
-				SetSelectedGameObject(go);
-			}
+			GameObject go = gameObjects[ i ];
+			// We are only drawing root objects in this loop
+			if ( go.GetParent().IsValid() )
+				continue;
 
-			ImGui::Separator();
-
-			if ( ImGui::MenuItem( "Cube" ) )
-			{
-				auto go = m_Context->InstantiateGameObject( "Cube" );
-				go.AddComponent<MeshComponent>();
-				SetSelectedGameObject( go );
-			}
-
-			if ( ImGui::MenuItem( "Sprite" ) )
-			{
-				auto go = m_Context->InstantiateGameObject( "Sprite" );
-				go.AddComponent<SpriteComponent>();
-				SetSelectedGameObject( go );
-			}
-
-			ImGui::Separator();
-
-			ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Text, { 0.8, 0.1, 0.1, 0.8 } );
-			if ( ImGui::MenuItem( " - Remove All - " ) ) m_Context->Clear();
-			ImGui::PopStyleColor();
-
-			ImGui::EndMenu();
+			DrawSceneNode( go );
 		}
 
-		#pragma endregion
-
-		#pragma region GamesObjects List
-
-		ImGui::Separator();
-
 		// Create a list box of all game objects in the scene
-		if ( ImGui::BeginListBox( "Game Objects", ImGui::GetContentRegionAvail() ) )
+		//if ( ImGui::BeginChild( "Game Objects", ImGui::GetContentRegionAvail() ) )
 		{
-			for ( int i = 0; i < gameObjects.size(); ++i )
-			{
-				auto go = gameObjects[ i ];
-				bool selected = go == m_SelectedGameObject;
-				auto& goTag = gameObjects.get<TagComponent>( go ).Tag;
 
-				// We must append the Tag with ##id so ImGui can have a unique identifier for this selectable.
-				if ( ImGui::Selectable( ( goTag + "##" + std::to_string( (uint32_t)go ) ).c_str(), selected ) )
-				{
-					SetSelectedGameObject( go );
-				}
-			}
-			ImGui::EndListBox();
+			//ImGui::EndChild();
 		}
 
 		#pragma endregion
 
 		ImGui::End();
+	}
+
+	void SceneHeirarchy::DrawSceneNode( GameObject go )
+	{
+		if ( !go.IsValid() )
+		{
+			TE_CORE_WARN( "Attempting to draw an invalid Game Object node!" );
+			return;
+		}
+
+		std::string label = go.GetTag();
+		bool selected = go == m_SelectedGameObject;
+		bool hasChildren = go.GetChildren().size() > 0;
+
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+		if ( selected )
+			flags |= ImGuiTreeNodeFlags_Selected;
+		if ( !hasChildren ) 
+			flags |= ImGuiTreeNodeFlags_Leaf;
+
+		bool drawChildren = ImGui::TreeNodeEx( (void*)(uint64_t)(uint32_t)go, flags, label.c_str() );
+		if ( ImGui::BeginDragDropSource() )
+		{
+			ImGui::SetDragDropPayload( "GameObject", (void*)&go, sizeof(go), ImGuiCond_Once );
+			ImGui::Text( label.c_str() );
+
+			ImGui::EndDragDropSource();
+		}
+		else if ( ImGui::BeginDragDropTarget() )
+		{
+			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( "GameObject" );
+			if ( payload )
+			{
+				GameObject payloadGO = *(GameObject*)payload->Data;
+				if ( payloadGO != go )
+				{
+					go.AttachChild( payloadGO );
+				}
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
+		if ( ImGui::IsItemClicked() )
+		{
+			SetSelectedGameObject( go );
+		}
+
+		if ( drawChildren )
+		{
+			std::vector<GameObject>& children = go.GetChildren();
+			for ( auto& child : children )
+			{
+				DrawSceneNode( child );
+			}
+
+			ImGui::TreePop();
+		}
 	}
 
 	void SceneHeirarchy::DrawInspector()

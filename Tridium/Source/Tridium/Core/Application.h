@@ -30,6 +30,7 @@ namespace Tridium
 		void PushOverlay( Layer* overlay );
 
 		static Application& Get() { return *s_Instance; }
+		static const Project& GetActiveProject() { return Get().m_Project; }
 		static const fs::path& GetAssetDirectory() { return Get().m_Project.GetAssetDirectory(); }
 
 		Window& GetWindow() { return *m_Window; }

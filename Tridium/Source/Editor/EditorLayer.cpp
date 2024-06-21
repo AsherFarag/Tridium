@@ -61,48 +61,46 @@ namespace Tridium::Editor {
 	{
 		if ( m_ActiveScene )
 		{
-
 			switch ( CurrentSceneState )
 			{
-			case SceneState::Edit:
-			{
-				m_EditorCamera.OnUpdate();
+				case SceneState::Edit:
+				{
+					m_EditorCamera.OnUpdate();
 
-				m_EditorCameraFBO->Bind();
-				m_ActiveScene->Render( m_EditorCamera, m_EditorCamera.GetViewMatrix() );
-				m_EditorCameraFBO->Unbind();
-				break;
-			}
-			case SceneState::Play:
-			{
-				if ( !m_ActiveScene->IsPaused() )
-				{
-					m_ActiveScene->OnUpdate();
-				}
-
-				CameraComponent* mainCam = m_ActiveScene->GetMainCamera();
-				if ( mainCam )
-				{
-					m_EditorCameraFBO->Bind();
-					mainCam->SceneCamera.SetViewportSize( m_ViewportSize.x, m_ViewportSize.y );
-					m_ActiveScene->Render( *mainCam );
-					m_EditorCameraFBO->Unbind();
-				}
-				else
-				{
 					m_EditorCameraFBO->Bind();
 					m_ActiveScene->Render( m_EditorCamera, m_EditorCamera.GetViewMatrix() );
 					m_EditorCameraFBO->Unbind();
+					break;
 				}
-				break;
-			}
+				case SceneState::Play:
+				{
+					if ( !m_ActiveScene->IsPaused() )
+					{
+						m_ActiveScene->OnUpdate();
+					}
+
+					CameraComponent* mainCam = m_ActiveScene->GetMainCamera();
+					if ( mainCam )
+					{
+						m_EditorCameraFBO->Bind();
+						mainCam->SceneCamera.SetViewportSize( m_ViewportSize.x, m_ViewportSize.y );
+						m_ActiveScene->Render( *mainCam );
+						m_EditorCameraFBO->Unbind();
+					}
+					else
+					{
+						m_EditorCameraFBO->Bind();
+						m_ActiveScene->Render( m_EditorCamera, m_EditorCamera.GetViewMatrix() );
+						m_EditorCameraFBO->Unbind();
+					}
+					break;
+				}
 			}
 		}
 	}
 
 	void EditorLayer::OnImGuiDraw()
 	{
-		static bool dockspace_Open = true;
 		static bool opt_Fullscreen = true;
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
@@ -117,19 +115,19 @@ namespace Tridium::Editor {
 			ImGui::PushStyleVar( ImGuiStyleVar_WindowRounding, 0.0f );
 			ImGui::PushStyleVar( ImGuiStyleVar_WindowBorderSize, 0.0f );
 
-			window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+			window_flags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 		}
 
 		ImGui::PushStyleVar( ImGuiStyleVar_WindowPadding, ImVec2( 0.0f, 0.0f ) );
-		ImGui::Begin( "DockSpace Window", &dockspace_Open, window_flags );
+		ImGui::Begin( Application::GetActiveProject().GetName().c_str(), nullptr, window_flags);
 		ImGui::PopStyleVar();
-		{
+
 			if ( opt_Fullscreen )
 				ImGui::PopStyleVar( 2 );
 
 			// Init Dock Space
-			ImGuiID dockspace_id = ImGui::GetID( "EditorDockSpace" );
+			static const ImGuiID dockspace_id = ImGui::GetID( "EditorDockSpace" );
 			ImGui::DockSpace( dockspace_id, ImVec2( 0.0f, 0.0f ), dockspace_flags );
 
 			DrawMenuBar();
@@ -140,7 +138,7 @@ namespace Tridium::Editor {
 			{
 				it->second->OnImGuiDraw();
 			}
-		}
+
 		ImGui::End();
 	}
 
@@ -202,7 +200,7 @@ namespace Tridium::Editor {
 
 	void EditorLayer::DrawMenuBar()
 	{
-		if ( !ImGui::BeginMenuBar() )
+		if ( !ImGui::BeginMainMenuBar() )
 			return;
 
 		if ( ImGui::BeginMenu( "File" ) )
@@ -266,7 +264,7 @@ namespace Tridium::Editor {
 			ImGui::EndMenu();
 		}
 
-		ImGui::EndMenuBar();
+		ImGui::EndMainMenuBar();
 	}
 
 	void EditorLayer::DrawEditorCameraViewPort()
@@ -303,16 +301,17 @@ namespace Tridium::Editor {
 
 	void UIToolBar::OnImGuiDraw()
 	{
-		constexpr ImVec2 buttonSize( 22, 22 );
-		constexpr ImVec2 buttonPadding( 5, 5 );
+		static constexpr ImVec2 buttonSize( 22, 22 );
+		static constexpr ImVec2 buttonPadding( 5, 5 );
 
-		ImGui::Begin( "##UIToolBar", nullptr, 
-			ImGuiWindowFlags_NoDecoration 
-			| ImGuiWindowFlags_NoScrollbar 
-			| ImGuiWindowFlags_NoScrollWithMouse 
-			| ImGuiWindowFlags_NoResize 
-			| ImGuiWindowFlags_NoMove
-			| ImGuiWindowFlags_NoTitleBar );
+		ImGui::BeginMenuBar();
+		//ImGui::Begin( "##UIToolBar", nullptr, 
+		//	ImGuiWindowFlags_NoDecoration 
+		//	| ImGuiWindowFlags_NoScrollbar 
+		//	| ImGuiWindowFlags_NoScrollWithMouse 
+		//	| ImGuiWindowFlags_NoResize 
+		//	| ImGuiWindowFlags_NoMove
+		//	| ImGuiWindowFlags_NoTitleBar );
 
 		EditorLayer& editor = EditorLayer::Get();
 		SceneState sceneState = EditorLayer::Get().CurrentSceneState;
@@ -363,7 +362,7 @@ namespace Tridium::Editor {
 		}
 		ImGui::EndGroup();
 
-		ImGui::End();
+		ImGui::EndMenuBar();
 	}
 
 #pragma endregion

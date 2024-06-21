@@ -1,6 +1,6 @@
 local Time = 0.0
 local SpawnTimer = 0.0
-local SpawnRate = 0.0
+local SpawnRate = 2.0
 
 local function SpawnObstacle()
 	go = GameObject.new()

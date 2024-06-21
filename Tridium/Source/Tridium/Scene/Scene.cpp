@@ -43,13 +43,8 @@ namespace Tridium {
 			if ( dynamic_cast<ScriptableComponent*>( component ) == nullptr )
 				continue;
 
-			auto before = std::chrono::high_resolution_clock::now();
-
 			for ( auto entity : storage.second )
 				reinterpret_cast<ScriptableComponent*>( storage.second.value( entity ) )->OnUpdate();
-
-			std::chrono::duration<double> elapsed_seconds = std::chrono::high_resolution_clock::now() - before;
-			TE_CORE_DEBUG( "{0}", elapsed_seconds.count() * 1000.0 );
 		}
 
 		TODO( "Make this only happen if the camera is shown!" );
@@ -90,7 +85,7 @@ namespace Tridium {
 
 
 				currentShader->SetFloat4( "uColour", colour );
-				Renderer::Submit( mesh.GetShader(), mesh.GetMesh().VAO, transform.GetTransform() );
+				Renderer::Submit( mesh.GetShader(), mesh.GetMesh().VAO, transform.GetWorldTransform() );
 			} );
 
 
@@ -121,7 +116,7 @@ namespace Tridium {
 					}
 				}
 
-				Renderer::Submit( sprite.GetShader(), sprite.GetMesh().VAO, transform.GetTransform() );
+				Renderer::Submit( sprite.GetShader(), sprite.GetMesh().VAO, transform.GetWorldTransform() );
 				transform.Scale = oldScale;
 
 				if ( sprite.GetTexture() )
