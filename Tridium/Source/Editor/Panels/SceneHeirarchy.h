@@ -2,7 +2,7 @@
 #ifdef IS_EDITOR
 
 #include "Panel.h"
-#include <Tridium/ECS/GameObject.h>
+#include "InspectorPanel.h"
 
 namespace Tridium { class Scene; }
 
@@ -11,7 +11,7 @@ namespace Tridium::Editor {
 	class SceneHeirarchy final : public Panel
 	{
 	public:
-		SceneHeirarchy() : Panel("Scene Heirarchy") {}
+		SceneHeirarchy();
 		virtual ~SceneHeirarchy() = default;
 
 		virtual void OnEvent( Event& e ) override;
@@ -24,27 +24,15 @@ namespace Tridium::Editor {
 		void SetSelectedGameObject( GameObject gameObject );
 
 		void DrawSceneHeirarchy();
-		void DrawInspector();
+		void OpenAddGameObjectPopUp();
+		void DrawAddGameObjectPopUp();
 
 		// Scene Heirarchy List
 		void DrawSceneNode( GameObject go );
 
-		// Inspector
-		void InspectGameObject( GameObject gameObject );
-		template <typename T, typename... Args>
-		void AddComponentToSelectedGameObject( Args&&... args )
-		{
-			if ( m_SelectedGameObject.HasComponent<T>() )
-			{
-				TE_CORE_ERROR( "{0} already has a [{1}]!", m_SelectedGameObject.GetTag(), typeid( T ).name() );
-				return;
-			}
-
-			m_SelectedGameObject.AddComponent<T>( std::forward<Args>( args )... );
-		}
-
 	private:
 		Ref<Scene> m_Context = nullptr;
+		InspectorPanel* m_Inspector;
 		GameObject m_SelectedGameObject;
 	};
 }

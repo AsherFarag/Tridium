@@ -8,9 +8,6 @@ namespace Tridium::Editor {
 	{
 		bool isCollapsed = !ImGui::Begin( m_Name.c_str(), &m_Open, a_WindowFlags );
 
-		if ( !m_Open )
-			Close();
-
 		return !isCollapsed;
 	}
 

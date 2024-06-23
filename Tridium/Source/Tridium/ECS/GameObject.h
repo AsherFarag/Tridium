@@ -26,6 +26,9 @@ namespace Tridium {
 		template <typename T, typename... Args>
 		T& AddComponent( Args&&... args );
 
+		template <typename T, typename... Args>
+		T* TryAddComponent( Args&&... args );
+
 		template <typename T>
 		inline T& GetComponent() const;
 
@@ -45,10 +48,10 @@ namespace Tridium {
 
 		const inline EntityID ID() const { return m_ID; }
 		std::string& GetTag() const;
+
 		TransformComponent& GetTransform() const;
 		Matrix4 GetWorldTransform() const;
 		Matrix4 GetLocalTransform() const;
-
 		bool HasParent() const;
 		GameObject GetParent() const;
 		void AttachToParent( GameObject a_Parent );
@@ -67,7 +70,7 @@ namespace Tridium {
 
 
 
-#pragma region Game Object Template Definitions
+#pragma region GameObject Template Definitions
 
 	template <typename T, typename... Args>
 	T& GameObject::AddComponent( Args&&... args )
@@ -99,6 +102,18 @@ namespace Tridium {
 		}
 
 		return component;
+	}
+
+	template <typename T, typename... Args>
+	T* GameObject::TryAddComponent( Args&&... args )
+	{
+		if ( HasComponent<T>() )
+		{
+			TE_CORE_ERROR( "'{0}' already has a component of type '{1}'!", m_SelectedGameObject.GetTag(), typeid( T ).name() );
+			return nullptr;
+		}
+
+		return &AddComponent<T>( std::forward<Args>( args )... );
 	}
 
 	template <typename T>
