@@ -32,7 +32,7 @@ namespace Tridium::Editor {
 
 	private:
 		Ref<Scene> m_Context = nullptr;
-		InspectorPanel* m_Inspector;
+		InspectorPanel* m_Inspector = nullptr;
 		GameObject m_SelectedGameObject;
 	};
 }

@@ -8,6 +8,8 @@
 #include <Tridium/Core/Application.h>
 #include <Tridium/ECS/Components/Types.h>
 
+#include <Tridium/Rendering/Texture.h>
+
 namespace ImGui {
 	static void DrawVec3Control( const std::string& label, Vector3& values, float speed, const char* format = "%.2f" )
 	{
@@ -221,50 +223,50 @@ namespace Tridium::Editor {
 
 		DrawComponent<SpriteComponent>( "Sprite Component", InspectedGameObject, []( auto& component )
 			{
-				//ImGui::Text( "Sprite: " );
-				//ImGui::SameLine();
-				//if ( component.GetTexture() )
-				//	ImGui::TextColored( { 0.85, 0.65, 0.1, 0.9 }, component.GetTexture()->GetPath().c_str() );
-				//else
-				//	ImGui::TextColored( { 0.85, 0.65, 0.1, 0.9 }, "Empty" );
+				ImGui::Text( "Sprite: " );
+				ImGui::SameLine();
+				if ( component.GetTexture() )
+					ImGui::TextColored( { 0.85, 0.65, 0.1, 0.9 }, component.GetTexture()->GetPath().c_str() );
+				else
+					ImGui::TextColored( { 0.85, 0.65, 0.1, 0.9 }, "Empty" );
 
-				//if ( ImGui::BeginDragDropTarget() )
-				//{
-				//	if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( "ContentBrowserItem" ) )
-				//	{
-				//		component.SetTexture( Texture2D::Create( static_cast<const char*>( payload->Data ) ) );
-				//	}
-				//	ImGui::EndDragDropTarget();
-				//}
+				if ( ImGui::BeginDragDropTarget() )
+				{
+					if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( "ContentBrowserItem" ) )
+					{
+						component.SetTexture( Texture2D::Create( static_cast<const char*>( payload->Data ) ) );
+					}
+					ImGui::EndDragDropTarget();
+				}
 
-				//if ( component.GetTexture() && ImGui::TreeNode( "Preview:" ) )
-				//{
-				//	Vector2 textureSize( component.GetTexture()->GetWidth(), component.GetTexture()->GetHeight() );
-				//	ImVec2 previewSize;
-				//	ImVec2 regionAvail = ImGui::GetContentRegionAvail();
-				//	// Centres the image so that there will never be less padding on the right side than the left.
-				//	regionAvail.x -= ImGui::GetContentRegionMax().x - regionAvail.x;
+				if ( component.GetTexture() && ImGui::TreeNode( "Preview:" ) )
+				{
+					Vector2 textureSize( component.GetTexture()->GetWidth(), component.GetTexture()->GetHeight() );
+					ImVec2 previewSize;
+					ImVec2 regionAvail = ImGui::GetContentRegionAvail();
+					// Centres the image so that there will never be less padding on the right side than the left.
+					regionAvail.x -= ImGui::GetContentRegionMax().x - regionAvail.x;
 
-				//	if ( textureSize.x >= textureSize.y )
-				//	{
-				//		float yScale = textureSize.y / textureSize.x;
-				//		previewSize.x = regionAvail.x;
-				//		previewSize.y = previewSize.x * yScale;
-				//	}
-				//	else
-				//	{
-				//		float xScale = textureSize.x / textureSize.y;
-				//		previewSize.y = regionAvail.y;
-				//		previewSize.x = previewSize.y * xScale;
-				//	}
-				//	ImGui::PushStyleVar( ImGuiStyleVar_::ImGuiStyleVar_FrameRounding, 5 );
-				//	ImGui::Image( (ImTextureID)component.GetTexture()->GetRendererID(),
-				//		previewSize,
-				//		{ 0, 1 }, { 1, 0 } );
-				//	ImGui::PopStyleVar();
+					if ( textureSize.x >= textureSize.y )
+					{
+						float yScale = textureSize.y / textureSize.x;
+						previewSize.x = regionAvail.x;
+						previewSize.y = previewSize.x * yScale;
+					}
+					else
+					{
+						float xScale = textureSize.x / textureSize.y;
+						previewSize.y = regionAvail.y;
+						previewSize.x = previewSize.y * xScale;
+					}
+					ImGui::PushStyleVar( ImGuiStyleVar_::ImGuiStyleVar_FrameRounding, 5 );
+					ImGui::Image( (ImTextureID)component.GetTexture()->GetRendererID(),
+						previewSize,
+						{ 0, 1 }, { 1, 0 } );
+					ImGui::PopStyleVar();
 
-				//	ImGui::TreePop();
-				//}
+					ImGui::TreePop();
+				}
 			} );
 	}
 
@@ -280,7 +282,11 @@ namespace Tridium::Editor {
 		ImGuiStyle& style = ImGui::GetStyle();
 
 		// Center the button by calculating its size
-
+		float size = ImGui::CalcTextSize( "Add Component" ).x + style.FramePadding.x * 2.0f;
+		float avail = ImGui::GetContentRegionAvail().x;
+		float off = ( avail - size ) * 0.5f;
+		if ( off > 0.0f )
+			ImGui::SetCursorPosX( ImGui::GetCursorPosX() + off );
 
 		if ( ImGui::Button( "Add Component" ) )
 			ImGui::OpenPopup( "AddComponent" );

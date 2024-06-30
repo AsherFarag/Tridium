@@ -68,7 +68,7 @@ namespace Tridium {
 	void TransformComponent::AttachChild( GameObject a_Child )
 	{
 		auto& childTransform = a_Child.GetTransform();
-		if ( childTransform.GetParent() != GetGameObject() )
+		if ( childTransform.GetParent() != GetGameObject() && a_Child != GetParent() )
 		{
 			childTransform.DetachFromParent();
 			childTransform.SetParent( GetGameObject() );

@@ -104,7 +104,7 @@ namespace Tridium::Editor {
 		static bool opt_Fullscreen = true;
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_::ImGuiWindowFlags_NoDecoration;
 		if ( opt_Fullscreen )
 		{
 			const ImGuiViewport* viewport = ImGui::GetMainViewport();

@@ -109,7 +109,7 @@ namespace Tridium {
 	{
 		if ( HasComponent<T>() )
 		{
-			TE_CORE_ERROR( "'{0}' already has a component of type '{1}'!", m_SelectedGameObject.GetTag(), typeid( T ).name() );
+			TE_CORE_ERROR( "'{0}' already has a component of type '{1}'!", GetTag(), typeid( T ).name() );
 			return nullptr;
 		}
 

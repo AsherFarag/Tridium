@@ -18,7 +18,6 @@ namespace Tridium::Editor {
 	SceneHeirarchy::SceneHeirarchy()
 		: Panel( "Scene Heirarchy" )
 	{
-		m_Inspector = m_Owner->PushPanel<InspectorPanel>( );
 	}
 
 	void SceneHeirarchy::OnEvent( Event& e )
@@ -39,9 +38,15 @@ namespace Tridium::Editor {
 	void SceneHeirarchy::SetSelectedGameObject( GameObject gameObject )
 	{
 		m_SelectedGameObject = gameObject;
+
+		if ( !m_Inspector && m_Owner )
+			m_Inspector = m_Owner->PushPanel<InspectorPanel>();
+
+		m_Inspector->InspectedGameObject = m_SelectedGameObject;
+
 		// Since a game object was selected, bring the Inspector into focus.
-		ImGui::SetWindowFocus( "Inspector" );
-		ImGui::SetWindowFocus( "Scene Heirarchy" );
+		//ImGui::SetWindowFocus( "Inspector" );
+		//ImGui::SetWindowFocus( "Scene Heirarchy" );
 	}
 
 
@@ -195,9 +200,11 @@ namespace Tridium::Editor {
 			flags |= ImGuiTreeNodeFlags_Leaf;
 
 		bool drawChildren = ImGui::TreeNodeEx( (void*)(uint64_t)(uint32_t)go, flags, label.c_str() );
+
+		// Drag-Drop Payload handling
 		if ( ImGui::BeginDragDropSource() )
 		{
-			ImGui::SetDragDropPayload( "GameObject", (void*)&go, sizeof(go), ImGuiCond_Once );
+			ImGui::SetDragDropPayload( "GameObject", (void*)&go, sizeof( go ), ImGuiCond_Once );
 			ImGui::Text( label.c_str() );
 
 			ImGui::EndDragDropSource();
