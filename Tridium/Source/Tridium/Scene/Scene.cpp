@@ -84,7 +84,7 @@ namespace Tridium {
 					(float)( glm::sin( Time::Get() - 10.f ) * 0.5f + 0.5f ), 1.0 );
 
 
-				currentShader->SetFloat4( "uColour", colour );
+				currentShader->SetFloat4( "uColour", { 0.2,0.3,1,1 } );
 				Renderer::Submit( mesh.GetShader(), mesh.GetMesh().VAO, transform.GetWorldTransform() );
 			} );
 

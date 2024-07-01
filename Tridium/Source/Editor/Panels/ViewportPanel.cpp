@@ -70,16 +70,14 @@ namespace Tridium::Editor {
 					(ImGuizmo::OPERATION)m_GizmoState, ImGuizmo::LOCAL,
 					&goWorldTransform[0][0] );
 
-				ImGuizmo::ViewManipulate( &CameraViewMatrix[0][0], 10.0f, { 0,0 }, { 32,32 }, IM_COL32_WHITE );
+				ImGuizmo::ViewManipulate( &CameraViewMatrix[0][0], 8.0f, { viewportBoundsMax.x - 75, viewportBoundsMin.y}, {75, 75 }, 0x10101010);
 
 				if ( ImGuizmo::IsUsing() )
 				{
 					if ( goTransform.GetParent() )
-						goWorldTransform * glm::inverse( goTransform.GetParent().GetWorldTransform() );
+						goWorldTransform = glm::inverse( goTransform.GetParent().GetWorldTransform() ) * goWorldTransform;
 
-					Vector3 rot = {};
-					Math::DecomposeTransform( goWorldTransform, goTransform.Position, rot, goTransform.Scale);
-					goTransform.Rotation = Quaternion(rot);
+					Math::DecomposeTransform( goWorldTransform, goTransform.Position, goTransform.Rotation, goTransform.Scale);
 				}
 			}
 

@@ -11,7 +11,7 @@
 #include <Tridium/Rendering/Texture.h>
 
 namespace ImGui {
-	static void DrawVec3Control( const std::string& label, Vector3& values, float speed, const char* format = "%.4f" )
+	static void DrawVec3Control( const std::string& label, Vector3& values, float speed, bool uniform = false, const char* format = "%.4f" )
 	{
 		float itemWidth = ImGui::GetContentRegionAvail().x / 3.f - 30;
 
@@ -22,10 +22,18 @@ namespace ImGui {
 		{
 			ImGui::PushItemWidth( itemWidth );
 
+			Vector3 tempVals = values;
+			float change = 0.0f;
+
 			// x
 			ImGui::PushStyleColor( ImGuiCol_Border, ImVec4( 0.9f, 0.5f, 0.5f, 0.9f ) );
 			ImGui::PushID( 0 );
-			ImGui::DragFloat( "", &values.x, speed, 0, 0, format );
+			if ( ImGui::DragFloat( "", &tempVals.x, speed, 0, 0, format ) && uniform)
+			{
+				change = tempVals.x - values.x;
+				tempVals.y += values.y / values.x * change;
+				tempVals.z += values.z / values.x * change;
+			}
 			ImGui::PopID();
 			ImGui::PopStyleColor();
 
@@ -34,7 +42,12 @@ namespace ImGui {
 			// y
 			ImGui::PushStyleColor( ImGuiCol_Border, ImVec4( 0.5f, 0.9f, 0.5f, 0.9f ) );
 			ImGui::PushID( 1 );
-			ImGui::DragFloat( "", &values.y, speed, 0, 0, format );
+			if ( ImGui::DragFloat( "", &tempVals.y, speed, 0, 0, format ) && uniform )
+			{
+				change = tempVals.y - values.y;
+				tempVals.x += values.x / values.y * change;
+				tempVals.z += values.z / values.y * change;
+			}
 			ImGui::PopID();
 			ImGui::PopStyleColor();
 
@@ -43,9 +56,16 @@ namespace ImGui {
 			// z
 			ImGui::PushStyleColor( ImGuiCol_Border, ImVec4( 0.5f, 0.5f, 0.9f, 0.9f ) );
 			ImGui::PushID( 2 );
-			ImGui::DragFloat( "", &values.z, speed, 0, 0, format );
+			if ( ImGui::DragFloat( "", &tempVals.z, speed, 0, 0, format ) && uniform )
+			{
+				change = tempVals.z - values.z;
+				tempVals.y += values.y / values.z * change;
+				tempVals.x += values.x / values.z * change;
+			}
 			ImGui::PopID();
 			ImGui::PopStyleColor();
+
+			values = tempVals;
 
 			ImGui::PopItemWidth();
 		}
@@ -145,7 +165,7 @@ namespace Tridium::Editor {
 				Vector3 rotation = glm::degrees( glm::eulerAngles( component.Rotation ) );
 				ImGui::DrawVec3Control( "Rotation", rotation, 1.f );
 				component.Rotation = glm::radians( rotation );
-				ImGui::DrawVec3Control( "Scale", component.Scale, 0.01f );
+				ImGui::DrawVec3Control( "Scale", component.Scale, 0.01f, Input::IsKeyPressed(Input::KEY_LEFT_CONTROL) );
 			} );
 
 		DrawComponent<MeshComponent>( "Mesh", InspectedGameObject, []( auto& component )

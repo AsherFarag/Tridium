@@ -87,6 +87,8 @@ namespace Tridium {
 		auto& childTransform = a_Child.GetTransform();
 		if ( childTransform.GetParent() == GetGameObject() )
 		{
+			Math::DecomposeTransform( childTransform.GetWorldTransform(), childTransform.Position, childTransform.Rotation, childTransform.Scale);
+
 			childTransform.SetParent();
 			RemoveChild( a_Child );
 		}

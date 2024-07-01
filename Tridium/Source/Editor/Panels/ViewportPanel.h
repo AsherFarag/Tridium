@@ -37,7 +37,7 @@ namespace Tridium::Editor {
 		virtual bool OnKeyPressed( KeyPressedEvent& e ) override;
 
 	private:
-		EGizmoState m_GizmoState = EGizmoState::Rotate;
+		EGizmoState m_GizmoState = EGizmoState::Translate;
 		SceneHeirarchy* m_SceneHeirarchy = nullptr;
 		Ref<Framebuffer> m_ViewedCameraFBO;
 		Vector2 m_ViewportSize;
