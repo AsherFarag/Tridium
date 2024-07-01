@@ -268,17 +268,17 @@ namespace Tridium::Editor {
 
 	void UIToolBar::OnImGuiDraw()
 	{
-		static constexpr ImVec2 buttonSize( 22, 22 );
-		static constexpr ImVec2 buttonPadding( 5, 5 );
+		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_WindowPadding, { 0,5 } );
 
-		ImGui::BeginMenuBar();
-		//ImGui::Begin( "##UIToolBar", nullptr, 
-		//	ImGuiWindowFlags_NoDecoration 
-		//	| ImGuiWindowFlags_NoScrollbar 
-		//	| ImGuiWindowFlags_NoScrollWithMouse 
-		//	| ImGuiWindowFlags_NoResize 
-		//	| ImGuiWindowFlags_NoMove
-		//	| ImGuiWindowFlags_NoTitleBar );
+		ImGui::Begin( "##UIToolBar", nullptr, 
+			ImGuiWindowFlags_NoDecoration 
+			| ImGuiWindowFlags_NoScrollbar 
+			| ImGuiWindowFlags_NoScrollWithMouse 
+			| ImGuiWindowFlags_NoTitleBar );
+
+		ImVec2 buttonPadding( 4, 4 );
+		float regionAvailY = ImGui::GetContentRegionAvail().y - 5 - buttonPadding.y;
+		ImVec2 buttonSize( regionAvailY, regionAvailY );
 
 		EditorLayer& editor = EditorLayer::Get();
 		SceneState sceneState = EditorLayer::Get().CurrentSceneState;
@@ -287,9 +287,11 @@ namespace Tridium::Editor {
 		bool hasPauseButton = ( sceneState == SceneState::Play ) && ( !editor.GetActiveScene()->IsPaused() );
 		bool hasStopButton = sceneState == SceneState::Play;
 
-		float totalButtonSizeX = buttonSize.x + ( buttonPadding.x * 2.f );
+		float itemSpacing = ImGui::GetStyle().ItemSpacing.x;
+
+		float totalButtonSizeX = buttonSize.x + ( buttonPadding.x * 2.f ) + itemSpacing;
 		float groupSizeX = ( totalButtonSizeX * hasPlayButton ) + ( totalButtonSizeX * hasPauseButton ) + ( totalButtonSizeX * hasStopButton );
-		ImGui::SetCursorPosX( ( ImGui::GetWindowContentRegionMax().x * 0.5f ) - groupSizeX );
+		ImGui::SetCursorPosX( ( ImGui::GetWindowWidth() * 0.5f ) - groupSizeX * 0.5f );
 
 		ImGui::BeginGroup();
 		{
@@ -329,7 +331,7 @@ namespace Tridium::Editor {
 		}
 		ImGui::EndGroup();
 
-		ImGui::EndMenuBar();
+		ImGui::End();
 	}
 
 #pragma endregion

@@ -11,7 +11,7 @@ namespace Tridium {
 
 	Ref<Script> Script::Create( const fs::path& a_FilePath )
 	{
-		if ( a_FilePath.extension() != "lua" )
+		if ( a_FilePath.extension() != ".lua" )
 			return nullptr;
 
 		Ref<Script> foundScript = ScriptLibrary::GetScript( a_FilePath.string() );

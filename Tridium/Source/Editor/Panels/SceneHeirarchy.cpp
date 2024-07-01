@@ -96,11 +96,13 @@ namespace Tridium::Editor {
 
 		if ( !ImGui::Begin( "Scene Heirarchy" ) )
 		{
+			m_IsHovered = false;
 			m_IsFocused = false;
 			ImGui::End();
 			return;
 		}
 
+		m_IsHovered = ImGui::IsWindowHovered();
 		m_IsFocused = ImGui::IsWindowFocused() || ImGui::IsItemFocused();
 
 		auto gameObjects = m_Context->GetRegistry().view<TagComponent>();
@@ -112,8 +114,13 @@ namespace Tridium::Editor {
 		// Align the button to the right
 		float addGameObjectButtonWidth = ImGui::CalcTextSize( "+" ).x + ImGui::GetStyle().FramePadding.x * 2.f;
 		ImGui::SetCursorPosX( ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - addGameObjectButtonWidth - 5 );
-		if ( ImGui::Button( "+" ) )
+
+		ImGui::PushStyleVar( ImGuiStyleVar_::ImGuiStyleVar_FramePadding, { 0,0 } );
+
+		if ( ImGui::Button( "+", { addGameObjectButtonWidth, addGameObjectButtonWidth } ) )
 			OpenAddGameObjectPopUp();
+
+		ImGui::PopStyleVar();
 
 		DrawAddGameObjectPopUp();
 
