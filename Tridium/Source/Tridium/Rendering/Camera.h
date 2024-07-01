@@ -54,7 +54,7 @@ namespace Tridium {
 		struct OrthographicData
 		{
 			float Size = 10.0f;
-			float Near = -1.0f, Far = 1.0f;
+			float Near = -1000.0f, Far = 1000.0f;
 		} m_Orthographic;
 
 

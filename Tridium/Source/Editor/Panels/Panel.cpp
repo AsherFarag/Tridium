@@ -4,6 +4,18 @@
 
 namespace Tridium::Editor {
 
+	void Panel::OnEvent( Event& e )
+	{
+		if ( !m_IsFocused )
+			return;
+
+		EventDispatcher dispatcher( e );
+		dispatcher.Dispatch<KeyPressedEvent>( TE_BIND_EVENT_FN( Panel::OnKeyPressed, 1 ) );
+		dispatcher.Dispatch<MouseButtonPressedEvent>( TE_BIND_EVENT_FN( Panel::OnMouseButtonPressed, 1 ) );
+		dispatcher.Dispatch<MouseButtonReleasedEvent>( TE_BIND_EVENT_FN( Panel::OnMouseButtonReleased, 1 ) );
+		dispatcher.Dispatch<MouseMovedEvent>( TE_BIND_EVENT_FN( Panel::OnMouseMoved, 1 ) );
+	}
+
 	bool Panel::ImGuiBegin( ImGuiWindowFlags a_WindowFlags )
 	{
 		bool isCollapsed = !ImGui::Begin( m_Name.c_str(), &m_Open, a_WindowFlags );
@@ -21,17 +33,9 @@ namespace Tridium::Editor {
 
 	void Panel::Close()
 	{
-		if ( OnClose() )
-		{
-			TE_ASSERT( m_Owner, "Panel does not have an owner!" );
-			m_Owner->DestroyPanel( this );
-		}
-		else
-			m_Open = true;
+		TE_ASSERT( m_Owner, "Panel does not have an owner!" );
+		m_Owner->DestroyPanel( this );
 	}
-
-
-
 
 
 	PanelStack::~PanelStack()

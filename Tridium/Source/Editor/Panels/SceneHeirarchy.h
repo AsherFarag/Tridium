@@ -14,20 +14,17 @@ namespace Tridium::Editor {
 		SceneHeirarchy();
 		virtual ~SceneHeirarchy() = default;
 
-		virtual void OnEvent( Event& e ) override;
 		virtual void OnImGuiDraw() override;
 
 		GameObject GetSelectedGameObject() const { return m_SelectedGameObject; }
 
 	private:
-		bool OnKeyPressed( KeyPressedEvent& e );
+		virtual bool OnKeyPressed( KeyPressedEvent& e ) override;
 		void SetSelectedGameObject( GameObject gameObject );
 
 		void DrawSceneHeirarchy();
 		void OpenAddGameObjectPopUp();
 		void DrawAddGameObjectPopUp();
-
-		// Scene Heirarchy List
 		void DrawSceneNode( GameObject go );
 
 	private:

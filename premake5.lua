@@ -17,6 +17,7 @@ IncludeDir = {}
 IncludeDir["glfw"] = "Tridium/Dependencies/glfw/include"
 IncludeDir["glad"] = "Tridium/Dependencies/glad/include"
 IncludeDir["ImGui"] = "Tridium/Dependencies/ImGui"
+IncludeDir["ImGuizmo"] = "Tridium/Dependencies/ImGuizmo"
 IncludeDir["glm"] = "Tridium/Dependencies/glm"
 IncludeDir["lua"] = "Tridium/Dependencies/lua/x64"
 IncludeDir["sol2"] = "Tridium/Dependencies/sol2"
@@ -46,7 +47,9 @@ project "Tridium"
 		"%{prj.name}/Source/**.h",
 		"%{prj.name}/Source/**.cpp",
 		"%{prj.name}/Dependencies/glm/glm/**.inl",
-		"%{prj.name}/Dependencies/glm/glm/**.hpp"
+		"%{prj.name}/Dependencies/glm/glm/**.hpp",
+		"%{prj.name}/Dependencies/ImGuizmo/ImGuizmo.h",
+		"%{prj.name}/Dependencies/ImGuizmo/ImGuizmo.cpp"
 	}
 
 	includedirs
@@ -56,6 +59,7 @@ project "Tridium"
 		"%{IncludeDir.glfw}",
 		"%{IncludeDir.glad}",
 		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.lua}/include",
 		"%{IncludeDir.sol2}/include",
@@ -77,6 +81,9 @@ project "Tridium"
 		"lua54",
 		"opengl32.lib"
 	}
+
+	filter "files:Tridium/Dependencies/ImGuizmo/**.cpp"
+	flags { "NoPCH" }
 
 	filter "system:windows"
 		systemversion "latest"
@@ -141,6 +148,7 @@ project "Sandbox"
 		"%{IncludeDir.lua}/include",
 		"%{IncludeDir.sol2}/include",
 		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.stbi}"

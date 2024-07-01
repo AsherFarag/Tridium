@@ -20,6 +20,8 @@ namespace Tridium {
 		operator const uint32_t() const { return (uint32_t)m_ID; }
 		operator EntityID () { return m_ID; }
 		operator const EntityID() const { return m_ID; }
+		operator bool () { return IsValid(); }
+		operator const bool() const { return IsValid(); }
 		bool operator ==( const GameObject& other ) const { return m_ID == other.m_ID; }
 		bool operator !=( const GameObject& other ) const { return m_ID != other.m_ID; }
 

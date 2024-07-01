@@ -16,7 +16,8 @@ namespace fs = std::filesystem;
 #define PRAGMA(p) _Pragma(#p)
 #define EXPAND(x) x
 
-#define TE_BIND_EVENT_FN(fn, ...) std::bind( &fn, this, __VA_ARGS__ )
+#define STD_PLACEHOLDERS std::placeholders::_
+#define TE_BIND_EVENT_FN(fn, PlaceHolder) std::bind( &fn, this, EXPAND(STD_PLACEHOLDERS)PlaceHolder )
 
 #pragma region Selectors
 

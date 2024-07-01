@@ -2,20 +2,27 @@
 #ifdef IS_EDITOR
 
 #include <Tridium/Core/Layer.h>
+#include <Tridium/Scene/Scene.h>
+#include <Tridium/Events/Eventsfwd.h>
+
+#include "Panels/Panel.h"
 
 #include <Tridium/Rendering/RenderCommand.h>
 #include <Tridium/Rendering/Renderer.h>
 #include <Tridium/Rendering/Shader.h>
-#include <Tridium/Rendering/framebuffer.h>
 
 #include "EditorCamera.h"
-#include "Panels/ContentBrowser.h"
-#include "Panels/SceneHeirarchy.h"
-#include "Panels/ScriptEditor.h"
+
+#include <Tridium/Rendering/Texture.h>
 
 namespace Tridium::Editor {
 
-	enum class SceneState : BYTE
+	class ContentBrowser;
+	class SceneHeirarchy;
+	class ViewportPanel;
+
+
+	enum class SceneState
 	{
 		None = 0,
 		Edit,		// The scene does not update but the Editor Camera can move and interact with the scene
@@ -51,6 +58,9 @@ namespace Tridium::Editor {
 		template <typename T, typename... Args>
 		inline T* PushPanel( Args&&... args ) { return m_PanelStack.PushPanel<T>( std::forward<Args>( args )... ); }
 
+		template <typename T>
+		inline T* GetPanel() { return m_PanelStack.GetPanel<T>(); }
+
 		static EditorLayer& Get() { return *s_Instance; }
 		EditorCamera& GetEditorCamera() { return m_EditorCamera; }
 
@@ -65,20 +75,17 @@ namespace Tridium::Editor {
 	private:
 		bool OnKeyPressed( KeyPressedEvent& e );
 
-		// - ImGui -
 		void DrawMenuBar();
-		void DrawEditorCameraViewPort();
 
 	private:
 		Ref<Scene> m_ActiveScene;
 
 		EditorCamera m_EditorCamera;
-		Ref<Framebuffer> m_EditorCameraFBO;
-		Vector2 m_ViewportSize;
 
 		PanelStack m_PanelStack;
 		ContentBrowser* m_ContentBrowser;
 		SceneHeirarchy* m_SceneHeirarchy;
+		ViewportPanel* m_ViewportPanel;
 		UIToolBar m_UIToolBar;
 
 	private:

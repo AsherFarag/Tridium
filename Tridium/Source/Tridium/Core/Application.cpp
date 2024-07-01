@@ -25,7 +25,7 @@ namespace Tridium {
 		TE_CORE_ASSERT( !s_Instance, "Application already exists!" );
 		s_Instance = this;
 		m_Window = Window::Create();
-		m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, std::placeholders::_1 ) );
+		m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
 
 		TODO( "Setup a proper scene initialiser!" );
 		m_ActiveScene = MakeRef<Scene>();
@@ -127,7 +127,7 @@ namespace Tridium {
 	void Application::OnEvent( Event& e )
 	{
 		EventDispatcher dispatcher( e );
-		dispatcher.Dispatch<WindowCloseEvent>( TE_BIND_EVENT_FN( Application::OnWindowClosed, std::placeholders::_1 ) );
+		dispatcher.Dispatch<WindowCloseEvent>( TE_BIND_EVENT_FN( Application::OnWindowClosed, 1 ) );
 	
 		for ( auto it = m_LayerStack.end(); it != m_LayerStack.begin(); )
 		{

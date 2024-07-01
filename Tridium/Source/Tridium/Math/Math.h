@@ -4,6 +4,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/matrix_decompose.hpp>
+
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
 typedef glm::vec2 Vector2;
@@ -39,4 +42,8 @@ typedef glm::quat Quaternion;
 
 #pragma endregion
 
-namespace Math {}
+namespace Tridium::Math
+{
+	void DecomposeTransform( const Matrix4& mat, Vector3& outPos, Vector3& outRot, Vector3& outScale );
+	void DecomposeTransform( const Matrix4& mat, Vector3& outPos, Quaternion& outRot, Vector3& outScale );
+}

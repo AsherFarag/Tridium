@@ -35,7 +35,7 @@ namespace Tridium {
 
 	Matrix4 TransformComponent::GetLocalTransform() const
 	{
-		Matrix4 rotationMatrix = glm::toMat4( Quaternion( Rotation ) );
+		Matrix4 rotationMatrix = glm::toMat4( Rotation );
 
 		constexpr Matrix4 identity = Matrix4( 1.0f );
 
@@ -71,6 +71,12 @@ namespace Tridium {
 		if ( childTransform.GetParent() != GetGameObject() && a_Child != GetParent() )
 		{
 			childTransform.DetachFromParent();
+
+			// We want to keep the child's world transform, so we need to change the childs local transform
+			Matrix4 newLocalTransform = glm::inverse( GetWorldTransform() ) * a_Child.GetWorldTransform();
+			TransformComponent& tc = a_Child.GetTransform();
+			Math::DecomposeTransform( newLocalTransform, tc.Position, tc.Rotation, tc.Scale );
+
 			childTransform.SetParent( GetGameObject() );
 			m_Children.push_back( a_Child );
 		}

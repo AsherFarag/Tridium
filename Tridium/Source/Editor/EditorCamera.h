@@ -8,14 +8,13 @@ namespace Tridium::Editor {
     class EditorCamera final : public Camera
     {
     public:
-
         void OnUpdate();
 
         Vector3 GetUpDirection() const;
         Vector3 GetRightDirection() const;
         Vector3 GetForwardDirection() const;
         Quaternion GetOrientation() const;
-
+        Matrix4 GetTransform() const;
         const Matrix4& GetViewMatrix() const { return m_View; }
 
     public:

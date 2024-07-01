@@ -11,7 +11,7 @@
 #include <Tridium/Rendering/Texture.h>
 
 namespace ImGui {
-	static void DrawVec3Control( const std::string& label, Vector3& values, float speed, const char* format = "%.2f" )
+	static void DrawVec3Control( const std::string& label, Vector3& values, float speed, const char* format = "%.4f" )
 	{
 		float itemWidth = ImGui::GetContentRegionAvail().x / 3.f - 30;
 
@@ -106,8 +106,11 @@ namespace Tridium::Editor {
 			bool removeComponent = false;
 			if ( ImGui::BeginPopup( "ComponentSettings" ) )
 			{
-				if ( ImGui::MenuItem( "Remove component" ) )
-					removeComponent = true;
+				if ( !std::is_same<T, TransformComponent>() )
+				{
+					if ( ImGui::MenuItem( "Remove component" ) )
+						removeComponent = true;
+				}
 
 				ImGui::EndPopup();
 			}
@@ -139,7 +142,7 @@ namespace Tridium::Editor {
 		DrawComponent<TransformComponent>( "Transform", InspectedGameObject, []( auto& component )
 			{
 				ImGui::DrawVec3Control( "Position", component.Position, 0.01f );
-				Vector3 rotation = glm::degrees( component.Rotation );
+				Vector3 rotation = glm::degrees( glm::eulerAngles( component.Rotation ) );
 				ImGui::DrawVec3Control( "Rotation", rotation, 1.f );
 				component.Rotation = glm::radians( rotation );
 				ImGui::DrawVec3Control( "Scale", component.Scale, 0.01f );

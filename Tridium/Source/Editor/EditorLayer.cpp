@@ -3,7 +3,13 @@
 #ifdef IS_EDITOR
 #include "EditorLayer.h"
 #include "imgui.h"
+
 #include "Panels/EditorPreferences.h"
+#include "Panels/ContentBrowser.h"
+#include "Panels/SceneHeirarchy.h"
+#include "Panels/ScriptEditor.h"
+#include "Panels/ViewportPanel.h"
+
 #include <Tridium/Scripting/ScriptEngine.h>
 #include <Tridium/ECS/Components/Types.h>
 
@@ -42,14 +48,9 @@ namespace Tridium::Editor {
 
 	void EditorLayer::OnAttach()
 	{
-		FramebufferSpecification FBOspecification;
-		FBOspecification.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
-		FBOspecification.Width = 1280;
-		FBOspecification.Height = 720;
-		m_EditorCameraFBO = Framebuffer::Create( FBOspecification );
-
 		m_SceneHeirarchy = m_PanelStack.PushPanel<SceneHeirarchy>();
 		m_ContentBrowser = m_PanelStack.PushPanel<ContentBrowser>();
+		m_ViewportPanel = m_PanelStack.PushPanel<ViewportPanel>();
 		m_PanelStack.PushPanel<Stats>();
 	}
 
@@ -61,15 +62,15 @@ namespace Tridium::Editor {
 	{
 		if ( m_ActiveScene )
 		{
+			m_ViewportPanel->ViewedCamera = &m_EditorCamera;
+			m_EditorCamera.Focused = m_ViewportPanel->IsFocused();
+
 			switch ( CurrentSceneState )
 			{
 				case SceneState::Edit:
 				{
 					m_EditorCamera.OnUpdate();
-
-					m_EditorCameraFBO->Bind();
-					m_ActiveScene->Render( m_EditorCamera, m_EditorCamera.GetViewMatrix() );
-					m_EditorCameraFBO->Unbind();
+					m_ViewportPanel->CameraViewMatrix = m_EditorCamera.GetViewMatrix();
 					break;
 				}
 				case SceneState::Play:
@@ -79,20 +80,12 @@ namespace Tridium::Editor {
 						m_ActiveScene->OnUpdate();
 					}
 
-					CameraComponent* mainCam = m_ActiveScene->GetMainCamera();
-					if ( mainCam )
+					if ( CameraComponent* mainCam = m_ActiveScene->GetMainCamera() )
 					{
-						m_EditorCameraFBO->Bind();
-						mainCam->SceneCamera.SetViewportSize( m_ViewportSize.x, m_ViewportSize.y );
-						m_ActiveScene->Render( *mainCam );
-						m_EditorCameraFBO->Unbind();
+						m_ViewportPanel->ViewedCamera = &mainCam->SceneCamera;
+						m_ViewportPanel->CameraViewMatrix = mainCam->GetView();
 					}
-					else
-					{
-						m_EditorCameraFBO->Bind();
-						m_ActiveScene->Render( m_EditorCamera, m_EditorCamera.GetViewMatrix() );
-						m_EditorCameraFBO->Unbind();
-					}
+
 					break;
 				}
 			}
@@ -132,7 +125,6 @@ namespace Tridium::Editor {
 
 			DrawMenuBar();
 			m_UIToolBar.OnImGuiDraw();
-			DrawEditorCameraViewPort();
 
 			for ( auto& it = m_PanelStack.rbegin(); it != m_PanelStack.rend(); it++ )
 			{
@@ -145,7 +137,7 @@ namespace Tridium::Editor {
 	void EditorLayer::OnEvent( Event& e )
 	{
 		EventDispatcher dispatcher( e );
-		dispatcher.Dispatch<KeyPressedEvent>( TE_BIND_EVENT_FN( EditorLayer::OnKeyPressed, std::placeholders::_1 ) );
+		dispatcher.Dispatch<KeyPressedEvent>( TE_BIND_EVENT_FN( EditorLayer::OnKeyPressed, 1 ) );
 
 		for ( auto it = m_PanelStack.end(); it != m_PanelStack.begin(); )
 		{
@@ -161,8 +153,6 @@ namespace Tridium::Editor {
 		m_ActiveScene->SetPaused( false );
 
 		CurrentSceneState = SceneState::Play;
-
-		//Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled );
 	}
 
 	void EditorLayer::OnEndScene()
@@ -170,8 +160,6 @@ namespace Tridium::Editor {
 		m_ActiveScene->OnEnd();
 
 		CurrentSceneState = SceneState::Edit;
-
-		//Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Normal );
 	}
 
 	bool EditorLayer::OnKeyPressed( KeyPressedEvent& e )
@@ -265,27 +253,6 @@ namespace Tridium::Editor {
 		}
 
 		ImGui::EndMainMenuBar();
-	}
-
-	void EditorLayer::DrawEditorCameraViewPort()
-	{
-		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2(2.f, 2.f) );
-
-		ImGui::Begin( "Viewport ##" );
-		{
-			m_EditorCamera.Focused = ImGui::IsWindowFocused();
-			Vector2 regionAvail = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
-
-			ImGui::Image( (ImTextureID)m_EditorCameraFBO->GetColorAttachmentID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
-
-			if ( m_ViewportSize != regionAvail )
-			{
-				m_ViewportSize = regionAvail;
-				m_EditorCamera.SetViewportSize( regionAvail.x, regionAvail.y );
-				m_EditorCameraFBO->Resize( regionAvail.x, regionAvail.y );
-			}
-		}
-		ImGui::End();
 	}
 
 #pragma region - UIToolBar -

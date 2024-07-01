@@ -13,3 +13,6 @@
 [submodule "Tridium/Dependencies/sol2"]
 	path = Tridium/Dependencies/sol2
 	url = https://github.com/AsherFarag/sol2
+[submodule "Tridium/Dependencies/ImGuizmo"]
+	path = Tridium/Dependencies/ImGuizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo

@@ -210,15 +210,6 @@ namespace Tridium::Editor {
 		}
 	}
 
-	void ScriptEditor::OnEvent( Event& e )
-	{
-		if ( m_IsFocused )
-		{
-			EventDispatcher dispatcher( e );
-			dispatcher.Dispatch<KeyPressedEvent>( TE_BIND_EVENT_FN( ScriptEditor::OnKeyPressed, std::placeholders::_1 ) );
-		}
-	}
-
 	bool ScriptEditor::OnKeyPressed( KeyPressedEvent& e )
 	{
 		if ( e.IsRepeat() )

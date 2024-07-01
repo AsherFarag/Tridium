@@ -6,37 +6,41 @@
 
 namespace Tridium::Editor {
 
-	class PanelStack;
-
 	class Panel
 	{
-		friend PanelStack;
+		friend class PanelStack;
 	public:
 		Panel( const std::string& a_Name ) : m_Name( a_Name ) {}
 		virtual ~Panel() = default;
 
-		virtual void OnEvent( Event& e ) {}
+		void OnEvent( Event& e );
 		virtual void OnImGuiDraw() = 0;
 
 		inline const void Focus() const { ImGui::SetWindowFocus( m_Name.c_str() ); }
-		bool IsFocused() const { return m_IsFocused; }
+		inline bool IsHovered() const { return m_IsHovered; }
+		inline bool IsFocused() const { return m_IsFocused; }
 
 	protected:
+		virtual bool OnKeyPressed( KeyPressedEvent& e ) { return false; }
+		virtual bool OnKeyReleased( KeyReleasedEvent& e ) { return false; }
+		virtual bool OnKeyTyped( KeyTypedEvent& e ) { return false; }
+		virtual bool OnMouseMoved( MouseMovedEvent& e ) { return false; }
+		virtual bool OnMouseButtonPressed( MouseButtonPressedEvent& e ) { return false; }
+		virtual bool OnMouseButtonReleased( MouseButtonReleasedEvent& e ) { return false; }
+
 		bool ImGuiBegin(ImGuiWindowFlags a_WindowFlags = 0);
-		void ImGuiEnd(); // If used, it MUST be the last call in OnImGuiDraw()
+		void ImGuiEnd();
 
 		void Close();
-		// Return false if this Panel should not be closed
-		virtual bool OnClose() { return true; }
 
 	protected:
 		std::string m_Name;
 		PanelStack* m_Owner = nullptr;
 		bool m_Open = true;
+		bool m_IsHovered = false;
 		bool m_IsFocused = false;
 	};
 
-	// Wrapper for a list of panels
 	class PanelStack
 	{
 	public:

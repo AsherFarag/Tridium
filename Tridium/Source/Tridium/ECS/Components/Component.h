@@ -15,7 +15,7 @@ namespace Tridium {
 		virtual ~Component() = default;
 		virtual void OnDestroy() {}
 
-		const GameObject GetGameObject() const { return m_GameObject; }
+		inline GameObject GetGameObject() const { return m_GameObject; }
 
 	private:
 		GameObject m_GameObject;

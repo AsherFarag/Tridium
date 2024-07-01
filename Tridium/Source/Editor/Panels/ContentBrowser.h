@@ -18,12 +18,9 @@ namespace Tridium::Editor {
 		ContentBrowser();
 		virtual ~ContentBrowser() = default;
 		
-		virtual void OnEvent( Event& e ) override;
 		virtual void OnImGuiDraw() override;
 
 	private:
-		bool OnMouseButtonPressed( MouseButtonPressedEvent& e );
-
 		static ContentType GetContentType( const fs::path& a_FilePath );
 		bool ContentItemOnImGuiDraw( const ContentType a_Type, const fs::path& a_FilePath, const ImVec2& a_Size );
 		void ContentOnOpened( const ContentType a_Type, const fs::path& a_FilePath );

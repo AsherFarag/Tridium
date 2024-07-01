@@ -1,9 +1,6 @@
 #pragma once
 #ifdef IS_EDITOR
 #include "Panel.h"
-#include <filesystem>
-
-namespace fs = std::filesystem;
 
 namespace Tridium::Editor {
 
@@ -39,13 +36,12 @@ namespace Tridium::Editor {
     public:
         ScriptEditor() : Panel("Script Editor") {}
 
-        virtual void OnEvent( Event& e ) override;
         virtual void OnImGuiDraw() override;
 
         void OpenFile( const fs::path& a_FilePath );
 
     private:
-        bool OnKeyPressed( KeyPressedEvent& e );
+        virtual bool OnKeyPressed( KeyPressedEvent& e ) override;
 
         bool DisplayFileContents( ScriptTextFile& file );
 

@@ -128,16 +128,6 @@ namespace Tridium {
 		Renderer::EndScene();
 	}
 
-	void Scene::Render( const CameraComponent& camera )
-	{
-		auto& transform = camera.GetGameObject().GetComponent<TransformComponent>();
-		auto orientation = Quaternion( Vector3( -transform.Rotation.x, -transform.Rotation.y, 0.f ) );
-		Matrix4 viewMatrix = glm::translate( Matrix4( 1.f ), transform.Position ) * glm::toMat4( orientation );
-		viewMatrix = glm::inverse( viewMatrix );
-
-		Render( camera.SceneCamera, viewMatrix );
-	}
-
 	void Scene::OnEnd()
 	{
 	}

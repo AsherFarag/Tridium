@@ -4,7 +4,8 @@
 #include "ContentBrowser.h"
 #include "Editor/EditorLayer.h"
 #include <fstream>
-
+#include <Tridium/Core/Application.h>
+#include "ScriptEditor.h"
 
 namespace Tridium::Editor {
 
@@ -50,12 +51,6 @@ namespace Tridium::Editor {
 		}
 
 		ImGui::PopStyleVar();
-	}
-
-	void ContentBrowser::OnEvent( Event& e )
-	{
-		EventDispatcher dispatcher( e );
-		dispatcher.Dispatch<MouseButtonPressedEvent>( TE_BIND_EVENT_FN( ContentBrowser::OnMouseButtonPressed, std::placeholders::_1 ) );
 	}
 
 	void ContentBrowser::OnImGuiDraw()
@@ -159,11 +154,6 @@ namespace Tridium::Editor {
 		if ( ext == ".png") { return ContentType::Texture; }
 
 		return ContentType::None;
-	}
-
-	bool ContentBrowser::OnMouseButtonPressed( MouseButtonPressedEvent& e )
-	{
-		return false;
 	}
 
 	bool ContentBrowser::ContentItemOnImGuiDraw( const ContentType type, const fs::path& a_FilePath, const ImVec2& size )

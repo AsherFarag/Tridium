@@ -20,19 +20,9 @@ namespace Tridium::Editor {
 	{
 	}
 
-	void SceneHeirarchy::OnEvent( Event& e )
-	{
-		if ( m_IsFocused )
-		{
-			EventDispatcher dispatcher( e );
-			dispatcher.Dispatch<KeyPressedEvent>( TE_BIND_EVENT_FN( SceneHeirarchy::OnKeyPressed, std::placeholders::_1 ) );
-		}
-	}
-
 	void SceneHeirarchy::OnImGuiDraw()
 	{
 		DrawSceneHeirarchy();
-		DrawAddGameObjectPopUp();
 	}
 
 	void SceneHeirarchy::SetSelectedGameObject( GameObject gameObject )
@@ -116,7 +106,7 @@ namespace Tridium::Editor {
 		auto gameObjects = m_Context->GetRegistry().view<TagComponent>();
 		ImGui::Text( "Game Objects: %i", gameObjects.size() );
 
-		//ImGui::SameLine();
+		ImGui::SameLine();
 
 		// Draw Add-GameObject Button
 		// Align the button to the right
@@ -124,6 +114,8 @@ namespace Tridium::Editor {
 		ImGui::SetCursorPosX( ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - addGameObjectButtonWidth - 5 );
 		if ( ImGui::Button( "+" ) )
 			OpenAddGameObjectPopUp();
+
+		DrawAddGameObjectPopUp();
 
 		ImGui::Separator();
 

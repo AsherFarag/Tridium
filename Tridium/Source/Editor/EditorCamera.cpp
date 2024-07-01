@@ -118,6 +118,17 @@ namespace Tridium::Editor {
 		return Quaternion( Vector3( -Pitch, -Yaw, 0.f ) );
 	}
 
+	Matrix4 EditorCamera::GetTransform() const
+	{
+		Matrix4 rotationMatrix = glm::toMat4( Quaternion( Vector3( Pitch, Yaw, 0.0f ) ) );
+
+		constexpr Matrix4 identity = Matrix4( 1.0f );
+
+		return glm::translate( identity, Position )
+			* rotationMatrix
+			* glm::scale( identity, Scale );
+	}
+
 }
 
 #endif // IS_EDITOR
