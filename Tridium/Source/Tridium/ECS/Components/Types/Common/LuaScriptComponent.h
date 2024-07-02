@@ -10,8 +10,8 @@ namespace Tridium {
 		friend class GameObject;
 
 	public:
-		LuaScriptComponent() = default;
-		LuaScriptComponent(const Ref<Script>& a_Script);
+		LuaScriptComponent();
+		LuaScriptComponent( const Ref<Script>& a_Script );
 		LuaScriptComponent( const std::string& a_Script );
 		~LuaScriptComponent();
 

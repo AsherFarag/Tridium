@@ -20,6 +20,7 @@ namespace Tridium::Editor {
 		m_LuaIcon = Texture2D::Create( ( iconFolder / "file-code.png" ).string() );
 		m_ImageMediaIcon = Texture2D::Create( ( iconFolder / "file-media.png" ).string() );
 		m_TridiumProjectIcon = Texture2D::Create( ( iconFolder / "EngineIcon.png" ).string() );
+		//m_TridiumSceneIcon = Texture2D::Create( ( iconFolder / "tridium-scene.png" ).string() );
 	}
 
 	static void DrawDirectoryPath( fs::path& a_Path )
@@ -211,7 +212,7 @@ namespace Tridium::Editor {
 
 			if ( ImGui::BeginDragDropSource() )
 			{
-				ImGui::SetDragDropPayload( "ContentBrowserItem", a_FilePath.string().c_str(), a_FilePath.string().size() + 1 );
+				ImGui::SetDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM, a_FilePath.string().c_str(), a_FilePath.string().size() + 1 );
 				ImGui::Image( (ImTextureID)icon->GetRendererID(),
 					{ size.x - paddingX * 2, size.y - paddingY * 2 },
 					{ 0,1 }, { 1,0 } );

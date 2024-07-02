@@ -10,7 +10,6 @@
 #include <Tridium/Rendering/RenderCommand.h>
 
 // TEMP
-using namespace entt::literals;
 #include "GLFW/glfw3.h"
 #include <Tridium/ECS/GameObject.h>
 #include <Tridium/ECS/Components/Types.h>
@@ -34,11 +33,11 @@ namespace Tridium {
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay( m_ImGuiLayer );
 
-		//m_Project = new Project("Sandbox", "Content", "Content");
 		ProjectSerializer::Deserialize( m_Project, "Content/Sandbox.TEproject" );
 
 #ifdef IS_EDITOR
 
+		m_Window->SetTitle( "Tridium Editor" );
 		m_Window->SetIcon( "Content/Engine/Editor/Icons/EngineIcon.png" );
 
 		m_EditorLayer = new Editor::EditorLayer();
@@ -50,13 +49,6 @@ namespace Tridium {
 
 		// Initialise the render pipeline
 		RenderCommand::Init();
-
-		// TEMP
-		// entt meta demo
-		entt::meta<TransformComponent>()
-			.data<&TransformComponent::Position>( "Position"_hs )
-			.data<&TransformComponent::Rotation>( "Rotation"_hs )
-			.data<&TransformComponent::Scale>( "Scale"_hs );
 	}
 	
 	Application::~Application()
@@ -66,11 +58,6 @@ namespace Tridium {
 	void Application::Run()
 	{
 		m_Running = true;
-
-		// TEMP
-		// entt meta demo
-		auto data = entt::resolve<TransformComponent>().data( "Position"_hs );
-		TE_CORE_DEBUG( data.type().info().name() );
 
 		while ( m_Running )
 		{
@@ -157,5 +144,4 @@ namespace Tridium {
 	{
 		m_Running = false;
 	}
-
 }

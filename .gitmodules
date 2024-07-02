@@ -16,3 +16,6 @@
 [submodule "Tridium/Dependencies/ImGuizmo"]
 	path = Tridium/Dependencies/ImGuizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo
+[submodule "Tridium/Dependencies/yaml-cpp"]
+	path = Tridium/Dependencies/yaml-cpp
+	url = https://github.com/AsherFarag/yaml-cpp.git

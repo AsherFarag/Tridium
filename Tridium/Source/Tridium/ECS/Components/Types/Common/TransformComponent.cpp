@@ -35,7 +35,7 @@ namespace Tridium {
 
 	Matrix4 TransformComponent::GetLocalTransform() const
 	{
-		Matrix4 rotationMatrix = glm::toMat4( Rotation );
+		Matrix4 rotationMatrix = glm::toMat4( Quaternion( Rotation ) );
 
 		constexpr Matrix4 identity = Matrix4( 1.0f );
 

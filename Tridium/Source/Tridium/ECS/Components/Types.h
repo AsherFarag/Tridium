@@ -1,6 +1,7 @@
 #pragma once
 
 // - Common -
+#include "Types/Common/GUIDComponent.h"
 #include "Types/Common/TagComponent.h"
 #include "Types/Common/TransformComponent.h"
 #include "Types/Common/LuaScriptComponent.h"

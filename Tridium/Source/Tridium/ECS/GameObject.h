@@ -7,6 +7,7 @@
 namespace Tridium {
 
 	class TagComponent;
+	class GUIDComponent;
 	class TransformComponent;
 
 	typedef entt::entity EntityID;
@@ -44,10 +45,11 @@ namespace Tridium {
 		inline void RemoveComponent();
 
 		static inline GameObject Create() { return Application::GetScene()->InstantiateGameObject(); }
-		static inline GameObject Create( const std::string& a_Name ) { return Application::GetScene()->InstantiateGameObject( a_Name ); }
+		static inline GameObject Create( GUID a_GUID, const std::string& a_Name ) { return Application::GetScene()->InstantiateGameObject( a_GUID, a_Name ); }
 		inline void Destroy() { Application::GetScene()->m_Registry.destroy( m_ID ); }
 		inline bool IsValid() const { return Application::GetScene()->m_Registry.valid( m_ID ); }
 
+		GUID GetGUID() const;
 		const inline EntityID ID() const { return m_ID; }
 		std::string& GetTag() const;
 
@@ -62,9 +64,6 @@ namespace Tridium {
 		void DetachChild( GameObject a_Child );
 		GameObject GetChild( const std::string& a_Tag ) const; /* Slow operation, avoid if possible. */
 		std::vector<GameObject>& GetChildren();
-
-	private:
-		void Init( const std::string& name );
 
 	private:
 		EntityID m_ID;

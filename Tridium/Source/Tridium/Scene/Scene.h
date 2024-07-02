@@ -10,9 +10,10 @@ namespace Tridium {
 	class Scene
 	{
 		friend class GameObject;
+		friend class SceneSerializer;
 
 	public:
-		Scene();
+		Scene( const std::string& name = "Unnamed Scene");
 		~Scene();
 
 		void OnBegin();
@@ -20,16 +21,20 @@ namespace Tridium {
 		void Render( const Camera& camera, const Matrix4& viewMatrix );
 		void OnEnd();
 
-		GameObject InstantiateGameObject( const std::string& name = "GameObject" );
-		auto& GetRegistry() { return m_Registry; }
-		void Clear();
+		inline const std::string& GetName() const { return m_Name; }
 
 		void SetPaused( bool newPaused ) { m_Paused = newPaused; }
 		bool IsPaused() const { return m_Paused; }
+
+		GameObject InstantiateGameObject( const std::string& name = "GameObject" );
+		GameObject InstantiateGameObject( GUID guid, const std::string& name = "GameObject" );
 		CameraComponent* GetMainCamera();
 		void SetMainCamera( const EntityID& a_Camera ) { m_MainCamera = a_Camera; }
+		auto& GetRegistry() { return m_Registry; }
+		void Clear();
 
 	private:
+		std::string m_Name;
 		entt::registry m_Registry;
 		bool m_Paused = false;
 

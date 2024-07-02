@@ -15,7 +15,7 @@ namespace Tridium {
 		uint32_t Width;
 		uint32_t Height;
 
-		WindowProps( const std::string& title = "Tridium Engine",
+		WindowProps( const std::string& title = "Application",
 			uint32_t width = 1280,
 			uint32_t height = 720 )
 			: Title( title ), Width( width ), Height( height )
@@ -40,6 +40,7 @@ namespace Tridium {
 		virtual void SetEventCallback( const EventCallbackFn& callback ) = 0;
 		virtual void SetVSync( bool enabled ) = 0;
 		virtual bool IsVSync() const = 0;
+		virtual void SetTitle( const std::string& title ) = 0;
 		virtual void SetIcon( const std::string& path ) = 0;
 
 		virtual void* GetNativeWindow() const = 0;

@@ -8,10 +8,13 @@
 #include "Panels/ContentBrowser.h"
 #include "Panels/SceneHeirarchy.h"
 #include "Panels/ScriptEditor.h"
-#include "Panels/ViewportPanel.h"
+#include "Panels/EditorViewportPanel.h"
+#include "Panels/GameViewportPanel.h"
 
 #include <Tridium/Scripting/ScriptEngine.h>
 #include <Tridium/ECS/Components/Types.h>
+
+#include <Tridium/IO/SceneSerializer.h>
 
 namespace Tridium::Editor {
 	
@@ -50,7 +53,9 @@ namespace Tridium::Editor {
 	{
 		m_SceneHeirarchy = m_PanelStack.PushPanel<SceneHeirarchy>();
 		m_ContentBrowser = m_PanelStack.PushPanel<ContentBrowser>();
-		m_ViewportPanel = m_PanelStack.PushPanel<ViewportPanel>();
+		m_EditorViewportPanel = m_PanelStack.PushPanel<EditorViewportPanel>(m_EditorCamera);
+		m_EditorViewportPanel->Focus();
+		m_GameViewportPanel = m_PanelStack.PushPanel<GameViewportPanel>();
 		m_PanelStack.PushPanel<Stats>();
 	}
 
@@ -62,30 +67,21 @@ namespace Tridium::Editor {
 	{
 		if ( m_ActiveScene )
 		{
-			m_ViewportPanel->ViewedCamera = &m_EditorCamera;
-			m_EditorCamera.Focused = m_ViewportPanel->IsFocused();
-
 			switch ( CurrentSceneState )
 			{
 				case SceneState::Edit:
 				{
 					m_EditorCamera.OnUpdate();
-					m_ViewportPanel->CameraViewMatrix = m_EditorCamera.GetViewMatrix();
 					break;
 				}
 				case SceneState::Play:
 				{
+					m_EditorCamera.OnUpdate();
+
 					if ( !m_ActiveScene->IsPaused() )
 					{
 						m_ActiveScene->OnUpdate();
 					}
-
-					if ( CameraComponent* mainCam = m_ActiveScene->GetMainCamera() )
-					{
-						m_ViewportPanel->ViewedCamera = &mainCam->SceneCamera;
-						m_ViewportPanel->CameraViewMatrix = mainCam->GetView();
-					}
-
 					break;
 				}
 			}
@@ -152,6 +148,8 @@ namespace Tridium::Editor {
 		m_ActiveScene->OnBegin();
 		m_ActiveScene->SetPaused( false );
 
+
+		m_GameViewportPanel->Focus();
 		CurrentSceneState = SceneState::Play;
 	}
 
@@ -160,6 +158,24 @@ namespace Tridium::Editor {
 		m_ActiveScene->OnEnd();
 
 		CurrentSceneState = SceneState::Edit;
+		m_EditorViewportPanel->Focus();
+		LoadScene( ( Application::GetAssetDirectory() / "Scene.tridium" ).string() );
+	}
+
+	bool EditorLayer::LoadScene( const std::string& filepath )
+	{
+		m_ActiveScene->Clear();
+
+		SceneSerializer serializer( m_ActiveScene );
+		serializer.DeserializeText( filepath );
+		return true;
+	}
+
+	bool EditorLayer::SaveScene( const std::string& filepath )
+	{
+		SceneSerializer serializer( m_ActiveScene );
+		serializer.SerializeText( filepath );
+		return true;
 	}
 
 	bool EditorLayer::OnKeyPressed( KeyPressedEvent& e )
@@ -172,6 +188,15 @@ namespace Tridium::Editor {
 
 		switch ( e.GetKeyCode() )
 		{
+		case Input::KEY_S:
+		{
+			if ( control )
+			{
+				SaveScene( ( Application::GetAssetDirectory() / "Scene.tridium" ).string() );
+				return true;
+			}
+			break;
+		}
 		case Input::KEY_R:
 		{
 			if ( control )
@@ -212,8 +237,8 @@ namespace Tridium::Editor {
 			if ( ImGui::MenuItem( "Open Scene", nullptr, nullptr, false ) )
 				TE_CORE_INFO( "Open Scene" );
 
-			if ( ImGui::MenuItem( "Save Scene", nullptr, nullptr, false ) )
-				TE_CORE_INFO( "Save Scene" );
+			if ( ImGui::MenuItem( "Save Scene", "Ctrl + S" ) )
+				SaveScene( ( Application::GetAssetDirectory() / "Scene.tridium" ).string() );
 
 			ImGui::EndMenu();
 		}

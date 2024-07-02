@@ -29,14 +29,16 @@ namespace Tridium::Editor {
 	{
 		m_SelectedGameObject = gameObject;
 
-		if ( !m_Inspector && m_Owner )
+		if ( !m_Inspector )
 			m_Inspector = m_Owner->PushPanel<InspectorPanel>();
+
+		if ( m_Inspector->InspectedGameObject == gameObject )
+			return;
 
 		m_Inspector->InspectedGameObject = m_SelectedGameObject;
 
 		// Since a game object was selected, bring the Inspector into focus.
-		//ImGui::SetWindowFocus( "Inspector" );
-		//ImGui::SetWindowFocus( "Scene Heirarchy" );
+		//m_Inspector->Focus();
 	}
 
 
@@ -126,15 +128,27 @@ namespace Tridium::Editor {
 
 		ImGui::Separator();
 
-		for ( int i = 0; i < gameObjects.size(); ++i )
+		// Draw Heirarchy List
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_Framed;
+		flags |= gameObjects.size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0;
+		ImGui::PushFont( ImGui::GetBoldFont() );
+		if ( ImGui::TreeNodeEx( m_Context->GetName().c_str(), flags ) )
 		{
-			GameObject go = gameObjects[ i ];
-			// We are only drawing root objects in this loop
-			if ( go.GetParent().IsValid() )
-				continue;
+			ImGui::PopFont();
+			for ( int i = 0; i < gameObjects.size(); ++i )
+			{
+				GameObject go = gameObjects[i];
+				// We are only drawing root objects in this loop
+				if ( go.GetParent().IsValid() )
+					continue;
 
-			DrawSceneNode( go );
+				DrawSceneNode( go );
+			}
+
+			ImGui::TreePop();
 		}
+		else
+			ImGui::PopFont();
 
 		ImGui::End();
 	}

@@ -162,7 +162,7 @@ namespace Tridium::Editor {
 		DrawComponent<TransformComponent>( "Transform", InspectedGameObject, []( auto& component )
 			{
 				ImGui::DrawVec3Control( "Position", component.Position, 0.01f );
-				Vector3 rotation = glm::degrees( glm::eulerAngles( component.Rotation ) );
+				Vector3 rotation = glm::degrees( component.Rotation );
 				ImGui::DrawVec3Control( "Rotation", rotation, 1.f );
 				component.Rotation = glm::radians( rotation );
 				ImGui::DrawVec3Control( "Scale", component.Scale, 0.01f, Input::IsKeyPressed(Input::KEY_LEFT_CONTROL) );
@@ -236,7 +236,7 @@ namespace Tridium::Editor {
 
 				if ( ImGui::BeginDragDropTarget() )
 				{
-					if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( "ContentBrowserItem" ) )
+					if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM ) )
 					{
 						component.SetScript( Script::Create( static_cast<const char*>( payload->Data ) ) );
 					}
@@ -255,7 +255,7 @@ namespace Tridium::Editor {
 
 				if ( ImGui::BeginDragDropTarget() )
 				{
-					if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( "ContentBrowserItem" ) )
+					if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM ) )
 					{
 						component.SetTexture( Texture2D::Create( static_cast<const char*>( payload->Data ) ) );
 					}
@@ -316,7 +316,7 @@ namespace Tridium::Editor {
 
 		if ( ImGui::BeginDragDropTarget() )
 		{
-			if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( "ContentBrowserItem" ) )
+			if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM ) )
 			{
 				AddComponentToGameObject<LuaScriptComponent>( InspectedGameObject, Script::Create( static_cast<const char*>( payload->Data ) ) );
 			}

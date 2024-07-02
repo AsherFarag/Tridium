@@ -13,7 +13,8 @@
 
 namespace Tridium {
 
-	Scene::Scene()
+	Scene::Scene(const std::string& name)
+		: m_Name(name)
 	{
 	}
 
@@ -43,14 +44,14 @@ namespace Tridium {
 			if ( dynamic_cast<ScriptableComponent*>( component ) == nullptr )
 				continue;
 
-			for ( auto entity : storage.second )
-				reinterpret_cast<ScriptableComponent*>( storage.second.value( entity ) )->OnUpdate();
+			for ( auto go : storage.second )
+				reinterpret_cast<ScriptableComponent*>( storage.second.value( go ) )->OnUpdate();
 		}
 
 		TODO( "Make this only happen if the camera is shown!" );
 		// Render all Scene Cameras
 		auto& cameras = m_Registry.view<CameraComponent, TransformComponent>();
-		cameras.each( [&]( auto entity, CameraComponent& camera, TransformComponent& transform )
+		cameras.each( [&]( auto go, CameraComponent& camera, TransformComponent& transform )
 			{
 				auto orientation = Quaternion( Vector3( -transform.Rotation.x, -transform.Rotation.y, 0.f ) );
 				Matrix4 viewMatrix = glm::translate( Matrix4( 1.f ), transform.Position ) * glm::toMat4( orientation );
@@ -71,7 +72,7 @@ namespace Tridium {
 
 		Ref<Shader> currentShader = nullptr;
 
-		meshComponents.each( [&]( auto entity, MeshComponent& mesh, TransformComponent& transform )
+		meshComponents.each( [&]( auto go, MeshComponent& mesh, TransformComponent& transform )
 			{
 				if ( mesh.GetShader() != currentShader )
 				{
@@ -91,7 +92,7 @@ namespace Tridium {
 
 		auto spriteComponents = m_Registry.view<SpriteComponent, TransformComponent>();
 
-		spriteComponents.each( [ & ]( auto entity, SpriteComponent& sprite, TransformComponent& transform )
+		spriteComponents.each( [ & ]( auto go, SpriteComponent& sprite, TransformComponent& transform )
 			{
 				if ( sprite.GetShader() != currentShader )
 				{
@@ -132,10 +133,21 @@ namespace Tridium {
 	{
 	}
 
-	GameObject Scene::InstantiateGameObject( const std::string& a_Name )
+	GameObject Scene::InstantiateGameObject( const std::string& name )
 	{
 		auto go = GameObject( m_Registry.create() );
-		go.Init( a_Name );
+		go.AddComponent<GUIDComponent>();
+		go.AddComponent<TagComponent>( name );
+		go.AddComponent<TransformComponent>();
+		return go;
+	}
+
+	GameObject Scene::InstantiateGameObject( GUID guid, const std::string& name )
+	{
+		auto go = GameObject( m_Registry.create() );
+		go.AddComponent<GUIDComponent>( guid );
+		go.AddComponent<TagComponent>( name );
+		go.AddComponent<TransformComponent>();
 		return go;
 	}
 

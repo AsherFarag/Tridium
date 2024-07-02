@@ -19,7 +19,8 @@ namespace Tridium::Editor {
 
 	class ContentBrowser;
 	class SceneHeirarchy;
-	class ViewportPanel;
+	class EditorViewportPanel;
+	class GameViewportPanel;
 
 
 	enum class SceneState
@@ -69,6 +70,9 @@ namespace Tridium::Editor {
 		void OnBeginScene();
 		void OnEndScene();
 
+		bool LoadScene( const std::string& filepath );
+		bool SaveScene( const std::string& filepath );
+
 	public:
 		SceneState CurrentSceneState = SceneState::Edit;
 
@@ -85,7 +89,8 @@ namespace Tridium::Editor {
 		PanelStack m_PanelStack;
 		ContentBrowser* m_ContentBrowser;
 		SceneHeirarchy* m_SceneHeirarchy;
-		ViewportPanel* m_ViewportPanel;
+		EditorViewportPanel* m_EditorViewportPanel;
+		GameViewportPanel* m_GameViewportPanel;
 		UIToolBar m_UIToolBar;
 
 	private:

@@ -5,6 +5,12 @@
 
 namespace Tridium {
 
+	LuaScriptComponent::LuaScriptComponent()
+		: m_Environment( ScriptEngine::GetLuaState(), sol::create, ScriptEngine::GetLuaState().globals() )
+	{
+
+	}
+
 	LuaScriptComponent::LuaScriptComponent( const Ref<Script>& a_Script )
 		: m_Environment( ScriptEngine::GetLuaState(), sol::create, ScriptEngine::GetLuaState().globals() )
 	{

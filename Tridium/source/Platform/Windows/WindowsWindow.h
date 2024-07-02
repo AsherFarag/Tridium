@@ -21,6 +21,7 @@ namespace Tridium {
         inline void SetEventCallback( const EventCallbackFn& callback ) override { m_Data.EventCallback = callback; }
         void SetVSync( bool enabled ) override;
         bool IsVSync() const override;
+        virtual void SetTitle( const std::string& title ) override;
         virtual void SetIcon( const std::string& path ) override;
 
         void* GetNativeWindow() const { return m_Window; }

@@ -1,13 +1,7 @@
 #include <Tridium.h>
 using namespace Tridium;
 
-DEFINE_COMPONENT( Test, ScriptableComponent )
-{
-	virtual void OnUpdate() override
-	{
-		std::cout << "Cpp" << std::endl;
-	}
-};
+#include <Tridium/IO/SceneSerializer.h>
 
 class ExampleLayer : public Tridium::Layer
 {
@@ -119,23 +113,8 @@ public:
 
 		Shader::Create( "Texture", vertexSrc, fragSrc );
 
-		auto& background = GetScene()->InstantiateGameObject( "Background" );
-		background.AddComponent<SpriteComponent>( ( Application::GetAssetDirectory() / "Engine/Editor/Icons/DeleteThisLater.png" ).string() );
-		background.TryGetComponent<TransformComponent>()->Position.z = -30;
-		background.TryGetComponent<TransformComponent>()->Scale = Vector3( 15 );
-
-		auto& obstacleSpawner = GetScene()->InstantiateGameObject( "Obstacle Spawner" );
-		obstacleSpawner.AddComponent<MeshComponent>();
-		obstacleSpawner.AddComponent<LuaScriptComponent>( Script::Create( Application::GetAssetDirectory() / "Scripts/Game/ObstacleSpawner.lua" ) );
-		obstacleSpawner.TryGetComponent<TransformComponent>()->Position.z = -20;
-		GameObject child = GameObject::Create( "Child" );
-		obstacleSpawner.GetTransform().AttachChild( child );
-
-		auto& player = GetScene()->InstantiateGameObject( "Player" );
-		player.AddComponent<CameraComponent>();
-		player.AddComponent<LuaScriptComponent>( Script::Create( Application::GetAssetDirectory() / "Scripts/Game/Player.lua" ) );
-
-		player.AttachChild( child );
+		SceneSerializer serializer( Application::GetScene() );
+		serializer.DeserializeText( ( Application::GetAssetDirectory() / "Scene.tridium" ).string() );
 	}
 };
 

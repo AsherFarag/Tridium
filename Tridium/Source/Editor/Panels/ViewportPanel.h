@@ -11,35 +11,22 @@ namespace Tridium {
 }
 
 namespace Tridium::Editor {
-	class SceneHeirarchy;
 
-	enum class EGizmoState
-	{
-		Translate = ImGuizmo::TRANSLATE,
-		Rotate = ImGuizmo::ROTATE,
-		Scale = ImGuizmo::SCALE,
-		Universal_Scale = ImGuizmo::SCALEU
-	};
+	class SceneHeirarchy;
 
 	class ViewportPanel : public Panel
 	{
 	public:
-		ViewportPanel();
+		ViewportPanel(const std::string& name);
 		virtual ~ViewportPanel() = default;
 
-		virtual void OnImGuiDraw() override;
+		virtual void OnImGuiDraw() = 0;
 
-	public:
-		Camera* ViewedCamera;
-		Matrix4 CameraViewMatrix = Matrix4(1.0f); // To be set by the manager of this viewport
+	protected:
+		virtual bool OnKeyPressed( KeyPressedEvent& e ) { return false; };
 
-	private:
-		virtual bool OnKeyPressed( KeyPressedEvent& e ) override;
-
-	private:
-		EGizmoState m_GizmoState = EGizmoState::Translate;
-		SceneHeirarchy* m_SceneHeirarchy = nullptr;
-		Ref<Framebuffer> m_ViewedCameraFBO;
+	protected:
+		Ref<Framebuffer> m_FBO;
 		Vector2 m_ViewportSize;
 	};
 

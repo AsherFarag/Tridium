@@ -23,7 +23,7 @@ namespace Tridium {
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		ImGuiIO& io = ImGui::GetIO();
 		// - Set up flags -
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -40,7 +40,10 @@ namespace Tridium {
 		}
 
 		// - Set Default Font -
-		io.Fonts->AddFontFromFileTTF( ( Application::Get().GetAssetDirectory() / "Engine/Fonts/DroidSans.ttf" ).string().c_str(), 15);
+		ImGui::GetLightFont();
+		io.FontDefault = ImGui::GetRegularFont();
+		ImGui::GetBoldFont();
+		ImGui::GetExtraBoldFont();
 
 		Application& app = Application::Get();
 		GLFWwindow* window = static_cast<GLFWwindow*>( app.GetWindow().GetNativeWindow() );

@@ -1,0 +1,58 @@
+Scene: Awesome Game Level
+GameObjects:
+  - GameObject: 2097152
+    TagComponent:
+      "Background"
+    TransformComponent:
+      Position: [0, 0, -30]
+      Rotation: [0, 0, 0]
+      Scale: [15, 15, 15]
+      Parent: 4294967295
+      Children: []
+    SpriteComponent:
+      Texture: "Content\\Engine/Editor/Icons/DeleteThisLater.png"
+  - GameObject: 2097153
+    TagComponent:
+      "Obstacle Spawner"
+    TransformComponent:
+      Position: [0, 0, -20]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+      Parent: 4294967295
+      Children: []
+    MeshComponent:
+      {}
+    LuaScriptComponent:
+      LuaScript: "Content\\Scripts/Game/ObstacleSpawner.lua"
+  - GameObject: 2097154
+    TagComponent:
+      "Player"
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+      Parent: 4294967295
+      Children: []
+    LuaScriptComponent:
+      LuaScript: "Content\\Scripts/Game/Player.lua"
+    CameraComponent:
+      Projection Mode: Perspective
+      Perspective:
+        FOV: 45
+        Near: 0.00999999978
+        Far: 1000
+      Orthographic:
+        Size: 10
+        Near: -1000
+        Far: 1000
+  - GameObject: 2097155
+    TagComponent:
+      "Cube"
+    TransformComponent:
+      Position: [0, 4.20008993, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Parent: 4294967295
+      Children: []
+    MeshComponent:
+      {}

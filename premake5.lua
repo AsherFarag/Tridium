@@ -23,11 +23,13 @@ IncludeDir["lua"] = "Tridium/Dependencies/lua/x64"
 IncludeDir["sol2"] = "Tridium/Dependencies/sol2"
 IncludeDir["entt"] = "Tridium/Dependencies/entt/include"
 IncludeDir["stbi"] = "Tridium/Dependencies/stbi/include"
+IncludeDir["yaml"] = "Tridium/Dependencies/yaml-cpp"
 IncludeDir["refl"] = "Tridium/Dependencies/refl/include"
 
 include "Tridium/Dependencies/glfw"
 include "Tridium/Dependencies/glad"
 include "Tridium/Dependencies/ImGui"
+include "Tridium/Dependencies/yaml-cpp"
 
 project "Tridium"
 	location "Tridium"
@@ -65,12 +67,13 @@ project "Tridium"
 		"%{IncludeDir.sol2}/include",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.stbi}",
+		"%{IncludeDir.yaml}/include",
 		"%{IncludeDir.refl}"
 	}
 
 	libdirs
 	{
-		"%{IncludeDir.lua}"
+		"%{IncludeDir.lua}",
 	}
 
 	links
@@ -79,6 +82,7 @@ project "Tridium"
 		"glad",
 		"ImGui",
 		"lua54",
+		"yaml-cpp",
 		"opengl32.lib"
 	}
 
@@ -151,6 +155,7 @@ project "Sandbox"
 		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.entt}",
+		"%{IncludeDir.yaml}/include",
 		"%{IncludeDir.stbi}"
 	}
 
