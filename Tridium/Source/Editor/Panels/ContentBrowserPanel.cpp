@@ -1,15 +1,15 @@
 #include "tripch.h"
 #ifdef IS_EDITOR
 
-#include "ContentBrowser.h"
+#include "ContentBrowserPanel.h"
 #include "Editor/EditorLayer.h"
 #include <fstream>
 #include <Tridium/Core/Application.h>
-#include "ScriptEditor.h"
+#include "ScriptEditorPanel.h"
 
 namespace Tridium::Editor {
 
-	ContentBrowser::ContentBrowser()
+	ContentBrowserPanel::ContentBrowserPanel()
 		: Panel( "Content Browser" ), m_CurrentDirectory( Application::Get().GetAssetDirectory() )
 	{
 		TODO( "Make proper Icon Assets" );
@@ -54,7 +54,7 @@ namespace Tridium::Editor {
 		ImGui::PopStyleVar();
 	}
 
-	void ContentBrowser::OnImGuiDraw()
+	void ContentBrowserPanel::OnImGuiDraw()
 	{
 		if ( !ImGui::Begin( m_Name.c_str(), &m_Open ) )
 		{
@@ -144,7 +144,7 @@ namespace Tridium::Editor {
 			Close();
 	}
 
-	ContentType ContentBrowser::GetContentType( const fs::path& a_FilePath )
+	ContentType ContentBrowserPanel::GetContentType( const fs::path& a_FilePath )
 	{
 		if ( fs::is_directory( a_FilePath ) )
 			return ContentType::Folder;
@@ -157,7 +157,7 @@ namespace Tridium::Editor {
 		return ContentType::None;
 	}
 
-	bool ContentBrowser::ContentItemOnImGuiDraw( const ContentType type, const fs::path& a_FilePath, const ImVec2& size )
+	bool ContentBrowserPanel::ContentItemOnImGuiDraw( const ContentType type, const fs::path& a_FilePath, const ImVec2& size )
 	{
 		Ref<Texture2D> icon;
 
@@ -233,7 +233,7 @@ namespace Tridium::Editor {
 		return result;
 	}
 
-	void ContentBrowser::ContentOnOpened( const ContentType type, const fs::path& a_FilePath )
+	void ContentBrowserPanel::ContentOnOpened( const ContentType type, const fs::path& a_FilePath )
 	{
 		switch ( type )
 		{
@@ -244,7 +244,7 @@ namespace Tridium::Editor {
 			}
 			case ContentType::Lua:
 			{
-				auto scriptEditor = EditorLayer::Get().PushPanel<ScriptEditor>();
+				auto scriptEditor = EditorLayer::Get().PushPanel<ScriptEditorPanel>();
 				scriptEditor->OpenFile( a_FilePath );
 				scriptEditor->Focus();
 				break;

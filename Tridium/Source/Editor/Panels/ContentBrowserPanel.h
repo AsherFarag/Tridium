@@ -7,16 +7,16 @@
 
 namespace Tridium::Editor {
 
-	enum class ContentType : BYTE
+	enum class ContentType
 	{
 		None = 0, Folder, Lua, Texture, Tridium_Project
 	};
 
-	class ContentBrowser final : public Panel
+	class ContentBrowserPanel final : public Panel
 	{
 	public:
-		ContentBrowser();
-		virtual ~ContentBrowser() = default;
+		ContentBrowserPanel();
+		virtual ~ContentBrowserPanel() = default;
 		
 		virtual void OnImGuiDraw() override;
 

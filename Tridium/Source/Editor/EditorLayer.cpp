@@ -4,10 +4,10 @@
 #include "EditorLayer.h"
 #include "imgui.h"
 
-#include "Panels/EditorPreferences.h"
-#include "Panels/ContentBrowser.h"
-#include "Panels/SceneHeirarchy.h"
-#include "Panels/ScriptEditor.h"
+#include "Panels/EditorPreferencesPanel.h"
+#include "Panels/ContentBrowserPanel.h"
+#include "Panels/SceneHeirarchyPanel.h"
+#include "Panels/ScriptEditorPanel.h"
 #include "Panels/EditorViewportPanel.h"
 #include "Panels/GameViewportPanel.h"
 
@@ -51,8 +51,8 @@ namespace Tridium::Editor {
 
 	void EditorLayer::OnAttach()
 	{
-		m_SceneHeirarchy = m_PanelStack.PushPanel<SceneHeirarchy>();
-		m_ContentBrowser = m_PanelStack.PushPanel<ContentBrowser>();
+		m_SceneHeirarchy = m_PanelStack.PushPanel<SceneHeirarchyPanel>();
+		m_ContentBrowser = m_PanelStack.PushPanel<ContentBrowserPanel>();
 		m_EditorViewportPanel = m_PanelStack.PushPanel<EditorViewportPanel>(m_EditorCamera);
 		m_EditorViewportPanel->Focus();
 		m_GameViewportPanel = m_PanelStack.PushPanel<GameViewportPanel>();
@@ -248,7 +248,7 @@ namespace Tridium::Editor {
 		if ( ImGui::BeginMenu( "Edit" ) )
 		{
 			if ( ImGui::MenuItem( "Editor Preferences" ) )
-				m_PanelStack.PushPanel<EditorPreferences>();
+				m_PanelStack.PushPanel<EditorPreferencesPanel>();
 
 			ImGui::EndMenu();
 		}
@@ -257,7 +257,7 @@ namespace Tridium::Editor {
 		{
 			if ( ImGui::BeginMenu( "Panels" ) )
 			{
-				if ( ImGui::MenuItem( "Content Browser" ) ) m_PanelStack.PushPanel<ContentBrowser>();
+				if ( ImGui::MenuItem( "Content Browser" ) ) m_PanelStack.PushPanel<ContentBrowserPanel>();
 				if ( ImGui::MenuItem( "Stats" ) ) m_PanelStack.PushPanel<Stats>();
 
 				ImGui::EndMenu();
@@ -269,7 +269,7 @@ namespace Tridium::Editor {
 		if ( ImGui::BeginMenu( "Script" ) )
 		{
 			if ( ImGui::MenuItem( "Open Script Editor" ) )
-				m_PanelStack.PushPanel<ScriptEditor>();
+				m_PanelStack.PushPanel<ScriptEditorPanel>();
 
 			if ( ImGui::MenuItem( "Recompile", "Ctrl+R" ) )
 				ScriptEngine::Recompile();

@@ -17,8 +17,8 @@
 
 namespace Tridium::Editor {
 
-	class ContentBrowser;
-	class SceneHeirarchy;
+	class ContentBrowserPanel;
+	class SceneHeirarchyPanel;
 	class EditorViewportPanel;
 	class GameViewportPanel;
 
@@ -87,8 +87,8 @@ namespace Tridium::Editor {
 		EditorCamera m_EditorCamera;
 
 		PanelStack m_PanelStack;
-		ContentBrowser* m_ContentBrowser;
-		SceneHeirarchy* m_SceneHeirarchy;
+		ContentBrowserPanel* m_ContentBrowser;
+		SceneHeirarchyPanel* m_SceneHeirarchy;
 		EditorViewportPanel* m_EditorViewportPanel;
 		GameViewportPanel* m_GameViewportPanel;
 		UIToolBar m_UIToolBar;

@@ -1,7 +1,7 @@
 #include "tripch.h"
 #ifdef IS_EDITOR
 
-#include "EditorPreferences.h"
+#include "EditorPreferencesPanel.h"
 #include "imgui.h"
 
 namespace Tridium::Editor {
@@ -97,7 +97,7 @@ namespace Tridium::Editor {
 
 	}
 
-	void EditorPreferences::OnImGuiDraw()
+	void EditorPreferencesPanel::OnImGuiDraw()
 	{
 		if ( !ImGuiBegin() )
 		{

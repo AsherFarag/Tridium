@@ -3,7 +3,7 @@
 
 #include <Editor/EditorLayer.h>
 #include "EditorViewportPanel.h"
-#include "SceneHeirarchy.h"
+#include "SceneHeirarchyPanel.h"
 
 #include <Tridium/ECS/Components/Types.h>
 
@@ -52,7 +52,7 @@ namespace Tridium::Editor {
 			return;
 
 		if ( m_SceneHeirarchy == nullptr )
-			m_SceneHeirarchy = EditorLayer::Get().GetPanel<SceneHeirarchy>();
+			m_SceneHeirarchy = EditorLayer::Get().GetPanel<SceneHeirarchyPanel>();
 
 		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2( 2.f, 2.f ) );
 
@@ -156,10 +156,10 @@ namespace Tridium::Editor {
 		}
 	}
 
-	SceneHeirarchy* EditorViewportPanel::GetSceneHeirarchy()
+	SceneHeirarchyPanel* EditorViewportPanel::GetSceneHeirarchy()
 	{
 		if ( !m_SceneHeirarchy )
-			m_SceneHeirarchy = EditorLayer::Get().GetPanel<SceneHeirarchy>();
+			m_SceneHeirarchy = EditorLayer::Get().GetPanel<SceneHeirarchyPanel>();
 
 		return m_SceneHeirarchy;
 	}

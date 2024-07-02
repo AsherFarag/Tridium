@@ -31,10 +31,10 @@ namespace Tridium::Editor {
         std::string m_Content;
     };
 
-    class ScriptEditor : public Panel
+    class ScriptEditorPanel : public Panel
     {
     public:
-        ScriptEditor() : Panel("Script Editor") {}
+        ScriptEditorPanel() : Panel("Script Editor") {}
 
         virtual void OnImGuiDraw() override;
 

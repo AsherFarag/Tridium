@@ -1,6 +1,6 @@
 #include "tripch.h"
 #ifdef IS_EDITOR
-#include "ScriptEditor.h"
+#include "ScriptEditorPanel.h"
 #include <Tridium/Core/Application.h>
 
 #include <fstream>
@@ -10,7 +10,7 @@ namespace Tridium::Editor {
 
 #pragma region Script Editor
 
-	void ScriptEditor::OnImGuiDraw()
+	void ScriptEditorPanel::OnImGuiDraw()
 	{
 		ImGuiBegin( ImGuiWindowFlags_MenuBar );
 
@@ -210,7 +210,7 @@ namespace Tridium::Editor {
 		}
 	}
 
-	bool ScriptEditor::OnKeyPressed( KeyPressedEvent& e )
+	bool ScriptEditorPanel::OnKeyPressed( KeyPressedEvent& e )
 	{
 		if ( e.IsRepeat() )
 			return false;
@@ -239,7 +239,7 @@ namespace Tridium::Editor {
 		return false;
 	}
 
-	bool ScriptEditor::DisplayFileContents( ScriptTextFile& file )
+	bool ScriptEditorPanel::DisplayFileContents( ScriptTextFile& file )
 	{
 		ImGuiTabItemFlags tabFlags = ImGuiTabItemFlags_None;
 		tabFlags |= file.Modified ? ImGuiTabItemFlags_UnsavedDocument : 0;
@@ -274,7 +274,7 @@ namespace Tridium::Editor {
 		return isOpen;
 	}
 
-	void ScriptEditor::SaveAllFiles()
+	void ScriptEditorPanel::SaveAllFiles()
 	{
 		for ( auto& file : m_ScriptTextFiles )
 		{
@@ -282,7 +282,7 @@ namespace Tridium::Editor {
 		}
 	}
 
-	void ScriptEditor::OpenFile( const  fs::path& a_FilePath )
+	void ScriptEditorPanel::OpenFile( const  fs::path& a_FilePath )
 	{
 		// Ensure this file isn't already open
 		for ( auto& file : m_ScriptTextFiles )
@@ -297,13 +297,13 @@ namespace Tridium::Editor {
 			m_ScriptTextFiles.pop_back();
 	}
 
-	void ScriptEditor::SaveCurrentFile()
+	void ScriptEditorPanel::SaveCurrentFile()
 	{
 		if ( m_CurrentTextFile )
 			m_CurrentTextFile->SaveFile();
 	}
 
-	void ScriptEditor::CloseFile( uint32_t index )
+	void ScriptEditorPanel::CloseFile( uint32_t index )
 	{
 		if ( index >= m_ScriptTextFiles.size() )
 			return;

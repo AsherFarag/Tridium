@@ -2,7 +2,7 @@
 
 #ifdef IS_EDITOR
 
-#include "SceneHeirarchy.h"
+#include "SceneHeirarchyPanel.h"
 #include "imgui.h"
 
 #include <Editor/EditorLayer.h>
@@ -10,22 +10,21 @@
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Core/Application.h>
 #include <Tridium/ECS/Components/Types.h>
-
 #include <Tridium/Rendering/Texture.h>
 
 namespace Tridium::Editor {
 
-	SceneHeirarchy::SceneHeirarchy()
+	SceneHeirarchyPanel::SceneHeirarchyPanel()
 		: Panel( "Scene Heirarchy" )
 	{
 	}
 
-	void SceneHeirarchy::OnImGuiDraw()
+	void SceneHeirarchyPanel::OnImGuiDraw()
 	{
 		DrawSceneHeirarchy();
 	}
 
-	void SceneHeirarchy::SetSelectedGameObject( GameObject gameObject )
+	void SceneHeirarchyPanel::SetSelectedGameObject( GameObject gameObject )
 	{
 		m_SelectedGameObject = gameObject;
 
@@ -42,7 +41,7 @@ namespace Tridium::Editor {
 	}
 
 
-	bool SceneHeirarchy::OnKeyPressed( KeyPressedEvent& e )
+	bool SceneHeirarchyPanel::OnKeyPressed( KeyPressedEvent& e )
 	{
 		if ( e.IsRepeat() )
 			return false;
@@ -88,7 +87,7 @@ namespace Tridium::Editor {
 		return false;
 	}
 
-	void SceneHeirarchy::DrawSceneHeirarchy()
+	void SceneHeirarchyPanel::DrawSceneHeirarchy()
 	{
 		m_Context = Application::GetScene();
 		if ( m_Context == nullptr )
@@ -153,12 +152,12 @@ namespace Tridium::Editor {
 		ImGui::End();
 	}
 
-	void SceneHeirarchy::OpenAddGameObjectPopUp()
+	void SceneHeirarchyPanel::OpenAddGameObjectPopUp()
 	{
 		ImGui::OpenPopup( "AddGameObject" );
 	}
 
-	void SceneHeirarchy::DrawAddGameObjectPopUp()
+	void SceneHeirarchyPanel::DrawAddGameObjectPopUp()
 	{
 		if ( ImGui::BeginPopup("AddGameObject" ) )
 		{
@@ -194,7 +193,7 @@ namespace Tridium::Editor {
 		}
 	}
 
-	void SceneHeirarchy::DrawSceneNode( GameObject go )
+	void SceneHeirarchyPanel::DrawSceneNode( GameObject go )
 	{
 		if ( !go.IsValid() )
 		{

@@ -8,11 +8,11 @@ namespace Tridium { class Scene; }
 
 namespace Tridium::Editor {
 
-	class SceneHeirarchy final : public Panel
+	class SceneHeirarchyPanel final : public Panel
 	{
 	public:
-		SceneHeirarchy();
-		virtual ~SceneHeirarchy() = default;
+		SceneHeirarchyPanel();
+		virtual ~SceneHeirarchyPanel() = default;
 
 		virtual void OnImGuiDraw() override;
 

@@ -12,7 +12,7 @@ namespace Tridium {
 
 namespace Tridium::Editor {
 
-	class SceneHeirarchy;
+	class SceneHeirarchyPanel;
 
 	class ViewportPanel : public Panel
 	{

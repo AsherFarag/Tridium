@@ -5,7 +5,7 @@
 namespace Tridium::Editor {
 	
 	class EditorCamera;
-	class SceneHeirarchy;
+	class SceneHeirarchyPanel;
 
 	enum class EGizmoState
 	{
@@ -30,12 +30,12 @@ namespace Tridium::Editor {
 		void DragDropTarget();
 		void DrawManipulationGizmos( const Vector2& viewportBoundsMin, const Vector2& viewportBoundsMax );
 
-		SceneHeirarchy* GetSceneHeirarchy();
+		SceneHeirarchyPanel* GetSceneHeirarchy();
 
 	private:
 		EGizmoState m_GizmoState = EGizmoState::Translate;
 		EditorCamera* m_EditorCamera;
-		SceneHeirarchy* m_SceneHeirarchy = nullptr;
+		SceneHeirarchyPanel* m_SceneHeirarchy = nullptr;
 	};
 
 }
