@@ -47,18 +47,6 @@ namespace Tridium {
 			for ( auto go : storage.second )
 				reinterpret_cast<ScriptableComponent*>( storage.second.value( go ) )->OnUpdate();
 		}
-
-		TODO( "Make this only happen if the camera is shown!" );
-		// Render all Scene Cameras
-		auto& cameras = m_Registry.view<CameraComponent, TransformComponent>();
-		cameras.each( [&]( auto go, CameraComponent& camera, TransformComponent& transform )
-			{
-				auto orientation = Quaternion( Vector3( -transform.Rotation.x, -transform.Rotation.y, 0.f ) );
-				Matrix4 viewMatrix = glm::translate( Matrix4( 1.f ), transform.Position ) * glm::toMat4( orientation );
-				viewMatrix = glm::inverse( viewMatrix );
-
-				Render( camera.SceneCamera, viewMatrix );
-			});
 	}
 
 	void Scene::Render( const Camera& camera, const Matrix4& viewMatrix )
@@ -71,27 +59,40 @@ namespace Tridium {
 		auto meshComponents = m_Registry.view<MeshComponent, TransformComponent>();
 
 		Ref<Shader> currentShader = nullptr;
+		MeshHandle currentMeshHandle = {};
+		Ref<Mesh> currentMesh = nullptr;
 
+
+		RenderCommand::SetCullMode( true );
 		meshComponents.each( [&]( auto go, MeshComponent& mesh, TransformComponent& transform )
 			{
-				if ( mesh.GetShader() != currentShader )
+
+				if ( mesh.GetMesh() != currentMeshHandle )
 				{
-					currentShader = mesh.GetShader();
-					currentShader->Bind();
+					currentMeshHandle = mesh.GetMesh();
+					currentMesh = MeshLibrary::GetMesh( currentMeshHandle );
 				}
 
 				Vector4 colour = Vector4( (float)( glm::sin( Time::Get() + 10.f ) * 0.5f + 0.5f ),
 					(float)( glm::sin( Time::Get() ) * 0.5f + 0.5f ),
 					(float)( glm::sin( Time::Get() - 10.f ) * 0.5f + 0.5f ), 1.0 );
 
+				if ( currentMesh )
+				{
+					if ( mesh.GetShader() != currentShader )
+					{
+						currentShader = mesh.GetShader();
+						currentShader->Bind();
+					}
 
-				currentShader->SetFloat4( "uColour", { 0.2,0.3,1,1 } );
-				Renderer::Submit( mesh.GetShader(), mesh.GetMesh().VAO, transform.GetWorldTransform() );
+					//currentShader->SetFloat4( "uColour", { 0.2,0.3,1,1 } );
+					Renderer::Submit( currentShader, currentMesh->GetVAO(), transform.GetWorldTransform());
+				}
 			} );
 
-
+		RenderCommand::SetCullMode( false );
+		auto quadMeshVAO = MeshLibrary::GetMesh( MeshLibrary::GetQuad() )->GetVAO();
 		auto spriteComponents = m_Registry.view<SpriteComponent, TransformComponent>();
-
 		spriteComponents.each( [ & ]( auto go, SpriteComponent& sprite, TransformComponent& transform )
 			{
 				if ( sprite.GetShader() != currentShader )
@@ -117,7 +118,7 @@ namespace Tridium {
 					}
 				}
 
-				Renderer::Submit( sprite.GetShader(), sprite.GetMesh().VAO, transform.GetWorldTransform() );
+				Renderer::Submit( sprite.GetShader(), quadMeshVAO, transform.GetWorldTransform() );
 				transform.Scale = oldScale;
 
 				if ( sprite.GetTexture() )

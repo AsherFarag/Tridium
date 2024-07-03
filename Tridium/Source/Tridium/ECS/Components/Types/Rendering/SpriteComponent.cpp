@@ -9,9 +9,9 @@ namespace Tridium {
 		m_Shader = ShaderLibrary::GetShader( "Texture" );
 	}
 	SpriteComponent::SpriteComponent( const Ref<Texture2D>& a_Texture )
-		: m_Texture( a_Texture )
+		: SpriteComponent()
 	{
-		m_Shader = ShaderLibrary::GetShader( "Texture" );
+		m_Texture = a_Texture;
 	}
 
 	SpriteComponent::SpriteComponent( const std::string& a_TexturePath )

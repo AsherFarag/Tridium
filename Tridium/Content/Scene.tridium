@@ -40,6 +40,6 @@ GameObjects:
       Scale: [1, 1, 1]
       Children: []
     MeshComponent:
-      {}
+      Mesh: "Content\\Temp\\soulspear.obj"
     LuaScriptComponent:
       LuaScript: "Content\\Scripts\\Game\\ObstacleSpawner.lua"

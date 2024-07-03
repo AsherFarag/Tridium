@@ -16,6 +16,8 @@ namespace Tridium {
 		virtual void Init() {}
 		virtual void SetViewport( uint32_t x, uint32_t y, uint32_t width, uint32_t height ) = 0;
 
+		virtual void SetCullMode( bool enabled ) = 0;
+
 		virtual void SetClearColor( const Vector4& color ) = 0;
 		virtual void Clear() = 0;
 

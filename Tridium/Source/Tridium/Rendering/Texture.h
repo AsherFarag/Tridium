@@ -1,8 +1,5 @@
 #pragma once
-
 #include "Tridium/Core/Core.h"
-
-#include <string>
 
 namespace Tridium {
 

@@ -1,5 +1,6 @@
 workspace "Tridium"
 	architecture "x64"
+	startproject "Sandbox"
 
 	configurations
 	{
@@ -24,11 +25,13 @@ IncludeDir["sol2"] = "Tridium/Dependencies/sol2"
 IncludeDir["entt"] = "Tridium/Dependencies/entt/include"
 IncludeDir["stbi"] = "Tridium/Dependencies/stbi/include"
 IncludeDir["yaml"] = "Tridium/Dependencies/yaml-cpp"
+IncludeDir["assimp"] = "Tridium/Dependencies/assimp"
 IncludeDir["refl"] = "Tridium/Dependencies/refl/include"
 
 include "Tridium/Dependencies/glfw"
 include "Tridium/Dependencies/glad"
 include "Tridium/Dependencies/ImGui"
+include "Tridium/Dependencies/assimp"
 include "Tridium/Dependencies/yaml-cpp"
 
 project "Tridium"
@@ -68,6 +71,7 @@ project "Tridium"
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.stbi}",
 		"%{IncludeDir.yaml}/include",
+		"%{IncludeDir.assimp}/include",
 		"%{IncludeDir.refl}"
 	}
 
@@ -83,11 +87,12 @@ project "Tridium"
 		"ImGui",
 		"lua54",
 		"yaml-cpp",
+		"assimp",
 		"opengl32.lib"
 	}
 
 	filter "files:Tridium/Dependencies/ImGuizmo/**.cpp"
-	flags { "NoPCH" }
+		flags { "NoPCH" }
 
 	filter "system:windows"
 		systemversion "latest"

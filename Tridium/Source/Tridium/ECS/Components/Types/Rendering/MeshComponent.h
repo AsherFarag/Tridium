@@ -1,6 +1,8 @@
 #pragma once
 #include <Tridium/ECS/Components/Component.h>
 
+#include <Tridium/Rendering/Mesh.h>
+
 #include <Tridium/Rendering/Shader.h>
 #include <Tridium/Rendering/Buffer.h>
 #include <Tridium/Rendering/VertexArray.h>
@@ -8,14 +10,14 @@
 namespace Tridium {
 	
 	// TEMP
-	struct Mesh
+	struct OldMesh
 	{
 		Ref<Shader> m_Shader;
 		Ref<VertexArray> VAO;
 		Ref<VertexBuffer> VBO;
 		Ref<IndexBuffer> IBO;
 
-		Mesh()
+		OldMesh()
 		{
 			VAO = VertexArray::Create();
 
@@ -92,12 +94,14 @@ namespace Tridium {
 		MeshComponent();
 		~MeshComponent() = default;
 
-		inline Mesh& GetMesh() { return m_Mesh; }
+		inline MeshHandle& GetMesh() { return m_Mesh; }
 		inline Ref<Shader>& GetShader() { return m_Shader; }
+
+		void SetMesh( const MeshHandle& meshHandle );
 
 	private:
 		Ref<Shader> m_Shader;
-		Mesh m_Mesh;
+		MeshHandle m_Mesh = {};
 	};
 
 }

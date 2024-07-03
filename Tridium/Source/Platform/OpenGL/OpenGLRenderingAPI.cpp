@@ -14,6 +14,14 @@ namespace Tridium {
 		glViewport( x, y, width, height );
 	}
 
+	void OpenGLRenderingAPI::SetCullMode( bool enabled )
+	{
+		if ( enabled )
+			glEnable( GL_CULL_FACE );
+		else
+			glDisable( GL_CULL_FACE );
+	}
+
 	void OpenGLRenderingAPI::SetClearColor( const Vector4& color )
 	{
 		glClearColor( color.r, color.g, color.b, color.a );

@@ -121,7 +121,7 @@ namespace Tridium {
 				glGetShaderiv( shader, GL_INFO_LOG_LENGTH, &maxLength );
 
 				std::vector<GLchar> infoLog;
-				infoLog.reserve( maxLength );
+				infoLog.resize( maxLength );
 				glGetShaderInfoLog( shader, maxLength, &maxLength, &infoLog[ 0 ] );
 
 				glDeleteShader( shader );

@@ -169,8 +169,59 @@ namespace Tridium::Editor {
 				ImGui::DrawVec3Control( "Scale", component.Scale, 0.01f, Input::IsKeyPressed(Input::KEY_LEFT_CONTROL) );
 			} );
 
-		DrawComponent<MeshComponent>( "Mesh", InspectedGameObject, []( auto& component )
+		DrawComponent<MeshComponent>( "Mesh", InspectedGameObject, []( MeshComponent& component )
 			{
+				ImGui::BeginGroup();
+				{
+					ImGui::PushFont( ImGui::GetBoldFont() );
+					ImGui::Text( "Mesh Handle: " );
+					ImGui::PopFont();
+
+					ImGui::SameLine();
+
+					bool hasMesh = component.GetMesh() != MeshHandle();
+
+					ImGui::PushFont( ImGui::GetLightFont() );
+
+					std::string selectableText = hasMesh ? std::to_string( component.GetMesh() ) : "Null";
+					ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
+					selectableFlags |= !hasMesh ? ImGuiSelectableFlags_Disabled : 0;
+					bool selected = false;
+					hasMesh ? ImGui::PushStyleColor( ImGuiCol_Text, { 0.85, 0.65, 0.1, 0.9 } ) : ImGui::PushStyleColor( ImGuiCol_Text, { 0.65, 0.65, 0.65, 0.9 } );
+					if ( ImGui::BorderedSelectable( selectableText.c_str(), &selected, selectableFlags, 1.f, IM_COL32( 255, 255, 255, 255 ), 2.f ) && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left ) )
+					{
+						//EditorLayer::OpenFile( component.GetScript()->GetFilePath() );
+					}
+					ImGui::PopStyleColor();
+					ImGui::PopFont();
+
+					// On right click, give the option to remove the script, if there is one.
+					if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
+						ImGui::OpenPopup( "##RemoveMesh" );
+					if ( ImGui::BeginPopup( "##RemoveMesh" ) )
+					{
+						if ( ImGui::MenuItem( "Remove Mesh", nullptr, nullptr, hasMesh ) )
+						{
+						}
+
+						ImGui::EndPopup();
+					}
+
+					if ( ImGui::BeginDragDropTarget() )
+					{
+						if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM ) )
+						{
+							fs::path file( static_cast<const char*>( payload->Data ) );
+							MeshHandle handle;
+							if ( MeshLoader::Load( file.string(), handle) )
+							{
+								component.SetMesh( handle );
+							}
+						}
+						ImGui::EndDragDropTarget();
+					}
+				}
+				ImGui::EndGroup();
 			} );
 
 		DrawComponent<CameraComponent>( "Camera", InspectedGameObject, []( auto& component )

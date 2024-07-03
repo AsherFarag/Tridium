@@ -135,6 +135,13 @@ namespace Tridium {
 			out << YAML::Key << "MeshComponent";
 			out << YAML::BeginMap;
 
+			out << YAML::Key << "Mesh";
+			if ( auto mesh = MeshLibrary::GetMesh( mc->GetMesh() ) )
+				out << YAML::Value << YAML::DoubleQuoted << mesh->GetPath();
+			else
+				out << YAML::Value << YAML::DoubleQuoted << "";
+
+
 			out << YAML::EndMap;
 		}
 
@@ -237,6 +244,13 @@ namespace Tridium {
 			MeshComponent* mc;
 			if ( !( mc = deserialisedGO.TryGetComponent<MeshComponent>() ) )
 				mc = &deserialisedGO.AddComponent<MeshComponent>();
+
+			if ( auto mesh = meshComponent["Mesh"] )
+			{
+				MeshHandle meshHandle;
+				if ( MeshLoader::Load( mesh.as<std::string>(), meshHandle ) )
+					mc->SetMesh( meshHandle );
+			}
 		}
 
 		if ( auto spriteComponent = go["SpriteComponent"] )

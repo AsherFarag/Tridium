@@ -39,18 +39,28 @@ public:
 						#version 410
 
 						layout(location = 0) in vec3 aPosition;
-						layout(location = 1) in vec4 aColor;
+						layout(location = 1) in vec3 aNormal;
+						layout(location = 2) in vec2 aUV;
+						layout(location = 3) in vec3 aTangent;
 						
 						out vec4 vPosition;
-						out vec4 vColor;			
+						out vec3 vNormal;
+						out vec2 vUV;
+						out vec3 vTangent;
+						out vec3 vBiTangent;
+						out float vDepth;			
 						
 						uniform mat4 uPVM;
 						
 						void main()
 						{	
-							gl_Position = uPVM * vec4(aPosition, 1);
-							vPosition =  vec4(aPosition, 1);
-							vColor = aColor;
+							vPosition    = vec4(aPosition, 1);
+							vNormal      = aNormal;
+							vUV			 = aUV;
+							vTangent     = aTangent;
+							vBiTangent   = cross(vNormal, vTangent);
+							gl_Position  = uPVM * vec4(aPosition, 1);
+							vDepth	     = gl_Position.z;
 						}
 					)";
 
@@ -58,16 +68,18 @@ public:
 			R"(
 						#version 410 core
 						
-						layout(location = 0) out vec4 aColor;
+						out vec4 oFragColor;
 
 						in vec4 vPosition;
-						in vec4 vColor;						
-						
-						uniform vec4 uColour;
-
+						in vec3 vNormal;
+						in vec2 vUV;
+						in vec3 vTangent;				
+						in vec3 vBiTangent;
+						in float vDepth;	
+	
 						void main()
 						{
-							aColor = (vColor * uColour);
+							oFragColor = vec4(vNormal.x, vNormal.y, vNormal.z, 1);
 						}
 					)";
 
@@ -79,10 +91,12 @@ public:
 						#version 410
 
 						layout(location = 0) in vec3 aPosition;
-						layout(location = 1) in vec2 aTextureCoords;
+						layout(location = 1) in vec3 aNormal;
+						layout(location = 2) in vec2 aUV;
 						
 						out vec4 vPosition;
-						out vec2 vTextureCoords;			
+						out vec3 vNormal;
+						out vec2 vUV;			
 						
 						uniform mat4 uPVM;
 						
@@ -90,7 +104,8 @@ public:
 						{	
 							gl_Position = uPVM * vec4(aPosition, 1);
 							vPosition =  vec4(aPosition, 1);
-							vTextureCoords = aTextureCoords;
+							vNormal = aNormal;
+							vUV = aUV;
 						}
 					)";
 
@@ -98,16 +113,17 @@ public:
 			R"(
 						#version 410 core
 
-						out vec4 aFragColour;
+						out vec4 oFragColour;
 
 						in vec4 vPosition;
-						in vec2 vTextureCoords;						
+						in vec3 vNormal;
+						in vec2 vUV;					
 						
 						uniform sampler2D uTexture;
 
 						void main()
 						{
-							aFragColour = vec4(texture(uTexture, vTextureCoords).rgb, 1);
+							oFragColour = vec4(texture(uTexture, vUV).rgb, 1);
 						}
 					)";
 

@@ -1,0 +1,13 @@
+#
+#
+#
+
+newmtl _SoulSpear_MAT
+illum 2
+Ka 2.000000 2.000000 2.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ns 32.000000
+map_Kd soulspear_diffuse.tga
+map_Ks soulspear_specular.tga
+bump soulspear_normal.tga
