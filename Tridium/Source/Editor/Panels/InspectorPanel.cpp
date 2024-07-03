@@ -159,6 +159,9 @@ namespace Tridium::Editor {
 		if ( ImGui::Button( "Destroy" ) ) { InspectedGameObject.Destroy(); }
 		ImGui::PopStyleColor();
 
+		ImGui::Text( "Gameobject ID: %i", (uint32_t)InspectedGameObject );
+		ImGui::Text( "GUID: %i", InspectedGameObject.GetGUID() );
+
 		DrawComponent<TransformComponent>( "Transform", InspectedGameObject, []( auto& component )
 			{
 				ImGui::DrawVec3Control( "Position", component.Position, 0.01f );
@@ -166,6 +169,9 @@ namespace Tridium::Editor {
 				ImGui::DrawVec3Control( "Rotation", rotation, 1.f );
 				component.Rotation = glm::radians( rotation );
 				ImGui::DrawVec3Control( "Scale", component.Scale, 0.01f, Input::IsKeyPressed(Input::KEY_LEFT_CONTROL) );
+
+				if ( component.HasParent() )
+					ImGui::Text( "Parent: %i", component.GetParent() );
 			} );
 
 		DrawComponent<MeshComponent>( "Mesh", InspectedGameObject, []( auto& component )

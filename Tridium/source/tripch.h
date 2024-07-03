@@ -12,6 +12,7 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <optional>
 
 #include <Tridium/Utils/Log.h>
 #include <Tridium/Utils/Todo.h>

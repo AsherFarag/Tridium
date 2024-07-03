@@ -5,6 +5,8 @@
 
 namespace Tridium {
 
+	struct DeserializedGameObject;
+
 	class SceneSerializer
 	{
 	public:
@@ -18,7 +20,7 @@ namespace Tridium {
 
 	private:
 		static void SerializeGameObject( YAML::Emitter& out, GameObject go );
-		static void DeserializeGameObject( YAML::detail::iterator_value& go );
+		static bool DeserializeGameObject( YAML::detail::iterator_value& go, DeserializedGameObject& deserializedGameObject );
 
 	private:
 		Ref<Scene> m_Scene;

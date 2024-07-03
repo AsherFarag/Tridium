@@ -7,7 +7,6 @@ GameObjects:
       Position: [0, 0, -30]
       Rotation: [0, 0, 0]
       Scale: [15, 15, 15]
-      Parent: 4294967295
       Children: []
     SpriteComponent:
       Texture: "Content\\Engine/Editor/Icons/DeleteThisLater.png"
@@ -18,7 +17,6 @@ GameObjects:
       Position: [0, 0, -20]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-      Parent: 4294967295
       Children: []
     MeshComponent:
       {}
@@ -28,11 +26,11 @@ GameObjects:
     TagComponent:
       "Player"
     TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
+      Position: [0, -4.20008993, 0]
+      Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
-      Parent: 4294967295
-      Children: []
+      Parent: 2097155
+      Children: [5116985560292658975]
     LuaScriptComponent:
       LuaScript: "Content\\Scripts/Game/Player.lua"
     CameraComponent:
@@ -52,7 +50,61 @@ GameObjects:
       Position: [0, 4.20008993, 0]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
-      Parent: 4294967295
+      Children: [2097154]
+    MeshComponent:
+      {}
+  - GameObject: 5116985560292658975
+    TagComponent:
+      "Cube"
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Parent: 2097154
+      Children: [17716309066001342273]
+    MeshComponent:
+      {}
+  - GameObject: 17716309066001342273
+    TagComponent:
+      "Cube"
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Parent: 5116985560292658975
+      Children: [4217240277692828131]
+    MeshComponent:
+      {}
+  - GameObject: 4217240277692828131
+    TagComponent:
+      "Cube"
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Parent: 17716309066001342273
+      Children: [16990480168200235957]
+    MeshComponent:
+      {}
+  - GameObject: 16990480168200235957
+    TagComponent:
+      "Cube"
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Parent: 4217240277692828131
+      Children: [2591232662637544898]
+    MeshComponent:
+      {}
+  - GameObject: 2591232662637544898
+    TagComponent:
+      "Cube"
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Parent: 16990480168200235957
       Children: []
     MeshComponent:
       {}

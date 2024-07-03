@@ -75,6 +75,13 @@ namespace Tridium {
 		return out;
 	}
 
+	struct DeserializedGameObject
+	{
+		GameObject GameObject;
+		std::optional<GUID> Parent = {};
+		std::vector<GUID> Children;
+	};
+
 	SceneSerializer::SceneSerializer( const Ref<Scene>& scene )
 		: m_Scene(scene)
 	{
@@ -106,7 +113,12 @@ namespace Tridium {
 			out << YAML::Key << "Rotation"; out << YAML::Value << glm::degrees( tc->Rotation ); 
 			out << YAML::Key << "Scale";    out << YAML::Value << tc->Scale;
 
-			out << YAML::Key << "Parent"; out << YAML::Value << (uint32_t)go.GetParent(); TODO( "MAKE THIS GUID" );
+			if ( go.HasParent() )
+			{
+				out << YAML::Key << "Parent";
+				out << YAML::Value << go.GetParent().GetGUID();
+			}
+
 			out << YAML::Key << "Children";
 			out << YAML::Flow; out << YAML::Value << YAML::BeginSeq;
 			for ( auto child : go.GetChildren() )
@@ -178,15 +190,20 @@ namespace Tridium {
 		out << YAML::EndMap;
 	}
 
-	void SceneSerializer::DeserializeGameObject( YAML::detail::iterator_value& go )
+	bool SceneSerializer::DeserializeGameObject( YAML::detail::iterator_value& go, DeserializedGameObject& deserializedGameObject )
 	{
-		GUID id = go["GameObject"].as<GUID>();
+		GUID id;
+		if ( auto gameObject = go["GameObject"] )
+			id = gameObject.as<GUID>();
+		else
+			return false;
 
 		std::string name;
 		if ( auto tagComponent = go["TagComponent"] )
 			name = tagComponent.as<std::string>();
 
 		auto deserialisedGO = GameObject::Create( id, name );
+		deserializedGameObject.GameObject = deserialisedGO;
 
 		if ( auto transformComponent = go["TransformComponent"] )
 		{
@@ -198,14 +215,17 @@ namespace Tridium {
 			tc->Rotation = transformComponent["Rotation"].as<Vector3>();
 			tc->Scale = transformComponent["Scale"].as<Vector3>();
 
-			//tc->SetParent( GameObject( (EntityID)(uint32_t)( transformComponent["Parent"].as<uint64_t>() ) ) );
-			//if ( auto children = transformComponent["Children"] )
-			//{
-			//	for ( auto child : children )
-			//	{
-			//		tc->m_Children.push_back((EntityID)(uint32_t)( child.as<uint64_t>() ));
-			//	}
-			//}
+			if ( auto parent = transformComponent["Parent"] )
+				deserializedGameObject.Parent = parent.as<uint64_t>();
+
+			if ( auto children = transformComponent["Children"] )
+			{
+				deserializedGameObject.Children.reserve( children.size() );
+				for ( auto child : children )
+				{
+					deserializedGameObject.Children.push_back( child.as<uint64_t>() );
+				}
+			}
 		}
 
 		if ( auto meshComponent = go["MeshComponent"] )
@@ -258,6 +278,8 @@ namespace Tridium {
 				cc->SceneCamera.SetOrthographicFarClip( orthographic["Far"].as<float>() );
 			}
 		}
+
+		return true;
 	}
 
 	void SceneSerializer::SerializeText( const std::string& filepath )
@@ -304,9 +326,27 @@ namespace Tridium {
 		TE_CORE_TRACE( "Begin Deserializing Scene '{0}'", m_Scene->m_Name );
 
 		auto gameObjects = data["GameObjects"];
+		std::unordered_map<GUID, DeserializedGameObject> deserializedGameObjects;
+		deserializedGameObjects.reserve( gameObjects.size() );
 		for ( auto go : gameObjects )
 		{
-			DeserializeGameObject( go );
+			DeserializedGameObject deserializedGO;
+			if ( DeserializeGameObject( go, deserializedGO ) )
+				deserializedGameObjects.insert( { deserializedGO.GameObject.GetGUID(), deserializedGO } );
+		}
+
+		// Link up gameobject references to eachother
+		for ( auto&& [guid, go] : deserializedGameObjects )
+		{
+			auto& tc = go.GameObject.GetComponent<TransformComponent>();
+			if ( go.Parent.has_value() )
+				tc.SetParent( deserializedGameObjects[go.Parent.value()].GameObject );
+
+			tc.m_Children.reserve( go.Children.size() );
+			for ( auto& childGUID : go.Children )
+			{
+				tc.m_Children.push_back( deserializedGameObjects[childGUID].GameObject);
+			}
 		}
 
 		TE_CORE_TRACE( "Finished Deserializing Scene" );
