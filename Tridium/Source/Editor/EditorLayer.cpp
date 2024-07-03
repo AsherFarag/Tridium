@@ -17,7 +17,7 @@
 #include <Tridium/IO/SceneSerializer.h>
 
 namespace Tridium::Editor {
-	
+
 	// TEMP
 	class Stats : public Panel
 	{
@@ -53,7 +53,7 @@ namespace Tridium::Editor {
 	{
 		m_SceneHeirarchy = m_PanelStack.PushPanel<SceneHeirarchyPanel>();
 		m_ContentBrowser = m_PanelStack.PushPanel<ContentBrowserPanel>();
-		m_EditorViewportPanel = m_PanelStack.PushPanel<EditorViewportPanel>(m_EditorCamera);
+		m_EditorViewportPanel = m_PanelStack.PushPanel<EditorViewportPanel>( m_EditorCamera );
 		m_EditorViewportPanel->Focus();
 		m_GameViewportPanel = m_PanelStack.PushPanel<GameViewportPanel>();
 		m_PanelStack.PushPanel<Stats>();
@@ -69,21 +69,21 @@ namespace Tridium::Editor {
 		{
 			switch ( CurrentSceneState )
 			{
-				case SceneState::Edit:
-				{
-					m_EditorCamera.OnUpdate();
-					break;
-				}
-				case SceneState::Play:
-				{
-					m_EditorCamera.OnUpdate();
+			case SceneState::Edit:
+			{
+				m_EditorCamera.OnUpdate();
+				break;
+			}
+			case SceneState::Play:
+			{
+				m_EditorCamera.OnUpdate();
 
-					if ( !m_ActiveScene->IsPaused() )
-					{
-						m_ActiveScene->OnUpdate();
-					}
-					break;
+				if ( !m_ActiveScene->IsPaused() )
+				{
+					m_ActiveScene->OnUpdate();
 				}
+				break;
+			}
 			}
 		}
 	}
@@ -93,7 +93,7 @@ namespace Tridium::Editor {
 		static bool opt_Fullscreen = true;
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_::ImGuiWindowFlags_NoDecoration;
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration;
 		if ( opt_Fullscreen )
 		{
 			const ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -109,23 +109,23 @@ namespace Tridium::Editor {
 		}
 
 		ImGui::PushStyleVar( ImGuiStyleVar_WindowPadding, ImVec2( 0.0f, 0.0f ) );
-		ImGui::Begin( Application::GetActiveProject().GetName().c_str(), nullptr, window_flags);
+		ImGui::Begin( Application::GetActiveProject().GetName().c_str(), nullptr, window_flags );
 		ImGui::PopStyleVar();
 
-			if ( opt_Fullscreen )
-				ImGui::PopStyleVar( 2 );
+		if ( opt_Fullscreen )
+			ImGui::PopStyleVar( 2 );
 
-			// Init Dock Space
-			static const ImGuiID dockspace_id = ImGui::GetID( "EditorDockSpace" );
-			ImGui::DockSpace( dockspace_id, ImVec2( 0.0f, 0.0f ), dockspace_flags );
+		// Init Dock Space
+		static const ImGuiID dockspace_id = ImGui::GetID( "EditorDockSpace" );
+		ImGui::DockSpace( dockspace_id, ImVec2( 0.0f, 0.0f ), dockspace_flags );
 
-			DrawMenuBar();
-			m_UIToolBar.OnImGuiDraw();
+		DrawMenuBar();
+		m_UIToolBar.OnImGuiDraw();
 
-			for ( auto& it = m_PanelStack.rbegin(); it != m_PanelStack.rend(); it++ )
-			{
-				it->second->OnImGuiDraw();
-			}
+		for ( auto& it = m_PanelStack.rbegin(); it != m_PanelStack.rend(); it++ )
+		{
+			it->second->OnImGuiDraw();
+		}
 
 		ImGui::End();
 	}
@@ -293,28 +293,26 @@ namespace Tridium::Editor {
 
 	void UIToolBar::OnImGuiDraw()
 	{
-		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_WindowPadding, { 0,5 } );
+		float winPaddingY = 5.0f;
+		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_WindowPadding, { 0, winPaddingY } );
 
-		ImGui::Begin( "##UIToolBar", nullptr, 
-			ImGuiWindowFlags_NoDecoration 
-			| ImGuiWindowFlags_NoScrollbar 
-			| ImGuiWindowFlags_NoScrollWithMouse 
+		ImGui::Begin( "##UIToolBar", nullptr,
+			ImGuiWindowFlags_NoDecoration
+			| ImGuiWindowFlags_NoScrollbar
+			| ImGuiWindowFlags_NoScrollWithMouse
 			| ImGuiWindowFlags_NoTitleBar );
 
 		ImVec2 buttonPadding( 4, 4 );
-		float regionAvailY = ImGui::GetContentRegionAvail().y - 5 - buttonPadding.y;
+		float regionAvailY = MAX( 0.0f, ImGui::GetContentRegionAvail().y - 5 - buttonPadding.y );
 		ImVec2 buttonSize( regionAvailY, regionAvailY );
 
 		EditorLayer& editor = EditorLayer::Get();
-		SceneState sceneState = EditorLayer::Get().CurrentSceneState;
-
+		SceneState sceneState = editor.CurrentSceneState;
 		bool hasPlayButton = ( sceneState == SceneState::Edit ) || ( sceneState == SceneState::Play && editor.GetActiveScene()->IsPaused() );
 		bool hasPauseButton = ( sceneState == SceneState::Play ) && ( !editor.GetActiveScene()->IsPaused() );
 		bool hasStopButton = sceneState == SceneState::Play;
 
-		float itemSpacing = ImGui::GetStyle().ItemSpacing.x;
-
-		float totalButtonSizeX = buttonSize.x + ( buttonPadding.x * 2.f ) + itemSpacing;
+		float totalButtonSizeX = buttonSize.x + ( buttonPadding.x * 2.f ) + ImGui::GetStyle().ItemSpacing.x;
 		float groupSizeX = ( totalButtonSizeX * hasPlayButton ) + ( totalButtonSizeX * hasPauseButton ) + ( totalButtonSizeX * hasStopButton );
 		ImGui::SetCursorPosX( ( ImGui::GetWindowWidth() * 0.5f ) - groupSizeX * 0.5f );
 
