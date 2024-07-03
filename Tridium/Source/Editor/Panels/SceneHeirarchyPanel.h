@@ -23,8 +23,8 @@ namespace Tridium::Editor {
 		void SetSelectedGameObject( GameObject gameObject );
 
 		void DrawSceneHeirarchy();
-		void OpenAddGameObjectPopUp();
-		void DrawAddGameObjectPopUp();
+		void OpenAddPopUp();
+		void DrawAddPopUp( GameObject go = {} );
 		void DrawSceneNode( GameObject go );
 
 	private:

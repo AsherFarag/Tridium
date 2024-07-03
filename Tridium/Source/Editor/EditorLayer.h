@@ -73,6 +73,8 @@ namespace Tridium::Editor {
 		bool LoadScene( const std::string& filepath );
 		bool SaveScene( const std::string& filepath );
 
+		static bool OpenFile( const fs::path& filePath );
+
 	public:
 		SceneState CurrentSceneState = SceneState::Edit;
 

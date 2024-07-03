@@ -53,9 +53,8 @@ namespace Tridium::Editor {
 	{
 		m_SceneHeirarchy = m_PanelStack.PushPanel<SceneHeirarchyPanel>();
 		m_ContentBrowser = m_PanelStack.PushPanel<ContentBrowserPanel>();
-		m_EditorViewportPanel = m_PanelStack.PushPanel<EditorViewportPanel>( m_EditorCamera );
-		m_EditorViewportPanel->Focus();
 		m_GameViewportPanel = m_PanelStack.PushPanel<GameViewportPanel>();
+		m_EditorViewportPanel = m_PanelStack.PushPanel<EditorViewportPanel>( m_EditorCamera );
 		m_PanelStack.PushPanel<Stats>();
 	}
 
@@ -176,6 +175,24 @@ namespace Tridium::Editor {
 		SceneSerializer serializer( m_ActiveScene );
 		serializer.SerializeText( filepath );
 		return true;
+	}
+
+	bool EditorLayer::OpenFile( const fs::path& filePath )
+	{
+		if ( !filePath.has_extension() )
+			return false;
+
+		std::string ext = filePath.extension().string();
+
+		if ( ext == ".lua" )
+		{
+			auto scriptEditor = EditorLayer::Get().PushPanel<ScriptEditorPanel>();
+			scriptEditor->OpenFile( filePath );
+			scriptEditor->Focus();
+
+			return true;
+		}
+
 	}
 
 	bool EditorLayer::OnKeyPressed( KeyPressedEvent& e )

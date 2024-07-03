@@ -119,11 +119,11 @@ namespace Tridium::Editor {
 		ImGui::PushStyleVar( ImGuiStyleVar_::ImGuiStyleVar_FramePadding, { 0,0 } );
 
 		if ( ImGui::Button( "+", { addGameObjectButtonWidth, addGameObjectButtonWidth } ) )
-			OpenAddGameObjectPopUp();
+			OpenAddPopUp();
 
 		ImGui::PopStyleVar();
 
-		DrawAddGameObjectPopUp();
+		DrawAddPopUp();
 
 		ImGui::Separator();
 
@@ -152,44 +152,59 @@ namespace Tridium::Editor {
 		ImGui::End();
 	}
 
-	void SceneHeirarchyPanel::OpenAddGameObjectPopUp()
+	void SceneHeirarchyPanel::OpenAddPopUp()
 	{
-		ImGui::OpenPopup( "AddGameObject" );
+		ImGui::OpenPopup( "Add##SceneHierachy" );
 	}
 
-	void SceneHeirarchyPanel::DrawAddGameObjectPopUp()
+	void SceneHeirarchyPanel::DrawAddPopUp( GameObject gameObject )
 	{
-		if ( ImGui::BeginPopup("AddGameObject" ) )
+		GameObject newGO = {};
+
+		if ( !ImGui::BeginPopup( "Add##SceneHierachy" ) )
+			return;
+
+		if ( ( gameObject.IsValid() ? ImGui::BeginMenu("Add Child") : ImGui::BeginMenu( "Add GameObject" ) ) )
 		{
-			if ( ImGui::MenuItem( "Game Object" ) )
+			if ( ImGui::MenuItem( "Empty" ) )
 			{
-				auto go = m_Context->InstantiateGameObject();
-				SetSelectedGameObject(go);
+				newGO = m_Context->InstantiateGameObject();
+				SetSelectedGameObject( newGO );
 			}
 
 			ImGui::Separator();
 
 			if ( ImGui::MenuItem( "Cube" ) )
 			{
-				auto go = m_Context->InstantiateGameObject( "Cube" );
-				go.AddComponent<MeshComponent>();
-				SetSelectedGameObject( go );
+				newGO = m_Context->InstantiateGameObject( "Cube" );
+				newGO.AddComponent<MeshComponent>();
+				SetSelectedGameObject( newGO );
 			}
 
 			if ( ImGui::MenuItem( "Sprite" ) )
 			{
-				auto go = m_Context->InstantiateGameObject( "Sprite" );
-				go.AddComponent<SpriteComponent>();
-				SetSelectedGameObject( go );
+				newGO = m_Context->InstantiateGameObject( "Sprite" );
+				newGO.AddComponent<SpriteComponent>();
+				SetSelectedGameObject( newGO );
 			}
 
+			ImGui::EndMenu();
+		}
+
+		if ( !gameObject.IsValid() )
+		{
 			ImGui::Separator();
 
 			ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Text, { 0.8, 0.1, 0.1, 0.8 } );
 			if ( ImGui::MenuItem( " - Remove All - " ) ) m_Context->Clear();
 			ImGui::PopStyleColor();
+		}
 
-			ImGui::EndMenu();
+		ImGui::EndPopup();
+
+		if ( newGO.IsValid() && gameObject.IsValid() )
+		{
+			gameObject.AttachChild( newGO );
 		}
 	}
 
@@ -213,6 +228,12 @@ namespace Tridium::Editor {
 
 		bool drawChildren = ImGui::TreeNodeEx( (void*)(uint64_t)(uint32_t)go, flags, label.c_str() );
 
+		auto goAsString = std::to_string( go );
+		if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
+			OpenAddPopUp();
+
+		DrawAddPopUp( go );
+
 		// Drag-Drop Payload handling
 		if ( ImGui::BeginDragDropSource() )
 		{
@@ -229,7 +250,10 @@ namespace Tridium::Editor {
 				GameObject payloadGO = *(GameObject*)payload->Data;
 				if ( payloadGO != go )
 				{
-					go.AttachChild( payloadGO );
+					if ( payloadGO.HasParent() && payloadGO.GetParent() == go )
+						go.DetachChild( payloadGO );
+					else
+						go.AttachChild( payloadGO );
 				}
 			}
 

@@ -113,8 +113,10 @@ public:
 
 		Shader::Create( "Texture", vertexSrc, fragSrc );
 
-		SceneSerializer serializer( Application::GetScene() );
-		serializer.DeserializeText( ( Application::GetAssetDirectory() / "Scene.tridium" ).string() );
+	#ifndef IS_EDITOR
+			SceneSerializer serializer( Application::GetScene() );
+			serializer.DeserializeText( ( Application::GetAssetDirectory() / "Scene.tridium" ).string() );
+	#endif // !IS_EDITOR
 	}
 };
 

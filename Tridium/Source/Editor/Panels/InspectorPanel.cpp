@@ -4,6 +4,7 @@
 
 #include "InspectorPanel.h"
 
+#include <Editor/EditorLayer.h>
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Core/Application.h>
 #include <Tridium/ECS/Components/Types.h>
@@ -159,9 +160,6 @@ namespace Tridium::Editor {
 		if ( ImGui::Button( "Destroy" ) ) { InspectedGameObject.Destroy(); }
 		ImGui::PopStyleColor();
 
-		ImGui::Text( "Gameobject ID: %i", (uint32_t)InspectedGameObject );
-		ImGui::Text( "GUID: %i", InspectedGameObject.GetGUID() );
-
 		DrawComponent<TransformComponent>( "Transform", InspectedGameObject, []( auto& component )
 			{
 				ImGui::DrawVec3Control( "Position", component.Position, 0.01f );
@@ -169,9 +167,6 @@ namespace Tridium::Editor {
 				ImGui::DrawVec3Control( "Rotation", rotation, 1.f );
 				component.Rotation = glm::radians( rotation );
 				ImGui::DrawVec3Control( "Scale", component.Scale, 0.01f, Input::IsKeyPressed(Input::KEY_LEFT_CONTROL) );
-
-				if ( component.HasParent() )
-					ImGui::Text( "Parent: %i", component.GetParent() );
 			} );
 
 		DrawComponent<MeshComponent>( "Mesh", InspectedGameObject, []( auto& component )
@@ -233,21 +228,51 @@ namespace Tridium::Editor {
 
 		DrawComponent<LuaScriptComponent>( "Lua Script Component", InspectedGameObject, []( auto& component )
 			{
-				ImGui::Text( "Script: " );
-				ImGui::SameLine();
-				if ( component.GetScript() )
-					ImGui::TextColored( { 0.85, 0.65, 0.1, 0.9 }, component.GetScript()->GetFilePath().string().c_str() );
-				else
-					ImGui::TextColored( { 0.85, 0.65, 0.1, 0.9 }, "Empty" );
-
-				if ( ImGui::BeginDragDropTarget() )
+				ImGui::BeginGroup();
 				{
-					if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM ) )
+					ImGui::PushFont( ImGui::GetBoldFont() );
+					ImGui::Text( "Script: " );
+					ImGui::PopFont();
+
+					ImGui::SameLine();
+
+					bool hasScript = component.GetScript() != nullptr;
+
+					ImGui::PushFont( ImGui::GetLightFont() );
+
+					std::string selectableText = hasScript ? component.GetScript()->GetFilePath().string() : "Empty";
+					ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
+					selectableFlags |= !hasScript ? ImGuiSelectableFlags_Disabled : 0;
+					bool selected = false;
+					hasScript ? ImGui::PushStyleColor( ImGuiCol_Text, { 0.85, 0.65, 0.1, 0.9 } ) : ImGui::PushStyleColor( ImGuiCol_Text, { 0.65, 0.65, 0.65, 0.9 } );
+					if ( ImGui::BorderedSelectable( selectableText.c_str(), &selected, selectableFlags, 1.f, IM_COL32( 255, 255, 255, 255 ), 2.f ) && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left ) )
 					{
-						component.SetScript( Script::Create( static_cast<const char*>( payload->Data ) ) );
+						EditorLayer::OpenFile( component.GetScript()->GetFilePath() );
 					}
-					ImGui::EndDragDropTarget();
+					ImGui::PopStyleColor();
+					ImGui::PopFont();
+
+					// On right click, give the option to remove the script, if there is one.
+					if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
+						ImGui::OpenPopup( "##RemoveScript" );
+					if ( ImGui::BeginPopup( "##RemoveScript" ) )
+					{
+						if ( ImGui::MenuItem( "Remove Script", nullptr, nullptr, hasScript ) )\
+							component.SetScript( nullptr );
+
+						ImGui::EndPopup();
+					}
+
+					if ( ImGui::BeginDragDropTarget() )
+					{
+						if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM ) )
+						{
+							component.SetScript( Script::Create( static_cast<const char*>( payload->Data ) ) );
+						}
+						ImGui::EndDragDropTarget();
+					}
 				}
+				ImGui::EndGroup();
 			} );
 
 		DrawComponent<SpriteComponent>( "Sprite Component", InspectedGameObject, []( auto& component )
@@ -257,7 +282,7 @@ namespace Tridium::Editor {
 				if ( component.GetTexture() )
 					ImGui::TextColored( { 0.85, 0.65, 0.1, 0.9 }, component.GetTexture()->GetPath().c_str() );
 				else
-					ImGui::TextColored( { 0.85, 0.65, 0.1, 0.9 }, "Empty" );
+					ImGui::TextColored( { 0.65, 0.65, 0.65, 0.9 }, "Empty" );
 
 				if ( ImGui::BeginDragDropTarget() )
 				{

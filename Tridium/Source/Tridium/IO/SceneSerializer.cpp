@@ -143,7 +143,11 @@ namespace Tridium {
 			out << YAML::Key << "SpriteComponent";
 			out << YAML::BeginMap;
 
-			out << YAML::Key << "Texture"; out << YAML::Value << YAML::DoubleQuoted << sc->GetTexture()->GetPath();
+			out << YAML::Key << "Texture";
+			if ( sc->GetTexture() )
+				out << YAML::Value << YAML::DoubleQuoted << sc->GetTexture()->GetPath();
+			else
+				out << YAML::Value << YAML::DoubleQuoted << "";
 
 			out << YAML::EndMap;
 		}

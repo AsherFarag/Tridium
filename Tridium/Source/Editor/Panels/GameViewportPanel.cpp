@@ -19,6 +19,8 @@ namespace Tridium::Editor {
 			CameraComponent* mainCam = EditorLayer::Get().GetActiveScene()->GetMainCamera();
 			if ( mainCam )
 				m_Camera = mainCam->GetGameObject();
+			else
+				return;
 		}
 
 		auto camera = m_Camera.TryGetComponent<CameraComponent>();

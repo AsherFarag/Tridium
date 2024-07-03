@@ -1,38 +1,26 @@
-Scene: Awesome Game Level
+Scene: Unnamed Scene
 GameObjects:
-  - GameObject: 2097152
+  - GameObject: 15522332228179318107
     TagComponent:
-      "Background"
+      "Backgr"
     TransformComponent:
-      Position: [0, 0, -30]
-      Rotation: [0, 0, 0]
-      Scale: [15, 15, 15]
+      Position: [0, 0, -40]
+      Rotation: [0, -0, 0]
+      Scale: [68.1517181, 68.1517105, 68.1517105]
+      Parent: 3762296498438068459
       Children: []
     SpriteComponent:
-      Texture: "Content\\Engine/Editor/Icons/DeleteThisLater.png"
-  - GameObject: 2097153
+      Texture: "Content\\Engine\\Editor\\Icons\\DeleteThisLater.png"
+  - GameObject: 3762296498438068459
     TagComponent:
-      "Obstacle Spawner"
+      "Player\x00ect"
     TransformComponent:
-      Position: [0, 0, -20]
+      Position: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-      Children: []
-    MeshComponent:
-      {}
+      Children: [15522332228179318107]
     LuaScriptComponent:
-      LuaScript: "Content\\Scripts/Game/ObstacleSpawner.lua"
-  - GameObject: 2097154
-    TagComponent:
-      "Player"
-    TransformComponent:
-      Position: [0, -4.20008993, 0]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Parent: 2097155
-      Children: [5116985560292658975]
-    LuaScriptComponent:
-      LuaScript: "Content\\Scripts/Game/Player.lua"
+      LuaScript: "Content\\Scripts\\Game\\Player.lua"
     CameraComponent:
       Projection Mode: Perspective
       Perspective:
@@ -43,68 +31,15 @@ GameObjects:
         Size: 10
         Near: -1000
         Far: 1000
-  - GameObject: 2097155
+  - GameObject: 1218220712224414344
     TagComponent:
-      "Cube"
+      "Obst"
     TransformComponent:
-      Position: [0, 4.20008993, 0]
-      Rotation: [0, -0, 0]
+      Position: [0, 0, -20]
+      Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-      Children: [2097154]
-    MeshComponent:
-      {}
-  - GameObject: 5116985560292658975
-    TagComponent:
-      "Cube"
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Parent: 2097154
-      Children: [17716309066001342273]
-    MeshComponent:
-      {}
-  - GameObject: 17716309066001342273
-    TagComponent:
-      "Cube"
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Parent: 5116985560292658975
-      Children: [4217240277692828131]
-    MeshComponent:
-      {}
-  - GameObject: 4217240277692828131
-    TagComponent:
-      "Cube"
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Parent: 17716309066001342273
-      Children: [16990480168200235957]
-    MeshComponent:
-      {}
-  - GameObject: 16990480168200235957
-    TagComponent:
-      "Cube"
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Parent: 4217240277692828131
-      Children: [2591232662637544898]
-    MeshComponent:
-      {}
-  - GameObject: 2591232662637544898
-    TagComponent:
-      "Cube"
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Parent: 16990480168200235957
       Children: []
     MeshComponent:
       {}
+    LuaScriptComponent:
+      LuaScript: "Content\\Scripts\\Game\\ObstacleSpawner.lua"

@@ -5,6 +5,9 @@
 
 namespace ImGui {
 	
+	bool BorderedSelectable( const char* label, bool selected, ImGuiSelectableFlags flags = 0, const float borderThickness = 1.0f, ImU32 borderColor = IM_COL32( 255, 255, 255, 255 ), float rounding = 0.0f, const ImVec2& size = ImVec2( 0, 0 ) );
+
+
 	struct ScopedDragDropTarget
 	{
 	public:

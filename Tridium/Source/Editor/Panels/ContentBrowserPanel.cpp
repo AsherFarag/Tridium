@@ -244,9 +244,7 @@ namespace Tridium::Editor {
 			}
 			case ContentType::Lua:
 			{
-				auto scriptEditor = EditorLayer::Get().PushPanel<ScriptEditorPanel>();
-				scriptEditor->OpenFile( a_FilePath );
-				scriptEditor->Focus();
+				EditorLayer::OpenFile( a_FilePath );
 				break;
 			}
 		default:
