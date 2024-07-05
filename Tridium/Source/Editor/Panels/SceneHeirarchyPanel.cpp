@@ -75,7 +75,7 @@ namespace Tridium::Editor {
 					{
 						auto& goTransform = m_SelectedGameObject.GetComponent<TransformComponent>();
 						auto& editorCam = EditorLayer::Get().GetEditorCamera();
-						editorCam.Position = goTransform.Position - ( editorCam.GetForwardDirection() * 5.f );
+						editorCam.LerpTo( goTransform.Position - ( editorCam.GetForwardDirection() * 5.f ) );
 						return true;
 					}
 				}

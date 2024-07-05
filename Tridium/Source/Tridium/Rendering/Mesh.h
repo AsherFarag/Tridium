@@ -17,20 +17,6 @@ namespace Tridium {
 		Vector3 Tangent;
 	};
 
-	struct MeshImportSettings
-	{
-		MeshImportSettings();
-		unsigned int PostProcessFlags;
-		float Scale = 1.f;
-		bool DiscardLocalData = false; /* If true, once the mesh has been loaded onto the GPU, the local Vertex Data will be deleted. */
-	};
-
-	struct SubMesh
-	{
-		Ref<IndexBuffer> IBO;
-		uint32_t MaterialIndex;
-	};
-
 	class Mesh
 	{
 		friend class MeshLoader;
@@ -46,28 +32,41 @@ namespace Tridium {
 		const inline size_t GetNumOfVerticies() const { return m_NumVerticies; }
 		const inline size_t GetNumOfPolygons() const { return (size_t)( m_NumVerticies / 3u ); }
 
-		const inline MeshImportSettings& GetImportSettings() const { return m_ImportSettings; }
-
 	private:
 		std::string m_FilePath;
-		MeshImportSettings m_ImportSettings;
 
 		Ref<VertexArray> m_VAO;
 		Ref<VertexBuffer> m_VBO;
 		Ref<IndexBuffer> m_IBO;
 
 		size_t m_NumVerticies = 0;
+		size_t m_NumIndicies = 0;
 
 		std::vector<Vertex> m_Verticies;
+
+		struct SubMesh
+		{
+			Ref<IndexBuffer> IBO;
+			uint32_t MaterialIndex;
+		};
 		std::vector<SubMesh> m_SubMeshes;
 		// std::vector<Material> m_Materials;
+	};
+
+
+	struct MeshImportSettings
+	{
+		MeshImportSettings();
+		unsigned int PostProcessFlags;
+		float Scale = 1.f;
+		bool DiscardLocalData = false; /* If true, once the mesh has been loaded onto the GPU, the local Vertex Data will be deleted. */
 	};
 
 	class MeshLoader
 	{
 	public:
-		static bool Import( const std::string& filepath, MeshHandle& outMeshHandle );
-		static bool Import( const std::string& filepath, MeshHandle& outMeshHandle, const MeshImportSettings& importSettings );
+		static Ref<Mesh> Import( const std::string& filepath);
+		static Ref<Mesh> Import( const std::string& filepath, const MeshImportSettings& importSettings );
 	};
 
 	class MeshLibrary
@@ -78,14 +77,13 @@ namespace Tridium {
 		static MeshLibrary* Get();
 		static Ref<Mesh> GetMesh( const MeshHandle& meshHandle );
 		static bool GetHandle( const std::string& filePath, MeshHandle& outMeshHandle );
+		static bool AddMesh( const std::string& filePath, const Ref<Mesh>& mesh, const MeshHandle& meshHandle );
 
 		// - Primatives -
 		static inline MeshHandle GetQuad() { return Get()->m_Quad; }
 
 	private:
 		void InitPrimatives();
-
-		static void AddMesh( const std::string& filePath, const Ref<Mesh>& mesh, MeshHandle& outMeshHandle );
 
 	private:
 		std::unordered_map<std::string, MeshHandle> m_PathHandles;

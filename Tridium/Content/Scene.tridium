@@ -1,12 +1,12 @@
 Scene: Unnamed Scene
 GameObjects:
-  - GameObject: 3861263242695395067
+  - GameObject: 5606624713127607489
     TagComponent:
       "Cube"
     TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Position: [0, 0, -2]
+      Rotation: [-8.6407299, 83.0244217, -58.5125847]
+      Scale: [0.999998569, 0.999999881, 0.999999404]
       Children: []
     MeshComponent:
-      Mesh: "Content\\Temp\\Primitives\\Sphere.obj"
+      Mesh: "Content\\Temp\\Mutant Dying.fbx"

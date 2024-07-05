@@ -8,6 +8,12 @@ namespace Tridium {
 		m_Shader = ShaderLibrary::GetShader( "Default" );
 	}
 
+	MeshComponent::MeshComponent( const MeshHandle& meshHandle )
+		: MeshComponent()
+	{
+		m_Mesh = meshHandle;
+	}
+
 	void MeshComponent::SetMesh( const MeshHandle& meshHandle )
 	{
 		m_Mesh = meshHandle;

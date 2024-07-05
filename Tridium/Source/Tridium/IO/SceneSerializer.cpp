@@ -92,7 +92,7 @@ namespace Tridium {
 	{
 		out << YAML::BeginMap;
 
-		out << YAML::Key << "GameObject"; out << YAML::Value << go.GetGUID();
+		out << YAML::Key << "GameObject"; out << YAML::Value << go.GetGUID().ID();
 
 		if ( auto tc = go.TryGetComponent<TagComponent>() )
 		{
@@ -116,14 +116,14 @@ namespace Tridium {
 			if ( go.HasParent() )
 			{
 				out << YAML::Key << "Parent";
-				out << YAML::Value << go.GetParent().GetGUID();
+				out << YAML::Value << go.GetParent().GetGUID().ID();
 			}
 
 			out << YAML::Key << "Children";
 			out << YAML::Flow; out << YAML::Value << YAML::BeginSeq;
 			for ( auto child : go.GetChildren() )
 			{
-				out << child.GetGUID();
+				out << child.GetGUID().ID();
 			}
 			out << YAML::EndSeq;
 
@@ -205,7 +205,7 @@ namespace Tridium {
 	{
 		GUID id;
 		if ( auto gameObject = go["GameObject"] )
-			id = gameObject.as<GUID>();
+			id = gameObject.as<GUIDType>();
 		else
 			return false;
 
@@ -223,18 +223,18 @@ namespace Tridium {
 				tc = &deserialisedGO.AddComponent<TransformComponent>();
 
 			tc->Position = transformComponent["Position"].as<Vector3>();
-			tc->Rotation = transformComponent["Rotation"].as<Vector3>();
+			tc->Rotation = glm::radians( transformComponent["Rotation"].as<Vector3>() );
 			tc->Scale = transformComponent["Scale"].as<Vector3>();
 
 			if ( auto parent = transformComponent["Parent"] )
-				deserializedGameObject.Parent = parent.as<uint64_t>();
+				deserializedGameObject.Parent = parent.as<GUIDType>();
 
 			if ( auto children = transformComponent["Children"] )
 			{
 				deserializedGameObject.Children.reserve( children.size() );
 				for ( auto child : children )
 				{
-					deserializedGameObject.Children.push_back( child.as<uint64_t>() );
+					deserializedGameObject.Children.push_back( child.as<GUIDType>() );
 				}
 			}
 		}
@@ -248,8 +248,19 @@ namespace Tridium {
 			if ( auto mesh = meshComponent["Mesh"] )
 			{
 				MeshHandle meshHandle;
-				if ( MeshLoader::Import( mesh.as<std::string>(), meshHandle ) )
-					mc->SetMesh( meshHandle );
+				auto meshFilePath = mesh.as<std::string>();
+
+				if ( !MeshLibrary::GetHandle( meshFilePath, meshHandle ) )
+				{
+					meshHandle = GUID::Create();
+					if ( Ref<Mesh> loadedMesh = MeshLoader::Import( meshFilePath ) )
+					{
+						if ( !MeshLibrary::AddMesh( meshFilePath, loadedMesh, meshHandle ) )
+							meshHandle = {};
+					}
+				}
+
+				mc->SetMesh( meshHandle );
 			}
 		}
 

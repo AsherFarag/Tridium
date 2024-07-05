@@ -3,6 +3,8 @@
 #include "Panel.h"
 #include <Tridium/Rendering/Mesh.h>
 
+namespace Tridium { class GameObject; }
+
 namespace Tridium::Editor {
 
     class MeshImporterPanel : public Panel
@@ -15,7 +17,7 @@ namespace Tridium::Editor {
     private:
         std::string m_FilePath;
         MeshHandle m_MeshHandle;
-        bool m_HasMeshHandle = false;
+
         MeshImportSettings m_ImportSettings;
     };
 

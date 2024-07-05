@@ -15,7 +15,22 @@ namespace Tridium::Editor {
 		: MeshImporterPanel(filePath)
 	{
 		m_MeshHandle = meshHandle;
-		m_HasMeshHandle = true;
+	}
+
+	void CheckboxFlag( const char* label, unsigned int& flags, const unsigned int flag )
+	{
+		bool hasFlag = ( flags & flag ) != 0;
+		ImGui::Checkbox( label, &hasFlag );
+		if ( hasFlag ) { flags |= flag; }
+		else { flags &= ~flag; }
+	}
+
+	void CheckboxFlag( const char* label, unsigned int& flags, const unsigned int flag, const unsigned int oppositeFlag )
+	{
+		bool hasFlag = ( flags & flag ) != 0;
+		ImGui::Checkbox( label, &hasFlag );
+		if ( hasFlag ) { flags |= flag; flags &= ~oppositeFlag; }
+		else { flags |= oppositeFlag; flags &= ~flag; }
 	}
 
 	void MeshImporterPanel::OnImGuiDraw()
@@ -26,27 +41,17 @@ namespace Tridium::Editor {
 
 			ImGui::Separator();
 
-			if ( ImGui::TreeNode( "Import Settings" ) )
+			if ( ImGui::TreeNodeEx( "Import Settings", ImGuiTreeNodeFlags_DefaultOpen ) )
 			{
-				if ( ImGui::TreeNode( "Post-Process Flags" ) )
+				if ( ImGui::TreeNodeEx( "Post-Process Flags", ImGuiTreeNodeFlags_DefaultOpen ) )
 				{
-					// Generate Smooth Normals
-					bool smoothNormals = ( m_ImportSettings.PostProcessFlags & aiProcess_GenSmoothNormals ) != 0;
-					ImGui::Checkbox( "Smooth Normals", &smoothNormals );
-					if ( smoothNormals ) { m_ImportSettings.PostProcessFlags |= aiProcess_GenSmoothNormals; m_ImportSettings.PostProcessFlags &= ~aiProcess_GenNormals; }
-					else { m_ImportSettings.PostProcessFlags |= aiProcess_GenNormals; m_ImportSettings.PostProcessFlags &= ~aiProcess_GenSmoothNormals; }
-
-					// Fix In-Facing Normals
-					bool inFacingNormals = ( m_ImportSettings.PostProcessFlags & aiProcess_FixInfacingNormals ) != 0;
-					ImGui::Checkbox( "Fix Infacing Normals", &inFacingNormals );
-					if ( inFacingNormals ) { m_ImportSettings.PostProcessFlags |= aiProcess_FixInfacingNormals; }
-					else { m_ImportSettings.PostProcessFlags &= ~aiProcess_FixInfacingNormals; }
+					CheckboxFlag( "Smooth Normals", m_ImportSettings.PostProcessFlags, aiProcess_GenSmoothNormals, aiProcess_GenNormals );
+					CheckboxFlag( "Fix Infacing Normals", m_ImportSettings.PostProcessFlags, aiProcess_FixInfacingNormals );
 
 					ImGui::TreePop();
 				}
 
 				ImGui::Checkbox( "Keep Local Mesh Data", &m_ImportSettings.DiscardLocalData );
-
 				ImGui::DragFloat( "Scale", &m_ImportSettings.Scale );
 
 				ImGui::TreePop();
@@ -54,12 +59,29 @@ namespace Tridium::Editor {
 
 			ImGui::Separator();
 
-			if ( ImGui::Button( "LOAD", { ImGui::GetContentRegionAvail().x, 40 } ) )
+			if ( ImGui::Button( "LOAD", { ImGui::GetContentRegionAvail().x * 0.5f, 40 } ) )
 			{
-				MeshHandle handle;
-				MeshLoader::Import( m_FilePath, handle, m_ImportSettings );
+				if ( Ref<Mesh> mesh = MeshLoader::Import( m_FilePath, m_ImportSettings ) )
+				{
+					MeshHandle handle = m_MeshHandle.Valid() ? m_MeshHandle : GUID::Create();
+					MeshLibrary::AddMesh( m_FilePath, mesh, handle );
+				}
+				else
+				{
+					TE_CORE_ERROR( "Failed to import mesh from '{0}'", m_FilePath );
+				}
+
 				m_Open = false;
 			}
+
+			ImGui::SameLine();
+
+			ImGui::PushStyleColor( ImGuiCol_Button, { 1.0f, 0.4f, 0.2f, 1.0f } );
+			if ( ImGui::Button( "Cancel", { ImGui::GetContentRegionAvail().x, 40 } ) )
+			{
+				m_Open = false;
+			}
+			ImGui::PopStyleColor();
 		}
 
 		ImGuiEnd();

@@ -6,7 +6,40 @@
 namespace ImGui {
 	
 	bool BorderedSelectable( const char* label, bool selected, ImGuiSelectableFlags flags = 0, const float borderThickness = 1.0f, ImU32 borderColor = IM_COL32( 255, 255, 255, 255 ), float rounding = 0.0f, const ImVec2& size = ImVec2( 0, 0 ) );
+	template <typename PayloadFunction >
+	bool DragDropSelectable( const char* label, bool isValid, const char* text, const char* payloadType, PayloadFunction payloadFunction )
+	{
+		ImGui::PushFont( ImGui::GetBoldFont() );
+		ImGui::Text( label );
+		ImGui::PopFont();
 
+		bool wasDoubleClicked = false;
+
+		ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
+		selectableFlags |= !isValid ? ImGuiSelectableFlags_Disabled : 0;
+
+		ImGui::SameLine();
+		ImGui::PushFont( ImGui::GetLightFont() );
+		isValid ? ImGui::PushStyleColor( ImGuiCol_Text, { 0.85, 0.65, 0.1, 0.9 } ) : ImGui::PushStyleColor( ImGuiCol_Text, { 0.65, 0.65, 0.65, 0.9 } );
+		if ( ImGui::BorderedSelectable( text, false, selectableFlags, 1.f, IM_COL32( 255, 255, 255, 255 ), 2.f )
+			&& ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left ) )
+		{
+			wasDoubleClicked = true;
+		}
+		ImGui::PopStyleColor();
+		ImGui::PopFont();
+
+		if ( ImGui::BeginDragDropTarget() )
+		{
+			if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( payloadType ) )
+			{
+				payloadFunction( payload );
+			}
+			ImGui::EndDragDropTarget();
+		}
+
+		return wasDoubleClicked;
+	}
 
 	struct ScopedDragDropTarget
 	{

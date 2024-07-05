@@ -6,7 +6,7 @@ namespace Tridium {
 	DEFINE_COMPONENT( GUIDComponent )
 	{
 	public:
-		GUIDComponent() : m_ID( CreateGUID() ) {}
+		GUIDComponent() : m_ID( GUID::Create() ) {}
 		GUIDComponent( GUID id) : m_ID(id) {}
 
 		void SetID(GUID id) { m_ID = id; }

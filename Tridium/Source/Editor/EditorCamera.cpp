@@ -6,66 +6,94 @@
 #include <Tridium/Core/Application.h>
 
 namespace Tridium::Editor {
+	EditorCamera::EditorCamera() {}
 
 	void EditorCamera::OnUpdate()
 	{
 		RecalculateView();
 
-		if ( Focused )
+		Lerp();
+
+		if ( m_IsMoving )
+		{
+			m_TimeMoving += Time::DeltaTime();
+			m_TimeMoving = MIN( m_MaxTimeMoving, m_TimeMoving );
+			m_TimeMovingSpeedMultiplier = m_TimeMovingSpeedMultiplier + ( m_MaxTimeMovingSpeedMultiplier - m_TimeMovingSpeedMultiplier ) * ( m_TimeMoving / m_MaxTimeMoving );
+		}
+		else
+		{
+			m_TimeMoving = 0.0f;
+		}
+
+		if ( Focused && !m_LerpData.IsLerping )
 			HandleInput();
+
+		if ( !m_IsMoving )
+		{
+			m_TimeMovingSpeedMultiplier = 1.f;
+		}
 
 		m_LastMousePos = Input::GetMousePosition();
 	}
 
+	void EditorCamera::LerpTo( const Vector3& pos )
+	{
+		m_LerpData.CurrLerpTime - 0.0f;
+		m_LerpData.IsLerping = true;
+		m_LerpData.LerpToPos = pos;
+	}
+
 	void EditorCamera::HandleInput()
 	{
+		m_IsMoving = false;
+
 		float dt = Time::DeltaTime();
 		auto up = GetUpDirection();
 		auto forward = GetForwardDirection();
 		auto right = GetRightDirection();
 
-		bool shift = Input::IsKeyPressed( Input::KEY_LEFT_SHIFT );
-		if ( shift != m_WasLeftShiftPressed )
-		{
-			if ( shift )
-				Speed *= 5.f;
-			else
-				Speed /= 5.f;
-		}
-		m_WasLeftShiftPressed = shift;
+		float speed = Speed;
+		speed *= m_TimeMovingSpeedMultiplier;
 
-		bool ctrl = Input::IsKeyPressed( Input::KEY_LEFT_CONTROL );
-		if ( ctrl != m_WasLeftCtrlPressed )
+		if ( Input::IsKeyPressed( Input::KEY_LEFT_SHIFT ) )
 		{
-			if ( ctrl )
-				Speed /= 5.f;
-			else
-				Speed *= 5.f;
+			speed *= 5.0f;
 		}
-		m_WasLeftCtrlPressed = ctrl;
 
-		MoveForward( Input::IsKeyPressed( Input::KEY_W ) - Input::IsKeyPressed( Input::KEY_S ) );
-		MoveSideways( Input::IsKeyPressed( Input::KEY_D ) - Input::IsKeyPressed( Input::KEY_A ) );
+		if ( Input::IsKeyPressed( Input::KEY_LEFT_CONTROL ) )
+		{
+			speed /= 5.f;
+		}
+
+		int forwardMag = Input::IsKeyPressed( Input::KEY_W ) - Input::IsKeyPressed( Input::KEY_S );
+		MoveForward( forwardMag, speed );
+		int sidewaysMag = Input::IsKeyPressed( Input::KEY_D ) - Input::IsKeyPressed( Input::KEY_A );
+		MoveSideways( sidewaysMag, speed );
+
+		if ( forwardMag != 0 || sidewaysMag != 0 )
+			m_IsMoving = true;
 
 		if ( Input::IsKeyPressed( Input::KEY_UP ) )
 		{
-			Position.y += Speed * dt;
+			m_IsMoving = true;
+			Position.y += speed * dt;
 		}
 
 		if ( Input::IsKeyPressed( Input::KEY_DOWN ) )
 		{
-			Position.y -= Speed * dt;
+			m_IsMoving = true;
+			Position.y -= speed * dt;
 		}
 
 		// Rotation
 
 		if ( Input::IsKeyPressed( Input::KEY_RIGHT ) )
 		{
-			Yaw += 0.5f * Speed * dt;
+			Yaw += 0.5f * speed * dt;
 		}
 		if ( Input::IsKeyPressed( Input::KEY_LEFT ) )
 		{
-			Yaw -= 0.5f * Speed * dt;
+			Yaw -= 0.5f * speed * dt;
 		}
 
 		if ( Input::IsMouseButtonPressed( Input::MOUSE_BUTTON_RIGHT ) )
@@ -74,14 +102,14 @@ namespace Tridium::Editor {
 		}
 	}
 
-	void EditorCamera::MoveForward( const float magnitude )
+	void EditorCamera::MoveForward( const float magnitude, const float speed )
 	{
-		Position += magnitude * GetForwardDirection() * Speed * (float)Time::DeltaTime();
+		Position += magnitude * GetForwardDirection() * speed * (float)Time::DeltaTime();
 	}
 
-	void EditorCamera::MoveSideways( const float magnitude )
+	void EditorCamera::MoveSideways( const float magnitude, const float speed )
 	{
-		Position += magnitude * GetRightDirection() * Speed * (float)Time::DeltaTime();
+		Position += magnitude * GetRightDirection() * speed * (float)Time::DeltaTime();
 	}
 
 	void EditorCamera::MouseRotate( const Vector2& mouseDelta )
@@ -96,6 +124,22 @@ namespace Tridium::Editor {
 		Quaternion orientation = GetOrientation();
 		m_View = glm::translate( Matrix4( 1.f ), Position ) * glm::toMat4( orientation );
 		m_View = glm::inverse( m_View );
+	}
+
+	void EditorCamera::Lerp()
+	{
+		if ( m_LerpData.IsLerping )
+		{
+			m_LerpData.CurrLerpTime += Time::DeltaTime();
+			m_LerpData.CurrLerpTime = MIN( m_LerpData.LerpTime, m_LerpData.CurrLerpTime );
+			Position = Position + ( m_LerpData.LerpToPos - Position ) * ( m_LerpData.CurrLerpTime / m_LerpData.LerpTime );
+
+			if ( m_LerpData.CurrLerpTime == m_LerpData.LerpTime )
+			{
+				m_LerpData.CurrLerpTime = 0.0f;
+				m_LerpData.IsLerping = false;
+			}
+		}
 	}
 
 	Vector3 EditorCamera::GetUpDirection() const

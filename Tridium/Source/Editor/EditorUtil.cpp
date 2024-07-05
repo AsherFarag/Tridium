@@ -8,14 +8,16 @@
 
 namespace Tridium::Editor::Util
 {
-	MeshHandle GetMesh( const std::string& filePath )
+	MeshHandle GetMeshHandle( const std::string& filePath )
 	{
 		MeshHandle handle;
 
 		if ( MeshLibrary::GetHandle( filePath, handle ) )
 			return handle;
-		else
-			EditorLayer::PushPanel<MeshImporterPanel>( filePath );
+
+		// The mesh has not been imported, so create a Mesh Import Prompt
+		handle = GUID::Create();
+		EditorLayer::PushPanel<MeshImporterPanel>( filePath, handle );
 
 		return handle;
 	}

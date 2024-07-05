@@ -10,36 +10,29 @@
 
 namespace Tridium {
 
-#pragma region MeshLoader
 
-
-    bool MeshLoader::Import( const std::string& filepath, MeshHandle& outMeshHandle )
+    MeshImportSettings::MeshImportSettings()
     {
-        return Import( filepath, outMeshHandle, MeshImportSettings{} );
+        PostProcessFlags = aiProcess_PreTransformVertices | aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_GlobalScale;
     }
 
-    bool MeshLoader::Import( const std::string& filepath, MeshHandle& outMeshHandle, const MeshImportSettings& importSettings )
-    {
-        if ( MeshLibrary::GetHandle( filepath, outMeshHandle ) )
-            return true;
+#pragma region MeshLoader
 
+    Ref<Mesh> MeshLoader::Import( const std::string& filepath )
+    {
+        return Import( filepath, MeshImportSettings{} );
+    }
+
+    Ref<Mesh> MeshLoader::Import( const std::string& filepath, const MeshImportSettings& importSettings )
+    {
         Assimp::Importer importer;
-        //unsigned int aiPostProcessFlags =// aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_GenNormals;
-        //aiProcess_GlobalScale
-        //    | aiProcess_OptimizeMeshes
-        //    | aiProcess_OptimizeGraph
-        //    | aiProcess_RemoveRedundantMaterials
-        //    | aiProcess_Triangulate
-        //    | aiProcess_LimitBoneWeights
-        //    | aiProcess_SplitByBoneCount
-        //    | aiProcess_CalcTangentSpace;
+        importer.SetPropertyFloat( AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, importSettings.Scale );
 
         const aiScene* scene = importer.ReadFile( filepath, importSettings.PostProcessFlags );
-
         if ( !scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode )
         {
-            TE_CORE_ERROR( "ASSIMP: {0}", importer.GetErrorString() );
-            return false;
+            TE_CORE_ERROR( "ASSIMP: File - '{0}', Error - {1}", filepath, importer.GetErrorString() );
+            return nullptr;
         }
 
         // Create a new Mesh
@@ -48,7 +41,7 @@ namespace Tridium {
         TODO( "We currently only load the first mesh for simplicity!" );
         aiMesh* ai_mesh = scene->mMeshes[0];
 
-#pragma region Load Verticies
+        #pragma region Load Verticies
 
         loadedMesh->m_NumVerticies = ai_mesh->mNumVertices;
         loadedMesh->m_Verticies.resize( ai_mesh->mNumVertices );
@@ -67,7 +60,7 @@ namespace Tridium {
         }
 
         TODO( "We only use the first channel of TexCoords from Assimp!" );
-        if ( ai_mesh->HasTextureCoords(0) )
+        if ( ai_mesh->HasTextureCoords( 0 ) )
         {
             for ( uint32_t i = 0; i < ai_mesh->mNumVertices; ++i )
                 loadedMesh->m_Verticies[i].UV = Vector2( ai_mesh->mTextureCoords[0][i].x, ai_mesh->mTextureCoords[0][i].y );
@@ -79,7 +72,7 @@ namespace Tridium {
                 loadedMesh->m_Verticies[i].Tangent = Vector3( ai_mesh->mTangents[i].x, ai_mesh->mTangents[i].y, ai_mesh->mTangents[i].z );
         }
 
-#pragma endregion
+        #pragma endregion
 
         // If there were no verticies, return
         if ( loadedMesh->m_Verticies.empty() )
@@ -87,11 +80,16 @@ namespace Tridium {
             return false;
         }
 
+        loadedMesh->m_NumVerticies = loadedMesh->m_Verticies.size();
+
         // Load indices
-        std::vector<uint32_t> indices( ai_mesh->mNumFaces );
-        for ( unsigned int i = 0; i < ai_mesh->mNumFaces; ++i ) {
+        std::vector<uint32_t> indices;
+        indices.reserve( ai_mesh->mNumFaces * 3 );
+        for ( unsigned int i = 0; i < ai_mesh->mNumFaces; ++i ) 
+        {
             aiFace face = ai_mesh->mFaces[i];
-            for ( unsigned int j = 0; j < face.mNumIndices; ++j ) {
+            for ( unsigned int j = 0; j < face.mNumIndices; ++j )
+            {
                 indices.push_back( face.mIndices[j] );
             }
         }
@@ -102,11 +100,13 @@ namespace Tridium {
             return false;
         }
 
+        loadedMesh->m_NumIndicies = indices.size();
+
         // - Load the mesh objects into the GPU -
 
         // Create Vertex Objects
         loadedMesh->m_VAO = VertexArray::Create();
-        loadedMesh->m_VBO = VertexBuffer::Create( (float*)loadedMesh->m_Verticies.data(), loadedMesh->m_Verticies.size() * sizeof( Vertex ));
+        loadedMesh->m_VBO = VertexBuffer::Create( (float*)loadedMesh->m_Verticies.data(), loadedMesh->m_Verticies.size() * sizeof( Vertex ) );
 
         BufferLayout layout =
         {
@@ -129,8 +129,7 @@ namespace Tridium {
             loadedMesh->m_Verticies.clear();
         }
 
-        MeshLibrary::AddMesh( filepath, loadedMesh, outMeshHandle );
-        return true;
+        return loadedMesh;
     }
 
 #pragma endregion
@@ -203,31 +202,33 @@ namespace Tridium {
         quadMesh->m_IBO = IndexBuffer::Create( indices, sizeof( indices ) / sizeof( uint32_t ) );
         quadMesh->m_VAO->SetIndexBuffer( quadMesh->m_IBO );
 
+        m_Quad = GUID::Create();
         AddMesh( "Quad", quadMesh, m_Quad );
 
 #pragma endregion
     }
 
-    void MeshLibrary::AddMesh( const std::string& filePath, const Ref<Mesh>& mesh, MeshHandle& outMeshHandle )
+    bool MeshLibrary::AddMesh( const std::string& filePath, const Ref<Mesh>& mesh, const MeshHandle& meshHandle )
     {
         auto& pathHandles = Get()->m_PathHandles;
-        if ( auto pair = pathHandles.find( filePath ); pair != pathHandles.end() )
+        if ( auto foundPath = pathHandles.find( filePath ); foundPath != pathHandles.end() )
         {
-            outMeshHandle = pair->second;
-            return;
+            TE_CORE_ERROR( "MeshLibrary already contains a mesh loaded from '{0}'", filePath );
+            return false;
         }
 
-        outMeshHandle = CreateGUID();
-        pathHandles.emplace( filePath, outMeshHandle );
+        auto& loadedMeshes = Get()->m_LoadedMeshes;
+        auto foundMesh = loadedMeshes.find( meshHandle );
+        if ( foundMesh != loadedMeshes.end() )
+        {
+            TE_CORE_ASSERT( false, "MeshHandle Collision!" );
+            return false;
+        }
 
-        Get()->m_LoadedMeshes[outMeshHandle] = mesh;
+        pathHandles.emplace( filePath, meshHandle );
+        loadedMeshes.emplace( meshHandle, mesh );
+        return true;
     }
 
 #pragma endregion
-
-    MeshImportSettings::MeshImportSettings()
-    {
-        PostProcessFlags = aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_GenNormals;
-    }
-
 }

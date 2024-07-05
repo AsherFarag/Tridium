@@ -10,7 +10,7 @@
 #include <Tridium/ECS/Components/Types.h>
 
 #include <Tridium/Rendering/Texture.h>
-#include "MeshImporterPanel.h"
+#include <Editor/EditorUtil.h>
 
 namespace ImGui {
 	static void DrawVec3Control( const std::string& label, Vector3& values, float speed, bool uniform = false, const char* format = "%.4f" )
@@ -170,55 +170,27 @@ namespace Tridium::Editor {
 				ImGui::DrawVec3Control( "Scale", component.Scale, 0.01f, Input::IsKeyPressed(Input::KEY_LEFT_CONTROL) );
 			} );
 
-		DrawComponent<MeshComponent>( "Mesh", InspectedGameObject, []( auto& component )
+		DrawComponent<MeshComponent>( "Mesh", InspectedGameObject, []( MeshComponent& component )
 			{
-				ImGui::BeginGroup();
+				Ref<Mesh> mesh = MeshLibrary::GetMesh( component.GetMesh() );
+				bool hasMesh = mesh != nullptr;
+				ImGui::DragDropSelectable( "Mesh: ", hasMesh, hasMesh ? mesh->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
+					[&]( const ImGuiPayload* payload ) {
+						std::string filePath( static_cast<const char*>( payload->Data ) );
+						component.SetMesh( Editor::Util::GetMeshHandle( filePath ) );
+					} );
+
+				// On right click, give the option to remove the mesh, if there is one.
+				if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
+					ImGui::OpenPopup( "##RemoveMesh" );
+				if ( ImGui::BeginPopup( "##RemoveMesh" ) )
 				{
-					ImGui::PushFont( ImGui::GetBoldFont() );
-					ImGui::Text( "Mesh Handle: " );
-					ImGui::PopFont();
-
-					ImGui::SameLine();
-
-					bool hasMesh = component.GetMesh() != MeshHandle();
-
-					ImGui::PushFont( ImGui::GetLightFont() );
-
-					std::string selectableText = hasMesh ? std::to_string( component.GetMesh() ) : "Null";
-					ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
-					selectableFlags |= !hasMesh ? ImGuiSelectableFlags_Disabled : 0;
-					bool selected = false;
-					hasMesh ? ImGui::PushStyleColor( ImGuiCol_Text, { 0.85, 0.65, 0.1, 0.9 } ) : ImGui::PushStyleColor( ImGuiCol_Text, { 0.65, 0.65, 0.65, 0.9 } );
-					if ( ImGui::BorderedSelectable( selectableText.c_str(), &selected, selectableFlags, 1.f, IM_COL32( 255, 255, 255, 255 ), 2.f ) && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left ) )
-					{
-						//EditorLayer::OpenFile( component.GetScript()->GetFilePath() );
-					}
-					ImGui::PopStyleColor();
-					ImGui::PopFont();
-
-					// On right click, give the option to remove the script, if there is one.
-					if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
-						ImGui::OpenPopup( "##RemoveMesh" );
-					if ( ImGui::BeginPopup( "##RemoveMesh" ) )
-					{
-						if ( ImGui::MenuItem( "Remove Mesh", nullptr, nullptr, hasMesh ) )
-						{
-							component.SetMesh( MeshHandle{} );
-						}
-
-						ImGui::EndPopup();
+					if ( ImGui::MenuItem( "Remove Mesh", nullptr, nullptr, hasMesh ) ) {
+						component.SetMesh( MeshHandle{} );
 					}
 
-					if ( ImGui::BeginDragDropTarget() )
-					{
-						if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM ) )
-						{
-							std::string filePath( static_cast<const char*>( payload->Data ) );
-						}
-						ImGui::EndDragDropTarget();
-					}
+					ImGui::EndPopup();
 				}
-				ImGui::EndGroup();
 			} );
 
 		DrawComponent<CameraComponent>( "Camera", InspectedGameObject, []( auto& component )
@@ -274,74 +246,50 @@ namespace Tridium::Editor {
 				ImGui::DragFloat( "Look Sensitivity", &component.LookSensitivity, 0.1f );
 			} );
 
-		DrawComponent<LuaScriptComponent>( "Lua Script Component", InspectedGameObject, []( auto& component )
+		DrawComponent<LuaScriptComponent>( "Lua Script Component", InspectedGameObject, []( LuaScriptComponent& component )
 			{
-				ImGui::BeginGroup();
+				bool hasScript = component.GetScript() != nullptr;
+				bool opened = ImGui::DragDropSelectable( "Script: ", hasScript, hasScript ? component.GetScript()->GetFilePath().string().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
+					[&]( const ImGuiPayload* payload ) {
+						component.SetScript( Script::Create( static_cast<const char*>( payload->Data ) ) );
+					} );
+
+				// On right click, give the option to remove the script, if there is one.
+				if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
+					ImGui::OpenPopup( "##RemoveScript" );
+				if ( ImGui::BeginPopup( "##RemoveScript" ) )
 				{
-					ImGui::PushFont( ImGui::GetBoldFont() );
-					ImGui::Text( "Script: " );
-					ImGui::PopFont();
-
-					ImGui::SameLine();
-
-					bool hasScript = component.GetScript() != nullptr;
-
-					ImGui::PushFont( ImGui::GetLightFont() );
-
-					std::string selectableText = hasScript ? component.GetScript()->GetFilePath().string() : "Empty";
-					ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
-					selectableFlags |= !hasScript ? ImGuiSelectableFlags_Disabled : 0;
-					bool selected = false;
-					hasScript ? ImGui::PushStyleColor( ImGuiCol_Text, { 0.85, 0.65, 0.1, 0.9 } ) : ImGui::PushStyleColor( ImGuiCol_Text, { 0.65, 0.65, 0.65, 0.9 } );
-					if ( ImGui::BorderedSelectable( selectableText.c_str(), &selected, selectableFlags, 1.f, IM_COL32( 255, 255, 255, 255 ), 2.f ) && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left ) )
-					{
-						EditorLayer::OpenFile( component.GetScript()->GetFilePath() );
-					}
-					ImGui::PopStyleColor();
-					ImGui::PopFont();
-
-					// On right click, give the option to remove the script, if there is one.
-					if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
-						ImGui::OpenPopup( "##RemoveScript" );
-					if ( ImGui::BeginPopup( "##RemoveScript" ) )
-					{
-						if ( ImGui::MenuItem( "Remove Script", nullptr, nullptr, hasScript ) )\
-							component.SetScript( nullptr );
-
-						ImGui::EndPopup();
+					if ( ImGui::MenuItem( "Remove Script", nullptr, nullptr, hasScript ) ) {
+						component.SetScript( nullptr );
 					}
 
-					if ( ImGui::BeginDragDropTarget() )
-					{
-						if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM ) )
-						{
-							component.SetScript( Script::Create( static_cast<const char*>( payload->Data ) ) );
-						}
-						ImGui::EndDragDropTarget();
-					}
+					ImGui::EndPopup();
 				}
-				ImGui::EndGroup();
+
+				if ( opened )
+					EditorLayer::OpenFile( component.GetScript()->GetFilePath() );
 			} );
 
-		DrawComponent<SpriteComponent>( "Sprite Component", InspectedGameObject, []( auto& component )
+		DrawComponent<SpriteComponent>( "Sprite Component", InspectedGameObject, []( SpriteComponent& component )
 			{
-				ImGui::Text( "Sprite: " );
-				ImGui::SameLine();
-				if ( component.GetTexture() )
-					ImGui::TextColored( { 0.85, 0.65, 0.1, 0.9 }, component.GetTexture()->GetPath().c_str() );
-				else
-					ImGui::TextColored( { 0.65, 0.65, 0.65, 0.9 }, "Empty" );
-
-				if ( ImGui::BeginDragDropTarget() )
-				{
-					if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM ) )
-					{
+				bool hasSprite = component.GetTexture() != nullptr;
+				ImGui::DragDropSelectable( "Sprite: ", hasSprite, hasSprite ? component.GetTexture()->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
+					[&]( const ImGuiPayload* payload ) {
 						component.SetTexture( Texture2D::Create( static_cast<const char*>( payload->Data ) ) );
-					}
-					ImGui::EndDragDropTarget();
+					} );
+
+				// On right click, give the option to remove the sprite, if there is one.
+				if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
+					ImGui::OpenPopup( "##RemoveSprite" );
+				if ( ImGui::BeginPopup( "##RemoveSprite" ) )
+				{
+					if ( ImGui::MenuItem( "Remove Sprite", nullptr, nullptr, hasSprite ) )
+						component.SetTexture( nullptr );
+
+					ImGui::EndPopup();
 				}
 
-				if ( component.GetTexture() && ImGui::TreeNode( "Preview:" ) )
+				if ( hasSprite && ImGui::TreeNode( "Preview:" ) )
 				{
 					Vector2 textureSize( component.GetTexture()->GetWidth(), component.GetTexture()->GetHeight() );
 					ImVec2 previewSize;
@@ -397,7 +345,14 @@ namespace Tridium::Editor {
 		{
 			if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM ) )
 			{
-				AddComponentToGameObject<LuaScriptComponent>( InspectedGameObject, Script::Create( static_cast<const char*>( payload->Data ) ) );
+				fs::path filePath( static_cast<const char*>( payload->Data ) );
+				auto ext = filePath.extension();
+				if ( ext == ".lua" )
+					AddComponentToGameObject<LuaScriptComponent>( InspectedGameObject, Script::Create( filePath ) );
+				else if ( ext == ".png" )
+					AddComponentToGameObject<SpriteComponent>( InspectedGameObject, filePath.string() );
+				else if ( ext == ".obj" || ext == ".fbx" )
+					AddComponentToGameObject<MeshComponent>( InspectedGameObject, Editor::Util::GetMeshHandle( filePath.string() ) );
 			}
 			ImGui::EndDragDropTarget();
 		}
@@ -407,7 +362,7 @@ namespace Tridium::Editor {
 			if ( ImGui::MenuItem( "Transform" ) )		    { AddComponentToGameObject<TransformComponent>( InspectedGameObject );	}
 			if ( ImGui::MenuItem( "Mesh" ) )			    { AddComponentToGameObject<MeshComponent>( InspectedGameObject ); }
 			if ( ImGui::MenuItem( "Camera" ) )			    { AddComponentToGameObject<CameraComponent>( InspectedGameObject ); }
-			if ( ImGui::MenuItem( "Camera Controller" ) ) { AddComponentToGameObject<CameraControllerComponent>( InspectedGameObject ); }
+			if ( ImGui::MenuItem( "Camera Controller" ) )	{ AddComponentToGameObject<CameraControllerComponent>( InspectedGameObject ); }
 			if ( ImGui::MenuItem( "Lua Script" ) )		    { AddComponentToGameObject<LuaScriptComponent>( InspectedGameObject ); }
 			if ( ImGui::MenuItem( "Sprite" ) )		        { AddComponentToGameObject<SpriteComponent>( InspectedGameObject ); }
 

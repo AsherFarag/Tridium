@@ -92,6 +92,7 @@ namespace Tridium {
 	{
 	public:
 		MeshComponent();
+		MeshComponent(const MeshHandle& meshHandle);
 		~MeshComponent() = default;
 
 		inline MeshHandle& GetMesh() { return m_Mesh; }

@@ -8,7 +8,11 @@ namespace Tridium::Editor {
     class EditorCamera final : public Camera
     {
     public:
+        EditorCamera();
+
         void OnUpdate();
+
+        void LerpTo( const Vector3& pos );
 
         Vector3 GetUpDirection() const;
         Vector3 GetRightDirection() const;
@@ -17,7 +21,6 @@ namespace Tridium::Editor {
         Matrix4 GetTransform() const;
         const Matrix4& GetViewMatrix() const { return m_View; }
 
-    public:
         bool Focused = true;
 
         float Sensitivity = 0.01f;
@@ -30,18 +33,31 @@ namespace Tridium::Editor {
     private:
         void HandleInput();
 
-        void MoveForward( const float magnitude );
-        void MoveSideways( const float magnitude );
+        void MoveForward( const float magnitude, const float speed );
+        void MoveSideways( const float magnitude, const float speed );
         void MouseRotate( const Vector2& mouseDelta );
 
         void RecalculateView();
+
+        void Lerp();
 
     private:
         Matrix4 m_View;
         Vector2 m_LastMousePos;
 
-        bool m_WasLeftShiftPressed = false;
-        bool m_WasLeftCtrlPressed = false;
+        bool m_IsMoving = false;
+        float m_MaxTimeMoving = 5.f;
+        float m_TimeMoving = 0.0f;
+        float m_MaxTimeMovingSpeedMultiplier = 10.f;
+        float m_TimeMovingSpeedMultiplier = 1.0f;
+
+        struct
+        {
+            float LerpTime = 0.5f;
+            float CurrLerpTime = 0.0f;
+            Vector3 LerpToPos = {};
+            bool IsLerping = false;
+        } m_LerpData;
     };
 
 }

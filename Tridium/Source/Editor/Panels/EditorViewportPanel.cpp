@@ -23,17 +23,17 @@ namespace Tridium::Editor {
 		{
 			switch ( e.GetKeyCode() )
 			{
-			case Input::KEY_E:
+			case Input::KEY_W:
 			{
 				m_GizmoState = EGizmoState::Translate;
 				return true;
 			}
-			case Input::KEY_R:
+			case Input::KEY_E:
 			{
 				m_GizmoState = EGizmoState::Rotate;
 				return true;
 			}
-			case Input::KEY_T:
+			case Input::KEY_R:
 			{
 				if ( Input::IsKeyPressed( Input::KEY_LEFT_CONTROL ) )
 					m_GizmoState = EGizmoState::Universal_Scale;
@@ -44,6 +44,8 @@ namespace Tridium::Editor {
 			}
 			}
 		}
+
+		return false;
 	}
 
 	void EditorViewportPanel::OnImGuiDraw()
@@ -83,7 +85,7 @@ namespace Tridium::Editor {
 		}
 		m_IsHovered = ImGui::IsWindowHovered();
 		m_IsFocused = ImGui::IsWindowFocused();
-		m_EditorCamera->Focused = m_IsFocused;
+		m_EditorCamera->Focused = m_IsFocused && !ImGuizmo::IsUsingAny();
 		ImGui::End();
 	}
 

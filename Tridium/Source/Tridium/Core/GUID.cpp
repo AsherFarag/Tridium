@@ -4,8 +4,9 @@
 #include <cstdint>
 
 namespace Tridium {
-	GUID CreateGUID()
-	{
+
+    GUID GUID::Create()
+    {
         // Seed with a real random value, if available
         static std::random_device rd;
 
@@ -15,6 +16,8 @@ namespace Tridium {
         // Define the distribution range for uint64_t
         static std::uniform_int_distribution<uint64_t> dis;
 
-        return (GUID)dis( gen );
-	}
+        GUID id( dis( gen ) );
+
+        return id.Valid() ? id : Create();
+    }
 }

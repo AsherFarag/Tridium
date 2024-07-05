@@ -5,8 +5,7 @@
 
 namespace Tridium::Editor::Util
 {
-	MeshHandle GetMesh( const std::string& filePath );
-
+	MeshHandle GetMeshHandle( const std::string& filePath );
 };
 
 #endif // IS_EDITOR
