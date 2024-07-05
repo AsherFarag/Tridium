@@ -1,45 +1,12 @@
 Scene: Unnamed Scene
 GameObjects:
-  - GameObject: 15522332228179318107
+  - GameObject: 3861263242695395067
     TagComponent:
-      "Backgr"
-    TransformComponent:
-      Position: [0, 0, -40]
-      Rotation: [0, -0, 0]
-      Scale: [68.1517181, 68.1517105, 68.1517105]
-      Parent: 3762296498438068459
-      Children: []
-    SpriteComponent:
-      Texture: "Content\\Engine\\Editor\\Icons\\DeleteThisLater.png"
-  - GameObject: 3762296498438068459
-    TagComponent:
-      "Player\x00ect"
+      "Cube"
     TransformComponent:
       Position: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-      Children: [15522332228179318107]
-    LuaScriptComponent:
-      LuaScript: "Content\\Scripts\\Game\\Player.lua"
-    CameraComponent:
-      Projection Mode: Perspective
-      Perspective:
-        FOV: 45
-        Near: 0.00999999978
-        Far: 1000
-      Orthographic:
-        Size: 10
-        Near: -1000
-        Far: 1000
-  - GameObject: 1218220712224414344
-    TagComponent:
-      "Obst"
-    TransformComponent:
-      Position: [0, 0, -20]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
       Children: []
     MeshComponent:
-      Mesh: "Content\\Temp\\soulspear.obj"
-    LuaScriptComponent:
-      LuaScript: "Content\\Scripts\\Game\\ObstacleSpawner.lua"
+      Mesh: "Content\\Temp\\Primitives\\Sphere.obj"

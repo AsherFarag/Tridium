@@ -10,6 +10,7 @@
 #include <Tridium/ECS/Components/Types.h>
 
 #include <Tridium/Rendering/Texture.h>
+#include "MeshImporterPanel.h"
 
 namespace ImGui {
 	static void DrawVec3Control( const std::string& label, Vector3& values, float speed, bool uniform = false, const char* format = "%.4f" )
@@ -169,7 +170,7 @@ namespace Tridium::Editor {
 				ImGui::DrawVec3Control( "Scale", component.Scale, 0.01f, Input::IsKeyPressed(Input::KEY_LEFT_CONTROL) );
 			} );
 
-		DrawComponent<MeshComponent>( "Mesh", InspectedGameObject, []( MeshComponent& component )
+		DrawComponent<MeshComponent>( "Mesh", InspectedGameObject, []( auto& component )
 			{
 				ImGui::BeginGroup();
 				{
@@ -202,6 +203,7 @@ namespace Tridium::Editor {
 					{
 						if ( ImGui::MenuItem( "Remove Mesh", nullptr, nullptr, hasMesh ) )
 						{
+							component.SetMesh( MeshHandle{} );
 						}
 
 						ImGui::EndPopup();
@@ -211,12 +213,7 @@ namespace Tridium::Editor {
 					{
 						if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM ) )
 						{
-							fs::path file( static_cast<const char*>( payload->Data ) );
-							MeshHandle handle;
-							if ( MeshLoader::Load( file.string(), handle) )
-							{
-								component.SetMesh( handle );
-							}
+							std::string filePath( static_cast<const char*>( payload->Data ) );
 						}
 						ImGui::EndDragDropTarget();
 					}

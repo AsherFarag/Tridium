@@ -56,13 +56,12 @@ namespace Tridium::Editor {
 		virtual void OnImGuiDraw() override;
 		virtual void OnEvent( Event& e ) override;
 
-		template <typename T, typename... Args>
-		inline T* PushPanel( Args&&... args ) { return m_PanelStack.PushPanel<T>( std::forward<Args>( args )... ); }
-
-		template <typename T>
-		inline T* GetPanel() { return m_PanelStack.GetPanel<T>(); }
-
 		static EditorLayer& Get() { return *s_Instance; }
+
+		// - Panels -
+		template <typename T, typename... Args> static inline T* PushPanel( Args&&... args ) { return Get().m_PanelStack.PushPanel<T>( std::forward<Args>( args )... ); }
+		template <typename T> static inline T* GetPanel() { return Get().m_PanelStack.GetPanel<T>(); }
+
 		EditorCamera& GetEditorCamera() { return m_EditorCamera; }
 
 		void SetActiveScene( const Ref<Scene>& a_Scene ) { m_ActiveScene = a_Scene; }

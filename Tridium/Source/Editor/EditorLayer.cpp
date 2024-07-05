@@ -131,15 +131,18 @@ namespace Tridium::Editor {
 
 	void EditorLayer::OnEvent( Event& e )
 	{
-		EventDispatcher dispatcher( e );
-		dispatcher.Dispatch<KeyPressedEvent>( TE_BIND_EVENT_FN( EditorLayer::OnKeyPressed, 1 ) );
-
 		for ( auto it = m_PanelStack.end(); it != m_PanelStack.begin(); )
 		{
 			( *--it ).second->OnEvent( e );
 			if ( e.Handled )
 				break;
 		}
+
+		if ( e.Handled )
+			return;
+
+		EventDispatcher dispatcher( e );
+		dispatcher.Dispatch<KeyPressedEvent>( TE_BIND_EVENT_FN( EditorLayer::OnKeyPressed, 1 ) );
 	}
 
 	void EditorLayer::OnBeginScene()

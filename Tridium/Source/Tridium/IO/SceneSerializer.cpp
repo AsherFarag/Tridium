@@ -248,7 +248,7 @@ namespace Tridium {
 			if ( auto mesh = meshComponent["Mesh"] )
 			{
 				MeshHandle meshHandle;
-				if ( MeshLoader::Load( mesh.as<std::string>(), meshHandle ) )
+				if ( MeshLoader::Import( mesh.as<std::string>(), meshHandle ) )
 					mc->SetMesh( meshHandle );
 			}
 		}

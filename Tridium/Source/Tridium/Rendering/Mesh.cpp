@@ -1,6 +1,9 @@
 #include "tripch.h"
 #include "Mesh.h"
 
+#include <Tridium/Rendering/Buffer.h>
+#include <Tridium/Rendering/VertexArray.h>
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -9,23 +12,29 @@ namespace Tridium {
 
 #pragma region MeshLoader
 
-    bool MeshLoader::Load( const std::string& filepath, MeshHandle& outMeshHandle )
+
+    bool MeshLoader::Import( const std::string& filepath, MeshHandle& outMeshHandle )
+    {
+        return Import( filepath, outMeshHandle, MeshImportSettings{} );
+    }
+
+    bool MeshLoader::Import( const std::string& filepath, MeshHandle& outMeshHandle, const MeshImportSettings& importSettings )
     {
         if ( MeshLibrary::GetHandle( filepath, outMeshHandle ) )
             return true;
 
         Assimp::Importer importer;
+        //unsigned int aiPostProcessFlags =// aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_GenNormals;
+        //aiProcess_GlobalScale
+        //    | aiProcess_OptimizeMeshes
+        //    | aiProcess_OptimizeGraph
+        //    | aiProcess_RemoveRedundantMaterials
+        //    | aiProcess_Triangulate
+        //    | aiProcess_LimitBoneWeights
+        //    | aiProcess_SplitByBoneCount
+        //    | aiProcess_CalcTangentSpace;
 
-        unsigned int aiPostProcessFlags =// aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_GenNormals;
-        aiProcess_GlobalScale
-            | aiProcess_OptimizeMeshes
-            | aiProcess_OptimizeGraph
-            | aiProcess_RemoveRedundantMaterials
-            | aiProcess_Triangulate
-            | aiProcess_LimitBoneWeights
-            | aiProcess_SplitByBoneCount
-            | aiProcess_CalcTangentSpace;
-        const aiScene* scene = importer.ReadFile( filepath, aiPostProcessFlags );
+        const aiScene* scene = importer.ReadFile( filepath, importSettings.PostProcessFlags );
 
         if ( !scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode )
         {
@@ -41,6 +50,7 @@ namespace Tridium {
 
 #pragma region Load Verticies
 
+        loadedMesh->m_NumVerticies = ai_mesh->mNumVertices;
         loadedMesh->m_Verticies.resize( ai_mesh->mNumVertices );
         if ( ai_mesh->HasPositions() )
         {
@@ -113,6 +123,12 @@ namespace Tridium {
         loadedMesh->m_VAO->SetIndexBuffer( loadedMesh->m_IBO );
 
         loadedMesh->m_FilePath = filepath;
+
+        if ( importSettings.DiscardLocalData )
+        {
+            loadedMesh->m_Verticies.clear();
+        }
+
         MeshLibrary::AddMesh( filepath, loadedMesh, outMeshHandle );
         return true;
     }
@@ -208,5 +224,10 @@ namespace Tridium {
     }
 
 #pragma endregion
+
+    MeshImportSettings::MeshImportSettings()
+    {
+        PostProcessFlags = aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_GenNormals;
+    }
 
 }

@@ -20,3 +20,6 @@
 	path = Tridium/Dependencies/yaml-cpp
 	url = https://github.com/AsherFarag/yaml-cpp.git
 
+[submodule "Tridium/Dependencies/assimp"]
+	path = Tridium/Dependencies/assimp
+	url = https://github.com/AsherFarag/assimp.git

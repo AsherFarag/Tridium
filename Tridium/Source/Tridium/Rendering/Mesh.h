@@ -1,12 +1,13 @@
 #pragma once
 #include "Tridium/Core/Core.h"
 
-#include <Tridium/Rendering/Buffer.h>
-#include <Tridium/Rendering/VertexArray.h>
-
 namespace Tridium {
 
 	typedef GUID MeshHandle;
+
+	class VertexArray;
+	class VertexBuffer;
+	class IndexBuffer;
 
 	struct Vertex
 	{
@@ -14,6 +15,14 @@ namespace Tridium {
 		Vector3 Normal;
 		Vector2 UV;
 		Vector3 Tangent;
+	};
+
+	struct MeshImportSettings
+	{
+		MeshImportSettings();
+		unsigned int PostProcessFlags;
+		float Scale = 1.f;
+		bool DiscardLocalData = false; /* If true, once the mesh has been loaded onto the GPU, the local Vertex Data will be deleted. */
 	};
 
 	struct SubMesh
@@ -34,12 +43,20 @@ namespace Tridium {
 
 		const inline auto& GetPath() const { return m_FilePath; }
 
+		const inline size_t GetNumOfVerticies() const { return m_NumVerticies; }
+		const inline size_t GetNumOfPolygons() const { return (size_t)( m_NumVerticies / 3u ); }
+
+		const inline MeshImportSettings& GetImportSettings() const { return m_ImportSettings; }
+
 	private:
 		std::string m_FilePath;
+		MeshImportSettings m_ImportSettings;
 
 		Ref<VertexArray> m_VAO;
 		Ref<VertexBuffer> m_VBO;
 		Ref<IndexBuffer> m_IBO;
+
+		size_t m_NumVerticies = 0;
 
 		std::vector<Vertex> m_Verticies;
 		std::vector<SubMesh> m_SubMeshes;
@@ -49,7 +66,8 @@ namespace Tridium {
 	class MeshLoader
 	{
 	public:
-		static bool Load( const std::string& filepath, MeshHandle& outMeshHandle );
+		static bool Import( const std::string& filepath, MeshHandle& outMeshHandle );
+		static bool Import( const std::string& filepath, MeshHandle& outMeshHandle, const MeshImportSettings& importSettings );
 	};
 
 	class MeshLibrary
