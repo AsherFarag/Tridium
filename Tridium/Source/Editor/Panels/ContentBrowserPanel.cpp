@@ -15,11 +15,11 @@ namespace Tridium::Editor {
 		TODO( "Make proper Icon Assets" );
 		// TEMP
 		fs::path iconFolder( "Content/Engine/Editor/Icons" );
-		m_DefaultIcon = Texture2D::Create( ( iconFolder / "file.png" ).string() );
-		m_FolderIcon = Texture2D::Create( ( iconFolder / "folder.png" ).string() );
-		m_LuaIcon = Texture2D::Create( ( iconFolder / "file-code.png" ).string() );
-		m_ImageMediaIcon = Texture2D::Create( ( iconFolder / "file-media.png" ).string() );
-		m_TridiumProjectIcon = Texture2D::Create( ( iconFolder / "EngineIcon.png" ).string() );
+		m_DefaultIcon = TextureLoader::Import( ( iconFolder / "file.png" ).string() );
+		m_FolderIcon = TextureLoader::Import( ( iconFolder / "folder.png" ).string() );
+		m_LuaIcon = TextureLoader::Import( ( iconFolder / "file-code.png" ).string() );
+		m_ImageMediaIcon = TextureLoader::Import( ( iconFolder / "file-media.png" ).string() );
+		m_TridiumProjectIcon = TextureLoader::Import( ( iconFolder / "EngineIcon.png" ).string() );
 		//m_TridiumSceneIcon = Texture2D::Create( ( iconFolder / "tridium-scene.png" ).string() );
 	}
 
@@ -159,7 +159,7 @@ namespace Tridium::Editor {
 
 	bool ContentBrowserPanel::ContentItemOnImGuiDraw( const ContentType type, const fs::path& a_FilePath, const ImVec2& size )
 	{
-		Ref<Texture2D> icon;
+		Ref<Texture> icon;
 
 		// Set Icon
 		switch ( type )

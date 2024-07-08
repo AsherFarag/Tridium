@@ -122,7 +122,7 @@ namespace Tridium {
         loadedMesh->m_IBO = IndexBuffer::Create( indices.data(), indices.size() );
         loadedMesh->m_VAO->SetIndexBuffer( loadedMesh->m_IBO );
 
-        loadedMesh->m_FilePath = filepath;
+        loadedMesh->m_Path = filepath;
 
         if ( importSettings.DiscardLocalData )
         {
@@ -137,42 +137,14 @@ namespace Tridium {
 
 #pragma region MeshLibrary
 
-    MeshLibrary* MeshLibrary::Get()
+    MeshLibrary::MeshLibrary()
     {
-        static bool hasBeenInit = false;
-        static MeshLibrary* s_Instance = new MeshLibrary();
-
-        if (!hasBeenInit)
-        {
-            hasBeenInit = true;
-            s_Instance->InitPrimatives();
-        }
-
-        return s_Instance;
-    }
-
-    Ref<Mesh> MeshLibrary::GetMesh( const MeshHandle& meshHandle )
-    {
-        if ( auto pair = Get()->m_LoadedMeshes.find( meshHandle ); pair != Get()->m_LoadedMeshes.end() )
-            return pair->second;
-
-        return nullptr;
-    }
-
-    bool MeshLibrary::GetHandle( const std::string& filePath, MeshHandle& outMeshHandle )
-    {
-        auto& pathHandles = Get()->m_PathHandles;
-        if ( auto pair = pathHandles.find( filePath ); pair != pathHandles.end() )
-        {
-            outMeshHandle = pair->second;
-            return true;
-        }
-        return false;
+        InitPrimatives();
     }
 
     void MeshLibrary::InitPrimatives()
     {
-#pragma region Quad
+    #pragma region Quad
 
         Ref<Mesh> quadMesh = MakeRef<Mesh>();
 
@@ -202,32 +174,11 @@ namespace Tridium {
         quadMesh->m_IBO = IndexBuffer::Create( indices, sizeof( indices ) / sizeof( uint32_t ) );
         quadMesh->m_VAO->SetIndexBuffer( quadMesh->m_IBO );
 
-        m_Quad = GUID::Create();
-        AddMesh( "Quad", quadMesh, m_Quad );
+        m_Quad = quadMesh->m_Handle = MeshHandle::Create();
+        m_PathHandles.emplace( "Quad", m_Quad );
+        m_Library.emplace( m_Quad, quadMesh );
 
-#pragma endregion
-    }
-
-    bool MeshLibrary::AddMesh( const std::string& filePath, const Ref<Mesh>& mesh, const MeshHandle& meshHandle )
-    {
-        auto& pathHandles = Get()->m_PathHandles;
-        if ( auto foundPath = pathHandles.find( filePath ); foundPath != pathHandles.end() )
-        {
-            TE_CORE_ERROR( "MeshLibrary already contains a mesh loaded from '{0}'", filePath );
-            return false;
-        }
-
-        auto& loadedMeshes = Get()->m_LoadedMeshes;
-        auto foundMesh = loadedMeshes.find( meshHandle );
-        if ( foundMesh != loadedMeshes.end() )
-        {
-            TE_CORE_ASSERT( false, "MeshHandle Collision!" );
-            return false;
-        }
-
-        pathHandles.emplace( filePath, meshHandle );
-        loadedMeshes.emplace( meshHandle, mesh );
-        return true;
+    #pragma endregion
     }
 
 #pragma endregion

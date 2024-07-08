@@ -1,0 +1,16 @@
+Material: 9198542461518443590
+Shader: 5221692212295922213
+Parent Material: 0
+Blend Mode: Additive
+Ambient: [0, 0, 0, 1]
+Diffuse: [0, 0, 0, 1]
+Specular: [1, 1, 1, 1]
+Opacity: 1
+Reflectivity: 0
+Refraction: 1
+DiffuseTexture: 0
+SpecularTexture: 0
+NormalMap: 0
+HeightMap: 0
+Textures:
+  []

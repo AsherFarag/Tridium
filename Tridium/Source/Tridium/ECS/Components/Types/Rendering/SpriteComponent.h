@@ -1,25 +1,24 @@
 #pragma once
 #include <Tridium/ECS/Components/Component.h>
 #include <Tridium/Rendering/Shader.h>
+#include <Tridium/Rendering/Texture.h>
 
 namespace Tridium {
-	class Texture2D;
 
 	DEFINE_COMPONENT( SpriteComponent )
 	{
 	public:
 		SpriteComponent();
-		SpriteComponent(const Ref<Texture2D>& a_Texture);
-		SpriteComponent( const std::string& a_TexturePath );
+		SpriteComponent( const TextureHandle& a_Texture );
 		~SpriteComponent() = default;
 
-		inline Ref<Texture2D>& GetTexture() { return m_Texture; }
-		inline void SetTexture(const  Ref<Texture2D>& a_Texture ) { m_Texture = a_Texture; }
+		inline TextureHandle GetTexture() { return m_Texture; }
+		inline void SetTexture(const  TextureHandle& a_Texture ) { m_Texture = a_Texture; }
 		inline Ref<Shader>& GetShader() { return m_Shader; }
 
 	private:
 		Ref<Shader> m_Shader;
-		Ref<Texture2D> m_Texture;
+		TextureHandle m_Texture;
 	};
 
 }

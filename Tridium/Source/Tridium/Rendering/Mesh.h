@@ -1,9 +1,10 @@
 #pragma once
-#include "Tridium/Core/Core.h"
+#include <Tridium/Core/Asset.h>
+#include "Material.h"
 
 namespace Tridium {
 
-	typedef GUID MeshHandle;
+	using MeshHandle = AssetHandle;
 
 	class VertexArray;
 	class VertexBuffer;
@@ -17,7 +18,7 @@ namespace Tridium {
 		Vector3 Tangent;
 	};
 
-	class Mesh
+	class Mesh : public Asset<MeshHandle>
 	{
 		friend class MeshLoader;
 		friend class MeshLibrary;
@@ -27,14 +28,10 @@ namespace Tridium {
 		inline auto GetVBO() const { return m_VBO; }
 		inline auto GetIBO() const { return m_IBO; }
 
-		const inline auto& GetPath() const { return m_FilePath; }
-
 		const inline size_t GetNumOfVerticies() const { return m_NumVerticies; }
 		const inline size_t GetNumOfPolygons() const { return (size_t)( m_NumVerticies / 3u ); }
 
 	private:
-		std::string m_FilePath;
-
 		Ref<VertexArray> m_VAO;
 		Ref<VertexBuffer> m_VBO;
 		Ref<IndexBuffer> m_IBO;
@@ -50,7 +47,7 @@ namespace Tridium {
 			uint32_t MaterialIndex;
 		};
 		std::vector<SubMesh> m_SubMeshes;
-		// std::vector<Material> m_Materials;
+		std::vector<MaterialHandle> m_Materials;
 	};
 
 
@@ -69,25 +66,24 @@ namespace Tridium {
 		static Ref<Mesh> Import( const std::string& filepath, const MeshImportSettings& importSettings );
 	};
 
-	class MeshLibrary
+	class MeshLibrary : public AssetLibrary<MeshLibrary, MeshHandle, Mesh>
 	{
 		friend MeshLoader;
-
 	public:
-		static MeshLibrary* Get();
-		static Ref<Mesh> GetMesh( const MeshHandle& meshHandle );
-		static bool GetHandle( const std::string& filePath, MeshHandle& outMeshHandle );
-		static bool AddMesh( const std::string& filePath, const Ref<Mesh>& mesh, const MeshHandle& meshHandle );
+		MeshLibrary();
+
+		static inline Ref<Mesh> GetMesh( const MeshHandle& meshHandle ) { return GetAsset( meshHandle ); }
+		static inline bool GetMeshHandle( const std::string& path, MeshHandle& outMeshHandle ) { return GetHandle( path, outMeshHandle ); }
+		static inline MeshHandle GetMeshHandle( const std::string& path ) { return GetHandle( path ); }
+		static inline bool HasMeshHandle( const std::string& path ) { return HasHandle( path ); }
+		static inline bool AddMesh( const std::string& path, const Ref<Mesh>& mesh ) { return AddAsset( path, mesh ); }
+		static inline bool RemoveMesh( const MeshHandle& meshHandle ) { return RemoveAsset( meshHandle ); }
 
 		// - Primatives -
-		static inline MeshHandle GetQuad() { return Get()->m_Quad; }
+		static inline MeshHandle GetQuad() { return Get().m_Quad; }
 
 	private:
 		void InitPrimatives();
-
-	private:
-		std::unordered_map<std::string, MeshHandle> m_PathHandles;
-		std::unordered_map<MeshHandle, Ref<Mesh>> m_LoadedMeshes;
 
 		// - Primatives -
 		MeshHandle m_Quad;

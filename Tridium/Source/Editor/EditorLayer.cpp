@@ -4,6 +4,8 @@
 #include "EditorLayer.h"
 #include "imgui.h"
 
+#include "EditorCamera.h"
+
 #include "Panels/EditorPreferencesPanel.h"
 #include "Panels/ContentBrowserPanel.h"
 #include "Panels/SceneHeirarchyPanel.h"
@@ -51,6 +53,8 @@ namespace Tridium::Editor {
 
 	void EditorLayer::OnAttach()
 	{
+		m_EditorCamera = MakeRef<EditorCamera>();
+
 		m_SceneHeirarchy = m_PanelStack.PushPanel<SceneHeirarchyPanel>();
 		m_ContentBrowser = m_PanelStack.PushPanel<ContentBrowserPanel>();
 		m_GameViewportPanel = m_PanelStack.PushPanel<GameViewportPanel>();
@@ -70,12 +74,12 @@ namespace Tridium::Editor {
 			{
 			case SceneState::Edit:
 			{
-				m_EditorCamera.OnUpdate();
+				m_EditorCamera->OnUpdate();
 				break;
 			}
 			case SceneState::Play:
 			{
-				m_EditorCamera.OnUpdate();
+				m_EditorCamera->OnUpdate();
 
 				if ( !m_ActiveScene->IsPaused() )
 				{
@@ -306,9 +310,9 @@ namespace Tridium::Editor {
 	{
 		fs::path iconFolder( "Content/Engine/Editor/Icons" );
 
-		PlayButtonIcon = Texture2D::Create( ( iconFolder / "PlayButton.png" ).string() );
-		StopButtonIcon = Texture2D::Create( ( iconFolder / "StopButton.png" ).string() );
-		PauseButtonIcon = Texture2D::Create( ( iconFolder / "PauseButton.png" ).string() );
+		PlayButtonIcon = TextureLoader::Import( ( iconFolder / "PlayButton.png" ).string() );
+		StopButtonIcon = TextureLoader::Import( ( iconFolder / "StopButton.png" ).string() );
+		PauseButtonIcon = TextureLoader::Import( ( iconFolder / "PauseButton.png" ).string() );
 	}
 
 	void UIToolBar::OnImGuiDraw()

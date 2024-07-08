@@ -27,7 +27,7 @@ namespace Tridium {
 	Ref<Shader> Shader::Create( const std::string& name, const std::string& vertex, const std::string& frag )
 	{
 		Ref<Shader> shader = nullptr;
-		TE_CORE_ASSERT( ShaderLibrary::Get()->m_Shaders.find( name ) == ShaderLibrary::Get()->m_Shaders.end(), "Shader already exists with that name!" );
+		TE_CORE_ASSERT( !ShaderLibrary::HasShaderHandle(name), "Shader already exists with that name!");
 
 		switch ( RendererAPI::GetAPI() )
 		{
@@ -39,21 +39,9 @@ namespace Tridium {
 			break;
 		}
 
-		ShaderLibrary::Get()->m_Shaders.insert( { name, shader } );
+		shader->_SetHandle( ShaderHandle::Create() );
+		ShaderLibrary::AddShader( name, shader );
 		return shader;
-	}
-
-	ShaderLibrary* ShaderLibrary::Get()
-	{
-		static ShaderLibrary* instance = new ShaderLibrary();
-
-		return instance;
-	}
-
-	Ref<Shader> ShaderLibrary::GetShader( const std::string& name )
-	{
-		auto it = Get()->m_Shaders.find( name );
-		return it != Get()->m_Shaders.end() ? it->second : nullptr;
 	}
 
 }

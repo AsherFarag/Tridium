@@ -51,7 +51,7 @@ namespace Tridium {
             sol::factories( [](){ return Application::GetScene()->InstantiateGameObject(); } ),
             "ID", sol::property( &GameObject::ID ),
             "GetTransform", &GameObject::GetComponent<TransformComponent>,
-			"AddSprite", []( GameObject& go, std::string& spritePath ) { go.AddComponent<SpriteComponent>( spritePath ); },
+			"AddSprite", []( GameObject& go, std::string& spritePath ) { go.AddComponent<SpriteComponent>( TextureLibrary::GetTextureHandle( spritePath ) ); },
             "AddScript", []( GameObject& go, std::string& scriptPath ) { go.AddComponent<LuaScriptComponent>( scriptPath ); } );
 
         //m_LuaState.set_function( "AddScript", &GameObject::AddComponent<LuaScriptComponent> );

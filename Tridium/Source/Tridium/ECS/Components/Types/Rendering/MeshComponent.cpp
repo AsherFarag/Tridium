@@ -1,11 +1,11 @@
 #include "tripch.h"
 #include "MeshComponent.h"
+#include <Tridium/Rendering/Shader.h>
 
 namespace Tridium {
 
 	MeshComponent::MeshComponent()
 	{
-		m_Shader = ShaderLibrary::GetShader( "Default" );
 	}
 
 	MeshComponent::MeshComponent( const MeshHandle& meshHandle )
@@ -17,5 +17,10 @@ namespace Tridium {
 	void MeshComponent::SetMesh( const MeshHandle& meshHandle )
 	{
 		m_Mesh = meshHandle;
+	}
+
+	void MeshComponent::SetMaterial( const MaterialHandle& materialHandle )
+	{
+		m_Material = materialHandle;
 	}
 }

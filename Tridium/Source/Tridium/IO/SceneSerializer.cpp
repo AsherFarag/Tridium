@@ -1,79 +1,15 @@
 #include "tripch.h"
 #include "SceneSerializer.h"
 
+#include "SerializationUtil.h"
+
 #include <Tridium/ECS/GameObject.h>
 #include <Tridium/ECS/Components/Types.h>
 #include <Tridium/Rendering/Texture.h>
 
 #include <fstream>
 
-namespace YAML {
-	template<>
-	struct convert<Vector3>
-	{
-		static Node encode( const Vector3& rhs )
-		{
-			Node node;
-			node.push_back( rhs.x );
-			node.push_back( rhs.y );
-			node.push_back( rhs.z );
-			return node;
-		}
-
-		static bool decode( const Node& node, Vector3& rhs )
-		{
-			if ( !node.IsSequence() || node.size() != 3 )
-				return false;
-
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			rhs.z = node[2].as<float>();
-			return true;
-		}
-	};
-
-	template<>
-	struct convert<Vector4>
-	{
-		static Node encode( const Vector4& rhs )
-		{
-			Node node;
-			node.push_back( rhs.x );
-			node.push_back( rhs.y );
-			node.push_back( rhs.z );
-			node.push_back( rhs.w );
-			return node;
-		}
-
-		static bool decode( const Node& node, Vector4& rhs )
-		{
-			if ( !node.IsSequence() || node.size() != 4 )
-				return false;
-
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			rhs.z = node[2].as<float>();
-			rhs.w = node[3].as<float>();
-			return true;
-		}
-	};
-}
-
 namespace Tridium {
-
-	YAML::Emitter& operator<<( YAML::Emitter& out, const Vector3& v )
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
-		return out;
-	}
-
-	YAML::Emitter& operator<<( YAML::Emitter& out, const Vector4& v )
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
-		return out;
-	}
 
 	struct DeserializedGameObject
 	{
@@ -88,7 +24,7 @@ namespace Tridium {
 
 	}
 
-	void SceneSerializer::SerializeGameObject( YAML::Emitter& out, GameObject go )
+	void SerializeGameObject( YAML::Emitter& out, GameObject go )
 	{
 		out << YAML::BeginMap;
 
@@ -151,8 +87,8 @@ namespace Tridium {
 			out << YAML::BeginMap;
 
 			out << YAML::Key << "Texture";
-			if ( sc->GetTexture() )
-				out << YAML::Value << YAML::DoubleQuoted << sc->GetTexture()->GetPath();
+			if ( auto tex = TextureLibrary::GetTexture( sc->GetTexture() ) )
+				out << YAML::Value << YAML::DoubleQuoted << tex->GetPath();
 			else
 				out << YAML::Value << YAML::DoubleQuoted << "";
 
@@ -201,11 +137,11 @@ namespace Tridium {
 		out << YAML::EndMap;
 	}
 
-	bool SceneSerializer::DeserializeGameObject( YAML::detail::iterator_value& go, DeserializedGameObject& deserializedGameObject )
+	bool DeserializeGameObject( YAML::detail::iterator_value& go, DeserializedGameObject& deserializedGameObject )
 	{
 		GUID id;
 		if ( auto gameObject = go["GameObject"] )
-			id = gameObject.as<GUIDType>();
+			id = gameObject.as<GUID>();
 		else
 			return false;
 
@@ -227,14 +163,14 @@ namespace Tridium {
 			tc->Scale = transformComponent["Scale"].as<Vector3>();
 
 			if ( auto parent = transformComponent["Parent"] )
-				deserializedGameObject.Parent = parent.as<GUIDType>();
+				deserializedGameObject.Parent = parent.as<GUID>();
 
 			if ( auto children = transformComponent["Children"] )
 			{
 				deserializedGameObject.Children.reserve( children.size() );
 				for ( auto child : children )
 				{
-					deserializedGameObject.Children.push_back( child.as<GUIDType>() );
+					deserializedGameObject.Children.push_back( child.as<GUID>() );
 				}
 			}
 		}
@@ -250,12 +186,13 @@ namespace Tridium {
 				MeshHandle meshHandle;
 				auto meshFilePath = mesh.as<std::string>();
 
-				if ( !MeshLibrary::GetHandle( meshFilePath, meshHandle ) )
+				if ( !MeshLibrary::GetMeshHandle( meshFilePath, meshHandle ) )
 				{
-					meshHandle = GUID::Create();
+					meshHandle = MeshHandle::Create();
 					if ( Ref<Mesh> loadedMesh = MeshLoader::Import( meshFilePath ) )
 					{
-						if ( !MeshLibrary::AddMesh( meshFilePath, loadedMesh, meshHandle ) )
+						loadedMesh->_SetHandle( meshHandle );
+						if ( !MeshLibrary::AddMesh( meshFilePath, loadedMesh ) )
 							meshHandle = {};
 					}
 				}
@@ -270,7 +207,24 @@ namespace Tridium {
 			if ( !( sc = deserialisedGO.TryGetComponent<SpriteComponent>() ) )
 				sc = &deserialisedGO.AddComponent<SpriteComponent>();
 
-			sc->SetTexture( Texture2D::Create( spriteComponent["Texture"].as<std::string>() ) );
+			if ( auto tex = spriteComponent["Texture"] )
+			{
+				TextureHandle textureHandle;
+				auto texFilePath = tex.as<std::string>();
+				textureHandle = TextureLibrary::GetTextureHandle( texFilePath );
+				if ( !textureHandle.Valid() )
+				{
+					textureHandle = TextureHandle::Create();
+					if ( Ref<Texture> loadedTex = TextureLoader::Import( texFilePath ) )
+					{
+						loadedTex->_SetHandle( textureHandle );
+						if ( !TextureLibrary::AddTexture( texFilePath, loadedTex ) )
+							textureHandle = {};
+					}
+				}
+
+				sc->SetTexture( textureHandle );
+			}
 		}
 
 		if ( auto luaScriptComponent = go["LuaScriptComponent"] )

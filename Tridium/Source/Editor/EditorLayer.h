@@ -2,21 +2,17 @@
 #ifdef IS_EDITOR
 
 #include <Tridium/Core/Layer.h>
-#include <Tridium/Scene/Scene.h>
 #include <Tridium/Events/Eventsfwd.h>
 
 #include "Panels/Panel.h"
 
-#include <Tridium/Rendering/RenderCommand.h>
-#include <Tridium/Rendering/Renderer.h>
-#include <Tridium/Rendering/Shader.h>
-
-#include "EditorCamera.h"
-
-#include <Tridium/Rendering/Texture.h>
+namespace Tridium {
+	class Scene;
+	class Texture;
+}
 
 namespace Tridium::Editor {
-
+	class EditorCamera;
 	class ContentBrowserPanel;
 	class SceneHeirarchyPanel;
 	class EditorViewportPanel;
@@ -33,11 +29,11 @@ namespace Tridium::Editor {
 
 	struct UIToolBar
 	{
-		Ref<Texture2D> PlayButtonIcon;
-		Ref<Texture2D> PauseButtonIcon;
-		Ref<Texture2D> StopButtonIcon;
-		Ref<Texture2D> StepOnceButtonIcon;
-		Ref<Texture2D> SimulateButtonIcon;
+		Ref<Texture> PlayButtonIcon;
+		Ref<Texture> PauseButtonIcon;
+		Ref<Texture> StopButtonIcon;
+		Ref<Texture> StepOnceButtonIcon;
+		Ref<Texture> SimulateButtonIcon;
 
 		UIToolBar();
 		void OnImGuiDraw();
@@ -62,7 +58,7 @@ namespace Tridium::Editor {
 		template <typename T, typename... Args> static inline T* PushPanel( Args&&... args ) { return Get().m_PanelStack.PushPanel<T>( std::forward<Args>( args )... ); }
 		template <typename T> static inline T* GetPanel() { return Get().m_PanelStack.GetPanel<T>(); }
 
-		EditorCamera& GetEditorCamera() { return m_EditorCamera; }
+		Ref<EditorCamera> GetEditorCamera() { return m_EditorCamera; }
 
 		void SetActiveScene( const Ref<Scene>& a_Scene ) { m_ActiveScene = a_Scene; }
 		Ref<Scene> GetActiveScene() const { return m_ActiveScene; }
@@ -85,7 +81,7 @@ namespace Tridium::Editor {
 	private:
 		Ref<Scene> m_ActiveScene;
 
-		EditorCamera m_EditorCamera;
+		Ref<EditorCamera> m_EditorCamera;
 
 		PanelStack m_PanelStack;
 		ContentBrowserPanel* m_ContentBrowser;

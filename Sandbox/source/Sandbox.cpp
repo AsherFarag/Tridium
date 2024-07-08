@@ -1,6 +1,7 @@
 #include <Tridium.h>
 using namespace Tridium;
-
+#include <Tridium/Rendering/Material.h>
+#include <Tridium/IO/MaterialSerializer.h>
 #include <Tridium/IO/SceneSerializer.h>
 
 class ExampleLayer : public Tridium::Layer
@@ -128,6 +129,12 @@ public:
 					)";
 
 		Shader::Create( "Texture", vertexSrc, fragSrc );
+
+		//Ref<Material> mat = MakeRef<Material>();
+		//mat->_SetHandle( MaterialHandle::Create() );
+		//mat->SetShader( ShaderLibrary::GetShaderHandle( "Default" ) );
+		//MaterialSerializer ser( mat );
+		//ser.SerializeText( "Content/TestMat.tasset" );
 
 	#ifndef IS_EDITOR
 			SceneSerializer serializer( Application::GetScene() );

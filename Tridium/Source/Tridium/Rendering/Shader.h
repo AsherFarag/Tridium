@@ -1,5 +1,9 @@
 #pragma once
+#include <Tridium/Core/Asset.h>
+
 namespace Tridium {
+
+	using ShaderHandle = AssetHandle;
 
 	enum class ShaderDataType : uint8_t
 	{
@@ -31,7 +35,7 @@ namespace Tridium {
 		return 0;
 	}
 
-	class Shader
+	class Shader : public Asset<ShaderHandle>
 	{
 	public:
 		static Ref<Shader> Create( const std::string& filePath );
@@ -76,16 +80,15 @@ namespace Tridium {
 		virtual bool SetMatrix4( const char* name, const uint32_t count, const Matrix4* val ) = 0;
 	};
 
-	class ShaderLibrary
+	class ShaderLibrary : public AssetLibrary<ShaderLibrary, ShaderHandle, Shader>
 	{
-		friend Shader;
-
 	public:
-		static ShaderLibrary* Get();
-		static Ref<Shader> GetShader( const std::string& name );
-
-	private:
-		std::unordered_map<std::string, Ref<Shader>> m_Shaders;
+		static inline Ref<Shader> GetShader( const ShaderHandle& shaderHandle ) { return GetAsset( shaderHandle ); }
+		static inline bool GetShaderHandle( const std::string& path, ShaderHandle& outShaderHandle ) { return GetHandle( path, outShaderHandle ); }
+		static inline ShaderHandle GetShaderHandle( const std::string& path ) { return GetHandle( path ); }
+		static inline bool HasShaderHandle( const std::string& path ) { return HasHandle( path ); }
+		static inline bool AddShader( const std::string& path, const Ref<Shader>& shader ) { return AddAsset( path, shader ); }
+		static inline bool RemoveShader( const ShaderHandle& shaderHandle ) { return RemoveAsset( shaderHandle ); }
 	};
 
 }

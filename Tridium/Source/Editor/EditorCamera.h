@@ -46,9 +46,9 @@ namespace Tridium::Editor {
         Vector2 m_LastMousePos;
 
         bool m_IsMoving = false;
-        float m_MaxTimeMoving = 5.f;
+        float m_MaxTimeMoving = 10.f;
         float m_TimeMoving = 0.0f;
-        float m_MaxTimeMovingSpeedMultiplier = 10.f;
+        float m_MaxTimeMovingSpeedMultiplier = 30.f;
         float m_TimeMovingSpeedMultiplier = 1.0f;
 
         struct

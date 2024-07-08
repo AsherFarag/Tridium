@@ -6,6 +6,7 @@
 #include "imgui.h"
 
 #include <Editor/EditorLayer.h>
+#include <Editor/EditorCamera.h>
 
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Core/Application.h>
@@ -75,7 +76,7 @@ namespace Tridium::Editor {
 					{
 						auto& goTransform = m_SelectedGameObject.GetComponent<TransformComponent>();
 						auto& editorCam = EditorLayer::Get().GetEditorCamera();
-						editorCam.LerpTo( goTransform.Position - ( editorCam.GetForwardDirection() * 5.f ) );
+						editorCam->LerpTo( goTransform.Position - ( editorCam->GetForwardDirection() * 5.f ) );
 						return true;
 					}
 				}

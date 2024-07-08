@@ -191,6 +191,26 @@ namespace Tridium::Editor {
 
 					ImGui::EndPopup();
 				}
+
+				Ref<Material> material = MaterialLibrary::GetMaterial( component.GetMaterial() );
+				bool hasMat = material != nullptr;
+				ImGui::DragDropSelectable( "Material: ", hasMat, hasMat ? material->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
+					[&]( const ImGuiPayload* payload ) {
+						std::string filePath( static_cast<const char*>( payload->Data ) );
+						component.SetMaterial( Editor::Util::GetMaterialHandle( filePath ) );
+					} );
+
+				// On right click, give the option to remove the mesh, if there is one.
+				if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
+					ImGui::OpenPopup( "##RemoveMat" );
+				if ( ImGui::BeginPopup( "##RemoveMat" ) )
+				{
+					if ( ImGui::MenuItem( "Remove Material", nullptr, nullptr, hasMat ) ) {
+						component.SetMaterial( MaterialHandle{} );
+					}
+
+					ImGui::EndPopup();
+				}
 			} );
 
 		DrawComponent<CameraComponent>( "Camera", InspectedGameObject, []( auto& component )
@@ -246,7 +266,7 @@ namespace Tridium::Editor {
 				ImGui::DragFloat( "Look Sensitivity", &component.LookSensitivity, 0.1f );
 			} );
 
-		DrawComponent<LuaScriptComponent>( "Lua Script Component", InspectedGameObject, []( LuaScriptComponent& component )
+		DrawComponent<LuaScriptComponent>( "Lua Script Component", InspectedGameObject, []( auto& component )
 			{
 				bool hasScript = component.GetScript() != nullptr;
 				bool opened = ImGui::DragDropSelectable( "Script: ", hasScript, hasScript ? component.GetScript()->GetFilePath().string().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
@@ -270,12 +290,15 @@ namespace Tridium::Editor {
 					EditorLayer::OpenFile( component.GetScript()->GetFilePath() );
 			} );
 
-		DrawComponent<SpriteComponent>( "Sprite Component", InspectedGameObject, []( SpriteComponent& component )
+		DrawComponent<SpriteComponent>( "Sprite Component", InspectedGameObject, []( auto& component )
 			{
-				bool hasSprite = component.GetTexture() != nullptr;
-				ImGui::DragDropSelectable( "Sprite: ", hasSprite, hasSprite ? component.GetTexture()->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
-					[&]( const ImGuiPayload* payload ) {
-						component.SetTexture( Texture2D::Create( static_cast<const char*>( payload->Data ) ) );
+				Ref<Texture> sprite = TextureLibrary::GetTexture( component.GetTexture() );
+				bool hasSprite = sprite != nullptr;
+				ImGui::DragDropSelectable( "Sprite: ", hasSprite, hasSprite ? sprite->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
+					[&]( const ImGuiPayload* payload ) 
+					{
+						std::string filePath = static_cast<const char*>( payload->Data );
+						component.SetTexture( Editor::Util::GetTextureHandle(filePath) );
 					} );
 
 				// On right click, give the option to remove the sprite, if there is one.
@@ -284,14 +307,14 @@ namespace Tridium::Editor {
 				if ( ImGui::BeginPopup( "##RemoveSprite" ) )
 				{
 					if ( ImGui::MenuItem( "Remove Sprite", nullptr, nullptr, hasSprite ) )
-						component.SetTexture( nullptr );
+						component.SetTexture( TextureHandle::Null() );
 
 					ImGui::EndPopup();
 				}
 
 				if ( hasSprite && ImGui::TreeNode( "Preview:" ) )
 				{
-					Vector2 textureSize( component.GetTexture()->GetWidth(), component.GetTexture()->GetHeight() );
+					Vector2 textureSize( sprite->GetWidth(), sprite->GetHeight() );
 					ImVec2 previewSize;
 					ImVec2 regionAvail = ImGui::GetContentRegionAvail();
 					// Centres the image so that there will never be less padding on the right side than the left.
@@ -310,7 +333,7 @@ namespace Tridium::Editor {
 						previewSize.x = previewSize.y * xScale;
 					}
 					ImGui::PushStyleVar( ImGuiStyleVar_::ImGuiStyleVar_FrameRounding, 5 );
-					ImGui::Image( (ImTextureID)component.GetTexture()->GetRendererID(),
+					ImGui::Image( (ImTextureID)sprite->GetRendererID(),
 						previewSize,
 						{ 0, 1 }, { 1, 0 } );
 					ImGui::PopStyleVar();
@@ -350,7 +373,9 @@ namespace Tridium::Editor {
 				if ( ext == ".lua" )
 					AddComponentToGameObject<LuaScriptComponent>( InspectedGameObject, Script::Create( filePath ) );
 				else if ( ext == ".png" )
-					AddComponentToGameObject<SpriteComponent>( InspectedGameObject, filePath.string() );
+				{
+					AddComponentToGameObject<SpriteComponent>( InspectedGameObject, Editor::Util::GetTextureHandle( filePath.string() ) );
+				}
 				else if ( ext == ".obj" || ext == ".fbx" )
 					AddComponentToGameObject<MeshComponent>( InspectedGameObject, Editor::Util::GetMeshHandle( filePath.string() ) );
 			}

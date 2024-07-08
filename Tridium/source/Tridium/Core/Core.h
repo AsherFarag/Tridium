@@ -4,6 +4,7 @@
 #include <Tridium/Math/Math.h>
 #include <Tridium/Core/Time.h>
 #include <Tridium/Core/GUID.h>
+#include <Tridium/Core/Color.h>
 #include <memory>
 #include <filesystem>
 namespace fs = std::filesystem;

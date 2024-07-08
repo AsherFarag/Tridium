@@ -4,30 +4,31 @@ namespace Tridium {
 
 #define INVALID_GUID 0
 
-	typedef uint64_t GUIDType;
-
 	// Globally-Unique Identifier
 	class GUID
 	{
 	public:
-		GUID() : m_ID( INVALID_GUID ) {}
-		GUID( GUIDType id ) : m_ID( id ) {}
+		typedef uint64_t Type;
 
+		GUID() : m_ID( INVALID_GUID ) {}
+		GUID( Type id ) : m_ID( id ) {}
+
+		static GUID Null() { return GUID(); }
 		static GUID Create();
-		const GUIDType ID() const { return m_ID; }
+		const Type ID() const { return m_ID; }
 		const bool Valid() const { return m_ID != INVALID_GUID; }
 
-		operator GUIDType() const { return m_ID; }
-		operator const GUIDType() const { return m_ID; }
-		GUID& operator=( const GUIDType& id ) { m_ID = id; return *this; }
+		operator Type() const { return m_ID; }
+		operator const Type() const { return m_ID; }
+		GUID& operator=( const Type& id ) { m_ID = id; return *this; }
 		GUID& operator=( const GUID& id ) { m_ID = id.m_ID; return *this; }
-		bool operator==( const GUIDType& id ) const { return m_ID == id; }
+		bool operator==( const Type& id ) const { return m_ID == id; }
 		bool operator==( const GUID& guid ) const { return m_ID == guid.m_ID; }
-		bool operator!=( const GUIDType& id ) const { return m_ID != id; }
+		bool operator!=( const Type& id ) const { return m_ID != id; }
 		bool operator!=( const GUID& guid ) const { return m_ID != guid.m_ID; }
 
 	private:
-		GUIDType m_ID = 0;
+		Type m_ID = 0;
 	};
 }
 
@@ -37,7 +38,7 @@ namespace std {
 	{
 		std::size_t operator()( const Tridium::GUID& s ) const noexcept 
 		{
-			return std::hash<Tridium::GUIDType>{}( s.ID() );
+			return std::hash<Tridium::GUID::Type>{}( s.ID() );
 		}
 	};
 }

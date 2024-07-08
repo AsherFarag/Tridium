@@ -18,7 +18,7 @@ namespace Tridium::Editor {
 	class EditorViewportPanel : public ViewportPanel
 	{
 	public:
-		EditorViewportPanel( EditorCamera& editorCamera );
+		EditorViewportPanel( const Ref<EditorCamera>& editorCamera );
 		virtual ~EditorViewportPanel() = default;
 
 		virtual void OnImGuiDraw() override;
@@ -34,7 +34,7 @@ namespace Tridium::Editor {
 
 	private:
 		EGizmoState m_GizmoState = EGizmoState::Translate;
-		EditorCamera* m_EditorCamera;
+		Ref<EditorCamera> m_EditorCamera;
 		SceneHeirarchyPanel* m_SceneHeirarchy = nullptr;
 	};
 

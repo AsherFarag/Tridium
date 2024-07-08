@@ -63,8 +63,9 @@ namespace Tridium::Editor {
 			{
 				if ( Ref<Mesh> mesh = MeshLoader::Import( m_FilePath, m_ImportSettings ) )
 				{
-					MeshHandle handle = m_MeshHandle.Valid() ? m_MeshHandle : GUID::Create();
-					MeshLibrary::AddMesh( m_FilePath, mesh, handle );
+					MeshHandle handle = m_MeshHandle.Valid() ? m_MeshHandle : MeshHandle::Create();
+					mesh->_SetHandle( handle );
+					MeshLibrary::AddMesh( m_FilePath, mesh );
 				}
 				else
 				{

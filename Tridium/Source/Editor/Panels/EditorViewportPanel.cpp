@@ -1,16 +1,17 @@
 #include "tripch.h"
 #ifdef IS_EDITOR
+#include "EditorViewportPanel.h"
 
 #include <Editor/EditorLayer.h>
-#include "EditorViewportPanel.h"
+#include <Editor/EditorCamera.h>
 #include "SceneHeirarchyPanel.h"
 
-#include <Tridium/ECS/Components/Types.h>
+#include <Tridium/ECS/Components/Types.h>`
 
 namespace Tridium::Editor {
 
-	EditorViewportPanel::EditorViewportPanel( EditorCamera& editorCamera )
-		: ViewportPanel( "Scene##EditorViewportPanel" ), m_EditorCamera( &editorCamera )
+	EditorViewportPanel::EditorViewportPanel( const Ref<EditorCamera>& editorCamera )
+		: ViewportPanel( "Scene##EditorViewportPanel" ), m_EditorCamera( editorCamera )
 	{
 	}
 

@@ -117,7 +117,7 @@ project "Tridium"
 			"TE_RELEASE",
 			"IS_EDITOR"
 		}
-		symbols "On"
+		optimize "On"
 
 	filter "configurations:Debug"
 		defines "TE_DEBUG"
@@ -191,7 +191,7 @@ project "Sandbox"
 			"TE_RELEASE",
 			"IS_EDITOR"
 		}
-		symbols "On"
+		optimize "On"
 
 	filter "configurations:Debug"
 		defines "TE_DEBUG"

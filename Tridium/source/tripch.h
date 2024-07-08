@@ -14,6 +14,7 @@
 #include <unordered_set>
 #include <optional>
 
+#include <Tridium/Core/GUID.h>
 #include <Tridium/Utils/Log.h>
 #include <Tridium/Utils/Todo.h>
 #include <Tridium/Math/Math.h>

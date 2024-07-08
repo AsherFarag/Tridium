@@ -4,62 +4,54 @@
 #include <Tridium/Rendering/Renderer.h>
 #include <Platform/OpenGL/OpenGLTexture.h>
 
+#include <stb_image.h>
+
 namespace Tridium {
 
-	Ref<Texture2D> Texture2D::Create( const TextureSpecification& specification )
+	Ref<Texture> Texture::Create( const TextureSpecification& specification )
 	{
 		switch ( Renderer::GetAPI() )
 		{
 		case RendererAPI::API::None:    TE_CORE_ASSERT( false, "RendererAPI::None is currently not supported!" ); return nullptr;
-		case RendererAPI::API::OpenGL:  return MakeRef<OpenGLTexture2D>( specification );
+		case RendererAPI::API::OpenGL:  return MakeRef<OpenGLTexture>( specification );
 		}
 
 		TE_CORE_ASSERT( false, "Unknown RendererAPI!" );
 		return nullptr;
 	}
 
-	Ref<Texture2D> Texture2D::Create( const std::string& path )
+	Ref<Texture> TextureLoader::Import( const std::string& path )
 	{
-		auto foundTexture = Texture2DLibrary::GetTexture( path );
-		if ( foundTexture )
-			return foundTexture;
+		TextureSpecification specification;
 
-		Ref<Texture2D> texture = nullptr;
+		int width, height, channels;
+		stbi_set_flip_vertically_on_load( 1 );
+		stbi_uc* data = stbi_load( path.c_str(), &width, &height, &channels, 0 );
 
-		switch ( Renderer::GetAPI() )
+		if ( !data )
+			return nullptr;
+
+		specification.Width = static_cast<uint32_t>( width );
+		specification.Height = static_cast<uint32_t>( height );
+
+		if ( channels == 4 )
 		{
-		case RendererAPI::API::None:    TE_CORE_ASSERT( false, "RendererAPI::None is currently not supported!" ); return nullptr;
-		case RendererAPI::API::OpenGL:  texture = MakeRef<OpenGLTexture2D>( path );
+			specification.ImageFormat = EImageFormat::RGBA;
+			specification.DataFormat = EDataFormat::RGBA8;
+		}
+		else if ( channels == 3 )
+		{
+			specification.ImageFormat = EImageFormat::RGB;
+			specification.DataFormat = EDataFormat::RGB8;
 		}
 
-		if ( texture )
-			Texture2DLibrary::Add( texture, path );
-		else
-			TE_CORE_ASSERT( false, "Unknown RendererAPI!" );
+		Ref<Texture> tex = Texture::Create( specification );
+		tex->_SetPath( path );
+		tex->SetIsLoaded( true );
+		tex->SetData( data, width * height * channels );
 
-		return texture;
+		stbi_image_free( data );
+
+		return tex;
 	}
-
-	Texture2DLibrary* Texture2DLibrary::Get()
-	{
-		static Texture2DLibrary* s_Instance = new Texture2DLibrary();
-		return s_Instance;
-	}
-
-	Ref<Texture2D> Texture2DLibrary::GetTexture( const std::string& a_Path )
-	{
-		auto it = Get()->m_Library.find( a_Path );
-		return it != Get()->m_Library.end() ? it->second : nullptr;
-	}
-
-	bool Texture2DLibrary::Has( const std::string& a_Path )
-	{
-		return Get()->m_Library.find( a_Path ) != Get()->m_Library.end();
-	}
-
-	void Texture2DLibrary::Add( const Ref<Texture2D>& a_Texture, const std::string& a_Path )
-	{
-		Get()->m_Library.emplace( a_Path, a_Texture );
-	}
-
 }

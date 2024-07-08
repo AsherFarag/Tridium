@@ -3,6 +3,7 @@
 
 #include "RenderCommand.h"
 #include "Camera.h"
+#include "Material.h"
 
 namespace Tridium {
 	
@@ -21,6 +22,20 @@ namespace Tridium {
 	{
 		a_Shader->Bind();
 		a_Shader->SetMatrix4( "uPVM", m_SceneData->ViewProjectionMatrix * a_Transform );
+
+		a_VertexArray->Bind();
+
+		RenderCommand::DrawIndexed( a_VertexArray );
+	}
+
+	void Renderer::Submit( const Ref<Material>& a_Material, const Ref<VertexArray>& a_VertexArray, const Matrix4& a_Transform )
+	{
+		Ref<Shader> shader = nullptr;
+		if ( !a_Material || !( shader = ShaderLibrary::GetShader( a_Material->GetShader() ) ) )
+			shader = ShaderLibrary::GetShader( ShaderLibrary::GetShaderHandle( "Default" ) );
+
+		shader->Bind();
+		shader->SetMatrix4( "uPVM", m_SceneData->ViewProjectionMatrix * a_Transform );
 
 		a_VertexArray->Bind();
 

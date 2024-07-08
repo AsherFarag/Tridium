@@ -6,6 +6,7 @@
 #include <Tridium/Core/Application.h>
 
 namespace Tridium::Editor {
+
 	EditorCamera::EditorCamera() {}
 
 	void EditorCamera::OnUpdate()
@@ -17,8 +18,8 @@ namespace Tridium::Editor {
 		if ( m_IsMoving )
 		{
 			m_TimeMoving += Time::DeltaTime();
-			m_TimeMoving = MIN( m_MaxTimeMoving, m_TimeMoving );
-			m_TimeMovingSpeedMultiplier = m_TimeMovingSpeedMultiplier + ( m_MaxTimeMovingSpeedMultiplier - m_TimeMovingSpeedMultiplier ) * ( m_TimeMoving / m_MaxTimeMoving );
+			//m_TimeMoving = MIN( m_MaxTimeMoving, m_TimeMoving );
+			m_TimeMovingSpeedMultiplier += ( m_MaxTimeMovingSpeedMultiplier - m_TimeMovingSpeedMultiplier ) * ( m_TimeMoving / m_MaxTimeMoving );
 		}
 		else
 		{
@@ -48,9 +49,9 @@ namespace Tridium::Editor {
 		m_IsMoving = false;
 
 		float dt = Time::DeltaTime();
-		auto up = GetUpDirection();
-		auto forward = GetForwardDirection();
-		auto right = GetRightDirection();
+		Vector3 up = GetUpDirection();
+		Vector3 forward = GetForwardDirection();
+		Vector3 right = GetRightDirection();
 
 		float speed = Speed;
 		speed *= m_TimeMovingSpeedMultiplier;
@@ -100,6 +101,8 @@ namespace Tridium::Editor {
 		{
 			MouseRotate( Input::GetMousePosition() - m_LastMousePos );
 		}
+
+		TE_CORE_INFO( "{0}", m_IsMoving );
 	}
 
 	void EditorCamera::MoveForward( const float magnitude, const float speed )
