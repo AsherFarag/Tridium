@@ -77,14 +77,41 @@ public:
 						in vec3 vTangent;				
 						in vec3 vBiTangent;
 						in float vDepth;	
+						
+						uniform vec3 uAmbient;
+
+						uniform sampler2D uDiffuse;
+
+						void main()
+						{
+							oFragColor = vec4( uAmbient * texture(uDiffuse, vUV).rgb, 1 );
+						}
+					)";
+
+		Shader::Create( "Default", vertexSrc, fragSrc );
+
+		fragSrc =
+			R"(
+						#version 410 core
+						
+						out vec4 oFragColor;
+
+						in vec4 vPosition;
+						in vec3 vNormal;
+						in vec2 vUV;
+						in vec3 vTangent;				
+						in vec3 vBiTangent;
+						in float vDepth;	
 	
+						uniform sampler2D uDiffuse;
+
 						void main()
 						{
 							oFragColor = vec4(vNormal.x, vNormal.y, vNormal.z, 1);
 						}
 					)";
 
-		Shader::Create( "Default", vertexSrc, fragSrc );
+		Shader::Create( "Normal", vertexSrc, fragSrc );
 
 		// TEMP
 		vertexSrc =
@@ -132,9 +159,13 @@ public:
 
 		//Ref<Material> mat = MakeRef<Material>();
 		//mat->_SetHandle( MaterialHandle::Create() );
-		//mat->SetShader( ShaderLibrary::GetShaderHandle( "Default" ) );
+		//mat->SetShader( ShaderLibrary::GetShaderHandle( "Normal" ) );
+		////auto tex = TextureLoader::Import( "Content/Temp/stray-robot/textures/Stray_robotic_Material.009_BaseColor.png" );
+		////tex->_SetHandle( TextureHandle::Create() );
+		////TextureLibrary::AddTexture( tex->GetPath(), tex );
+		////mat->DiffuseTexture = tex->GetHandle();
 		//MaterialSerializer ser( mat );
-		//ser.SerializeText( "Content/TestMat.tasset" );
+		//ser.SerializeText( "Content/NormalMat.tasset" );
 
 	#ifndef IS_EDITOR
 			SceneSerializer serializer( Application::GetScene() );

@@ -12,6 +12,7 @@
 #include "Panels/ScriptEditorPanel.h"
 #include "Panels/EditorViewportPanel.h"
 #include "Panels/GameViewportPanel.h"
+#include "Panels/MaterialEditorPanel.h"
 
 #include <Tridium/Scripting/ScriptEngine.h>
 #include <Tridium/ECS/Components/Types.h>
@@ -200,6 +201,13 @@ namespace Tridium::Editor {
 			return true;
 		}
 
+	}
+
+	bool EditorLayer::OpenMaterial( const fs::path& filePath )
+	{
+		auto panel = Get().PushPanel<MaterialEditorPanel>();
+		panel->Focus();
+		panel->SetMaterial( MaterialLibrary::GetMaterialHandle( filePath.string() ) );
 	}
 
 	bool EditorLayer::OnKeyPressed( KeyPressedEvent& e )

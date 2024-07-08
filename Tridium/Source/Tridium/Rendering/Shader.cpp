@@ -38,7 +38,8 @@ namespace Tridium {
 			return nullptr;
 			break;
 		}
-
+		
+		shader->_SetPath( name );
 		shader->_SetHandle( ShaderHandle::Create() );
 		ShaderLibrary::AddShader( name, shader );
 		return shader;

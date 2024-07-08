@@ -101,8 +101,6 @@ namespace Tridium::Editor {
 		{
 			MouseRotate( Input::GetMousePosition() - m_LastMousePos );
 		}
-
-		TE_CORE_INFO( "{0}", m_IsMoving );
 	}
 
 	void EditorCamera::MoveForward( const float magnitude, const float speed )

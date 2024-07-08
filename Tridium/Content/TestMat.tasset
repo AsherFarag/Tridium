@@ -1,16 +1,16 @@
-Material: 9198542461518443590
-Shader: 5221692212295922213
+Material: 12353063105360036512
+Shader: Default
 Parent Material: 0
 Blend Mode: Additive
-Ambient: [0, 0, 0, 1]
-Diffuse: [0, 0, 0, 1]
+Ambient: [1, 1, 1, 1]
+Diffuse: [1, 1, 1, 1]
 Specular: [1, 1, 1, 1]
 Opacity: 1
 Reflectivity: 0
 Refraction: 1
-DiffuseTexture: 0
-SpecularTexture: 0
-NormalMap: 0
-HeightMap: 0
+DiffuseTexture: Content/Temp/stray-robot/textures/Stray_robotic_Material.009_BaseColor.png
+SpecularTexture: ""
+NormalMap: ""
+HeightMap: ""
 Textures:
   []

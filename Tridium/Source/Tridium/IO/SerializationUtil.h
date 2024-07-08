@@ -1,5 +1,6 @@
 #pragma once
 #include <Tridium/Core/Core.h>
+#include <Tridium/Rendering/Texture.h>
 
 #define YAML_CPP_STATIC_DEFINE
 #include "yaml-cpp/yaml.h"
@@ -82,4 +83,5 @@ namespace Tridium {
 
 	YAML::Emitter& operator<<( YAML::Emitter& out, const Vector4& v );
 
+	TextureHandle GetTexture( const std::string& path );
 }

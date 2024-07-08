@@ -23,4 +23,20 @@ namespace Tridium {
 		return out;
 	}
 
+	TextureHandle GetTexture( const std::string& path )
+	{
+		TextureHandle handle;
+		if ( TextureLibrary::GetTextureHandle( path, handle ) )
+			return handle;
+
+		if ( auto tex = TextureLoader::Import( path ) )
+		{
+			handle = TextureHandle::Create();
+			tex->_SetHandle( handle );
+			TextureLibrary::AddTexture( path, tex );
+		}
+
+		return handle;
+	}
+
 }

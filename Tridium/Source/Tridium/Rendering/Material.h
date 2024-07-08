@@ -21,6 +21,9 @@ namespace Tridium {
 		Material( const ShaderHandle& shader );
 		~Material() = default;
 
+		void Bind();
+		void Unbind();
+
 		ShaderHandle GetShader() const { return m_Shader; }
 		void SetShader( const ShaderHandle& shader ) { m_Shader = shader; }
 		MaterialHandle GetParent() const { return m_Parent; }

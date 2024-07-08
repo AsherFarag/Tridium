@@ -194,7 +194,7 @@ namespace Tridium::Editor {
 
 				Ref<Material> material = MaterialLibrary::GetMaterial( component.GetMaterial() );
 				bool hasMat = material != nullptr;
-				ImGui::DragDropSelectable( "Material: ", hasMat, hasMat ? material->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
+				bool matOpened = ImGui::DragDropSelectable( "Material: ", hasMat, hasMat ? material->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
 					[&]( const ImGuiPayload* payload ) {
 						std::string filePath( static_cast<const char*>( payload->Data ) );
 						component.SetMaterial( Editor::Util::GetMaterialHandle( filePath ) );
@@ -211,6 +211,9 @@ namespace Tridium::Editor {
 
 					ImGui::EndPopup();
 				}
+
+				if ( matOpened )
+					EditorLayer::OpenMaterial( material->GetPath() );
 			} );
 
 		DrawComponent<CameraComponent>( "Camera", InspectedGameObject, []( auto& component )

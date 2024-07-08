@@ -99,7 +99,8 @@ namespace Tridium {
 		out << YAML::Key << "Material";
 		out << YAML::Value << m_Material->GetHandle();
 
-		out << YAML::Key << "Shader"; out << YAML::Value << m_Material->GetShader();
+		Ref<Shader> shader = ShaderLibrary::GetShader( m_Material->GetShader() );
+		out << YAML::Key << "Shader"; out << YAML::Value << ( shader ? shader->GetPath() : "" );
 
 		out << YAML::Key << "Parent Material";
 		out << YAML::Value << m_Material->m_Parent;
@@ -112,10 +113,19 @@ namespace Tridium {
 		out << YAML::Key << "Reflectivity"; out << YAML::Value << m_Material->Reflectivity;
 		out << YAML::Key << "Refraction"; out << YAML::Value << m_Material->Refraction;
 
-		out << YAML::Key << "DiffuseTexture"; out << YAML::Value << m_Material->DiffuseTexture;
-		out << YAML::Key << "SpecularTexture"; out << YAML::Value << m_Material->SpecularTexture;
-		out << YAML::Key << "NormalMap"; out << YAML::Value << m_Material->NormalMap;
-		out << YAML::Key << "HeightMap"; out << YAML::Value << m_Material->HeightMap;
+		Ref<Texture> tex = nullptr;
+		out << YAML::Key << "DiffuseTexture"; 
+		tex = TextureLibrary::GetTexture( m_Material->DiffuseTexture );
+		out << YAML::Value << ( tex ? tex->GetPath() : "" );
+		tex = TextureLibrary::GetTexture( m_Material->SpecularTexture );
+		out << YAML::Key << "SpecularTexture";
+		out << YAML::Value << ( tex ? tex->GetPath() : "" );
+		tex = TextureLibrary::GetTexture( m_Material->NormalMap );
+		out << YAML::Key << "NormalMap";
+		out << YAML::Value << ( tex ? tex->GetPath() : "" );
+		tex = TextureLibrary::GetTexture( m_Material->HeightMap );
+		out << YAML::Key << "HeightMap";
+		out << YAML::Value << ( tex ? tex->GetPath() : "" );
 
 		out << YAML::Key << "Textures";
 		out << YAML::Value << YAML::BeginSeq;
@@ -147,7 +157,7 @@ namespace Tridium {
 		m_Material->m_Path = filepath;
 
 		m_Material->m_Handle = data["Material"].as<MaterialHandle>();
-		m_Material->m_Shader = data["Shader"].as<ShaderHandle>();
+		m_Material->m_Shader = ShaderLibrary::GetShaderHandle( data["Shader"].as<std::string>() );
 		m_Material->m_Parent = data["Parent Material"].as<MaterialHandle>();
 
 		m_Material->BlendMode = data["Blend Mode"].as<EBlendMode>();
@@ -158,10 +168,10 @@ namespace Tridium {
 		m_Material->Reflectivity = data["Reflectivity"].as<float>();
 		m_Material->Refraction = data["Refraction"].as<float>();
 									  
-		m_Material->DiffuseTexture = data["DiffuseTexture"].as<TextureHandle>();
-		m_Material->SpecularTexture = data["SpecularTexture"].as<TextureHandle>();
-		m_Material->NormalMap = data["NormalMap"].as<TextureHandle>();
-		m_Material->HeightMap = data["HeightMap"].as<TextureHandle>();
+		m_Material->DiffuseTexture = GetTexture( data["DiffuseTexture"].as<std::string>() );
+		m_Material->SpecularTexture = GetTexture( data["SpecularTexture"].as<std::string>() );
+		m_Material->NormalMap = GetTexture( data["NormalMap"].as<std::string>() );
+		m_Material->HeightMap = GetTexture( data["HeightMap"].as<std::string>() );
 
 		TE_CORE_TRACE( "End Deserializing Material" );
 
