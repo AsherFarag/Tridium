@@ -12,9 +12,11 @@ namespace Tridium {
 
 	struct Vertex
 	{
+		static constexpr size_t NumUVChannels = 8;
+
 		Vector3 Position;
 		Vector3 Normal;
-		Vector2 UV;
+		Vector2 UV[NumUVChannels];
 		Vector3 Tangent;
 	};
 
@@ -70,17 +72,20 @@ namespace Tridium {
 	{
 		friend MeshLoader;
 	public:
-		MeshLibrary();
-
-		static inline Ref<Mesh> GetMesh( const MeshHandle& meshHandle ) { return GetAsset( meshHandle ); }
-		static inline bool GetMeshHandle( const std::string& path, MeshHandle& outMeshHandle ) { return GetHandle( path, outMeshHandle ); }
-		static inline MeshHandle GetMeshHandle( const std::string& path ) { return GetHandle( path ); }
-		static inline bool HasMeshHandle( const std::string& path ) { return HasHandle( path ); }
-		static inline bool AddMesh( const std::string& path, const Ref<Mesh>& mesh ) { return AddAsset( path, mesh ); }
-		static inline bool RemoveMesh( const MeshHandle& meshHandle ) { return RemoveAsset( meshHandle ); }
+		static inline Ref<Mesh> GetMesh( const MeshHandle& meshHandle ) { return Get().GetAsset( meshHandle ); }
+		static inline bool GetMeshHandle( const std::string& path, MeshHandle& outMeshHandle ) { return Get().GetHandle( path, outMeshHandle ); }
+		static inline MeshHandle GetMeshHandle( const std::string& path ) { return Get().GetHandle( path ); }
+		static inline bool HasMeshHandle( const std::string& path ) { return Get().HasHandle( path ); }
+		static inline bool AddMesh( const std::string& path, const Ref<Mesh>& mesh ) { return Get().AddAsset( path, mesh ); }
+		static inline bool RemoveMesh( const MeshHandle& meshHandle ) { return Get().RemoveAsset( meshHandle ); }
 
 		// - Primatives -
-		static inline MeshHandle GetQuad() { return Get().m_Quad; }
+		static inline MeshHandle GetQuad() 
+		{ 
+			return Get().m_Quad;
+		}
+
+		virtual void Init() override;
 
 	private:
 		void InitPrimatives();

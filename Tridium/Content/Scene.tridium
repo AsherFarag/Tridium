@@ -1,32 +1,12 @@
 Scene: Unnamed Scene
 GameObjects:
-  - GameObject: 5606624713127607489
+  - GameObject: 14015923136149722016
     TagComponent:
       "Cube"
-    TransformComponent:
-      Position: [0, 0, -2]
-      Rotation: [-8.6407299, 83.0244217, -58.5125847]
-      Scale: [0.999998569, 0.999999881, 0.999999404]
-      Children: []
-    MeshComponent:
-      Mesh: "Content\\Temp\\Mutant Dying.fbx"
-  - GameObject: 7896649786779084447
-    TagComponent:
-      "GameObject"
     TransformComponent:
       Position: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
       Children: []
-    LuaScriptComponent:
-      LuaScript: "Content\\Scripts\\Game\\Player.lua"
-    CameraComponent:
-      Projection Mode: Perspective
-      Perspective:
-        FOV: 45
-        Near: 0.00999999978
-        Far: 1000
-      Orthographic:
-        Size: 10
-        Near: -1000
-        Far: 1000
+    MeshComponent:
+      Mesh: "Content\\Temp\\stray-robot\\source\\robot.fbx"

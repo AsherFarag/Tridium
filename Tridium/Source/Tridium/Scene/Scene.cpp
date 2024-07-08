@@ -115,7 +115,7 @@ namespace Tridium {
 					}
 				}
 
-				Renderer::Submit( sprite.GetShader(), quadMeshVAO, transform.GetWorldTransform());
+				Renderer::Submit( ShaderLibrary::GetShader( sprite.GetShader() ), quadMeshVAO, transform.GetWorldTransform());
 				transform.Scale = oldScale;
 
 				if ( currentTex )

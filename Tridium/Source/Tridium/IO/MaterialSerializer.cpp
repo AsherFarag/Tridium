@@ -114,17 +114,20 @@ namespace Tridium {
 		out << YAML::Key << "Refraction"; out << YAML::Value << m_Material->Refraction;
 
 		Ref<Texture> tex = nullptr;
-		out << YAML::Key << "DiffuseTexture"; 
-		tex = TextureLibrary::GetTexture( m_Material->DiffuseTexture );
+		out << YAML::Key << "BaseColorTexture"; 
+		tex = TextureLibrary::GetTexture( m_Material->BaseColorTexture );
 		out << YAML::Value << ( tex ? tex->GetPath() : "" );
-		tex = TextureLibrary::GetTexture( m_Material->SpecularTexture );
-		out << YAML::Key << "SpecularTexture";
+		tex = TextureLibrary::GetTexture( m_Material->NormalMapTexture );
+		out << YAML::Key << "NormalMapTexture";
 		out << YAML::Value << ( tex ? tex->GetPath() : "" );
-		tex = TextureLibrary::GetTexture( m_Material->NormalMap );
-		out << YAML::Key << "NormalMap";
+		tex = TextureLibrary::GetTexture( m_Material->MetallicTexture );
+		out << YAML::Key << "MetallicTexture";
 		out << YAML::Value << ( tex ? tex->GetPath() : "" );
-		tex = TextureLibrary::GetTexture( m_Material->HeightMap );
-		out << YAML::Key << "HeightMap";
+		tex = TextureLibrary::GetTexture( m_Material->RoughnessTexture );
+		out << YAML::Key << "RoughnessTexture";
+		out << YAML::Value << ( tex ? tex->GetPath() : "" );
+		tex = TextureLibrary::GetTexture( m_Material->EmissiveTexture );
+		out << YAML::Key << "EmissiveTexture";
 		out << YAML::Value << ( tex ? tex->GetPath() : "" );
 
 		out << YAML::Key << "Textures";
@@ -168,10 +171,11 @@ namespace Tridium {
 		m_Material->Reflectivity = data["Reflectivity"].as<float>();
 		m_Material->Refraction = data["Refraction"].as<float>();
 									  
-		m_Material->DiffuseTexture = GetTexture( data["DiffuseTexture"].as<std::string>() );
-		m_Material->SpecularTexture = GetTexture( data["SpecularTexture"].as<std::string>() );
-		m_Material->NormalMap = GetTexture( data["NormalMap"].as<std::string>() );
-		m_Material->HeightMap = GetTexture( data["HeightMap"].as<std::string>() );
+		m_Material->BaseColorTexture = GetTexture( data["BaseColorTexture"].as<std::string>() );
+		m_Material->NormalMapTexture = GetTexture( data["NormalMapTexture"].as<std::string>() );
+		m_Material->MetallicTexture = GetTexture( data["MetallicTexture"].as<std::string>() );
+		m_Material->RoughnessTexture = GetTexture( data["RoughnessTexture"].as<std::string>() );
+		m_Material->EmissiveTexture = GetTexture( data["EmissiveTexture"].as<std::string>() );
 
 		TE_CORE_TRACE( "End Deserializing Material" );
 

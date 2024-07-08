@@ -39,13 +39,13 @@ namespace Tridium {
 	{
 	public:
 		static Ref<Shader> Create( const std::string& filePath );
-		static Ref<Shader> Create( const std::string& name, const std::string& vertex, const std::string& frag );
+		static Ref<Shader> Create( const std::string& path, const std::string& vertex, const std::string& frag );
 		virtual ~Shader() = default;
+
+		virtual bool Recompile() = 0;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
-
-		virtual const std::string& GetName() const = 0;
 
 		// - SINGULAR -
 
@@ -83,12 +83,24 @@ namespace Tridium {
 	class ShaderLibrary : public AssetLibrary<ShaderLibrary, ShaderHandle, Shader>
 	{
 	public:
-		static inline Ref<Shader> GetShader( const ShaderHandle& shaderHandle ) { return GetAsset( shaderHandle ); }
-		static inline bool GetShaderHandle( const std::string& path, ShaderHandle& outShaderHandle ) { return GetHandle( path, outShaderHandle ); }
-		static inline ShaderHandle GetShaderHandle( const std::string& path ) { return GetHandle( path ); }
-		static inline bool HasShaderHandle( const std::string& path ) { return HasHandle( path ); }
-		static inline bool AddShader( const std::string& path, const Ref<Shader>& shader ) { return AddAsset( path, shader ); }
-		static inline bool RemoveShader( const ShaderHandle& shaderHandle ) { return RemoveAsset( shaderHandle ); }
+		static inline Ref<Shader> GetShader( const ShaderHandle& shaderHandle ) { return Get().GetAsset( shaderHandle ); }
+		static inline bool GetShaderHandle( const std::string& path, ShaderHandle& outShaderHandle ) { return Get().GetHandle( path, outShaderHandle ); }
+		static inline ShaderHandle GetShaderHandle( const std::string& path ) { return Get().GetHandle( path ); }
+		static inline bool HasShaderHandle( const std::string& path ) { return Get().HasHandle( path ); }
+		static inline bool AddShader( const std::string& path, const Ref<Shader>& shader ) { return Get().AddAsset( path, shader ); }
+		static inline bool RemoveShader( const ShaderHandle& shaderHandle ) { return Get().RemoveAsset( shaderHandle ); }
+
+		static inline ShaderHandle GetDefaultShader() { return Get().m_Default; }
+		static inline ShaderHandle GetSpriteShader() { return Get().m_Sprite; }
+
+		static void RecompileAll();
+
+		virtual void Init() override;
+
+	private:
+		ShaderHandle m_Default;
+		ShaderHandle m_Sprite;
+
 	};
 
 }

@@ -44,8 +44,8 @@ namespace Tridium {
 
 #pragma region - Buffer Element -
 
-	BufferElement::BufferElement( ShaderDataType type, const std::string& name, bool normalised )
-		: Name( name ), Type( type ), Size( ShaderDataTypeSize( type ) ), Offset( 0 ), Normalised( normalised )
+	BufferElement::BufferElement( ShaderDataType type, const std::string& name, uint32_t count, bool normalised )
+		: Name( name ), Type( type ), Size( ShaderDataTypeSize( type ) * count ), Offset( 0 ), Normalised( normalised )
 	{
 	}
 

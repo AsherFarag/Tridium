@@ -59,11 +59,13 @@ namespace Tridium {
                 loadedMesh->m_Verticies[i].Normal = Vector3( ai_mesh->mNormals[i].x, ai_mesh->mNormals[i].y, ai_mesh->mNormals[i].z );
         }
 
-        TODO( "We only use the first channel of TexCoords from Assimp!" );
-        if ( ai_mesh->HasTextureCoords( 0 ) )
+        for ( uint32_t channel = 0; channel < Vertex::NumUVChannels; ++channel )
         {
-            for ( uint32_t i = 0; i < ai_mesh->mNumVertices; ++i )
-                loadedMesh->m_Verticies[i].UV = Vector2( ai_mesh->mTextureCoords[0][i].x, ai_mesh->mTextureCoords[0][i].y );
+            if ( ai_mesh->HasTextureCoords( channel ) )
+            {
+                for ( uint32_t i = 0; i < ai_mesh->mNumVertices; ++i )
+                    loadedMesh->m_Verticies[i].UV[channel] = Vector2(ai_mesh->mTextureCoords[channel][i].x, ai_mesh->mTextureCoords[channel][i].y);
+            }
         }
 
         if ( ai_mesh->HasTangentsAndBitangents() )
@@ -112,7 +114,7 @@ namespace Tridium {
         {
             { ShaderDataType::Float3, "aPosition" },
             { ShaderDataType::Float3, "aNormal" },
-            { ShaderDataType::Float2, "aUV" },
+            { ShaderDataType::Float2, "aUV", Vertex::NumUVChannels },
             { ShaderDataType::Float3, "aTangent" }
         };
 
@@ -137,7 +139,7 @@ namespace Tridium {
 
 #pragma region MeshLibrary
 
-    MeshLibrary::MeshLibrary()
+    void MeshLibrary::Init()
     {
         InitPrimatives();
     }
@@ -175,8 +177,7 @@ namespace Tridium {
         quadMesh->m_VAO->SetIndexBuffer( quadMesh->m_IBO );
 
         m_Quad = quadMesh->m_Handle = MeshHandle::Create();
-        m_PathHandles.emplace( "Quad", m_Quad );
-        m_Library.emplace( m_Quad, quadMesh );
+        AddAsset( "Quad", quadMesh );
 
     #pragma endregion
     }

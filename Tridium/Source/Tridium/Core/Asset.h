@@ -29,12 +29,14 @@ namespace Tridium {
 		static T& Get();
 
 	protected:
-		static Ref<AssetType> GetAsset( const AssetHandle& handle );
-		static bool GetHandle( const std::string& path, AssetHandle& outHandle );
-		static AssetHandle GetHandle( const std::string& path );
-		static bool HasHandle( const std::string& path );
-		static bool AddAsset( const std::string& path, const Ref<AssetType>& asset );
-		static bool RemoveAsset( const AssetHandle& handle );
+		virtual void Init() {};
+
+		Ref<AssetType> GetAsset( const AssetHandle& handle );
+		bool GetHandle( const std::string& path, AssetHandle& outHandle );
+		AssetHandle GetHandle( const std::string& path );
+		bool HasHandle( const std::string& path );
+		bool AddAsset( const std::string& path, const Ref<AssetType>& asset );
+		bool RemoveAsset( const AssetHandle& handle );
 
 	protected:
 		std::unordered_map<std::string, AssetHandle> m_PathHandles;
@@ -45,13 +47,20 @@ namespace Tridium {
 	inline T& AssetLibrary<T, AssetHandle, AssetType>::Get()
 	{
 		static T s_LibraryInstance;
+		static bool m_HasBeenInitialised = false;
+		if ( !m_HasBeenInitialised )
+		{
+			m_HasBeenInitialised = true;
+			s_LibraryInstance.Init();
+		}
+
 		return s_LibraryInstance;
 	}
 
 	template<typename T, typename AssetHandle, typename AssetType>
 	inline Ref<AssetType> AssetLibrary<T, AssetHandle, AssetType>::GetAsset( const AssetHandle& handle )
 	{
-		if ( auto it = Get().m_Library.find( handle ); it != Get().m_Library.end() )
+		if ( auto it = m_Library.find( handle ); it != m_Library.end() )
 		{
 			return it->second;
 		}
@@ -62,7 +71,7 @@ namespace Tridium {
 	template<typename T, typename AssetHandle, typename AssetType>
 	inline bool AssetLibrary<T, AssetHandle, AssetType>::GetHandle( const std::string& path, AssetHandle& outHandle )
 	{
-		if ( auto it = Get().m_PathHandles.find( path ); it != Get().m_PathHandles.end() )
+		if ( auto it = m_PathHandles.find( path ); it != m_PathHandles.end() )
 		{
 			outHandle = it->second;
 			return true;
@@ -74,7 +83,7 @@ namespace Tridium {
 	template<typename T, typename AssetHandle, typename AssetType>
 	inline AssetHandle AssetLibrary<T, AssetHandle, AssetType>::GetHandle( const std::string& path )
 	{
-		if ( auto it = Get().m_PathHandles.find( path ); it != Get().m_PathHandles.end() )
+		if ( auto it = m_PathHandles.find( path ); it != m_PathHandles.end() )
 		{
 			return it->second;
 		}
@@ -85,7 +94,7 @@ namespace Tridium {
 	template<typename T, typename AssetHandle, typename AssetType>
 	inline bool AssetLibrary<T, AssetHandle, AssetType>::HasHandle( const std::string& path )
 	{
-		if ( auto it = Get().m_PathHandles.find( path ); it != Get().m_PathHandles.end() )
+		if ( auto it = m_PathHandles.find( path ); it != m_PathHandles.end() )
 		{
 			return true;
 		}
@@ -103,8 +112,8 @@ namespace Tridium {
 		if ( GetAsset( asset->GetHandle() ) )
 			return false;
 
-		Get().m_PathHandles.emplace( path, asset->GetHandle() );
-		Get().m_Library.emplace( asset->GetHandle(), asset );
+		m_PathHandles.emplace( path, asset->GetHandle() );
+		m_Library.emplace( asset->GetHandle(), asset );
 
 		return true;
 	}
@@ -114,18 +123,18 @@ namespace Tridium {
 	{
 		TE_CORE_ASSERT( handle.Valid() );
 
-		for ( auto it = Get().m_PathHandles.begin(); it != Get().m_PathHandles.end(); ++it )
+		for ( auto it = m_PathHandles.begin(); it != m_PathHandles.end(); ++it )
 		{
 			if ( it->second == handle )
 			{
-				Get().m_PathHandles.erase( it );
+				m_PathHandles.erase( it );
 				break;
 			}
 		}
 
-		if ( auto it = Get().m_Library.find( handle ); it != Get().m_Library.end() )
+		if ( auto it = m_Library.find( handle ); it != m_Library.end() )
 		{
-			Get().m_Library.erase( it );
+			m_Library.erase( it );
 			return true;
 		}
 

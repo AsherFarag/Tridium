@@ -14,10 +14,10 @@ namespace Tridium {
 
 		inline TextureHandle GetTexture() { return m_Texture; }
 		inline void SetTexture(const  TextureHandle& a_Texture ) { m_Texture = a_Texture; }
-		inline Ref<Shader>& GetShader() { return m_Shader; }
+		inline ShaderHandle GetShader() { return m_Shader; }
 
 	private:
-		Ref<Shader> m_Shader;
+		ShaderHandle m_Shader;
 		TextureHandle m_Texture;
 	};
 

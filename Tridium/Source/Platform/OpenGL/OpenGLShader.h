@@ -11,13 +11,13 @@ namespace Tridium {
     {
     public:
         OpenGLShader( const std::string& filePath );
-        OpenGLShader( const std::string& name, const std::string& vertex, const std::string& frag );
+        OpenGLShader( const std::string& path, const std::string& vertex, const std::string& frag );
         virtual ~OpenGLShader();
+
+        virtual bool Recompile() override;
 
         virtual void Bind() const override;
         virtual void Unbind() const override;
-
-        virtual const std::string& GetName() const override { return m_Name; }
 
         virtual bool SetInt( const char* name, const int val ) override;
         virtual bool SetInt2( const char* name, const iVector2& val ) override;
@@ -49,7 +49,6 @@ namespace Tridium {
 
     private:
         uint32_t m_RendererID;
-        std::string m_Name;
     };
 
 }

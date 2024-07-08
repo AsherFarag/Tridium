@@ -1,4 +1,4 @@
-Material: 3292157216903428021
+Material: 9993708189442365812
 Shader: Normal
 Parent Material: 0
 Blend Mode: Additive
@@ -8,9 +8,10 @@ Specular: [1, 1, 1, 1]
 Opacity: 1
 Reflectivity: 0
 Refraction: 1
-DiffuseTexture: ""
-SpecularTexture: ""
-NormalMap: ""
-HeightMap: ""
+BaseColorTexture: ""
+NormalMapTexture: ""
+MetallicTexture: ""
+RoughnessTexture: ""
+EmissiveTexture: ""
 Textures:
   []

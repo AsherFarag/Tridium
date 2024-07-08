@@ -208,6 +208,7 @@ namespace Tridium::Editor {
 		auto panel = Get().PushPanel<MaterialEditorPanel>();
 		panel->Focus();
 		panel->SetMaterial( MaterialLibrary::GetMaterialHandle( filePath.string() ) );
+		return true;
 	}
 
 	bool EditorLayer::OnKeyPressed( KeyPressedEvent& e )
@@ -306,6 +307,15 @@ namespace Tridium::Editor {
 			if ( ImGui::MenuItem( "Recompile", "Ctrl+R" ) )
 				ScriptEngine::Recompile();
 
+			ImGui::EndMenu();
+		}
+
+		ImGui::Separator();
+
+		if ( ImGui::BeginMenu( "Other" ) )
+		{
+			if ( ImGui::MenuItem( "Recompile Shaders" ) )
+				ShaderLibrary::RecompileAll();
 			ImGui::EndMenu();
 		}
 

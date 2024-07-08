@@ -21,49 +21,59 @@ namespace Tridium {
 
 	void Material::Bind()
 	{
-		auto diff = TextureLibrary::GetTexture( DiffuseTexture );
-		if ( diff )
+		auto col = TextureLibrary::GetTexture( BaseColorTexture );
+		if ( col )
 		{
-			diff->Bind( 0 );
+			col->Bind( 0 );
 		}
-		auto spec = TextureLibrary::GetTexture( SpecularTexture );
-		if ( spec )
-		{
-			spec->Bind( 1 );
-		}
-		auto norm = TextureLibrary::GetTexture( NormalMap );
+		auto norm = TextureLibrary::GetTexture( NormalMapTexture );
 		if ( norm )
 		{
-			norm->Bind( 2 );
+			norm->Bind( 1 );
 		}
-		auto heig = TextureLibrary::GetTexture( HeightMap );
-		if ( heig )
+		auto metal = TextureLibrary::GetTexture( MetallicTexture );
+		if ( metal )
 		{
-			heig->Bind( 3 );
+			metal->Bind( 2 );
+		}
+		auto rough = TextureLibrary::GetTexture( RoughnessTexture );
+		if ( rough )
+		{
+			rough->Bind( 3 );
+		}
+		auto emissive = TextureLibrary::GetTexture( EmissiveTexture );
+		if ( emissive )
+		{
+			emissive->Bind( 4 );
 		}
 	}
 
 	void Material::Unbind()
 	{
-		auto diff = TextureLibrary::GetTexture( DiffuseTexture );
-		if ( diff )
+		auto col = TextureLibrary::GetTexture( BaseColorTexture );
+		if ( col )
 		{
-			diff->Unbind( 0 );
+			col->Unbind( 0 );
 		}
-		auto spec = TextureLibrary::GetTexture( SpecularTexture );
-		if ( spec )
-		{
-			spec->Unbind( 1 );
-		}
-		auto norm = TextureLibrary::GetTexture( NormalMap );
+		auto norm = TextureLibrary::GetTexture( NormalMapTexture );
 		if ( norm )
 		{
-			norm->Unbind( 2 );
+			norm->Unbind( 1 );
 		}
-		auto heig = TextureLibrary::GetTexture( HeightMap );
-		if ( heig )
+		auto metal = TextureLibrary::GetTexture( MetallicTexture );
+		if ( metal )
 		{
-			heig->Unbind( 3 );
+			metal->Unbind( 2 );
+		}
+		auto rough = TextureLibrary::GetTexture( RoughnessTexture );
+		if ( rough )
+		{
+			rough->Unbind( 3 );
+		}
+		auto emissive = TextureLibrary::GetTexture( EmissiveTexture );
+		if ( emissive )
+		{
+			emissive->Unbind( 4 );
 		}
 	}
 

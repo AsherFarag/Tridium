@@ -11,7 +11,7 @@ namespace Tridium {
 
 		if ( type == "vertex" )
 			return true;
-		if ( type == "frag" )
+		if ( type == "fragment" )
 			return true;
 
 		return false;
@@ -23,8 +23,8 @@ namespace Tridium {
 
 		if ( type == "vertex" )
 			return GL_VERTEX_SHADER;
-		if ( type == "frag" )
-			return GL_VERTEX_SHADER;
+		if ( type == "fragment" )
+			return GL_FRAGMENT_SHADER;
 
 		TE_CORE_ASSERT( false, "Invalid shader type!" );
 		return 0;
@@ -32,14 +32,13 @@ namespace Tridium {
 
 	OpenGLShader::OpenGLShader( const std::string& filePath )
 	{
-		std::string source = ReadFile( filePath );
-		auto shaderSources = PreProcess( source );
-		Compile( shaderSources );
+		m_Path = filePath;
+		Recompile();
 	}
 
-	OpenGLShader::OpenGLShader( const std::string& name, const std::string& vertexSource, const std::string& fragmentSource )
-		: m_Name( name )
+	OpenGLShader::OpenGLShader( const std::string& path, const std::string& vertexSource, const std::string& fragmentSource )
 	{
+		_SetPath( path );
 		ShaderSources sources;
 		sources[ GL_VERTEX_SHADER ] = vertexSource;
 		sources[ GL_FRAGMENT_SHADER ] = fragmentSource;
@@ -147,7 +146,7 @@ namespace Tridium {
 			glGetProgramiv( program, GL_INFO_LOG_LENGTH, &maxLength );
 
 			std::vector<GLchar> infoLog;
-			infoLog.reserve( maxLength );
+			infoLog.resize( maxLength );
 			glGetProgramInfoLog( program, maxLength, &maxLength, &infoLog[ 0 ] );
 
 			glDeleteProgram( program );
@@ -176,6 +175,16 @@ namespace Tridium {
 	OpenGLShader::~OpenGLShader()
 	{
 		glDeleteProgram( m_RendererID );
+	}
+
+	bool OpenGLShader::Recompile()
+	{
+		glDeleteProgram( m_RendererID );
+
+		std::string source = ReadFile( m_Path );
+		auto shaderSources = PreProcess( source );
+		Compile( shaderSources );
+		return false;
 	}
 
 	void OpenGLShader::Bind() const
@@ -222,7 +231,6 @@ namespace Tridium {
 			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
-
 		glUniform3i( i, val.x, val.y, val.z );
 		return true;
 	}

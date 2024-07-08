@@ -1,6 +1,7 @@
 #include "tripch.h"
 #include "Shader.h"
 
+#include <Tridium/Core/Application.h>
 #include <Tridium/Rendering/RenderingAPI.h>
 #include <Platform/OpenGL/OpenGLShader.h>
 
@@ -20,7 +21,8 @@ namespace Tridium {
 			break;
 		}
 
-		//ShaderLibrary::Get()->m_Shaders.insert( { name, shader } );
+		shader->_SetHandle( ShaderHandle::Create() );
+		ShaderLibrary::AddShader( filePath, shader );
 		return shader;
 	}
 
@@ -43,6 +45,23 @@ namespace Tridium {
 		shader->_SetHandle( ShaderHandle::Create() );
 		ShaderLibrary::AddShader( name, shader );
 		return shader;
+	}
+
+	void ShaderLibrary::RecompileAll()
+	{
+		for ( auto it = Get().m_Library.begin(); it != Get().m_Library.end(); ++it )
+			it->second->Recompile();
+	}
+
+	void ShaderLibrary::Init()
+	{
+		auto defaultShader = Shader::Create( ( Application::GetAssetDirectory() / "Engine" / "Shaders" / "Default.glsl" ).string() );
+		m_Default = defaultShader->GetHandle();
+		AddAsset( defaultShader->GetPath(), defaultShader );
+
+		auto spriteShader = Shader::Create( ( Application::GetAssetDirectory() / "Engine" / "Shaders" / "Sprite.glsl" ).string() );
+		m_Sprite = spriteShader->GetHandle();
+		AddAsset( spriteShader->GetPath(), spriteShader );
 	}
 
 }

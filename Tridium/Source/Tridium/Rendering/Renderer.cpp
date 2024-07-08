@@ -35,7 +35,7 @@ namespace Tridium {
 			shader = ShaderLibrary::GetShader( a_Material->GetShader() );
 
 		if ( shader == nullptr )
-			shader = ShaderLibrary::GetShader( ShaderLibrary::GetShaderHandle( "Default" ) );
+			shader = ShaderLibrary::GetShader( ShaderLibrary::GetDefaultShader() );
 
 		shader->Bind();
 		shader->SetMatrix4( "uPVM", m_SceneData->ViewProjectionMatrix * a_Transform );

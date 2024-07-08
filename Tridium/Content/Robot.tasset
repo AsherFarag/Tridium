@@ -1,0 +1,17 @@
+Material: 18252360671124937865
+Shader: Content/Engine/Shaders/Default.glsl
+Parent Material: 0
+Blend Mode: Additive
+Ambient: [0, 0, 0, 1]
+Diffuse: [0, 0, 0, 1]
+Specular: [1, 1, 1, 1]
+Opacity: 1
+Reflectivity: 0
+Refraction: 1
+BaseColorTexture: Content/Temp/stray-robot/textures/Stray_robotic_Material.009_BaseColor.png
+NormalMapTexture: ""
+MetallicTexture: ""
+RoughnessTexture: ""
+EmissiveTexture: Content/Temp/stray-robot/textures/Stray_robotic_Material.009_Emissive.png
+Textures:
+  []

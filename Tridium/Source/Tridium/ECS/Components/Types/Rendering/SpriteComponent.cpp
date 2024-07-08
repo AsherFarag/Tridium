@@ -5,7 +5,7 @@ namespace Tridium {
 
 	SpriteComponent::SpriteComponent()
 	{
-		m_Shader = ShaderLibrary::GetShader( ShaderLibrary::GetShaderHandle( "Texture" ) );
+		m_Shader = ShaderLibrary::GetSpriteShader();
 	}
 	SpriteComponent::SpriteComponent( const TextureHandle& a_Texture )
 		: SpriteComponent()

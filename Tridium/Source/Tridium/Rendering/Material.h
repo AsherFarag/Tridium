@@ -40,10 +40,11 @@ namespace Tridium {
 		float Reflectivity;
 		float Refraction;
 
-		TextureHandle DiffuseTexture;
-		TextureHandle SpecularTexture;
-		TextureHandle NormalMap;
-		TextureHandle HeightMap;
+		TextureHandle BaseColorTexture;
+		TextureHandle NormalMapTexture;
+		TextureHandle MetallicTexture;
+		TextureHandle RoughnessTexture;
+		TextureHandle EmissiveTexture;
 
 	private:
 		ShaderHandle m_Shader;
@@ -60,12 +61,12 @@ namespace Tridium {
 	class MaterialLibrary : public AssetLibrary<MaterialLibrary, MaterialHandle, Material>
 	{
 	public:
-		static inline Ref<Material> GetMaterial( const MaterialHandle& materialHandle ) { return GetAsset( materialHandle ); }
-		static inline bool GetMaterialHandle( const std::string& path, MaterialHandle& outMaterialHandle ) { return GetHandle( path, outMaterialHandle ); }
-		static inline MaterialHandle GetMaterialHandle( const std::string& path ) { return GetHandle( path ); }
-		static inline bool HasMaterialHandle( const std::string& path ) { return HasHandle( path ); }
-		static inline bool AddMaterial( const std::string& path, const Ref<Material>& material ) { return AddAsset( path, material ); }
-		static inline bool RemoveMaterial( const MaterialHandle& materialHandle ) { return RemoveAsset( materialHandle ); }
+		static inline Ref<Material> GetMaterial( const MaterialHandle& materialHandle ) { return Get().GetAsset( materialHandle ); }
+		static inline bool GetMaterialHandle( const std::string& path, MaterialHandle& outMaterialHandle ) { return Get().GetHandle( path, outMaterialHandle ); }
+		static inline MaterialHandle GetMaterialHandle( const std::string& path ) { return Get().GetHandle( path ); }
+		static inline bool HasMaterialHandle( const std::string& path ) { return Get().HasHandle( path ); }
+		static inline bool AddMaterial( const std::string& path, const Ref<Material>& material ) { return Get().AddAsset( path, material ); }
+		static inline bool RemoveMaterial( const MaterialHandle& materialHandle ) { return Get().RemoveAsset( materialHandle ); }
 	};
 
 }
