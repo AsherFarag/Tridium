@@ -7,6 +7,8 @@ namespace Tridium {
 	void OpenGLRenderingAPI::Init()
 	{
 		glEnable( GL_DEPTH_TEST );
+		TODO( "Set up functions to enable these!" );
+		glEnable( GL_MULTISAMPLE );
 		glEnable( GL_BLEND );
 		glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 	}

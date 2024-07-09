@@ -24,7 +24,7 @@ namespace Tridium::Editor {
         bool Focused = true;
 
         float Sensitivity = 0.01f;
-        float Speed = 3.f;
+        float Speed = 1.f;
 
         Vector3 Position = Vector3( 0 );
         float Pitch = 0.f, Yaw = 0.f;

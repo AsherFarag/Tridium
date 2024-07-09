@@ -15,24 +15,20 @@ namespace Tridium::Editor {
 
 		Lerp();
 
-		if ( m_IsMoving )
-		{
+		if ( m_IsMoving ) {
 			m_TimeMoving += Time::DeltaTime();
-			//m_TimeMoving = MIN( m_MaxTimeMoving, m_TimeMoving );
-			m_TimeMovingSpeedMultiplier += ( m_MaxTimeMovingSpeedMultiplier - m_TimeMovingSpeedMultiplier ) * ( m_TimeMoving / m_MaxTimeMoving );
+			m_TimeMoving = MIN( m_TimeMoving, m_MaxTimeMoving );
+
+			m_TimeMovingSpeedMultiplier = 1.0f + ( m_MaxTimeMovingSpeedMultiplier - 1.0f ) * ( m_TimeMoving / m_MaxTimeMoving );
 		}
-		else
+		else 
 		{
+			m_TimeMovingSpeedMultiplier = 1.0f;
 			m_TimeMoving = 0.0f;
 		}
 
 		if ( Focused && !m_LerpData.IsLerping )
 			HandleInput();
-
-		if ( !m_IsMoving )
-		{
-			m_TimeMovingSpeedMultiplier = 1.f;
-		}
 
 		m_LastMousePos = Input::GetMousePosition();
 	}

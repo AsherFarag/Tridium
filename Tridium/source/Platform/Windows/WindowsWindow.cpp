@@ -88,6 +88,9 @@ namespace Tridium {
 			s_GLFWInitialized = true;
 		}
 
+		TODO( "Make anti-aliasing a setting!" );
+		glfwWindowHint( GLFW_SAMPLES, 8 );
+
 		m_Window = glfwCreateWindow( (int)props.Width, (int)props.Height, props.Title.c_str(), nullptr, nullptr );
 		glfwMakeContextCurrent( m_Window );
 
