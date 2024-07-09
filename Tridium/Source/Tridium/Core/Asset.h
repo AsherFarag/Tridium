@@ -5,21 +5,24 @@ namespace Tridium {
 
 	using AssetHandle = GUID;
 
-	template <typename AssetHandle>
 	class Asset
 	{
 	public:
 		Asset() = default;
 		virtual ~Asset() = default;
 
-		inline const std::string& GetPath() const { return m_Path; }
-		inline AssetHandle GetHandle() const { return m_Handle; }
-		inline void _SetPath( const std::string& path ) { m_Path = path; }
-		inline void _SetHandle( const AssetHandle& handle ) { m_Handle = handle; }
+		bool IsModified() const { return m_Modified; }
+		void SetModified( bool modified );
+
+		const std::string& GetPath() const { return m_Path; }
+		const AssetHandle GetHandle() const { return m_Handle; }
+		void _SetPath( const std::string& path ) { m_Path = path; }
+		void _SetHandle( const AssetHandle& handle ) { m_Handle = handle; }
 
 	protected:
 		std::string m_Path;
-		AssetHandle m_Handle;
+		GUID m_Handle;
+		bool m_Modified = false;
 	};
 
 	template <typename T, typename AssetHandle, typename AssetType>
@@ -27,6 +30,8 @@ namespace Tridium {
 	{
 	public:
 		static T& Get();
+
+		auto& GetLibrary() { return m_Library; }
 
 	protected:
 		virtual void Init() {};

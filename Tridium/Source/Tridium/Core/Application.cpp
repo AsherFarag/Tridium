@@ -2,7 +2,7 @@
 #include "Application.h"
 
 #ifdef IS_EDITOR
-#include <Editor/EditorLayer.h>
+#include <Editor/Editor.h>
 #endif // IS_EDITOR
 
 // TEMP ?
@@ -37,12 +37,8 @@ namespace Tridium {
 
 #ifdef IS_EDITOR
 
-		m_Window->SetTitle( "Tridium Editor" );
-		m_Window->SetIcon( "Content/Engine/Editor/Icons/EngineIcon.png" );
-
-		m_EditorLayer = new Editor::EditorLayer();
-		m_EditorLayer->SetActiveScene( m_ActiveScene );
-		PushOverlay( m_EditorLayer );
+		Editor::EditorApplication::Init();
+		Editor::GetEditorLayer()->SetActiveScene( m_ActiveScene );
 
 #endif // IS_EDITOR
 
@@ -100,12 +96,18 @@ namespace Tridium {
 
 			m_Window->OnUpdate();
 		}
+
+		#ifdef IS_EDITOR
+
+		Editor::EditorApplication::Shutdown();
+
+		#endif // IS_EDITOR
 	}
 
 	void Application::Quit()
 	{
 	#ifdef IS_EDITOR
-		Get().m_EditorLayer->OnEndScene();
+		Editor::GetEditorLayer()->OnEndScene();
 	#else
 		Get().Shutdown();
 	#endif // IS_EDITOR

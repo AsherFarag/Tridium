@@ -55,13 +55,6 @@ namespace Tridium
 
 		uint32_t m_FPS = 0u;
 
-	#ifdef IS_EDITOR
-		
-		Editor::EditorLayer* m_EditorLayer;
-
-	#endif // IS_EDITOR
-
-
 	private:
 		static Application* s_Instance;
 	};

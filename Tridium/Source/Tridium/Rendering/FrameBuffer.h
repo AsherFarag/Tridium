@@ -2,13 +2,13 @@
 
 namespace Tridium {
 
-	enum class FramebufferTextureFormat
+	enum class EFramebufferTextureFormat
 	{
 		None = 0,
 
 		// Color
 		RGBA8,
-		RED_INTEGER,
+		RED_INT,
 
 		// Depth/stencil
 		DEPTH24STENCIL8,
@@ -20,10 +20,10 @@ namespace Tridium {
 	struct FramebufferTextureSpecification
 	{
 		FramebufferTextureSpecification() = default;
-		FramebufferTextureSpecification( FramebufferTextureFormat format )
+		FramebufferTextureSpecification( EFramebufferTextureFormat format )
 			: TextureFormat( format ) {}
 
-		FramebufferTextureFormat TextureFormat = FramebufferTextureFormat::None;
+		EFramebufferTextureFormat TextureFormat = EFramebufferTextureFormat::None;
 	};
 
 	struct FramebufferAttachmentSpecification

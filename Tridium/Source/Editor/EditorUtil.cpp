@@ -1,7 +1,7 @@
 #include "tripch.h"
 #ifdef IS_EDITOR
 #include "EditorUtil.h"
-#include "EditorLayer.h"
+#include "Editor.h"
 
 #include "Panels/MeshImporterPanel.h"
 
@@ -17,7 +17,7 @@ namespace Tridium::Editor::Util
 
 		// The mesh has not been imported, so create a Mesh Import Prompt
 		handle = MeshHandle::Create();
-		EditorLayer::PushPanel<MeshImporterPanel>( filePath, handle );
+		GetEditorLayer()->PushPanel<MeshImporterPanel>( filePath, handle );
 
 		return handle;
 	}

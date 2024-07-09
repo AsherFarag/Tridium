@@ -18,6 +18,7 @@ namespace Tridium {
 	{
 		None = 0,
 		R8,
+		RG8,
 		RGB8,
 		RGBA8,
 		RGBA32F
@@ -33,7 +34,7 @@ namespace Tridium {
 		bool GenerateMips = true;
 	};
 
-	class Texture : public Asset<TextureHandle>
+	class Texture : public Asset
 	{
 		friend class TextureLoader;
 

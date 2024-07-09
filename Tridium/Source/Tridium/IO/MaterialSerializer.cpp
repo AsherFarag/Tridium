@@ -106,10 +106,7 @@ namespace Tridium {
 		out << YAML::Value << m_Material->m_Parent;
 
 		out << YAML::Key << "Blend Mode"; out << YAML::Value << m_Material->BlendMode;
-		out << YAML::Key << "Ambient"; out << YAML::Value << m_Material->Ambient;
-		out << YAML::Key << "Diffuse"; out << YAML::Value << m_Material->Diffuse;
-		out << YAML::Key << "Specular"; out << YAML::Value << m_Material->Specular;
-		out << YAML::Key << "Opacity"; out << YAML::Value << m_Material->Opacity;
+		out << YAML::Key << "Color"; out << YAML::Value << m_Material->Color;
 		out << YAML::Key << "Reflectivity"; out << YAML::Value << m_Material->Reflectivity;
 		out << YAML::Key << "Refraction"; out << YAML::Value << m_Material->Refraction;
 
@@ -151,6 +148,11 @@ namespace Tridium {
 
 	bool MaterialSerializer::DeserializeText( const std::string& filepath )
 	{
+		TODO( "This is jank" );
+		std::ifstream file( filepath );
+		if ( !file )
+			return false;
+
 		TE_CORE_TRACE( "Begin Deserializing Material from '{0}'", filepath );
 
 		YAML::Node data = YAML::LoadFile( filepath );
@@ -164,10 +166,7 @@ namespace Tridium {
 		m_Material->m_Parent = data["Parent Material"].as<MaterialHandle>();
 
 		m_Material->BlendMode = data["Blend Mode"].as<EBlendMode>();
-		m_Material->Ambient = data["Ambient"].as<Color>();
-		m_Material->Diffuse = data["Diffuse"].as<Color>();
-		m_Material->Specular = data["Specular"].as<Color>();
-		m_Material->Opacity = data["Opacity"].as<float>();
+		m_Material->Color = data["Color"].as<Color>();
 		m_Material->Reflectivity = data["Reflectivity"].as<float>();
 		m_Material->Refraction = data["Refraction"].as<float>();
 									  

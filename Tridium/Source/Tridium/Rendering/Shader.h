@@ -35,7 +35,7 @@ namespace Tridium {
 		return 0;
 	}
 
-	class Shader : public Asset<ShaderHandle>
+	class Shader : public Asset
 	{
 	public:
 		static Ref<Shader> Create( const std::string& filePath );

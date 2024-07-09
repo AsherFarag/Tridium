@@ -77,6 +77,11 @@ namespace Tridium {
 			else
 				out << YAML::Value << YAML::DoubleQuoted << "";
 
+			out << YAML::Key << "Material";
+			if ( auto mat = MaterialLibrary::GetMaterial( mc->GetMaterial() ) )
+				out << YAML::Value << YAML::DoubleQuoted << mat->GetPath();
+			else
+				out << YAML::Value << YAML::DoubleQuoted << "";
 
 			out << YAML::EndMap;
 		}
@@ -199,6 +204,23 @@ namespace Tridium {
 
 				mc->SetMesh( meshHandle );
 			}
+
+			if ( auto mat = meshComponent["Material"] )
+			{
+				MaterialHandle handle;
+				auto filePath = mat.as<std::string>();
+
+				if ( !MaterialLibrary::GetMaterialHandle( filePath, handle ) )
+				{
+					if ( Ref<Material> loadedMat = MaterialLoader::Import( filePath ) )
+					{
+						if ( MaterialLibrary::AddMaterial( filePath, loadedMat ) )
+							handle = loadedMat->GetHandle();
+					}
+				}
+
+				mc->SetMaterial( handle );
+			}
 		}
 
 		if ( auto spriteComponent = go["SpriteComponent"] )
@@ -300,10 +322,11 @@ namespace Tridium {
 
 	bool SceneSerializer::DeserializeText( const std::string& filepath )
 	{
-
 		YAML::Node data = YAML::LoadFile( filepath );
 		if ( !data["Scene"] )
 			return false;
+
+		m_Scene->_SetPath( filepath );
 
 		m_Scene->m_Name = data["Scene"].as<std::string>();
 		TE_CORE_TRACE( "Begin Deserializing Scene '{0}'", m_Scene->m_Name );

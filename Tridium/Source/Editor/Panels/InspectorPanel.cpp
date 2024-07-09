@@ -4,7 +4,7 @@
 
 #include "InspectorPanel.h"
 
-#include <Editor/EditorLayer.h>
+#include <Editor/Editor.h>
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Core/Application.h>
 #include <Tridium/ECS/Components/Types.h>
@@ -197,7 +197,7 @@ namespace Tridium::Editor {
 				bool matOpened = ImGui::DragDropSelectable( "Material: ", hasMat, hasMat ? material->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
 					[&]( const ImGuiPayload* payload ) {
 						std::string filePath( static_cast<const char*>( payload->Data ) );
-						component.SetMaterial( Editor::Util::GetMaterialHandle( filePath ) );
+						component.SetMaterial( Util::GetMaterialHandle( filePath ) );
 					} );
 
 				// On right click, give the option to remove the mesh, if there is one.
@@ -213,7 +213,7 @@ namespace Tridium::Editor {
 				}
 
 				if ( matOpened )
-					EditorLayer::OpenMaterial( material->GetPath() );
+					Util::OpenMaterial( material->GetPath() );
 			} );
 
 		DrawComponent<CameraComponent>( "Camera", InspectedGameObject, []( auto& component )
@@ -290,7 +290,7 @@ namespace Tridium::Editor {
 				}
 
 				if ( opened )
-					EditorLayer::OpenFile( component.GetScript()->GetFilePath() );
+					Util::OpenFile( component.GetScript()->GetFilePath() );
 			} );
 
 		DrawComponent<SpriteComponent>( "Sprite Component", InspectedGameObject, []( auto& component )
@@ -301,7 +301,7 @@ namespace Tridium::Editor {
 					[&]( const ImGuiPayload* payload ) 
 					{
 						std::string filePath = static_cast<const char*>( payload->Data );
-						component.SetTexture( Editor::Util::GetTextureHandle(filePath) );
+						component.SetTexture( Util::GetTextureHandle(filePath) );
 					} );
 
 				// On right click, give the option to remove the sprite, if there is one.

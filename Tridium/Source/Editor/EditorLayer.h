@@ -42,7 +42,7 @@ namespace Tridium::Editor {
 	class EditorLayer final : public Layer
 	{
 	public:
-		EditorLayer( const std::string& name = "EditorLayer" );
+		EditorLayer();
 		virtual ~EditorLayer();
 
 		// Layer Overrides
@@ -52,11 +52,11 @@ namespace Tridium::Editor {
 		virtual void OnImGuiDraw() override;
 		virtual void OnEvent( Event& e ) override;
 
-		static EditorLayer& Get() { return *s_Instance; }
-
 		// - Panels -
-		template <typename T, typename... Args> static inline T* PushPanel( Args&&... args ) { return Get().m_PanelStack.PushPanel<T>( std::forward<Args>( args )... ); }
-		template <typename T> static inline T* GetPanel() { return Get().m_PanelStack.GetPanel<T>(); }
+		template <typename T, typename... Args>
+		inline T* PushPanel( Args&&... args );
+		template <typename T>
+		inline T* GetPanel();
 
 		Ref<EditorCamera> GetEditorCamera() { return m_EditorCamera; }
 
@@ -68,10 +68,6 @@ namespace Tridium::Editor {
 		bool LoadScene( const std::string& filepath );
 		bool SaveScene( const std::string& filepath );
 
-		static bool OpenFile( const fs::path& filePath );
-		static bool OpenMaterial( const fs::path& filePath );
-
-	public:
 		SceneState CurrentSceneState = SceneState::Edit;
 
 	private:
@@ -90,10 +86,19 @@ namespace Tridium::Editor {
 		EditorViewportPanel* m_EditorViewportPanel;
 		GameViewportPanel* m_GameViewportPanel;
 		UIToolBar m_UIToolBar;
-
-	private:
-		static EditorLayer* s_Instance;
 	};
+
+	template<typename T, typename ...Args>
+	inline T* Editor::EditorLayer::PushPanel( Args && ...args )
+	{
+		return m_PanelStack.PushPanel<T>( std::forward<Args>( args )... );
+	}
+
+	template<typename T>
+	inline T* Editor::EditorLayer::GetPanel()
+	{
+		return m_PanelStack.GetPanel<T>();
+	}
 
 }
 

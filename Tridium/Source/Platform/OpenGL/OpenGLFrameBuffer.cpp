@@ -66,22 +66,22 @@ namespace Tridium {
 			glFramebufferTexture2D( GL_FRAMEBUFFER, attachmentType, TextureTarget( multisampled ), id, 0 );
 		}
 
-		static bool IsDepthFormat( FramebufferTextureFormat format )
+		static bool IsDepthFormat( EFramebufferTextureFormat format )
 		{
 			switch ( format )
 			{
-			case FramebufferTextureFormat::DEPTH24STENCIL8:  return true;
+			case EFramebufferTextureFormat::DEPTH24STENCIL8:  return true;
 			}
 
 			return false;
 		}
 
-		static GLenum HazelFBTextureFormatToGL( FramebufferTextureFormat format )
+		static GLenum TridiumFBTextureFormatToGL( EFramebufferTextureFormat format )
 		{
 			switch ( format )
 			{
-			case FramebufferTextureFormat::RGBA8:       return GL_RGBA8;
-			case FramebufferTextureFormat::RED_INTEGER: return GL_RED_INTEGER;
+			case EFramebufferTextureFormat::RGBA8:       return GL_RGBA8;
+			case EFramebufferTextureFormat::RED_INT: return GL_RED_INTEGER;
 			}
 
 			return 0;
@@ -137,23 +137,23 @@ namespace Tridium {
 				Utils::BindTexture( multisample, m_ColorAttachments[ i ] );
 				switch ( m_ColorAttachmentSpecifications[ i ].TextureFormat )
 				{
-				case FramebufferTextureFormat::RGBA8:
+				case EFramebufferTextureFormat::RGBA8:
 					Utils::AttachColorTexture( m_ColorAttachments[ i ], m_Specification.Samples, GL_RGBA8, GL_RGBA, m_Specification.Width, m_Specification.Height, i );
 					break;
-				case FramebufferTextureFormat::RED_INTEGER:
+				case EFramebufferTextureFormat::RED_INT:
 					Utils::AttachColorTexture( m_ColorAttachments[ i ], m_Specification.Samples, GL_R32I, GL_RED_INTEGER, m_Specification.Width, m_Specification.Height, i );
 					break;
 				}
 			}
 		}
 
-		if ( m_DepthAttachmentSpecification.TextureFormat != FramebufferTextureFormat::None )
+		if ( m_DepthAttachmentSpecification.TextureFormat != EFramebufferTextureFormat::None )
 		{
 			Utils::CreateTextures( multisample, &m_DepthAttachment, 1 );
 			Utils::BindTexture( multisample, m_DepthAttachment );
 			switch ( m_DepthAttachmentSpecification.TextureFormat )
 			{
-			case FramebufferTextureFormat::DEPTH24STENCIL8:
+			case EFramebufferTextureFormat::DEPTH24STENCIL8:
 				Utils::AttachDepthTexture( m_DepthAttachment, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height );
 				break;
 			}
@@ -222,6 +222,6 @@ namespace Tridium {
 
 		auto& spec = m_ColorAttachmentSpecifications[ attachmentIndex ];
 		glClearTexImage( m_ColorAttachments[ attachmentIndex ], 0,
-			Utils::HazelFBTextureFormatToGL( spec.TextureFormat ), GL_INT, &value );
+			Utils::TridiumFBTextureFormatToGL( spec.TextureFormat ), GL_INT, &value );
 	}
 }

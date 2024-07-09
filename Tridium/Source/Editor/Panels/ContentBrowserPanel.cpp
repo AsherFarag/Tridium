@@ -2,7 +2,7 @@
 #ifdef IS_EDITOR
 
 #include "ContentBrowserPanel.h"
-#include "Editor/EditorLayer.h"
+#include "Editor/Editor.h"
 #include <fstream>
 #include <Tridium/Core/Application.h>
 #include "ScriptEditorPanel.h"
@@ -244,7 +244,7 @@ namespace Tridium::Editor {
 			}
 			case ContentType::Lua:
 			{
-				EditorLayer::OpenFile( a_FilePath );
+				Util::OpenFile( a_FilePath );
 				break;
 			}
 		default:

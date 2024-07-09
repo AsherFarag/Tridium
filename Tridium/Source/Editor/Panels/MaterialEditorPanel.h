@@ -12,6 +12,7 @@ namespace Tridium::Editor {
         MaterialEditorPanel( const MaterialHandle& material = {} );
 
         virtual void OnImGuiDraw() override;
+        virtual bool OnKeyPressed( KeyPressedEvent& e ) override;
 
         void SetMaterial( const MaterialHandle& material ) { m_Material = material; }
 

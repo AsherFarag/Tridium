@@ -2,7 +2,7 @@
 #ifdef IS_EDITOR
 #include "EditorViewportPanel.h"
 
-#include <Editor/EditorLayer.h>
+#include <Editor/Editor.h>
 #include <Editor/EditorCamera.h>
 #include "SceneHeirarchyPanel.h"
 
@@ -13,6 +13,11 @@ namespace Tridium::Editor {
 	EditorViewportPanel::EditorViewportPanel( const Ref<EditorCamera>& editorCamera )
 		: ViewportPanel( "Scene##EditorViewportPanel" ), m_EditorCamera( editorCamera )
 	{
+		FramebufferSpecification FBOspecification;
+		FBOspecification.Attachments = { EFramebufferTextureFormat::RGBA8, EFramebufferTextureFormat::RED_INT, EFramebufferTextureFormat::Depth };
+		FBOspecification.Width = 1280;
+		FBOspecification.Height = 720;
+		m_FBO = Framebuffer::Create( FBOspecification );
 	}
 
 	bool EditorViewportPanel::OnKeyPressed( KeyPressedEvent& e )
@@ -55,7 +60,7 @@ namespace Tridium::Editor {
 			return;
 
 		if ( m_SceneHeirarchy == nullptr )
-			m_SceneHeirarchy = EditorLayer::Get().GetPanel<SceneHeirarchyPanel>();
+			m_SceneHeirarchy = GetEditorLayer()->GetPanel<SceneHeirarchyPanel>();
 
 		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2( 2.f, 2.f ) );
 
@@ -74,15 +79,32 @@ namespace Tridium::Editor {
 			m_FBO->Resize( regionAvail.x, regionAvail.y );
 
 			m_FBO->Bind();
-			EditorLayer::Get().GetActiveScene()->Render( *m_EditorCamera, m_EditorCamera->GetViewMatrix() );
+			GetEditorLayer()->GetActiveScene()->Render( *m_EditorCamera, m_EditorCamera->GetViewMatrix() );
 			m_FBO->Unbind();
 
+			// Draw the Editor Camera ViewPort
 			ImGui::Image( (ImTextureID)m_FBO->GetColorAttachmentID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
 
 			// Drag-Drop for scenes
 			DragDropTarget();
 
 			DrawManipulationGizmos( viewportBoundsMin, viewportBoundsMax );
+
+			if ( m_IsFocused && ImGui::IsItemClicked() && !ImGuizmo::IsUsingAny() )
+			{
+				auto [mx, my] = ImGui::GetMousePos();
+				mx -= viewportBoundsMin.x;
+				my -= viewportBoundsMin.y;
+				my = m_ViewportSize.y - my;
+				int mouseX = (int)mx;
+				int mouseY = (int)my;
+
+				m_FBO->Bind();
+				int goID = m_FBO->ReadPixel( 1, mouseX, mouseY );
+				m_FBO->Unbind();
+
+				GetEditorLayer()->GetPanel<SceneHeirarchyPanel>()->SetSelectedGameObject( (EntityID)goID );
+			}
 		}
 		m_IsHovered = ImGui::IsWindowHovered();
 		m_IsFocused = ImGui::IsWindowFocused();
@@ -107,7 +129,7 @@ namespace Tridium::Editor {
 
 		if ( filePath.extension() == ".tridium" )
 		{
-			EditorLayer::Get().LoadScene( ( Application::GetAssetDirectory() / "Scene.tridium" ).string() );
+			GetEditorLayer()->LoadScene( ( Application::GetAssetDirectory() / "Scene.tridium" ).string() );
 		}
 	}
 
@@ -162,7 +184,7 @@ namespace Tridium::Editor {
 	SceneHeirarchyPanel* EditorViewportPanel::GetSceneHeirarchy()
 	{
 		if ( !m_SceneHeirarchy )
-			m_SceneHeirarchy = EditorLayer::Get().GetPanel<SceneHeirarchyPanel>();
+			m_SceneHeirarchy = GetEditorLayer()->GetPanel<SceneHeirarchyPanel>();
 
 		return m_SceneHeirarchy;
 	}

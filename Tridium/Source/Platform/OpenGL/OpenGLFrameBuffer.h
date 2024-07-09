@@ -28,7 +28,7 @@ namespace Tridium {
 		FramebufferSpecification m_Specification;
 
 		std::vector<FramebufferTextureSpecification> m_ColorAttachmentSpecifications;
-		FramebufferTextureSpecification m_DepthAttachmentSpecification = FramebufferTextureFormat::None;
+		FramebufferTextureSpecification m_DepthAttachmentSpecification = EFramebufferTextureFormat::None;
 
 		std::vector<uint32_t> m_ColorAttachments;
 		uint32_t m_DepthAttachment = 0;

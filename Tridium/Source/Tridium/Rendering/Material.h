@@ -12,7 +12,7 @@ namespace Tridium {
 		Additive = 0, Subtractive, Multiplicative, Alpha
 	};
 
-	class Material : public Asset<MaterialHandle>
+	class Material : public Asset
 	{
 		friend class MaterialSerializer;
 
@@ -33,10 +33,7 @@ namespace Tridium {
 		bool GetTexture( const std::string& name, TextureHandle& outTextureHandle ) const;
 
 		EBlendMode BlendMode;
-		Color Ambient;
-		Color Diffuse;
-		Color Specular;
-		float Opacity;
+		Color Color;
 		float Reflectivity;
 		float Refraction;
 

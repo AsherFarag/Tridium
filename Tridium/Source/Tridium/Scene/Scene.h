@@ -1,5 +1,6 @@
 #pragma once
 #include "entt.hpp"
+#include <Tridium/Core/Asset.h>
 
 namespace Tridium {
 	typedef entt::entity EntityID;
@@ -7,7 +8,7 @@ namespace Tridium {
 	class Camera;
 	class CameraComponent;
 
-	class Scene
+	class Scene : public Asset
 	{
 		friend class GameObject;
 		friend class SceneSerializer;

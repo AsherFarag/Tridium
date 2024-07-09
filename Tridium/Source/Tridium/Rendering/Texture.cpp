@@ -34,15 +34,32 @@ namespace Tridium {
 		specification.Width = static_cast<uint32_t>( width );
 		specification.Height = static_cast<uint32_t>( height );
 
-		if ( channels == 4 )
+		switch ( channels )
 		{
-			specification.ImageFormat = EImageFormat::RGBA;
-			specification.DataFormat = EDataFormat::RGBA8;
-		}
-		else if ( channels == 3 )
-		{
-			specification.ImageFormat = EImageFormat::RGB;
-			specification.DataFormat = EDataFormat::RGB8;
+			case 1:
+			{
+				specification.ImageFormat = EImageFormat::R;
+				specification.DataFormat = EDataFormat::R8;
+				break;
+			}
+			case 2:
+			{
+				specification.ImageFormat = EImageFormat::RG;
+				specification.DataFormat = EDataFormat::RG8;
+				break;
+			}
+			case 3:
+			{
+				specification.ImageFormat = EImageFormat::RGB;
+				specification.DataFormat = EDataFormat::RGB8;
+				break;
+			}
+			case 4:
+			{
+				specification.ImageFormat = EImageFormat::RGBA;
+				specification.DataFormat = EDataFormat::RGBA8;
+				break;
+			}
 		}
 
 		Ref<Texture> tex = Texture::Create( specification );

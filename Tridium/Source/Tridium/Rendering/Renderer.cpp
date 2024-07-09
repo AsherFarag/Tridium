@@ -42,7 +42,7 @@ namespace Tridium {
 
 		if ( a_Material )
 		{
-			shader->SetFloat3( "uAmbient", a_Material->Ambient);
+			shader->SetFloat3( "uAmbient", a_Material->Color);
 			a_Material->Bind();
 		}
 

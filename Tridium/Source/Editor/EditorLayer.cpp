@@ -4,7 +4,11 @@
 #include "EditorLayer.h"
 #include "imgui.h"
 
+#include "Editor.h"
 #include "EditorCamera.h"
+
+#include <Tridium/Scripting/ScriptEngine.h>
+#include <Tridium/ECS/Components/Types.h>
 
 #include "Panels/EditorPreferencesPanel.h"
 #include "Panels/ContentBrowserPanel.h"
@@ -13,9 +17,6 @@
 #include "Panels/EditorViewportPanel.h"
 #include "Panels/GameViewportPanel.h"
 #include "Panels/MaterialEditorPanel.h"
-
-#include <Tridium/Scripting/ScriptEngine.h>
-#include <Tridium/ECS/Components/Types.h>
 
 #include <Tridium/IO/SceneSerializer.h>
 
@@ -38,18 +39,13 @@ namespace Tridium::Editor {
 		}
 	};
 
-	EditorLayer* EditorLayer::s_Instance = nullptr;
-
-	EditorLayer::EditorLayer( const std::string& name )
-		: Layer( name )
+	EditorLayer::EditorLayer()
+		: Layer( "EditorLayer")
 	{
-		TE_CORE_ASSERT( s_Instance == nullptr, "An instance of the editor layer already exists!" );
-		s_Instance = this;
 	}
 
 	EditorLayer::~EditorLayer()
 	{
-		s_Instance = nullptr;
 	}
 
 	void EditorLayer::OnAttach()
@@ -185,32 +181,6 @@ namespace Tridium::Editor {
 		return true;
 	}
 
-	bool EditorLayer::OpenFile( const fs::path& filePath )
-	{
-		if ( !filePath.has_extension() )
-			return false;
-
-		std::string ext = filePath.extension().string();
-
-		if ( ext == ".lua" )
-		{
-			auto scriptEditor = EditorLayer::Get().PushPanel<ScriptEditorPanel>();
-			scriptEditor->OpenFile( filePath );
-			scriptEditor->Focus();
-
-			return true;
-		}
-
-	}
-
-	bool EditorLayer::OpenMaterial( const fs::path& filePath )
-	{
-		auto panel = Get().PushPanel<MaterialEditorPanel>();
-		panel->Focus();
-		panel->SetMaterial( MaterialLibrary::GetMaterialHandle( filePath.string() ) );
-		return true;
-	}
-
 	bool EditorLayer::OnKeyPressed( KeyPressedEvent& e )
 	{
 		if ( e.IsRepeat() )
@@ -225,7 +195,10 @@ namespace Tridium::Editor {
 		{
 			if ( control )
 			{
-				SaveScene( ( Application::GetAssetDirectory() / "Scene.tridium" ).string() );
+				if ( m_ActiveScene )
+					SaveScene( m_ActiveScene->GetPath() );
+
+				Util::SaveAll();
 				return true;
 			}
 			break;
@@ -348,10 +321,10 @@ namespace Tridium::Editor {
 		float regionAvailY = MAX( 0.0f, ImGui::GetContentRegionAvail().y - 5 - buttonPadding.y );
 		ImVec2 buttonSize( regionAvailY, regionAvailY );
 
-		EditorLayer& editor = EditorLayer::Get();
-		SceneState sceneState = editor.CurrentSceneState;
-		bool hasPlayButton = ( sceneState == SceneState::Edit ) || ( sceneState == SceneState::Play && editor.GetActiveScene()->IsPaused() );
-		bool hasPauseButton = ( sceneState == SceneState::Play ) && ( !editor.GetActiveScene()->IsPaused() );
+		EditorLayer* editor = GetEditorLayer();
+		SceneState sceneState = editor->CurrentSceneState;
+		bool hasPlayButton = ( sceneState == SceneState::Edit ) || ( sceneState == SceneState::Play && editor->GetActiveScene()->IsPaused() );
+		bool hasPauseButton = ( sceneState == SceneState::Play ) && ( !editor->GetActiveScene()->IsPaused() );
 		bool hasStopButton = sceneState == SceneState::Play;
 
 		float totalButtonSizeX = buttonSize.x + ( buttonPadding.x * 2.f ) + ImGui::GetStyle().ItemSpacing.x;
@@ -368,7 +341,7 @@ namespace Tridium::Editor {
 					buttonSize, { 0,1 }, { 1,0 },
 					{ 0,0,0,0 }, { 0.5f, 1.0f, 0.5f, 1.0f } ) )
 				{
-					editor.OnBeginScene();
+					editor->OnBeginScene();
 				}
 			}
 
@@ -378,7 +351,7 @@ namespace Tridium::Editor {
 					buttonSize, { 0,1 }, { 1,0 },
 					{ 0,0,0,0 } ) )
 				{
-					editor.GetActiveScene()->SetPaused( true );
+					editor->GetActiveScene()->SetPaused( true );
 				}
 			}
 
@@ -390,7 +363,7 @@ namespace Tridium::Editor {
 					buttonSize, { 0,1 }, { 1,0 },
 					{ 0,0,0,0 }, { 1.0f, 0.5f, 0.5f, 1.0f } ) )
 				{
-					editor.OnEndScene();
+					editor->OnEndScene();
 				}
 			}
 		}

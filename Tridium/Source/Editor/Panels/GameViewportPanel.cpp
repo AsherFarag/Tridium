@@ -3,20 +3,25 @@
 
 #include "GameViewportPanel.h"
 #include <Tridium/ECS/Components/Types/Rendering/CameraComponent.h>
-#include <Editor/EditorLayer.h>
+#include <Editor/Editor.h>
 
 namespace Tridium::Editor {
 
 	GameViewportPanel::GameViewportPanel( GameObject camera )
 		: ViewportPanel("Game##GameViewportPanel"), m_Camera(camera)
 	{
+		FramebufferSpecification FBOspecification;
+		FBOspecification.Attachments = { EFramebufferTextureFormat::RGBA8, EFramebufferTextureFormat::Depth };
+		FBOspecification.Width = 1280;
+		FBOspecification.Height = 720;
+		m_FBO = Framebuffer::Create( FBOspecification );
 	}
 
 	void GameViewportPanel::OnImGuiDraw()
 	{
 		if ( !m_Camera )
 		{
-			CameraComponent* mainCam = EditorLayer::Get().GetActiveScene()->GetMainCamera();
+			CameraComponent* mainCam = GetEditorLayer()->GetActiveScene()->GetMainCamera();
 			if ( mainCam )
 				m_Camera = mainCam->GetGameObject();
 			else
@@ -37,7 +42,7 @@ namespace Tridium::Editor {
 			m_FBO->Resize( regionAvail.x, regionAvail.y );
 
 			m_FBO->Bind();
-			EditorLayer::Get().GetActiveScene()->Render( sceneCamera, camera->GetView() );
+			GetEditorLayer()->GetActiveScene()->Render( sceneCamera, camera->GetView() );
 			m_FBO->Unbind();
 
 			ImGui::Image( (ImTextureID)m_FBO->GetColorAttachmentID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );

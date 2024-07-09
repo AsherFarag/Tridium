@@ -54,34 +54,46 @@ namespace Tridium {
 		RenderCommand::SetClearColor( { 0.1, 0.1, 0.12, 1.0 } );
 		RenderCommand::Clear();
 
+		Matrix4 pvm = camera.GetProjection() * viewMatrix;
 		Renderer::BeginScene( camera, viewMatrix );
 
 		auto meshComponents = m_Registry.view<MeshComponent, TransformComponent>();
 
-		MaterialHandle currentMaterialHandle;
-		Ref<Material> currentMaterial = nullptr;
-		MeshHandle currentMeshHandle = {};
-		Ref<Mesh> currentMesh = nullptr;
-
-
 		RenderCommand::SetCullMode( true );
-		meshComponents.each( [&]( auto go, MeshComponent& mesh, TransformComponent& transform )
+		meshComponents.each( [&]( auto go, MeshComponent& meshComponent, TransformComponent& transform )
 			{
-				if ( mesh.GetMesh() != currentMeshHandle )
-				{
-					currentMeshHandle = mesh.GetMesh();
-					currentMesh = MeshLibrary::GetMesh( currentMeshHandle );
-				}
+				if ( !meshComponent.GetMesh().Valid() )
+					return;
 
-				if ( currentMesh )
+				if ( auto mesh = MeshLibrary::GetMesh( meshComponent.GetMesh() ) )
 				{
-					if ( mesh.GetMaterial() != currentMaterialHandle )
+					Ref<Material> mat = nullptr;
+					Ref<Shader> shader = nullptr;
+
+					if ( mat = MaterialLibrary::GetMaterial( meshComponent.GetMaterial() ) )
+						shader = ShaderLibrary::GetShader( mat->GetShader() );
+
+					if ( !shader )
+						shader = ShaderLibrary::GetShader( ShaderLibrary::GetDefaultShader() );
+
+					shader->Bind();
+					shader->SetInt( "uID", (uint32_t)go );
+					shader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
+
+					if ( mat )
 					{
-						currentMaterialHandle = mesh.GetMaterial();
-						currentMaterial = MaterialLibrary::GetMaterial( currentMaterialHandle );
+						shader->SetFloat4( "uColor", mat->Color );
+						mat->Bind();
 					}
 
-					Renderer::Submit( currentMaterial, currentMesh->GetVAO(), transform.GetWorldTransform());
+					mesh->GetVAO()->Bind();
+
+					RenderCommand::DrawIndexed( mesh->GetVAO() );
+
+					mesh->GetVAO()->Unbind();
+
+					if ( mat )
+						mat->Unbind();
 				}
 			} );
 

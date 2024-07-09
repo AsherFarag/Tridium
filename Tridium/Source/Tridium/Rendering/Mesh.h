@@ -20,7 +20,7 @@ namespace Tridium {
 		Vector3 Tangent;
 	};
 
-	class Mesh : public Asset<MeshHandle>
+	class Mesh : public Asset
 	{
 		friend class MeshLoader;
 		friend class MeshLibrary;

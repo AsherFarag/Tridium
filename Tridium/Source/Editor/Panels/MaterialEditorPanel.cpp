@@ -2,6 +2,7 @@
 #ifdef IS_EDITOR
 #include "Editor/EditorUtil.h"
 #include "MaterialEditorPanel.h"
+#include <Tridium/IO/MaterialSerializer.h>
 
 namespace Tridium::Editor {
 	MaterialEditorPanel::MaterialEditorPanel( const MaterialHandle& material )
@@ -10,8 +11,11 @@ namespace Tridium::Editor {
 		m_Material = material;
 	}
 
-	void DrawTextureDragDrop(const char* label, TextureHandle& handle)
+	// Returns true if modified
+	bool DrawTextureDragDrop(const char* label, TextureHandle& handle)
 	{
+		auto oldHandle = handle;
+
 		Ref<Texture> sprite = TextureLibrary::GetTexture( handle );
 		bool hasSprite = sprite != nullptr;
 		ImGui::DragDropSelectable( label, hasSprite, hasSprite ? sprite->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
@@ -31,34 +35,59 @@ namespace Tridium::Editor {
 
 			ImGui::EndPopup();
 		}
+
+		return oldHandle != handle;
 	}
 
 	void MaterialEditorPanel::OnImGuiDraw()
 	{
 		auto material = MaterialLibrary::GetMaterial( m_Material );
-		if ( ImGuiBegin() && material )
+		ImGuiWindowFlags flags = ( material && material->IsModified() ) ? ImGuiWindowFlags_UnsavedDocument : 0;
+		if ( ImGuiBegin( flags ) && material )
 		{
-			ImGui::ColorEdit3( "Ambient", &material->Ambient[0] );
-			ImGui::ColorEdit3( "Diffuse", &material->Diffuse[0] );
-			ImGui::ColorEdit3( "Specular", &material->Specular[0] );
-			ImGui::SliderFloat( "Opacity", &material->Opacity, 0.0f, 1.0f );
-			ImGui::SliderFloat( "Reflectivity", &material->Reflectivity, 0.0f, 1.0f );
-			ImGui::SliderFloat( "Refraction", &material->Refraction, 0.0f, 1.0f );
+			bool modified = material->IsModified();
+			modified |= ImGui::ColorEdit4( "Color", &material->Color[0] );
+			modified |= ImGui::SliderFloat( "Reflectivity", &material->Reflectivity, 0.0f, 1.0f );
+			modified |= ImGui::SliderFloat( "Refraction", &material->Refraction, 0.0f, 1.0f );
 
 			ImGui::Separator();
 
-			DrawTextureDragDrop( "Base Color: ", material->BaseColorTexture );
-			DrawTextureDragDrop( "Normal Map: ", material->NormalMapTexture );
-			DrawTextureDragDrop( "Metallic: ", material->MetallicTexture );
-			DrawTextureDragDrop( "Roughness: ", material->RoughnessTexture );
-			DrawTextureDragDrop( "Emissive: ", material->EmissiveTexture );
-		}
-		else
-		{
-			ImGui::Text( "No Material!" );
+			modified |= DrawTextureDragDrop( "Base Color: ", material->BaseColorTexture );
+			modified |= DrawTextureDragDrop( "Normal Map: ", material->NormalMapTexture );
+			modified |= DrawTextureDragDrop( "Metallic: ", material->MetallicTexture );
+			modified |= DrawTextureDragDrop( "Roughness: ", material->RoughnessTexture );
+			modified |= DrawTextureDragDrop( "Emissive: ", material->EmissiveTexture );
+
+			material->SetModified( modified );
 		}
 
 		ImGuiEnd();
+	}
+
+	bool MaterialEditorPanel::OnKeyPressed( KeyPressedEvent& e )
+	{
+		if ( e.IsRepeat() )
+			return false;
+
+		bool control = Input::IsKeyPressed( Input::KEY_LEFT_CONTROL );
+
+		switch ( e.GetKeyCode() )
+		{
+		case Input::KEY_S:
+		{
+			if ( control )
+			{
+				if ( auto mat = MaterialLibrary::GetMaterial(m_Material) )
+				{
+					MaterialSerializer s( mat );
+					s.SerializeText( mat->GetPath() );
+					return true;
+				}
+			}
+		}
+		}
+
+		return false;
 	}
 
 }
