@@ -2,12 +2,23 @@ Scene: Untitled
 GameObjects:
   - GameObject: 4543584931917837423
     TagComponent:
-      "Cube"
+      "Robo"
     TransformComponent:
       Position: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
       Children: []
     MeshComponent:
-      Mesh: "Content\\Engine\\Mesh\\Primitive\\Cube.fbx"
-      Material: "Content\\Robot.tasset"
+      Mesh: "Content\\Temp\\Robot\\Robot.obj"
+      Material: "Content\\Temp\\Robot\\Robot.tasset"
+  - GameObject: 11349251049602994204
+    TagComponent:
+      "Spea"
+    TransformComponent:
+      Position: [1.04839396, 0, 3.02333808]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    MeshComponent:
+      Mesh: "Content\\Temp\\soulspear\\soulspear.obj"
+      Material: "Content\\Temp\\soulspear\\NewMaterial.tasset"

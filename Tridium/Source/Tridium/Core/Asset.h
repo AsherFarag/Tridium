@@ -30,6 +30,7 @@ namespace Tridium {
 	{
 	public:
 		static T& Get();
+		static AssetHandle Create( const std::string& path );
 
 		auto& GetLibrary() { return m_Library; }
 
@@ -60,6 +61,20 @@ namespace Tridium {
 		}
 
 		return s_LibraryInstance;
+	}
+
+	template<typename T, typename AssetHandle, typename AssetType>
+	inline AssetHandle AssetLibrary<T, AssetHandle, AssetType>::Create( const std::string& path )
+	{
+		if ( auto handle = Get().GetHandle( path ); handle.Valid() )
+			return handle;
+
+		auto asset = MakeRef<AssetType>();
+		asset->_SetHandle( AssetHandle::Create() );
+		asset->_SetPath( path );
+		Get().AddAsset( path, asset );
+
+		return asset->GetHandle();
 	}
 
 	template<typename T, typename AssetHandle, typename AssetType>

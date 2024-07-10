@@ -80,7 +80,8 @@ namespace Tridium::Editor {
 		{
 			if ( control )
 			{
-				if ( auto mat = MaterialLibrary::GetMaterial(m_Material) )
+				Ref<Material> mat = MaterialLibrary::GetMaterial( m_Material );
+				if ( mat && mat->IsModified() )
 				{
 					MaterialSerializer s( mat );
 					s.SerializeText( mat->GetPath() );

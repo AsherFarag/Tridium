@@ -7,6 +7,9 @@
 #include <Tridium/Core/Application.h>
 #include "ScriptEditorPanel.h"
 
+#include <Tridium/IO/MaterialSerializer.h>
+#include <Tridium/Rendering/Material.h>
+
 namespace Tridium::Editor {
 
 	ContentBrowserPanel::ContentBrowserPanel()
@@ -103,37 +106,45 @@ namespace Tridium::Editor {
 			ImGui::EndTable();
 		}
 
-		// TEMP
-		TODO( "Set up a PopUpModal system!" )
-		ImGui::OpenPopupOnItemClick( "NewFile",ImGuiPopupFlags_::ImGuiPopupFlags_MouseButtonRight );
 		// If the folder is right clicked, open a prompt to make a new file
-		if ( ImGui::BeginPopupModal( "NewFile" ) )
+		if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
+			ImGui::OpenPopup("Create Asset", ImGuiPopupFlags_::ImGuiPopupFlags_MouseButtonRight);
+		if ( ImGui::BeginPopup( "Create Asset" ) )
 		{
-			char fileName[ 1024 ] = { "ComponentTemplate.lua" };
-			ImGui::InputText( "File Name", fileName, 1024 );
-
-			ImGui::SameLine();
-			if ( ImGui::Button( "New" ) )
+			if ( ImGui::MenuItem( "New Material" ) )
 			{
-				std::string filePath = ( m_CurrentDirectory / fileName ).string();
-				std::ifstream existingFile( filePath );
-				// If there is no file at the filePath,
-				// make a new file.
-				if ( !existingFile )
-				{
-					std::ofstream newFile( filePath, std::ios::out | std::ios::app );
-					// Create a new file and write in a component template
-					newFile << "function OnConstruct()\nend\n\nfunction OnUpdate( deltaTime )\nend\n\nfunction OnDestroy()\nend\n";
-					newFile.close();
-				}
-				existingFile.close();
+				auto mat = MaterialLibrary::GetMaterial( MaterialLibrary::Create( ( m_CurrentDirectory / "NewMaterial.tasset" ).string() ) );
+				MaterialSerializer s( mat );
+				s.SerializeText( mat->GetPath() );
 
 				ImGui::CloseCurrentPopup();
 			}
 
-			ImGui::SameLine();
-			if ( ImGui::Button( "Cancel" ) )
-				ImGui::CloseCurrentPopup();
+			//char fileName[ 1024 ] = { "ComponentTemplate.lua" };
+			//ImGui::InputText( "File Name", fileName, 1024 );
+
+			//ImGui::SameLine();
+			//if ( ImGui::Button( "New" ) )
+			//{
+			//	std::string filePath = ( m_CurrentDirectory / fileName ).string();
+			//	std::ifstream existingFile( filePath );
+			//	// If there is no file at the filePath,
+			//	// make a new file.
+			//	if ( !existingFile )
+			//	{
+			//		std::ofstream newFile( filePath, std::ios::out | std::ios::app );
+			//		// Create a new file and write in a component template
+			//		newFile << "function OnConstruct()\nend\n\nfunction OnUpdate( deltaTime )\nend\n\nfunction OnDestroy()\nend\n";
+			//		newFile.close();
+			//	}
+			//	existingFile.close();
+
+			//	ImGui::CloseCurrentPopup();
+			//}
+
+			//ImGui::SameLine();
+			//if ( ImGui::Button( "Cancel" ) )
+			//	ImGui::CloseCurrentPopup();
 
 			ImGui::EndPopup();
 		}
