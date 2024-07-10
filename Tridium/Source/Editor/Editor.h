@@ -32,6 +32,8 @@ namespace Tridium::Editor {
 
 	inline EditorLayer* GetEditorLayer() { return EditorApplication::Get()->GetEditorLayer(); }
 
+	inline Ref<Scene> GetActiveScene() { return EditorApplication::Get()->GetEditorLayer()->GetActiveScene();}
+
 	namespace Util {
 		bool OpenFile( const fs::path& filePath );
 		bool OpenMaterial( const fs::path& filePath );

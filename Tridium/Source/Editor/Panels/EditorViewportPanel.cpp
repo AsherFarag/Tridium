@@ -3,10 +3,16 @@
 #include "EditorViewportPanel.h"
 
 #include <Editor/Editor.h>
+#include <Editor/EditorUtil.h>
 #include <Editor/EditorCamera.h>
 #include "SceneHeirarchyPanel.h"
 
 #include <Tridium/ECS/Components/Types.h>`
+#include <Tridium/Scene/Scene.h>
+
+// TEMP ?
+#include <Tridium/Rendering/RenderCommand.h>
+#include <Tridium/Rendering/VertexArray.h>
 
 namespace Tridium::Editor {
 
@@ -14,10 +20,15 @@ namespace Tridium::Editor {
 		: ViewportPanel( "Scene##EditorViewportPanel" ), m_EditorCamera( editorCamera )
 	{
 		FramebufferSpecification FBOspecification;
-		FBOspecification.Attachments = { EFramebufferTextureFormat::RGBA8, EFramebufferTextureFormat::RED_INT, EFramebufferTextureFormat::Depth };
+		FBOspecification.Attachments = { EFramebufferTextureFormat::RGBA8, EFramebufferTextureFormat::Depth };
 		FBOspecification.Width = 1280;
 		FBOspecification.Height = 720;
 		m_FBO = Framebuffer::Create( FBOspecification );
+
+		FBOspecification.Attachments = { EFramebufferTextureFormat::RED_INT };
+		m_IDFBO = Framebuffer::Create( FBOspecification );
+
+		m_GameObjectIDShader = Shader::Create( "Content/Engine/Editor/Shaders/ID.glsl" );
 	}
 
 	bool EditorViewportPanel::OnKeyPressed( KeyPressedEvent& e )
@@ -92,6 +103,8 @@ namespace Tridium::Editor {
 
 			if ( m_IsFocused && ImGui::IsItemClicked() && !ImGuizmo::IsUsingAny() )
 			{
+				m_IDFBO->Resize( regionAvail.x, regionAvail.y );
+
 				auto [mx, my] = ImGui::GetMousePos();
 				mx -= viewportBoundsMin.x;
 				my -= viewportBoundsMin.y;
@@ -99,11 +112,12 @@ namespace Tridium::Editor {
 				int mouseX = (int)mx;
 				int mouseY = (int)my;
 
-				m_FBO->Bind();
-				int goID = m_FBO->ReadPixel( 1, mouseX, mouseY );
-				m_FBO->Unbind();
+				m_IDFBO->Bind();
+				RenderGameObjectIDs();
+				int goID = m_FBO->ReadPixel( 0, mouseX, mouseY );
+				m_IDFBO->Unbind();
 
-				GetEditorLayer()->GetPanel<SceneHeirarchyPanel>()->SetSelectedGameObject( (EntityID)goID );
+				GetSceneHeirarchy()->SetSelectedGameObject((EntityID)goID);
 			}
 		}
 		m_IsHovered = ImGui::IsWindowHovered();
@@ -179,6 +193,53 @@ namespace Tridium::Editor {
 				(ImGuizmo::OPERATION)m_GizmoState, ImGuizmo::LOCAL,
 				&identity[0][0], 8.0f, ImVec2( viewportBoundsMax.x - 75, viewportBoundsMin.y ), ImVec2( 75, 75 ), 0x10101010 );
 		}
+	}
+
+	void EditorViewportPanel::RenderGameObjectIDs()
+	{
+		RenderCommand::SetClearColor( { 0.1, 0.1, 0.12, 1.0 } );
+		RenderCommand::Clear();
+
+		m_GameObjectIDShader->Bind();
+
+		Matrix4 pvm = m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix();
+
+		auto meshComponents = GetActiveScene()->GetRegistry().view<MeshComponent, TransformComponent>();
+		RenderCommand::SetCullMode( true );
+		meshComponents.each( 
+			[&]( auto go, MeshComponent& meshComponent, TransformComponent& transform )
+			{
+				if ( !meshComponent.GetMesh().Valid() )
+					return;
+
+				if ( auto mesh = MeshLibrary::GetMesh( meshComponent.GetMesh() ) )
+				{
+					m_GameObjectIDShader->SetInt( "uID", (uint32_t)go );
+					m_GameObjectIDShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
+					mesh->GetVAO()->Bind();
+
+					RenderCommand::DrawIndexed( mesh->GetVAO() );
+
+					mesh->GetVAO()->Unbind();
+				}
+			} );
+
+		RenderCommand::SetCullMode( false );
+
+		auto quadMeshVAO = MeshLibrary::GetMesh( MeshLibrary::GetQuad() )->GetVAO();
+		quadMeshVAO->Bind();
+		auto spriteComponents = GetActiveScene()->GetRegistry().view<SpriteComponent, TransformComponent>();
+		spriteComponents.each( 
+			[&]( auto go, SpriteComponent& spriteComponent, TransformComponent& transform )
+			{
+				m_GameObjectIDShader->SetInt( "uID", (uint32_t)go );
+				m_GameObjectIDShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
+				RenderCommand::DrawIndexed( quadMeshVAO );
+			}
+		);
+		quadMeshVAO->Unbind();
+
+		m_GameObjectIDShader->Unbind();
 	}
 
 	SceneHeirarchyPanel* EditorViewportPanel::GetSceneHeirarchy()

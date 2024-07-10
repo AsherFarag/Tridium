@@ -45,6 +45,8 @@ namespace Tridium {
 
 		virtual void* GetNativeWindow() const = 0;
 
+		virtual void MakeContextCurrent( Window* window ) = 0;
+
 		// Implemented in platform-specific child classes
 		static UniquePtr<Window> Create( const WindowProps& props = WindowProps() );
 	};

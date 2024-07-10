@@ -71,6 +71,14 @@ namespace Tridium {
 		stbi_image_free( images[ 0 ].pixels );
 	}
 
+	void WindowsWindow::MakeContextCurrent( Window* window )
+	{
+		if ( window )
+			glfwMakeContextCurrent( (GLFWwindow*)window->GetNativeWindow() );
+		else
+			glfwMakeContextCurrent( nullptr );
+	}
+
 	void WindowsWindow::Init( const WindowProps& props )
 	{
 		m_Data.Title = props.Title;
@@ -92,7 +100,7 @@ namespace Tridium {
 		glfwWindowHint( GLFW_SAMPLES, 8 );
 
 		m_Window = glfwCreateWindow( (int)props.Width, (int)props.Height, props.Title.c_str(), nullptr, nullptr );
-		glfwMakeContextCurrent( m_Window );
+		MakeContextCurrent( this );
 
 		// - Rendering Context Initialisation -
 		TODO( "Make this API dependent!" );

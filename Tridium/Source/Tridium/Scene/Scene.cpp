@@ -9,7 +9,6 @@
 #include <Tridium/Rendering/RenderCommand.h>
 #include <Tridium/Rendering/Shader.h>
 #include <Tridium/Rendering/Texture.h>
-#include <Tridium/ECS/Components/Types/Rendering/MeshComponent.h>
 
 namespace Tridium {
 
@@ -57,9 +56,9 @@ namespace Tridium {
 		Matrix4 pvm = camera.GetProjection() * viewMatrix;
 		Renderer::BeginScene( camera, viewMatrix );
 
-		auto meshComponents = m_Registry.view<MeshComponent, TransformComponent>();
-
+		// - Draw Meshes -
 		RenderCommand::SetCullMode( true );
+		auto meshComponents = m_Registry.view<MeshComponent, TransformComponent>();
 		meshComponents.each( [&]( auto go, MeshComponent& meshComponent, TransformComponent& transform )
 			{
 				if ( !meshComponent.GetMesh().Valid() )
@@ -77,7 +76,6 @@ namespace Tridium {
 						shader = ShaderLibrary::GetShader( ShaderLibrary::GetDefaultShader() );
 
 					shader->Bind();
-					shader->SetInt( "uID", (uint32_t)go );
 					shader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
 
 					if ( mat )
@@ -94,47 +92,39 @@ namespace Tridium {
 
 					if ( mat )
 						mat->Unbind();
+
+					shader->Unbind();
 				}
 			} );
 
+
+		// - Draw Sprites -
 		RenderCommand::SetCullMode( false );
+
+		auto spriteShader = ShaderLibrary::GetShader( ShaderLibrary::GetSpriteShader() );
 		auto quadMeshVAO = MeshLibrary::GetMesh( MeshLibrary::GetQuad() )->GetVAO();
-		TextureHandle currentTexHandle;
-		Ref<Texture> currentTex = nullptr;
+
+		spriteShader->Bind();
+		quadMeshVAO->Bind();
+
 		auto spriteComponents = m_Registry.view<SpriteComponent, TransformComponent>();
-		spriteComponents.each( [ & ]( auto go, SpriteComponent& sprite, TransformComponent& transform )
+		spriteComponents.each( 
+			[ & ]( auto go, SpriteComponent& sprite, TransformComponent& transform )
 			{
-				if ( currentTexHandle != sprite.GetTexture() )
-				{
-					currentTexHandle = sprite.GetTexture();
-					currentTex = TextureLibrary::GetTexture( currentTexHandle );
-				}
+				spriteShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
 
-				Vector3 oldScale = transform.Scale;
+				Ref<Texture> tex = TextureLibrary::GetTexture( sprite.GetTexture() );
+				if ( tex )
+					tex->Bind();
 
-				if ( currentTex )
-				{
-					currentTex->Bind();
+				RenderCommand::DrawIndexed( quadMeshVAO );
 
-					Vector2 textureSize( currentTex->GetWidth(), currentTex->GetHeight() );
-					if ( textureSize.x > textureSize.y )
-					{
-						transform.Scale.y *= textureSize.y / textureSize.x;
-					}
-					else
-					{
-						transform.Scale.x *= textureSize.x / textureSize.y;
-					}
-				}
-
-				Renderer::Submit( ShaderLibrary::GetShader( sprite.GetShader() ), quadMeshVAO, transform.GetWorldTransform());
-				transform.Scale = oldScale;
-
-				if ( currentTex )
-				{
-					currentTex->Unbind();
-				}
+				if ( tex )
+					tex->Unbind();
 			} );
+
+		spriteShader->Unbind();
+		quadMeshVAO->Unbind();
 
 		Renderer::EndScene();
 	}

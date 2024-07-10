@@ -224,4 +224,5 @@ namespace Tridium {
 		glClearTexImage( m_ColorAttachments[ attachmentIndex ], 0,
 			Utils::TridiumFBTextureFormatToGL( spec.TextureFormat ), GL_INT, &value );
 	}
+
 }

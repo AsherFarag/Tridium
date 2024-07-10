@@ -25,5 +25,5 @@ uniform sampler2D uTexture;
 
 void main()
 {
-	oFragColor = vec4(texture(uTexture, vUV).rgb, 1);
+	oFragColor = texture(uTexture, vUV).rgba;
 }

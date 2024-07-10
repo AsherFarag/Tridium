@@ -52,6 +52,7 @@ namespace Tridium::Editor {
 	{
 		m_EditorCamera = MakeRef<EditorCamera>();
 
+		m_PanelStack.PushPanel<InspectorPanel>();
 		m_SceneHeirarchy = m_PanelStack.PushPanel<SceneHeirarchyPanel>();
 		m_ContentBrowser = m_PanelStack.PushPanel<ContentBrowserPanel>();
 		m_GameViewportPanel = m_PanelStack.PushPanel<GameViewportPanel>();

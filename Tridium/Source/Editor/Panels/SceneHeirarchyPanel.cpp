@@ -175,11 +175,23 @@ namespace Tridium::Editor {
 
 			ImGui::Separator();
 
-			if ( ImGui::MenuItem( "Cube" ) )
+			if ( ImGui::BeginMenu("Primatives") )
 			{
-				newGO = m_Context->InstantiateGameObject( "Cube" );
-				newGO.AddComponent<MeshComponent>();
-				SetSelectedGameObject( newGO );
+				if ( ImGui::MenuItem( "Cube" ) )
+				{
+					newGO = m_Context->InstantiateGameObject( "Cube" );
+					newGO.AddComponent<MeshComponent>().SetMesh( MeshLibrary::GetCube() );
+					SetSelectedGameObject( newGO );
+				}
+
+				if ( ImGui::MenuItem( "Sphere" ) )
+				{
+					newGO = m_Context->InstantiateGameObject( "Sphere" );
+					newGO.AddComponent<MeshComponent>().SetMesh( MeshLibrary::GetSphere() );
+					SetSelectedGameObject( newGO );
+				}
+
+				ImGui::EndMenu();
 			}
 
 			if ( ImGui::MenuItem( "Sprite" ) )

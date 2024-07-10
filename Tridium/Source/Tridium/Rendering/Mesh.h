@@ -64,8 +64,9 @@ namespace Tridium {
 	class MeshLoader
 	{
 	public:
-		static Ref<Mesh> Import( const std::string& filepath);
-		static Ref<Mesh> Import( const std::string& filepath, const MeshImportSettings& importSettings );
+		static Ref<Mesh> Import( const std::string& filepath, const MeshImportSettings& importSettings = {} );
+
+		static MeshHandle Load( const std::string& filepath, const MeshImportSettings& importSettings = {} );
 	};
 
 	class MeshLibrary : public AssetLibrary<MeshLibrary, MeshHandle, Mesh>
@@ -80,10 +81,9 @@ namespace Tridium {
 		static inline bool RemoveMesh( const MeshHandle& meshHandle ) { return Get().RemoveAsset( meshHandle ); }
 
 		// - Primatives -
-		static inline MeshHandle GetQuad() 
-		{ 
-			return Get().m_Quad;
-		}
+		static inline MeshHandle GetQuad() { return Get().m_Quad; }
+		static inline MeshHandle GetCube() { return Get().m_Cube; }
+		static inline MeshHandle GetSphere() { return Get().m_Sphere; }
 
 		virtual void Init() override;
 
@@ -92,5 +92,7 @@ namespace Tridium {
 
 		// - Primatives -
 		MeshHandle m_Quad;
+		MeshHandle m_Cube;
+		MeshHandle m_Sphere;
 	};
 }

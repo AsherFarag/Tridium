@@ -14,7 +14,7 @@ namespace Tridium {
 		friend class SceneSerializer;
 
 	public:
-		Scene( const std::string& name = "Unnamed Scene");
+		Scene( const std::string& name = "Untitled");
 		~Scene();
 
 		void OnBegin();
@@ -41,10 +41,4 @@ namespace Tridium {
 
 		EntityID m_MainCamera;
 	};
-
-#pragma region Scene Template Definitions
-
-
-#pragma endregion
-
 }

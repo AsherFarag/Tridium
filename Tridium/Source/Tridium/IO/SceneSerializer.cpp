@@ -191,18 +191,7 @@ namespace Tridium {
 				MeshHandle meshHandle;
 				auto meshFilePath = mesh.as<std::string>();
 
-				if ( !MeshLibrary::GetMeshHandle( meshFilePath, meshHandle ) )
-				{
-					meshHandle = MeshHandle::Create();
-					if ( Ref<Mesh> loadedMesh = MeshLoader::Import( meshFilePath ) )
-					{
-						loadedMesh->_SetHandle( meshHandle );
-						if ( !MeshLibrary::AddMesh( meshFilePath, loadedMesh ) )
-							meshHandle = {};
-					}
-				}
-
-				mc->SetMesh( meshHandle );
+				mc->SetMesh( MeshLoader::Load( meshFilePath ) );
 			}
 
 			if ( auto mat = meshComponent["Material"] )

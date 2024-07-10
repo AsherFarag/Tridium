@@ -143,6 +143,8 @@ namespace Tridium {
 		std::ofstream outFile( filepath );
 		outFile << out.c_str();
 
+		m_Material->SetModified( false );
+
 		TE_CORE_TRACE( "End Serializing Material" );
 	}
 

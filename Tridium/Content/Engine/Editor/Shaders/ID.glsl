@@ -1,30 +1,27 @@
 #type Vertex
-#version 410
+#version 420
 
 layout(location = 0) in vec3 aPosition;
 
-uniform int aID;
+uniform int uID;
 uniform mat4 uPVM;		
 
-out vec2 vID;
+flat out int vID;
 
 void main()
 {	
 	gl_Position = uPVM * vec4(aPosition, 1);
-	vID = aID;
+	vID = uID;
 }
 
 #type Fragment
-#version 410 core
+#version 420 core
 
 layout(location = 0) out int oID;
 
-in vec2 vID;						
-
-uniform sampler2D uTexture;
+flat in int vID;						
 
 void main()
 {
-	oFragColor = vec4(texture(uTexture, vUV).rgb, 1);
-	vID = aID;
+	oID = vID;
 }

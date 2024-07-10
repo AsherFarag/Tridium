@@ -61,6 +61,9 @@ namespace Tridium::Editor {
 			material->SetModified( modified );
 		}
 
+		m_IsHovered = ImGui::IsWindowHovered();
+		m_IsFocused = ImGui::IsWindowFocused();
+
 		ImGuiEnd();
 	}
 

@@ -1,24 +1,13 @@
-Scene: Unnamed Scene
+Scene: Untitled
 GameObjects:
-  - GameObject: 6009218087540367391
-    TagComponent:
-      "Cube"
-    TransformComponent:
-      Position: [1.11287546, -0.5, -2.98023259e-08]
-      Rotation: [-90, -0, 0]
-      Scale: [0.0700000301, 0.0699916333, 0.0699916184]
-      Children: []
-    MeshComponent:
-      Mesh: "Content\\Temp\\stray-robot\\source\\robot.fbx"
-      Material: "Content\\Robot.tasset"
-  - GameObject: 6231356404510969453
+  - GameObject: 4543584931917837423
     TagComponent:
       "Cube"
     TransformComponent:
       Position: [0, 0, 0]
-      Rotation: [0, -0, 0]
+      Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
       Children: []
     MeshComponent:
-      Mesh: "Content\\Temp\\Primitives\\Box.obj"
-      Material: "Content\\TestMat.tasset"
+      Mesh: "Content\\Engine\\Mesh\\Primitive\\Cube.fbx"
+      Material: "Content\\Robot.tasset"

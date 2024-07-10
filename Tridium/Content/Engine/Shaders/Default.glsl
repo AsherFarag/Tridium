@@ -6,15 +6,13 @@ layout(location = 1) in vec3 aNormal;
 layout(location = 2) in vec2 aUV[8];
 layout(location = 3) in vec3 aTangent;
 
-uniform int uID; // Temp
 uniform mat4 uPVM;
 
 out vec4 vPosition;
 out vec3 vNormal;
 out vec2 vUV[8];
 out vec3 vTangent;
-out float vDepth;
-flat out int vID; // Temp			
+out float vDepth;		
 
 void main()
 {	
@@ -23,26 +21,22 @@ void main()
 	vNormal = aNormal;
 	for (int i = 0; i < 8; ++i)
 	{
-		 vUV[i] = aUV[i];
+		vUV[i] = aUV[i];
 	}
 	vTangent = aTangent;
 	vDepth = gl_Position.z;
-
-	vID = uID;// Temp	
 }
 
 #type Fragment
 #version 420 core
 
 layout(location = 0) out vec4 oFragColor;
-layout(location = 1) out int oID; // Temp
 
 in vec4 vPosition;
 in vec3 vNormal;
 in vec2 vUV[8];
 in vec3 vTangent;
 in float vDepth;					
-flat in int vID; // Temp	
 
 uniform vec4 uColor;
 
@@ -64,6 +58,4 @@ void main()
 	
 	// Output the final color
 	oFragColor = uColor * vec4(finalColor, 1.0);
-
-	oID = vID;
 }
