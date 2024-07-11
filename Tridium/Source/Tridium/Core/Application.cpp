@@ -6,14 +6,9 @@
 #endif // IS_EDITOR
 
 // TEMP ?
-#include <Tridium/Rendering/Renderer.h>
 #include <Tridium/Rendering/RenderCommand.h>
+#include "Tridium/IO/ProjectSerializer.h"
 
-// TEMP
-#include "GLFW/glfw3.h"
-#include <Tridium/ECS/GameObject.h>
-#include <Tridium/ECS/Components/Types.h>
-#include <Tridium/Scripting/Script.h>
 
 namespace Tridium {
 
@@ -26,14 +21,17 @@ namespace Tridium {
 		m_Window = Window::Create();
 		m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
 
+
+		m_Project = MakeRef<Project>();
+		ProjectSerializer s( m_Project );
+		s.SerializeText( "test.tproject" );
+
 		TODO( "Setup a proper scene initialiser!" );
 		m_ActiveScene = MakeRef<Scene>();
 
 		// Initialise ImGui
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay( m_ImGuiLayer );
-
-		ProjectSerializer::Deserialize( m_Project, "Content/Sandbox.TEproject" );
 
 #ifdef IS_EDITOR
 

@@ -5,7 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 namespace Tridium {
 
-	START_REFLECT( TransformComponent )
+	BEGIN_REFLECT( TransformComponent )
 		PROPERTY( TransformComponent, Position )
 		PROPERTY( TransformComponent, Rotation )
 		PROPERTY( TransformComponent, Scale )

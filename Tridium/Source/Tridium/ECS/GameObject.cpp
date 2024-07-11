@@ -4,6 +4,10 @@
 
 namespace Tridium {
 
+    BEGIN_REFLECT( GameObject )
+        PROPERTY( GameObject, m_ID )
+    END_REFLECT
+
     GameObject::GameObject( EntityID a_ID )
         : m_ID( a_ID )
     {

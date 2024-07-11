@@ -110,7 +110,7 @@ namespace Tridium::Editor {
 		}
 
 		ImGui::PushStyleVar( ImGuiStyleVar_WindowPadding, ImVec2( 0.0f, 0.0f ) );
-		ImGui::Begin( Application::GetActiveProject().GetName().c_str(), nullptr, window_flags );
+		ImGui::Begin( Application::GetActiveProject()->GetName().c_str(), nullptr, window_flags );
 		ImGui::PopStyleVar();
 
 		if ( opt_Fullscreen )

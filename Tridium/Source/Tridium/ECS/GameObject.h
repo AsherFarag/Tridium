@@ -1,5 +1,5 @@
 #pragma once
-#include "entt.hpp"
+#include "Reflection.h"
 
 // TEMP ?
 #include <Tridium/Core/Application.h>
@@ -14,6 +14,7 @@ namespace Tridium {
 
 	class GameObject
 	{
+		REFLECT;
 		friend class Scene;
 	public:
 		GameObject( EntityID id = entt::null );

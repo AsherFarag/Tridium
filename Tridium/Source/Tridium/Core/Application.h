@@ -30,8 +30,8 @@ namespace Tridium
 		void PushOverlay( Layer* overlay );
 
 		static Application& Get() { return *s_Instance; }
-		static const Project& GetActiveProject() { return Get().m_Project; }
-		static const fs::path& GetAssetDirectory() { return Get().m_Project.GetAssetDirectory(); }
+		static Ref<Project> GetActiveProject() { return Get().m_Project; }
+		static const fs::path& GetAssetDirectory() { return Get().m_Project->GetAssetDirectory(); }
 
 		Window& GetWindow() { return *m_Window; }
 		uint32_t GetFPS() const { return m_FPS; }
@@ -50,7 +50,7 @@ namespace Tridium
 		ImGuiLayer* m_ImGuiLayer;
 		LayerStack m_LayerStack;
 
-		Project m_Project;
+		Ref<Project> m_Project;
 		Ref<Scene> m_ActiveScene;
 
 		uint32_t m_FPS = 0u;
