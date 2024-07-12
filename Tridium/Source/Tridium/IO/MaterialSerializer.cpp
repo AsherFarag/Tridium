@@ -97,7 +97,7 @@ namespace Tridium {
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Material";
-		out << YAML::Value << m_Material->GetHandle();
+		out << YAML::Value << m_Material->GetGUID();
 
 		Ref<Shader> shader = ShaderLibrary::GetShader( m_Material->GetShader() );
 		out << YAML::Key << "Shader"; out << YAML::Value << ( shader ? shader->GetPath() : "" );

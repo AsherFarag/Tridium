@@ -204,7 +204,7 @@ namespace Tridium {
 					if ( Ref<Material> loadedMat = MaterialLoader::Import( filePath ) )
 					{
 						if ( MaterialLibrary::AddMaterial( filePath, loadedMat ) )
-							handle = loadedMat->GetHandle();
+							handle = loadedMat->GetGUID();
 					}
 				}
 

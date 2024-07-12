@@ -84,8 +84,8 @@ namespace Tridium {
 	{
 	public:
 		static inline Ref<Shader> GetShader( const ShaderHandle& shaderHandle ) { return Get().GetAsset( shaderHandle ); }
-		static inline bool GetShaderHandle( const std::string& path, ShaderHandle& outShaderHandle ) { return Get().GetHandle( path, outShaderHandle ); }
-		static inline ShaderHandle GetShaderHandle( const std::string& path ) { return Get().GetHandle( path ); }
+		static inline bool GetShaderHandle( const std::string& path, ShaderHandle& outShaderHandle ) { return Get().GetGUID( path, outShaderHandle ); }
+		static inline ShaderHandle GetShaderHandle( const std::string& path ) { return Get().GetGUID( path ); }
 		static inline bool HasShaderHandle( const std::string& path ) { return Get().HasHandle( path ); }
 		static inline bool AddShader( const std::string& path, const Ref<Shader>& shader ) { return Get().AddAsset( path, shader ); }
 		static inline bool RemoveShader( const ShaderHandle& shaderHandle ) { return Get().RemoveAsset( shaderHandle ); }

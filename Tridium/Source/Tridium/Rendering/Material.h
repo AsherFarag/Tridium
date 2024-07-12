@@ -59,8 +59,8 @@ namespace Tridium {
 	{
 	public:
 		static inline Ref<Material> GetMaterial( const MaterialHandle& materialHandle ) { return Get().GetAsset( materialHandle ); }
-		static inline bool GetMaterialHandle( const std::string& path, MaterialHandle& outMaterialHandle ) { return Get().GetHandle( path, outMaterialHandle ); }
-		static inline MaterialHandle GetMaterialHandle( const std::string& path ) { return Get().GetHandle( path ); }
+		static inline bool GetMaterialHandle( const std::string& path, MaterialHandle& outMaterialHandle ) { return Get().GetGUID( path, outMaterialHandle ); }
+		static inline MaterialHandle GetMaterialHandle( const std::string& path ) { return Get().GetGUID( path ); }
 		static inline bool HasMaterialHandle( const std::string& path ) { return Get().HasHandle( path ); }
 		static inline bool AddMaterial( const std::string& path, const Ref<Material>& material ) { return Get().AddAsset( path, material ); }
 		static inline bool RemoveMaterial( const MaterialHandle& materialHandle ) { return Get().RemoveAsset( materialHandle ); }

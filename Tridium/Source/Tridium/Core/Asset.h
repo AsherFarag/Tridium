@@ -5,31 +5,34 @@ namespace Tridium {
 
 	using AssetHandle = GUID;
 
+	struct AssetMetaData
+	{
+		std::string Path;
+		GUID ID;
+		bool Modified = false;
+	};
+
+	template <typename T>
 	class Asset
 	{
 	public:
-		Asset() = default;
-		virtual ~Asset() = default;
+		static Ref<T> Create();
 
-		bool IsModified() const { return m_Modified; }
-		void SetModified( bool modified );
+		bool IsModified() const { return m_MetaData.Modified; }
+		virtual void SetModified( bool modified ) { m_MetaData.Modified = modified; }
 
-		const std::string& GetPath() const { return m_Path; }
-		const AssetHandle GetHandle() const { return m_Handle; }
-		void _SetPath( const std::string& path ) { m_Path = path; }
-		void _SetHandle( const AssetHandle& handle ) { m_Handle = handle; }
+		const std::string& GetPath() const { return m_MetaData.Path; }
+		const GUID GetGUID() const { return m_MetaData.ID; }
+		void _SetPath( const std::string& path ) { m_MetaData.Path = path; }
 
 	protected:
-		std::string m_Path;
-		GUID m_Handle;
-		bool m_Modified = false;
+		AssetMetaData m_MetaData;
 	};
 
-	template <typename T, typename AssetHandle, typename AssetType>
-	class AssetLibrary
+	class AssetLibrary final
 	{
 	public:
-		static T& Get();
+		static AssetLibrary& Get();
 		static AssetHandle Create( const std::string& path );
 
 		auto& GetLibrary() { return m_Library; }
@@ -38,8 +41,8 @@ namespace Tridium {
 		virtual void Init() {};
 
 		Ref<AssetType> GetAsset( const AssetHandle& handle );
-		bool GetHandle( const std::string& path, AssetHandle& outHandle );
-		AssetHandle GetHandle( const std::string& path );
+		bool GetGUID( const std::string& path, AssetHandle& outHandle );
+		AssetHandle GetGUID( const std::string& path );
 		bool HasHandle( const std::string& path );
 		bool AddAsset( const std::string& path, const Ref<AssetType>& asset );
 		bool RemoveAsset( const AssetHandle& handle );
@@ -48,6 +51,30 @@ namespace Tridium {
 		std::unordered_map<std::string, AssetHandle> m_PathHandles;
 		std::unordered_map<AssetHandle, Ref<AssetType>> m_Library;
 	};
+
+	//template <typename T, typename AssetHandle, typename AssetType>
+	//class AssetLibrary
+	//{
+	//public:
+	//	static T& Get();
+	//	static AssetHandle Create( const std::string& path );
+
+	//	auto& GetLibrary() { return m_Library; }
+
+	//protected:
+	//	virtual void Init() {};
+
+	//	Ref<AssetType> GetAsset( const AssetHandle& handle );
+	//	bool GetGUID( const std::string& path, AssetHandle& outHandle );
+	//	AssetHandle GetGUID( const std::string& path );
+	//	bool HasHandle( const std::string& path );
+	//	bool AddAsset( const std::string& path, const Ref<AssetType>& asset );
+	//	bool RemoveAsset( const AssetHandle& handle );
+
+	//protected:
+	//	std::unordered_map<std::string, AssetHandle> m_PathHandles;
+	//	std::unordered_map<AssetHandle, Ref<AssetType>> m_Library;
+	//};
 
 	template<typename T, typename AssetHandle, typename AssetType>
 	inline T& AssetLibrary<T, AssetHandle, AssetType>::Get()
@@ -66,7 +93,7 @@ namespace Tridium {
 	template<typename T, typename AssetHandle, typename AssetType>
 	inline AssetHandle AssetLibrary<T, AssetHandle, AssetType>::Create( const std::string& path )
 	{
-		if ( auto handle = Get().GetHandle( path ); handle.Valid() )
+		if ( auto handle = Get().GetGUID( path ); handle.Valid() )
 			return handle;
 
 		auto asset = MakeRef<AssetType>();
@@ -74,7 +101,7 @@ namespace Tridium {
 		asset->_SetPath( path );
 		Get().AddAsset( path, asset );
 
-		return asset->GetHandle();
+		return asset->GetGUID();
 	}
 
 	template<typename T, typename AssetHandle, typename AssetType>
@@ -89,7 +116,7 @@ namespace Tridium {
 	}
 
 	template<typename T, typename AssetHandle, typename AssetType>
-	inline bool AssetLibrary<T, AssetHandle, AssetType>::GetHandle( const std::string& path, AssetHandle& outHandle )
+	inline bool AssetLibrary<T, AssetHandle, AssetType>::GetGUID( const std::string& path, AssetHandle& outHandle )
 	{
 		if ( auto it = m_PathHandles.find( path ); it != m_PathHandles.end() )
 		{
@@ -101,7 +128,7 @@ namespace Tridium {
 	}
 
 	template<typename T, typename AssetHandle, typename AssetType>
-	inline AssetHandle AssetLibrary<T, AssetHandle, AssetType>::GetHandle( const std::string& path )
+	inline AssetHandle AssetLibrary<T, AssetHandle, AssetType>::GetGUID( const std::string& path )
 	{
 		if ( auto it = m_PathHandles.find( path ); it != m_PathHandles.end() )
 		{
@@ -125,15 +152,15 @@ namespace Tridium {
 	template<typename T, typename AssetHandle, typename AssetType>
 	inline bool AssetLibrary<T, AssetHandle, AssetType>::AddAsset( const std::string& path, const Ref<AssetType>& asset )
 	{
-		TE_CORE_ASSERT( asset->GetHandle().Valid() );
+		TE_CORE_ASSERT( asset->GetGUID().Valid() );
 		if ( HasHandle( path ) )
 			return false;
 
-		if ( GetAsset( asset->GetHandle() ) )
+		if ( GetAsset( asset->GetGUID() ) )
 			return false;
 
-		m_PathHandles.emplace( path, asset->GetHandle() );
-		m_Library.emplace( asset->GetHandle(), asset );
+		m_PathHandles.emplace( path, asset->GetGUID() );
+		m_Library.emplace( asset->GetGUID(), asset );
 
 		return true;
 	}

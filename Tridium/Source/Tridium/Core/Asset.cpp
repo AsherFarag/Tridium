@@ -9,12 +9,12 @@
 
 namespace Tridium {
 
-	void Asset::SetModified( bool modified )
-	{
-        if ( m_Modified == modified )
-            return;
-
-        m_Modified = modified;
-	}
+    template<typename T>
+    Ref<T> Asset<T>::Create()
+    {
+        Ref<T> asset = MakeRef<T>();
+        asset->m_MetaData.ID = GUID::Create();
+        return ;
+    }
 
 }

@@ -74,8 +74,8 @@ namespace Tridium {
 		friend MeshLoader;
 	public:
 		static inline Ref<Mesh> GetMesh( const MeshHandle& meshHandle ) { return Get().GetAsset( meshHandle ); }
-		static inline bool GetMeshHandle( const std::string& path, MeshHandle& outMeshHandle ) { return Get().GetHandle( path, outMeshHandle ); }
-		static inline MeshHandle GetMeshHandle( const std::string& path ) { return Get().GetHandle( path ); }
+		static inline bool GetMeshHandle( const std::string& path, MeshHandle& outMeshHandle ) { return Get().GetGUID( path, outMeshHandle ); }
+		static inline MeshHandle GetMeshHandle( const std::string& path ) { return Get().GetGUID( path ); }
 		static inline bool HasMeshHandle( const std::string& path ) { return Get().HasHandle( path ); }
 		static inline bool AddMesh( const std::string& path, const Ref<Mesh>& mesh ) { return Get().AddAsset( path, mesh ); }
 		static inline bool RemoveMesh( const MeshHandle& meshHandle ) { return Get().RemoveAsset( meshHandle ); }

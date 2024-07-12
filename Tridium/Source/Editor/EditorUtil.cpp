@@ -47,7 +47,7 @@ namespace Tridium::Editor::Util
 
 		if ( auto mat = MaterialLoader::Import( filePath ) )
 		{
-			handle = mat->GetHandle();
+			handle = mat->GetGUID();
 			mat->_SetPath( filePath );
 			MaterialLibrary::AddMaterial( filePath, mat );
 		}

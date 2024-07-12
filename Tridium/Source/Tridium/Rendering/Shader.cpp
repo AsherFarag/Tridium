@@ -56,11 +56,11 @@ namespace Tridium {
 	void ShaderLibrary::Init()
 	{
 		auto defaultShader = Shader::Create( ( Application::GetAssetDirectory() / "Engine" / "Shaders" / "Default.glsl" ).string() );
-		m_Default = defaultShader->GetHandle();
+		m_Default = defaultShader->GetGUID();
 		AddAsset( defaultShader->GetPath(), defaultShader );
 
 		auto spriteShader = Shader::Create( ( Application::GetAssetDirectory() / "Engine" / "Shaders" / "Sprite.glsl" ).string() );
-		m_Sprite = spriteShader->GetHandle();
+		m_Sprite = spriteShader->GetGUID();
 		AddAsset( spriteShader->GetPath(), spriteShader );
 	}
 

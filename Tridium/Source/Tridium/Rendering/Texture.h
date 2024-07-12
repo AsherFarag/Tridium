@@ -74,8 +74,8 @@ namespace Tridium {
 	{
 	public:
 		static inline Ref<Texture> GetTexture( const TextureHandle& textureHandle ) { return Get().GetAsset( textureHandle ); }
-		static inline bool GetTextureHandle( const std::string& path, TextureHandle& outTextureHandle ) { return Get().GetHandle( path, outTextureHandle ); }
-		static inline TextureHandle GetTextureHandle( const std::string& path ) { return Get().GetHandle( path ); }
+		static inline bool GetTextureHandle( const std::string& path, TextureHandle& outTextureHandle ) { return Get().GetGUID( path, outTextureHandle ); }
+		static inline TextureHandle GetTextureHandle( const std::string& path ) { return Get().GetGUID( path ); }
 		static inline bool HasTextureHandle( const std::string& path ) { return Get().HasHandle( path ); }
 		static inline bool AddTexture( const std::string& path, const Ref<Texture>& texture ) { return Get().AddAsset( path, texture ); }
 		static inline bool RemoveTexture( const TextureHandle& textureHandle ) { return Get().RemoveAsset( textureHandle ); }
