@@ -14,7 +14,7 @@ namespace Tridium {
 
 	class GameObject
 	{
-		REFLECT;
+		REFLECT
 		friend class Scene;
 	public:
 		GameObject( EntityID id = entt::null );

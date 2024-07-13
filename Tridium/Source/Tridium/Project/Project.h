@@ -5,8 +5,8 @@ namespace Tridium {
 	struct ProjectConfiguration
 	{
 		std::string Name = "Untitled";
-		fs::path AssetDirectory = "Content"; // TEMP
-		fs::path MetaDirectory = "meta";
+		fs::path AssetDirectory = "Content";
+		fs::path MetaDirectory = "Meta";
 		fs::path StartScene = "Content";
 
 		ProjectConfiguration() = default;
@@ -27,6 +27,7 @@ namespace Tridium {
 
 		const std::string& GetName() const { return m_ProjectConfig.Name; }
 		const fs::path& GetAssetDirectory() const { return m_ProjectConfig.AssetDirectory; }
+		const fs::path& GetMetaDirectory() const { return m_ProjectConfig.MetaDirectory; }
 		const fs::path& GetStartSceneDirectory() const { return m_ProjectConfig.StartScene; }
 
 

@@ -4,8 +4,6 @@
 
 namespace Tridium {
 
-	using MeshHandle = AssetHandle;
-
 	class VertexArray;
 	class VertexBuffer;
 	class IndexBuffer;
@@ -22,10 +20,10 @@ namespace Tridium {
 
 	class Mesh : public Asset
 	{
-		friend class MeshLoader;
-		friend class MeshLibrary;
-
 	public:
+		ASSET_CLASS_TYPE( Mesh )
+		static bool Load( const std::string& path );
+
 		inline auto GetVAO() const { return m_VAO; }
 		inline auto GetVBO() const { return m_VBO; }
 		inline auto GetIBO() const { return m_IBO; }
@@ -65,34 +63,5 @@ namespace Tridium {
 	{
 	public:
 		static Ref<Mesh> Import( const std::string& filepath, const MeshImportSettings& importSettings = {} );
-
-		static MeshHandle Load( const std::string& filepath, const MeshImportSettings& importSettings = {} );
-	};
-
-	class MeshLibrary : public AssetLibrary<MeshLibrary, MeshHandle, Mesh>
-	{
-		friend MeshLoader;
-	public:
-		static inline Ref<Mesh> GetMesh( const MeshHandle& meshHandle ) { return Get().GetAsset( meshHandle ); }
-		static inline bool GetMeshHandle( const std::string& path, MeshHandle& outMeshHandle ) { return Get().GetGUID( path, outMeshHandle ); }
-		static inline MeshHandle GetMeshHandle( const std::string& path ) { return Get().GetGUID( path ); }
-		static inline bool HasMeshHandle( const std::string& path ) { return Get().HasHandle( path ); }
-		static inline bool AddMesh( const std::string& path, const Ref<Mesh>& mesh ) { return Get().AddAsset( path, mesh ); }
-		static inline bool RemoveMesh( const MeshHandle& meshHandle ) { return Get().RemoveAsset( meshHandle ); }
-
-		// - Primatives -
-		static inline MeshHandle GetQuad() { return Get().m_Quad; }
-		static inline MeshHandle GetCube() { return Get().m_Cube; }
-		static inline MeshHandle GetSphere() { return Get().m_Sphere; }
-
-		virtual void Init() override;
-
-	private:
-		void InitPrimatives();
-
-		// - Primatives -
-		MeshHandle m_Quad;
-		MeshHandle m_Cube;
-		MeshHandle m_Sphere;
 	};
 }

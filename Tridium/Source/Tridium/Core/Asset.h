@@ -1,191 +1,75 @@
 #pragma once
 #include <Tridium/Core/Core.h>
+#include <Tridium/Core/Singleton.h>
+
+#define ASSET_MANAGER_FILENAME "AssetManager.tmeta"
 
 namespace Tridium {
 
-	using AssetHandle = GUID;
+#define ASSET_CLASS_TYPE(type) static EAssetType GetStaticType() { return EAssetType::type; }\
+							   virtual EAssetType GetAssetType() { return GetStaticType(); }\
+                               virtual const char* AssetTypeName() { return #type; }\
 
-	struct AssetMetaData
+	enum class EAssetType
 	{
-		std::string Path;
-		GUID ID;
-		bool Modified = false;
+		None = 0, Mesh, Shader, Texture, Material,
 	};
 
-	template <typename T>
 	class Asset
 	{
+		friend class AssetManager;
 	public:
-		static Ref<T> Create();
+		virtual EAssetType GetAssetType() { return EAssetType::None; }
+		virtual const char* AssetTypeName() { return "None"; }
 
-		bool IsModified() const { return m_MetaData.Modified; }
-		virtual void SetModified( bool modified ) { m_MetaData.Modified = modified; }
+		const std::string& GetPath() const { return m_Path; }
+		const GUID GetGUID() const { return m_GUID; }
 
-		const std::string& GetPath() const { return m_MetaData.Path; }
-		const GUID GetGUID() const { return m_MetaData.ID; }
-		void _SetPath( const std::string& path ) { m_MetaData.Path = path; }
+		bool IsLoaded() const { return m_Loaded; }
+		bool IsModified() const { return m_Modified; }
+		void SetModified( bool modified ) { m_Modified = modified; }
 
 	protected:
-		AssetMetaData m_MetaData;
+		GUID m_GUID;
+		std::string m_Path;
+		bool m_Loaded = false;
+		bool m_Modified = false;
 	};
 
-	class AssetLibrary final
+	class AssetManager final : public Singleton<AssetManager>
 	{
+		friend class Singleton<AssetManager>;
 	public:
-		static AssetLibrary& Get();
-		static AssetHandle Create( const std::string& path );
-
 		auto& GetLibrary() { return m_Library; }
 
-	protected:
-		virtual void Init() {};
+		/* Returns true if an asset with this GUID is loaded in the asset library. */
+		template <typename T>
+		static bool HasAsset( const GUID& assetGUID );
+		/*
+		Returns the loaded asset with the corresponding GUID. 
+		If the asset isn't loaded and shouldLoad == true, the asset will be loaded and returned.
+		else, returns nullptr.
+		*/
+		template <typename T>
+		static Ref<T> GetAsset( const GUID& assetGUID, bool shouldLoad = true );
 
-		Ref<AssetType> GetAsset( const AssetHandle& handle );
-		bool GetGUID( const std::string& path, AssetHandle& outHandle );
-		AssetHandle GetGUID( const std::string& path );
-		bool HasHandle( const std::string& path );
-		bool AddAsset( const std::string& path, const Ref<AssetType>& asset );
-		bool RemoveAsset( const AssetHandle& handle );
+		template <typename T>
+		static bool LoadAsset( const GUID& assetGUID, Ref<T>& outAsset );
+		template <typename T>
+		static bool LoadAsset( const std::string& path, Ref<T>& outAsset );
 
-	protected:
-		std::unordered_map<std::string, AssetHandle> m_PathHandles;
-		std::unordered_map<AssetHandle, Ref<AssetType>> m_Library;
+		static void Serialize( const fs::path& path );
+		bool Deserialize( const std::string& path );
+		static Ref<Asset> Import( const fs::path& path );
+
+	private:
+		AssetManager() = default;
+		/* Deserializes the Asset Directory Meta File containing a map of GUID's to file paths and adds them to m_Paths. */
+		virtual void Init() override;
+		static void AddAsset( const Ref<Asset>& asset ) { Get().m_Library[asset->GetGUID()] = asset; }
+
+	private:
+		std::unordered_map<GUID, Ref<Asset>> m_Library;
+		std::unordered_map<GUID, std::string> m_Paths;
 	};
-
-	//template <typename T, typename AssetHandle, typename AssetType>
-	//class AssetLibrary
-	//{
-	//public:
-	//	static T& Get();
-	//	static AssetHandle Create( const std::string& path );
-
-	//	auto& GetLibrary() { return m_Library; }
-
-	//protected:
-	//	virtual void Init() {};
-
-	//	Ref<AssetType> GetAsset( const AssetHandle& handle );
-	//	bool GetGUID( const std::string& path, AssetHandle& outHandle );
-	//	AssetHandle GetGUID( const std::string& path );
-	//	bool HasHandle( const std::string& path );
-	//	bool AddAsset( const std::string& path, const Ref<AssetType>& asset );
-	//	bool RemoveAsset( const AssetHandle& handle );
-
-	//protected:
-	//	std::unordered_map<std::string, AssetHandle> m_PathHandles;
-	//	std::unordered_map<AssetHandle, Ref<AssetType>> m_Library;
-	//};
-
-	template<typename T, typename AssetHandle, typename AssetType>
-	inline T& AssetLibrary<T, AssetHandle, AssetType>::Get()
-	{
-		static T s_LibraryInstance;
-		static bool m_HasBeenInitialised = false;
-		if ( !m_HasBeenInitialised )
-		{
-			m_HasBeenInitialised = true;
-			s_LibraryInstance.Init();
-		}
-
-		return s_LibraryInstance;
-	}
-
-	template<typename T, typename AssetHandle, typename AssetType>
-	inline AssetHandle AssetLibrary<T, AssetHandle, AssetType>::Create( const std::string& path )
-	{
-		if ( auto handle = Get().GetGUID( path ); handle.Valid() )
-			return handle;
-
-		auto asset = MakeRef<AssetType>();
-		asset->_SetHandle( AssetHandle::Create() );
-		asset->_SetPath( path );
-		Get().AddAsset( path, asset );
-
-		return asset->GetGUID();
-	}
-
-	template<typename T, typename AssetHandle, typename AssetType>
-	inline Ref<AssetType> AssetLibrary<T, AssetHandle, AssetType>::GetAsset( const AssetHandle& handle )
-	{
-		if ( auto it = m_Library.find( handle ); it != m_Library.end() )
-		{
-			return it->second;
-		}
-
-		return nullptr;
-	}
-
-	template<typename T, typename AssetHandle, typename AssetType>
-	inline bool AssetLibrary<T, AssetHandle, AssetType>::GetGUID( const std::string& path, AssetHandle& outHandle )
-	{
-		if ( auto it = m_PathHandles.find( path ); it != m_PathHandles.end() )
-		{
-			outHandle = it->second;
-			return true;
-		}
-
-		return false;
-	}
-
-	template<typename T, typename AssetHandle, typename AssetType>
-	inline AssetHandle AssetLibrary<T, AssetHandle, AssetType>::GetGUID( const std::string& path )
-	{
-		if ( auto it = m_PathHandles.find( path ); it != m_PathHandles.end() )
-		{
-			return it->second;
-		}
-
-		return {};
-	}
-
-	template<typename T, typename AssetHandle, typename AssetType>
-	inline bool AssetLibrary<T, AssetHandle, AssetType>::HasHandle( const std::string& path )
-	{
-		if ( auto it = m_PathHandles.find( path ); it != m_PathHandles.end() )
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	template<typename T, typename AssetHandle, typename AssetType>
-	inline bool AssetLibrary<T, AssetHandle, AssetType>::AddAsset( const std::string& path, const Ref<AssetType>& asset )
-	{
-		TE_CORE_ASSERT( asset->GetGUID().Valid() );
-		if ( HasHandle( path ) )
-			return false;
-
-		if ( GetAsset( asset->GetGUID() ) )
-			return false;
-
-		m_PathHandles.emplace( path, asset->GetGUID() );
-		m_Library.emplace( asset->GetGUID(), asset );
-
-		return true;
-	}
-
-	template<typename T, typename AssetHandle, typename AssetType>
-	inline bool AssetLibrary<T, AssetHandle, AssetType>::RemoveAsset( const AssetHandle& handle )
-	{
-		TE_CORE_ASSERT( handle.Valid() );
-
-		for ( auto it = m_PathHandles.begin(); it != m_PathHandles.end(); ++it )
-		{
-			if ( it->second == handle )
-			{
-				m_PathHandles.erase( it );
-				break;
-			}
-		}
-
-		if ( auto it = m_Library.find( handle ); it != m_Library.end() )
-		{
-			m_Library.erase( it );
-			return true;
-		}
-
-		return false;
-	}
-
 }

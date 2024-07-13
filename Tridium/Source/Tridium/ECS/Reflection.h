@@ -4,7 +4,7 @@ using namespace entt::literals;
 
 #define REFLECT friend class SceneSerializer;\
 friend class Reflector;\
-static void OnReflect()
+static void OnReflect();
 
 #define BEGIN_REFLECT(Class) void Class::OnReflect() { entt::meta<Class>().type(entt::type_hash<Class>::value())
 	#define PROPERTY(Class, Name) .data<&Class::Name>(entt::hashed_string( #Name ))

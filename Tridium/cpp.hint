@@ -5,3 +5,4 @@
 #define DEFINE_COMPONENT(__VA_ARGS__) EXPAND(SELECT_MACRO_2( __VA_ARGS__, DEFINE_INHERITED_COMPONENT, DEFINE_BASE_COMPONENT )(__VA_ARGS__))
 #define BEGIN_REFLECT(Class) void Class::OnReflect() { entt::meta<Class>().type(entt::type_hash<Class>::value())
 #define PROPERTY(Class, Name) .data<&Class::Name>(entt::hashed_string( #Name ))
+#define ASSET_CLASS_TYPE(type) static EAssetType GetStaticType() { return EventType::type; } virtual EAssetType GetAssetType() { return GetStaticType(); } virtual const char* AssetTypeName() { return #type; }
