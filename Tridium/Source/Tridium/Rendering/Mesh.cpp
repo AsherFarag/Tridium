@@ -17,9 +17,9 @@ namespace Tridium {
         PostProcessFlags = aiProcess_PreTransformVertices | aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_GlobalScale;
     }
 
-#pragma region MeshLoader
+#pragma region MeshImporter
 
-    Ref<Mesh> MeshLoader::Import( const std::string& filepath, const MeshImportSettings& importSettings )
+    Ref<Mesh> MeshImporter::Import( const std::string& filepath, const MeshImportSettings& importSettings )
     {
         Assimp::Importer importer;
         importer.SetPropertyFloat( AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, importSettings.Scale );
@@ -130,38 +130,19 @@ namespace Tridium {
         return loadedMesh;
     }
 
-    MeshHandle MeshLoader::Load( const std::string& filepath, const MeshImportSettings& importSettings )
-    {
-        MeshHandle handle;
-        if ( handle = MeshLibrary::GetMeshHandle( filepath ); handle.Valid() )
-            return handle;
-
-        if ( auto mesh = Import( filepath, importSettings ) )
-        {
-            handle = MeshHandle::Create();
-            mesh->_SetHandle( handle );
-            MeshLibrary::AddMesh( filepath, mesh );
-            return handle;
-        }
-
-        return {};
-    }
-
 #pragma endregion
 
-
-#pragma region MeshLibrary
-
-    void MeshLibrary::Init()
+    Ref<Mesh> Mesh::Load( const std::string& path )
     {
-        InitPrimatives();
+        return MeshImporter::Import(path);
     }
 
-    void MeshLibrary::InitPrimatives()
+    const Ref<Mesh>& Mesh::GetQuad()
     {
-    #pragma region Quad
+        static Ref<Mesh> quadMesh;
+        if ( !quadMesh )
         {
-            Ref<Mesh> quadMesh = MakeRef<Mesh>();
+            quadMesh = MakeRef<Mesh>();
 
             quadMesh->m_VAO = VertexArray::Create();
 
@@ -188,17 +169,10 @@ namespace Tridium {
             quadMesh->m_IBO = IndexBuffer::Create( indices, sizeof( indices ) / sizeof( uint32_t ) );
             quadMesh->m_VAO->SetIndexBuffer( quadMesh->m_IBO );
 
-            m_Quad = quadMesh->m_Handle = MeshHandle::Create();
-            AddAsset( "Quad", quadMesh );
+            TODO( "Make a better quad mesh system!" );
+            quadMesh->m_GUID = 1;
         }
 
-    #pragma endregion
-
-        fs::path path = Application::GetAssetDirectory() / "Engine" / "Mesh" / "Primitive";
-        m_Cube = MeshLoader::Load( ( path / "Cube.obj" ).string() );
-        m_Sphere = MeshLoader::Load( ( path / "Sphere.fbx" ).string() );
-
+        return quadMesh;
     }
-
-#pragma endregion
 }

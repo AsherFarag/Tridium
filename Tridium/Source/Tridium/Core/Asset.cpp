@@ -12,68 +12,6 @@
 
 namespace Tridium {
 
-    template<typename T>
-    bool AssetManager::HasAsset( const GUID& assetGUID )
-    {
-        if ( auto it = Get().m_Library.find( assetGUID ); it != Get().m_Library.end() )
-        {
-            if ( it->second->GetAssetType() != T::GetStaticType() )
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    template<typename T>
-    Ref<T> AssetManager::GetAsset( const GUID& assetGUID, bool shouldLoad )
-    {
-        // Check if the asset is already loaded
-        if ( auto it = Get().m_Library.find(assetGUID); it != Get().m_Library.end() )
-        {
-            if ( it->second->GetAssetType() != T::GetStaticType() )
-            {
-                TE_CORE_WARN( "Attempted to get asset of type '{0}' but the asset type is '{1}'", T::GetStaticType(), it->second->GetAssetType() );
-                return nullptr;
-            }
-
-            return static_cast<Ref<T>>( it->second );
-        }
-
-        if ( !shouldLoad )
-            return nullptr;
-
-        Ref<T> asset = MakeRef<T>();
-        asset->m_GUID = assetGUID;
-        TODO( "Add asynchronous loading." );
-        if ( !LoadAsset( assetGUID, asset ) )
-            return false;
-
-        return asset;
-    }
-
-    template<typename T>
-    bool AssetManager::LoadAsset( const GUID& assetGUID, Ref<T>& outAsset )
-    {
-        if ( auto it = Get().m_Paths.find(assetGUID); it != Get().m_Paths.end() )
-            return LoadAsset( path, outAsset );
-
-        return false;
-    }
-
-    template<typename T>
-    bool AssetManager::LoadAsset( const std::string& path, Ref<T>& outAsset )
-    {
-        if ( !T::Load( path, outAsset ) )
-            return false;
-
-        AddAsset( asset );
-        return true;
-    }
-
     void AssetManager::Serialize( const fs::path& path )
     {
         auto filepath = path / ASSET_MANAGER_FILENAME;
@@ -98,6 +36,11 @@ namespace Tridium {
 
     bool AssetManager::Deserialize( const std::string& path )
     {
+        TODO( "This is jank" );
+        std::ifstream file( path );
+        if ( !file )
+            return false;
+
         YAML::Node data = YAML::LoadFile( path );
         YAML::Node assetsNode = data["Assets"];
         if ( !assetsNode )

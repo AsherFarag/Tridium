@@ -82,6 +82,4 @@ namespace Tridium {
 	YAML::Emitter& operator<<( YAML::Emitter& out, const Vector3& v );
 
 	YAML::Emitter& operator<<( YAML::Emitter& out, const Vector4& v );
-
-	TextureHandle GetTexture( const std::string& path );
 }

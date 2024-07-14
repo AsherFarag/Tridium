@@ -3,8 +3,6 @@
 
 namespace Tridium {
 
-	using TextureHandle = AssetHandle;
-
 	enum class EImageFormat
 	{
 		None = 0,
@@ -36,11 +34,11 @@ namespace Tridium {
 
 	class Texture : public Asset
 	{
-		friend class TextureLoader;
-
 	public:
+		ASSET_CLASS_TYPE( Texture )
 		virtual ~Texture() = default;
 
+		static Ref<Texture> Load( const std::string& path );
 		static Ref<Texture> Create( const TextureSpecification& specification );
 
 		virtual const TextureSpecification& GetSpecification() const = 0;
@@ -61,24 +59,5 @@ namespace Tridium {
 
 	protected:
 		virtual void SetIsLoaded( bool loaded ) = 0;
-
 	};
-
-	class TextureLoader
-	{
-	public:
-		static Ref<Texture> Import( const std::string& path );
-	};
-
-	class TextureLibrary : public AssetLibrary<TextureLibrary, TextureHandle, Texture>
-	{
-	public:
-		static inline Ref<Texture> GetTexture( const TextureHandle& textureHandle ) { return Get().GetAsset( textureHandle ); }
-		static inline bool GetTextureHandle( const std::string& path, TextureHandle& outTextureHandle ) { return Get().GetGUID( path, outTextureHandle ); }
-		static inline TextureHandle GetTextureHandle( const std::string& path ) { return Get().GetGUID( path ); }
-		static inline bool HasTextureHandle( const std::string& path ) { return Get().HasHandle( path ); }
-		static inline bool AddTexture( const std::string& path, const Ref<Texture>& texture ) { return Get().AddAsset( path, texture ); }
-		static inline bool RemoveTexture( const TextureHandle& textureHandle ) { return Get().RemoveAsset( textureHandle ); }
-	};
-
 }

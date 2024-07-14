@@ -6,6 +6,8 @@
 #include <Tridium/ECS/GameObject.h>
 #include <Tridium/ECS/Components/Types.h>
 #include <Tridium/Rendering/Texture.h>
+#include <Tridium/Rendering/Material.h>
+#include <Tridium/Rendering/Mesh.h>
 
 #include <fstream>
 
@@ -71,17 +73,8 @@ namespace Tridium {
 			out << YAML::Key << "MeshComponent";
 			out << YAML::BeginMap;
 
-			out << YAML::Key << "Mesh";
-			if ( auto mesh = MeshLibrary::GetMesh( mc->GetMesh() ) )
-				out << YAML::Value << YAML::DoubleQuoted << mesh->GetPath();
-			else
-				out << YAML::Value << YAML::DoubleQuoted << "";
-
-			out << YAML::Key << "Material";
-			if ( auto mat = MaterialLibrary::GetMaterial( mc->GetMaterial() ) )
-				out << YAML::Value << YAML::DoubleQuoted << mat->GetPath();
-			else
-				out << YAML::Value << YAML::DoubleQuoted << "";
+			out << YAML::Key << "Mesh" << YAML::Value << ( mc->GetMesh() ? mc->GetMesh()->GetGUID() : GUID{} );
+			out << YAML::Key << "Material" << YAML::Value << ( mc->GetMaterial() ? mc->GetMaterial()->GetGUID() : GUID{} );
 
 			out << YAML::EndMap;
 		}
@@ -91,11 +84,7 @@ namespace Tridium {
 			out << YAML::Key << "SpriteComponent";
 			out << YAML::BeginMap;
 
-			out << YAML::Key << "Texture";
-			if ( auto tex = TextureLibrary::GetTexture( sc->GetTexture() ) )
-				out << YAML::Value << YAML::DoubleQuoted << tex->GetPath();
-			else
-				out << YAML::Value << YAML::DoubleQuoted << "";
+			out << YAML::Key << "Texture" << YAML::Value << ( sc->GetTexture() ? sc->GetTexture()->GetGUID() : GUID{} );
 
 			out << YAML::EndMap;
 		}
@@ -105,7 +94,7 @@ namespace Tridium {
 			out << YAML::Key << "LuaScriptComponent";
 			out << YAML::BeginMap;
 
-			out << YAML::Key << "LuaScript"; out << YAML::Value << YAML::DoubleQuoted << lsc->GetScript()->GetFilePath().string();
+			out << YAML::Key << "LuaScript" << YAML::Value << YAML::DoubleQuoted << ( lsc->GetScript() ? lsc->GetScript()->GetFilePath().string() : "" );
 
 			out << YAML::EndMap;
 		}
@@ -151,8 +140,9 @@ namespace Tridium {
 			return false;
 
 		std::string name;
-		if ( auto tagComponent = go["TagComponent"] )
+		if ( auto tagComponent = go["TagComponent"] ) {
 			name = tagComponent.as<std::string>();
+		}
 
 		auto deserialisedGO = GameObject::Create( id, name );
 		deserializedGameObject.GameObject = deserialisedGO;
@@ -160,21 +150,22 @@ namespace Tridium {
 		if ( auto transformComponent = go["TransformComponent"] )
 		{
 			TransformComponent* tc;  
-			if ( !( tc = deserialisedGO.TryGetComponent<TransformComponent>() ) )
+			if ( !( tc = deserialisedGO.TryGetComponent<TransformComponent>() ) ) {
 				tc = &deserialisedGO.AddComponent<TransformComponent>();
+			}
 
 			tc->Position = transformComponent["Position"].as<Vector3>();
 			tc->Rotation = glm::radians( transformComponent["Rotation"].as<Vector3>() );
 			tc->Scale = transformComponent["Scale"].as<Vector3>();
 
-			if ( auto parent = transformComponent["Parent"] )
+			if ( auto parent = transformComponent["Parent"] ) {
 				deserializedGameObject.Parent = parent.as<GUID>();
+			}
 
 			if ( auto children = transformComponent["Children"] )
 			{
 				deserializedGameObject.Children.reserve( children.size() );
-				for ( auto child : children )
-				{
+				for ( auto child : children ) {
 					deserializedGameObject.Children.push_back( child.as<GUID>() );
 				}
 			}
@@ -183,66 +174,37 @@ namespace Tridium {
 		if ( auto meshComponent = go["MeshComponent"] )
 		{
 			MeshComponent* mc;
-			if ( !( mc = deserialisedGO.TryGetComponent<MeshComponent>() ) )
+			if ( !( mc = deserialisedGO.TryGetComponent<MeshComponent>() ) ) {
 				mc = &deserialisedGO.AddComponent<MeshComponent>();
-
-			if ( auto mesh = meshComponent["Mesh"] )
-			{
-				MeshHandle meshHandle;
-				auto meshFilePath = mesh.as<std::string>();
-
-				mc->SetMesh( MeshLoader::Load( meshFilePath ) );
 			}
 
-			if ( auto mat = meshComponent["Material"] )
-			{
-				MaterialHandle handle;
-				auto filePath = mat.as<std::string>();
+			if ( auto mesh = meshComponent["Mesh"] ) {
+				mc->SetMesh( AssetManager::GetAsset<Mesh>( mesh.as<GUID>() ) );
+			}
 
-				if ( !MaterialLibrary::GetMaterialHandle( filePath, handle ) )
-				{
-					if ( Ref<Material> loadedMat = MaterialLoader::Import( filePath ) )
-					{
-						if ( MaterialLibrary::AddMaterial( filePath, loadedMat ) )
-							handle = loadedMat->GetGUID();
-					}
-				}
-
-				mc->SetMaterial( handle );
+			if ( auto mat = meshComponent["Material"] ) {
+				mc->SetMaterial( AssetManager::GetAsset<Material>( mat.as<GUID>() ) );
 			}
 		}
 
 		if ( auto spriteComponent = go["SpriteComponent"] )
 		{
 			SpriteComponent* sc;
-			if ( !( sc = deserialisedGO.TryGetComponent<SpriteComponent>() ) )
+			if ( !( sc = deserialisedGO.TryGetComponent<SpriteComponent>() ) ) {
 				sc = &deserialisedGO.AddComponent<SpriteComponent>();
+			}
 
-			if ( auto tex = spriteComponent["Texture"] )
-			{
-				TextureHandle textureHandle;
-				auto texFilePath = tex.as<std::string>();
-				textureHandle = TextureLibrary::GetTextureHandle( texFilePath );
-				if ( !textureHandle.Valid() )
-				{
-					textureHandle = TextureHandle::Create();
-					if ( Ref<Texture> loadedTex = TextureLoader::Import( texFilePath ) )
-					{
-						loadedTex->_SetHandle( textureHandle );
-						if ( !TextureLibrary::AddTexture( texFilePath, loadedTex ) )
-							textureHandle = {};
-					}
-				}
-
-				sc->SetTexture( textureHandle );
+			if ( auto tex = spriteComponent["Texture"] ) {
+				sc->SetTexture( AssetManager::GetAsset<Texture>( tex.as<GUID>() ) );
 			}
 		}
 
 		if ( auto luaScriptComponent = go["LuaScriptComponent"] )
 		{
 			LuaScriptComponent* lsc;
-			if ( !( lsc = deserialisedGO.TryGetComponent<LuaScriptComponent>() ) )
+			if ( !( lsc = deserialisedGO.TryGetComponent<LuaScriptComponent>() ) ) {
 				lsc = &deserialisedGO.AddComponent<LuaScriptComponent>();
+			}
 
 			lsc->SetScript( Script::Create( luaScriptComponent["LuaScript"].as<std::string>() ) );
 		}
@@ -250,11 +212,11 @@ namespace Tridium {
 		if ( auto cameraComponent = go["CameraComponent"] )
 		{
 			CameraComponent* cc;
-			if ( !( cc = deserialisedGO.TryGetComponent<CameraComponent>() ) )
+			if ( !( cc = deserialisedGO.TryGetComponent<CameraComponent>() ) ) {
 				cc = &deserialisedGO.AddComponent<CameraComponent>();
+			}
 
-			if ( auto projectionType = cameraComponent["Projection Mode"] )
-			{
+			if ( auto projectionType = cameraComponent["Projection Mode"] ) {
 				cc->SceneCamera.SetProjectionType( projectionType.as<std::string>() == "Perspective" ? Camera::ProjectionType::Perspective : Camera::ProjectionType::Orthographic );
 			}
 
@@ -315,7 +277,7 @@ namespace Tridium {
 		if ( !data["Scene"] )
 			return false;
 
-		m_Scene->_SetPath( filepath );
+		m_Scene->m_Path = filepath;
 
 		m_Scene->m_Name = data["Scene"].as<std::string>();
 		TE_CORE_TRACE( "Begin Deserializing Scene '{0}'", m_Scene->m_Name );

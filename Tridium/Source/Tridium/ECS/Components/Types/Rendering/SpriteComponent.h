@@ -8,17 +8,15 @@ namespace Tridium {
 	DEFINE_COMPONENT( SpriteComponent )
 	{
 	public:
-		SpriteComponent();
-		SpriteComponent( const TextureHandle& a_Texture );
+		SpriteComponent() = default;
+		SpriteComponent( const Ref<Texture>&texture );
 		~SpriteComponent() = default;
 
-		inline TextureHandle GetTexture() { return m_Texture; }
-		inline void SetTexture(const  TextureHandle& a_Texture ) { m_Texture = a_Texture; }
-		inline ShaderHandle GetShader() { return m_Shader; }
+		const Ref<Texture>& GetTexture() { return m_Texture; }
+		void SetTexture(const Ref<Texture>& texture ) { m_Texture = texture; }
 
 	private:
-		ShaderHandle m_Shader;
-		TextureHandle m_Texture;
+		Ref<Texture> m_Texture;
 	};
 
 }

@@ -289,7 +289,7 @@ namespace Tridium::Editor {
 		if ( ImGui::BeginMenu( "Other" ) )
 		{
 			if ( ImGui::MenuItem( "Recompile Shaders" ) )
-				ShaderLibrary::RecompileAll();
+				Util::RecompileAllShaders();
 			ImGui::EndMenu();
 		}
 
@@ -302,9 +302,9 @@ namespace Tridium::Editor {
 	{
 		fs::path iconFolder( "Content/Engine/Editor/Icons" );
 
-		PlayButtonIcon = TextureLoader::Import( ( iconFolder / "PlayButton.png" ).string() );
-		StopButtonIcon = TextureLoader::Import( ( iconFolder / "StopButton.png" ).string() );
-		PauseButtonIcon = TextureLoader::Import( ( iconFolder / "PauseButton.png" ).string() );
+		PlayButtonIcon = Texture::Load( ( iconFolder / "PlayButton.png" ).string() );
+		StopButtonIcon = Texture::Load( ( iconFolder / "StopButton.png" ).string() );
+		PauseButtonIcon = Texture::Load( ( iconFolder / "PauseButton.png" ).string() );
 	}
 
 	void UIToolBar::OnImGuiDraw()

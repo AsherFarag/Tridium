@@ -4,6 +4,15 @@
 #include <Tridium/IO/MaterialSerializer.h>
 
 namespace Tridium {
+	Ref<Material> Material::Load( const std::string& path )
+	{
+		auto mat = MakeRef<Material>();
+		MaterialSerializer serializer( mat );
+		if ( serializer.DeserializeText( path ) )
+			return mat;
+
+		return nullptr;
+	}
 
 	Material::Material()
 		: BlendMode( EBlendMode::Additive ),
@@ -13,7 +22,7 @@ namespace Tridium {
 
 	}
 
-	Material::Material( const ShaderHandle& shader )
+	Material::Material( const Ref<Shader>& shader )
 		: Material()
 	{
 		m_Shader = shader;
@@ -21,91 +30,32 @@ namespace Tridium {
 
 	void Material::Bind()
 	{
-		auto col = TextureLibrary::GetTexture( BaseColorTexture );
-		if ( col )
-		{
-			col->Bind( 0 );
-		}
-		auto norm = TextureLibrary::GetTexture( NormalMapTexture );
-		if ( norm )
-		{
-			norm->Bind( 1 );
-		}
-		auto metal = TextureLibrary::GetTexture( MetallicTexture );
-		if ( metal )
-		{
-			metal->Bind( 2 );
-		}
-		auto rough = TextureLibrary::GetTexture( RoughnessTexture );
-		if ( rough )
-		{
-			rough->Bind( 3 );
-		}
-		auto emissive = TextureLibrary::GetTexture( EmissiveTexture );
-		if ( emissive )
-		{
-			emissive->Bind( 4 );
+		if ( BaseColorTexture ) {
+			BaseColorTexture->Bind( 0 );
+		} if ( NormalMapTexture ) {
+			NormalMapTexture->Bind( 1 );
+		} if ( MetallicTexture ) {
+			MetallicTexture->Bind( 2 );
+		} if ( RoughnessTexture ) {
+			RoughnessTexture->Bind( 3 );
+		} if ( EmissiveTexture ) {
+			EmissiveTexture->Bind( 4 );
 		}
 	}
 
 	void Material::Unbind()
 	{
-		auto col = TextureLibrary::GetTexture( BaseColorTexture );
-		if ( col )
-		{
-			col->Unbind( 0 );
+		if ( BaseColorTexture ) {
+			BaseColorTexture->Unbind( 0 );
+		} if ( NormalMapTexture ) {
+			NormalMapTexture->Unbind( 1 );
+		} if ( MetallicTexture ) {
+			MetallicTexture->Unbind( 2 );
+		} if ( RoughnessTexture ) {
+			RoughnessTexture->Unbind( 3 );
+		} if ( EmissiveTexture ) {
+			EmissiveTexture->Unbind( 4 );
 		}
-		auto norm = TextureLibrary::GetTexture( NormalMapTexture );
-		if ( norm )
-		{
-			norm->Unbind( 1 );
-		}
-		auto metal = TextureLibrary::GetTexture( MetallicTexture );
-		if ( metal )
-		{
-			metal->Unbind( 2 );
-		}
-		auto rough = TextureLibrary::GetTexture( RoughnessTexture );
-		if ( rough )
-		{
-			rough->Unbind( 3 );
-		}
-		auto emissive = TextureLibrary::GetTexture( EmissiveTexture );
-		if ( emissive )
-		{
-			emissive->Unbind( 4 );
-		}
-	}
-
-	TextureHandle Material::GetTexture( const std::string& name ) const
-	{
-		auto it = m_Textures.find( name );
-		if ( it != m_Textures.end() )
-			return it->second;
-
-		return {};
-	}
-
-	bool Material::GetTexture( const std::string& name, TextureHandle& outTextureHandle ) const
-	{
-		auto it = m_Textures.find( name );
-		if ( it != m_Textures.end() )
-		{
-			outTextureHandle = it->second;
-			return true;
-		}
-
-		return false;
-	}
-
-	Ref<Material> MaterialLoader::Import( const std::string& filePath )
-	{
-		auto mat = MakeRef<Material>();
-		MaterialSerializer serializer( mat );
-		if ( serializer.DeserializeText( filePath ) )
-			return mat;
-
-		return false;
 	}
 
 }

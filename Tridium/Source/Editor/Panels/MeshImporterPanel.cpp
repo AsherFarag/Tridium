@@ -11,10 +11,10 @@ namespace Tridium::Editor {
 
 	}
 
-	MeshImporterPanel::MeshImporterPanel( const std::string& filePath, MeshHandle meshHandle )
+	MeshImporterPanel::MeshImporterPanel( const std::string& filePath, const Ref<Mesh>& mesh )
 		: MeshImporterPanel(filePath)
 	{
-		m_MeshHandle = meshHandle;
+		m_Mesh = mesh;
 	}
 
 	void CheckboxFlag( const char* label, unsigned int& flags, const unsigned int flag )
@@ -61,11 +61,8 @@ namespace Tridium::Editor {
 
 			if ( ImGui::Button( "LOAD", { ImGui::GetContentRegionAvail().x * 0.5f, 40 } ) )
 			{
-				if ( Ref<Mesh> mesh = MeshLoader::Import( m_FilePath, m_ImportSettings ) )
+				if ( Ref<Mesh> mesh = MeshImporter::Import( m_FilePath, m_ImportSettings ) )
 				{
-					MeshHandle handle = m_MeshHandle.Valid() ? m_MeshHandle : MeshHandle::Create();
-					mesh->_SetHandle( handle );
-					MeshLibrary::AddMesh( m_FilePath, mesh );
 				}
 				else
 				{

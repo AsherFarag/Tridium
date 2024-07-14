@@ -10,6 +10,7 @@
 #include <Tridium/ECS/Components/Types.h>
 
 #include <Tridium/Rendering/Texture.h>
+#include <Tridium/Rendering/Material.h>
 #include <Editor/EditorUtil.h>
 
 namespace ImGui {
@@ -172,12 +173,12 @@ namespace Tridium::Editor {
 
 		DrawComponent<MeshComponent>( "Mesh", InspectedGameObject, []( MeshComponent& component )
 			{
-				Ref<Mesh> mesh = MeshLibrary::GetMesh( component.GetMesh() );
+				Ref<Mesh> mesh = component.GetMesh();
 				bool hasMesh = mesh != nullptr;
 				ImGui::DragDropSelectable( "Mesh: ", hasMesh, hasMesh ? mesh->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
 					[&]( const ImGuiPayload* payload ) {
 						std::string filePath( static_cast<const char*>( payload->Data ) );
-						component.SetMesh( Editor::Util::GetMeshHandle( filePath ) );
+						component.SetMesh( AssetManager::GetAsset<Mesh>( filePath ) );
 					} );
 
 				// On right click, give the option to remove the mesh, if there is one.
@@ -186,18 +187,18 @@ namespace Tridium::Editor {
 				if ( ImGui::BeginPopup( "##RemoveMesh" ) )
 				{
 					if ( ImGui::MenuItem( "Remove Mesh", nullptr, nullptr, hasMesh ) ) {
-						component.SetMesh( MeshHandle{} );
+						component.SetMesh( nullptr );
 					}
 
 					ImGui::EndPopup();
 				}
 
-				Ref<Material> material = MaterialLibrary::GetMaterial( component.GetMaterial() );
+				Ref<Material> material = component.GetMaterial();
 				bool hasMat = material != nullptr;
 				bool matOpened = ImGui::DragDropSelectable( "Material: ", hasMat, hasMat ? material->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
 					[&]( const ImGuiPayload* payload ) {
 						std::string filePath( static_cast<const char*>( payload->Data ) );
-						component.SetMaterial( Util::GetMaterialHandle( filePath ) );
+						component.SetMaterial( AssetManager::GetAsset<Material>( filePath ) );
 					} );
 
 				// On right click, give the option to remove the mesh, if there is one.
@@ -206,7 +207,7 @@ namespace Tridium::Editor {
 				if ( ImGui::BeginPopup( "##RemoveMat" ) )
 				{
 					if ( ImGui::MenuItem( "Remove Material", nullptr, nullptr, hasMat ) ) {
-						component.SetMaterial( MaterialHandle{} );
+						component.SetMaterial( nullptr );
 					}
 
 					ImGui::EndPopup();
@@ -293,15 +294,15 @@ namespace Tridium::Editor {
 					Util::OpenFile( component.GetScript()->GetFilePath() );
 			} );
 
-		DrawComponent<SpriteComponent>( "Sprite Component", InspectedGameObject, []( auto& component )
+		DrawComponent<SpriteComponent>( "Sprite Component", InspectedGameObject, []( SpriteComponent& component )
 			{
-				Ref<Texture> sprite = TextureLibrary::GetTexture( component.GetTexture() );
+				auto& sprite = component.GetTexture();
 				bool hasSprite = sprite != nullptr;
 				ImGui::DragDropSelectable( "Sprite: ", hasSprite, hasSprite ? sprite->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
 					[&]( const ImGuiPayload* payload ) 
 					{
 						std::string filePath = static_cast<const char*>( payload->Data );
-						component.SetTexture( Util::GetTextureHandle(filePath) );
+						component.SetTexture( AssetManager::GetAsset<Texture>(filePath) );
 					} );
 
 				// On right click, give the option to remove the sprite, if there is one.
@@ -310,7 +311,7 @@ namespace Tridium::Editor {
 				if ( ImGui::BeginPopup( "##RemoveSprite" ) )
 				{
 					if ( ImGui::MenuItem( "Remove Sprite", nullptr, nullptr, hasSprite ) )
-						component.SetTexture( TextureHandle::Null() );
+						component.SetTexture( nullptr );
 
 					ImGui::EndPopup();
 				}
@@ -373,14 +374,15 @@ namespace Tridium::Editor {
 			{
 				fs::path filePath( static_cast<const char*>( payload->Data ) );
 				auto ext = filePath.extension();
-				if ( ext == ".lua" )
+				if ( ext == ".lua" ) {
 					AddComponentToGameObject<LuaScriptComponent>( InspectedGameObject, Script::Create( filePath ) );
-				else if ( ext == ".png" )
-				{
-					AddComponentToGameObject<SpriteComponent>( InspectedGameObject, Editor::Util::GetTextureHandle( filePath.string() ) );
 				}
-				else if ( ext == ".obj" || ext == ".fbx" )
-					AddComponentToGameObject<MeshComponent>( InspectedGameObject, Editor::Util::GetMeshHandle( filePath.string() ) );
+				else if ( ext == ".png" ) {
+					AddComponentToGameObject<SpriteComponent>( InspectedGameObject, AssetManager::GetAsset<Texture>( filePath.string() ) );
+				}
+				else if ( ext == ".obj" || ext == ".fbx" ) {
+					AddComponentToGameObject<MeshComponent>( InspectedGameObject, AssetManager::GetAsset<Mesh>( filePath.string() ) );
+				}
 			}
 			ImGui::EndDragDropTarget();
 		}

@@ -9,6 +9,8 @@
 #include <Tridium/Rendering/RenderCommand.h>
 #include <Tridium/Rendering/Shader.h>
 #include <Tridium/Rendering/Texture.h>
+#include <Tridium/Rendering/Material.h>
+#include <Tridium/Rendering/Mesh.h>
 
 namespace Tridium {
 
@@ -61,19 +63,13 @@ namespace Tridium {
 		auto meshComponents = m_Registry.view<MeshComponent, TransformComponent>();
 		meshComponents.each( [&]( auto go, MeshComponent& meshComponent, TransformComponent& transform )
 			{
-				if ( !meshComponent.GetMesh().Valid() )
-					return;
-
-				if ( auto mesh = MeshLibrary::GetMesh( meshComponent.GetMesh() ) )
+				if ( auto& mesh = meshComponent.GetMesh() )
 				{
-					Ref<Material> mat = nullptr;
-					Ref<Shader> shader = nullptr;
-
-					if ( mat = MaterialLibrary::GetMaterial( meshComponent.GetMaterial() ) )
-						shader = ShaderLibrary::GetShader( mat->GetShader() );
+					Ref<Material> mat = meshComponent.GetMaterial();
+					Ref<Shader> shader = mat ? mat->GetShader() : nullptr;
 
 					if ( !shader )
-						shader = ShaderLibrary::GetShader( ShaderLibrary::GetDefaultShader() );
+						return;
 
 					shader->Bind();
 					shader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
@@ -101,30 +97,30 @@ namespace Tridium {
 		// - Draw Sprites -
 		RenderCommand::SetCullMode( false );
 
-		auto spriteShader = ShaderLibrary::GetShader( ShaderLibrary::GetSpriteShader() );
-		auto quadMeshVAO = MeshLibrary::GetMesh( MeshLibrary::GetQuad() )->GetVAO();
+		//auto spriteShader = ShaderLibrary::GetShader(  ShaderLibrary::GetSpriteShader() );
+		//auto quadMeshVAO = MeshLibrary::GetMesh( MeshLibrary::GetQuad() )->GetVAO();
 
-		spriteShader->Bind();
-		quadMeshVAO->Bind();
+		//spriteShader->Bind();
+		//quadMeshVAO->Bind();
 
-		auto spriteComponents = m_Registry.view<SpriteComponent, TransformComponent>();
-		spriteComponents.each( 
-			[ & ]( auto go, SpriteComponent& sprite, TransformComponent& transform )
-			{
-				spriteShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
+		//auto spriteComponents = m_Registry.view<SpriteComponent, TransformComponent>();
+		//spriteComponents.each( 
+		//	[ & ]( auto go, SpriteComponent& sprite, TransformComponent& transform )
+		//	{
+		//		spriteShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
 
-				Ref<Texture> tex = TextureLibrary::GetTexture( sprite.GetTexture() );
-				if ( tex )
-					tex->Bind();
+		//		Ref<Texture> tex = TextureLibrary::GetTexture( sprite.GetTexture() );
+		//		if ( tex )
+		//			tex->Bind();
 
-				RenderCommand::DrawIndexed( quadMeshVAO );
+		//		RenderCommand::DrawIndexed( quadMeshVAO );
 
-				if ( tex )
-					tex->Unbind();
-			} );
+		//		if ( tex )
+		//			tex->Unbind();
+		//	} );
 
-		spriteShader->Unbind();
-		quadMeshVAO->Unbind();
+		//spriteShader->Unbind();
+		//quadMeshVAO->Unbind();
 
 		Renderer::EndScene();
 	}

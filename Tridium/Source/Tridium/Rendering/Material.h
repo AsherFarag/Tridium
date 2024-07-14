@@ -5,8 +5,6 @@
 
 namespace Tridium {
 
-	using MaterialHandle = AssetHandle;
-
 	enum class EBlendMode
 	{
 		Additive = 0, Subtractive, Multiplicative, Alpha
@@ -17,53 +15,32 @@ namespace Tridium {
 		friend class MaterialSerializer;
 
 	public:
+		ASSET_CLASS_TYPE( Material )
+		static Ref<Material> Load( const std::string& path );
+
 		Material();
-		Material( const ShaderHandle& shader );
-		~Material() = default;
+		Material( const Ref<Shader>& shader );
 
 		void Bind();
 		void Unbind();
 
-		ShaderHandle GetShader() const { return m_Shader; }
-		void SetShader( const ShaderHandle& shader ) { m_Shader = shader; }
-		MaterialHandle GetParent() const { return m_Parent; }
-
-		void SetTexture( const std::string& name, const TextureHandle& texture ) { m_Textures[name] = texture; }
-		TextureHandle GetTexture( const std::string& name ) const;
-		bool GetTexture( const std::string& name, TextureHandle& outTextureHandle ) const;
+		Ref<Shader> GetShader() const { return m_Shader; }
+		void SetShader( const Ref<Shader>& shader ) { m_Shader = shader; }
+		Ref<Material> GetParent() const { return m_Parent; }
 
 		EBlendMode BlendMode;
 		Color Color;
 		float Reflectivity;
 		float Refraction;
 
-		TextureHandle BaseColorTexture;
-		TextureHandle NormalMapTexture;
-		TextureHandle MetallicTexture;
-		TextureHandle RoughnessTexture;
-		TextureHandle EmissiveTexture;
+		Ref<Texture> BaseColorTexture;
+		Ref<Texture> NormalMapTexture;
+		Ref<Texture> MetallicTexture;
+		Ref<Texture> RoughnessTexture;
+		Ref<Texture> EmissiveTexture;
 
 	private:
-		ShaderHandle m_Shader;
-		MaterialHandle m_Parent;
-		std::unordered_map<std::string, TextureHandle> m_Textures;
+		Ref<Shader> m_Shader;
+		Ref<Material> m_Parent;
 	};
-
-	class MaterialLoader
-	{
-	public:
-		static Ref<Material> Import( const std::string& filePath );
-	};
-
-	class MaterialLibrary : public AssetLibrary<MaterialLibrary, MaterialHandle, Material>
-	{
-	public:
-		static inline Ref<Material> GetMaterial( const MaterialHandle& materialHandle ) { return Get().GetAsset( materialHandle ); }
-		static inline bool GetMaterialHandle( const std::string& path, MaterialHandle& outMaterialHandle ) { return Get().GetGUID( path, outMaterialHandle ); }
-		static inline MaterialHandle GetMaterialHandle( const std::string& path ) { return Get().GetGUID( path ); }
-		static inline bool HasMaterialHandle( const std::string& path ) { return Get().HasHandle( path ); }
-		static inline bool AddMaterial( const std::string& path, const Ref<Material>& material ) { return Get().AddAsset( path, material ); }
-		static inline bool RemoveMaterial( const MaterialHandle& materialHandle ) { return Get().RemoveAsset( materialHandle ); }
-	};
-
 }

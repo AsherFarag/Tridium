@@ -11,12 +11,12 @@ namespace Tridium::Editor {
     {
     public:
         MeshImporterPanel( const std::string& filePath );
-        MeshImporterPanel( const std::string& filePath, MeshHandle meshHandle );
+        MeshImporterPanel( const std::string& filePath, const Ref<Mesh>& mesh );
         virtual void OnImGuiDraw() override;
 
     private:
         std::string m_FilePath;
-        MeshHandle m_MeshHandle;
+        Ref<Mesh> m_Mesh;
 
         MeshImportSettings m_ImportSettings;
     };

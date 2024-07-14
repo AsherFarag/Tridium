@@ -72,9 +72,12 @@ namespace fs = std::filesystem;
 
 namespace Tridium {
 
-	constexpr auto operator"" _H(const char* str )
-	{
-		return std::hash<std::string>{}(str);
+	constexpr size_t fnv1a( const char* str, size_t hash = 2166136261U ) {
+		return *str ? fnv1a( str + 1, ( hash ^ static_cast<size_t>( *str ) ) * 16777619U ) : hash;
+	}
+
+	constexpr size_t operator"" _H( const char* str, size_t ) {
+		return fnv1a( str );
 	}
 
 #pragma region Memory

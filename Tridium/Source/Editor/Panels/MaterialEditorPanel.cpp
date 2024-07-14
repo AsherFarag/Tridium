@@ -5,60 +5,58 @@
 #include <Tridium/IO/MaterialSerializer.h>
 
 namespace Tridium::Editor {
-	MaterialEditorPanel::MaterialEditorPanel( const MaterialHandle& material )
-		: Panel("Material Editor##")
+	MaterialEditorPanel::MaterialEditorPanel( const Ref<Material>& material )
+		: Panel( "Material Editor##" ), m_Material( material )
 	{
-		m_Material = material;
 	}
 
 	// Returns true if modified
-	bool DrawTextureDragDrop(const char* label, TextureHandle& handle)
+	bool DrawTextureDragDrop(const char* label, Ref<Texture>& texture)
 	{
-		auto oldHandle = handle;
+		GUID oldTextureGUID = texture ? texture->GetGUID() : GUID{};
 
-		Ref<Texture> sprite = TextureLibrary::GetTexture( handle );
-		bool hasSprite = sprite != nullptr;
-		ImGui::DragDropSelectable( label, hasSprite, hasSprite ? sprite->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
+		bool hasSprite = texture != nullptr;
+		ImGui::DragDropSelectable( label, hasSprite, hasSprite ? texture->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
 			[&]( const ImGuiPayload* payload )
 			{
 				std::string filePath = static_cast<const char*>( payload->Data );
-				handle = Editor::Util::GetTextureHandle( filePath );
+				texture = AssetManager::GetAsset<Texture>( filePath );
 			} );
 
 		// On right click, give the option to remove the sprite, if there is one.
 		if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
-			ImGui::OpenPopup( "##RemoveSprite" );
-		if ( ImGui::BeginPopup( "##RemoveSprite" ) )
+			ImGui::OpenPopup( label );
+		if ( ImGui::BeginPopup( label ) )
 		{
 			if ( ImGui::MenuItem( "Remove Sprite", nullptr, nullptr, hasSprite ) )
-				handle = {};
+				texture = nullptr;
 
 			ImGui::EndPopup();
 		}
 
-		return oldHandle != handle;
+		GUID newGUID = texture ? texture->GetGUID() : GUID{};
+		return newGUID != oldTextureGUID;
 	}
 
 	void MaterialEditorPanel::OnImGuiDraw()
 	{
-		auto material = MaterialLibrary::GetMaterial( m_Material );
-		ImGuiWindowFlags flags = ( material && material->IsModified() ) ? ImGuiWindowFlags_UnsavedDocument : 0;
-		if ( ImGuiBegin( flags ) && material )
+		ImGuiWindowFlags flags = ( m_Material && m_Material->IsModified() ) ? ImGuiWindowFlags_UnsavedDocument : 0;
+		if ( ImGuiBegin( flags ) && m_Material )
 		{
-			bool modified = material->IsModified();
-			modified |= ImGui::ColorEdit4( "Color", &material->Color[0] );
-			modified |= ImGui::SliderFloat( "Reflectivity", &material->Reflectivity, 0.0f, 1.0f );
-			modified |= ImGui::SliderFloat( "Refraction", &material->Refraction, 0.0f, 1.0f );
+			bool modified = m_Material->IsModified();
+			modified |= ImGui::ColorEdit4( "Color", &m_Material->Color[0] );
+			modified |= ImGui::SliderFloat( "Reflectivity", &m_Material->Reflectivity, 0.0f, 1.0f );
+			modified |= ImGui::SliderFloat( "Refraction", &m_Material->Refraction, 0.0f, 1.0f );
 
 			ImGui::Separator();
 
-			modified |= DrawTextureDragDrop( "Base Color: ", material->BaseColorTexture );
-			modified |= DrawTextureDragDrop( "Normal Map: ", material->NormalMapTexture );
-			modified |= DrawTextureDragDrop( "Metallic: ", material->MetallicTexture );
-			modified |= DrawTextureDragDrop( "Roughness: ", material->RoughnessTexture );
-			modified |= DrawTextureDragDrop( "Emissive: ", material->EmissiveTexture );
+			modified |= DrawTextureDragDrop( "Base Color: ", m_Material->BaseColorTexture );
+			modified |= DrawTextureDragDrop( "Normal Map: ", m_Material->NormalMapTexture );
+			modified |= DrawTextureDragDrop( "Metallic: ", m_Material->MetallicTexture );
+			modified |= DrawTextureDragDrop( "Roughness: ", m_Material->RoughnessTexture );
+			modified |= DrawTextureDragDrop( "Emissive: ", m_Material->EmissiveTexture );
 
-			material->SetModified( modified );
+			m_Material->SetModified( modified );
 		}
 
 		m_IsHovered = ImGui::IsWindowHovered();
@@ -80,11 +78,9 @@ namespace Tridium::Editor {
 		{
 			if ( control )
 			{
-				Ref<Material> mat = MaterialLibrary::GetMaterial( m_Material );
-				if ( mat && mat->IsModified() )
+				if ( m_Material && m_Material->IsModified() )
 				{
-					MaterialSerializer s( mat );
-					s.SerializeText( mat->GetPath() );
+					m_Material->Save();
 					return true;
 				}
 			}

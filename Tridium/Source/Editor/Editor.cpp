@@ -69,22 +69,27 @@ namespace Tridium::Editor {
         {
             auto panel = GetEditorLayer()->PushPanel<MaterialEditorPanel>();
             panel->Focus();
-            panel->SetMaterial( MaterialLibrary::GetMaterialHandle( filePath.string() ) );
+            TODO( "panel->SetMaterial(MaterialLibrary::GetMaterialHandle(filePath.string())); " );
             return true;
         }
 
         void SaveAll()
         {
-            auto& materialLib = MaterialLibrary::Get().GetLibrary();
-            for ( auto it = materialLib.begin(); it != materialLib.end(); ++it )
+            auto& AssetLib = AssetManager::Get().GetLibrary();
+            for ( auto&& [guid, asset] : AssetLib )
             {
-                if ( !it->second->IsModified() )
+                asset->Save();
+            }
+        }
+        void RecompileAllShaders()
+        {
+            auto& AssetLib = AssetManager::Get().GetLibrary();
+            for ( auto&& [guid, asset] : AssetLib )
+            {
+                if ( asset->GetAssetType() != EAssetType::Shader )
                     continue;
 
-                MaterialSerializer s( it->second );
-                s.SerializeText( it->second->GetPath() );
-
-                it->second->SetModified( false );
+                static_cast<Shader*>( asset.get() )->Recompile();
             }
         }
     }

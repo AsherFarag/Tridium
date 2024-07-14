@@ -1,9 +1,9 @@
 #pragma once
 #include <Tridium/Core/Asset.h>
-#include "Material.h"
 
 namespace Tridium {
 
+	class Material;
 	class VertexArray;
 	class VertexBuffer;
 	class IndexBuffer;
@@ -22,7 +22,9 @@ namespace Tridium {
 	{
 	public:
 		ASSET_CLASS_TYPE( Mesh )
-		static bool Load( const std::string& path );
+		static Ref<Mesh> Load( const std::string& path );
+
+		static const Ref<Mesh>& GetQuad();
 
 		inline auto GetVAO() const { return m_VAO; }
 		inline auto GetVBO() const { return m_VBO; }
@@ -47,7 +49,10 @@ namespace Tridium {
 			uint32_t MaterialIndex;
 		};
 		std::vector<SubMesh> m_SubMeshes;
-		std::vector<MaterialHandle> m_Materials;
+		std::vector<Ref<Material>> m_Materials;
+
+	private:
+		friend class MeshImporter;
 	};
 
 
@@ -59,7 +64,7 @@ namespace Tridium {
 		bool DiscardLocalData = false; /* If true, once the mesh has been loaded onto the GPU, the local Vertex Data will be deleted. */
 	};
 
-	class MeshLoader
+	class MeshImporter
 	{
 	public:
 		static Ref<Mesh> Import( const std::string& filepath, const MeshImportSettings& importSettings = {} );

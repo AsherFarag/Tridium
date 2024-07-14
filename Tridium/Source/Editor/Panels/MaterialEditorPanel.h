@@ -9,15 +9,15 @@ namespace Tridium::Editor {
     class MaterialEditorPanel : public Panel
     {
     public:
-        MaterialEditorPanel( const MaterialHandle& material = {} );
+        MaterialEditorPanel( const Ref<Material>& material = nullptr );
 
         virtual void OnImGuiDraw() override;
         virtual bool OnKeyPressed( KeyPressedEvent& e ) override;
 
-        void SetMaterial( const MaterialHandle& material ) { m_Material = material; }
+        void SetMaterial( const Ref<Material>& material ) { m_Material = material; }
 
     private:
-        MaterialHandle m_Material;
+        Ref<Material> m_Material;
     };
 
 }

@@ -7,20 +7,7 @@
 #include <stb_image.h>
 
 namespace Tridium {
-
-	Ref<Texture> Texture::Create( const TextureSpecification& specification )
-	{
-		switch ( Renderer::GetAPI() )
-		{
-		case RendererAPI::API::None:    TE_CORE_ASSERT( false, "RendererAPI::None is currently not supported!" ); return nullptr;
-		case RendererAPI::API::OpenGL:  return MakeRef<OpenGLTexture>( specification );
-		}
-
-		TE_CORE_ASSERT( false, "Unknown RendererAPI!" );
-		return nullptr;
-	}
-
-	Ref<Texture> TextureLoader::Import( const std::string& path )
+	Ref<Texture> Texture::Load( const std::string& path )
 	{
 		TextureSpecification specification;
 
@@ -36,39 +23,51 @@ namespace Tridium {
 
 		switch ( channels )
 		{
-			case 1:
-			{
-				specification.ImageFormat = EImageFormat::R;
-				specification.DataFormat = EDataFormat::R8;
-				break;
-			}
-			case 2:
-			{
-				specification.ImageFormat = EImageFormat::RG;
-				specification.DataFormat = EDataFormat::RG8;
-				break;
-			}
-			case 3:
-			{
-				specification.ImageFormat = EImageFormat::RGB;
-				specification.DataFormat = EDataFormat::RGB8;
-				break;
-			}
-			case 4:
-			{
-				specification.ImageFormat = EImageFormat::RGBA;
-				specification.DataFormat = EDataFormat::RGBA8;
-				break;
-			}
+		case 1:
+		{
+			specification.ImageFormat = EImageFormat::R;
+			specification.DataFormat = EDataFormat::R8;
+			break;
+		}
+		case 2:
+		{
+			specification.ImageFormat = EImageFormat::RG;
+			specification.DataFormat = EDataFormat::RG8;
+			break;
+		}
+		case 3:
+		{
+			specification.ImageFormat = EImageFormat::RGB;
+			specification.DataFormat = EDataFormat::RGB8;
+			break;
+		}
+		case 4:
+		{
+			specification.ImageFormat = EImageFormat::RGBA;
+			specification.DataFormat = EDataFormat::RGBA8;
+			break;
+		}
 		}
 
 		Ref<Texture> tex = Texture::Create( specification );
-		tex->_SetPath( path );
+		tex->m_Path = path;
 		tex->SetIsLoaded( true );
 		tex->SetData( data, width * height * channels );
 
 		stbi_image_free( data );
 
 		return tex;
+	}
+
+	Ref<Texture> Texture::Create( const TextureSpecification& specification )
+	{
+		switch ( Renderer::GetAPI() )
+		{
+		case RendererAPI::API::None:    TE_CORE_ASSERT( false, "RendererAPI::None is currently not supported!" ); return nullptr;
+		case RendererAPI::API::OpenGL:  return MakeRef<OpenGLTexture>( specification );
+		}
+
+		TE_CORE_ASSERT( false, "Unknown RendererAPI!" );
+		return nullptr;
 	}
 }

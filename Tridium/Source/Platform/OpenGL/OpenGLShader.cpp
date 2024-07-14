@@ -38,7 +38,7 @@ namespace Tridium {
 
 	OpenGLShader::OpenGLShader( const std::string& path, const std::string& vertexSource, const std::string& fragmentSource )
 	{
-		_SetPath( path );
+		m_Path = path;
 		ShaderSources sources;
 		sources[ GL_VERTEX_SHADER ] = vertexSource;
 		sources[ GL_FRAGMENT_SHADER ] = fragmentSource;

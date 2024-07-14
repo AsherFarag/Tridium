@@ -38,6 +38,7 @@ namespace Tridium::Editor {
 		bool OpenFile( const fs::path& filePath );
 		bool OpenMaterial( const fs::path& filePath );
 		void SaveAll();
+		void RecompileAllShaders();
 	}
 };
 

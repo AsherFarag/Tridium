@@ -13,6 +13,7 @@
 // TEMP ?
 #include <Tridium/Rendering/RenderCommand.h>
 #include <Tridium/Rendering/VertexArray.h>
+#include <Tridium/Rendering/Shader.h>
 
 namespace Tridium::Editor {
 
@@ -28,7 +29,7 @@ namespace Tridium::Editor {
 		FBOspecification.Attachments = { EFramebufferTextureFormat::RED_INT };
 		m_IDFBO = Framebuffer::Create( FBOspecification );
 
-		m_GameObjectIDShader = Shader::Create( "Content/Engine/Editor/Shaders/ID.glsl" );
+		m_GameObjectIDShader = AssetManager::LoadAsset<Shader>( "Content/Engine/Editor/Shaders/ID.glsl" );
 	}
 
 	bool EditorViewportPanel::OnKeyPressed( KeyPressedEvent& e )
@@ -209,37 +210,33 @@ namespace Tridium::Editor {
 		meshComponents.each( 
 			[&]( auto go, MeshComponent& meshComponent, TransformComponent& transform )
 			{
-				if ( !meshComponent.GetMesh().Valid() )
-					return;
-
-				if ( auto mesh = MeshLibrary::GetMesh( meshComponent.GetMesh() ) )
+				if ( meshComponent.GetMesh() )
 				{
 					m_GameObjectIDShader->SetInt( "uID", (uint32_t)go );
 					m_GameObjectIDShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
-					mesh->GetVAO()->Bind();
 
-					RenderCommand::DrawIndexed( mesh->GetVAO() );
-
-					mesh->GetVAO()->Unbind();
+					meshComponent.GetMesh()->GetVAO()->Bind();
+					RenderCommand::DrawIndexed( meshComponent.GetMesh()->GetVAO() );
+					meshComponent.GetMesh()->GetVAO()->Unbind();
 				}
 			} );
 
 		RenderCommand::SetCullMode( false );
 
-		auto quadMeshVAO = MeshLibrary::GetMesh( MeshLibrary::GetQuad() )->GetVAO();
-		quadMeshVAO->Bind();
-		auto spriteComponents = GetActiveScene()->GetRegistry().view<SpriteComponent, TransformComponent>();
-		spriteComponents.each( 
-			[&]( auto go, SpriteComponent& spriteComponent, TransformComponent& transform )
-			{
-				m_GameObjectIDShader->SetInt( "uID", (uint32_t)go );
-				m_GameObjectIDShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
-				RenderCommand::DrawIndexed( quadMeshVAO );
-			}
-		);
-		quadMeshVAO->Unbind();
+		//auto quadMeshVAO = Mesh::GetQuad()->GetVAO();
+		//quadMeshVAO->Bind();
+		//auto spriteComponents = GetActiveScene()->GetRegistry().view<SpriteComponent, TransformComponent>();
+		//spriteComponents.each( 
+		//	[&]( auto go, SpriteComponent& spriteComponent, TransformComponent& transform )
+		//	{
+		//		m_GameObjectIDShader->SetInt( "uID", (uint32_t)go );
+		//		m_GameObjectIDShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
+		//		RenderCommand::DrawIndexed( quadMeshVAO );
+		//	}
+		//);
+		//quadMeshVAO->Unbind();
 
-		m_GameObjectIDShader->Unbind();
+		//m_GameObjectIDShader->Unbind();
 	}
 
 	SceneHeirarchyPanel* EditorViewportPanel::GetSceneHeirarchy()

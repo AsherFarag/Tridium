@@ -1,27 +1,27 @@
 #pragma once
 #include <Tridium/ECS/Components/Component.h>
-#include <Tridium/Rendering/Mesh.h>
 
 namespace Tridium {
 
-	class Shader;
+	class Mesh;
+	class Material;
 
 	DEFINE_COMPONENT( MeshComponent )
 	{
 	public:
-		MeshComponent();
-		MeshComponent(const MeshHandle& meshHandle);
+		MeshComponent() = default;
+		MeshComponent(const Ref<Mesh>& mesh);
 		~MeshComponent() = default;
 
-		inline MeshHandle GetMesh() { return m_Mesh; }
-		inline MaterialHandle GetMaterial() { return m_Material; }
+		const Ref<Mesh>& GetMesh() const { return m_Mesh; }
+		const Ref<Material>& GetMaterial() { return m_Material; }
 
-		void SetMesh( const MeshHandle& meshHandle );
-		void SetMaterial( const MaterialHandle& materialHandle );
+		void SetMesh( const Ref<Mesh>& mesh ) { m_Mesh = mesh; }
+		void SetMaterial( const Ref<Material>& material ) { m_Material = material; }
 
 	private:
-		MeshHandle m_Mesh = {};
-		MaterialHandle m_Material;
+		Ref<Mesh> m_Mesh;
+		Ref<Material> m_Material;
 	};
 
 }
