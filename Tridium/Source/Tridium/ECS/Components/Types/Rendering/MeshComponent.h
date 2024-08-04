@@ -10,18 +10,18 @@ namespace Tridium {
 	{
 	public:
 		MeshComponent() = default;
-		MeshComponent(const Ref<Mesh>& mesh);
+		MeshComponent(const SharedPtr<Mesh>& mesh);
 		~MeshComponent() = default;
 
-		const Ref<Mesh>& GetMesh() const { return m_Mesh; }
-		const Ref<Material>& GetMaterial() { return m_Material; }
+		const SharedPtr<Mesh>& GetMesh() const { return m_Mesh; }
+		const SharedPtr<Material>& GetMaterial() { return m_Material; }
 
-		void SetMesh( const Ref<Mesh>& mesh ) { m_Mesh = mesh; }
-		void SetMaterial( const Ref<Material>& material ) { m_Material = material; }
+		void SetMesh( const SharedPtr<Mesh>& mesh ) { m_Mesh = mesh; }
+		void SetMaterial( const SharedPtr<Material>& material ) { m_Material = material; }
 
 	private:
-		Ref<Mesh> m_Mesh;
-		Ref<Material> m_Material;
+		SharedPtr<Mesh> m_Mesh;
+		SharedPtr<Material> m_Material;
 	};
 
 }

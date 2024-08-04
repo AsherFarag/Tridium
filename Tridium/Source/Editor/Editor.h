@@ -12,7 +12,7 @@ namespace Tridium::Editor {
 	class EditorApplication
 	{
 	public:
-		static Ref<EditorApplication> Get() { return s_Instance; }
+		static SharedPtr<EditorApplication> Get() { return s_Instance; }
 		static bool Init();
 		static bool Shutdown();
 
@@ -26,13 +26,13 @@ namespace Tridium::Editor {
 		EditorApplication( const EditorApplication& ) = delete;
 		EditorApplication& operator=( const EditorApplication& ) = delete;
 
-		static Ref<EditorApplication> s_Instance;
+		static SharedPtr<EditorApplication> s_Instance;
 		static std::once_flag s_InitFlag;
 	};
 
 	inline EditorLayer* GetEditorLayer() { return EditorApplication::Get()->GetEditorLayer(); }
 
-	inline Ref<Scene> GetActiveScene() { return EditorApplication::Get()->GetEditorLayer()->GetActiveScene();}
+	inline SharedPtr<Scene> GetActiveScene() { return EditorApplication::Get()->GetEditorLayer()->GetActiveScene();}
 
 	namespace Util {
 		bool OpenFile( const fs::path& filePath );

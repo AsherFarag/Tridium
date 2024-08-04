@@ -11,13 +11,14 @@
 #include <Tridium/Scene/Scene.h>
 
 // TEMP ?
+#include "Tridium/Core/AssetManager.h"
 #include <Tridium/Rendering/RenderCommand.h>
 #include <Tridium/Rendering/VertexArray.h>
 #include <Tridium/Rendering/Shader.h>
 
 namespace Tridium::Editor {
 
-	EditorViewportPanel::EditorViewportPanel( const Ref<EditorCamera>& editorCamera )
+	EditorViewportPanel::EditorViewportPanel( const SharedPtr<EditorCamera>& editorCamera )
 		: ViewportPanel( "Scene##EditorViewportPanel" ), m_EditorCamera( editorCamera )
 	{
 		FramebufferSpecification FBOspecification;

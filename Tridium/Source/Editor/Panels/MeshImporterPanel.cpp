@@ -11,7 +11,7 @@ namespace Tridium::Editor {
 
 	}
 
-	MeshImporterPanel::MeshImporterPanel( const std::string& filePath, const Ref<Mesh>& mesh )
+	MeshImporterPanel::MeshImporterPanel( const std::string& filePath, const SharedPtr<Mesh>& mesh )
 		: MeshImporterPanel(filePath)
 	{
 		m_Mesh = mesh;
@@ -61,7 +61,7 @@ namespace Tridium::Editor {
 
 			if ( ImGui::Button( "LOAD", { ImGui::GetContentRegionAvail().x * 0.5f, 40 } ) )
 			{
-				if ( Ref<Mesh> mesh = MeshImporter::Import( m_FilePath, m_ImportSettings ) )
+				if ( SharedPtr<Mesh> mesh = MeshImporter::Import( m_FilePath, m_ImportSettings ) )
 				{
 				}
 				else

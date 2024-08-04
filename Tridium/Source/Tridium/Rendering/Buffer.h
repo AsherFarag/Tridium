@@ -45,7 +45,7 @@ namespace Tridium {
 	class VertexBuffer
 	{
 	public:
-		static Ref<VertexBuffer> Create(float* a_Verticies, uint32_t a_Size);
+		static SharedPtr<VertexBuffer> Create(float* a_Verticies, uint32_t a_Size);
 		virtual ~VertexBuffer() = default;
 
 		virtual void Bind() const = 0;
@@ -60,7 +60,7 @@ namespace Tridium {
 	class IndexBuffer
 	{
 	public:
-		static Ref<IndexBuffer> Create( uint32_t* a_Indicies, uint32_t a_Count );
+		static SharedPtr<IndexBuffer> Create( uint32_t* a_Indicies, uint32_t a_Count );
 		virtual ~IndexBuffer() = default;
 
 		virtual void Bind() const = 0;

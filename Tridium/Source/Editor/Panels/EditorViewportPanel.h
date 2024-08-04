@@ -22,7 +22,7 @@ namespace Tridium::Editor {
 	class EditorViewportPanel : public ViewportPanel
 	{
 	public:
-		EditorViewportPanel( const Ref<EditorCamera>& editorCamera );
+		EditorViewportPanel( const SharedPtr<EditorCamera>& editorCamera );
 		virtual ~EditorViewportPanel() = default;
 
 		virtual void OnImGuiDraw() override;
@@ -40,11 +40,11 @@ namespace Tridium::Editor {
 
 	private:
 		EGizmoState m_GizmoState = EGizmoState::Translate;
-		Ref<EditorCamera> m_EditorCamera;
+		SharedPtr<EditorCamera> m_EditorCamera;
 		SceneHeirarchyPanel* m_SceneHeirarchy = nullptr;
 
-		Ref<Framebuffer> m_IDFBO;
-		Ref<Shader> m_GameObjectIDShader;
+		SharedPtr<Framebuffer> m_IDFBO;
+		SharedPtr<Shader> m_GameObjectIDShader;
 	};
 
 }

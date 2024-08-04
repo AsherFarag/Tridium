@@ -2,7 +2,7 @@
 
 namespace Tridium {
 
-#define INVALID_GUID 0
+constexpr uint64_t INVALID_GUID = 0;
 
 	// Globally-Unique Identifier
 	class GUID

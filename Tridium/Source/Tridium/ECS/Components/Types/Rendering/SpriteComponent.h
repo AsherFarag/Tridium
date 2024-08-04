@@ -9,14 +9,14 @@ namespace Tridium {
 	{
 	public:
 		SpriteComponent() = default;
-		SpriteComponent( const Ref<Texture>&texture );
+		SpriteComponent( const SharedPtr<Texture>&texture );
 		~SpriteComponent() = default;
 
-		const Ref<Texture>& GetTexture() { return m_Texture; }
-		void SetTexture(const Ref<Texture>& texture ) { m_Texture = texture; }
+		const SharedPtr<Texture>& GetTexture() { return m_Texture; }
+		void SetTexture(const SharedPtr<Texture>& texture ) { m_Texture = texture; }
 
 	private:
-		Ref<Texture> m_Texture;
+		SharedPtr<Texture> m_Texture;
 	};
 
 }

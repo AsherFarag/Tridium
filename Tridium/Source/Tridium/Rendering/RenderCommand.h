@@ -28,7 +28,7 @@ namespace Tridium {
 			s_RendererAPI->Clear();
 		}
 
-		static inline void DrawIndexed( const Ref<VertexArray>& a_VertexArray )
+		static inline void DrawIndexed( const SharedPtr<VertexArray>& a_VertexArray )
 		{
 			s_RendererAPI->DrawIndexed( a_VertexArray );
 		}

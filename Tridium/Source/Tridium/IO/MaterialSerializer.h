@@ -8,7 +8,7 @@ namespace Tridium {
 	class MaterialSerializer
 	{
 	public:
-		MaterialSerializer( const Ref<Material>& material );
+		MaterialSerializer( const SharedPtr<Material>& material );
 
 		void SerializeText( const std::string& filepath );
 		void SerializeBinary( const std::string& filepath ) {}
@@ -17,7 +17,7 @@ namespace Tridium {
 		bool DeserializeBinary( const std::string& filepath ) { return false; }
 
 	private:
-		Ref<Material> m_Material; 
+		SharedPtr<Material> m_Material; 
 	};
 
 }

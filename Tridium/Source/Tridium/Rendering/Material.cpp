@@ -4,9 +4,9 @@
 #include <Tridium/IO/MaterialSerializer.h>
 
 namespace Tridium {
-	Ref<Material> Material::Load( const std::string& path )
+	SharedPtr<Material> Material::Load( const std::string& path )
 	{
-		auto mat = MakeRef<Material>();
+		auto mat = MakeShared<Material>();
 		MaterialSerializer serializer( mat );
 		if ( serializer.DeserializeText( path ) )
 			return mat;
@@ -22,7 +22,7 @@ namespace Tridium {
 
 	}
 
-	Material::Material( const Ref<Shader>& shader )
+	Material::Material( const SharedPtr<Shader>& shader )
 		: Material()
 	{
 		m_Shader = shader;

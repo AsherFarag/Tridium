@@ -36,7 +36,7 @@ namespace Tridium {
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	}
 
-	void OpenGLRenderingAPI::DrawIndexed( const Ref<VertexArray>& a_VertexArray )
+	void OpenGLRenderingAPI::DrawIndexed( const SharedPtr<VertexArray>& a_VertexArray )
 	{
 		glDrawElements( GL_TRIANGLES, a_VertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr );
 	}

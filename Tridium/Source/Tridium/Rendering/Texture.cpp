@@ -7,7 +7,7 @@
 #include <stb_image.h>
 
 namespace Tridium {
-	Ref<Texture> Texture::Load( const std::string& path )
+	SharedPtr<Texture> Texture::Load( const std::string& path )
 	{
 		TextureSpecification specification;
 
@@ -49,7 +49,7 @@ namespace Tridium {
 		}
 		}
 
-		Ref<Texture> tex = Texture::Create( specification );
+		SharedPtr<Texture> tex = Texture::Create( specification );
 		tex->m_Path = path;
 		tex->SetIsLoaded( true );
 		tex->SetData( data, width * height * channels );
@@ -59,12 +59,12 @@ namespace Tridium {
 		return tex;
 	}
 
-	Ref<Texture> Texture::Create( const TextureSpecification& specification )
+	SharedPtr<Texture> Texture::Create( const TextureSpecification& specification )
 	{
 		switch ( Renderer::GetAPI() )
 		{
 		case RendererAPI::API::None:    TE_CORE_ASSERT( false, "RendererAPI::None is currently not supported!" ); return nullptr;
-		case RendererAPI::API::OpenGL:  return MakeRef<OpenGLTexture>( specification );
+		case RendererAPI::API::OpenGL:  return MakeShared<OpenGLTexture>( specification );
 		}
 
 		TE_CORE_ASSERT( false, "Unknown RendererAPI!" );

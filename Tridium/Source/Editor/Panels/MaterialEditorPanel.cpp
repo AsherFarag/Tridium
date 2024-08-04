@@ -5,13 +5,13 @@
 #include <Tridium/IO/MaterialSerializer.h>
 
 namespace Tridium::Editor {
-	MaterialEditorPanel::MaterialEditorPanel( const Ref<Material>& material )
+	MaterialEditorPanel::MaterialEditorPanel( const SharedPtr<Material>& material )
 		: Panel( "Material Editor##" ), m_Material( material )
 	{
 	}
 
 	// Returns true if modified
-	bool DrawTextureDragDrop(const char* label, Ref<Texture>& texture)
+	bool DrawTextureDragDrop(const char* label, SharedPtr<Texture>& texture)
 	{
 		GUID oldTextureGUID = texture ? texture->GetGUID() : GUID{};
 

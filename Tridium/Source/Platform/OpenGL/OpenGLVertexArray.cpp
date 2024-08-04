@@ -45,7 +45,7 @@ namespace Tridium {
 		glBindVertexArray( 0 );
 	}
 
-	void OpenGLVertexArray::AddVertexBuffer( const Ref<VertexBuffer>& a_VertexBuffer )
+	void OpenGLVertexArray::AddVertexBuffer( const SharedPtr<VertexBuffer>& a_VertexBuffer )
 	{
 		TE_CORE_ASSERT( a_VertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer has no Layout!" );
 
@@ -70,7 +70,7 @@ namespace Tridium {
 		m_VertexBuffers.push_back( a_VertexBuffer );
 	}
 
-	void OpenGLVertexArray::SetIndexBuffer( const Ref<IndexBuffer>& a_IndexBuffer )
+	void OpenGLVertexArray::SetIndexBuffer( const SharedPtr<IndexBuffer>& a_IndexBuffer )
 	{
 		glBindVertexArray( m_RendererID );
 		a_IndexBuffer->Bind();

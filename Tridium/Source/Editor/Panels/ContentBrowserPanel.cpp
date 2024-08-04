@@ -170,7 +170,7 @@ namespace Tridium::Editor {
 
 	bool ContentBrowserPanel::ContentItemOnImGuiDraw( const ContentType type, const fs::path& a_FilePath, const ImVec2& size )
 	{
-		Ref<Texture> icon;
+		SharedPtr<Texture> icon;
 
 		// Set Icon
 		switch ( type )

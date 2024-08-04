@@ -1,6 +1,7 @@
 #include "tripch.h"
 #include "ScriptEngine.h"
 
+#include "Tridium/Core/AssetManager.h"
 #include <Tridium/ECS/Components/Types.h>
 
 namespace Tridium {

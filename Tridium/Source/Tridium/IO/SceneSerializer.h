@@ -8,7 +8,7 @@ namespace Tridium {
 	class SceneSerializer
 	{
 	public:
-		SceneSerializer( const Ref<Scene>& scene );
+		SceneSerializer( const SharedPtr<Scene>& scene );
 
 		void SerializeText( const std::string& filepath );
 		void SerializeBinary( const std::string& filepath );
@@ -17,7 +17,7 @@ namespace Tridium {
 		bool DeserializeBinary( const std::string& filepath );
 
 	private:
-		Ref<Scene> m_Scene;
+		SharedPtr<Scene> m_Scene;
 	};
 
 }

@@ -65,8 +65,8 @@ namespace Tridium {
 			{
 				if ( auto& mesh = meshComponent.GetMesh() )
 				{
-					Ref<Material> mat = meshComponent.GetMaterial();
-					Ref<Shader> shader = mat ? mat->GetShader() : nullptr;
+					SharedPtr<Material> mat = meshComponent.GetMaterial();
+					SharedPtr<Shader> shader = mat ? mat->GetShader() : nullptr;
 
 					if ( !shader )
 						return;
@@ -109,7 +109,7 @@ namespace Tridium {
 		//	{
 		//		spriteShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
 
-		//		Ref<Texture> tex = TextureLibrary::GetTexture( sprite.GetTexture() );
+		//		SharedPtr<Texture> tex = TextureLibrary::GetTexture( sprite.GetTexture() );
 		//		if ( tex )
 		//			tex->Bind();
 

@@ -2,7 +2,7 @@
 #ifdef  IS_EDITOR
 #include "Editor.h"
 
-#include <Tridium/Core/Asset.h>
+#include <Tridium/Core/AssetManager.h>
 
 // Assets
 #include <Tridium/Rendering/Mesh.h>
@@ -34,7 +34,7 @@ namespace Tridium::Editor {
         Application::Get().GetWindow().SetTitle("Tridium Editor");
         Application::Get().GetWindow().SetIcon( "Content/Engine/Editor/Icons/EngineIcon.png" );
 
-        s_Instance = Ref<EditorApplication>( new EditorApplication() );
+        s_Instance = SharedPtr<EditorApplication>( new EditorApplication() );
         s_Instance->m_EditorLayer = new EditorLayer();
         Application::Get().PushLayer( s_Instance->m_EditorLayer );
         return true;
@@ -78,7 +78,7 @@ namespace Tridium::Editor {
             auto& AssetLib = AssetManager::Get().GetLibrary();
             for ( auto&& [guid, asset] : AssetLib )
             {
-                asset->Save();
+                //asset->Save();
             }
         }
         void RecompileAllShaders()

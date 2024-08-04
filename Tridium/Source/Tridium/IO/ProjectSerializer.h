@@ -7,7 +7,7 @@ namespace Tridium {
 	class ProjectSerializer
 	{
 	public:
-		ProjectSerializer( const Ref<Project>& project );
+		ProjectSerializer( const SharedPtr<Project>& project );
 
 		void SerializeText( const std::string& filepath );
 		void SerializeBinary( const std::string& filepath ) {}
@@ -16,7 +16,7 @@ namespace Tridium {
 		bool DeserializeBinary( const std::string& filepath ) { return false; }
 
 	private:
-		Ref<Project> m_Project;
+		SharedPtr<Project> m_Project;
 	};
 
 }

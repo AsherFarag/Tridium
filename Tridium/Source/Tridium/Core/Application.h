@@ -30,14 +30,14 @@ namespace Tridium
 		void PushOverlay( Layer* overlay );
 
 		static Application& Get() { return *s_Instance; }
-		static Ref<Project> GetActiveProject() { return Get().m_Project; }
+		static SharedPtr<Project> GetActiveProject() { return Get().m_Project; }
 		static const fs::path& GetAssetDirectory() { return Get().m_Project->GetAssetDirectory(); }
 
 		Window& GetWindow() { return *m_Window; }
 		uint32_t GetFPS() const { return m_FPS; }
 
 		// - Scene -
-		static Ref<Scene> GetScene() { return s_Instance->m_ActiveScene; }
+		static SharedPtr<Scene> GetScene() { return s_Instance->m_ActiveScene; }
 
 	private:
 		bool OnWindowClosed( WindowCloseEvent& e );
@@ -50,8 +50,8 @@ namespace Tridium
 		ImGuiLayer* m_ImGuiLayer;
 		LayerStack m_LayerStack;
 
-		Ref<Project> m_Project;
-		Ref<Scene> m_ActiveScene;
+		SharedPtr<Project> m_Project;
+		SharedPtr<Scene> m_ActiveScene;
 
 		uint32_t m_FPS = 0u;
 

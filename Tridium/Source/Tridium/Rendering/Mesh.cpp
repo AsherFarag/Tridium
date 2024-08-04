@@ -19,7 +19,7 @@ namespace Tridium {
 
 #pragma region MeshImporter
 
-    Ref<Mesh> MeshImporter::Import( const std::string& filepath, const MeshImportSettings& importSettings )
+    SharedPtr<Mesh> MeshImporter::Import( const std::string& filepath, const MeshImportSettings& importSettings )
     {
         Assimp::Importer importer;
         importer.SetPropertyFloat( AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, importSettings.Scale );
@@ -32,7 +32,7 @@ namespace Tridium {
         }
 
         // Create a new Mesh
-        Ref<Mesh> loadedMesh = MakeRef<Mesh>();
+        SharedPtr<Mesh> loadedMesh = MakeShared<Mesh>();
 
         TODO( "We currently only load the first mesh for simplicity!" );
         aiMesh* ai_mesh = scene->mMeshes[0];
@@ -132,17 +132,17 @@ namespace Tridium {
 
 #pragma endregion
 
-    Ref<Mesh> Mesh::Load( const std::string& path )
+    SharedPtr<Mesh> Mesh::Load( const std::string& path )
     {
         return MeshImporter::Import(path);
     }
 
-    const Ref<Mesh>& Mesh::GetQuad()
+    const SharedPtr<Mesh>& Mesh::GetQuad()
     {
-        static Ref<Mesh> quadMesh;
+        static SharedPtr<Mesh> quadMesh;
         if ( !quadMesh )
         {
-            quadMesh = MakeRef<Mesh>();
+            quadMesh = MakeShared<Mesh>();
 
             quadMesh->m_VAO = VertexArray::Create();
 

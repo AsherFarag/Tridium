@@ -3,7 +3,7 @@
 
 namespace Tridium {
 
-	MeshComponent::MeshComponent( const Ref<Mesh>& mesh )
+	MeshComponent::MeshComponent( const SharedPtr<Mesh>& mesh )
 		: m_Mesh( mesh )
 	{
 	}

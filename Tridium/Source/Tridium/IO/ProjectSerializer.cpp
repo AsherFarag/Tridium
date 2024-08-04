@@ -63,7 +63,7 @@ namespace Tridium {
 		return out;
 	}
 
-	ProjectSerializer::ProjectSerializer( const Ref<Project>& project )
+	ProjectSerializer::ProjectSerializer( const SharedPtr<Project>& project )
 		: m_Project( project )
 	{
 	}

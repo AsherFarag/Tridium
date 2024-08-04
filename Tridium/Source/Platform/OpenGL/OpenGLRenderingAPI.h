@@ -13,7 +13,7 @@ namespace Tridium {
 		virtual void SetClearColor( const Vector4& color ) override;
 		virtual void Clear() override;
 
-		virtual void DrawIndexed( const Ref<VertexArray>& a_VertexArray ) override;
+		virtual void DrawIndexed( const SharedPtr<VertexArray>& a_VertexArray ) override;
 	};
 
 }

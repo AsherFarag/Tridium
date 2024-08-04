@@ -1,5 +1,6 @@
 #include "tripch.h"
 #include "MaterialSerializer.h"
+#include "Tridium/Core/AssetManager.h"
 #include <Tridium/Rendering/Material.h>
 #include "SerializationUtil.h"
 
@@ -84,7 +85,7 @@ namespace Tridium {
 		return out;
 	}
 
-	MaterialSerializer::MaterialSerializer( const Ref<Material>& material )
+	MaterialSerializer::MaterialSerializer( const SharedPtr<Material>& material )
 		: m_Material ( material )
 	{
 	}
@@ -118,8 +119,6 @@ namespace Tridium {
 
 		std::ofstream outFile( filepath );
 		outFile << out.c_str();
-
-		m_Material->SetModified( false );
 
 		TE_CORE_TRACE( "End Serializing Material" );
 	}

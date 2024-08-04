@@ -11,7 +11,7 @@ namespace Tridium {
 
 	}
 
-	LuaScriptComponent::LuaScriptComponent( const Ref<Script>& a_Script )
+	LuaScriptComponent::LuaScriptComponent( const SharedPtr<Script>& a_Script )
 		: m_Environment( ScriptEngine::GetLuaState(), sol::create, ScriptEngine::GetLuaState().globals() )
 	{
 		m_Script = a_Script;
@@ -48,7 +48,7 @@ namespace Tridium {
 	}
 
 
-	void LuaScriptComponent::SetScript( const Ref<Script>& a_Script )
+	void LuaScriptComponent::SetScript( const SharedPtr<Script>& a_Script )
 	{
 		m_Script = a_Script;
 		Compile();

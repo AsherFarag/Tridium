@@ -22,12 +22,12 @@ namespace Tridium {
 		m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
 
 
-		m_Project = MakeRef<Project>();
+		m_Project = MakeShared<Project>();
 		ProjectSerializer s( m_Project );
 		s.SerializeText( "test.tproject" );
 
 		TODO( "Setup a proper scene initialiser!" );
-		m_ActiveScene = MakeRef<Scene>();
+		m_ActiveScene = MakeShared<Scene>();
 
 		// Initialise ImGui
 		m_ImGuiLayer = new ImGuiLayer();

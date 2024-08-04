@@ -22,9 +22,9 @@ namespace Tridium {
 	{
 	public:
 		ASSET_CLASS_TYPE( Mesh )
-		static Ref<Mesh> Load( const std::string& path );
+		static SharedPtr<Mesh> Load( const std::string& path );
 
-		static const Ref<Mesh>& GetQuad();
+		static const SharedPtr<Mesh>& GetQuad();
 
 		inline auto GetVAO() const { return m_VAO; }
 		inline auto GetVBO() const { return m_VBO; }
@@ -34,9 +34,9 @@ namespace Tridium {
 		const inline size_t GetNumOfPolygons() const { return (size_t)( m_NumVerticies / 3u ); }
 
 	private:
-		Ref<VertexArray> m_VAO;
-		Ref<VertexBuffer> m_VBO;
-		Ref<IndexBuffer> m_IBO;
+		SharedPtr<VertexArray> m_VAO;
+		SharedPtr<VertexBuffer> m_VBO;
+		SharedPtr<IndexBuffer> m_IBO;
 
 		size_t m_NumVerticies = 0;
 		size_t m_NumIndicies = 0;
@@ -45,11 +45,11 @@ namespace Tridium {
 
 		struct SubMesh
 		{
-			Ref<IndexBuffer> IBO;
+			SharedPtr<IndexBuffer> IBO;
 			uint32_t MaterialIndex;
 		};
 		std::vector<SubMesh> m_SubMeshes;
-		std::vector<Ref<Material>> m_Materials;
+		std::vector<SharedPtr<Material>> m_Materials;
 
 	private:
 		friend class MeshImporter;
@@ -67,6 +67,6 @@ namespace Tridium {
 	class MeshImporter
 	{
 	public:
-		static Ref<Mesh> Import( const std::string& filepath, const MeshImportSettings& importSettings = {} );
+		static SharedPtr<Mesh> Import( const std::string& filepath, const MeshImportSettings& importSettings = {} );
 	};
 }

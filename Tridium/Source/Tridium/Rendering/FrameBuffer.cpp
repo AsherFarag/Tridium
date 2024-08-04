@@ -8,12 +8,12 @@
 
 namespace Tridium {
 
-    Ref<Framebuffer> Framebuffer::Create( const FramebufferSpecification& spec )
+    SharedPtr<Framebuffer> Framebuffer::Create( const FramebufferSpecification& spec )
     {
 		switch ( RendererAPI::GetAPI() )
 		{
 		case RendererAPI::API::OpenGL:
-			return MakeRef<OpenGLFramebuffer>( spec );
+			return MakeShared<OpenGLFramebuffer>( spec );
 			break;
 		default:
 			return nullptr;

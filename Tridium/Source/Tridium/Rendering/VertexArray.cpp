@@ -6,12 +6,12 @@
 
 namespace Tridium {
 
-	Ref<VertexArray> VertexArray::Create()
+	SharedPtr<VertexArray> VertexArray::Create()
 	{
 		switch ( RendererAPI::GetAPI() )
 		{
 		case RendererAPI::API::OpenGL:
-			return MakeRef<OpenGLVertexArray>();
+			return MakeShared<OpenGLVertexArray>();
 			break;
 		default:
 			return nullptr;

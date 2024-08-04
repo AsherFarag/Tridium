@@ -2,7 +2,7 @@
 #include "SpriteComponent.h"
 
 namespace Tridium {
-	SpriteComponent::SpriteComponent( const Ref<Texture>& texture )
+	SpriteComponent::SpriteComponent( const SharedPtr<Texture>& texture )
 		: m_Texture( texture )
 	{
 	}

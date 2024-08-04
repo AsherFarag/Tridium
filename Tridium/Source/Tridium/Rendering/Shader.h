@@ -37,8 +37,8 @@ namespace Tridium {
 	{
 	public:
 		ASSET_CLASS_TYPE( Shader )
-		static Ref<Shader> Load( const std::string& path );
-		static Ref<Shader> Create( const std::string& path, const std::string& vertex, const std::string& frag );
+		static SharedPtr<Shader> Load( const std::string& path );
+		static SharedPtr<Shader> Create( const std::string& path, const std::string& vertex, const std::string& frag );
 		virtual ~Shader() = default;
 
 		virtual bool Recompile() = 0;

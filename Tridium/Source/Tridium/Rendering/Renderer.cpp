@@ -18,7 +18,7 @@ namespace Tridium {
 	{
 	}
 
-	void Renderer::Submit( const Ref<Shader>& a_Shader, const Ref<VertexArray>& a_VertexArray, const Matrix4& a_Transform )
+	void Renderer::Submit( const SharedPtr<Shader>& a_Shader, const SharedPtr<VertexArray>& a_VertexArray, const Matrix4& a_Transform )
 	{
 		a_Shader->Bind();
 		a_Shader->SetMatrix4( "uPVM", m_SceneData->ViewProjectionMatrix * a_Transform );

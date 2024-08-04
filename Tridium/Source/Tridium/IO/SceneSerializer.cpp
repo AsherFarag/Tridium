@@ -3,6 +3,7 @@
 
 #include "SerializationUtil.h"
 
+#include "Tridium/Core/AssetManager.h"
 #include <Tridium/ECS/GameObject.h>
 #include <Tridium/ECS/Components/Types.h>
 #include <Tridium/Rendering/Texture.h>
@@ -20,7 +21,7 @@ namespace Tridium {
 		std::vector<GUID> Children;
 	};
 
-	SceneSerializer::SceneSerializer( const Ref<Scene>& scene )
+	SceneSerializer::SceneSerializer( const SharedPtr<Scene>& scene )
 		: m_Scene(scene)
 	{
 

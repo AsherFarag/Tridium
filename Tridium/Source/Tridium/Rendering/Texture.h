@@ -38,8 +38,8 @@ namespace Tridium {
 		ASSET_CLASS_TYPE( Texture )
 		virtual ~Texture() = default;
 
-		static Ref<Texture> Load( const std::string& path );
-		static Ref<Texture> Create( const TextureSpecification& specification );
+		static SharedPtr<Texture> Load( const std::string& path );
+		static SharedPtr<Texture> Create( const TextureSpecification& specification );
 
 		virtual const TextureSpecification& GetSpecification() const = 0;
 

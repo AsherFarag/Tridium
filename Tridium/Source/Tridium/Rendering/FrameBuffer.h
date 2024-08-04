@@ -47,7 +47,7 @@ namespace Tridium {
 	class Framebuffer
 	{
 	public:
-		static Ref<Framebuffer> Create( const FramebufferSpecification& spec );
+		static SharedPtr<Framebuffer> Create( const FramebufferSpecification& spec );
 		virtual ~Framebuffer() = default;
 
 		virtual void Bind() = 0;

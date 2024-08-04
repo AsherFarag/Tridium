@@ -50,7 +50,7 @@ namespace Tridium::Editor {
 
 	void EditorLayer::OnAttach()
 	{
-		m_EditorCamera = MakeRef<EditorCamera>();
+		m_EditorCamera = MakeShared<EditorCamera>();
 
 		m_PanelStack.PushPanel<InspectorPanel>();
 		m_SceneHeirarchy = m_PanelStack.PushPanel<SceneHeirarchyPanel>();

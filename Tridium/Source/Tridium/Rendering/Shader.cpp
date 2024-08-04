@@ -7,14 +7,14 @@
 
 namespace Tridium {
 
-	Ref<Shader> Shader::Load( const std::string& path )
+	SharedPtr<Shader> Shader::Load( const std::string& path )
 	{
-		Ref<Shader> shader = nullptr;
+		SharedPtr<Shader> shader = nullptr;
 
 		switch ( RendererAPI::GetAPI() )
 		{
 		case RendererAPI::API::OpenGL:
-			shader = MakeRef<OpenGLShader>( path );
+			shader = MakeShared<OpenGLShader>( path );
 			break;
 		default:
 			return nullptr;
@@ -24,14 +24,14 @@ namespace Tridium {
 		return shader;
 	}
 
-	Ref<Shader> Shader::Create( const std::string& name, const std::string& vertex, const std::string& frag )
+	SharedPtr<Shader> Shader::Create( const std::string& name, const std::string& vertex, const std::string& frag )
 	{
-		Ref<Shader> shader = nullptr;
+		SharedPtr<Shader> shader = nullptr;
 
 		switch ( RendererAPI::GetAPI() )
 		{
 		case RendererAPI::API::OpenGL:
-			shader = MakeRef<OpenGLShader>( name, vertex, frag );
+			shader = MakeShared<OpenGLShader>( name, vertex, frag );
 			break;
 		default:
 			return nullptr;
