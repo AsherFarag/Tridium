@@ -12,6 +12,11 @@
 
 namespace Tridium {
 
+    void AssetManager::ReleaseAsset( const AssetHandle& a_AssetHandle )
+    {
+        Get().ReleaseAsset( a_AssetHandle );
+    }
+
     void AssetManager::Serialize( const fs::path& path )
     {
         auto filepath = path / ASSET_MANAGER_FILENAME;
@@ -23,7 +28,7 @@ namespace Tridium {
         for ( auto& asset : Get().m_Paths )
         {
             out << YAML::BeginMap;
-            out << YAML::Key << "GUID" << YAML::Value << asset.first;
+            out << YAML::Key << "AssetHandle" << YAML::Value << asset.first;
             out << YAML::Key << "Path" << YAML::Value << asset.second;
             out << YAML::EndMap;
         }
@@ -50,9 +55,9 @@ namespace Tridium {
 
         for ( auto assetNode : assetsNode )
         {
-            GUID guid;
-            if ( auto guidNode = assetNode["GUID"] )
-                guid = guidNode.as<GUID>();
+            AssetHandle AssetHandle;
+            if ( auto AssetHandleNode = assetNode["AssetHandle"] )
+                AssetHandle = AssetHandleNode.as<AssetHandle>();
             else
             {
                 TE_CORE_WARN( "Invalid Asset Node while reading meta file '{0}'", path );
@@ -66,21 +71,52 @@ namespace Tridium {
                 continue;
             }
 
-            AssetPaths.emplace( guid, pathNode.as<std::string>() );
+            AssetPaths.emplace( AssetHandle, pathNode.as<std::string>() );
         }
 
         return true;
-    }
-
-    SharedPtr<Asset> AssetManager::Import( const fs::path& path )
-    {
-        return SharedPtr<Asset>();
     }
 
     void AssetManager::Init()
     {
         auto filepath = Application::GetActiveProject()->GetMetaDirectory() / ASSET_MANAGER_FILENAME;
         Deserialize( filepath.string() );
+    }
+
+    void AssetManager::Internal_AddAsset( const AssetRef<Asset>& asset )
+    {
+        Get().m_Library[asset->GetHandle()] = asset;
+    }
+
+    AssetRef<Asset> AssetManager::Internal_GetAsset( const AssetHandle& a_AssetHandle )
+    {
+        if ( auto it = m_Library.find( a_AssetHandle ); it != m_Library.end() )
+        {
+            return it->second;
+        }
+
+        return nullptr;
+    }
+
+    const std::string& AssetManager::Internal_GetPath( const AssetHandle& a_AssetHandle )
+    {
+        // TODO: insert return statement here
+    }
+
+    const AssetHandle& AssetManager::Internal_GetAssetHandle( const std::string& a_Path )
+    {
+        // TODO: insert return statement here
+    }
+
+    bool AssetManager::Internal_RemoveAsset( const AssetHandle& a_AssetHandle )
+    {
+        if ( auto it = m_Library.find( a_AssetHandle ); it != m_Library.end() )
+        {
+            m_Library.erase( it );
+            return true;
+        }
+
+        return false;
     }
 
 }

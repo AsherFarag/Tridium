@@ -12,6 +12,7 @@
 #include <Tridium/Rendering/Texture.h>
 #include <Tridium/Rendering/Material.h>
 #include <Editor/EditorUtil.h>
+#include <Tridium/Core/AssetManager.h>
 
 namespace ImGui {
 	static void DrawVec3Control( const std::string& label, Vector3& values, float speed, bool uniform = false, const char* format = "%.4f" )

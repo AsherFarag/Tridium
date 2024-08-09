@@ -3,6 +3,7 @@
 #include "Editor/EditorUtil.h"
 #include "MaterialEditorPanel.h"
 #include <Tridium/IO/MaterialSerializer.h>
+#include <Tridium/Core/AssetManager.h>
 
 namespace Tridium::Editor {
 	MaterialEditorPanel::MaterialEditorPanel( const SharedPtr<Material>& material )
@@ -13,7 +14,7 @@ namespace Tridium::Editor {
 	// Returns true if modified
 	bool DrawTextureDragDrop(const char* label, SharedPtr<Texture>& texture)
 	{
-		GUID oldTextureGUID = texture ? texture->GetGUID() : GUID{};
+		AssetHandle oldTextureGUID = texture ? texture->GetHandle() : AssetHandle{};
 
 		bool hasSprite = texture != nullptr;
 		ImGui::DragDropSelectable( label, hasSprite, hasSprite ? texture->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,

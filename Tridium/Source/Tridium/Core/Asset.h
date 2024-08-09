@@ -4,13 +4,15 @@
 namespace Tridium {
 
 #define ASSET_CLASS_TYPE(type) static EAssetType GetStaticType() { return EAssetType::type; }\
-							   virtual EAssetType GetAssetType() { return GetStaticType(); }\
-                               virtual const char* AssetTypeName() { return #type; }\
+							   virtual EAssetType GetAssetType() const { return GetStaticType(); }\
+                               virtual const char* AssetTypeName() const { return #type; }\
 
-	enum class EAssetType
+	enum class EAssetType : unsigned char
 	{
 		None = 0, Mesh, Shader, Texture, Material,
 	};
+
+    typedef GUID AssetHandle;
 
     class Asset
     {
@@ -19,7 +21,7 @@ namespace Tridium {
         ASSET_CLASS_TYPE( None )
 
         const std::string& GetPath() const { return m_Path; }
-        const GUID GetGUID() const { return m_GUID; }
+        const AssetHandle& GetHandle() const { return m_Handle; }
 
         bool IsLoaded() const { return m_Loaded; }
 
@@ -28,7 +30,7 @@ namespace Tridium {
         void Release();
 
     protected:
-        GUID m_GUID;
+        AssetHandle m_Handle;
         std::string m_Path;
         size_t m_RefCount = 0;
         bool m_Loaded = false;
@@ -41,7 +43,7 @@ namespace Tridium {
     {
     public:
         AssetRef( T* a_Ptr = nullptr );
-        AssetRef( const GUID& a_AssetGUID );
+        AssetRef( const AssetHandle& a_AssetHandle );
         AssetRef( const AssetRef& other );
         AssetRef& operator=( const AssetRef& other );
         ~AssetRef();
@@ -51,15 +53,17 @@ namespace Tridium {
         T* Get() const { return m_Ptr; }
         void Reset();
 
-        GUID GetGUID() const { return m_AssetGUID; }
-        void SetGUID( GUID a_GUID );
+        const AssetHandle& GetAssetHandle() const { return m_AssetHandle; }
+        void SetAssetHandle( AssetHandle a_AssetHandle );
 
         explicit operator bool() const { return m_Ptr != nullptr; }
 
     private:
-        GUID m_AssetGUID;
+        AssetHandle m_AssetHandle;
         T* m_Ptr = nullptr;
     };
+
+#pragma region Template Definitions
 
     template<typename T>
     inline AssetRef<T>::AssetRef( T* a_Ptr )
@@ -68,17 +72,17 @@ namespace Tridium {
         if ( m_Ptr )
         {
             m_Ptr->AddRef();
-            m_AssetGUID = m_Ptr->GetGUID();
+            m_AssetHandle = m_Ptr->GetAssetHandle();
         }
     }
 
     template<typename T>
-    inline AssetRef<T>::AssetRef( const GUID& a_AssetGUID )
-        : m_AssetGUID( a_AssetGUID ) {}
+    inline AssetRef<T>::AssetRef( const AssetHandle& a_AssetAssetHandle )
+        : m_AssetHandle( a_AssetAssetHandle ) {}
 
     template<typename T>
     inline AssetRef<T>::AssetRef( const AssetRef& other )
-        : m_Ptr( other.m_Ptr ), m_AssetGUID( other.m_AssetGUID )
+        : m_Ptr( other.m_Ptr ), m_AssetHandle( other.m_AssetHandle )
     {
         if ( m_Ptr )
             m_Ptr->AddRef();
@@ -94,7 +98,7 @@ namespace Tridium {
             m_Ptr->Release();
 
         m_Ptr = other.m_Ptr;
-        m_AssetGUID = other.m_AssetGUID;
+        m_AssetHandle = other.m_AssetHandle;
 
         if ( m_Ptr )
             m_Ptr->AddRef();
@@ -112,7 +116,7 @@ namespace Tridium {
     template<typename T>
     inline void AssetRef<T>::Reset()
     {
-        m_AssetGUID = GUID::Null();
+        m_AssetHandle = AssetHandle::Null();
         if ( m_Ptr )
         {
             m_Ptr->Release();
@@ -121,15 +125,17 @@ namespace Tridium {
     }
 
     template<typename T>
-    inline void AssetRef<T>::SetGUID( GUID a_GUID )
+    inline void AssetRef<T>::SetAssetHandle( AssetHandle a_AssetHandle )
     {
-        if ( m_AssetGUID == a_GUID )
+        if ( m_AssetHandle == a_AssetHandle )
             return;
 
         Reset();
 
-        m_AssetGUID = a_GUID;
+        m_AssetHandle = a_AssetHandle;
     }
+
+#pragma endregion
 
 #pragma endregion
 
