@@ -1,27 +1,26 @@
 #pragma once
 #include <Tridium/ECS/Components/Component.h>
+#include <Tridium/Rendering/Material.h>
+#include <Tridium/Rendering/Mesh.h>
 
 namespace Tridium {
-
-	class Mesh;
-	class Material;
 
 	DEFINE_COMPONENT( MeshComponent )
 	{
 	public:
 		MeshComponent() = default;
-		MeshComponent(const SharedPtr<Mesh>& mesh);
+		MeshComponent(const AssetRef<Mesh>& mesh);
 		~MeshComponent() = default;
 
-		const SharedPtr<Mesh>& GetMesh() const { return m_Mesh; }
-		const SharedPtr<Material>& GetMaterial() { return m_Material; }
+		const AssetRef<Mesh>& GetMesh() const { return m_Mesh; }
+		const AssetRef<Material>& GetMaterial() { return m_Material; }
 
-		void SetMesh( const SharedPtr<Mesh>& mesh ) { m_Mesh = mesh; }
-		void SetMaterial( const SharedPtr<Material>& material ) { m_Material = material; }
+		void SetMesh( const AssetRef<Mesh>& a_Mesh ) { m_Mesh = a_Mesh; }
+		void SetMaterial( const AssetRef<Material>& a_Material ) { m_Material = a_Material; }
 
 	private:
-		SharedPtr<Mesh> m_Mesh;
-		SharedPtr<Material> m_Material;
+		AssetRef<Mesh> m_Mesh;
+		AssetRef<Material> m_Material;
 	};
 
 }

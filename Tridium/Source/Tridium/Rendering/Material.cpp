@@ -4,15 +4,6 @@
 #include <Tridium/IO/MaterialSerializer.h>
 
 namespace Tridium {
-	SharedPtr<Material> Material::Load( const std::string& path )
-	{
-		auto mat = MakeShared<Material>();
-		MaterialSerializer serializer( mat );
-		if ( serializer.DeserializeText( path ) )
-			return mat;
-
-		return nullptr;
-	}
 
 	Material::Material()
 		: BlendMode( EBlendMode::Additive ),
@@ -22,10 +13,10 @@ namespace Tridium {
 
 	}
 
-	Material::Material( const SharedPtr<Shader>& shader )
+	Material::Material( const AssetRef<Shader>& a_Shader )
 		: Material()
 	{
-		m_Shader = shader;
+		m_Shader = a_Shader;
 	}
 
 	void Material::Bind()

@@ -1,7 +1,6 @@
 #include "tripch.h"
 #include "MaterialSerializer.h"
 #include "Tridium/Core/AssetManager.h"
-#include <Tridium/Rendering/Material.h>
 #include "SerializationUtil.h"
 
 #include <fstream>
@@ -85,8 +84,8 @@ namespace Tridium {
 		return out;
 	}
 
-	MaterialSerializer::MaterialSerializer( const SharedPtr<Material>& material )
-		: m_Material ( material )
+	MaterialSerializer::MaterialSerializer( const AssetRef<Material>& a_Material )
+		: m_Material ( a_Material )
 	{
 	}
 
@@ -98,22 +97,22 @@ namespace Tridium {
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Material";
-		out << YAML::Value << m_Material->GetGUID();
+		out << YAML::Value << m_Material->GetHandle();
 
-		out << YAML::Key << "Shader"; out << YAML::Value << ( m_Material->GetShader() ? m_Material->GetShader()->GetGUID() : GUID{} );
+		out << YAML::Key << "Shader"; out << YAML::Value << ( m_Material->GetShader() ? m_Material->GetShader()->GetHandle() : AssetHandle{} );
 
-		out << YAML::Key << "Parent Material" << YAML::Value << ( m_Material->m_Parent ? m_Material->m_Parent->GetGUID() : GUID{} );
+		out << YAML::Key << "Parent Material" << YAML::Value << ( m_Material->m_Parent ? m_Material->m_Parent->GetHandle() : AssetHandle{} );
 
 		out << YAML::Key << "Blend Mode"   << YAML::Value << m_Material->BlendMode;
 		out << YAML::Key << "Color"        << YAML::Value << m_Material->Color;
 		out << YAML::Key << "Reflectivity" << YAML::Value << m_Material->Reflectivity;
 		out << YAML::Key << "Refraction"   << YAML::Value << m_Material->Refraction;
 
-		out << YAML::Key << "BaseColorTexture" << YAML::Value << ( m_Material->BaseColorTexture ? m_Material->BaseColorTexture->GetGUID() : GUID{} );
-		out << YAML::Key << "NormalMapTexture" << YAML::Value << ( m_Material->NormalMapTexture ? m_Material->NormalMapTexture->GetGUID() : GUID{} );
-		out << YAML::Key << "MetallicTexture"  << YAML::Value << ( m_Material->MetallicTexture ? m_Material->MetallicTexture->GetGUID() : GUID{} );
-		out << YAML::Key << "RoughnessTexture" << YAML::Value << ( m_Material->RoughnessTexture ? m_Material->RoughnessTexture->GetGUID() : GUID{} );
-		out << YAML::Key << "EmissiveTexture"  << YAML::Value << ( m_Material->EmissiveTexture ? m_Material->EmissiveTexture->GetGUID() : GUID{} );
+		out << YAML::Key << "BaseColorTexture" << YAML::Value << ( m_Material->BaseColorTexture ? m_Material->BaseColorTexture->GetHandle() : AssetHandle{} );
+		out << YAML::Key << "NormalMapTexture" << YAML::Value << ( m_Material->NormalMapTexture ? m_Material->NormalMapTexture->GetHandle() : AssetHandle{} );
+		out << YAML::Key << "MetallicTexture"  << YAML::Value << ( m_Material->MetallicTexture ? m_Material->MetallicTexture->GetHandle()   : AssetHandle{} );
+		out << YAML::Key << "RoughnessTexture" << YAML::Value << ( m_Material->RoughnessTexture ? m_Material->RoughnessTexture->GetHandle() : AssetHandle{} );
+		out << YAML::Key << "EmissiveTexture"  << YAML::Value << ( m_Material->EmissiveTexture ? m_Material->EmissiveTexture->GetHandle()   : AssetHandle{} );
 
 		out << YAML::EndMap;
 
@@ -138,9 +137,9 @@ namespace Tridium {
 
 		m_Material->m_Path = filepath;
 
-		m_Material->m_GUID = data["Material"].as<GUID>();
+		m_Material->m_Handle = data["Material"].as<AssetHandle>();
 		m_Material->m_Shader = AssetManager::GetAsset<Shader>( data["Shader"].as<std::string>() );
-		m_Material->m_Parent = AssetManager::GetAsset<Material>( data["Parent Material"].as<GUID>() );
+		m_Material->m_Parent = AssetManager::GetAsset<Material>( data["Parent Material"].as<AssetHandle>() );
 
 		m_Material->BlendMode = data["Blend Mode"].as<EBlendMode>();
 		m_Material->Color = data["Color"].as<Color>();

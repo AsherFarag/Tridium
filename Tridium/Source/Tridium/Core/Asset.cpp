@@ -4,7 +4,7 @@
 
 namespace Tridium {
 
-    void Asset::Release()
+    void Asset::Internal_ReleaseRef()
     {
         if ( --m_RefCount == 0 )
         {

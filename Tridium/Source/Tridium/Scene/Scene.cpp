@@ -65,8 +65,8 @@ namespace Tridium {
 			{
 				if ( auto& mesh = meshComponent.GetMesh() )
 				{
-					SharedPtr<Material> mat = meshComponent.GetMaterial();
-					SharedPtr<Shader> shader = mat ? mat->GetShader() : nullptr;
+					AssetRef<Material> mat = meshComponent.GetMaterial();
+					AssetRef<Shader> shader = mat ? mat->GetShader() : nullptr;
 
 					if ( !shader )
 						return;

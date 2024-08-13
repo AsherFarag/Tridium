@@ -5,6 +5,7 @@
 #include <Tridium/Core/Time.h>
 #include <Tridium/Core/GUID.h>
 #include <Tridium/Core/Color.h>
+#include <Tridium/Core/Asset.h>
 #include <memory>
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -98,6 +99,12 @@ namespace Tridium {
 	constexpr SharedPtr<T> MakeShared( Args&& ... args )
 	{
 		return std::make_shared<T>( std::forward<Args>( args )... );
+	}
+
+	template<typename T1, typename T2>
+	inline constexpr SharedPtr<T1> SharedPtrCast( const SharedPtr<T2>& other )
+	{
+		return std::static_pointer_cast<T1>( other );
 	}
 
 	// Type alias for std::weak_ptr

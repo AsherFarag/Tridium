@@ -1,9 +1,9 @@
 #pragma once
 #include <Tridium/Core/Asset.h>
+#include <Tridium/Rendering/Material.h>
 
 namespace Tridium {
 
-	class Material;
 	class VertexArray;
 	class VertexBuffer;
 	class IndexBuffer;
@@ -22,9 +22,8 @@ namespace Tridium {
 	{
 	public:
 		ASSET_CLASS_TYPE( Mesh )
-		static SharedPtr<Mesh> Load( const std::string& path );
 
-		static const SharedPtr<Mesh>& GetQuad();
+		static const AssetRef<Mesh>& GetQuad();
 
 		inline auto GetVAO() const { return m_VAO; }
 		inline auto GetVBO() const { return m_VBO; }
@@ -49,7 +48,7 @@ namespace Tridium {
 			uint32_t MaterialIndex;
 		};
 		std::vector<SubMesh> m_SubMeshes;
-		std::vector<SharedPtr<Material>> m_Materials;
+		std::vector<AssetRef<Material>> m_Materials;
 
 	private:
 		friend class MeshImporter;
@@ -67,6 +66,6 @@ namespace Tridium {
 	class MeshImporter
 	{
 	public:
-		static SharedPtr<Mesh> Import( const std::string& filepath, const MeshImportSettings& importSettings = {} );
+		static AssetRef<Mesh> Import( const std::string& a_Path, const MeshImportSettings& a_ImportSettings = {} );
 	};
 }

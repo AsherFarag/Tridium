@@ -2,13 +2,13 @@
 #ifdef IS_EDITOR
 
 #include <Tridium/Core/Layer.h>
+#include <Tridium/Rendering/Texture.h>
 #include <Tridium/Events/Eventsfwd.h>
 
 #include "Panels/Panel.h"
 
 namespace Tridium {
 	class Scene;
-	class Texture;
 }
 
 namespace Tridium::Editor {
@@ -29,11 +29,11 @@ namespace Tridium::Editor {
 
 	struct UIToolBar
 	{
-		SharedPtr<Texture> PlayButtonIcon;
-		SharedPtr<Texture> PauseButtonIcon;
-		SharedPtr<Texture> StopButtonIcon;
-		SharedPtr<Texture> StepOnceButtonIcon;
-		SharedPtr<Texture> SimulateButtonIcon;
+		AssetRef<Texture> PlayButtonIcon;
+		AssetRef<Texture> PauseButtonIcon;
+		AssetRef<Texture> StopButtonIcon;
+		AssetRef<Texture> StepOnceButtonIcon;
+		AssetRef<Texture> SimulateButtonIcon;
 
 		UIToolBar();
 		void OnImGuiDraw();

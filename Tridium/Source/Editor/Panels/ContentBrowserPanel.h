@@ -28,11 +28,11 @@ namespace Tridium::Editor {
 	private:
 		fs::path m_CurrentDirectory;
 
-		SharedPtr<Texture> m_DefaultIcon;
-		SharedPtr<Texture> m_FolderIcon;
-		SharedPtr<Texture> m_LuaIcon;
-		SharedPtr<Texture> m_ImageMediaIcon;
-		SharedPtr<Texture> m_TridiumProjectIcon;
+		AssetRef<Texture> m_DefaultIcon;
+		AssetRef<Texture> m_FolderIcon;
+		AssetRef<Texture> m_LuaIcon;
+		AssetRef<Texture> m_ImageMediaIcon;
+		AssetRef<Texture> m_TridiumProjectIcon;
 	};
 }
 

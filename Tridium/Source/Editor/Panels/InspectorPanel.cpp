@@ -11,6 +11,7 @@
 
 #include <Tridium/Rendering/Texture.h>
 #include <Tridium/Rendering/Material.h>
+#include <Tridium/Rendering/Mesh.h>
 #include <Editor/EditorUtil.h>
 #include <Tridium/Core/AssetManager.h>
 
@@ -174,7 +175,7 @@ namespace Tridium::Editor {
 
 		DrawComponent<MeshComponent>( "Mesh", InspectedGameObject, []( MeshComponent& component )
 			{
-				Ref<Mesh> mesh = component.GetMesh();
+				AssetRef<Mesh> mesh = component.GetMesh();
 				bool hasMesh = mesh != nullptr;
 				ImGui::DragDropSelectable( "Mesh: ", hasMesh, hasMesh ? mesh->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
 					[&]( const ImGuiPayload* payload ) {
@@ -194,7 +195,7 @@ namespace Tridium::Editor {
 					ImGui::EndPopup();
 				}
 
-				Ref<Material> material = component.GetMaterial();
+				AssetRef<Material> material = component.GetMaterial();
 				bool hasMat = material != nullptr;
 				bool matOpened = ImGui::DragDropSelectable( "Material: ", hasMat, hasMat ? material->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
 					[&]( const ImGuiPayload* payload ) {

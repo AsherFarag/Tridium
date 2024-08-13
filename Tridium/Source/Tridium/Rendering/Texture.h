@@ -38,8 +38,8 @@ namespace Tridium {
 		ASSET_CLASS_TYPE( Texture )
 		virtual ~Texture() = default;
 
-		static SharedPtr<Texture> Load( const std::string& path );
-		static SharedPtr<Texture> Create( const TextureSpecification& specification );
+		static AssetRef<Texture> Load( const std::string& path );
+		static AssetRef<Texture> Create( const TextureSpecification& specification );
 
 		virtual const TextureSpecification& GetSpecification() const = 0;
 
@@ -53,11 +53,6 @@ namespace Tridium {
 		virtual void Bind( uint32_t slot = 0 ) const = 0;
 		virtual void Unbind( uint32_t slot = 0 ) const = 0;
 
-		virtual bool IsLoaded() const = 0;
-
 		virtual bool operator==( const Texture& other ) const = 0;
-
-	protected:
-		virtual void SetIsLoaded( bool loaded ) = 0;
 	};
 }

@@ -16,31 +16,30 @@ namespace Tridium {
 
 	public:
 		ASSET_CLASS_TYPE( Material )
-		static SharedPtr<Material> Load( const std::string& path );
 
 		Material();
-		Material( const SharedPtr<Shader>& shader );
+		Material( const AssetRef<Shader>& a_Shader );
 
 		void Bind();
 		void Unbind();
 
-		SharedPtr<Shader> GetShader() const { return m_Shader; }
-		void SetShader( const SharedPtr<Shader>& shader ) { m_Shader = shader; }
-		SharedPtr<Material> GetParent() const { return m_Parent; }
+		AssetRef<Shader> GetShader() const { return m_Shader; }
+		void SetShader( const AssetRef<Shader>& a_Shader ) { m_Shader = a_Shader; }
+		AssetRef<Material> GetParent() const { return m_Parent; }
 
 		EBlendMode BlendMode;
 		Color Color;
 		float Reflectivity;
 		float Refraction;
 
-		SharedPtr<Texture> BaseColorTexture;
-		SharedPtr<Texture> NormalMapTexture;
-		SharedPtr<Texture> MetallicTexture;
-		SharedPtr<Texture> RoughnessTexture;
-		SharedPtr<Texture> EmissiveTexture;
+		AssetRef<Texture> BaseColorTexture;
+		AssetRef<Texture> NormalMapTexture;
+		AssetRef<Texture> MetallicTexture;
+		AssetRef<Texture> RoughnessTexture;
+		AssetRef<Texture> EmissiveTexture;
 
 	private:
-		SharedPtr<Shader> m_Shader;
-		SharedPtr<Material> m_Parent;
+		AssetRef<Shader> m_Shader;
+		AssetRef<Material> m_Parent;
 	};
 }

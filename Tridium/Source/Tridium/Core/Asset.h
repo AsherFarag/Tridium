@@ -1,11 +1,13 @@
 #pragma once
-#include <Tridium/Core/Core.h>
+#include <string>
 
 namespace Tridium {
 
-#define ASSET_CLASS_TYPE(type) static EAssetType GetStaticType() { return EAssetType::type; }\
-							   virtual EAssetType GetAssetType() const { return GetStaticType(); }\
+#define ASSET_CLASS_TYPE(type) static EAssetType StaticType() { return EAssetType::type; }\
+							   virtual EAssetType AssetType() const { return StaticType(); }\
                                virtual const char* AssetTypeName() const { return #type; }\
+
+#define ASSET_LOADER_TYPE(type) using LoaderType = type;
 
 	enum class EAssetType : unsigned char
 	{
@@ -25,9 +27,8 @@ namespace Tridium {
 
         bool IsLoaded() const { return m_Loaded; }
 
-    protected:
-        void AddRef() { ++m_RefCount; }
-        void Release();
+        void Internal_AddRef() { ++m_RefCount; }
+        void Internal_ReleaseRef();
 
     protected:
         AssetHandle m_Handle;
@@ -53,9 +54,14 @@ namespace Tridium {
         T* Get() const { return m_Ptr; }
         void Reset();
 
+        template <typename AsT>
+        AssetRef<AsT> As();
+
         const AssetHandle& GetAssetHandle() const { return m_AssetHandle; }
         void SetAssetHandle( AssetHandle a_AssetHandle );
 
+        bool operator==( std::nullptr_t ) const { return m_Ptr == nullptr; }
+        bool operator!=( std::nullptr_t ) const { return m_Ptr != nullptr; }
         explicit operator bool() const { return m_Ptr != nullptr; }
 
     private:
@@ -71,8 +77,8 @@ namespace Tridium {
     {
         if ( m_Ptr )
         {
-            m_Ptr->AddRef();
-            m_AssetHandle = m_Ptr->GetAssetHandle();
+            m_Ptr->Internal_AddRef();
+            m_AssetHandle = m_Ptr->GetHandle();
         }
     }
 
@@ -85,7 +91,7 @@ namespace Tridium {
         : m_Ptr( other.m_Ptr ), m_AssetHandle( other.m_AssetHandle )
     {
         if ( m_Ptr )
-            m_Ptr->AddRef();
+            m_Ptr->Internal_AddRef();
     }
 
     template<typename T>
@@ -95,13 +101,13 @@ namespace Tridium {
             return *this;
 
         if ( m_Ptr )
-            m_Ptr->Release();
+            m_Ptr->Internal_ReleaseRef();
 
         m_Ptr = other.m_Ptr;
         m_AssetHandle = other.m_AssetHandle;
 
         if ( m_Ptr )
-            m_Ptr->AddRef();
+            m_Ptr->Internal_AddRef();
 
         return *this;
     }
@@ -110,7 +116,7 @@ namespace Tridium {
     inline AssetRef<T>::~AssetRef()
     {
         if ( m_Ptr )
-            m_Ptr->Release();
+            m_Ptr->Internal_ReleaseRef();
     }
 
     template<typename T>
@@ -119,7 +125,7 @@ namespace Tridium {
         m_AssetHandle = AssetHandle::Null();
         if ( m_Ptr )
         {
-            m_Ptr->Release();
+            m_Ptr->Internal_ReleaseRef();
             m_Ptr = nullptr;
         }
     }
@@ -133,6 +139,19 @@ namespace Tridium {
         Reset();
 
         m_AssetHandle = a_AssetHandle;
+    }
+
+    template<typename T>
+    template<typename AsT>
+    inline AssetRef<AsT> AssetRef<T>::As()
+    {
+        if ( m_Ptr == nullptr )
+            return nullptr;
+
+        if ( AsT::StaticType() != m_Ptr->AssetType() )
+            return nullptr;
+
+        return AssetRef<AsT>(m_Ptr);
     }
 
 #pragma endregion

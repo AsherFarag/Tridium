@@ -4,17 +4,18 @@
 #include "MaterialEditorPanel.h"
 #include <Tridium/IO/MaterialSerializer.h>
 #include <Tridium/Core/AssetManager.h>
+#include <Tridium/Rendering/Texture.h>
 
 namespace Tridium::Editor {
-	MaterialEditorPanel::MaterialEditorPanel( const SharedPtr<Material>& material )
+	MaterialEditorPanel::MaterialEditorPanel( const AssetRef<Material>& material )
 		: Panel( "Material Editor##" ), m_Material( material )
 	{
 	}
 
 	// Returns true if modified
-	bool DrawTextureDragDrop(const char* label, SharedPtr<Texture>& texture)
+	bool DrawTextureDragDrop(const char* label, AssetRef<Texture>& texture)
 	{
-		AssetHandle oldTextureGUID = texture ? texture->GetHandle() : AssetHandle{};
+		AssetHandle oldTextureHandle = texture.GetAssetHandle();
 
 		bool hasSprite = texture != nullptr;
 		ImGui::DragDropSelectable( label, hasSprite, hasSprite ? texture->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
@@ -35,16 +36,16 @@ namespace Tridium::Editor {
 			ImGui::EndPopup();
 		}
 
-		GUID newGUID = texture ? texture->GetGUID() : GUID{};
-		return newGUID != oldTextureGUID;
+		AssetHandle newHandle = texture ? texture.GetAssetHandle() : AssetHandle{};
+		return newHandle != oldTextureHandle;
 	}
 
 	void MaterialEditorPanel::OnImGuiDraw()
 	{
-		ImGuiWindowFlags flags = ( m_Material && m_Material->IsModified() ) ? ImGuiWindowFlags_UnsavedDocument : 0;
+		ImGuiWindowFlags flags; // = ( m_Material && m_Material->IsModified() ) ? ImGuiWindowFlags_UnsavedDocument : 0;
 		if ( ImGuiBegin( flags ) && m_Material )
 		{
-			bool modified = m_Material->IsModified();
+			bool modified = false;
 			modified |= ImGui::ColorEdit4( "Color", &m_Material->Color[0] );
 			modified |= ImGui::SliderFloat( "Reflectivity", &m_Material->Reflectivity, 0.0f, 1.0f );
 			modified |= ImGui::SliderFloat( "Refraction", &m_Material->Refraction, 0.0f, 1.0f );
@@ -56,8 +57,6 @@ namespace Tridium::Editor {
 			modified |= DrawTextureDragDrop( "Metallic: ", m_Material->MetallicTexture );
 			modified |= DrawTextureDragDrop( "Roughness: ", m_Material->RoughnessTexture );
 			modified |= DrawTextureDragDrop( "Emissive: ", m_Material->EmissiveTexture );
-
-			m_Material->SetModified( modified );
 		}
 
 		m_IsHovered = ImGui::IsWindowHovered();
@@ -79,9 +78,10 @@ namespace Tridium::Editor {
 		{
 			if ( control )
 			{
-				if ( m_Material && m_Material->IsModified() )
+				if ( m_Material )
 				{
-					m_Material->Save();
+					//MaterialSerializer s( m_Material );
+					//s.SerializeText(AssetManager::Ge);
 					return true;
 				}
 			}

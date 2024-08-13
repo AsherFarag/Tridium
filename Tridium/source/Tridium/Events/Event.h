@@ -28,8 +28,8 @@ namespace Tridium {
 		EventCategoryMouseButton    = BIT(4)
 	};
 
-#define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }\
-                               virtual EventType GetEventType() const override { return GetStaticType(); }\
+#define EVENT_CLASS_TYPE(type) static EventType StaticType() { return EventType::type; }\
+                               virtual EventType GetEventType() const override { return StaticType(); }\
                                virtual const char* GetName() const override { return #type; }
 
 #define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
@@ -61,7 +61,7 @@ namespace Tridium {
 		template<typename T, typename F>
 		bool Dispatch(const F& func)
 		{
-			if (m_Event.GetEventType() == T::GetStaticType())
+			if (m_Event.GetEventType() == T::StaticType())
 			{
 				m_Event.Handled |= func(static_cast<T&>(m_Event));
 				return true;

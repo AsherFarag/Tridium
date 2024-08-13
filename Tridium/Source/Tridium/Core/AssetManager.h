@@ -1,15 +1,18 @@
 #pragma once
 #include <Tridium/Core/Core.h>
-#include <Tridium/Core/Singleton.h>
 #include "Asset.h"
 
 #define ASSET_MANAGER_FILENAME "AssetManager.tmeta"
+#define META_FILE_EXTENSION ".meta"
 
 namespace Tridium {
 
-	class AssetManager : public Singleton<AssetManager>
+	class AssetManager
 	{
+		friend class Application;
+
 	public:
+		static SharedPtr<AssetManager> Get() { return s_Instance; }
 		auto& GetLibrary() { return m_Library; }
 
 		/* Returns true if an asset with this AssetHandle is loaded in the asset library. */
@@ -26,44 +29,43 @@ namespace Tridium {
 		// If the asset isn't loaded and a_ShouldLoad == true, the asset will be loaded and returned.
 		// else, returns nullptr.
 		template <typename T>
-		static AssetRef<T> GetAsset( const std::string& a_Path, bool a_ShouldLoad = true );
+		static AssetRef<T> GetAsset( const fs::path& a_Path, bool a_ShouldLoad = true );
 
 		template <typename T>
 		static AssetRef<T> LoadAsset( const AssetHandle& a_AssetHandle );
 		template <typename T>
-		static AssetRef<T> LoadAsset( const std::string& a_Path );
-
-		template <typename T>
-		static bool AsyncLoadAsset( const AssetHandle& a_AssetHandle, AssetRef<T>& outAsset ) { return nullptr; }
-		template <typename T>
-		static bool AsyncLoadAsset( const std::string& a_Path, AssetRef<T>& outAsset ) { return nullptr; }
+		static AssetRef<T> LoadAsset( const fs::path& a_Path );
 
 		/* Releases the AssetRef to a_AssetHandle and removes it from the asset library */
 		static void ReleaseAsset( const AssetHandle& a_AssetHandle );
 
 		static void Serialize( const fs::path& a_Path );
-		bool Deserialize( const std::string& a_Path );
+		bool Deserialize( const fs::path& a_Path );
 
-	private:
-		/* Deserializes the Asset Directory Meta File containing a map of AssetHandle's to file paths and adds them to m_Paths. */
-		virtual void Init() override;
-		void Internal_AddAsset( const AssetRef<Asset>& asset );
+	protected:
+		void Internal_AddAsset( const AssetRef<Asset>& a_Asset );
+		AssetRef<Asset> Internal_LoadAsset( const AssetHandle& a_AssetHandle );
+		AssetRef<Asset> Internal_LoadAsset( const fs::path& a_Path );
 		AssetRef<Asset> Internal_GetAsset( const AssetHandle& a_AssetHandle );
-		const std::string& Internal_GetPath( const AssetHandle& a_AssetHandle );
-		const AssetHandle& Internal_GetAssetHandle( const std::string& a_Path );
+		const fs::path& Internal_GetPath( const AssetHandle& a_AssetHandle );
+		const AssetHandle& Internal_GetAssetHandle( const fs::path& a_Path );
 		bool Internal_RemoveAsset( const AssetHandle& a_AssetHandle );
 
-	private:
+	protected:
 		std::unordered_map<AssetHandle, AssetRef<Asset>> m_Library;
-		std::unordered_map<AssetHandle, std::string> m_Paths;
+		std::unordered_map<AssetHandle, fs::path> m_Paths;
+
+		static SharedPtr<AssetManager> s_Instance;
 	};
+
+#pragma region Template Definitions
 
 	template<typename T>
 	bool AssetManager::HasAsset( const AssetHandle& a_AssetHandle )
 	{
-		if ( auto it = Get().m_Library.find( a_AssetHandle ); it != Get().m_Library.end() )
+		if ( auto it = Get()->m_Library.find( a_AssetHandle ); it != Get()->m_Library.end() )
 		{
-			return it->second->GetAssetType() = T::GetStaticType();
+			return it->second->AssetType() = T::StaticType();
 		}
 
 		return false;
@@ -73,15 +75,9 @@ namespace Tridium {
 	inline AssetRef<T> AssetManager::GetAsset( const AssetHandle& a_AssetHandle, bool shouldLoad )
 	{
 		// Check if the asset is already loaded
-		if ( auto asset = Get().Internal_GetAsset() )
+		if ( auto asset = Get()->Internal_GetAsset( a_AssetHandle ) )
 		{
-			if ( it->second->GetAssetType() != T::GetStaticType() )
-			{
-				TE_CORE_WARN( "Attempted to get asset of a type, but the asset's type is different" );
-				return nullptr;
-			}
-
-			return std::static_pointer_cast<T>( it->second );
+			return asset.As<T>();
 		}
 
 		if ( !shouldLoad )
@@ -91,15 +87,15 @@ namespace Tridium {
 	}
 
 	template<typename T>
-	inline AssetRef<T> AssetManager::GetAsset( const std::string& a_Path, bool a_ShouldLoad )
+	inline AssetRef<T> AssetManager::GetAsset( const fs::path& a_Path, bool a_ShouldLoad )
 	{
-		return GetAsset<T>();
+		return nullptr;
 	}
 
 	template<typename T>
 	inline AssetRef<T> AssetManager::LoadAsset( const AssetHandle& a_AssetHandle )
 	{
-		if ( auto it = Get().m_Paths.find( a_AssetHandle ); it != Get().m_Paths.end() )
+		if ( auto it = Get()->m_Paths.find( a_AssetHandle ); it != Get()->m_Paths.end() )
 			return LoadAsset<T>( it->second );
 
 		TE_CORE_WARN( "Could not find Asset Path for {0}", (AssetHandle::Type)a_AssetHandle.ID() );
@@ -107,9 +103,11 @@ namespace Tridium {
 	}
 
 	template<typename T>
-	inline AssetRef<T> AssetManager::LoadAsset( const std::string& a_Path )
+	inline AssetRef<T> AssetManager::LoadAsset( const fs::path& a_Path )
 	{
-		return T::Load( a_Path );
+		return Get()->Internal_LoadAsset(a_Path).As<T>();
 	}
+
+#pragma endregion
 
 }

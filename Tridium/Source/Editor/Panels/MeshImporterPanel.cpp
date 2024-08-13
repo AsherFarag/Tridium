@@ -61,7 +61,7 @@ namespace Tridium::Editor {
 
 			if ( ImGui::Button( "LOAD", { ImGui::GetContentRegionAvail().x * 0.5f, 40 } ) )
 			{
-				if ( SharedPtr<Mesh> mesh = MeshImporter::Import( m_FilePath, m_ImportSettings ) )
+				if ( AssetRef<Mesh> mesh = MeshImporter::Import( m_FilePath, m_ImportSettings ) )
 				{
 				}
 				else

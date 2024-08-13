@@ -2,6 +2,7 @@
 #ifdef IS_EDITOR
 #include "EditorLayer.h"
 #include "Tridium/Core/Core.h"
+#include "EditorAssetManager.h"
 
 namespace Tridium {
 	class Asset;
@@ -31,7 +32,6 @@ namespace Tridium::Editor {
 	};
 
 	inline EditorLayer* GetEditorLayer() { return EditorApplication::Get()->GetEditorLayer(); }
-
 	inline SharedPtr<Scene> GetActiveScene() { return EditorApplication::Get()->GetEditorLayer()->GetActiveScene();}
 
 	namespace Util {

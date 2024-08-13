@@ -44,7 +44,7 @@ namespace Tridium::Editor {
 		SceneHeirarchyPanel* m_SceneHeirarchy = nullptr;
 
 		SharedPtr<Framebuffer> m_IDFBO;
-		SharedPtr<Shader> m_GameObjectIDShader;
+		AssetRef<Shader> m_GameObjectIDShader;
 	};
 
 }

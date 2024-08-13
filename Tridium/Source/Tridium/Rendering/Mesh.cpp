@@ -19,7 +19,7 @@ namespace Tridium {
 
 #pragma region MeshImporter
 
-    SharedPtr<Mesh> MeshImporter::Import( const std::string& filepath, const MeshImportSettings& importSettings )
+    AssetRef<Mesh> MeshImporter::Import( const std::string& filepath, const MeshImportSettings& importSettings )
     {
         Assimp::Importer importer;
         importer.SetPropertyFloat( AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, importSettings.Scale );
@@ -32,7 +32,7 @@ namespace Tridium {
         }
 
         // Create a new Mesh
-        SharedPtr<Mesh> loadedMesh = MakeShared<Mesh>();
+        AssetRef<Mesh> loadedMesh( new Mesh() );
 
         TODO( "We currently only load the first mesh for simplicity!" );
         aiMesh* ai_mesh = scene->mMeshes[0];
@@ -132,19 +132,14 @@ namespace Tridium {
 
 #pragma endregion
 
-    SharedPtr<Mesh> Mesh::Load( const std::string& path )
+    const AssetRef<Mesh>& Mesh::GetQuad()
     {
-        return MeshImporter::Import(path);
-    }
-
-    const SharedPtr<Mesh>& Mesh::GetQuad()
-    {
-        static SharedPtr<Mesh> quadMesh;
-        if ( !quadMesh )
+        static Mesh quadMesh;
+        static bool init = false;
+        if ( !init )
         {
-            quadMesh = MakeShared<Mesh>();
-
-            quadMesh->m_VAO = VertexArray::Create();
+            quadMesh.Internal_AddRef();
+            quadMesh.m_VAO = VertexArray::Create();
 
             float vertices[] = {
                 -0.5f, -0.5f,  0, 0.0f, 0.0f,
@@ -155,7 +150,7 @@ namespace Tridium {
 
             uint32_t indices[] = { 0,1,2,1,2,3 };
 
-            quadMesh->m_VBO = VertexBuffer::Create( vertices, sizeof( vertices ) );
+            quadMesh.m_VBO = VertexBuffer::Create( vertices, sizeof( vertices ) );
 
             BufferLayout layout =
             {
@@ -163,16 +158,16 @@ namespace Tridium {
                 { ShaderDataType::Float2, "aUV" },
             };
 
-            quadMesh->m_VBO->SetLayout( layout );
-            quadMesh->m_VAO->AddVertexBuffer( quadMesh->m_VBO );
+            quadMesh.m_VBO->SetLayout( layout );
+            quadMesh.m_VAO->AddVertexBuffer( quadMesh.m_VBO );
 
-            quadMesh->m_IBO = IndexBuffer::Create( indices, sizeof( indices ) / sizeof( uint32_t ) );
-            quadMesh->m_VAO->SetIndexBuffer( quadMesh->m_IBO );
+            quadMesh.m_IBO = IndexBuffer::Create( indices, sizeof( indices ) / sizeof( uint32_t ) );
+            quadMesh.m_VAO->SetIndexBuffer( quadMesh.m_IBO );
 
             TODO( "Make a better quad mesh system!" );
-            quadMesh->m_GUID = 1;
+            quadMesh.m_Handle = 1;
         }
 
-        return quadMesh;
+        return { &quadMesh };
     }
 }

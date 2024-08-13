@@ -74,8 +74,8 @@ namespace Tridium {
 			out << YAML::Key << "MeshComponent";
 			out << YAML::BeginMap;
 
-			out << YAML::Key << "Mesh" << YAML::Value << ( mc->GetMesh() ? mc->GetMesh()->GetGUID() : GUID{} );
-			out << YAML::Key << "Material" << YAML::Value << ( mc->GetMaterial() ? mc->GetMaterial()->GetGUID() : GUID{} );
+			out << YAML::Key << "Mesh" << YAML::Value << mc->GetMesh().GetAssetHandle();
+			out << YAML::Key << "Material" << YAML::Value << mc->GetMaterial().GetAssetHandle();
 
 			out << YAML::EndMap;
 		}
@@ -85,7 +85,7 @@ namespace Tridium {
 			out << YAML::Key << "SpriteComponent";
 			out << YAML::BeginMap;
 
-			out << YAML::Key << "Texture" << YAML::Value << ( sc->GetTexture() ? sc->GetTexture()->GetGUID() : GUID{} );
+			out << YAML::Key << "Texture" << YAML::Value << sc->GetTexture().GetAssetHandle();
 
 			out << YAML::EndMap;
 		}

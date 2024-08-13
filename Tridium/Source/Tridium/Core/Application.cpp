@@ -1,8 +1,11 @@
 #include "tripch.h"
 #include "Application.h"
 
+#include "AssetManager.h"
+
 #ifdef IS_EDITOR
 #include <Editor/Editor.h>
+#include <Editor/EditorAssetManager.h>
 #endif // IS_EDITOR
 
 // TEMP ?
@@ -21,7 +24,7 @@ namespace Tridium {
 		m_Window = Window::Create();
 		m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
 
-
+		// Initialise Project
 		m_Project = MakeShared<Project>();
 		ProjectSerializer s( m_Project );
 		s.SerializeText( "test.tproject" );
@@ -37,6 +40,11 @@ namespace Tridium {
 
 		Editor::EditorApplication::Init();
 		Editor::GetEditorLayer()->SetActiveScene( m_ActiveScene );
+		AssetManager::s_Instance = MakeShared<Editor::EditorAssetManager>();
+
+#else
+
+		AssetManager::s_Instance = MakeShared<AssetManager>();
 
 #endif // IS_EDITOR
 
