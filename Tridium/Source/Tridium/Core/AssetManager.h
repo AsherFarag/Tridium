@@ -72,7 +72,7 @@ namespace Tridium {
 	}
 
 	template<typename T>
-	inline AssetRef<T> AssetManager::GetAsset( const AssetHandle& a_AssetHandle, bool shouldLoad )
+	inline AssetRef<T> AssetManager::GetAsset( const AssetHandle& a_AssetHandle, bool a_ShouldLoad )
 	{
 		// Check if the asset is already loaded
 		if ( auto asset = Get()->Internal_GetAsset( a_AssetHandle ) )
@@ -80,7 +80,7 @@ namespace Tridium {
 			return asset.As<T>();
 		}
 
-		if ( !shouldLoad )
+		if ( !a_ShouldLoad )
 			return nullptr;
 
 		return LoadAsset<T>( a_AssetHandle );

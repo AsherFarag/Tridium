@@ -12,6 +12,8 @@
 
 namespace Tridium {
 
+    SharedPtr<AssetManager> AssetManager::s_Instance = nullptr;
+
     void AssetManager::ReleaseAsset( const AssetHandle& a_AssetHandle )
     {
         Get()->ReleaseAsset( a_AssetHandle );
@@ -59,14 +61,14 @@ namespace Tridium {
                 assetHandle = assetHandleNode.as<AssetHandle>();
             else
             {
-                TE_CORE_WARN( "Invalid Asset Node while reading meta file '{0}'", a_Path );
+                TE_CORE_WARN( "Invalid Asset Node while reading meta file '{0}'", a_Path.string() );
                 continue;
             }
 
             auto pathNode = assetNode["Path"];
             if ( !pathNode )
             {
-                TE_CORE_WARN( "Invalid Asset Node while reading meta file '{0}'", a_Path );
+                TE_CORE_WARN( "Invalid Asset Node while reading meta file '{0}'", a_Path.string() );
                 continue;
             }
 

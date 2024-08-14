@@ -151,7 +151,7 @@ namespace Tridium {
         if ( AsT::StaticType() != m_Ptr->AssetType() )
             return nullptr;
 
-        return AssetRef<AsT>(m_Ptr);
+        return AssetRef<AsT>(static_cast<AsT*>(m_Ptr));
     }
 
 #pragma endregion
