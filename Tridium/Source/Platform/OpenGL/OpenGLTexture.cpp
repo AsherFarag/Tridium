@@ -5,21 +5,21 @@ namespace Tridium {
 
 	namespace Utils {
 
-		GLenum TridiumImageFormatToGLInternalFormat( EImageFormat format )
+		EDataFormat GLDataFormatToTridiumDataFormat( GLenum format )
 		{
 			switch ( format )
 			{
-			case EImageFormat::R: return GL_R;
-			case EImageFormat::RG: return GL_RG;
-			case EImageFormat::RGB: return GL_RGB;
-			case EImageFormat::RGBA: return GL_RGBA;
+			case GL_R: return EDataFormat::R8;
+			case GL_RG: return EDataFormat::RG8;
+			case GL_RGB: return EDataFormat::RGB8;
+			case GL_RGBA: return EDataFormat::RGBA8;
 			}
 
 			TE_CORE_ASSERT( false );
-			return 0;
+			return EDataFormat::None;
 		}
 
-		GLenum TridiumDataFormatToGLDataFormat( EDataFormat format )
+		GLenum TridiumDataFormatToGLInternalFormat( EDataFormat format )
 		{
 			switch ( format )
 			{
@@ -33,18 +33,18 @@ namespace Tridium {
 			return 0;
 		}
 
-		EImageFormat GLInternalFormatToTridiumImageFormat( GLenum format )
+		GLenum TridiumDataFormatToGLDataFormat( EDataFormat format )
 		{
 			switch ( format )
 			{
-			case GL_R: return EImageFormat::R;
-			case GL_RG: return EImageFormat::RG;
-			case GL_RGB: return EImageFormat::RGB;
-			case GL_RGBA: return EImageFormat::RGBA;
+			case EDataFormat::R8: return GL_R;
+			case EDataFormat::RG8: return GL_RG;
+			case EDataFormat::RGB8: return GL_RGB;
+			case EDataFormat::RGBA8: return GL_RGBA;
 			}
 
 			TE_CORE_ASSERT( false );
-			return EImageFormat::R;
+			return 0;
 		}
 
 	}
@@ -52,13 +52,11 @@ namespace Tridium {
 	OpenGLTexture::OpenGLTexture( const TextureSpecification& specification )
 		: m_Specification( specification ), m_Width( m_Specification.Width ), m_Height( m_Specification.Height )
 	{
-		m_InternalFormat = Utils::TridiumImageFormatToGLInternalFormat( m_Specification.ImageFormat );
 		m_DataFormat = Utils::TridiumDataFormatToGLDataFormat( m_Specification.DataFormat );
-
-		//TE_CORE_ASSERT( m_InternalFormat & m_DataFormat, "Format not supported!" );
+		m_InternalFormat = Utils::TridiumDataFormatToGLInternalFormat( m_Specification.DataFormat );
 
 		glCreateTextures( GL_TEXTURE_2D, 1, &m_RendererID );
-		glTextureStorage2D( m_RendererID, 1, m_DataFormat, m_Width, m_Height );
+		glTextureStorage2D( m_RendererID, 1, m_InternalFormat, m_Width, m_Height );
 
 		glTextureParameteri( m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		glTextureParameteri( m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
@@ -74,9 +72,9 @@ namespace Tridium {
 
 	void OpenGLTexture::SetData( void* data, uint32_t size )
 	{
-		uint32_t bpp = (uint32_t)Utils::GLInternalFormatToTridiumImageFormat( m_InternalFormat );
+		uint32_t bpp = (uint32_t)Utils::GLDataFormatToTridiumDataFormat( m_DataFormat );
 		TE_CORE_ASSERT( size == m_Width * m_Height * bpp, "Data must be entire texture!" );
-		glTextureSubImage2D( m_RendererID, 0, 0, 0, m_Width, m_Height, m_InternalFormat, GL_UNSIGNED_BYTE, data );
+		glTextureSubImage2D( m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data );
 	}
 
 	void OpenGLTexture::Bind( uint32_t slot ) const

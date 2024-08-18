@@ -1,6 +1,6 @@
 #pragma once
 #include "entt.hpp"
-#include <Tridium/Core/Asset.h>
+#include <Tridium/Asset/Asset.h>
 
 namespace Tridium {
 	typedef entt::entity EntityID;

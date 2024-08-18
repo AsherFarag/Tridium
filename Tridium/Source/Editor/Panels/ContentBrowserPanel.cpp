@@ -9,6 +9,7 @@
 
 #include <Tridium/IO/MaterialSerializer.h>
 #include <Tridium/Rendering/Material.h>
+#include <Tridium/Asset/Loaders/TextureLoader.h>
 
 namespace Tridium::Editor {
 
@@ -17,13 +18,13 @@ namespace Tridium::Editor {
 	{
 		TODO( "Make proper Icon Assets" );
 		// TEMP
-		fs::path iconFolder( "Content/Engine/Editor/Icons" );
-		m_DefaultIcon = Texture::Load( ( iconFolder / "file.png" ).string() );
-		m_FolderIcon = Texture::Load( ( iconFolder / "folder.png" ).string() );
-		m_LuaIcon = Texture::Load( ( iconFolder / "file-code.png" ).string() );
-		m_ImageMediaIcon = Texture::Load( ( iconFolder / "file-media.png" ).string() );
-		m_TridiumProjectIcon = Texture::Load( ( iconFolder / "EngineIcon.png" ).string() );
-		//m_TridiumSceneIcon = Texture2D::Create( ( iconFolder / "tridium-scene.png" ).string() );
+		fs::path iconFolder( "Content\\Engine\\Editor\\Icons" );
+		m_DefaultIcon = ( TextureLoader::Load( ( iconFolder / "file.png" ).string() ) );
+		m_FolderIcon = (TextureLoader::Load( ( iconFolder / "folder.png" ).string() ) );
+		m_LuaIcon = ( TextureLoader::Load( ( iconFolder / "file-code.png" ).string() ) );
+		m_ImageMediaIcon = ( TextureLoader::Load( ( iconFolder / "file-media.png" ).string() ) );
+		m_TridiumProjectIcon = ( TextureLoader::Load( ( iconFolder / "EngineIcon.png" ).string() ) );
+		//m_TridiumSceneIcon.reset( TextureLoader::Load( ( iconFolder / "tridium-scene.png" ).string() ) );
 	}
 
 	static void DrawDirectoryPath( fs::path& a_Path )

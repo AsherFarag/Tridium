@@ -75,7 +75,7 @@ namespace Tridium::Editor {
 					if ( m_SelectedGameObject.HasComponent<TransformComponent>() )
 					{
 						auto& goTransform = m_SelectedGameObject.GetComponent<TransformComponent>();
-						auto& editorCam = GetEditorLayer()->GetEditorCamera();
+						auto editorCam = GetEditorLayer()->GetEditorCamera();
 						editorCam->LerpTo( goTransform.Position - ( editorCam->GetForwardDirection() * 5.f ) );
 						return true;
 					}
@@ -241,7 +241,6 @@ namespace Tridium::Editor {
 
 		bool drawChildren = ImGui::TreeNodeEx( (void*)(uint64_t)(uint32_t)go, flags, label.c_str() );
 
-		auto goAsString = std::to_string( go );
 		if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
 			OpenAddPopUp();
 

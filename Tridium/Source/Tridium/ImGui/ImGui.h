@@ -5,6 +5,11 @@
 
 namespace ImGui {
 	
+	ImFont* GetLightFont();
+	ImFont* GetRegularFont();
+	ImFont* GetBoldFont();
+	ImFont* GetExtraBoldFont();
+
 	bool BorderedSelectable( const char* label, bool selected, ImGuiSelectableFlags flags = 0, const float borderThickness = 1.0f, ImU32 borderColor = IM_COL32( 255, 255, 255, 255 ), float rounding = 0.0f, const ImVec2& size = ImVec2( 0, 0 ) );
 	template <typename PayloadFunction >
 	bool DragDropSelectable( const char* label, bool isValid, const char* text, const char* payloadType, PayloadFunction payloadFunction )
@@ -69,9 +74,4 @@ namespace ImGui {
 		ScopedStyleCol( ImGuiCol styleCol, ImU32 col ) { ImGui::PushStyleColor( styleCol, col ); }
 		~ScopedStyleCol() { ImGui::PopStyleColor(); }
 	};
-
-	ImFont* GetLightFont();
-	ImFont* GetRegularFont();
-	ImFont* GetBoldFont();
-	ImFont* GetExtraBoldFont();
 }

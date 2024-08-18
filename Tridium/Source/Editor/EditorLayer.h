@@ -29,11 +29,11 @@ namespace Tridium::Editor {
 
 	struct UIToolBar
 	{
-		AssetRef<Texture> PlayButtonIcon;
-		AssetRef<Texture> PauseButtonIcon;
-		AssetRef<Texture> StopButtonIcon;
-		AssetRef<Texture> StepOnceButtonIcon;
-		AssetRef<Texture> SimulateButtonIcon;
+		UniquePtr<Texture> PlayButtonIcon;
+		UniquePtr<Texture> PauseButtonIcon;
+		UniquePtr<Texture> StopButtonIcon;
+		UniquePtr<Texture> StepOnceButtonIcon;
+		UniquePtr<Texture> SimulateButtonIcon;
 
 		UIToolBar();
 		void OnImGuiDraw();

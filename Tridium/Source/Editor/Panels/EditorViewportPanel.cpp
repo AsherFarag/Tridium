@@ -11,7 +11,7 @@
 #include <Tridium/Scene/Scene.h>
 
 // TEMP ?
-#include "Tridium/Core/AssetManager.h"
+#include "Tridium/Asset/AssetManager.h"
 #include <Tridium/Rendering/RenderCommand.h>
 #include <Tridium/Rendering/VertexArray.h>
 #include <Tridium/Rendering/Shader.h>
@@ -30,7 +30,40 @@ namespace Tridium::Editor {
 		FBOspecification.Attachments = { EFramebufferTextureFormat::RED_INT };
 		m_IDFBO = Framebuffer::Create( FBOspecification );
 
-		m_GameObjectIDShader = AssetManager::LoadAsset<Shader>( "Content/Engine/Editor/Shaders/ID.glsl" );
+		std::string idVert =
+			R"(
+			#version 420
+
+			layout( location = 0 ) in vec3 aPosition;
+
+			uniform int uID;
+			uniform mat4 uPVM;
+
+			flat out int vID;
+
+			void main()
+			{
+				gl_Position = uPVM * vec4( aPosition, 1 );
+				vID = uID;
+			}
+		)";
+
+
+		std::string idFrag =
+			R"(
+			#version 420 core
+			
+			layout(location = 0) out int oID;
+			
+			flat in int vID;						
+			
+			void main()
+			{
+				oID = vID;
+			}
+		)";
+
+		m_GameObjectIDShader = Shader::Create( idVert, idFrag );
 	}
 
 	bool EditorViewportPanel::OnKeyPressed( KeyPressedEvent& e )

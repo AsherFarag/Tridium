@@ -10,14 +10,28 @@
 #include <Tridium/IO/SerializationUtil.h>
 #include <fstream>
 
+// Assets
+#include <Tridium/Rendering/Mesh.h>
+#include <Tridium/Rendering/Shader.h>
+#include <Tridium/Rendering/Texture.h>
+#include <Tridium/Rendering/Material.h>
+
+// Asset Meta Data
+#include "Meta/AssetMetaData.h"
+#include "Meta/ModelMetaData.h"
+#include "Meta/ShaderMetaData.h"
+#include "Meta/TextureMetaData.h"
+#include "Meta/MaterialMetaData.h"
+
+// Asset Loaders
+#include "Loaders/ModelLoader.h"
+#include "Loaders/ShaderLoader.h"
+#include "Loaders/TextureLoader.h"
+#include "Loaders/MaterialLoader.h"
+
 namespace Tridium {
 
     SharedPtr<AssetManager> AssetManager::s_Instance = nullptr;
-
-    void AssetManager::ReleaseAsset( const AssetHandle& a_AssetHandle )
-    {
-        Get()->ReleaseAsset( a_AssetHandle );
-    }
 
     void AssetManager::Serialize( const fs::path& path )
     {
@@ -40,6 +54,7 @@ namespace Tridium {
         std::ofstream outFile( filepath );
         outFile << out.c_str();
     }
+
     bool AssetManager::Deserialize( const fs::path& a_Path )
     {
         TODO( "This is jank" );
@@ -58,7 +73,9 @@ namespace Tridium {
         {
             AssetHandle assetHandle;
             if ( auto assetHandleNode = assetNode["AssetHandle"] )
+            {
                 assetHandle = assetHandleNode.as<AssetHandle>();
+            }
             else
             {
                 TE_CORE_WARN( "Invalid Asset Node while reading meta file '{0}'", a_Path.string() );
@@ -80,18 +97,63 @@ namespace Tridium {
 
     void AssetManager::Internal_AddAsset( const AssetRef<Asset>& a_Asset )
     {
-        TE_CORE_ASSERT( a_Asset );
+        CHECK( a_Asset );
         Get()->m_Library[a_Asset->GetHandle()] = a_Asset;
-    }
-
-    AssetRef<Asset> AssetManager::Internal_LoadAsset( const AssetHandle& a_AssetHandle )
-    {
-        return AssetRef<Asset>();
     }
 
     AssetRef<Asset> AssetManager::Internal_LoadAsset( const fs::path& a_Path )
     {
-        return AssetRef<Asset>();
+        // Step 1. Open meta data file
+        fs::path metaPath = a_Path;
+        metaPath.append( ".meta" );
+        UniquePtr<AssetMetaData> metaData;
+        metaData.reset( AssetMetaData::Deserialize( metaPath ) );
+        TE_CORE_ASSERT( metaData );
+
+        // Step 2. Check if this asset it already loaded
+        if ( auto asset = Internal_GetAsset( metaData->Handle ) )
+            return asset;
+
+        // Step 3. Load the asset with it's matching loader
+        AssetRef<Asset> asset;
+        switch ( metaData->AssetType )
+        {
+            case EAssetType::Mesh:
+            {
+                asset = Mesh::LoaderType::Load( a_Path, *static_cast<ModelMetaData*>( metaData.get() ) );
+                break;
+            }
+            case EAssetType::Shader:
+            {
+                asset = Shader::LoaderType::Load( a_Path, *static_cast<ShaderMetaData*>( metaData.get() ) );
+                break;
+            }
+            case EAssetType::Texture:
+            {
+                asset = Texture::LoaderType::Load( a_Path, *static_cast<TextureMetaData*>( metaData.get() ) );
+                break;
+            }
+            case EAssetType::Material:
+            {
+                asset = Material::LoaderType::Load( a_Path, *static_cast<MaterialMetaData*>( metaData.get() ) );
+                break;
+            }
+            default:
+            {
+                TE_CORE_ERROR( "Asset meta data stored invalid AssetType. '{0}'", metaPath.string() );
+                return nullptr;
+            }
+        }
+
+        // Step 4. If the asset was successfuly loaded, add it to m_Library
+        // Else, return nullptr
+
+        if ( asset == nullptr )
+            return nullptr;
+
+        Internal_AddAsset( asset );
+
+        return asset;
     }
 
     AssetRef<Asset> AssetManager::Internal_GetAsset( const AssetHandle& a_AssetHandle )
@@ -102,22 +164,6 @@ namespace Tridium {
         }
 
         return nullptr;
-    }
-
-    const fs::path& AssetManager::Internal_GetPath( const AssetHandle& a_AssetHandle )
-    {
-        return {};
-    }
-
-    const AssetHandle& AssetManager::Internal_GetAssetHandle( const fs::path& a_Path )
-    {
-        fs::path path = a_Path;
-        if ( !path.has_extension() || path.extension() != META_FILE_EXTENSION )
-        {
-            path.append( META_FILE_EXTENSION );
-        }
-
-        return {};
     }
 
     bool AssetManager::Internal_RemoveAsset( const AssetHandle& a_AssetHandle )

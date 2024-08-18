@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/Core/Asset.h>
+#include <Tridium/Asset/Asset.h>
 
 namespace Tridium {
 
@@ -37,8 +37,10 @@ namespace Tridium {
 	{
 	public:
 		ASSET_CLASS_TYPE( Shader )
-		static AssetRef<Shader> Load( const std::string& a_Path );
-		static AssetRef<Shader> Create( const std::string& a_Path, const std::string& a_Vertex, const std::string& a_Frag );
+        ASSET_LOADER_TYPE( ShaderLoader )
+
+		static Shader* Create();
+		static Shader* Create( const std::string& a_Vertex, const std::string& a_Frag );
 		virtual ~Shader() = default;
 
 		virtual bool Recompile() = 0;

@@ -1,7 +1,7 @@
 #include "tripch.h"
 #include "Application.h"
 
-#include "AssetManager.h"
+#include <Tridium/Asset/AssetManager.h>
 
 #ifdef IS_EDITOR
 #include <Editor/Editor.h>

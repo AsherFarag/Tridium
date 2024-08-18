@@ -39,7 +39,7 @@ project "Tridium"
 	kind "StaticLib"
 	staticruntime "On"
 	language "C++"
-	cppdialect "C++17"
+	cppdialect "C++20"
 
 	targetdir ("Bin/%{prj.name}/" .. outputdir)
 	objdir ("Bin-Int/%{prj.name}/" .. outputdir)
@@ -138,7 +138,7 @@ project "Sandbox"
 	kind "ConsoleApp"
 	staticruntime "On"
 	language "C++"
-	cppdialect "C++17"
+	cppdialect "C++20"
 
 	targetdir ("Bin/%{prj.name}/" .. outputdir)
 	objdir ("Bin-Int/%{prj.name}/" .. outputdir)

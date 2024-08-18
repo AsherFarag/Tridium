@@ -1,9 +1,12 @@
 #pragma once
 #ifdef IS_EDITOR
 #include "Panel.h"
-#include <Tridium/Rendering/Mesh.h>
+#include <Tridium/Asset/Meta/ModelMetaData.h>
 
-namespace Tridium { class GameObject; }
+namespace Tridium { 
+    class GameObject;
+    class Mesh;
+}
 
 namespace Tridium::Editor {
 
@@ -18,7 +21,7 @@ namespace Tridium::Editor {
         std::string m_FilePath;
         SharedPtr<Mesh> m_Mesh;
 
-        MeshImportSettings m_ImportSettings;
+        ModelMetaData m_ModelMetaData;
     };
 
 }

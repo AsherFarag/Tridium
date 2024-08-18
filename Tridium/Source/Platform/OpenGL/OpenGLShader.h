@@ -10,8 +10,8 @@ namespace Tridium {
     class OpenGLShader : public Shader
     {
     public:
-        OpenGLShader( const std::string& filePath );
-        OpenGLShader( const std::string& path, const std::string& vertex, const std::string& frag );
+        OpenGLShader() = default;
+        OpenGLShader( const std::string& a_Vertex, const std::string& a_Frag );
         virtual ~OpenGLShader();
 
         virtual bool Recompile() override;

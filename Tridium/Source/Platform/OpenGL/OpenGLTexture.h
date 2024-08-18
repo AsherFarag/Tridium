@@ -1,7 +1,5 @@
 #pragma once
 
-#define STB_IMAGE_IMPLEMENTATION
-
 #include "Tridium/Rendering/Texture.h"
 
 #include <glad/glad.h>

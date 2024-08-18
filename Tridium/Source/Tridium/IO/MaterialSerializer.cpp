@@ -1,6 +1,7 @@
+
 #include "tripch.h"
 #include "MaterialSerializer.h"
-#include "Tridium/Core/AssetManager.h"
+#include "Tridium/Asset/AssetManager.h"
 #include "SerializationUtil.h"
 
 #include <fstream>

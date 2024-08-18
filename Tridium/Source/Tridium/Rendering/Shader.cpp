@@ -7,36 +7,34 @@
 
 namespace Tridium {
 
-	AssetRef<Shader> Shader::Load( const std::string& path )
-	{
-		switch ( RendererAPI::GetAPI() )
-		{
-		case RendererAPI::API::OpenGL:
-			return new OpenGLShader( path );
-			break;
-		default:
-			return nullptr;
-			break;
-		}
-	}
-
-	AssetRef<Shader> Shader::Create( const std::string& name, const std::string& vertex, const std::string& frag )
+	Shader* Shader::Create( const std::string& a_Vertex, const std::string& a_Frag )
 	{
 		Shader* shader = nullptr;
 
 		switch ( RendererAPI::GetAPI() )
 		{
 		case RendererAPI::API::OpenGL:
-			shader = new OpenGLShader( name, vertex, frag );
+			shader = new OpenGLShader( a_Vertex, a_Frag );
 			break;
 		default:
 			return nullptr;
 			break;
 		}
 		
-		shader->m_Path = name;
 		shader->m_Handle = AssetHandle::Create();
-		return { shader };
+		return shader;
 	} 
+
+	Shader* Shader::Create()
+	{
+		switch ( RendererAPI::GetAPI() )
+		{
+			using enum RendererAPI::API;
+		case OpenGL:
+			return new OpenGLShader();
+		default:
+			return nullptr;
+		}
+	}
 
 }

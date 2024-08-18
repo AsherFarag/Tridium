@@ -2,6 +2,8 @@
 #ifdef IS_EDITOR
 #include "MeshImporterPanel.h"
 #include <assimp/postprocess.h>
+#include <Tridium/Rendering/Mesh.h>
+#include <Tridium/Asset/Loaders/ModelLoader.h>
 
 namespace Tridium::Editor {
 
@@ -45,14 +47,14 @@ namespace Tridium::Editor {
 			{
 				if ( ImGui::TreeNodeEx( "Post-Process Flags", ImGuiTreeNodeFlags_DefaultOpen ) )
 				{
-					CheckboxFlag( "Smooth Normals", m_ImportSettings.PostProcessFlags, aiProcess_GenSmoothNormals, aiProcess_GenNormals );
-					CheckboxFlag( "Fix Infacing Normals", m_ImportSettings.PostProcessFlags, aiProcess_FixInfacingNormals );
+					CheckboxFlag( "Smooth Normals", m_ModelMetaData.ImportSettings.PostProcessFlags, aiProcess_GenSmoothNormals, aiProcess_GenNormals );
+					CheckboxFlag( "Fix Infacing Normals", m_ModelMetaData.ImportSettings.PostProcessFlags, aiProcess_FixInfacingNormals );
 
 					ImGui::TreePop();
 				}
 
-				ImGui::Checkbox( "Keep Local Mesh Data", &m_ImportSettings.DiscardLocalData );
-				ImGui::DragFloat( "Scale", &m_ImportSettings.Scale );
+				ImGui::Checkbox( "Keep Local Mesh Data", &m_ModelMetaData.ImportSettings.DiscardLocalData );
+				ImGui::DragFloat( "Scale", &m_ModelMetaData.ImportSettings.Scale );
 
 				ImGui::TreePop();
 			}
@@ -61,13 +63,11 @@ namespace Tridium::Editor {
 
 			if ( ImGui::Button( "LOAD", { ImGui::GetContentRegionAvail().x * 0.5f, 40 } ) )
 			{
-				if ( AssetRef<Mesh> mesh = MeshImporter::Import( m_FilePath, m_ImportSettings ) )
-				{
-				}
-				else
-				{
-					TE_CORE_ERROR( "Failed to import mesh from '{0}'", m_FilePath );
-				}
+				m_ModelMetaData.FileFormatVersion = FILE_FORMAT_VERSION;
+				m_ModelMetaData.Handle = AssetHandle::Create();
+				m_ModelMetaData.AssetType = EAssetType::Mesh;
+				ModelLoader::Load( m_FilePath, m_ModelMetaData );
+				TE_CORE_ERROR( "Failed to import mesh from '{0}'", m_FilePath );
 
 				m_Open = false;
 			}

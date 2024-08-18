@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/Core/Asset.h>
+#include <Tridium/Asset/Asset.h>
 #include <Tridium/Rendering/Texture.h>
 #include <Tridium/Rendering/Shader.h>
 
@@ -13,9 +13,9 @@ namespace Tridium {
 	class Material : public Asset
 	{
 		friend class MaterialSerializer;
-
 	public:
 		ASSET_CLASS_TYPE( Material )
+		ASSET_LOADER_TYPE( MaterialLoader );
 
 		Material();
 		Material( const AssetRef<Shader>& a_Shader );

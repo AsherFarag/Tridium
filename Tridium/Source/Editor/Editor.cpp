@@ -2,7 +2,7 @@
 #ifdef  IS_EDITOR
 #include "Editor.h"
 
-#include <Tridium/Core/AssetManager.h>
+#include <Tridium/Asset/AssetManager.h>
 
 // Assets
 #include <Tridium/Rendering/Mesh.h>

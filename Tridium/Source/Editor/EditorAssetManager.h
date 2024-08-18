@@ -1,6 +1,6 @@
 #pragma once
 #ifdef IS_EDITOR
-#include <Tridium/Core/AssetManager.h>
+#include <Tridium/Asset/AssetManager.h>
 
 namespace Tridium::Editor {
 
@@ -10,7 +10,7 @@ namespace Tridium::Editor {
         static SharedPtr<EditorAssetManager> Get() { return SharedPtrCast<EditorAssetManager>( s_Instance ); }
 
         template <typename T>
-        static inline AssetRef<T> ImportAsset( const std::string& a_Path ) { return SharedPtrCast<T>( ImportAsset( a_Path ) ); }
+        static inline AssetRef<T> ImportAsset( const std::string& a_Path ) { return ImportAsset( a_Path ).As<T>(); }
         static AssetRef<Asset> ImportAsset( const std::string& a_Path );
     };
 

@@ -30,18 +30,11 @@ namespace Tridium {
 		return 0;
 	}
 
-	OpenGLShader::OpenGLShader( const std::string& filePath )
+	OpenGLShader::OpenGLShader( const std::string& a_VertexSource, const std::string& a_FragmentSource )
 	{
-		m_Path = filePath;
-		Recompile();
-	}
-
-	OpenGLShader::OpenGLShader( const std::string& path, const std::string& vertexSource, const std::string& fragmentSource )
-	{
-		m_Path = path;
 		ShaderSources sources;
-		sources[ GL_VERTEX_SHADER ] = vertexSource;
-		sources[ GL_FRAGMENT_SHADER ] = fragmentSource;
+		sources[ GL_VERTEX_SHADER ] = a_VertexSource;
+		sources[ GL_FRAGMENT_SHADER ] = a_FragmentSource;
 		Compile( sources );
 	}
 
@@ -184,7 +177,7 @@ namespace Tridium {
 		std::string source = ReadFile( m_Path );
 		auto shaderSources = PreProcess( source );
 		Compile( shaderSources );
-		return false;
+		return true;
 	}
 
 	void OpenGLShader::Bind() const
@@ -196,6 +189,8 @@ namespace Tridium {
 	{
 		glUseProgram( 0 );
 	}
+
+#pragma region Uniform Setters
 
 	bool OpenGLShader::SetInt( const char* name, const int val )
 	{
@@ -481,4 +476,6 @@ namespace Tridium {
 		glUniformMatrix4fv( i, count, GL_FALSE, (float*)val );
 		return true;
 	}
+
+#pragma endregion
 }

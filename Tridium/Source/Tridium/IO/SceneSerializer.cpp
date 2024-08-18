@@ -3,7 +3,7 @@
 
 #include "SerializationUtil.h"
 
-#include "Tridium/Core/AssetManager.h"
+#include "Tridium/Asset/AssetManager.h"
 #include <Tridium/ECS/GameObject.h>
 #include <Tridium/ECS/Components/Types.h>
 #include <Tridium/Rendering/Texture.h>

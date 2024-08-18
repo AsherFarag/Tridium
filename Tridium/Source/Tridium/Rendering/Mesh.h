@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/Core/Asset.h>
+#include <Tridium/Asset/Asset.h>
 #include <Tridium/Rendering/Material.h>
 
 namespace Tridium {
@@ -22,6 +22,7 @@ namespace Tridium {
 	{
 	public:
 		ASSET_CLASS_TYPE( Mesh )
+		ASSET_LOADER_TYPE( ModelLoader )
 
 		static const AssetRef<Mesh>& GetQuad();
 
@@ -49,23 +50,5 @@ namespace Tridium {
 		};
 		std::vector<SubMesh> m_SubMeshes;
 		std::vector<AssetRef<Material>> m_Materials;
-
-	private:
-		friend class MeshImporter;
-	};
-
-
-	struct MeshImportSettings
-	{
-		MeshImportSettings();
-		unsigned int PostProcessFlags;
-		float Scale = 1.f;
-		bool DiscardLocalData = false; /* If true, once the mesh has been loaded onto the GPU, the local Vertex Data will be deleted. */
-	};
-
-	class MeshImporter
-	{
-	public:
-		static AssetRef<Mesh> Import( const std::string& a_Path, const MeshImportSettings& a_ImportSettings = {} );
 	};
 }

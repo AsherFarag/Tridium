@@ -12,8 +12,8 @@ namespace Tridium {
 		TransformComponent( const Vector3& a_Position );
 		virtual void OnDestroy() override;
 
-		operator Matrix4&() { return GetWorldTransform(); }
-		operator const Matrix4&() const { return GetWorldTransform(); }
+		operator Matrix4() { return GetWorldTransform(); }
+		operator const Matrix4() const { return GetWorldTransform(); }
 
 		Matrix4 GetWorldTransform() const; /* Returns the transform matrix in world space. */
 		Matrix4 GetLocalTransform() const; /* Returns the transform matrix in local space. */

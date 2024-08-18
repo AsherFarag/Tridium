@@ -19,6 +19,7 @@
 #include "Panels/MaterialEditorPanel.h"
 
 #include <Tridium/IO/SceneSerializer.h>
+#include <Tridium/Asset/Loaders/TextureLoader.h>
 
 namespace Tridium::Editor {
 
@@ -123,7 +124,7 @@ namespace Tridium::Editor {
 		DrawMenuBar();
 		m_UIToolBar.OnImGuiDraw();
 
-		for ( auto& it = m_PanelStack.rbegin(); it != m_PanelStack.rend(); it++ )
+		for ( auto it = m_PanelStack.rbegin(); it != m_PanelStack.rend(); it++ )
 		{
 			it->second->OnImGuiDraw();
 		}
@@ -302,9 +303,9 @@ namespace Tridium::Editor {
 	{
 		fs::path iconFolder( "Content/Engine/Editor/Icons" );
 
-		PlayButtonIcon = Texture::Load( ( iconFolder / "PlayButton.png" ).string() );
-		StopButtonIcon = Texture::Load( ( iconFolder / "StopButton.png" ).string() );
-		PauseButtonIcon = Texture::Load( ( iconFolder / "PauseButton.png" ).string() );
+		PlayButtonIcon.reset( TextureLoader::Load( ( iconFolder / "PlayButton.png" ).string() ) );
+		StopButtonIcon.reset( TextureLoader::Load( ( iconFolder / "StopButton.png" ).string() ) );
+		PauseButtonIcon.reset( TextureLoader::Load( ( iconFolder / "PauseButton.png" ).string() ) );
 	}
 
 	void UIToolBar::OnImGuiDraw()

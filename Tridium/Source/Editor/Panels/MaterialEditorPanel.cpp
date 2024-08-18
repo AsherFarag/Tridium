@@ -3,7 +3,7 @@
 #include "Editor/EditorUtil.h"
 #include "MaterialEditorPanel.h"
 #include <Tridium/IO/MaterialSerializer.h>
-#include <Tridium/Core/AssetManager.h>
+#include <Tridium/Asset/AssetManager.h>
 #include <Tridium/Rendering/Texture.h>
 
 namespace Tridium::Editor {

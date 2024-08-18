@@ -37,18 +37,15 @@ namespace Tridium {
 		static AssetRef<T> LoadAsset( const fs::path& a_Path );
 
 		/* Releases the AssetRef to a_AssetHandle and removes it from the asset library */
-		static void ReleaseAsset( const AssetHandle& a_AssetHandle );
+		static void ReleaseAsset( const AssetHandle& a_AssetHandle ) { Get()->m_Library.erase( a_AssetHandle ); }
 
 		static void Serialize( const fs::path& a_Path );
 		bool Deserialize( const fs::path& a_Path );
 
 	protected:
 		void Internal_AddAsset( const AssetRef<Asset>& a_Asset );
-		AssetRef<Asset> Internal_LoadAsset( const AssetHandle& a_AssetHandle );
 		AssetRef<Asset> Internal_LoadAsset( const fs::path& a_Path );
 		AssetRef<Asset> Internal_GetAsset( const AssetHandle& a_AssetHandle );
-		const fs::path& Internal_GetPath( const AssetHandle& a_AssetHandle );
-		const AssetHandle& Internal_GetAssetHandle( const fs::path& a_Path );
 		bool Internal_RemoveAsset( const AssetHandle& a_AssetHandle );
 
 	protected:
@@ -96,7 +93,7 @@ namespace Tridium {
 	inline AssetRef<T> AssetManager::LoadAsset( const AssetHandle& a_AssetHandle )
 	{
 		if ( auto it = Get()->m_Paths.find( a_AssetHandle ); it != Get()->m_Paths.end() )
-			return LoadAsset<T>( it->second );
+			return Get()->Internal_LoadAsset( it->second ).As<T>();
 
 		TE_CORE_WARN( "Could not find Asset Path for {0}", (AssetHandle::Type)a_AssetHandle.ID() );
 		return nullptr;

@@ -5,7 +5,7 @@
 #include <Tridium/Core/Time.h>
 #include <Tridium/Core/GUID.h>
 #include <Tridium/Core/Color.h>
-#include <Tridium/Core/Asset.h>
+#include <Tridium/Asset/Asset.h>
 #include <memory>
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -71,10 +71,26 @@ namespace fs = std::filesystem;
 	#define TE_CORE_ASSERT(x, ...)
 #endif // TE_ENABLE_ASSERTS
 
+#ifdef TE_DEBUG
+	#define TE_ENABLE_CHECKS
+#endif // TE_DEBUG
+
+
+#ifdef TE_ENABLE_CHECKS
+	#define CHECK(x) { if (!(x)) { __debugbreak(); } }
+#else
+	#define CHECK(x)
+#endif // TE_ENABLE_CHECKS
+
+
 namespace Tridium {
 
 	constexpr size_t fnv1a( const char* str, size_t hash = 2166136261U ) {
 		return *str ? fnv1a( str + 1, ( hash ^ static_cast<size_t>( *str ) ) * 16777619U ) : hash;
+	}
+
+	inline constexpr size_t HashString( const char* str ) { 
+		return fnv1a( str ); 
 	}
 
 	constexpr size_t operator"" _H( const char* str, size_t ) {

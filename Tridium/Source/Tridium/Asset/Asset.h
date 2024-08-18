@@ -7,7 +7,8 @@ namespace Tridium {
 							   virtual EAssetType AssetType() const { return StaticType(); }\
                                virtual const char* AssetTypeName() const { return #type; }\
 
-#define ASSET_LOADER_TYPE(type) using LoaderType = type;
+#define ASSET_LOADER_TYPE(type) friend class type; \
+                                using LoaderType = type;
 
 	enum class EAssetType : unsigned char
 	{

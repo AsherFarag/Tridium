@@ -1,16 +1,7 @@
 #pragma once
-#include "Tridium/Core/Asset.h"
+#include "Tridium/Asset/Asset.h"
 
 namespace Tridium {
-
-	enum class EImageFormat
-	{
-		None = 0,
-		R,
-		RG,
-		RGB,
-		RGBA
-	};
 
 	enum class EDataFormat
 	{
@@ -27,7 +18,6 @@ namespace Tridium {
 		uint32_t Width = 1u;
 		uint32_t Height = 1u;
 		uint32_t Depth = 0u;
-		EImageFormat ImageFormat = EImageFormat::RGBA;
 		EDataFormat DataFormat = EDataFormat::RGBA8;
 		bool GenerateMips = true;
 	};
@@ -36,10 +26,10 @@ namespace Tridium {
 	{
 	public:
 		ASSET_CLASS_TYPE( Texture )
+		ASSET_LOADER_TYPE( TextureLoader )
 		virtual ~Texture() = default;
 
-		static AssetRef<Texture> Load( const std::string& path );
-		static AssetRef<Texture> Create( const TextureSpecification& specification );
+		static Texture* Create( const TextureSpecification& a_Specification );
 
 		virtual const TextureSpecification& GetSpecification() const = 0;
 

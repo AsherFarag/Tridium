@@ -6,6 +6,8 @@
 
 namespace Tridium {
 
+	class Component;
+	class ScriptableComponent;
 	class TagComponent;
 	class GUIDComponent;
 	class TransformComponent;

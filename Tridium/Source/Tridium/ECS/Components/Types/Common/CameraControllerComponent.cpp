@@ -8,7 +8,7 @@ namespace Tridium {
 
 	void CameraControllerComponent::OnUpdate()
 	{
-		auto& go = GetGameObject();
+		auto go = GetGameObject();
 		if ( !go.HasComponent<TransformComponent>() )
 			return;
 
