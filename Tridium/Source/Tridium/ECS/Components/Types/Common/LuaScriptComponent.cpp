@@ -34,9 +34,9 @@ namespace Tridium {
 			return;
 
 		sol::state& lua = ScriptEngine::GetLuaState();
-		if ( !lua.safe_script_file( m_Script->GetFilePath().string(), m_Environment, &sol::script_pass_on_error).valid() )
+		if ( !lua.safe_script_file( m_Script->GetFilePath().ToString(), m_Environment, &sol::script_pass_on_error).valid() )
 		{
-			TE_CORE_ERROR( "Failed to compile script [{0}]!", m_Script->GetFilePath().string() );
+			TE_CORE_ERROR( "Failed to compile script [{0}]!", m_Script->GetFilePath().ToString() );
 			return;
 		}
 

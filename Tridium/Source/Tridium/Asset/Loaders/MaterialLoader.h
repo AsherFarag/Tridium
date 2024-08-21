@@ -7,7 +7,7 @@ namespace Tridium {
 	class MaterialLoader
 	{
 	public:
-		static Material* Load( const fs::path& a_Path, const MaterialMetaData& a_MetaData );
+		static Material* Load( const IO::FilePath& a_Path, const MaterialMetaData& a_MetaData );
 	};
 
 }

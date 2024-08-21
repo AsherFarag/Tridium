@@ -12,15 +12,15 @@
 
 namespace Tridium {
 
-	Mesh* ModelLoader::Load( const fs::path& a_Path, const ModelMetaData& a_MetaData )
+	Mesh* ModelLoader::Load( const IO::FilePath& a_Path, const ModelMetaData& a_MetaData )
 	{
         Assimp::Importer importer;
         importer.SetPropertyFloat( AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, a_MetaData.ImportSettings.Scale );
 
-        const aiScene* scene = importer.ReadFile( a_Path.string(), a_MetaData.ImportSettings.PostProcessFlags);
+        const aiScene* scene = importer.ReadFile( a_Path.ToString(), a_MetaData.ImportSettings.PostProcessFlags);
         if ( !scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode )
         {
-            TE_CORE_ERROR( "ASSIMP: File - '{0}', Error - {1}", a_Path.string(), importer.GetErrorString());
+            TE_CORE_ERROR( "ASSIMP: File - '{0}', Error - {1}", a_Path.ToString(), importer.GetErrorString());
             return nullptr;
         }
 
@@ -126,7 +126,7 @@ namespace Tridium {
         // Set meta data
         loadedMesh->m_Handle = a_MetaData.Handle;
         loadedMesh->m_Loaded = true;
-        loadedMesh->m_Path = a_Path.string();
+        loadedMesh->m_Path = a_Path.ToString();
 
         return loadedMesh;
 	}

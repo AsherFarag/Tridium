@@ -8,12 +8,14 @@ namespace Tridium::Editor {
     {
     public:
         static SharedPtr<EditorAssetManager> Get() { return SharedPtrCast<EditorAssetManager>( s_Instance ); }
+     
+        static void ImportAsset( const IO::FilePath& a_Path ) { Get()->Internal_ImportAsset( a_Path ); }
 
-        template <typename T>
-        static inline AssetRef<T> ImportAsset( const std::string& a_Path ) { return ImportAsset( a_Path ).As<T>(); }
-        static AssetRef<Asset> ImportAsset( const std::string& a_Path );
+    protected:
+        void Internal_ImportAsset( const IO::FilePath a_Path );
+        void Internal_ImportFBX( const IO::FilePath& a_Path );
+        virtual AssetRef<Asset> Internal_LoadAsset( const IO::FilePath& a_Path ) override;
     };
-
 }
 
 #endif // IS_EDITOR

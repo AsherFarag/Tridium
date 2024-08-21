@@ -5,7 +5,7 @@
 
 namespace Tridium {
 
-    Project::Project( const std::string& a_Name, const fs::path& a_AssetDirectory, const fs::path& a_StartScene )
+    Project::Project( const std::string& a_Name, const IO::FilePath& a_AssetDirectory, const IO::FilePath& a_StartScene )
         : m_ProjectConfig( a_Name, a_AssetDirectory, a_StartScene ) 
     {}
 

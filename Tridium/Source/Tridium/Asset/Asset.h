@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "AssetType.h"
 
 namespace Tridium {
 
@@ -9,13 +10,6 @@ namespace Tridium {
 
 #define ASSET_LOADER_TYPE(type) friend class type; \
                                 using LoaderType = type;
-
-	enum class EAssetType : unsigned char
-	{
-		None = 0, Mesh, Shader, Texture, Material,
-	};
-
-    typedef GUID AssetHandle;
 
     class Asset
     {

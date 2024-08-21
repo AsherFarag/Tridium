@@ -95,7 +95,7 @@ namespace Tridium {
 			out << YAML::Key << "LuaScriptComponent";
 			out << YAML::BeginMap;
 
-			out << YAML::Key << "LuaScript" << YAML::Value << YAML::DoubleQuoted << ( lsc->GetScript() ? lsc->GetScript()->GetFilePath().string() : "" );
+			out << YAML::Key << "LuaScript" << YAML::Value << YAML::DoubleQuoted << ( lsc->GetScript() ? lsc->GetScript()->GetFilePath().ToString() : "" );
 
 			out << YAML::EndMap;
 		}

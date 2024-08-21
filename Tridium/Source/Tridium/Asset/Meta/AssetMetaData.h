@@ -17,8 +17,8 @@ namespace Tridium {
 		AssetHandle Handle;
 		EAssetType AssetType;
 
-		void Serialize( const fs::path& a_Path );
-		static AssetMetaData* Deserialize( const fs::path& a_Path );
+		void Serialize( const IO::FilePath& a_Path );
+		static AssetMetaData* Deserialize( const IO::FilePath& a_Path );
 
 	protected:
 		virtual void OnSerialize( YAML::Emitter& a_Out ) {}

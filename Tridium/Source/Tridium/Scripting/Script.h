@@ -10,16 +10,16 @@ namespace Tridium {
 	{
 		friend class ScriptEngine;
 	public:
-		static SharedPtr<Script> Create( const fs::path& a_FilePath );
+		static SharedPtr<Script> Create( const IO::FilePath& a_FilePath );
 		~Script() = default;
 
-		const fs::path& GetFilePath() const { return m_FilePath; }
+		const IO::FilePath& GetFilePath() const { return m_FilePath; }
 
 	private:
-		Script( const fs::path& a_FilePath );
+		Script( const IO::FilePath& a_FilePath );
 
 	private:
-		fs::path m_FilePath;
+		IO::FilePath m_FilePath;
 	};
 
 
@@ -37,7 +37,7 @@ namespace Tridium {
 		static void Add( const SharedPtr<Script>& a_Script, const std::string& a_Path );
 
 	private:
-		std::unordered_map<fs::path, SharedPtr<Script>> m_Library;
+		std::unordered_map<IO::FilePath, SharedPtr<Script>> m_Library;
 	};
 
 }

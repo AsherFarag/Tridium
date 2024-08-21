@@ -29,28 +29,28 @@ namespace Tridium {
 		// If the asset isn't loaded and a_ShouldLoad == true, the asset will be loaded and returned.
 		// else, returns nullptr.
 		template <typename T>
-		static AssetRef<T> GetAsset( const fs::path& a_Path, bool a_ShouldLoad = true );
+		static AssetRef<T> GetAsset( const IO::FilePath& a_Path, bool a_ShouldLoad = true );
 
 		template <typename T>
 		static AssetRef<T> LoadAsset( const AssetHandle& a_AssetHandle );
 		template <typename T>
-		static AssetRef<T> LoadAsset( const fs::path& a_Path );
+		static AssetRef<T> LoadAsset( const IO::FilePath& a_Path );
 
 		/* Releases the AssetRef to a_AssetHandle and removes it from the asset library */
 		static void ReleaseAsset( const AssetHandle& a_AssetHandle ) { Get()->m_Library.erase( a_AssetHandle ); }
 
-		static void Serialize( const fs::path& a_Path );
-		bool Deserialize( const fs::path& a_Path );
+		static void Serialize( const IO::FilePath& a_Path );
+		bool Deserialize( const IO::FilePath& a_Path );
 
 	protected:
-		void Internal_AddAsset( const AssetRef<Asset>& a_Asset );
-		AssetRef<Asset> Internal_LoadAsset( const fs::path& a_Path );
-		AssetRef<Asset> Internal_GetAsset( const AssetHandle& a_AssetHandle );
-		bool Internal_RemoveAsset( const AssetHandle& a_AssetHandle );
+		virtual void Internal_AddAsset( const AssetRef<Asset>& a_Asset );
+		virtual AssetRef<Asset> Internal_LoadAsset( const IO::FilePath& a_Path ) = 0;
+		virtual AssetRef<Asset> Internal_GetAsset( const AssetHandle& a_AssetHandle );
+		virtual bool Internal_RemoveAsset( const AssetHandle& a_AssetHandle );
 
 	protected:
 		std::unordered_map<AssetHandle, AssetRef<Asset>> m_Library;
-		std::unordered_map<AssetHandle, fs::path> m_Paths;
+		std::unordered_map<AssetHandle, IO::FilePath> m_Paths;
 
 		static SharedPtr<AssetManager> s_Instance;
 	};
@@ -84,7 +84,7 @@ namespace Tridium {
 	}
 
 	template<typename T>
-	inline AssetRef<T> AssetManager::GetAsset( const fs::path& a_Path, bool a_ShouldLoad )
+	inline AssetRef<T> AssetManager::GetAsset( const IO::FilePath& a_Path, bool a_ShouldLoad )
 	{
 		return nullptr;
 	}
@@ -100,7 +100,7 @@ namespace Tridium {
 	}
 
 	template<typename T>
-	inline AssetRef<T> AssetManager::LoadAsset( const fs::path& a_Path )
+	inline AssetRef<T> AssetManager::LoadAsset( const IO::FilePath& a_Path )
 	{
 		return Get()->Internal_LoadAsset(a_Path).As<T>();
 	}

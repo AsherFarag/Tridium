@@ -16,13 +16,6 @@
 #include <Tridium/Rendering/Texture.h>
 #include <Tridium/Rendering/Material.h>
 
-// Asset Meta Data
-#include "Meta/AssetMetaData.h"
-#include "Meta/ModelMetaData.h"
-#include "Meta/ShaderMetaData.h"
-#include "Meta/TextureMetaData.h"
-#include "Meta/MaterialMetaData.h"
-
 // Asset Loaders
 #include "Loaders/ModelLoader.h"
 #include "Loaders/ShaderLoader.h"
@@ -33,9 +26,9 @@ namespace Tridium {
 
     SharedPtr<AssetManager> AssetManager::s_Instance = nullptr;
 
-    void AssetManager::Serialize( const fs::path& path )
+    void AssetManager::Serialize( const IO::FilePath& a_Path )
     {
-        auto filepath = path / ASSET_MANAGER_FILENAME;
+        auto filepath = a_Path / ASSET_MANAGER_FILENAME;
         YAML::Emitter out;
 
         out << YAML::Key << "Assets";
@@ -45,24 +38,24 @@ namespace Tridium {
         {
             out << YAML::BeginMap;
             out << YAML::Key << "AssetHandle" << YAML::Value << asset.first;
-            out << YAML::Key << "Path" << YAML::Value << asset.second.c_str();
+            out << YAML::Key << "Path" << YAML::Value << asset.second.ToString();
             out << YAML::EndMap;
         }
 
         out << YAML::EndSeq;
 
-        std::ofstream outFile( filepath );
+        std::ofstream outFile( filepath.ToString() );
         outFile << out.c_str();
     }
 
-    bool AssetManager::Deserialize( const fs::path& a_Path )
+    bool AssetManager::Deserialize( const IO::FilePath& a_Path )
     {
         TODO( "This is jank" );
-        std::ifstream file( a_Path );
+        std::ifstream file( a_Path.ToString() );
         if ( !file )
             return false;
 
-        YAML::Node data = YAML::LoadFile( a_Path.string() );
+        YAML::Node data = YAML::LoadFile( a_Path.ToString() );
         YAML::Node assetsNode = data["Assets"];
         if ( !assetsNode )
             return false;
@@ -78,14 +71,14 @@ namespace Tridium {
             }
             else
             {
-                TE_CORE_WARN( "Invalid Asset Node while reading meta file '{0}'", a_Path.string() );
+                TE_CORE_WARN( "Invalid Asset Node while reading meta file '{0}'", a_Path.ToString() );
                 continue;
             }
 
             auto pathNode = assetNode["Path"];
             if ( !pathNode )
             {
-                TE_CORE_WARN( "Invalid Asset Node while reading meta file '{0}'", a_Path.string() );
+                TE_CORE_WARN( "Invalid Asset Node while reading meta file '{0}'", a_Path.ToString() );
                 continue;
             }
 
@@ -99,61 +92,6 @@ namespace Tridium {
     {
         CHECK( a_Asset );
         Get()->m_Library[a_Asset->GetHandle()] = a_Asset;
-    }
-
-    AssetRef<Asset> AssetManager::Internal_LoadAsset( const fs::path& a_Path )
-    {
-        // Step 1. Open meta data file
-        fs::path metaPath = a_Path;
-        metaPath.append( ".meta" );
-        UniquePtr<AssetMetaData> metaData;
-        metaData.reset( AssetMetaData::Deserialize( metaPath ) );
-        TE_CORE_ASSERT( metaData );
-
-        // Step 2. Check if this asset it already loaded
-        if ( auto asset = Internal_GetAsset( metaData->Handle ) )
-            return asset;
-
-        // Step 3. Load the asset with it's matching loader
-        AssetRef<Asset> asset;
-        switch ( metaData->AssetType )
-        {
-            case EAssetType::Mesh:
-            {
-                asset = Mesh::LoaderType::Load( a_Path, *static_cast<ModelMetaData*>( metaData.get() ) );
-                break;
-            }
-            case EAssetType::Shader:
-            {
-                asset = Shader::LoaderType::Load( a_Path, *static_cast<ShaderMetaData*>( metaData.get() ) );
-                break;
-            }
-            case EAssetType::Texture:
-            {
-                asset = Texture::LoaderType::Load( a_Path, *static_cast<TextureMetaData*>( metaData.get() ) );
-                break;
-            }
-            case EAssetType::Material:
-            {
-                asset = Material::LoaderType::Load( a_Path, *static_cast<MaterialMetaData*>( metaData.get() ) );
-                break;
-            }
-            default:
-            {
-                TE_CORE_ERROR( "Asset meta data stored invalid AssetType. '{0}'", metaPath.string() );
-                return nullptr;
-            }
-        }
-
-        // Step 4. If the asset was successfuly loaded, add it to m_Library
-        // Else, return nullptr
-
-        if ( asset == nullptr )
-            return nullptr;
-
-        Internal_AddAsset( asset );
-
-        return asset;
     }
 
     AssetRef<Asset> AssetManager::Internal_GetAsset( const AssetHandle& a_AssetHandle )

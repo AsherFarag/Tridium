@@ -9,7 +9,7 @@ namespace Tridium {
 	class ShaderLoader
 	{
 	public:
-		static Shader* Load( const fs::path& a_Path, const ShaderMetaData& a_MetaData );
+		static Shader* Load( const IO::FilePath& a_Path, const ShaderMetaData& a_MetaData );
 	};
 
 }

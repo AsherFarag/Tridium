@@ -164,7 +164,8 @@ namespace Tridium::Editor {
 
 		CurrentSceneState = SceneState::Edit;
 		m_EditorViewportPanel->Focus();
-		LoadScene( ( Application::GetAssetDirectory() / "Scene.tridium" ).string() );
+		TODO("Make this not hard coded!")
+		LoadScene( GetActiveScene()->GetPath() );
 	}
 
 	bool EditorLayer::LoadScene( const std::string& filepath )
@@ -246,7 +247,7 @@ namespace Tridium::Editor {
 				TE_CORE_INFO( "Open Scene" );
 
 			if ( ImGui::MenuItem( "Save Scene", "Ctrl + S" ) )
-				SaveScene( ( Application::GetAssetDirectory() / "Scene.tridium" ).string() );
+				SaveScene( ( Application::GetAssetDirectory() / "Scene.tridium" ).ToString() );
 
 			ImGui::EndMenu();
 		}
@@ -301,11 +302,11 @@ namespace Tridium::Editor {
 
 	UIToolBar::UIToolBar()
 	{
-		fs::path iconFolder( "Content/Engine/Editor/Icons" );
+		IO::FilePath iconFolder( "Content/Engine/Editor/Icons" );
 
-		PlayButtonIcon.reset( TextureLoader::Load( ( iconFolder / "PlayButton.png" ).string() ) );
-		StopButtonIcon.reset( TextureLoader::Load( ( iconFolder / "StopButton.png" ).string() ) );
-		PauseButtonIcon.reset( TextureLoader::Load( ( iconFolder / "PauseButton.png" ).string() ) );
+		PlayButtonIcon.reset( TextureLoader::Load( ( iconFolder / "PlayButton.png" ).ToString() ) );
+		StopButtonIcon.reset( TextureLoader::Load( ( iconFolder / "StopButton.png" ).ToString() ) );
+		PauseButtonIcon.reset( TextureLoader::Load( ( iconFolder / "PauseButton.png" ).ToString() ) );
 	}
 
 	void UIToolBar::OnImGuiDraw()

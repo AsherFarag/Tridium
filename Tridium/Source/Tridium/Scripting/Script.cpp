@@ -4,22 +4,22 @@
 
 namespace Tridium {
 
-	Script::Script( const fs::path& a_FilePath )
+	Script::Script( const IO::FilePath& a_FilePath )
 		: m_FilePath( a_FilePath )
 	{
 	}
 
-	SharedPtr<Script> Script::Create( const fs::path& a_FilePath )
+	SharedPtr<Script> Script::Create( const IO::FilePath& a_FilePath )
 	{
-		if ( a_FilePath.extension() != ".lua" )
+		if ( a_FilePath.GetExtension() != ".lua" )
 			return nullptr;
 
-		SharedPtr<Script> foundScript = ScriptLibrary::GetScript( a_FilePath.string() );
+		SharedPtr<Script> foundScript = ScriptLibrary::GetScript( a_FilePath.ToString() );
 		if ( foundScript )
 			return foundScript;
 
 		auto script = SharedPtr<Script>( new Script( a_FilePath ) );
-		ScriptLibrary::Add( script, a_FilePath.string() );
+		ScriptLibrary::Add( script, a_FilePath.ToString() );
 		return script;
 	}
 

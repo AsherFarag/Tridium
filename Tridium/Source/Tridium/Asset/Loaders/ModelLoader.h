@@ -9,7 +9,7 @@ namespace Tridium {
 	class ModelLoader
 	{
 	public:
-		static Mesh* Load( const fs::path& a_Path, const ModelMetaData& a_MetaData );
+		static Mesh* Load( const IO::FilePath& a_Path, const ModelMetaData& a_MetaData );
 	};
 
 }

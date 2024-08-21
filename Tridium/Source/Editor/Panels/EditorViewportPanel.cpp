@@ -9,6 +9,7 @@
 
 #include <Tridium/ECS/Components/Types.h>`
 #include <Tridium/Scene/Scene.h>
+#include <Tridium/Asset/AssetFileExtensions.h>
 
 // TEMP ?
 #include "Tridium/Asset/AssetManager.h"
@@ -171,14 +172,13 @@ namespace Tridium::Editor {
 		if ( !payload )
 			return;
 
-		fs::path filePath( (const char*)payload->Data );
+		IO::FilePath filePath( (const char*)payload->Data );
 
-		if ( !filePath.has_extension() )
-			return;
+		EAssetType assetType = IO::GetAssetTypeFromExtension( filePath.GetExtension().ToString() );
 
-		if ( filePath.extension() == ".tridium" )
+		if ( assetType == EAssetType::Scene)
 		{
-			GetEditorLayer()->LoadScene( ( Application::GetAssetDirectory() / "Scene.tridium" ).string() );
+			GetEditorLayer()->LoadScene( filePath.ToString() );
 		}
 	}
 

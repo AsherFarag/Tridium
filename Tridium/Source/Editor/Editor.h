@@ -35,8 +35,8 @@ namespace Tridium::Editor {
 	inline SharedPtr<Scene> GetActiveScene() { return EditorApplication::Get()->GetEditorLayer()->GetActiveScene();}
 
 	namespace Util {
-		bool OpenFile( const fs::path& filePath );
-		bool OpenMaterial( const fs::path& filePath );
+		bool OpenFile( const IO::FilePath& filePath );
+		bool OpenMaterial( const IO::FilePath& filePath );
 		void SaveAll();
 		void RecompileAllShaders();
 	}

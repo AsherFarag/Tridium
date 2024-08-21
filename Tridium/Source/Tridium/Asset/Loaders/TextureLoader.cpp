@@ -6,10 +6,10 @@
 #include <stb_image.h>
 
 namespace Tridium {
-	Texture* TextureLoader::Load( const fs::path& a_Path )
+	Texture* TextureLoader::Load( const IO::FilePath& a_Path )
 	{
 		TextureSpecification specification;
-		std::string stringPath = a_Path.string();
+		std::string stringPath = a_Path.ToString();
 
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load( 1 );
@@ -31,10 +31,10 @@ namespace Tridium {
 
 		return tex;
 	}
-	Texture* TextureLoader::Load( const fs::path& a_Path, const TextureMetaData& a_MetaData )
+	Texture* TextureLoader::Load( const IO::FilePath& a_Path, const TextureMetaData& a_MetaData )
     {
 		TextureSpecification specification;
-		std::string stringPath = a_Path.string();
+		std::string stringPath = a_Path.ToString();
 
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load( 1 );

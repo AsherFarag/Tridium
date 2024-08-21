@@ -219,7 +219,7 @@ namespace Tridium::Editor {
 					Util::OpenMaterial( material->GetPath() );
 			} );
 
-		DrawComponent<CameraComponent>( "Camera", InspectedGameObject, []( auto& component )
+		DrawComponent<CameraComponent>( "Camera", InspectedGameObject, []( CameraComponent& component )
 			{
 				int currentItem = (int)component.SceneCamera.GetProjectionType();
 				Camera::ProjectionType projType = component.SceneCamera.GetProjectionType();
@@ -266,16 +266,16 @@ namespace Tridium::Editor {
 
 			} );
 
-		DrawComponent<CameraControllerComponent>( "Camera Controller", InspectedGameObject, []( auto& component )
+		DrawComponent<CameraControllerComponent>( "Camera Controller", InspectedGameObject, []( CameraControllerComponent& component )
 			{
 				ImGui::DragFloat( "Speed", &component.Speed, 0.1f );
 				ImGui::DragFloat( "Look Sensitivity", &component.LookSensitivity, 0.1f );
 			} );
 
-		DrawComponent<LuaScriptComponent>( "Lua Script Component", InspectedGameObject, []( auto& component )
+		DrawComponent<LuaScriptComponent>( "Lua Script Component", InspectedGameObject, []( LuaScriptComponent& component )
 			{
 				bool hasScript = component.GetScript() != nullptr;
-				bool opened = ImGui::DragDropSelectable( "Script: ", hasScript, hasScript ? component.GetScript()->GetFilePath().string().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
+				bool opened = ImGui::DragDropSelectable( "Script: ", hasScript, hasScript ? component.GetScript()->GetFilePath().ToString().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
 					[&]( const ImGuiPayload* payload ) {
 						component.SetScript( Script::Create( static_cast<const char*>( payload->Data ) ) );
 					} );
@@ -374,16 +374,16 @@ namespace Tridium::Editor {
 		{
 			if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM ) )
 			{
-				fs::path filePath( static_cast<const char*>( payload->Data ) );
-				auto ext = filePath.extension();
+				IO::FilePath filePath( static_cast<const char*>( payload->Data ) );
+				auto ext = filePath.GetExtension();
 				if ( ext == ".lua" ) {
 					AddComponentToGameObject<LuaScriptComponent>( InspectedGameObject, Script::Create( filePath ) );
 				}
 				else if ( ext == ".png" ) {
-					AddComponentToGameObject<SpriteComponent>( InspectedGameObject, AssetManager::GetAsset<Texture>( filePath.string() ) );
+					AddComponentToGameObject<SpriteComponent>( InspectedGameObject, AssetManager::GetAsset<Texture>( filePath.ToString() ) );
 				}
 				else if ( ext == ".obj" || ext == ".fbx" ) {
-					AddComponentToGameObject<MeshComponent>( InspectedGameObject, AssetManager::GetAsset<Mesh>( filePath.string() ) );
+					AddComponentToGameObject<MeshComponent>( InspectedGameObject, AssetManager::GetAsset<Mesh>( filePath.ToString() ) );
 				}
 			}
 			ImGui::EndDragDropTarget();

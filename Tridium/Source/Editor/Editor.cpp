@@ -46,12 +46,12 @@ namespace Tridium::Editor {
     }
 
     namespace Util {
-        bool OpenFile( const fs::path& filePath )
+        bool OpenFile( const IO::FilePath& filePath )
         {
-            if ( !filePath.has_extension() )
+            if ( !filePath.HasExtension() )
                 return false;
 
-            std::string ext = filePath.extension().string();
+            std::string ext = filePath.GetExtension().ToString();
 
             if ( ext == ".lua" )
             {
@@ -65,7 +65,7 @@ namespace Tridium::Editor {
             return false;
         }
 
-        bool OpenMaterial( const fs::path& filePath )
+        bool OpenMaterial( const IO::FilePath& filePath )
         {
             auto panel = GetEditorLayer()->PushPanel<MaterialEditorPanel>();
             panel->Focus();

@@ -65,8 +65,8 @@ namespace Tridium::Editor {
 		void OnBeginScene();
 		void OnEndScene();
 
-		bool LoadScene( const std::string& filepath );
-		bool SaveScene( const std::string& filepath );
+		bool LoadScene( const std::string& a_Path );
+		bool SaveScene( const std::string& a_Path );
 
 		SceneState CurrentSceneState = SceneState::Edit;
 

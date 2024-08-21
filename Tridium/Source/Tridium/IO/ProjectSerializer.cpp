@@ -13,9 +13,9 @@ namespace YAML {
 		{
 			Node node;
 			node.push_back( rhs.Name );
-			node.push_back( rhs.AssetDirectory.string() );
-			node.push_back( rhs.MetaDirectory.string() );
-			node.push_back( rhs.StartScene.string() );
+			node.push_back( rhs.AssetDirectory.ToString() );
+			node.push_back( rhs.MetaDirectory.ToString() );
+			node.push_back( rhs.StartScene.ToString() );
 			return node;
 		}
 
@@ -55,9 +55,9 @@ namespace Tridium {
 		out << YAML::BeginMap;
 		
 		out << YAML::Key << "Name" << YAML::Value << v.Name;
-		out << YAML::Key << "Asset Directory" << YAML::Value << v.AssetDirectory.string();
-		out << YAML::Key << "Meta Directory" << YAML::Value << v.MetaDirectory.string();
-		out << YAML::Key << "Start Scene" << YAML::Value << v.StartScene.string();
+		out << YAML::Key << "Asset Directory" << YAML::Value << v.AssetDirectory.ToString();
+		out << YAML::Key << "Meta Directory" << YAML::Value << v.MetaDirectory.ToString();
+		out << YAML::Key << "Start Scene" << YAML::Value << v.StartScene.ToString();
 
 		out << YAML::EndMap;
 		return out;

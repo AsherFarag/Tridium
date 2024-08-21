@@ -31,7 +31,7 @@ namespace Tridium
 
 		static Application& Get() { return *s_Instance; }
 		static SharedPtr<Project> GetActiveProject() { return Get().m_Project; }
-		static const fs::path& GetAssetDirectory() { return Get().m_Project->GetAssetDirectory(); }
+		static const IO::FilePath& GetAssetDirectory() { return Get().m_Project->GetAssetDirectory(); }
 
 		Window& GetWindow() { return *m_Window; }
 		uint32_t GetFPS() const { return m_FPS; }

@@ -7,8 +7,8 @@ namespace Tridium {
 	class TextureLoader
 	{
 	public:
-		static Texture* Load( const fs::path& a_Path );
-		static Texture* Load( const fs::path& a_Path, const TextureMetaData& a_MetaData );
+		static Texture* Load( const IO::FilePath& a_Path );
+		static Texture* Load( const IO::FilePath& a_Path, const TextureMetaData& a_MetaData );
 	};
 
 }

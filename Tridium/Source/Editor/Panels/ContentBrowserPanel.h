@@ -4,13 +4,9 @@
 
 #include "Panel.h"
 #include <Tridium/Rendering/Texture.h>
+#include <Tridium/Asset/AssetType.h>
 
 namespace Tridium::Editor {
-
-	enum class ContentType
-	{
-		None = 0, Folder, Lua, Texture, Tridium_Project
-	};
 
 	class ContentBrowserPanel final : public Panel
 	{
@@ -21,12 +17,11 @@ namespace Tridium::Editor {
 		virtual void OnImGuiDraw() override;
 
 	private:
-		static ContentType GetContentType( const fs::path& a_FilePath );
-		bool ContentItemOnImGuiDraw( const ContentType a_Type, const fs::path& a_FilePath, const ImVec2& a_Size );
-		void ContentOnOpened( const ContentType a_Type, const fs::path& a_FilePath );
+		bool ContentItemOnImGuiDraw( const EAssetType a_Type, const IO::FilePath& a_FilePath, const ImVec2& a_Size );
+		void ContentOnOpened( const EAssetType a_Type, const IO::FilePath& a_FilePath );
 
 	private:
-		fs::path m_CurrentDirectory;
+		IO::FilePath m_CurrentDirectory;
 
 		AssetRef<Texture> m_DefaultIcon;
 		AssetRef<Texture> m_FolderIcon;

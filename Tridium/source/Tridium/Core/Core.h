@@ -6,9 +6,8 @@
 #include <Tridium/Core/GUID.h>
 #include <Tridium/Core/Color.h>
 #include <Tridium/Asset/Asset.h>
+#include <Tridium/IO/FilePath.h>
 #include <memory>
-#include <filesystem>
-namespace fs = std::filesystem;
 
 #pragma region Macro Helpers
 

@@ -4,6 +4,7 @@
 #include "ShaderMetaData.h"
 #include "TextureMetaData.h"
 #include "MaterialMetaData.h"
+#include <Tridium/Asset/AssetFileExtensions.h>
 #include <Tridium/IO/SerializationUtil.h>
 
 const char* ToString( const Tridium::EAssetType& rhs )
@@ -70,9 +71,9 @@ namespace Tridium {
         return out;
     }
 
-    void AssetMetaData::Serialize( const fs::path& a_Path )
+    void AssetMetaData::Serialize( const IO::FilePath& a_Path )
     {
-        CHECK( a_Path.extension() != ".meta" );
+        CHECK( a_Path.GetExtension() != IO::MetaExtension );
 
         YAML::Emitter out;
 
@@ -83,12 +84,12 @@ namespace Tridium {
         OnSerialize( out );
     }
 
-    AssetMetaData* AssetMetaData::Deserialize( const fs::path& a_Path )
+    AssetMetaData* AssetMetaData::Deserialize( const IO::FilePath& a_Path )
     {
         YAML::Node data;
         try
         {
-            data = YAML::LoadFile( a_Path.string() );
+            data = YAML::LoadFile( a_Path.ToString() );
         }
         catch ( YAML::BadFile badFile )
         {

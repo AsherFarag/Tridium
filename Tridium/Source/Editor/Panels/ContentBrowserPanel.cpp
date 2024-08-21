@@ -7,6 +7,7 @@
 #include <Tridium/Core/Application.h>
 #include "ScriptEditorPanel.h"
 
+#include <Tridium/Asset/AssetFileExtensions.h>
 #include <Tridium/IO/MaterialSerializer.h>
 #include <Tridium/Rendering/Material.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
@@ -18,30 +19,31 @@ namespace Tridium::Editor {
 	{
 		TODO( "Make proper Icon Assets" );
 		// TEMP
-		fs::path iconFolder( "Content\\Engine\\Editor\\Icons" );
-		m_DefaultIcon = ( TextureLoader::Load( ( iconFolder / "file.png" ).string() ) );
-		m_FolderIcon = (TextureLoader::Load( ( iconFolder / "folder.png" ).string() ) );
-		m_LuaIcon = ( TextureLoader::Load( ( iconFolder / "file-code.png" ).string() ) );
-		m_ImageMediaIcon = ( TextureLoader::Load( ( iconFolder / "file-media.png" ).string() ) );
-		m_TridiumProjectIcon = ( TextureLoader::Load( ( iconFolder / "EngineIcon.png" ).string() ) );
-		//m_TridiumSceneIcon.reset( TextureLoader::Load( ( iconFolder / "tridium-scene.png" ).string() ) );
+		IO::FilePath iconFolder( "Content\\Engine\\Editor\\Icons" );
+		m_DefaultIcon = ( TextureLoader::Load( ( iconFolder / "file.png" ).ToString() ) );
+		m_FolderIcon = (TextureLoader::Load( ( iconFolder / "folder.png" ).ToString() ) );
+		m_LuaIcon = ( TextureLoader::Load( ( iconFolder / "file-code.png" ).ToString() ) );
+		m_ImageMediaIcon = ( TextureLoader::Load( ( iconFolder / "file-media.png" ).ToString() ) );
+		m_TridiumProjectIcon = ( TextureLoader::Load( ( iconFolder / "EngineIcon.png" ).ToString() ) );
+		//m_TridiumSceneIcon.reset( TextureLoader::Load( ( iconFolder / "tridium-scene.png" ).ToString() ) );
 	}
 
-	static void DrawDirectoryPath( fs::path& a_Path )
+	static void DrawDirectoryPath( IO::FilePath& a_Path )
 	{
-		std::list<fs::path> parentFolderPaths;
+		std::list<IO::FilePath> parentFolderPaths;
 		parentFolderPaths.push_back( a_Path );
 
-		while ( parentFolderPaths.front().has_parent_path() )
+		while ( parentFolderPaths.front().HasParentPath() )
 		{
-			parentFolderPaths.push_front( parentFolderPaths.front().parent_path() );
+			parentFolderPaths.push_front( parentFolderPaths.front().GetParentPath() );
 		}
 
 		ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 0.f );
+		ImGui::PushStyleColor( ImGuiCol_Button, ImGui::GetStyleColorVec4( ImGuiCol_::ImGuiCol_WindowBg ) );
 		char uniqueID = 0;
 		for ( auto& path : parentFolderPaths )
 		{
-			if ( ImGui::Button( ( path.filename().string() + "##" + std::to_string( uniqueID ) ).c_str() ) )
+			if ( ImGui::Button( ( path.GetFilename().ToString() + "##" + std::to_string( uniqueID ) ).c_str() ) )
 			{
 				a_Path = path;
 			}
@@ -50,12 +52,14 @@ namespace Tridium::Editor {
 			if (uniqueID < parentFolderPaths.size() )
 			{
 				ImGui::SameLine();
-				ImGui::Text( "/" );
+				ImGui::Text( ">" );
 				ImGui::SameLine();
 			}
 		}
-
+		ImGui::PopStyleColor();
 		ImGui::PopStyleVar();
+
+		ImGui::Separator();
 	}
 
 	void ContentBrowserPanel::OnImGuiDraw()
@@ -72,7 +76,7 @@ namespace Tridium::Editor {
 
 		// If the directory was deleted while we are in it,
 		// Goto to the main content directory.
-		if ( !fs::exists( m_CurrentDirectory ) )
+		if ( !m_CurrentDirectory.Exists() )
 			m_CurrentDirectory = "Content";
 
 		DrawDirectoryPath( m_CurrentDirectory );
@@ -88,13 +92,14 @@ namespace Tridium::Editor {
 
 		if ( ImGui::BeginTable( "Folder Contents Items", columnCount ) )
 		{
-			for ( auto& directoryEntry : std::filesystem::directory_iterator( m_CurrentDirectory ) )
+			for ( auto& directoryEntry : IO::DirectoryIterator( m_CurrentDirectory ) )
 			{
-				ImGui::TableNextColumn();
 				const auto& path = directoryEntry.path();
+				EAssetType type = IO::GetAssetTypeFromExtension( path.extension().string() );
+				if ( type == EAssetType::None )
+					continue;
 
-				ContentType type = GetContentType( path );
-
+				ImGui::TableNextColumn();
 				ContentItemOnImGuiDraw( type, path, { thumbnailSize, thumbnailSize } );
 
 
@@ -156,42 +161,30 @@ namespace Tridium::Editor {
 			Close();
 	}
 
-	ContentType ContentBrowserPanel::GetContentType( const fs::path& a_FilePath )
-	{
-		if ( fs::is_directory( a_FilePath ) )
-			return ContentType::Folder;
-
-		std::string ext = a_FilePath.extension().string();
-		if ( ext == ".lua" ) { return ContentType::Lua; }
-		if ( ext == ".TEproject" ) { return ContentType::Tridium_Project; }
-		if ( ext == ".png") { return ContentType::Texture; }
-
-		return ContentType::None;
-	}
-
-	bool ContentBrowserPanel::ContentItemOnImGuiDraw( const ContentType type, const fs::path& a_FilePath, const ImVec2& size )
+	bool ContentBrowserPanel::ContentItemOnImGuiDraw( const EAssetType a_Type, const IO::FilePath& a_FilePath, const ImVec2& a_Size )
 	{
 		AssetRef<Texture> icon;
 
 		// Set Icon
-		switch ( type )
+		switch ( a_Type )
 		{
-			case ContentType::Folder:
+			using enum EAssetType;
+			case Folder:
 			{
 				icon = m_FolderIcon;
 				break;
 			}
-			case ContentType::Lua:
+			case Lua:
 			{
 				icon = m_LuaIcon;
 				break;
 			}
-			case ContentType::Texture:
+			case Texture:
 			{
 				icon = m_ImageMediaIcon;
 				break;
 			}
-			case ContentType::Tridium_Project:
+			case Project:
 			{
 				icon = m_TridiumProjectIcon;
 				break;
@@ -205,8 +198,8 @@ namespace Tridium::Editor {
 		ImGui::BeginGroup();
 			float paddingX = 25.f;
 			float paddingY = 25.f;
-			paddingX = size.x < paddingX ? 0 : paddingX;
-			paddingY = size.y < paddingY ? 0 : paddingY;
+			paddingX = a_Size.x < paddingX ? 0 : paddingX;
+			paddingY = a_Size.y < paddingY ? 0 : paddingY;
 
 			ImGui::PushStyleVar( ImGuiStyleVar_::ImGuiStyleVar_FramePadding, { paddingX, paddingY } );
 			ImGui::PushStyleColor( ImGuiCol_Button, ImVec4( 0.f, 0.f, 0.f, 0.f ) );
@@ -214,9 +207,9 @@ namespace Tridium::Editor {
 			ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 1.f, 1.f, 1.f, 0.5f ) );
 
 			bool result = ImGui::ImageButton(
-				a_FilePath.string().c_str(),
+				a_FilePath.ToString().c_str(),
 				(ImTextureID)icon->GetRendererID(),
-				{ size.x - paddingX * 2, size.y - paddingY * 2 },
+				{ a_Size.x - paddingX * 2, a_Size.y - paddingY * 2 },
 				{ 0,1 }, { 1,0 } );
 
 			ImGui::PopStyleVar();
@@ -224,20 +217,20 @@ namespace Tridium::Editor {
 
 			if ( ImGui::BeginDragDropSource() )
 			{
-				ImGui::SetDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM, a_FilePath.string().c_str(), a_FilePath.string().size() + 1 );
+				ImGui::SetDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM, a_FilePath.ToString().c_str(), a_FilePath.ToString().size() + 1 );
 				ImGui::Image( (ImTextureID)icon->GetRendererID(),
-					{ size.x - paddingX * 2, size.y - paddingY * 2 },
+					{ a_Size.x - paddingX * 2, a_Size.y - paddingY * 2 },
 					{ 0,1 }, { 1,0 } );
 
-				ImGui::PushTextWrapPos( size.x - paddingX * 2 );
-				ImGui::Text( a_FilePath.filename().string().c_str() );
+				ImGui::PushTextWrapPos( a_Size.x - paddingX * 2 );
+				ImGui::Text( a_FilePath.GetFilename().ToString().c_str());
 				ImGui::PopTextWrapPos();
 
 				ImGui::EndDragDropSource();
 			}
 
-			ImGui::PushTextWrapPos( ImGui::GetCursorPosX() + size.x );
-			ImGui::Text( a_FilePath.filename().string().c_str() );
+			ImGui::PushTextWrapPos( ImGui::GetCursorPosX() + a_Size.x );
+			ImGui::Text( a_FilePath.GetFilename().ToString().c_str() );
 			ImGui::PopTextWrapPos();
 
 		ImGui::EndGroup();
@@ -245,16 +238,17 @@ namespace Tridium::Editor {
 		return result;
 	}
 
-	void ContentBrowserPanel::ContentOnOpened( const ContentType type, const fs::path& a_FilePath )
+	void ContentBrowserPanel::ContentOnOpened( const EAssetType type, const IO::FilePath& a_FilePath )
 	{
 		switch ( type )
 		{
-			case ContentType::Folder:
+			using enum EAssetType;
+			case Folder:
 			{
 				m_CurrentDirectory = a_FilePath;
 				break;
 			}
-			case ContentType::Lua:
+			case Lua:
 			{
 				Util::OpenFile( a_FilePath );
 				break;

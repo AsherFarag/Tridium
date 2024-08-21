@@ -5,12 +5,12 @@
 
 namespace Tridium {
 
-    Shader* ShaderLoader::Load( const fs::path& a_Path, const ShaderMetaData& a_MetaData )
+    Shader* ShaderLoader::Load( const IO::FilePath& a_Path, const ShaderMetaData& a_MetaData )
     {
         Shader* shader = Shader::Create();
         CHECK( shader );
 
-        shader->m_Path = a_Path.string();
+        shader->m_Path = a_Path.ToString();
         shader->Recompile();
 
         return shader;
