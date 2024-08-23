@@ -6,6 +6,7 @@ namespace Tridium {
 
 	struct ShaderMetaData : public AssetMetaData
 	{
+		ShaderMetaData() : AssetMetaData( EAssetType::Shader ) {}
 	};
 
 }

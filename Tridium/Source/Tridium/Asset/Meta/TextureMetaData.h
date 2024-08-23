@@ -5,6 +5,7 @@ namespace Tridium {
 
 	struct TextureMetaData : public AssetMetaData
 	{
+		TextureMetaData() : AssetMetaData( EAssetType::Texture ) {}
 	};
 
 }

@@ -73,15 +73,23 @@ namespace Tridium {
 
     void AssetMetaData::Serialize( const IO::FilePath& a_Path )
     {
-        CHECK( a_Path.GetExtension() != IO::MetaExtension );
+        CHECK( a_Path.GetExtension().ToString() != IO::MetaExtension );
 
         YAML::Emitter out;
 
+        out << YAML::BeginMap;
         out << YAML::Key << "FileFormatVersion" << YAML::Value << FileFormatVersion;
         out << YAML::Key << "Handle" << YAML::Value << Handle;
         out << YAML::Key << "AssetType" << YAML::Value << AssetType;
 
         OnSerialize( out );
+
+        out << YAML::EndMap;
+
+        std::string metaPath = a_Path.ToString();
+        metaPath.append( IO::MetaExtension );
+        std::ofstream outFile( metaPath );
+        outFile << out.c_str();
     }
 
     AssetMetaData* AssetMetaData::Deserialize( const IO::FilePath& a_Path )
@@ -99,7 +107,7 @@ namespace Tridium {
 
         AssetMetaData tempMetaData;
 
-        if ( auto node = data["FileFormatVersion"] ) { tempMetaData.FileFormatVersion = node.as<unsigned char>(); }
+        if ( auto node = data["FileFormatVersion"] ) { tempMetaData.FileFormatVersion = node.as<uint32_t>(); }
         else return nullptr;
 
         if ( auto node = data["Handle"] ) { tempMetaData.Handle = node.as<AssetHandle>(); }
@@ -115,12 +123,16 @@ namespace Tridium {
             using enum Tridium::EAssetType;
             case Mesh:
                 assetMetaData = new ModelMetaData{};
+                break;
             case Shader:
                 assetMetaData = new ShaderMetaData{};
+                break;
             case Texture:
                 assetMetaData = new TextureMetaData{};
+                break;
             case Material:
                 assetMetaData = new MaterialMetaData{};
+                break;
             default:
                 return nullptr;
         }

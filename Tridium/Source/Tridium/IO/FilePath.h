@@ -9,20 +9,23 @@ namespace Tridium::IO {
     class FilePath : private fs::path
     {
     public:
-        FilePath() = default;
-        FilePath( const std::string& a_PathStr ) : fs::path( a_PathStr ) {}
-        FilePath( const char* a_PathStr ) : fs::path( a_PathStr ) {}
+        using fs::path::path;
         FilePath( const fs::path& a_Path ) : fs::path( a_Path ) {}
 
         operator const fs::path&() const { return *this; }
         operator std::string() const { return ToString(); }
+
+        FilePath& operator+=( const std::string& suffix ) {
+            fs::path::operator+=( suffix );
+            return *this;
+        }
 
         FilePath operator/( const FilePath& other ) const {
             return FilePath( static_cast<fs::path>( *this ) / static_cast<fs::path>( other ) );
         }
 
         bool operator==( const FilePath& other ) const {
-            return static_cast<const std::filesystem::path&>( *this ) == static_cast<const std::filesystem::path&>( other );
+            return static_cast<const std::filesystem::path&>( *this ) == static_cast<const fs::path&>( other );
         }
 
         bool operator!=( const FilePath& other ) const {

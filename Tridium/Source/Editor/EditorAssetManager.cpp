@@ -3,6 +3,8 @@
 #include "EditorAssetManager.h"
 
 #include <Tridium/Asset/AssetFileExtensions.h>
+#include "Editor.h"
+#include "Panels/MeshImporterPanel.h"
 
 // Assets
 #include <Tridium/Rendering/Mesh.h>
@@ -16,6 +18,7 @@
 #include <Tridium/Asset/Meta/ShaderMetaData.h>
 #include <Tridium/Asset/Meta/TextureMetaData.h>
 #include <Tridium/Asset/Meta/MaterialMetaData.h>
+#include <Tridium/Asset/Meta/SceneMetaData.h>
 
 // Asset Loaders
 #include <Tridium/Asset/Loaders/ModelLoader.h>
@@ -25,22 +28,101 @@
 
 namespace Tridium::Editor {
 
-    void EditorAssetManager::Internal_ImportAsset( const IO::FilePath a_Path )
+    namespace Util {
+    }
+
+#pragma region Import
+
+        void EditorAssetManager::ImportFBX( const IO::FilePath& a_Path )
+        {
+
+        }
+
+        void EditorAssetManager::ImportMesh( const IO::FilePath& a_Path )
+        {
+            GetEditorLayer()->PushPanel<MeshImporterPanel>( a_Path );
+        }
+
+        void EditorAssetManager::ImportTexture( const IO::FilePath& a_Path )
+        {
+            TextureMetaData metadata;
+            if ( Texture* texture = Texture::LoaderType::Load( a_Path, metadata ) )
+            {
+                Internal_AddAsset( texture );
+                metadata.Serialize( a_Path );
+            }
+        }
+
+        void EditorAssetManager::ImportShader( const IO::FilePath& a_Path )
+        {
+            ShaderMetaData metadata;
+            if ( Shader* shader = Shader::LoaderType::Load( a_Path, metadata ) )
+            {
+                Internal_AddAsset( shader );
+                metadata.Serialize( a_Path );
+            }
+        }
+
+        void EditorAssetManager::ImportMaterial( const IO::FilePath& a_Path )
+        {
+            MaterialMetaData metadata;
+            if ( Material* material = Material::LoaderType::Load( a_Path, metadata ) )
+            {
+                Internal_AddAsset( material );
+                metadata.Serialize( a_Path );
+            }
+        }
+        
+        void EditorAssetManager::ImportScene( const IO::FilePath& a_Path )
+        {
+            SceneMetaData metadata;
+        }
+
+#pragma endregion
+
+    void EditorAssetManager::Internal_ImportAsset( const IO::FilePath a_Path, bool a_Override )
     {
+        // If we do not want to reimport an asset and there is an existing meta data file, return
+        if ( !a_Override && AssetMetaData::Deserialize( a_Path.ToString().append( IO::MetaExtension ) ) )
+            return;
+
         std::string fileExt = a_Path.GetExtension().ToString();
+
         if ( fileExt == IO::FBXExtension )
         {
-            Internal_ImportFBX( a_Path );
+            ImportFBX( a_Path );
             return;
         }
 
         EAssetType assetType = IO::GetAssetTypeFromExtension( fileExt );
-        if ( assetType == EAssetType::None )
-            return;
-    }
 
-    void EditorAssetManager::Internal_ImportFBX( const IO::FilePath& a_Path )
-    {
+        switch ( assetType )
+        {
+            using enum EAssetType;
+        case None:
+            return;
+        case Mesh:
+            ImportMesh( a_Path );
+            break;
+        case Shader:
+            ImportShader( a_Path );
+            break;
+        case Texture:
+            ImportTexture( a_Path );
+            break;
+        case Material:
+            ImportMaterial( a_Path );
+            break;
+        case Folder:
+            break;
+        case Lua:
+            break;
+        case Project:
+            break;
+        case Scene:
+            ImportScene( a_Path );
+            break;
+        }
     }
 
     AssetRef<Asset> EditorAssetManager::Internal_LoadAsset( const IO::FilePath& a_Path )
@@ -49,7 +131,7 @@ namespace Tridium::Editor {
 
         // Step 1. Try to find the corresponding meta data file
         IO::FilePath metaPath = a_Path;
-        metaPath.Append( IO::MetaExtension );
+        metaPath += IO::MetaExtension;
         UniquePtr<AssetMetaData> metaData;
         metaData.reset( AssetMetaData::Deserialize( metaPath ) );
 

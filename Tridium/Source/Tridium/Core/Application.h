@@ -26,8 +26,8 @@ namespace Tridium
 
 		void OnEvent( Event& e );
 
-		void PushLayer( Layer* layer );
-		void PushOverlay( Layer* overlay );
+		void PushLayer( Layer* a_Layer );
+		void PushOverlay( Layer* a_Overlay );
 
 		static Application& Get() { return *s_Instance; }
 		static SharedPtr<Project> GetActiveProject() { return Get().m_Project; }
@@ -38,7 +38,7 @@ namespace Tridium
 
 		// - Scene -
 		static SharedPtr<Scene> GetScene() { return s_Instance->m_ActiveScene; }
-
+		static void SetScene( SharedPtr<Scene> a_Scene ) { s_Instance->m_ActiveScene = a_Scene; }
 	private:
 		bool OnWindowClosed( WindowCloseEvent& e );
 

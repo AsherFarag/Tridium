@@ -106,14 +106,14 @@ namespace Tridium {
 
 		out << YAML::Key << "Blend Mode"   << YAML::Value << m_Material->BlendMode;
 		out << YAML::Key << "Color"        << YAML::Value << m_Material->Color;
-		out << YAML::Key << "Reflectivity" << YAML::Value << m_Material->Reflectivity;
-		out << YAML::Key << "Refraction"   << YAML::Value << m_Material->Refraction;
+		//out << YAML::Key << "Reflectivity" << YAML::Value << m_Material->Reflectivity;
+		//out << YAML::Key << "Refraction"   << YAML::Value << m_Material->Refraction;
 
-		out << YAML::Key << "BaseColorTexture" << YAML::Value << ( m_Material->BaseColorTexture ? m_Material->BaseColorTexture->GetHandle() : AssetHandle{} );
-		out << YAML::Key << "NormalMapTexture" << YAML::Value << ( m_Material->NormalMapTexture ? m_Material->NormalMapTexture->GetHandle() : AssetHandle{} );
-		out << YAML::Key << "MetallicTexture"  << YAML::Value << ( m_Material->MetallicTexture ? m_Material->MetallicTexture->GetHandle()   : AssetHandle{} );
-		out << YAML::Key << "RoughnessTexture" << YAML::Value << ( m_Material->RoughnessTexture ? m_Material->RoughnessTexture->GetHandle() : AssetHandle{} );
-		out << YAML::Key << "EmissiveTexture"  << YAML::Value << ( m_Material->EmissiveTexture ? m_Material->EmissiveTexture->GetHandle()   : AssetHandle{} );
+		//out << YAML::Key << "BaseColorTexture" << YAML::Value << ( m_Material->BaseColorTexture ? m_Material->BaseColorTexture->GetHandle() : AssetHandle{} );
+		//out << YAML::Key << "NormalMapTexture" << YAML::Value << ( m_Material->NormalMapTexture ? m_Material->NormalMapTexture->GetHandle() : AssetHandle{} );
+		//out << YAML::Key << "MetallicTexture"  << YAML::Value << ( m_Material->MetallicTexture ? m_Material->MetallicTexture->GetHandle()   : AssetHandle{} );
+		//out << YAML::Key << "RoughnessTexture" << YAML::Value << ( m_Material->RoughnessTexture ? m_Material->RoughnessTexture->GetHandle() : AssetHandle{} );
+		//out << YAML::Key << "EmissiveTexture"  << YAML::Value << ( m_Material->EmissiveTexture ? m_Material->EmissiveTexture->GetHandle()   : AssetHandle{} );
 
 		out << YAML::EndMap;
 
@@ -144,14 +144,14 @@ namespace Tridium {
 
 		m_Material->BlendMode = data["Blend Mode"].as<EBlendMode>();
 		m_Material->Color = data["Color"].as<Color>();
-		m_Material->Reflectivity = data["Reflectivity"].as<float>();
-		m_Material->Refraction = data["Refraction"].as<float>();
-									  
-		m_Material->BaseColorTexture = AssetManager::GetAsset<Texture>( data["BaseColorTexture"].as<std::string>() );
-		m_Material->NormalMapTexture = AssetManager::GetAsset<Texture>( data["NormalMapTexture"].as<std::string>() );
-		m_Material->MetallicTexture  = AssetManager::GetAsset<Texture>( data["MetallicTexture"].as<std::string>() );
-		m_Material->RoughnessTexture = AssetManager::GetAsset<Texture>( data["RoughnessTexture"].as<std::string>() );
-		m_Material->EmissiveTexture  = AssetManager::GetAsset<Texture>( data["EmissiveTexture"].as<std::string>() );
+		//m_Material->Reflectivity = data["Reflectivity"].as<float>();
+		//m_Material->Refraction = data["Refraction"].as<float>();
+		//							  
+		//m_Material->BaseColorTexture = AssetManager::GetAsset<Texture>( data["BaseColorTexture"].as<std::string>() );
+		//m_Material->NormalMapTexture = AssetManager::GetAsset<Texture>( data["NormalMapTexture"].as<std::string>() );
+		//m_Material->MetallicTexture  = AssetManager::GetAsset<Texture>( data["MetallicTexture"].as<std::string>() );
+		//m_Material->RoughnessTexture = AssetManager::GetAsset<Texture>( data["RoughnessTexture"].as<std::string>() );
+		//m_Material->EmissiveTexture  = AssetManager::GetAsset<Texture>( data["EmissiveTexture"].as<std::string>() );
 
 		TE_CORE_TRACE( "End Deserializing Material" );
 

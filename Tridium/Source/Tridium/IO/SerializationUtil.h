@@ -2,6 +2,8 @@
 #include <Tridium/Core/Core.h>
 #include <Tridium/Core/ForEachStructMember.h>
 
+#include <fstream>
+
 #define YAML_CPP_STATIC_DEFINE
 #include "yaml-cpp/yaml.h"
 

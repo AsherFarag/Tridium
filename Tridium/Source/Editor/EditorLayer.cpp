@@ -148,6 +148,12 @@ namespace Tridium::Editor {
 		dispatcher.Dispatch<KeyPressedEvent>( TE_BIND_EVENT_FN( EditorLayer::OnKeyPressed, 1 ) );
 	}
 
+	void EditorLayer::SetActiveScene( const SharedPtr<Scene>& a_Scene )
+	{
+		m_ActiveScene = a_Scene; 
+		Application::SetScene( m_ActiveScene );
+	}
+
 	void EditorLayer::OnBeginScene()
 	{
 		m_ActiveScene->OnBegin();
@@ -182,6 +188,11 @@ namespace Tridium::Editor {
 		SceneSerializer serializer( m_ActiveScene );
 		serializer.SerializeText( filepath );
 		return true;
+	}
+
+	void EditorLayer::NewScene()
+	{
+		SetActiveScene( MakeShared<Scene>("New Scene"));
 	}
 
 	bool EditorLayer::OnKeyPressed( KeyPressedEvent& e )
@@ -240,8 +251,8 @@ namespace Tridium::Editor {
 			ImGui::Separator();
 
 			// Scene
-			if ( ImGui::MenuItem( "New Scene", nullptr, nullptr, false ) )
-				TE_CORE_INFO( "New Scene" );
+			if ( ImGui::MenuItem( "New Scene" ) )
+				NewScene();
 
 			if ( ImGui::MenuItem( "Open Scene", nullptr, nullptr, false ) )
 				TE_CORE_INFO( "Open Scene" );

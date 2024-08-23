@@ -13,14 +13,11 @@ namespace Tridium::Editor {
     class MeshImporterPanel : public Panel
     {
     public:
-        MeshImporterPanel( const std::string& filePath );
-        MeshImporterPanel( const std::string& filePath, const SharedPtr<Mesh>& mesh );
+        MeshImporterPanel( const IO::FilePath& a_Path );
         virtual void OnImGuiDraw() override;
 
     private:
-        std::string m_FilePath;
-        SharedPtr<Mesh> m_Mesh;
-
+        std::string m_Path;
         ModelMetaData m_ModelMetaData;
     };
 

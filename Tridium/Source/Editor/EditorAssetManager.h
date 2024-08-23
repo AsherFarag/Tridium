@@ -9,12 +9,19 @@ namespace Tridium::Editor {
     public:
         static SharedPtr<EditorAssetManager> Get() { return SharedPtrCast<EditorAssetManager>( s_Instance ); }
      
-        static void ImportAsset( const IO::FilePath& a_Path ) { Get()->Internal_ImportAsset( a_Path ); }
+        static void ImportAsset( const IO::FilePath& a_Path, bool a_Override = false ) { Get()->Internal_ImportAsset( a_Path, a_Override ); }
 
     protected:
-        void Internal_ImportAsset( const IO::FilePath a_Path );
-        void Internal_ImportFBX( const IO::FilePath& a_Path );
         virtual AssetRef<Asset> Internal_LoadAsset( const IO::FilePath& a_Path ) override;
+
+        // ----------
+        void Internal_ImportAsset( const IO::FilePath a_Path, bool a_Override );
+        void ImportFBX( const IO::FilePath& a_Path );
+        void ImportMesh( const IO::FilePath& a_Path );
+        void ImportTexture( const IO::FilePath& a_Path );
+        void ImportShader( const IO::FilePath& a_Path );
+        void ImportMaterial( const IO::FilePath& a_Path );
+        void ImportScene( const IO::FilePath& a_Path );
     };
 }
 

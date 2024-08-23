@@ -47,16 +47,16 @@ namespace Tridium::Editor {
 		{
 			bool modified = false;
 			modified |= ImGui::ColorEdit4( "Color", &m_Material->Color[0] );
-			modified |= ImGui::SliderFloat( "Reflectivity", &m_Material->Reflectivity, 0.0f, 1.0f );
-			modified |= ImGui::SliderFloat( "Refraction", &m_Material->Refraction, 0.0f, 1.0f );
+			//modified |= ImGui::SliderFloat( "Reflectivity", &m_Material->Reflectivity, 0.0f, 1.0f );
+			//modified |= ImGui::SliderFloat( "Refraction", &m_Material->Refraction, 0.0f, 1.0f );
 
-			ImGui::Separator();
+			//ImGui::Separator();
 
-			modified |= DrawTextureDragDrop( "Base Color: ", m_Material->BaseColorTexture );
-			modified |= DrawTextureDragDrop( "Normal Map: ", m_Material->NormalMapTexture );
-			modified |= DrawTextureDragDrop( "Metallic: ", m_Material->MetallicTexture );
-			modified |= DrawTextureDragDrop( "Roughness: ", m_Material->RoughnessTexture );
-			modified |= DrawTextureDragDrop( "Emissive: ", m_Material->EmissiveTexture );
+			//modified |= DrawTextureDragDrop( "Base Color: ", m_Material->BaseColorTexture );
+			//modified |= DrawTextureDragDrop( "Normal Map: ", m_Material->NormalMapTexture );
+			//modified |= DrawTextureDragDrop( "Metallic: ", m_Material->MetallicTexture );
+			//modified |= DrawTextureDragDrop( "Roughness: ", m_Material->RoughnessTexture );
+			//modified |= DrawTextureDragDrop( "Emissive: ", m_Material->EmissiveTexture );
 		}
 
 		m_IsHovered = ImGui::IsWindowHovered();

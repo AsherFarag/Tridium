@@ -60,13 +60,14 @@ namespace Tridium::Editor {
 
 		SharedPtr<EditorCamera> GetEditorCamera() { return m_EditorCamera; }
 
-		void SetActiveScene( const SharedPtr<Scene>& a_Scene ) { m_ActiveScene = a_Scene; }
+		void SetActiveScene( const SharedPtr<Scene>& a_Scene );
 		SharedPtr<Scene> GetActiveScene() const { return m_ActiveScene; }
 		void OnBeginScene();
 		void OnEndScene();
 
 		bool LoadScene( const std::string& a_Path );
 		bool SaveScene( const std::string& a_Path );
+		void NewScene();
 
 		SceneState CurrentSceneState = SceneState::Edit;
 

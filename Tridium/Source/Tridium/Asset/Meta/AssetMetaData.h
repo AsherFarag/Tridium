@@ -13,9 +13,12 @@ namespace Tridium {
 
 	struct AssetMetaData
 	{
-		unsigned char FileFormatVersion = FILE_FORMAT_VERSION;
+		uint32_t FileFormatVersion = FILE_FORMAT_VERSION;
 		AssetHandle Handle;
 		EAssetType AssetType;
+
+		AssetMetaData() = default;
+		AssetMetaData( EAssetType a_AssetType ) : Handle(AssetHandle::Create()), AssetType( a_AssetType ) { }
 
 		void Serialize( const IO::FilePath& a_Path );
 		static AssetMetaData* Deserialize( const IO::FilePath& a_Path );

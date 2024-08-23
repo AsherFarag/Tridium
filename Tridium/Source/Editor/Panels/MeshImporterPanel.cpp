@@ -4,19 +4,14 @@
 #include <assimp/postprocess.h>
 #include <Tridium/Rendering/Mesh.h>
 #include <Tridium/Asset/Loaders/ModelLoader.h>
+#include <Editor/EditorAssetManager.h>
 
 namespace Tridium::Editor {
 
-	MeshImporterPanel::MeshImporterPanel( const std::string& filePath )
-		: Panel("Mesh Importer"), m_FilePath(filePath)
+	MeshImporterPanel::MeshImporterPanel( const IO::FilePath& a_Path )
+		: Panel("Mesh Importer"), m_Path( a_Path )
 	{
 
-	}
-
-	MeshImporterPanel::MeshImporterPanel( const std::string& filePath, const SharedPtr<Mesh>& mesh )
-		: MeshImporterPanel(filePath)
-	{
-		m_Mesh = mesh;
 	}
 
 	void CheckboxFlag( const char* label, unsigned int& flags, const unsigned int flag )
@@ -39,12 +34,18 @@ namespace Tridium::Editor {
 	{
 		if ( ImGui::Begin( m_Name.c_str() ) )
 		{
-			ImGui::Text( "File Path: %s", m_FilePath.c_str() );
+			ImGui::Text( "File Path: %s", m_Path.c_str() );
 
 			ImGui::Separator();
 
+			// Draw import settings options
+
 			if ( ImGui::TreeNodeEx( "Import Settings", ImGuiTreeNodeFlags_DefaultOpen ) )
 			{
+				ImGui::DragFloat( "Scale", &m_ModelMetaData.ImportSettings.Scale );
+
+				ImGui::Separator();
+
 				if ( ImGui::TreeNodeEx( "Post-Process Flags", ImGuiTreeNodeFlags_DefaultOpen ) )
 				{
 					CheckboxFlag( "Smooth Normals", m_ModelMetaData.ImportSettings.PostProcessFlags, aiProcess_GenSmoothNormals, aiProcess_GenNormals );
@@ -53,21 +54,27 @@ namespace Tridium::Editor {
 					ImGui::TreePop();
 				}
 
+				ImGui::Separator();
+
 				ImGui::Checkbox( "Keep Local Mesh Data", &m_ModelMetaData.ImportSettings.DiscardLocalData );
-				ImGui::DragFloat( "Scale", &m_ModelMetaData.ImportSettings.Scale );
 
 				ImGui::TreePop();
 			}
 
 			ImGui::Separator();
 
-			if ( ImGui::Button( "LOAD", { ImGui::GetContentRegionAvail().x * 0.5f, 40 } ) )
+			if ( ImGui::Button( "Import", { ImGui::GetContentRegionAvail().x * 0.5f, 40 } ) )
 			{
-				m_ModelMetaData.FileFormatVersion = FILE_FORMAT_VERSION;
-				m_ModelMetaData.Handle = AssetHandle::Create();
-				m_ModelMetaData.AssetType = EAssetType::Mesh;
-				ModelLoader::Load( m_FilePath, m_ModelMetaData );
-				TE_CORE_ERROR( "Failed to import mesh from '{0}'", m_FilePath );
+				if ( Mesh* mesh = ModelLoader::Load( m_Path, m_ModelMetaData ) )
+				{
+					EditorAssetManager::Get()->Internal_AddAsset( mesh );
+					m_ModelMetaData.Serialize( m_Path );
+					TE_CORE_INFO( "Successfully imported mesh from '{0}'", m_Path );
+				}
+				else
+				{
+					TE_CORE_ERROR( "Failed to import mesh from '{0}'", m_Path );
+				}
 
 				m_Open = false;
 			}

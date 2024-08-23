@@ -42,8 +42,9 @@ namespace Tridium {
 		static void Serialize( const IO::FilePath& a_Path );
 		bool Deserialize( const IO::FilePath& a_Path );
 
-	protected:
 		virtual void Internal_AddAsset( const AssetRef<Asset>& a_Asset );
+
+	protected:
 		virtual AssetRef<Asset> Internal_LoadAsset( const IO::FilePath& a_Path ) = 0;
 		virtual AssetRef<Asset> Internal_GetAsset( const AssetHandle& a_AssetHandle );
 		virtual bool Internal_RemoveAsset( const AssetHandle& a_AssetHandle );

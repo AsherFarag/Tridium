@@ -176,9 +176,42 @@ namespace Tridium::Editor {
 
 		EAssetType assetType = IO::GetAssetTypeFromExtension( filePath.GetExtension().ToString() );
 
-		if ( assetType == EAssetType::Scene)
+		switch ( assetType )
 		{
-			GetEditorLayer()->LoadScene( filePath.ToString() );
+			using enum EAssetType;
+			case Mesh:
+			{
+				EditorAssetManager::ImportAsset( filePath );
+				break;
+			}
+			case Shader:
+			{
+				EditorAssetManager::ImportAsset( filePath );
+				break;
+			}
+			case Texture:
+			{
+				EditorAssetManager::ImportAsset( filePath );
+				break;
+			}
+			case Material:
+			{
+				EditorAssetManager::ImportAsset( filePath );
+				break;
+			}
+			case Folder:
+				break;
+			case Lua:
+				break;
+			case Project:
+				break;
+			case Scene:
+			{
+				GetEditorLayer()->LoadScene( filePath.ToString() );
+				break;
+			}
+			default:
+				break;
 		}
 	}
 

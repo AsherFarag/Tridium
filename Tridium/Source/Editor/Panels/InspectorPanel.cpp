@@ -180,7 +180,7 @@ namespace Tridium::Editor {
 				ImGui::DragDropSelectable( "Mesh: ", hasMesh, hasMesh ? mesh->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
 					[&]( const ImGuiPayload* payload ) {
 						std::string filePath( static_cast<const char*>( payload->Data ) );
-						component.SetMesh( AssetManager::GetAsset<Mesh>( filePath ) );
+						component.SetMesh( AssetManager::LoadAsset<Mesh>( filePath ) );
 					} );
 
 				// On right click, give the option to remove the mesh, if there is one.
@@ -200,7 +200,7 @@ namespace Tridium::Editor {
 				bool matOpened = ImGui::DragDropSelectable( "Material: ", hasMat, hasMat ? material->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
 					[&]( const ImGuiPayload* payload ) {
 						std::string filePath( static_cast<const char*>( payload->Data ) );
-						component.SetMaterial( AssetManager::GetAsset<Material>( filePath ) );
+						component.SetMaterial( AssetManager::LoadAsset<Material>( filePath ) );
 					} );
 
 				// On right click, give the option to remove the mesh, if there is one.

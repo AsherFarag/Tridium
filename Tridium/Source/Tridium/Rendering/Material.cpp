@@ -7,8 +7,7 @@ namespace Tridium {
 
 	Material::Material()
 		: BlendMode( EBlendMode::Additive ),
-		Color( 1.0f, 1.0f, 1.0f, 1.0f ),
-		Reflectivity( 0.0f ), Refraction( 1.0f )
+		Color( 1.0f, 1.0f, 1.0f, 1.0f )
 	{
 
 	}
@@ -21,32 +20,47 @@ namespace Tridium {
 
 	void Material::Bind()
 	{
-		if ( BaseColorTexture ) {
-			BaseColorTexture->Bind( 0 );
-		} if ( NormalMapTexture ) {
-			NormalMapTexture->Bind( 1 );
-		} if ( MetallicTexture ) {
-			MetallicTexture->Bind( 2 );
-		} if ( RoughnessTexture ) {
-			RoughnessTexture->Bind( 3 );
-		} if ( EmissiveTexture ) {
-			EmissiveTexture->Bind( 4 );
-		}
 	}
 
 	void Material::Unbind()
 	{
-		if ( BaseColorTexture ) {
-			BaseColorTexture->Unbind( 0 );
-		} if ( NormalMapTexture ) {
-			NormalMapTexture->Unbind( 1 );
-		} if ( MetallicTexture ) {
-			MetallicTexture->Unbind( 2 );
-		} if ( RoughnessTexture ) {
-			RoughnessTexture->Unbind( 3 );
-		} if ( EmissiveTexture ) {
-			EmissiveTexture->Unbind( 4 );
+	}
+
+	bool Material::AddProperty( const std::string& a_Name, const Property& a_Property )
+	{
+		if ( m_Properties.find(a_Name) != m_Properties.end() )
+			return false;
+
+		m_Properties.insert( { a_Name, a_Property } );
+		return true;
+	}
+
+	bool Material::SetProperty( const std::string& a_Name, const Property& a_Property )
+	{
+		auto it = m_Properties.find( a_Name );
+		if (  it == m_Properties.end() )
+		{
+			TE_CORE_WARN( "Attempting to set non-existent property '{0}' on a material!", a_Name );
+			return false;
 		}
+
+		if ( it->second.Type != a_Property.Type )
+		{
+			TE_CORE_WARN( "Attempting to set material property '{0}' with a different type!", a_Name );
+			return false;
+		}
+
+		it->second.Value = a_Property.Value;
+		return true;
+	}
+
+	Property* Material::GetProperty( const std::string& a_Name )
+	{
+		auto it = m_Properties.find( a_Name );
+		if ( it == m_Properties.end() )
+			return nullptr;
+
+		return &( it->second );
 	}
 
 }
