@@ -92,68 +92,177 @@ namespace Tridium {
 
 	void MaterialSerializer::SerializeText( const std::string& filepath )
 	{
-		TE_CORE_TRACE( "Begin Serializing Material" );
-		TE_CORE_TRACE( "Serializing to \"{0}\"", filepath );
-
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "Material";
-		out << YAML::Value << m_Material->GetHandle();
-
-		out << YAML::Key << "Shader"; out << YAML::Value << ( m_Material->GetShader() ? m_Material->GetShader()->GetHandle() : AssetHandle{} );
-
-		out << YAML::Key << "Parent Material" << YAML::Value << ( m_Material->m_Parent ? m_Material->m_Parent->GetHandle() : AssetHandle{} );
-
+		out << YAML::Key << "Shader" << YAML::Value << m_Material->m_Shader.GetAssetHandle();
+		out << YAML::Key << "Parent Material" << YAML::Value << m_Material->m_Parent.GetAssetHandle();
 		out << YAML::Key << "Blend Mode"   << YAML::Value << m_Material->BlendMode;
-		out << YAML::Key << "Color"        << YAML::Value << m_Material->Color;
-		//out << YAML::Key << "Reflectivity" << YAML::Value << m_Material->Reflectivity;
-		//out << YAML::Key << "Refraction"   << YAML::Value << m_Material->Refraction;
 
-		//out << YAML::Key << "BaseColorTexture" << YAML::Value << ( m_Material->BaseColorTexture ? m_Material->BaseColorTexture->GetHandle() : AssetHandle{} );
-		//out << YAML::Key << "NormalMapTexture" << YAML::Value << ( m_Material->NormalMapTexture ? m_Material->NormalMapTexture->GetHandle() : AssetHandle{} );
-		//out << YAML::Key << "MetallicTexture"  << YAML::Value << ( m_Material->MetallicTexture ? m_Material->MetallicTexture->GetHandle()   : AssetHandle{} );
-		//out << YAML::Key << "RoughnessTexture" << YAML::Value << ( m_Material->RoughnessTexture ? m_Material->RoughnessTexture->GetHandle() : AssetHandle{} );
-		//out << YAML::Key << "EmissiveTexture"  << YAML::Value << ( m_Material->EmissiveTexture ? m_Material->EmissiveTexture->GetHandle()   : AssetHandle{} );
+		out << YAML::Key << "Properties" << YAML::Value << YAML::BeginSeq;
+
+		for ( auto&[name, prop] : m_Material->m_Properties )
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "Name" << YAML::Value << name;
+			out << YAML::Key << "Type" << YAML::Value << (int)prop.Type;
+			out << YAML::Key << "Value";
+
+		#define PRINT_ARRAY(type)\
+			out << YAML::Value << YAML::BeginSeq;\
+			std::vector<type>& arr = std::get<std::vector<type>>( prop.Value );\
+			for( type& it : arr )\
+			{\
+				out << it;\
+			}\
+			out << YAML::EndSeq;
+
+			switch ( prop.Type )
+			{
+			case EPropertyType::Int:
+			{
+				out << YAML::Value << std::get<int>( prop.Value );
+				break;
+			}
+			case EPropertyType::IntArray:
+			{
+				PRINT_ARRAY( int )
+					break;
+			}
+			case EPropertyType::Float:
+			{
+				out << YAML::Value << std::get<float>( prop.Value );
+				break;
+			}
+			case EPropertyType::FloatArray:
+			{
+				PRINT_ARRAY( float )
+				break;
+			}
+			case EPropertyType::Color:
+			{
+				out << YAML::Value << std::get<Color>( prop.Value );
+				break;
+			}
+			case EPropertyType::ColorArray:
+			{
+				out << YAML::Value << YAML::BeginSeq; std::vector<Color>& arr = std::get<std::vector<Color>>( prop.Value ); for ( auto& it : arr ) {
+					out << it;
+				} out << YAML::EndSeq;
+					break;
+			}
+			case EPropertyType::Vector4:
+			{
+				out << YAML::Value << std::get<Vector4>( prop.Value );
+				break;
+			}
+			case EPropertyType::Vector4Array:
+			{
+				PRINT_ARRAY( Vector4 )
+				break;
+			}
+			case EPropertyType::Matrix4:
+			{
+				out << YAML::Value << std::get<Matrix4>( prop.Value );
+				break;
+			}
+			case EPropertyType::Matrix4Array:
+			{
+				PRINT_ARRAY( Matrix4 )
+				break;
+			}
+			case EPropertyType::Texture:
+			{
+				out << YAML::Value << std::get<AssetRef<Texture>>( prop.Value ).GetAssetHandle();
+				break;
+			}
+			default:
+				break;
+			}
+
+		#undef	PRINT_ARRAY
+
+			out << YAML::EndMap;
+		}
+
+		out << YAML::EndSeq;
 
 		out << YAML::EndMap;
 
 		std::ofstream outFile( filepath );
 		outFile << out.c_str();
-
-		TE_CORE_TRACE( "End Serializing Material" );
 	}
 
-	bool MaterialSerializer::DeserializeText( const std::string& filepath )
+	bool MaterialSerializer::DeserializeText( const std::string& a_Path )
 	{
-		TODO( "This is jank" );
-		std::ifstream file( filepath );
-		if ( !file )
+		YAML::Node data;
+		try
+		{
+			data = YAML::LoadFile( a_Path );
+		}
+		catch ( YAML::BadFile badFile )
+		{
+			TE_CORE_ERROR( "YAML: {0}", badFile.msg );
 			return false;
+		}
 
-		TE_CORE_TRACE( "Begin Deserializing Material from '{0}'", filepath );
+		m_Material->m_Path = a_Path;
 
-		YAML::Node data = YAML::LoadFile( filepath );
-		if ( !data["Material"] )
-			return false;
-
-		m_Material->m_Path = filepath;
-
-		m_Material->m_Handle = data["Material"].as<AssetHandle>();
-		m_Material->m_Shader = AssetManager::GetAsset<Shader>( data["Shader"].as<std::string>() );
-		m_Material->m_Parent = AssetManager::GetAsset<Material>( data["Parent Material"].as<AssetHandle>() );
-
+		m_Material->m_Shader = AssetManager::LoadAsset<Shader>( data["Shader"].as<AssetHandle>() );
+		m_Material->m_Parent = AssetManager::LoadAsset<Material>( data["Parent Material"].as<AssetHandle>() );
 		m_Material->BlendMode = data["Blend Mode"].as<EBlendMode>();
-		m_Material->Color = data["Color"].as<Color>();
-		//m_Material->Reflectivity = data["Reflectivity"].as<float>();
-		//m_Material->Refraction = data["Refraction"].as<float>();
-		//							  
-		//m_Material->BaseColorTexture = AssetManager::GetAsset<Texture>( data["BaseColorTexture"].as<std::string>() );
-		//m_Material->NormalMapTexture = AssetManager::GetAsset<Texture>( data["NormalMapTexture"].as<std::string>() );
-		//m_Material->MetallicTexture  = AssetManager::GetAsset<Texture>( data["MetallicTexture"].as<std::string>() );
-		//m_Material->RoughnessTexture = AssetManager::GetAsset<Texture>( data["RoughnessTexture"].as<std::string>() );
-		//m_Material->EmissiveTexture  = AssetManager::GetAsset<Texture>( data["EmissiveTexture"].as<std::string>() );
 
-		TE_CORE_TRACE( "End Deserializing Material" );
+		for ( auto propNode : data["Properties"] )
+		{
+			auto nameNode = propNode["Name"];
+			auto typeNode = propNode["Type"];
+			auto valueNode = propNode["Value"];
+
+			if ( !nameNode || !typeNode || !valueNode )
+				continue;
+
+			EPropertyType type = static_cast<EPropertyType>( typeNode.as<int>() );
+			std::string name = nameNode.as<std::string>();
+			m_Material->m_Properties.insert( { name, { type } } );
+
+			switch ( type )
+			{
+			case EPropertyType::Int:
+				m_Material->m_Properties[name].Value = valueNode.as<int>();
+				break;
+			case EPropertyType::IntArray:
+				m_Material->m_Properties[name].Value = valueNode.as<std::vector<int>>();
+				break;
+			case EPropertyType::Float:
+				m_Material->m_Properties[name].Value = valueNode.as<float>();
+				break;
+			case EPropertyType::FloatArray:
+				m_Material->m_Properties[name].Value = valueNode.as<std::vector<float>>();
+				break;
+			case EPropertyType::Color:
+				m_Material->m_Properties[name].Value = valueNode.as<Color>();
+				break;
+			case EPropertyType::ColorArray:
+				m_Material->m_Properties[name].Value = valueNode.as<std::vector<Color>>();
+				break;
+			case EPropertyType::Vector4:
+				m_Material->m_Properties[name].Value = valueNode.as<Vector4>();
+				break;
+			case EPropertyType::Vector4Array:
+				m_Material->m_Properties[name].Value = valueNode.as<std::vector<Vector4>>();
+				break;
+			case EPropertyType::Matrix4:
+				m_Material->m_Properties[name].Value = valueNode.as<Matrix4>();
+				break;
+			case EPropertyType::Matrix4Array:
+				m_Material->m_Properties[name].Value = valueNode.as<std::vector<Matrix4>>();
+				break;
+			case EPropertyType::Texture:
+				m_Material->m_Properties[name].Value = AssetRef<Texture>{ valueNode.as<AssetHandle>() };
+				break;
+			default:
+				break;
+			}
+		}
 
 		return true;
 	}

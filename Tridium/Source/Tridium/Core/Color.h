@@ -2,6 +2,9 @@
 
 namespace Tridium {
 
-	typedef Vector4 Color;
+	struct Color : public Vector4
+	{
+
+	};
 
 }

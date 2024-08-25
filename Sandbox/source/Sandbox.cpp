@@ -3,6 +3,7 @@ using namespace Tridium;
 #include <Tridium/Rendering/Material.h>
 #include <Tridium/IO/MaterialSerializer.h>
 #include <Tridium/IO/SceneSerializer.h>
+#include <variant>
 
 class ExampleLayer : public Tridium::Layer
 {
@@ -25,6 +26,19 @@ public:
 		SetScene();
 
 		PushLayer( new ExampleLayer() );
+
+		//AssetRef<Material> mat(new Material());
+		//mat->AddProperty( "Color", { EPropertyType::Color, Color{} } );
+		//mat->AddProperty( "Index", { EPropertyType::Int, 5 } );
+		//mat->AddProperty( "IntArr", { EPropertyType::IntArray, std::vector<int>{1,2,3,4,5,6,7,8,9,0} } );
+		//mat->AddProperty( "MatArr", { EPropertyType::Matrix4Array, std::vector<Matrix4>{Matrix4{1}, Matrix4{2}} } );
+
+		//MaterialSerializer s( mat );
+		//s.SerializeText( "Content/testMat.tmat" );
+
+		//AssetRef<Material> newmat( new Material() );
+		//MaterialSerializer ser( newmat );
+		//ser.DeserializeText( "Content/testMat.tmat" );
 	}
 
 	~Sandbox()

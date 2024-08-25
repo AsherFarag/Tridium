@@ -76,7 +76,7 @@ namespace Tridium {
 
 					if ( mat )
 					{
-						shader->SetFloat4( "uColor", mat->Color );
+						//shader->SetFloat4( "uColor", mat->Color );
 						mat->Bind();
 					}
 

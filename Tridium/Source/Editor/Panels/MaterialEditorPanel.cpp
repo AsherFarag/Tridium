@@ -46,7 +46,7 @@ namespace Tridium::Editor {
 		if ( ImGuiBegin( flags ) && m_Material )
 		{
 			bool modified = false;
-			modified |= ImGui::ColorEdit4( "Color", &m_Material->Color[0] );
+			//modified |= ImGui::ColorEdit4( "Color", &m_Material->Color[0] );
 			//modified |= ImGui::SliderFloat( "Reflectivity", &m_Material->Reflectivity, 0.0f, 1.0f );
 			//modified |= ImGui::SliderFloat( "Refraction", &m_Material->Refraction, 0.0f, 1.0f );
 

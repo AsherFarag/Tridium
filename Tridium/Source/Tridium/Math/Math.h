@@ -9,19 +9,19 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
-typedef glm::vec2 Vector2;
-typedef glm::vec3 Vector3;
-typedef glm::vec4 Vector4;
+using Vector2 = glm::vec2;
+using Vector3 = glm::vec3;
+using Vector4 = glm::vec4;
 
-typedef glm::ivec2 iVector2;
-typedef glm::ivec3 iVector3;
-typedef glm::ivec4 iVector4;
+using iVector2 = glm::ivec2;
+using iVector3 = glm::ivec3;
+using iVector4 = glm::ivec4;
 
-typedef glm::mat2 Matrix2;
-typedef glm::mat3 Matrix3;
-typedef glm::mat4 Matrix4;
+using Matrix2 = glm::mat2;
+using Matrix3 = glm::mat3;
+using Matrix4 = glm::mat4;
 
-typedef glm::quat Quaternion;
+using Quaternion = glm::quat;
 
 #pragma region To String Functions
 

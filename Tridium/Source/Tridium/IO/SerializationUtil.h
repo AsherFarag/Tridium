@@ -75,6 +75,65 @@ namespace YAML {
 			return true;
 		}
 	};
+
+	template<>
+	struct convert<Tridium::Color>
+	{
+		static Node encode( const Tridium::Color& rhs )
+		{
+			Node node;
+			node.push_back( rhs.x );
+			node.push_back( rhs.y );
+			node.push_back( rhs.z );
+			node.push_back( rhs.w );
+			return node;
+		}
+
+		static bool decode( const Node& node, Tridium::Color& rhs )
+		{
+			if ( !node.IsSequence() || node.size() != 4 )
+				return false;
+
+			rhs.x = node[0].as<float>();
+			rhs.y = node[1].as<float>();
+			rhs.z = node[2].as<float>();
+			rhs.w = node[3].as<float>();
+			return true;
+		}
+	};
+
+	template<>
+	struct convert<Matrix4>
+	{
+		static Node encode( const Matrix4& rhs )
+		{
+			Node node;
+			for ( int i = 0; i < 4; ++i )
+			{
+				for ( int j = 0; j < 4; ++j )
+				{
+					node.push_back(rhs[i][j]);
+				}
+			}
+			return node;
+		}
+
+		static bool decode( const Node& node, Matrix4& rhs )
+		{
+			if ( !node.IsSequence() || node.size() != 16 )
+				return false;
+
+			for ( int i = 0; i < 4; ++i )
+			{
+				for ( int j = 0; j < 4; ++j )
+				{
+					rhs[i][j] = node[i * 4 + j].as<float>();
+				}
+			}
+
+			return true;
+		}
+	};
 }
 
 namespace Tridium {
@@ -84,4 +143,8 @@ namespace Tridium {
 	YAML::Emitter& operator<<( YAML::Emitter& out, const Vector3& v );
 
 	YAML::Emitter& operator<<( YAML::Emitter& out, const Vector4& v );
+
+	YAML::Emitter& operator<<( YAML::Emitter& out, const Color& v );
+	
+	YAML::Emitter& operator<<( YAML::Emitter& out, const Matrix4& v );
 }
