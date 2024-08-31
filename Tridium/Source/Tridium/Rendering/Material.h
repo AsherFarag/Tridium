@@ -11,35 +11,37 @@ namespace Tridium {
 		Additive = 0, Subtractive, Multiplicative, Alpha
 	};
 
-	enum class EPropertyType : uint8_t
-	{
-		Int, IntArray,
-		Float, FloatArray,
-		Color, ColorArray,
-		Vector4, Vector4Array,
-		Matrix4, Matrix4Array,
-		Texture,
-		None
-	};
-
-	struct Property
-	{
-		EPropertyType Type = EPropertyType::None;
-		std::variant<
-			int, std::vector<int>,
-			float, std::vector<float>, 
-			Color, std::vector<Color>,
-			Vector4, std::vector<Vector4>,
-			Matrix4, std::vector<Matrix4>,
-			AssetRef<Texture>> Value;
-	};
-
 	class Material : public Asset
 	{
 		friend class MaterialSerializer;
 	public:
 		ASSET_CLASS_TYPE( Material )
 		ASSET_LOADER_TYPE( MaterialLoader )
+
+		enum class EPropertyType : uint8_t
+		{
+			Int, IntArray,
+			Float, FloatArray,
+			Color, ColorArray,
+			Vector4, Vector4Array,
+			Matrix4, Matrix4Array,
+			Texture,
+			None
+		};
+
+		struct Property
+		{
+			EPropertyType Type = EPropertyType::Int;
+			std::variant<
+				int, std::vector<int>,
+				float, std::vector<float>,
+				Color, std::vector<Color>,
+				Vector4, std::vector<Vector4>,
+				Matrix4, std::vector<Matrix4>,
+				AssetRef<Texture>> Value;
+		};
+
+		using PropertyTable = std::map<std::string, Property>;
 
 		Material();
 		Material( const AssetRef<Shader>& a_Shader );
@@ -55,6 +57,8 @@ namespace Tridium {
 		bool RemoveProperty( const std::string& a_Name );
 
 		// - Getters -
+
+		auto& GetProperties() { return m_Properties; }
 
 		int*			      GetInt( const std::string& a_Name );
 		std::vector<int>*     GetIntVector( const std::string& a_Name );
@@ -87,6 +91,6 @@ namespace Tridium {
 	private:
 		AssetRef<Shader> m_Shader;
 		AssetRef<Material> m_Parent;
-		std::unordered_map<std::string, Property> m_Properties;
+		PropertyTable m_Properties;
 	};
 }

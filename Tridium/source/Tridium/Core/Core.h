@@ -116,10 +116,10 @@ namespace Tridium {
 		return std::make_shared<T>( std::forward<Args>( args )... );
 	}
 
-	template<typename T1, typename T2>
-	inline constexpr SharedPtr<T1> SharedPtrCast( const SharedPtr<T2>& other )
+	template<typename _To, typename _From>
+	inline constexpr SharedPtr<_To> SharedPtrCast( const SharedPtr<_From>& other )
 	{
-		return std::static_pointer_cast<T1>( other );
+		return std::static_pointer_cast<_To>( other );
 	}
 
 	// Type alias for std::weak_ptr

@@ -4,6 +4,8 @@ using namespace Tridium;
 #include <Tridium/IO/MaterialSerializer.h>
 #include <Tridium/IO/SceneSerializer.h>
 #include <variant>
+#include "Editor/Editor.h"
+#include "Editor/Panels/MaterialEditorPanel.h"
 
 class ExampleLayer : public Tridium::Layer
 {
@@ -36,9 +38,12 @@ public:
 		//MaterialSerializer s( mat );
 		//s.SerializeText( "Content/testMat.tmat" );
 
-		//AssetRef<Material> newmat( new Material() );
-		//MaterialSerializer ser( newmat );
-		//ser.DeserializeText( "Content/testMat.tmat" );
+		AssetRef<Material> newmat( new Material() );
+		MaterialSerializer ser( newmat );
+		ser.DeserializeText( "Content/testMat.tmat" );
+
+		Editor::MaterialEditorPanel* panel = Editor::GetEditorLayer()->PushPanel<Editor::MaterialEditorPanel>();
+		panel->SetMaterial( newmat );
 	}
 
 	~Sandbox()

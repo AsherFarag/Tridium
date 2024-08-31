@@ -18,6 +18,7 @@ namespace Tridium::Editor {
 
     private:
         AssetRef<Material> m_Material;
+        bool m_Modified = false;
     };
 
 }

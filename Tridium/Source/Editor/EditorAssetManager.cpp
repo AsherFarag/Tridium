@@ -78,6 +78,67 @@ namespace Tridium::Editor {
             SceneMetaData metadata;
         }
 
+        bool EditorAssetManager::HasAssetImpl( const AssetHandle& a_AssetHandle ) const
+        {
+            return m_Library.find(a_AssetHandle) != m_Library.end();
+        }
+
+        AssetRef<Asset> EditorAssetManager::GetAssetImpl( const AssetHandle& a_AssetHandle, bool a_ShouldLoad )
+        {
+            // Check if the asset is already loaded
+		    if ( auto it = m_Library.find(a_AssetHandle); it != m_Library.end() )
+		    	return it->second;
+      
+		    return a_ShouldLoad ? LoadAssetImpl( a_AssetHandle ) : nullptr;
+        }
+
+        AssetRef<Asset> EditorAssetManager::GetAssetImpl( const IO::FilePath& a_Path, bool a_ShouldLoad )
+        {
+            TODO( "Slow! Cache Paths-to-Handles or something." );
+
+            AssetHandle foundHandle;
+            for ( auto& [handle, path] : m_Paths )
+            {
+                if ( path == a_Path )
+                {
+                    foundHandle = handle;
+                    break;
+                }
+            }
+
+            // Check if the asset is already loaded
+            if ( auto it = m_Library.find( foundHandle ); it != m_Library.end() )
+                return it->second;
+
+            return a_ShouldLoad ? LoadAssetImpl( foundHandle ) : nullptr;
+        }
+
+        AssetRef<Asset> EditorAssetManager::LoadAssetImpl( const AssetHandle& a_AssetHandle )
+        {
+            auto it = m_Paths.find( a_AssetHandle );
+            if ( it == m_Paths.end() )
+                return nullptr;
+
+            return LoadAssetImpl( it->second );
+        }
+
+        AssetRef<Asset> EditorAssetManager::LoadAssetImpl( const IO::FilePath& a_Path )
+        {
+            return AssetRef<Asset>();
+        }
+
+        bool EditorAssetManager::ReleaseAssetImpl( const AssetHandle& a_AssetHandle )
+        {
+            auto it = m_Library.find( a_AssetHandle );
+            if ( it == m_Library.end() )
+            {
+                return false;
+            }
+
+            m_Library.erase( it );
+            return true;
+        }
+
 #pragma endregion
 
     void EditorAssetManager::Internal_ImportAsset( const IO::FilePath a_Path, bool a_Override )
@@ -186,6 +247,36 @@ namespace Tridium::Editor {
         Internal_AddAsset( asset );
 
         return asset;
+    }
+
+    bool EditorAssetManager::Internal_SaveAsset( const IO::FilePath a_Path, const AssetRef<Asset>& a_Asset )
+    {
+        if ( !a_Asset )
+            return false;
+
+        switch ( a_Asset->AssetType() )
+        {
+            case EAssetType::Mesh:
+            {
+                break;
+            }
+            case EAssetType::Shader:
+            {
+                break;
+            }
+            case EAssetType::Texture:
+            {
+                break;
+            }
+            case EAssetType::Material:
+            {
+                break;
+            }
+            default:
+            {
+                return false;
+            }
+        }
     }
 
 }

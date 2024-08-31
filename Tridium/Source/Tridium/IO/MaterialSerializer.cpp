@@ -118,59 +118,59 @@ namespace Tridium {
 
 			switch ( prop.Type )
 			{
-			case EPropertyType::Int:
+			case Material::EPropertyType::Int:
 			{
 				out << YAML::Value << std::get<int>( prop.Value );
 				break;
 			}
-			case EPropertyType::IntArray:
+			case Material::EPropertyType::IntArray:
 			{
 				PRINT_ARRAY( int )
 					break;
 			}
-			case EPropertyType::Float:
+			case Material::EPropertyType::Float:
 			{
 				out << YAML::Value << std::get<float>( prop.Value );
 				break;
 			}
-			case EPropertyType::FloatArray:
+			case Material::EPropertyType::FloatArray:
 			{
 				PRINT_ARRAY( float )
 				break;
 			}
-			case EPropertyType::Color:
+			case Material::EPropertyType::Color:
 			{
 				out << YAML::Value << std::get<Color>( prop.Value );
 				break;
 			}
-			case EPropertyType::ColorArray:
+			case Material::EPropertyType::ColorArray:
 			{
 				out << YAML::Value << YAML::BeginSeq; std::vector<Color>& arr = std::get<std::vector<Color>>( prop.Value ); for ( auto& it : arr ) {
 					out << it;
 				} out << YAML::EndSeq;
 					break;
 			}
-			case EPropertyType::Vector4:
+			case Material::EPropertyType::Vector4:
 			{
 				out << YAML::Value << std::get<Vector4>( prop.Value );
 				break;
 			}
-			case EPropertyType::Vector4Array:
+			case Material::EPropertyType::Vector4Array:
 			{
 				PRINT_ARRAY( Vector4 )
 				break;
 			}
-			case EPropertyType::Matrix4:
+			case Material::EPropertyType::Matrix4:
 			{
 				out << YAML::Value << std::get<Matrix4>( prop.Value );
 				break;
 			}
-			case EPropertyType::Matrix4Array:
+			case Material::EPropertyType::Matrix4Array:
 			{
 				PRINT_ARRAY( Matrix4 )
 				break;
 			}
-			case EPropertyType::Texture:
+			case Material::EPropertyType::Texture:
 			{
 				out << YAML::Value << std::get<AssetRef<Texture>>( prop.Value ).GetAssetHandle();
 				break;
@@ -220,43 +220,43 @@ namespace Tridium {
 			if ( !nameNode || !typeNode || !valueNode )
 				continue;
 
-			EPropertyType type = static_cast<EPropertyType>( typeNode.as<int>() );
+			Material::EPropertyType type = static_cast<Material::EPropertyType>( typeNode.as<int>() );
 			std::string name = nameNode.as<std::string>();
 			m_Material->m_Properties.insert( { name, { type } } );
 
 			switch ( type )
 			{
-			case EPropertyType::Int:
+			case Material::EPropertyType::Int:
 				m_Material->m_Properties[name].Value = valueNode.as<int>();
 				break;
-			case EPropertyType::IntArray:
+			case Material::EPropertyType::IntArray:
 				m_Material->m_Properties[name].Value = valueNode.as<std::vector<int>>();
 				break;
-			case EPropertyType::Float:
+			case Material::EPropertyType::Float:
 				m_Material->m_Properties[name].Value = valueNode.as<float>();
 				break;
-			case EPropertyType::FloatArray:
+			case Material::EPropertyType::FloatArray:
 				m_Material->m_Properties[name].Value = valueNode.as<std::vector<float>>();
 				break;
-			case EPropertyType::Color:
+			case Material::EPropertyType::Color:
 				m_Material->m_Properties[name].Value = valueNode.as<Color>();
 				break;
-			case EPropertyType::ColorArray:
+			case Material::EPropertyType::ColorArray:
 				m_Material->m_Properties[name].Value = valueNode.as<std::vector<Color>>();
 				break;
-			case EPropertyType::Vector4:
+			case Material::EPropertyType::Vector4:
 				m_Material->m_Properties[name].Value = valueNode.as<Vector4>();
 				break;
-			case EPropertyType::Vector4Array:
+			case Material::EPropertyType::Vector4Array:
 				m_Material->m_Properties[name].Value = valueNode.as<std::vector<Vector4>>();
 				break;
-			case EPropertyType::Matrix4:
+			case Material::EPropertyType::Matrix4:
 				m_Material->m_Properties[name].Value = valueNode.as<Matrix4>();
 				break;
-			case EPropertyType::Matrix4Array:
+			case Material::EPropertyType::Matrix4Array:
 				m_Material->m_Properties[name].Value = valueNode.as<std::vector<Matrix4>>();
 				break;
-			case EPropertyType::Texture:
+			case Material::EPropertyType::Texture:
 				m_Material->m_Properties[name].Value = AssetRef<Texture>{ valueNode.as<AssetHandle>() };
 				break;
 			default:

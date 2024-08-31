@@ -4,9 +4,9 @@
 
 namespace Tridium {
 
-#define ASSET_CLASS_TYPE(type) static EAssetType StaticType() { return EAssetType::type; }\
+#define ASSET_CLASS_TYPE(type) static constexpr EAssetType StaticType() { return EAssetType::type; }\
 							   virtual EAssetType AssetType() const { return StaticType(); }\
-                               virtual const char* AssetTypeName() const { return #type; }\
+                               virtual constexpr const char* AssetTypeName() const { return #type; }\
 
 #define ASSET_LOADER_TYPE(type) friend class type; \
                                 using LoaderType = type;
@@ -22,6 +22,7 @@ namespace Tridium {
 
         bool IsLoaded() const { return m_Loaded; }
 
+        size_t GetRefCount() const { return m_RefCount; }
         void Internal_AddRef() { ++m_RefCount; }
         void Internal_ReleaseRef();
 
@@ -31,8 +32,6 @@ namespace Tridium {
         size_t m_RefCount = 0;
         bool m_Loaded = false;
     };
-
-#pragma region Asset Ref
 
     template <typename T>
     class AssetRef
@@ -143,13 +142,14 @@ namespace Tridium {
         if ( m_Ptr == nullptr )
             return nullptr;
 
+        if constexpr ( Asset::StaticType() == AsT::StaticType() )
+            return static_cast<Asset*>( m_Ptr );
+
         if ( AsT::StaticType() != m_Ptr->AssetType() )
             return nullptr;
 
-        return AssetRef<AsT>(static_cast<AsT*>(m_Ptr));
+        return static_cast<AsT*>(m_Ptr);
     }
-
-#pragma endregion
 
 #pragma endregion
 
