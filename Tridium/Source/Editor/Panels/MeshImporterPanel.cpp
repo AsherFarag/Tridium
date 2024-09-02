@@ -67,7 +67,7 @@ namespace Tridium::Editor {
 			{
 				if ( Mesh* mesh = ModelLoader::Load( m_Path, m_ModelMetaData ) )
 				{
-					EditorAssetManager::Get()->Internal_AddAsset( mesh );
+					EditorAssetManager::AddAsset( mesh );
 					m_ModelMetaData.Serialize( m_Path );
 					TE_CORE_INFO( "Successfully imported mesh from '{0}'", m_Path );
 				}

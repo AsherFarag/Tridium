@@ -16,6 +16,10 @@ int main(int argc, char** argv)
 	TE_CORE_ERROR( "ERROR" );
 	TE_CORE_FATAL( "FATAL" );
 
+	TE_CORE_INFO( argc );
+	for ( size_t i = 0; i < argc; ++i )
+	    TE_CORE_INFO( argv[i] );
+
 	auto app = Tridium::CreateApplication();
 	app->Run();
 	delete app;

@@ -40,7 +40,7 @@ namespace Tridium {
 
 		Editor::EditorApplication::Init();
 		Editor::GetEditorLayer()->SetActiveScene( m_ActiveScene );
-		AssetManager::s_Instance = MakeShared<Editor::EditorAssetManager>();
+		AssetManager::s_Instance = new Editor::EditorAssetManager();
 
 #else
 

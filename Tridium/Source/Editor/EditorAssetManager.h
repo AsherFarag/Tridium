@@ -7,13 +7,16 @@ namespace Tridium::Editor {
     class EditorAssetManager final : public AssetManager
     {
     public:
-        static const EditorAssetManager* Get() { return static_cast<EditorAssetManager*>( s_Instance ); }
+        static EditorAssetManager* Get() { return static_cast<EditorAssetManager*>( s_Instance ); }
 
-        static void ImportAsset( const IO::FilePath& a_Path, bool a_Override = false ) { Get()->Internal_ImportAsset( a_Path, a_Override ); }
-        static bool SaveAsset( const IO::FilePath& a_Path, const AssetRef<Asset>& a_Asset ) { return Get()->Internal_SaveAsset( a_Path, a_Asset ); }
+        static void ImportAsset( const IO::FilePath& a_Path, bool a_Override = false ) { Get()->ImportAssetImpl( a_Path, a_Override ); }
+        static bool SaveAsset( const IO::FilePath& a_Path, const AssetRef<Asset>& a_Asset ) { return Get()->SaveAssetImpl( a_Path, a_Asset ); }
+        static bool AddAsset( const AssetRef<Asset>& a_Asset ) { return Get()->AddAssetImpl( a_Asset ); }
 
     protected:
-        bool Internal_SaveAsset( const IO::FilePath a_Path, const AssetRef<Asset>& a_Asset );
+        void ImportAssetImpl( const IO::FilePath& a_Path, bool a_Override = false );
+        bool SaveAssetImpl( const IO::FilePath& a_Path, const AssetRef<Asset>& a_Asset );
+        bool AddAssetImpl( const AssetRef<Asset>& a_Asset );
 
         virtual bool HasAssetImpl( const AssetHandle& a_AssetHandle ) const override;
         virtual AssetRef<Asset> GetAssetImpl( const AssetHandle& a_AssetHandle, bool a_ShouldLoad ) override;
@@ -23,7 +26,6 @@ namespace Tridium::Editor {
         virtual bool ReleaseAssetImpl( const AssetHandle& a_AssetHandle ) override;
 
         // ----------
-        void Internal_ImportAsset( const IO::FilePath a_Path, bool a_Override );
         void ImportFBX( const IO::FilePath& a_Path );
         void ImportMesh( const IO::FilePath& a_Path );
         void ImportTexture( const IO::FilePath& a_Path );
@@ -34,29 +36,9 @@ namespace Tridium::Editor {
     private:
         std::unordered_map<AssetHandle, AssetRef<Asset>> m_Library;
 		std::unordered_map<AssetHandle, IO::FilePath> m_Paths;
+        std::unordered_map<AssetHandle, std::unordered_set<AssetHandle>> m_Dependencies;
     };
 
-    //class EditorAssetManager : public AssetManager
-    //{
-    //public:
-    //    static SharedPtr<EditorAssetManager> Get() { return SharedPtrCast<EditorAssetManager>( s_Instance ); }
-    // 
-    //    static void ImportAsset( const IO::FilePath& a_Path, bool a_Override = false ) { Get()->Internal_ImportAsset( a_Path, a_Override ); }
-    //    static bool SaveAsset( const IO::FilePath& a_Path, const AssetRef<Asset>& a_Asset ) { return Get()->Internal_SaveAsset( a_Path, a_Asset ); }
-
-    //protected:
-    //    virtual AssetRef<Asset> Internal_LoadAsset( const IO::FilePath& a_Path ) override;
-    //    bool Internal_SaveAsset( const IO::FilePath a_Path, const AssetRef<Asset>& a_Asset );
-
-    //    // ----------
-    //    void Internal_ImportAsset( const IO::FilePath a_Path, bool a_Override );
-    //    void ImportFBX( const IO::FilePath& a_Path );
-    //    void ImportMesh( const IO::FilePath& a_Path );
-    //    void ImportTexture( const IO::FilePath& a_Path );
-    //    void ImportShader( const IO::FilePath& a_Path );
-    //    void ImportMaterial( const IO::FilePath& a_Path );
-    //    void ImportScene( const IO::FilePath& a_Path );
-    //};
 }
 
 #endif // IS_EDITOR

@@ -75,22 +75,22 @@ namespace Tridium::Editor {
 
         void SaveAll()
         {
-            auto& AssetLib = AssetManager::Get()->GetLibrary();
-            for ( auto&& [guid, asset] : AssetLib )
-            {
-                //asset->Save();
-            }
+            //auto& AssetLib = AssetManager::Get()->GetLibrary();
+            //for ( auto&& [guid, asset] : AssetLib )
+            //{
+            //    //asset->Save();
+            //}
         }
         void RecompileAllShaders()
         {
-            auto& AssetLib = AssetManager::Get()->GetLibrary();
-            for ( auto&& [guid, asset] : AssetLib )
-            {
-                if ( AssetRef<Shader> shader = asset.As<Shader>() )
-                {
-                    shader->Recompile();
-                }
-            }
+            //auto& AssetLib = AssetManager::Get()->GetLibrary();
+            //for ( auto&& [guid, asset] : AssetLib )
+            //{
+            //    if ( AssetRef<Shader> shader = asset.As<Shader>() )
+            //    {
+            //        shader->Recompile();
+            //    }
+            //}
         }
     }
 
