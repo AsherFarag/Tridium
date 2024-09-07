@@ -1,4 +1,5 @@
 #pragma once
+#include <Tridium/Core/Reflection.h>
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/Core/Core.h>
 #include "ImportSettings.h"
@@ -15,6 +16,8 @@ namespace Tridium {
 
 	struct AssetMetaData
 	{
+		REFLECT;
+
 		FileFormat FileFormatVersion = FILE_FORMAT_VERSION;
 		AssetHandle Handle;
 		EAssetType AssetType;
@@ -32,26 +35,31 @@ namespace Tridium {
 
 	struct ShaderMetaData : public AssetMetaData
 	{
+		REFLECT;
 		ShaderMetaData() : AssetMetaData( EAssetType::Shader ) {}
 	};
 
 	struct SceneMetaData : public AssetMetaData
 	{
+		REFLECT;
 		SceneMetaData() : AssetMetaData( EAssetType::Scene ) {}
 	};
 
 	struct TextureMetaData : public AssetMetaData
 	{
+		REFLECT;
 		TextureMetaData() : AssetMetaData( EAssetType::Texture ) {}
 	};
 
 	struct MaterialMetaData : public AssetMetaData
 	{
+		REFLECT;
 		MaterialMetaData() : AssetMetaData( EAssetType::Material ) {}
 	};
 
 	struct ModelMetaData : public AssetMetaData
 	{
+		REFLECT;
 		ModelMetaData();
 		ModelImportSettings ImportSettings;
 

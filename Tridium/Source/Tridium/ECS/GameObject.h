@@ -1,5 +1,5 @@
 #pragma once
-#include "Reflection.h"
+#include <Tridium/Core/Reflection.h>
 
 // TEMP ?
 #include <Tridium/Core/Application.h>

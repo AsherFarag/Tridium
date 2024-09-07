@@ -46,7 +46,7 @@ namespace Tridium::Editor {
 
     AssetRef<Asset> EditorAssetManager::LoadAssetImpl( const IO::FilePath& a_Path )
     {  
-        Scope<AssetMetaData> metaData( LoadAssetMetaData( a_Path + IO::MetaExtension ) );
+        Scope<AssetMetaData> metaData( LoadAssetMetaDataImpl( a_Path + IO::MetaExtension ) );
         // If this asset file has no meta data file, we must import the asset file
         if ( !metaData )
             return ImportAssetImpl( a_Path, true );

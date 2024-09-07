@@ -6,6 +6,8 @@ using namespace Tridium;
 #include <variant>
 #include "Editor/Editor.h"
 
+#include <Tridium/Asset/AssetMetaData.h>
+
 class ExampleLayer : public Tridium::Layer
 {
 
@@ -41,6 +43,18 @@ public:
 		MaterialSerializer ser( newmat );
 		ser.DeserializeText( "Content/testMat.tmat" );
 
+		auto ide = entt::resolve<ModelMetaData>();
+		
+		int i = 0;
+		for ( auto&& [id, prop] : entt::resolve<ModelImportSettings>().prop() ) {
+			i++;
+		}
+
+		LOG_INFO( i );
+		//
+		//for ( auto&& [id, type] : entt::resolve() ) {
+		//	LOG_INFO( type.info().name().data() );
+		//}
 		//Editor::MaterialEditorPanel* panel = Editor::GetEditorLayer()->PushPanel<Editor::MaterialEditorPanel>();
 		//panel->SetMaterial( newmat );
 	}

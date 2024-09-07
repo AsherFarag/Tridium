@@ -1,11 +1,16 @@
 #pragma once
+#include <Tridium/Core/Reflection.h>
 
 namespace Tridium {
 
-	struct ImportSettings {};
-
-	struct ModelImportSettings : public ImportSettings
+	struct AssetImportSettings
 	{
+		REFLECT;
+	};
+
+	struct ModelImportSettings : public AssetImportSettings
+	{
+		REFLECT;
 		ModelImportSettings();
 
 		unsigned int PostProcessFlags;

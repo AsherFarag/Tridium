@@ -3,7 +3,7 @@
 #include <Tridium/Core/Core.h>
 #include <Tridium/ECS/GameObject.h>
 #include "entt.hpp"
-#include <Tridium/ECS/Reflection.h>
+#include <Tridium/Core/Reflection.h>
 
 namespace Tridium {
 

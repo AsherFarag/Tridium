@@ -61,6 +61,8 @@ namespace YAML {
 
 namespace Tridium {
 
+
+
     YAML::Emitter& operator<<( YAML::Emitter& out, const EAssetType& v )
     {
         out << ToString( v );
@@ -174,4 +176,25 @@ namespace Tridium {
         return true;
     }
 
+    BEGIN_REFLECT( AssetMetaData )
+        PROPERTY( FileFormatVersion )
+        PROPERTY( Handle )
+        PROPERTY( AssetType )
+    END_REFLECT
+
+    BEGIN_REFLECT( ShaderMetaData, AssetMetaData )
+    END_REFLECT
+
+    BEGIN_REFLECT( SceneMetaData, AssetMetaData )
+    END_REFLECT
+
+    BEGIN_REFLECT( TextureMetaData, AssetMetaData )
+    END_REFLECT
+
+    BEGIN_REFLECT( MaterialMetaData, AssetMetaData )
+    END_REFLECT
+
+    BEGIN_REFLECT( ModelMetaData, AssetMetaData )
+        PROPERTY( ImportSettings )
+    END_REFLECT
 }

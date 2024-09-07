@@ -5,11 +5,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 namespace Tridium {
 
-	BEGIN_REFLECT( TransformComponent )
-		PROPERTY( TransformComponent, Position )
-		PROPERTY( TransformComponent, Rotation )
-		PROPERTY( TransformComponent, Scale )
-		FUNCTION( TransformComponent, GetForward )
+	BEGIN_REFLECT( TransformComponent, Component )
+		PROPERTY( Position )
+		PROPERTY( Rotation )
+		PROPERTY( Scale )
+		FUNCTION( GetForward )
 	END_REFLECT
 
 	TransformComponent::TransformComponent( const Vector3& a_Translation )
