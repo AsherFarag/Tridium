@@ -9,7 +9,7 @@ namespace Tridium {
 	// For the future, a better strategy might be to buffer events in an event
 	// bus and process them during the "event" part of the update stage.
 
-	enum class EventType
+	enum class EventType : Byte
 	{
 		None = 0,
 		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
@@ -18,7 +18,7 @@ namespace Tridium {
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 	};
 
-	enum EventCategory
+	enum EventCategory : Byte
 	{
 		None = 0,
 		EventCategoryApplication    = BIT(0),

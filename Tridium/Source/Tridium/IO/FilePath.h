@@ -15,6 +15,10 @@ namespace Tridium::IO {
         operator const fs::path&() const { return *this; }
         operator std::string() const { return ToString(); }
 
+        FilePath operator+( const std::string& suffix ) const {
+            return ToString() + suffix;
+        }
+
         FilePath& operator+=( const std::string& suffix ) {
             fs::path::operator+=( suffix );
             return *this;
@@ -69,7 +73,7 @@ namespace Tridium::IO {
 
         bool IsFile() const { return fs::is_regular_file( *this ); }
 
-        static FilePath FromPath( const IO::FilePath& path ) { return FilePath( path ); }
+        static FilePath FromPath( const fs::path& a_Path ) { return FilePath( a_Path ); }
     };
 
     class DirectoryEntry : public fs::directory_entry
@@ -93,7 +97,7 @@ namespace std {
     {
         std::size_t operator()( const Tridium::IO::FilePath& s ) const noexcept
         {
-            return std::hash<std::string>{}( s.ToString() );
+            return std::hash<filesystem::path>{}( s.ToString() );
         }
     };
 }

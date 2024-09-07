@@ -2,6 +2,7 @@
 #include <unordered_set>
 #include <string>
 #include "AssetType.h"
+#include <Tridium/IO/FilePath.h>
 
 namespace Tridium {
 	namespace IO {

@@ -1,4 +1,5 @@
 #pragma once
+#include <Tridium/Math/Math.h>
 
 namespace Tridium {
 

@@ -18,7 +18,7 @@
 #include "Panels/ScriptEditorPanel.h"
 #include "Panels/EditorViewportPanel.h"
 #include "Panels/GameViewportPanel.h"
-#include "Panels/MaterialEditorPanel.h"
+#include "Panels/Asset/MaterialEditorPanel.h"
 
 namespace Tridium::Editor {
 

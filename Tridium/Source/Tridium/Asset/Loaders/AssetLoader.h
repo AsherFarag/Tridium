@@ -1,21 +1,20 @@
 #pragma once
 #include <Tridium/Asset/AssetType.h>
+#include <Tridium/Asset/AssetFactory.h>
+#include <Tridium/Asset/AssetMetaData.h>
 #include <Tridium/IO/FilePath.h>
+
+#define ASSET_USE_RUNTIME 0
 
 namespace Tridium {
 
-	class Asset;
-	class AssetHandle;
-
-	class IAssetLoader
+	class IAssetLoaderInterface
 	{
 	public:
-		virtual Asset* Load( const IO::FilePath& a_Path ) = 0;
-
-#ifdef IS_EDITOR
-		virtual AssetHandle Import( const IO::FilePath& a_Path ) = 0;
-#endif // IS_EDITOR
-
+		virtual AssetMetaData* ConstructAssetMetaData() const = 0;
+		virtual Asset* RuntimeLoad( const IO::FilePath& a_Path ) const = 0;
+		virtual Asset* DebugLoad( const IO::FilePath& a_Path, const AssetMetaData* a_MetaData ) const = 0;
+		virtual bool Save( const IO::FilePath& a_Path, const Asset* a_Asset ) const = 0;
 	};
 
 }

@@ -10,7 +10,7 @@ namespace Tridium {
 
 	struct Vertex
 	{
-		static constexpr size_t NumUVChannels = 8;
+		static constexpr Byte NumUVChannels = 8;
 
 		Vector3 Position;
 		Vector3 Normal;

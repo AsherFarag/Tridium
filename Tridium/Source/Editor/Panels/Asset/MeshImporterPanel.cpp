@@ -8,10 +8,9 @@
 
 namespace Tridium::Editor {
 
-	MeshImporterPanel::MeshImporterPanel( const IO::FilePath& a_Path )
-		: Panel("Mesh Importer"), m_Path( a_Path )
+	MeshImporterPanel::MeshImporterPanel( const AssetHandle& a_AssetHandle, const IO::FilePath& a_Path )
+		: AssetImporterPanel( "Mesh Importer", a_AssetHandle, a_Path )
 	{
-
 	}
 
 	void CheckboxFlag( const char* label, unsigned int& flags, const unsigned int flag )

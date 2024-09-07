@@ -1,7 +1,5 @@
 #include "tripch.h"
 #include "ModelLoader.h"
-#include <Tridium/Rendering/Mesh.h>
-#include <Tridium/Asset/Meta/ModelMetaData.h>
 
 #include <Tridium/Rendering/Buffer.h>
 #include <Tridium/Rendering/VertexArray.h>
@@ -12,15 +10,37 @@
 
 namespace Tridium {
 
-	Mesh* ModelLoader::Load( const IO::FilePath& a_Path, const ModelMetaData& a_MetaData )
-	{
-        Assimp::Importer importer;
-        importer.SetPropertyFloat( AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, a_MetaData.ImportSettings.Scale );
+    Mesh* ModelLoader::Load( const IO::FilePath& a_Path )
+    {
+    #if ASSET_USE_RUNTIME
+        return RuntimeLoad( a_Path );
+    #else
+        return DebugLoad( a_Path, nullptr );
+    #endif
+    }
 
-        const aiScene* scene = importer.ReadFile( a_Path.ToString(), a_MetaData.ImportSettings.PostProcessFlags);
+    ModelMetaData* ModelLoader::ConstructMetaData()
+    {
+        return new ModelMetaData();
+    }
+
+    Mesh* ModelLoader::RuntimeLoad( const IO::FilePath& a_Path )
+    {
+        return nullptr;
+    }
+
+    Mesh* ModelLoader::DebugLoad( const IO::FilePath& a_Path, const ModelMetaData* a_MetaData )
+    {
+        const ModelImportSettings& importSettings = a_MetaData ?
+            static_cast<const ModelMetaData*>( a_MetaData )->ImportSettings : ModelImportSettings{};
+
+        Assimp::Importer importer;
+        importer.SetPropertyFloat( AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, importSettings.Scale );
+
+        const aiScene* scene = importer.ReadFile( a_Path.ToString(), importSettings.PostProcessFlags );
         if ( !scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode )
         {
-            TE_CORE_ERROR( "ASSIMP: File - '{0}', Error - {1}", a_Path.ToString(), importer.GetErrorString());
+            TE_CORE_ERROR( "ASSIMP: File - '{0}', Error - {1}", a_Path.ToString(), importer.GetErrorString() );
             return nullptr;
         }
 
@@ -30,7 +50,7 @@ namespace Tridium {
         TODO( "We currently only load the first mesh for simplicity!" );
         aiMesh* ai_mesh = scene->mMeshes[0];
 
-        #pragma region Load Verticies
+#pragma region Load Verticies
 
         loadedMesh->m_NumVerticies = ai_mesh->mNumVertices;
         loadedMesh->m_Verticies.resize( ai_mesh->mNumVertices );
@@ -72,9 +92,9 @@ namespace Tridium {
 
         loadedMesh->m_NumVerticies = loadedMesh->m_Verticies.size();
 
-        #pragma endregion
+#pragma endregion
 
-        #pragma region Load Indices
+#pragma region Load Indices
 
         std::vector<uint32_t> indices;
         indices.reserve( ai_mesh->mNumFaces * 3 );
@@ -96,7 +116,7 @@ namespace Tridium {
 
         loadedMesh->m_NumIndicies = indices.size();
 
-        #pragma endregion
+#pragma endregion
 
         // - Load the mesh objects into the GPU -
 
@@ -118,17 +138,50 @@ namespace Tridium {
         loadedMesh->m_IBO = IndexBuffer::Create( indices.data(), indices.size() );
         loadedMesh->m_VAO->SetIndexBuffer( loadedMesh->m_IBO );
 
-        if ( a_MetaData.ImportSettings.DiscardLocalData )
+        if ( importSettings.DiscardLocalData )
         {
             loadedMesh->m_Verticies.clear();
         }
 
-        // Set meta data
-        loadedMesh->m_Handle = a_MetaData.Handle;
         loadedMesh->m_Loaded = true;
         loadedMesh->m_Path = a_Path.ToString();
 
         return loadedMesh;
-	}
+    }
 
+    bool ModelLoader::Save( const IO::FilePath& a_Path, const Mesh* a_Asset )
+    {
+        return false;
+    }
+
+    class ModelLoaderInterface : public IAssetLoaderInterface
+    {
+    public:
+        ModelLoaderInterface()
+        {
+            AssetFactory::RegisterLoader( EAssetType::Mesh, *this );
+        }
+
+        AssetMetaData* ConstructAssetMetaData() const override
+        {
+            return ModelLoader::ConstructMetaData();
+        }
+
+        Asset* RuntimeLoad( const IO::FilePath& a_Path ) const override
+        {
+            return ModelLoader::RuntimeLoad( a_Path );
+        }
+
+        Asset* DebugLoad( const IO::FilePath& a_Path, const AssetMetaData* a_MetaData ) const override
+        {
+            return ModelLoader::DebugLoad( a_Path, static_cast<const ModelMetaData*>( a_MetaData ) );
+        }
+
+        bool Save( const IO::FilePath& a_Path, const Asset* a_Asset ) const override
+        {
+            return ModelLoader::Save( a_Path, static_cast<const Mesh*>( a_Asset ) );
+        }
+    };
+
+    static ModelLoaderInterface s_Instance;
 }

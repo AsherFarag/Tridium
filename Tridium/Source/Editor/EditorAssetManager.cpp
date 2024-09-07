@@ -1,70 +1,39 @@
 #include "tripch.h"
 #ifdef IS_EDITOR
 #include "EditorAssetManager.h"
+#include <Tridium/Asset/Asset.h>
 #include <Tridium/Asset/AssetFactory.h>
-
+#include <Tridium/Asset/Loaders/AssetLoader.h>
+#include <Tridium/Asset/AssetMetaData.h>
 #include <Tridium/Asset/AssetFileExtensions.h>
 #include "Editor.h"
-#include "Panels/MeshImporterPanel.h"
-
-// Assets
-#include <Tridium/Rendering/Mesh.h>
-#include <Tridium/Rendering/Shader.h>
-#include <Tridium/Rendering/Texture.h>
-#include <Tridium/Rendering/Material.h>
-
-// Asset Meta Data
-#include <Tridium/Asset/Meta/AssetMetaData.h>
-#include <Tridium/Asset/Meta/ModelMetaData.h>
-#include <Tridium/Asset/Meta/ShaderMetaData.h>
-#include <Tridium/Asset/Meta/TextureMetaData.h>
-#include <Tridium/Asset/Meta/MaterialMetaData.h>
-#include <Tridium/Asset/Meta/SceneMetaData.h>
-
-// Asset Loaders
-#include <Tridium/Asset/Loaders/ModelLoader.h>
-#include <Tridium/Asset/Loaders/ShaderLoader.h>
-#include <Tridium/Asset/Loaders/TextureLoader.h>
-#include <Tridium/Asset/Loaders/MaterialLoader.h>
 
 namespace Tridium::Editor {
 
-    namespace Util {
-    }
     bool EditorAssetManager::HasAssetImpl( const AssetHandle& a_AssetHandle ) const
     {
         return m_Library.find(a_AssetHandle) != m_Library.end();
     }
 
-    AssetRef<Asset> EditorAssetManager::GetAssetImpl( const AssetHandle& a_AssetHandle, bool a_ShouldLoad )
+    AssetRef<Asset> EditorAssetManager::GetAssetImpl( const AssetHandle& a_AssetHandle )
     {
         // Check if the asset is already loaded
 	    if ( auto it = m_Library.find(a_AssetHandle); it != m_Library.end() )
 	    	return it->second;
     
-	    return a_ShouldLoad ? LoadAssetImpl( a_AssetHandle ) : nullptr;
+	    return nullptr;
     }
 
-    AssetRef<Asset> EditorAssetManager::GetAssetImpl( const IO::FilePath& a_Path, bool a_ShouldLoad )
-        {
-            TODO( "Slow! Cache Paths-to-Handles or something." );
+    AssetRef<Asset> EditorAssetManager::GetAssetImpl( const IO::FilePath& a_Path )
+    {
+        AssetHandle assetHandle = GetAssetHandleImpl(a_Path);
 
-            AssetHandle foundHandle;
-            for ( auto& [handle, path] : m_Paths )
-            {
-                if ( path == a_Path )
-                {
-                    foundHandle = handle;
-                    break;
-                }
-            }
+        // Check if the asset is already loaded
+        if ( auto it = m_Library.find( assetHandle ); it != m_Library.end() )
+            return it->second;
 
-            // Check if the asset is already loaded
-            if ( auto it = m_Library.find( foundHandle ); it != m_Library.end() )
-                return it->second;
-
-            return a_ShouldLoad ? LoadAssetImpl( foundHandle ) : nullptr;
-        }
+        return nullptr;
+    }
 
     AssetRef<Asset> EditorAssetManager::LoadAssetImpl( const AssetHandle& a_AssetHandle )
     {
@@ -76,123 +45,52 @@ namespace Tridium::Editor {
     }
 
     AssetRef<Asset> EditorAssetManager::LoadAssetImpl( const IO::FilePath& a_Path )
-    {
-        CHECK( a_Path.GetExtension().ToString() != IO::MetaExtension );
-
-        // Step 1. Try to find the corresponding meta data file
-        IO::FilePath metaPath = a_Path;
-        metaPath += IO::MetaExtension;
-        UniquePtr<AssetMetaData> metaData;
-        metaData.reset( AssetMetaData::Deserialize( metaPath ) );
-
-        // If the meta data file doesn't exist, we need to import the asset and create the meta file
+    {  
+        Scope<AssetMetaData> metaData( LoadAssetMetaData( a_Path + IO::MetaExtension ) );
+        // If this asset file has no meta data file, we must import the asset file
         if ( !metaData )
-        {
-            TE_CORE_ERROR( "Attempted to load asset with missing .meta file. '{0}'", a_Path.ToString() );
-            return nullptr;
-        }
+            return ImportAssetImpl( a_Path, true );
 
-        // Step 2. Check if this asset it already loaded
-        if ( auto asset = GetAssetImpl( metaData->Handle, false ) )
-            return asset;
-
-        // Step 3. Load the asset with it's matching loader
-        AssetRef<Asset> asset;
-        switch ( metaData->AssetType )
-        {
-        case EAssetType::Mesh:
-        {
-            asset = Mesh::LoaderType::Load( a_Path, *static_cast<ModelMetaData*>( metaData.get() ) );
-            break;
-        }
-        case EAssetType::Shader:
-        {
-            asset = Shader::LoaderType::Load( a_Path, *static_cast<ShaderMetaData*>( metaData.get() ) );
-            break;
-        }
-        case EAssetType::Texture:
-        {
-            asset = Texture::LoaderType::Load( a_Path, *static_cast<TextureMetaData*>( metaData.get() ) );
-            break;
-        }
-        case EAssetType::Material:
-        {
-            asset = Material::LoaderType::Load( a_Path, *static_cast<MaterialMetaData*>( metaData.get() ) );
-            break;
-        }
-        default:
-        {
-            TE_CORE_ERROR( "Asset meta data stored invalid AssetType. '{0}'", metaPath.ToString() );
-            return nullptr;
-        }
-        }
-
-        // Step 4. If the asset was successfuly loaded, add it to m_Library
-        // Else, return nullptr
-
-        if ( asset == nullptr )
+        const IAssetLoaderInterface* assetLoader = AssetFactory::GetLoader( metaData->AssetType );
+        // If there is no loader for this asset type
+        if ( !assetLoader )
             return nullptr;
 
-        AddAssetImpl( asset );
+        AssetRef<Asset> asset = assetLoader->DebugLoadImpl( a_Path, metaData.Get() );
 
-        return asset;
+        if ( !asset )
+            return nullptr;
+
+        ApplyMetaDataToAsset( *asset, *metaData );
+
+        return AddAssetImpl( asset ) ? asset : nullptr;
     }
 
     bool EditorAssetManager::ReleaseAssetImpl( const AssetHandle& a_AssetHandle )
     {
         auto it = m_Library.find( a_AssetHandle );
         if ( it == m_Library.end() )
-        {
             return false;
-        }
 
         m_Library.erase( it );
         return true;
     }
 
-    void EditorAssetManager::ImportAssetImpl( const IO::FilePath& a_Path, bool a_Override )
+    void EditorAssetManager::ApplyMetaDataToAsset( Asset& a_Asset, const AssetMetaData& a_MetaData )
     {
-        // If we do not want to reimport an asset and there is an existing meta data file, return
-        if ( !a_Override && AssetMetaData::Deserialize( a_Path.ToString().append( IO::MetaExtension ) ) )
-            return;
+        a_Asset.m_Handle = a_MetaData.Handle;
+    }
 
-        std::string fileExt = a_Path.GetExtension().ToString();
+    AssetRef<Asset> EditorAssetManager::ImportAssetImpl( const IO::FilePath& a_Path, bool a_Override )
+    {
+        if ( !a_Override && LoadAssetMetaDataImpl( a_Path + IO::MetaExtension ) )
+            return LoadAsset( a_Path );
 
-        if ( fileExt == IO::FBXExtension )
-        {
-            ImportFBX( a_Path );
-            return;
-        }
+        EAssetType assetType = IO::GetAssetTypeFromExtension( a_Path.GetExtension() );
+        Scope<AssetMetaData> metaData = AssetFactory::ConstructAssetMetaData( assetType );
+        if ( !metaData )
+            return nullptr;
 
-        EAssetType assetType = IO::GetAssetTypeFromExtension( fileExt );
-
-        switch ( assetType )
-        {
-            using enum EAssetType;
-        case None:
-            return;
-        case Mesh:
-            ImportMesh( a_Path );
-            break;
-        case Shader:
-            ImportShader( a_Path );
-            break;
-        case Texture:
-            ImportTexture( a_Path );
-            break;
-        case Material:
-            ImportMaterial( a_Path );
-            break;
-        case Folder:
-            break;
-        case Lua:
-            break;
-        case Project:
-            break;
-        case Scene:
-            ImportScene( a_Path );
-            break;
-        }
     }
 
     bool EditorAssetManager::SaveAssetImpl( const IO::FilePath& a_Path, const AssetRef<Asset>& a_Asset )
@@ -200,29 +98,7 @@ namespace Tridium::Editor {
         if ( !a_Asset )
             return false;
 
-        switch ( a_Asset->AssetType() )
-        {
-            case EAssetType::Mesh:
-            {
-                break;
-            }
-            case EAssetType::Shader:
-            {
-                break;
-            }
-            case EAssetType::Texture:
-            {
-                break;
-            }
-            case EAssetType::Material:
-            {
-                break;
-            }
-            default:
-            {
-                return false;
-            }
-        }
+        return AssetFactory::SaveAsset( a_Path, a_Asset );
     }
 
 
@@ -238,6 +114,24 @@ namespace Tridium::Editor {
         m_Paths.insert( { a_Asset.GetAssetHandle(), a_Asset->GetPath() } );
 
         return true;
+    }
+
+    AssetHandle EditorAssetManager::GetAssetHandleImpl( const IO::FilePath& a_Path ) const
+    {
+        TODO( "Slow! Cache Paths-to-Handles or something." );
+
+        for ( auto& [handle, path] : m_Paths )
+        {
+            if ( path == a_Path )
+                return handle;
+        }
+
+        return {};
+    }
+
+    AssetMetaData* EditorAssetManager::LoadAssetMetaDataImpl( const IO::FilePath& a_Path ) const
+    {
+        return nullptr;
     }
 
 }

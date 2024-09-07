@@ -13,7 +13,7 @@ namespace Tridium {
 		bool Normalised;
 
 		BufferElement() {}
-		BufferElement( ShaderDataType type, const std::string& name, uint32_t count = 1, bool normalised = false );
+		BufferElement( ShaderDataType a_Type, const std::string& a_Name, uint32_t a_Count = 1, bool a_Normalised = false );
 
 		uint32_t GetComponentCount() const;
 	};
@@ -23,7 +23,7 @@ namespace Tridium {
 	class BufferLayout
 	{
 	public:
-		BufferLayout() {}
+		BufferLayout() = default;
 		BufferLayout( const std::initializer_list<BufferElement>& a_Elements );
 
 		inline const auto& GetElements() const { return m_Elements; }

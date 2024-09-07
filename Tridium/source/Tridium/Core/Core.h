@@ -1,13 +1,15 @@
 #pragma once
 
 // - Common Includes -
-#include <Tridium/Math/Math.h>
+#include <Tridium/Core/Types.h>
+#include <Tridium/Core/Hash.h>
+#include <Tridium/Core/Memory.h>
 #include <Tridium/Core/Time.h>
 #include <Tridium/Core/GUID.h>
 #include <Tridium/Core/Color.h>
+#include <Tridium/Math/Math.h>
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/IO/FilePath.h>
-#include <memory>
 
 #pragma region Macro Helpers
 
@@ -80,59 +82,3 @@
 #else
 	#define CHECK(x)
 #endif // TE_ENABLE_CHECKS
-
-
-namespace Tridium {
-
-	constexpr size_t fnv1a( const char* str, size_t hash = 2166136261U ) {
-		return *str ? fnv1a( str + 1, ( hash ^ static_cast<size_t>( *str ) ) * 16777619U ) : hash;
-	}
-
-	inline constexpr size_t HashString( const char* str ) { 
-		return fnv1a( str ); 
-	}
-
-	constexpr size_t operator"" _H( const char* str, size_t ) {
-		return fnv1a( str );
-	}
-
-#pragma region Memory
-
-	template <typename T>
-	using UniquePtr = std::unique_ptr<T>;
-
-	template<typename T, typename ... Args>
-	constexpr UniquePtr<T> MakeUnique( Args&& ... args )
-	{
-		return std::make_unique<T>( std::forward<Args>( args )... );
-	}
-
-	template<typename T>
-	using SharedPtr = std::shared_ptr<T>;
-
-	template<typename T, typename ... Args>
-	constexpr SharedPtr<T> MakeShared( Args&& ... args )
-	{
-		return std::make_shared<T>( std::forward<Args>( args )... );
-	}
-
-	template<typename _To, typename _From>
-	inline constexpr SharedPtr<_To> SharedPtrCast( const SharedPtr<_From>& other )
-	{
-		return std::static_pointer_cast<_To>( other );
-	}
-
-	// Type alias for std::weak_ptr
-	template<typename T>
-	using WeakRef = std::weak_ptr<T>;
-
-	// Function to convert std::shared_ptr to std::weak_ptr
-	template<typename T>
-	constexpr WeakRef<T> MakeWeakRef( const std::shared_ptr<T>& sharedPtr )
-	{
-		return WeakRef<T>( sharedPtr );
-	}
-
-#pragma endregion
-
-}

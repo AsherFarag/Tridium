@@ -16,7 +16,7 @@
 #include "Panels/ScriptEditorPanel.h"
 #include "Panels/EditorViewportPanel.h"
 #include "Panels/GameViewportPanel.h"
-#include "Panels/MaterialEditorPanel.h"
+#include "Panels/Asset/MaterialEditorPanel.h"
 
 #include <Tridium/IO/SceneSerializer.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
