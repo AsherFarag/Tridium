@@ -2,8 +2,6 @@
 #ifdef IS_EDITOR
 #include <Tridium/Asset/AssetManager.h>
 
-
-
 namespace Tridium {
 
     struct AssetMetaData;
@@ -24,7 +22,7 @@ namespace Tridium {
                 a_Path must include the MetaData file extension. 
                 E.g. Path/To/Asset.type.tmeta
             */
-            static AssetMetaData* LoadAssetMetaData( const IO::FilePath& a_Path );
+            static AssetMetaData* LoadAssetMetaData( const IO::FilePath& a_Path ) { return Get()->LoadAssetMetaDataImpl( a_Path ); }
 
             template<typename T>
             static T* LoadAssetMetaData( const IO::FilePath& a_Path ) { return static_cast<T*>( LoadAssetMetaDataImpl( a_Path ) ); }

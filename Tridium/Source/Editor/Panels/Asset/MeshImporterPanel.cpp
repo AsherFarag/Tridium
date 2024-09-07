@@ -33,7 +33,7 @@ namespace Tridium::Editor {
 	{
 		if ( ImGui::Begin( m_Name.c_str() ) )
 		{
-			ImGui::Text( "File Path: %s", m_Path.c_str() );
+			ImGui::Text( "File Path: %s", m_Path.ToString() );
 
 			ImGui::Separator();
 
@@ -64,16 +64,16 @@ namespace Tridium::Editor {
 
 			if ( ImGui::Button( "Import", { ImGui::GetContentRegionAvail().x * 0.5f, 40 } ) )
 			{
-				if ( Mesh* mesh = ModelLoader::Load( m_Path, m_ModelMetaData ) )
-				{
-					EditorAssetManager::AddAsset( mesh );
-					m_ModelMetaData.Serialize( m_Path );
-					TE_CORE_INFO( "Successfully imported mesh from '{0}'", m_Path );
-				}
-				else
-				{
-					TE_CORE_ERROR( "Failed to import mesh from '{0}'", m_Path );
-				}
+				//if ( Mesh* mesh = ModelLoader::Load( m_Path, m_ModelMetaData ) )
+				//{
+				//	EditorAssetManager::AddAsset( mesh );
+				//	m_ModelMetaData.Serialize( m_Path );
+				//	TE_CORE_INFO( "Successfully imported mesh from '{0}'", m_Path );
+				//}
+				//else
+				//{
+				//	TE_CORE_ERROR( "Failed to import mesh from '{0}'", m_Path );
+				//}
 
 				m_Open = false;
 			}

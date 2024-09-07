@@ -11,6 +11,14 @@ namespace Tridium {
 	class IAssetLoaderInterface
 	{
 	public:
+		Asset* Load( const IO::FilePath& a_Path ) const
+		{
+        #if ASSET_USE_RUNTIME
+			return RuntimeLoad( a_Path );
+        #else
+			return DebugLoad( a_Path, nullptr );
+        #endif
+		}
 		virtual AssetMetaData* ConstructAssetMetaData() const = 0;
 		virtual Asset* RuntimeLoad( const IO::FilePath& a_Path ) const = 0;
 		virtual Asset* DebugLoad( const IO::FilePath& a_Path, const AssetMetaData* a_MetaData ) const = 0;

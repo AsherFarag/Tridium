@@ -56,7 +56,7 @@ namespace Tridium::Editor {
         if ( !assetLoader )
             return nullptr;
 
-        AssetRef<Asset> asset = assetLoader->DebugLoadImpl( a_Path, metaData.Get() );
+        AssetRef<Asset> asset = assetLoader->DebugLoad( a_Path, metaData.Get() );
 
         if ( !asset )
             return nullptr;

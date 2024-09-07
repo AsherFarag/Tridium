@@ -2,13 +2,6 @@
 #include <string>
 #include "AssetType.h"
 
-#ifdef IS_EDITOR
-namespace Editor {
-    class EditorAssetManager; // Forward declaration
-}
-#endif // IS_EDITOR
-
-
 namespace Tridium {
 
 #define ASSET_CLASS_TYPE(type) static constexpr EAssetType StaticType() { return EAssetType::type; }\
@@ -17,6 +10,12 @@ namespace Tridium {
 
 #define ASSET_LOADER_TYPE(type) friend class type; \
                                 using LoaderType = type;
+
+#ifdef IS_EDITOR
+    namespace Editor {
+        class EditorAssetManager; // Forward declaration
+    }
+#endif // IS_EDITOR
 
     class Asset
     {
@@ -32,7 +31,14 @@ namespace Tridium {
 
     protected:
         void Internal_AddRef() { ++m_RefCount; }
-        void Internal_ReleaseRef();
+        void Internal_ReleaseRef()
+        {
+            if ( --m_RefCount == 0 )
+            {
+                // Clean up the asset if reference count drops to zero
+                delete this;
+            }
+        }
 
     protected:
         AssetHandle m_Handle;

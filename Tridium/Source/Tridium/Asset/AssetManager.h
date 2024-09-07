@@ -2,9 +2,6 @@
 #include  "Asset.h"
 #include <Tridium/IO/FilePath.h>
 
-#define ASSET_MANAGER_FILENAME "AssetManager.tmeta"
-#define META_FILE_EXTENSION ".meta"
-
 namespace Tridium {
 
 	class AssetManager
