@@ -10,6 +10,7 @@ namespace Tridium::Reflection {
 
 	typedef void ( *SerializeFunc )( YAML::Emitter& a_Out, const char* a_Name, const entt::meta_handle& a_Handle );
 
+	// Used to statically reflect a class.
 	template<typename T>
 	struct Reflector
 	{
@@ -19,6 +20,7 @@ namespace Tridium::Reflection {
 		}
 	};
 
+	// Registry for meta data.
 	class MetaRegistry
 	{
 	public:
@@ -65,7 +67,7 @@ namespace Tridium::Reflection {
 	};
 } // namespace Tridium::Reflection
 
-// Reflection macros
+#pragma region Internal Reflection Macro Helpers
 
 #define _BEGIN_REFLECT_BODY_HELPER( Class )                                      \
     static ::Tridium::Reflection::Reflector<Class> s_Reflector##Class##Instance; \
@@ -112,16 +114,27 @@ namespace Tridium::Reflection {
 				  a_Out << YAML::EndMap;                                                       \
               });
 
-#define _REFLECT_MEMBER_HELPER( Name, Type )                                                  \
-    ::Tridium::Reflection::MetaRegistry::RegisterName( entt::hashed_string( #Name ), #Name ); \
+#define _REFLECT_REGISTER_NAME( Name ) \
+    ::Tridium::Reflection::MetaRegistry::RegisterName( entt::hashed_string( #Name ), #Name );
+
+#define _REFLECT_MEMBER_HELPER( Name, Type )                  \
+    _REFLECT_REGISTER_NAME(Name)                              \
     meta.Type<&ClassType::Name>(entt::hashed_string( #Name ));
 
-// To be defined in the class implementation
-#define BEGIN_REFLECT(Class)          \
-    _BEGIN_REFLECT_BODY_HELPER(Class) \
-	_REFLECT_SERIALIZE_HELPER(Class)
+#pragma endregion
 
+
+// ----- Reflection macros ----- //
+// To be defined in the class implementation.
+// This macro is used to define the reflection data for a class.
+#define BEGIN_REFLECT(Class) _BEGIN_REFLECT_BODY_HELPER(Class) _REFLECT_SERIALIZE_HELPER(Class)
+	// Defines a base class this class inherits from
     #define BASE(Base) meta.base<Base>();
+	// Allows user defined meta properties and functions that are not apart of the class.
+    #define META(Name) _REFLECT_REGISTER_NAME(Name) meta.prop(entt::hashed_string(#Name), Name);
+	// Defines the properties that are apart of the class.
     #define PROPERTY(Name) _REFLECT_MEMBER_HELPER(Name, data)
+	// Defines the functions that are apart of the class.
 	#define FUNCTION(Name) _REFLECT_MEMBER_HELPER(Name, func)
+// Ends the reflection data for a class.
 #define END_REFLECT ; }

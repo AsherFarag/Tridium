@@ -20,7 +20,7 @@ namespace Tridium::Reflection {
             .prop(_Internal_YAML_OnSerialize_ID, \
                 +[](YAML::Emitter& a_Out, const char* a_Name, const entt::meta_handle& a_Value) \
                 { \
-                    a_Out << YAML::Key << a_Name << YAML::Value << *static_cast<const Type*>(a_Value->data()); \
+                    a_Out << YAML::Key << a_Name << YAML::Value << a_Value->cast<Type>(); \
                 });
 
             SERIALIZE_BASIC_TYPE( bool );
@@ -36,6 +36,8 @@ namespace Tridium::Reflection {
             SERIALIZE_BASIC_TYPE( float );
             SERIALIZE_BASIC_TYPE( double );
             SERIALIZE_BASIC_TYPE( char );
+            SERIALIZE_BASIC_TYPE( char* );
+            SERIALIZE_BASIC_TYPE( const char* );
             SERIALIZE_BASIC_TYPE( unsigned char );
             SERIALIZE_BASIC_TYPE( short );
             SERIALIZE_BASIC_TYPE( unsigned short );
@@ -43,7 +45,9 @@ namespace Tridium::Reflection {
             SERIALIZE_BASIC_TYPE( unsigned long );
             SERIALIZE_BASIC_TYPE( long long );
             SERIALIZE_BASIC_TYPE( unsigned long long );
-            //SERIALIZE_BASIC_TYPE( long double );
+
+            // STD
+			SERIALIZE_BASIC_TYPE( std::string );
 
         #undef SERIALIZE_BASIC_TYPE
 		}
