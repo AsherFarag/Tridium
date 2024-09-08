@@ -3,9 +3,12 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <Tridium/Utils/Reflection/Reflection.h>
+
 namespace Tridium {
 
-	BEGIN_REFLECT( TransformComponent, Component )
+	BEGIN_REFLECT( TransformComponent )
+		BASE( Component )
 		PROPERTY( Position )
 		PROPERTY( Rotation )
 		PROPERTY( Scale )

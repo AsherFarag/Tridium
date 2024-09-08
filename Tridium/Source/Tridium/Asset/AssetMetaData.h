@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/Core/Reflection.h>
+#include <Tridium/Utils/Reflection/ReflectionFwd.h>
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/Core/Core.h>
 #include "ImportSettings.h"
@@ -22,7 +22,7 @@ namespace Tridium {
 		AssetHandle Handle;
 		EAssetType AssetType;
 
-		AssetMetaData() = default;
+		AssetMetaData() : Handle( AssetHandle::Null() ), AssetType( EAssetType::None ) {}
 		AssetMetaData( EAssetType a_AssetType ) : Handle(AssetHandle::Create()), AssetType( a_AssetType ) { }
 
 		void Serialize( const IO::FilePath& a_Path );

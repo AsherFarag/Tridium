@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/Core/Reflection.h>
+#include <Tridium/Utils/Reflection/ReflectionFwd.h>
 
 namespace Tridium {
 

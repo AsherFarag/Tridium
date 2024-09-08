@@ -5,8 +5,11 @@ using namespace Tridium;
 #include <Tridium/IO/SceneSerializer.h>
 #include <variant>
 #include "Editor/Editor.h"
-
+#include <Tridium/IO/SerializationUtil.h>
 #include <Tridium/Asset/AssetMetaData.h>
+#include <Tridium/Utils/Reflection/Reflection.h>
+
+#include <any>
 
 class ExampleLayer : public Tridium::Layer
 {
@@ -21,65 +24,102 @@ public:
 	}
 };
 
+
+
+
+
+
+
+
+struct FirstBase
+{
+	REFLECT;
+	int firstBaseVar = 5;
+};
+
+struct SecondBase
+{
+	REFLECT;
+	float secondBaseVar = 9.031f;
+};
+
+struct Nested
+{
+	REFLECT;
+	int varA = 10;
+	float varB = 5.5f;
+	const char* varC = "Hello World";
+	SecondBase varD;
+};
+
+struct Derived : public FirstBase, public SecondBase
+{
+	REFLECT;
+	int derivedVar = 10;
+	Nested nested;
+	SecondBase secondBase;
+};
+
+BEGIN_REFLECT( FirstBase )
+    PROPERTY( firstBaseVar )
+END_REFLECT
+
+BEGIN_REFLECT( SecondBase )
+    PROPERTY( secondBaseVar )
+END_REFLECT
+
+BEGIN_REFLECT( Nested )
+    PROPERTY( varA )
+    PROPERTY( varB )
+    PROPERTY( varC )
+	PROPERTY( varD )
+END_REFLECT
+
+BEGIN_REFLECT( Derived )
+    BASE( FirstBase )
+	BASE( SecondBase )
+    PROPERTY( derivedVar )
+    PROPERTY( nested )
+	PROPERTY( secondBase )
+END_REFLECT
+
+void Test()
+{
+	Derived test;
+	YAML::Emitter out;
+	Tridium::Reflection::MetaRegistry::WriteObjectToEmitter( out, "Test", test );
+
+	std::ofstream outFile( "Content/testrefl.yaml" );
+	outFile << out.c_str();
+}
+
+
+
+
+
+
+
+
+
+
+
 class Sandbox : public Tridium::Application
 {
 public:
 	Sandbox()
 	{
-		SetScene();
-
+    #ifndef IS_EDITOR
+		SceneSerializer serializer( Application::GetScene() );
+		serializer.DeserializeText( ( Application::GetAssetDirectory() / "Scene.tridium" ).string() );
+    #endif // !IS_EDITOR
 		PushLayer( new ExampleLayer() );
 
-		//AssetRef<Material> mat(new Material());
-		//mat->AddProperty( "Color", { EPropertyType::Color, Color{} } );
-		//mat->AddProperty( "Index", { EPropertyType::Int, 5 } );
-		//mat->AddProperty( "IntArr", { EPropertyType::IntArray, std::vector<int>{1,2,3,4,5,6,7,8,9,0} } );
-		//mat->AddProperty( "MatArr", { EPropertyType::Matrix4Array, std::vector<Matrix4>{Matrix4{1}, Matrix4{2}} } );
-
-		//MaterialSerializer s( mat );
-		//s.SerializeText( "Content/testMat.tmat" );
-
-		AssetRef<Material> newmat( new Material() );
-		MaterialSerializer ser( newmat );
-		ser.DeserializeText( "Content/testMat.tmat" );
-
-		auto ide = entt::resolve<ModelMetaData>();
-		
-		int i = 0;
-		for ( auto&& [id, prop] : entt::resolve<ModelImportSettings>().prop() ) {
-			i++;
-		}
-
-		LOG_INFO( i );
-		//
-		//for ( auto&& [id, type] : entt::resolve() ) {
-		//	LOG_INFO( type.info().name().data() );
-		//}
-		//Editor::MaterialEditorPanel* panel = Editor::GetEditorLayer()->PushPanel<Editor::MaterialEditorPanel>();
-		//panel->SetMaterial( newmat );
+		Test();
 	}
 
 	~Sandbox()
 	{
 
-	}
-
-	void SetScene()
-	{
-		//Ref<Material> mat = MakeRef<Material>();
-		//mat->_SetHandle( MaterialHandle::Create() );
-		//mat->SetShader( ShaderLibrary::GetShaderHandle( "Default" ) );
-		//auto tex = TextureLoader::Import( "Content/Temp/stray-robot/textures/Stray_robotic_Material.009_BaseColor.png" );
-		//tex->_SetHandle( TextureHandle::Create() );
-		//TextureLibrary::AddTexture( tex->GetPath(), tex );
-		//mat->BaseColorTexture = tex->GetHandle();
-		//MaterialSerializer ser( mat );
-		//ser.SerializeText( "Content/Robot.tasset" );
-
-	#ifndef IS_EDITOR
-			SceneSerializer serializer( Application::GetScene() );
-			serializer.DeserializeText( ( Application::GetAssetDirectory() / "Scene.tridium" ).string() );
-	#endif // !IS_EDITOR
 	}
 };
 

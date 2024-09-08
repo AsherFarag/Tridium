@@ -1,4 +1,5 @@
 #include "tripch.h"
+#include <Tridium/Utils/Reflection/Reflection.h>
 #include "AssetMetaData.h"
 #include <Tridium/Asset/AssetFileExtensions.h>
 #include <Tridium/IO/SerializationUtil.h>
@@ -71,75 +72,76 @@ namespace Tridium {
 
     void AssetMetaData::Serialize( const IO::FilePath& a_Path )
     {
-        CHECK( a_Path.GetExtension().ToString() != IO::MetaExtension );
+        //CHECK( a_Path.GetExtension().ToString() != IO::MetaExtension );
 
-        YAML::Emitter out;
+        //YAML::Emitter out;
 
-        out << YAML::BeginMap;
-        out << YAML::Key << "FileFormatVersion" << YAML::Value << FileFormatVersion;
-        out << YAML::Key << "Handle" << YAML::Value << Handle;
-        out << YAML::Key << "AssetType" << YAML::Value << AssetType;
+        //out << YAML::BeginMap;
+        //out << YAML::Key << "FileFormatVersion" << YAML::Value << FileFormatVersion;
+        //out << YAML::Key << "Handle" << YAML::Value << Handle;
+        //out << YAML::Key << "AssetType" << YAML::Value << AssetType;
 
-        OnSerialize( out );
+        //OnSerialize( out );
 
-        out << YAML::EndMap;
+        //out << YAML::EndMap;
 
-        std::string metaPath = a_Path.ToString();
-        metaPath.append( IO::MetaExtension );
-        std::ofstream outFile( metaPath );
-        outFile << out.c_str();
+        //std::string metaPath = a_Path.ToString();
+        //metaPath.append( IO::MetaExtension );
+        //std::ofstream outFile( metaPath );
+        //outFile << out.c_str();
     }
 
     AssetMetaData* AssetMetaData::Deserialize( const IO::FilePath& a_Path )
     {
-        YAML::Node data;
-        try
-        {
-            data = YAML::LoadFile( a_Path.ToString() );
-        }
-        catch ( YAML::BadFile badFile )
-        {
-            TE_CORE_ERROR( "YAML: {0}", badFile.msg );
-            return nullptr;
-        }
+        return nullptr;
+        //YAML::Node data;
+        //try
+        //{
+        //    data = YAML::LoadFile( a_Path.ToString() );
+        //}
+        //catch ( YAML::BadFile badFile )
+        //{
+        //    TE_CORE_ERROR( "YAML: {0}", badFile.msg );
+        //    return nullptr;
+        //}
 
-        AssetMetaData tempMetaData;
+        //AssetMetaData tempMetaData;
 
-        if ( auto node = data["FileFormatVersion"] ) { tempMetaData.FileFormatVersion = node.as<uint32_t>(); }
-        else return nullptr;
+        //if ( auto node = data["FileFormatVersion"] ) { tempMetaData.FileFormatVersion = node.as<uint32_t>(); }
+        //else return nullptr;
 
-        if ( auto node = data["Handle"] ) { tempMetaData.Handle = node.as<AssetHandle>(); }
-        else return nullptr;
+        //if ( auto node = data["Handle"] ) { tempMetaData.Handle = node.as<AssetHandle>(); }
+        //else return nullptr;
 
-        if ( auto node = data["AssetType"] ) { tempMetaData.AssetType = AssetTypeFromString( node.as<std::string>() ); }
-        else return nullptr;
+        //if ( auto node = data["AssetType"] ) { tempMetaData.AssetType = AssetTypeFromString( node.as<std::string>() ); }
+        //else return nullptr;
 
-        AssetMetaData* assetMetaData;
+        //AssetMetaData* assetMetaData;
 
-        switch ( tempMetaData.AssetType )
-        {
-            using enum Tridium::EAssetType;
-            case Mesh:
-                assetMetaData = new ModelMetaData{};
-                break;
-            case Shader:
-                assetMetaData = new ShaderMetaData{};
-                break;
-            case Texture:
-                assetMetaData = new TextureMetaData{};
-                break;
-            case Material:
-                assetMetaData = new MaterialMetaData{};
-                break;
-            default:
-                return nullptr;
-        }
+        //switch ( tempMetaData.AssetType )
+        //{
+        //    using enum Tridium::EAssetType;
+        //    case Mesh:
+        //        assetMetaData = new ModelMetaData{};
+        //        break;
+        //    case Shader:
+        //        assetMetaData = new ShaderMetaData{};
+        //        break;
+        //    case Texture:
+        //        assetMetaData = new TextureMetaData{};
+        //        break;
+        //    case Material:
+        //        assetMetaData = new MaterialMetaData{};
+        //        break;
+        //    default:
+        //        return nullptr;
+        //}
 
-        assetMetaData->FileFormatVersion = tempMetaData.FileFormatVersion;
-        assetMetaData->Handle = tempMetaData.Handle;
-        assetMetaData->AssetType = tempMetaData.AssetType;
+        //assetMetaData->FileFormatVersion = tempMetaData.FileFormatVersion;
+        //assetMetaData->Handle = tempMetaData.Handle;
+        //assetMetaData->AssetType = tempMetaData.AssetType;
 
-        return assetMetaData->OnDeserialize( data ) ? assetMetaData : nullptr;
+        //return assetMetaData->OnDeserialize( data ) ? assetMetaData : nullptr;
     }
 
     ModelMetaData::ModelMetaData()
@@ -149,31 +151,32 @@ namespace Tridium {
 
     void ModelMetaData::OnSerialize( YAML::Emitter& a_Out )
     {
-        a_Out << YAML::Key << "Import Settings" << YAML::BeginMap;
+        //a_Out << YAML::Key << "Import Settings" << YAML::BeginMap;
 
-        a_Out << YAML::Key << "PostProcessFlags" << YAML::Value << ImportSettings.PostProcessFlags;
-        a_Out << YAML::Key << "Scale" << YAML::Value << ImportSettings.Scale;
-        a_Out << YAML::Key << "DiscardLocalData" << YAML::Value << ImportSettings.DiscardLocalData;
+        //a_Out << YAML::Key << "PostProcessFlags" << YAML::Value << ImportSettings.PostProcessFlags;
+        //a_Out << YAML::Key << "Scale" << YAML::Value << ImportSettings.Scale;
+        //a_Out << YAML::Key << "DiscardLocalData" << YAML::Value << ImportSettings.DiscardLocalData;
 
-        a_Out << YAML::EndMap;
+        //a_Out << YAML::EndMap;
     }
 
     bool ModelMetaData::OnDeserialize( YAML::Node& a_Data )
     {
-        auto importSettingsNode = a_Data["Import Settings"];
-        if ( !importSettingsNode )
-            return true;
+        return false;
+        //auto importSettingsNode = a_Data["Import Settings"];
+        //if ( !importSettingsNode )
+        //    return true;
 
-        if ( auto node = importSettingsNode["PostProcessFlags"] )
-            ImportSettings.PostProcessFlags = node.as<unsigned int>();
+        //if ( auto node = importSettingsNode["PostProcessFlags"] )
+        //    ImportSettings.PostProcessFlags = node.as<unsigned int>();
 
-        if ( auto node = importSettingsNode["Scale"] )
-            ImportSettings.Scale = node.as<float>();
+        //if ( auto node = importSettingsNode["Scale"] )
+        //    ImportSettings.Scale = node.as<float>();
 
-        if ( auto node = importSettingsNode["DiscardLocalData"] )
-            ImportSettings.Scale = node.as<bool>();
+        //if ( auto node = importSettingsNode["DiscardLocalData"] )
+        //    ImportSettings.Scale = node.as<bool>();
 
-        return true;
+        //return true;
     }
 
     BEGIN_REFLECT( AssetMetaData )
@@ -182,19 +185,24 @@ namespace Tridium {
         PROPERTY( AssetType )
     END_REFLECT
 
-    BEGIN_REFLECT( ShaderMetaData, AssetMetaData )
+    BEGIN_REFLECT( ShaderMetaData )
+        BASE( AssetMetaData )
     END_REFLECT
 
-    BEGIN_REFLECT( SceneMetaData, AssetMetaData )
+    BEGIN_REFLECT( SceneMetaData )
+		BASE( AssetMetaData )
     END_REFLECT
 
-    BEGIN_REFLECT( TextureMetaData, AssetMetaData )
+	BEGIN_REFLECT( TextureMetaData )
+		BASE( AssetMetaData )
     END_REFLECT
 
-    BEGIN_REFLECT( MaterialMetaData, AssetMetaData )
+	BEGIN_REFLECT( MaterialMetaData )
+		BASE( AssetMetaData )
     END_REFLECT
 
-    BEGIN_REFLECT( ModelMetaData, AssetMetaData )
+    BEGIN_REFLECT( ModelMetaData )
+		BASE( AssetMetaData )
         PROPERTY( ImportSettings )
     END_REFLECT
 }

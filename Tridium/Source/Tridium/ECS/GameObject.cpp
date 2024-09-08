@@ -2,6 +2,8 @@
 #include "GameObject.h"
 #include "Components/Types.h"
 
+#include <Tridium/Utils/Reflection/Reflection.h>
+
 namespace Tridium {
 
     BEGIN_REFLECT( GameObject )
