@@ -179,30 +179,30 @@ namespace Tridium {
         //return true;
     }
 
-    BEGIN_REFLECT( AssetMetaData )
-        PROPERTY( FileFormatVersion )
-        PROPERTY( Handle )
-        PROPERTY( AssetType )
-    END_REFLECT
+    BEGIN_REFLECT( AssetMetaData );
+        PROPERTY( FileFormatVersion );
+        PROPERTY( Handle );
+        PROPERTY( AssetType );
+    END_REFLECT( AssetMetaData );
 
-    BEGIN_REFLECT( ShaderMetaData )
-        BASE( AssetMetaData )
-    END_REFLECT
+    BEGIN_REFLECT( ShaderMetaData );
+        BASE( AssetMetaData );
+    END_REFLECT( ShaderMetaData );
 
-    BEGIN_REFLECT( SceneMetaData )
-		BASE( AssetMetaData )
-    END_REFLECT
+    BEGIN_REFLECT( SceneMetaData );
+        BASE( AssetMetaData );
+    END_REFLECT( SceneMetaData );
 
-	BEGIN_REFLECT( TextureMetaData )
-		BASE( AssetMetaData )
-    END_REFLECT
+    BEGIN_REFLECT( TextureMetaData );
+        BASE( AssetMetaData );
+	END_REFLECT( TextureMetaData );
 
 	BEGIN_REFLECT( MaterialMetaData )
 		BASE( AssetMetaData )
-    END_REFLECT
+	END_REFLECT( MaterialMetaData );
 
     BEGIN_REFLECT( ModelMetaData )
 		BASE( AssetMetaData )
         PROPERTY( ImportSettings )
-    END_REFLECT
+	END_REFLECT( ModelMetaData );
 }

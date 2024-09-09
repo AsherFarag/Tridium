@@ -10,38 +10,11 @@
 #include <Tridium/Math/Math.h>
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/IO/FilePath.h>
-
-#pragma region Macro Helpers
-
-#define BIT(x) (1 << x)
-
-#define Stringize( x ) #x 
-#define WRAP( m, x ) m(x)
-#define PRAGMA(p) _Pragma(#p)
-#define EXPAND(x) x
+#include <Tridium/Utils/Macro.h>
 
 #define STD_PLACEHOLDERS std::placeholders::_
 #define TE_BIND_EVENT_FN(fn, PlaceHolder) std::bind( &fn, this, EXPAND(STD_PLACEHOLDERS)PlaceHolder )
 
-#pragma region Selectors
-
-#define SELECT_MACRO_2(_1, _2, x, ...) x
-#define SELECT_MACRO_3(_1, _2, _3, x, ...) x
-#define SELECT_MACRO_4(_1, _2, _3, _4, x, ...) x
-#define SELECT_MACRO_5(_1, _2, _3, _4, _5, x, ...) x
-#define SELECT_MACRO_6(_1, _2, _3, _4, _5, _6, x, ...) x
-#define SELECT_MACRO_7(_1, _2, _3, _4, _5, _6, _7, x, ...) x
-#define SELECT_MACRO_8(_1, _2, _3, _4, _5, _6, _7, _8, x, ...) x
-#define SELECT_MACRO_9(_1, _2, _3, _4, _5, _6, _7, _8, _9, x, ...) x
-#define SELECT_MACRO_10(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, x, ...) x
-
-#pragma endregion
-
-#define MIN(x, y) (x > y ? y : x)
-#define MAX(x, y) (x > y ? x : y)
-#define CLAMP(min, max, val) (MAX(min, val) == val ? MIN(max, val) : MAX(min, val))
-
-#pragma endregion
 
 #ifdef TE_PLATFORM_WINDOWS
 

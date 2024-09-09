@@ -13,7 +13,7 @@ namespace Tridium {
 		PROPERTY( Rotation )
 		PROPERTY( Scale )
 		FUNCTION( GetForward )
-	END_REFLECT
+	END_REFLECT( TransformComponent )
 
 	TransformComponent::TransformComponent( const Vector3& a_Translation )
 		: Position( a_Translation ) {}

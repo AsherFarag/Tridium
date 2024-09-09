@@ -29,9 +29,21 @@ public:
 
 
 
+struct TestStruct
+{
+	REFLECT;
+	int varA = 10;
+	float varB = 5.5f;
+	const char* varC = "Hello World";
+};
 
+BEGIN_REFLECT( TestStruct )
+PROPERTY( varA )
+PROPERTY( varB )
+PROPERTY( varC )
+END_REFLECT( TestStruct )
 
-struct FirstBase
+struct FirstBase : public TestStruct
 {
 	REFLECT;
 	int firstBaseVar = 5;
@@ -60,20 +72,22 @@ struct Derived : public FirstBase, public SecondBase
 	SecondBase secondBase;
 };
 
+
 BEGIN_REFLECT( FirstBase )
-    PROPERTY( firstBaseVar )
-END_REFLECT
+    BASE( TestStruct )
+	PROPERTY( firstBaseVar )
+END_REFLECT( FirstBase )
 
 BEGIN_REFLECT( SecondBase )
     PROPERTY( secondBaseVar )
-END_REFLECT
+END_REFLECT( SecondBase)
 
 BEGIN_REFLECT( Nested )
     PROPERTY( varA )
     PROPERTY( varB )
     PROPERTY( varC )
 	PROPERTY( varD )
-END_REFLECT
+END_REFLECT( Nested )
 
 BEGIN_REFLECT( Derived )
     BASE( FirstBase )
@@ -81,13 +95,22 @@ BEGIN_REFLECT( Derived )
     PROPERTY( derivedVar )
     PROPERTY( nested )
 	PROPERTY( secondBase )
-END_REFLECT
+END_REFLECT( Derived )
 
 void Test()
 {
 	Derived test;
 	YAML::Emitter out;
-	Tridium::Reflection::MetaRegistry::WriteObjectToEmitter( out, "Test", test );
+
+	auto start = std::chrono::high_resolution_clock::now();
+
+	Tridium::Refl::MetaRegistry::WriteObjectToEmitter( out, "Test", test );
+
+	auto end = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> duration = end - start;
+	double executionTime = duration.count();
+
+	LOG_INFO( "Execution Time: {0}", executionTime );
 
 	std::ofstream outFile( "Content/testrefl.yaml" );
 	outFile << out.c_str();

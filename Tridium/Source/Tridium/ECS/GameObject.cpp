@@ -8,7 +8,7 @@ namespace Tridium {
 
     BEGIN_REFLECT( GameObject )
         PROPERTY( m_ID )
-    END_REFLECT
+    END_REFLECT( GameObject )
 
     GameObject::GameObject( EntityID a_ID )
         : m_ID( a_ID )

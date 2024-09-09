@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Tridium::Reflection {
+namespace Tridium::Refl {
 
 	class MetaRegistry;
 
@@ -9,7 +9,4 @@ namespace Tridium::Reflection {
 }
 
 // To be declared in the class definition
-#define REFLECT friend class SceneSerializer;\
-				template<typename T>\
-                friend class ::Tridium::Reflection::Reflector;\
-                static void OnReflect();
+#define REFLECT template<typename T> friend class ::Tridium::Refl::Reflector;

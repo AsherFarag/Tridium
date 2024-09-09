@@ -6,7 +6,7 @@ namespace Tridium {
 	DEFINE_COMPONENT( TransformComponent )
 	{
 		REFLECT;
-
+		friend class SceneSerializer;
 	public:
 		TransformComponent() = default;
 		TransformComponent( const Vector3& a_Position );

@@ -1,24 +1,29 @@
 #pragma once
+#include <Tridium/Utils/Macro.h>
 #include "ReflectionFwd.h"
 #include <unordered_map>
 #include "entt.hpp"
 #include "yaml-cpp/yaml.h"
 
-namespace Tridium::Reflection {
+namespace Tridium::Refl {
 
+	enum class EPropertyFlags : uint16_t
+	{
+		None = 0,
+		Serialize = BIT( 0 ),
+		EditAnywhere = BIT( 1 ), /* Defines this property as Editable from the Editor Inspector. */
+		VisibleAnywhere = BIT( 2 ), /* Defines this property as Visible from the Editor Inspector. */
+	};
+
+	// ID for the serialize function.
 	constexpr entt::id_type _Internal_YAML_OnSerialize_ID = entt::hashed_string( "Internal_YAML_OnSerialize" ).value();
 
+	// Serialize function signature typedef.
 	typedef void ( *SerializeFunc )( YAML::Emitter& a_Out, const char* a_Name, const entt::meta_handle& a_Handle );
 
 	// Used to statically reflect a class.
 	template<typename T>
-	struct Reflector
-	{
-		Reflector()
-		{
-			T::OnReflect();
-		}
-	};
+	struct Reflector{ };
 
 	// Registry for meta data.
 	class MetaRegistry
@@ -65,37 +70,46 @@ namespace Tridium::Reflection {
 		MetaRegistry( const MetaRegistry& ) = delete;
 		MetaRegistry& operator=( const MetaRegistry& ) = delete;
 	};
+
+
+
+
 } // namespace Tridium::Reflection
 
 #pragma region Internal Reflection Macro Helpers
 
-#define _BEGIN_REFLECT_BODY_HELPER( Class )                                      \
-    static ::Tridium::Reflection::Reflector<Class> s_Reflector##Class##Instance; \
-    void Class::OnReflect()                                                      \
-    {                                                                            \
-    using ClassType = Class;                                                     \
-    auto meta = entt::meta<Class>();                                             \
-    meta.type( entt::type_hash<Class>::value() );
+#define _REFL_ ::Tridium::Refl::
+
+#define _BEGIN_REFLECT_BODY_HELPER( Class )                 \
+    template<>												\
+    struct _REFL_ Reflector<Class>			                \
+    {														\
+	    static Reflector<Class> s_Reflector##Class;         \
+		using ClassType = Class;							\
+	    Reflector()                                         \
+	    {													\
+            auto meta = entt::meta<Class>();                \
+            meta.type( entt::type_hash<Class>::value() );
 
 #define _REFLECT_SERIALIZE_MEMBERS_HELPER(Meta, ClassData)                                                                \
     for (auto&& [id_unique, data_unique] : Meta.data()) 															      \
 	{                 																				                      \
-        if (auto serializeFunc = data_unique.type().prop(::Tridium::Reflection::_Internal_YAML_OnSerialize_ID))           \
+        if (auto serializeFunc = data_unique.type().prop( _REFL_ _Internal_YAML_OnSerialize_ID))                          \
 		{              																			                          \
-			auto name = ::Tridium::Reflection::MetaRegistry::GetName(id_unique);                                          \
-            serializeFunc.value().cast<::Tridium::Reflection::SerializeFunc>()(a_Out, name, data_unique.get(*ClassData)); \
+			auto name = _REFL_ MetaRegistry::GetName(id_unique);                                                          \
+            serializeFunc.value().cast<_REFL_ SerializeFunc>()(a_Out, name, data_unique.get(*ClassData));                 \
         }                                                                                                                 \
 		else 																										      \
 		{                                                                                                                 \
-			auto name = ::Tridium::Reflection::MetaRegistry::GetName(id_unique);                                          \
+			auto name = _REFL_ MetaRegistry::GetName(id_unique);                                                          \
 			a_Out << YAML::Key << name;                                                                                   \
 			a_Out << YAML::Value << *static_cast<const int64_t*>( data_unique.get( *ClassData ).data() );                 \
 		}                                                                                                                 \
     }
 
-// Add a serialize function to the meta data
+// Add a serialize static lambda function to the meta data.
 #define _REFLECT_SERIALIZE_HELPER(Class)                                                       \
-    meta.prop(::Tridium::Reflection::_Internal_YAML_OnSerialize_ID,                            \
+    meta.prop(_REFL_ _Internal_YAML_OnSerialize_ID,                                            \
               +[](YAML::Emitter& a_Out, const char* a_Name, const entt::meta_handle& a_Handle) \
 		      {                                                                                \
                   using ClassT = Class;                                                        \
@@ -114,8 +128,7 @@ namespace Tridium::Reflection {
 				  a_Out << YAML::EndMap;                                                       \
               });
 
-#define _REFLECT_REGISTER_NAME( Name ) \
-    ::Tridium::Reflection::MetaRegistry::RegisterName( entt::hashed_string( #Name ), #Name );
+#define _REFLECT_REGISTER_NAME( Name ) constexpr entt::hashed_string Hashed_##Name ( #Name ); _REFL_ MetaRegistry::RegisterName( Hashed_##Name, #Name );
 
 #define _REFLECT_MEMBER_HELPER( Name, Type )                  \
     _REFLECT_REGISTER_NAME(Name)                              \
@@ -137,4 +150,4 @@ namespace Tridium::Reflection {
 	// Defines the functions that are apart of the class.
 	#define FUNCTION(Name) _REFLECT_MEMBER_HELPER(Name, func)
 // Ends the reflection data for a class.
-#define END_REFLECT ; }
+#define END_REFLECT(Class) } }; static _REFL_ Reflector<Class> s_Reflector##Class;

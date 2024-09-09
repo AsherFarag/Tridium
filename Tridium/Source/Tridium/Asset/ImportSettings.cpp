@@ -12,13 +12,13 @@ namespace Tridium {
 	{
 	}
 
-	BEGIN_REFLECT( AssetImportSettings )
-	END_REFLECT
+	BEGIN_REFLECT( AssetImportSettings );
+	END_REFLECT( AssetImportSettings );
 
-	BEGIN_REFLECT( ModelImportSettings )
-		BASE( AssetImportSettings )
-		PROPERTY( PostProcessFlags )
-		PROPERTY( Scale )
-		PROPERTY( DiscardLocalData )
-	END_REFLECT
+	BEGIN_REFLECT( ModelImportSettings );
+	    BASE( AssetImportSettings );
+	    PROPERTY( PostProcessFlags );
+	    PROPERTY( Scale );
+	    PROPERTY( DiscardLocalData );
+	END_REFLECT( ModelImportSettings );
 }
