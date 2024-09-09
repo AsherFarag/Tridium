@@ -28,89 +28,54 @@ public:
 
 
 
-
-struct TestStruct
-{
-	REFLECT;
-	int varA = 10;
-	float varB = 5.5f;
-	const char* varC = "Hello World";
-};
-
-BEGIN_REFLECT( TestStruct )
-PROPERTY( varA )
-PROPERTY( varB )
-PROPERTY( varC )
-END_REFLECT( TestStruct )
-
-struct FirstBase : public TestStruct
-{
-	REFLECT;
-	int firstBaseVar = 5;
-};
-
-struct SecondBase
-{
-	REFLECT;
-	float secondBaseVar = 9.031f;
-};
-
 struct Nested
 {
 	REFLECT;
-	int varA = 10;
-	float varB = 5.5f;
-	const char* varC = "Hello World";
-	SecondBase varD;
+	int NestedVarA = 10;
+	float NestedVarB = 5.5f;
+	const char* NestedVarC = "I was serialized!";
 };
 
-struct Derived : public FirstBase, public SecondBase
+struct Base
 {
 	REFLECT;
-	int derivedVar = 10;
-	Nested nested;
-	SecondBase secondBase;
+	int BaseVar = 5;
+	Nested BaseNested;
+};
+
+struct Derived : public Base
+{
+	REFLECT;
+	int DerivedVar = 10;
+	const char* OtherDerivedVar = "I was not serialized!";
+	Nested DerivedNested;
 };
 
 
-BEGIN_REFLECT( FirstBase )
-    BASE( TestStruct )
-	PROPERTY( firstBaseVar )
-END_REFLECT( FirstBase )
-
-BEGIN_REFLECT( SecondBase )
-    PROPERTY( secondBaseVar )
-END_REFLECT( SecondBase)
+BEGIN_REFLECT( Base )
+	PROPERTY( BaseVar, Serialize )
+	PROPERTY( BaseNested, Serialize )
+END_REFLECT( Base )
 
 BEGIN_REFLECT( Nested )
-    PROPERTY( varA )
-    PROPERTY( varB )
-    PROPERTY( varC )
-	PROPERTY( varD )
+    PROPERTY( NestedVarA )
+    PROPERTY( NestedVarB )
+    PROPERTY( NestedVarC, Serialize )
 END_REFLECT( Nested )
 
 BEGIN_REFLECT( Derived )
-    BASE( FirstBase )
-	BASE( SecondBase )
-    PROPERTY( derivedVar )
-    PROPERTY( nested )
-	PROPERTY( secondBase )
+    BASE( Base )
+	PROPERTY( DerivedVar, Serialize )
+	PROPERTY( OtherDerivedVar )
+    PROPERTY( DerivedNested, Serialize )
 END_REFLECT( Derived )
 
 void Test()
 {
-	Derived test;
+	Derived derivedInstance;
 	YAML::Emitter out;
 
-	auto start = std::chrono::high_resolution_clock::now();
-
-	Tridium::Refl::MetaRegistry::WriteObjectToEmitter( out, "Test", test );
-
-	auto end = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double> duration = end - start;
-	double executionTime = duration.count();
-
-	LOG_INFO( "Execution Time: {0}", executionTime );
+	Tridium::Refl::MetaRegistry::WriteObjectToEmitter( out, "derivedInstance", derivedInstance );
 
 	std::ofstream outFile( "Content/testrefl.yaml" );
 	outFile << out.c_str();

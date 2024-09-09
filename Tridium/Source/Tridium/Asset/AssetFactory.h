@@ -7,7 +7,7 @@ namespace Tridium {
 
 	template<typename T>
 	class AssetRef;
-	class AssetMetaData;
+	struct AssetMetaData;
 	class IO::FilePath;
 	class IAssetLoaderInterface;
 

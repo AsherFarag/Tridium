@@ -7,14 +7,6 @@
 
 namespace Tridium::Refl {
 
-	enum class EPropertyFlags : uint16_t
-	{
-		None = 0,
-		Serialize = BIT( 0 ),
-		EditAnywhere = BIT( 1 ), /* Defines this property as Editable from the Editor Inspector. */
-		VisibleAnywhere = BIT( 2 ), /* Defines this property as Visible from the Editor Inspector. */
-	};
-
 	// ID for the serialize function.
 	constexpr entt::id_type _Internal_YAML_OnSerialize_ID = entt::hashed_string( "Internal_YAML_OnSerialize" ).value();
 
@@ -80,6 +72,8 @@ namespace Tridium::Refl {
 
 #define _REFL_ ::Tridium::Refl::
 
+#define _HAS_PROPFLAG( Flags, Flag ) ( ( Flags & static_cast<_REFL_ PropertyFlags>( Flag ) ) == static_cast<_REFL_ PropertyFlags>( Flag ) )
+
 #define _BEGIN_REFLECT_BODY_HELPER( Class )                 \
     template<>												\
     struct _REFL_ Reflector<Class>			                \
@@ -89,11 +83,16 @@ namespace Tridium::Refl {
 	    Reflector()                                         \
 	    {													\
             auto meta = entt::meta<Class>();                \
-            meta.type( entt::type_hash<Class>::value() );
+            meta.type( entt::type_hash<Class>::value() );	\
+			using enum _REFL_ EPropertyFlag;
 
 #define _REFLECT_SERIALIZE_MEMBERS_HELPER(Meta, ClassData)                                                                \
     for (auto&& [id_unique, data_unique] : Meta.data()) 															      \
 	{                 																				                      \
+		if ( !_HAS_PROPFLAG( data_unique.propFlags(), EPropertyFlag::Serialize ) )                                        \
+		{                                                                                                                 \
+			continue;                                                                                                     \
+		}                                                                                                                 \
         if (auto serializeFunc = data_unique.type().prop( _REFL_ _Internal_YAML_OnSerialize_ID))                          \
 		{              																			                          \
 			auto name = _REFL_ MetaRegistry::GetName(id_unique);                                                          \
@@ -130,12 +129,21 @@ namespace Tridium::Refl {
 
 #define _REFLECT_REGISTER_NAME( Name ) constexpr entt::hashed_string Hashed_##Name ( #Name ); _REFL_ MetaRegistry::RegisterName( Hashed_##Name, #Name );
 
-#define _REFLECT_MEMBER_HELPER( Name, Type )                  \
-    _REFLECT_REGISTER_NAME(Name)                              \
-    meta.Type<&ClassType::Name>(entt::hashed_string( #Name ));
+#define _REFLECT_MEMBER_HELPER( Name, Type )            \
+    _REFLECT_REGISTER_NAME(Name)                        \
+    meta.Type<&ClassType::Name>(Hashed_##Name);		    
+
+// Used in a macro selector
+// Define a property with no flags.
+#define _REFLECT_PROPERTY_NO_FLAGS( Name ) _REFLECT_MEMBER_HELPER(Name, data)
+
+// Used in a macro selector
+// Define a property with flags.
+#define _REFLECT_PROPERTY_FLAGS( Name, Flags )         \
+    _REFLECT_REGISTER_NAME(Name)                        \
+    meta.data<&ClassType::Name>(Hashed_##Name, static_cast<_REFL_ PropertyFlags>( Flags ));
 
 #pragma endregion
-
 
 // ----- Reflection macros ----- //
 // To be defined in the class implementation.
@@ -146,7 +154,7 @@ namespace Tridium::Refl {
 	// Allows user defined meta properties and functions that are not apart of the class.
     #define META(Name) _REFLECT_REGISTER_NAME(Name) meta.prop(entt::hashed_string(#Name), Name);
 	// Defines the properties that are apart of the class.
-    #define PROPERTY(Name) _REFLECT_MEMBER_HELPER(Name, data)
+    #define PROPERTY(...) EXPAND(SELECT_MACRO_2( __VA_ARGS__, _REFLECT_PROPERTY_FLAGS, _REFLECT_PROPERTY_NO_FLAGS )(__VA_ARGS__))
 	// Defines the functions that are apart of the class.
 	#define FUNCTION(Name) _REFLECT_MEMBER_HELPER(Name, func)
 // Ends the reflection data for a class.
