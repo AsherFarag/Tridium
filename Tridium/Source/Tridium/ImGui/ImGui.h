@@ -10,6 +10,12 @@ namespace ImGui {
 	ImFont* GetBoldFont();
 	ImFont* GetExtraBoldFont();
 
+	// ImGui::InputText() with std::string
+	// Because text input needs dynamic resizing, we need to setup a callback to grow the capacity
+	bool InputText( const char* label, std::string* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr );
+	bool InputTextMultiline( const char* label, std::string* str, const ImVec2& size = ImVec2( 0, 0 ), ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr );
+	bool InputTextWithHint( const char* label, const char* hint, std::string* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr );
+
 	bool BorderedSelectable( const char* label, bool selected, ImGuiSelectableFlags flags = 0, const float borderThickness = 1.0f, ImU32 borderColor = IM_COL32( 255, 255, 255, 255 ), float rounding = 0.0f, const ImVec2& size = ImVec2( 0, 0 ) );
 	template <typename PayloadFunction >
 	bool DragDropSelectable( const char* label, bool isValid, const char* text, const char* payloadType, PayloadFunction payloadFunction )

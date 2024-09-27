@@ -2,19 +2,13 @@
 #include "Reflection.h"
 
 namespace Tridium::Refl {
-
-	MetaRegistry& MetaRegistry::Get()
-	{
-		static MetaRegistry s_Instance;
-		return s_Instance;
-	}
 	
     void ReflectBasicTypes()
     {
         #define SERIALIZE_BASIC_TYPE(Type) \
             entt::meta<Type>() \
             .type(entt::type_hash<Type>::value()) \
-            .prop(_Internal_YAML_OnSerialize_ID, \
+            .prop(Internal::YAMLSerializeFuncID, \
                 +[](YAML::Emitter& a_Out, const char* a_Name, const entt::meta_handle& a_Value) \
                 { \
                     a_Out << YAML::Key << a_Name << YAML::Value << a_Value->cast<Type>(); \

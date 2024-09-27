@@ -1,70 +1,26 @@
 #pragma once
 #include <Tridium/Utils/Macro.h>
+#include <Tridium/Utils/Reflection/MetaRegistry.h>
 #include "ReflectionFwd.h"
-#include <unordered_map>
-#include "entt.hpp"
-#include "yaml-cpp/yaml.h"
+
+#include "EditorReflectionMacros.h"
 
 namespace Tridium::Refl {
-
-	// ID for the serialize function.
-	constexpr entt::id_type _Internal_YAML_OnSerialize_ID = entt::hashed_string( "Internal_YAML_OnSerialize" ).value();
-
-	// Serialize function signature typedef.
-	typedef void ( *SerializeFunc )( YAML::Emitter& a_Out, const char* a_Name, const entt::meta_handle& a_Handle );
 
 	// Used to statically reflect a class.
 	template<typename T>
 	struct Reflector{ };
 
-	// Registry for meta data.
-	class MetaRegistry
-	{
-	public:
-		static MetaRegistry& Get();
+    namespace Internal {
 
-		static void RegisterName( entt::id_type a_ID, const char* a_Name )
-		{
-			Get().s_Names[a_ID] = a_Name;
-		}
+        // Helper function for combining flags using fold expression
+        template<typename... EnumType>
+        constexpr auto CombineFlags( EnumType... flags ) 
+        {
+            return ( static_cast<std::underlying_type_t<EnumType>>( flags ) | ... );
+        }
 
-		static const char* GetName( const entt::id_type& a_ID )
-		{
-			auto it = Get().s_Names.find( a_ID );
-			if ( it == Get().s_Names.end() )
-				return "Unknown";
-
-			return it->second;
-		}
-
-		template<typename T>
-		static bool WriteObjectToEmitter( YAML::Emitter& a_Out, const char* a_Name, const T& a_Object )
-		{
-			auto meta = entt::resolve<T>();
-			if ( auto serializeFunc = meta.prop( _Internal_YAML_OnSerialize_ID ) )
-			{
-				if ( serializeFunc.value().try_cast<SerializeFunc>( ) )
-				{
-					a_Out << YAML::BeginMap;
-					serializeFunc.value().cast<SerializeFunc>()( a_Out, a_Name, entt::meta_handle( a_Object ));
-					a_Out << YAML::EndMap;
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-	private:
-		std::unordered_map<entt::id_type, const char*> s_Names;
-
-		MetaRegistry() = default;
-		MetaRegistry( const MetaRegistry& ) = delete;
-		MetaRegistry& operator=( const MetaRegistry& ) = delete;
-	};
-
-
-
+    }
 
 } // namespace Tridium::Reflection
 
@@ -72,8 +28,7 @@ namespace Tridium::Refl {
 
 #define _REFL_ ::Tridium::Refl::
 
-#define _HAS_PROPFLAG( Flags, Flag ) ( ( Flags & static_cast<_REFL_ PropertyFlags>( Flag ) ) == static_cast<_REFL_ PropertyFlags>( Flag ) )
-
+// Serialize function signature typedef
 #define _BEGIN_REFLECT_BODY_HELPER( Class )                 \
     template<>												\
     struct _REFL_ Reflector<Class>			                \
@@ -86,17 +41,19 @@ namespace Tridium::Refl {
             meta.type( entt::type_hash<Class>::value() );	\
 			using enum _REFL_ EPropertyFlag;
 
+
+// Serialize all members of a class.
 #define _REFLECT_SERIALIZE_MEMBERS_HELPER(Meta, ClassData)                                                                \
     for (auto&& [id_unique, data_unique] : Meta.data()) 															      \
 	{                 																				                      \
-		if ( !_HAS_PROPFLAG( data_unique.propFlags(), EPropertyFlag::Serialize ) )                                        \
+		if  ( !_HAS_PROPFLAG( data_unique.propFlags(), EPropertyFlag::Serialize ) )                                       \
 		{                                                                                                                 \
 			continue;                                                                                                     \
 		}                                                                                                                 \
-        if (auto serializeFunc = data_unique.type().prop( _REFL_ _Internal_YAML_OnSerialize_ID))                          \
+        if (auto serializeFunc = data_unique.type().prop( _REFL_ Internal::YAMLSerializeFuncID))                          \
 		{              																			                          \
 			auto name = _REFL_ MetaRegistry::GetName(id_unique);                                                          \
-            serializeFunc.value().cast<_REFL_ SerializeFunc>()(a_Out, name, data_unique.get(*ClassData));                 \
+            serializeFunc.value().cast<_REFL_ Internal::SerializeFunc>()(a_Out, name, data_unique.get(*ClassData));       \
         }                                                                                                                 \
 		else 																										      \
 		{                                                                                                                 \
@@ -106,9 +63,11 @@ namespace Tridium::Refl {
 		}                                                                                                                 \
     }
 
+
+
 // Add a serialize static lambda function to the meta data.
 #define _REFLECT_SERIALIZE_HELPER(Class)                                                       \
-    meta.prop(_REFL_ _Internal_YAML_OnSerialize_ID,                                            \
+    meta.prop(_REFL_ Internal::YAMLSerializeFuncID,                                            \
               +[](YAML::Emitter& a_Out, const char* a_Name, const entt::meta_handle& a_Handle) \
 		      {                                                                                \
                   using ClassT = Class;                                                        \
@@ -125,10 +84,14 @@ namespace Tridium::Refl {
                   /* Serialize members */                                                      \
                   _REFLECT_SERIALIZE_MEMBERS_HELPER(meta, classData)                           \
 				  a_Out << YAML::EndMap;                                                       \
-              });
+              });                                    
+
+
 
 #define _REFLECT_REGISTER_NAME( Name ) constexpr entt::hashed_string Hashed_##Name ( #Name ); _REFL_ MetaRegistry::RegisterName( Hashed_##Name, #Name );
 
+// Used in a macro selector
+// Define a member helper for a property.
 #define _REFLECT_MEMBER_HELPER( Name, Type )            \
     _REFLECT_REGISTER_NAME(Name)                        \
     meta.Type<&ClassType::Name>(Hashed_##Name);		    
@@ -140,22 +103,45 @@ namespace Tridium::Refl {
 // Used in a macro selector
 // Define a property with flags.
 #define _REFLECT_PROPERTY_FLAGS( Name, Flags )         \
-    _REFLECT_REGISTER_NAME(Name)                        \
+    _REFLECT_REGISTER_NAME(Name)                       \
     meta.data<&ClassType::Name>(Hashed_##Name, static_cast<_REFL_ PropertyFlags>( Flags ));
 
 #pragma endregion
 
 // ----- Reflection macros ----- //
 // To be defined in the class implementation.
+
+// Example:
+// 
+// In the header file:
+// 
+// class MyStruct
+// {
+// 	REFLECT;
+// 	int MyInt = 5;
+//  void MyFunction();
+// };
+//
+// In the source file:
+// 
+// BEGIN_REFLECT( MyStruct )
+//  PROPERTY( MyInt, FLAGS( Serialize, VisibleAnywhere ) )
+//  FUNCTION( MyFunction )
+// END_REFLECT( MyStruct )
+
 // This macro is used to define the reflection data for a class.
-#define BEGIN_REFLECT(Class) _BEGIN_REFLECT_BODY_HELPER(Class) _REFLECT_SERIALIZE_HELPER(Class)
+#define BEGIN_REFLECT(Class) _BEGIN_REFLECT_BODY_HELPER(Class) _REFLECT_SERIALIZE_HELPER(Class) _DRAW_PROPERTY_FUNC(Class)
 	// Defines a base class this class inherits from
     #define BASE(Base) meta.base<Base>();
 	// Allows user defined meta properties and functions that are not apart of the class.
-    #define META(Name) _REFLECT_REGISTER_NAME(Name) meta.prop(entt::hashed_string(#Name), Name);
+    #define META(Name) _REFLECT_REGISTER_NAME(Name) meta.prop((Hashed_##Name, Name);
 	// Defines the properties that are apart of the class.
     #define PROPERTY(...) EXPAND(SELECT_MACRO_2( __VA_ARGS__, _REFLECT_PROPERTY_FLAGS, _REFLECT_PROPERTY_NO_FLAGS )(__VA_ARGS__))
 	// Defines the functions that are apart of the class.
 	#define FUNCTION(Name) _REFLECT_MEMBER_HELPER(Name, func)
 // Ends the reflection data for a class.
 #define END_REFLECT(Class) } }; static _REFL_ Reflector<Class> s_Reflector##Class;
+
+// This macro is used to define the flags for a property.
+// Example: PROPERTY( Name, FLAGS( Serialize, VisibleAnywhere ) )
+#define FLAGS(...) _REFL_ Internal::CombineFlags(__VA_ARGS__)

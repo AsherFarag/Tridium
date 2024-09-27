@@ -18,69 +18,7 @@
 namespace ImGui {
 	static void DrawVec3Control( const std::string& label, Vector3& values, float speed, bool uniform = false, const char* format = "%.4f" )
 	{
-		float itemWidth = ImGui::GetContentRegionAvail().x / 3.f - 30;
 
-		ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 1 );
-
-		ImGui::BeginGroup();
-		ImGui::PushID( label.c_str() );
-		{
-			ImGui::PushItemWidth( itemWidth );
-
-			Vector3 tempVals = values;
-			float change = 0.0f;
-
-			// x
-			ImGui::PushStyleColor( ImGuiCol_Border, ImVec4( 0.9f, 0.5f, 0.5f, 0.9f ) );
-			ImGui::PushID( 0 );
-			if ( ImGui::DragFloat( "", &tempVals.x, speed, 0, 0, format ) && uniform)
-			{
-				change = tempVals.x - values.x;
-				tempVals.y += values.y / values.x * change;
-				tempVals.z += values.z / values.x * change;
-			}
-			ImGui::PopID();
-			ImGui::PopStyleColor();
-
-			ImGui::SameLine();
-
-			// y
-			ImGui::PushStyleColor( ImGuiCol_Border, ImVec4( 0.5f, 0.9f, 0.5f, 0.9f ) );
-			ImGui::PushID( 1 );
-			if ( ImGui::DragFloat( "", &tempVals.y, speed, 0, 0, format ) && uniform )
-			{
-				change = tempVals.y - values.y;
-				tempVals.x += values.x / values.y * change;
-				tempVals.z += values.z / values.y * change;
-			}
-			ImGui::PopID();
-			ImGui::PopStyleColor();
-
-			ImGui::SameLine();
-
-			// z
-			ImGui::PushStyleColor( ImGuiCol_Border, ImVec4( 0.5f, 0.5f, 0.9f, 0.9f ) );
-			ImGui::PushID( 2 );
-			if ( ImGui::DragFloat( "", &tempVals.z, speed, 0, 0, format ) && uniform )
-			{
-				change = tempVals.z - values.z;
-				tempVals.y += values.y / values.z * change;
-				tempVals.x += values.x / values.z * change;
-			}
-			ImGui::PopID();
-			ImGui::PopStyleColor();
-
-			values = tempVals;
-
-			ImGui::PopItemWidth();
-		}
-		ImGui::PopID();
-		ImGui::EndGroup();
-
-		ImGui::PopStyleVar();
-
-		ImGui::SameLine();
-		ImGui::Text( label.c_str() );
 	}
 }
 

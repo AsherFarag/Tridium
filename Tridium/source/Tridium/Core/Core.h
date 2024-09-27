@@ -11,6 +11,7 @@
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/IO/FilePath.h>
 #include <Tridium/Utils/Macro.h>
+#include <Tridium/Utils/Reflection/ReflectionFwd.h>
 
 #define STD_PLACEHOLDERS std::placeholders::_
 #define TE_BIND_EVENT_FN(fn, PlaceHolder) std::bind( &fn, this, EXPAND(STD_PLACEHOLDERS)PlaceHolder )

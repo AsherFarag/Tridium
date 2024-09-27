@@ -1,0 +1,12 @@
+derivedInstance:
+  BaseVar: 5
+  BaseNested:
+    NestedVarA: 10
+    NestedVarB: 1085276160
+    NestedVarC: 2927473864192
+  DerivedVar: 10
+  OtherDerivedVar: 140699229685688
+  DerivedNested:
+    NestedVarA: 10
+    NestedVarB: 1085276160
+    NestedVarC: 2927473865072
