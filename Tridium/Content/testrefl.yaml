@@ -1,12 +1,12 @@
 derivedInstance:
   BaseVar: 5
-  BaseNested:
-    NestedVarA: 10
-    NestedVarB: 1085276160
-    NestedVarC: 2927473864192
+  BaseVar2: Hello
   DerivedVar: 10
-  OtherDerivedVar: 140699229685688
-  DerivedNested:
+  DerivedVar2: 5.5
+  DerivedVar3: true
+  vec2: [-107374176, -107374176]
+  vec3: [-107374176, -107374176, -107374176]
+  vec4: [-107374176, -107374176, -107374176, -107374176]
+  nested:
     NestedVarA: 10
-    NestedVarB: 1085276160
-    NestedVarC: 2927473865072
+    NestedVarB: 5.5

@@ -13,9 +13,18 @@
 #include <Tridium/Utils/Macro.h>
 #include <Tridium/Utils/Reflection/ReflectionFwd.h>
 
-#define STD_PLACEHOLDERS std::placeholders::_
-#define TE_BIND_EVENT_FN(fn, PlaceHolder) std::bind( &fn, this, EXPAND(STD_PLACEHOLDERS)PlaceHolder )
+namespace Tridium {
 
+	template<typename _Flags, typename _EnumFlag>
+	bool HasFlag( _Flags Flags, _EnumFlag Flag )
+	{
+		std::underlying_type_t<_EnumFlag> flag = static_cast<std::underlying_type_t<_EnumFlag>>( Flag );
+		return ( Flags & static_cast<std::underlying_type_t<_EnumFlag>>( Flag ) ) == flag;
+	}
+
+}
+
+#define TE_BIND_EVENT_FN(fn, PlaceHolder) std::bind( &fn, this, std::placeholders::_##PlaceHolder )
 
 #ifdef TE_PLATFORM_WINDOWS
 

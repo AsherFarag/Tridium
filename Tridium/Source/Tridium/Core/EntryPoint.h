@@ -1,11 +1,14 @@
 #pragma once
 
 #ifdef TE_PLATFORM_WINDOWS
+#include <Tridium/Utils/Reflection/Reflection.h>
 
 extern Tridium::Application* Tridium::CreateApplication();
 
 int main(int argc, char** argv)
 { 
+	Tridium::Refl::__Internal_InitializeReflection();
+
 	Tridium::Log::Init();
 	TE_CORE_INFO( " - Initialised Log - " );
 

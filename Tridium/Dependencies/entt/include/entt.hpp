@@ -60435,6 +60435,7 @@ struct meta_data_node {
     /* Begin Tridium */
 
     Tridium::Refl::PropertyFlags propFlags{ 0u };
+	std::string name{};
 
     /* End Tridium */
 
@@ -61619,6 +61620,14 @@ struct meta_data {
 
 
     /* Begin Tridium */
+
+     /**
+     * @brief Returns the Property Flags of this meta data.
+     * @return The EPropertyFlags of this meta data.
+     */
+    [[nodiscard]] const std::string& name() const noexcept {
+        return node->name;
+    }
 
     /**
      * @brief Returns the Property Flags of this meta data.
@@ -64171,7 +64180,7 @@ public:
      */
     template<auto Data, typename Policy = as_is_t>
     auto data(const id_type id,
-        /* Begin Tridium */ const Tridium::Refl::PropertyFlags propFlags = 0u /* End Tridium */ ) noexcept {
+        /* Begin Tridium */ const Tridium::Refl::PropertyFlags propFlags = 0u, const char* nameID = "NoNameSet" /* End Tridium */) noexcept {
 
         if constexpr(std::is_member_object_pointer_v<decltype(Data)>) {
             using data_type = std::invoke_result_t<decltype(Data), Type &>;
@@ -64185,6 +64194,7 @@ public:
                     /* Begin Tridium */
 
                     propFlags,
+                    nameID,
 
                     /* End Tridium */
 
@@ -64214,6 +64224,7 @@ public:
                     /* Begin Tridium */
 
                     propFlags,
+                    nameID,
 
                     /* End Tridium */
 

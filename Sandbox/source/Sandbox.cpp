@@ -16,41 +16,53 @@ struct Nested
 	REFLECT;
 	int NestedVarA = 10;
 	float NestedVarB = 5.5f;
-	std::string NestedVarC = "I was serialized!";
 };
 
 struct Base
 {
 	REFLECT;
 	int BaseVar = 5;
-	Nested BaseNested;
+	std::string BaseVar2 = "Hello";
 };
 
 struct Derived : public Base
 {
 	REFLECT;
+
+	Derived()
+	{
+		printf( "Derirved was constructed" );
+	}
+
 	int DerivedVar = 10;
-	const char* OtherDerivedVar = "I was not serialized!";
-	Nested DerivedNested;
+	float DerivedVar2 = 5.5f;
+	bool DerivedVar3 = true;
+	Vector2 vec2;
+	Vector3 vec3;
+	Vector4 vec4;
+	Nested nested;
 };
 
 
 BEGIN_REFLECT( Base )
-	PROPERTY( BaseVar, FLAGS( Serialize, VisibleAnywhere ) )
-	PROPERTY( BaseNested, FLAGS( Serialize, VisibleAnywhere ) )
+	PROPERTY( BaseVar, FLAGS( Serialize, EditAnywhere ) )
+	PROPERTY( BaseVar2, FLAGS( Serialize, VisibleAnywhere ) )
 END_REFLECT( Base )
 
 BEGIN_REFLECT( Nested )
-	PROPERTY( NestedVarA, FLAGS( Serialize, VisibleAnywhere ) )
+	PROPERTY( NestedVarA, FLAGS( Serialize, EditAnywhere ) )
 	PROPERTY( NestedVarB, FLAGS( Serialize, VisibleAnywhere ) )
-	PROPERTY( NestedVarC, FLAGS( Serialize, VisibleAnywhere ) )
 END_REFLECT( Nested )
 
 BEGIN_REFLECT( Derived )
 	BASE( Base )
-	PROPERTY( DerivedVar, FLAGS( Serialize, VisibleAnywhere ) )
-	PROPERTY( OtherDerivedVar, FLAGS( Serialize ) )
-	PROPERTY( DerivedNested, FLAGS( Serialize ) )
+	PROPERTY( DerivedVar, FLAGS( Serialize, EditAnywhere ) )
+	PROPERTY( DerivedVar2, FLAGS( Serialize, VisibleAnywhere ) )
+	PROPERTY( DerivedVar3, FLAGS( Serialize, EditAnywhere ) )
+	PROPERTY( vec2, FLAGS( Serialize, EditAnywhere ) )
+	PROPERTY( vec3, FLAGS( Serialize, EditAnywhere ) )
+	PROPERTY( vec4, FLAGS( Serialize, EditAnywhere ) )
+	PROPERTY( nested, FLAGS( Serialize, VisibleAnywhere ) )
 END_REFLECT( Derived )
 
 void Test()
@@ -61,6 +73,10 @@ void Test()
 
 	std::ofstream outFile( "Content/testrefl.yaml" );
 	outFile << out.c_str();
+
+	auto derivedVarMeta = entt::resolve<Derived>().data(entt::hashed_string("DerivedVar"));
+	derivedVarMeta.set( derivedInstance, 20 );
+	printf( "DerivedVar: %d\n", derivedInstance.DerivedVar );
 }
 
 class ExampleLayer : public Tridium::Layer
@@ -70,24 +86,22 @@ public:
 
 	ExampleLayer() = default;
 
-	Base derivedInstance;
+	Derived derivedInstance;
 
 	virtual void OnImGuiDraw() override
 	{
 		using namespace Tridium::Editor;
-		auto drawFunc = +[]( const entt::meta_handle& handle ) {};
+		::Tridium::Editor::Internal::DrawPropFunc drawFunc;
 
 		if ( ImGui::Begin("test window") )
 		{
-
-			if ( ::Tridium::Refl::MetaRegistry::TryGetMetaPropertyFromClass<Base>( drawFunc, ::Tridium::Editor::Internal::DrawPropFuncID ) )
+			if ( ::Tridium::Refl::MetaRegistry::TryGetMetaPropertyFromClass<Derived>( drawFunc, ::Tridium::Editor::Internal::DrawPropFuncID ) )
 			{
-
-				drawFunc( entt::meta_handle(derivedInstance));
+				drawFunc( "derivedInstance", derivedInstance, static_cast<::Tridium::Refl::PropertyFlags>(::Tridium::Refl::EPropertyFlag::EditAnywhere));
 			}
 
-			ImGui::End();
 		}
+		ImGui::End();
 	}
 };
 

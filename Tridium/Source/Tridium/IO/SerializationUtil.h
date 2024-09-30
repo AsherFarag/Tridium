@@ -27,6 +27,28 @@ namespace YAML {
 	};
 
 	template<>
+	struct convert<Vector2>
+	{
+		static Node encode( const Vector2& rhs )
+		{
+			Node node;
+			node.push_back( rhs.x );
+			node.push_back( rhs.y );
+			return node;
+		}
+
+		static bool decode( const Node& node, Vector2& rhs )
+		{
+			if ( !node.IsSequence() || node.size() != 2 )
+				return false;
+
+			rhs.x = node[0].as<float>();
+			rhs.y = node[1].as<float>();
+			return true;
+		}
+	};
+
+	template<>
 	struct convert<Vector3>
 	{
 		static Node encode( const Vector3& rhs )
@@ -139,6 +161,8 @@ namespace YAML {
 namespace Tridium {
 	
 	YAML::Emitter& operator<<( YAML::Emitter& out, const GUID& v );
+
+	YAML::Emitter& operator<<( YAML::Emitter& out, const Vector2& v );
 
 	YAML::Emitter& operator<<( YAML::Emitter& out, const Vector3& v );
 

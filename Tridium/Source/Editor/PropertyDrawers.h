@@ -3,7 +3,7 @@
 #include <Tridium/Core/Core.h>
 #include <Tridium/ImGui/ImGui.h>
 #include <Editor/EditorStyle.h>
-#include "entt.hpp"
+#include <Tridium/Utils/Reflection/Meta.h>
 
 namespace Tridium::Editor {
 
@@ -33,10 +33,10 @@ namespace Tridium::Editor {
 		};
 
 		// Draw Property function signature typedef.
-		typedef void ( *DrawPropFunc )( const char* a_Name, const entt::meta_handle& a_Handle, ::Tridium::Refl::PropertyFlags a_Flags );
+		typedef void ( *DrawPropFunc )( const char* a_Name, ::Tridium::Refl::MetaHandle a_Handle, ::Tridium::Refl::PropertyFlags a_Flags );
 
 		// ID for the  Draw Property function.
-		constexpr entt::id_type DrawPropFuncID = entt::hashed_string( "DrawPropFuncID" ).value();
+		constexpr ::Tridium::Refl::MetaIDType DrawPropFuncID = entt::hashed_string( "DrawPropFuncID" ).value();
 
 	}
 

@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include "entt.hpp"
 #include "yaml-cpp/yaml.h"
+#include "Meta.h"
 
 
 namespace Tridium::Refl {
@@ -12,20 +13,20 @@ namespace Tridium::Refl {
 		typedef void ( *SerializeFunc )( YAML::Emitter& a_Out, const char* a_Name, const entt::meta_handle& a_Handle );
 
 		// ID for the serialize function.
-		constexpr entt::id_type YAMLSerializeFuncID = entt::hashed_string( "YAMLSerializeFuncID" ).value();
+		constexpr MetaIDType YAMLSerializeFuncID = entt::hashed_string( "YAMLSerializeFuncID" ).value();
 	}
 
-	typedef entt::id_type MetaIDType;
-
-	// Registry for meta data.
-	class MetaRegistry
+	class MetaRegistry final
 	{
 	public:
 		static MetaRegistry& Get();
 
-		static void RegisterName( entt::id_type a_ID, const char* a_Name );
+		static void RegisterName( MetaIDType a_ID, const char* a_Name );
 
-		static const char* GetName( const entt::id_type& a_ID );
+		static const char* GetName( MetaIDType a_ID );
+
+		static inline MetaType GetMetaType( MetaIDType a_ID );
+
 
 		template<typename _Class, typename _MetaProperty>
 		static bool TryGetMetaPropertyFromClass( _MetaProperty& o_Meta, MetaIDType a_MetaID );

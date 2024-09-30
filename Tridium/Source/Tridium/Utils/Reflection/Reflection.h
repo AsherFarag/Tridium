@@ -22,6 +22,8 @@ namespace Tridium::Refl {
 
     }
 
+	void __Internal_InitializeReflection();
+
 } // namespace Tridium::Reflection
 
 #pragma region Internal Reflection Macro Helpers
@@ -43,24 +45,22 @@ namespace Tridium::Refl {
 
 
 // Serialize all members of a class.
-#define _REFLECT_SERIALIZE_MEMBERS_HELPER(Meta, ClassData)                                                                \
-    for (auto&& [id_unique, data_unique] : Meta.data()) 															      \
-	{                 																				                      \
-		if  ( !_HAS_PROPFLAG( data_unique.propFlags(), EPropertyFlag::Serialize ) )                                       \
-		{                                                                                                                 \
-			continue;                                                                                                     \
-		}                                                                                                                 \
-        if (auto serializeFunc = data_unique.type().prop( _REFL_ Internal::YAMLSerializeFuncID))                          \
-		{              																			                          \
-			auto name = _REFL_ MetaRegistry::GetName(id_unique);                                                          \
-            serializeFunc.value().cast<_REFL_ Internal::SerializeFunc>()(a_Out, name, data_unique.get(*ClassData));       \
-        }                                                                                                                 \
-		else 																										      \
-		{                                                                                                                 \
-			auto name = _REFL_ MetaRegistry::GetName(id_unique);                                                          \
-			a_Out << YAML::Key << name;                                                                                   \
-			a_Out << YAML::Value << *static_cast<const int64_t*>( data_unique.get( *ClassData ).data() );                 \
-		}                                                                                                                 \
+#define _REFLECT_SERIALIZE_MEMBERS_HELPER(Meta, ClassData)                                                                                            \
+    for (auto&& [id_unique, data_unique] : Meta.data()) 															                                  \
+	{                 																				                                                  \
+		if  ( !HasFlag( data_unique.propFlags(), EPropertyFlag::Serialize ) )                                                                         \
+		{                                                                                                                                             \
+			continue;                                                                                                                                 \
+		}                                                                                                                                             \
+        if (auto serializeFunc = data_unique.type().prop( _REFL_ Internal::YAMLSerializeFuncID))                                                      \
+		{              																			                                                      \
+            serializeFunc.value().cast<_REFL_ Internal::SerializeFunc>()(a_Out, data_unique.name().c_str(), data_unique.get(*ClassData));             \
+        }                                                                                                                                             \
+		else 																										                                  \
+		{                                                                                                                                             \
+			a_Out << YAML::Key << data_unique.name().c_str();                                                                                         \
+			a_Out << YAML::Value << std::string("Refl Error: No serialize function for type <") + data_unique.type().info().name().data(), + ">!"; \
+		}                                                                                                                                             \
     }
 
 
@@ -90,21 +90,15 @@ namespace Tridium::Refl {
 
 #define _REFLECT_REGISTER_NAME( Name ) constexpr entt::hashed_string Hashed_##Name ( #Name ); _REFL_ MetaRegistry::RegisterName( Hashed_##Name, #Name );
 
-// Used in a macro selector
-// Define a member helper for a property.
-#define _REFLECT_MEMBER_HELPER( Name, Type )            \
-    _REFLECT_REGISTER_NAME(Name)                        \
-    meta.Type<&ClassType::Name>(Hashed_##Name);		    
-
-// Used in a macro selector
-// Define a property with no flags.
-#define _REFLECT_PROPERTY_NO_FLAGS( Name ) _REFLECT_MEMBER_HELPER(Name, data)
+#define _REFLECT_FUNCTION(Name) constexpr entt::hashed_string Hashed_##Name ( #Name ); meta.func<&ClassType::Name>(Hashed_##Name);	
 
 // Used in a macro selector
 // Define a property with flags.
-#define _REFLECT_PROPERTY_FLAGS( Name, Flags )         \
-    _REFLECT_REGISTER_NAME(Name)                       \
-    meta.data<&ClassType::Name>(Hashed_##Name, static_cast<_REFL_ PropertyFlags>( Flags ));
+#define _REFLECT_PROPERTY_FLAGS( Name, Flags ) constexpr entt::hashed_string Hashed_##Name( #Name ); meta.data<&ClassType::Name>(Hashed_##Name, static_cast<_REFL_ PropertyFlags>( Flags ), #Name);
+
+// Used in a macro selector
+// Define a property with no flags.
+#define _REFLECT_PROPERTY_NO_FLAGS( Name ) _REFLECT_PROPERTY_FLAGS( Name, _REFL_ EPropertyFlag::None )
 
 #pragma endregion
 
@@ -134,11 +128,11 @@ namespace Tridium::Refl {
 	// Defines a base class this class inherits from
     #define BASE(Base) meta.base<Base>();
 	// Allows user defined meta properties and functions that are not apart of the class.
-    #define META(Name) _REFLECT_REGISTER_NAME(Name) meta.prop((Hashed_##Name, Name);
+    #define META(Name) TO BE IMPLEMENTED
 	// Defines the properties that are apart of the class.
     #define PROPERTY(...) EXPAND(SELECT_MACRO_2( __VA_ARGS__, _REFLECT_PROPERTY_FLAGS, _REFLECT_PROPERTY_NO_FLAGS )(__VA_ARGS__))
 	// Defines the functions that are apart of the class.
-	#define FUNCTION(Name) _REFLECT_MEMBER_HELPER(Name, func)
+    #define FUNCTION(Name) _REFLECT_FUNCTION(Name)
 // Ends the reflection data for a class.
 #define END_REFLECT(Class) } }; static _REFL_ Reflector<Class> s_Reflector##Class;
 
