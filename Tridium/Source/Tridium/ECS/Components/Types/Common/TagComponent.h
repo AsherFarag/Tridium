@@ -5,12 +5,15 @@ namespace Tridium {
 
 	DEFINE_COMPONENT( TagComponent )
 	{
+		REFLECT;
 	public:
 		TagComponent()
 			: Tag("Tag") {}
 		TagComponent( const TagComponent& ) = default;
 		TagComponent( const std::string & a_Tag )
 			: Tag( a_Tag ) {}
+		TagComponent( std::string&& a_Tag )
+			: Tag( std::move(a_Tag) ) {}
 
 		operator std::string& ( ) { return Tag; }
 		operator const std::string& ( ) const { return Tag; }

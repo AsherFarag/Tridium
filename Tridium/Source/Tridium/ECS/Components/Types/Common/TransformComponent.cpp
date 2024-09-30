@@ -7,12 +7,11 @@
 
 namespace Tridium {
 
-	BEGIN_REFLECT( TransformComponent )
+	BEGIN_REFLECT_COMPONENT( TransformComponent )
 		BASE( Component )
-		PROPERTY( Position )
-		PROPERTY( Rotation )
-		PROPERTY( Scale )
-		FUNCTION( GetForward )
+		PROPERTY( Position, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( Rotation, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( Scale, FLAGS( Serialize, EditAnywhere ) )
 	END_REFLECT( TransformComponent )
 
 	TransformComponent::TransformComponent( const Vector3& a_Translation )

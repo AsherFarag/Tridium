@@ -15,6 +15,8 @@
 #include <Editor/EditorUtil.h>
 #include <Tridium/Asset/AssetManager.h>
 
+using namespace entt::literals;
+
 namespace ImGui {
 	static void DrawVec3Control( const std::string& label, Vector3& values, float speed, bool uniform = false, const char* format = "%.4f" )
 	{
@@ -35,8 +37,6 @@ namespace Tridium::Editor {
 
 		// - Draw Components -
 		DrawInspectedGameObject();
-
-		ImGui::Separator();
 
 		DrawAddComponentButton();
 
@@ -102,189 +102,39 @@ namespace Tridium::Editor {
 		if ( ImGui::Button( "Destroy" ) ) { InspectedGameObject.Destroy(); }
 		ImGui::PopStyleColor();
 
-		DrawComponent<TransformComponent>( "Transform", InspectedGameObject, []( auto& component )
+
+		// Draw all components
+		auto& registry = Application::Get().GetScene()->GetRegistry();
+		for ( auto&& [id, storage] : registry.storage() )
+		{
+			if ( storage.size() == 0 )
+				continue;
+
+			// Resolve the meta type for the current component type
+			Refl::MetaType metaType = entt::resolve( storage.type() );
+			if ( !metaType )  // Ensure meta type exists
+				continue;
+
+			void* componentPtr = storage.value( InspectedGameObject );
+			if ( !componentPtr )
+				continue;
+
+			Refl::MetaAny component = metaType.from_void( componentPtr );
+
+			// Check if the type has a DrawPropFunc property associated with it
+			if ( auto prop = metaType.prop( Internal::DrawPropFuncID ) )
 			{
-				ImGui::DrawVec3Control( "Position", component.Position, 0.01f );
-				Vector3 rotation = glm::degrees( component.Rotation );
-				ImGui::DrawVec3Control( "Rotation", rotation, 1.f );
-				component.Rotation = glm::radians( rotation );
-				ImGui::DrawVec3Control( "Scale", component.Scale, 0.01f, Input::IsKeyPressed(Input::KEY_LEFT_CONTROL) );
-			} );
-
-		DrawComponent<MeshComponent>( "Mesh", InspectedGameObject, []( MeshComponent& component )
-			{
-				AssetRef<Mesh> mesh = component.GetMesh();
-				bool hasMesh = mesh != nullptr;
-				ImGui::DragDropSelectable( "Mesh: ", hasMesh, hasMesh ? mesh->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
-					[&]( const ImGuiPayload* payload ) {
-						std::string filePath( static_cast<const char*>( payload->Data ) );
-						component.SetMesh( AssetManager::LoadAsset<Mesh>( filePath ) );
-					} );
-
-				// On right click, give the option to remove the mesh, if there is one.
-				if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
-					ImGui::OpenPopup( "##RemoveMesh" );
-				if ( ImGui::BeginPopup( "##RemoveMesh" ) )
+				// Try to retrieve the DrawPropFunc and call it
+				if ( prop.value().try_cast<Internal::DrawPropFunc>( ) )
 				{
-					if ( ImGui::MenuItem( "Remove Mesh", nullptr, nullptr, hasMesh ) ) {
-						component.SetMesh( nullptr );
-					}
-
-					ImGui::EndPopup();
+					Internal::DrawPropFunc drawFunc = prop.value().cast<Internal::DrawPropFunc>();
+					const char* className = metaType.prop( "CleanClassName"_hs ).value().cast<const char*>();
+					drawFunc( className, component, 0, static_cast<::Tridium::Refl::PropertyFlags>( ::Tridium::Refl::EPropertyFlag::EditAnywhere ));
 				}
 
-				AssetRef<Material> material = component.GetMaterial();
-				bool hasMat = material != nullptr;
-				bool matOpened = ImGui::DragDropSelectable( "Material: ", hasMat, hasMat ? material->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
-					[&]( const ImGuiPayload* payload ) {
-						std::string filePath( static_cast<const char*>( payload->Data ) );
-						component.SetMaterial( AssetManager::LoadAsset<Material>( filePath ) );
-					} );
-
-				// On right click, give the option to remove the mesh, if there is one.
-				if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
-					ImGui::OpenPopup( "##RemoveMat" );
-				if ( ImGui::BeginPopup( "##RemoveMat" ) )
-				{
-					if ( ImGui::MenuItem( "Remove Material", nullptr, nullptr, hasMat ) ) {
-						component.SetMaterial( nullptr );
-					}
-
-					ImGui::EndPopup();
-				}
-
-				if ( matOpened )
-					Util::OpenMaterial( material->GetPath() );
-			} );
-
-		DrawComponent<CameraComponent>( "Camera", InspectedGameObject, []( CameraComponent& component )
-			{
-				int currentItem = (int)component.SceneCamera.GetProjectionType();
-				Camera::ProjectionType projType = component.SceneCamera.GetProjectionType();
-				const char* const items[ 2 ] = { "Perspective", "Orthographic" };
-
-				auto& camera = component.SceneCamera;
-
-				ImGui::Combo( "Perspective", &currentItem, items, 2, -1 );
-				camera.SetProjectionType( (Camera::ProjectionType)currentItem );
-
-				ImGui::Text( "%f : Aspect Ratio", camera.GetAspectRatio() );
-
-				if ( camera.GetProjectionType() == Camera::ProjectionType::Perspective )
-				{
-					float fov = camera.GetPerspectiveFOV();
-					if ( ImGui::DragFloat( "FOV", &fov, 1.f, 0, 0, "%.0f" ) )
-						camera.SetPerspectiveFOV( fov );
-
-					float nearClip = camera.GetPerspectiveNearClip();
-					if ( ImGui::DragFloat( "Near Clip", &nearClip, 1.f, 0, 0, "%.1f" ) )
-						camera.SetPerspectiveNearClip( nearClip );
-
-					float farClip = camera.GetPerspectiveFarClip();
-					if ( ImGui::DragFloat( "Far Clip", &farClip, 1.f, 0, 0, "%.1f" ) )
-						camera.SetPerspectiveFarClip( farClip );
-
-				}
-				// Orthographic
-				else
-				{
-					float size = camera.GetOrthographicSize();
-					if ( ImGui::DragFloat( "Size", &size, 1.f, 0, 0, "%.1f" ) )
-						camera.SetOrthographicSize( size );
-
-					float nearClip = camera.GetOrthographicNearClip();
-					if ( ImGui::DragFloat( "Near Clip", &nearClip, 1.f, 0, 0, "%.1f" ) )
-						camera.SetOrthographicNearClip( nearClip );
-
-					float farClip = camera.GetOrthographicFarClip();
-					if ( ImGui::DragFloat( "Far Clip", &farClip, 1.f, 0, 0, "%.1f" ) )
-						camera.SetOrthographicFarClip( farClip );
-				}
-
-
-			} );
-
-		DrawComponent<CameraControllerComponent>( "Camera Controller", InspectedGameObject, []( CameraControllerComponent& component )
-			{
-				ImGui::DragFloat( "Speed", &component.Speed, 0.1f );
-				ImGui::DragFloat( "Look Sensitivity", &component.LookSensitivity, 0.1f );
-			} );
-
-		DrawComponent<LuaScriptComponent>( "Lua Script Component", InspectedGameObject, []( LuaScriptComponent& component )
-			{
-				bool hasScript = component.GetScript() != nullptr;
-				bool opened = ImGui::DragDropSelectable( "Script: ", hasScript, hasScript ? component.GetScript()->GetFilePath().ToString().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
-					[&]( const ImGuiPayload* payload ) {
-						component.SetScript( Script::Create( static_cast<const char*>( payload->Data ) ) );
-					} );
-
-				// On right click, give the option to remove the script, if there is one.
-				if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
-					ImGui::OpenPopup( "##RemoveScript" );
-				if ( ImGui::BeginPopup( "##RemoveScript" ) )
-				{
-					if ( ImGui::MenuItem( "Remove Script", nullptr, nullptr, hasScript ) ) {
-						component.SetScript( nullptr );
-					}
-
-					ImGui::EndPopup();
-				}
-
-				if ( opened )
-					Util::OpenFile( component.GetScript()->GetFilePath() );
-			} );
-
-		DrawComponent<SpriteComponent>( "Sprite Component", InspectedGameObject, []( SpriteComponent& component )
-			{
-				auto& sprite = component.GetTexture();
-				bool hasSprite = sprite != nullptr;
-				ImGui::DragDropSelectable( "Sprite: ", hasSprite, hasSprite ? sprite->GetPath().c_str() : "Null", TE_PAYLOAD_CONTENT_BROWSER_ITEM,
-					[&]( const ImGuiPayload* payload ) 
-					{
-						std::string filePath = static_cast<const char*>( payload->Data );
-						component.SetTexture( AssetManager::GetAsset<Texture>(filePath) );
-					} );
-
-				// On right click, give the option to remove the sprite, if there is one.
-				if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
-					ImGui::OpenPopup( "##RemoveSprite" );
-				if ( ImGui::BeginPopup( "##RemoveSprite" ) )
-				{
-					if ( ImGui::MenuItem( "Remove Sprite", nullptr, nullptr, hasSprite ) )
-						component.SetTexture( nullptr );
-
-					ImGui::EndPopup();
-				}
-
-				if ( hasSprite && ImGui::TreeNode( "Preview:" ) )
-				{
-					Vector2 textureSize( sprite->GetWidth(), sprite->GetHeight() );
-					ImVec2 previewSize;
-					ImVec2 regionAvail = ImGui::GetContentRegionAvail();
-					// Centres the image so that there will never be less padding on the right side than the left.
-					regionAvail.x -= ImGui::GetContentRegionMax().x - regionAvail.x;
-
-					if ( textureSize.x >= textureSize.y )
-					{
-						float yScale = textureSize.y / textureSize.x;
-						previewSize.x = regionAvail.x;
-						previewSize.y = previewSize.x * yScale;
-					}
-					else
-					{
-						float xScale = textureSize.x / textureSize.y;
-						previewSize.y = regionAvail.y;
-						previewSize.x = previewSize.y * xScale;
-					}
-					ImGui::PushStyleVar( ImGuiStyleVar_::ImGuiStyleVar_FrameRounding, 5 );
-					ImGui::Image( (ImTextureID)sprite->GetRendererID(),
-						previewSize,
-						{ 0, 1 }, { 1, 0 } );
-					ImGui::PopStyleVar();
-
-					ImGui::TreePop();
-				}
-			} );
+				ImGui::Separator();
+			}
+		}
 	}
 
 	template <typename T, typename... Args>
@@ -329,12 +179,21 @@ namespace Tridium::Editor {
 
 		if ( ImGui::BeginPopup( "AddComponent" ) )
 		{
-			if ( ImGui::MenuItem( "Transform" ) )		    { AddComponentToGameObject<TransformComponent>( InspectedGameObject );	}
-			if ( ImGui::MenuItem( "Mesh" ) )			    { AddComponentToGameObject<MeshComponent>( InspectedGameObject ); }
-			if ( ImGui::MenuItem( "Camera" ) )			    { AddComponentToGameObject<CameraComponent>( InspectedGameObject ); }
-			if ( ImGui::MenuItem( "Camera Controller" ) )	{ AddComponentToGameObject<CameraControllerComponent>( InspectedGameObject ); }
-			if ( ImGui::MenuItem( "Lua Script" ) )		    { AddComponentToGameObject<LuaScriptComponent>( InspectedGameObject ); }
-			if ( ImGui::MenuItem( "Sprite" ) )		        { AddComponentToGameObject<SpriteComponent>( InspectedGameObject ); }
+			for ( auto&& [id, metaType] : entt::resolve() )
+			{
+				if ( auto isComponentProp = metaType.prop( Refl::IsComponentID ); !isComponentProp )
+					continue;
+
+				const char* className = metaType.prop( "CleanClassName"_hs ).value().cast<const char*>();
+				if ( !ImGui::MenuItem( className ) )
+					continue;
+
+				if ( auto addToGameObjectFunc = metaType.prop( Tridium::Refl::Internal::AddToGameObjectPropID ); addToGameObjectFunc )
+				{
+					addToGameObjectFunc.value().cast<Tridium::Refl::Internal::AddToGameObjectFunc>()( InspectedGameObject );
+				}
+				break;
+			}
 
 			ImGui::EndMenu();
 		}

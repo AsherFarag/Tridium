@@ -6,6 +6,12 @@
 
 namespace Tridium {
 
+	BEGIN_REFLECT_COMPONENT(CameraControllerComponent)
+		BASE( ScriptableComponent )
+		PROPERTY( Speed, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( LookSensitivity, FLAGS( Serialize, EditAnywhere ) )
+	END_REFLECT( CameraControllerComponent )
+
 	void CameraControllerComponent::OnUpdate()
 	{
 		auto go = GetGameObject();

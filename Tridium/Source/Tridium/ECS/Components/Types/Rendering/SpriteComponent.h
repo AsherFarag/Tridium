@@ -8,6 +8,7 @@ namespace Tridium {
 
 	DEFINE_COMPONENT( SpriteComponent )
 	{
+		REFLECT;
 	public:
 		SpriteComponent() = default;
 		SpriteComponent( const AssetRef<Texture>& a_Texture );

@@ -7,6 +7,7 @@ namespace Tridium {
 
 	DEFINE_COMPONENT( CameraControllerComponent, ScriptableComponent )
 	{
+		REFLECT;
 	public:
 		virtual void OnUpdate() override;
 

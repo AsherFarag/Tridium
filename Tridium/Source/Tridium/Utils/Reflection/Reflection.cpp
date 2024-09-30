@@ -5,7 +5,59 @@
 #include <Tridium/IO/SerializationUtil.h>
 
 namespace Tridium::Refl {
-	
+
+#ifdef IS_EDITOR
+
+    template<typename T>
+    void DrawBasicType(
+        const char* a_Name,
+        MetaAny& a_Handle,
+        MetaIDType a_PropertyID,
+        PropertyFlags a_Flags )
+    {
+        ::Tridium::Editor::EDrawPropertyFlags drawFlags 
+            = HasFlag( a_Flags, ::Tridium::Refl::EPropertyFlag::EditAnywhere ) 
+            ? ::Tridium::Editor::EDrawPropertyFlags::Editable : ::Tridium::Editor::EDrawPropertyFlags::ReadOnly;
+
+        MetaData prop = a_Handle.type().is_pointer_like() ? ( *a_Handle ).type().data( a_PropertyID ) : ( a_Handle ).type().data( a_PropertyID );
+		if ( !prop )
+        {
+			ImGui::Text( "Nested classes and structs are currently not supported." );
+            return;
+        }
+
+        T value = a_Handle.type().is_pointer_like() ? prop.get( *a_Handle ).cast<T>() : prop.get( a_Handle ).cast<T>();
+        if ( ::Tridium::Editor::DrawProperty( a_Name, value, drawFlags ) )
+        {
+            if ( a_Handle.type().is_pointer_like() ) 
+            {
+                if ( MetaAny ref = *a_Handle; ref )
+                {
+                    prop.set( ref, value );
+                }
+            }
+            else 
+            {
+                prop.set( a_Handle, value );
+            }
+        }
+    }
+
+    // Adds a static draw property lambda to the type
+// Converts the PropertyFlags to DrawPropertyFlags. EditAnywhere -> Editable, VisibleAnywhere -> ReadOnly
+// Calls the templated DrawProperty function with the value and flags
+#define ADD_DRAWPROPERTY_FUNC_TO_TYPE(Type)                                                                                                                      \
+            .prop( ::Tridium::Editor::Internal::DrawPropFuncID,                                                                                                  \
+                +[]( const char* a_Name, ::Tridium::Refl::MetaAny& a_Handle, ::Tridium::Refl::MetaIDType a_PropertyID, ::Tridium::Refl::PropertyFlags a_Flags )  \
+                {                                                                                                                                                \
+                    ::Tridium::Refl::DrawBasicType<Type>(a_Name, a_Handle, a_PropertyID, a_Flags);                                                               \
+                } )
+
+#else
+    #define ADD_DRAWPROPERTY_FUNC_TO_TYPE(Type)
+#endif // IS_EDITOR
+
+
     void __Internal_InitializeReflection()
     {
         #define ADD_SERIALIZE_FUNC_TO_TYPE(Type)                                                          \
@@ -15,29 +67,6 @@ namespace Tridium::Refl {
                     a_Out << YAML::Key << a_Name << YAML::Value << a_Value->cast<Type>();                 \
                 })
 
-#ifdef IS_EDITOR
-
-		// Adds a static draw property lambda to the type
-		// Converts the PropertyFlags to DrawPropertyFlags. EditAnywhere -> Editable, VisibleAnywhere -> ReadOnly
-		// Calls the templated DrawProperty function with the value and flags
-        #define ADD_DRAWPROPERTY_FUNC_TO_TYPE(Type)                                                                          \
-			.prop(::Tridium::Editor::Internal::DrawPropFuncID,                                                               \
-                +[]( const char* a_Name, ::Tridium::Refl::MetaHandle a_Handle, ::Tridium::Refl::PropertyFlags a_Flags )      \
-                {                                                                                                            \
-                    ::Tridium::Editor::EDrawPropertyFlags drawFlags                                                          \
-                        = HasFlag( a_Flags, ::Tridium::Refl::EPropertyFlag::EditAnywhere )                                   \
-                        ? ::Tridium::Editor::EDrawPropertyFlags::Editable : ::Tridium::Editor::EDrawPropertyFlags::ReadOnly; \
-                    Type value = a_Handle->cast<Type>();                                                                     \
-                    if ( ::Tridium::Editor::DrawProperty( a_Name, value, drawFlags ) )                                       \
-                    {                                                                                                        \
-                        a_Handle = value;                                                                             \
-                    }                                                                                                        \
-                } )
-
-#else
-        #define ADD_DRAWPROPERTY_FUNC_TO_TYPE(Type)
-#endif // IS_EDITOR
-
         #define REFLECT_BASIC_TYPE(Type)          \
 			entt::meta<Type>()                    \
 			.type(entt::type_hash<Type>::value()) \
@@ -45,15 +74,7 @@ namespace Tridium::Refl {
 
 		// Basic types
 		REFLECT_BASIC_TYPE( bool )ADD_DRAWPROPERTY_FUNC_TO_TYPE( bool );
-		REFLECT_BASIC_TYPE( int )
-            .prop( ::Tridium::Editor::Internal::DrawPropFuncID, 
-            +[]( const char* a_Name, ::Tridium::Refl::MetaHandle a_Handle, ::Tridium::Refl::PropertyFlags a_Flags ) 
-                { 
-                    ::Tridium::Editor::EDrawPropertyFlags drawFlags = HasFlag( a_Flags, ::Tridium::Refl::EPropertyFlag::EditAnywhere ) ? ::Tridium::Editor::EDrawPropertyFlags::Editable : ::Tridium::Editor::EDrawPropertyFlags::ReadOnly; int value = a_Handle->cast<int>(); 
-                    if ( ::Tridium::Editor::DrawProperty( a_Name, value, drawFlags ) ) 
-                    {
-						a_Handle = value;
-                    } } );
+		REFLECT_BASIC_TYPE( int )ADD_DRAWPROPERTY_FUNC_TO_TYPE( int );
         REFLECT_BASIC_TYPE( int8_t );
         REFLECT_BASIC_TYPE( uint8_t );
         REFLECT_BASIC_TYPE( int16_t );

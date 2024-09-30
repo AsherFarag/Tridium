@@ -30,7 +30,7 @@ namespace Tridium::Editor {
 	bool DrawProperty( const char* a_Name, std::string& a_Value, EDrawPropertyFlags a_Flags )
 	{
 		IS_DISABLED( a_Flags );
-		return ImGui::InputText( a_Name, a_Value.data(), a_Value.size() );
+		return ImGui::InputText( a_Name, &a_Value );
 	}
 
 #define _DRAW_FLOAT(_id, _color) \
@@ -47,7 +47,11 @@ namespace Tridium::Editor {
 
 		bool modified = false;
 		{
-			float itemWidth = ImGui::GetContentRegionAvail().x / 3.f - 30;
+			constexpr float NumFloats = 2;
+			float regionWidthAvail = ImGui::GetContentRegionAvail().x - ( ImGui::GetContentRegionMax().x - ImGui::GetContentRegionAvail().x );
+			regionWidthAvail -= ImGui::CalcTextSize( a_Name ).x;
+			regionWidthAvail -= ImGui::GetStyle().ItemSpacing.x * NumFloats - 1;
+			float itemWidth = regionWidthAvail / NumFloats;
 
 			ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 1 );
 
@@ -72,6 +76,7 @@ namespace Tridium::Editor {
 			ImGui::PopStyleVar();
 
 			ImGui::SameLine();
+
 			ImGui::Text( a_Name );
 		}
 
@@ -85,7 +90,11 @@ namespace Tridium::Editor {
 
 		bool modified = false;
 		{
-			float itemWidth = ImGui::GetContentRegionAvail().x / 3.f - 30;
+			constexpr float NumFloats = 3;
+			float regionWidthAvail = ImGui::GetContentRegionAvail().x - ( ImGui::GetContentRegionMax().x - ImGui::GetContentRegionAvail().x );
+			regionWidthAvail -= ImGui::CalcTextSize( a_Name ).x;
+			regionWidthAvail -= ImGui::GetStyle().ItemSpacing.x * NumFloats - 1;
+			float itemWidth = regionWidthAvail / NumFloats;
 
 			ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 1 );
 
@@ -128,7 +137,11 @@ namespace Tridium::Editor {
 
 		bool modified = false;
 		{
-			float itemWidth = ImGui::GetContentRegionAvail().x / 3.f - 30;
+			constexpr float NumFloats = 4;
+			float regionWidthAvail = ImGui::GetContentRegionAvail().x - ( ImGui::GetContentRegionMax().x - ImGui::GetContentRegionAvail().x );
+			regionWidthAvail -= ImGui::CalcTextSize( a_Name ).x;
+			regionWidthAvail -= ImGui::GetStyle().ItemSpacing.x * NumFloats - 1;
+			float itemWidth = regionWidthAvail / NumFloats;
 
 			ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 1 );
 

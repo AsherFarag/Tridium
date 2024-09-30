@@ -29,24 +29,21 @@ struct Derived : public Base
 {
 	REFLECT;
 
-	Derived()
-	{
-		printf( "Derirved was constructed" );
-	}
-
 	int DerivedVar = 10;
 	float DerivedVar2 = 5.5f;
 	bool DerivedVar3 = true;
 	Vector2 vec2;
 	Vector3 vec3;
 	Vector4 vec4;
+private:
+	Vector2 mySuperLongVariableName;
 	Nested nested;
 };
 
 
 BEGIN_REFLECT( Base )
 	PROPERTY( BaseVar, FLAGS( Serialize, EditAnywhere ) )
-	PROPERTY( BaseVar2, FLAGS( Serialize, VisibleAnywhere ) )
+	PROPERTY( BaseVar2, FLAGS( Serialize ) )
 END_REFLECT( Base )
 
 BEGIN_REFLECT( Nested )
@@ -63,7 +60,11 @@ BEGIN_REFLECT( Derived )
 	PROPERTY( vec3, FLAGS( Serialize, EditAnywhere ) )
 	PROPERTY( vec4, FLAGS( Serialize, EditAnywhere ) )
 	PROPERTY( nested, FLAGS( Serialize, VisibleAnywhere ) )
+	PROPERTY( mySuperLongVariableName, FLAGS( Serialize, EditAnywhere ) )
 END_REFLECT( Derived )
+
+
+using namespace Tridium::Refl;
 
 void Test()
 {
@@ -73,10 +74,6 @@ void Test()
 
 	std::ofstream outFile( "Content/testrefl.yaml" );
 	outFile << out.c_str();
-
-	auto derivedVarMeta = entt::resolve<Derived>().data(entt::hashed_string("DerivedVar"));
-	derivedVarMeta.set( derivedInstance, 20 );
-	printf( "DerivedVar: %d\n", derivedInstance.DerivedVar );
 }
 
 class ExampleLayer : public Tridium::Layer
@@ -86,22 +83,8 @@ public:
 
 	ExampleLayer() = default;
 
-	Derived derivedInstance;
-
 	virtual void OnImGuiDraw() override
 	{
-		using namespace Tridium::Editor;
-		::Tridium::Editor::Internal::DrawPropFunc drawFunc;
-
-		if ( ImGui::Begin("test window") )
-		{
-			if ( ::Tridium::Refl::MetaRegistry::TryGetMetaPropertyFromClass<Derived>( drawFunc, ::Tridium::Editor::Internal::DrawPropFuncID ) )
-			{
-				drawFunc( "derivedInstance", derivedInstance, static_cast<::Tridium::Refl::PropertyFlags>(::Tridium::Refl::EPropertyFlag::EditAnywhere));
-			}
-
-		}
-		ImGui::End();
 	}
 };
 

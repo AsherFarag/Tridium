@@ -5,6 +5,11 @@
 
 namespace Tridium {
 
+	BEGIN_REFLECT_COMPONENT( LuaScriptComponent )
+		BASE( ScriptableComponent )
+		PROPERTY( m_Script, FLAGS( Serialize, EditAnywhere ) )
+	END_REFLECT( LuaScriptComponent )
+
 	LuaScriptComponent::LuaScriptComponent()
 		: m_Environment( ScriptEngine::GetLuaState(), sol::create, ScriptEngine::GetLuaState().globals() )
 	{

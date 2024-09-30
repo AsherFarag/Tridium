@@ -5,43 +5,53 @@
 
 #include "EditorReflectionMacros.h"
 
-namespace Tridium::Refl {
+namespace Tridium
+{
+    class GameObject;
 
-	// Used to statically reflect a class.
-	template<typename T>
-	struct Reflector{ };
+    namespace Refl {
 
-    namespace Internal {
+        // Used to statically reflect a class.
+        template<typename T>
+        struct Reflector { };
 
-        // Helper function for combining flags using fold expression
-        template<typename... EnumType>
-        constexpr auto CombineFlags( EnumType... flags ) 
-        {
-            return ( static_cast<std::underlying_type_t<EnumType>>( flags ) | ... );
+        namespace Internal {
+
+            // Helper function for combining flags using fold expression
+            template<typename... EnumType>
+            constexpr auto CombineFlags( EnumType... flags )
+            {
+                return ( static_cast<std::underlying_type_t<EnumType>>( flags ) | ... );
+            }
+
+            constexpr MetaIDType IsComponentPropID = entt::hashed_string( "IsComponent" ).value();
+            constexpr MetaIDType AddToGameObjectPropID = entt::hashed_string( "AddToGameObject" ).value();
+            typedef void( *AddToGameObjectFunc )( ::Tridium::GameObject a_GameObject );
         }
 
+        void __Internal_InitializeReflection();
     }
 
-	void __Internal_InitializeReflection();
-
-} // namespace Tridium::Reflection
+}
 
 #pragma region Internal Reflection Macro Helpers
 
 #define _REFL_ ::Tridium::Refl::
 
 // Serialize function signature typedef
-#define _BEGIN_REFLECT_BODY_HELPER( Class )                 \
-    template<>												\
-    struct _REFL_ Reflector<Class>			                \
-    {														\
-	    static Reflector<Class> s_Reflector##Class;         \
-		using ClassType = Class;							\
-	    Reflector()                                         \
-	    {													\
-            auto meta = entt::meta<Class>();                \
-            meta.type( entt::type_hash<Class>::value() );	\
-			using enum _REFL_ EPropertyFlag;
+#define _BEGIN_REFLECT_BODY_HELPER( Class )               \
+    template<>											  \
+    struct _REFL_ Reflector<Class>			              \
+    {													  \
+	    static Reflector<Class> s_Reflector##Class;       \
+		using ClassType = Class;						  \
+	    Reflector()                                       \
+	    {												  \
+	        using namespace entt::literals;				  \
+            auto meta = entt::meta<Class>();              \
+            meta.type( entt::type_hash<Class>::value() ); \
+            meta.prop( "CleanClassName"_hs, #Class );     \
+			using enum _REFL_ EPropertyFlag;              
 
 
 // Serialize all members of a class.
@@ -100,6 +110,14 @@ namespace Tridium::Refl {
 // Define a property with no flags.
 #define _REFLECT_PROPERTY_NO_FLAGS( Name ) _REFLECT_PROPERTY_FLAGS( Name, _REFL_ EPropertyFlag::None )
 
+// Used in a macro selector
+// Define a meta property with a value.
+#define _REFLECT_META_VALUE( Name, Value ) meta.prop(Name##_hs, Value);
+
+// Used in a macro selector
+// Define a meta property with no value.
+#define _REFLECT_META_NO_VALUE( Name ) meta.prop(Name##_hs);
+
 #pragma endregion
 
 // ----- Reflection macros ----- //
@@ -127,8 +145,10 @@ namespace Tridium::Refl {
 #define BEGIN_REFLECT(Class) _BEGIN_REFLECT_BODY_HELPER(Class) _REFLECT_SERIALIZE_HELPER(Class) _DRAW_PROPERTY_FUNC(Class)
 	// Defines a base class this class inherits from
     #define BASE(Base) meta.base<Base>();
+    // Adds user-defined bit flag traits to the type.
+    #define TRAITS(...) TO BE IMPLEMENTED   //meta.traits(_REFL_ Internal::CombineFlags(__VA_ARGS__));
 	// Allows user defined meta properties and functions that are not apart of the class.
-    #define META(Name) TO BE IMPLEMENTED
+    #define META(...) EXPAND(SELECT_MACRO_2( __VA_ARGS__, _REFLECT_META_VALUE, _REFLECT_META_NO_VALUE)(__VA_ARGS__))
 	// Defines the properties that are apart of the class.
     #define PROPERTY(...) EXPAND(SELECT_MACRO_2( __VA_ARGS__, _REFLECT_PROPERTY_FLAGS, _REFLECT_PROPERTY_NO_FLAGS )(__VA_ARGS__))
 	// Defines the functions that are apart of the class.
@@ -139,3 +159,12 @@ namespace Tridium::Refl {
 // This macro is used to define the flags for a property.
 // Example: PROPERTY( Name, FLAGS( Serialize, VisibleAnywhere ) )
 #define FLAGS(...) _REFL_ Internal::CombineFlags(__VA_ARGS__)
+
+#define BEGIN_REFLECT_COMPONENT(ComponentClass)                     \
+    BEGIN_REFLECT(ComponentClass)                                   \
+    meta.prop(::Tridium::Refl::Internal::IsComponentPropID);	    \
+    meta.prop(::Tridium::Refl::Internal::AddToGameObjectPropID,     \
+			  +[](GameObject a_GameObject)                          \
+			  {                                                     \
+				  a_GameObject.AddComponent<ComponentClass>();      \
+			  });                                                   

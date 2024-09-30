@@ -6,6 +6,11 @@ namespace Tridium::Refl {
 
 	template<typename T>
 	class Reflector;
+
+	enum class ETypeTraits : uint16_t
+	{
+		Is_Component = BIT(0),
+	};
 }
 
 // To be declared in the class definition

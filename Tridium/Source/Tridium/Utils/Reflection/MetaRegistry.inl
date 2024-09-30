@@ -8,23 +8,35 @@ namespace Tridium::Refl {
 		return s_Instance;
 	}
 
-	inline void MetaRegistry::RegisterName( MetaIDType a_ID, const char* a_Name )
+	inline MetaType MetaRegistry::ResolveMetaType( const TypeInfo& a_TypeInfo )
 	{
-		Get().s_Names[a_ID] = a_Name;
+		return entt::resolve( a_TypeInfo );
 	}
 
-	inline const char* MetaRegistry::GetName( MetaIDType a_ID )
+	inline MetaType MetaRegistry::ResolveMetaType( MetaIDType a_ID )
 	{
-		auto it = Get().s_Names.find( a_ID );
-		if ( it == Get().s_Names.end() )
-			return "Unknown";
-
-		return it->second;
+		return entt::resolve( a_ID );
 	}
 
-	inline MetaType MetaRegistry::GetMetaType( MetaIDType a_ID )
+	template<typename T>
+	inline MetaType MetaRegistry::ResolveMetaType()
 	{
-		return entt::resolve(a_ID);
+		return entt::resolve<T>();
+	}
+
+	template<typename _MetaProperty>
+	inline bool MetaRegistry::TryGetMetaPropertyFromClass( MetaType a_ClassID, _MetaProperty& o_Meta, MetaIDType a_MetaID )
+	{
+		if ( auto prop = a_ClassID.prop( a_MetaID ) )
+		{
+			if ( prop.value().try_cast<_MetaProperty>( ) )
+			{
+				o_Meta = prop.value().cast<_MetaProperty>();
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	template<typename _Class, typename _MetaProperty>

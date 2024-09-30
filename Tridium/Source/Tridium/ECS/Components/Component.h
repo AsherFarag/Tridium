@@ -1,5 +1,5 @@
 #pragma once
-#include <type_traits>
+#include <Tridium/Utils/Reflection/Reflection.h>
 #include <Tridium/Core/Core.h>
 #include <Tridium/ECS/GameObject.h>
 #include "entt.hpp"
@@ -7,8 +7,13 @@
 
 namespace Tridium {
 
+	namespace Refl {
+		constexpr MetaIDType IsComponentID = entt::hashed_string( "IsComponent" ).value();
+	}
+
 	class Component
 	{
+		REFLECT;
 		friend class GameObject;
 	public:
 		Component() {}
@@ -32,6 +37,7 @@ namespace Tridium {
 
 	DEFINE_COMPONENT( ScriptableComponent )
 	{
+		REFLECT;
 		friend class Scene;
 		friend class GameObject;
 

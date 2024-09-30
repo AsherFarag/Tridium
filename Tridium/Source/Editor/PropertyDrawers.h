@@ -33,7 +33,7 @@ namespace Tridium::Editor {
 		};
 
 		// Draw Property function signature typedef.
-		typedef void ( *DrawPropFunc )( const char* a_Name, ::Tridium::Refl::MetaHandle a_Handle, ::Tridium::Refl::PropertyFlags a_Flags );
+		typedef void ( *DrawPropFunc )( const char* a_Name, ::Tridium::Refl::MetaAny& a_Handle, ::Tridium::Refl::MetaIDType a_PropertyID, ::Tridium::Refl::PropertyFlags a_Flags );
 
 		// ID for the  Draw Property function.
 		constexpr ::Tridium::Refl::MetaIDType DrawPropFuncID = entt::hashed_string( "DrawPropFuncID" ).value();

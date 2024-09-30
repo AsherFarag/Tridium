@@ -21,12 +21,15 @@ namespace Tridium::Refl {
 	public:
 		static MetaRegistry& Get();
 
-		static void RegisterName( MetaIDType a_ID, const char* a_Name );
+		static inline MetaType ResolveMetaType( const TypeInfo& a_TypeInfo );
 
-		static const char* GetName( MetaIDType a_ID );
+		static inline MetaType ResolveMetaType( MetaIDType a_ID );
 
-		static inline MetaType GetMetaType( MetaIDType a_ID );
+		template<typename T>
+		static MetaType ResolveMetaType();
 
+		template<typename _MetaProperty>
+		static bool TryGetMetaPropertyFromClass( MetaType a_ClassID, _MetaProperty& o_Meta, MetaIDType a_MetaID );
 
 		template<typename _Class, typename _MetaProperty>
 		static bool TryGetMetaPropertyFromClass( _MetaProperty& o_Meta, MetaIDType a_MetaID );
@@ -49,8 +52,6 @@ namespace Tridium::Refl {
 
 
 	private:
-		std::unordered_map<entt::id_type, const char*> s_Names;
-
 		MetaRegistry() = default;
 		MetaRegistry( const MetaRegistry& ) = delete;
 		MetaRegistry& operator=( const MetaRegistry& ) = delete;

@@ -10,3 +10,4 @@ derivedInstance:
   nested:
     NestedVarA: 10
     NestedVarB: 5.5
+  mySuperLongVariableName: [-107374176, -107374176]
