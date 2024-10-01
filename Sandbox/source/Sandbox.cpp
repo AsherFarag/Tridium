@@ -8,6 +8,7 @@ using namespace Tridium;
 #include <Tridium/IO/SerializationUtil.h>
 #include <Tridium/Asset/AssetMetaData.h>
 #include <Tridium/Utils/Reflection/Reflection.h>
+#include <Tridium/IO/TextSerializer.h>
 
 #include <any>
 
@@ -70,10 +71,29 @@ void Test()
 {
 	Derived derivedInstance;
 	YAML::Emitter out;
-	Tridium::Refl::MetaRegistry::WriteObjectToEmitter( out, "derivedInstance", derivedInstance );
+	//Tridium::Refl::MetaRegistry::WriteObjectToEmitter( out, "derivedInstance", derivedInstance );
+
+	std::map<std::string, std::vector< int >> map = { {"MyInt1", {1,2,3,4,5,6}}, {"MyInt2", {1,2,3,4,5,6}}, {"MyInt3", {1,2,3,4,5,6}} };
+
+	out << YAML::BeginMap;
+
+	out << YAML::Key << "MyMap" << YAML::Value;
+
+	IO::SerializeToText( out, map );
+
+	out << YAML::EndMap;
 
 	std::ofstream outFile( "Content/testrefl.yaml" );
 	outFile << out.c_str();
+
+	//std::map<std::string, int> deserMap;
+	//YAML::Node data = YAML::LoadFile( "Content/testrefl.yaml" ); 
+	//IO::DeserializeFromText( data["MyMap"], deserMap );
+
+	//for ( auto& it : deserMap )
+	//{
+	//	TE_CORE_TRACE( "{0} : {1}", it.first, it.second );
+	//}
 }
 
 class ExampleLayer : public Tridium::Layer

@@ -91,6 +91,11 @@ project "Tridium"
 		"opengl32.lib"
 	}
 
+	defines
+	{
+		"YAML_CPP_STATIC_DEFINE"
+	}
+
 	filter "files:Tridium/Dependencies/ImGuizmo/**.cpp"
 		flags { "NoPCH" }
 
@@ -167,6 +172,11 @@ project "Sandbox"
 	links
 	{
 		"Tridium"
+	}
+
+	defines
+	{
+		"YAML_CPP_STATIC_DEFINE"
 	}
 
 	filter "system:windows"
