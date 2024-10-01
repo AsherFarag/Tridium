@@ -55,34 +55,4 @@ namespace Tridium::Refl {
 		return false;
 	}
 
-	template<typename T>
-	inline Internal::SerializeFunc MetaRegistry::GetSerializeFunction()
-	{
-		auto meta = entt::resolve<T>();
-		// Check if the class has a serialize function.
-		if ( auto serializeFunc = meta.prop( Internal::YAMLSerializeFuncID ) )
-		{
-			if ( serializeFunc.value().try_cast<Internal::SerializeFunc>( ) )
-			{
-				return serializeFunc.value().cast<Internal::SerializeFunc>();
-			}
-		}
-
-		return nullptr;
-	}
-
-	template<typename T>
-	inline bool MetaRegistry::WriteObjectToEmitter( YAML::Emitter& a_Out, const char* a_Name, const T& a_Object )
-	{
-		if ( Internal::SerializeFunc serFunc = GetSerializeFunction<T>() )
-		{
-			a_Out << YAML::BeginMap;
-			serFunc( a_Out, a_Name, entt::meta_handle( a_Object ) );
-			a_Out << YAML::EndMap;
-			return true;
-		}
-
-		return false;
-	}
-
 } // namespace Tridium::Reflection

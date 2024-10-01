@@ -8,19 +8,30 @@ using namespace Tridium;
 #include <Tridium/IO/SerializationUtil.h>
 #include <Tridium/Asset/AssetMetaData.h>
 #include <Tridium/Utils/Reflection/Reflection.h>
-#include <Tridium/IO/TextSerializer.h>
 
 #include <any>
 
 struct Nested
 {
 	REFLECT;
+	~Nested()
+	{
+		TE_CORE_TRACE( "Nested Destructor" );
+	}
+
 	int NestedVarA = 10;
 	float NestedVarB = 5.5f;
+
+	std::map<std::string, Vector3> MyMap = { {"MyVec1", {1,2,3}}, {"MyVec2", {1,2,3}}, {"MyVec3", {1,2,3}} };
 };
 
 struct Base
 {
+	~Base()
+	{
+		TE_CORE_TRACE( "Base Destructor" );
+
+	}
 	REFLECT;
 	int BaseVar = 5;
 	std::string BaseVar2 = "Hello";
@@ -33,9 +44,9 @@ struct Derived : public Base
 	int DerivedVar = 10;
 	float DerivedVar2 = 5.5f;
 	bool DerivedVar3 = true;
-	Vector2 vec2;
-	Vector3 vec3;
-	Vector4 vec4;
+	Vector2 vec2{0};
+	Vector3 vec3{0};
+	Vector4 vec4{0};
 private:
 	Vector2 mySuperLongVariableName;
 	Nested nested;
@@ -71,15 +82,19 @@ void Test()
 {
 	Derived derivedInstance;
 	YAML::Emitter out;
+
+	Internal::SerializeFunc serFunc;
+	MetaRegistry::TryGetMetaPropertyFromClass<Derived>( serFunc, Internal::YAMLSerializeFuncID );
+
 	//Tridium::Refl::MetaRegistry::WriteObjectToEmitter( out, "derivedInstance", derivedInstance );
 
 	std::map<std::string, std::vector< int >> map = { {"MyInt1", {1,2,3,4,5,6}}, {"MyInt2", {1,2,3,4,5,6}}, {"MyInt3", {1,2,3,4,5,6}} };
 
 	out << YAML::BeginMap;
 
-	out << YAML::Key << "MyMap" << YAML::Value;
+	out << YAML::Key << "derivedInstance" << YAML::Value;
 
-	IO::SerializeToText( out, map );
+	serFunc( out, entt::forward_as_meta( derivedInstance ) );
 
 	out << YAML::EndMap;
 

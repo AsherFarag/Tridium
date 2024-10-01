@@ -47,53 +47,30 @@ namespace Tridium
 		using ClassType = Class;						  \
 	    Reflector()                                       \
 	    {												  \
+            using enum _REFL_ EPropertyFlag;              \
 	        using namespace entt::literals;				  \
             auto meta = entt::meta<Class>();              \
             meta.type( entt::type_hash<Class>::value() ); \
-            meta.prop( "CleanClassName"_hs, #Class );     \
-			using enum _REFL_ EPropertyFlag;              
+            meta.prop( "CleanClassName"_hs, #Class );      
 
+namespace Tridium::Refl::Internal {
 
-// Serialize all members of a class.
-#define _REFLECT_SERIALIZE_MEMBERS_HELPER(Meta, ClassData)                                                                                            \
-    for (auto&& [id_unique, data_unique] : Meta.data()) 															                                  \
-	{                 																				                                                  \
-		if  ( !HasFlag( data_unique.propFlags(), EPropertyFlag::Serialize ) )                                                                         \
-		{                                                                                                                                             \
-			continue;                                                                                                                                 \
-		}                                                                                                                                             \
-        if (auto serializeFunc = data_unique.type().prop( _REFL_ Internal::YAMLSerializeFuncID))                                                      \
-		{              																			                                                      \
-            serializeFunc.value().cast<_REFL_ Internal::SerializeFunc>()(a_Out, data_unique.name().c_str(), data_unique.get(*ClassData));             \
-        }                                                                                                                                             \
-		else 																										                                  \
-		{                                                                                                                                             \
-			a_Out << YAML::Key << data_unique.name().c_str();                                                                                         \
-			a_Out << YAML::Value << std::string("Refl Error: No serialize function for type <") + data_unique.type().info().name().data(), + ">!"; \
-		}                                                                                                                                             \
-    }
+	void SerializeClass( IO::Archive& a_Archive, const MetaAny& a_Data, const MetaType& a_MetaType );
 
-
+	template <typename T>
+	void SerializeClass( IO::Archive& a_Archive, const MetaAny& a_Data )
+	{
+		static const MetaType metaType = MetaRegistry::ResolveMetaType<T>();
+		SerializeClass( a_Archive, a_Data, metaType );
+	}
+}
 
 // Add a serialize static lambda function to the meta data.
 #define _REFLECT_SERIALIZE_HELPER(Class)                                                       \
     meta.prop(_REFL_ Internal::YAMLSerializeFuncID,                                            \
-              +[](YAML::Emitter& a_Out, const char* a_Name, const entt::meta_handle& a_Handle) \
+              +[](::Tridium::IO::Archive& a_Archive, const _REFL_ MetaAny& a_Data)             \
 		      {                                                                                \
-                  using ClassT = Class;                                                        \
-                  auto classData = static_cast<const ClassT*>(a_Handle->data());               \
-                  auto meta = entt::resolve<ClassT>();                                         \
-                  a_Out << YAML::Key << a_Name;                                                \
-                  a_Out << YAML::Value;                                                        \
-                  a_Out << YAML::BeginMap;                                                     \
-                  /* Serialize parent classes */                                               \
-                  for (auto&& [id, base] : meta.base())                                        \
-				  {                                                                            \
-                      _REFLECT_SERIALIZE_MEMBERS_HELPER( base, classData)                      \
-                  }                                                                            \
-                  /* Serialize members */                                                      \
-                  _REFLECT_SERIALIZE_MEMBERS_HELPER(meta, classData)                           \
-				  a_Out << YAML::EndMap;                                                       \
+				  _REFL_ Internal::SerializeClass<Class>(a_Archive, a_Data);                   \
               });                                    
 
 

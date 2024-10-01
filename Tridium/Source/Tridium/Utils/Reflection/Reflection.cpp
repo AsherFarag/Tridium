@@ -2,9 +2,57 @@
 #include "Reflection.h"
 #include "EditorReflectionMacros.h"
 #include <Editor/PropertyDrawers.h>
-#include <Tridium/IO/SerializationUtil.h>
+#include <Tridium/IO/TextSerializer.h>
 
 namespace Tridium::Refl {
+
+    namespace Internal
+    {
+        void SerializeMembersOfMetaClass( IO::Archive& a_Archive, const MetaType& a_MetaType, const MetaAny& a_Data )
+        {
+            for ( auto&& [id, data] : a_MetaType.data() )
+            {
+                if ( !HasFlag( data.propFlags(), EPropertyFlag::Serialize ) )
+                {
+                    continue;
+                }
+
+                a_Archive << YAML::Key << data.name().c_str() << YAML::Value;
+
+                if ( auto serializeFunc = data.type().prop( YAMLSerializeFuncID ) )
+                {
+					if ( a_Data.type().is_pointer_like() )
+                    {
+                        if ( MetaAny ref = *a_Data; ref )
+                            serializeFunc.value().cast<SerializeFunc>()( a_Archive, data.get( ref ) );
+                    }
+                    else
+					{
+						serializeFunc.value().cast<SerializeFunc>()( a_Archive, data.get( a_Data ) );
+					}
+                }
+                // Print an error message if there is no serialize function for the type.
+                else
+                {
+                    a_Archive << std::string( "Refl Error: No serialize function for type <" ) + data.type().info().name().data(), +">!";
+                }
+            }
+        }
+
+        void SerializeClass( IO::Archive& a_Archive, const MetaAny& a_Data, const MetaType& a_MetaType )
+        {
+            a_Archive << YAML::BeginMap;
+
+            for ( auto&& [id, baseType] : a_MetaType.base() )
+            {
+                SerializeMembersOfMetaClass( a_Archive, baseType, a_Data );
+            }
+
+            SerializeMembersOfMetaClass( a_Archive, a_MetaType, a_Data );
+
+            a_Archive << YAML::EndMap;
+        }
+    }
 
 #ifdef IS_EDITOR
 
@@ -60,17 +108,17 @@ namespace Tridium::Refl {
 
     void __Internal_InitializeReflection()
     {
-        #define ADD_SERIALIZE_FUNC_TO_TYPE(Type)                                                          \
+        #define ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE(Type)                                                  \
             .prop(Internal::YAMLSerializeFuncID,                                                          \
-                +[](YAML::Emitter& a_Out, const char* a_Name, const ::Tridium::Refl::MetaHandle& a_Value) \
+                +[]( IO::Archive& a_Archive, const ::Tridium::Refl::MetaAny& a_Value )                    \
                 {                                                                                         \
-                    a_Out << YAML::Key << a_Name << YAML::Value << a_Value->cast<Type>();                 \
+                    IO::SerializeToText(a_Archive, a_Value.cast<Type>());                                 \
                 })
 
         #define REFLECT_BASIC_TYPE(Type)          \
 			entt::meta<Type>()                    \
 			.type(entt::type_hash<Type>::value()) \
-			ADD_SERIALIZE_FUNC_TO_TYPE(Type)
+			ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE(Type)
 
 		// Basic types
 		REFLECT_BASIC_TYPE( bool )ADD_DRAWPROPERTY_FUNC_TO_TYPE( bool );

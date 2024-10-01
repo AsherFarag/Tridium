@@ -1,4 +1,13 @@
-MyMap:
-  - [MyInt1, [1, 2, 3, 4, 5, 6]]
-  - [MyInt2, [1, 2, 3, 4, 5, 6]]
-  - [MyInt3, [1, 2, 3, 4, 5, 6]]
+derivedInstance:
+  BaseVar: 5
+  BaseVar2: Hello
+  DerivedVar: 10
+  DerivedVar2: 5.5
+  DerivedVar3: true
+  vec2: [0, 0]
+  vec3: [0, 0, 0]
+  vec4: [0, 0, 0, 0]
+  nested:
+    NestedVarA: 10
+    NestedVarB: 5.5
+  mySuperLongVariableName: [-107374176, -107374176]
