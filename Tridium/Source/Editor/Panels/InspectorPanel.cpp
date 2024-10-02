@@ -129,10 +129,8 @@ namespace Tridium::Editor {
 				{
 					Internal::DrawPropFunc drawFunc = prop.value().cast<Internal::DrawPropFunc>();
 					const char* className = metaType.prop( "CleanClassName"_hs ).value().cast<const char*>();
-					drawFunc( className, component, 0, static_cast<::Tridium::Refl::PropertyFlags>( ::Tridium::Refl::EPropertyFlag::EditAnywhere ));
+					bool wasChanged = drawFunc( className, component, static_cast<::Tridium::Refl::PropertyFlags>( ::Tridium::Refl::EPropertyFlag::EditAnywhere ));
 				}
-
-				ImGui::Separator();
 			}
 		}
 	}

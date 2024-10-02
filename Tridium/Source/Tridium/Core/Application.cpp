@@ -1,11 +1,11 @@
 #include "tripch.h"
 #include "Application.h"
 
-#include <Tridium/Asset/AssetManager.h>
-
 #ifdef IS_EDITOR
 #include <Editor/Editor.h>
 #include <Editor/EditorAssetManager.h>
+#else
+#include <Tridium/Asset/RuntimeAssetManager.h>
 #endif // IS_EDITOR
 
 // TEMP ?
@@ -44,7 +44,7 @@ namespace Tridium {
 
 #else
 
-		AssetManager::s_Instance = MakeShared<AssetManager>();
+		AssetManager::s_Instance = new RuntimeAssetManager();
 
 #endif // IS_EDITOR
 

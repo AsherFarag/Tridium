@@ -11,27 +11,36 @@ using namespace Tridium;
 
 #include <any>
 
+class ExampleComponent : public Tridium::Component
+{
+	REFLECT;
+public:
+	std::map<std::string, int> MyMap;
+	std::unordered_map<std::string, int> MyUnorderedMap;
+	std::vector<int> MyVec = { 1,2,3,4,5,6,7,8,9,10 };
+
+};
+
+BEGIN_REFLECT_COMPONENT( ExampleComponent )
+PROPERTY( MyMap, FLAGS( Serialize, EditAnywhere ) )
+PROPERTY( MyUnorderedMap, FLAGS( Serialize, EditAnywhere ) )
+PROPERTY( MyVec, FLAGS( Serialize, EditAnywhere ) )
+END_REFLECT( ExampleComponent )
+
+
 struct Nested
 {
 	REFLECT;
-	~Nested()
-	{
-		TE_CORE_TRACE( "Nested Destructor" );
-	}
 
 	int NestedVarA = 10;
 	float NestedVarB = 5.5f;
 
 	std::map<std::string, Vector3> MyMap = { {"MyVec1", {1,2,3}}, {"MyVec2", {1,2,3}}, {"MyVec3", {1,2,3}} };
+	std::vector<int> MyVec = { 1,2,3,4,5,6,7,8,9,10 };
 };
 
 struct Base
 {
-	~Base()
-	{
-		TE_CORE_TRACE( "Base Destructor" );
-
-	}
 	REFLECT;
 	int BaseVar = 5;
 	std::string BaseVar2 = "Hello";
@@ -61,6 +70,8 @@ END_REFLECT( Base )
 BEGIN_REFLECT( Nested )
 	PROPERTY( NestedVarA, FLAGS( Serialize, EditAnywhere ) )
 	PROPERTY( NestedVarB, FLAGS( Serialize, VisibleAnywhere ) )
+	PROPERTY( MyMap, FLAGS( Serialize, EditAnywhere ) )
+	PROPERTY( MyVec, FLAGS( Serialize, EditAnywhere ) )
 END_REFLECT( Nested )
 
 BEGIN_REFLECT( Derived )
@@ -129,10 +140,6 @@ class Sandbox : public Tridium::Application
 public:
 	Sandbox()
 	{
-    #ifndef IS_EDITOR
-		SceneSerializer serializer( Application::GetScene() );
-		serializer.DeserializeText( ( Application::GetAssetDirectory() / "Scene.tridium" ).string() );
-    #endif // !IS_EDITOR
 		PushLayer( new ExampleLayer() );
 
 		Test();

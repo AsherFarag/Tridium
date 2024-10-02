@@ -1,6 +1,6 @@
 #include "tripch.h"
 #include "Reflection.h"
-#include "EditorReflectionMacros.h"
+#include "EditorReflection.h"
 #include <Editor/PropertyDrawers.h>
 #include <Tridium/IO/TextSerializer.h>
 
@@ -10,31 +10,58 @@ namespace Tridium::Refl {
     {
         void SerializeMembersOfMetaClass( IO::Archive& a_Archive, const MetaType& a_MetaType, const MetaAny& a_Data )
         {
-            for ( auto&& [id, data] : a_MetaType.data() )
+            for ( auto&& [id, metaData] : a_MetaType.data() )
             {
-                if ( !HasFlag( data.propFlags(), EPropertyFlag::Serialize ) )
+                if ( !HasFlag( metaData.propFlags(), EPropertyFlag::Serialize ) )
                 {
                     continue;
                 }
 
-                a_Archive << YAML::Key << data.name().c_str() << YAML::Value;
+                a_Archive << YAML::Key << metaData.name().c_str() << YAML::Value;
 
-                if ( auto serializeFunc = data.type().prop( YAMLSerializeFuncID ) )
+				MetaAny memberData = a_Data.type().is_pointer_like() ? metaData.get( *a_Data ) : metaData.get( a_Data );
+
+				// If the type has a serialize function, call it.
+                if ( auto serializeFunc = metaData.type().prop( YAMLSerializeFuncID ) )
                 {
-					if ( a_Data.type().is_pointer_like() )
-                    {
-                        if ( MetaAny ref = *a_Data; ref )
-                            serializeFunc.value().cast<SerializeFunc>()( a_Archive, data.get( ref ) );
-                    }
-                    else
+					serializeFunc.value().cast<SerializeFunc>()( a_Archive, memberData );
+                }
+                else if ( metaData.type().is_sequence_container() )
+				{
+					a_Archive << YAML::Flow << YAML::BeginSeq;
+					for ( auto&& element : memberData.as_sequence_container() )
 					{
-						serializeFunc.value().cast<SerializeFunc>()( a_Archive, data.get( a_Data ) );
+						if ( auto serializeFunc = element.type().prop( YAMLSerializeFuncID ) )
+						{
+							serializeFunc.value().cast<SerializeFunc>()( a_Archive, element );
+						}
 					}
+					a_Archive << YAML::EndSeq;
+				}
+				// If the type is an associative container, serialize each key-value pair.
+                else if ( metaData.type().is_associative_container() )
+                {
+                    a_Archive << YAML::BeginSeq;
+                    for ( auto&& [key, value] : memberData.as_associative_container() )
+                    {
+
+                        a_Archive << YAML::Flow << YAML::BeginSeq;
+                        if ( auto serializeFunc = key.type().prop( YAMLSerializeFuncID ) )
+                        {
+                            serializeFunc.value().cast<SerializeFunc>()( a_Archive, key );
+                        }
+                        if ( auto serializeFunc = value.type().prop( YAMLSerializeFuncID ) )
+                        {
+                            serializeFunc.value().cast<SerializeFunc>()( a_Archive, value );
+                        }
+                        a_Archive << YAML::EndSeq;
+                    }
+                    a_Archive << YAML::EndSeq;
                 }
                 // Print an error message if there is no serialize function for the type.
                 else
                 {
-                    a_Archive << std::string( "Refl Error: No serialize function for type <" ) + data.type().info().name().data(), +">!";
+                    a_Archive << std::string( "Refl Error: No serialize function for type <" ) + metaData.type().info().name().data(), +">!";
                 }
             }
         }
@@ -57,48 +84,33 @@ namespace Tridium::Refl {
 #ifdef IS_EDITOR
 
     template<typename T>
-    void DrawBasicType(
-        const char* a_Name,
-        MetaAny& a_Handle,
-        MetaIDType a_PropertyID,
-        PropertyFlags a_Flags )
+    bool DrawBasicType( const char* a_Name, MetaAny& a_Handle, PropertyFlags a_Flags )
     {
         ::Tridium::Editor::EDrawPropertyFlags drawFlags 
             = HasFlag( a_Flags, ::Tridium::Refl::EPropertyFlag::EditAnywhere ) 
             ? ::Tridium::Editor::EDrawPropertyFlags::Editable : ::Tridium::Editor::EDrawPropertyFlags::ReadOnly;
 
-        MetaData prop = a_Handle.type().is_pointer_like() ? ( *a_Handle ).type().data( a_PropertyID ) : ( a_Handle ).type().data( a_PropertyID );
-		if ( !prop )
-        {
-			ImGui::Text( "Nested classes and structs are currently not supported." );
-            return;
-        }
+		MetaAny handle = a_Handle.type().is_pointer_like() ? *a_Handle : a_Handle;
+        T value = handle.cast<T>();
 
-        T value = a_Handle.type().is_pointer_like() ? prop.get( *a_Handle ).cast<T>() : prop.get( a_Handle ).cast<T>();
         if ( ::Tridium::Editor::DrawProperty( a_Name, value, drawFlags ) )
         {
-            if ( a_Handle.type().is_pointer_like() ) 
-            {
-                if ( MetaAny ref = *a_Handle; ref )
-                {
-                    prop.set( ref, value );
-                }
-            }
-            else 
-            {
-                prop.set( a_Handle, value );
-            }
+            a_Handle = value;
+            return true;
         }
+
+		return false;
     }
 
     // Adds a static draw property lambda to the type
 // Converts the PropertyFlags to DrawPropertyFlags. EditAnywhere -> Editable, VisibleAnywhere -> ReadOnly
 // Calls the templated DrawProperty function with the value and flags
-#define ADD_DRAWPROPERTY_FUNC_TO_TYPE(Type)                                                                                                                      \
-            .prop( ::Tridium::Editor::Internal::DrawPropFuncID,                                                                                                  \
-                +[]( const char* a_Name, ::Tridium::Refl::MetaAny& a_Handle, ::Tridium::Refl::MetaIDType a_PropertyID, ::Tridium::Refl::PropertyFlags a_Flags )  \
-                {                                                                                                                                                \
-                    ::Tridium::Refl::DrawBasicType<Type>(a_Name, a_Handle, a_PropertyID, a_Flags);                                                               \
+#define ADD_DRAWPROPERTY_FUNC_TO_TYPE(Type)                                                                            \
+            .prop( ::Tridium::Editor::Internal::DrawPropFuncID,                                                        \
+                +[]( const char* a_Name, ::Tridium::Refl::MetaAny& a_Handle, ::Tridium::Refl::PropertyFlags a_Flags )  \
+                    -> bool 																						   \
+                {                                                                                                      \
+                    return ::Tridium::Refl::DrawBasicType<Type>(a_Name, a_Handle, a_Flags);                            \
                 } )
 
 #else

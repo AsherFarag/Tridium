@@ -63,5 +63,6 @@ constexpr int current_build_month()
 
 #define $LINE WRAP( Stringize, __LINE__ )
 
+#define FIXME(Message)	PRAGMA(message(__FILE__ "(" $LINE ") : FIXME: " Message))
 #define TODO(Message)	PRAGMA(message(__FILE__ "(" $LINE ") : TODO: " Message))
 #define NOT_IMPLEMENTED	PRAGMA(message(__FILE__ "(" $LINE ") : Not Implemented"))

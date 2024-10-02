@@ -1,4 +1,6 @@
 #include "tripch.h"
+#ifdef IS_EDITOR
+
 #include "PropertyDrawers.h"
 
 namespace Tridium::Editor {
@@ -30,7 +32,7 @@ namespace Tridium::Editor {
 	bool DrawProperty( const char* a_Name, std::string& a_Value, EDrawPropertyFlags a_Flags )
 	{
 		IS_DISABLED( a_Flags );
-		return ImGui::InputText( a_Name, &a_Value );
+		return ImGui::InputText( a_Name, &a_Value, ImGuiInputTextFlags_EnterReturnsTrue );
 	}
 
 #define _DRAW_FLOAT(_id, _color) \
@@ -185,3 +187,4 @@ namespace Tridium::Editor {
 #undef _DRAW_FLOAT
 
 }
+#endif // IS_EDITOR

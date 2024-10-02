@@ -3,7 +3,7 @@
 #include <Tridium/Utils/Reflection/MetaRegistry.h>
 #include "ReflectionFwd.h"
 
-#include "EditorReflectionMacros.h"
+#include "EditorReflection.h"
 
 namespace Tridium
 {
@@ -143,5 +143,5 @@ namespace Tridium::Refl::Internal {
     meta.prop(::Tridium::Refl::Internal::AddToGameObjectPropID,     \
 			  +[](GameObject a_GameObject)                          \
 			  {                                                     \
-				  a_GameObject.AddComponent<ComponentClass>();      \
+				  a_GameObject.TryAddComponent<ComponentClass>();   \
 			  });                                                   
