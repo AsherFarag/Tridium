@@ -18,6 +18,7 @@ public:
 	std::map<std::string, int> MyMap;
 	std::unordered_map<std::string, int> MyUnorderedMap;
 	std::vector<int> MyVec = { 1,2,3,4,5,6,7,8,9,10 };
+	std::vector<Vector4> MyVectorOfVec4s = { {1,2,3,4}, {5,6,7,8}, {9,10,11,12} };
 
 };
 
@@ -25,6 +26,7 @@ BEGIN_REFLECT_COMPONENT( ExampleComponent )
 PROPERTY( MyMap, FLAGS( Serialize, EditAnywhere ) )
 PROPERTY( MyUnorderedMap, FLAGS( Serialize, EditAnywhere ) )
 PROPERTY( MyVec, FLAGS( Serialize, EditAnywhere ) )
+PROPERTY( MyVectorOfVec4s, FLAGS( Serialize, EditAnywhere ) )
 END_REFLECT( ExampleComponent )
 
 

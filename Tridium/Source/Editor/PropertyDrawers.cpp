@@ -36,7 +36,7 @@ namespace Tridium::Editor {
 	}
 
 #define _DRAW_FLOAT(_id, _color) \
-	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(_color)); \
+	ImGui::PushStyleColor(ImGuiCol_Border, _color.Value); \
 	ImGui::PushID(_id); \
 	modified |= ImGui::DragFloat("", &a_Value[_id]); \
 	ImGui::PopID(); \
@@ -63,12 +63,12 @@ namespace Tridium::Editor {
 				ImGui::PushItemWidth( itemWidth );
 
 				// x
-				_DRAW_FLOAT( 0, EditorStyle::Red )
+				_DRAW_FLOAT( 0, Style::Colors::Red )
 
 					ImGui::SameLine();
 
 				// y
-				_DRAW_FLOAT( 1, EditorStyle::Green )
+				_DRAW_FLOAT( 1, Style::Colors::Green )
 
 					ImGui::PopItemWidth();
 			}
@@ -106,17 +106,17 @@ namespace Tridium::Editor {
 				ImGui::PushItemWidth( itemWidth );
 
 				// x
-				_DRAW_FLOAT( 0, EditorStyle::Red )
+				_DRAW_FLOAT( 0, Style::Colors::Red )
 
 					ImGui::SameLine();
 
 				// y
-				_DRAW_FLOAT( 1, EditorStyle::Green )
+				_DRAW_FLOAT( 1, Style::Colors::Green )
 
 					ImGui::SameLine();
 
 				// z
-				_DRAW_FLOAT( 2, EditorStyle::Blue )
+				_DRAW_FLOAT( 2, Style::Colors::Blue )
 
 					ImGui::PopItemWidth();
 			}
@@ -153,22 +153,22 @@ namespace Tridium::Editor {
 				ImGui::PushItemWidth( itemWidth );
 
 				// x
-				_DRAW_FLOAT( 0, EditorStyle::Red )
+				_DRAW_FLOAT( 0, Style::Colors::Red )
 
 					ImGui::SameLine();
 
 				// y
-				_DRAW_FLOAT( 1, EditorStyle::Green )
+				_DRAW_FLOAT( 1, Style::Colors::Green )
 
 					ImGui::SameLine();
 
 				// z
-				_DRAW_FLOAT( 2, EditorStyle::Blue )
+				_DRAW_FLOAT( 2, Style::Colors::Blue )
 
 					ImGui::SameLine();
 
 				// w
-				_DRAW_FLOAT( 3, EditorStyle::Orange )
+				_DRAW_FLOAT( 3, Style::Colors::Orange )
 
 					ImGui::PopItemWidth();
 			}

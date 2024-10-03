@@ -13,6 +13,7 @@ namespace Tridium::Refl {
 
 		// ID for the serialize function.
 		constexpr MetaIDType YAMLSerializeFuncID = entt::hashed_string( "YAMLSerializeFuncID" ).value();
+		constexpr MetaIDType CleanClassNamePropID = entt::hashed_string( "CleanClassName" ).value();
 	}
 
 	class MetaRegistry final
@@ -23,6 +24,8 @@ namespace Tridium::Refl {
 		static inline MetaType ResolveMetaType( const TypeInfo& a_TypeInfo );
 
 		static inline MetaType ResolveMetaType( MetaIDType a_ID );
+
+		static inline const char* GetCleanTypeName( MetaType a_MetaType );
 
 		template<typename T>
 		static MetaType ResolveMetaType();

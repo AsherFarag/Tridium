@@ -18,6 +18,16 @@ namespace Tridium::Refl {
 		return entt::resolve( a_ID );
 	}
 
+	inline const char* MetaRegistry::GetCleanTypeName( MetaType a_MetaType )
+	{
+		if ( auto prop = a_MetaType.prop( Internal::CleanClassNamePropID ) )
+		{
+			return prop.value().cast<const char*>();
+		}
+
+		return "Unknown";
+	}
+
 	template<typename T>
 	inline MetaType MetaRegistry::ResolveMetaType()
 	{

@@ -20,7 +20,7 @@ namespace Tridium {
         bool DrawRemoveElementButton( const char* a_Name )
         {
             ImGui::SetCursorPosX( ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - ( ImGui::CalcTextSize( a_Name ).x + 10 ) );
-			ImGui::ScopedStyleCol col( ImGuiCol_Button, Editor::EditorStyle::Red.Value );
+			ImGui::ScopedStyleCol col( ImGuiCol_Button, Editor::Style::Colors::Red.Value );
             return ImGui::SmallButton( a_Name );
         }
 
@@ -48,59 +48,78 @@ namespace Tridium {
         bool DrawKeyToValueAssociativeContainer( entt::meta_associative_container& a_AssociativeContainer, const MetaData& a_MetaData, PropertyFlags a_DrawFlag )
         {
             if ( !ImGui::TreeNodeEx( a_MetaData.name().c_str() ) )
+            {
+                if ( ImGui::BeginItemTooltip() )
+                {
+                    ImGui::Text( "Class: Map Container of '%s' to '%s'",
+                        MetaRegistry::GetCleanTypeName( a_AssociativeContainer.key_type() ),
+                        MetaRegistry::GetCleanTypeName( a_AssociativeContainer.mapped_type() ) );
+                    ImGui::EndTooltip();
+                }
                 return false;
+            }
+
+            if ( ImGui::BeginItemTooltip() )
+            {
+                ImGui::Text( "Class: Map Container of '%s' to '%s'",
+                    MetaRegistry::GetCleanTypeName( a_AssociativeContainer.key_type() ),
+                    MetaRegistry::GetCleanTypeName( a_AssociativeContainer.mapped_type() ) );
+                ImGui::EndTooltip();
+            }
+
+            ImGui::FunctionScope treePop( +[]() { ImGui::TreePop(); } );
 
             bool wasChanged = false;
 
             auto keyDrawFuncProp = a_AssociativeContainer.key_type().prop( DrawPropFuncID );
             auto valueDrawFuncProp = a_AssociativeContainer.mapped_type().prop( DrawPropFuncID );
 
-            if ( keyDrawFuncProp && valueDrawFuncProp )
+            if ( !keyDrawFuncProp || !valueDrawFuncProp )
+                return false;
+
+            auto keyDrawFunc = keyDrawFuncProp.value().cast<DrawPropFunc>();
+            auto valueDrawFunc = valueDrawFuncProp.value().cast<DrawPropFunc>();
+
+
+            // Iterate through each element of the map
+            size_t index = 0;
+            for ( auto&& [key, value] : a_AssociativeContainer )
             {
-                auto keyDrawFunc = keyDrawFuncProp.value().cast<DrawPropFunc>();
-                auto valueDrawFunc = valueDrawFuncProp.value().cast<DrawPropFunc>();
+                const std::string elementName = std::string( "Element " ) + std::to_string( index );
+                ++index;
+                ElementReturn treeNodeResult = BeginElementTreeNode( elementName.c_str() );
 
-                size_t index = 0;
-                for ( auto&& [key, value] : a_AssociativeContainer )
+                if ( treeNodeResult.WasRemoved )
                 {
-                    ImGui::Separator();
+                    a_AssociativeContainer.erase( key );
+                    wasChanged = true;
 
-                    const std::string elementName = std::string( "Element " ) + std::to_string( index );
-                    ++index;
-                    ElementReturn treeNodeResult = BeginElementTreeNode( elementName.c_str() );
+                    if ( treeNodeResult.IsOpen )
+                        ImGui::TreePop();
 
-                    if ( treeNodeResult.WasRemoved )
-                    {
-						a_AssociativeContainer.erase( key );
-                        wasChanged = true;
+                    break;
+                }
 
-						if ( treeNodeResult.IsOpen )
-                            ImGui::TreePop();
+                if ( !treeNodeResult.IsOpen )
+                    continue;
 
-						break;
-                    }
+                // Need to make copies of the key and value to pass to the draw functions
+                FIXME();
+                auto tempKey = key;
+                auto tempValue = value;
 
-					if ( !treeNodeResult.IsOpen )
-                        continue;
+                ImGui::PushItemWidth( ImGui::GetContentRegionAvail().x - 100 );
+                wasChanged |= keyDrawFunc( "Key", tempKey, a_DrawFlag );
+                wasChanged |= valueDrawFunc( "Value", tempValue, a_DrawFlag );
+                ImGui::PopItemWidth();
 
-					// Need to make copies of the key and value to pass to the draw functions
-                    FIXME();
-                    auto tempKey = key;
-                    auto tempValue = value;
+                ImGui::TreePop();
 
-                    ImGui::PushItemWidth( ImGui::GetContentRegionAvail().x - 100 );
-                    wasChanged |= keyDrawFunc( "Key", tempKey, a_DrawFlag );
-                    wasChanged |= valueDrawFunc( "Value", tempValue, a_DrawFlag );
-                    ImGui::PopItemWidth();
-
-                    ImGui::TreePop();
-
-                    if ( wasChanged )
-                    {
-                        a_AssociativeContainer.erase( key );
-                        a_AssociativeContainer.insert( tempKey, tempValue );
-                        break;
-                    }
+                if ( wasChanged )
+                {
+                    a_AssociativeContainer.erase( key );
+                    a_AssociativeContainer.insert( tempKey, tempValue );
+                    break;
                 }
             }
 
@@ -113,15 +132,26 @@ namespace Tridium {
                 wasChanged = true;
             }
 
-            ImGui::TreePop();
-
             return wasChanged;
         }
 
         bool DrawSequenceContainer( entt::meta_sequence_container& a_SequenceContainer, const MetaData& a_MetaData, PropertyFlags a_DrawFlag )
         {
             if ( !ImGui::TreeNodeEx( a_MetaData.name().c_str() ) )
-				return false;
+            {
+                if ( ImGui::BeginItemTooltip() )
+                {
+                    ImGui::Text( "Class: Sequence Container of '%s'", MetaRegistry::GetCleanTypeName( a_SequenceContainer.value_type() ) );
+                    ImGui::EndTooltip();
+                }
+                return false;
+            }
+
+            if ( ImGui::BeginItemTooltip() )
+            {
+                ImGui::Text( "Class: Sequence Container of '%s'", MetaRegistry::GetCleanTypeName( a_SequenceContainer.value_type() ) );
+                ImGui::EndTooltip();
+            }
 
             bool wasChanged = false;
 
@@ -132,19 +162,12 @@ namespace Tridium {
                 size_t index = 0;
                 for ( auto it = a_SequenceContainer.begin(); it != a_SequenceContainer.end(); ++it )
                 {
-                    ImGui::Separator();
-
 					MetaAny&& element = *it;
 
                     const std::string elementName = std::to_string( index );
 					ImGui::PushItemWidth( ImGui::GetContentRegionAvail().x - 100 );
                     wasChanged |= drawFunc( elementName.c_str(), element, a_DrawFlag );
 					ImGui::PopItemWidth();
-
-                    if ( wasChanged )
-                    {
-						a_SequenceContainer[index] = element;
-                    }
 
                     ImGui::SameLine();
 
@@ -153,6 +176,12 @@ namespace Tridium {
                         a_SequenceContainer.erase( it );
                         wasChanged = true;
                         break;
+                    }
+
+                    if ( wasChanged )
+                    {
+                        FIXME();
+                        it = a_SequenceContainer.insert( a_SequenceContainer.erase( it ), element );
                     }
 
                     ++index;
@@ -196,9 +225,6 @@ namespace Tridium {
                 {
                     continue;
                 }
-
-                // Add a separator between properties
-                ImGui::Separator();
 
                 // Get a copy of the member data from the handle
                 MetaAny memberData = a_Handle.type().is_pointer_like() ? metaData.get( *a_Handle ) : metaData.get( a_Handle );

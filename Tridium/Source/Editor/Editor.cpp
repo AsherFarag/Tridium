@@ -1,6 +1,7 @@
 #include "tripch.h"
 #ifdef  IS_EDITOR
 #include "Editor.h"
+#include "EditorStyle.h"
 
 #include <Tridium/Asset/AssetManager.h>
 
@@ -37,6 +38,9 @@ namespace Tridium::Editor {
         s_Instance = SharedPtr<EditorApplication>( new EditorApplication() );
         s_Instance->m_EditorLayer = new EditorLayer();
         Application::Get().PushLayer( s_Instance->m_EditorLayer );
+
+		Style::SetTheme( Style::ETheme::Midnight );
+
         return true;
     }
 

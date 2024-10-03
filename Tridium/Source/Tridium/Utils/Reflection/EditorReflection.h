@@ -33,6 +33,12 @@ namespace Tridium::Refl::Internal {
 
         if ( ImGui::TreeNodeEx( a_Name, ImGuiTreeNodeFlags_Framed ) )
         {
+            if ( ImGui::BeginItemTooltip() )
+            {
+				ImGui::Text( "Class: %s", MetaRegistry::GetCleanTypeName( metaType ) );
+                ImGui::EndTooltip();
+            }
+
             for ( auto&& [id, base] : metaType.base() )
             {
                 wasChanged |= DrawAllMembersOfMetaClass( base, a_Handle, overrideFlag );

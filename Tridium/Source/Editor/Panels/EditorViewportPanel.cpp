@@ -19,6 +19,17 @@
 
 namespace Tridium::Editor {
 
+	void SetImGuizmoColors()
+	{
+		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::DIRECTION_X] = Style::Colors::Red;
+		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::DIRECTION_Y] = Style::Colors::Green;
+		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::DIRECTION_Z] = Style::Colors::Blue;
+		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::PLANE_X] = Style::Colors::Red;
+		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::PLANE_Y] = Style::Colors::Green;
+		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::PLANE_Z] = Style::Colors::Blue;
+		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::SELECTION] = Style::Colors::Orange;
+	}
+
 	EditorViewportPanel::EditorViewportPanel( const SharedPtr<EditorCamera>& editorCamera )
 		: ViewportPanel( "Scene##EditorViewportPanel" ), m_EditorCamera( editorCamera )
 	{
@@ -76,17 +87,17 @@ namespace Tridium::Editor {
 		{
 			switch ( e.GetKeyCode() )
 			{
-			case Input::KEY_W:
+			case Input::KEY_E:
 			{
 				m_GizmoState = EGizmoState::Translate;
 				return true;
 			}
-			case Input::KEY_E:
+			case Input::KEY_R:
 			{
 				m_GizmoState = EGizmoState::Rotate;
 				return true;
 			}
-			case Input::KEY_R:
+			case Input::KEY_T:
 			{
 				if ( Input::IsKeyPressed( Input::KEY_LEFT_CONTROL ) )
 					m_GizmoState = EGizmoState::Universal_Scale;
@@ -222,6 +233,7 @@ namespace Tridium::Editor {
 		Matrix4 camView = m_EditorCamera->GetViewMatrix();
 
 		// Set up ImGuizmo
+		SetImGuizmoColors();
 		ImGuizmo::SetOrthographic( false );
 		ImGuizmo::SetDrawlist();
 		ImGuizmo::SetRect( viewportBoundsMin.x, viewportBoundsMin.y,

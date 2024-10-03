@@ -51,7 +51,7 @@ namespace Tridium
 	        using namespace entt::literals;				  \
             auto meta = entt::meta<Class>();              \
             meta.type( entt::type_hash<Class>::value() ); \
-            meta.prop( "CleanClassName"_hs, #Class );      
+            meta.prop( _REFL_ Internal::CleanClassNamePropID, #Class );      
 
 namespace Tridium::Refl::Internal {
 

@@ -7,12 +7,40 @@
 namespace Tridium {
 
     BEGIN_REFLECT( GameObject )
+		FUNCTION( GetGUID )
+		FUNCTION( GetTag )
+		FUNCTION( GetTransform )
+		FUNCTION( GetWorldTransform )
+		FUNCTION( GetLocalTransform )
+		FUNCTION( HasParent )
+		FUNCTION( GetParent )
+		FUNCTION( AttachToParent )
+		FUNCTION( DetachFromParent )
+		FUNCTION( AttachChild )
+		FUNCTION( DetachChild )
+		FUNCTION( GetChild )
+		FUNCTION( GetChildren )
         PROPERTY( m_ID )
     END_REFLECT( GameObject )
 
     GameObject::GameObject( EntityID a_ID )
         : m_ID( a_ID )
     {
+    }
+    
+    std::vector<Component*>&& Tridium::GameObject::GetAllComponents() const
+    {
+		std::vector<Component*> components;
+		// Reserve a magic number of components
+		components.reserve( 16 );
+
+		for ( auto&& [id, componentStorage] : Application::GetScene()->m_Registry.storage() )
+		{
+            if ( componentStorage.contains( m_ID ) )
+                components.push_back( static_cast<Component*>( componentStorage.value( m_ID ) ) );
+		}
+
+        return std::move(components);
     }
 
     GUID GameObject::GetGUID() const {

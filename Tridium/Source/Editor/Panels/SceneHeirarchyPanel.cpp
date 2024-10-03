@@ -96,11 +96,11 @@ namespace Tridium::Editor {
 
 		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2( 1, 1 ) );
 
+		ImGui::FunctionScope endWindow( +[]() { ImGui::End(); } );
 		if ( !ImGui::Begin( "Scene Heirarchy" ) )
 		{
 			m_IsHovered = false;
 			m_IsFocused = false;
-			ImGui::End();
 			return;
 		}
 
@@ -110,19 +110,10 @@ namespace Tridium::Editor {
 		auto gameObjects = m_Context->GetRegistry().view<TagComponent>();
 		ImGui::Text( "Game Objects: %i", gameObjects.size() );
 
-		ImGui::SameLine();
+		ImGui::SameLine( ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("+").x - 10);
 
-		// Draw Add-GameObject Button
-		// Align the button to the right
-		float addGameObjectButtonWidth = ImGui::CalcTextSize( "+" ).x + ImGui::GetStyle().FramePadding.x * 2.f;
-		ImGui::SetCursorPosX( ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - addGameObjectButtonWidth - 5 );
-
-		ImGui::PushStyleVar( ImGuiStyleVar_::ImGuiStyleVar_FramePadding, { 0,0 } );
-
-		if ( ImGui::Button( "+", { addGameObjectButtonWidth, addGameObjectButtonWidth } ) )
+		if ( ImGui::SmallButton( "+" ) )
 			OpenAddPopUp();
-
-		ImGui::PopStyleVar();
 
 		DrawAddPopUp();
 
@@ -148,9 +139,9 @@ namespace Tridium::Editor {
 			ImGui::TreePop();
 		}
 		else
+		{
 			ImGui::PopFont();
-
-		ImGui::End();
+		}
 	}
 
 	void SceneHeirarchyPanel::OpenAddPopUp()

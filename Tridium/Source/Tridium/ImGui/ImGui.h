@@ -1,5 +1,6 @@
 #pragma once
 #include <imgui.h>
+#include "ImGuiHelpers.h"	
 
 #define TE_PAYLOAD_CONTENT_BROWSER_ITEM "ContentBrowserItem"
 

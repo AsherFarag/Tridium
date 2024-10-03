@@ -130,6 +130,7 @@ namespace Tridium::Refl {
         #define REFLECT_BASIC_TYPE(Type)          \
 			entt::meta<Type>()                    \
 			.type(entt::type_hash<Type>::value()) \
+            .prop(Internal::CleanClassNamePropID, #Type) \
 			ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE(Type)
 
 		// Basic types

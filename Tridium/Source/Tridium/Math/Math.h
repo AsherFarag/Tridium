@@ -44,6 +44,6 @@ using Quaternion = glm::quat;
 
 namespace Tridium::Math
 {
-	void DecomposeTransform( const Matrix4& mat, Vector3& outPos, Vector3& outRot, Vector3& outScale );
-	void DecomposeTransform( const Matrix4& mat, Vector3& outPos, Quaternion& outRot, Vector3& outScale );
+	void DecomposeTransform( const Matrix4& a_Mat, Vector3& o_Pos, Vector3& o_Rot, Vector3& o_Scale );
+	void DecomposeTransform( const Matrix4& a_Mat, Vector3& o_Pos, Quaternion& o_Rot, Vector3& o_Scale );
 }

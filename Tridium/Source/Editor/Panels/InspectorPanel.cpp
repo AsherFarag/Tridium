@@ -38,6 +38,8 @@ namespace Tridium::Editor {
 		// - Draw Components -
 		DrawInspectedGameObject();
 
+		ImGui::Separator();
+
 		DrawAddComponentButton();
 
 		ImGui::End();
@@ -93,25 +95,34 @@ namespace Tridium::Editor {
 
 	void InspectorPanel::DrawInspectedGameObject()
 	{
-		auto& tag = InspectedGameObject.GetComponent<TagComponent>();
-		ImGui::InputText( "Tag", (char*)tag.Tag.c_str(), tag.MaxSize() );
+		if ( TagComponent* tagComponent = InspectedGameObject.TryGetComponent<TagComponent>() )
+		{
+			std::string tag = InspectedGameObject.GetComponent<TagComponent>().Tag;
+			if ( ImGui::InputText( "Tag", &tag, ImGuiInputTextFlags_EnterReturnsTrue ) )
+			{
+				tagComponent->Tag = std::move(tag);
+			}
+		}
 
-		ImGui::SameLine();
+		ImGui::SameLine( ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("Destroy").x);
 
-		ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Button, ImVec4( 1, 0.2, 0.2, 1 ) );
+		ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Button, Style::Colors::Red.Value );
 		if ( ImGui::Button( "Destroy" ) ) { InspectedGameObject.Destroy(); }
 		ImGui::PopStyleColor();
 
+		ImGui::Separator();
 
-		// Draw all components
 		auto& registry = Application::Get().GetScene()->GetRegistry();
 		for ( auto&& [id, storage] : registry.storage() )
 		{
 			if ( storage.size() == 0 )
 				continue;
 
+			if ( !storage.contains( InspectedGameObject ) )
+				continue;
+
 			// Resolve the meta type for the current component type
-			Refl::MetaType metaType = entt::resolve( storage.type() );
+			Refl::MetaType metaType = Refl::MetaRegistry::ResolveMetaType( storage.type() );
 			if ( !metaType )  // Ensure meta type exists
 				continue;
 
@@ -128,7 +139,7 @@ namespace Tridium::Editor {
 				if ( prop.value().try_cast<Internal::DrawPropFunc>( ) )
 				{
 					Internal::DrawPropFunc drawFunc = prop.value().cast<Internal::DrawPropFunc>();
-					const char* className = metaType.prop( "CleanClassName"_hs ).value().cast<const char*>();
+					const char* className = Refl::MetaRegistry::GetCleanTypeName(metaType);
 					bool wasChanged = drawFunc( className, component, static_cast<::Tridium::Refl::PropertyFlags>( ::Tridium::Refl::EPropertyFlag::EditAnywhere ));
 				}
 			}
