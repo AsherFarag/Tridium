@@ -18,7 +18,7 @@ namespace Tridium::Refl {
 		return entt::resolve( a_ID );
 	}
 
-	inline const char* MetaRegistry::GetCleanTypeName( MetaType a_MetaType )
+	inline const char* MetaRegistry::GetCleanTypeName( const MetaType& a_MetaType )
 	{
 		if ( auto prop = a_MetaType.prop( Internal::CleanClassNamePropID ) )
 		{
@@ -35,9 +35,9 @@ namespace Tridium::Refl {
 	}
 
 	template<typename _MetaProperty>
-	inline bool MetaRegistry::TryGetMetaPropertyFromClass( MetaType a_ClassID, _MetaProperty& o_Meta, MetaIDType a_MetaID )
+	inline bool MetaRegistry::TryGetMetaPropertyFromClass( const MetaType& a_ClassMetaType, _MetaProperty& o_Meta, MetaIDType a_MetaID )
 	{
-		if ( auto prop = a_ClassID.prop( a_MetaID ) )
+		if ( auto prop = a_ClassMetaType.prop( a_MetaID ) )
 		{
 			if ( prop.value().try_cast<_MetaProperty>( ) )
 			{

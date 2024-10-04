@@ -25,13 +25,13 @@ namespace Tridium::Refl {
 
 		static inline MetaType ResolveMetaType( MetaIDType a_ID );
 
-		static inline const char* GetCleanTypeName( MetaType a_MetaType );
+		static inline const char* GetCleanTypeName( const MetaType& a_MetaType );
 
 		template<typename T>
 		static MetaType ResolveMetaType();
 
 		template<typename _MetaProperty>
-		static bool TryGetMetaPropertyFromClass( MetaType a_ClassID, _MetaProperty& o_Meta, MetaIDType a_MetaID );
+		static bool TryGetMetaPropertyFromClass( const MetaType& a_ClassMetaType, _MetaProperty& o_Meta, MetaIDType a_MetaID );
 
 		template<typename _Class, typename _MetaProperty>
 		static bool TryGetMetaPropertyFromClass( _MetaProperty& o_Meta, MetaIDType a_MetaID );

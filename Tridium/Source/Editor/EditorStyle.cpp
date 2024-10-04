@@ -31,8 +31,8 @@ namespace Tridium::Editor::Style {
 			const ImVec4 frameBgColor = ImVec4( 0.05f, 0.05f, 0.05f, 0.54f );
 			const ImVec4 hoverColor = ImVec4( 0.19f, 0.19f, 0.19f, 0.54f );
 			const ImVec4 activeColor = ImVec4( 0.20f, 0.22f, 0.23f, 1.00f );
-			const ImVec4 headerColor = ImVec4( 0.30f, 0.30f, 0.40f, 0.52f );
-			const ImVec4 hoveredHeaderColor = ImVec4( 0.40f, 0.40f, 0.50f, 0.52f );
+			const ImVec4 headerColor = ImVec4( 0.20f, 0.225f, 0.25f, 0.52f );
+			const ImVec4 hoveredHeaderColor = ImVec4( 0.30f, 0.325f, 0.35f, 0.52f );
 			const ImVec4 checkMarkColor = ImVec4( 0.33f, 0.67f, 0.86f, 1.00f );
 
 			// Assign colors using the common variables
@@ -59,10 +59,10 @@ namespace Tridium::Editor::Style {
 			colors[ImGuiCol_SliderGrabActive] = ImVec4( 0.56f, 0.56f, 0.56f, 0.54f );
 			colors[ImGuiCol_Button] = headerColor;
 			colors[ImGuiCol_ButtonHovered] = hoveredHeaderColor;
-			colors[ImGuiCol_ButtonActive] = white;
+			colors[ImGuiCol_ButtonActive] = hoveredHeaderColor * 2;
 			colors[ImGuiCol_Header] = headerColor;
 			colors[ImGuiCol_HeaderHovered] = hoveredHeaderColor;
-			colors[ImGuiCol_HeaderActive] = white;
+			colors[ImGuiCol_HeaderActive] = hoveredHeaderColor * 2;
 			colors[ImGuiCol_Separator] = ImVec4( 0.28f, 0.28f, 0.28f, 0.29f );
 			colors[ImGuiCol_SeparatorHovered] = ImVec4( 0.44f, 0.44f, 0.44f, 0.29f );
 			colors[ImGuiCol_SeparatorActive] = ImVec4( 0.40f, 0.44f, 0.47f, 1.00f );

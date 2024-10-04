@@ -11,6 +11,8 @@ namespace Tridium {
         using ::Tridium::Editor::Internal::DrawPropFuncID;
         using ::Tridium::Editor::Internal::DrawPropFunc;
 
+#pragma region Helpers
+
         struct ElementReturn
         {
 			uint8_t IsOpen : 1;
@@ -24,16 +26,17 @@ namespace Tridium {
             return ImGui::SmallButton( a_Name );
         }
 
-        ElementReturn BeginElementTreeNode( const char* a_Name )
+        ElementReturn BeginElementTreeNode( const char* a_Name, PropertyFlags a_Flags )
         {
-
             ElementReturn ret;
 
             ret.IsOpen = ImGui::TreeNodeEx( a_Name, ImGuiTreeNodeFlags_DefaultOpen );
 
-            ImGui::SameLine();
-
-			ret.WasRemoved = DrawRemoveElementButton( "Remove" );
+            if ( HasFlag( a_Flags, EPropertyFlag::EditAnywhere ) )
+            {
+                ImGui::SameLine();
+                ret.WasRemoved = DrawRemoveElementButton( "Remove" );
+            }
 
             return ret;
         }
@@ -45,9 +48,11 @@ namespace Tridium {
             return ImGui::SmallButton( a_Name );
         }
 
+#pragma endregion
+
         bool DrawKeyToValueAssociativeContainer( entt::meta_associative_container& a_AssociativeContainer, const MetaData& a_MetaData, PropertyFlags a_DrawFlag )
         {
-            if ( !ImGui::TreeNodeEx( a_MetaData.name().c_str() ) )
+            if ( !ImGui::TreeNodeEx( a_MetaData.name().c_str(), ImGuiTreeNodeFlags_Framed ) )
             {
                 if ( ImGui::BeginItemTooltip() )
                 {
@@ -87,7 +92,7 @@ namespace Tridium {
             {
                 const std::string elementName = std::string( "Element " ) + std::to_string( index );
                 ++index;
-                ElementReturn treeNodeResult = BeginElementTreeNode( elementName.c_str() );
+                ElementReturn treeNodeResult = BeginElementTreeNode( elementName.c_str(), a_DrawFlag );
 
                 if ( treeNodeResult.WasRemoved )
                 {
@@ -123,13 +128,20 @@ namespace Tridium {
                 }
             }
 
-
-            if ( DrawAddElementButton( "Add Element" ) )
+            if ( a_AssociativeContainer.size() == 0 )
             {
-                auto newKey = MetaRegistry::ResolveMetaType( a_AssociativeContainer.key_type().info() ).construct();
-                auto newValue = MetaRegistry::ResolveMetaType( a_AssociativeContainer.mapped_type().info() ).construct();
-                a_AssociativeContainer.insert( newKey, newValue );
-                wasChanged = true;
+                ImGui::Text( "Empty" );
+            }
+
+            if ( HasFlag( a_DrawFlag, EPropertyFlag::EditAnywhere ) )
+            {
+                if ( DrawAddElementButton( "Add Element" ) )
+                {
+                    auto newKey = MetaRegistry::ResolveMetaType( a_AssociativeContainer.key_type().info() ).construct();
+                    auto newValue = MetaRegistry::ResolveMetaType( a_AssociativeContainer.mapped_type().info() ).construct();
+                    a_AssociativeContainer.insert( newKey, newValue );
+                    wasChanged = true;
+                }
             }
 
             return wasChanged;
@@ -137,7 +149,7 @@ namespace Tridium {
 
         bool DrawSequenceContainer( entt::meta_sequence_container& a_SequenceContainer, const MetaData& a_MetaData, PropertyFlags a_DrawFlag )
         {
-            if ( !ImGui::TreeNodeEx( a_MetaData.name().c_str() ) )
+            if ( !ImGui::TreeNodeEx( a_MetaData.name().c_str(), ImGuiTreeNodeFlags_Framed ) )
             {
                 if ( ImGui::BeginItemTooltip() )
                 {
@@ -162,38 +174,49 @@ namespace Tridium {
                 size_t index = 0;
                 for ( auto it = a_SequenceContainer.begin(); it != a_SequenceContainer.end(); ++it )
                 {
-					MetaAny&& element = *it;
+					MetaAny elementRef = *it;
 
                     const std::string elementName = std::to_string( index );
 					ImGui::PushItemWidth( ImGui::GetContentRegionAvail().x - 100 );
-                    wasChanged |= drawFunc( elementName.c_str(), element, a_DrawFlag );
+                    wasChanged |= drawFunc( elementName.c_str(), elementRef, a_DrawFlag );
 					ImGui::PopItemWidth();
 
-                    ImGui::SameLine();
-
-                    if ( DrawRemoveElementButton("Remove") )
+					if ( HasFlag( a_DrawFlag, EPropertyFlag::EditAnywhere ) )
                     {
-                        a_SequenceContainer.erase( it );
-                        wasChanged = true;
-                        break;
+                        ImGui::SameLine();
+
+                        if ( DrawRemoveElementButton( "Remove" ) )
+                        {
+                            a_SequenceContainer.erase( it );
+                            wasChanged = true;
+                            break;
+                        }
                     }
 
                     if ( wasChanged )
                     {
                         FIXME();
-                        it = a_SequenceContainer.insert( a_SequenceContainer.erase( it ), element );
+                        it = a_SequenceContainer.insert( a_SequenceContainer.erase( it ), elementRef );
                     }
 
                     ++index;
                 }
             }
 
-            if ( DrawAddElementButton( "Add Element" ) )
+			if ( HasFlag( a_DrawFlag, EPropertyFlag::EditAnywhere ) )
             {
-                auto newElement = MetaRegistry::ResolveMetaType( a_SequenceContainer.value_type().info() ).construct();
-                a_SequenceContainer.insert( a_SequenceContainer.end(), newElement );
-                wasChanged = true;
+                if ( DrawAddElementButton( "Add Element" ) )
+                {
+                    auto newElement = MetaRegistry::ResolveMetaType( a_SequenceContainer.value_type().info() ).construct();
+                    a_SequenceContainer.insert( a_SequenceContainer.end(), newElement );
+                    wasChanged = true;
+                }
             }
+
+			if ( a_SequenceContainer.size() == 0 )
+			{
+				ImGui::Text( "Empty" );
+			}
 
             ImGui::TreePop();
 

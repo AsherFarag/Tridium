@@ -45,50 +45,32 @@ namespace Tridium::Editor {
 		ImGui::End();
 	}
 
-	TODO( "This is a temporary solution that requires a reflection system!" );
-	template<typename T, typename UIFunction>
-	static void DrawComponent( const std::string& name, GameObject gameObject, UIFunction uiFunction )
+	void DrawComponent( const Refl::MetaType& a_MetaType, Refl::MetaAny&& a_Component )
 	{
-
-		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_AllowItemOverlap;
-		if ( gameObject.HasComponent<T>() )
+		// Check if the type has a DrawPropFunc property associated with it
+		if ( auto prop = a_MetaType.prop( Internal::DrawPropFuncID ) )
 		{
-			auto& component = gameObject.GetComponent<T>();
-
-			ImGui::Separator();
-			bool open = ImGui::TreeNodeEx( ( void* )typeid( T ).hash_code(), treeNodeFlags, name.c_str() );
-
-			ImGui::SameLine();
-
-			// Align the button to the right
-			float addGameObjectButtonWidth = ImGui::CalcTextSize( "+" ).x + ImGui::GetStyle().FramePadding.x * 2.f;
-			ImGui::SetCursorPosX( ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - addGameObjectButtonWidth - 5 );
-			if ( ImGui::Button( "+" ) )
+			// Try to retrieve the DrawPropFunc and call it
+			if ( prop.value().try_cast<Internal::DrawPropFunc>( ) )
 			{
-				ImGui::OpenPopup( "ComponentSettings" );
+				Internal::DrawPropFunc drawFunc = prop.value().cast<Internal::DrawPropFunc>();
+				const char* className = Refl::MetaRegistry::GetCleanTypeName( a_MetaType );
+				drawFunc( className, a_Component, static_cast<::Tridium::Refl::PropertyFlags>( ::Tridium::Refl::EPropertyFlag::EditAnywhere ) );
 			}
+		}
+	}
 
-			bool removeComponent = false;
-			if ( ImGui::BeginPopup( "ComponentSettings" ) )
+	void DrawComponent( const Refl::MetaType& a_MetaType, Refl::MetaAny& a_Component )
+	{
+		// Check if the type has a DrawPropFunc property associated with it
+		if ( auto prop = a_MetaType.prop( Internal::DrawPropFuncID ) )
+		{
+			// Try to retrieve the DrawPropFunc and call it
+			if ( prop.value().try_cast<Internal::DrawPropFunc>( ) )
 			{
-				if ( !std::is_same<T, TransformComponent>() )
-				{
-					if ( ImGui::MenuItem( "Remove component" ) )
-						removeComponent = true;
-				}
-
-				ImGui::EndPopup();
-			}
-
-			if ( open )
-			{
-				uiFunction( component );
-				ImGui::TreePop();
-			}
-
-			if ( removeComponent )
-			{
-				gameObject.RemoveComponent<T>();
+				Internal::DrawPropFunc drawFunc = prop.value().cast<Internal::DrawPropFunc>();
+				const char* className = Refl::MetaRegistry::GetCleanTypeName( a_MetaType );
+				drawFunc( className, a_Component, static_cast<::Tridium::Refl::PropertyFlags>( ::Tridium::Refl::EPropertyFlag::EditAnywhere ) );
 			}
 		}
 	}
@@ -112,6 +94,18 @@ namespace Tridium::Editor {
 
 		ImGui::Separator();
 
+		// Draw all components attached to the GameObject
+
+		// Draw TransformComponent first
+		if ( TransformComponent* tc = InspectedGameObject.TryGetComponent<TransformComponent>() )
+		{
+			DrawComponent( 
+				Refl::MetaRegistry::ResolveMetaType<TransformComponent>(), 
+				entt::forward_as_meta( *tc ) );
+		}
+
+		const Refl::MetaType transformMetaType = Refl::MetaRegistry::ResolveMetaType<TransformComponent>();
+
 		auto& registry = Application::Get().GetScene()->GetRegistry();
 		for ( auto&& [id, storage] : registry.storage() )
 		{
@@ -123,7 +117,7 @@ namespace Tridium::Editor {
 
 			// Resolve the meta type for the current component type
 			Refl::MetaType metaType = Refl::MetaRegistry::ResolveMetaType( storage.type() );
-			if ( !metaType )  // Ensure meta type exists
+			if ( !metaType || metaType == transformMetaType )  // Ensure meta type exists and isn't TransformComponent
 				continue;
 
 			void* componentPtr = storage.value( InspectedGameObject );
@@ -132,17 +126,7 @@ namespace Tridium::Editor {
 
 			Refl::MetaAny component = metaType.from_void( componentPtr );
 
-			// Check if the type has a DrawPropFunc property associated with it
-			if ( auto prop = metaType.prop( Internal::DrawPropFuncID ) )
-			{
-				// Try to retrieve the DrawPropFunc and call it
-				if ( prop.value().try_cast<Internal::DrawPropFunc>( ) )
-				{
-					Internal::DrawPropFunc drawFunc = prop.value().cast<Internal::DrawPropFunc>();
-					const char* className = Refl::MetaRegistry::GetCleanTypeName(metaType);
-					bool wasChanged = drawFunc( className, component, static_cast<::Tridium::Refl::PropertyFlags>( ::Tridium::Refl::EPropertyFlag::EditAnywhere ));
-				}
-			}
+			DrawComponent( metaType, component );
 		}
 	}
 
