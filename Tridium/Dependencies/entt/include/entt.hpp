@@ -61619,7 +61619,7 @@ struct meta_data {
           ctx{&area} {}
 
 
-    /* Begin Tridium */
+    /* <Tridium> */
 
      /**
      * @brief Returns the Property Flags of this meta data.
@@ -61637,7 +61637,7 @@ struct meta_data {
         return node->propFlags;
     }
 
-    /* End Tridium */
+    /* </Tridium> */
 
     /**
      * @brief Returns the number of setters available.
@@ -63683,13 +63683,19 @@ template<typename Type, auto Data, typename Policy = as_is_t>
         if constexpr(!std::is_array_v<std::remove_cv_t<std::remove_reference_t<std::invoke_result_t<decltype(Data), Type &>>>>) {
             if constexpr(std::is_invocable_v<decltype(Data), Type &>) {
                 if(auto *clazz = instance->try_cast<Type>(); clazz) {
-                    return meta_dispatch<Policy>(ctx, std::invoke(Data, *clazz));
+                    /* <Tridium> */
+                    //return meta_dispatch<Policy>(ctx, std::invoke(Data, *clazz));
+                    return meta_dispatch<Policy>( ctx, &( clazz->*Data ) );
+                    /* </Tridium> */
                 }
             }
 
             if constexpr(std::is_invocable_v<decltype(Data), const Type &>) {
                 if(auto *fallback = instance->try_cast<const Type>(); fallback) {
-                    return meta_dispatch<Policy>(ctx, std::invoke(Data, *fallback));
+                    /* <Tridium> */
+                    //return meta_dispatch<Policy>( ctx, std::invoke( Data, *fallback ) );
+                    return meta_dispatch<Policy>( ctx, &(fallback->*Data) );
+                    /* </Tridium> */
                 }
             }
         }

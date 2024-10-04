@@ -4,7 +4,7 @@
 
 namespace ImGui {
 
-	float s_FontSize = 17.5f;
+	float s_FontSize = 20.f;
 
     struct InputTextCallback_UserData
     {

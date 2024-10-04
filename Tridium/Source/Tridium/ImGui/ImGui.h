@@ -68,7 +68,6 @@ namespace ImGui {
 
 	struct ScopedStyleVar
 	{
-	public:
 		ScopedStyleVar( ImGuiStyleVar_ styleVar, float val ) { ImGui::PushStyleVar( styleVar, val ); }
 		ScopedStyleVar( ImGuiStyleVar_ styleVar, ImVec2 val ) { ImGui::PushStyleVar( styleVar, val ); }
 		~ScopedStyleVar() { ImGui::PopStyleVar(); }
@@ -76,9 +75,18 @@ namespace ImGui {
 
 	struct ScopedStyleCol
 	{
-	public:
 		ScopedStyleCol( ImGuiCol styleCol, ImVec4 col ) { ImGui::PushStyleColor( styleCol, col ); }
 		ScopedStyleCol( ImGuiCol styleCol, ImU32 col ) { ImGui::PushStyleColor( styleCol, col ); }
 		~ScopedStyleCol() { ImGui::PopStyleColor(); }
 	};
+
+	struct ScopedID
+	{
+		ScopedID( int a_ID ) { ImGui::PushID( a_ID ); }
+		ScopedID( const char* a_ID ) { ImGui::PushID( a_ID ); }
+		ScopedID( const char* str_id_begin, const char* str_id_end ) { ImGui::PushID( str_id_begin, str_id_end ); }
+		ScopedID( const void* a_ID ) { ImGui::PushID( a_ID ); }
+		~ScopedID() { ImGui::PopID(); }
+	};
+
 }

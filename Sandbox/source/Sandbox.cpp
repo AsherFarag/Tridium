@@ -1,18 +1,38 @@
 #include <Tridium.h>
 
-class Person : public Tridium::Component
+struct PersonInfo
 {
 	REFLECT;
-public:
+
+	~PersonInfo()
+	{
+		LOG_INFO( "PersonInfo Destructor" );
+	}
+
 	int Age = 0;
 	std::string Name = "John Doe";
 	float Height = 0.0f;
 };
 
-BEGIN_REFLECT_COMPONENT( Person )
+BEGIN_REFLECT( PersonInfo )
 	PROPERTY( Age, FLAGS( EditAnywhere ) )
 	PROPERTY( Name, FLAGS( EditAnywhere ) )
 	PROPERTY( Height, FLAGS( EditAnywhere ) )
+END_REFLECT( PersonInfo )
+
+class Person : public Tridium::Component
+{
+	REFLECT;
+public:
+	PersonInfo Info;
+	std::map<std::string, PersonInfo> Children;
+	std::vector<int> Numbers = { 1, 2, 3 };
+};
+
+BEGIN_REFLECT_COMPONENT( Person )
+	PROPERTY( Info, FLAGS( EditAnywhere ) )
+	PROPERTY( Children, FLAGS( EditAnywhere ) )
+	PROPERTY( Numbers, FLAGS( EditAnywhere ) )
 END_REFLECT( Person )
 
 class ExampleLayer : public Tridium::Layer

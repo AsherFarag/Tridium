@@ -108,38 +108,41 @@ namespace Tridium {
                 if ( !treeNodeResult.IsOpen )
                     continue;
 
-                // Need to make copies of the key and value to pass to the draw functions
-                FIXME();
+                // Create a temporary so that, if changed, we can replace the original
                 auto tempKey = key;
-                auto tempValue = value;
 
                 ImGui::PushItemWidth( ImGui::GetContentRegionAvail().x - 100 );
-                wasChanged |= keyDrawFunc( "Key", tempKey, a_DrawFlag );
-                wasChanged |= valueDrawFunc( "Value", tempValue, a_DrawFlag );
+                wasChanged |= keyDrawFunc( "Key", tempKey, a_DrawFlag);
+                wasChanged |= valueDrawFunc( "Value", value, a_DrawFlag );
                 ImGui::PopItemWidth();
 
                 ImGui::TreePop();
 
                 if ( wasChanged )
                 {
+                    auto tempVal = value;
                     a_AssociativeContainer.erase( key );
-                    a_AssociativeContainer.insert( tempKey, tempValue );
+                    a_AssociativeContainer.insert( std::move( tempKey ), std::move( tempVal ) );
                     break;
                 }
             }
 
-            if ( a_AssociativeContainer.size() == 0 )
+            if ( !HasFlag(a_DrawFlag, EPropertyFlag::EditAnywhere) 
+                && a_AssociativeContainer.size() == 0 )
             {
                 ImGui::Text( "Empty" );
             }
 
-            if ( HasFlag( a_DrawFlag, EPropertyFlag::EditAnywhere ) )
+            if ( HasFlag( a_DrawFlag, EPropertyFlag::EditAnywhere )
+                && DrawAddElementButton( "Add Element" ) )
             {
-                if ( DrawAddElementButton( "Add Element" ) )
+                auto newKey = a_AssociativeContainer.key_type().construct();
+                if ( a_AssociativeContainer.size() == 0 
+                    || a_AssociativeContainer.find( newKey ) == a_AssociativeContainer.end() )
                 {
-                    auto newKey = MetaRegistry::ResolveMetaType( a_AssociativeContainer.key_type().info() ).construct();
-                    auto newValue = MetaRegistry::ResolveMetaType( a_AssociativeContainer.mapped_type().info() ).construct();
-                    a_AssociativeContainer.insert( newKey, newValue );
+                    a_AssociativeContainer.insert(
+                        std::move( newKey ),
+                        std::move( a_AssociativeContainer.mapped_type().construct() ) );
                     wasChanged = true;
                 }
             }
@@ -177,26 +180,25 @@ namespace Tridium {
 					MetaAny elementRef = *it;
 
                     const std::string elementName = std::to_string( index );
+
+                    float oldCursorPosY = ImGui::GetCursorPosY();
 					ImGui::PushItemWidth( ImGui::GetContentRegionAvail().x - 100 );
                     wasChanged |= drawFunc( elementName.c_str(), elementRef, a_DrawFlag );
 					ImGui::PopItemWidth();
+					ImVec2 currentCursorPos = ImGui::GetCursorPos();
 
 					if ( HasFlag( a_DrawFlag, EPropertyFlag::EditAnywhere ) )
                     {
-                        ImGui::SameLine();
-
+						ImGui::ScopedID elementID( index );
+						ImGui::SetCursorPosY( oldCursorPosY + 2.5f );
                         if ( DrawRemoveElementButton( "Remove" ) )
                         {
                             a_SequenceContainer.erase( it );
                             wasChanged = true;
                             break;
                         }
-                    }
 
-                    if ( wasChanged )
-                    {
-                        FIXME();
-                        it = a_SequenceContainer.insert( a_SequenceContainer.erase( it ), elementRef );
+                        ImGui::SetCursorPos( currentCursorPos );
                     }
 
                     ++index;
@@ -208,12 +210,13 @@ namespace Tridium {
                 if ( DrawAddElementButton( "Add Element" ) )
                 {
                     auto newElement = MetaRegistry::ResolveMetaType( a_SequenceContainer.value_type().info() ).construct();
-                    a_SequenceContainer.insert( a_SequenceContainer.end(), newElement );
+                    a_SequenceContainer.insert( a_SequenceContainer.end(), std::move(newElement) );
                     wasChanged = true;
                 }
             }
 
-			if ( a_SequenceContainer.size() == 0 )
+			if ( !HasFlag( a_DrawFlag, EPropertyFlag::EditAnywhere ) 
+                && a_SequenceContainer.size() == 0 )
 			{
 				ImGui::Text( "Empty" );
 			}
@@ -261,7 +264,7 @@ namespace Tridium {
 				// Handle the drawing of associative containers
                 else if ( metaData.type().is_associative_container() )
                 {
-					auto associativeContainer = memberData.as_associative_container();
+					auto associativeContainer = ( *memberData ).as_associative_container();
 					if ( associativeContainer.key_only() )
 					{
                         TODO( "Add property drawing for key only associative containers!" );
@@ -274,22 +277,8 @@ namespace Tridium {
 				// Handle the drawing of sequence containers
                 else if ( metaData.type().is_sequence_container() )
                 {
-                    auto sequenceContainer = memberData.as_sequence_container();
+                    auto sequenceContainer = ( *memberData ).as_sequence_container();
                     memberWasChanged |= DrawSequenceContainer( sequenceContainer, metaData, drawFlag );
-                }
-
-                if ( memberWasChanged )
-                {
-                    wasChanged = true;
-
-                    if ( a_Handle.type().is_pointer_like() )
-                    {
-                        metaData.set( *a_Handle, memberData );
-                    }
-                    else
-                    {
-                        metaData.set( a_Handle, memberData );
-                    }
                 }
             }
 

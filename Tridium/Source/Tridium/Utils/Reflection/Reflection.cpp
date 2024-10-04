@@ -91,12 +91,20 @@ namespace Tridium::Refl {
             ? ::Tridium::Editor::EDrawPropertyFlags::Editable : ::Tridium::Editor::EDrawPropertyFlags::ReadOnly;
 
 		MetaAny handle = a_Handle.type().is_pointer_like() ? *a_Handle : a_Handle;
-        T value = handle.cast<T>();
-
-        if ( ::Tridium::Editor::DrawProperty( a_Name, value, drawFlags ) )
+        if ( a_Handle.type().is_pointer_like() )
         {
-            a_Handle = value;
-            return true;
+			// Const cast the pointer if it is a const pointer
+			if ( a_Handle.allow_cast<const T*>() )
+                return ::Tridium::Editor::DrawProperty( a_Name, *const_cast<T*>( a_Handle.cast<const T*>() ), drawFlags );
+            else
+				return ::Tridium::Editor::DrawProperty( a_Name, *a_Handle.cast<T*>(), drawFlags );
+        }
+        else
+        {
+            if ( a_Handle.policy() != entt::any_policy::cref )
+            {
+                return ::Tridium::Editor::DrawProperty( a_Name, a_Handle.cast<T&>(), drawFlags );
+            }
         }
 
 		return false;
