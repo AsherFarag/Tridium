@@ -5,12 +5,12 @@ namespace Tridium {
 
 	struct AssetImportSettings
 	{
-		REFLECT;
+		REFLECT(AssetImportSettings);
 	};
 
 	struct ModelImportSettings : public AssetImportSettings
 	{
-		REFLECT;
+		REFLECT( ModelImportSettings );
 		ModelImportSettings();
 
 		unsigned int PostProcessFlags;

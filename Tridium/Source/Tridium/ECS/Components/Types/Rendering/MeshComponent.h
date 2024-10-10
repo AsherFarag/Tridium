@@ -5,9 +5,9 @@
 
 namespace Tridium {
 
-	DEFINE_COMPONENT( MeshComponent )
+	class MeshComponent : public Component
 	{
-		REFLECT;
+		REFLECT( MeshComponent );
 	public:
 		MeshComponent() = default;
 		MeshComponent(const AssetRef<Mesh>& mesh);

@@ -4,9 +4,9 @@
 
 namespace Tridium {
 
-	DEFINE_COMPONENT( LuaScriptComponent, ScriptableComponent )
+	class LuaScriptComponent : public ScriptableComponent
 	{
-		REFLECT;
+		REFLECT( LuaScriptComponent );
 		friend class ScriptEngine;
 		friend class GameObject;
 

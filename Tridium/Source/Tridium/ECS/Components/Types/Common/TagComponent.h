@@ -3,9 +3,9 @@
 
 namespace Tridium {
 
-	DEFINE_COMPONENT( TagComponent )
+	class TagComponent : public Component
 	{
-		REFLECT;
+		REFLECT( TagComponent );
 	public:
 		TagComponent()
 			: Tag("Tag") {}

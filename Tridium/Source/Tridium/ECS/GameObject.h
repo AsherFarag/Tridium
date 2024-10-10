@@ -17,7 +17,7 @@ namespace Tridium {
 	// A GameObject is simply a wrapper around an EntityID.
 	class GameObject
 	{
-		REFLECT;
+		REFLECT( GameObject );
 		friend class Scene;
 	public:
 		GameObject( EntityID id = entt::null );
@@ -48,7 +48,7 @@ namespace Tridium {
 		template <typename T>
 		inline void RemoveComponent();
 
-		[[nodiscard]] std::vector<Component*>&& GetAllComponents() const;
+		[[nodiscard]] std::vector<std::pair<Refl::MetaType, Component*>> GetAllComponents() const;
 
 		static inline GameObject Create() { return Application::GetScene()->InstantiateGameObject(); }
 		static inline GameObject Create( GUID a_GUID, const std::string& a_Name ) { return Application::GetScene()->InstantiateGameObject( a_GUID, a_Name ); }

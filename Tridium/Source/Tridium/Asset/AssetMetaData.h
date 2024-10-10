@@ -16,7 +16,7 @@ namespace Tridium {
 
 	struct AssetMetaData
 	{
-		REFLECT;
+		REFLECT(AssetMetaData);
 
 		FileFormat FileFormatVersion = FILE_FORMAT_VERSION;
 		AssetHandle Handle;
@@ -35,31 +35,31 @@ namespace Tridium {
 
 	struct ShaderMetaData : public AssetMetaData
 	{
-		REFLECT;
+		REFLECT( ShaderMetaData );
 		ShaderMetaData() : AssetMetaData( EAssetType::Shader ) {}
 	};
 
 	struct SceneMetaData : public AssetMetaData
 	{
-		REFLECT;
+		REFLECT( SceneMetaData );
 		SceneMetaData() : AssetMetaData( EAssetType::Scene ) {}
 	};
 
 	struct TextureMetaData : public AssetMetaData
 	{
-		REFLECT;
+		REFLECT( TextureMetaData );
 		TextureMetaData() : AssetMetaData( EAssetType::Texture ) {}
 	};
 
 	struct MaterialMetaData : public AssetMetaData
 	{
-		REFLECT;
+		REFLECT( MaterialMetaData );
 		MaterialMetaData() : AssetMetaData( EAssetType::Material ) {}
 	};
 
 	struct ModelMetaData : public AssetMetaData
 	{
-		REFLECT;
+		REFLECT( ModelMetaData );
 		ModelMetaData();
 		ModelImportSettings ImportSettings;
 

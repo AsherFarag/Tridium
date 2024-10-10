@@ -13,7 +13,7 @@ namespace Tridium
 
         // Used to statically reflect a class.
         template<typename T>
-        struct Reflector { };
+        struct Reflector;
 
         namespace Internal {
 
@@ -43,14 +43,13 @@ namespace Tridium
     template<>											  \
     struct _REFL_ Reflector<Class>			              \
     {													  \
-	    static Reflector<Class> s_Reflector##Class;       \
 		using ClassType = Class;						  \
 	    Reflector()                                       \
 	    {												  \
             using enum _REFL_ EPropertyFlag;              \
 	        using namespace entt::literals;				  \
             auto meta = entt::meta<Class>();              \
-            meta.type( entt::type_hash<Class>::value() ); \
+			meta.type( entt::type_hash<Class>::value() ); \
             meta.prop( _REFL_ Internal::CleanClassNamePropID, #Class );      
 
 namespace Tridium::Refl::Internal {
@@ -131,7 +130,7 @@ namespace Tridium::Refl::Internal {
 	// Defines the functions that are apart of the class.
     #define FUNCTION(Name) _REFLECT_FUNCTION(Name)
 // Ends the reflection data for a class.
-#define END_REFLECT(Class) } }; static _REFL_ Reflector<Class> s_Reflector##Class;
+#define END_REFLECT(Class) } }; ::Tridium::Refl::Reflector<Class> Class::___StaticInitializer_##Class;
 
 // This macro is used to define the flags for a property.
 // Example: PROPERTY( Name, FLAGS( Serialize, VisibleAnywhere ) )

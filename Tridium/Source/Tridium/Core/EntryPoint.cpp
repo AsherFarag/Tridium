@@ -1,12 +1,11 @@
-#pragma once
+#include "tripch.h"
+#include <Tridium/ECS/Components/Types/Common/TestComponent.h>
 
 #ifdef TE_PLATFORM_WINDOWS
 #include <Tridium/Utils/Reflection/Reflection.h>
 
-extern Tridium::Application* Tridium::CreateApplication();
-
-int main(int argc, char** argv)
-{ 
+int main( int argc, char** argv )
+{
 	Tridium::Refl::__Internal_InitializeReflection();
 
 	Tridium::Log::Init();
@@ -21,11 +20,10 @@ int main(int argc, char** argv)
 
 	TE_CORE_INFO( argc );
 	for ( size_t i = 0; i < argc; ++i )
-	    TE_CORE_INFO( argv[i] );
+		TE_CORE_INFO( argv[i] );
 
-	auto app = Tridium::CreateApplication();
-	app->Run();
-	delete app;
+	Tridium::Application app;
+	app.Run();
 }
 
 #endif // TE_PLATFORM_WINDOWS

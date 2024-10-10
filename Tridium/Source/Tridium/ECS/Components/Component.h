@@ -13,7 +13,7 @@ namespace Tridium {
 
 	class Component
 	{
-		REFLECT;
+		REFLECT( Component )
 		friend class GameObject;
 	public:
 		Component() {}
@@ -26,18 +26,9 @@ namespace Tridium {
 		GameObject m_GameObject;
 	};
 
-
-
-#define DEFINE_BASE_COMPONENT( Name ) class Name : public Component
-#define DEFINE_INHERITED_COMPONENT( Name, Base ) class Name : public Base
-
-#define DEFINE_COMPONENT(...) EXPAND(SELECT_MACRO_2( __VA_ARGS__, DEFINE_INHERITED_COMPONENT, DEFINE_BASE_COMPONENT )(__VA_ARGS__))
-
-
-
-	DEFINE_COMPONENT( ScriptableComponent )
+	class ScriptableComponent : public Component
 	{
-		REFLECT;
+		REFLECT( ScriptableComponent );
 		friend class Scene;
 		friend class GameObject;
 

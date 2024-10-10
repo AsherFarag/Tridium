@@ -177,16 +177,11 @@ namespace Tridium::Editor {
 	bool EditorLayer::LoadScene( const std::string& filepath )
 	{
 		m_ActiveScene->Clear();
-
-		SceneSerializer serializer( m_ActiveScene );
-		serializer.DeserializeText( filepath );
 		return true;
 	}
 
 	bool EditorLayer::SaveScene( const std::string& filepath )
 	{
-		SceneSerializer serializer( m_ActiveScene );
-		serializer.SerializeText( filepath );
 		return true;
 	}
 

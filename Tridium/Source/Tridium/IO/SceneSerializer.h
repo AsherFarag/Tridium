@@ -1,23 +1,16 @@
 #pragma once
-#include <Tridium/Scene/Scene.h>
+#include "TextSerializer.h"
 
 namespace Tridium {
 
-	struct DeserializedGameObject;
+	class Scene;
 
-	class SceneSerializer
-	{
-	public:
-		SceneSerializer( const SharedPtr<Scene>& scene );
+	namespace IO {
 
-		void SerializeText( const std::string& filepath );
-		void SerializeBinary( const std::string& filepath );
+		template<>
+		void SerializeToText( Archive& a_Archive, const Scene& a_Data );
 
-		bool DeserializeText( const std::string& filepath );
-		bool DeserializeBinary( const std::string& filepath );
-
-	private:
-		SharedPtr<Scene> m_Scene;
-	};
-
+		template<>
+		bool DeserializeFromText( const YAML::Node& a_Node, Scene& a_Data );
+	}
 }

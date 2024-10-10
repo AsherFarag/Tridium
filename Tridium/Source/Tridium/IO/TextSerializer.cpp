@@ -1,5 +1,6 @@
 #include "tripch.h"
 #include "TextSerializer.h"
+#include <Tridium/ECS/GameObject.h>
 
 namespace Tridium::IO {
 
@@ -7,10 +8,9 @@ namespace Tridium::IO {
 	// SerializeToText
 	// =================================================================================================
 
-#define _TRIDUM_SERIALIZE_TO_TEXT( Type ) \
-	template<> void SerializeToText( Archive& a_Archive, const Type& a_Value )
+#define _TRIDUM_SERIALIZE_TO_TEXT( Type ) template<> void SerializeToText( Archive& a_Archive, const Type& a_Value )
 
-#pragma region Math Types
+	// ----------- Math Types -----------
 
 	_TRIDUM_SERIALIZE_TO_TEXT( Vector2 )
 	{
@@ -92,21 +92,30 @@ namespace Tridium::IO {
 		a_Archive << YAML::EndSeq;
 	}
 
-#pragma endregion
+	// ----------- Std Types -----------
 
-#pragma region Std Types
+	// ----------- Tridium Types -----------
 
-#pragma endregion
+	_TRIDUM_SERIALIZE_TO_TEXT( GUID )
+	{
+		YAML::Value << a_Value.ID();
+	}
 
+	_TRIDUM_SERIALIZE_TO_TEXT( GameObject )
+	{
+		a_Archive << YAML::BeginMap;
+		a_Archive << YAML::Key << "GUID"; SerializeToText( a_Archive, a_Value.GetGUID() );
+		a_Archive << YAML::Key << "Name" << YAML::Value << a_Value.GetTag();
+		a_Archive << YAML::EndMap;
+	}
 
 	// =================================================================================================
 	// DeserializeFromText
 	// =================================================================================================
 
-#define _TRIDUM_DESERIALIZE_FROM_TEXT( Type ) \
-	template<> bool DeserializeFromText( const YAML::Node& a_Node, Type& o_Value )
+#define _TRIDUM_DESERIALIZE_FROM_TEXT( Type ) template<> bool DeserializeFromText( const YAML::Node& a_Node, Type& o_Value )
 
-#pragma region Math Types
+	// ----------- Math Types -----------
 
 	_TRIDUM_DESERIALIZE_FROM_TEXT( Vector2 )
 	{
@@ -202,5 +211,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-#pragma endregion
+	// ----------- Std Types -----------
+
+	// ----------- Tridium Types -----------
+
 }

@@ -27,17 +27,20 @@ namespace Tridium {
         : m_ID( a_ID )
     {
     }
-    
-    std::vector<Component*>&& Tridium::GameObject::GetAllComponents() const
+
+    std::vector<std::pair<Refl::MetaType, Component*>> Tridium::GameObject::GetAllComponents() const
     {
-		std::vector<Component*> components;
+        std::vector<std::pair<Refl::MetaType, Component*>> components;
 		// Reserve a magic number of components
 		components.reserve( 16 );
 
 		for ( auto&& [id, componentStorage] : Application::GetScene()->m_Registry.storage() )
 		{
             if ( componentStorage.contains( m_ID ) )
-                components.push_back( static_cast<Component*>( componentStorage.value( m_ID ) ) );
+                components.emplace_back( 
+                    entt::resolve( componentStorage.type() ),
+                    static_cast<Component*>( componentStorage.value( m_ID ) ) 
+                );
 		}
 
         return std::move(components);

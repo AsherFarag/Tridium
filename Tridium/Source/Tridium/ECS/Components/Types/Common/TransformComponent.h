@@ -3,9 +3,9 @@
 
 namespace Tridium {
 
-	DEFINE_COMPONENT( TransformComponent )
+	class TransformComponent : public Component
 	{
-		REFLECT;
+		REFLECT(TransformComponent);
 		friend class SceneSerializer;
 	public:
 		TransformComponent() = default;

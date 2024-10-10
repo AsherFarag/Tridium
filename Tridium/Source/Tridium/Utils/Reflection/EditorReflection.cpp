@@ -6,7 +6,6 @@
 namespace Tridium {
 
 	namespace Refl::Internal {
-
         using enum ::Tridium::Refl::EPropertyFlag;
         using ::Tridium::Editor::Internal::DrawPropFuncID;
         using ::Tridium::Editor::Internal::DrawPropFunc;

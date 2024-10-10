@@ -1,5 +1,6 @@
 #include "tripch.h"
 #include "SceneSerializer.h"
+#include <Tridium/Scene/Scene.h>
 
 #include "SerializationUtil.h"
 
@@ -12,6 +13,37 @@
 
 #include <fstream>
 
+namespace Tridium::IO {
+
+	template<>
+	void SerializeToText( Archive& a_Archive, const Scene& a_Data )
+	{
+		a_Archive << YAML::BeginMap;
+		a_Archive << YAML::Key << "Scene";
+		a_Archive << YAML::Value << a_Data.GetName().c_str();
+
+		a_Archive << YAML::Key << "GameObjects";
+		a_Archive << YAML::Value << YAML::BeginSeq;
+		{
+			auto view = a_Data.GetRegistry().view<GUIDComponent>();
+			for ( auto it = view.rbegin(); it < view.rend(); it++ )
+			{
+				//SerializeGameObject( a_Archive, *it );
+			}
+		}
+		a_Archive << YAML::EndSeq;
+
+		a_Archive << YAML::EndMap;
+	}
+
+	template<>
+	bool DeserializeFromText( const YAML::Node& a_Node, Scene& a_Data )
+	{
+		return false;
+	}
+
+}
+
 namespace Tridium {
 
 	struct DeserializedGameObject
@@ -20,12 +52,6 @@ namespace Tridium {
 		std::optional<GUID> Parent = {};
 		std::vector<GUID> Children;
 	};
-
-	SceneSerializer::SceneSerializer( const SharedPtr<Scene>& scene )
-		: m_Scene(scene)
-	{
-
-	}
 
 	void SerializeGameObject( YAML::Emitter& out, GameObject go )
 	{
@@ -239,80 +265,42 @@ namespace Tridium {
 		return true;
 	}
 
-	void SceneSerializer::SerializeText( const std::string& filepath )
-	{
-		TE_CORE_TRACE( "Begin Serializing Scene" );
-		TE_CORE_TRACE( "Serializing to \"{0}\"", filepath );
+	//bool SceneSerializer::DeserializeText( const std::string& filepath )
+	//{
+	//	YAML::Node data = YAML::LoadFile( filepath );
+	//	if ( !data["Scene"] )
+	//		return false;
 
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "Scene";
-		out << YAML::Value << m_Scene->m_Name.c_str();
+	//	m_Scene->m_Path = filepath;
 
-		out << YAML::Key << "GameObjects";
-		out << YAML::Value << YAML::BeginSeq;
-		{
-			auto view = m_Scene->m_Registry.view<TagComponent>();
-			for ( auto it = view.rbegin(); it < view.rend(); it++ )
-			{
-				SerializeGameObject( out, *it );
-			}
-		}
-		out << YAML::EndSeq;
+	//	m_Scene->m_Name = data["Scene"].as<std::string>();
+	//	TE_CORE_TRACE( "Begin Deserializing Scene '{0}'", m_Scene->m_Name );
 
-		out << YAML::EndMap;
+	//	auto gameObjects = data["GameObjects"];
+	//	std::unordered_map<GUID, DeserializedGameObject> deserializedGameObjects;
+	//	deserializedGameObjects.reserve( gameObjects.size() );
+	//	for ( auto go : gameObjects )
+	//	{
+	//		DeserializedGameObject deserializedGO;
+	//		if ( DeserializeGameObject( go, deserializedGO ) )
+	//			deserializedGameObjects.insert( { deserializedGO.GameObject.GetGUID(), deserializedGO } );
+	//	}
 
-		std::ofstream outFile( filepath );
-		outFile << out.c_str();
+	//	// Link up gameobject references to eachother
+	//	for ( auto&& [guid, go] : deserializedGameObjects )
+	//	{
+	//		auto& tc = go.GameObject.GetComponent<TransformComponent>();
+	//		if ( go.Parent.has_value() )
+	//			tc.SetParent( deserializedGameObjects[go.Parent.value()].GameObject );
 
-		TE_CORE_TRACE( "Finished Serializing Scene" );
-	}
+	//		tc.m_Children.reserve( go.Children.size() );
+	//		for ( auto& childGUID : go.Children )
+	//		{
+	//			tc.m_Children.push_back( deserializedGameObjects[childGUID].GameObject);
+	//		}
+	//	}
 
-	void SceneSerializer::SerializeBinary( const std::string& filepath )
-	{
-	}
-
-	bool SceneSerializer::DeserializeText( const std::string& filepath )
-	{
-		YAML::Node data = YAML::LoadFile( filepath );
-		if ( !data["Scene"] )
-			return false;
-
-		m_Scene->m_Path = filepath;
-
-		m_Scene->m_Name = data["Scene"].as<std::string>();
-		TE_CORE_TRACE( "Begin Deserializing Scene '{0}'", m_Scene->m_Name );
-
-		auto gameObjects = data["GameObjects"];
-		std::unordered_map<GUID, DeserializedGameObject> deserializedGameObjects;
-		deserializedGameObjects.reserve( gameObjects.size() );
-		for ( auto go : gameObjects )
-		{
-			DeserializedGameObject deserializedGO;
-			if ( DeserializeGameObject( go, deserializedGO ) )
-				deserializedGameObjects.insert( { deserializedGO.GameObject.GetGUID(), deserializedGO } );
-		}
-
-		// Link up gameobject references to eachother
-		for ( auto&& [guid, go] : deserializedGameObjects )
-		{
-			auto& tc = go.GameObject.GetComponent<TransformComponent>();
-			if ( go.Parent.has_value() )
-				tc.SetParent( deserializedGameObjects[go.Parent.value()].GameObject );
-
-			tc.m_Children.reserve( go.Children.size() );
-			for ( auto& childGUID : go.Children )
-			{
-				tc.m_Children.push_back( deserializedGameObjects[childGUID].GameObject);
-			}
-		}
-
-		TE_CORE_TRACE( "Finished Deserializing Scene" );
-		return true;
-	}
-
-	bool SceneSerializer::DeserializeBinary( const std::string& filepath )
-	{
-		return false;
-	}
+	//	TE_CORE_TRACE( "Finished Deserializing Scene" );
+	//	return true;
+	//}
 }

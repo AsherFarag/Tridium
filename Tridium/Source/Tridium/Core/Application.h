@@ -58,8 +58,5 @@ namespace Tridium
 	private:
 		static Application* s_Instance;
 	};
-
-	// To be defined in CLIENT
-	Application* CreateApplication();
 }
 

@@ -1,4 +1,5 @@
 #pragma once
+#include "Meta.h"
 
 namespace Tridium::Refl {
 
@@ -14,4 +15,6 @@ namespace Tridium::Refl {
 }
 
 // To be declared in the class definition
-#define REFLECT template<typename T> friend class ::Tridium::Refl::Reflector;
+#define REFLECT(Class)                                            \
+	template<typename T> friend class ::Tridium::Refl::Reflector; \
+	[[maybe_unused]] static ::Tridium::Refl::Reflector<Class> ___StaticInitializer_##Class;

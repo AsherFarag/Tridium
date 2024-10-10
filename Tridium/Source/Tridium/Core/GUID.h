@@ -8,7 +8,7 @@ constexpr uint64_t INVALID_GUID = 0;
 	class GUID
 	{
 	public:
-		typedef uint64_t Type;
+		using Type = uint64_t;
 
 		GUID() : m_ID( INVALID_GUID ) {}
 		GUID( Type id ) : m_ID( id ) {}

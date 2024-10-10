@@ -4,6 +4,12 @@
 #define YAML_CPP_STATIC_DEFINE
 #include "yaml-cpp/yaml.h"
 
+namespace Tridium {
+
+	class GameObject;
+
+}
+
 namespace Tridium::IO {
 
 	using Archive = YAML::Emitter;
@@ -20,15 +26,14 @@ namespace Tridium::IO {
 
 	// Serialize a value into a text format into the given archive.
 	template<typename T>
-	void SerializeToText( Archive& a_Archive, const T& a_Value )
+	void SerializeToText( Archive& a_Archive, const T& a_Data )
 	{
-		a_Archive << YAML::Value << a_Value;
+		a_Archive << YAML::Value << a_Data;
 	}
 
-#define _TRIDUM_SERIALIZE_TO_TEXT( Type ) \
-	template<> void SerializeToText( Archive& a_Archive, const Type& a_Value )
+#define _TRIDUM_SERIALIZE_TO_TEXT( Type ) template<> void SerializeToText( Archive& a_Archive, const Type& a_Data )
 
-#pragma region Math Types
+	// ----------- Math Types -----------
 
 	_TRIDUM_SERIALIZE_TO_TEXT( Vector2 );
 	_TRIDUM_SERIALIZE_TO_TEXT( Vector3 );
@@ -38,16 +43,14 @@ namespace Tridium::IO {
 	_TRIDUM_SERIALIZE_TO_TEXT( Matrix3 );
 	_TRIDUM_SERIALIZE_TO_TEXT( Matrix4 );
 
-#pragma endregion
-
-#pragma region Std Types
+	// ----------- STD Types -----------
 
 	template<typename T>
-	void SerializeToText( Archive& a_Archive, const std::vector<T>& a_Value )
+	void SerializeToText( Archive& a_Archive, const std::vector<T>& a_Data )
 	{
 		a_Archive << YAML::Flow;
 		a_Archive << YAML::BeginSeq;
-		for ( const T& it : a_Value )
+		for ( const T& it : a_Data )
 		{
 			SerializeToText( a_Archive, it );
 		}
@@ -55,10 +58,10 @@ namespace Tridium::IO {
 	}
 
 	template<typename _Key, typename _Val>
-	void SerializeToText( Archive& a_Archive, const std::map<_Key, _Val>& a_Value )
+	void SerializeToText( Archive& a_Archive, const std::map<_Key, _Val>& a_Data )
 	{
 		a_Archive << YAML::BeginSeq;
-		for ( const auto& it : a_Value )
+		for ( const auto& it : a_Data )
 		{
 			a_Archive << YAML::Flow << YAML::BeginSeq;
 			SerializeToText( a_Archive, it.first );
@@ -69,10 +72,10 @@ namespace Tridium::IO {
 	}
 
 	template<typename _Key, typename _Val>
-	void SerializeToText( Archive& a_Archive, const std::unordered_map<_Key, _Val>& a_Value )
+	void SerializeToText( Archive& a_Archive, const std::unordered_map<_Key, _Val>& a_Data )
 	{
 		a_Archive << YAML::BeginSeq;
-		for ( const auto& it : a_Value )
+		for ( const auto& it : a_Data )
 		{
 			a_Archive << YAML::Flow << YAML::BeginSeq;
 			SerializeToText( a_Archive, it.first );
@@ -82,10 +85,15 @@ namespace Tridium::IO {
 		a_Archive << YAML::EndSeq;
 	}
 
-#pragma endregion
+	// ---------- Tridium Types -----------
+
+	_TRIDUM_SERIALIZE_TO_TEXT( GUID );
+	_TRIDUM_SERIALIZE_TO_TEXT( GameObject );
 
 
 #undef _TRIDUM_SERIALIZE_TO_TEXT
+
+
 
 	// =================================================================================================
 	// DeserializeFromText
@@ -94,20 +102,19 @@ namespace Tridium::IO {
 	// Deserialize a value from a text format from the given node.
 	// Returns true if the deserialization was successful, false otherwise.
 	template<typename T>
-	bool DeserializeFromText( const YAML::Node& a_Node, T& o_Value )
+	bool DeserializeFromText( const YAML::Node& a_Node, T& o_Data )
 	{
 		if ( a_Node )
 		{
-			o_Value = a_Node.as<T>();
+			o_Data = a_Node.as<T>();
 			return true;
 		}
 		return false;
 	}
 
-#define _TRIDUM_DESERIALIZE_FROM_TEXT( Type ) \
-	template<> bool DeserializeFromText( const YAML::Node& a_Node, Type& o_Value )
+#define _TRIDUM_DESERIALIZE_FROM_TEXT( Type ) template<> bool DeserializeFromText( const YAML::Node& a_Node, Type& o_Data )
 
-#pragma region Math Types
+	// ----------- Math Types -----------
 
 	_TRIDUM_DESERIALIZE_FROM_TEXT( Vector2 );
 	_TRIDUM_DESERIALIZE_FROM_TEXT( Vector3 );
@@ -117,22 +124,20 @@ namespace Tridium::IO {
 	_TRIDUM_DESERIALIZE_FROM_TEXT( Matrix3 );
 	_TRIDUM_DESERIALIZE_FROM_TEXT( Matrix4 );
 
-#pragma endregion
-
-#pragma region Std Types
+	// ----------- STD Types -----------
 
 	template<typename T>
-	bool DeserializeFromText( const YAML::Node& a_Node, std::vector<T>& o_Value )
+	bool DeserializeFromText( const YAML::Node& a_Node, std::vector<T>& o_Data )
 	{
 		if ( a_Node && a_Node.IsSequence() )
 		{
 			const size_t size = a_Node.size();
-			o_Value.reserve( size );
+			o_Data.reserve( size );
 
 			size_t index = 0;
 			for ( const auto& it : a_Node )
 			{
-				if ( !DeserializeFromText( it, o_Value[index] ) )
+				if ( !DeserializeFromText( it, o_Data[index] ) )
 					return false;
 
 				++index;
@@ -145,7 +150,7 @@ namespace Tridium::IO {
 	}
 
 	template<typename _Key, typename _Val>
-	bool DeserializeFromText( const YAML::Node& a_Node, std::map<_Key, _Val>& o_Value )
+	bool DeserializeFromText( const YAML::Node& a_Node, std::map<_Key, _Val>& o_Data )
 	{
 		if ( a_Node && a_Node.IsSequence() )
 		{
@@ -159,7 +164,7 @@ namespace Tridium::IO {
 				if ( !DeserializeFromText( it[0], key ) || !DeserializeFromText( it[1], val ) )
 					return false;
 
-				o_Value[key] = val;
+				o_Data[key] = val;
 			}
 
 			return true;
@@ -169,7 +174,7 @@ namespace Tridium::IO {
 	}
 
 	template<typename _Key, typename _Val>
-	bool DeserializeFromText( const YAML::Node& a_Node, std::unordered_map<_Key, _Val>& o_Value )
+	bool DeserializeFromText( const YAML::Node& a_Node, std::unordered_map<_Key, _Val>& o_Data )
 	{
 		if ( a_Node && a_Node.IsSequence() )
 		{
@@ -183,7 +188,7 @@ namespace Tridium::IO {
 				if ( !DeserializeFromText( it[0], key ) || !DeserializeFromText( it[1], val ) )
 					return false;
 
-				o_Value[key] = val;
+				o_Data[key] = val;
 			}
 
 			return true;
@@ -192,7 +197,10 @@ namespace Tridium::IO {
 		return false;
 	}
 
-#pragma endregion
+	// ---------- Tridium Types -----------
+
+	_TRIDUM_DESERIALIZE_FROM_TEXT( GUID );
+	_TRIDUM_DESERIALIZE_FROM_TEXT( GameObject );
 
 #undef _TRIDUM_DESERIALIZE_FROM_TEXT
 

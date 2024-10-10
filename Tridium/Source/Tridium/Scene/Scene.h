@@ -11,7 +11,6 @@ namespace Tridium {
 	class Scene : public Asset
 	{
 		friend class GameObject;
-		friend class SceneSerializer;
 
 	public:
 		Scene( const std::string& name = "Untitled");
@@ -23,15 +22,17 @@ namespace Tridium {
 		void OnEnd();
 
 		inline const std::string& GetName() const { return m_Name; }
+		inline void SetName( const std::string& a_Name ) { m_Name = a_Name; }
+		inline auto& GetRegistry() { return m_Registry; }
+		inline auto& GetRegistry() const { return m_Registry; }
 
-		void SetPaused( bool newPaused ) { m_Paused = newPaused; }
+		void SetPaused( bool a_NewPaused ) { m_Paused = a_NewPaused; }
 		bool IsPaused() const { return m_Paused; }
 
-		GameObject InstantiateGameObject( const std::string& name = "GameObject" );
-		GameObject InstantiateGameObject( GUID guid, const std::string& name = "GameObject" );
+		GameObject InstantiateGameObject( const std::string& a_Name = "GameObject" );
+		GameObject InstantiateGameObject( GUID a_GUID, const std::string& a_Name = "GameObject" );
 		CameraComponent* GetMainCamera();
 		void SetMainCamera( const EntityID& a_Camera ) { m_MainCamera = a_Camera; }
-		auto& GetRegistry() { return m_Registry; }
 		void Clear();
 
 	private:

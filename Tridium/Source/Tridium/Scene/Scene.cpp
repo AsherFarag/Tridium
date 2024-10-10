@@ -50,13 +50,13 @@ namespace Tridium {
 		}
 	}
 
-	void Scene::Render( const Camera& camera, const Matrix4& viewMatrix )
+	void Scene::Render( const Camera& a_Camera, const Matrix4& a_ViewMatrix )
 	{
 		RenderCommand::SetClearColor( { 0.1, 0.1, 0.12, 1.0 } );
 		RenderCommand::Clear();
 
-		Matrix4 pvm = camera.GetProjection() * viewMatrix;
-		Renderer::BeginScene( camera, viewMatrix );
+		Matrix4 pvm = a_Camera.GetProjection() * a_ViewMatrix;
+		Renderer::BeginScene( a_Camera, a_ViewMatrix );
 
 		// - Draw Meshes -
 		RenderCommand::SetCullMode( true );
@@ -129,20 +129,20 @@ namespace Tridium {
 	{
 	}
 
-	GameObject Scene::InstantiateGameObject( const std::string& name )
+	GameObject Scene::InstantiateGameObject( const std::string& a_Name )
 	{
 		auto go = GameObject( m_Registry.create() );
 		go.AddComponent<GUIDComponent>();
-		go.AddComponent<TagComponent>( name );
+		go.AddComponent<TagComponent>( a_Name );
 		go.AddComponent<TransformComponent>();
 		return go;
 	}
 
-	GameObject Scene::InstantiateGameObject( GUID guid, const std::string& name )
+	GameObject Scene::InstantiateGameObject( GUID a_GUID, const std::string& a_Name )
 	{
 		auto go = GameObject( m_Registry.create() );
-		go.AddComponent<GUIDComponent>( guid );
-		go.AddComponent<TagComponent>( name );
+		go.AddComponent<GUIDComponent>( a_GUID );
+		go.AddComponent<TagComponent>( a_Name );
 		go.AddComponent<TransformComponent>();
 		return go;
 	}

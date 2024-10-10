@@ -1,8 +1,9 @@
 #include <Tridium.h>
+#include <Tridium/ECS/Components/Types/Common/TestComponent.h>
 
 struct PersonInfo
 {
-	REFLECT;
+	REFLECT(PersonInfo);
 
 	~PersonInfo()
 	{
@@ -22,7 +23,7 @@ END_REFLECT( PersonInfo )
 
 class Person : public Tridium::Component
 {
-	REFLECT;
+	REFLECT(Person);
 public:
 	PersonInfo Info;
 	std::map<std::string, PersonInfo> Children;
@@ -39,30 +40,16 @@ class ExampleLayer : public Tridium::Layer
 {
 
 public:
-
+	int m = 5;
 	ExampleLayer() = default;
 
 	virtual void OnImGuiDraw() override
 	{
+		//Tridium::s_ReflectorTestComponent;
+		auto t = entt::resolve<Tridium::TestComponent>();
+		LOG_INFO( "{0}", Tridium::Refl::MetaRegistry::GetCleanTypeName(t) );
+
+		t = entt::resolve( t.id() );
+		LOG_INFO( "{0}", t.info().name() );
 	}
 };
-
-
-class Sandbox : public Tridium::Application
-{
-public:
-	Sandbox()
-	{
-		PushLayer( new ExampleLayer() );
-	}
-
-	~Sandbox()
-	{
-
-	}
-};
-
-Tridium::Application* Tridium::CreateApplication()
-{
-	return new Sandbox();
-}

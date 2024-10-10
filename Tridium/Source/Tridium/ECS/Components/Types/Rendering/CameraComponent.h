@@ -4,9 +4,9 @@
 
 namespace Tridium {
 
-	DEFINE_COMPONENT( CameraComponent )
+	class CameraComponent : public Component
 	{
-		REFLECT;
+		REFLECT(CameraComponent);
 	public:
 		CameraComponent() = default;
 		~CameraComponent() = default;

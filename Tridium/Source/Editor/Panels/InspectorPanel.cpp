@@ -104,7 +104,13 @@ namespace Tridium::Editor {
 				entt::forward_as_meta( *tc ) );
 		}
 
-		const Refl::MetaType transformMetaType = Refl::MetaRegistry::ResolveMetaType<TransformComponent>();
+		// Create a set of blacklisted components that should not be drawn in the inspector
+		static const std::unordered_set<entt::id_type> BlacklistedComponents =
+		{
+			entt::type_hash<TransformComponent>::value(),
+			entt::type_hash<TagComponent>::value(),
+			entt::type_hash<GUIDComponent>::value(),
+		};
 
 		auto& registry = Application::Get().GetScene()->GetRegistry();
 		for ( auto&& [id, storage] : registry.storage() )
@@ -117,7 +123,7 @@ namespace Tridium::Editor {
 
 			// Resolve the meta type for the current component type
 			Refl::MetaType metaType = Refl::MetaRegistry::ResolveMetaType( storage.type() );
-			if ( !metaType || metaType == transformMetaType )  // Ensure meta type exists and isn't TransformComponent
+			if ( !metaType || BlacklistedComponents.contains( metaType.id() ) )
 				continue;
 
 			void* componentPtr = storage.value( InspectedGameObject );
