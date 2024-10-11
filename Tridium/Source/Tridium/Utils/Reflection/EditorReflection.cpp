@@ -51,7 +51,7 @@ namespace Tridium {
 
         bool DrawKeyToValueAssociativeContainer( entt::meta_associative_container& a_AssociativeContainer, const MetaData& a_MetaData, PropertyFlags a_DrawFlag )
         {
-            if ( !ImGui::TreeNodeEx( a_MetaData.name().c_str(), ImGuiTreeNodeFlags_Framed ) )
+            if ( !ImGui::TreeNodeEx( a_MetaData.name().c_str() ) )
             {
                 if ( ImGui::BeginItemTooltip() )
                 {
@@ -151,7 +151,7 @@ namespace Tridium {
 
         bool DrawSequenceContainer( entt::meta_sequence_container& a_SequenceContainer, const MetaData& a_MetaData, PropertyFlags a_DrawFlag )
         {
-            if ( !ImGui::TreeNodeEx( a_MetaData.name().c_str(), ImGuiTreeNodeFlags_Framed ) )
+            if ( !ImGui::TreeNodeEx( a_MetaData.name().c_str() ) )
             {
                 if ( ImGui::BeginItemTooltip() )
                 {

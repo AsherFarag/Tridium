@@ -95,7 +95,7 @@ namespace Tridium::Editor {
 			return;
 
 		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2( 1, 1 ) );
-
+		ImGui::ScopedStyleCol winBg( ImGuiCol_::ImGuiCol_WindowBg, ImVec4( 0.1f, 0.1f, 0.1f, 1.0f ) );
 		ImGui::FunctionScope endWindow( +[]() { ImGui::End(); } );
 		if ( !ImGui::Begin( "Scene Heirarchy" ) )
 		{
@@ -107,8 +107,9 @@ namespace Tridium::Editor {
 		m_IsHovered = ImGui::IsWindowHovered();
 		m_IsFocused = ImGui::IsWindowFocused() || ImGui::IsItemFocused();
 
-		auto gameObjects = m_Context->GetRegistry().view<TagComponent>();
-		ImGui::Text( "Game Objects: %i", gameObjects.size() );
+		ImGui::PushFont( ImGui::GetBoldFont() );
+		ImGui::Text( m_Context->GetName().c_str() );
+		ImGui::PopFont();
 
 		ImGui::SameLine( ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("+").x - 10);
 
@@ -119,28 +120,17 @@ namespace Tridium::Editor {
 
 		ImGui::Separator();
 
-		// Draw Heirarchy List
-		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_Framed;
-		flags |= gameObjects.size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0;
-		ImGui::PushFont( ImGui::GetBoldFont() );
-		if ( ImGui::TreeNodeEx( m_Context->GetName().c_str(), flags ) )
-		{
-			ImGui::PopFont();
-			for ( int i = 0; i < gameObjects.size(); ++i )
-			{
-				GameObject go = gameObjects[i];
-				// We are only drawing root objects in this loop
-				if ( go.GetParent().IsValid() )
-					continue;
+		auto gameObjects = m_Context->GetRegistry().view<TagComponent>();
 
-				DrawSceneNode( go );
-			}
-
-			ImGui::TreePop();
-		}
-		else
+		ImGui::ScopedStyleVar itemSpacing( ImGuiStyleVar_::ImGuiStyleVar_ItemSpacing, ImVec2( 0, 1 ) );
+		for ( int i = 0; i < gameObjects.size(); ++i )
 		{
-			ImGui::PopFont();
+			GameObject go = gameObjects[i];
+			// We are only drawing root objects in this loop
+			if ( go.GetParent().IsValid() )
+				continue;
+
+			DrawSceneNode( go );
 		}
 	}
 
@@ -168,19 +158,12 @@ namespace Tridium::Editor {
 
 			if ( ImGui::BeginMenu("Primatives") )
 			{
-				//if ( ImGui::MenuItem( "Cube" ) )
-				//{
-				//	newGO = m_Context->InstantiateGameObject( "Cube" );
-				//	newGO.AddComponent<MeshComponent>().SetMesh( MeshLibrary::GetCube() );
-				//	SetSelectedGameObject( newGO );
-				//}
-
-				//if ( ImGui::MenuItem( "Sphere" ) )
-				//{
-				//	newGO = m_Context->InstantiateGameObject( "Sphere" );
-				//	newGO.AddComponent<MeshComponent>().SetMesh( MeshLibrary::GetSphere() );
-				//	SetSelectedGameObject( newGO );
-				//}
+				if ( ImGui::MenuItem( "Cube" ) )
+				{
+					newGO = m_Context->InstantiateGameObject( "Cube" );
+					newGO.AddComponent<MeshComponent>();
+					SetSelectedGameObject( newGO );
+				}
 
 				ImGui::EndMenu();
 			}

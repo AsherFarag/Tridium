@@ -121,7 +121,7 @@ namespace Tridium {
 			out << YAML::Key << "LuaScriptComponent";
 			out << YAML::BeginMap;
 
-			out << YAML::Key << "LuaScript" << YAML::Value << YAML::DoubleQuoted << ( lsc->GetScript() ? lsc->GetScript()->GetFilePath().ToString() : "" );
+			//out << YAML::Key << "LuaScript" << YAML::Value << YAML::DoubleQuoted << ( lsc->GetScript() ? lsc->GetScript()->GetFilePath().ToString() : "" );
 
 			out << YAML::EndMap;
 		}
@@ -233,7 +233,7 @@ namespace Tridium {
 				lsc = &deserialisedGO.AddComponent<LuaScriptComponent>();
 			}
 
-			lsc->SetScript( Script::Create( luaScriptComponent["LuaScript"].as<std::string>() ) );
+			//lsc->SetScript( Script::Create( luaScriptComponent["LuaScript"].as<std::string>() ) );
 		}
 
 		if ( auto cameraComponent = go["CameraComponent"] )

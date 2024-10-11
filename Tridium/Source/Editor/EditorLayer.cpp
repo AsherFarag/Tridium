@@ -308,7 +308,7 @@ namespace Tridium::Editor {
 
 	UIToolBar::UIToolBar()
 	{
-		IO::FilePath iconFolder( "Content/Engine/Editor/Icons" );
+		IO::FilePath iconFolder( "../Tridium/Content/Engine/Editor/Icons" );
 
 		PlayButtonIcon.reset( TextureLoader::Load( ( iconFolder / "PlayButton.png" ).ToString() ) );
 		StopButtonIcon.reset( TextureLoader::Load( ( iconFolder / "StopButton.png" ).ToString() ) );

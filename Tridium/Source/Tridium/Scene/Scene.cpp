@@ -63,34 +63,99 @@ namespace Tridium {
 		auto meshComponents = m_Registry.view<MeshComponent, TransformComponent>();
 		meshComponents.each( [&]( auto go, MeshComponent& meshComponent, TransformComponent& transform )
 			{
-				if ( auto& mesh = meshComponent.GetMesh() )
-				{
-					AssetRef<Material> mat = meshComponent.GetMaterial();
-					AssetRef<Shader> shader = mat ? mat->GetShader() : nullptr;
+				//if ( true /*auto& mesh = meshComponent.GetMesh()*/ )
+				//{
+				//	AssetRef<Material> mat = meshComponent.GetMaterial();
+				//	AssetRef<Shader> shader = mat ? mat->GetShader() : nullptr;
 
-					if ( !shader )
-						return;
+				//	if ( !shader )
+				//		return;
 
-					shader->Bind();
-					shader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
+				//	shader->Bind();
+				//	shader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
 
-					if ( mat )
+				//	if ( mat )
+				//	{
+				//		//shader->SetFloat4( "uColor", mat->Color );
+				//		mat->Bind();
+				//	}
+
+				//	mesh->GetVAO()->Bind();
+
+				//	RenderCommand::DrawIndexed( mesh->GetVAO() );
+
+				//	mesh->GetVAO()->Unbind();
+
+				//	if ( mat )
+				//		mat->Unbind();
+
+				//	shader->Unbind();
+				//}
+
+				std::string vert = R"(
+					#version 330 core
+					layout(location = 0) in vec3 a_Position;
+					layout(location = 1) in vec3 a_Normal; 
+
+					uniform mat4 uPVM;
+					uniform mat4 uModel;
+					
+					out vec3 v_Normal;
+
+					void main()
 					{
-						//shader->SetFloat4( "uColor", mat->Color );
-						mat->Bind();
+						v_Normal = mat3(transpose(inverse(uModel))) * a_Normal;
+						gl_Position = uPVM * vec4(a_Position, 1.0);
 					}
+				)";
 
-					mesh->GetVAO()->Bind();
+				std::string frag = R"(
+				    #version 330 core
+				    layout(location = 0) out vec4 color;
+				
+				    in vec3 v_Normal;
+				
+				    uniform vec3 lightDir; // Direction of the light
+				    uniform vec3 objectColor; // Base object color
+					uniform vec3 ambientColor; // Ambient color
+					uniform vec3 lightColor; // Light color
+				
+				    void main()
+				    {
+				        // Normalize the normal vector
+				        vec3 norm = normalize(v_Normal);
+				
+				        // Calculate diffuse lighting (Lambertian reflectance)
+				        float diff = max(dot(norm, normalize(lightDir)), 0.0);
+				
+				        // Final color is object color modulated by diffuse lighting
+				        vec3 lighting = objectColor * diff;
+				
+				        // Output final color with alpha of 1.0
+				        color = vec4(ambientColor + lighting + lightColor * diff, 1.0f);
+				    }
+				)";
+				RenderCommand::SetCullMode( false );
+				static Shader* shader = Shader::Create( vert, frag );
 
-					RenderCommand::DrawIndexed( mesh->GetVAO() );
+				shader->Bind();
+				shader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
+				shader->SetMatrix4( "uModel", transform.GetWorldTransform() );
+				shader->SetFloat3( "lightDir", { 1.0f, 1.0f, -1.0f } );
+				shader->SetFloat3( "objectColor", { 0.5f, 0.5f, 0.5f } );
+				shader->SetFloat3( "ambientColor", { 0.3f, 0.1f, 0.05f } );
+				shader->SetFloat3( "lightColor", { 1.0f, 0.95f, 0.1f } );
 
-					mesh->GetVAO()->Unbind();
+				auto& meshRef = meshComponent.GetMesh();
+				auto& mesh = *meshRef.Get();
 
-					if ( mat )
-						mat->Unbind();
+				mesh.GetVAO()->Bind();
 
-					shader->Unbind();
-				}
+				RenderCommand::DrawIndexed( mesh.GetVAO() );
+
+				mesh.GetVAO()->Unbind();
+
+				shader->Unbind();
 			} );
 
 

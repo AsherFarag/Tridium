@@ -5,7 +5,8 @@ namespace Tridium {
 	struct ProjectConfiguration
 	{
 		std::string Name = "Untitled";
-		IO::FilePath AssetDirectory = "Content";
+		FIXME()
+		IO::FilePath AssetDirectory = "../Tridium/Content";
 		IO::FilePath MetaDirectory = "Meta";
 		IO::FilePath StartScene = "Content";
 

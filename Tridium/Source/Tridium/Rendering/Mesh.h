@@ -33,7 +33,7 @@ namespace Tridium {
 		const inline size_t GetNumOfVerticies() const { return m_NumVerticies; }
 		const inline size_t GetNumOfPolygons() const { return (size_t)( m_NumVerticies / 3u ); }
 
-	private:
+	//private:
 		SharedPtr<VertexArray> m_VAO;
 		SharedPtr<VertexBuffer> m_VBO;
 		SharedPtr<IndexBuffer> m_IBO;

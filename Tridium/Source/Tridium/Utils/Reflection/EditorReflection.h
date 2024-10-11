@@ -31,7 +31,7 @@ namespace Tridium::Refl::Internal {
         bool wasChanged = false;
         EPropertyFlag overrideFlag = HasFlag( a_Flags, EPropertyFlag::VisibleAnywhere ) ? EPropertyFlag::VisibleAnywhere : EPropertyFlag::None;
 
-        if ( ImGui::TreeNodeEx( a_Name, ImGuiTreeNodeFlags_Framed ) )
+        if ( ImGui::TreeNodeEx( a_Name ) )
         {
             if ( ImGui::BeginItemTooltip() )
             {

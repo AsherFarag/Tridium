@@ -17,14 +17,15 @@
 
 using namespace entt::literals;
 
-namespace ImGui {
-	static void DrawVec3Control( const std::string& label, Vector3& values, float speed, bool uniform = false, const char* format = "%.4f" )
-	{
-
-	}
-}
-
 namespace Tridium::Editor {
+
+	// Create a set of blacklisted components that should not be drawn in the inspector
+	static const std::unordered_set<entt::id_type> s_BlacklistedComponents =
+	{
+		entt::type_hash<TransformComponent>::value(),
+		entt::type_hash<TagComponent>::value(),
+		entt::type_hash<GUIDComponent>::value(),
+	};
 
 	void InspectorPanel::OnImGuiDraw()
 	{
@@ -45,34 +46,25 @@ namespace Tridium::Editor {
 		ImGui::End();
 	}
 
-	void DrawComponent( const Refl::MetaType& a_MetaType, Refl::MetaAny&& a_Component )
+	bool DrawComponentTreeNode(const char* a_Name, bool a_HasOptionsButton)
 	{
-		// Check if the type has a DrawPropFunc property associated with it
-		if ( auto prop = a_MetaType.prop( Internal::DrawPropFuncID ) )
-		{
-			// Try to retrieve the DrawPropFunc and call it
-			if ( prop.value().try_cast<Internal::DrawPropFunc>( ) )
-			{
-				Internal::DrawPropFunc drawFunc = prop.value().cast<Internal::DrawPropFunc>();
-				const char* className = Refl::MetaRegistry::GetCleanTypeName( a_MetaType );
-				drawFunc( className, a_Component, static_cast<::Tridium::Refl::PropertyFlags>( ::Tridium::Refl::EPropertyFlag::EditAnywhere ) );
-			}
-		}
-	}
+		const bool isOpen = ImGui::TreeNodeEx( a_Name, ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_AllowOverlap );
 
-	void DrawComponent( const Refl::MetaType& a_MetaType, Refl::MetaAny& a_Component )
-	{
-		// Check if the type has a DrawPropFunc property associated with it
-		if ( auto prop = a_MetaType.prop( Internal::DrawPropFuncID ) )
+		if ( a_HasOptionsButton )
 		{
-			// Try to retrieve the DrawPropFunc and call it
-			if ( prop.value().try_cast<Internal::DrawPropFunc>( ) )
+			ImGui::SameLine( 
+				ImGui::GetContentRegionMax().x 
+				- ImGui::CalcTextSize( "*" ).x
+				- ( 2.0f * ImGui::GetStyle().FramePadding.x )
+			);
+
+			if ( ImGui::SmallButton( ( std::string( "*##" ) + a_Name ).c_str() ) )
 			{
-				Internal::DrawPropFunc drawFunc = prop.value().cast<Internal::DrawPropFunc>();
-				const char* className = Refl::MetaRegistry::GetCleanTypeName( a_MetaType );
-				drawFunc( className, a_Component, static_cast<::Tridium::Refl::PropertyFlags>( ::Tridium::Refl::EPropertyFlag::EditAnywhere ) );
+				ImGui::OpenPopup( a_Name );
 			}
 		}
+
+		return isOpen;
 	}
 
 	void InspectorPanel::DrawInspectedGameObject()
@@ -89,7 +81,12 @@ namespace Tridium::Editor {
 		ImGui::SameLine( ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("Destroy").x);
 
 		ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Button, Style::Colors::Red.Value );
-		if ( ImGui::Button( "Destroy" ) ) { InspectedGameObject.Destroy(); }
+
+		if ( ImGui::Button( "Destroy" ) ) 
+		{ 
+			InspectedGameObject.Destroy();
+		}
+
 		ImGui::PopStyleColor();
 
 		ImGui::Separator();
@@ -99,40 +96,46 @@ namespace Tridium::Editor {
 		// Draw TransformComponent first
 		if ( TransformComponent* tc = InspectedGameObject.TryGetComponent<TransformComponent>() )
 		{
-			DrawComponent( 
-				Refl::MetaRegistry::ResolveMetaType<TransformComponent>(), 
-				entt::forward_as_meta( *tc ) );
+			if ( DrawComponentTreeNode( "Transform", false ) )
+			{
+				DrawProperty( "Pos", tc->Position, EDrawPropertyFlags::Editable );
+				DrawProperty( "Rot", tc->Rotation, EDrawPropertyFlags::Editable );
+				DrawProperty( "Sca", tc->Scale, EDrawPropertyFlags::Editable );
+
+				ImGui::TreePop();
+			}
 		}
 
-		// Create a set of blacklisted components that should not be drawn in the inspector
-		static const std::unordered_set<entt::id_type> BlacklistedComponents =
+		auto components = InspectedGameObject.GetAllComponents();
+		for ( auto& [metaType, component] : components )
 		{
-			entt::type_hash<TransformComponent>::value(),
-			entt::type_hash<TagComponent>::value(),
-			entt::type_hash<GUIDComponent>::value(),
-		};
-
-		auto& registry = Application::Get().GetScene()->GetRegistry();
-		for ( auto&& [id, storage] : registry.storage() )
-		{
-			if ( storage.size() == 0 )
+			if ( s_BlacklistedComponents.contains( metaType.id() ) )
 				continue;
 
-			if ( !storage.contains( InspectedGameObject ) )
+			const char* className = Refl::MetaRegistry::GetCleanTypeName( metaType );
+
+			// Component options popup
+			if ( ImGui::BeginPopup( className ) )
+			{
+				if ( ImGui::MenuItem( "Remove Component" ) )
+				{
+					Tridium::Refl::Internal::RemoveFromGameObjectFunc removeFunc;
+					if ( Tridium::Refl::MetaRegistry::TryGetMetaPropertyFromClass( metaType, removeFunc, Tridium::Refl::Internal::RemoveFromGameObjectPropID ) )
+						removeFunc( InspectedGameObject );
+					else
+						TE_CORE_ERROR( "Component [{0}] does not have a RemoveFromGameObject function!", Refl::MetaRegistry::GetCleanTypeName( metaType ) );
+				}
+
+				ImGui::EndPopup();
+			}
+
+			if ( !DrawComponentTreeNode( className, true ) )
 				continue;
 
-			// Resolve the meta type for the current component type
-			Refl::MetaType metaType = Refl::MetaRegistry::ResolveMetaType( storage.type() );
-			if ( !metaType || BlacklistedComponents.contains( metaType.id() ) )
-				continue;
+			Refl::MetaAny handle = metaType.from_void( component );
+			Tridium::Refl::Internal::DrawAllMembersOfMetaClass( metaType, handle );
 
-			void* componentPtr = storage.value( InspectedGameObject );
-			if ( !componentPtr )
-				continue;
-
-			Refl::MetaAny component = metaType.from_void( componentPtr );
-
-			DrawComponent( metaType, component );
+			ImGui::TreePop();
 		}
 	}
 
@@ -164,7 +167,7 @@ namespace Tridium::Editor {
 				IO::FilePath filePath( static_cast<const char*>( payload->Data ) );
 				auto ext = filePath.GetExtension();
 				if ( ext == ".lua" ) {
-					AddComponentToGameObject<LuaScriptComponent>( InspectedGameObject, Script::Create( filePath ) );
+					//AddComponentToGameObject<LuaScriptComponent>( InspectedGameObject, Script::Create( filePath ) );
 				}
 				else if ( ext == ".png" ) {
 					AddComponentToGameObject<SpriteComponent>( InspectedGameObject, AssetManager::GetAsset<Texture>( filePath.ToString() ) );
@@ -180,6 +183,9 @@ namespace Tridium::Editor {
 		{
 			for ( auto&& [id, metaType] : entt::resolve() )
 			{
+				if ( s_BlacklistedComponents.contains( id ) )
+					continue;
+
 				if ( auto isComponentProp = metaType.prop( Refl::IsComponentID ); !isComponentProp )
 					continue;
 

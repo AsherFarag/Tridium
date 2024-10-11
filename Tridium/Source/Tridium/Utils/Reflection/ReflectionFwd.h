@@ -16,5 +16,4 @@ namespace Tridium::Refl {
 
 // To be declared in the class definition
 #define REFLECT(Class)                                            \
-	template<typename T> friend class ::Tridium::Refl::Reflector; \
-	[[maybe_unused]] static ::Tridium::Refl::Reflector<Class> ___StaticInitializer_##Class;
+	template<typename T> friend class ::Tridium::Refl::Reflector;

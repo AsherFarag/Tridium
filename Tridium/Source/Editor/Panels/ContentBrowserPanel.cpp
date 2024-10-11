@@ -19,7 +19,7 @@ namespace Tridium::Editor {
 	{
 		TODO( "Make proper Icon Assets" );
 		// TEMP
-		IO::FilePath iconFolder( "Content\\Engine\\Editor\\Icons" );
+		IO::FilePath iconFolder( "../Tridium/Content/Engine/Editor/Icons" );
 		m_DefaultIcon = ( TextureLoader::Load( ( iconFolder / "file.png" ).ToString() ) );
 		m_FolderIcon = (TextureLoader::Load( ( iconFolder / "folder.png" ).ToString() ) );
 		m_LuaIcon = ( TextureLoader::Load( ( iconFolder / "file-code.png" ).ToString() ) );
