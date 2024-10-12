@@ -19,7 +19,15 @@ namespace Tridium::Refl {
 
                 a_Archive << YAML::Key << metaData.name().c_str() << YAML::Value;
 
-				MetaAny memberData = a_Data.type().is_pointer_like() ? metaData.get( *a_Data ) : metaData.get( a_Data );
+				// Ensure memberData is a value reference and not a pointer
+				MetaAny memberData = a_Data.type().is_pointer_like() ? 
+                    metaData.get( *a_Data ) 
+                    : metaData.get( a_Data );
+
+				if ( memberData.type().is_pointer_like() )
+				{
+					memberData = *memberData;
+				}
 
 				// If the type has a serialize function, call it.
                 if ( auto serializeFunc = metaData.type().prop( YAMLSerializeFuncID ) )
@@ -29,7 +37,7 @@ namespace Tridium::Refl {
                 else if ( metaData.type().is_sequence_container() )
 				{
 					a_Archive << YAML::Flow << YAML::BeginSeq;
-					for ( auto&& element : memberData.as_sequence_container() )
+                    for ( auto&& element : memberData.as_sequence_container() )
 					{
 						if ( auto serializeFunc = element.type().prop( YAMLSerializeFuncID ) )
 						{
@@ -44,7 +52,6 @@ namespace Tridium::Refl {
                     a_Archive << YAML::BeginSeq;
                     for ( auto&& [key, value] : memberData.as_associative_container() )
                     {
-
                         a_Archive << YAML::Flow << YAML::BeginSeq;
                         if ( auto serializeFunc = key.type().prop( YAMLSerializeFuncID ) )
                         {
@@ -78,6 +85,79 @@ namespace Tridium::Refl {
             SerializeMembersOfMetaClass( a_Archive, a_MetaType, a_Data );
 
             a_Archive << YAML::EndMap;
+        }
+
+        void DeserializeMembersOfMetaClass( const YAML::Node& a_Node, MetaAny& a_Data, const MetaType& a_MetaType )
+        {
+            for ( auto&& [id, metaData] : a_MetaType.data() )
+            {
+                if ( !HasFlag( metaData.propFlags(), EPropertyFlag::Serialize ) )
+                {
+                    continue;
+                }
+
+                auto propNode = a_Node[metaData.name().c_str()];
+                if ( !propNode )
+                    continue;
+
+                MetaAny memberData = a_Data.type().is_pointer_like() ? metaData.get( *a_Data ) : metaData.get( a_Data );
+				if ( memberData.type().is_pointer_like() )
+				{
+					memberData = *memberData;
+				}
+
+				if (auto deserializePropFunc = metaData.prop( YAMLDeserializeFuncID ) )
+                {
+                    deserializePropFunc.value().cast<DeserializeFunc>()( propNode, memberData );
+                }
+                else if ( metaData.type().is_sequence_container() && propNode.IsSequence() )
+                {
+					auto seqContainer = memberData.as_sequence_container();
+                    if ( auto deserializePropFunc = seqContainer.value_type().prop(YAMLDeserializeFuncID) )
+                    {
+						seqContainer.clear();
+                        auto deserializeFunc = deserializePropFunc.value().cast<DeserializeFunc>();
+                        for ( auto elem : propNode )
+                        {
+                            auto metaElem = seqContainer.value_type().construct();
+							deserializeFunc( elem, metaElem );
+                            seqContainer.insert( seqContainer.end(), metaElem );
+                        }
+                    }
+				}
+				else if ( metaData.type().is_associative_container() )
+				{
+					auto assocContainer = memberData.as_associative_container();
+                    if ( auto deserializeKeyFunc = assocContainer.key_type().prop( YAMLDeserializeFuncID ) )
+                    {
+                        if ( auto deserializeValueFunc = assocContainer.mapped_type().prop( YAMLDeserializeFuncID ) )
+                        {
+                            assocContainer.clear();
+                            auto deserializeKey = deserializeKeyFunc.value().cast<DeserializeFunc>();
+                            auto deserializeValue = deserializeValueFunc.value().cast<DeserializeFunc>();
+                            for ( auto elem : propNode )
+                            {
+                                auto key = assocContainer.key_type().construct();
+                                auto value = assocContainer.mapped_type().construct();
+                                deserializeKey( elem[0], key );
+                                deserializeValue( elem[1], value );
+                                assocContainer.insert( key, value );
+                            }
+                        }
+                    }
+				}       
+            }
+
+        }
+
+        void DeserializeClass( const YAML::Node& a_Node, MetaAny& a_Data, const MetaType& a_MetaType )
+        {
+            for ( auto&& [id, baseType] : a_MetaType.base() )
+            {
+                DeserializeMembersOfMetaClass( a_Node, a_Data, baseType );
+            }
+
+            DeserializeMembersOfMetaClass( a_Node, a_Data, a_MetaType );
         }
     }
 
@@ -125,57 +205,61 @@ namespace Tridium::Refl {
     #define ADD_DRAWPROPERTY_FUNC_TO_TYPE(Type)
 #endif // IS_EDITOR
 
+    template <typename T>
+	void SerializeBasicType( IO::Archive& a_Archive, const MetaAny& a_Value )
+	{
+        IO::SerializeToText( a_Archive, a_Value.cast<const T&>() );
+	}
 
-    void __Internal_InitializeReflection()
+    template <typename T>
+    bool DeserializeBasicType( const YAML::Node& a_Node, MetaAny& a_Handle )
     {
-        #define ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE(Type)                                                  \
+        return IO::DeserializeFromText( a_Node, a_Handle.cast<T&>() );
+    }
+
+#define ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE(Type)                                                          \
             .prop(Internal::YAMLSerializeFuncID,                                                          \
                 +[]( IO::Archive& a_Archive, const ::Tridium::Refl::MetaAny& a_Value )                    \
                 {                                                                                         \
-                    IO::SerializeToText(a_Archive, a_Value.cast<Type>());                                 \
-                })
+                    SerializeBasicType<Type>(a_Archive, a_Value);                                         \
+                })																						  \
+			.prop(Internal::YAMLDeserializeFuncID,                                                        \
+				+[]( const YAML::Node& a_Node, ::Tridium::Refl::MetaAny& a_Value )                        \
+				{                                                                                         \
+					DeserializeBasicType<Type>(a_Node, a_Value);                                          \
+				})
 
-        #define REFLECT_BASIC_TYPE(Type)          \
+#define REFLECT_BASIC_TYPE(Type)                  \
 			entt::meta<Type>()                    \
 			.type(entt::type_hash<Type>::value()) \
-            .prop(Internal::CleanClassNamePropID, #Type) \
-			ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE(Type)
+            .prop(Internal::CleanClassNamePropID, #Type)
 
+    void __Internal_InitializeReflection()
+    {
 		// Basic types
-		REFLECT_BASIC_TYPE( bool )ADD_DRAWPROPERTY_FUNC_TO_TYPE( bool );
-		REFLECT_BASIC_TYPE( int )ADD_DRAWPROPERTY_FUNC_TO_TYPE( int );
-        REFLECT_BASIC_TYPE( int8_t );
-        REFLECT_BASIC_TYPE( uint8_t );
-        REFLECT_BASIC_TYPE( int16_t );
-        REFLECT_BASIC_TYPE( uint16_t );
-        REFLECT_BASIC_TYPE( int32_t );
-        REFLECT_BASIC_TYPE( uint32_t );
-        REFLECT_BASIC_TYPE( int64_t );
-        REFLECT_BASIC_TYPE( uint64_t );
-        REFLECT_BASIC_TYPE( float )ADD_DRAWPROPERTY_FUNC_TO_TYPE( float );
-        REFLECT_BASIC_TYPE( double );
+		REFLECT_BASIC_TYPE( bool )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( bool )ADD_DRAWPROPERTY_FUNC_TO_TYPE( bool );
+		REFLECT_BASIC_TYPE( int )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( int ) ADD_DRAWPROPERTY_FUNC_TO_TYPE( int );
+        REFLECT_BASIC_TYPE( int8_t )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE(int8_t);
+		REFLECT_BASIC_TYPE( uint8_t )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( uint8_t );
+		REFLECT_BASIC_TYPE( int16_t )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( int16_t );
+		REFLECT_BASIC_TYPE( uint16_t )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( uint16_t );
+        REFLECT_BASIC_TYPE( int32_t )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( int32_t );
+		REFLECT_BASIC_TYPE( uint32_t )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( uint32_t );
+		REFLECT_BASIC_TYPE( int64_t )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( int64_t );
+		REFLECT_BASIC_TYPE( uint64_t )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( uint64_t );
+		REFLECT_BASIC_TYPE( float )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( float )ADD_DRAWPROPERTY_FUNC_TO_TYPE( float );
+		REFLECT_BASIC_TYPE( double )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( double );
         REFLECT_BASIC_TYPE( char );
         REFLECT_BASIC_TYPE( char* );
-        REFLECT_BASIC_TYPE( const char* );
-        REFLECT_BASIC_TYPE( unsigned char );
-        REFLECT_BASIC_TYPE( short );
-        REFLECT_BASIC_TYPE( unsigned short );
-        REFLECT_BASIC_TYPE( long );
-        REFLECT_BASIC_TYPE( unsigned long );
-        REFLECT_BASIC_TYPE( long long );
-        REFLECT_BASIC_TYPE( unsigned long long );
+		REFLECT_BASIC_TYPE( const char* )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( std::string );
 
         // STD
-        REFLECT_BASIC_TYPE( std::string )ADD_DRAWPROPERTY_FUNC_TO_TYPE( std::string );
+		REFLECT_BASIC_TYPE( std::string )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( std::string )ADD_DRAWPROPERTY_FUNC_TO_TYPE( std::string );
 
 		// Math
 		REFLECT_BASIC_TYPE( Vector2 )ADD_DRAWPROPERTY_FUNC_TO_TYPE( Vector2 );
 		REFLECT_BASIC_TYPE( Vector3 )ADD_DRAWPROPERTY_FUNC_TO_TYPE( Vector3 );
 		REFLECT_BASIC_TYPE( Vector4 )ADD_DRAWPROPERTY_FUNC_TO_TYPE( Vector4 );
-
-        #undef REFLECT_BASIC_TYPE
-        #undef ADD_SERIALIZE_FUNC_TO_TYPE
-        #undef ADD_DRAWPROPERTY_FUNC_TO_TYPE
     }
 
 } // namespace Tridium::Reflection

@@ -64,6 +64,15 @@ namespace Tridium::Refl::Internal {
 		static const MetaType metaType = MetaRegistry::ResolveMetaType<T>();
 		SerializeClass( a_Archive, a_Data, metaType );
 	}
+
+	void DeserializeClass( const YAML::Node& a_Node, MetaAny& a_Data, const MetaType& a_MetaType );
+
+	template <typename T>
+	void DeserializeClass( const YAML::Node& a_Node, MetaAny& a_Data )
+	{
+		static const MetaType metaType = MetaRegistry::ResolveMetaType<T>();
+		DeserializeClass( a_Node, a_Data, metaType );
+	}
 }
 
 // Add a serialize static lambda function to the meta data.
@@ -72,8 +81,12 @@ namespace Tridium::Refl::Internal {
               +[](::Tridium::IO::Archive& a_Archive, const _REFL_ MetaAny& a_Data)             \
 		      {                                                                                \
 				  _REFL_ Internal::SerializeClass<Class>(a_Archive, a_Data);                   \
-              });                                    
-
+              });                                    	                                       \
+	meta.prop(_REFL_ Internal::YAMLDeserializeFuncID,                                          \
+			  +[](const YAML::Node& a_Node, _REFL_ MetaAny& a_Data)                            \
+			  {                                                                                \
+				  _REFL_ Internal::DeserializeClass<Class>(a_Node, a_Data);                    \
+			  });
 
 
 #define _REFLECT_REGISTER_NAME( Name ) constexpr entt::hashed_string Hashed_##Name ( #Name ); _REFL_ MetaRegistry::RegisterName( Hashed_##Name, #Name );

@@ -8,24 +8,31 @@ namespace Tridium {
 
     Texture* TextureLoader::Load( const IO::FilePath& a_Path )
     {
-    #if ASSET_USE_RUNTIME
-        return RuntimeLoad( a_Path );
-    #else
-        return DebugLoad( a_Path, nullptr );
-    #endif
+		static TextureLoader loader;
+#if ASSET_USE_RUNTIME
+		return static_cast<Texture*>( loader.RuntimeLoad( a_Path ) );
+#else
+		return static_cast<Texture*>( loader.DebugLoad( a_Path, nullptr ) );
+#endif // ASSET_USE_RUNTIME
     }
 
-    TextureMetaData* TextureLoader::ConstructMetaData()
-    {
-        return new TextureMetaData();
-    }
-
-    Texture* TextureLoader::RuntimeLoad( const IO::FilePath& a_Path )
+    AssetMetaData* TextureLoader::LoadAssetMetaData( const YAML::Node & a_Node ) const
     {
         return nullptr;
     }
 
-    Texture* TextureLoader::DebugLoad( const IO::FilePath& a_Path, const TextureMetaData* a_MetaData )
+    AssetMetaData* TextureLoader::ConstructAssetMetaData() const
+    {
+        return new TextureMetaData();
+    }
+
+    Asset* TextureLoader::RuntimeLoad( const IO::FilePath& a_Path ) const
+    {
+		NOT_IMPLEMENTED;
+        return nullptr;
+    }
+
+    Asset* TextureLoader::DebugLoad( const IO::FilePath& a_Path, const AssetMetaData* a_MetaData ) const
     {
         TextureSpecification specification;
         std::string stringPath = a_Path.ToString();
@@ -51,39 +58,8 @@ namespace Tridium {
         return tex;
     }
 
-    bool TextureLoader::Save( const IO::FilePath& a_Path, const Texture* a_Asset )
+    bool TextureLoader::Save( const IO::FilePath& a_Path, const Asset* a_Asset ) const
     {
         return false;
     }
-
-    class TextureLoaderInterface : public IAssetLoaderInterface
-    {
-    public:
-        TextureLoaderInterface()
-        {
-            AssetFactory::RegisterLoader( EAssetType::Texture, *this );
-        }
-
-        AssetMetaData* ConstructAssetMetaData() const override
-        {
-            return TextureLoader::ConstructMetaData();
-        }
-
-        Asset* RuntimeLoad( const IO::FilePath& a_Path ) const override
-        {
-            return TextureLoader::RuntimeLoad( a_Path );
-        }
-
-        Asset* DebugLoad( const IO::FilePath& a_Path, const AssetMetaData* a_MetaData ) const override
-        {
-            return TextureLoader::DebugLoad( a_Path, static_cast<const TextureMetaData*>( a_MetaData ) );
-        }
-
-        bool Save( const IO::FilePath& a_Path, const Asset* a_Asset ) const override
-        {
-            return TextureLoader::Save( a_Path, static_cast<const Texture*>( a_Asset ) );
-        }
-    };
-
-    static TextureLoaderInterface s_Instance;
 }

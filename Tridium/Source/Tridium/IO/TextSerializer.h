@@ -1,8 +1,7 @@
 #pragma once
 #include <Tridium/Core/Core.h>
 
-#define YAML_CPP_STATIC_DEFINE
-#include "yaml-cpp/yaml.h"
+#include "Archive.h"
 
 namespace Tridium {
 
@@ -11,8 +10,6 @@ namespace Tridium {
 }
 
 namespace Tridium::IO {
-
-	using Archive = YAML::Emitter;
 
 	enum class ETextSerializationFormat
 	{

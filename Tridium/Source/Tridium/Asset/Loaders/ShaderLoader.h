@@ -4,17 +4,14 @@
 
 namespace Tridium {
 
-	class ShaderLoader
+	class ShaderLoader : public IAssetLoader
 	{
-		friend class ShaderLoaderInterface;
 	public:
-		static Shader* Load( const IO::FilePath& a_Path );
-
-	private:
-		static ShaderMetaData* ConstructMetaData();
-		static Shader* RuntimeLoad( const IO::FilePath& a_Path );
-		static Shader* DebugLoad( const IO::FilePath& a_Path, const ShaderMetaData* a_MetaData );
-		static bool Save( const IO::FilePath& a_Path, const Shader* a_Asset );
+		AssetMetaData* LoadAssetMetaData( const YAML::Node& a_Node ) const override;
+		AssetMetaData* ConstructAssetMetaData() const override;
+		Asset* RuntimeLoad( const IO::FilePath& a_Path ) const override;
+		Asset* DebugLoad( const IO::FilePath& a_Path, const AssetMetaData* a_MetaData ) const override;
+		bool Save( const IO::FilePath& a_Path, const Asset* a_Asset ) const override;
 	};
 
 }

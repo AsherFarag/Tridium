@@ -24,13 +24,6 @@ namespace Tridium {
 
 		AssetMetaData() : Handle( AssetHandle::Null() ), AssetType( EAssetType::None ) {}
 		AssetMetaData( EAssetType a_AssetType ) : Handle(AssetHandle::Create()), AssetType( a_AssetType ) { }
-
-		void Serialize( const IO::FilePath& a_Path );
-		static AssetMetaData* Deserialize( const IO::FilePath& a_Path );
-
-	protected:
-		virtual void OnSerialize( YAML::Emitter& a_Out ) {}
-		virtual bool OnDeserialize( YAML::Node& a_Data ) { return true; }
 	};
 
 	struct ShaderMetaData : public AssetMetaData
@@ -62,10 +55,6 @@ namespace Tridium {
 		REFLECT( ModelMetaData );
 		ModelMetaData();
 		ModelImportSettings ImportSettings;
-
-	protected:
-		virtual void OnSerialize( YAML::Emitter& a_Out );
-		virtual bool OnDeserialize( YAML::Node& a_Data );
 	};
 
 }

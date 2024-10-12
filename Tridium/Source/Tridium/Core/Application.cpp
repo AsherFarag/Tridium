@@ -1,6 +1,7 @@
 #include "tripch.h"
 #include "Application.h"
 
+
 #ifdef IS_EDITOR
 #include <Editor/Editor.h>
 #include <Editor/EditorAssetManager.h>
@@ -61,6 +62,9 @@ namespace Tridium {
 	{
 		m_Running = true;
 
+		m_GameInstance.reset( CreateGameInstance() );
+		m_GameInstance->Init();
+
 		while ( m_Running )
 		{
 			Time::Update();
@@ -102,6 +106,8 @@ namespace Tridium {
 
 			m_Window->OnUpdate();
 		}
+
+		m_GameInstance->Shutdown();
 
 		#ifdef IS_EDITOR
 

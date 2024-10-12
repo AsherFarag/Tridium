@@ -7,6 +7,7 @@
 #include <Tridium/Asset/AssetMetaData.h>
 #include <Tridium/Asset/AssetFileExtensions.h>
 #include "Editor.h"
+#include <Tridium/IO/Archive.h>
 
 namespace Tridium::Editor {
 
@@ -51,7 +52,7 @@ namespace Tridium::Editor {
         if ( !metaData )
             return ImportAssetImpl( a_Path, true );
 
-        const IAssetLoaderInterface* assetLoader = AssetFactory::GetLoader( metaData->AssetType );
+        const IAssetLoader* assetLoader = AssetFactory::GetLoader( metaData->AssetType );
         // If there is no loader for this asset type
         if ( !assetLoader )
             return nullptr;
@@ -91,6 +92,19 @@ namespace Tridium::Editor {
         if ( !metaData )
             return nullptr;
 
+        IAssetLoader* assetLoader = AssetFactory::GetLoader( assetType );
+		if ( !assetLoader )
+			return nullptr;
+
+		AssetRef<Asset> asset = assetLoader->DebugLoad( a_Path, metaData.Get() );
+		if ( !asset )
+			return nullptr;
+
+		ApplyMetaDataToAsset( *asset, *metaData );
+
+        TODO( "// Save the meta data" );
+
+		return AddAssetImpl( asset ) ? asset : nullptr;
     }
 
     bool EditorAssetManager::SaveAssetImpl( const IO::FilePath& a_Path, const AssetRef<Asset>& a_Asset )
@@ -131,7 +145,30 @@ namespace Tridium::Editor {
 
     AssetMetaData* EditorAssetManager::LoadAssetMetaDataImpl( const IO::FilePath& a_Path ) const
     {
-        return nullptr;
+		IO::Archive archive;
+		YAML::Node node;
+
+        try
+		{
+            node = YAML::LoadFile( a_Path.ToString() );
+		}
+		catch ( const std::exception& e )
+		{
+			TE_CORE_ERROR( "Failed to load meta data for asset: {0}", e.what() );
+			return nullptr;
+		}
+        
+		EAssetType assetType;
+        if ( auto assetTypeNode = node["AssetType"] )
+            assetType = AssetTypeFromString( assetTypeNode.as<std::string>().c_str() );
+        else
+			return nullptr;
+
+		AssetMetaData* metaData = AssetFactory::LoadAssetMetaData( assetType, node );
+		if ( !metaData )
+			return nullptr;
+
+		return metaData;
     }
 
 }

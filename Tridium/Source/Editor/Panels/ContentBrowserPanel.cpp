@@ -17,15 +17,13 @@ namespace Tridium::Editor {
 	ContentBrowserPanel::ContentBrowserPanel()
 		: Panel( "Content Browser" ), m_CurrentDirectory( Application::Get().GetAssetDirectory() )
 	{
-		TODO( "Make proper Icon Assets" );
-		// TEMP
 		IO::FilePath iconFolder( "../Tridium/Content/Engine/Editor/Icons" );
+
 		m_DefaultIcon = ( TextureLoader::Load( ( iconFolder / "file.png" ).ToString() ) );
 		m_FolderIcon = (TextureLoader::Load( ( iconFolder / "folder.png" ).ToString() ) );
 		m_LuaIcon = ( TextureLoader::Load( ( iconFolder / "file-code.png" ).ToString() ) );
 		m_ImageMediaIcon = ( TextureLoader::Load( ( iconFolder / "file-media.png" ).ToString() ) );
 		m_TridiumProjectIcon = ( TextureLoader::Load( ( iconFolder / "EngineIcon.png" ).ToString() ) );
-		//m_TridiumSceneIcon.reset( TextureLoader::Load( ( iconFolder / "tridium-scene.png" ).ToString() ) );
 	}
 
 	static void DrawDirectoryPath( IO::FilePath& a_Path )

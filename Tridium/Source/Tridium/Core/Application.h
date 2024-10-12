@@ -8,6 +8,7 @@
 #include <Tridium/ImGui/ImGuiLayer.h>
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Project/Project.h>
+#include <Tridium/Core/GameInstance.h>
 
 namespace Tridium
 {
@@ -49,6 +50,7 @@ namespace Tridium
 		UniquePtr<Window> m_Window;
 		ImGuiLayer* m_ImGuiLayer;
 		LayerStack m_LayerStack;
+		SharedPtr<GameInstance> m_GameInstance;
 
 		SharedPtr<Project> m_Project;
 		SharedPtr<Scene> m_ActiveScene;
@@ -58,5 +60,8 @@ namespace Tridium
 	private:
 		static Application* s_Instance;
 	};
+
+	// To be defined in CLIENT
+	GameInstance* CreateGameInstance();
 }
 

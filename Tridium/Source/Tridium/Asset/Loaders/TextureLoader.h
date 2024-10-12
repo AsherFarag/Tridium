@@ -4,17 +4,16 @@
 
 namespace Tridium {
 
-	class TextureLoader
+	class TextureLoader : public IAssetLoader
 	{
-		friend class TextureLoaderInterface;
 	public:
 		static Texture* Load( const IO::FilePath& a_Path );
 
-	private:
-		static TextureMetaData* ConstructMetaData();
-		static Texture* RuntimeLoad( const IO::FilePath& a_Path );
-		static Texture* DebugLoad( const IO::FilePath& a_Path, const TextureMetaData* a_MetaData );
-		static bool Save( const IO::FilePath& a_Path, const Texture* a_Asset );
+		virtual AssetMetaData* LoadAssetMetaData( const YAML::Node& a_Node ) const override;
+		virtual AssetMetaData* ConstructAssetMetaData() const override;
+		virtual Asset* RuntimeLoad( const IO::FilePath& a_Path ) const override;
+		virtual Asset* DebugLoad( const IO::FilePath& a_Path, const AssetMetaData* a_MetaData ) const override;
+		virtual bool Save( const IO::FilePath& a_Path, const Asset* a_Asset ) const override;
 	};
 
 }

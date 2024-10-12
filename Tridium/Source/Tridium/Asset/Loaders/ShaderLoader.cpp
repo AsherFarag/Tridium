@@ -1,29 +1,36 @@
 #include "tripch.h"
 #include "ShaderLoader.h"
 #include <Tridium/Rendering/Shader.h>
+#include <Tridium/Utils/Reflection/Reflection.h>
 
 namespace Tridium {
 
-    Shader* ShaderLoader::Load( const IO::FilePath& a_Path )
+    AssetMetaData* ShaderLoader::LoadAssetMetaData( const YAML::Node & a_Node ) const
     {
-    #if ASSET_USE_RUNTIME
-        return RuntimeLoad( a_Path );
-    #else
-        return DebugLoad( a_Path, nullptr );
-    #endif
+        Scope<ShaderMetaData> metaData = new ShaderMetaData();
+
+		Refl::Internal::DeserializeFunc deserializeFunc;
+        if ( !Refl::MetaRegistry::TryGetMetaPropertyFromClass<ShaderMetaData>( deserializeFunc, Refl::Internal::YAMLDeserializeFuncID ) )
+            return nullptr;
+
+        Refl::MetaAny asAny( *metaData );
+        deserializeFunc( a_Node, asAny );
+
+		metaData.Retire();
+        return metaData.Get();
     }
 
-    ShaderMetaData* ShaderLoader::ConstructMetaData()
+    AssetMetaData* ShaderLoader::ConstructAssetMetaData() const
     {
         return new ShaderMetaData();
     }
 
-    Shader* ShaderLoader::RuntimeLoad( const IO::FilePath& a_Path )
+    Asset* ShaderLoader::RuntimeLoad( const IO::FilePath& a_Path ) const
     {
         return nullptr;
     }
 
-    Shader* ShaderLoader::DebugLoad( const IO::FilePath& a_Path, const ShaderMetaData* a_MetaData )
+    Asset* ShaderLoader::DebugLoad( const IO::FilePath& a_Path, const AssetMetaData* a_MetaData ) const
     {
         Shader* shader = Shader::Create();
         CHECK( shader );
@@ -34,39 +41,8 @@ namespace Tridium {
         return shader;
     }
 
-    bool ShaderLoader::Save( const IO::FilePath& a_Path, const Shader* a_Asset )
+    bool ShaderLoader::Save( const IO::FilePath& a_Path, const Asset* a_Asset ) const
     {
         return false;
     }
-
-    class ShaderLoaderInterface : public IAssetLoaderInterface
-    {
-    public:
-        ShaderLoaderInterface()
-        {
-            AssetFactory::RegisterLoader( EAssetType::Shader, *this );
-        }
-
-        AssetMetaData* ConstructAssetMetaData() const override
-        {
-            return ShaderLoader::ConstructMetaData();
-        }
-
-        Asset* RuntimeLoad( const IO::FilePath& a_Path ) const override
-        {
-            return ShaderLoader::RuntimeLoad( a_Path );
-        }
-
-        Asset* DebugLoad( const IO::FilePath& a_Path, const AssetMetaData* a_MetaData ) const override
-        {
-            return ShaderLoader::DebugLoad( a_Path, static_cast<const ShaderMetaData*>( a_MetaData ) );
-        }
-
-        bool Save( const IO::FilePath& a_Path, const Asset* a_Asset ) const override
-        {
-            return ShaderLoader::Save( a_Path, static_cast<const Shader*>( a_Asset ) );
-        }
-    };
-
-    static ShaderLoaderInterface s_Instance;
 }

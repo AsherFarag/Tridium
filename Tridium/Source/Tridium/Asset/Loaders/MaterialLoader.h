@@ -4,17 +4,14 @@
 
 namespace Tridium {
 
-	class MaterialLoader
+	class MaterialLoader : public IAssetLoader
 	{
-		friend class MaterialLoaderInterface;
 	public:
-		static Material* Load( const IO::FilePath& a_Path );
-
-	private:
-		static MaterialMetaData* ConstructMetaData();
-		static Material* RuntimeLoad( const IO::FilePath& a_Path );
-		static Material* DebugLoad( const IO::FilePath& a_Path, const MaterialMetaData* a_MetaData );
-		static bool Save( const IO::FilePath& a_Path, const Material* a_Asset );
+		AssetMetaData* LoadAssetMetaData( const YAML::Node& a_Node ) const override;
+		AssetMetaData* ConstructAssetMetaData() const override;
+		Asset* RuntimeLoad( const IO::FilePath& a_Path ) const override;
+		Asset* DebugLoad( const IO::FilePath& a_Path, const AssetMetaData* a_MetaData ) const override;
+		bool Save( const IO::FilePath& a_Path, const Asset* a_Asset ) const override;
 	};
 
 }

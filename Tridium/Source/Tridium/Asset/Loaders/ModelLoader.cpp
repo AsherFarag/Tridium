@@ -10,26 +10,22 @@
 
 namespace Tridium {
 
-    Mesh* ModelLoader::Load( const IO::FilePath& a_Path )
-    {
-    #if ASSET_USE_RUNTIME
-        return RuntimeLoad( a_Path );
-    #else
-        return DebugLoad( a_Path, nullptr );
-    #endif
-    }
-
-    ModelMetaData* ModelLoader::ConstructMetaData()
-    {
-        return new ModelMetaData();
-    }
-
-    Mesh* ModelLoader::RuntimeLoad( const IO::FilePath& a_Path )
+    AssetMetaData* ModelLoader::LoadAssetMetaData( const YAML::Node & a_Node ) const
     {
         return nullptr;
     }
 
-    Mesh* ModelLoader::DebugLoad( const IO::FilePath& a_Path, const ModelMetaData* a_MetaData )
+    AssetMetaData* ModelLoader::ConstructAssetMetaData() const
+    {
+        return new ModelMetaData();
+    }
+
+    Asset* ModelLoader::RuntimeLoad( const IO::FilePath& a_Path ) const
+    {
+        return nullptr;
+    }
+
+    Asset* ModelLoader::DebugLoad( const IO::FilePath& a_Path, const AssetMetaData* a_MetaData ) const
     {
         const ModelImportSettings& importSettings = a_MetaData ?
             static_cast<const ModelMetaData*>( a_MetaData )->ImportSettings : ModelImportSettings{};
@@ -149,39 +145,8 @@ namespace Tridium {
         return loadedMesh;
     }
 
-    bool ModelLoader::Save( const IO::FilePath& a_Path, const Mesh* a_Asset )
+    bool ModelLoader::Save( const IO::FilePath& a_Path, const Asset* a_Asset ) const
     {
         return false;
     }
-
-    class ModelLoaderInterface : public IAssetLoaderInterface
-    {
-    public:
-        ModelLoaderInterface()
-        {
-            AssetFactory::RegisterLoader( EAssetType::Mesh, *this );
-        }
-
-        AssetMetaData* ConstructAssetMetaData() const override
-        {
-            return ModelLoader::ConstructMetaData();
-        }
-
-        Asset* RuntimeLoad( const IO::FilePath& a_Path ) const override
-        {
-            return ModelLoader::RuntimeLoad( a_Path );
-        }
-
-        Asset* DebugLoad( const IO::FilePath& a_Path, const AssetMetaData* a_MetaData ) const override
-        {
-            return ModelLoader::DebugLoad( a_Path, static_cast<const ModelMetaData*>( a_MetaData ) );
-        }
-
-        bool Save( const IO::FilePath& a_Path, const Asset* a_Asset ) const override
-        {
-            return ModelLoader::Save( a_Path, static_cast<const Mesh*>( a_Asset ) );
-        }
-    };
-
-    static ModelLoaderInterface s_Instance;
 }

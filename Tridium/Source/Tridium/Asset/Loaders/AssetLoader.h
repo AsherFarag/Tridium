@@ -3,12 +3,13 @@
 #include <Tridium/Asset/AssetFactory.h>
 #include <Tridium/Asset/AssetMetaData.h>
 #include <Tridium/IO/FilePath.h>
+#include <Tridium/IO/Archive.h>
 
 #define ASSET_USE_RUNTIME 0
 
 namespace Tridium {
 
-	class IAssetLoaderInterface
+	class IAssetLoader
 	{
 	public:
 		Asset* Load( const IO::FilePath& a_Path ) const
@@ -19,6 +20,8 @@ namespace Tridium {
 			return DebugLoad( a_Path, nullptr );
         #endif
 		}
+
+		virtual AssetMetaData* LoadAssetMetaData( const YAML::Node & a_Node ) const = 0;
 		virtual AssetMetaData* ConstructAssetMetaData() const = 0;
 		virtual Asset* RuntimeLoad( const IO::FilePath& a_Path ) const = 0;
 		virtual Asset* DebugLoad( const IO::FilePath& a_Path, const AssetMetaData* a_MetaData ) const = 0;
