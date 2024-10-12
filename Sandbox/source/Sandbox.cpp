@@ -1,5 +1,4 @@
 #include <Tridium.h>
-#include <Tridium/ECS/Components/Types/Common/TestComponent.h>
 
 struct PersonInfo
 {

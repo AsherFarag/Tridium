@@ -1,9 +1,7 @@
 #include "tripch.h"
-#include <Tridium/ECS/Components/Types/Common/TestComponent.h>
-
 #ifdef TE_PLATFORM_WINDOWS
+#include <Tridium/Core/Application.h>
 #include <Tridium/Utils/Reflection/Reflection.h>
-#include <fstream>
 
 int main( int argc, char** argv )
 {

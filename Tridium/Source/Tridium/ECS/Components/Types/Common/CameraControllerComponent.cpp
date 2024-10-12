@@ -10,7 +10,13 @@ namespace Tridium {
 		BASE( ScriptableComponent )
 		PROPERTY( Speed, FLAGS( Serialize, EditAnywhere ) )
 		PROPERTY( LookSensitivity, FLAGS( Serialize, EditAnywhere ) )
-	END_REFLECT( CameraControllerComponent )
+	END_REFLECT( CameraControllerComponent );
+
+	CameraControllerComponent::CameraControllerComponent()
+		: LookSensitivity( 0.75f ), Speed( 1.0f )
+	{
+
+	}
 
 	void CameraControllerComponent::OnUpdate()
 	{

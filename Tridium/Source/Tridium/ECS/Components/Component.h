@@ -16,7 +16,7 @@ namespace Tridium {
 		REFLECT( Component )
 		friend class GameObject;
 	public:
-		Component() {}
+		Component();
 		virtual ~Component() = default;
 		virtual void OnDestroy() {}
 

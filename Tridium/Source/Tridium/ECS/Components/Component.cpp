@@ -11,4 +11,9 @@ namespace Tridium {
 		BASE( Component )
 	END_REFLECT( ScriptableComponent )
 
+	Component::Component()
+		: m_GameObject()
+	{
+	}
+
 }
