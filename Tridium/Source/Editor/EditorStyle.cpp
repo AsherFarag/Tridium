@@ -5,11 +5,6 @@
 
 namespace Tridium::Editor::Style {
 
-	static ImVec4&& operator*( const ImVec4& a_Color, float a_Value )
-	{
-		return ImVec4( a_Color.x * a_Value, a_Color.y * a_Value, a_Color.z * a_Value, a_Color.w );
-	}
-
 	namespace Themes {
 		static void Midnight()
 		{
@@ -26,7 +21,6 @@ namespace Tridium::Editor::Style {
 			const ImVec4 disabledTextColor = gray;
 			const ImVec4 windowBgColor = ImVec4( 0.125f, 0.1275f, 0.1275f, 1.00f );
 			const ImVec4 transparentColor = ImVec4( 0.00f, 0.00f, 0.00f, 0.00f );
-			const ImVec4 popupBgColor = ImVec4( 0.19f, 0.19f, 0.19f, 0.92f );
 			const ImVec4 borderColor = ImVec4( 0.00f, 0.00f, 0.00f, 0.29f );
 			const ImVec4 frameBgColor = ImVec4( 0.125f, 0.1275f, 0.1275f, 1.00f ) * 0.5f;
 			const ImVec4 hoverColor = ImVec4( 0.19f, 0.19f, 0.19f, 0.54f );
@@ -41,15 +35,15 @@ namespace Tridium::Editor::Style {
 
 			colors[ImGuiCol_WindowBg] = windowBgColor;
 			colors[ImGuiCol_ChildBg] = transparentColor;
-			colors[ImGuiCol_PopupBg] = popupBgColor;
+			colors[ImGuiCol_PopupBg] = windowBgColor;
 			colors[ImGuiCol_Border] = borderColor;
-			colors[ImGuiCol_BorderShadow] = ImVec4( 1.00f, 1.00f, 1.00f, 0.24f );
+			colors[ImGuiCol_BorderShadow] = borderColor;
 			colors[ImGuiCol_FrameBg] = frameBgColor;
 			colors[ImGuiCol_FrameBgHovered] = frameBgColor * 2.5f;
 			colors[ImGuiCol_FrameBgActive] = frameBgColor * 4.5f;
 
 			colors[ImGuiCol_TitleBg] = ImVec4( 0.125f, 0.1275f, 0.13f, 1.00f ) * 0.75f;
-			colors[ImGuiCol_TitleBgActive] = ImVec4( 0.125f, 0.1275f, 0.13f, 0.00f ) * 0.85f;
+			colors[ImGuiCol_TitleBgActive] = ImVec4( 0.125f, 0.1275f, 0.13f, 1.00f ) * 0.85f;
 			colors[ImGuiCol_TitleBgCollapsed] = transparentColor;
 
 			colors[ImGuiCol_MenuBarBg] = windowBgColor * 0.5f;

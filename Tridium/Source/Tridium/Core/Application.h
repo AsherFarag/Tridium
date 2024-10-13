@@ -27,8 +27,10 @@ namespace Tridium
 
 		void OnEvent( Event& e );
 
-		void PushLayer( Layer* a_Layer );
-		void PushOverlay( Layer* a_Overlay );
+		void PushLayer( Layer* a_Layer ) { m_LayerStack.PushLayer( a_Layer ); }
+		void PushOverlay( Layer* a_Overlay ) { m_LayerStack.PushOverlay( a_Overlay ); }
+		void PopLayer( Layer* a_Layer, bool a_Destroy = false ) { m_LayerStack.PopLayer( a_Layer, a_Destroy ); }
+		void PopOverlay( Layer* a_Overlay, bool a_Destroy = false ) { m_LayerStack.PopOverlay( a_Overlay, a_Destroy ); }
 
 		static Application& Get() { return *s_Instance; }
 		static SharedPtr<Project> GetActiveProject() { return Get().m_Project; }

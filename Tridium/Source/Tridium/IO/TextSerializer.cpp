@@ -98,15 +98,7 @@ namespace Tridium::IO {
 
 	_TRIDUM_SERIALIZE_TO_TEXT( GUID )
 	{
-		YAML::Value << a_Value.ID();
-	}
-
-	_TRIDUM_SERIALIZE_TO_TEXT( GameObject )
-	{
-		a_Archive << YAML::BeginMap;
-		a_Archive << YAML::Key << "GUID"; SerializeToText( a_Archive, a_Value.GetGUID() );
-		a_Archive << YAML::Key << "Name" << YAML::Value << a_Value.GetTag();
-		a_Archive << YAML::EndMap;
+		a_Archive << a_Value.ID();
 	}
 
 	// =================================================================================================
@@ -214,5 +206,15 @@ namespace Tridium::IO {
 	// ----------- Std Types -----------
 
 	// ----------- Tridium Types -----------
+
+	_TRIDUM_DESERIALIZE_FROM_TEXT( GUID )
+	{
+		if ( a_Node && a_Node.IsScalar() )
+		{
+			o_Value = GUID( a_Node.as<uint64_t>() );
+			return true;
+		}
+		return false;
+	}
 
 }

@@ -15,6 +15,165 @@
 
 namespace Tridium::IO {
 
+	static const std::unordered_set<Refl::MetaIDType> s_BlacklistedComponents =
+	{
+		"Component"_hs.value(),
+		"ScriptableComponent"_hs.value(),
+		"TransformComponent"_hs.value(),
+		"TagComponent"_hs.value(),
+		"GUIDComponent"_hs.value(),
+	};
+
+	struct DeserializedGameObject
+	{
+		GameObject GameObject;
+		std::optional<GUID> Parent = {};
+		std::vector<GUID> Children;
+	};
+
+	void SerializeGameObject( Archive& out, GameObject go )
+	{
+		out << YAML::BeginMap; // Begin GameObject
+
+		// GUID
+		out << YAML::Key << "GameObject"; out << YAML::Value << go.GetGUID().ID();
+
+		// TagComponent
+		if ( auto tc = go.TryGetComponent<TagComponent>() )
+		{
+			out << YAML::Key << "Tag" << YAML::Value << tc->Tag;
+		}
+
+		// TransformComponent
+		if ( auto tc = go.TryGetComponent<TransformComponent>() )
+		{
+			out << YAML::Key << "Transform" << YAML::Value << YAML::BeginMap;
+			{
+				out << YAML::Key << "Position"; out << YAML::Value << tc->Position;
+				out << YAML::Key << "Rotation"; out << YAML::Value << glm::degrees( tc->Rotation );
+				out << YAML::Key << "Scale";    out << YAML::Value << tc->Scale;
+
+				if ( go.HasParent() )
+				{
+					out << YAML::Key << "Parent";
+					out << YAML::Value << go.GetParent().GetGUID().ID();
+				}
+
+				if ( go.HasParent() )
+				{
+					out << YAML::Key << "Parent";
+					out << YAML::Value << go.GetParent().GetGUID().ID();
+				}
+
+				out << YAML::Key << "Children";
+				out << YAML::Value << YAML::Flow << YAML::BeginSeq;
+				for ( auto child : go.GetChildren() )
+				{
+					out << child.GetGUID().ID();
+				}
+				out << YAML::EndSeq;
+			}
+			out << YAML::EndMap;
+		}
+
+		// Write all components
+		for ( auto [type, component] : go.GetAllComponents() )
+		{
+			if ( s_BlacklistedComponents.contains( type.id() ) )
+				continue;
+
+			out << YAML::Key << Refl::MetaRegistry::GetCleanTypeName( type );
+
+			Refl::Internal::SerializeFunc serFunc;
+			if ( Refl::MetaRegistry::TryGetMetaPropertyFromClass( type, serFunc, Refl::Internal::YAMLSerializeFuncID ) )
+			{
+				serFunc( out, type.from_void( component ) );
+			}
+		}
+
+
+		out << YAML::EndMap; // End GameObject
+	}
+
+	bool DeserializeGameObject( const YAML::Node& a_Node, Scene& a_Scene, std::unordered_map<GUID, DeserializedGameObject>& a_DeserializedGameObjects )
+	{
+		GUID guid;
+		if ( auto guidNode = a_Node["GameObject"] )
+			guid = guidNode.as<GUID>();
+		else
+			return false;
+
+		std::string tag;
+		if ( auto tagNode = a_Node["Tag"] )
+			tag = tagNode.as<std::string>();
+		else
+			return false;
+
+		GameObject go = a_Scene.InstantiateGameObject( guid, tag );
+		DeserializedGameObject deserializedGO;
+		deserializedGO.GameObject = go;
+
+		if ( auto transformNode = a_Node["Transform"] )
+		{
+			TransformComponent& tc = go.GetTransform();
+			tc.Position = transformNode["Position"].as<Vector3>();
+			tc.Rotation = glm::radians( transformNode["Rotation"].as<Vector3>() );
+			tc.Scale = transformNode["Scale"].as<Vector3>();
+
+			if ( auto parentNode = transformNode["Parent"] )
+			{
+				deserializedGO.Parent = parentNode.as<GUID>();
+			}
+
+			for ( auto child : transformNode["Children"] )
+			{
+				deserializedGO.Children.push_back( child.as<GUID>() );
+			}
+		}
+
+		a_DeserializedGameObjects.emplace( guid, std::move(deserializedGO) );
+
+		auto it = a_Node.begin();
+		++it; // Skip GameObject node
+		++it; // Skip Tag node
+		++it; // Skip Transform node
+
+		// Deserialize all components
+		for ( ; it != a_Node.end(); ++it )
+		{
+			auto componentNode = *it;
+			auto componentName = componentNode.first.as<std::string>();
+
+			Refl::MetaType componentType = Refl::MetaRegistry::ResolveMetaType( entt::hashed_string( componentName.c_str() ) );
+
+			Refl::Internal::AddToGameObjectFunc addToGameObjectFunc;
+			if ( !Refl::MetaRegistry::TryGetMetaPropertyFromClass( componentType, addToGameObjectFunc, Refl::Internal::AddToGameObjectPropID ) )
+			{
+				TE_CORE_ERROR( "Failed to deserialize component '{0}' from GameObject", componentName );
+				continue;
+			}
+
+			Refl::Internal::DeserializeFunc deserFunc;
+			if ( !Refl::MetaRegistry::TryGetMetaPropertyFromClass( componentType, deserFunc, Refl::Internal::YAMLDeserializeFuncID ) )
+			{
+				TE_CORE_ERROR( "Failed to deserialize component '{0}' from GameObject", componentName );
+				continue;
+			}
+
+			Component* component = addToGameObjectFunc( go );
+			if ( !component )
+			{
+				TE_CORE_ERROR( "Failed to deserialize component '{0}' from GameObject", componentName );
+				continue;
+			}
+
+			Refl::MetaAny componentAsAny = componentType.from_void( component );
+			deserFunc( componentNode.second, componentAsAny );
+		}
+
+		return true;
+	}
+
 	template<>
 	void SerializeToText( Archive& a_Archive, const Scene& a_Data )
 	{
@@ -25,10 +184,10 @@ namespace Tridium::IO {
 		a_Archive << YAML::Key << "GameObjects";
 		a_Archive << YAML::Value << YAML::BeginSeq;
 		{
-			auto view = a_Data.GetRegistry().view<GUIDComponent>();
-			for ( auto it = view.rbegin(); it < view.rend(); it++ )
+			auto gameObjects = a_Data.GetRegistry().view<GUIDComponent>();
+			for ( auto it = gameObjects.rbegin(); it < gameObjects.rend(); it++ )
 			{
-				//SerializeGameObject( a_Archive, *it );
+				SerializeGameObject( a_Archive, GameObject( *it ) );
 			}
 		}
 		a_Archive << YAML::EndSeq;
@@ -39,268 +198,36 @@ namespace Tridium::IO {
 	template<>
 	bool DeserializeFromText( const YAML::Node& a_Node, Scene& a_Data )
 	{
-		return false;
-	}
-
-}
-
-namespace Tridium {
-
-	struct DeserializedGameObject
-	{
-		GameObject GameObject;
-		std::optional<GUID> Parent = {};
-		std::vector<GUID> Children;
-	};
-
-	void SerializeGameObject( YAML::Emitter& out, GameObject go )
-	{
-		out << YAML::BeginMap;
-
-		out << YAML::Key << "GameObject"; out << YAML::Value << go.GetGUID().ID();
-
-		if ( auto tc = go.TryGetComponent<TagComponent>() )
-		{
-			out << YAML::Key << "TagComponent";
-			out << YAML::BeginMap;
-
-			out << YAML::Value << YAML::DoubleQuoted << tc->Tag;
-
-			out << YAML::EndMap;
-		}
-
-		if ( auto tc = go.TryGetComponent<TransformComponent>() )
-		{
-			out << YAML::Key << "TransformComponent";
-			out << YAML::BeginMap;
-
-			out << YAML::Key << "Position"; out << YAML::Value << tc->Position;
-			out << YAML::Key << "Rotation"; out << YAML::Value << glm::degrees( tc->Rotation ); 
-			out << YAML::Key << "Scale";    out << YAML::Value << tc->Scale;
-
-			if ( go.HasParent() )
-			{
-				out << YAML::Key << "Parent";
-				out << YAML::Value << go.GetParent().GetGUID().ID();
-			}
-
-			out << YAML::Key << "Children";
-			out << YAML::Flow; out << YAML::Value << YAML::BeginSeq;
-			for ( auto child : go.GetChildren() )
-			{
-				out << child.GetGUID().ID();
-			}
-			out << YAML::EndSeq;
-
-			out << YAML::EndMap;
-		}
-
-		if ( auto mc = go.TryGetComponent<MeshComponent>() )
-		{
-			out << YAML::Key << "MeshComponent";
-			out << YAML::BeginMap;
-
-			out << YAML::Key << "Mesh" << YAML::Value << mc->GetMesh().GetAssetHandle();
-			out << YAML::Key << "Material" << YAML::Value << mc->GetMaterial().GetAssetHandle();
-
-			out << YAML::EndMap;
-		}
-
-		if ( auto sc = go.TryGetComponent<SpriteComponent>() )
-		{
-			out << YAML::Key << "SpriteComponent";
-			out << YAML::BeginMap;
-
-			out << YAML::Key << "Texture" << YAML::Value << sc->GetTexture().GetAssetHandle();
-
-			out << YAML::EndMap;
-		}
-
-		if ( auto lsc = go.TryGetComponent<LuaScriptComponent>() )
-		{
-			out << YAML::Key << "LuaScriptComponent";
-			out << YAML::BeginMap;
-
-			//out << YAML::Key << "LuaScript" << YAML::Value << YAML::DoubleQuoted << ( lsc->GetScript() ? lsc->GetScript()->GetFilePath().ToString() : "" );
-
-			out << YAML::EndMap;
-		}
-
-		if ( auto cc = go.TryGetComponent<CameraComponent>() )
-		{
-			out << YAML::Key << "CameraComponent";
-			out << YAML::BeginMap;
-
-			out << YAML::Key << "Projection Mode";
-			out << YAML::Value << ( cc->SceneCamera.GetProjectionType() == Camera::ProjectionType::Perspective ? "Perspective" : "Orthographic" );
-
-			out << YAML::Key << "Perspective";
-			out << YAML::BeginMap;
-
-			out << YAML::Key << "FOV"; out << YAML::Value << cc->SceneCamera.GetPerspectiveFOV();
-			out << YAML::Key << "Near"; out << YAML::Value << cc->SceneCamera.GetPerspectiveNearClip();
-			out << YAML::Key << "Far"; out << YAML::Value << cc->SceneCamera.GetPerspectiveFarClip();
-
-			out << YAML::EndMap;
-
-			out << YAML::Key << "Orthographic";
-			out << YAML::BeginMap;
-
-			out << YAML::Key << "Size"; out << YAML::Value << cc->SceneCamera.GetOrthographicSize();
-			out << YAML::Key << "Near"; out << YAML::Value << cc->SceneCamera.GetOrthographicNearClip();
-			out << YAML::Key << "Far"; out << YAML::Value << cc->SceneCamera.GetOrthographicFarClip();
-
-			out << YAML::EndMap;
-
-			out << YAML::EndMap;
-		}
-
-		out << YAML::EndMap;
-	}
-
-	bool DeserializeGameObject( YAML::detail::iterator_value& go, DeserializedGameObject& deserializedGameObject )
-	{
-		GUID id;
-		if ( auto gameObject = go["GameObject"] )
-			id = gameObject.as<GUID>();
+		if ( auto sceneNameNode = a_Node["Scene"] )
+			a_Data.SetName( sceneNameNode.as<std::string>() );
 		else
 			return false;
 
-		std::string name;
-		if ( auto tagComponent = go["TagComponent"] ) {
-			name = tagComponent.as<std::string>();
+		auto gameObjectsNode = a_Node["GameObjects"];
+
+		if ( !gameObjectsNode )
+			return false;
+
+		std::unordered_map<GUID, DeserializedGameObject> deserializedGameObjects;
+		for ( auto goNode : gameObjectsNode )
+		{
+			TE_CORE_ASSERT( DeserializeGameObject( goNode, a_Data, deserializedGameObjects ), "Failed to deserialize GameObject from a scene file!" );
 		}
 
-		auto deserialisedGO = GameObject::Create( id, name );
-		deserializedGameObject.GameObject = deserialisedGO;
-
-		if ( auto transformComponent = go["TransformComponent"] )
+		// Link up gameobject references to eachother
+		for ( auto&& [guid, go] : deserializedGameObjects )
 		{
-			TransformComponent* tc;  
-			if ( !( tc = deserialisedGO.TryGetComponent<TransformComponent>() ) ) {
-				tc = &deserialisedGO.AddComponent<TransformComponent>();
-			}
-
-			tc->Position = transformComponent["Position"].as<Vector3>();
-			tc->Rotation = glm::radians( transformComponent["Rotation"].as<Vector3>() );
-			tc->Scale = transformComponent["Scale"].as<Vector3>();
-
-			if ( auto parent = transformComponent["Parent"] ) {
-				deserializedGameObject.Parent = parent.as<GUID>();
-			}
-
-			if ( auto children = transformComponent["Children"] )
+			if ( go.Parent.has_value() )
 			{
-				deserializedGameObject.Children.reserve( children.size() );
-				for ( auto child : children ) {
-					deserializedGameObject.Children.push_back( child.as<GUID>() );
+				if ( auto parent = deserializedGameObjects.find( go.Parent.value() ); parent != deserializedGameObjects.end() )
+				{
+					TransformComponent& tc = go.GameObject.GetComponent<TransformComponent>();
+					tc.AttachToParent( parent->second.GameObject );
 				}
-			}
-		}
-
-		if ( auto meshComponent = go["MeshComponent"] )
-		{
-			MeshComponent* mc;
-			if ( !( mc = deserialisedGO.TryGetComponent<MeshComponent>() ) ) {
-				mc = &deserialisedGO.AddComponent<MeshComponent>();
-			}
-
-			if ( auto mesh = meshComponent["Mesh"] ) {
-				mc->SetMesh( AssetManager::GetAsset<Mesh>( mesh.as<GUID>() ) );
-			}
-
-			if ( auto mat = meshComponent["Material"] ) {
-				mc->SetMaterial( AssetManager::GetAsset<Material>( mat.as<GUID>() ) );
-			}
-		}
-
-		if ( auto spriteComponent = go["SpriteComponent"] )
-		{
-			SpriteComponent* sc;
-			if ( !( sc = deserialisedGO.TryGetComponent<SpriteComponent>() ) ) {
-				sc = &deserialisedGO.AddComponent<SpriteComponent>();
-			}
-
-			if ( auto tex = spriteComponent["Texture"] ) {
-				sc->SetTexture( AssetManager::GetAsset<Texture>( tex.as<GUID>() ) );
-			}
-		}
-
-		if ( auto luaScriptComponent = go["LuaScriptComponent"] )
-		{
-			LuaScriptComponent* lsc;
-			if ( !( lsc = deserialisedGO.TryGetComponent<LuaScriptComponent>() ) ) {
-				lsc = &deserialisedGO.AddComponent<LuaScriptComponent>();
-			}
-
-			//lsc->SetScript( Script::Create( luaScriptComponent["LuaScript"].as<std::string>() ) );
-		}
-
-		if ( auto cameraComponent = go["CameraComponent"] )
-		{
-			CameraComponent* cc;
-			if ( !( cc = deserialisedGO.TryGetComponent<CameraComponent>() ) ) {
-				cc = &deserialisedGO.AddComponent<CameraComponent>();
-			}
-
-			if ( auto projectionType = cameraComponent["Projection Mode"] ) {
-				cc->SceneCamera.SetProjectionType( projectionType.as<std::string>() == "Perspective" ? Camera::ProjectionType::Perspective : Camera::ProjectionType::Orthographic );
-			}
-
-			if ( auto perspective = cameraComponent["Perspective"] )
-			{
-				cc->SceneCamera.SetPerspectiveFOV( perspective["FOV"].as<float>() );
-				cc->SceneCamera.SetPerspectiveNearClip( perspective["Near"].as<float>() );
-				cc->SceneCamera.SetPerspectiveFarClip( perspective["Far"].as<float>() );
-			}
-
-			if ( auto orthographic = cameraComponent["Orthographic"] )
-			{
-				cc->SceneCamera.SetOrthographicSize( orthographic["Size"].as<float>() );
-				cc->SceneCamera.SetOrthographicNearClip( orthographic["Near"].as<float>() );
-				cc->SceneCamera.SetOrthographicFarClip( orthographic["Far"].as<float>() );
 			}
 		}
 
 		return true;
 	}
 
-	//bool SceneSerializer::DeserializeText( const std::string& filepath )
-	//{
-	//	YAML::Node data = YAML::LoadFile( filepath );
-	//	if ( !data["Scene"] )
-	//		return false;
-
-	//	m_Scene->m_Path = filepath;
-
-	//	m_Scene->m_Name = data["Scene"].as<std::string>();
-	//	TE_CORE_TRACE( "Begin Deserializing Scene '{0}'", m_Scene->m_Name );
-
-	//	auto gameObjects = data["GameObjects"];
-	//	std::unordered_map<GUID, DeserializedGameObject> deserializedGameObjects;
-	//	deserializedGameObjects.reserve( gameObjects.size() );
-	//	for ( auto go : gameObjects )
-	//	{
-	//		DeserializedGameObject deserializedGO;
-	//		if ( DeserializeGameObject( go, deserializedGO ) )
-	//			deserializedGameObjects.insert( { deserializedGO.GameObject.GetGUID(), deserializedGO } );
-	//	}
-
-	//	// Link up gameobject references to eachother
-	//	for ( auto&& [guid, go] : deserializedGameObjects )
-	//	{
-	//		auto& tc = go.GameObject.GetComponent<TransformComponent>();
-	//		if ( go.Parent.has_value() )
-	//			tc.SetParent( deserializedGameObjects[go.Parent.value()].GameObject );
-
-	//		tc.m_Children.reserve( go.Children.size() );
-	//		for ( auto& childGUID : go.Children )
-	//		{
-	//			tc.m_Children.push_back( deserializedGameObjects[childGUID].GameObject);
-	//		}
-	//	}
-
-	//	TE_CORE_TRACE( "Finished Deserializing Scene" );
-	//	return true;
-	//}
 }

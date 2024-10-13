@@ -96,10 +96,11 @@ namespace Tridium {
 			// - ImGui -
 			m_ImGuiLayer->Begin();
 
-			for ( Layer* layer : m_LayerStack )
-				layer->OnImGuiDraw();
+			for ( int i = 0; i < m_LayerStack.NumLayers(); i++ )
+				m_LayerStack[i]->OnImGuiDraw();
 
 			m_ImGuiLayer->End();
+
 			// ---------
 			
 			// ====================================================================================================
@@ -136,16 +137,6 @@ namespace Tridium {
 			if ( e.Handled )
 				break;
 		}
-	}
-	
-	void Application::PushLayer( Layer* layer )
-	{
-		m_LayerStack.PushLayer( layer );
-	}
-	
-	void Application::PushOverlay( Layer* overlay )
-	{
-		m_LayerStack.PushOverlay( overlay );
 	}
 	
 	bool Application::OnWindowClosed( WindowCloseEvent& e )

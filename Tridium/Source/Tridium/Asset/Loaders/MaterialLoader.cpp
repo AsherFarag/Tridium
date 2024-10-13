@@ -1,12 +1,17 @@
 #include "tripch.h"
 #include "MaterialLoader.h"
-#include <Tridium/IO/MaterialSerializer.h>
+#include <Tridium/IO/Serializer.h>
 
 namespace Tridium {
 
 	AssetMetaData* MaterialLoader::LoadAssetMetaData( const YAML::Node & a_Node ) const
 	{
-		return nullptr;
+		Scope<ModelMetaData> metaData = new ModelMetaData();
+		if ( !IO::DeserializeFromArchive( a_Node, *metaData ) )
+			return nullptr;
+
+		metaData.Retire();
+		return metaData.Get();
 	}
 	AssetMetaData* MaterialLoader::ConstructAssetMetaData() const
 	{

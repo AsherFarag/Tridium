@@ -61,6 +61,4 @@ namespace Tridium {
 		}
 
 	}
-
-
 }

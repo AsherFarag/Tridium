@@ -1,11 +1,27 @@
 #pragma once
+#include <Tridium/Utils/Reflection/Reflection.h>
 
 namespace Tridium {
 
+	struct PerspectiveData
+	{
+		REFLECT( PerspectiveData );
+		float FOV = 45.0f;
+		float Near = 0.01f, Far = 1000.0f;
+	};
+
+	struct OrthographicData
+	{
+		REFLECT( OrthographicData );
+		float Size = 10.0f;
+		float Near = -1000.0f, Far = 1000.0f;
+	};
+
+	enum class ProjectionType { Perspective = 0, Orthographic = 1 };
+
 	class Camera
 	{
-	public:
-		enum class ProjectionType { Perspective = 0, Orthographic = 1 };
+		REFLECT( Camera );
 
 	public:
 		Camera();
@@ -45,20 +61,29 @@ namespace Tridium {
 		ProjectionType m_ProjectionType = ProjectionType::Perspective;
 		Matrix4 m_Projection = Matrix4( 1.0f );
 
-		struct PerspectiveData
-		{
-			float FOV = 45.0f;
-			float Near = 0.01f, Far = 1000.0f;
-		} m_Perspective;
-
-		struct OrthographicData
-		{
-			float Size = 10.0f;
-			float Near = -1000.0f, Far = 1000.0f;
-		} m_Orthographic;
+		PerspectiveData m_Perspective;
+		OrthographicData m_Orthographic;
 
 
 		float m_AspectRatio = 16.f / 9.0f;
 	};
+
+	BEGIN_REFLECT( PerspectiveData )
+		PROPERTY( FOV, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( Near, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( Far, FLAGS( Serialize, EditAnywhere ) )
+	END_REFLECT( PerspectiveData );
+
+	BEGIN_REFLECT( OrthographicData )
+		PROPERTY( Size, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( Near, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( Far, FLAGS( Serialize, EditAnywhere ) )
+	END_REFLECT( OrthographicData )
+
+	BEGIN_REFLECT( Camera )
+		PROPERTY( m_Perspective, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( m_Orthographic, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( m_ProjectionType, FLAGS( Serialize, EditAnywhere ) )
+	END_REFLECT( Camera )
 
 }

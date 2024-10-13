@@ -75,6 +75,9 @@ namespace Tridium::Editor {
 	template<>
 	bool DrawProperty( const char* a_Name, Vector4& a_Value, EDrawPropertyFlags a_Flags );
 
+	template<>
+	bool DrawProperty( const char* a_Name, AssetHandle& a_Value, EDrawPropertyFlags a_Flags );
+
 }
 
 #endif // IS_EDITOR

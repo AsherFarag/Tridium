@@ -24,9 +24,14 @@ project "Sandbox"
         "%{IncludeDir.yaml}/include",
 	}
 
+	libdirs
+	{
+		"%{wks.location}/Tridium/Bin/Tridium/" .. outputdir
+	}
+
 	links
 	{
-		"Tridium"
+		"Tridium.lib"
 	}
 
 	defines

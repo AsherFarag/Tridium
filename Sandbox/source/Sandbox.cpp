@@ -1,4 +1,5 @@
 #include <Tridium.h>
+#include <Tridium/IO/SceneSerializer.h>
 
 struct PersonInfo
 {
@@ -30,52 +31,22 @@ public:
 };
 
 BEGIN_REFLECT_COMPONENT( Person )
-	PROPERTY( Info, FLAGS( EditAnywhere ) )
-	PROPERTY( Children, FLAGS( EditAnywhere ) )
-	PROPERTY( Numbers, FLAGS( EditAnywhere ) )
+	PROPERTY( Info, FLAGS( Serialize, EditAnywhere ) )
+	PROPERTY( Children, FLAGS( Serialize, EditAnywhere ) )
+	PROPERTY( Numbers, FLAGS( Serialize, EditAnywhere ) )
 END_REFLECT( Person )
 
-#include <fstream>
+class TestLayer : public Tridium::Layer
+{
+	virtual void OnImGuiDraw() override
+	{
+	}
+};
 
 class SandboxGameInstance : public Tridium::GameInstance
 {
 	virtual void Init() override
 	{
-		using namespace Tridium::Refl;
-		PersonInfo info{ 10, "MyThing", 5, false};
-
-		Internal::SerializeFunc func;
-		if ( MetaRegistry::TryGetMetaPropertyFromClass<PersonInfo>( func, Internal::YAMLSerializeFuncID ) )
-		{
-
-			//Tridium::IO::Archive archive;
-			//func( archive, entt::forward_as_meta( info ) );
-
-			//std::ofstream file( "PersonInfo.yaml" );
-			//file << archive.c_str();
-
-			//file.close();
-
-			auto node =  YAML::LoadFile( "PersonInfo.yaml" );
-
-			Internal::DeserializeFunc deserializeFunc;
-			if ( MetaRegistry::TryGetMetaPropertyFromClass<PersonInfo>( deserializeFunc, Internal::YAMLDeserializeFuncID ) )
-			{
-				MetaAny any = entt::forward_as_meta( info );
-				deserializeFunc( node, any );
-
-				LOG_DEBUG( "Deserialized PersonInfo: {0}, {1}, {2}, {3}", info.Age, info.Name, info.Height, info.IsMale );
-				for ( const auto& number : info.Numbers )
-				{
-					LOG_DEBUG( "Number: {0}", number );
-				}
-
-				for ( const auto& [key, value] : info.Map )
-				{
-					LOG_DEBUG( "Map: {0} -> {1}", key, value );
-				}
-			}
-		}
 	}
 };
 

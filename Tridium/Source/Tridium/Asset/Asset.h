@@ -23,6 +23,7 @@ namespace Tridium {
         ASSET_CLASS_TYPE( None )
 
         const std::string& GetPath() const { return m_Path; }
+		void SetPath( const std::string& a_Path ) { m_Path = a_Path; }
         const AssetHandle& GetHandle() const { return m_Handle; }
 
         bool IsLoaded() const { return m_Loaded; }

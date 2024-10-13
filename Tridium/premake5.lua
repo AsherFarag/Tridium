@@ -41,16 +41,21 @@ project "Tridium"
 	libdirs
 	{
 		"%{IncludeDir.lua}",
+		"Dependencies/glfw/bin/" .. outputdir .. "/GLFW",
+		"Dependencies/glad/bin/" .. outputdir .. "/glad",
+		"Dependencies/ImGui/bin/" .. outputdir .. "/ImGui",
+		"Dependencies/yaml-cpp/bin/" .. outputdir .. "/yaml-cpp",
+		"Dependencies/assimp/bin/" .. outputdir .. "/assimp",
 	}
 
 	links
 	{
-		"glfw",
-		"glad",
-		"ImGui",
-		"lua54",
-		"yaml-cpp",
-		"assimp",
+		"GLFW.lib",
+		"glad.lib",
+		"ImGui.lib",
+		"lua54.lib",
+		"yaml-cpp.lib",
+		"assimp.lib",
 		"opengl32.lib"
 	}
 

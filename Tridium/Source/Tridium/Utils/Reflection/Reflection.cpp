@@ -3,6 +3,11 @@
 #include "EditorReflection.h"
 #include <Editor/PropertyDrawers.h>
 #include <Tridium/IO/TextSerializer.h>
+#include <Tridium/Rendering/Texture.h>
+#include <Tridium/Rendering/Material.h>
+#include <Tridium/Rendering/Mesh.h>
+#include <Tridium/Rendering/Shader.h>
+
 
 namespace Tridium::Refl {
 
@@ -234,6 +239,36 @@ namespace Tridium::Refl {
 			.type(entt::type_hash<Type>::value()) \
             .prop(Internal::CleanClassNamePropID, #Type)
 
+#define REFLECT_ASSET_REF_TYPE(Type)                                                                      \
+			entt::meta<AssetRef<Type>>()                                                                  \
+			.type(entt::type_hash<AssetRef<Type>>::value())                                               \
+			.prop(Internal::CleanClassNamePropID, Stringize(AssetRef<##Type>))                            \
+            .prop(Internal::YAMLSerializeFuncID,                                                          \
+                +[]( IO::Archive& a_Archive, const ::Tridium::Refl::MetaAny& a_Value )                    \
+                {                                                                                         \
+                    SerializeBasicType<AssetHandle>(a_Archive,                                            \
+                        a_Value.cast<const AssetRef<Type>&>().GetAssetHandle());                          \
+                })																						  \
+			.prop(Internal::YAMLDeserializeFuncID,                                                        \
+				+[]( const YAML::Node& a_Node, ::Tridium::Refl::MetaAny& a_Value )                        \
+				{                                                                                         \
+                    Refl::MetaAny handle = a_Value.cast<AssetRef<Type>&>().GetAssetHandle();              \
+                    DeserializeBasicType<AssetHandle>(a_Node, handle);                                    \
+					a_Value.cast<AssetRef<Type>&>().SetAssetHandle(handle.cast<AssetHandle>());           \
+				}) 																					      \
+            .prop(Editor::Internal::DrawPropFuncID,                                                       \
+				+[]( const char* a_Name, ::Tridium::Refl::MetaAny& a_Handle, ::Tridium::Refl::PropertyFlags a_Flags ) \
+					-> bool 																			  \
+				{                                                                                         \
+					MetaAny handle = a_Handle.cast<AssetRef<Type>*>()->GetAssetHandle();                  \
+					if ( DrawBasicType<AssetHandle>(a_Name, handle, a_Flags ) )                           \
+					{                                                                                     \
+						a_Handle.cast<AssetRef<Type>*>()->SetAssetHandle(handle.cast<AssetHandle>());     \
+						return true;                                                                      \
+					}                                                                                     \
+					return false;                                                                         \
+				})
+
     void __Internal_InitializeReflection()
     {
 		// Basic types
@@ -260,6 +295,13 @@ namespace Tridium::Refl {
 		REFLECT_BASIC_TYPE( Vector2 )ADD_DRAWPROPERTY_FUNC_TO_TYPE( Vector2 );
 		REFLECT_BASIC_TYPE( Vector3 )ADD_DRAWPROPERTY_FUNC_TO_TYPE( Vector3 );
 		REFLECT_BASIC_TYPE( Vector4 )ADD_DRAWPROPERTY_FUNC_TO_TYPE( Vector4 );
+
+        // Asset Refs
+		REFLECT_BASIC_TYPE( AssetHandle )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( AssetHandle )ADD_DRAWPROPERTY_FUNC_TO_TYPE( AssetHandle );
+		REFLECT_ASSET_REF_TYPE( Texture );
+		REFLECT_ASSET_REF_TYPE( Material );
+		REFLECT_ASSET_REF_TYPE( Mesh );
+		REFLECT_ASSET_REF_TYPE( Shader );
     }
 
 } // namespace Tridium::Reflection

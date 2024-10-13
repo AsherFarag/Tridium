@@ -95,7 +95,7 @@ namespace Tridium::Editor {
 			return;
 
 		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2( 1, 1 ) );
-		ImGui::ScopedStyleCol winBg( ImGuiCol_::ImGuiCol_WindowBg, ImVec4( 0.1f, 0.1f, 0.1f, 1.0f ) );
+		ImGui::ScopedStyleCol winBg( ImGuiCol_::ImGuiCol_WindowBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg) * 0.5f );
 		ImGui::FunctionScope endWindow( +[]() { ImGui::End(); } );
 		if ( !ImGui::Begin( "Scene Heirarchy" ) )
 		{

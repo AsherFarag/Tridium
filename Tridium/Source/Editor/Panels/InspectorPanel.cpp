@@ -22,11 +22,11 @@ namespace Tridium::Editor {
 	// Create a set of blacklisted components that should not be drawn in the inspector
 	static const std::unordered_set<entt::id_type> s_BlacklistedComponents =
 	{
-		entt::type_hash<Component>::value(),
-		entt::type_hash<ScriptableComponent>::value(),
-		entt::type_hash<TransformComponent>::value(),
-		entt::type_hash<TagComponent>::value(),
-		entt::type_hash<GUIDComponent>::value(),
+		"Component"_hs.value(),
+		"ScriptableComponent"_hs.value(),
+		"TransformComponent"_hs.value(),
+		"TagComponent"_hs.value(),
+		"GUIDComponent"_hs.value(),
 	};
 
 	void InspectorPanel::OnImGuiDraw()

@@ -1,0 +1,15 @@
+Scene: Untitled
+GameObjects:
+  - GameObject: 9818768311568883989
+    Tag: Cube Jesse stinks
+    Transform:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    MeshComponent:
+      m_Mesh: 0
+      m_Material: 0
+    CameraControllerComponent:
+      Speed: 1
+      LookSensitivity: 0.75

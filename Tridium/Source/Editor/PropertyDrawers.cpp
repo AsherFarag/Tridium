@@ -184,6 +184,16 @@ namespace Tridium::Editor {
 		return modified;
 	}
 
+	template<>
+	bool DrawProperty( const char* a_Name, AssetHandle& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		IS_DISABLED( a_Flags );
+		return ImGui::InputScalar(
+			a_Name, ImGuiDataType_U64, &a_Value,
+			nullptr, nullptr, nullptr,
+			ImGuiInputTextFlags_EnterReturnsTrue);
+	}
+
 #undef _DRAW_FLOAT
 
 }

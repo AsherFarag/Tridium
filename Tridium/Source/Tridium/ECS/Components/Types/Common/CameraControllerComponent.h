@@ -21,4 +21,9 @@ namespace Tridium {
 		int m_LastMouseScroll = 0;
 	};
 
+	BEGIN_REFLECT_COMPONENT( CameraControllerComponent )
+		BASE( ScriptableComponent )
+		PROPERTY( Speed, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( LookSensitivity, FLAGS( Serialize, EditAnywhere ) )
+	END_REFLECT( CameraControllerComponent );
 }

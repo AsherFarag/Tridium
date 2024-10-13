@@ -85,7 +85,6 @@ namespace Tridium::IO {
 	// ---------- Tridium Types -----------
 
 	_TRIDUM_SERIALIZE_TO_TEXT( GUID );
-	_TRIDUM_SERIALIZE_TO_TEXT( GameObject );
 
 
 #undef _TRIDUM_SERIALIZE_TO_TEXT
@@ -197,7 +196,6 @@ namespace Tridium::IO {
 	// ---------- Tridium Types -----------
 
 	_TRIDUM_DESERIALIZE_FROM_TEXT( GUID );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( GameObject );
 
 #undef _TRIDUM_DESERIALIZE_FROM_TEXT
 

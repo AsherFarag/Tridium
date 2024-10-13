@@ -12,6 +12,8 @@ namespace Tridium {
 		PROPERTY( Position, FLAGS( Serialize, EditAnywhere ) )
 		PROPERTY( Rotation, FLAGS( Serialize, EditAnywhere ) )
 		PROPERTY( Scale, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( m_Parent, FLAGS( Serialize ) )
+		PROPERTY( m_Children, FLAGS( Serialize ) )
 	END_REFLECT( TransformComponent )
 
 	TransformComponent::TransformComponent( const Vector3& a_Translation )
@@ -73,11 +75,7 @@ namespace Tridium {
 		if ( childTransform.GetParent() != GetGameObject() && a_Child != GetParent() )
 		{
 			childTransform.DetachFromParent();
-
-			// We want to keep the child's world transform, so we need to change the childs local transform
-			Matrix4 newLocalTransform = glm::inverse( GetWorldTransform() ) * a_Child.GetWorldTransform();
 			TransformComponent& tc = a_Child.GetTransform();
-			Math::DecomposeTransform( newLocalTransform, tc.Position, tc.Rotation, tc.Scale );
 
 			childTransform.SetParent( GetGameObject() );
 			m_Children.push_back( a_Child );

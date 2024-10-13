@@ -6,6 +6,7 @@
 
 #include "Editor.h"
 #include "EditorCamera.h"
+#include "EditorUtil.h"
 
 #include <Tridium/Scripting/ScriptEngine.h>
 #include <Tridium/ECS/Components/Types.h>
@@ -20,6 +21,9 @@
 
 #include <Tridium/IO/SceneSerializer.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
+
+#include <fstream>
+#include <Tridium/IO/Serializer.h>
 
 namespace Tridium::Editor {
 
@@ -177,11 +181,32 @@ namespace Tridium::Editor {
 	bool EditorLayer::LoadScene( const std::string& filepath )
 	{
 		m_ActiveScene->Clear();
-		return true;
+		m_ActiveScene->SetPath( filepath );
+
+		YAML::Node archive;
+		try
+		{
+			archive = YAML::LoadFile( filepath );
+		}
+		catch ( const std::exception& )
+		{
+			TE_CORE_ERROR( "Failed to load scene '{0}'", filepath );
+		}
+
+		return IO::DeserializeFromText( archive, *m_ActiveScene );
 	}
 
 	bool EditorLayer::SaveScene( const std::string& filepath )
 	{
+		Tridium::IO::Archive archive;
+		Tridium::IO::SerializeToText( archive, *m_ActiveScene );
+
+		std::ofstream file( filepath );
+		file << archive.c_str();
+		file.close();
+
+		m_ActiveScene->SetPath( filepath );
+
 		return true;
 	}
 
@@ -205,7 +230,12 @@ namespace Tridium::Editor {
 			if ( control )
 			{
 				if ( m_ActiveScene )
-					SaveScene( m_ActiveScene->GetPath() );
+				{
+					if ( m_ActiveScene->GetPath().length() == 0 )
+						Util::OpenSaveFileDialog( "Untitled.tscene", [this](const std::string& path) { SaveScene(path); });
+					else
+						SaveScene( m_ActiveScene->GetPath() );
+				}
 
 				Util::SaveAll();
 				return true;
@@ -249,11 +279,18 @@ namespace Tridium::Editor {
 			if ( ImGui::MenuItem( "New Scene" ) )
 				NewScene();
 
-			if ( ImGui::MenuItem( "Open Scene", nullptr, nullptr, false ) )
-				TE_CORE_INFO( "Open Scene" );
+			if ( ImGui::MenuItem( "Open Scene" ) )
+			{
+				Util::OpenLoadFileDialog( "", [this](const std::string& path) { LoadScene(path); });
+			}
 
 			if ( ImGui::MenuItem( "Save Scene", "Ctrl + S" ) )
-				SaveScene( ( Application::GetAssetDirectory() / "Scene.tridium" ).ToString() );
+			{
+				if ( m_ActiveScene->GetPath().length() == 0 )
+					Util::OpenSaveFileDialog( "Untitled.tscene", [this](const std::string& path) { SaveScene(path); });
+				else
+					SaveScene( m_ActiveScene->GetPath() );
+			}
 
 			ImGui::EndMenu();
 		}
