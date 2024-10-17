@@ -3,17 +3,18 @@
 
 namespace Tridium {
 
-	class RuntimeAssetManager : public AssetManager
+	class RuntimeAssetManager : public AssetManagerBase
 	{
 	public:
 
-		// Inherited via AssetManager
-		bool HasAssetImpl( const AssetHandle& a_AssetHandle ) const override;
-		AssetRef<Asset> GetAssetImpl( const AssetHandle& a_AssetHandle ) override;
-		AssetRef<Asset> GetAssetImpl( const IO::FilePath& a_Path ) override;
-		AssetRef<Asset> LoadAssetImpl( const AssetHandle& a_AssetHandle ) override;
-		AssetRef<Asset> LoadAssetImpl( const IO::FilePath& a_Path ) override;
-		bool ReleaseAssetImpl( const AssetHandle& a_AssetHandle ) override;
+		// Inherited via AssetManagerBase
+		SharedPtr<Asset> GetAsset( AssetHandle a_Handle ) override;
+		SharedPtr<Asset> GetMemoryOnlyAsset( AssetHandle a_Handle ) override;
+		bool AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset ) override;
+		bool HasAsset( AssetHandle a_Handle ) override;
+		void RemoveAsset( AssetHandle a_Handle ) override;
+		EAssetType GetAssetType( AssetHandle a_Handle ) override;
+		bool IsMemoryAsset( AssetHandle a_Handle ) override;
 	};
 
 }

@@ -16,7 +16,6 @@ namespace Tridium {
 		friend class MaterialSerializer;
 	public:
 		ASSET_CLASS_TYPE( Material )
-		ASSET_LOADER_TYPE( MaterialLoader )
 
 		enum class EPropertyType : uint8_t
 		{
@@ -37,21 +36,20 @@ namespace Tridium {
 				float, std::vector<float>,
 				Color, std::vector<Color>,
 				Vector4, std::vector<Vector4>,
-				Matrix4, std::vector<Matrix4>,
-				AssetRef<Texture>> Value;
+				Matrix4, std::vector<Matrix4> > Value;
 		};
 
 		using PropertyTable = std::map<std::string, Property>;
 
 		Material();
-		Material( const AssetRef<Shader>& a_Shader );
+		Material( const AssetHandle& a_Shader );
 
 		void Bind();
 		void Unbind();
 
-		const AssetRef<Shader>& GetShader() const { return m_Shader; }
-		void SetShader( const AssetRef<Shader>& a_Shader ) { m_Shader = a_Shader; }
-		const AssetRef<Material>& GetParent() const { return m_Parent; }
+		const AssetHandle& GetShader() const { return m_Shader; }
+		void SetShader( const AssetHandle& a_Shader ) { m_Shader = a_Shader; }
+		const AssetHandle& GetParent() const { return m_ParentMaterial; }
 
 		bool AddProperty( const std::string& a_Name, const Property& a_Property );
 		bool RemoveProperty( const std::string& a_Name );
@@ -70,7 +68,6 @@ namespace Tridium {
 		std::vector<Vector4>* GetVector4Array( const std::string& a_Name );
 		Matrix4*              GetMatrix4( const std::string& a_Name );
 		std::vector<Matrix4>* GetMatrix4Array( const std::string& a_Name );
-		AssetRef<Texture>*    GetTexture( const std::string& a_Name );
 
 		// - Setters -
 
@@ -84,13 +81,13 @@ namespace Tridium {
 		bool SetVector4Array( const std::string& a_Name, const std::vector<Vector4>& a_Value );
 		bool SetMatrix4( const std::string& a_Name, const Matrix4& a_Value );
 		bool SetMatrix4Array( const std::string& a_Name, const std::vector<Matrix4>& a_Value );
-		bool SetTexture( const std::string& a_Name, const AssetRef<Texture>& a_Value );
+		bool SetTexture( const std::string& a_Name, const AssetHandle& a_Value );
 
 		EBlendMode BlendMode;
 
 	private:
-		AssetRef<Shader> m_Shader;
-		AssetRef<Material> m_Parent;
+		AssetHandle m_Shader;
+		AssetHandle m_ParentMaterial;
 		PropertyTable m_Properties;
 	};
 }

@@ -12,11 +12,7 @@
 
 namespace Tridium
 {
-#ifdef IS_EDITOR
-	namespace Editor { class EditorLayer; }
-#endif // IS_EDITOR
-
-	class Application
+	class Application final
 	{
 	public:
 		Application();
@@ -25,8 +21,10 @@ namespace Tridium
 		void Run();
 		static void Quit();
 
+		// - Event Handling -
 		void OnEvent( Event& e );
 
+		// - Layer Stack -
 		void PushLayer( Layer* a_Layer ) { m_LayerStack.PushLayer( a_Layer ); }
 		void PushOverlay( Layer* a_Overlay ) { m_LayerStack.PushOverlay( a_Overlay ); }
 		void PopLayer( Layer* a_Layer, bool a_Destroy = false ) { m_LayerStack.PopLayer( a_Layer, a_Destroy ); }
@@ -43,8 +41,8 @@ namespace Tridium
 		static SharedPtr<Scene> GetScene() { return s_Instance->m_ActiveScene; }
 		static void SetScene( SharedPtr<Scene> a_Scene ) { s_Instance->m_ActiveScene = a_Scene; }
 	private:
+		void InitializeAssetManager();
 		bool OnWindowClosed( WindowCloseEvent& e );
-
 		void Shutdown();
 
 	private:
@@ -52,14 +50,17 @@ namespace Tridium
 		UniquePtr<Window> m_Window;
 		ImGuiLayer* m_ImGuiLayer;
 		LayerStack m_LayerStack;
-		SharedPtr<GameInstance> m_GameInstance;
 
+		SharedPtr<class AssetManagerBase> m_AssetManager;
 		SharedPtr<Project> m_Project;
 		SharedPtr<Scene> m_ActiveScene;
+		SharedPtr<GameInstance> m_GameInstance;
 
 		uint32_t m_FPS = 0u;
 
 	private:
+		friend class AssetManager;
+
 		static Application* s_Instance;
 	};
 

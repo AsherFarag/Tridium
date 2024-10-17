@@ -4,7 +4,7 @@
 
 #define TE_PAYLOAD_CONTENT_BROWSER_ITEM "ContentBrowserItem"
 
-static ImVec4&& operator*( const ImVec4& a_Color, float a_Value )
+static ImVec4 operator*( const ImVec4& a_Color, float a_Value )
 {
 	return ImVec4( a_Color.x * a_Value, a_Color.y * a_Value, a_Color.z * a_Value, a_Color.w );
 }

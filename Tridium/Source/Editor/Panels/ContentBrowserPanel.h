@@ -8,6 +8,15 @@
 
 namespace Tridium::Editor {
 
+	enum class EFileType
+	{
+		Folder,
+		Lua,
+		Image,
+		Tridium_Scene,
+		Tridium_Project,
+	};
+
 	class ContentBrowserPanel final : public Panel
 	{
 	public:
@@ -17,17 +26,17 @@ namespace Tridium::Editor {
 		virtual void OnImGuiDraw() override;
 
 	private:
-		bool ContentItemOnImGuiDraw( const EAssetType a_Type, const IO::FilePath& a_FilePath, const ImVec2& a_Size );
-		void ContentOnOpened( const EAssetType a_Type, const IO::FilePath& a_FilePath );
+		bool ContentItemOnImGuiDraw( const EFileType a_Type, const IO::FilePath& a_FilePath, const ImVec2& a_Size );
+		void ContentOnOpened( const EFileType a_Type, const IO::FilePath& a_FilePath );
 
 	private:
 		IO::FilePath m_CurrentDirectory;
 
-		AssetRef<Texture> m_DefaultIcon;
-		AssetRef<Texture> m_FolderIcon;
-		AssetRef<Texture> m_LuaIcon;
-		AssetRef<Texture> m_ImageMediaIcon;
-		AssetRef<Texture> m_TridiumProjectIcon;
+		SharedPtr<Texture> m_DefaultIcon;
+		SharedPtr<Texture> m_FolderIcon;
+		SharedPtr<Texture> m_LuaIcon;
+		SharedPtr<Texture> m_ImageMediaIcon;
+		SharedPtr<Texture> m_TridiumProjectIcon;
 	};
 }
 

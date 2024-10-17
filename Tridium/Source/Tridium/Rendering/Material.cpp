@@ -1,8 +1,6 @@
 #include "tripch.h"
 #include "Material.h"
 
-#include <Tridium/IO/MaterialSerializer.h>
-
 namespace Tridium {
 
 	Material::Material()
@@ -11,7 +9,7 @@ namespace Tridium {
 
 	}
 
-	Material::Material( const AssetRef<Shader>& a_Shader )
+	Material::Material( const AssetHandle& a_Shader )
 		: Material()
 	{
 		m_Shader = a_Shader;
@@ -19,62 +17,62 @@ namespace Tridium {
 
 	void Material::Bind()
 	{
-		if ( !m_Shader )
-			return;
+		//if ( !m_Shader )
+		//	return;
 
-		for ( auto& [name, prop] : m_Properties )
-		{
-			switch ( prop.Type )
-			{
-			case EPropertyType::Int:
-			{
-				m_Shader->SetInt( name.c_str(), std::get<int>( prop.Value ) );
-				break;
-			}
-			case EPropertyType::IntArray:
-			{
-				auto& arr = std::get<std::vector<int>>( prop.Value );
-				m_Shader->SetInt( name.c_str(), arr.size(), arr.data() );
-				break;
-			}
-			case EPropertyType::Float:
-			{
-				m_Shader->SetFloat( name.c_str(), std::get<float>( prop.Value ) );
-				break;
-			}
-			case EPropertyType::FloatArray:
-			{
-				auto& arr = std::get<std::vector<float>>( prop.Value );
-				m_Shader->SetFloat( name.c_str(), arr.size(), arr.data() );
-				break;
-			}
-			case EPropertyType::Color:
-			{
-				m_Shader->SetFloat4( name.c_str(), std::get<Color>( prop.Value ) );
-				break;
-			}
-			case EPropertyType::ColorArray:
-			{
-				auto& arr = std::get<std::vector<float>>( prop.Value );
-				m_Shader->SetFloat( name.c_str(), arr.size(), arr.data() );
-				break;
-			}
-			case EPropertyType::Vector4:
-				break;
-			case EPropertyType::Vector4Array:
-				break;
-			case EPropertyType::Matrix4:
-				break;
-			case EPropertyType::Matrix4Array:
-				break;
-			case EPropertyType::Texture:
-				break;
-			case EPropertyType::None:
-				break;
-			default:
-				break;
-			}
-		}
+		//for ( auto& [name, prop] : m_Properties )
+		//{
+		//	switch ( prop.Type )
+		//	{
+		//	case EPropertyType::Int:
+		//	{
+		//		m_Shader->SetInt( name.c_str(), std::get<int>( prop.Value ) );
+		//		break;
+		//	}
+		//	case EPropertyType::IntArray:
+		//	{
+		//		auto& arr = std::get<std::vector<int>>( prop.Value );
+		//		m_Shader->SetInt( name.c_str(), arr.size(), arr.data() );
+		//		break;
+		//	}
+		//	case EPropertyType::Float:
+		//	{
+		//		m_Shader->SetFloat( name.c_str(), std::get<float>( prop.Value ) );
+		//		break;
+		//	}
+		//	case EPropertyType::FloatArray:
+		//	{
+		//		auto& arr = std::get<std::vector<float>>( prop.Value );
+		//		m_Shader->SetFloat( name.c_str(), arr.size(), arr.data() );
+		//		break;
+		//	}
+		//	case EPropertyType::Color:
+		//	{
+		//		m_Shader->SetFloat4( name.c_str(), std::get<Color>( prop.Value ) );
+		//		break;
+		//	}
+		//	case EPropertyType::ColorArray:
+		//	{
+		//		auto& arr = std::get<std::vector<float>>( prop.Value );
+		//		m_Shader->SetFloat( name.c_str(), arr.size(), arr.data() );
+		//		break;
+		//	}
+		//	case EPropertyType::Vector4:
+		//		break;
+		//	case EPropertyType::Vector4Array:
+		//		break;
+		//	case EPropertyType::Matrix4:
+		//		break;
+		//	case EPropertyType::Matrix4Array:
+		//		break;
+		//	case EPropertyType::Texture:
+		//		break;
+		//	case EPropertyType::None:
+		//		break;
+		//	default:
+		//		break;
+		//	}
+		//}
 	}
 
 	void Material::Unbind()
@@ -178,11 +176,6 @@ namespace Tridium {
 		GET_PROPERTY_BODY( Matrix4Array );
 	}
 
-	AssetRef<Texture>* Material::GetTexture( const std::string& a_Name )
-	{
-		GET_PROPERTY_BODY( Texture );
-	}
-
 #undef GET_PROPERTY_BODY
 
 #pragma endregion
@@ -252,11 +245,6 @@ namespace Tridium {
 	bool Material::SetMatrix4Array( const std::string& a_Name, const std::vector<Matrix4>& a_Value )
 	{
 		SET_PROPERTY_BODY( Matrix4Array );
-	}
-
-	bool Material::SetTexture( const std::string& a_Name, const AssetRef<Texture>& a_Value )
-	{
-		SET_PROPERTY_BODY( Texture );
 	}
 
 #undef SET_PROPERTY_BODY

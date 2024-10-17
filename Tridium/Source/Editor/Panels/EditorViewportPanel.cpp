@@ -7,9 +7,8 @@
 #include <Editor/EditorCamera.h>
 #include "SceneHeirarchyPanel.h"
 
-#include <Tridium/ECS/Components/Types.h>`
+#include <Tridium/ECS/Components/Types.h>
 #include <Tridium/Scene/Scene.h>
-#include <Tridium/Asset/AssetFileExtensions.h>
 
 // TEMP ?
 #include "Tridium/Asset/AssetManager.h"
@@ -75,7 +74,7 @@ namespace Tridium::Editor {
 			}
 		)";
 
-		m_GameObjectIDShader = Shader::Create( idVert, idFrag );
+		m_GameObjectIDShader.reset( Shader::Create( idVert, idFrag ) );
 	}
 
 	bool EditorViewportPanel::OnKeyPressed( KeyPressedEvent& e )
@@ -185,45 +184,7 @@ namespace Tridium::Editor {
 
 		IO::FilePath filePath( (const char*)payload->Data );
 
-		EAssetType assetType = IO::GetAssetTypeFromExtension( filePath.GetExtension().ToString() );
-
-		switch ( assetType )
-		{
-			using enum EAssetType;
-			case Mesh:
-			{
-				EditorAssetManager::ImportAsset( filePath );
-				break;
-			}
-			case Shader:
-			{
-				EditorAssetManager::ImportAsset( filePath );
-				break;
-			}
-			case Texture:
-			{
-				EditorAssetManager::ImportAsset( filePath );
-				break;
-			}
-			case Material:
-			{
-				EditorAssetManager::ImportAsset( filePath );
-				break;
-			}
-			case Folder:
-				break;
-			case Lua:
-				break;
-			case Project:
-				break;
-			case Scene:
-			{
-				GetEditorLayer()->LoadScene( filePath.ToString() );
-				break;
-			}
-			default:
-				break;
-		}
+		TODO( "Add support for importing assets via dragging into the view port" );
 	}
 
 	void EditorViewportPanel::DrawManipulationGizmos( const Vector2& viewportBoundsMin, const Vector2& viewportBoundsMax )
@@ -289,14 +250,26 @@ namespace Tridium::Editor {
 		meshComponents.each( 
 			[&]( auto go, MeshComponent& meshComponent, TransformComponent& transform )
 			{
-				if ( meshComponent.GetMesh() )
-				{
-					m_GameObjectIDShader->SetInt( "uID", (uint32_t)go );
-					m_GameObjectIDShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
+				m_GameObjectIDShader->SetInt( "uID", (uint32_t)go );
+				m_GameObjectIDShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
 
-					meshComponent.GetMesh()->GetVAO()->Bind();
-					RenderCommand::DrawIndexed( meshComponent.GetMesh()->GetVAO() );
-					meshComponent.GetMesh()->GetVAO()->Unbind();
+				if ( meshComponent.GetMesh().Valid() )
+				{
+					if ( SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( meshComponent.GetMesh() ) )
+					{
+						if ( SharedPtr<MeshSource> meshSource = AssetManager::GetAsset<MeshSource>( mesh->GetMeshSource() ) )
+						{
+							for ( const auto& submesh : meshSource->GetSubMeshes() )
+							{
+								if ( SharedPtr<VertexArray> vao = meshSource->GetVAO() )
+								{
+									vao->Bind();
+									RenderCommand::DrawIndexed( vao );
+									vao->Unbind();
+								}
+							}
+						}
+					}
 				}
 			} );
 

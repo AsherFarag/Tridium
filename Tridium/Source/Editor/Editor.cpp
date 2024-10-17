@@ -10,7 +10,6 @@
 #include <Tridium/Rendering/Texture.h>
 #include <Tridium/Rendering/Shader.h>
 #include <Tridium/Rendering/Material.h>
-#include <Tridium/IO/MaterialSerializer.h>
 
 // Panels
 #include "Panels/EditorPreferencesPanel.h"

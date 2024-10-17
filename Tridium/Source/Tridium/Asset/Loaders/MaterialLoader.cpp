@@ -4,29 +4,12 @@
 
 namespace Tridium {
 
-	AssetMetaData* MaterialLoader::LoadAssetMetaData( const YAML::Node & a_Node ) const
+	void MaterialLoader::SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
 	{
-		Scope<ModelMetaData> metaData = new ModelMetaData();
-		if ( !IO::DeserializeFromArchive( a_Node, *metaData ) )
-			return nullptr;
+	}
 
-		metaData.Retire();
-		return metaData.Get();
-	}
-	AssetMetaData* MaterialLoader::ConstructAssetMetaData() const
+	SharedPtr<Asset> MaterialLoader::LoadAsset( const AssetMetaData& a_MetaData )
 	{
-		return new ModelMetaData();
-	}
-	Asset* MaterialLoader::RuntimeLoad( const IO::FilePath& a_Path ) const
-	{
-		return nullptr;
-	}
-	Asset* MaterialLoader::DebugLoad( const IO::FilePath& a_Path, const AssetMetaData* a_MetaData ) const
-	{
-		return nullptr;
-	}
-	bool MaterialLoader::Save( const IO::FilePath& a_Path, const Asset* a_Asset ) const
-	{
-		return false;
+		return SharedPtr<Asset>();
 	}
 }

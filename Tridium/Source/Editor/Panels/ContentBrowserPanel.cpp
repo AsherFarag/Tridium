@@ -7,8 +7,6 @@
 #include <Tridium/Core/Application.h>
 #include "ScriptEditorPanel.h"
 
-#include <Tridium/Asset/AssetFileExtensions.h>
-#include <Tridium/IO/MaterialSerializer.h>
 #include <Tridium/Rendering/Material.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
 
@@ -19,11 +17,11 @@ namespace Tridium::Editor {
 	{
 		IO::FilePath iconFolder( "../Tridium/Content/Engine/Editor/Icons" );
 
-		m_DefaultIcon = ( TextureLoader::Load( ( iconFolder / "file.png" ).ToString() ) );
-		m_FolderIcon = (TextureLoader::Load( ( iconFolder / "folder.png" ).ToString() ) );
-		m_LuaIcon = ( TextureLoader::Load( ( iconFolder / "file-code.png" ).ToString() ) );
-		m_ImageMediaIcon = ( TextureLoader::Load( ( iconFolder / "file-media.png" ).ToString() ) );
-		m_TridiumProjectIcon = ( TextureLoader::Load( ( iconFolder / "EngineIcon.png" ).ToString() ) );
+		m_DefaultIcon = TextureLoader::LoadTexture( iconFolder / "file.png" );
+		m_FolderIcon = TextureLoader::LoadTexture( iconFolder / "folder.png" );
+		m_LuaIcon = TextureLoader::LoadTexture( iconFolder / "file-code.png" );
+		m_ImageMediaIcon = TextureLoader::LoadTexture( iconFolder / "file-media.png" );
+		m_TridiumProjectIcon = TextureLoader::LoadTexture( iconFolder / "EngineIcon.png" );
 	}
 
 	static void DrawDirectoryPath( IO::FilePath& a_Path )
@@ -92,19 +90,19 @@ namespace Tridium::Editor {
 		{
 			for ( auto& directoryEntry : IO::DirectoryIterator( m_CurrentDirectory ) )
 			{
-				const auto& path = directoryEntry.path();
-				EAssetType type = IO::GetAssetTypeFromExtension( path.extension().string() );
-				if ( type == EAssetType::None )
-					continue;
+				//const auto& path = directoryEntry.path();
+				//EAssetType type = IO::GetAssetTypeFromExtension( path.extension().string() );
+				//if ( type == EAssetType::None )
+				//	continue;
 
-				ImGui::TableNextColumn();
-				ContentItemOnImGuiDraw( type, path, { thumbnailSize, thumbnailSize } );
+				//ImGui::TableNextColumn();
+				//ContentItemOnImGuiDraw( type, path, { thumbnailSize, thumbnailSize } );
 
 
-				if ( ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left ) )
-				{
-					ContentOnOpened( type, path );
-				}
+				//if ( ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left ) )
+				//{
+				//	ContentOnOpened( type, path );
+				//}
 			}
 
 			ImGui::EndTable();
@@ -159,14 +157,14 @@ namespace Tridium::Editor {
 			Close();
 	}
 
-	bool ContentBrowserPanel::ContentItemOnImGuiDraw( const EAssetType a_Type, const IO::FilePath& a_FilePath, const ImVec2& a_Size )
+	bool ContentBrowserPanel::ContentItemOnImGuiDraw( const EFileType a_Type, const IO::FilePath& a_FilePath, const ImVec2& a_Size )
 	{
-		AssetRef<Texture> icon;
+		SharedPtr<Texture> icon;
 
 		// Set Icon
 		switch ( a_Type )
 		{
-			using enum EAssetType;
+			using enum EFileType;
 			case Folder:
 			{
 				icon = m_FolderIcon;
@@ -177,12 +175,12 @@ namespace Tridium::Editor {
 				icon = m_LuaIcon;
 				break;
 			}
-			case Texture:
+			case Image:
 			{
 				icon = m_ImageMediaIcon;
 				break;
 			}
-			case Project:
+			case Tridium_Project:
 			{
 				icon = m_TridiumProjectIcon;
 				break;
@@ -236,24 +234,8 @@ namespace Tridium::Editor {
 		return result;
 	}
 
-	void ContentBrowserPanel::ContentOnOpened( const EAssetType type, const IO::FilePath& a_FilePath )
+	void ContentBrowserPanel::ContentOnOpened( const EFileType type, const IO::FilePath& a_FilePath )
 	{
-		switch ( type )
-		{
-			using enum EAssetType;
-			case Folder:
-			{
-				m_CurrentDirectory = a_FilePath;
-				break;
-			}
-			case Lua:
-			{
-				Util::OpenFile( a_FilePath );
-				break;
-			}
-		default:
-			break;
-		}
 	}
 }
 

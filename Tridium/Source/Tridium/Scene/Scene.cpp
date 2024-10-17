@@ -3,6 +3,7 @@
 #include <Tridium/ECS/GameObject.h>
 #include <Tridium/ECS/Components/Component.h>
 #include <Tridium/ECS/Components/Types.h>
+#include <Tridium/Asset/AssetManager.h>
 
 // Temp ?
 #include <Tridium/Rendering/Renderer.h>
@@ -63,35 +64,6 @@ namespace Tridium {
 		auto meshComponents = m_Registry.view<MeshComponent, TransformComponent>();
 		meshComponents.each( [&]( auto go, MeshComponent& meshComponent, TransformComponent& transform )
 			{
-				//if ( true /*auto& mesh = meshComponent.GetMesh()*/ )
-				//{
-				//	AssetRef<Material> mat = meshComponent.GetMaterial();
-				//	AssetRef<Shader> shader = mat ? mat->GetShader() : nullptr;
-
-				//	if ( !shader )
-				//		return;
-
-				//	shader->Bind();
-				//	shader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
-
-				//	if ( mat )
-				//	{
-				//		//shader->SetFloat4( "uColor", mat->Color );
-				//		mat->Bind();
-				//	}
-
-				//	mesh->GetVAO()->Bind();
-
-				//	RenderCommand::DrawIndexed( mesh->GetVAO() );
-
-				//	mesh->GetVAO()->Unbind();
-
-				//	if ( mat )
-				//		mat->Unbind();
-
-				//	shader->Unbind();
-				//}
-
 				std::string vert = R"(
 					#version 330 core
 					layout(location = 0) in vec3 a_Position;
@@ -135,7 +107,6 @@ namespace Tridium {
 				        color = vec4(ambientColor + lighting + lightColor * diff, 1.0f);
 				    }
 				)";
-				RenderCommand::SetCullMode( false );
 				static Shader* shader = Shader::Create( vert, frag );
 
 				shader->Bind();
@@ -146,46 +117,96 @@ namespace Tridium {
 				shader->SetFloat3( "ambientColor", { 0.3f, 0.1f, 0.05f } );
 				shader->SetFloat3( "lightColor", { 1.0f, 0.95f, 0.1f } );
 
-				auto& meshRef = meshComponent.GetMesh();
-				auto& mesh = *meshRef.Get();
+				if ( meshComponent.GetMesh().Valid() )
+				{
+					if ( SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( meshComponent.GetMesh() ) )
+					{
+						if ( SharedPtr<MeshSource> meshSource = AssetManager::GetAsset<MeshSource>( mesh->GetMeshSource() ) )
+						{
+							for ( const auto& submesh : meshSource->GetSubMeshes() )
+							{
+								if ( SharedPtr<VertexArray> vao = meshSource->GetVAO() )
+								{
+									vao->Bind();
+									RenderCommand::DrawIndexed( vao );
+									vao->Unbind();
+								}
+							}
+						}
+					}
+				}
 
-				mesh.GetVAO()->Bind();
-
-				RenderCommand::DrawIndexed( mesh.GetVAO() );
-
-				mesh.GetVAO()->Unbind();
 
 				shader->Unbind();
 			} );
 
 
 		// - Draw Sprites -
-		RenderCommand::SetCullMode( false );
+		{
+			RenderCommand::SetCullMode( false );
 
-		//auto spriteShader = ShaderLibrary::GetShader(  ShaderLibrary::GetSpriteShader() );
-		//auto quadMeshVAO = MeshLibrary::GetMesh( MeshLibrary::GetQuad() )->GetVAO();
+			std::string vert = R"(
 
-		//spriteShader->Bind();
-		//quadMeshVAO->Bind();
+				#version 330 core
+				layout(location = 0) in vec3 a_Position;
+				layout(location = 1) in vec2 a_UV;
 
-		//auto spriteComponents = m_Registry.view<SpriteComponent, TransformComponent>();
-		//spriteComponents.each( 
-		//	[ & ]( auto go, SpriteComponent& sprite, TransformComponent& transform )
-		//	{
-		//		spriteShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
+				uniform mat4 uPVM;
+	
+				out vec2 v_UV;
 
-		//		SharedPtr<Texture> tex = TextureLibrary::GetTexture( sprite.GetTexture() );
-		//		if ( tex )
-		//			tex->Bind();
+				void main()
+				{
+					v_UV = a_UV;
+					gl_Position = uPVM * vec4(a_Position, 1.0);
+				}
 
-		//		RenderCommand::DrawIndexed( quadMeshVAO );
+			)";
 
-		//		if ( tex )
-		//			tex->Unbind();
-		//	} );
+			std::string frag = R"(
+				#version 330 core
 
-		//spriteShader->Unbind();
-		//quadMeshVAO->Unbind();
+				layout(location = 0) out vec4 color;
+
+				in vec2 v_UV;
+
+				uniform sampler2D u_Texture;
+
+				void main()
+				{
+					color = texture(u_Texture, v_UV);
+				}
+			)";
+
+			//static Shader* shader = Shader::Create( vert, frag );
+			//auto quadMeshVAO = AssetManager::GetMemoryOnlyAsset<StaticMesh>( MeshFactory::GetQuad() )->GetVAO();
+
+			//shader->Bind();
+			//quadMeshVAO->Bind();
+
+			//auto spriteComponents = m_Registry.view<SpriteComponent, TransformComponent>();
+			//spriteComponents.each(
+			//	[&]( auto go, SpriteComponent& sprite, TransformComponent& transform )
+			//	{
+
+			//		shader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
+
+			//		SharedPtr<Texture> tex;
+			//		if ( sprite.GetTexture().Valid() ) 
+			//			tex = AssetManager::GetAsset<Texture>( sprite.GetTexture() );
+
+			//		if ( tex )
+			//			tex->Bind();
+
+			//		RenderCommand::DrawIndexed( quadMeshVAO );
+
+			//		if ( tex )
+			//			tex->Unbind();
+			//	} );
+
+			//shader->Unbind();
+			//quadMeshVAO->Unbind();
+		}
 
 		Renderer::EndScene();
 	}

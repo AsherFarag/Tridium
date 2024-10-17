@@ -1,44 +1,64 @@
 #pragma once
 #include  "Asset.h"
-#include <Tridium/IO/FilePath.h>
+#include <Tridium/Core/Application.h>
 
 namespace Tridium {
 
+	class AssetManagerBase
+	{
+	public:
+		AssetManagerBase() = default;
+		virtual ~AssetManagerBase() = default;
+
+		virtual void Init() {};
+		virtual void Shutdown() {};
+
+		virtual SharedPtr<Asset> GetAsset( AssetHandle a_Handle ) = 0;
+		virtual SharedPtr<Asset> GetMemoryOnlyAsset( AssetHandle a_Handle ) = 0;
+		virtual bool AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset ) = 0;
+		virtual bool HasAsset( AssetHandle a_Handle ) = 0;
+		virtual void RemoveAsset( AssetHandle a_Handle ) = 0;
+		virtual EAssetType GetAssetType( AssetHandle a_Handle ) = 0;
+		virtual bool IsMemoryAsset( AssetHandle a_Handle ) = 0;
+	};
+
+	// Static API for the Asset Manager.
 	class AssetManager
 	{
-		friend class Application;
 	public:
-		static const AssetManager* Get() { return s_Instance; }
+		static SharedPtr<AssetManagerBase> Get() { return Application::Get().m_AssetManager; }
 
-		static bool HasAsset( const AssetHandle& a_AssetHandle ) { return s_Instance->HasAssetImpl( a_AssetHandle ); }
+		// Can return nullptr if the AssetManager is not of the correct type.
+		template<typename T>
+		static SharedPtr<T> Get()
+		{
+			static_assert( std::is_base_of_v<AssetManagerBase, T>, "T must inherit from AssetManagerBase" );
+			return SharedPtrCast<T>( Application::Get().m_AssetManager );
+		}
 
-		static AssetRef<Asset> GetAsset( const AssetHandle& a_AssetHandle, bool a_ShouldLoad = true );
-		static AssetRef<Asset> GetAsset( const IO::FilePath& a_Path, bool a_ShouldLoad = true );
+		template<typename T>
+		static SharedPtr<T> GetAsset( AssetHandle a_Handle )
+		{
+			SharedPtr<Asset> asset = Application::Get().m_AssetManager->GetAsset( a_Handle );
+			return SharedPtrCast<T>( asset );
+		}
 
-		static AssetRef<Asset> LoadAsset( const AssetHandle& a_AssetHandle );
-		static AssetRef<Asset> LoadAsset( const IO::FilePath& a_Path );
+		template<typename T>
+		static SharedPtr<T> GetMemoryOnlyAsset( AssetHandle a_Handle )
+		{
+			SharedPtr<Asset> asset = Application::Get().m_AssetManager->GetMemoryOnlyAsset( a_Handle );
+			return SharedPtrCast<T>( asset );
+		}
 
-		static bool ReleaseAsset( const AssetHandle& a_AssetHandle ) { return s_Instance->ReleaseAssetImpl( a_AssetHandle ); }
+		template<typename T>
+		static bool AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<T> a_Asset ) 
+		{
+			static_assert( std::is_base_of_v<Asset, T>, "T must inherit from Asset" );
+			return Application::Get().m_AssetManager->AddMemoryOnlyAsset( a_Handle, SharedPtrCast<Asset>( a_Asset ) );
+		}
 
-		template <typename T>
-		static AssetRef<T> GetAsset( const AssetHandle& a_AssetHandle, bool a_ShouldLoad = true ) { return GetAsset( a_AssetHandle, a_ShouldLoad ).As<T>(); }
-		template <typename T>
-		static AssetRef<T> GetAsset( const IO::FilePath& a_Path, bool a_ShouldLoad = true ) { return GetAsset( a_Path, a_ShouldLoad ).As<T>(); }
-
-		template <typename T>
-		static AssetRef<T> LoadAsset( const AssetHandle& a_AssetHandle ) { return LoadAsset( a_AssetHandle ).As<T>(); }
-		template <typename T>
-		static AssetRef<T> LoadAsset( const IO::FilePath& a_Path ) { return LoadAsset( a_Path ).As<T>(); }
-
-	protected:
-		virtual bool HasAssetImpl( const AssetHandle& a_AssetHandle ) const = 0;
-		virtual AssetRef<Asset> GetAssetImpl( const AssetHandle& a_AssetHandle ) = 0;
-		virtual AssetRef<Asset> GetAssetImpl( const IO::FilePath& a_Path ) = 0;
-		virtual AssetRef<Asset> LoadAssetImpl( const AssetHandle& a_AssetHandle ) = 0;
-		virtual AssetRef<Asset> LoadAssetImpl( const IO::FilePath& a_Path ) = 0;
-		virtual bool ReleaseAssetImpl( const AssetHandle& a_AssetHandle ) = 0;
-
-	protected:
-		static AssetManager* s_Instance;
+		static bool HasAsset( AssetHandle a_Handle ) { return Application::Get().m_AssetManager->HasAsset( a_Handle ); }
+		static void RemoveAsset( AssetHandle a_Handle ) { Application::Get().m_AssetManager->RemoveAsset( a_Handle ); }
+		static EAssetType GetAssetType( AssetHandle a_Handle ) { return Application::Get().m_AssetManager->GetAssetType( a_Handle ); }
 	};
 }

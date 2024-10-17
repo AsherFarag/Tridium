@@ -5,44 +5,19 @@
 
 namespace Tridium {
 
-    AssetMetaData* ShaderLoader::LoadAssetMetaData( const YAML::Node & a_Node ) const
+    void ShaderLoader::SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
     {
-        Scope<ShaderMetaData> metaData = new ShaderMetaData();
-
-		Refl::Internal::DeserializeFunc deserializeFunc;
-        if ( !Refl::MetaRegistry::TryGetMetaPropertyFromClass<ShaderMetaData>( deserializeFunc, Refl::Internal::YAMLDeserializeFuncID ) )
-            return nullptr;
-
-        Refl::MetaAny asAny( *metaData );
-        deserializeFunc( a_Node, asAny );
-
-		metaData.Retire();
-        return metaData.Get();
+		NOT_IMPLEMENTED;
     }
 
-    AssetMetaData* ShaderLoader::ConstructAssetMetaData() const
-    {
-        return new ShaderMetaData();
-    }
-
-    Asset* ShaderLoader::RuntimeLoad( const IO::FilePath& a_Path ) const
-    {
-        return nullptr;
-    }
-
-    Asset* ShaderLoader::DebugLoad( const IO::FilePath& a_Path, const AssetMetaData* a_MetaData ) const
+    SharedPtr<Asset> ShaderLoader::LoadAsset( const AssetMetaData& a_MetaData )
     {
         Shader* shader = Shader::Create();
         CHECK( shader );
 
-        shader->m_Path = a_Path.ToString();
-        shader->Recompile();
+        shader->Compile( a_MetaData.Path );
 
-        return shader;
+        return SharedPtr<Asset>( shader );
     }
 
-    bool ShaderLoader::Save( const IO::FilePath& a_Path, const Asset* a_Asset ) const
-    {
-        return false;
-    }
 }

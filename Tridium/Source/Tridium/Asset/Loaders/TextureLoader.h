@@ -7,13 +7,19 @@ namespace Tridium {
 	class TextureLoader : public IAssetLoader
 	{
 	public:
-		static Texture* Load( const IO::FilePath& a_Path );
+		static SharedPtr<Texture> LoadTexture( const IO::FilePath& a_FilePath )
+		{
+			AssetMetaData metaData;
+			metaData.AssetType = EAssetType::Texture;
+			metaData.Path = a_FilePath;
 
-		virtual AssetMetaData* LoadAssetMetaData( const YAML::Node& a_Node ) const override;
-		virtual AssetMetaData* ConstructAssetMetaData() const override;
-		virtual Asset* RuntimeLoad( const IO::FilePath& a_Path ) const override;
-		virtual Asset* DebugLoad( const IO::FilePath& a_Path, const AssetMetaData* a_MetaData ) const override;
-		virtual bool Save( const IO::FilePath& a_Path, const Asset* a_Asset ) const override;
+			SharedPtr<IAssetLoader> loader = AssetFactory::GetAssetLoader( metaData.AssetType );
+			return SharedPtrCast<Texture>( loader->LoadAsset( metaData ) );
+		}
+
+		// Inherited via IAssetLoader
+		void SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset ) override;
+		SharedPtr<Asset> LoadAsset( const AssetMetaData& a_MetaData ) override;
 	};
 
 }

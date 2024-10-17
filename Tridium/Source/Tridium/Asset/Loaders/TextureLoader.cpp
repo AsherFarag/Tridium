@@ -6,40 +6,17 @@
 
 namespace Tridium {
 
-    Texture* TextureLoader::Load( const IO::FilePath& a_Path )
-    {
-		static TextureLoader loader;
-#if ASSET_USE_RUNTIME
-		return static_cast<Texture*>( loader.RuntimeLoad( a_Path ) );
-#else
-		return static_cast<Texture*>( loader.DebugLoad( a_Path, nullptr ) );
-#endif // ASSET_USE_RUNTIME
-    }
+	void TextureLoader::SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
+	{
+	}
 
-    AssetMetaData* TextureLoader::LoadAssetMetaData( const YAML::Node & a_Node ) const
-    {
-        return nullptr;
-    }
-
-    AssetMetaData* TextureLoader::ConstructAssetMetaData() const
-    {
-        return new TextureMetaData();
-    }
-
-    Asset* TextureLoader::RuntimeLoad( const IO::FilePath& a_Path ) const
-    {
-		NOT_IMPLEMENTED;
-        return nullptr;
-    }
-
-    Asset* TextureLoader::DebugLoad( const IO::FilePath& a_Path, const AssetMetaData* a_MetaData ) const
-    {
+	SharedPtr<Asset> TextureLoader::LoadAsset( const AssetMetaData& a_MetaData )
+	{
         TextureSpecification specification;
-        std::string stringPath = a_Path.ToString();
 
         int width, height, channels;
         stbi_set_flip_vertically_on_load( 1 );
-        stbi_uc* data = stbi_load( stringPath.c_str(), &width, &height, &channels, 0 );
+        stbi_uc* data = stbi_load( a_MetaData.Path.ToString().c_str(), &width, &height, &channels, 0 );
 
         if ( !data )
             return nullptr;
@@ -49,17 +26,11 @@ namespace Tridium {
         specification.DataFormat = static_cast<EDataFormat>( channels );
 
         Texture* tex = Texture::Create( specification );
-        tex->m_Path = stringPath;
-        tex->m_Loaded = true;
         tex->SetData( data, width * height * channels );
 
         stbi_image_free( data );
 
-        return tex;
-    }
+        return SharedPtr<Asset>( tex );
+	}
 
-    bool TextureLoader::Save( const IO::FilePath& a_Path, const Asset* a_Asset ) const
-    {
-        return false;
-    }
 }

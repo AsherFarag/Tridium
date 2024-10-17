@@ -2,7 +2,6 @@
 #ifdef IS_EDITOR
 #include "EditorLayer.h"
 #include "Tridium/Core/Core.h"
-#include "EditorAssetManager.h"
 
 namespace Tridium {
 	class Asset;
@@ -33,13 +32,6 @@ namespace Tridium::Editor {
 
 	inline EditorLayer* GetEditorLayer() { return EditorApplication::Get()->GetEditorLayer(); }
 	inline SharedPtr<Scene> GetActiveScene() { return EditorApplication::Get()->GetEditorLayer()->GetActiveScene();}
-
-	namespace Util {
-		bool OpenFile( const IO::FilePath& filePath );
-		bool OpenMaterial( const IO::FilePath& filePath );
-		void SaveAll();
-		void RecompileAllShaders();
-	}
 };
 
 #endif // IS_EDITOR

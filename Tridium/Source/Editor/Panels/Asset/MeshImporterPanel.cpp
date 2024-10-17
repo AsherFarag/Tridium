@@ -1,10 +1,8 @@
 #include "tripch.h"
 #ifdef IS_EDITOR
 #include "MeshImporterPanel.h"
-#include <assimp/postprocess.h>
 #include <Tridium/Rendering/Mesh.h>
-#include <Tridium/Asset/Loaders/ModelLoader.h>
-#include <Editor/EditorAssetManager.h>
+#include <Tridium/Asset/Loaders/MeshLoader.h>
 
 namespace Tridium::Editor {
 
@@ -39,26 +37,26 @@ namespace Tridium::Editor {
 
 			// Draw import settings options
 
-			if ( ImGui::TreeNodeEx( "Import Settings", ImGuiTreeNodeFlags_DefaultOpen ) )
-			{
-				ImGui::DragFloat( "Scale", &m_ModelMetaData.ImportSettings.Scale );
+			//if ( ImGui::TreeNodeEx( "Import Settings", ImGuiTreeNodeFlags_DefaultOpen ) )
+			//{
+			//	//ImGui::DragFloat( "Scale", &m_ModelMetaData.ImportSettings.Scale );
 
-				ImGui::Separator();
+			//	ImGui::Separator();
 
-				if ( ImGui::TreeNodeEx( "Post-Process Flags", ImGuiTreeNodeFlags_DefaultOpen ) )
-				{
-					CheckboxFlag( "Smooth Normals", m_ModelMetaData.ImportSettings.PostProcessFlags, aiProcess_GenSmoothNormals, aiProcess_GenNormals );
-					CheckboxFlag( "Fix Infacing Normals", m_ModelMetaData.ImportSettings.PostProcessFlags, aiProcess_FixInfacingNormals );
+			//	if ( ImGui::TreeNodeEx( "Post-Process Flags", ImGuiTreeNodeFlags_DefaultOpen ) )
+			//	{
+			//		CheckboxFlag( "Smooth Normals", m_ModelMetaData.ImportSettings.PostProcessFlags, aiProcess_GenSmoothNormals, aiProcess_GenNormals );
+			//		CheckboxFlag( "Fix Infacing Normals", m_ModelMetaData.ImportSettings.PostProcessFlags, aiProcess_FixInfacingNormals );
 
-					ImGui::TreePop();
-				}
+			//		ImGui::TreePop();
+			//	}
 
-				ImGui::Separator();
+			//	ImGui::Separator();
 
-				ImGui::Checkbox( "Keep Local Mesh Data", &m_ModelMetaData.ImportSettings.DiscardLocalData );
+			//	ImGui::Checkbox( "Keep Local Mesh Data", &m_ModelMetaData.ImportSettings.DiscardLocalData );
 
-				ImGui::TreePop();
-			}
+			//	ImGui::TreePop();
+			//}
 
 			ImGui::Separator();
 

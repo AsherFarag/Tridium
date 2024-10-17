@@ -1,0 +1,37 @@
+#include "tripch.h"
+
+namespace Tridium {
+
+    EAssetType GetAssetTypeFromFileExtension( const std::string& a_Extension )
+    {
+		static const std::unordered_map<std::string, EAssetType> s_Extensions =
+		{
+			// Tridium
+			{ ".tscene", EAssetType::Scene },
+			{ ".tmat", EAssetType::Material },
+			{ ".tmesh", EAssetType::StaticMesh },
+
+			// Mesh Sources
+			{ ".obj", EAssetType::MeshSource },
+			{ ".fbx", EAssetType::MeshSource },
+			{ ".gltf", EAssetType::MeshSource },
+
+			// Rendering
+			{ ".glsl", EAssetType::Shader },
+
+			// Textures
+			{ ".jpg", EAssetType::Texture },
+			{ ".png", EAssetType::Texture },
+			{ ".tga", EAssetType::Texture },
+			{ ".jpeg", EAssetType::Texture },
+		};
+
+		if ( auto it = s_Extensions.find( Util::ToLowerCase( a_Extension ) ); it != s_Extensions.end() )
+		{
+			return it->second;
+		}
+
+		return EAssetType::None;
+    }
+
+}

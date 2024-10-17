@@ -2,35 +2,31 @@
 #include "RuntimeAssetManager.h"
 
 namespace Tridium {
-
-    bool RuntimeAssetManager::HasAssetImpl( const AssetHandle& a_AssetHandle ) const
-    {
-        return false;
-    }
-
-    AssetRef<Asset> RuntimeAssetManager::GetAssetImpl( const AssetHandle& a_AssetHandle )
-    {
-        return AssetRef<Asset>();
-    }
-
-    AssetRef<Asset> RuntimeAssetManager::GetAssetImpl( const IO::FilePath& a_Path )
-    {
-        return AssetRef<Asset>();
-    }
-
-    AssetRef<Asset> RuntimeAssetManager::LoadAssetImpl( const AssetHandle& a_AssetHandle )
-    {
-        return AssetRef<Asset>();
-    }
-
-    AssetRef<Asset> RuntimeAssetManager::LoadAssetImpl( const IO::FilePath& a_Path )
-    {
-        return AssetRef<Asset>();
-    }
-
-    bool RuntimeAssetManager::ReleaseAssetImpl( const AssetHandle& a_AssetHandle )
-    {
-        return false;
-    }
-
+	SharedPtr<Asset> RuntimeAssetManager::GetAsset( AssetHandle a_Handle )
+	{
+		return SharedPtr<Asset>();
+	}
+	SharedPtr<Asset> RuntimeAssetManager::GetMemoryOnlyAsset( AssetHandle a_Handle )
+	{
+		return SharedPtr<Asset>();
+	}
+	bool RuntimeAssetManager::AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset )
+	{
+		return false;
+	}
+	bool RuntimeAssetManager::HasAsset( AssetHandle a_Handle )
+	{
+		return false;
+	}
+	void RuntimeAssetManager::RemoveAsset( AssetHandle a_Handle )
+	{
+	}
+	EAssetType RuntimeAssetManager::GetAssetType( AssetHandle a_Handle )
+	{
+		return EAssetType();
+	}
+	bool RuntimeAssetManager::IsMemoryAsset( AssetHandle a_Handle )
+	{
+		return false;
+	}
 } // namespace Tridium

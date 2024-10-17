@@ -1,12 +1,11 @@
 #include "tripch.h"
 #include "Application.h"
 
-
 #ifdef IS_EDITOR
-#include <Editor/Editor.h>
-#include <Editor/EditorAssetManager.h>
+	#include <Editor/Editor.h>
+	#include <Tridium/Asset/EditorAssetManager.h>
 #else
-#include <Tridium/Asset/RuntimeAssetManager.h>
+	#include <Tridium/Asset/RuntimeAssetManager.h>
 #endif // IS_EDITOR
 
 // TEMP ?
@@ -20,8 +19,11 @@ namespace Tridium {
 
 	Application::Application()
 	{
+		// Set the singleton instance
 		TE_CORE_ASSERT( !s_Instance, "Application already exists!" );
 		s_Instance = this;
+
+		// Initialise Window
 		m_Window = Window::Create();
 		m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
 
@@ -30,6 +32,10 @@ namespace Tridium {
 		ProjectSerializer s( m_Project );
 		s.SerializeText( "test.tproject" );
 
+		// Initialise Asset Manager
+		InitializeAssetManager();
+
+		// Initialise Scene
 		TODO( "Setup a proper scene initialiser!" );
 		m_ActiveScene = MakeShared<Scene>();
 
@@ -37,21 +43,14 @@ namespace Tridium {
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay( m_ImGuiLayer );
 
-#ifdef IS_EDITOR
-
-		Editor::EditorApplication::Init();
-		Editor::GetEditorLayer()->SetActiveScene( m_ActiveScene );
-		AssetManager::s_Instance = new Editor::EditorAssetManager();
-
-#else
-
-		AssetManager::s_Instance = new RuntimeAssetManager();
-
-#endif // IS_EDITOR
-
-
 		// Initialise the render pipeline
 		RenderCommand::Init();
+
+		// Initialise the editor
+#ifdef IS_EDITOR
+		Editor::EditorApplication::Init();
+		Editor::GetEditorLayer()->SetActiveScene( m_ActiveScene );
+#endif // IS_EDITOR
 	}
 	
 	Application::~Application()
@@ -109,6 +108,7 @@ namespace Tridium {
 		}
 
 		m_GameInstance->Shutdown();
+		m_AssetManager->Shutdown();
 
 		#ifdef IS_EDITOR
 
@@ -139,6 +139,17 @@ namespace Tridium {
 		}
 	}
 	
+	void Application::InitializeAssetManager()
+	{
+#ifdef IS_EDITOR
+		m_AssetManager = MakeShared<Editor::EditorAssetManager>();
+#else
+		m_AssetManager = MakeShared<RuntimeAssetManager>();
+#endif // IS_EDITOR
+
+		m_AssetManager->Init();
+	}
+
 	bool Application::OnWindowClosed( WindowCloseEvent& e )
 	{
 		Shutdown();
@@ -149,4 +160,5 @@ namespace Tridium {
 	{
 		m_Running = false;
 	}
-}
+
+} // namespace Tridium

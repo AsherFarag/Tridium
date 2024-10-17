@@ -26,7 +26,6 @@ namespace Tridium {
 	{
 	public:
 		ASSET_CLASS_TYPE( Texture )
-		ASSET_LOADER_TYPE( TextureLoader )
 		virtual ~Texture() = default;
 
 		static Texture* Create( const TextureSpecification& a_Specification );

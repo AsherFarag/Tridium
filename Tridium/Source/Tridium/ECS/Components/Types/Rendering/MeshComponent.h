@@ -10,18 +10,17 @@ namespace Tridium {
 		REFLECT( MeshComponent );
 	public:
 		MeshComponent();
-		MeshComponent(const AssetRef<Mesh>& mesh);
 		~MeshComponent() = default;
 
-		const AssetRef<Mesh>& GetMesh() const { return m_Mesh; }
-		const AssetRef<Material>& GetMaterial() { return m_Material; }
+		AssetHandle GetMesh() const { return m_Mesh; }
+		AssetHandle GetMaterial() { return m_Material; }
 
-		void SetMesh( const AssetRef<Mesh>& a_Mesh ) { m_Mesh = a_Mesh; }
-		void SetMaterial( const AssetRef<Material>& a_Material ) { m_Material = a_Material; }
+		void SetMesh( AssetHandle a_Mesh ) { m_Mesh = a_Mesh; }
+		void SetMaterial( AssetHandle a_Material ) { m_Material = a_Material; }
 
 	private:
-		AssetRef<Mesh> m_Mesh;
-		AssetRef<Material> m_Material;
+		AssetHandle m_Mesh;
+		AssetHandle m_Material;
 	};
 
 }

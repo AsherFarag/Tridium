@@ -168,15 +168,8 @@ namespace Tridium::Editor {
 			{
 				IO::FilePath filePath( static_cast<const char*>( payload->Data ) );
 				auto ext = filePath.GetExtension();
-				if ( ext == ".lua" ) {
-					//AddComponentToGameObject<LuaScriptComponent>( InspectedGameObject, Script::Create( filePath ) );
-				}
-				else if ( ext == ".png" ) {
-					AddComponentToGameObject<SpriteComponent>( InspectedGameObject, AssetManager::GetAsset<Texture>( filePath.ToString() ) );
-				}
-				else if ( ext == ".obj" || ext == ".fbx" ) {
-					AddComponentToGameObject<MeshComponent>( InspectedGameObject, AssetManager::GetAsset<Mesh>( filePath.ToString() ) );
-				}
+
+				TODO( "DragDrop Add Component" );
 			}
 			ImGui::EndDragDropTarget();
 		}

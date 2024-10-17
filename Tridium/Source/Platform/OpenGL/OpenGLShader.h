@@ -14,7 +14,7 @@ namespace Tridium {
         OpenGLShader( const std::string& a_Vertex, const std::string& a_Frag );
         virtual ~OpenGLShader();
 
-        virtual bool Recompile() override;
+		virtual bool Compile( const IO::FilePath& a_Path ) override;
 
         virtual void Bind() const override;
         virtual void Unbind() const override;

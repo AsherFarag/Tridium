@@ -11,14 +11,4 @@ namespace Tridium {
 		: PostProcessFlags( DEFAULT_POST_PROCESS_FLAGS )
 	{
 	}
-
-	BEGIN_REFLECT( AssetImportSettings );
-	END_REFLECT( AssetImportSettings );
-
-	BEGIN_REFLECT( ModelImportSettings );
-	    BASE( AssetImportSettings );
-	    PROPERTY( PostProcessFlags );
-	    PROPERTY( Scale );
-	    PROPERTY( DiscardLocalData );
-	END_REFLECT( ModelImportSettings );
 }

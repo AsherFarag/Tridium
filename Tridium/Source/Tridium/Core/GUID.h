@@ -2,21 +2,21 @@
 
 namespace Tridium {
 
-constexpr uint64_t INVALID_GUID = 0;
-
 	// Globally-Unique Identifier
 	class GUID
 	{
 	public:
 		using Type = uint64_t;
 
-		GUID() : m_ID( INVALID_GUID ) {}
-		GUID( Type id ) : m_ID( id ) {}
+		static constexpr Type InvalidGUID = 0;
+
+		GUID() : m_ID( InvalidGUID ) {}
+		GUID( Type a_ID ) : m_ID( a_ID ) {}
 
 		static GUID Null() { return GUID(); }
 		static GUID Create();
 		const Type ID() const { return m_ID; }
-		const bool Valid() const { return m_ID != INVALID_GUID; }
+		const bool Valid() const { return m_ID != InvalidGUID; }
 
 		operator Type() const { return m_ID; }
 		operator const Type() const { return m_ID; }
@@ -28,7 +28,7 @@ constexpr uint64_t INVALID_GUID = 0;
 		bool operator!=( const GUID& guid ) const { return m_ID != guid.m_ID; }
 
 	private:
-		Type m_ID = 0;
+		Type m_ID;
 	};
 }
 

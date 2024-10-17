@@ -170,11 +170,11 @@ namespace Tridium {
 		glDeleteProgram( m_RendererID );
 	}
 
-	bool OpenGLShader::Recompile()
+	bool OpenGLShader::Compile( const IO::FilePath& a_Path )
 	{
 		glDeleteProgram( m_RendererID );
 
-		std::string source = ReadFile( m_Path );
+		std::string source = ReadFile( a_Path );
 		auto shaderSources = PreProcess( source );
 		Compile( shaderSources );
 		return true;

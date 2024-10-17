@@ -53,20 +53,20 @@ namespace Tridium {
 	}
 
 	template<typename _To, typename _From>
-	inline constexpr SharedPtr<_To> SharedPtrCast( const SharedPtr<_From>& other )
+	inline constexpr SharedPtr<_To> SharedPtrCast( const SharedPtr<_From>& a_Other )
 	{
-		return std::static_pointer_cast<_To>( other );
+		return std::static_pointer_cast<_To>( a_Other );
 	}
 
 	// Type alias for std::weak_ptr
 	template<typename T>
-	using WeakRef = std::weak_ptr<T>;
+	using WeakPtr = std::weak_ptr<T>;
 
 	// Function to convert std::shared_ptr to std::weak_ptr
 	template<typename T>
-	constexpr WeakRef<T> MakeWeakRef( const std::shared_ptr<T>& sharedPtr )
+	constexpr WeakPtr<T> MakeWeakPtr( const SharedPtr<T>& a_SharedPtr )
 	{
-		return WeakRef<T>( sharedPtr );
+		return WeakPtr<T>( a_SharedPtr );
 	}
 
 }

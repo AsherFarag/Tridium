@@ -37,13 +37,12 @@ namespace Tridium {
 	{
 	public:
 		ASSET_CLASS_TYPE( Shader )
-        ASSET_LOADER_TYPE( ShaderLoader )
 
 		static Shader* Create();
 		static Shader* Create( const std::string& a_Vertex, const std::string& a_Frag );
 		virtual ~Shader() = default;
 
-		virtual bool Recompile() = 0;
+		virtual bool Compile( const IO::FilePath& a_Path ) = 0;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;

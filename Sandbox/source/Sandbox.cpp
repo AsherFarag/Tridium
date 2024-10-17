@@ -1,5 +1,7 @@
 #include <Tridium.h>
 #include <Tridium/IO/SceneSerializer.h>
+#include <Tridium/Asset/AssetManager.h>
+#include <Tridium/Asset/EditorAssetManager.h>
 
 struct PersonInfo
 {
@@ -40,13 +42,52 @@ class TestLayer : public Tridium::Layer
 {
 	virtual void OnImGuiDraw() override
 	{
+		using namespace Tridium;
+
+		if ( ImGui::Begin( "Import Asset" ) )
+		{
+			ImGui::InputText( "FilePath ", &FilePath );
+
+			if ( ImGui::Button( "Import" ) )
+			{
+				ImportedAssetHandle = Tridium::AssetManager::Get<Tridium::Editor::EditorAssetManager>()->ImportAsset( FilePath );
+				Tridium::AssetManager::GetAsset<Tridium::Texture>( ImportedAssetHandle );
+			}
+
+			ImGui::InputScalar( "AssetHandle", ImGuiDataType_U64, &ImportedAssetHandle, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly );
+		}
+
+		ImGui::End();
+
+		if ( ImGui::Begin( "Create Mesh" ) )
+		{
+			if ( ImGui::InputScalar( "Mesh Source", ImGuiDataType_U64, &MeshSourceHandle, nullptr, nullptr, nullptr, ImGuiInputTextFlags_EnterReturnsTrue ) )
+			{
+				SharedPtr<StaticMesh> mesh = MakeShared<StaticMesh>( MeshSourceHandle );
+				MeshHandle = AssetHandle::Create();
+				AssetManager::Get<Editor::EditorAssetManager>()->AddMemoryOnlyAsset( MeshHandle, mesh);
+			}
+
+			ImGui::InputScalar( "AssetHandle", ImGuiDataType_U64, &MeshHandle, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly );
+		}
+
+		ImGui::End();
 	}
+
+
+	Tridium::AssetHandle ImportedAssetHandle;
+	std::string FilePath{ "Content/soulspear.obj" };
+
+
+	Tridium::AssetHandle MeshSourceHandle;
+	Tridium::AssetHandle MeshHandle;
 };
 
 class SandboxGameInstance : public Tridium::GameInstance
 {
 	virtual void Init() override
 	{
+		Tridium::Application::Get().PushOverlay( new TestLayer() );
 	}
 };
 

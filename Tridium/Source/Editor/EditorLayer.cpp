@@ -18,6 +18,7 @@
 #include "Panels/EditorViewportPanel.h"
 #include "Panels/GameViewportPanel.h"
 #include "Panels/Asset/MaterialEditorPanel.h"
+#include "Panels/AssetRegistryPanel.h"
 
 #include <Tridium/IO/SceneSerializer.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
@@ -175,37 +176,35 @@ namespace Tridium::Editor {
 		CurrentSceneState = SceneState::Edit;
 		m_EditorViewportPanel->Focus();
 		TODO("Make this not hard coded!")
-		LoadScene( GetActiveScene()->GetPath() );
+		//LoadScene( GetActiveScene() );
 	}
 
-	bool EditorLayer::LoadScene( const std::string& filepath )
+	bool EditorLayer::LoadScene( const std::string& a_FilePath )
 	{
 		m_ActiveScene->Clear();
-		m_ActiveScene->SetPath( filepath );
+		//m_ActiveScene->SetPath( filepath );
 
 		YAML::Node archive;
 		try
 		{
-			archive = YAML::LoadFile( filepath );
+			archive = YAML::LoadFile( a_FilePath );
 		}
 		catch ( const std::exception& )
 		{
-			TE_CORE_ERROR( "Failed to load scene '{0}'", filepath );
+			TE_CORE_ERROR( "Failed to load scene '{0}'", a_FilePath );
 		}
 
 		return IO::DeserializeFromText( archive, *m_ActiveScene );
 	}
 
-	bool EditorLayer::SaveScene( const std::string& filepath )
+	bool EditorLayer::SaveScene( const std::string& a_FilePath )
 	{
 		Tridium::IO::Archive archive;
 		Tridium::IO::SerializeToText( archive, *m_ActiveScene );
 
-		std::ofstream file( filepath );
+		std::ofstream file( a_FilePath );
 		file << archive.c_str();
 		file.close();
-
-		m_ActiveScene->SetPath( filepath );
 
 		return true;
 	}
@@ -231,13 +230,12 @@ namespace Tridium::Editor {
 			{
 				if ( m_ActiveScene )
 				{
-					if ( m_ActiveScene->GetPath().length() == 0 )
-						Util::OpenSaveFileDialog( "Untitled.tscene", [this](const std::string& path) { SaveScene(path); });
-					else
-						SaveScene( m_ActiveScene->GetPath() );
+					//if ( m_ActiveScene->GetPath().length() == 0 )
+					//	Util::OpenSaveFileDialog( "Untitled.tscene", [this](const std::string& path) { SaveScene(path); });
+					//else
+					//	SaveScene( m_ActiveScene->GetPath() );
 				}
 
-				Util::SaveAll();
 				return true;
 			}
 			break;
@@ -286,10 +284,10 @@ namespace Tridium::Editor {
 
 			if ( ImGui::MenuItem( "Save Scene", "Ctrl + S" ) )
 			{
-				if ( m_ActiveScene->GetPath().length() == 0 )
-					Util::OpenSaveFileDialog( "Untitled.tscene", [this](const std::string& path) { SaveScene(path); });
-				else
-					SaveScene( m_ActiveScene->GetPath() );
+				//if ( m_ActiveScene->GetPath().length() == 0 )
+				//	Util::OpenSaveFileDialog( "Untitled.tscene", [this](const std::string& path) { SaveScene(path); });
+				//else
+				//	SaveScene( m_ActiveScene->GetPath() );
 			}
 
 			ImGui::EndMenu();
@@ -311,6 +309,7 @@ namespace Tridium::Editor {
 			{
 				if ( ImGui::MenuItem( "Content Browser" ) ) m_PanelStack.PushPanel<ContentBrowserPanel>();
 				if ( ImGui::MenuItem( "Stats" ) ) m_PanelStack.PushPanel<Stats>();
+				if ( ImGui::MenuItem( "Asset Registry" ) ) m_PanelStack.PushPanel<AssetRegistryPanel>();
 
 				ImGui::EndMenu();
 			}
@@ -333,8 +332,8 @@ namespace Tridium::Editor {
 
 		if ( ImGui::BeginMenu( "Other" ) )
 		{
-			if ( ImGui::MenuItem( "Recompile Shaders" ) )
-				Util::RecompileAllShaders();
+			if ( ImGui::MenuItem( "Recompile Shaders" ) ) {}
+
 			ImGui::EndMenu();
 		}
 
@@ -347,9 +346,9 @@ namespace Tridium::Editor {
 	{
 		IO::FilePath iconFolder( "../Tridium/Content/Engine/Editor/Icons" );
 
-		PlayButtonIcon.reset( TextureLoader::Load( ( iconFolder / "PlayButton.png" ).ToString() ) );
-		StopButtonIcon.reset( TextureLoader::Load( ( iconFolder / "StopButton.png" ).ToString() ) );
-		PauseButtonIcon.reset( TextureLoader::Load( ( iconFolder / "PauseButton.png" ).ToString() ) );
+		PlayButtonIcon = TextureLoader::LoadTexture( iconFolder / "PlayButton.png" );
+		StopButtonIcon = TextureLoader::LoadTexture( iconFolder / "StopButton.png" );
+		PauseButtonIcon = TextureLoader::LoadTexture( iconFolder / "PauseButton.png" );
 	}
 
 	void UIToolBar::OnImGuiDraw()
