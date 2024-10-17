@@ -36,7 +36,8 @@ namespace Tridium {
 				float, std::vector<float>,
 				Color, std::vector<Color>,
 				Vector4, std::vector<Vector4>,
-				Matrix4, std::vector<Matrix4> > Value;
+				Matrix4, std::vector<Matrix4>,
+				AssetHandle > Value;
 		};
 
 		using PropertyTable = std::map<std::string, Property>;
@@ -68,6 +69,7 @@ namespace Tridium {
 		std::vector<Vector4>* GetVector4Array( const std::string& a_Name );
 		Matrix4*              GetMatrix4( const std::string& a_Name );
 		std::vector<Matrix4>* GetMatrix4Array( const std::string& a_Name );
+		AssetHandle*		  GetTexture( const std::string& a_Name );
 
 		// - Setters -
 

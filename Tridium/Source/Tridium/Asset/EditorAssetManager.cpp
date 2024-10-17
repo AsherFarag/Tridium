@@ -10,6 +10,10 @@ namespace Tridium::Editor {
 		Init();
 	}
 
+	//////////////////////////////////////////////////////////////////////////
+	// Inherited via AssetManagerBase
+	//////////////////////////////////////////////////////////////////////////
+
 	void EditorAssetManager::Init()
 	{
 		AssetFactory::Init();
@@ -124,6 +128,28 @@ namespace Tridium::Editor {
 	{
 		return m_MemoryAssets.contains( a_Handle );
 	}
+
+	void EditorAssetManager::RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency )
+	{
+		TE_CORE_INFO( "[AssetManager] Registering dependency: {0} -> {1}", a_Dependent.ID(), a_Dependency.ID() );
+		m_AssetDependencies[a_Dependent].insert( a_Dependency );
+	}
+
+	void EditorAssetManager::UnregisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency )
+	{
+		if ( auto it = m_AssetDependencies.find( a_Dependent ); it != m_AssetDependencies.end() )
+		{
+			TE_CORE_INFO( "[AssetManager] Unregistering dependency: {0} -> {1}", a_Dependent.ID(), a_Dependency.ID() );
+			it->second.erase( a_Dependency );
+		}
+	}
+
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Editor Only
+	//////////////////////////////////////////////////////////////////////////
+
 	const AssetMetaData& EditorAssetManager::GetAssetMetaData( AssetHandle a_Handle ) const
 	{
 		if ( auto it = m_AssetRegistry.find( a_Handle ); it != m_AssetRegistry.end() )
@@ -182,6 +208,28 @@ namespace Tridium::Editor {
 		TE_CORE_INFO( "[AssetManager] Successfully imported asset from: {0}", a_Path.ToString() );
 		SetAssetMetaData( metaData );
 		return metaData.Handle;
+	}
+
+	bool EditorAssetManager::CreateAsset( const AssetMetaData& a_MetaData, SharedPtr<Asset> a_Asset )
+	{
+		if ( auto it = m_AssetRegistry.find( a_MetaData.Handle ); it != m_AssetRegistry.end() )
+		{
+			TE_CORE_WARN( "[AssetManager] Asset already exists with handle: {0}", a_MetaData.Handle.ID() );
+			return false;
+		}
+
+		if ( auto it = m_LoadedAssets.find( a_MetaData.Handle ); it != m_LoadedAssets.end() )
+		{
+			TE_CORE_WARN( "[AssetManager] Asset already loaded with handle: {0}", a_MetaData.Handle.ID() );
+			return false;
+		}
+
+		SetAssetMetaData( a_MetaData );
+		m_LoadedAssets[a_MetaData.Handle] = a_Asset;
+		if ( a_Asset )
+			a_Asset->SetHandle( a_MetaData.Handle );
+
+		return true;
 	}
 
 	bool EditorAssetManager::SerializeAssetRegistry()

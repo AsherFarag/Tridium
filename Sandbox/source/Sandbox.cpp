@@ -2,6 +2,7 @@
 #include <Tridium/IO/SceneSerializer.h>
 #include <Tridium/Asset/AssetManager.h>
 #include <Tridium/Asset/EditorAssetManager.h>
+#include <Editor/Panels/Asset/MeshSourceImporterPanel.h>
 
 struct PersonInfo
 {
@@ -50,8 +51,9 @@ class TestLayer : public Tridium::Layer
 
 			if ( ImGui::Button( "Import" ) )
 			{
-				ImportedAssetHandle = Tridium::AssetManager::Get<Tridium::Editor::EditorAssetManager>()->ImportAsset( FilePath );
-				Tridium::AssetManager::GetAsset<Tridium::Texture>( ImportedAssetHandle );
+				//ImportedAssetHandle = Tridium::AssetManager::Get<Tridium::Editor::EditorAssetManager>()->ImportAsset( FilePath );
+				//Tridium::AssetManager::GetAsset<Tridium::Texture>( ImportedAssetHandle );
+				Application::Get().PushOverlay( new Editor::MeshSourceImporterPanel( FilePath ) );
 			}
 
 			ImGui::InputScalar( "AssetHandle", ImGuiDataType_U64, &ImportedAssetHandle, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly );
@@ -76,7 +78,7 @@ class TestLayer : public Tridium::Layer
 
 
 	Tridium::AssetHandle ImportedAssetHandle;
-	std::string FilePath{ "Content/soulspear.obj" };
+	std::string FilePath{ "Content/Mutant Punch.fbx" };
 
 
 	Tridium::AssetHandle MeshSourceHandle;

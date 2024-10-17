@@ -59,7 +59,7 @@ namespace Tridium::IO {
 
         FilePath GetParentPath() const { return parent_path(); }
 
-        FilePath GetFilename() const { return filename(); }
+        FilePath GetFilename() const { return filename();}
 
         FilePath GetExtension() const { return extension(); }
 

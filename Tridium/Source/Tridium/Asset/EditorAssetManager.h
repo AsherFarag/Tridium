@@ -9,7 +9,8 @@ namespace Tridium::Editor {
 
 	class EditorAssetManager final : public AssetManagerBase
 	{
-		using AssetStorageType = std::unordered_map<AssetHandle, SharedPtr<Asset>>;
+		template<typename T>
+		using AssetStorageType = std::unordered_map<AssetHandle, T>;
 
 	public:
 		EditorAssetManager();
@@ -25,6 +26,8 @@ namespace Tridium::Editor {
 		void RemoveAsset( AssetHandle a_Handle ) override;
 		EAssetType GetAssetType( AssetHandle a_Handle ) override;
 		bool IsMemoryAsset( AssetHandle a_Handle ) override;
+		void RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) override;
+		void UnregisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) override;
 
 		// - Editor -
 		const AssetMetaData& GetAssetMetaData( AssetHandle a_Handle ) const;
@@ -32,14 +35,16 @@ namespace Tridium::Editor {
 		void SetAssetMetaData( const AssetMetaData& a_MetaData );
 
 		AssetHandle ImportAsset( const IO::FilePath& a_Path );
+		bool CreateAsset( const AssetMetaData& a_MetaData, SharedPtr<Asset> a_Asset );
 
 	private:
 		bool SerializeAssetRegistry();
 		bool DeserializeAssetRegistry();
 
 	private:
-		AssetStorageType m_LoadedAssets;
-		AssetStorageType m_MemoryAssets;
+		AssetStorageType<SharedPtr<Asset>> m_LoadedAssets;
+		AssetStorageType<SharedPtr<Asset>> m_MemoryAssets;
+		AssetStorageType<std::unordered_set<AssetHandle>> m_AssetDependencies;
 		AssetRegistry m_AssetRegistry;
 
 		friend class AssetRegistryPanel;

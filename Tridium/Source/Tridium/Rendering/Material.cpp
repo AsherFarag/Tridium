@@ -176,6 +176,11 @@ namespace Tridium {
 		GET_PROPERTY_BODY( Matrix4Array );
 	}
 
+	AssetHandle* Material::GetTexture( const std::string& a_Name )
+	{
+		GET_PROPERTY_BODY( Texture );
+	}
+
 #undef GET_PROPERTY_BODY
 
 #pragma endregion
@@ -245,6 +250,11 @@ namespace Tridium {
 	bool Material::SetMatrix4Array( const std::string& a_Name, const std::vector<Matrix4>& a_Value )
 	{
 		SET_PROPERTY_BODY( Matrix4Array );
+	}
+
+	bool Material::SetTexture( const std::string& a_Name, const AssetHandle& a_Value )
+	{
+		SET_PROPERTY_BODY( Texture );
 	}
 
 #undef SET_PROPERTY_BODY

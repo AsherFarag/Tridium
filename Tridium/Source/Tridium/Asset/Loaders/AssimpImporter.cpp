@@ -28,17 +28,17 @@ namespace Tridium {
 
 	
 	static const uint32_t s_AssimpImportFlags =
-		aiProcess_CalcTangentSpace          // Create binormals/tangents just in case
-		| aiProcess_Triangulate             // Make sure we're triangles
-		| aiProcess_SortByPType             // Split meshes by primitive type
-		| aiProcess_GenNormals              // Make sure we have legit normals
-		| aiProcess_GenUVCoords             // Convert UVs if required 
-		//		| aiProcess_OptimizeGraph
-		| aiProcess_OptimizeMeshes          // Batch draws where possible
+		aiProcess_CalcTangentSpace          
+		| aiProcess_Triangulate             
+		| aiProcess_SortByPType             
+		| aiProcess_GenNormals              
+		| aiProcess_GenUVCoords
+		| aiProcess_OptimizeGraph
+		| aiProcess_OptimizeMeshes          
 		| aiProcess_JoinIdenticalVertices
-		| aiProcess_LimitBoneWeights        // If more than N (=4) bone weights, discard least influencing bones and renormalise sum to 1
-		| aiProcess_ValidateDataStructure   // Validation
-		| aiProcess_GlobalScale             // e.g. convert cm to m for fbx import (and other formats where cm is native)
+		| aiProcess_LimitBoneWeights        
+		| aiProcess_ValidateDataStructure   
+		| aiProcess_GlobalScale             
 		;
 
 	AssimpImporter::AssimpImporter( const IO::FilePath& a_FilePath )
@@ -46,12 +46,13 @@ namespace Tridium {
 	{
 	}
 
-	SharedPtr<MeshSource> AssimpImporter::ImportMeshSource()
+	SharedPtr<MeshSource> AssimpImporter::ImportMeshSource( const MeshSourceImportSettings& a_ImportSettings )
 	{
 		SharedPtr<MeshSource> meshSource = MakeShared<MeshSource>();
 
 		Assimp::Importer importer;
 		importer.SetPropertyBool( AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false );
+		importer.SetPropertyFloat( AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, a_ImportSettings.Scale );
 
 		const aiScene* scene = importer.ReadFile( m_FilePath.ToString().c_str(), s_AssimpImportFlags);
 		if ( !scene )
@@ -63,19 +64,7 @@ namespace Tridium {
 		ExtractSubmeshes( (void*)scene, meshSource );
 		ExtractMaterials( (void*)scene, meshSource );
 
-		//mesh->m_VBO = VertexBuffer::Create( vertices, sizeof( vertices ) );
-
-//BufferLayout layout =
-//{
-//	{ ShaderDataType::Float3, "a_Position" },
-//	{ ShaderDataType::Float3, "a_Normal" },
-//};
-
-//mesh->m_VBO->SetLayout( layout );
-//mesh->m_VAO->AddVertexBuffer( mesh->m_VBO );
-
-//mesh->m_IBO = IndexBuffer::Create( indices, sizeof( indices ) / sizeof( uint32_t ) );
-//mesh->m_VAO->SetIndexBuffer( mesh->m_IBO );
+		// Create GPU buffers
 
 		meshSource->m_VAO = VertexArray::Create();
 

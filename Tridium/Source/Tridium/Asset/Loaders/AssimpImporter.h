@@ -2,6 +2,7 @@
 #include <Tridium/IO/FilePath.h>
 #include <Tridium/Rendering/Mesh.h>
 #include <Tridium/Core/Memory.h>
+#include <Tridium/Asset/ImportSettings.h>
 
 namespace Tridium {
 
@@ -10,7 +11,7 @@ namespace Tridium {
 	public:
 		AssimpImporter(const IO::FilePath& a_FilePath);
 
-		SharedPtr<MeshSource> ImportMeshSource();
+		SharedPtr<MeshSource> ImportMeshSource( const MeshSourceImportSettings& a_ImportSettings = {} );
 
 	private:
 

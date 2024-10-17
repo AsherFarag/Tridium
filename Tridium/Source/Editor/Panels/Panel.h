@@ -32,6 +32,7 @@ namespace Tridium::Editor {
 		void ImGuiEnd();
 
 		void Close();
+		virtual void OnClose() {};
 
 	protected:
 		std::string m_Name;

@@ -20,6 +20,8 @@ namespace Tridium {
 		virtual void RemoveAsset( AssetHandle a_Handle ) = 0;
 		virtual EAssetType GetAssetType( AssetHandle a_Handle ) = 0;
 		virtual bool IsMemoryAsset( AssetHandle a_Handle ) = 0;
+		virtual void RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) = 0;
+		virtual void UnregisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) = 0;
 	};
 
 	// Static API for the Asset Manager.
@@ -29,6 +31,7 @@ namespace Tridium {
 		static SharedPtr<AssetManagerBase> Get() { return Application::Get().m_AssetManager; }
 
 		// Can return nullptr if the AssetManager is not of the correct type.
+		// If macro IS_EDITOR is defined, this will return an instance of EditorAssetManager.
 		template<typename T>
 		static SharedPtr<T> Get()
 		{
@@ -39,6 +42,7 @@ namespace Tridium {
 		template<typename T>
 		static SharedPtr<T> GetAsset( AssetHandle a_Handle )
 		{
+			static_assert( std::is_base_of_v<Asset, T>, "T must inherit from Asset" );
 			SharedPtr<Asset> asset = Application::Get().m_AssetManager->GetAsset( a_Handle );
 			return SharedPtrCast<T>( asset );
 		}
@@ -46,6 +50,7 @@ namespace Tridium {
 		template<typename T>
 		static SharedPtr<T> GetMemoryOnlyAsset( AssetHandle a_Handle )
 		{
+			static_assert( std::is_base_of_v<Asset, T>, "T must inherit from Asset" );
 			SharedPtr<Asset> asset = Application::Get().m_AssetManager->GetMemoryOnlyAsset( a_Handle );
 			return SharedPtrCast<T>( asset );
 		}
@@ -60,5 +65,8 @@ namespace Tridium {
 		static bool HasAsset( AssetHandle a_Handle ) { return Application::Get().m_AssetManager->HasAsset( a_Handle ); }
 		static void RemoveAsset( AssetHandle a_Handle ) { Application::Get().m_AssetManager->RemoveAsset( a_Handle ); }
 		static EAssetType GetAssetType( AssetHandle a_Handle ) { return Application::Get().m_AssetManager->GetAssetType( a_Handle ); }
+		static bool IsMemoryAsset( AssetHandle a_Handle ) { return Application::Get().m_AssetManager->IsMemoryAsset( a_Handle ); }
+		static void RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) { Application::Get().m_AssetManager->RegisterDependency( a_Dependent, a_Dependency ); }
+		static void UnregisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) { Application::Get().m_AssetManager->UnregisterDependency( a_Dependent, a_Dependency ); }
 	};
 }

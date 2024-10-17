@@ -2,6 +2,9 @@
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/Rendering/Material.h>
 
+// - Forward Declarations -
+namespace Tridium { namespace Editor { class MeshSourceImporterPanel; } }
+
 namespace Tridium {
 
 	class VertexArray;
@@ -29,6 +32,9 @@ namespace Tridium {
 		std::string Name;
 	};
 
+	// - Mesh Source -
+	// A mesh source is a collection of assets such as meshes, materials, textures, animations and skeletons,
+	// loaded from a file format such as FBX or glTF.
 	class MeshSource final : public Asset
 	{
 	public:
@@ -65,6 +71,7 @@ namespace Tridium {
 		std::vector<SubMesh> m_SubMeshes;
 		std::vector<AssetHandle> m_Materials;
 
+		// A mesh node is a node in a hierarchy of nodes that make up a mesh, loaded by Assimp.
 		struct MeshNode
 		{
 			Matrix4 LocalTransform;
@@ -79,8 +86,12 @@ namespace Tridium {
 		std::vector<MeshNode> m_MeshNodes;
 
 		friend class AssimpImporter;
+		friend class Editor::MeshSourceImporterPanel;
 	};
 
+	// - Static Mesh -
+	// A static mesh is an unanimated mesh that is not deformed by bones or other deformations.
+	// It can still be composed of multiple sub-meshes and materials.
 	class StaticMesh final : public Asset
 	{
 	public:
@@ -97,11 +108,16 @@ namespace Tridium {
 
 
 	private:
+		SharedPtr<VertexArray> m_VAO;
+		SharedPtr<IndexBuffer> m_IBO;
+
 		AssetHandle m_MeshSource;
 		std::vector<uint32_t> m_SubMeshes;
 		std::vector<AssetHandle> m_Materials;
 	};
 
+	// - Mesh Factory -
+	// A factory class for creating common mesh types such as quads and cubes.
 	class MeshFactory
 	{
 	public:

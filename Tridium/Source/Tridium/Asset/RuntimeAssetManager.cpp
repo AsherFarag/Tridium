@@ -29,4 +29,10 @@ namespace Tridium {
 	{
 		return false;
 	}
+	void RuntimeAssetManager::RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency )
+	{
+	}
+	void RuntimeAssetManager::UnregisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency )
+	{
+	}
 } // namespace Tridium

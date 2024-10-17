@@ -15,6 +15,8 @@ namespace Tridium {
 		void RemoveAsset( AssetHandle a_Handle ) override;
 		EAssetType GetAssetType( AssetHandle a_Handle ) override;
 		bool IsMemoryAsset( AssetHandle a_Handle ) override;
+		void RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) override;
+		void UnregisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) override;
 	};
 
 }
