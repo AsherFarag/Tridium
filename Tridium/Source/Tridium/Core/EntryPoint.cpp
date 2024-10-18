@@ -6,10 +6,11 @@
 int main( int argc, char** argv )
 {
 	Tridium::Refl::__Internal_InitializeReflection();
-
 	Tridium::Log::Init();
 
-	Tridium::Application app;
+	const char* ProjectPath = argc >= 2 ? argv[1] : "";
+
+	Tridium::Application app(ProjectPath);
 	app.Run();
 }
 

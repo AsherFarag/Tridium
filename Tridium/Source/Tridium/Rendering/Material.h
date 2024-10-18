@@ -1,10 +1,52 @@
 #pragma once
 #include <Tridium/Asset/Asset.h>
-#include <Tridium/Rendering/Texture.h>
-#include <Tridium/Rendering/Shader.h>
-#include <variant>
 
 namespace Tridium {
+
+	class Material : public Asset
+	{
+	public:
+		Material() = default;
+		virtual ~Material() = default;
+
+		// - Shader
+		//   The shader used by the material
+		AssetHandle Shader;
+
+		// - Albedo
+		//   The color of the material
+		AssetHandle AlbedoTexture;
+
+		// - Metallic
+		//   The metallic value of the material
+		AssetHandle MetallicTexture;
+
+		// - Roughness
+		//   The roughness value of the material
+		AssetHandle RoughnessTexture;
+
+		// - Specular
+		//   The specular value of the material.
+		AssetHandle SpecularTexture;
+
+		// - Normal
+		//   The normal map of the material
+		AssetHandle NormalTexture;
+
+		// - Opacity
+		//   The opacity map of the material
+		AssetHandle OpacityTexture;
+
+		// - Emissive
+		//   The emissive map of the material
+		AssetHandle EmissiveTexture;
+
+		// - Ambient Occlusion
+		//   The ambient occlusion map of the material
+		AssetHandle AOTexture;
+	};
+
+#if 0
 
 	enum class EBlendMode : uint8_t
 	{
@@ -92,4 +134,7 @@ namespace Tridium {
 		AssetHandle m_ParentMaterial;
 		PropertyTable m_Properties;
 	};
-}
+
+#endif
+
+} // namespace Tridium

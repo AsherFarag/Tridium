@@ -17,20 +17,24 @@ namespace Tridium {
 
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application()
+	Application::Application( const std::string& a_ProjectPath )
 	{
 		// Set the singleton instance
 		TE_CORE_ASSERT( !s_Instance, "Application already exists!" );
 		s_Instance = this;
 
+		// Initialise Project
+		m_Project = MakeShared<Project>();
+		if ( !a_ProjectPath.empty() )
+		{
+			ProjectSerializer s( m_Project );
+			s.DeserializeText( a_ProjectPath );
+			m_Project->GetConfiguration().ProjectDirectory = IO::FilePath( a_ProjectPath ).GetParentPath();
+		}
+
 		// Initialise Window
 		m_Window = Window::Create();
 		m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
-
-		// Initialise Project
-		m_Project = MakeShared<Project>();
-		ProjectSerializer s( m_Project );
-		s.SerializeText( "test.tproject" );
 
 		// Initialise Asset Manager
 		InitializeAssetManager();
@@ -52,7 +56,7 @@ namespace Tridium {
 		Editor::GetEditorLayer()->SetActiveScene( m_ActiveScene );
 #endif // IS_EDITOR
 	}
-	
+
 	Application::~Application()
 	{
 	}
@@ -146,8 +150,6 @@ namespace Tridium {
 #else
 		m_AssetManager = MakeShared<RuntimeAssetManager>();
 #endif // IS_EDITOR
-
-		m_AssetManager->Init();
 	}
 
 	bool Application::OnWindowClosed( WindowCloseEvent& e )

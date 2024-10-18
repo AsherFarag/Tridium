@@ -116,7 +116,7 @@ namespace Tridium::Editor {
 		}
 
 		ImGui::PushStyleVar( ImGuiStyleVar_WindowPadding, ImVec2( 0.0f, 0.0f ) );
-		ImGui::Begin( Application::GetActiveProject()->GetName().c_str(), nullptr, window_flags );
+		ImGui::Begin( Application::GetActiveProject()->GetConfiguration().Name.c_str(), nullptr, window_flags);
 		ImGui::PopStyleVar();
 
 		if ( opt_Fullscreen )
@@ -337,6 +337,19 @@ namespace Tridium::Editor {
 			ImGui::EndMenu();
 		}
 
+		// Project Name
+		{
+			const char* projectName = Application::GetActiveProject()->GetConfiguration().Name.c_str();
+			const float paddingFromRight = 10.0f;
+			ImGui::SameLine( ImGui::GetContentRegionMax().x - ImGui::CalcTextSize( projectName ).x - paddingFromRight );
+
+			ImGui::Separator();
+
+			ImGui::PushFont( ImGui::GetExtraBoldFont() );
+			ImGui::Text( projectName );
+			ImGui::PopFont();
+		}
+
 		ImGui::EndMainMenuBar();
 	}
 
@@ -344,7 +357,7 @@ namespace Tridium::Editor {
 
 	UIToolBar::UIToolBar()
 	{
-		IO::FilePath iconFolder( "../Tridium/Content/Engine/Editor/Icons" );
+		IO::FilePath iconFolder( Application::GetEngineAssetsDirectory() / "Editor/Icons" );
 
 		PlayButtonIcon = TextureLoader::LoadTexture( iconFolder / "PlayButton.png" );
 		StopButtonIcon = TextureLoader::LoadTexture( iconFolder / "StopButton.png" );

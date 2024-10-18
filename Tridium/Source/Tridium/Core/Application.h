@@ -15,7 +15,7 @@ namespace Tridium
 	class Application final
 	{
 	public:
-		Application();
+		Application( const std::string& a_ProjectPath );
 		virtual ~Application();
 
 		void Run();
@@ -32,7 +32,7 @@ namespace Tridium
 
 		static Application& Get() { return *s_Instance; }
 		static SharedPtr<Project> GetActiveProject() { return Get().m_Project; }
-		static const IO::FilePath& GetAssetDirectory() { return Get().m_Project->GetAssetDirectory(); }
+		static IO::FilePath GetEngineAssetsDirectory() { return "../Tridium/EngineAssets"; }
 
 		Window& GetWindow() { return *m_Window; }
 		uint32_t GetFPS() const { return m_FPS; }

@@ -54,7 +54,7 @@ namespace Tridium
             using enum _REFL_ EPropertyFlag;              \
 	        using namespace entt::literals;				  \
             auto meta = entt::meta<Class>();              \
-			meta.type( #Class##_hs );                      \
+			meta.type( entt::hashed_string( #Class ) );   \
             meta.prop( _REFL_ Internal::CleanClassNamePropID, #Class );      
 
 namespace Tridium::Refl::Internal {

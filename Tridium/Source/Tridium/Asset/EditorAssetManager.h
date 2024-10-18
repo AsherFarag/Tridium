@@ -34,6 +34,10 @@ namespace Tridium::Editor {
 		AssetHandle ImportAsset( const IO::FilePath& a_Path );
 		bool CreateAsset( const AssetMetaData& a_MetaData, SharedPtr<Asset> a_Asset );
 
+		// If the path is already absolute, it will be returned as is.
+		// Otherwise, it will be appended to the project directory.
+		IO::FilePath GetAbsolutePath( const IO::FilePath& a_Path ) const;
+
 	private:
 		bool SerializeAssetRegistry();
 		bool DeserializeAssetRegistry();

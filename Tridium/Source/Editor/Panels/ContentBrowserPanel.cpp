@@ -13,8 +13,10 @@
 namespace Tridium::Editor {
 
 	ContentBrowserPanel::ContentBrowserPanel()
-		: Panel( "Content Browser" ), m_CurrentDirectory( Application::Get().GetAssetDirectory() )
+		: Panel( "Content Browser" )
 	{
+		m_CurrentDirectory = Application::GetActiveProject()->GetConfiguration().AssetDirectory;
+
 		IO::FilePath iconFolder( "../Tridium/Content/Engine/Editor/Icons" );
 
 		m_DefaultIcon = TextureLoader::LoadTexture( iconFolder / "file.png" );
@@ -88,22 +90,22 @@ namespace Tridium::Editor {
 
 		if ( ImGui::BeginTable( "Folder Contents Items", columnCount ) )
 		{
-			for ( auto& directoryEntry : IO::DirectoryIterator( m_CurrentDirectory ) )
-			{
-				//const auto& path = directoryEntry.path();
-				//EAssetType type = IO::GetAssetTypeFromExtension( path.extension().string() );
-				//if ( type == EAssetType::None )
-				//	continue;
+			//for ( auto& directoryEntry : IO::DirectoryIterator( m_CurrentDirectory ) )
+			//{
+			//	//const auto& path = directoryEntry.path();
+			//	//EAssetType type = IO::GetAssetTypeFromExtension( path.extension().string() );
+			//	//if ( type == EAssetType::None )
+			//	//	continue;
 
-				//ImGui::TableNextColumn();
-				//ContentItemOnImGuiDraw( type, path, { thumbnailSize, thumbnailSize } );
+			//	//ImGui::TableNextColumn();
+			//	//ContentItemOnImGuiDraw( type, path, { thumbnailSize, thumbnailSize } );
 
 
-				//if ( ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left ) )
-				//{
-				//	ContentOnOpened( type, path );
-				//}
-			}
+			//	//if ( ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left ) )
+			//	//{
+			//	//	ContentOnOpened( type, path );
+			//	//}
+			//}
 
 			ImGui::EndTable();
 		}

@@ -2,6 +2,8 @@
 #ifdef IS_EDITOR
 #include "EditorAssetManager.h"
 #include <Tridium/Asset/AssetFactory.h>
+#include <yaml-cpp/yaml.h>
+#include <fstream>
 
 namespace Tridium::Editor {
 
@@ -17,14 +19,16 @@ namespace Tridium::Editor {
 	void EditorAssetManager::Init()
 	{
 		AssetFactory::Init();
+		DeserializeAssetRegistry();
 	}
 
 	void EditorAssetManager::Shutdown()
 	{
-		if ( SerializeAssetRegistry() )
-			TE_CORE_INFO( "[AssetManager] Asset registry serialized successfully" );
-		else
-			TE_CORE_ERROR( "[AssetManager] Failed to serialize asset registry" );
+		SerializeAssetRegistry();
+		for ( auto& [handle, asset] : m_LoadedAssets )
+		{
+			AssetFactory::SaveAsset( GetAssetMetaData( handle ), asset );
+		}
 	}
 
 	SharedPtr<Asset> EditorAssetManager::GetAsset( AssetHandle a_Handle )
@@ -44,6 +48,18 @@ namespace Tridium::Editor {
 
 		if ( metaData.IsAssetLoaded )
 			return m_LoadedAssets[a_Handle];
+
+		// The asset needs to be loaded
+
+		// Load the dependencies first
+		for ( const auto& dependency : m_AssetRegistry.AssetDependencies[a_Handle] )
+		{
+			if ( !GetAsset( dependency ) )
+			{
+				TE_CORE_ERROR( "[AssetManager] Failed to load dependency: {0} for asset: {1}", dependency.ID(), a_Handle.ID() );
+				return nullptr;
+			}
+		}
 
 		// Load the asset
 		TE_CORE_INFO( "[AssetManager] Loading asset from: {0}", metaData.Path.ToString() );
@@ -161,18 +177,19 @@ namespace Tridium::Editor {
 		if ( auto it = m_AssetRegistry.AssetMetaData.find( a_Handle ); it != m_AssetRegistry.AssetMetaData.end() )
 			return it->second;
 
-		return AssetMetaData::Invalid;
+		return AssetMetaData::s_InvalidMetaData;
 	}
 
 	const AssetMetaData& EditorAssetManager::GetAssetMetaData( const IO::FilePath& a_Path ) const
 	{
+		IO::FilePath path = GetAbsolutePath( a_Path );
 		for ( const auto& [handle, metaData] : m_AssetRegistry.AssetMetaData )
 		{
-			if ( metaData.Path == a_Path )
+			if ( metaData.Path == path )
 				return metaData;
 		}
 
-		return AssetMetaData::Invalid;
+		return AssetMetaData::s_InvalidMetaData;
 	}
 
 	void EditorAssetManager::SetAssetMetaData( const AssetMetaData& a_MetaData )
@@ -208,7 +225,7 @@ namespace Tridium::Editor {
 		AssetMetaData metaData;
 		metaData.Handle = AssetHandle::Create();
 		metaData.AssetType = assetType;
-		metaData.Path = a_Path;
+		metaData.Path = GetAbsolutePath(a_Path);
 		metaData.IsAssetLoaded = false;
 
 		TE_CORE_INFO( "[AssetManager] Successfully imported asset from: {0}", a_Path.ToString() );
@@ -238,14 +255,123 @@ namespace Tridium::Editor {
 		return true;
 	}
 
+	IO::FilePath EditorAssetManager::GetAbsolutePath( const IO::FilePath& a_Path ) const
+	{
+		// If the path is already absolute, return it
+		if ( a_Path.IsAbsolute() )
+			return a_Path;
+
+		// Else, the path is relative to the project directory
+		return Application::GetActiveProject()->GetConfiguration().ProjectDirectory / a_Path;
+	}
+
 	bool EditorAssetManager::SerializeAssetRegistry()
 	{
-		return false;
+		TE_CORE_INFO( "[AssetManager] Serializing asset registry" );
+		// Create a timer
+		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "AssetMetaData";
+		out << YAML::Value << YAML::BeginSeq; // AssetMetaData
+
+		for ( const auto& [handle, metaData] : m_AssetRegistry.AssetMetaData )
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "Handle" << YAML::Value << handle.ID();
+			out << YAML::Key << "AssetType" << YAML::Value << AssetTypeToString( metaData.AssetType );
+			out << YAML::Key << "Path" << YAML::Value << metaData.Path.ToString();
+			out << YAML::Key << "Name" << YAML::Value << metaData.Name;
+			out << YAML::EndMap;
+		}
+
+		out << YAML::EndSeq; // AssetMetaData
+
+		out << YAML::Key << "AssetDependencies";
+		out << YAML::Value << YAML::BeginMap; // AssetDependencies
+
+		for ( const auto& [dependent, dependencies] : m_AssetRegistry.AssetDependencies )
+		{
+			out << YAML::Key << dependent.ID();
+			out << YAML::Value << YAML::BeginSeq; // Dependencies
+
+			for ( const auto& dependency : dependencies )
+			{
+				out << dependency.ID();
+			}
+
+			out << YAML::EndSeq; // Dependencies
+		}
+
+
+		TODO( "Implement a proper path system for the asset registry" );
+		const IO::FilePath registryPath = Application::GetActiveProject()->GetConfiguration().ProjectDirectory / "TridiumAssetRegistry.yaml";
+
+		std::ofstream file( registryPath.ToString() );
+		file << out.c_str();
+		file.close();
+
+		TE_CORE_INFO( "[AssetManager] Asset registry serialized in: {0}ms", 
+			std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::steady_clock::now() - begin ).count() );
+
+		return true;
 	}
 
 	bool EditorAssetManager::DeserializeAssetRegistry()
 	{
-		return false;
+		YAML::Node data;
+		try
+		{
+			TODO( "Implement a proper path system for the asset registry" );
+			const IO::FilePath registryPath =  Application::GetActiveProject()->GetConfiguration().ProjectDirectory / "TridiumAssetRegistry.yaml";
+			data = YAML::LoadFile( registryPath.ToString() );
+		}
+		catch ( const YAML::BadFile& e )
+		{
+			TE_CORE_ERROR( "[AssetManager] Failed to deserialize asset registry: {0}", e.what() );
+			return false;
+		}
+
+		// Deserialize AssetMetaData
+		if ( auto assetMetaData = data["AssetMetaData"]; assetMetaData )
+		{
+			for ( const auto& asset : assetMetaData )
+			{
+				AssetMetaData metaData;
+				metaData.Handle = asset["Handle"].as<uint64_t>();
+				metaData.AssetType = AssetTypeFromString( asset["AssetType"].as<std::string>().c_str() );
+				metaData.Path = asset["Path"].as<std::string>();
+				metaData.Name = asset["Name"].as<std::string>();
+
+				SetAssetMetaData( metaData );
+			}
+		}
+		else
+		{
+			TE_CORE_ERROR( "[AssetManager] Failed to deserialize asset registry: missing AssetMetaData" );
+			return false;
+		}
+
+		// Deserialize AssetDependencies
+		if ( auto assetDependencies = data["AssetDependencies"]; assetDependencies )
+		{
+			for ( const auto& assetDependency : assetDependencies )
+			{
+				AssetHandle dependent = assetDependency.first.as<uint64_t>();
+				for ( const auto& dependency : assetDependency.second )
+				{
+					RegisterDependency( dependent, dependency.as<uint64_t>() );
+				}
+			}
+		}
+		else
+		{
+			TE_CORE_ERROR( "[AssetManager] Failed to deserialize asset registry: missing AssetDependencies" );
+			return false;
+		}
+
+		return true;
 	}
 }
 

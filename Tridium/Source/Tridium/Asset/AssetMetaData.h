@@ -13,9 +13,9 @@ namespace Tridium {
 		EAssetType AssetType;
 		IO::FilePath Path;
 		std::string Name;
-		bool IsAssetLoaded;
+		bool IsAssetLoaded = false;
 
-		static const AssetMetaData Invalid;
+		static const AssetMetaData s_InvalidMetaData;
 
 		bool IsValid() const { return Handle.Valid(); }
 	};

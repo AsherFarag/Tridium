@@ -60,20 +60,6 @@ class TestLayer : public Tridium::Layer
 		}
 
 		ImGui::End();
-
-		if ( ImGui::Begin( "Create Mesh" ) )
-		{
-			if ( ImGui::InputScalar( "Mesh Source", ImGuiDataType_U64, &MeshSourceHandle, nullptr, nullptr, nullptr, ImGuiInputTextFlags_EnterReturnsTrue ) )
-			{
-				SharedPtr<StaticMesh> mesh = MakeShared<StaticMesh>( MeshSourceHandle );
-				MeshHandle = AssetHandle::Create();
-				AssetManager::Get<Editor::EditorAssetManager>()->AddMemoryOnlyAsset( MeshHandle, mesh);
-			}
-
-			ImGui::InputScalar( "AssetHandle", ImGuiDataType_U64, &MeshHandle, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly );
-		}
-
-		ImGui::End();
 	}
 
 

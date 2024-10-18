@@ -12,7 +12,7 @@ namespace Tridium {
 		PROPERTY( IsAssetLoaded )
 	END_REFLECT( AssetMetaData )
 
-	const AssetMetaData AssetMetaData::Invalid = 
+	const AssetMetaData AssetMetaData::s_InvalidMetaData = 
 	{ 
 		AssetHandle::InvalidGUID,
 		EAssetType::None,

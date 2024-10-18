@@ -88,7 +88,7 @@ namespace Tridium::Editor {
 
 		if ( ImGui::BeginPopupModal( "OpenFile" ) )
 		{
-			static char filePath[ 1024 ] = { (char)(Application::GetAssetDirectory() / "Scripts/ComponentTemplate.lua" ).ToString().c_str() };
+			static char filePath[ 1024 ] = ".lua";
 			ImGui::InputText( "File Path", filePath, 1024 );
 
 			ImGui::SameLine();

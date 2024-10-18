@@ -105,7 +105,8 @@ namespace Tridium {
 		void SetSubMeshes( const std::vector<uint32_t>& a_SubMeshes );
 		void SetSubMeshes( SharedPtr<MeshSource> a_MeshSource );
 		const auto& GetSubMeshes() const { return m_SubMeshes; }
-
+		void SetMaterials( const std::vector<AssetHandle>& a_Materials ) { m_Materials = a_Materials; }
+		auto& GetMaterials() { return m_Materials; }
 
 	private:
 		SharedPtr<VertexArray> m_VAO;

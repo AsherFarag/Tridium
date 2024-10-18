@@ -32,7 +32,7 @@ namespace Tridium::Editor {
     bool EditorApplication::Init()
     {
         Application::Get().GetWindow().SetTitle("Tridium Editor");
-        Application::Get().GetWindow().SetIcon( "../Tridium/Content/Engine/Editor/Icons/EngineIcon.png" );
+        Application::Get().GetWindow().SetIcon(  Application::GetEngineAssetsDirectory() / "Editor/Icons/EngineIcon.png" );
 
         s_Instance = SharedPtr<EditorApplication>( new EditorApplication() );
         s_Instance->m_EditorLayer = new EditorLayer();

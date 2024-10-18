@@ -1,18 +1,18 @@
 #pragma once
+#include <Tridium/IO/FilePath.h>
 
 namespace Tridium {
 
 	struct ProjectConfiguration
 	{
 		std::string Name = "Untitled";
-		FIXME()
-		IO::FilePath AssetDirectory = "../Tridium/Content";
-		IO::FilePath MetaDirectory = "Meta";
-		IO::FilePath StartScene = "Content";
+		IO::FilePath ProjectDirectory{};
+		IO::FilePath AssetDirectory{ "Content" }; // Relative to ProjectDirectory
+		IO::FilePath StartScene{};
 
 		ProjectConfiguration() = default;
 		ProjectConfiguration( const std::string& a_Name, const IO::FilePath& a_AssetDirectory, const IO::FilePath& a_StartScene )
-			: Name( a_Name ), AssetDirectory( a_AssetDirectory ), StartScene( a_StartScene ) {}
+			: Name( a_Name ), ProjectDirectory( a_AssetDirectory ), StartScene( a_StartScene ) {}
 	};
 
 	class Project
@@ -25,14 +25,10 @@ namespace Tridium {
 		~Project();
 
 		ProjectConfiguration& GetConfiguration() { return m_ProjectConfig; }
+		const ProjectConfiguration& GetConfiguration() const { return m_ProjectConfig; }
+		IO::FilePath GetAssetDirectory() const { return m_ProjectConfig.ProjectDirectory + m_ProjectConfig.AssetDirectory; }
 
-		const std::string& GetName() const { return m_ProjectConfig.Name; }
-		const IO::FilePath& GetAssetDirectory() const { return m_ProjectConfig.AssetDirectory; }
-		const IO::FilePath& GetMetaDirectory() const { return m_ProjectConfig.MetaDirectory; }
-		const IO::FilePath& GetStartSceneDirectory() const { return m_ProjectConfig.StartScene; }
-
-
-	private:
+	protected:
 		ProjectConfiguration m_ProjectConfig;
 	};
 }

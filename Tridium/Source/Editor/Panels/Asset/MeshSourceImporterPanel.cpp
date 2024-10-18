@@ -15,23 +15,29 @@ namespace Tridium::Editor {
 	MeshSourceImporterPanel::MeshSourceImporterPanel( const IO::FilePath& a_Path )
 		: Layer( "Mesh Source Importer" )
 	{
-		m_Path = a_Path;
+		m_Path = AssetManager::Get<EditorAssetManager>()->GetAbsolutePath( a_Path );
 		AssimpImporter importer( m_Path );
 		m_MeshSource = importer.ImportMeshSource();
-		m_SelectedSubmeshes.resize( m_MeshSource->m_MeshNodes.size() );
+		if ( m_MeshSource )
+			m_SelectedSubmeshes.resize( m_MeshSource->m_MeshNodes.size() );
+
+		m_ShouldClose = m_MeshSource == nullptr;
 	}
 
 	void MeshSourceImporterPanel::OnImGuiDraw()
 	{
+		if ( m_ShouldClose )
+		{
+			Application::Get().PopOverlay( this, true );
+			return;
+		}
+
 		ImGui::OpenPopup( "Import MeshSource" );
 
 		ImGui::SetNextWindowPos( ImVec2( 0.5f * ImGui::GetIO().DisplaySize.x, 0.5f * ImGui::GetIO().DisplaySize.y ), ImGuiCond_Appearing, ImVec2( 0.5f, 0.5f ) );
 
 		if ( !ImGui::BeginPopupModal( "Import MeshSource", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize ) )
 			return;
-
-		bool shouldClose = false;
-		shouldClose |= m_MeshSource == nullptr; // Close the window if the mesh source failed to load
 
 		// Display the submesh nodes
 		for ( uint32_t i = 0; i < m_MeshSource->m_MeshNodes.size(); ++i )
@@ -60,7 +66,7 @@ namespace Tridium::Editor {
 			{
 				ImportMeshes();
 				ImGui::CloseCurrentPopup();
-				shouldClose = true;
+				m_ShouldClose = true;
 			}
 
 			ImGui::SameLine();
@@ -68,18 +74,13 @@ namespace Tridium::Editor {
 			if ( ImGui::Button( "Cancel", buttonSize ) )
 			{
 				ImGui::CloseCurrentPopup();
-				shouldClose = true;
+				m_ShouldClose = true;
 			}
 
 			ImGui::PopStyleVar();
 		}
 
 		ImGui::EndPopup();
-
-		if ( shouldClose )
-		{
-			Application::Get().PopOverlay( this, true );
-		}
 	}
 
 	void MeshSourceImporterPanel::ImportMeshes()
@@ -127,7 +128,8 @@ namespace Tridium::Editor {
 			AssetMetaData metaData;
 			metaData.Handle = AssetHandle::Create();
 			metaData.AssetType = EAssetType::StaticMesh;
-			metaData.Path = m_Path;
+			metaData.Path = m_Path.GetParentPath();
+			metaData.Path.Append( m_MeshSource->m_MeshNodes[i].Name + ".tmesh" );
 			metaData.Name = m_MeshSource->m_MeshNodes[i].Name;
 			metaData.IsAssetLoaded = true;
 

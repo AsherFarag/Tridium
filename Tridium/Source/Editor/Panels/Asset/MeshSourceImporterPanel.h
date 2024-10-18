@@ -20,6 +20,8 @@ namespace Tridium::Editor {
 		SharedPtr<MeshSource> m_MeshSource;
 
 		std::vector<bool> m_SelectedSubmeshes;
+
+		bool m_ShouldClose = false;
     };
 
 }

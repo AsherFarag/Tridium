@@ -4,90 +4,58 @@
 #include "yaml-cpp/yaml.h"
 #include <fstream>
 
-namespace YAML {
-
-	template<>
-	struct convert<Tridium::ProjectConfiguration>
-	{
-		static Node encode( const Tridium::ProjectConfiguration& rhs )
-		{
-			Node node;
-			node.push_back( rhs.Name );
-			node.push_back( rhs.AssetDirectory.ToString() );
-			node.push_back( rhs.MetaDirectory.ToString() );
-			node.push_back( rhs.StartScene.ToString() );
-			return node;
-		}
-
-		static bool decode( const Node& node, Tridium::ProjectConfiguration& rhs )
-		{
-			if ( auto val = node["Name"] )
-				rhs.Name = val.as<std::string>();
-			else
-				return false;
-
-			if ( auto val = node["Asset Directory"] )
-				rhs.AssetDirectory = val.as<std::string>();
-			else
-				return false;
-
-			if ( auto val = node["Meta Directory"] )
-				rhs.MetaDirectory = val.as<std::string>();
-			else
-				return false;
-
-			if ( auto val = node["Start Scene"] )
-				rhs.MetaDirectory = val.as<std::string>();
-			else
-				return false;
-
-			return true;
-		}
-	};
-
-}
-
 namespace Tridium {
 
 
-	YAML::Emitter& operator<<( YAML::Emitter& out, const ProjectConfiguration& v )
-	{
-		out << YAML::BeginMap;
-		
-		out << YAML::Key << "Name" << YAML::Value << v.Name;
-		out << YAML::Key << "Asset Directory" << YAML::Value << v.AssetDirectory.ToString();
-		out << YAML::Key << "Meta Directory" << YAML::Value << v.MetaDirectory.ToString();
-		out << YAML::Key << "Start Scene" << YAML::Value << v.StartScene.ToString();
-
-		out << YAML::EndMap;
-		return out;
-	}
-
-	ProjectSerializer::ProjectSerializer( const SharedPtr<Project>& project )
-		: m_Project( project )
+	ProjectSerializer::ProjectSerializer( const SharedPtr<Project>& a_Project )
+		: m_Project( a_Project )
 	{
 	}
 
-	void ProjectSerializer::SerializeText( const std::string& filepath )
+	void ProjectSerializer::SerializeText( const std::string& a_Path )
 	{
 		YAML::Emitter out;
 
-		out << YAML::Key << "Configuration"; out << YAML::Value << m_Project->GetConfiguration();
+		out << YAML::BeginMap; // Project
+		{
+			out << YAML::Key << "Configuration";
+			out << YAML::Value << YAML::BeginMap; // Configuration
+			{
+				out << YAML::Key << "Name" << YAML::Value << m_Project->m_ProjectConfig.Name;
+				out << YAML::Key << "AssetDirectory" << YAML::Value << m_Project->m_ProjectConfig.AssetDirectory.ToString();
+				out << YAML::Key << "StartScene" << YAML::Value << m_Project->m_ProjectConfig.StartScene.ToString();
+			}
+			out << YAML::EndMap; // Configuration
+		}
+		out << YAML::EndMap; // Project
 
-		std::ofstream outFile( filepath );
+		std::ofstream outFile( a_Path );
 		outFile << out.c_str();
 	}
 
-	bool ProjectSerializer::DeserializeText( const std::string& filepath )
+	bool ProjectSerializer::DeserializeText( const std::string& a_Path )
 	{
-		YAML::Node data = YAML::LoadFile( filepath );
+		YAML::Node data;
 
-		auto configNode = data["Configuration"];
-
-		if ( !configNode )
+		try
+		{
+			data = YAML::LoadFile( a_Path );
+		}
+		catch ( const YAML::BadFile& e )
+		{
 			return false;
+		}
 
-		m_Project->m_ProjectConfig = configNode.as<ProjectConfiguration>();
+		if ( auto configNode = data["Configuration"] )
+		{
+			m_Project->m_ProjectConfig.Name = configNode["Name"].as<std::string>();
+			m_Project->m_ProjectConfig.AssetDirectory = IO::FilePath( configNode["AssetDirectory"].as<std::string>() );
+			m_Project->m_ProjectConfig.StartScene = IO::FilePath( configNode["StartScene"].as<std::string>() );
+		}
+		else
+		{
+			return false;
+		}
 
 		return true;
 	}

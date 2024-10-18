@@ -3,6 +3,8 @@
 
 namespace Tridium {
 
+#if 0
+
 	Material::Material()
 		: BlendMode( EBlendMode::Additive )
 	{
@@ -260,4 +262,6 @@ namespace Tridium {
 #undef SET_PROPERTY_BODY
 
 #pragma endregion
+
+#endif
 }

@@ -53,6 +53,7 @@ namespace Tridium::IO {
         }
 
         // Conversion to string with forward slashes
+		//      E.g. "MyFolder/MyFile.txt"
         std::string ToString() const { return generic_string(); }
 
         void Append( const std::string& a_String ) { append( a_String ); }
@@ -72,6 +73,10 @@ namespace Tridium::IO {
         bool IsDirectory() const { return fs::is_directory( *this ); }
 
         bool IsFile() const { return fs::is_regular_file( *this ); }
+
+        bool IsAbsolute() const { return is_absolute(); }
+
+		bool IsRelative() const { return is_relative(); }
 
         static FilePath FromPath( const fs::path& a_Path ) { return FilePath( a_Path ); }
     };
