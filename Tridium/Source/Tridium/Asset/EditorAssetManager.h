@@ -1,16 +1,13 @@
 #pragma once
 #ifdef IS_EDITOR
-#include <Tridium/Asset/AssetManager.h>
-#include <Tridium/Asset/AssetMetaData.h>
+#include "AssetManager.h"
+#include "AssetRegistry.h"
 
 namespace Tridium::Editor {
 
-	using AssetRegistry = std::unordered_map<AssetHandle, AssetMetaData>;
-
 	class EditorAssetManager final : public AssetManagerBase
 	{
-		template<typename T>
-		using AssetStorageType = std::unordered_map<AssetHandle, T>;
+		using AssetStorageType = std::unordered_map<AssetHandle, SharedPtr<Asset>>;
 
 	public:
 		EditorAssetManager();
@@ -42,9 +39,8 @@ namespace Tridium::Editor {
 		bool DeserializeAssetRegistry();
 
 	private:
-		AssetStorageType<SharedPtr<Asset>> m_LoadedAssets;
-		AssetStorageType<SharedPtr<Asset>> m_MemoryAssets;
-		AssetStorageType<std::unordered_set<AssetHandle>> m_AssetDependencies;
+		AssetStorageType m_LoadedAssets;
+		AssetStorageType m_MemoryAssets;
 		AssetRegistry m_AssetRegistry;
 
 		friend class AssetRegistryPanel;

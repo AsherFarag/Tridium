@@ -37,8 +37,8 @@ namespace Tridium::Editor {
 		for ( uint32_t i = 0; i < m_MeshSource->m_MeshNodes.size(); ++i )
 		{
 			auto& node = m_MeshSource->m_MeshNodes[i];
-			//if ( !node.IsRoot() )
-			//	continue;
+			if ( !node.IsRoot() )
+				continue;
 
 			bool isSelected = m_SelectedSubmeshes[i];
 			ImGui::Checkbox( node.Name.c_str(), &isSelected );
@@ -85,12 +85,14 @@ namespace Tridium::Editor {
 	void MeshSourceImporterPanel::ImportMeshes()
 	{
 		auto assetManager = AssetManager::Get<EditorAssetManager>();
-		AssetMetaData meshSourceMetaData;
-		meshSourceMetaData.Handle = AssetHandle::Create();
-		meshSourceMetaData.AssetType = EAssetType::MeshSource;
-		meshSourceMetaData.Path = m_Path;
-		meshSourceMetaData.Name = m_Path.GetFilename();
-		meshSourceMetaData.IsAssetLoaded = true;
+		AssetMetaData meshSourceMetaData =
+		{
+			AssetHandle::Create(),
+			EAssetType::MeshSource,
+			m_Path,
+			m_Path.GetFilename(),
+			true
+		};
 
 		// Add the MeshSource to the asset manager
 		assetManager->CreateAsset( meshSourceMetaData, m_MeshSource );
@@ -120,7 +122,7 @@ namespace Tridium::Editor {
 				}
 			}
 
-			SharedPtr<StaticMesh> mesh = MakeShared<StaticMesh>( m_MeshSource->m_Handle, subMeshes );
+			SharedPtr<StaticMesh> mesh = MakeShared<StaticMesh>( m_MeshSource->GetHandle(), subMeshes);
 
 			AssetMetaData metaData;
 			metaData.Handle = AssetHandle::Create();
@@ -130,7 +132,7 @@ namespace Tridium::Editor {
 			metaData.IsAssetLoaded = true;
 
 			assetManager->CreateAsset( metaData, mesh );
-			assetManager->RegisterDependency( m_MeshSource->m_Handle, mesh->GetHandle() );
+			assetManager->RegisterDependency( mesh->GetHandle(), m_MeshSource->GetHandle()  );
 		}
 	}
 

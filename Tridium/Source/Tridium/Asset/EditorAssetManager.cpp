@@ -106,9 +106,15 @@ namespace Tridium::Editor {
 			m_LoadedAssets.erase( it );
 		}
 
-		if ( auto it = m_AssetRegistry.find( a_Handle ); it != m_AssetRegistry.end() )
+		if ( auto it = m_AssetRegistry.AssetMetaData.find( a_Handle ); it != m_AssetRegistry.AssetMetaData.end() )
 		{
-			m_AssetRegistry.erase( it );
+			m_AssetRegistry.AssetMetaData.erase( it );
+		}
+
+		// Remove dependencies
+		for ( auto& [dependent, dependencies] : m_AssetRegistry.AssetDependencies )
+		{
+			dependencies.erase( a_Handle );
 		}
 	}
 
@@ -132,12 +138,12 @@ namespace Tridium::Editor {
 	void EditorAssetManager::RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency )
 	{
 		TE_CORE_INFO( "[AssetManager] Registering dependency: {0} -> {1}", a_Dependent.ID(), a_Dependency.ID() );
-		m_AssetDependencies[a_Dependent].insert( a_Dependency );
+		m_AssetRegistry.AssetDependencies[a_Dependent].insert( a_Dependency );
 	}
 
 	void EditorAssetManager::UnregisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency )
 	{
-		if ( auto it = m_AssetDependencies.find( a_Dependent ); it != m_AssetDependencies.end() )
+		if ( auto it = m_AssetRegistry.AssetDependencies.find( a_Dependent ); it != m_AssetRegistry.AssetDependencies.end() )
 		{
 			TE_CORE_INFO( "[AssetManager] Unregistering dependency: {0} -> {1}", a_Dependent.ID(), a_Dependency.ID() );
 			it->second.erase( a_Dependency );
@@ -152,7 +158,7 @@ namespace Tridium::Editor {
 
 	const AssetMetaData& EditorAssetManager::GetAssetMetaData( AssetHandle a_Handle ) const
 	{
-		if ( auto it = m_AssetRegistry.find( a_Handle ); it != m_AssetRegistry.end() )
+		if ( auto it = m_AssetRegistry.AssetMetaData.find( a_Handle ); it != m_AssetRegistry.AssetMetaData.end() )
 			return it->second;
 
 		return AssetMetaData::Invalid;
@@ -160,7 +166,7 @@ namespace Tridium::Editor {
 
 	const AssetMetaData& EditorAssetManager::GetAssetMetaData( const IO::FilePath& a_Path ) const
 	{
-		for ( const auto& [handle, metaData] : m_AssetRegistry )
+		for ( const auto& [handle, metaData] : m_AssetRegistry.AssetMetaData )
 		{
 			if ( metaData.Path == a_Path )
 				return metaData;
@@ -171,7 +177,7 @@ namespace Tridium::Editor {
 
 	void EditorAssetManager::SetAssetMetaData( const AssetMetaData& a_MetaData )
 	{
-		m_AssetRegistry[a_MetaData.Handle] = a_MetaData;
+		m_AssetRegistry.AssetMetaData[a_MetaData.Handle] = a_MetaData;
 	}
 
 	AssetHandle EditorAssetManager::ImportAsset( const IO::FilePath& a_Path )
@@ -212,7 +218,7 @@ namespace Tridium::Editor {
 
 	bool EditorAssetManager::CreateAsset( const AssetMetaData& a_MetaData, SharedPtr<Asset> a_Asset )
 	{
-		if ( auto it = m_AssetRegistry.find( a_MetaData.Handle ); it != m_AssetRegistry.end() )
+		if ( auto it = m_AssetRegistry.AssetMetaData.find( a_MetaData.Handle ); it != m_AssetRegistry.AssetMetaData.end() )
 		{
 			TE_CORE_WARN( "[AssetManager] Asset already exists with handle: {0}", a_MetaData.Handle.ID() );
 			return false;

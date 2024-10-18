@@ -10,7 +10,7 @@ namespace Tridium::Editor {
 		{
 			AssetRegistry& assetRegistry = AssetManager::Get<EditorAssetManager>()->m_AssetRegistry;
 
-			for ( auto& [handle, metaData] : assetRegistry )
+			for ( auto& [handle, metaData] : assetRegistry.AssetMetaData )
 			{
 				const std::string& assetName = metaData.Name.size() ? metaData.Name.c_str() : metaData.Path.GetFilename();
 				if ( ImGui::TreeNode( 
