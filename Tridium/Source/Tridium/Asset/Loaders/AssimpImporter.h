@@ -17,6 +17,7 @@ namespace Tridium {
 
 		void ExtractSubmeshes( void* a_AssimpScene, SharedPtr<MeshSource>& a_MeshSource);
 		void ExtractMaterials( void* a_AssimpScene, SharedPtr<MeshSource>& a_MeshSource );
+		AssetHandle ExtractTexture( void* a_AssimpScene, void* a_AssimpMaterial, int a_AssimpTextureType );
 
 		void TraverseNodes( SharedPtr<MeshSource> a_MeshSource, void* a_AssimpNode, uint32_t a_NodeIndex, const Matrix4& a_ParentTransform = Matrix4( 1.0f ), uint32_t a_Level = 0 );
 

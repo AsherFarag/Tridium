@@ -24,11 +24,12 @@ namespace Tridium::Editor {
 
 	void EditorAssetManager::Shutdown()
 	{
-		SerializeAssetRegistry();
 		for ( auto& [handle, asset] : m_LoadedAssets )
 		{
 			AssetFactory::SaveAsset( GetAssetMetaData( handle ), asset );
 		}
+
+		SerializeAssetRegistry();
 	}
 
 	SharedPtr<Asset> EditorAssetManager::GetAsset( AssetHandle a_Handle )
@@ -42,18 +43,23 @@ namespace Tridium::Editor {
 		// Failed to get meta data
 		if ( !metaData.IsValid() )
 		{
-			TE_CORE_ERROR( "[AssetManager] Failed to get meta data for asset handle: {0}", a_Handle.ID() );
+			//TE_CORE_ERROR( "[AssetManager] Failed to get meta data for asset handle: {0}", a_Handle.ID() );
 			return nullptr;
 		}
 
 		if ( metaData.IsAssetLoaded )
 			return m_LoadedAssets[a_Handle];
 
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// The asset needs to be loaded
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 		// Load the dependencies first
 		for ( const auto& dependency : m_AssetRegistry.AssetDependencies[a_Handle] )
 		{
+			if ( !dependency.Valid() )
+				continue;
+
 			if ( !GetAsset( dependency ) )
 			{
 				TE_CORE_ERROR( "[AssetManager] Failed to load dependency: {0} for asset: {1}", dependency.ID(), a_Handle.ID() );
@@ -91,6 +97,8 @@ namespace Tridium::Editor {
 
 	bool EditorAssetManager::AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset )
 	{
+		TE_CORE_ASSERT( a_Asset, "[AssetManager] Asset is nullptr" );
+
 		if ( m_MemoryAssets.contains( a_Handle ) )
 		{
 			TE_CORE_WARN( "[AssetManager] Memory only asset already exists with handle: {0}", a_Handle.ID() );
@@ -98,6 +106,8 @@ namespace Tridium::Editor {
 		}
 
 		m_MemoryAssets[a_Handle] = a_Asset;
+		a_Asset->SetHandle( a_Handle );
+
 		return true;
 	}
 
@@ -202,22 +212,24 @@ namespace Tridium::Editor {
 		if ( auto metaData = GetAssetMetaData( a_Path ); metaData.IsValid() )
 			return metaData.Handle;
 
-		if ( !a_Path.Exists() )
+		IO::FilePath path = GetAbsolutePath( a_Path );
+
+		if ( !path.Exists() )
 		{
-			TE_CORE_ERROR( "[AssetManager] Failed to import asset: {0}, file does not exist", a_Path.ToString() );
+			TE_CORE_ERROR( "[AssetManager] Failed to import asset: {0}, file does not exist", path.ToString() );
 			return AssetHandle::InvalidGUID;
 		}
 
-		if ( !a_Path.HasExtension() )
+		if ( !path.HasExtension() )
 		{
-			TE_CORE_ERROR( "[AssetManager] Failed to import asset: {0}, missing file extension", a_Path.ToString() );
+			TE_CORE_ERROR( "[AssetManager] Failed to import asset: {0}, missing file extension", path.ToString() );
 			return AssetHandle::InvalidGUID;
 		}
 
-		EAssetType assetType = GetAssetTypeFromFileExtension( a_Path.GetExtension() );
+		EAssetType assetType = GetAssetTypeFromFileExtension( path.GetExtension() );
 		if ( assetType == EAssetType::None )
 		{
-			TE_CORE_ERROR( "[AssetManager] Failed to import asset: {0}, unsupported file extension", a_Path.ToString() );
+			TE_CORE_ERROR( "[AssetManager] Failed to import asset: {0}, unsupported file extension", path.ToString() );
 			return AssetHandle::InvalidGUID;
 		}
 
@@ -225,10 +237,10 @@ namespace Tridium::Editor {
 		AssetMetaData metaData;
 		metaData.Handle = AssetHandle::Create();
 		metaData.AssetType = assetType;
-		metaData.Path = GetAbsolutePath(a_Path);
+		metaData.Path = path;
 		metaData.IsAssetLoaded = false;
 
-		TE_CORE_INFO( "[AssetManager] Successfully imported asset from: {0}", a_Path.ToString() );
+		TE_CORE_INFO( "[AssetManager] Successfully imported asset from: {0}", path.ToString() );
 		SetAssetMetaData( metaData );
 		return metaData.Handle;
 	}

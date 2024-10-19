@@ -9,7 +9,7 @@ namespace Tridium {
 	class OpenGLTexture : public Texture
 	{
 	public:
-		OpenGLTexture( const TextureSpecification& specification );
+		OpenGLTexture( const TextureSpecification& a_Specification, void* a_TextureData = nullptr );
 		virtual ~OpenGLTexture();
 
 		virtual bool operator==( const Texture& other ) const override { return m_RendererID == other.GetRendererID(); }

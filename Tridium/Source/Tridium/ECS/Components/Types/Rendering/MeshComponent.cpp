@@ -4,14 +4,14 @@
 
 namespace Tridium {
 
-	BEGIN_REFLECT_COMPONENT( MeshComponent )
+	BEGIN_REFLECT_COMPONENT( StaticMeshComponent )
 		BASE( Component )
-		PROPERTY( m_Mesh, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( m_Material, FLAGS( Serialize, EditAnywhere ) )
-	END_REFLECT( MeshComponent )
+		PROPERTY( Mesh, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( Materials, FLAGS( Serialize, EditAnywhere ) )
+	END_REFLECT( StaticMeshComponent )
 
-	MeshComponent::MeshComponent()
-		: m_Mesh( MeshFactory::GetCube() )
+	StaticMeshComponent::StaticMeshComponent()
+		: Mesh( AssetHandle::InvalidGUID )
 	{
 
 	}

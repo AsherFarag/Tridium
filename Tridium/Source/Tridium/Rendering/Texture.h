@@ -29,6 +29,7 @@ namespace Tridium {
 		virtual ~Texture() = default;
 
 		static Texture* Create( const TextureSpecification& a_Specification );
+		static Texture* Create( const TextureSpecification& a_Specification, void* a_TextureData );
 
 		virtual const TextureSpecification& GetSpecification() const = 0;
 

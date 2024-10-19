@@ -3,12 +3,18 @@
 
 #include <Tridium/Rendering/Buffer.h>
 #include <Tridium/Rendering/VertexArray.h>
+#include <Tridium/Rendering/Texture.h>
+#include <Tridium/Rendering/Material.h>
+#include <Tridium/Rendering/Mesh.h>
 
 #include <Tridium/Asset/AssetFactory.h>
+#include <Tridium/Asset/AssetManager.h>
+#include <Tridium/Asset/Loaders/TextureLoader.h>
 
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
+#include "assimp/material.h"
 
 namespace Tridium {
 
@@ -31,9 +37,9 @@ namespace Tridium {
 		aiProcess_CalcTangentSpace          
 		| aiProcess_Triangulate             
 		| aiProcess_SortByPType             
-		| aiProcess_GenNormals              
+		| aiProcess_GenSmoothNormals
 		| aiProcess_GenUVCoords
-		| aiProcess_OptimizeGraph
+		//| aiProcess_OptimizeGraph
 		| aiProcess_OptimizeMeshes          
 		| aiProcess_JoinIdenticalVertices
 		| aiProcess_LimitBoneWeights        
@@ -167,25 +173,77 @@ namespace Tridium {
 				a_MeshSource->m_Indices.push_back( face.mIndices[1] );
 				a_MeshSource->m_Indices.push_back( face.mIndices[2] );
 			}
-
-
-			MeshSource::MeshNode& rootNode = a_MeshSource->m_MeshNodes.emplace_back();
-			TraverseNodes( a_MeshSource, a_Scene->mRootNode, 0 );
 		}
+
+		MeshSource::MeshNode& rootNode = a_MeshSource->m_MeshNodes.emplace_back();
+		TraverseNodes( a_MeshSource, a_Scene->mRootNode, 0 );
 	}
 
 	void AssimpImporter::ExtractMaterials( void* a_AssimpScene, SharedPtr<MeshSource>& a_MeshSource )
 	{
-		TODO();
 		const aiScene* a_Scene = static_cast<aiScene*>( a_AssimpScene );
 		if ( !a_Scene->HasMaterials() )
 			return;
 
-		a_MeshSource->m_Materials.reserve( a_Scene->mNumMaterials );
+		a_MeshSource->m_Materials.resize( a_Scene->mNumMaterials );
 
 		for ( uint32_t i = 0; i < a_Scene->mNumMaterials; i++ )
 		{
+			aiMaterial* aiMat = a_Scene->mMaterials[i];
+
+			auto material = MakeShared<Material>();
+
+			// Albedo
+			material->AlbedoTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_DIFFUSE );
+			// Normal
+			material->NormalTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_NORMALS );
+
+			AssetHandle matAssetHandle = AssetHandle::Create();
+			AssetManager::AddMemoryOnlyAsset( matAssetHandle, material );
+			a_MeshSource->m_Materials[i] = matAssetHandle;
 		}
+	}
+
+	AssetHandle AssimpImporter::ExtractTexture( void* a_AssimpScene, void* a_AssimpMaterial, int a_AssimpTextureType )
+	{
+		SharedPtr<TextureLoader> textureLoader = SharedPtrCast<TextureLoader>( AssetFactory::GetAssetLoader( EAssetType::Texture ) );
+		aiScene* aiScn = static_cast<aiScene*>( a_AssimpScene );
+		aiMaterial* aiMat = static_cast<aiMaterial*>( a_AssimpMaterial );
+		aiTextureType aiTexType = static_cast<aiTextureType>( a_AssimpTextureType );
+		aiString aiTexturePath;
+
+		if ( aiMat->GetTexture( aiTexType, 0, &aiTexturePath ) == AI_FAILURE )
+			return AssetHandle::InvalidGUID;
+
+		AssetHandle texHandle = AssetHandle::Create();
+
+		if ( auto aiEmbeddedTexture = aiScn->GetEmbeddedTexture( aiTexturePath.C_Str() ) )
+		{
+			TextureSpecification spec;
+			spec.DataFormat = EDataFormat::RGBA32F;
+			spec.Width = aiEmbeddedTexture->mWidth;
+			spec.Height = aiEmbeddedTexture->mHeight;
+			AssetManager::AddMemoryOnlyAsset( texHandle, SharedPtr<Texture>( Texture::Create( spec, aiEmbeddedTexture->pcData ) ) );
+			return texHandle;
+		}
+		else
+		{
+			auto parentPath = m_FilePath.GetParentPath();
+			auto texturePath = parentPath / aiTexturePath.C_Str();
+			if ( !texturePath.Exists() )
+				texturePath = parentPath / texturePath.GetFilename();
+
+			if ( !texturePath.Exists() )
+				return AssetHandle::InvalidGUID;
+
+			if ( SharedPtr<Texture> texture = textureLoader->LoadTexture( texturePath ) )
+			{
+				AssetManager::AddMemoryOnlyAsset( texHandle, texture );
+				return texHandle;
+			}
+		}
+
+		return AssetHandle::InvalidGUID;
 	}
 
 	void AssimpImporter::TraverseNodes( SharedPtr<MeshSource> a_MeshSource, void* a_AssimpNode, uint32_t a_NodeIndex, const Matrix4& a_ParentTransform, uint32_t a_Level )
@@ -202,7 +260,7 @@ namespace Tridium {
 		for ( uint32_t i = 0; i < a_Node->mNumMeshes; i++ )
 		{
 			uint32_t submeshIndex = a_Node->mMeshes[i];
-			auto& submesh = a_MeshSource->m_SubMeshes[submeshIndex];
+			SubMesh& submesh = a_MeshSource->m_SubMeshes[submeshIndex];
 			submesh.Name = a_Node->mName.C_Str();
 			submesh.Transform = transform;
 			submesh.LocalTransform = node.LocalTransform;

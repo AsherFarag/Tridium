@@ -3,6 +3,8 @@
 
 #include "PropertyDrawers.h"
 
+#include <Tridium/Asset/EditorAssetManager.h>
+
 namespace Tridium::Editor {
 
 #define IS_DISABLED(Flags) Internal::ScopedDisable _DISABLED_{ Flags == EDrawPropertyFlags::ReadOnly }
@@ -188,10 +190,41 @@ namespace Tridium::Editor {
 	bool DrawProperty( const char* a_Name, AssetHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
 		IS_DISABLED( a_Flags );
-		return ImGui::InputScalar(
-			a_Name, ImGuiDataType_U64, &a_Value,
-			nullptr, nullptr, nullptr,
-			ImGuiInputTextFlags_EnterReturnsTrue);
+		bool modified = false;
+
+		auto assetManager = AssetManager::Get<EditorAssetManager>();
+
+		const char* assetName = "None";
+		if ( a_Value.Valid() )
+			assetName = assetManager->GetAssetMetaData(a_Value).Name.c_str();
+
+		if ( ImGui::BeginCombo( a_Name, assetName ) )
+		{
+			for ( const auto& [handle, assetMetaData] : assetManager->GetAssetRegistry().AssetMetaData )
+			{
+				{
+					std::string name = !assetMetaData.Name.empty() ? assetMetaData.Name : assetMetaData.Path.ToString();
+					ImGui::ScopedID id( handle.ID() );
+					if ( ImGui::Selectable( name.c_str(), a_Value == handle) )
+					{
+						a_Value = handle;
+						modified = true;
+						break;
+					}
+				}
+
+				if ( ImGui::BeginItemTooltip() )
+				{
+					ImGui::Text( "Asset Type: %s", AssetTypeToString( assetMetaData.AssetType ) );
+					ImGui::Text( "Path: %s", assetMetaData.Path.ToString().c_str());
+					ImGui::EndTooltip();
+				}
+			}
+
+			ImGui::EndCombo();
+		}
+
+		return modified;
 	}
 
 #undef _DRAW_FLOAT

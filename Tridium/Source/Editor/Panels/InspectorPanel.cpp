@@ -178,7 +178,7 @@ namespace Tridium::Editor {
 		{
 			for ( auto&& [id, metaType] : entt::resolve() )
 			{
-				if ( s_BlacklistedComponents.contains( id ) )
+				if ( s_BlacklistedComponents.contains( metaType.id() ) )
 					continue;
 
 				if ( auto isComponentProp = metaType.prop( Refl::IsComponentID ); !isComponentProp )

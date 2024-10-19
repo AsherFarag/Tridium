@@ -9,6 +9,7 @@
 
 #include <Tridium/ECS/Components/Types.h>
 #include <Tridium/Scene/Scene.h>
+#include <Tridium/Rendering/SceneRenderer.h>
 
 // TEMP ?
 #include "Tridium/Asset/AssetManager.h"
@@ -136,7 +137,8 @@ namespace Tridium::Editor {
 			m_FBO->Resize( regionAvail.x, regionAvail.y );
 
 			m_FBO->Bind();
-			GetEditorLayer()->GetActiveScene()->Render( *m_EditorCamera, m_EditorCamera->GetViewMatrix() );
+			auto sceneRenderer = SceneRenderer( GetEditorLayer()->GetActiveScene() );
+			sceneRenderer.Render( *m_EditorCamera, m_EditorCamera->GetViewMatrix() );
 			m_FBO->Unbind();
 
 			// Draw the Editor Camera ViewPort
@@ -245,17 +247,17 @@ namespace Tridium::Editor {
 
 		Matrix4 pvm = m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix();
 
-		auto meshComponents = GetActiveScene()->GetRegistry().view<MeshComponent, TransformComponent>();
+		auto meshComponents = GetActiveScene()->GetRegistry().view<StaticMeshComponent, TransformComponent>();
 		RenderCommand::SetCullMode( true );
 		meshComponents.each( 
-			[&]( auto go, MeshComponent& meshComponent, TransformComponent& transform )
+			[&]( auto go, StaticMeshComponent& meshComponent, TransformComponent& transform )
 			{
 				m_GameObjectIDShader->SetInt( "uID", (uint32_t)go );
 				m_GameObjectIDShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
 
-				if ( meshComponent.GetMesh().Valid() )
+				if ( meshComponent.Mesh.Valid() )
 				{
-					if ( SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( meshComponent.GetMesh() ) )
+					if ( SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( meshComponent.Mesh ) )
 					{
 						if ( SharedPtr<MeshSource> meshSource = AssetManager::GetAsset<MeshSource>( mesh->GetMeshSource() ) )
 						{

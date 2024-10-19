@@ -12,7 +12,9 @@ namespace Tridium {
 
     SharedPtr<Asset> ShaderLoader::LoadAsset( const AssetMetaData& a_MetaData )
     {
-        Shader* shader = Shader::Create();
+        SharedPtr<Shader> shader;
+        shader.reset( Shader::Create() );
+
         CHECK( shader );
 
         shader->Compile( a_MetaData.Path );

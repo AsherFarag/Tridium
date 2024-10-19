@@ -74,7 +74,7 @@ namespace Tridium {
 			const std::vector<AssetHandle>& meshMaterials = meshSourceRef->GetMaterials();
 			uint32_t numMaterials = static_cast<uint32_t>( meshMaterials.size() );
 			for ( uint32_t i = 0; i < numMaterials; i++ )
-				m_Materials[i] = meshMaterials[i];
+				m_Materials.push_back( meshMaterials[i] );
 		}
 	}
 

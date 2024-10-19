@@ -4,6 +4,7 @@
 #include "GameViewportPanel.h"
 #include <Tridium/ECS/Components/Types/Rendering/CameraComponent.h>
 #include <Editor/Editor.h>
+#include <Tridium/Rendering/SceneRenderer.h>
 
 namespace Tridium::Editor {
 
@@ -41,9 +42,12 @@ namespace Tridium::Editor {
 			sceneCamera.SetViewportSize( regionAvail.x, regionAvail.y );
 			m_FBO->Resize( regionAvail.x, regionAvail.y );
 
-			m_FBO->Bind();
-			GetEditorLayer()->GetActiveScene()->Render( sceneCamera, camera->GetView() );
-			m_FBO->Unbind();
+			{
+				m_FBO->Bind();
+				auto sceneRenderer = SceneRenderer( GetEditorLayer()->GetActiveScene() );
+				sceneRenderer.Render( sceneCamera, camera->GetView() );
+				m_FBO->Unbind();
+			}
 
 			ImGui::Image( (ImTextureID)m_FBO->GetColorAttachmentID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
 		}

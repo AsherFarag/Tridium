@@ -3,6 +3,7 @@
 #include <Tridium/IO/Serializer.h>
 #include <yaml-cpp/yaml.h>
 #include <fstream>
+#include <Tridium/Asset/AssetManager.h>
 
 namespace Tridium {
 
@@ -11,18 +12,28 @@ namespace Tridium {
 		SharedPtr<Material> material = SharedPtrCast<Material>(a_Asset);
 		TE_CORE_ASSERT( material );
 
+		TODO( "Should we be adding dependencies here?" );
+		AssetManager::RegisterDependency( a_MetaData.Handle, material->AlbedoTexture );
+		AssetManager::RegisterDependency( a_MetaData.Handle, material->MetallicTexture );
+		AssetManager::RegisterDependency( a_MetaData.Handle, material->RoughnessTexture );
+		AssetManager::RegisterDependency( a_MetaData.Handle, material->SpecularTexture );
+		AssetManager::RegisterDependency( a_MetaData.Handle, material->NormalTexture );
+		AssetManager::RegisterDependency( a_MetaData.Handle, material->OpacityTexture );
+		AssetManager::RegisterDependency( a_MetaData.Handle, material->EmissiveTexture );
+		AssetManager::RegisterDependency( a_MetaData.Handle, material->AOTexture );
+
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		{
 			out << YAML::Key << "Shader" << YAML::Value << material->Shader.ID();
-			out << YAML::Key << "Albedo" << YAML::Value << material->AlbedoTexture.ID();
-			out << YAML::Key << "Metallic" << YAML::Value << material->MetallicTexture.ID();
-			out << YAML::Key << "Roughness" << YAML::Value << material->RoughnessTexture.ID();
-			out << YAML::Key << "Specular" << YAML::Value << material->SpecularTexture.ID();
-			out << YAML::Key << "Normal" << YAML::Value << material->NormalTexture.ID();
-			out << YAML::Key << "Opacity" << YAML::Value << material->OpacityTexture.ID();
-			out << YAML::Key << "Emissive" << YAML::Value << material->EmissiveTexture.ID();
-			out << YAML::Key << "AO" << YAML::Value << material->AOTexture.ID();
+			out << YAML::Key << "AlbedoTexture" << YAML::Value << material->AlbedoTexture.ID();
+			out << YAML::Key << "MetallicTexture" << YAML::Value << material->MetallicTexture.ID();
+			out << YAML::Key << "RoughnessTexture" << YAML::Value << material->RoughnessTexture.ID();
+			out << YAML::Key << "SpecularTexture" << YAML::Value << material->SpecularTexture.ID();
+			out << YAML::Key << "NormalTexture" << YAML::Value << material->NormalTexture.ID();
+			out << YAML::Key << "OpacityTexture" << YAML::Value << material->OpacityTexture.ID();
+			out << YAML::Key << "EmissiveTexture" << YAML::Value << material->EmissiveTexture.ID();
+			out << YAML::Key << "AOTexture" << YAML::Value << material->AOTexture.ID();
 		}
 		out << YAML::EndMap;
 

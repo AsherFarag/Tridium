@@ -4,9 +4,10 @@
 #include <Tridium/Asset/EditorAssetManager.h>
 
 namespace Tridium::Editor {
+
 	void AssetRegistryPanel::OnImGuiDraw()
 	{
-		if ( ImGui::Begin( m_Name.c_str() ) )
+		if ( ImGui::Begin( "Asset Registry") )
 		{
 			AssetRegistry& assetRegistry = AssetManager::Get<EditorAssetManager>()->m_AssetRegistry;
 

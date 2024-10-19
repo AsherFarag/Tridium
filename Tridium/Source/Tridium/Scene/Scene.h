@@ -18,7 +18,6 @@ namespace Tridium {
 
 		void OnBegin();
 		void OnUpdate();
-		void Render( const Camera& camera, const Matrix4& viewMatrix );
 		void OnEnd();
 
 		inline const std::string& GetName() const { return m_Name; }
@@ -41,5 +40,7 @@ namespace Tridium {
 		bool m_Paused = false;
 
 		EntityID m_MainCamera;
+
+		friend class SceneRenderer;
 	};
 }

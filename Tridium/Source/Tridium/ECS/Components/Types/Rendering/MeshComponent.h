@@ -5,22 +5,15 @@
 
 namespace Tridium {
 
-	class MeshComponent : public Component
+	class StaticMeshComponent : public Component
 	{
-		REFLECT( MeshComponent );
+		REFLECT( StaticMeshComponent );
 	public:
-		MeshComponent();
-		~MeshComponent() = default;
+		StaticMeshComponent();
+		~StaticMeshComponent() = default;
 
-		AssetHandle GetMesh() const { return m_Mesh; }
-		AssetHandle GetMaterial() { return m_Material; }
-
-		void SetMesh( AssetHandle a_Mesh ) { m_Mesh = a_Mesh; }
-		void SetMaterial( AssetHandle a_Material ) { m_Material = a_Material; }
-
-	private:
-		AssetHandle m_Mesh;
-		AssetHandle m_Material;
+		AssetHandle Mesh;
+		std::vector<AssetHandle> Materials;
 	};
 
 }

@@ -31,6 +31,10 @@ namespace Tridium::Editor {
 		const AssetMetaData& GetAssetMetaData( const IO::FilePath& a_Path ) const;
 		void SetAssetMetaData( const AssetMetaData& a_MetaData );
 
+		const AssetStorageType& GetLoadedAssets() const { return m_LoadedAssets; }
+		const AssetStorageType& GetMemoryAssets() const { return m_MemoryAssets; }
+		const AssetRegistry& GetAssetRegistry() const { return m_AssetRegistry; }
+
 		AssetHandle ImportAsset( const IO::FilePath& a_Path );
 		bool CreateAsset( const AssetMetaData& a_MetaData, SharedPtr<Asset> a_Asset );
 

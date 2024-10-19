@@ -161,7 +161,7 @@ namespace Tridium::Editor {
 				if ( ImGui::MenuItem( "Cube" ) )
 				{
 					newGO = m_Context->InstantiateGameObject( "Cube" );
-					newGO.AddComponent<MeshComponent>();
+					newGO.AddComponent<StaticMeshComponent>();
 					SetSelectedGameObject( newGO );
 				}
 
