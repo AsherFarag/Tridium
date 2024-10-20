@@ -95,7 +95,7 @@ namespace Tridium {
 	// MeshFactory
 	/////////////////////////////////////////////////////////////////////////////////////////
 
-    StaticMesh* MeshFactory::CreateQuad()
+	SharedPtr<VertexArray> MeshFactory::CreateQuad()
     {
 		return nullptr;
 		//StaticMesh* mesh = new StaticMesh();
@@ -127,92 +127,78 @@ namespace Tridium {
 		//return mesh;
     }
 
-    StaticMesh* MeshFactory::CreateCube()
+	SharedPtr<VertexArray> MeshFactory::CreateCube()
     {
-		return nullptr;
-		//StaticMesh* mesh = new StaticMesh();
-		//mesh->m_VAO = VertexArray::Create();
-		//float vertices[] = {
-		//	// Front face
-		//	-0.5f, -0.5f,  0.5f,   0.0f,  0.0f,  1.0f,   // Bottom-left (normal pointing outwards along z-axis)
-		//	-0.5f,  0.5f,  0.5f,   0.0f,  0.0f,  1.0f,   // Top-left
-		//	 0.5f, -0.5f,  0.5f,   0.0f,  0.0f,  1.0f,   // Bottom-right
-		//	 0.5f,  0.5f,  0.5f,   0.0f,  0.0f,  1.0f,   // Top-right
+		SharedPtr<VertexArray> vao = VertexArray::Create();
 
-		//	 // Back face
-		//	 -0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f,   // Bottom-left (normal pointing inwards along z-axis)
-		//	 -0.5f,  0.5f, -0.5f,   0.0f,  0.0f, -1.0f,   // Top-left
-		//	  0.5f, -0.5f, -0.5f,   0.0f,  0.0f, -1.0f,   // Bottom-right
-		//	  0.5f,  0.5f, -0.5f,   0.0f,  0.0f, -1.0f,   // Top-right
+		Vector3 size = { 1.0f, 1.0f, 1.0f };
 
-		//	  // Left face
-		//	  -0.5f, -0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,   // Bottom-left (normal pointing leftwards along x-axis)
-		//	  -0.5f,  0.5f, -0.5f,  -1.0f,  0.0f,  0.0f,   // Top-left
-		//	  -0.5f, -0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,   // Bottom-right
-		//	  -0.5f,  0.5f,  0.5f,  -1.0f,  0.0f,  0.0f,   // Top-right
+		std::vector<Vertex> vertices;
+		vertices.resize( 8 );
+		vertices[0].Position = { -size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f };
+		vertices[1].Position = { size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f };
+		vertices[2].Position = { size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f };
+		vertices[3].Position = { -size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f };
+		vertices[4].Position = { -size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f };
+		vertices[5].Position = { size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f };
+		vertices[6].Position = { size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f };
+		vertices[7].Position = { -size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f };
 
-		//	  // Right face
-		//	   0.5f, -0.5f, -0.5f,   1.0f,  0.0f,  0.0f,   // Bottom-left (normal pointing rightwards along x-axis)
-		//	   0.5f,  0.5f, -0.5f,   1.0f,  0.0f,  0.0f,   // Top-left
-		//	   0.5f, -0.5f,  0.5f,   1.0f,  0.0f,  0.0f,   // Bottom-right
-		//	   0.5f,  0.5f,  0.5f,   1.0f,  0.0f,  0.0f,   // Top-right
+		vertices[0].Normal = { -1.0f, -1.0f,  1.0f };
+		vertices[1].Normal = { 1.0f, -1.0f,  1.0f };
+		vertices[2].Normal = { 1.0f,  1.0f,  1.0f };
+		vertices[3].Normal = { -1.0f,  1.0f,  1.0f };
+		vertices[4].Normal = { -1.0f, -1.0f, -1.0f };
+		vertices[5].Normal = { 1.0f, -1.0f, -1.0f };
+		vertices[6].Normal = { 1.0f,  1.0f, -1.0f };
+		vertices[7].Normal = { -1.0f,  1.0f, -1.0f };
 
-		//	   // Top face
-		//	   -0.5f,  0.5f,  0.5f,   0.0f,  1.0f,  0.0f,   // Top-left (normal pointing upwards along y-axis)
-		//	   -0.5f,  0.5f, -0.5f,   0.0f,  1.0f,  0.0f,   // Top-right
-		//		0.5f,  0.5f,  0.5f,   0.0f,  1.0f,  0.0f,   // Bottom-left
-		//		0.5f,  0.5f, -0.5f,   0.0f,  1.0f,  0.0f,   // Bottom-right
+		std::vector<uint32_t> indices;
+		indices.resize( 12 * 3 );
+		indices[0] = 0; indices[1] = 1; indices[2] = 2;
+		indices[3] = 2; indices[4] = 3; indices[5] = 0;
+		indices[6] = 1; indices[7] = 5; indices[8] = 6;
+		indices[9] = 6; indices[10] = 2; indices[11] = 1;
+		indices[12] = 7; indices[13] = 6; indices[14] = 5;
+		indices[15] = 5; indices[16] = 4; indices[17] = 7;
+		indices[18] = 4; indices[19] = 0; indices[20] = 3;
+		indices[21] = 3; indices[22] = 7; indices[23] = 4;
+		indices[24] = 4; indices[25] = 5; indices[26] = 1;
+		indices[27] = 1; indices[28] = 0; indices[29] = 4;
+		indices[30] = 3; indices[31] = 2; indices[32] = 6;
+		indices[33] = 6; indices[34] = 7; indices[35] = 3;
 
-		//		// Bottom face
-		//		-0.5f, -0.5f,  0.5f,   0.0f, -1.0f,  0.0f,   // Bottom-left (normal pointing downwards along y-axis)
-		//		-0.5f, -0.5f, -0.5f,   0.0f, -1.0f,  0.0f,   // Bottom-right
-		//		 0.5f, -0.5f,  0.5f,   0.0f, -1.0f,  0.0f,   // Top-left
-		//		 0.5f, -0.5f, -0.5f,   0.0f, -1.0f,  0.0f    // Top-right
-		//};
+		SharedPtr<VertexBuffer> vbo = VertexBuffer::Create( &vertices.data()->Position.x, vertices.size() * sizeof(Vertex));
 
-		//uint32_t indices[] = {
-		//	// Front face
-		//	0, 1, 2,   1, 2, 3,
-		//	// Back face
-		//	4, 5, 6,   5, 6, 7,
-		//	// Left face
-		//	8, 9, 10,  9, 10, 11,
-		//	// Right face
-		//	12, 13, 14, 13, 14, 15,
-		//	// Top face
-		//	16, 17, 18, 17, 18, 19,
-		//	// Bottom face
-		//	20, 21, 22, 21, 22, 23
-		//};
+		BufferLayout layout =
+		{
+			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float3, "a_Normal" },
+			{ ShaderDataType::Float3, "a_Tangent" },
+			{ ShaderDataType::Float3, "a_Bitangent" },
+			{ ShaderDataType::Float2, "a_UV" },
+		};
 
-		//mesh->m_VBO = VertexBuffer::Create( vertices, sizeof( vertices ) );
+		vbo->SetLayout( layout );
+		vao->AddVertexBuffer( vbo );
 
-		//BufferLayout layout =
-		//{
-		//	{ ShaderDataType::Float3, "a_Position" },
-		//	{ ShaderDataType::Float3, "a_Normal" },
-		//};
+		SharedPtr<IndexBuffer> ibo = IndexBuffer::Create( indices.data(), indices.size() );
+		vao->SetIndexBuffer( ibo );
 
-		//mesh->m_VBO->SetLayout( layout );
-		//mesh->m_VAO->AddVertexBuffer( mesh->m_VBO );
-
-		//mesh->m_IBO = IndexBuffer::Create( indices, sizeof( indices ) / sizeof( uint32_t ) );
-		//mesh->m_VAO->SetIndexBuffer( mesh->m_IBO );
-
-		//return mesh;
+		return vao;
     }
 
 	AssetHandle MeshFactory::GetQuad()
 	{
 		static AssetHandle s_QuadHandle = 1u;
-		static bool s_QuadCreated = ( AssetManager::AddMemoryOnlyAsset( s_QuadHandle, SharedPtr<StaticMesh>( CreateQuad() ) ), true );
+		//static bool s_QuadCreated = ( AssetManager::AddMemoryOnlyAsset( s_QuadHandle, SharedPtr<StaticMesh>( CreateQuad() ) ), true );
 		return s_QuadHandle;
 	}
 
 	AssetHandle MeshFactory::GetCube()
 	{
 		static AssetHandle s_CubeHandle = 2u;
-		static bool s_CubeCreated = ( AssetManager::AddMemoryOnlyAsset( s_CubeHandle, SharedPtr<StaticMesh>( CreateCube() ) ), true );
+		//static bool s_CubeCreated = ( AssetManager::AddMemoryOnlyAsset( s_CubeHandle, SharedPtr<StaticMesh>( CreateCube() ) ), true );
 		return s_CubeHandle;
 	}
 }

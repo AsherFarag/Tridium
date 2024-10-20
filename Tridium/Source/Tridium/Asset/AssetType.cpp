@@ -24,6 +24,12 @@ namespace Tridium {
 			{ ".png", EAssetType::Texture },
 			{ ".tga", EAssetType::Texture },
 			{ ".jpeg", EAssetType::Texture },
+
+			// Cube Maps
+			{ ".hdr", EAssetType::CubeMap },
+
+			// Lua
+			{ ".lua", EAssetType::Lua },
 		};
 
 		if ( auto it = s_Extensions.find( Util::ToLowerCase( a_Extension ) ); it != s_Extensions.end() )

@@ -1,24 +1,24 @@
 AssetMetaData:
-  - Handle: 195043704299636925
-    AssetType: MeshSource
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/TrollApose_low.fbx
-    Name: TrollApose_low.fbx
   - Handle: 2710374286840682701
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/SoulSpear/soulspear_diffuse.tga
     Name: soulspear_diffuse
-  - Handle: 15697145363054614336
-    AssetType: Material
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Default.tmat
-    Name: TrollMaterial
-  - Handle: 2752145153444275711
-    AssetType: Mesh
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/SoulSpear/soulspear.obj.tmesh
-    Name: soulspear
+  - Handle: 195043704299636925
+    AssetType: MeshSource
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/TrollApose_low.fbx
+    Name: TrollApose_low.fbx
   - Handle: 1013522209545910320
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/SoulSpear/soulspear_normal.tga
     Name: soulspear_normal
+  - Handle: 2752145153444275711
+    AssetType: Mesh
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/SoulSpear/soulspear.obj.tmesh
+    Name: soulspear
+  - Handle: 15697145363054614336
+    AssetType: Material
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Default.tmat
+    Name: TrollMaterial
   - Handle: 5742226400149584207
     AssetType: MeshSource
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/SoulSpear/soulspear.obj
@@ -51,31 +51,43 @@ AssetMetaData:
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_AO.jpg
     Name: ""
+  - Handle: 12344971950102856376
+    AssetType: CubeMap
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/resting_place_2_4k.hdr
+    Name: RestingPlace_CubeMap
+  - Handle: 4568836145033297429
+    AssetType: CubeMap
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/metro_noord_4k.hdr
+    Name: ""
 AssetDependencies:
-  16235613660444837420:
-    []
+  2752145153444275711:
+    - 5742226400149584207
   15697145363054614336:
-    - 3478916749128622966
-    - 0
     - 33771987171409446
+    - 0
+    - 3478916749128622966
     - 16235613660444837420
     - 7224770696508785986
     - 4619301127283000839
-  2752145153444275711:
-    - 5742226400149584207
   15355942973043554998:
     - 2710374286840682701
     - 0
     - 1013522209545910320
-  33771987171409446:
-    []
   3478916749128622966:
+    []
+  33771987171409446:
     []
   7689658421196502889:
     - 195043704299636925
+  4568836145033297429:
+    []
   195043704299636925:
+    []
+  16235613660444837420:
     []
   7224770696508785986:
     []
   4619301127283000839:
+    []
+  12344971950102856376:
     []

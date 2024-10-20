@@ -5,42 +5,50 @@ namespace Tridium {
 
 	namespace Utils {
 
-		EDataFormat GLDataFormatToTridiumDataFormat( GLenum format )
+		ETextureFormat GLDataFormatToTridiumDataFormat( GLenum format )
 		{
 			switch ( format )
 			{
-			case GL_R: return EDataFormat::R8;
-			case GL_RG: return EDataFormat::RG8;
-			case GL_RGB: return EDataFormat::RGB8;
-			case GL_RGBA: return EDataFormat::RGBA8;
+			case GL_R: return ETextureFormat::R8;
+			case GL_RG: return ETextureFormat::RG8;
+			case GL_RGB: return ETextureFormat::RGB8;
+			case GL_RGBA: return ETextureFormat::RGBA8;
 			}
 
 			TE_CORE_ASSERT( false );
-			return EDataFormat::None;
+			return ETextureFormat::None;
 		}
 
-		GLenum TridiumDataFormatToGLInternalFormat( EDataFormat format )
+		GLenum TridiumDataFormatToGLInternalFormat( ETextureFormat format )
 		{
 			switch ( format )
 			{
-			case EDataFormat::R8: return GL_R8;
-			case EDataFormat::RG8: return GL_RG8;
-			case EDataFormat::RGB8: return GL_RGB8;
-			case EDataFormat::RGBA8: return GL_RGBA8;
+			case ETextureFormat::R8: return GL_R8;
+			case ETextureFormat::RG8: return GL_RG8;
+			case ETextureFormat::RGB8: return GL_RGB8;
+			case ETextureFormat::RGBA8: return GL_RGBA8;
+			case ETextureFormat::RGB32F: return GL_RGB32F;
+			case ETextureFormat::RGBA32F: return GL_RGBA32F;
+			case ETextureFormat::SRGB: return GL_SRGB;
+			case ETextureFormat::SRGBA: return GL_SRGB_ALPHA;
 			}
 
 			TE_CORE_ASSERT( false );
 			return 0;
 		}
 
-		GLenum TridiumDataFormatToGLDataFormat( EDataFormat format )
+		GLenum TridiumDataFormatToGLDataFormat( ETextureFormat format )
 		{
 			switch ( format )
 			{
-			case EDataFormat::R8: return GL_R;
-			case EDataFormat::RG8: return GL_RG;
-			case EDataFormat::RGB8: return GL_RGB;
-			case EDataFormat::RGBA8: return GL_RGBA;
+			case ETextureFormat::R8: return GL_R;
+			case ETextureFormat::RG8: return GL_RG;
+			case ETextureFormat::RGB8: return GL_RGB;
+			case ETextureFormat::RGBA8: return GL_RGBA;
+			case ETextureFormat::RGB32F: return GL_RGB;
+			case ETextureFormat::RGBA32F: return GL_RGBA;
+			case ETextureFormat::SRGB: return GL_RGB;
+			case ETextureFormat::SRGBA: return GL_RGBA;
 			}
 
 			TE_CORE_ASSERT( false );
@@ -49,11 +57,16 @@ namespace Tridium {
 
 	}
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Texture
+	//////////////////////////////////////////////////////////////////////////
+
 	OpenGLTexture::OpenGLTexture( const TextureSpecification& a_Specification, void* a_TextureData )
 		: m_Specification( a_Specification ), m_Width( m_Specification.Width ), m_Height( m_Specification.Height )
 	{
-		m_DataFormat = Utils::TridiumDataFormatToGLDataFormat( m_Specification.DataFormat );
-		m_InternalFormat = Utils::TridiumDataFormatToGLInternalFormat( m_Specification.DataFormat );
+		m_DataFormat = Utils::TridiumDataFormatToGLDataFormat( m_Specification.TextureFormat );
+		m_InternalFormat = Utils::TridiumDataFormatToGLInternalFormat( m_Specification.TextureFormat );
 
 		SetData( a_TextureData, m_Width * m_Height * (uint32_t)Utils::GLDataFormatToTridiumDataFormat( m_DataFormat ) );
 
@@ -84,6 +97,60 @@ namespace Tridium {
 		glBindTextureUnit( slot, m_RendererID );
 	}
 	void OpenGLTexture::Unbind( uint32_t slot ) const
+	{
+		glBindTextureUnit( slot, 0 );
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// CubeMap
+	//////////////////////////////////////////////////////////////////////////
+
+	OpenGLCubeMap::OpenGLCubeMap( const TextureSpecification& a_Specification, void** a_TextureData )
+		: m_Specification( a_Specification ), m_Width( m_Specification.Width ), m_Height( m_Specification.Height )
+	{
+		m_DataFormat = Utils::TridiumDataFormatToGLDataFormat( m_Specification.TextureFormat );
+		m_InternalFormat = Utils::TridiumDataFormatToGLInternalFormat( m_Specification.TextureFormat );
+
+		glGenTextures( 1, &m_RendererID );
+		glBindTexture( GL_TEXTURE_CUBE_MAP, m_RendererID );
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+
+		if ( a_TextureData )
+			SetData( a_TextureData, m_Width * m_Height * (uint32_t)Utils::GLDataFormatToTridiumDataFormat( m_DataFormat ) );
+	}
+
+	OpenGLCubeMap::~OpenGLCubeMap()
+	{
+		glDeleteTextures( 1, &m_RendererID );
+	}
+
+	void OpenGLCubeMap::SetData( void** a_Data, uint32_t a_Size )
+	{
+		auto type = m_InternalFormat == GL_RGBA32F ? GL_FLOAT : GL_UNSIGNED_BYTE;	
+		for ( uint32_t i = 0; i < 6; i++ )
+		{
+			glTexImage2D( 
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+				0,
+				m_InternalFormat,
+				m_Width, m_Height,
+				0,
+				m_DataFormat,
+				type,
+				a_Data[i]
+			);
+		}
+	}
+
+	void OpenGLCubeMap::Bind( uint32_t slot ) const
+	{
+		glBindTextureUnit( slot, m_RendererID );
+	}
+
+	void OpenGLCubeMap::Unbind( uint32_t slot ) const
 	{
 		glBindTextureUnit( slot, 0 );
 	}

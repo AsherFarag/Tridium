@@ -122,8 +122,8 @@ namespace Tridium {
 	class MeshFactory
 	{
 	public:
-		static StaticMesh* CreateQuad();
-		static StaticMesh* CreateCube();
+		static SharedPtr<VertexArray> CreateQuad();
+		static SharedPtr<VertexArray> CreateCube();
 
 		static AssetHandle GetQuad();
 		static AssetHandle GetCube();

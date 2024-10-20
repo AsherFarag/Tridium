@@ -220,7 +220,7 @@ namespace Tridium {
 		if ( auto aiEmbeddedTexture = aiScn->GetEmbeddedTexture( aiTexturePath.C_Str() ) )
 		{
 			TextureSpecification spec;
-			spec.DataFormat = EDataFormat::RGBA32F;
+			spec.TextureFormat = ETextureFormat::RGBA32F;
 			spec.Width = aiEmbeddedTexture->mWidth;
 			spec.Height = aiEmbeddedTexture->mHeight;
 			AssetManager::AddMemoryOnlyAsset( texHandle, SharedPtr<Texture>( Texture::Create( spec, aiEmbeddedTexture->pcData ) ) );

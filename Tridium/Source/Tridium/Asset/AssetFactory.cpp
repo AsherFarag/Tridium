@@ -17,6 +17,7 @@ namespace Tridium {
 	void AssetFactory::Init()
 	{
 		s_AssetFactories[EAssetType::Texture] = MakeShared<TextureLoader>();
+		s_AssetFactories[EAssetType::CubeMap] = MakeShared<CubeMapLoader>();
 		s_AssetFactories[EAssetType::Shader] = MakeShared<ShaderLoader>();
 		s_AssetFactories[EAssetType::Material] = MakeShared<MaterialLoader>();
 		s_AssetFactories[EAssetType::MeshSource] = MakeShared<MeshSourceLoader>();

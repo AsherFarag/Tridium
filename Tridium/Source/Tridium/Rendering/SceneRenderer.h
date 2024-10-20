@@ -50,9 +50,14 @@ namespace Tridium {
 		SharedPtr<Scene> m_Scene;
 		SharedPtr<Shader> m_DefaultShader;
 		SharedPtr<Material> m_DefaultMaterial;
+		SharedPtr<Shader> m_SkyboxShader;
+		SharedPtr<VertexArray> m_SkyboxVAO;
+		RenderEnvironment& m_RenderEnvironment;
 
 		// Per frame data
 		Vector3 m_CameraPosition;
+		Matrix4 m_ViewMatrix;
+		Matrix4 m_ProjectionMatrix;
 		Matrix4 m_ViewProjectionMatrix;
 		std::vector<DrawCall> m_DrawCalls;
 		PointLight m_PointLights[MAX_POINT_LIGHTS];

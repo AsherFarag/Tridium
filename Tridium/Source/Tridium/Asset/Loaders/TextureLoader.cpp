@@ -1,8 +1,9 @@
 #include "tripch.h"
 #include "TextureLoader.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+//#define STB_IMAGE_IMPLEMENTATION
+//#include <stb_image.h>
+#include "HdriToCubemap.hpp"
 
 namespace Tridium {
 
@@ -23,7 +24,7 @@ namespace Tridium {
 
         specification.Width = static_cast<uint32_t>( width );
         specification.Height = static_cast<uint32_t>( height );
-        specification.DataFormat = static_cast<EDataFormat>( channels );
+        specification.TextureFormat = static_cast<ETextureFormat>( channels );
 
         Texture* tex = Texture::Create( specification );
         tex->SetData( data, width * height * channels );
@@ -32,5 +33,45 @@ namespace Tridium {
 
         return SharedPtr<Asset>( tex );
 	}
+
+    void CubeMapLoader::SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
+    {
+    }
+
+    SharedPtr<Asset> CubeMapLoader::LoadAsset( const AssetMetaData& a_MetaData )
+    {
+		const int size = 1024;
+
+		if ( false /*stbi_is_hdr( a_MetaData.Path.ToString().c_str() )*/ )
+		{
+            HdriToCubemap<float> cubemap( a_MetaData.Path.ToString().c_str(), size, true );
+            TextureSpecification specification;
+            specification.Width = size;
+            specification.Height = size;
+            specification.TextureFormat = ETextureFormat::RGB32F;
+
+            std::array<float*, 6> faces{ cubemap.getRight(), cubemap.getLeft(), cubemap.getDown(), cubemap.getUp(), cubemap.getFront(), cubemap.getBack() };
+
+            SharedPtr<CubeMap> tex( CubeMap::Create( specification ) );
+            tex->SetData( (void**)faces.data(), size * size * 4 * 6 );
+
+            return tex;
+		}
+        else
+        {
+            HdriToCubemap<unsigned char> cubemap( a_MetaData.Path.ToString().c_str(), size, true );
+            TextureSpecification specification;
+            specification.Width = size;
+            specification.Height = size;
+            specification.TextureFormat = ETextureFormat::RGB8;
+
+            std::array<unsigned char*, 6> faces{ cubemap.getRight(), cubemap.getLeft(), cubemap.getDown(), cubemap.getUp(), cubemap.getFront(), cubemap.getBack() };
+
+            SharedPtr<CubeMap> tex( CubeMap::Create( specification ) );
+            tex->SetData( (void**)faces.data(), size * size * 4 * 6 );
+
+            return tex;
+        }
+    }
 
 }

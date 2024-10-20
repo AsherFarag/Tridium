@@ -100,6 +100,28 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0)
 	return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
+vec3 FakeSSS( in vec3 SubColour, in PointLight light )
+{
+	vec3 PDiff = v_WorldPos - u_CameraPosition;
+	vec3 LDiff = light.Position - u_CameraPosition;
+	float PDiffLen = length( PDiff );
+	float LDiffLen = length( LDiff );
+	vec3 P = PDiff / PDiffLen;
+	vec3 L = LDiff / LDiffLen;
+	vec3 Colour = light.Color * light.Intensity * SubColour;
+
+	vec3 Normal = normalize( v_TBN[2] );
+	float Fresnel = pow( 1.0 - dot( -P, Normal ), 0.5 );
+
+			float distance = length(light.Position - v_WorldPos);
+		float attenuation = 1.0 / ( distance * distance);
+
+	float Behind = ( LDiffLen > PDiffLen ? 1.0 : 0.0 ) * pow( max( dot( P, L ), 0.0 ), 80.0 ) * Fresnel;
+	float Nearby = attenuation * 0.1;
+
+	return max( Behind * 0.3, Nearby ) * Colour;
+}
+
 void main()
 {
 	vec3 albedo = texture(u_AlbedoTexture, v_UV).rgb;
@@ -148,6 +170,8 @@ void main()
 		// add to Lo
 		float NdotL = max(dot(normal, L), 0.0);
 		Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+
+		//Lo += albedo * FakeSSS( vec3( 0.2, 0.8, 0.4 ), pointLight );
 	}
 
 	vec3 ambient = vec3(0.1) * albedo * ao;

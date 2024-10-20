@@ -138,6 +138,12 @@ namespace Tridium {
 			GLint maxLength = 0;
 			glGetProgramiv( program, GL_INFO_LOG_LENGTH, &maxLength );
 
+			if ( maxLength == 0 )
+			{
+				TE_CORE_ASSERT( false );
+				return;
+			}
+
 			std::vector<GLchar> infoLog;
 			infoLog.resize( maxLength );
 			glGetProgramInfoLog( program, maxLength, &maxLength, &infoLog[ 0 ] );

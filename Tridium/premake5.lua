@@ -17,7 +17,8 @@ project "Tridium"
 		"Dependencies/glm/glm/**.inl",
 		"Dependencies/glm/glm/**.hpp",
 		"Dependencies/ImGuizmo/ImGuizmo.h",
-		"Dependencies/ImGuizmo/ImGuizmo.cpp"
+		"Dependencies/ImGuizmo/ImGuizmo.cpp",
+		"Dependencies/HdriToCubemap/HdriToCubemap.hpp"
 	}
 
 	includedirs
@@ -35,7 +36,8 @@ project "Tridium"
 		"%{IncludeDir.stbi}",
 		"%{IncludeDir.yaml}/include",
 		"%{IncludeDir.assimp}/include",
-		"%{IncludeDir.refl}"
+		"%{IncludeDir.refl}",
+		"Dependencies/HdriToCubemap"
 	}
 
 	libdirs

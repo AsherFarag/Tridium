@@ -10,13 +10,13 @@ namespace Tridium {
     enum class EAssetType : Byte
     {
         None = 0,
-		// Tridium 
-		StaticMesh, Scene, Material,
-
-		// Rendering
-		MeshSource, Shader, Texture, 
-
-        // Scripting
+		Scene,
+		Material,
+		MeshSource,
+		StaticMesh,
+		Shader,
+		Texture,
+		CubeMap,
         Lua,
     };
 
@@ -24,12 +24,13 @@ namespace Tridium {
 	{
 		switch ( a_Type )
 		{
-		case EAssetType::StaticMesh: return "Mesh";
 		case EAssetType::Scene: return "Scene";
 		case EAssetType::Material: return "Material";
 		case EAssetType::MeshSource: return "MeshSource";
+		case EAssetType::StaticMesh: return "Mesh";
 		case EAssetType::Shader: return "Shader";
 		case EAssetType::Texture: return "Texture";
+		case EAssetType::CubeMap: return "CubeMap";
 		case EAssetType::Lua: return "Lua";
 		}
 
@@ -38,13 +39,14 @@ namespace Tridium {
 
 	static EAssetType AssetTypeFromString( const char* a_Type )
 	{
-		if ( strcmp( a_Type, "Mesh" ) == 0 ) return EAssetType::StaticMesh;
+		if ( strcmp( a_Type, "Scene" ) == 0 ) return EAssetType::Scene;
+		if ( strcmp( a_Type, "Material" ) == 0 ) return EAssetType::Material;
 		if ( strcmp( a_Type, "MeshSource" ) == 0 ) return EAssetType::MeshSource;
+		if ( strcmp( a_Type, "Mesh" ) == 0 ) return EAssetType::StaticMesh;
 		if ( strcmp( a_Type, "Shader" ) == 0 ) return EAssetType::Shader;
 		if ( strcmp( a_Type, "Texture" ) == 0 ) return EAssetType::Texture;
-		if ( strcmp( a_Type, "Material" ) == 0 ) return EAssetType::Material;
+		if ( strcmp( a_Type, "CubeMap" ) == 0 ) return EAssetType::CubeMap;
 		if ( strcmp( a_Type, "Lua" ) == 0 ) return EAssetType::Lua;
-		if ( strcmp( a_Type, "Scene" ) == 0 ) return EAssetType::Scene;
 
 		return EAssetType::None;
 	}

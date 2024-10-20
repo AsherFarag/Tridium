@@ -17,11 +17,80 @@ namespace Tridium {
 	float s_LightIntensity = 1.0f;
 
 	SceneRenderer::SceneRenderer( const SharedPtr<Scene>& a_Scene )
-		: m_Scene( a_Scene )
+		: m_Scene( a_Scene ), m_RenderEnvironment( a_Scene->GetRenderEnvironment() )
 	{
+		TODO( "Use the asset manager instead." );
 		m_DefaultShader.reset( Shader::Create() );
 		m_DefaultShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Default.glsl" );
+		m_SkyboxShader.reset( Shader::Create() );
+		m_SkyboxShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/SkyBox.glsl" );
 		m_DefaultMaterial = MakeShared<Material>( );
+
+		{
+			float skyboxVertices[] = {
+				// positions          
+				-1.0f,  1.0f, -1.0f,
+				-1.0f, -1.0f, -1.0f,
+				 1.0f, -1.0f, -1.0f,
+				 1.0f, -1.0f, -1.0f,
+				 1.0f,  1.0f, -1.0f,
+				-1.0f,  1.0f, -1.0f,
+
+				-1.0f, -1.0f,  1.0f,
+				-1.0f, -1.0f, -1.0f,
+				-1.0f,  1.0f, -1.0f,
+				-1.0f,  1.0f, -1.0f,
+				-1.0f,  1.0f,  1.0f,
+				-1.0f, -1.0f,  1.0f,
+
+				 1.0f, -1.0f, -1.0f,
+				 1.0f, -1.0f,  1.0f,
+				 1.0f,  1.0f,  1.0f,
+				 1.0f,  1.0f,  1.0f,
+				 1.0f,  1.0f, -1.0f,
+				 1.0f, -1.0f, -1.0f,
+
+				-1.0f, -1.0f,  1.0f,
+				-1.0f,  1.0f,  1.0f,
+				 1.0f,  1.0f,  1.0f,
+				 1.0f,  1.0f,  1.0f,
+				 1.0f, -1.0f,  1.0f,
+				-1.0f, -1.0f,  1.0f,
+
+				-1.0f,  1.0f, -1.0f,
+				 1.0f,  1.0f, -1.0f,
+				 1.0f,  1.0f,  1.0f,
+				 1.0f,  1.0f,  1.0f,
+				-1.0f,  1.0f,  1.0f,
+				-1.0f,  1.0f, -1.0f,
+
+				-1.0f, -1.0f, -1.0f,
+				-1.0f, -1.0f,  1.0f,
+				 1.0f, -1.0f, -1.0f,
+				 1.0f, -1.0f, -1.0f,
+				-1.0f, -1.0f,  1.0f,
+				 1.0f, -1.0f,  1.0f
+			};
+
+			uint32_t indicies[] = {
+				0, 1, 2, 3, 4, 5,
+				6, 7, 8, 9, 10, 11,
+				12, 13, 14, 15, 16, 17,
+				18, 19, 20, 21, 22, 23,
+				24, 25, 26, 27, 28, 29,
+				30, 31, 32, 33, 34, 35
+			};
+
+			m_SkyboxVAO = VertexArray::Create();
+			SharedPtr<VertexBuffer> vbo = VertexBuffer::Create( skyboxVertices, sizeof( skyboxVertices ) );
+			BufferLayout layout = {
+				{ ShaderDataType::Float3, "a_Position" }
+			};
+			vbo->SetLayout( layout );
+
+			m_SkyboxVAO->AddVertexBuffer( vbo );
+			m_SkyboxVAO->SetIndexBuffer( IndexBuffer::Create( indicies, sizeof( indicies ) / sizeof( uint32_t ) ) );
+		}
 	}
 
 	void SceneRenderer::Render( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition )
@@ -83,14 +152,41 @@ namespace Tridium {
 			);
 		}
 		
-		m_ViewProjectionMatrix = a_Camera.GetProjection() * a_View;
+		// - Update View Projection Matrix -
+		m_ViewMatrix = a_View;
+		m_ProjectionMatrix = a_Camera.GetProjection();
+		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 
 		// - Perform Mesh Draw Calls -
 		{
+			RenderCommand::SetDepthCompare( EDepthCompareOperator::Less );
 			for ( const auto& drawCall : m_DrawCalls )
 			{
 				PerformDrawCall( drawCall );
 			}
+		}
+
+		// - Draw Skybox -
+		if ( auto environmentMap = AssetManager::GetAsset<CubeMap>( m_RenderEnvironment.EnvironmentMap ) )
+		{
+			//RenderCommand::SetCullMode( false );	
+			RenderCommand::SetDepthCompare( EDepthCompareOperator::LessOrEqual );
+			m_SkyboxShader->Bind();
+			{
+				Matrix4 skyboxView = Matrix4( Matrix3( m_ViewMatrix ) ); // Remove translation
+				m_SkyboxShader->SetMatrix4( "u_Projection", m_ProjectionMatrix  );
+				m_SkyboxShader->SetMatrix4( "u_View", skyboxView );
+
+				environmentMap->Bind();
+
+				m_SkyboxVAO->Bind();
+				RenderCommand::DrawIndexed( m_SkyboxVAO );
+				m_SkyboxVAO->Unbind();
+
+				environmentMap->Unbind();
+			}
+			m_SkyboxShader->Unbind();
+
 		}
 
 		EndScene();

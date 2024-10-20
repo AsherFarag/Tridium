@@ -8,6 +8,11 @@ namespace Tridium {
 	class Camera;
 	class CameraComponent;
 
+	struct RenderEnvironment
+	{
+		AssetHandle EnvironmentMap;
+	};
+
 	class Scene : public Asset
 	{
 		friend class GameObject;
@@ -34,11 +39,13 @@ namespace Tridium {
 		void SetMainCamera( const EntityID& a_Camera ) { m_MainCamera = a_Camera; }
 		void Clear();
 
+		RenderEnvironment& GetRenderEnvironment() { return m_RenderEnvironment; }
+
 	private:
 		std::string m_Name;
 		entt::registry m_Registry;
+		RenderEnvironment m_RenderEnvironment;
 		bool m_Paused = false;
-
 		EntityID m_MainCamera;
 
 		friend class SceneRenderer;
