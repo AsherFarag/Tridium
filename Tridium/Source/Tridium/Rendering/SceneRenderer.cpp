@@ -19,86 +19,33 @@ namespace Tridium {
 	SceneRenderer::SceneRenderer( const SharedPtr<Scene>& a_Scene )
 		: m_Scene( a_Scene )
 	{
-		const std::string vert = R"(
-					#version 410 core
-					layout(location = 0) in vec3 a_Position;
-					layout(location = 1) in vec3 a_Normal;
-					layout(location = 2) in vec3 a_Tangent;
-					layout(location = 3) in vec3 a_Bitangent;
-					layout(location = 4) in vec2 a_UV;
-
-
-					uniform mat4 u_PVM;
-					uniform mat4 u_Model;
-					
-					out vec3 v_Normal;
-					out vec3 v_Tangent;
-					out vec3 v_Bitangent;
-					out vec2 v_UV;
-
-					void main()
-					{
-						mat3 normalMatrix = mat3(transpose(inverse(u_Model)));
-						v_Normal = normalMatrix * a_Normal;
-						v_Tangent = normalMatrix * a_Tangent;
-						v_Bitangent = normalMatrix * a_Bitangent;
-						v_UV = a_UV;
-						gl_Position = u_PVM * vec4(a_Position, 1.0);
-					}
-				)";
-
-		const std::string frag = R"(
-				    #version 410 core
-				    layout(location = 0) out vec4 o_Color;
-				
-				    in vec3 v_Normal;
-				    in vec3 v_Tangent;
-				    in vec3 v_Bitangent;
-				    in vec2 v_UV;
-					
-					uniform sampler2D u_AlbedoTexture;
-					uniform sampler2D u_MetallicTexture;
-					uniform sampler2D u_RoughnessTexture;
-					uniform sampler2D u_SpecularTexture;
-					uniform sampler2D u_NormalTexture;
-					uniform sampler2D u_OpacityTexture;
-					uniform sampler2D u_EmissiveTexture;
-					uniform sampler2D u_AOTexture;
-
-					uniform vec3 u_AmbientColor;
-					uniform vec3 u_SunDirection;
-					uniform vec3 u_SunColor;
-					uniform float u_SunIntensity;
-
-				    void main()
-				    {
-						vec3 T = normalize(v_Tangent);
-						vec3 N = normalize(v_Normal);
-						vec3 B = normalize(v_Bitangent);
-						mat3 TBN = mat3(T, B, N);
-
-
-						vec3 normal = texture(u_NormalTexture, v_UV).xyz * 2.0 - 1.0;
-						normal = normalize(TBN * normal);
-
-						vec3 lightDir = normalize(u_SunDirection);
-						float diff = max(dot(normal, lightDir), 0.0);
-						vec3 diffuse = diff * u_SunColor * u_SunIntensity;
-						vec3 albedo = texture(u_AlbedoTexture, v_UV).xyz;
-						vec3 ambient = u_AmbientColor * albedo;
-
-						o_Color = vec4(albedo * diffuse + ambient, 1.0);
-				    }
-				)";
-
-		m_DefaultShader.reset( Shader::Create( vert, frag ) );
+		m_DefaultShader.reset( Shader::Create() );
+		m_DefaultShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Default.glsl" );
 		m_DefaultMaterial = MakeShared<Material>( );
 	}
 
-	void SceneRenderer::Render( const Camera& a_Camera, const Matrix4& a_View )
+	void SceneRenderer::Render( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition )
 	{
 		Flush();
-		BeginScene( a_Camera, a_View );
+		BeginScene( a_Camera, a_View, a_CameraPosition );
+
+		// - Submit Point Lights -
+		{
+			auto pointLightComponents = m_Scene->m_Registry.view<PointLightComponent, TransformComponent>();
+			uint32_t lightIndex = 0;
+			pointLightComponents.each( 
+				[&]( auto go, PointLightComponent& lightComponent, TransformComponent& transform )
+				{
+					if ( lightIndex >= MAX_POINT_LIGHTS )
+						return;
+
+					m_PointLights[lightIndex].Position = transform.Position;
+					m_PointLights[lightIndex].Color = lightComponent.Color;
+					m_PointLights[lightIndex].Intensity = lightComponent.Intensity;
+					lightIndex++;
+				}
+			);
+		}
 
 		// - Submit Draw Calls -
 		{
@@ -138,7 +85,7 @@ namespace Tridium {
 		
 		m_ViewProjectionMatrix = a_Camera.GetProjection() * a_View;
 
-		// - Perform Draw Calls -
+		// - Perform Mesh Draw Calls -
 		{
 			for ( const auto& drawCall : m_DrawCalls )
 			{
@@ -149,10 +96,12 @@ namespace Tridium {
 		EndScene();
 	}
 
-	void SceneRenderer::BeginScene( const Camera& a_Camera, const Matrix4& a_View )
+	void SceneRenderer::BeginScene( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition )
 	{
 		RenderCommand::SetClearColor( { 0.1, 0.1, 0.12, 1.0 } );
 		RenderCommand::Clear();
+
+		m_CameraPosition = a_CameraPosition;
 	}
 
 	void SceneRenderer::EndScene()
@@ -162,6 +111,10 @@ namespace Tridium {
 	void SceneRenderer::Flush()
 	{
 		m_DrawCalls.clear();
+		for ( auto& pointLight : m_PointLights )
+		{
+			pointLight = {};
+		}
 	}
 
 	void SceneRenderer::SubmitDrawCall( const DrawCall& a_DrawCall )
@@ -179,15 +132,21 @@ namespace Tridium {
 		if ( !shader )
 			shader = m_DefaultShader;
 
-		shader->Bind();
-		shader->SetMatrix4( "u_PVM", m_ViewProjectionMatrix * a_DrawCall.Transform );
-		shader->SetMatrix4( "u_Model", a_DrawCall.Transform );
-
 		// Bind Uniforms
-		shader->SetFloat3( "u_AmbientColor", s_AmbientColor );
-		shader->SetFloat3( "u_SunDirection", s_LightDirection );
-		shader->SetFloat3( "u_SunColor", s_LightColor );
-		shader->SetFloat( "u_SunIntensity", s_LightIntensity );
+		{
+			shader->Bind();
+			shader->SetMatrix4( "u_PVM", m_ViewProjectionMatrix * a_DrawCall.Transform );
+			shader->SetMatrix4( "u_Model", a_DrawCall.Transform );
+			shader->SetFloat3( "u_CameraPosition", m_CameraPosition );
+			// Bind Point Lights
+			for ( uint32_t i = 0; i < MAX_POINT_LIGHTS; i++ )
+			{
+				std::string index = std::to_string( i );
+				shader->SetFloat3( ( "u_PointLights[" + index + "].Position" ).c_str(), m_PointLights[i].Position );
+				shader->SetFloat3( ( "u_PointLights[" + index + "].Color" ).c_str(), m_PointLights[i].Color );
+				shader->SetFloat( ( "u_PointLights[" + index + "].Intensity" ).c_str(), m_PointLights[i].Intensity );
+			}
+		}
 
 		// Bind Textures
 		{
@@ -199,44 +158,44 @@ namespace Tridium {
 
 			if ( auto metallicTexture = AssetManager::GetAsset<Texture>( material->MetallicTexture ) )
 			{
-				metallicTexture->Bind( 2 );
-				shader->SetInt( "u_MetallicTexture", 2 );
+				metallicTexture->Bind( 1 );
+				shader->SetInt( "u_MetallicTexture", 1 );
 			}
 
 			if ( auto roughnessTexture = AssetManager::GetAsset<Texture>( material->RoughnessTexture ) )
 			{
-				roughnessTexture->Bind( 3 );
-				shader->SetInt( "u_RoughnessTexture", 3 );
+				roughnessTexture->Bind( 2 );
+				shader->SetInt( "u_RoughnessTexture", 2 );
 			}
 
 			if ( auto specularTexture = AssetManager::GetAsset<Texture>( material->SpecularTexture ) )
 			{
-				specularTexture->Bind( 4 );
-				shader->SetInt( "u_SpecularTexture", 4 );
+				specularTexture->Bind( 3 );
+				shader->SetInt( "u_SpecularTexture", 3 );
 			}
 
 			if ( auto normalTexture = AssetManager::GetAsset<Texture>( material->NormalTexture ) )
 			{
-				normalTexture->Bind( 5 );
-				shader->SetInt( "u_NormalTexture", 5 );
+				normalTexture->Bind( 4 );
+				shader->SetInt( "u_NormalTexture", 4 );
 			}
 
 			if ( auto opacityTexture = AssetManager::GetAsset<Texture>( material->OpacityTexture ) )
 			{
-				opacityTexture->Bind( 6 );
-				shader->SetInt( "u_OpacityTexture", 6 );
+				opacityTexture->Bind( 5 );
+				shader->SetInt( "u_OpacityTexture", 5 );
 			}
 
 			if ( auto emissiveTexture = AssetManager::GetAsset<Texture>( material->EmissiveTexture ) )
 			{
-				emissiveTexture->Bind( 7 );
-				shader->SetInt( "u_EmissiveTexture", 7 );
+				emissiveTexture->Bind( 6 );
+				shader->SetInt( "u_EmissiveTexture", 6 );
 			}
 
 			if ( auto aoTexture = AssetManager::GetAsset<Texture>( material->AOTexture ) )
 			{
-				aoTexture->Bind( 8 );
-				shader->SetInt( "u_AOTexture", 8 );
+				aoTexture->Bind( 7 );
+				shader->SetInt( "u_AOTexture", 7 );
 			}
 		}
 

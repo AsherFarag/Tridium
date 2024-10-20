@@ -10,7 +10,7 @@ AssetMetaData:
   - Handle: 15697145363054614336
     AssetType: Material
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Default.tmat
-    Name: Default
+    Name: TrollMaterial
   - Handle: 2752145153444275711
     AssetType: Mesh
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/SoulSpear/soulspear.obj.tmesh
@@ -39,11 +39,28 @@ AssetMetaData:
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_Normals.jpg
     Name: ""
+  - Handle: 16235613660444837420
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_Roughness2.jpg
+    Name: ""
+  - Handle: 7224770696508785986
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_Emissive.jpg
+    Name: ""
+  - Handle: 4619301127283000839
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_AO.jpg
+    Name: ""
 AssetDependencies:
+  16235613660444837420:
+    []
   15697145363054614336:
     - 3478916749128622966
     - 0
     - 33771987171409446
+    - 16235613660444837420
+    - 7224770696508785986
+    - 4619301127283000839
   2752145153444275711:
     - 5742226400149584207
   15355942973043554998:
@@ -57,4 +74,8 @@ AssetDependencies:
   7689658421196502889:
     - 195043704299636925
   195043704299636925:
+    []
+  7224770696508785986:
+    []
+  4619301127283000839:
     []

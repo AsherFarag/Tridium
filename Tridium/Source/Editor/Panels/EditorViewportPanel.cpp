@@ -138,7 +138,7 @@ namespace Tridium::Editor {
 
 			m_FBO->Bind();
 			auto sceneRenderer = SceneRenderer( GetEditorLayer()->GetActiveScene() );
-			sceneRenderer.Render( *m_EditorCamera, m_EditorCamera->GetViewMatrix() );
+			sceneRenderer.Render( *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position );
 			m_FBO->Unbind();
 
 			// Draw the Editor Camera ViewPort

@@ -5,6 +5,7 @@
 #include <Tridium/ECS/Components/Types/Rendering/CameraComponent.h>
 #include <Editor/Editor.h>
 #include <Tridium/Rendering/SceneRenderer.h>
+#include <Tridium/ECS/Components/Types.h>
 
 namespace Tridium::Editor {
 
@@ -45,7 +46,7 @@ namespace Tridium::Editor {
 			{
 				m_FBO->Bind();
 				auto sceneRenderer = SceneRenderer( GetEditorLayer()->GetActiveScene() );
-				sceneRenderer.Render( sceneCamera, camera->GetView() );
+				sceneRenderer.Render( sceneCamera, camera->GetView(), m_Camera.GetTransform().Position );
 				m_FBO->Unbind();
 			}
 

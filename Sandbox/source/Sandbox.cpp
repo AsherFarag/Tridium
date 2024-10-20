@@ -44,6 +44,15 @@ using namespace Tridium;
 
 class TestLayer : public Layer
 {
+	virtual void OnUpdate() override
+	{
+		Time += Time::DeltaTime();
+		if ( EnableRotatingLight )
+		{
+			s_LightDirection.x = glm::sin( Time );
+		}
+	}
+
 	virtual void OnImGuiDraw() override
 	{
 		if ( ImGui::Begin( "Light Settings" ) )
@@ -52,11 +61,13 @@ class TestLayer : public Layer
 			ImGui::SliderFloat3( "Light Direction", &s_LightDirection.x, -1.0f, 1.0f );
 			ImGui::ColorEdit3( "Light Color", &s_LightColor.x );
 			ImGui::DragFloat( "Light Intensity", &s_LightIntensity );
+			ImGui::Checkbox( "Enable Rotating Light", &EnableRotatingLight );
 		}
 
 		ImGui::End();
 	}
-
+	float Time = 0.0f;
+	bool EnableRotatingLight = false;
 	std::string FilePath{ "Content/troll/TrollApose_low.fbx" };
 };
 

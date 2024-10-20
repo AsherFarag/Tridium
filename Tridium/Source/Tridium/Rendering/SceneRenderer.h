@@ -21,15 +21,24 @@ namespace Tridium {
 		Matrix4 Transform;
 	};
 
+	constexpr uint32_t MAX_POINT_LIGHTS = 4;
+
+	struct PointLight
+	{
+		Vector3 Position;
+		Vector3 Color;
+		float Intensity;
+	};
+
 	class SceneRenderer
 	{
 	public:
 		SceneRenderer( const SharedPtr<Scene>& a_Scene );
 
-		void Render( const Camera& a_Camera, const Matrix4& a_View );
+		void Render( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition );
 
 	protected:
-		void BeginScene( const Camera& a_Camera, const Matrix4& a_View );
+		void BeginScene( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition );
 		void EndScene();
 
 		void Flush();
@@ -39,12 +48,14 @@ namespace Tridium {
 
 	private:
 		SharedPtr<Scene> m_Scene;
-		std::vector<DrawCall> m_DrawCalls;
-		Matrix4 m_ViewProjectionMatrix;
-
-		// TEMP ?
 		SharedPtr<Shader> m_DefaultShader;
 		SharedPtr<Material> m_DefaultMaterial;
+
+		// Per frame data
+		Vector3 m_CameraPosition;
+		Matrix4 m_ViewProjectionMatrix;
+		std::vector<DrawCall> m_DrawCalls;
+		PointLight m_PointLights[MAX_POINT_LIGHTS];
 	};
 
 }
