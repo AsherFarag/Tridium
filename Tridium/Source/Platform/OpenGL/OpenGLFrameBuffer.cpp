@@ -9,6 +9,50 @@ namespace Tridium {
 
 	namespace Utils {
 
+		static auto GLTypeFromFramebufferTextureFormat( EFramebufferTextureFormat format )
+		{
+			switch ( format )
+			{
+			case EFramebufferTextureFormat::RGBA8:       return GL_UNSIGNED_BYTE;
+			case EFramebufferTextureFormat::RGBA16F:     return GL_FLOAT;
+			case EFramebufferTextureFormat::RGB32F:      return GL_FLOAT;
+			case EFramebufferTextureFormat::RGBA32F:     return GL_FLOAT;
+			case EFramebufferTextureFormat::RED_INT:     return GL_INT;
+			}
+
+			TE_CORE_ASSERT( false, "Unknown FramebufferTextureFormat!" );
+			return 0;
+		}
+
+		static EFramebufferTextureFormat GLToTridiumFBTextureFormat( GLenum format )
+		{
+			switch ( format )
+			{
+			case GL_RGBA8:       return EFramebufferTextureFormat::RGBA8;
+			case GL_RGBA16F:     return EFramebufferTextureFormat::RGBA16F;
+			case GL_RGB32F:      return EFramebufferTextureFormat::RGB32F;
+			case GL_RGBA32F:     return EFramebufferTextureFormat::RGBA32F;
+			case GL_R32I: return EFramebufferTextureFormat::RED_INT;
+			}
+
+			return EFramebufferTextureFormat::None;
+		}
+
+
+		static GLenum TridiumFBTextureFormatToGL( EFramebufferTextureFormat format )
+		{
+			switch ( format )
+			{
+			case EFramebufferTextureFormat::RGBA8:       return GL_RGBA8;
+			case EFramebufferTextureFormat::RGBA16F:     return GL_RGBA16F;
+			case EFramebufferTextureFormat::RGB32F:      return GL_RGB32F;
+			case EFramebufferTextureFormat::RGBA32F:     return GL_RGBA32F;
+			case EFramebufferTextureFormat::RED_INT:	 return GL_R32I;
+			}
+
+			return 0;
+		}
+
 		static GLenum TextureTarget( bool multisampled )
 		{
 			return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
@@ -33,7 +77,8 @@ namespace Tridium {
 			}
 			else
 			{
-				glTexImage2D( GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, nullptr );
+				int type = GLTypeFromFramebufferTextureFormat( GLToTridiumFBTextureFormat( internalFormat ) );
+				glTexImage2D( GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, nullptr );
 
 				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
@@ -70,26 +115,16 @@ namespace Tridium {
 		{
 			switch ( format )
 			{
-			case EFramebufferTextureFormat::DEPTH24STENCIL8:  return true;
+				case EFramebufferTextureFormat::DEPTH24STENCIL8:  return true;
 			}
 
 			return false;
 		}
 
-		static GLenum TridiumFBTextureFormatToGL( EFramebufferTextureFormat format )
-		{
-			switch ( format )
-			{
-			case EFramebufferTextureFormat::RGBA8:       return GL_RGBA8;
-			case EFramebufferTextureFormat::RED_INT: return GL_RED_INTEGER;
-			}
-
-			return 0;
-		}
-
 	}
 
-	OpenGLFramebuffer::OpenGLFramebuffer( const FramebufferSpecification& spec ) : m_Specification( spec )
+	OpenGLFramebuffer::OpenGLFramebuffer( const FramebufferSpecification& spec ) 
+		: m_Specification( spec )
 	{
 		for ( auto spec : m_Specification.Attachments.Attachments )
 		{
@@ -139,6 +174,15 @@ namespace Tridium {
 				{
 				case EFramebufferTextureFormat::RGBA8:
 					Utils::AttachColorTexture( m_ColorAttachments[ i ], m_Specification.Samples, GL_RGBA8, GL_RGBA, m_Specification.Width, m_Specification.Height, i );
+					break;
+				case EFramebufferTextureFormat::RGBA16F:
+					Utils::AttachColorTexture( m_ColorAttachments[i], m_Specification.Samples, GL_RGBA16F, GL_RGBA, m_Specification.Width, m_Specification.Height, i );
+					break;
+				case EFramebufferTextureFormat::RGB32F:
+					Utils::AttachColorTexture( m_ColorAttachments[i], m_Specification.Samples, GL_RGB32F, GL_RGB, m_Specification.Width, m_Specification.Height, i );
+					break;
+				case EFramebufferTextureFormat::RGBA32F:
+					Utils::AttachColorTexture( m_ColorAttachments[i], m_Specification.Samples, GL_RGBA32F, GL_RGBA, m_Specification.Width, m_Specification.Height, i );
 					break;
 				case EFramebufferTextureFormat::RED_INT:
 					Utils::AttachColorTexture( m_ColorAttachments[ i ], m_Specification.Samples, GL_R32I, GL_RED_INTEGER, m_Specification.Width, m_Specification.Height, i );

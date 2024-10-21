@@ -24,7 +24,24 @@ namespace Tridium {
 
         specification.Width = static_cast<uint32_t>( width );
         specification.Height = static_cast<uint32_t>( height );
-        specification.TextureFormat = static_cast<ETextureFormat>( channels );
+        switch ( channels )
+        {
+		case 1:
+			specification.TextureFormat = ETextureFormat::R8;
+			break;
+		case 2:
+			specification.TextureFormat = ETextureFormat::RG8;
+			break;
+		case 3:
+			specification.TextureFormat = ETextureFormat::RGB8;
+			break;
+		case 4:
+			specification.TextureFormat = ETextureFormat::RGBA8;
+			break;
+        default:
+			TE_CORE_ASSERT( false, "Unknown texture format!" );
+            break;
+        }
 
         Texture* tex = Texture::Create( specification );
         tex->SetData( data, width * height * channels );
@@ -40,11 +57,11 @@ namespace Tridium {
 
     SharedPtr<Asset> CubeMapLoader::LoadAsset( const AssetMetaData& a_MetaData )
     {
-		const int size = 1024;
+		const int size = 1024 * 2;
 
-		if ( false /*stbi_is_hdr( a_MetaData.Path.ToString().c_str() )*/ )
+		if ( stbi_is_hdr( a_MetaData.Path.ToString().c_str() ) )
 		{
-            HdriToCubemap<float> cubemap( a_MetaData.Path.ToString().c_str(), size, true );
+            HdriToCubemap<float> cubemap( a_MetaData.Path.ToString().c_str(), size, false );
             TextureSpecification specification;
             specification.Width = size;
             specification.Height = size;
@@ -53,7 +70,7 @@ namespace Tridium {
             std::array<float*, 6> faces{ cubemap.getRight(), cubemap.getLeft(), cubemap.getDown(), cubemap.getUp(), cubemap.getFront(), cubemap.getBack() };
 
             SharedPtr<CubeMap> tex( CubeMap::Create( specification ) );
-            tex->SetData( (void**)faces.data(), size * size * 4 * 6 );
+            tex->SetData( (void**)faces.data(), size * size * cubemap.getNumChannels() * 6 );
 
             return tex;
 		}

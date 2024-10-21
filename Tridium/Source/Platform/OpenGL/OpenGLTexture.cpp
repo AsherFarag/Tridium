@@ -27,6 +27,8 @@ namespace Tridium {
 			case ETextureFormat::RG8: return GL_RG8;
 			case ETextureFormat::RGB8: return GL_RGB8;
 			case ETextureFormat::RGBA8: return GL_RGBA8;
+			case ETextureFormat::RGB16F: return GL_RGB16F;
+			case ETextureFormat::RGBA16F: return GL_RGBA16F;
 			case ETextureFormat::RGB32F: return GL_RGB32F;
 			case ETextureFormat::RGBA32F: return GL_RGBA32F;
 			case ETextureFormat::SRGB: return GL_SRGB;
@@ -45,6 +47,8 @@ namespace Tridium {
 			case ETextureFormat::RG8: return GL_RG;
 			case ETextureFormat::RGB8: return GL_RGB;
 			case ETextureFormat::RGBA8: return GL_RGBA;
+			case ETextureFormat::RGB16F: return GL_RGB;
+			case ETextureFormat::RGBA16F: return GL_RGBA;
 			case ETextureFormat::RGB32F: return GL_RGB;
 			case ETextureFormat::RGBA32F: return GL_RGBA;
 			case ETextureFormat::SRGB: return GL_RGB;
@@ -113,13 +117,19 @@ namespace Tridium {
 
 		glGenTextures( 1, &m_RendererID );
 		glBindTexture( GL_TEXTURE_CUBE_MAP, m_RendererID );
+
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );  // Add R wrapping
 
 		if ( a_TextureData )
-			SetData( a_TextureData, m_Width * m_Height * (uint32_t)Utils::GLDataFormatToTridiumDataFormat( m_DataFormat ) );
+		{
+			// Ensure the size calculation is correct for your format
+			uint32_t dataSize = m_Width * m_Height * (uint32_t)Utils::GLDataFormatToTridiumDataFormat( m_DataFormat );
+			SetData( a_TextureData, dataSize );
+		}
 	}
 
 	OpenGLCubeMap::~OpenGLCubeMap()
@@ -129,20 +139,22 @@ namespace Tridium {
 
 	void OpenGLCubeMap::SetData( void** a_Data, uint32_t a_Size )
 	{
-		auto type = m_InternalFormat == GL_RGBA32F ? GL_FLOAT : GL_UNSIGNED_BYTE;	
+		//auto type = m_InternalFormat == GL_RGBA32F ? GL_FLOAT : GL_UNSIGNED_BYTE;	
 		for ( uint32_t i = 0; i < 6; i++ )
 		{
 			glTexImage2D( 
 				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
 				0,
-				m_InternalFormat,
+				GL_RGB16F,
 				m_Width, m_Height,
 				0,
-				m_DataFormat,
-				type,
+				GL_RGB,
+				GL_FLOAT,
 				a_Data[i]
 			);
 		}
+
+		glGenerateMipmap( GL_TEXTURE_CUBE_MAP );
 	}
 
 	void OpenGLCubeMap::Bind( uint32_t slot ) const

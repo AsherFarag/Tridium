@@ -13,7 +13,7 @@ namespace Tridium::Editor {
 		: ViewportPanel("Game##GameViewportPanel"), m_Camera(camera)
 	{
 		FramebufferSpecification FBOspecification;
-		FBOspecification.Attachments = { EFramebufferTextureFormat::RGBA8, EFramebufferTextureFormat::Depth };
+		FBOspecification.Attachments = { EFramebufferTextureFormat::RGBA16F, EFramebufferTextureFormat::Depth };
 		FBOspecification.Width = 1280;
 		FBOspecification.Height = 720;
 		m_FBO = Framebuffer::Create( FBOspecification );

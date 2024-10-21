@@ -34,12 +34,12 @@ namespace Tridium::Editor {
 		: ViewportPanel( "Scene##EditorViewportPanel" ), m_EditorCamera( editorCamera )
 	{
 		FramebufferSpecification FBOspecification;
-		FBOspecification.Attachments = { EFramebufferTextureFormat::RGBA8, EFramebufferTextureFormat::Depth };
+		FBOspecification.Attachments = { EFramebufferTextureFormat::RGBA16F, EFramebufferTextureFormat::Depth };
 		FBOspecification.Width = 1280;
 		FBOspecification.Height = 720;
 		m_FBO = Framebuffer::Create( FBOspecification );
 
-		FBOspecification.Attachments = { EFramebufferTextureFormat::RED_INT };
+		//FBOspecification.Attachments = { EFramebufferTextureFormat::RED_INT };
 		m_IDFBO = Framebuffer::Create( FBOspecification );
 
 		std::string idVert =

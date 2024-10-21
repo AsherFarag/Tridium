@@ -220,20 +220,6 @@ namespace Tridium::Editor {
 					ImGui::Text( "Asset Type: %s", AssetTypeToString( assetMetaData.AssetType ) );
 					ImGui::Text( "Path: %s", assetMetaData.Path.ToString().c_str());
 
-					if ( assetMetaData.AssetType == EAssetType::CubeMap )
-					{
-						if ( SharedPtr<CubeMap> image = AssetManager::GetAsset<CubeMap>( handle ) )
-						{
-							ImVec2 size = ImVec2( 128, 128 );
-							float aspect = static_cast<float>( image->GetWidth() ) / static_cast<float>( image->GetHeight() );
-							if ( aspect > 1.0f )
-								size.y /= aspect;
-							else
-								size.x *= aspect;
-							ImGui::Image( (ImTextureID)image->GetRendererID(), size );
-						}
-					}
-
 					ImGui::EndTooltip();
 				}
 			}

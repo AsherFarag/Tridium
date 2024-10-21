@@ -68,8 +68,17 @@ namespace Tridium::Editor {
 		}
 
 		// Load the asset
-		TE_CORE_INFO( "[AssetManager] Loading asset from: {0}", metaData.Path.ToString() );
-		asset = AssetFactory::LoadAsset( metaData );
+		AssetMetaData newMetaData =
+		{
+				.Handle = metaData.Handle,
+				.AssetType = metaData.AssetType,
+				.Path = GetAbsolutePath( metaData.Path ),
+				.Name = metaData.Name,
+				.IsAssetLoaded = false
+		};
+
+		TE_CORE_INFO( "[AssetManager] Loading asset from: {0}", newMetaData.Path.ToString() );
+		asset = AssetFactory::LoadAsset( newMetaData );
 
 		if ( !asset )
 		{
@@ -78,8 +87,9 @@ namespace Tridium::Editor {
 		}
 
 		// Asset loaded successfully
-		AssetMetaData newMetaData = metaData;
 		newMetaData.IsAssetLoaded = true;
+		TODO( "Dirty way of converting a once relative path back into a relative path." );
+		newMetaData.Path = metaData.Path;
 
 		SetAssetMetaData( newMetaData );
 
@@ -192,10 +202,11 @@ namespace Tridium::Editor {
 
 	const AssetMetaData& EditorAssetManager::GetAssetMetaData( const IO::FilePath& a_Path ) const
 	{
+		TODO( "Incredibly inefficient, fix this" );
 		IO::FilePath path = GetAbsolutePath( a_Path );
 		for ( const auto& [handle, metaData] : m_AssetRegistry.AssetMetaData )
 		{
-			if ( metaData.Path == path )
+			if ( GetAbsolutePath( metaData.Path ) == path )
 				return metaData;
 		}
 
@@ -212,24 +223,24 @@ namespace Tridium::Editor {
 		if ( auto metaData = GetAssetMetaData( a_Path ); metaData.IsValid() )
 			return metaData.Handle;
 
-		IO::FilePath path = GetAbsolutePath( a_Path );
+		IO::FilePath absolutePath = GetAbsolutePath( a_Path );
 
-		if ( !path.Exists() )
+		if ( !absolutePath.Exists() )
 		{
-			TE_CORE_ERROR( "[AssetManager] Failed to import asset: {0}, file does not exist", path.ToString() );
+			TE_CORE_ERROR( "[AssetManager] Failed to import asset: {0}, file does not exist", a_Path.ToString() );
 			return AssetHandle::InvalidGUID;
 		}
 
-		if ( !path.HasExtension() )
+		if ( !absolutePath.HasExtension() )
 		{
-			TE_CORE_ERROR( "[AssetManager] Failed to import asset: {0}, missing file extension", path.ToString() );
+			TE_CORE_ERROR( "[AssetManager] Failed to import asset: {0}, missing file extension", a_Path.ToString() );
 			return AssetHandle::InvalidGUID;
 		}
 
-		EAssetType assetType = GetAssetTypeFromFileExtension( path.GetExtension() );
+		EAssetType assetType = GetAssetTypeFromFileExtension( a_Path.GetExtension() );
 		if ( assetType == EAssetType::None )
 		{
-			TE_CORE_ERROR( "[AssetManager] Failed to import asset: {0}, unsupported file extension", path.ToString() );
+			TE_CORE_ERROR( "[AssetManager] Failed to import asset: {0}, unsupported file extension", a_Path.ToString() );
 			return AssetHandle::InvalidGUID;
 		}
 
@@ -237,10 +248,11 @@ namespace Tridium::Editor {
 		AssetMetaData metaData;
 		metaData.Handle = AssetHandle::Create();
 		metaData.AssetType = assetType;
-		metaData.Path = path;
+		metaData.Path = a_Path;
+		metaData.Name = a_Path.GetFilenameWithoutExtension();
 		metaData.IsAssetLoaded = false;
 
-		TE_CORE_INFO( "[AssetManager] Successfully imported asset from: {0}", path.ToString() );
+		TE_CORE_INFO( "[AssetManager] Successfully imported asset from: {0}", a_Path.ToString() );
 		SetAssetMetaData( metaData );
 		return metaData.Handle;
 	}
@@ -355,6 +367,9 @@ namespace Tridium::Editor {
 				metaData.AssetType = AssetTypeFromString( asset["AssetType"].as<std::string>().c_str() );
 				metaData.Path = asset["Path"].as<std::string>();
 				metaData.Name = asset["Name"].as<std::string>();
+
+				if ( metaData.Name.empty() )
+					metaData.Name = metaData.Path.GetFilenameWithoutExtension();
 
 				SetAssetMetaData( metaData );
 			}

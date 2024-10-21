@@ -17,7 +17,7 @@ namespace Tridium {
 	float s_LightIntensity = 1.0f;
 
 	SceneRenderer::SceneRenderer( const SharedPtr<Scene>& a_Scene )
-		: m_Scene( a_Scene ), m_RenderEnvironment( a_Scene->GetRenderEnvironment() )
+		: m_Scene( a_Scene ), m_SceneEnvironment( a_Scene->GetSceneEnvironment() )
 	{
 		TODO( "Use the asset manager instead." );
 		m_DefaultShader.reset( Shader::Create() );
@@ -167,16 +167,24 @@ namespace Tridium {
 		}
 
 		// - Draw Skybox -
-		if ( auto environmentMap = AssetManager::GetAsset<CubeMap>( m_RenderEnvironment.EnvironmentMap ) )
+		if ( auto environmentMap = AssetManager::GetAsset<CubeMap>( m_SceneEnvironment.HDRI.EnvironmentMap ) )
 		{
 			//RenderCommand::SetCullMode( false );	
 			RenderCommand::SetDepthCompare( EDepthCompareOperator::LessOrEqual );
 			m_SkyboxShader->Bind();
 			{
 				Matrix4 skyboxView = Matrix4( Matrix3( m_ViewMatrix ) ); // Remove translation
+				Matrix4 skyboxTransform = Matrix4( 1.0f );
+				skyboxTransform = glm::rotate( skyboxTransform, glm::radians( m_SceneEnvironment.HDRI.RotationEular.x ), { 1.0f, 0.0f, 0.0f } );
+				skyboxTransform = glm::rotate( skyboxTransform, glm::radians( m_SceneEnvironment.HDRI.RotationEular.y ), { 0.0f, 1.0f, 0.0f } );
+				skyboxTransform = glm::rotate( skyboxTransform, glm::radians( m_SceneEnvironment.HDRI.RotationEular.z ), { 0.0f, 0.0f, 1.0f } );
+				skyboxTransform = glm::scale( skyboxTransform, { 100.0f, 100.0f, 100.0f } );
+
 				m_SkyboxShader->SetMatrix4( "u_Projection", m_ProjectionMatrix  );
 				m_SkyboxShader->SetMatrix4( "u_View", skyboxView );
-
+				m_SkyboxShader->SetMatrix4( "u_Model", skyboxTransform );
+				m_SkyboxShader->SetFloat( "u_Exposure", m_SceneEnvironment.HDRI.Exposure );
+				m_SkyboxShader->SetFloat( "u_Gamma", m_SceneEnvironment.HDRI.Gamma );
 				environmentMap->Bind();
 
 				m_SkyboxVAO->Bind();

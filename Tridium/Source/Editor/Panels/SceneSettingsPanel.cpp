@@ -19,9 +19,12 @@ namespace Tridium::Editor {
 			return;
 		}
 
-		if ( ImGui::TreeNode( "Render Environment" ) )
+		if ( ImGui::TreeNode( "Scene Environment" ) )
 		{
-			DrawProperty( "Environment Map", m_Scene->GetRenderEnvironment().EnvironmentMap, EDrawPropertyFlags::Editable );
+			DrawProperty( "Environment Map", m_Scene->GetSceneEnvironment().HDRI.EnvironmentMap, EDrawPropertyFlags::Editable );
+			ImGui::SliderFloat( "Exposure", &m_Scene->GetSceneEnvironment().HDRI.Exposure, 0.0f, 10.0f );
+			ImGui::SliderFloat( "Gamma", &m_Scene->GetSceneEnvironment().HDRI.Gamma, 0.0f, 10.0f );
+			DrawProperty( "Rotation", m_Scene->GetSceneEnvironment().HDRI.RotationEular, EDrawPropertyFlags::Editable );
 
 			ImGui::TreePop();
 		}

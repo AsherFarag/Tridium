@@ -8,9 +8,14 @@ namespace Tridium {
 	class Camera;
 	class CameraComponent;
 
-	struct RenderEnvironment
+	struct SceneEnvironment
 	{
-		AssetHandle EnvironmentMap;
+		struct {
+			AssetHandle EnvironmentMap;
+			float Exposure = 1.0f;
+			float Gamma = 2.2f;
+			Vector3 RotationEular = { 0.0f, 0.0f, 0.0f };
+		} HDRI;
 	};
 
 	class Scene : public Asset
@@ -39,12 +44,12 @@ namespace Tridium {
 		void SetMainCamera( const EntityID& a_Camera ) { m_MainCamera = a_Camera; }
 		void Clear();
 
-		RenderEnvironment& GetRenderEnvironment() { return m_RenderEnvironment; }
+		SceneEnvironment& GetSceneEnvironment() { return m_SceneEnvironment; }
 
 	private:
 		std::string m_Name;
 		entt::registry m_Registry;
-		RenderEnvironment m_RenderEnvironment;
+		SceneEnvironment m_SceneEnvironment;
 		bool m_Paused = false;
 		EntityID m_MainCamera;
 

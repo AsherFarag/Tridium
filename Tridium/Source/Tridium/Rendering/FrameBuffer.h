@@ -9,6 +9,9 @@ namespace Tridium {
 		// Color
 		RGBA8,
 		RED_INT,
+		RGBA16F,
+		RGB32F,
+		RGBA32F,
 
 		// Depth/stencil
 		DEPTH24STENCIL8,

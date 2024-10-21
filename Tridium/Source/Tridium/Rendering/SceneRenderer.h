@@ -52,7 +52,7 @@ namespace Tridium {
 		SharedPtr<Material> m_DefaultMaterial;
 		SharedPtr<Shader> m_SkyboxShader;
 		SharedPtr<VertexArray> m_SkyboxVAO;
-		RenderEnvironment& m_RenderEnvironment;
+		SceneEnvironment& m_SceneEnvironment;
 
 		// Per frame data
 		Vector3 m_CameraPosition;

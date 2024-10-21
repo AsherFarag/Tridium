@@ -62,6 +62,8 @@ namespace Tridium::IO {
 
         FilePath GetFilename() const { return filename();}
 
+		std::string GetFilenameWithoutExtension() const { return filename().replace_extension().string(); }
+
         FilePath GetExtension() const { return extension(); }
 
         bool HasParentPath() const { return has_parent_path(); }
