@@ -7,6 +7,7 @@
 #include <Tridium/Rendering/Material.h>
 #include <Tridium/Rendering/Mesh.h>
 #include <Tridium/Rendering/Shader.h>
+#include <Tridium/Math/Rotator.h>
 
 
 namespace Tridium::Refl {
@@ -111,7 +112,7 @@ namespace Tridium::Refl {
 					memberData = *memberData;
 				}
 
-				if (auto deserializePropFunc = metaData.prop( YAMLDeserializeFuncID ) )
+				if (auto deserializePropFunc = metaData.type().prop(YAMLDeserializeFuncID) )
                 {
                     deserializePropFunc.value().cast<DeserializeFunc>()( propNode, memberData );
                 }
@@ -265,8 +266,11 @@ namespace Tridium::Refl {
 		REFLECT_BASIC_TYPE( Vector2 )ADD_DRAWPROPERTY_FUNC_TO_TYPE( Vector2 );
 		REFLECT_BASIC_TYPE( Vector3 )ADD_DRAWPROPERTY_FUNC_TO_TYPE( Vector3 );
 		REFLECT_BASIC_TYPE( Vector4 )ADD_DRAWPROPERTY_FUNC_TO_TYPE( Vector4 );
+		REFLECT_BASIC_TYPE( Color )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( Color )ADD_DRAWPROPERTY_FUNC_TO_TYPE( Color );
+		REFLECT_BASIC_TYPE( Rotator )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( Rotator )ADD_DRAWPROPERTY_FUNC_TO_TYPE( Rotator );
 
-        // Asset Refs
+        // Tridium
+		REFLECT_BASIC_TYPE( GUID )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( GUID )ADD_DRAWPROPERTY_FUNC_TO_TYPE( GUID );
 		REFLECT_BASIC_TYPE( AssetHandle )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( AssetHandle )ADD_DRAWPROPERTY_FUNC_TO_TYPE( AssetHandle );
     }
 

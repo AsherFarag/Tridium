@@ -189,6 +189,27 @@ namespace Tridium::Editor {
 	}
 
 	template<>
+	bool DrawProperty( const char* a_Name, Rotator& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		IS_DISABLED( a_Flags );
+		Vector3 euler = glm::degrees( a_Value.Euler );
+		if ( DrawProperty( a_Name, euler, a_Flags ) )
+		{
+			a_Value.SetFromEuler( glm::radians( a_Value.Euler ) );
+			return true;
+		}
+
+		return false;
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, Color& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		IS_DISABLED( a_Flags );
+		return ImGui::ColorEdit4( a_Name, &a_Value.r );
+	}
+
+	template<>
 	bool DrawProperty( const char* a_Name, AssetHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
 		IS_DISABLED( a_Flags );

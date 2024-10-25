@@ -3,7 +3,7 @@
 #include <Tridium/IO/Serializer.h>
 #include <yaml-cpp/yaml.h>
 #include <fstream>
-#include <Tridium/Asset/AssetManager.h>
+#include <Tridium/Asset/EditorAssetManager.h>
 
 namespace Tridium {
 
@@ -37,7 +37,8 @@ namespace Tridium {
 		}
 		out << YAML::EndMap;
 
-		std::ofstream file( a_MetaData.Path.ToString() );
+		TODO( "This is editor only!" );
+		std::ofstream file(  AssetManager::Get<Editor::EditorAssetManager>()->GetAbsolutePath( a_MetaData.Path ).ToString() );
 		file << out.c_str();
 	}
 

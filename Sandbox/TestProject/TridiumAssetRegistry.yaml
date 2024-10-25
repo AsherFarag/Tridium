@@ -1,24 +1,32 @@
 AssetMetaData:
-  - Handle: 195043704299636925
-    AssetType: MeshSource
-    Path: Content/troll/TrollApose_low.fbx
-    Name: TrollApose_low.fbx
   - Handle: 2710374286840682701
     AssetType: Texture
     Path: Content/SoulSpear/soulspear_diffuse.tga
     Name: soulspear_diffuse
-  - Handle: 15697145363054614336
-    AssetType: Material
-    Path: Content/Default.tmat
-    Name: TrollMaterial
-  - Handle: 2752145153444275711
-    AssetType: Mesh
-    Path: Content/SoulSpear/soulspear.obj.tmesh
-    Name: soulspear
+  - Handle: 195043704299636925
+    AssetType: MeshSource
+    Path: Content/troll/TrollApose_low.fbx
+    Name: TrollApose_low.fbx
+  - Handle: 7291008065835380108
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_R.tga
+    Name: Cerberus_R
   - Handle: 1013522209545910320
     AssetType: Texture
     Path: Content/SoulSpear/soulspear_normal.tga
     Name: soulspear_normal
+  - Handle: 709335604338777553
+    AssetType: MeshSource
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/source/wpn_Revolver_Final_LP.fbx
+    Name: wpn_Revolver_Final_LP.fbx
+  - Handle: 2752145153444275711
+    AssetType: Mesh
+    Path: Content/SoulSpear/soulspear.obj.tmesh
+    Name: soulspear
+  - Handle: 15697145363054614336
+    AssetType: Material
+    Path: Content/Default.tmat
+    Name: TrollMaterial
   - Handle: 5742226400149584207
     AssetType: MeshSource
     Path: Content/SoulSpear/soulspear.obj
@@ -27,10 +35,26 @@ AssetMetaData:
     AssetType: Material
     Path: Content/Default.tmat
     Name: SoulSpearMaterial
+  - Handle: 3331575371303235212
+    AssetType: MeshSource
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX
+    Name: Cerberus_LP.FBX
   - Handle: 7689658421196502889
     AssetType: Mesh
     Path: Content/troll/RootNode.tmesh
     Name: RootNode
+  - Handle: 14693471984162796061
+    AssetType: Mesh
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/RootNode.tmesh
+    Name: RootNode
+  - Handle: 11992163285139873086
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/shotgun/textures/COLORID_TRI_DefaultMaterial_Normal.png
+    Name: COLORID_TRI_DefaultMaterial_Normal
+  - Handle: 11233282396329318663
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/shotgun/textures/COLORID_TRI_DefaultMaterial_BaseColor.png
+    Name: COLORID_TRI_DefaultMaterial_BaseColor
   - Handle: 33771987171409446
     AssetType: Texture
     Path: Content/troll/Troll_Albedo.jpg
@@ -39,10 +63,18 @@ AssetMetaData:
     AssetType: Texture
     Path: Content/troll/Troll_Normals.jpg
     Name: Troll_Normals
+  - Handle: 403840991678955900
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/shotgun/textures/COLORID_TRI_DefaultMaterial_Roughness.png
+    Name: COLORID_TRI_DefaultMaterial_Roughness
   - Handle: 16235613660444837420
     AssetType: Texture
     Path: Content/troll/Troll_Roughness2.jpg
     Name: Troll_Roughness2
+  - Handle: 14168495522398980698
+    AssetType: MeshSource
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/Barrel_FaceNormals.fbx
+    Name: Barrel_FaceNormals.fbx
   - Handle: 7224770696508785986
     AssetType: Texture
     Path: Content/troll/Troll_Emissive.jpg
@@ -59,31 +91,245 @@ AssetMetaData:
     AssetType: CubeMap
     Path: Content/metro_noord_4k.hdr
     Name: metro_noord_4k
+  - Handle: 15466887609461447096
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/T_Barrel_Material_Normal.tga
+    Name: T_Barrel_Material_Normal
+  - Handle: 3549135908215171877
+    AssetType: Mesh
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/source/RootNode.tmesh
+    Name: RootNode
+  - Handle: 316072791104589991
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Metallic.png
+    Name: 1001_Metallic
+  - Handle: 16699354290950884582
+    AssetType: CubeMap
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/kloppenheim_02_puresky_4k.hdr
+    Name: kloppenheim_02_puresky_4k
+  - Handle: 3275106472032729521
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/source/Textures/Revolver_AO.tga
+    Name: Revolver_AO
+  - Handle: 16434812625582587342
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/source/Textures/Revolver_Rou.tga
+    Name: Revolver_Rou
+  - Handle: 10922954378922511770
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Raw/Cerberus_AO.tga
+    Name: Cerberus_AO
+  - Handle: 15801561412469174575
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/source/Textures/Revolver_Dif.tga
+    Name: Revolver_Dif
+  - Handle: 4881975585746158865
+    AssetType: Material
+    Path: Content/m_Cerberus.tmat
+    Name: m_Cerberus
+  - Handle: 18412146176103799929
+    AssetType: Scene
+    Path: Content/Scenes/TestScene.tscene
+    Name: TestScene
+  - Handle: 4946495934512701145
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/source/Textures/Revolver_Nor.tga
+    Name: Revolver_Nor
+  - Handle: 8199592906944464256
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/source/Textures/Revolver_Met.tga
+    Name: Revolver_Met
+  - Handle: 15334464935254617518
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Tridium/EngineAssets/Textures/Black.tga
+    Name: Black
+  - Handle: 15725698897759553593
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Tridium/EngineAssets/Textures/White.tga
+    Name: White
+  - Handle: 13074434395209484545
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/shotgun/textures/DefaultMaterial_ambient_occlusion.png
+    Name: DefaultMaterial_ambient_occlusion
+  - Handle: 606706941318924826
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Tridium/EngineAssets/Textures/Normal.tga
+    Name: Normal
+  - Handle: 10953796838106496417
+    AssetType: MeshSource
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/shotgun/source/shotgun_LP_TRI_UVW.fbx
+    Name: shotgun_LP_TRI_UVW.fbx
+  - Handle: 519346118941001885
+    AssetType: Mesh
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/shotgun/source/RootNode.tmesh
+    Name: RootNode
+  - Handle: 7916455217221871782
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/shotgun/textures/COLORID_TRI_DefaultMaterial_Metallic.png
+    Name: COLORID_TRI_DefaultMaterial_Metallic
+  - Handle: 16621613401874603449
+    AssetType: MeshSource
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/sphere.fbx
+    Name: sphere.fbx
+  - Handle: 3228463107512144107
+    AssetType: Mesh
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/RootNode.tmesh
+    Name: RootNode
+  - Handle: 10742584269142510346
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_A.tga
+    Name: Cerberus_A
+  - Handle: 17347757536288481838
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_M.tga
+    Name: Cerberus_M
+  - Handle: 14453273009465349364
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_N.tga
+    Name: Cerberus_N
+  - Handle: 3808192814853239745
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/T_Barrel_ORM.tga
+    Name: T_Barrel_ORM
+  - Handle: 9549768138707358729
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/T_Barrel_Material_BaseColor.tga
+    Name: T_Barrel_Material_BaseColor
+  - Handle: 10986069327451655317
+    AssetType: Scene
+    Path: Content/Scenes/TestScene.tscene
+    Name: TestScene
 AssetDependencies:
-  16235613660444837420:
-    []
+  2752145153444275711:
+    - 5742226400149584207
   15697145363054614336:
-    - 3478916749128622966
-    - 0
     - 33771987171409446
+    - 0
+    - 3478916749128622966
+    - 15334464935254617518
     - 16235613660444837420
     - 7224770696508785986
     - 4619301127283000839
-  2752145153444275711:
-    - 5742226400149584207
+    - 316072791104589991
   15355942973043554998:
     - 2710374286840682701
     - 0
+    - 15334464935254617518
+    - 7291008065835380108
     - 1013522209545910320
-  33771987171409446:
-    []
-  3478916749128622966:
+    - 10922954378922511770
+    - 15801561412469174575
+    - 4946495934512701145
+    - 8199592906944464256
+    - 3275106472032729521
+    - 16434812625582587342
+    - 15725698897759553593
+    - 606706941318924826
+    - 9549768138707358729
+    - 3808192814853239745
+    - 15466887609461447096
+    - 10742584269142510346
+    - 14453273009465349364
+    - 17347757536288481838
+  3331575371303235212:
     []
   7689658421196502889:
     - 195043704299636925
-  195043704299636925:
+  316072791104589991:
     []
+  3549135908215171877:
+    - 709335604338777553
+  11770072767574787224:
+    - 2710374286840682701
+    - 0
+    - 1013522209545910320
+  3433945519544472784:
+    - 15801561412469174575
+    - 4946495934512701145
+    - 8199592906944464256
+    - 3275106472032729521
+    - 16434812625582587342
+    - 0
+  13348434139331010301:
+    - 15725698897759553593
+    - 606706941318924826
+    - 15334464935254617518
+    - 0
+  14453273009465349364:
+    []
+  16890182028853221786:
+    - 1829915728529847391
+  2455724555223372607:
+    - 13889658543185183496
+    - 12756991105870949116
+    - 6480832282558947908
+    - 0
+  11732713430778066300:
+    - 10277266604553700543
   7224770696508785986:
     []
+  18426496087389225440:
+    - 16393977853805282278
+  519346118941001885:
+    - 10953796838106496417
+  9573509018978272795:
+    - 11992163285139873086
+    - 11233282396329318663
+    - 7916455217221871782
+    - 13074434395209484545
+    - 15725698897759553593
+    - 15334464935254617518
+  12562320498944195980:
+    - 15801561412469174575
+    - 4946495934512701145
+    - 8199592906944464256
+    - 3275106472032729521
+    - 16434812625582587342
+    - 0
+    - 15334464935254617518
+  3228463107512144107:
+    - 16621613401874603449
+  33771987171409446:
+    []
+  14693471984162796061:
+    - 3331575371303235212
+  6374648664069564329:
+    - 14168495522398980698
+  8715147054545421819:
+    - 0
+  48366076669736260:
+    - 10742584269142510346
+    - 0
+    - 17347757536288481838
+    - 15334464935254617518
+    - 7291008065835380108
+    - 14453273009465349364
+    - 10922954378922511770
+  10922954378922511770:
+    []
+  4881975585746158865:
+    - 0
+    - 10742584269142510346
+    - 17347757536288481838
+    - 15334464935254617518
+    - 7291008065835380108
+    - 14453273009465349364
+    - 10922954378922511770
+  18412146176103799929:
+    []
+  195043704299636925:
+    []
+  3478916749128622966:
+    []
+  15334464935254617518:
+    []
+  16235613660444837420:
+    []
   4619301127283000839:
+    []
+  10742584269142510346:
+    []
+  17347757536288481838:
+    []
+  7291008065835380108:
     []

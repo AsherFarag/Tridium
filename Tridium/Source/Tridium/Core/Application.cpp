@@ -40,8 +40,15 @@ namespace Tridium {
 		InitializeAssetManager();
 
 		// Initialise Scene
-		TODO( "Setup a proper scene initialiser!" );
+		// Create a new scene, so when loading one, game objects can be added to it.
 		m_ActiveScene = MakeShared<Scene>();
+		if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( m_Project->GetConfiguration().StartScene ) )
+		{
+		}
+		else
+		{
+			TE_CORE_WARN( "Failed to load start scene! - Creating new scene" );
+		}
 
 		// Initialise ImGui
 		m_ImGuiLayer = new ImGuiLayer();
@@ -53,7 +60,6 @@ namespace Tridium {
 		// Initialise the editor
 #ifdef IS_EDITOR
 		Editor::EditorApplication::Init();
-		Editor::GetEditorLayer()->SetActiveScene( m_ActiveScene );
 #endif // IS_EDITOR
 	}
 

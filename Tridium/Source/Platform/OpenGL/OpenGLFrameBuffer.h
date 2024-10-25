@@ -34,4 +34,29 @@ namespace Tridium {
 		uint32_t m_DepthAttachment = 0;
 	};
 
+	class OpenGLRenderBuffer : public RenderBuffer
+	{
+	public:
+		OpenGLRenderBuffer( uint32_t a_Width, uint32_t a_Height, EFramebufferTextureFormat a_Format );
+		virtual ~OpenGLRenderBuffer();
+
+		void Invalidate();
+
+		virtual void Bind() override;
+		virtual void Unbind() override;
+
+		virtual void Resize( uint32_t a_Width, uint32_t a_Height ) override;
+
+		virtual uint32_t GetID() const override { return m_RendererID; }
+		virtual EFramebufferTextureFormat GetFormat() const override { return m_Format; }
+		virtual uint32_t GetWidth() const override { return m_Width; }
+		virtual uint32_t GetHeight() const override { return m_Height; }
+
+
+	private:
+		uint32_t m_RendererID = 0;
+		uint32_t m_Width = 0, m_Height = 0;
+		EFramebufferTextureFormat m_Format;
+	};
+
 }

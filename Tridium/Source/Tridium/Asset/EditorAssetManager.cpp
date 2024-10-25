@@ -97,6 +97,15 @@ namespace Tridium::Editor {
         return asset;
     }
 
+	SharedPtr<Asset> EditorAssetManager::GetAsset( const IO::FilePath& a_Path )
+	{
+		const AssetMetaData& metaData = GetAssetMetaData( a_Path );
+		if ( !metaData.IsValid() )
+			return nullptr;
+
+		return GetAsset( metaData.Handle );
+	}
+
 	SharedPtr<Asset> EditorAssetManager::GetMemoryOnlyAsset( AssetHandle a_Handle )
 	{
 		if ( auto it = m_MemoryAssets.find( a_Handle ); it != m_MemoryAssets.end() )
@@ -203,7 +212,7 @@ namespace Tridium::Editor {
 	const AssetMetaData& EditorAssetManager::GetAssetMetaData( const IO::FilePath& a_Path ) const
 	{
 		TODO( "Incredibly inefficient, fix this" );
-		IO::FilePath path = GetAbsolutePath( a_Path );
+		const IO::FilePath& path = GetAbsolutePath( a_Path );
 		for ( const auto& [handle, metaData] : m_AssetRegistry.AssetMetaData )
 		{
 			if ( GetAbsolutePath( metaData.Path ) == path )
@@ -216,6 +225,27 @@ namespace Tridium::Editor {
 	void EditorAssetManager::SetAssetMetaData( const AssetMetaData& a_MetaData )
 	{
 		m_AssetRegistry.AssetMetaData[a_MetaData.Handle] = a_MetaData;
+	}
+
+	bool EditorAssetManager::SaveAsset( AssetHandle a_Handle )
+	{
+		const AssetMetaData& metaData = GetAssetMetaData( a_Handle );
+		if ( !metaData.IsValid() )
+		{
+			TE_CORE_ERROR( "[AssetManager] Failed to save asset: {0}, meta data not found", a_Handle.ID() );
+			return false;
+		}
+
+		// The asset is not loaded, so we can't save it
+		if ( !metaData.IsAssetLoaded )
+			return true;
+
+		if ( auto asset = GetAsset( a_Handle ); asset )
+		{
+			AssetFactory::SaveAsset( metaData, asset );
+			return true;
+		}
+		return false;
 	}
 
 	AssetHandle EditorAssetManager::ImportAsset( const IO::FilePath& a_Path )
@@ -363,9 +393,16 @@ namespace Tridium::Editor {
 			for ( const auto& asset : assetMetaData )
 			{
 				AssetMetaData metaData;
+				metaData.Path = asset["Path"].as<std::string>();
+
+				if ( !GetAbsolutePath( metaData.Path ).Exists() )
+				{
+					TE_CORE_WARN( "[AssetManager] Failed to deserialize imported asset: {0} does not exist. - Removing from asset registry!", metaData.Path.ToString() );
+					continue;
+				}
+
 				metaData.Handle = asset["Handle"].as<uint64_t>();
 				metaData.AssetType = AssetTypeFromString( asset["AssetType"].as<std::string>().c_str() );
-				metaData.Path = asset["Path"].as<std::string>();
 				metaData.Name = asset["Name"].as<std::string>();
 
 				if ( metaData.Name.empty() )

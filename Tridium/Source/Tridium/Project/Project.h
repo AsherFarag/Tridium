@@ -26,7 +26,7 @@ namespace Tridium {
 
 		ProjectConfiguration& GetConfiguration() { return m_ProjectConfig; }
 		const ProjectConfiguration& GetConfiguration() const { return m_ProjectConfig; }
-		IO::FilePath GetAssetDirectory() const { return m_ProjectConfig.ProjectDirectory + m_ProjectConfig.AssetDirectory; }
+		IO::FilePath GetAssetDirectory() const { return m_ProjectConfig.ProjectDirectory / m_ProjectConfig.AssetDirectory; }
 
 	protected:
 		ProjectConfiguration m_ProjectConfig;

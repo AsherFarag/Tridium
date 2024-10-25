@@ -14,6 +14,7 @@ namespace Tridium {
 		virtual void Shutdown() {};
 
 		virtual SharedPtr<Asset> GetAsset( AssetHandle a_Handle ) = 0;
+		virtual SharedPtr<Asset> GetAsset( const IO::FilePath& a_Path ) = 0;
 		virtual SharedPtr<Asset> GetMemoryOnlyAsset( AssetHandle a_Handle ) = 0;
 		virtual bool AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset ) = 0;
 		virtual bool HasAsset( AssetHandle a_Handle ) = 0;
@@ -44,6 +45,14 @@ namespace Tridium {
 		{
 			static_assert( std::is_base_of_v<Asset, T>, "T must inherit from Asset" );
 			SharedPtr<Asset> asset = Application::Get().m_AssetManager->GetAsset( a_Handle );
+			return SharedPtrCast<T>( asset );
+		}
+
+		template<typename T>
+		static SharedPtr<T> GetAsset( const IO::FilePath& a_Path )
+		{
+			static_assert( std::is_base_of_v<Asset, T>, "T must inherit from Asset" );
+			SharedPtr<Asset> asset = Application::Get().m_AssetManager->GetAsset( a_Path );
 			return SharedPtrCast<T>( asset );
 		}
 

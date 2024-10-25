@@ -39,7 +39,7 @@ namespace Tridium {
 
 	Matrix4 TransformComponent::GetLocalTransform() const
 	{
-		Matrix4 rotationMatrix = glm::toMat4( Quaternion( Rotation ) );
+		Matrix4 rotationMatrix = glm::toMat4( Rotation.Quat );
 
 		constexpr Matrix4 identity = Matrix4( 1.0f );
 
@@ -50,12 +50,7 @@ namespace Tridium {
 
 	Vector3 TransformComponent::GetForward() const
 	{
-		return glm::rotate( GetOrientation(), Vector3( 0.0f, 0.0f, -1.0f ) );
-	}
-
-	Quaternion TransformComponent::GetOrientation() const
-	{
-		return Quaternion( Vector3( -Rotation.x, -Rotation.y, 0.f ) );
+		return Rotation.GetForward();
 	}
 
 	void TransformComponent::AttachToParent( GameObject a_Parent )
@@ -87,7 +82,9 @@ namespace Tridium {
 		auto& childTransform = a_Child.GetTransform();
 		if ( childTransform.GetParent() == GetGameObject() )
 		{
-			Math::DecomposeTransform( childTransform.GetWorldTransform(), childTransform.Position, childTransform.Rotation, childTransform.Scale);
+			Quaternion rotation = childTransform.Rotation.Quat;
+			Math::DecomposeTransform( childTransform.GetWorldTransform(), childTransform.Position, rotation, childTransform.Scale);
+			childTransform.Rotation.SetFromQuaternion( rotation );
 
 			childTransform.SetParent();
 			RemoveChild( a_Child );

@@ -5,6 +5,7 @@
 #include <Tridium/IO/FilePath.h>
 #include <Tridium/IO/Archive.h>
 
+#include <Tridium/Asset/Loaders/SceneLoader.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
 #include <Tridium/Asset/Loaders/ShaderLoader.h>
 #include <Tridium/Asset/Loaders/MaterialLoader.h>
@@ -16,6 +17,7 @@ namespace Tridium {
 
 	void AssetFactory::Init()
 	{
+		s_AssetFactories[EAssetType::Scene] = MakeShared<SceneLoader>();
 		s_AssetFactories[EAssetType::Texture] = MakeShared<TextureLoader>();
 		s_AssetFactories[EAssetType::CubeMap] = MakeShared<CubeMapLoader>();
 		s_AssetFactories[EAssetType::Shader] = MakeShared<ShaderLoader>();

@@ -8,6 +8,7 @@
 #include <Tridium/Core/GUID.h>
 #include <Tridium/Core/Color.h>
 #include <Tridium/Math/Math.h>
+#include <Tridium/Math/Rotator.h>
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/IO/FilePath.h>
 #include <Tridium/Utils/Macro.h>

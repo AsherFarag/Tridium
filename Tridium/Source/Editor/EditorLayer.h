@@ -61,13 +61,9 @@ namespace Tridium::Editor {
 		SharedPtr<EditorCamera> GetEditorCamera() { return m_EditorCamera; }
 
 		void SetActiveScene( const SharedPtr<Scene>& a_Scene );
-		SharedPtr<Scene> GetActiveScene() const { return m_ActiveScene; }
+		SharedPtr<Scene> GetActiveScene() const;
 		void OnBeginScene();
 		void OnEndScene();
-
-		bool LoadScene( const std::string& a_Path );
-		bool SaveScene( const std::string& a_Path );
-		void NewScene();
 
 		SceneState CurrentSceneState = SceneState::Edit;
 
@@ -77,8 +73,6 @@ namespace Tridium::Editor {
 		void DrawMenuBar();
 
 	private:
-		SharedPtr<Scene> m_ActiveScene;
-
 		SharedPtr<EditorCamera> m_EditorCamera;
 
 		PanelStack m_PanelStack;
@@ -87,6 +81,8 @@ namespace Tridium::Editor {
 		EditorViewportPanel* m_EditorViewportPanel;
 		GameViewportPanel* m_GameViewportPanel;
 		UIToolBar m_UIToolBar;
+
+		friend ::Tridium::Application;
 	};
 
 	template<typename T, typename ...Args>

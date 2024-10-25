@@ -21,4 +21,17 @@ namespace Tridium {
 		}
     }
 
+	SharedPtr<RenderBuffer> RenderBuffer::Create( uint32_t a_Width, uint32_t a_Height, EFramebufferTextureFormat a_Format )
+	{
+		switch ( RendererAPI::GetAPI() )
+		{
+		case RendererAPI::API::OpenGL:
+			return MakeShared<OpenGLRenderBuffer>( a_Width, a_Height, a_Format );
+			break;
+		default:
+			return nullptr;
+			break;
+		}
+	}
+
 }

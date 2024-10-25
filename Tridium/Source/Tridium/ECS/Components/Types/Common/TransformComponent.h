@@ -1,5 +1,6 @@
 #pragma once
 #include <Tridium/ECS/Components/Component.h>
+#include <Tridium/Math/Rotator.h>
 
 namespace Tridium {
 
@@ -30,7 +31,7 @@ namespace Tridium {
 
 	public:
 		Vector3 Position = Vector3( 0.0f );
-		Vector3 Rotation = Vector3( 0.0f );
+		Rotator Rotation = Rotator( Vector3( 0.0f ) );
 		Vector3 Scale = Vector3( 1.0f );
 
 	private:

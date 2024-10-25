@@ -92,6 +92,16 @@ namespace Tridium::IO {
 		a_Archive << YAML::EndSeq;
 	}
 
+	_TRIDUM_SERIALIZE_TO_TEXT( Rotator )
+	{
+		a_Archive << YAML::Flow;
+		a_Archive << YAML::BeginSeq;
+		a_Archive << a_Value.Euler.x;
+		a_Archive << a_Value.Euler.y;
+		a_Archive << a_Value.Euler.z;
+		a_Archive << YAML::EndSeq;
+	}
+
 	// ----------- Std Types -----------
 
 	// ----------- Tridium Types -----------
@@ -198,6 +208,16 @@ namespace Tridium::IO {
 					o_Value[i][j] = a_Node[i * 4 + j].as<float>();
 				}
 			}
+			return true;
+		}
+		return false;
+	}
+
+	_TRIDUM_DESERIALIZE_FROM_TEXT( Rotator )
+	{
+		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 3 )
+		{
+			o_Value.SetFromEuler( Vector3( a_Node[0].as<float>(), a_Node[1].as<float>(), a_Node[2].as<float>() ) );
 			return true;
 		}
 		return false;

@@ -10,6 +10,7 @@
 #include <Tridium/Rendering/Texture.h>
 #include <Tridium/Rendering/Material.h>
 #include <Tridium/Rendering/Mesh.h>
+#include <Tridium/Rendering/EnvironmentMap.h>
 
 #include <fstream>
 
@@ -50,7 +51,7 @@ namespace Tridium::IO {
 			out << YAML::Key << "Transform" << YAML::Value << YAML::BeginMap;
 			{
 				out << YAML::Key << "Position"; out << YAML::Value << tc->Position;
-				out << YAML::Key << "Rotation"; out << YAML::Value << glm::degrees( tc->Rotation );
+				out << YAML::Key << "Rotation"; out << YAML::Value << tc->Rotation.Euler;
 				out << YAML::Key << "Scale";    out << YAML::Value << tc->Scale;
 
 				if ( go.HasParent() )
@@ -181,6 +182,42 @@ namespace Tridium::IO {
 		a_Archive << YAML::Key << "Scene";
 		a_Archive << YAML::Value << a_Data.GetName().c_str();
 
+		a_Archive << YAML::Key << "SceneEnvironment" << YAML::BeginMap;
+		{
+			a_Archive << YAML::Key << "HDRI" << YAML::BeginMap;
+			{
+				a_Archive << YAML::Key << "EnvironmentMapHandle";
+				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle;
+
+				a_Archive << YAML::Key << "Exposure";
+				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().HDRI.Exposure;
+
+				a_Archive << YAML::Key << "Gamma";
+				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().HDRI.Gamma;
+
+				a_Archive << YAML::Key << "Blur";
+				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().HDRI.Blur;
+
+				a_Archive << YAML::Key << "RotationEular";
+				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().HDRI.RotationEular;
+			}
+			a_Archive << YAML::EndMap; // End HDRI
+
+			a_Archive << YAML::Key << "DirectionalLight" << YAML::BeginMap;
+			{
+				a_Archive << YAML::Key << "Direction";
+				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().DirectionalLight.Direction;
+
+				a_Archive << YAML::Key << "Color";
+				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().DirectionalLight.Color;
+
+				a_Archive << YAML::Key << "Intensity";
+				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().DirectionalLight.Intensity;
+			}
+			a_Archive << YAML::EndMap; // End DirectionalLight
+		}
+		a_Archive << YAML::EndMap; // End SceneEnvironment
+
 		a_Archive << YAML::Key << "GameObjects";
 		a_Archive << YAML::Value << YAML::BeginSeq;
 		{
@@ -202,6 +239,30 @@ namespace Tridium::IO {
 			a_Data.SetName( sceneNameNode.as<std::string>() );
 		else
 			return false;
+
+		if ( auto sceneEnvironmentNode = a_Node["SceneEnvironment"] )
+		{
+			if ( auto hdriNode = sceneEnvironmentNode["HDRI"] )
+			{
+				a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle = hdriNode["EnvironmentMapHandle"].as<AssetHandle>();
+				a_Data.GetSceneEnvironment().HDRI.Exposure = hdriNode["Exposure"].as<float>();
+				a_Data.GetSceneEnvironment().HDRI.Gamma = hdriNode["Gamma"].as<float>();
+				a_Data.GetSceneEnvironment().HDRI.Blur = hdriNode["Blur"].as<float>();
+				a_Data.GetSceneEnvironment().HDRI.RotationEular = hdriNode["RotationEular"].as<Vector3>();
+
+				if ( a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle.Valid() )
+				{
+					a_Data.GetSceneEnvironment().HDRI.EnvironmentMap = EnvironmentMap::Create( a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle );
+				}
+			}
+
+			if ( auto directionalLightNode = sceneEnvironmentNode["DirectionalLight"] )
+			{
+				a_Data.GetSceneEnvironment().DirectionalLight.Direction = directionalLightNode["Direction"].as<Vector3>();
+				a_Data.GetSceneEnvironment().DirectionalLight.Color = directionalLightNode["Color"].as<Color>();
+				a_Data.GetSceneEnvironment().DirectionalLight.Intensity = directionalLightNode["Intensity"].as<float>();
+			}
+		}
 
 		auto gameObjectsNode = a_Node["GameObjects"];
 

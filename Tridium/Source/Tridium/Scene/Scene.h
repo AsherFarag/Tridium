@@ -1,21 +1,27 @@
 #pragma once
 #include "entt.hpp"
 #include <Tridium/Asset/Asset.h>
+#include <Tridium/Rendering/Lights.h>
 
 namespace Tridium {
 	typedef entt::entity EntityID;
 
 	class Camera;
 	class CameraComponent;
+	class EnvironmentMap;
 
 	struct SceneEnvironment
 	{
 		struct {
-			AssetHandle EnvironmentMap;
+			AssetHandle EnvironmentMapHandle;
+			SharedPtr<EnvironmentMap> EnvironmentMap;
 			float Exposure = 1.0f;
 			float Gamma = 2.2f;
+			float Blur = 0.0f;
 			Vector3 RotationEular = { 0.0f, 0.0f, 0.0f };
 		} HDRI;
+
+		DirectionalLight DirectionalLight;
 	};
 
 	class Scene : public Asset
@@ -45,6 +51,7 @@ namespace Tridium {
 		void Clear();
 
 		SceneEnvironment& GetSceneEnvironment() { return m_SceneEnvironment; }
+		const SceneEnvironment& GetSceneEnvironment() const { return m_SceneEnvironment; }
 
 	private:
 		std::string m_Name;

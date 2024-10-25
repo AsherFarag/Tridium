@@ -23,6 +23,7 @@
 
 #include <Tridium/IO/SceneSerializer.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
+#include <Tridium/Asset/EditorAssetManager.h>
 
 #include <fstream>
 #include <Tridium/IO/Serializer.h>
@@ -73,7 +74,7 @@ namespace Tridium::Editor {
 
 	void EditorLayer::OnUpdate()
 	{
-		if ( m_ActiveScene )
+		if ( GetActiveScene() )
 		{
 			switch ( CurrentSceneState )
 			{
@@ -86,9 +87,9 @@ namespace Tridium::Editor {
 			{
 				m_EditorCamera->OnUpdate();
 
-				if ( !m_ActiveScene->IsPaused() )
+				if ( !GetActiveScene()->IsPaused() )
 				{
-					m_ActiveScene->OnUpdate();
+					GetActiveScene()->OnUpdate();
 				}
 				break;
 			}
@@ -156,14 +157,18 @@ namespace Tridium::Editor {
 
 	void EditorLayer::SetActiveScene( const SharedPtr<Scene>& a_Scene )
 	{
-		m_ActiveScene = a_Scene; 
-		Application::SetScene( m_ActiveScene );
+		Application::SetScene( a_Scene );
+	}
+
+	SharedPtr<Scene> EditorLayer::GetActiveScene() const
+	{
+		return Application::GetScene();
 	}
 
 	void EditorLayer::OnBeginScene()
 	{
-		m_ActiveScene->OnBegin();
-		m_ActiveScene->SetPaused( false );
+		GetActiveScene()->OnBegin();
+		GetActiveScene()->SetPaused( false );
 
 
 		m_GameViewportPanel->Focus();
@@ -172,47 +177,12 @@ namespace Tridium::Editor {
 
 	void EditorLayer::OnEndScene()
 	{
-		m_ActiveScene->OnEnd();
+		GetActiveScene()->OnEnd();
 
 		CurrentSceneState = SceneState::Edit;
 		m_EditorViewportPanel->Focus();
 		TODO("Make this not hard coded!")
 		//LoadScene( GetActiveScene() );
-	}
-
-	bool EditorLayer::LoadScene( const std::string& a_FilePath )
-	{
-		m_ActiveScene->Clear();
-		//m_ActiveScene->SetPath( filepath );
-
-		YAML::Node archive;
-		try
-		{
-			archive = YAML::LoadFile( a_FilePath );
-		}
-		catch ( const std::exception& )
-		{
-			TE_CORE_ERROR( "Failed to load scene '{0}'", a_FilePath );
-		}
-
-		return IO::DeserializeFromText( archive, *m_ActiveScene );
-	}
-
-	bool EditorLayer::SaveScene( const std::string& a_FilePath )
-	{
-		Tridium::IO::Archive archive;
-		Tridium::IO::SerializeToText( archive, *m_ActiveScene );
-
-		std::ofstream file( a_FilePath );
-		file << archive.c_str();
-		file.close();
-
-		return true;
-	}
-
-	void EditorLayer::NewScene()
-	{
-		SetActiveScene( MakeShared<Scene>("New Scene"));
 	}
 
 	bool EditorLayer::OnKeyPressed( KeyPressedEvent& e )
@@ -229,7 +199,7 @@ namespace Tridium::Editor {
 		{
 			if ( control )
 			{
-				if ( m_ActiveScene )
+				if ( GetActiveScene() )
 				{
 					//if ( m_ActiveScene->GetPath().length() == 0 )
 					//	Util::OpenSaveFileDialog( "Untitled.tscene", [this](const std::string& path) { SaveScene(path); });
@@ -276,19 +246,67 @@ namespace Tridium::Editor {
 
 			// Scene
 			if ( ImGui::MenuItem( "New Scene" ) )
-				NewScene();
-
+			{
+				Util::OpenNewFileDialog(
+					"Scene",
+					"Untitled.tscene",
+					[this]( const std::string& path )
+					{
+						auto assetManager = AssetManager::Get<EditorAssetManager>();
+						AssetMetaData metaData =
+						{
+								AssetHandle::Create(),
+								EAssetType::Scene,
+								path,
+								IO::FilePath( path ).GetFilenameWithoutExtension(),
+								true
+						};
+						SharedPtr<Scene> scene = MakeShared<Scene>();
+						scene->SetName( metaData.Name );
+						if ( assetManager->CreateAsset( metaData, scene ) )
+							SetActiveScene( scene );
+						else
+							TE_CORE_ERROR( "Failed to create scene '{0}'", path );
+					} );
+			}
 			if ( ImGui::MenuItem( "Open Scene" ) )
 			{
-				Util::OpenLoadFileDialog( "", [this](const std::string& path) { LoadScene(path); });
+				Util::OpenLoadFileDialog( "",
+					[this](const std::string& path) 
+					{
+						auto assetManager = AssetManager::Get<EditorAssetManager>();
+						const AssetMetaData& sceneMetaData = assetManager->GetAssetMetaData( path );
+						auto scene = AssetManager::GetAsset<Scene>( sceneMetaData.Handle );
+						SetActiveScene( scene );
+					});
 			}
 
 			if ( ImGui::MenuItem( "Save Scene", "Ctrl + S" ) )
 			{
-				//if ( m_ActiveScene->GetPath().length() == 0 )
-				//	Util::OpenSaveFileDialog( "Untitled.tscene", [this](const std::string& path) { SaveScene(path); });
-				//else
-				//	SaveScene( m_ActiveScene->GetPath() );
+				if ( GetActiveScene() )
+				{
+					auto assetManager = AssetManager::Get<EditorAssetManager>();
+					if ( !assetManager->SaveAsset( GetActiveScene()->GetHandle() ) )
+					{
+						Util::OpenSaveFileDialog( GetActiveScene()->GetName() + ".tscene",
+							[this]( const std::string& path )
+							{
+								auto assetManager = AssetManager::Get<EditorAssetManager>();
+								AssetMetaData metaData =
+								{
+									GetActiveScene()->GetHandle(),
+									EAssetType::Scene,
+									path,
+									IO::FilePath( path ).GetFilenameWithoutExtension(),
+									true
+								};
+								if ( assetManager->CreateAsset( metaData, GetActiveScene() ) )
+									assetManager->SaveAsset( metaData.Handle );
+								else
+									TE_CORE_ERROR( "Failed to save scene '{0}'", path );
+							} );
+					}
+				}
 			}
 
 			ImGui::EndMenu();

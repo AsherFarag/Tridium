@@ -4,72 +4,9 @@
 #include <Tridium/Asset/EditorAssetManager.h>
 #include <Editor/Panels/Asset/MeshSourceImporterPanel.h>
 #include <Tridium/Rendering/SceneRenderer.h>
-
-struct PersonInfo
-{
-	int Age = 0;
-	std::string Name = "John Doe";
-	float Height = 0.0f;
-	bool IsMale = true;
-
-	std::vector<std::string> Numbers = { "1", "2", "3" };
-	std::map<std::string, std::string> Map = { { "Key1", "Value1" }, { "Key2", "Value2" } };
-};
-
-BEGIN_REFLECT( PersonInfo )
-	PROPERTY( Age, FLAGS( Serialize, EditAnywhere ) )
-	PROPERTY( Name, FLAGS( Serialize, EditAnywhere ) )
-	PROPERTY( Height, FLAGS( Serialize, EditAnywhere ) )
-	PROPERTY( IsMale, FLAGS( Serialize, EditAnywhere ) )
-	PROPERTY( Numbers, FLAGS( Serialize, EditAnywhere ) )
-	PROPERTY( Map, FLAGS( Serialize, EditAnywhere ) )
-END_REFLECT( PersonInfo )
-
-class Person : public Tridium::Component
-{
-	REFLECT(Person);
-public:
-	PersonInfo Info;
-	std::map<std::string, PersonInfo> Children;
-	std::vector<int> Numbers = { 1, 2, 3 };
-};
-
-BEGIN_REFLECT_COMPONENT( Person )
-	PROPERTY( Info, FLAGS( Serialize, EditAnywhere ) )
-	PROPERTY( Children, FLAGS( Serialize, EditAnywhere ) )
-	PROPERTY( Numbers, FLAGS( Serialize, EditAnywhere ) )
-END_REFLECT( Person )
+#include <Tridium/Asset/AssetFactory.h>
 
 using namespace Tridium;
-
-class TestLayer : public Layer
-{
-	virtual void OnUpdate() override
-	{
-		Time += Time::DeltaTime();
-		if ( EnableRotatingLight )
-		{
-			s_LightDirection.x = glm::sin( Time );
-		}
-	}
-
-	virtual void OnImGuiDraw() override
-	{
-		if ( ImGui::Begin( "Light Settings" ) )
-		{
-			ImGui::ColorEdit3( "Ambient Color", &s_AmbientColor.x );
-			ImGui::SliderFloat3( "Light Direction", &s_LightDirection.x, -1.0f, 1.0f );
-			ImGui::ColorEdit3( "Light Color", &s_LightColor.x );
-			ImGui::DragFloat( "Light Intensity", &s_LightIntensity );
-			ImGui::Checkbox( "Enable Rotating Light", &EnableRotatingLight );
-		}
-
-		ImGui::End();
-	}
-	float Time = 0.0f;
-	bool EnableRotatingLight = false;
-	std::string FilePath{ "Content/troll/TrollApose_low.fbx" };
-};
 
 class CreateNewAssetLayer : public Layer
 {
@@ -92,6 +29,8 @@ class CreateNewAssetLayer : public Layer
 			ImGui::EndCombo();
 		}
 
+		ImGui::InputText( "Asset Path", &AssetPath );
+
 		if ( ImGui::Button( "Create" ) )
 		{
 			auto assetManager = AssetManager::Get<Editor::EditorAssetManager>();
@@ -104,12 +43,13 @@ class CreateNewAssetLayer : public Layer
 
 				AssetMetaData metaData;
 				metaData.Handle = AssetHandle::Create();
-				metaData.Path = assetManager->GetAbsolutePath( IO::FilePath("Content/Default.tmat") );
+				metaData.Path = AssetPath;
 				metaData.AssetType = AssetType;
-				metaData.Name = "Default";
+				metaData.Name = metaData.Path.GetFilenameWithoutExtension();
 				metaData.IsAssetLoaded = true;
 
 				assetManager->CreateAsset( metaData, material );
+				AssetFactory::SaveAsset( metaData, material );
 			}
 			break;
 			default:
@@ -121,6 +61,7 @@ class CreateNewAssetLayer : public Layer
 	}
 
 	EAssetType AssetType = EAssetType::None;
+	std::string AssetPath;
 };
 
 class ImportLayer : public Layer
@@ -134,6 +75,34 @@ class ImportLayer : public Layer
 		}
 
 		ImGui::InputText( "FilePath ", &FilePath );
+
+		ImGui::SameLine();
+
+		if ( ImGui::ArrowButton( "Browse", ImGuiDir_Down ) )
+			ImGui::OpenPopup( "ImportAssetPopup" );
+
+		if ( ImGui::BeginPopup( "ImportAssetPopup" ) )
+		{
+			auto assetmanager = AssetManager::Get<Editor::EditorAssetManager>();
+			for ( auto entry : std::filesystem::recursive_directory_iterator( Application::GetActiveProject()->GetAssetDirectory().ToString() ) )
+			{
+				if ( entry.is_directory() )
+					continue;
+
+				if ( assetmanager->GetAssetMetaData( entry.path() ).IsValid() )
+					continue;
+
+				std::string asString = entry.path().generic_string();
+				if ( ImGui::Selectable( asString.c_str() ) )
+				{
+					FilePath = asString;
+					ImGui::CloseCurrentPopup();
+					break;
+				}
+			}
+
+			ImGui::EndPopup();
+		}
 
 		if ( ImGui::Button( "Import" ) )
 		{
@@ -150,6 +119,47 @@ class ImportLayer : public Layer
 	std::string FilePath;
 };
 
+bool DrawAssetHandle( const char* a_Name, AssetHandle& a_Value, EAssetType a_Type )
+{
+	bool modified = false;
+
+	auto assetManager = AssetManager::Get<Editor::EditorAssetManager>();
+
+	const char* assetName = "None";
+	if ( a_Value.Valid() )
+		assetName = assetManager->GetAssetMetaData( a_Value ).Name.c_str();
+
+	if ( ImGui::BeginCombo( a_Name, assetName ) )
+	{
+		for ( const auto& [handle, assetMetaData] : assetManager->GetAssetRegistry().AssetMetaData )
+		{
+			if ( assetMetaData.AssetType != a_Type )
+				continue;
+
+			std::string name = !assetMetaData.Name.empty() ? assetMetaData.Name : assetMetaData.Path.ToString();
+			ImGui::ScopedID id( handle.ID() );
+			if ( ImGui::Selectable( name.c_str(), a_Value == handle ) )
+			{
+				a_Value = handle;
+				modified = true;
+				break;
+			}
+
+			if ( ImGui::BeginItemTooltip() )
+			{
+				ImGui::Text( "Asset Type: %s", AssetTypeToString( assetMetaData.AssetType ) );
+				ImGui::Text( "Path: %s", assetMetaData.Path.ToString().c_str() );
+
+				ImGui::EndTooltip();
+			}
+		}
+
+		ImGui::EndCombo();
+	}
+
+	return modified;
+}
+
 
 class MaterialEditorLayer : public Layer
 {
@@ -161,54 +171,18 @@ class MaterialEditorLayer : public Layer
 			return;
 		}
 
-		auto handle = MaterialHandle.ID();
-		if ( ImGui::InputScalar( "Material Handle", ImGuiDataType_U64, &handle ) )
-		{
-			MaterialHandle = handle;
-		}
+		DrawAssetHandle( "Material", MaterialHandle, EAssetType::Material );
 
 		if ( SharedPtr<Material> material = AssetManager::GetAsset<Material>( MaterialHandle ) )
 		{
-			handle = material->AlbedoTexture.ID();
-			if ( ImGui::InputScalar( "Albedo Texture Handle", ImGuiDataType_U64, &handle ) )
-			{
-				material->AlbedoTexture = handle;
-			}
-			handle = material->MetallicTexture.ID();
-			if ( ImGui::InputScalar( "Metallic Texture Handle", ImGuiDataType_U64, &handle ) )
-			{
-				material->MetallicTexture = handle;
-			}
-			handle = material->RoughnessTexture.ID();
-			if ( ImGui::InputScalar( "Roughness Texture Handle", ImGuiDataType_U64, &handle ) )
-			{
-				material->RoughnessTexture = handle;
-			}
-			handle = material->SpecularTexture.ID();
-			if ( ImGui::InputScalar( "Specular Texture Handle", ImGuiDataType_U64, &handle ) )
-			{
-				material->SpecularTexture = handle;
-			}
-			handle = material->NormalTexture.ID();
-			if ( ImGui::InputScalar( "Normal Texture Handle", ImGuiDataType_U64, &handle ) )
-			{
-				material->NormalTexture = handle;
-			}
-			handle = material->OpacityTexture.ID();
-			if ( ImGui::InputScalar( "Opacity Texture Handle", ImGuiDataType_U64, &handle ) )
-			{
-				material->OpacityTexture = handle;
-			}
-			handle = material->EmissiveTexture.ID();
-			if ( ImGui::InputScalar( "Emissive Texture Handle", ImGuiDataType_U64, &handle ) )
-			{
-				material->EmissiveTexture = handle;
-			}
-			handle = material->AOTexture.ID();
-			if ( ImGui::InputScalar( "AO Texture Handle", ImGuiDataType_U64, &handle ) )
-			{
-				material->AOTexture = handle;
-			}
+			DrawAssetHandle( "Albedo Texture", material->AlbedoTexture, EAssetType::Texture );
+			DrawAssetHandle( "Metallic Texture", material->MetallicTexture, EAssetType::Texture );
+			DrawAssetHandle( "Roughness Texture", material->RoughnessTexture, EAssetType::Texture );
+			DrawAssetHandle( "Specular Texture", material->SpecularTexture, EAssetType::Texture );
+			DrawAssetHandle( "Normal Texture", material->NormalTexture, EAssetType::Texture );
+			DrawAssetHandle( "Opacity Texture", material->OpacityTexture, EAssetType::Texture );
+			DrawAssetHandle( "Emissive Texture", material->EmissiveTexture, EAssetType::Texture );
+			DrawAssetHandle( "AO Texture", material->AOTexture, EAssetType::Texture );
 		}
 
 		ImGui::End();
@@ -221,7 +195,6 @@ class SandboxGameInstance : public Tridium::GameInstance
 {
 	virtual void Init() override
 	{
-		Tridium::Application::Get().PushOverlay( new TestLayer() );
 		Tridium::Application::Get().PushOverlay( new CreateNewAssetLayer() );
 		Tridium::Application::Get().PushOverlay( new ImportLayer() );
 		Tridium::Application::Get().PushOverlay( new MaterialEditorLayer() );

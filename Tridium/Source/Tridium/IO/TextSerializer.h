@@ -39,6 +39,7 @@ namespace Tridium::IO {
 	_TRIDUM_SERIALIZE_TO_TEXT( Quaternion );
 	_TRIDUM_SERIALIZE_TO_TEXT( Matrix3 );
 	_TRIDUM_SERIALIZE_TO_TEXT( Matrix4 );
+	_TRIDUM_SERIALIZE_TO_TEXT( Rotator );
 
 	// ----------- STD Types -----------
 
@@ -119,6 +120,7 @@ namespace Tridium::IO {
 	_TRIDUM_DESERIALIZE_FROM_TEXT( Quaternion );
 	_TRIDUM_DESERIALIZE_FROM_TEXT( Matrix3 );
 	_TRIDUM_DESERIALIZE_FROM_TEXT( Matrix4 );
+	_TRIDUM_DESERIALIZE_FROM_TEXT( Rotator );
 
 	// ----------- STD Types -----------
 

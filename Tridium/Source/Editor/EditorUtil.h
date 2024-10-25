@@ -5,139 +5,57 @@
 
 namespace Tridium::Editor::Util {
 
-	template <typename SaveFileDialogCallback>
-	class SaveFileDialogLayer : public Layer
+	typedef std::function<void( const std::string& )> FileDialogCallback;
+
+	class FileDialogLayer : public Layer
 	{
 	public:
-		SaveFileDialogLayer( SaveFileDialogCallback a_Callback, const std::string& a_DefaultPath )
-			: Layer( "SaveFileDialogLayer" )
-			, m_Callback( a_Callback )
-			, m_FilePath( a_DefaultPath )
-		{
-		}
-
-		virtual void OnImGuiDraw() override
-		{
-			ImGui::OpenPopup( "Save File" );
-
-			ImGui::SetNextWindowPos( ImVec2( 0.5f * ImGui::GetIO().DisplaySize.x, 0.5f * ImGui::GetIO().DisplaySize.y ), ImGuiCond_Appearing, ImVec2( 0.5f, 0.5f ) );
-
-			if ( !ImGui::BeginPopupModal( "Save File", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize ) )
-				return;
-
-			ImGui::InputTextWithHint( "##FilePath", "File Path", &m_FilePath );
-
-			ImVec2 buttonSize = ImGui::CalcTextSize( "Cancel" );
-			const ImVec2 buttonPadding = ImGui::GetStyle().FramePadding;
-			buttonSize.x += buttonPadding.x * 2.0f;
-			buttonSize.y += buttonPadding.y * 2.0f;
-
-			bool shouldClose = false;
-
-			ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 1.0f );
-
-			if ( ImGui::Button( "Save", buttonSize ) )
-			{
-				shouldClose = true;
-				ImGui::CloseCurrentPopup();
-				m_Callback( m_FilePath );
-			}
-
-			ImGui::SameLine();
-
-			if ( ImGui::Button( "Cancel", buttonSize ) )
-			{
-				ImGui::CloseCurrentPopup();
-				shouldClose = true;
-			}
-
-			ImGui::PopStyleVar();
-
-			ImGui::EndPopup();
-
-			if ( shouldClose )
-			{
-				Application::Get().PopOverlay( this, true );
-			}
-		}
-
-	private:
-		SaveFileDialogCallback m_Callback;
+		FileDialogLayer( FileDialogCallback a_Callback, const std::string& a_DefaultPath );
+		virtual void OnImGuiDraw() {};
+	protected:
+		FileDialogCallback m_Callback;
 		std::string m_FilePath;
 	};
 
+	class SaveFileDialogLayer : public FileDialogLayer
+	{
+	public:
+		SaveFileDialogLayer( FileDialogCallback a_Callback, const std::string& a_DefaultPath )
+			: FileDialogLayer( a_Callback, a_DefaultPath ) {}
+		virtual void OnImGuiDraw() override;
+	};
 
-	template <typename SaveFileDialogCallback>
-	void OpenSaveFileDialog( const std::string& a_DefaultFilePath, SaveFileDialogCallback a_Callback )
+	inline void OpenSaveFileDialog( const std::string& a_DefaultFilePath, FileDialogCallback a_Callback )
 	{
 		Application::Get().PushOverlay( new SaveFileDialogLayer( a_Callback, a_DefaultFilePath ) );
 	}
 
-	template <typename LoadFileDialogCallback>
-	class LoadFileDialogLayer : public Layer
+	class LoadFileDialogLayer : public FileDialogLayer
 	{
 	public:
-		LoadFileDialogLayer( LoadFileDialogCallback a_Callback, const std::string& a_DefaultPath )
-			: Layer( "LoadFileDialogLayer" )
-			, m_Callback( a_Callback )
-			, m_FilePath( a_DefaultPath )
-		{
-		}
-
-		virtual void OnImGuiDraw() override
-		{
-			ImGui::OpenPopup( "Load File" );
-
-			ImGui::SetNextWindowPos( ImVec2( 0.5f * ImGui::GetIO().DisplaySize.x, 0.5f * ImGui::GetIO().DisplaySize.y ), ImGuiCond_Appearing, ImVec2( 0.5f, 0.5f ) );
-
-			if ( !ImGui::BeginPopupModal( "Load File", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize ) )
-				return;
-
-			ImGui::InputTextWithHint( "##FilePath", "File Path", &m_FilePath );
-
-			ImVec2 buttonSize = ImGui::CalcTextSize( "Cancel" );
-			const ImVec2 buttonPadding = ImGui::GetStyle().FramePadding;
-			buttonSize.x += buttonPadding.x * 2.0f;
-			buttonSize.y += buttonPadding.y * 2.0f;
-
-			bool shouldClose = false;
-
-			ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 1.0f );
-
-			if ( ImGui::Button( "Load", buttonSize ) )
-			{
-				shouldClose = true;
-				ImGui::CloseCurrentPopup();
-				m_Callback( m_FilePath );
-			}
-
-			ImGui::SameLine();
-
-			if ( ImGui::Button( "Cancel", buttonSize ) )
-			{
-				ImGui::CloseCurrentPopup();
-				shouldClose = true;
-			}
-
-			ImGui::PopStyleVar();
-
-			ImGui::EndPopup();
-
-			if ( shouldClose )
-			{
-				Application::Get().PopOverlay( this, true );
-			}
-		}
-
-	private:
-		LoadFileDialogCallback m_Callback;
-		std::string m_FilePath;
+		LoadFileDialogLayer( FileDialogCallback a_Callback, const std::string& a_DefaultPath )
+			: FileDialogLayer( a_Callback, a_DefaultPath ) {}
+		virtual void OnImGuiDraw() override;
 	};
 
-	template <typename LoadFileDialogCallback>
-	void OpenLoadFileDialog( const std::string& a_DefaultFilePath, LoadFileDialogCallback a_Callback )
+	inline void OpenLoadFileDialog( const std::string& a_DefaultFilePath, FileDialogCallback a_Callback )
 	{
 		Application::Get().PushOverlay( new LoadFileDialogLayer( a_Callback, a_DefaultFilePath ) );
+	}
+
+	class NewFileDialogLayer : public FileDialogLayer
+	{
+	public:
+		NewFileDialogLayer( const std::string& a_FileTypeName, FileDialogCallback a_Callback, const std::string& a_DefaultPath );
+		virtual void OnImGuiDraw() override;
+
+	protected:
+		std::string m_FileTypeName;
+	};
+
+	inline void OpenNewFileDialog( const std::string& a_FileTypeName, const std::string& a_DefaultFilePath, FileDialogCallback a_Callback )
+	{
+		Application::Get().PushOverlay( new NewFileDialogLayer( a_FileTypeName, a_Callback, a_DefaultFilePath ) );
 	}
 };
 

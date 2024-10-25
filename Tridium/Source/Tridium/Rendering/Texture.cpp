@@ -32,22 +32,27 @@ namespace Tridium {
 		return nullptr;
 	}
 
-	CubeMap* CubeMap::Create( const TextureSpecification& a_Specification )
+	CubeMap* CubeMap::Create( const TextureSpecification& a_Specification, const SharedPtr<Texture>& a_Texture )
 	{
 		switch ( Renderer::GetAPI() )
 		{
 			using enum RendererAPI::API;
 		case OpenGL:
-			return new OpenGLCubeMap( a_Specification, nullptr );
+			return new OpenGLCubeMap( a_Specification, a_Texture );
 		}
+		TE_CORE_ASSERT( false, "Unknown RendererAPI!" );
+		return nullptr;
 	}
-	CubeMap* CubeMap::Create( const TextureSpecification& a_Specification, void** a_TextureData )
+
+	CubeMap* CubeMap::Create( const TextureSpecification& a_Specification, const std::array<float*, 6>& a_CubeMapData )
 	{
 		switch ( Renderer::GetAPI() )
 		{
 			using enum RendererAPI::API;
 		case OpenGL:
-			return new OpenGLCubeMap( a_Specification, a_TextureData );
+			return new OpenGLCubeMap( a_Specification, a_CubeMapData );
 		}
+		TE_CORE_ASSERT( false, "Unknown RendererAPI!" );
+		return nullptr;
 	}
 }

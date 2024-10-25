@@ -18,7 +18,7 @@
 
 namespace Tridium {
 
-	namespace Utils {
+	namespace Util {
 
 		Matrix4 Mat4FromAIMatrix4x4( const aiMatrix4x4& matrix )
 		{
@@ -39,7 +39,7 @@ namespace Tridium {
 		| aiProcess_SortByPType             
 		| aiProcess_GenSmoothNormals
 		| aiProcess_GenUVCoords
-		//| aiProcess_OptimizeGraph
+		| aiProcess_OptimizeGraph
 		| aiProcess_OptimizeMeshes          
 		| aiProcess_JoinIdenticalVertices
 		| aiProcess_LimitBoneWeights        
@@ -253,7 +253,7 @@ namespace Tridium {
 		const aiNode* a_Node = static_cast<aiNode*>( a_AssimpNode );
 		MeshNode& node = a_MeshSource->m_MeshNodes[a_NodeIndex];
 		node.Name = a_Node->mName.C_Str();
-		node.LocalTransform = Utils::Mat4FromAIMatrix4x4( a_Node->mTransformation );
+		node.LocalTransform = Util::Mat4FromAIMatrix4x4( a_Node->mTransformation );
 
 		// Process submeshes
 		Matrix4 transform = a_ParentTransform * node.LocalTransform;

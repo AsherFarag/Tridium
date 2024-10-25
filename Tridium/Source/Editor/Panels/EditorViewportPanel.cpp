@@ -39,7 +39,7 @@ namespace Tridium::Editor {
 		FBOspecification.Height = 720;
 		m_FBO = Framebuffer::Create( FBOspecification );
 
-		//FBOspecification.Attachments = { EFramebufferTextureFormat::RED_INT };
+		FBOspecification.Attachments = { EFramebufferTextureFormat::RED_INT };
 		m_IDFBO = Framebuffer::Create( FBOspecification );
 
 		std::string idVert =
@@ -226,7 +226,9 @@ namespace Tridium::Editor {
 				if ( goTransform.GetParent() )
 					goWorldTransform = glm::inverse( goTransform.GetParent().GetWorldTransform() ) * goWorldTransform;
 
-				Math::DecomposeTransform( goWorldTransform, goTransform.Position, goTransform.Rotation, goTransform.Scale );
+				Quaternion rotation = goTransform.Rotation.Quat;
+				Math::DecomposeTransform( goWorldTransform, goTransform.Position, rotation, goTransform.Scale );
+				goTransform.Rotation.SetFromQuaternion( rotation );
 			}
 		}
 		else

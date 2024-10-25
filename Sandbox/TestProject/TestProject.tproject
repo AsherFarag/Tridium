@@ -1,4 +1,4 @@
 Configuration:
   Name: TestProject
   AssetDirectory: Content
-  StartScene: ""
+  StartScene: Content/Scenes/TestScene.tscene

@@ -1,0 +1,78 @@
+Scene: TestScene
+SceneEnvironment:
+  HDRI:
+    EnvironmentMapHandle: 12344971950102856376
+    Exposure: 1
+    Gamma: 2.20000005
+    Blur: 1
+    RotationEular: [0, 2, 0]
+  DirectionalLight:
+    Direction: [239, 0, 0]
+    Color: [1, 1, 1, 1]
+    Intensity: 6
+GameObjects:
+  - GameObject: 3127996517173142863
+    Tag: Revolver 1
+    Transform:
+      Position: [-2, 0, 0]
+      Rotation: [-2.36056621e-16, -0, 0]
+      Scale: [0.0700000152, 0.0699999556, 0.0699999854]
+      Parent: 6862458883491203351
+      Parent: 6862458883491203351
+      Children: []
+    StaticMeshComponent:
+      Mesh: 14693471984162796061
+      Materials: [4881975585746158865]
+  - GameObject: 9468288163137663489
+    Tag: Revolver 2
+    Transform:
+      Position: [1.99919748, 1.1920929e-07, 0.000654220581]
+      Rotation: [-2.36056595e-16, -7.99760439e-24, -1.37658737e-21]
+      Scale: [0.0699995458, 0.0699997842, 0.0699994713]
+      Parent: 6862458883491203351
+      Parent: 6862458883491203351
+      Children: []
+    StaticMeshComponent:
+      Mesh: 14693471984162796061
+      Materials: [4881975585746158865]
+  - GameObject: 6862458883491203351
+    Tag: GameObject
+    Transform:
+      Position: [8.73816776, -0.460164338, 4.17627764]
+      Rotation: [-0.000478386704, -1.33152309e-16, -4.72113189e-16]
+      Scale: [0.312400103, 0.312399834, 0.312399954]
+      Children: [3127996517173142863, 9468288163137663489]
+  - GameObject: 9896380478623354452
+    Tag: Troll
+    Transform:
+      Position: [20.5016785, 1.20664517e-05, -32.4219933]
+      Rotation: [-0.000956983771, 2.29091565e-05, -0.000956983771]
+      Scale: [0.296461195, 0.296460599, 0.296461195]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 7689658421196502889
+      Materials: [15697145363054614336]
+  - GameObject: 3307555999298345195
+    Tag: Troll 2
+    Transform:
+      Position: [2.27071929, 2.66568604e-05, 41.9950905]
+      Rotation: [-5.08787767e-09, 5.76307169e-10, -5.08787767e-09]
+      Scale: [0.279999971, 0.280000001, 0.279999971]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 7689658421196502889
+      Materials: [15697145363054614336]
+  - GameObject: 14136703662758363788
+    Tag: SpotLight
+    Transform:
+      Position: [-5.33450079, 0.260906339, 31.2669163]
+      Rotation: [-0.000956976553, -0.000109974295, 0.000956983538]
+      Scale: [229.948029, 74.2800827, 66.2788467]
+      Children: []
+    SpotLightComponent:
+      LightColor: [0, 1, 0.00778198242, 1]
+      Intensity: 762
+      FalloffExponent: 3
+      AttenuationRadius: 2559.45996
+      InnerConeAngle: 60.9500008
+      OuterConeAngle: 63

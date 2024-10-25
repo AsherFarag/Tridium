@@ -3,16 +3,13 @@
 #include "Shader.h"
 #include "Material.h"
 #include <Tridium/Scene/Scene.h>
+#include <Tridium/Rendering/Lights.h>
 
 namespace Tridium {
 
-	extern Vector3 s_AmbientColor;
-	extern Vector3 s_LightDirection;
-	extern Vector3 s_LightColor;
-	extern float s_LightIntensity;
-
 	// Forward declarations
 	class VertexArray;
+	class Texture;
 
 	struct DrawCall
 	{
@@ -21,13 +18,11 @@ namespace Tridium {
 		Matrix4 Transform;
 	};
 
-	constexpr uint32_t MAX_POINT_LIGHTS = 4;
-
-	struct PointLight
+	struct LightEnvironment
 	{
-		Vector3 Position;
-		Vector3 Color;
-		float Intensity;
+		PointLight PointLights[MAX_POINT_LIGHTS];
+		SpotLight SpotLights[MAX_SPOT_LIGHTS];
+		DirectionalLight DirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 	};
 
 	class SceneRenderer
@@ -54,13 +49,15 @@ namespace Tridium {
 		SharedPtr<VertexArray> m_SkyboxVAO;
 		SceneEnvironment& m_SceneEnvironment;
 
+		SharedPtr<Texture> m_BrdfLUT;
+
 		// Per frame data
 		Vector3 m_CameraPosition;
 		Matrix4 m_ViewMatrix;
 		Matrix4 m_ProjectionMatrix;
 		Matrix4 m_ViewProjectionMatrix;
 		std::vector<DrawCall> m_DrawCalls;
-		PointLight m_PointLights[MAX_POINT_LIGHTS];
+		LightEnvironment m_LightEnvironment;
 	};
 
 }

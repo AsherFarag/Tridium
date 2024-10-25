@@ -17,7 +17,7 @@ namespace Tridium::Editor {
 	{
 		m_CurrentDirectory = Application::GetActiveProject()->GetConfiguration().AssetDirectory;
 
-		IO::FilePath iconFolder( "../Tridium/Content/Engine/Editor/Icons" );
+		IO::FilePath iconFolder( Application::GetEngineAssetsDirectory() / "Editor/Icons" );
 
 		m_DefaultIcon = TextureLoader::LoadTexture( iconFolder / "file.png" );
 		m_FolderIcon = TextureLoader::LoadTexture( iconFolder / "folder.png" );

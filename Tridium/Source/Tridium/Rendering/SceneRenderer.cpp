@@ -8,13 +8,10 @@
 #include <Tridium/Rendering/Texture.h>
 #include <Tridium/Rendering/Material.h>
 #include <Tridium/Rendering/Mesh.h>
+#include <Tridium/Rendering/EnvironmentMap.h>
+#include <Tridium/Asset/Loaders/TextureLoader.h>
 
 namespace Tridium {
-
-	Vector3 s_AmbientColor = { 0.1f, 0.1f, 0.1f };
-	Vector3 s_LightDirection = { 0.0f, 1.0f, 0.0f };
-	Vector3 s_LightColor = { 1.0f, 0.5f, 0.0f };
-	float s_LightIntensity = 1.0f;
 
 	SceneRenderer::SceneRenderer( const SharedPtr<Scene>& a_Scene )
 		: m_Scene( a_Scene ), m_SceneEnvironment( a_Scene->GetSceneEnvironment() )
@@ -23,9 +20,12 @@ namespace Tridium {
 		m_DefaultShader.reset( Shader::Create() );
 		m_DefaultShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Default.glsl" );
 		m_SkyboxShader.reset( Shader::Create() );
-		m_SkyboxShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/SkyBox.glsl" );
+		m_SkyboxShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/EnvironmentMap/SkyBox.glsl" );
 		m_DefaultMaterial = MakeShared<Material>( );
 
+		m_BrdfLUT = TextureLoader::LoadTexture( Application::GetEngineAssetsDirectory() / "Renderer/BRDF_LUT.png" );
+
+		// Create the skybox VAO
 		{
 			float skyboxVertices[] = {
 				// positions          
@@ -98,6 +98,17 @@ namespace Tridium {
 		Flush();
 		BeginScene( a_Camera, a_View, a_CameraPosition );
 
+		// - Submit Directional Lights -
+		{
+			m_LightEnvironment.DirectionalLights[0] = m_SceneEnvironment.DirectionalLight;
+			// Convert angles from degrees to radians
+			Vector3 eulerRadians = glm::radians( m_SceneEnvironment.DirectionalLight.Direction );
+			// Calculate direction vector
+			m_LightEnvironment.DirectionalLights[0].Direction.x = cos( eulerRadians.x ) * cos( eulerRadians.y );
+			m_LightEnvironment.DirectionalLights[0].Direction.y = sin( eulerRadians.y );
+			m_LightEnvironment.DirectionalLights[0].Direction.z = sin( eulerRadians.x ) * cos( eulerRadians.y );
+		}
+
 		// - Submit Point Lights -
 		{
 			auto pointLightComponents = m_Scene->m_Registry.view<PointLightComponent, TransformComponent>();
@@ -108,9 +119,34 @@ namespace Tridium {
 					if ( lightIndex >= MAX_POINT_LIGHTS )
 						return;
 
-					m_PointLights[lightIndex].Position = transform.Position;
-					m_PointLights[lightIndex].Color = lightComponent.Color;
-					m_PointLights[lightIndex].Intensity = lightComponent.Intensity;
+					m_LightEnvironment.PointLights[lightIndex].Position = transform.Position;
+					m_LightEnvironment.PointLights[lightIndex].Color = lightComponent.LightColor;
+					m_LightEnvironment.PointLights[lightIndex].Intensity = lightComponent.Intensity;
+					m_LightEnvironment.PointLights[lightIndex].FalloffExponent = lightComponent.FalloffExponent;
+					m_LightEnvironment.PointLights[lightIndex].AttenuationRadius = lightComponent.AttenuationRadius;
+					lightIndex++;
+				}
+			);
+		}
+
+		// - Submit Spot Lights -
+		{
+			auto spotLightComponents = m_Scene->m_Registry.view<SpotLightComponent, TransformComponent>();
+			uint32_t lightIndex = 0;
+			spotLightComponents.each(
+				[&]( auto go, SpotLightComponent& lightComponent, TransformComponent& transform )
+				{
+					if ( lightIndex >= MAX_SPOT_LIGHTS )
+						return;
+
+					m_LightEnvironment.SpotLights[lightIndex].Position = transform.Position;
+					m_LightEnvironment.SpotLights[lightIndex].Direction = transform.GetForward();
+					m_LightEnvironment.SpotLights[lightIndex].Color = lightComponent.LightColor;
+					m_LightEnvironment.SpotLights[lightIndex].Intensity = lightComponent.Intensity;
+					m_LightEnvironment.SpotLights[lightIndex].FalloffExponent = lightComponent.FalloffExponent;
+					m_LightEnvironment.SpotLights[lightIndex].AttenuationRadius = lightComponent.AttenuationRadius;
+					m_LightEnvironment.SpotLights[lightIndex].InnerConeAngle =  glm::radians( lightComponent.InnerConeAngle );
+					m_LightEnvironment.SpotLights[lightIndex].OuterConeAngle = glm::radians( lightComponent.OuterConeAngle );
 					lightIndex++;
 				}
 			);
@@ -167,34 +203,33 @@ namespace Tridium {
 		}
 
 		// - Draw Skybox -
-		if ( auto environmentMap = AssetManager::GetAsset<CubeMap>( m_SceneEnvironment.HDRI.EnvironmentMap ) )
+		if ( m_SceneEnvironment.HDRI.EnvironmentMap && m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap() )
 		{
-			//RenderCommand::SetCullMode( false );	
+			auto radianceMap = m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap();
 			RenderCommand::SetDepthCompare( EDepthCompareOperator::LessOrEqual );
 			m_SkyboxShader->Bind();
 			{
 				Matrix4 skyboxView = Matrix4( Matrix3( m_ViewMatrix ) ); // Remove translation
-				Matrix4 skyboxTransform = Matrix4( 1.0f );
-				skyboxTransform = glm::rotate( skyboxTransform, glm::radians( m_SceneEnvironment.HDRI.RotationEular.x ), { 1.0f, 0.0f, 0.0f } );
-				skyboxTransform = glm::rotate( skyboxTransform, glm::radians( m_SceneEnvironment.HDRI.RotationEular.y ), { 0.0f, 1.0f, 0.0f } );
-				skyboxTransform = glm::rotate( skyboxTransform, glm::radians( m_SceneEnvironment.HDRI.RotationEular.z ), { 0.0f, 0.0f, 1.0f } );
-				skyboxTransform = glm::scale( skyboxTransform, { 100.0f, 100.0f, 100.0f } );
+				Matrix4 skyboxTransform = glm::scale( Matrix4( 1.0f ), { 100.0f, 100.0f, 100.0f } );
 
-				m_SkyboxShader->SetMatrix4( "u_Projection", m_ProjectionMatrix  );
+				m_SkyboxShader->SetMatrix4( "u_Projection", m_ProjectionMatrix );
 				m_SkyboxShader->SetMatrix4( "u_View", skyboxView );
 				m_SkyboxShader->SetMatrix4( "u_Model", skyboxTransform );
 				m_SkyboxShader->SetFloat( "u_Exposure", m_SceneEnvironment.HDRI.Exposure );
 				m_SkyboxShader->SetFloat( "u_Gamma", m_SceneEnvironment.HDRI.Gamma );
-				environmentMap->Bind();
+				const uint32_t MaxMipLevels = 5;
+				float roughness = static_cast<float>( m_SceneEnvironment.HDRI.Blur * ( MaxMipLevels - 1 ) );
+				m_SkyboxShader->SetFloat( "u_Roughness", roughness );
+
+				radianceMap->Bind();
 
 				m_SkyboxVAO->Bind();
 				RenderCommand::DrawIndexed( m_SkyboxVAO );
 				m_SkyboxVAO->Unbind();
 
-				environmentMap->Unbind();
+				radianceMap->Unbind();
 			}
 			m_SkyboxShader->Unbind();
-
 		}
 
 		EndScene();
@@ -215,9 +250,17 @@ namespace Tridium {
 	void SceneRenderer::Flush()
 	{
 		m_DrawCalls.clear();
-		for ( auto& pointLight : m_PointLights )
+		for ( auto& pointLight : m_LightEnvironment.PointLights )
 		{
 			pointLight = {};
+		}
+		for ( auto& spotLight : m_LightEnvironment.SpotLights )
+		{
+			spotLight = {};
+		}
+		for ( auto& directionalLight : m_LightEnvironment.DirectionalLights )
+		{
+			directionalLight = {};
 		}
 	}
 
@@ -245,67 +288,152 @@ namespace Tridium {
 			// Bind Point Lights
 			for ( uint32_t i = 0; i < MAX_POINT_LIGHTS; i++ )
 			{
+				PointLight& pointLight = m_LightEnvironment.PointLights[i];
 				std::string index = std::to_string( i );
-				shader->SetFloat3( ( "u_PointLights[" + index + "].Position" ).c_str(), m_PointLights[i].Position );
-				shader->SetFloat3( ( "u_PointLights[" + index + "].Color" ).c_str(), m_PointLights[i].Color );
-				shader->SetFloat( ( "u_PointLights[" + index + "].Intensity" ).c_str(), m_PointLights[i].Intensity );
-			}
-		}
-
-		// Bind Textures
-		{
-			if ( auto albedoTexture = AssetManager::GetAsset<Texture>( material->AlbedoTexture ) )
-			{
-				albedoTexture->Bind( 0 );
-				shader->SetInt( "u_AlbedoTexture", 0 );
+				shader->SetFloat3( ( "u_PointLights[" + index + "].Position" ).c_str(), pointLight.Position );
+				shader->SetFloat3( ( "u_PointLights[" + index + "].Color" ).c_str(), pointLight.Color );
+				shader->SetFloat( ( "u_PointLights[" + index + "].Intensity" ).c_str(), pointLight.Intensity );
+				shader->SetFloat( ( "u_PointLights[" + index + "].FalloffExponent" ).c_str(), pointLight.FalloffExponent );
+				shader->SetFloat( ( "u_PointLights[" + index + "].AttenuationRadius" ).c_str(), pointLight.AttenuationRadius );
 			}
 
-			if ( auto metallicTexture = AssetManager::GetAsset<Texture>( material->MetallicTexture ) )
+			// Bind Spot Lights
+			for ( uint32_t i = 0; i < MAX_SPOT_LIGHTS; ++i )
 			{
-				metallicTexture->Bind( 1 );
-				shader->SetInt( "u_MetallicTexture", 1 );
+				SpotLight& spotLight = m_LightEnvironment.SpotLights[i];
+				std::string index = std::to_string( i );
+				shader->SetFloat3( ( "u_SpotLights[" + index + "].Position" ).c_str(), spotLight.Position );
+				shader->SetFloat3( ( "u_SpotLights[" + index + "].Direction" ).c_str(), spotLight.Direction );
+				shader->SetFloat3( ( "u_SpotLights[" + index + "].Color" ).c_str(), spotLight.Color );
+				shader->SetFloat( ( "u_SpotLights[" + index + "].Intensity" ).c_str(), spotLight.Intensity );
+				shader->SetFloat( ( "u_SpotLights[" + index + "].FalloffExponent" ).c_str(), spotLight.FalloffExponent );
+				shader->SetFloat( ( "u_SpotLights[" + index + "].AttenuationRadius" ).c_str(), spotLight.AttenuationRadius );
+				shader->SetFloat( ( "u_SpotLights[" + index + "].InnerConeAngle" ).c_str(), spotLight.InnerConeAngle );
+				shader->SetFloat( ( "u_SpotLights[" + index + "].OuterConeAngle" ).c_str(), spotLight.OuterConeAngle );
 			}
 
-			if ( auto roughnessTexture = AssetManager::GetAsset<Texture>( material->RoughnessTexture ) )
+			// Bind Directional Lights
+			for ( uint32_t i = 0; i < MAX_DIRECTIONAL_LIGHTS; ++i )
 			{
-				roughnessTexture->Bind( 2 );
-				shader->SetInt( "u_RoughnessTexture", 2 );
+				DirectionalLight& directionalLight = m_LightEnvironment.DirectionalLights[i];
+				std::string index = std::to_string( i );
+				shader->SetFloat3( ( "u_DirectionalLights[" + index + "].Direction" ).c_str(), directionalLight.Direction );
+				shader->SetFloat3( ( "u_DirectionalLights[" + index + "].Color" ).c_str(), directionalLight.Color );
+				shader->SetFloat( ( "u_DirectionalLights[" + index + "].Intensity" ).c_str(), directionalLight.Intensity );
 			}
 
-			if ( auto specularTexture = AssetManager::GetAsset<Texture>( material->SpecularTexture ) )
+			// Bind Textures
 			{
-				specularTexture->Bind( 3 );
-				shader->SetInt( "u_SpecularTexture", 3 );
+				if ( auto albedoTexture = AssetManager::GetAsset<Texture>( material->AlbedoTexture ) )
+				{
+					albedoTexture->Bind( 0 );
+					shader->SetInt( "u_AlbedoTexture", 0 );
+				}
+
+				if ( auto metallicTexture = AssetManager::GetAsset<Texture>( material->MetallicTexture ) )
+				{
+					metallicTexture->Bind( 1 );
+					shader->SetInt( "u_MetallicTexture", 1 );
+				}
+
+				if ( auto roughnessTexture = AssetManager::GetAsset<Texture>( material->RoughnessTexture ) )
+				{
+					roughnessTexture->Bind( 2 );
+					shader->SetInt( "u_RoughnessTexture", 2 );
+				}
+
+				if ( auto specularTexture = AssetManager::GetAsset<Texture>( material->SpecularTexture ) )
+				{
+					specularTexture->Bind( 3 );
+					shader->SetInt( "u_SpecularTexture", 3 );
+				}
+
+				if ( auto normalTexture = AssetManager::GetAsset<Texture>( material->NormalTexture ) )
+				{
+					normalTexture->Bind( 4 );
+					shader->SetInt( "u_NormalTexture", 4 );
+				}
+
+				if ( auto opacityTexture = AssetManager::GetAsset<Texture>( material->OpacityTexture ) )
+				{
+					opacityTexture->Bind( 5 );
+					shader->SetInt( "u_OpacityTexture", 5 );
+				}
+
+				if ( auto emissiveTexture = AssetManager::GetAsset<Texture>( material->EmissiveTexture ) )
+				{
+					emissiveTexture->Bind( 6 );
+					shader->SetInt( "u_EmissiveTexture", 6 );
+				}
+
+				if ( auto aoTexture = AssetManager::GetAsset<Texture>( material->AOTexture ) )
+				{
+					aoTexture->Bind( 7 );
+					shader->SetInt( "u_AOTexture", 7 );
+				}
 			}
 
-			if ( auto normalTexture = AssetManager::GetAsset<Texture>( material->NormalTexture ) )
+			// Bind environment map
+			if ( m_SceneEnvironment.HDRI.EnvironmentMap && m_SceneEnvironment.HDRI.EnvironmentMap->GetIrradianceMap() )
 			{
-				normalTexture->Bind( 4 );
-				shader->SetInt( "u_NormalTexture", 4 );
+				if ( auto irradianceMap = m_SceneEnvironment.HDRI.EnvironmentMap->GetIrradianceMap() )
+				{
+					irradianceMap->Bind( 8 );
+					shader->SetInt( "u_Environment.IrradianceMap", 8 );
+				}
+
+				if ( auto radianceMap = m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap() )
+				{
+					radianceMap->Bind( 9 );
+					shader->SetInt( "u_Environment.PrefilterMap", 9 );
+				}
+
+				shader->SetFloat( "u_Environment.Roughness", m_SceneEnvironment.HDRI.Blur );
+				shader->SetFloat( "u_Environment.Exposure", m_SceneEnvironment.HDRI.Exposure );
+				shader->SetFloat( "u_Environment.Gamma", m_SceneEnvironment.HDRI.Gamma );
 			}
 
-			if ( auto opacityTexture = AssetManager::GetAsset<Texture>( material->OpacityTexture ) )
+			// Bind BRDF LUT
+			if ( m_BrdfLUT )
 			{
-				opacityTexture->Bind( 5 );
-				shader->SetInt( "u_OpacityTexture", 5 );
-			}
-
-			if ( auto emissiveTexture = AssetManager::GetAsset<Texture>( material->EmissiveTexture ) )
-			{
-				emissiveTexture->Bind( 6 );
-				shader->SetInt( "u_EmissiveTexture", 6 );
-			}
-
-			if ( auto aoTexture = AssetManager::GetAsset<Texture>( material->AOTexture ) )
-			{
-				aoTexture->Bind( 7 );
-				shader->SetInt( "u_AOTexture", 7 );
+				m_BrdfLUT->Bind( 10 );
+				shader->SetInt( "u_Environment.BrdfLUT", 10 );
 			}
 		}
 
 		a_DrawCall.VAO->Bind();
 		RenderCommand::DrawIndexed( a_DrawCall.VAO );
 		a_DrawCall.VAO->Unbind();
+
+		// Unbind Textures
+		{
+			if ( auto albedoTexture = AssetManager::GetAsset<Texture>( material->AlbedoTexture ) )
+				albedoTexture->Unbind();
+
+			if ( auto metallicTexture = AssetManager::GetAsset<Texture>( material->MetallicTexture ) )
+				metallicTexture->Unbind();
+
+			if ( auto roughnessTexture = AssetManager::GetAsset<Texture>( material->RoughnessTexture ) )
+				roughnessTexture->Unbind();
+
+			if ( auto specularTexture = AssetManager::GetAsset<Texture>( material->SpecularTexture ) )
+				specularTexture->Unbind();
+
+			if ( auto normalTexture = AssetManager::GetAsset<Texture>( material->NormalTexture ) )
+				normalTexture->Unbind();
+
+			if ( auto opacityTexture = AssetManager::GetAsset<Texture>( material->OpacityTexture ) )
+				opacityTexture->Unbind();
+
+			if ( auto emissiveTexture = AssetManager::GetAsset<Texture>( material->EmissiveTexture ) )
+				emissiveTexture->Unbind();
+
+			if ( auto aoTexture = AssetManager::GetAsset<Texture>( material->AOTexture ) )
+				aoTexture->Unbind();
+
+			if ( m_SceneEnvironment.HDRI.EnvironmentMap && m_SceneEnvironment.HDRI.EnvironmentMap->GetIrradianceMap() )
+				m_SceneEnvironment.HDRI.EnvironmentMap->GetIrradianceMap()->Unbind();
+		}
 
 		shader->Unbind();
 	}

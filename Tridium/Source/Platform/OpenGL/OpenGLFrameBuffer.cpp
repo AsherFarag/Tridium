@@ -7,13 +7,14 @@ namespace Tridium {
 
 	static const uint32_t s_MaxFramebufferSize = 8192;
 
-	namespace Utils {
+	namespace Util {
 
 		static auto GLTypeFromFramebufferTextureFormat( EFramebufferTextureFormat format )
 		{
 			switch ( format )
 			{
 			case EFramebufferTextureFormat::RGBA8:       return GL_UNSIGNED_BYTE;
+			case EFramebufferTextureFormat::RG16F:       return GL_FLOAT;
 			case EFramebufferTextureFormat::RGBA16F:     return GL_FLOAT;
 			case EFramebufferTextureFormat::RGB32F:      return GL_FLOAT;
 			case EFramebufferTextureFormat::RGBA32F:     return GL_FLOAT;
@@ -29,6 +30,7 @@ namespace Tridium {
 			switch ( format )
 			{
 			case GL_RGBA8:       return EFramebufferTextureFormat::RGBA8;
+			case GL_RG16F:       return EFramebufferTextureFormat::RG16F;
 			case GL_RGBA16F:     return EFramebufferTextureFormat::RGBA16F;
 			case GL_RGB32F:      return EFramebufferTextureFormat::RGB32F;
 			case GL_RGBA32F:     return EFramebufferTextureFormat::RGBA32F;
@@ -44,6 +46,7 @@ namespace Tridium {
 			switch ( format )
 			{
 			case EFramebufferTextureFormat::RGBA8:       return GL_RGBA8;
+			case EFramebufferTextureFormat::RG16F:       return GL_RG16F;
 			case EFramebufferTextureFormat::RGBA16F:     return GL_RGBA16F;
 			case EFramebufferTextureFormat::RGB32F:      return GL_RGB32F;
 			case EFramebufferTextureFormat::RGBA32F:     return GL_RGBA32F;
@@ -128,7 +131,7 @@ namespace Tridium {
 	{
 		for ( auto spec : m_Specification.Attachments.Attachments )
 		{
-			if ( !Utils::IsDepthFormat( spec.TextureFormat ) )
+			if ( !Util::IsDepthFormat( spec.TextureFormat ) )
 				m_ColorAttachmentSpecifications.emplace_back( spec );
 			else
 				m_DepthAttachmentSpecification = spec;
@@ -165,27 +168,30 @@ namespace Tridium {
 		if ( m_ColorAttachmentSpecifications.size() )
 		{
 			m_ColorAttachments.resize( m_ColorAttachmentSpecifications.size() );
-			Utils::CreateTextures( multisample, m_ColorAttachments.data(), m_ColorAttachments.size() );
+			Util::CreateTextures( multisample, m_ColorAttachments.data(), m_ColorAttachments.size() );
 
 			for ( size_t i = 0; i < m_ColorAttachments.size(); i++ )
 			{
-				Utils::BindTexture( multisample, m_ColorAttachments[ i ] );
+				Util::BindTexture( multisample, m_ColorAttachments[ i ] );
 				switch ( m_ColorAttachmentSpecifications[ i ].TextureFormat )
 				{
 				case EFramebufferTextureFormat::RGBA8:
-					Utils::AttachColorTexture( m_ColorAttachments[ i ], m_Specification.Samples, GL_RGBA8, GL_RGBA, m_Specification.Width, m_Specification.Height, i );
+					Util::AttachColorTexture( m_ColorAttachments[ i ], m_Specification.Samples, GL_RGBA8, GL_RGBA, m_Specification.Width, m_Specification.Height, i );
+					break;
+				case EFramebufferTextureFormat::RG16F:
+					Util::AttachColorTexture( m_ColorAttachments[i], m_Specification.Samples, GL_RG16F, GL_RG, m_Specification.Width, m_Specification.Height, i );
 					break;
 				case EFramebufferTextureFormat::RGBA16F:
-					Utils::AttachColorTexture( m_ColorAttachments[i], m_Specification.Samples, GL_RGBA16F, GL_RGBA, m_Specification.Width, m_Specification.Height, i );
+					Util::AttachColorTexture( m_ColorAttachments[i], m_Specification.Samples, GL_RGBA16F, GL_RGBA, m_Specification.Width, m_Specification.Height, i );
 					break;
 				case EFramebufferTextureFormat::RGB32F:
-					Utils::AttachColorTexture( m_ColorAttachments[i], m_Specification.Samples, GL_RGB32F, GL_RGB, m_Specification.Width, m_Specification.Height, i );
+					Util::AttachColorTexture( m_ColorAttachments[i], m_Specification.Samples, GL_RGB32F, GL_RGB, m_Specification.Width, m_Specification.Height, i );
 					break;
 				case EFramebufferTextureFormat::RGBA32F:
-					Utils::AttachColorTexture( m_ColorAttachments[i], m_Specification.Samples, GL_RGBA32F, GL_RGBA, m_Specification.Width, m_Specification.Height, i );
+					Util::AttachColorTexture( m_ColorAttachments[i], m_Specification.Samples, GL_RGBA32F, GL_RGBA, m_Specification.Width, m_Specification.Height, i );
 					break;
 				case EFramebufferTextureFormat::RED_INT:
-					Utils::AttachColorTexture( m_ColorAttachments[ i ], m_Specification.Samples, GL_R32I, GL_RED_INTEGER, m_Specification.Width, m_Specification.Height, i );
+					Util::AttachColorTexture( m_ColorAttachments[ i ], m_Specification.Samples, GL_R32I, GL_RED_INTEGER, m_Specification.Width, m_Specification.Height, i );
 					break;
 				}
 			}
@@ -193,12 +199,12 @@ namespace Tridium {
 
 		if ( m_DepthAttachmentSpecification.TextureFormat != EFramebufferTextureFormat::None )
 		{
-			Utils::CreateTextures( multisample, &m_DepthAttachment, 1 );
-			Utils::BindTexture( multisample, m_DepthAttachment );
+			Util::CreateTextures( multisample, &m_DepthAttachment, 1 );
+			Util::BindTexture( multisample, m_DepthAttachment );
 			switch ( m_DepthAttachmentSpecification.TextureFormat )
 			{
 			case EFramebufferTextureFormat::DEPTH24STENCIL8:
-				Utils::AttachDepthTexture( m_DepthAttachment, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height );
+				Util::AttachDepthTexture( m_DepthAttachment, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height );
 				break;
 			}
 		}
@@ -266,7 +272,45 @@ namespace Tridium {
 
 		auto& spec = m_ColorAttachmentSpecifications[ attachmentIndex ];
 		glClearTexImage( m_ColorAttachments[ attachmentIndex ], 0,
-			Utils::TridiumFBTextureFormatToGL( spec.TextureFormat ), GL_INT, &value );
+			Util::TridiumFBTextureFormatToGL( spec.TextureFormat ), GL_INT, &value );
+	}
+
+	OpenGLRenderBuffer::OpenGLRenderBuffer( uint32_t a_Width, uint32_t a_Height, EFramebufferTextureFormat a_Format )
+		: m_Width( a_Width ), m_Height( a_Height ), m_Format( a_Format )
+	{
+		Invalidate();
+	}
+
+	OpenGLRenderBuffer::~OpenGLRenderBuffer()
+	{
+		glDeleteRenderbuffers( 1, &m_RendererID );
+	}
+
+	void OpenGLRenderBuffer::Invalidate()
+	{
+		TODO( "Set up format!" );
+		glGenRenderbuffers( 1, &m_RendererID );
+		glBindRenderbuffer( GL_RENDERBUFFER, m_RendererID );
+		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, m_Width, m_Height );
+		glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_RendererID ); // Attach depth buffer
+	}
+
+	void OpenGLRenderBuffer::Bind()
+	{
+		glBindRenderbuffer( GL_RENDERBUFFER, m_RendererID );
+	}
+
+	void OpenGLRenderBuffer::Unbind()
+	{
+		glBindRenderbuffer( GL_RENDERBUFFER, 0 );
+	}
+
+	void OpenGLRenderBuffer::Resize( uint32_t a_Width, uint32_t a_Height )
+	{
+		m_Width = a_Width;
+		m_Height = a_Height;
+
+		Invalidate();
 	}
 
 }

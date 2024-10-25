@@ -13,6 +13,7 @@ namespace Tridium::IO {
         FilePath( const fs::path& a_Path ) : fs::path( a_Path ) {}
 
         operator const fs::path&() const { return *this; }
+		operator fs::path& ( ) { return *this; }
         operator std::string() const { return ToString(); }
 
         FilePath operator+( const std::string& suffix ) const {

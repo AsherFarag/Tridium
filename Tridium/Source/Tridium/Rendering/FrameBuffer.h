@@ -9,6 +9,8 @@ namespace Tridium {
 		// Color
 		RGBA8,
 		RED_INT,
+		RG16F,
+		RGB16F,
 		RGBA16F,
 		RGB32F,
 		RGBA32F,
@@ -64,6 +66,24 @@ namespace Tridium {
 
 		virtual uint32_t GetColorAttachmentID( uint32_t index = 0 ) const = 0;
 		virtual const FramebufferSpecification& GetSpecification() const = 0;
+	};
+
+	class RenderBuffer
+	{
+	public:
+		static SharedPtr<RenderBuffer> Create( uint32_t a_Width, uint32_t a_Height, EFramebufferTextureFormat a_Format );
+		virtual ~RenderBuffer() = default;
+
+		virtual void Bind() = 0;
+		virtual void Unbind() = 0;
+		virtual void Invalidate() = 0;
+
+		virtual void Resize( uint32_t a_Width, uint32_t a_Height ) = 0;
+
+		virtual uint32_t GetID() const = 0;
+		virtual EFramebufferTextureFormat GetFormat() const = 0;
+		virtual uint32_t GetWidth() const = 0;
+		virtual uint32_t GetHeight() const = 0;
 	};
 
 }
