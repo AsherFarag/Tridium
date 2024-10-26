@@ -43,7 +43,6 @@ in vec2 v_UV;
 uniform sampler2D u_AlbedoTexture;
 uniform sampler2D u_MetallicTexture;
 uniform sampler2D u_RoughnessTexture;
-uniform sampler2D u_SpecularTexture;
 uniform sampler2D u_NormalTexture;
 uniform sampler2D u_OpacityTexture;
 uniform sampler2D u_EmissiveTexture;
@@ -326,7 +325,7 @@ vec3 CalcSpotLightRadiance(SpotLight light, vec3 normal, vec3 fragPos, vec3 view
     vec3 H = normalize(viewDir + L);               // Half-vector
 
     // Spotlight angle attenuation based on cone angles
-    float theta = dot(L, normalize(-light.Direction)); // Align light direction
+    float theta = dot(-L, normalize(-light.Direction)); // Align light direction
     float epsilon = light.InnerConeAngle - light.OuterConeAngle;
     float intensityFactor = 1.0 - clamp((theta - light.OuterConeAngle) / epsilon, 0.0, 1.0); 
 

@@ -3,6 +3,7 @@
 #include <Tridium/IO/Serializer.h>
 #include <yaml-cpp/yaml.h>
 #include <fstream>
+#include <Tridium/Asset/AssetManager.h>
 #include <Tridium/Asset/EditorAssetManager.h>
 
 namespace Tridium {

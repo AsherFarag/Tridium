@@ -119,4 +119,14 @@ namespace Tridium {
 
 		virtual bool operator==( const CubeMap& a_Other ) const = 0;
 	};
+
+	class TextureFactory
+	{
+	public:
+		static void Init();
+
+		static AssetHandle GetWhiteTexture();
+		static AssetHandle GetBlackTexture();
+		static AssetHandle GetNormalTexture();
+	};
 }

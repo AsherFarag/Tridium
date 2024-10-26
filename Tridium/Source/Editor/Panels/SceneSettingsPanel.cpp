@@ -1,4 +1,6 @@
 #include "tripch.h"
+#ifdef IS_EDITOR
+
 #include "SceneSettingsPanel.h"
 #include <Editor/Editor.h>
 #include <Editor/PropertyDrawers.h>
@@ -60,3 +62,4 @@ namespace Tridium::Editor {
 	}
 
 }
+#endif // IS_EDITOR

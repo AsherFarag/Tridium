@@ -5,11 +5,13 @@
 #include <yaml-cpp/yaml.h>
 #include <fstream>
 
+#include <Tridium/Rendering/Mesh.h>
+#include <Tridium/Rendering/Texture.h>
+
 namespace Tridium::Editor {
 
 	EditorAssetManager::EditorAssetManager()
 	{
-		Init();
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -20,6 +22,10 @@ namespace Tridium::Editor {
 	{
 		AssetFactory::Init();
 		DeserializeAssetRegistry();
+
+		// Initialize asset factories
+		MeshFactory::Init();
+		TextureFactory::Init();
 	}
 
 	void EditorAssetManager::Shutdown()

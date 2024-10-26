@@ -156,6 +156,8 @@ namespace Tridium {
 #else
 		m_AssetManager = MakeShared<RuntimeAssetManager>();
 #endif // IS_EDITOR
+
+		m_AssetManager->Init();
 	}
 
 	bool Application::OnWindowClosed( WindowCloseEvent& e )

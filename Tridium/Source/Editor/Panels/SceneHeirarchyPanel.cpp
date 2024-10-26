@@ -161,7 +161,54 @@ namespace Tridium::Editor {
 				if ( ImGui::MenuItem( "Cube" ) )
 				{
 					newGO = m_Context->InstantiateGameObject( "Cube" );
-					newGO.AddComponent<StaticMeshComponent>();
+					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCube();
+					SetSelectedGameObject( newGO );
+				}
+
+				if ( ImGui::MenuItem( "Sphere" ) )
+				{
+					newGO = m_Context->InstantiateGameObject( "Sphere" );
+					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultSphere();
+					SetSelectedGameObject( newGO );
+				}
+
+				if ( ImGui::MenuItem( "Cylinder" ) )
+				{
+					newGO = m_Context->InstantiateGameObject( "Cylinder" );
+					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCylinder();
+					SetSelectedGameObject( newGO );
+				}
+
+				if ( ImGui::MenuItem( "Cone" ) )
+				{
+					newGO = m_Context->InstantiateGameObject( "Cone" );
+					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCone();
+					SetSelectedGameObject( newGO );
+				}
+
+				if ( ImGui::MenuItem( "Torus" ) )
+				{
+					newGO = m_Context->InstantiateGameObject( "Torus" );
+					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultTorus();
+					SetSelectedGameObject( newGO );
+				}
+
+				ImGui::EndMenu();
+			}
+
+			if ( ImGui::BeginMenu( "Lights" ) )
+			{
+				if ( ImGui::MenuItem( "Point Light" ) )
+				{
+					newGO = m_Context->InstantiateGameObject( "Point Light" );
+					newGO.AddComponent<PointLightComponent>();
+					SetSelectedGameObject( newGO );
+				}
+
+				if ( ImGui::MenuItem( "Spot Light" ) )
+				{
+					newGO = m_Context->InstantiateGameObject( "Spot Light" );
+					newGO.AddComponent<SpotLightComponent>();
 					SetSelectedGameObject( newGO );
 				}
 
@@ -182,7 +229,7 @@ namespace Tridium::Editor {
 		{
 			ImGui::Separator();
 
-			ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Text, { 0.8, 0.1, 0.1, 0.8 } );
+			ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Text, ImVec4( Editor::Style::Colors::Red ) );
 			if ( ImGui::MenuItem( " - Remove All - " ) ) m_Context->Clear();
 			ImGui::PopStyleColor();
 		}

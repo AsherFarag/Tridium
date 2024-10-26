@@ -51,6 +51,11 @@ namespace Tridium {
 
 		SharedPtr<Texture> m_BrdfLUT;
 
+		// Temp?
+		SharedPtr<Texture> m_WhiteTexture;
+		SharedPtr<Texture> m_BlackTexture;
+		SharedPtr<Texture> m_NormalTexture;
+
 		// Per frame data
 		Vector3 m_CameraPosition;
 		Matrix4 m_ViewMatrix;
