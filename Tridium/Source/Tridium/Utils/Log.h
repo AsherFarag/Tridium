@@ -41,6 +41,9 @@ namespace Tridium {
 //	return os << glm::to_string( quaternion );
 //}
 
+#define TE_USE_LOGGING 0
+#if TE_USE_LOGGING
+
 // - Core Log Macros -
 #define TE_CORE_TRACE(...)	::Tridium::Log::GetCoreLogger()->trace(__VA_ARGS__)
 #define TE_CORE_DEBUG(...)	::Tridium::Log::GetCoreLogger()->debug(__VA_ARGS__)
@@ -56,3 +59,23 @@ namespace Tridium {
 #define LOG_WARN(...)       ::Tridium::Log::GetClientLogger()->warn(__VA_ARGS__)
 #define LOG_ERROR(...)      ::Tridium::Log::GetClientLogger()->error(__VA_ARGS__)
 #define LOG_FATAL(...)      ::Tridium::Log::GetClientLogger()->critical(__VA_ARGS__)
+
+#else
+
+// - Core Log Macros -
+#define TE_CORE_TRACE(...)	
+#define TE_CORE_DEBUG(...)	
+#define TE_CORE_INFO(...)	
+#define TE_CORE_WARN(...)	
+#define TE_CORE_ERROR(...)	
+#define TE_CORE_FATAL(...)	
+
+// - Client Log Macros - 
+#define LOG_TRACE(...)      
+#define LOG_DEBUG(...)		
+#define LOG_INFO(...)       
+#define LOG_WARN(...)       
+#define LOG_ERROR(...)      
+#define LOG_FATAL(...)      
+
+#endif

@@ -6,6 +6,7 @@
 #include <Editor/PropertyDrawers.h>
 #include <Tridium/Rendering/EnvironmentMap.h>
 #include <Tridium/Asset/EditorAssetManager.h>
+#include <Tridium/Rendering/FrameBuffer.h>
 
 namespace Tridium::Editor {
 
@@ -39,18 +40,8 @@ namespace Tridium::Editor {
 				ImGui::SliderFloat( "Exposure", &m_Scene->GetSceneEnvironment().HDRI.Exposure, 0.0f, 10.0f );
 				ImGui::SliderFloat( "Gamma", &m_Scene->GetSceneEnvironment().HDRI.Gamma, 0.0f, 10.0f );
 				ImGui::SliderFloat( "Blur", &m_Scene->GetSceneEnvironment().HDRI.Blur, 0.0f, 1.0f );
+				ImGui::SliderFloat( "Intensity", &m_Scene->GetSceneEnvironment().HDRI.Intensity, 0.0f, 10.0f );
 				DrawProperty( "Rotation", m_Scene->GetSceneEnvironment().HDRI.RotationEular, EDrawPropertyFlags::Editable );
-
-				ImGui::TreePop();
-			}
-
-			if ( ImGui::TreeNode( "Directional Light" ) )
-			{
-				Vector2 direction = m_Scene->GetSceneEnvironment().DirectionalLight.Direction;
-				if ( DrawProperty( "Direction", direction, EDrawPropertyFlags::Editable ) )
-					m_Scene->GetSceneEnvironment().DirectionalLight.Direction = { direction.x, direction.y, 0.0f };
-				DrawProperty( "Color", m_Scene->GetSceneEnvironment().DirectionalLight.Color, EDrawPropertyFlags::Editable );
-				ImGui::DragFloat( "Intensity", &m_Scene->GetSceneEnvironment().DirectionalLight.Intensity, 0.1f, 0.0f );
 
 				ImGui::TreePop();
 			}

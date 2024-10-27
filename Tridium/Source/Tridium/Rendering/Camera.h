@@ -34,8 +34,10 @@ namespace Tridium {
 		void SetPerspective( float FOV, float nearClip, float farClip );
 		void SetOrthographic( float size, float nearClip, float farClip );
 
-		float GetAspectRatio() const { return m_AspectRatio; }
-		void SetViewportSize( uint32_t width, uint32_t height );
+		float GetAspectRatio() const { return m_ViewportSize.x / m_ViewportSize.y; }
+		const iVector2& GetViewportSize() const { return m_ViewportSize; }
+		void SetViewportSize( const iVector2& a_Size );
+		void SetViewportSize( uint32_t a_Width, uint32_t a_Heigh ) { SetViewportSize( iVector2( a_Width, a_Heigh ) ); }
 
 		float GetPerspectiveFOV() const { return m_Perspective.FOV; } 
 		void SetPerspectiveFOV( float FOV ) { m_Perspective.FOV = FOV; RecalculateProjection(); }
@@ -64,8 +66,7 @@ namespace Tridium {
 		PerspectiveData m_Perspective;
 		OrthographicData m_Orthographic;
 
-
-		float m_AspectRatio = 16.f / 9.0f;
+		Vector2 m_ViewportSize = { 1280, 720 };
 	};
 
 	BEGIN_REFLECT( PerspectiveData )

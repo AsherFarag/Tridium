@@ -11,6 +11,11 @@ uniform mat4 u_Model;
 out vec3 v_WorldPos;
 out mat3 v_TBN; 
 out vec2 v_UV;
+
+// Shadows
+uniform mat4 u_LightSpaceMatrix;
+out vec4 v_FragPosLightSpace;
+
 void main()
 {
 	vec3 T = normalize(vec3(u_Model * vec4(a_Tangent,   0.0)));
@@ -23,6 +28,10 @@ void main()
 
 	v_WorldPos = ( u_Model * vec4(a_Position, 1.0) ).xyz;
 	v_UV = a_UV;
+
+    // Shadows
+	v_FragPosLightSpace = u_LightSpaceMatrix * vec4( v_WorldPos, 1.0 );
+
 	gl_Position = u_PVM * vec4(a_Position, 1.0);
 }
 
@@ -48,14 +57,21 @@ uniform sampler2D u_OpacityTexture;
 uniform sampler2D u_EmissiveTexture;
 uniform sampler2D u_AOTexture;
 
+// Shadows
+in vec4 v_FragPosLightSpace;
+uniform sampler2D u_ShadowMap;
+uniform vec3 u_LightPos;
+uniform vec3 u_ViewPos;
+
+
 struct Environment
 {
-	samplerCube IrradianceMap;
 	samplerCube PrefilterMap;
 	sampler2D BrdfLUT;
 	float Roughness;
 	float Exposure;
 	float Gamma;
+    float Intensity;
 };
 
 uniform Environment u_Environment;
@@ -124,6 +140,9 @@ vec3 GammaCorrection(vec3 color, float gamma)
     return pow(color, vec3(1.0 / gamma));
 }
 
+// TEMP ?
+float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal);
+
 void main()
 {
 	vec3 albedo = texture(u_AlbedoTexture, v_UV).rgb;
@@ -156,7 +175,8 @@ void main()
 	for (int i = 0; i < MAX_NUM_DIRECTIONAL_LIGHTS; ++i)
 	{
 	    DirectionalLight dirLight = u_DirectionalLights[i];
-	    Lo += CalcDirectionalLightRadiance(dirLight, normal, V, albedo, roughness, metallic, F0);
+	    vec3 light = CalcDirectionalLightRadiance(dirLight, normal, V, albedo, roughness, metallic, F0);
+        Lo += light * ( 1.0 - ShadowCalculation(v_FragPosLightSpace, normal) );
 	}
 	// Point Lights
 	for (int i = 0; i < MAX_NUM_POINT_LIGHTS; ++i)
@@ -180,10 +200,12 @@ void main()
 	kD *= 1.0 - metallic;
 
 	vec3 irradiance = textureLod(u_Environment.PrefilterMap, normal, MAX_REFLECTION_LOD).rgb;
+    irradiance *= u_Environment.Intensity;
 	vec3 diffuse = irradiance * albedo;
 
 	float prefilteredRoughness = min( ( ( u_Environment.Roughness + roughness ) * MAX_REFLECTION_LOD ), MAX_REFLECTION_LOD );
 	vec3 prefilteredColor = textureLod(u_Environment.PrefilterMap, R, prefilteredRoughness).rgb;
+    prefilteredColor *= u_Environment.Intensity;
 
 	vec2 envBRDF = texture(u_Environment.BrdfLUT, vec2(max(dot(normal, -V), 0.0)), u_Environment.Roughness + roughness).rg;
 	vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
@@ -192,9 +214,10 @@ void main()
 
 	// Apply fresnel factor to the specular term, ensuring roughness impact
 	//specular *= max( (1.0 - roughness), EPSILON );  // Reduce specular based on roughness
-	//specular *= 0.65 + fresnel * 0.35;  // Add a slight minimum base reflectivity (0.1) and clamp at 1.0
+	specular *= 0.65 + fresnel * 0.35;  // Add a slight minimum base reflectivity (0.1) and clamp at 1.0
 	//specular *= mix(vec3(1.0), albedo / max( dot(GRAY_SCALE, albedo), metallic), 0.01 );
-	vec3 ambient = (kD * diffuse + specular ) * max(ao, EPSILON);
+
+	vec3 ambient = (kD * diffuse + specular ) * max(ao, 0.05); // Minimum AO is 0.05
 	vec3 color = ambient + Lo;
 
 	color += emissive * 5.0;
@@ -352,4 +375,26 @@ vec3 CalcSpotLightRadiance(SpotLight light, vec3 normal, vec3 fragPos, vec3 view
 
     float NdotL = max(dot(normal, L), 0.0);
     return (kD * albedo / PI + specular) * radiance * NdotL;
+}
+
+// TEMP ?
+float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal)
+{
+    // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+	if(projCoords.z > 1.0)
+        return 0.0;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+
+    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float closestDepth = texture(u_ShadowMap, projCoords.xy).r; 
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+
+    vec3 lightDir = normalize(u_LightPos - v_WorldPos);
+	float bias = max(0.025 * (1.0 - dot(normal, lightDir)), 0.0005);  
+    // check whether current frag pos is in shadow
+    float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
+	return shadow;
 }

@@ -204,7 +204,7 @@ namespace Tridium {
 		framebuffer->Bind();
 		renderBuffer->Bind();
 
-		RenderCommand::SetCullMode( false );
+		RenderCommand::SetCullMode( ECullMode::None );
 		UniquePtr<Shader> irradianceShader( Shader::Create() );
 		irradianceShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/EnvironmentMap/IrradianceConvolution.glsl" );
 
@@ -233,7 +233,7 @@ namespace Tridium {
 			framebuffer->Unbind(); // Unbind the framebuffer
 		}
 
-		RenderCommand::SetCullMode( true );
+		RenderCommand::SetCullMode( ECullMode::Back );
 
 		m_IrradianceMap->Unbind(); // Unbind the irradiance map
 		irradianceShader->Unbind(); // Unbind the shader
@@ -259,7 +259,7 @@ namespace Tridium {
 		UniquePtr<Shader> prefilterShader( Shader::Create() );
 		prefilterShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/EnvironmentMap/PreFilter-EnvironmentMap.glsl" );
 
-		RenderCommand::SetCullMode( false );
+		RenderCommand::SetCullMode( ECullMode::None );
 		prefilterShader->Bind();
 		{
 			prefilterShader->SetMatrix4( "u_Projection", s_CaptureProjection );
@@ -298,7 +298,6 @@ namespace Tridium {
 			a_EnvironmentCubeMap->Unbind(); // Unbind the irradiance map
 		}
 		prefilterShader->Unbind(); // Unbind the shader
-		RenderCommand::SetCullMode( true );
 	}
 
 }

@@ -36,10 +36,10 @@ namespace Tridium {
 		SetOrthographic();
 	}
 
-	void Camera::SetViewportSize( uint32_t width, uint32_t height )
+	void Camera::SetViewportSize( const iVector2& a_Size )
 	{
-		TE_CORE_ASSERT( width > 0 && height > 0, "Invalid Viewport width and height!" );
-		m_AspectRatio = (float)width / (float)height;
+		TE_CORE_ASSERT( a_Size.x > 0 && a_Size.y > 0, "Invalid Viewport width and height!" );
+		m_ViewportSize = a_Size;
 		RecalculateProjection();
 	}
 
@@ -47,12 +47,12 @@ namespace Tridium {
 	{
 		if ( m_ProjectionType == ProjectionType::Perspective )
 		{
-			m_Projection = glm::perspective( glm::radians( m_Perspective.FOV ), m_AspectRatio, m_Perspective.Near, m_Perspective.Far );
+			m_Projection = glm::perspective( glm::radians( m_Perspective.FOV ), GetAspectRatio(), m_Perspective.Near, m_Perspective.Far);
 		}
 		else // Orthographic
 		{
-			float orthoLeft = -m_Orthographic.Size * m_AspectRatio * 0.5f;
-			float orthoRight = m_Orthographic.Size * m_AspectRatio * 0.5f;
+			float orthoLeft = -m_Orthographic.Size * GetAspectRatio() * 0.5f;
+			float orthoRight = m_Orthographic.Size * GetAspectRatio() * 0.5f;
 			float orthoBottom = -m_Orthographic.Size * 0.5f;
 			float orthoTop = m_Orthographic.Size * 0.5f;
 

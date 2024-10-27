@@ -15,4 +15,11 @@ namespace Tridium {
 		Always,
 	};
 
+	enum class ECullMode
+	{
+		None = 0,
+		Front,
+		Back,
+	};
+
 }

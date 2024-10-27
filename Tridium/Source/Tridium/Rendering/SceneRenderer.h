@@ -4,12 +4,14 @@
 #include "Material.h"
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Rendering/Lights.h>
+#include <Tridium/Rendering/FrameBuffer.h>
 
 namespace Tridium {
 
 	// Forward declarations
 	class VertexArray;
 	class Texture;
+	// -------------------
 
 	struct DrawCall
 	{
@@ -30,7 +32,7 @@ namespace Tridium {
 	public:
 		SceneRenderer( const SharedPtr<Scene>& a_Scene );
 
-		void Render( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition );
+		void Render( const SharedPtr<Framebuffer>& a_FBO, const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition );
 
 	protected:
 		void BeginScene( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition );
@@ -43,15 +45,14 @@ namespace Tridium {
 
 	private:
 		SharedPtr<Scene> m_Scene;
+		SceneEnvironment& m_SceneEnvironment;
+
+		// Default assets
 		SharedPtr<Shader> m_DefaultShader;
 		SharedPtr<Material> m_DefaultMaterial;
 		SharedPtr<Shader> m_SkyboxShader;
 		SharedPtr<VertexArray> m_SkyboxVAO;
-		SceneEnvironment& m_SceneEnvironment;
-
 		SharedPtr<Texture> m_BrdfLUT;
-
-		// Temp?
 		SharedPtr<Texture> m_WhiteTexture;
 		SharedPtr<Texture> m_BlackTexture;
 		SharedPtr<Texture> m_NormalTexture;
@@ -63,6 +64,12 @@ namespace Tridium {
 		Matrix4 m_ViewProjectionMatrix;
 		std::vector<DrawCall> m_DrawCalls;
 		LightEnvironment m_LightEnvironment;
+
+		// Shadows
+		SharedPtr<Framebuffer> m_ShadowFBO;
+		Vector2 m_ShadowMapSize{1024, 1024};
+		SharedPtr<Shader> m_ShadowMapShader;
+		Matrix4 m_LightViewProjectionMatrix;
 	};
 
 }

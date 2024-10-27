@@ -32,6 +32,109 @@ namespace Tridium::IO {
 		std::vector<GUID> Children;
 	};
 
+	void SerializeGameObject( Archive& out, GameObject go );
+	bool DeserializeGameObject( const YAML::Node& a_Node, Scene& a_Scene, std::unordered_map<GUID, DeserializedGameObject>& a_DeserializedGameObjects );
+
+	template<>
+	void SerializeToText( Archive& a_Archive, const Scene& a_Data )
+	{
+		a_Archive << YAML::BeginMap;
+		a_Archive << YAML::Key << "Scene";
+		a_Archive << YAML::Value << a_Data.GetName().c_str();
+
+		a_Archive << YAML::Key << "SceneEnvironment" << YAML::BeginMap;
+		{
+			a_Archive << YAML::Key << "HDRI" << YAML::BeginMap;
+			{
+				a_Archive << YAML::Key << "EnvironmentMapHandle";
+				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle;
+
+				a_Archive << YAML::Key << "Exposure";
+				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().HDRI.Exposure;
+
+				a_Archive << YAML::Key << "Gamma";
+				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().HDRI.Gamma;
+
+				a_Archive << YAML::Key << "Blur";
+				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().HDRI.Blur;
+
+				a_Archive << YAML::Key << "Intensity";
+				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().HDRI.Intensity;
+
+				a_Archive << YAML::Key << "RotationEular";
+				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().HDRI.RotationEular;
+			}
+			a_Archive << YAML::EndMap; // End HDRI
+		}
+		a_Archive << YAML::EndMap; // End SceneEnvironment
+
+		a_Archive << YAML::Key << "GameObjects";
+		a_Archive << YAML::Value << YAML::BeginSeq;
+		{
+			auto gameObjects = a_Data.GetRegistry().view<GUIDComponent>();
+			for ( auto it = gameObjects.rbegin(); it < gameObjects.rend(); it++ )
+			{
+				SerializeGameObject( a_Archive, GameObject( *it ) );
+			}
+		}
+		a_Archive << YAML::EndSeq;
+
+		a_Archive << YAML::EndMap;
+	}
+
+	template<>
+	bool DeserializeFromText( const YAML::Node& a_Node, Scene& a_Data )
+	{
+		if ( auto sceneNameNode = a_Node["Scene"] )
+			a_Data.SetName( sceneNameNode.as<std::string>() );
+		else
+			return false;
+
+		if ( auto sceneEnvironmentNode = a_Node["SceneEnvironment"] )
+		{
+			if ( auto hdriNode = sceneEnvironmentNode["HDRI"] )
+			{
+				a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle = hdriNode["EnvironmentMapHandle"].as<AssetHandle>();
+				a_Data.GetSceneEnvironment().HDRI.Exposure = hdriNode["Exposure"].as<float>();
+				a_Data.GetSceneEnvironment().HDRI.Gamma = hdriNode["Gamma"].as<float>();
+				a_Data.GetSceneEnvironment().HDRI.Blur = hdriNode["Blur"].as<float>();
+				a_Data.GetSceneEnvironment().HDRI.Intensity = hdriNode["Intensity"].as<float>();
+				a_Data.GetSceneEnvironment().HDRI.RotationEular = hdriNode["RotationEular"].as<Vector3>();
+
+				if ( a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle.Valid() )
+				{
+					a_Data.GetSceneEnvironment().HDRI.EnvironmentMap = EnvironmentMap::Create( a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle );
+				}
+			}
+		}
+
+		auto gameObjectsNode = a_Node["GameObjects"];
+
+		if ( !gameObjectsNode )
+			return false;
+
+		std::unordered_map<GUID, DeserializedGameObject> deserializedGameObjects;
+		for ( auto goNode : gameObjectsNode )
+		{
+			TE_CORE_ASSERT( DeserializeGameObject( goNode, a_Data, deserializedGameObjects ), "Failed to deserialize GameObject from a scene file!" );
+		}
+
+		// Link up gameobject references to eachother
+		for ( auto&& [guid, go] : deserializedGameObjects )
+		{
+			if ( go.Parent.has_value() )
+			{
+				if ( auto parent = deserializedGameObjects.find( go.Parent.value() ); parent != deserializedGameObjects.end() )
+				{
+					TransformComponent& tc = go.GameObject.GetComponent<TransformComponent>();
+					tc.AttachToParent( parent->second.GameObject );
+				}
+			}
+		}
+
+		return true;
+	}
+
 	void SerializeGameObject( Archive& out, GameObject go )
 	{
 		out << YAML::BeginMap; // Begin GameObject
@@ -118,7 +221,7 @@ namespace Tridium::IO {
 		{
 			TransformComponent& tc = go.GetTransform();
 			tc.Position = transformNode["Position"].as<Vector3>();
-			tc.Rotation = glm::radians( transformNode["Rotation"].as<Vector3>() );
+			tc.Rotation.SetFromEuler( transformNode["Rotation"].as<Vector3>() );
 			tc.Scale = transformNode["Scale"].as<Vector3>();
 
 			if ( auto parentNode = transformNode["Parent"] )
@@ -132,7 +235,7 @@ namespace Tridium::IO {
 			}
 		}
 
-		a_DeserializedGameObjects.emplace( guid, std::move(deserializedGO) );
+		a_DeserializedGameObjects.emplace( guid, std::move( deserializedGO ) );
 
 		auto it = a_Node.begin();
 		++it; // Skip GameObject node
@@ -170,122 +273,6 @@ namespace Tridium::IO {
 
 			Refl::MetaAny componentAsAny = componentType.from_void( component );
 			deserFunc( componentNode.second, componentAsAny );
-		}
-
-		return true;
-	}
-
-	template<>
-	void SerializeToText( Archive& a_Archive, const Scene& a_Data )
-	{
-		a_Archive << YAML::BeginMap;
-		a_Archive << YAML::Key << "Scene";
-		a_Archive << YAML::Value << a_Data.GetName().c_str();
-
-		a_Archive << YAML::Key << "SceneEnvironment" << YAML::BeginMap;
-		{
-			a_Archive << YAML::Key << "HDRI" << YAML::BeginMap;
-			{
-				a_Archive << YAML::Key << "EnvironmentMapHandle";
-				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle;
-
-				a_Archive << YAML::Key << "Exposure";
-				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().HDRI.Exposure;
-
-				a_Archive << YAML::Key << "Gamma";
-				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().HDRI.Gamma;
-
-				a_Archive << YAML::Key << "Blur";
-				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().HDRI.Blur;
-
-				a_Archive << YAML::Key << "RotationEular";
-				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().HDRI.RotationEular;
-			}
-			a_Archive << YAML::EndMap; // End HDRI
-
-			a_Archive << YAML::Key << "DirectionalLight" << YAML::BeginMap;
-			{
-				a_Archive << YAML::Key << "Direction";
-				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().DirectionalLight.Direction;
-
-				a_Archive << YAML::Key << "Color";
-				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().DirectionalLight.Color;
-
-				a_Archive << YAML::Key << "Intensity";
-				a_Archive << YAML::Value << a_Data.GetSceneEnvironment().DirectionalLight.Intensity;
-			}
-			a_Archive << YAML::EndMap; // End DirectionalLight
-		}
-		a_Archive << YAML::EndMap; // End SceneEnvironment
-
-		a_Archive << YAML::Key << "GameObjects";
-		a_Archive << YAML::Value << YAML::BeginSeq;
-		{
-			auto gameObjects = a_Data.GetRegistry().view<GUIDComponent>();
-			for ( auto it = gameObjects.rbegin(); it < gameObjects.rend(); it++ )
-			{
-				SerializeGameObject( a_Archive, GameObject( *it ) );
-			}
-		}
-		a_Archive << YAML::EndSeq;
-
-		a_Archive << YAML::EndMap;
-	}
-
-	template<>
-	bool DeserializeFromText( const YAML::Node& a_Node, Scene& a_Data )
-	{
-		if ( auto sceneNameNode = a_Node["Scene"] )
-			a_Data.SetName( sceneNameNode.as<std::string>() );
-		else
-			return false;
-
-		if ( auto sceneEnvironmentNode = a_Node["SceneEnvironment"] )
-		{
-			if ( auto hdriNode = sceneEnvironmentNode["HDRI"] )
-			{
-				a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle = hdriNode["EnvironmentMapHandle"].as<AssetHandle>();
-				a_Data.GetSceneEnvironment().HDRI.Exposure = hdriNode["Exposure"].as<float>();
-				a_Data.GetSceneEnvironment().HDRI.Gamma = hdriNode["Gamma"].as<float>();
-				a_Data.GetSceneEnvironment().HDRI.Blur = hdriNode["Blur"].as<float>();
-				a_Data.GetSceneEnvironment().HDRI.RotationEular = hdriNode["RotationEular"].as<Vector3>();
-
-				if ( a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle.Valid() )
-				{
-					a_Data.GetSceneEnvironment().HDRI.EnvironmentMap = EnvironmentMap::Create( a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle );
-				}
-			}
-
-			if ( auto directionalLightNode = sceneEnvironmentNode["DirectionalLight"] )
-			{
-				a_Data.GetSceneEnvironment().DirectionalLight.Direction = directionalLightNode["Direction"].as<Vector3>();
-				a_Data.GetSceneEnvironment().DirectionalLight.Color = directionalLightNode["Color"].as<Color>();
-				a_Data.GetSceneEnvironment().DirectionalLight.Intensity = directionalLightNode["Intensity"].as<float>();
-			}
-		}
-
-		auto gameObjectsNode = a_Node["GameObjects"];
-
-		if ( !gameObjectsNode )
-			return false;
-
-		std::unordered_map<GUID, DeserializedGameObject> deserializedGameObjects;
-		for ( auto goNode : gameObjectsNode )
-		{
-			TE_CORE_ASSERT( DeserializeGameObject( goNode, a_Data, deserializedGameObjects ), "Failed to deserialize GameObject from a scene file!" );
-		}
-
-		// Link up gameobject references to eachother
-		for ( auto&& [guid, go] : deserializedGameObjects )
-		{
-			if ( go.Parent.has_value() )
-			{
-				if ( auto parent = deserializedGameObjects.find( go.Parent.value() ); parent != deserializedGameObjects.end() )
-				{
-					TransformComponent& tc = go.GameObject.GetComponent<TransformComponent>();
-					tc.AttachToParent( parent->second.GameObject );
-				}
-			}
 		}
 
 		return true;

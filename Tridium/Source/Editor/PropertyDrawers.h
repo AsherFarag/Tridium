@@ -5,6 +5,9 @@
 #include <Editor/EditorStyle.h>
 #include <Tridium/Utils/Reflection/Meta.h>
 
+// Temp?
+#include <Tridium/Rendering/FrameBuffer.h>
+
 namespace Tridium::Editor {
 
 	enum class EDrawPropertyFlags : Byte
@@ -83,6 +86,10 @@ namespace Tridium::Editor {
 
 	template<>
 	bool DrawProperty( const char* a_Name, AssetHandle& a_Value, EDrawPropertyFlags a_Flags );
+
+	// Temp ?
+	template<>
+	bool DrawProperty( const char* a_Name, SharedPtr<Framebuffer>& a_Value, EDrawPropertyFlags a_Flags );
 }
 
 #endif // IS_EDITOR

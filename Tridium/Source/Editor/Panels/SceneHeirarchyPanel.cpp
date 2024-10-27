@@ -212,6 +212,13 @@ namespace Tridium::Editor {
 					SetSelectedGameObject( newGO );
 				}
 
+				if ( ImGui::MenuItem( "Directional Light" ) )
+				{
+					newGO = m_Context->InstantiateGameObject( "Directional Light" );
+					newGO.AddComponent<DirectionalLightComponent>();
+					SetSelectedGameObject( newGO );
+				}
+
 				ImGui::EndMenu();
 			}
 

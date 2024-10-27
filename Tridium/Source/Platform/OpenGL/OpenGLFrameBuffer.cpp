@@ -106,9 +106,13 @@ namespace Tridium {
 
 				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+				// Fix for shadow mapping
+				// Should probably be a parameter
+				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER );
+				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER );
+				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER );
+				float color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+				glTexParameterfv( GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color );
 			}
 
 			glFramebufferTexture2D( GL_FRAMEBUFFER, attachmentType, TextureTarget( multisampled ), id, 0 );
@@ -220,6 +224,7 @@ namespace Tridium {
 		{
 			// Only depth-pass
 			glDrawBuffer( GL_NONE );
+			glReadBuffer( GL_NONE );
 		}
 
 		TE_CORE_ASSERT( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!" );
@@ -273,6 +278,26 @@ namespace Tridium {
 		auto& spec = m_ColorAttachmentSpecifications[ attachmentIndex ];
 		glClearTexImage( m_ColorAttachments[ attachmentIndex ], 0,
 			Util::TridiumFBTextureFormatToGL( spec.TextureFormat ), GL_INT, &value );
+	}
+
+	void OpenGLFramebuffer::BindAttatchment( uint32_t a_AttachmentIndex, uint32_t a_Slot )
+	{
+		glBindTextureUnit( a_Slot, GetColorAttachmentID( a_AttachmentIndex ) );
+	}
+
+	void OpenGLFramebuffer::UnbindAttatchment( uint32_t a_Slot )
+	{
+		glBindTextureUnit( a_Slot, 0 );
+	}
+
+	void OpenGLFramebuffer::BindDepthAttatchment( uint32_t a_Slot )
+	{
+		glBindTextureUnit( a_Slot, m_DepthAttachment );
+	}
+
+	void OpenGLFramebuffer::UnbindDepthAttatchment( uint32_t a_Slot )
+	{
+		glBindTextureUnit( a_Slot, 0 );
 	}
 
 	OpenGLRenderBuffer::OpenGLRenderBuffer( uint32_t a_Width, uint32_t a_Height, EFramebufferTextureFormat a_Format )

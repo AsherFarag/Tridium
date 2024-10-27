@@ -31,6 +31,7 @@ namespace Tridium {
 	void OpenGLRenderingAPI::Init()
 	{
 		glEnable( GL_DEPTH_TEST );
+		glDepthMask( GL_TRUE );
 		TODO( "Set up functions to enable these!" );
 		glEnable( GL_MULTISAMPLE );
 		glEnable( GL_BLEND );
@@ -43,17 +44,39 @@ namespace Tridium {
 		glViewport( x, y, width, height );
 	}
 
+	void OpenGLRenderingAPI::SetDepthTest( bool enabled )
+	{
+	}
+
 	void OpenGLRenderingAPI::SetDepthCompare( EDepthCompareOperator a_DepthCompareOperator )
 	{
 		glDepthFunc( Util::DepthCompareOperatorToOpenGL( a_DepthCompareOperator ) );
 	}
 
-	void OpenGLRenderingAPI::SetCullMode( bool enabled )
+	void OpenGLRenderingAPI::SetCullMode( ECullMode a_CullMode )
 	{
-		if ( enabled )
-			glEnable( GL_CULL_FACE );
-		else
+		switch ( a_CullMode )
+		{
+		case ECullMode::None:
+		{
 			glDisable( GL_CULL_FACE );
+			break;
+		}
+		case ECullMode::Front:
+		{
+			glEnable( GL_CULL_FACE );
+			glCullFace( GL_FRONT );
+			break;
+		}
+		case ECullMode::Back:
+		{
+			glEnable( GL_CULL_FACE );
+			glCullFace( GL_BACK );
+			break;
+		}
+		default:
+			TE_CORE_ASSERT( false, "Unknown cull mode!" );
+		}
 	}
 
 	void OpenGLRenderingAPI::SetClearColor( const Vector4& color )

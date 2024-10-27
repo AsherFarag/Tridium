@@ -136,10 +136,8 @@ namespace Tridium::Editor {
 			m_EditorCamera->SetViewportSize( regionAvail.x, regionAvail.y );
 			m_FBO->Resize( regionAvail.x, regionAvail.y );
 
-			m_FBO->Bind();
 			auto sceneRenderer = SceneRenderer( GetEditorLayer()->GetActiveScene() );
-			sceneRenderer.Render( *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position );
-			m_FBO->Unbind();
+			sceneRenderer.Render( m_FBO, *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position );
 
 			// Draw the Editor Camera ViewPort
 			ImGui::Image( (ImTextureID)m_FBO->GetColorAttachmentID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
@@ -242,6 +240,7 @@ namespace Tridium::Editor {
 
 	void EditorViewportPanel::RenderGameObjectIDs()
 	{
+		RenderCommand::SetCullMode( ECullMode::Back );
 		RenderCommand::SetClearColor( { 0.1, 0.1, 0.12, 1.0 } );
 		RenderCommand::Clear();
 
@@ -250,7 +249,6 @@ namespace Tridium::Editor {
 		Matrix4 pvm = m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix();
 
 		auto meshComponents = GetActiveScene()->GetRegistry().view<StaticMeshComponent, TransformComponent>();
-		RenderCommand::SetCullMode( true );
 		meshComponents.each( 
 			[&]( auto go, StaticMeshComponent& meshComponent, TransformComponent& transform )
 			{
@@ -263,21 +261,16 @@ namespace Tridium::Editor {
 					{
 						if ( SharedPtr<MeshSource> meshSource = AssetManager::GetAsset<MeshSource>( mesh->GetMeshSource() ) )
 						{
-							for ( const auto& submesh : meshSource->GetSubMeshes() )
+							if ( SharedPtr<VertexArray> vao = meshSource->GetVAO() )
 							{
-								if ( SharedPtr<VertexArray> vao = meshSource->GetVAO() )
-								{
-									vao->Bind();
-									RenderCommand::DrawIndexed( vao );
-									vao->Unbind();
-								}
+								vao->Bind();
+								RenderCommand::DrawIndexed( vao );
+								vao->Unbind();
 							}
 						}
 					}
 				}
 			} );
-
-		RenderCommand::SetCullMode( false );
 
 		//auto quadMeshVAO = Mesh::GetQuad()->GetVAO();
 		//quadMeshVAO->Bind();
@@ -292,7 +285,7 @@ namespace Tridium::Editor {
 		//);
 		//quadMeshVAO->Unbind();
 
-		//m_GameObjectIDShader->Unbind();
+		m_GameObjectIDShader->Unbind();
 	}
 
 	SceneHeirarchyPanel* EditorViewportPanel::GetSceneHeirarchy()

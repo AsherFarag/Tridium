@@ -30,10 +30,16 @@ namespace Tridium {
 
 	constexpr uint32_t MAX_DIRECTIONAL_LIGHTS = 1;
 
+	// Temp?
+	class Framebuffer;
+
 	struct DirectionalLight
 	{
 		Vector3 Direction;
 		Color Color;
 		float Intensity;
+
+		// Temp?
+		SharedPtr<Framebuffer> ShadowMap;
 	};
 }

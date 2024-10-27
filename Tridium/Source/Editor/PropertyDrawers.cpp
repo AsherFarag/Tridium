@@ -7,6 +7,8 @@
 
 #include <Tridium/Rendering/Texture.h>
 
+#include <Tridium/Rendering/Framebuffer.h>
+
 namespace Tridium::Editor {
 
 #define IS_DISABLED(Flags) Internal::ScopedDisable _DISABLED_{ Flags == EDrawPropertyFlags::ReadOnly }
@@ -195,7 +197,7 @@ namespace Tridium::Editor {
 		Vector3 euler = glm::degrees( a_Value.Euler );
 		if ( DrawProperty( a_Name, euler, a_Flags ) )
 		{
-			a_Value.SetFromEuler( glm::radians( a_Value.Euler ) );
+			a_Value.SetFromEuler( glm::radians( euler ) );
 			return true;
 		}
 
@@ -249,6 +251,25 @@ namespace Tridium::Editor {
 		}
 
 		return modified;
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, SharedPtr<Framebuffer>& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		if ( ImGui::TreeNode(a_Name) )
+		{
+			if ( a_Value )
+			{
+				if ( a_Value->GetDepthAttachmentID() )
+				{
+					ImGui::Image( (ImTextureID)a_Value->GetDepthAttachmentID(), ImVec2( 128, 128 ), ImVec2( 0, 1 ), ImVec2( 1, 0 ) );
+				}
+			}
+
+			ImGui::TreePop();
+		}
+
+		return false;
 	}
 
 #undef _DRAW_FLOAT

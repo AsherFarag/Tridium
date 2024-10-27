@@ -8,6 +8,7 @@
 #include <Tridium/Rendering/Mesh.h>
 #include <Tridium/Rendering/Shader.h>
 #include <Tridium/Math/Rotator.h>
+#include <Tridium/Rendering/FrameBuffer.h>
 
 
 namespace Tridium::Refl {
@@ -272,6 +273,8 @@ namespace Tridium::Refl {
         // Tridium
 		REFLECT_BASIC_TYPE( GUID )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( GUID )ADD_DRAWPROPERTY_FUNC_TO_TYPE( GUID );
 		REFLECT_BASIC_TYPE( AssetHandle )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( AssetHandle )ADD_DRAWPROPERTY_FUNC_TO_TYPE( AssetHandle );
+        // Temp?
+        REFLECT_BASIC_TYPE( SharedPtr<Framebuffer> )ADD_DRAWPROPERTY_FUNC_TO_TYPE( SharedPtr<Framebuffer> );
     }
 
 } // namespace Tridium::Reflection
