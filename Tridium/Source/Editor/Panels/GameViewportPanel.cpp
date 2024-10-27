@@ -43,10 +43,7 @@ namespace Tridium::Editor {
 			sceneCamera.SetViewportSize( regionAvail.x, regionAvail.y );
 			m_FBO->Resize( regionAvail.x, regionAvail.y );
 
-			{
-				auto sceneRenderer = SceneRenderer( GetEditorLayer()->GetActiveScene() );
-				sceneRenderer.Render( m_FBO, sceneCamera, camera->GetView(), m_Camera.GetTransform().Position );
-			}
+			GetEditorLayer()->GetActiveScene()->GetSceneRenderer().Render( m_FBO, sceneCamera, camera->GetView(), m_Camera.GetTransform().Position );
 
 			ImGui::Image( (ImTextureID)m_FBO->GetColorAttachmentID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
 		}

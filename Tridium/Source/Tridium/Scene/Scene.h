@@ -2,6 +2,7 @@
 #include "entt.hpp"
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/Rendering/Lights.h>
+#include <Tridium/Rendering/SceneRenderer.h>
 
 namespace Tridium {
 	typedef entt::entity EntityID;
@@ -52,6 +53,8 @@ namespace Tridium {
 		SceneEnvironment& GetSceneEnvironment() { return m_SceneEnvironment; }
 		const SceneEnvironment& GetSceneEnvironment() const { return m_SceneEnvironment; }
 
+		SceneRenderer& GetSceneRenderer() { return m_SceneRenderer; }
+
 	private:
 		std::string m_Name;
 		entt::registry m_Registry;
@@ -59,6 +62,7 @@ namespace Tridium {
 		bool m_Paused = false;
 		EntityID m_MainCamera;
 
-		friend class SceneRenderer;
+		SceneRenderer m_SceneRenderer;
+		friend SceneRenderer;
 	};
 }

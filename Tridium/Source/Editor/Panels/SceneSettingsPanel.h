@@ -6,15 +6,12 @@
 
 namespace Tridium::Editor {
 
-    class SceneSettingsPanel : public Panel
+    class SceneRendererPanel : public Panel
     {
 	public:
-		SceneSettingsPanel();
+		SceneRendererPanel();
 
 		void OnImGuiDraw() override;
-
-	protected:
-		SharedPtr<Scene> m_Scene;
     };
 
 }

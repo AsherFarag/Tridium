@@ -2,15 +2,18 @@
 #include "Camera.h"
 #include "Shader.h"
 #include "Material.h"
-#include <Tridium/Scene/Scene.h>
 #include <Tridium/Rendering/Lights.h>
 #include <Tridium/Rendering/FrameBuffer.h>
 
 namespace Tridium {
 
 	// Forward declarations
+	class Scene;
+	class SceneEnvironment;
 	class VertexArray;
 	class Texture;
+
+	namespace Editor { class SceneRendererPanel; }
 	// -------------------
 
 	struct DrawCall
@@ -30,7 +33,7 @@ namespace Tridium {
 	class SceneRenderer
 	{
 	public:
-		SceneRenderer( const SharedPtr<Scene>& a_Scene );
+		SceneRenderer( Scene& a_Scene );
 
 		void Render( const SharedPtr<Framebuffer>& a_FBO, const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition );
 
@@ -44,7 +47,7 @@ namespace Tridium {
 		void PerformDrawCall( const DrawCall& a_DrawCall );
 
 	private:
-		SharedPtr<Scene> m_Scene;
+		Scene& m_Scene;
 		SceneEnvironment& m_SceneEnvironment;
 
 		// Default assets
@@ -70,6 +73,8 @@ namespace Tridium {
 		Vector2 m_ShadowMapSize{1024, 1024};
 		SharedPtr<Shader> m_ShadowMapShader;
 		Matrix4 m_LightViewProjectionMatrix;
+
+		friend class Editor::SceneRendererPanel;
 	};
 
 }

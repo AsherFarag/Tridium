@@ -4,7 +4,7 @@ SceneEnvironment:
     EnvironmentMapHandle: 12344971950102856376
     Exposure: 1
     Gamma: 2.20000005
-    Blur: 1
+    Blur: 0
     Intensity: 1
     RotationEular: [0, 2, 0]
 GameObjects:
@@ -23,8 +23,8 @@ GameObjects:
   - GameObject: 9468288163137663489
     Tag: Revolver 2
     Transform:
-      Position: [1.99919748, 1.1920929e-07, 0.000654220581]
-      Rotation: [-0, -0, -0]
+      Position: [1.99919701, -0.000113725662, -1.46899533]
+      Rotation: [0, -0, 0]
       Scale: [0.0699995458, 0.0699997842, 0.0699994713]
       Parent: 6862458883491203351
       Parent: 6862458883491203351
@@ -59,7 +59,7 @@ GameObjects:
   - GameObject: 12179223292318667309
     Tag: Cone
     Transform:
-      Position: [2.61753798, 0, -3.67736316]
+      Position: [2.61753798, 3.24223638, -6.72028399]
       Rotation: [-0.753696799, -0, 0]
       Scale: [1, 0.999996543, 0.999996543]
       Children: []
@@ -79,9 +79,9 @@ GameObjects:
   - GameObject: 16021369955158816775
     Tag: Cube
     Transform:
-      Position: [0.0156837702, -4.31887245, 3.3301425]
-      Rotation: [0, -8.71261048e-28, -0]
-      Scale: [224.335709, 0.351000011, 41.9105606]
+      Position: [0.0156837702, -4.3839159, 3.3301425]
+      Rotation: [0, -8.71261048e-28, 0]
+      Scale: [224.335709, 0.351000011, 198.227066]
       Children: []
     StaticMeshComponent:
       Mesh: 2
@@ -89,7 +89,7 @@ GameObjects:
   - GameObject: 15338987025969501834
     Tag: Cube
     Transform:
-      Position: [-1.10070086, -2.59247947, 0.490246534]
+      Position: [-1.10070086, -2.01584077, -0.326853722]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
       Children: []
@@ -99,8 +99,8 @@ GameObjects:
   - GameObject: 14090283722306482535
     Tag: Revolver
     Transform:
-      Position: [0, 0.148858353, -5.51624055e-07]
-      Rotation: [4.74240875, 6.56243801, 0]
+      Position: [4.59472942, -0.0329353213, 4.97951174]
+      Rotation: [-1.54077649, 0.279252678, 0]
       Scale: [0.0775319934, 0.0775318816, 0.0775318816]
       Children: []
     StaticMeshComponent:
@@ -110,15 +110,15 @@ GameObjects:
     Tag: Green Spot Light
     Transform:
       Position: [7.81791544, -3.16986346, 13.7520914]
-      Rotation: [5.79334757e-36, 7.04609781e-36, 7.16328349e-36]
-      Scale: [1, 1.00000024, 0.99999994]
+      Rotation: [-1.1914469, 0.429616988, -2.4646523]
+      Scale: [1.00000191, 1.00000179, 1.00000036]
       Children: []
     SpotLightComponent:
       LightColor: [0.249027371, 1, 0, 1]
-      Intensity: 108
+      Intensity: 43
       FalloffExponent: 2
-      AttenuationRadius: 852
-      InnerConeAngle: 30
+      AttenuationRadius: 10
+      InnerConeAngle: 35
       OuterConeAngle: 57
   - GameObject: 7937407404219979403
     Tag: Blue Point Light
@@ -145,7 +145,7 @@ GameObjects:
   - GameObject: 10978064587207019422
     Tag: Cube
     Transform:
-      Position: [0.721231937, -0.550955653, -2.1960535]
+      Position: [-0.811419547, -0.550985932, -3.07151151]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
       Children: []
@@ -175,10 +175,10 @@ GameObjects:
   - GameObject: 6915290739978003337
     Tag: Directional Light
     Transform:
-      Position: [0, 0, 0]
-      Rotation: [-0.346768349, 0.406119674, -0.14180021]
-      Scale: [1, 1, 1]
+      Position: [2.83417592e-08, 8.63307342e-12, -2.05869544e-08]
+      Rotation: [-0.336895853, 0.681653261, 0.0638997331]
+      Scale: [4, 0.999981284, 0.99999994]
       Children: []
     DirectionalLightComponent:
-      LightColor: [1, 1, 1, 1]
-      Intensity: 1
+      LightColor: [0.988326848, 0.557825744, 0.180744603, 1]
+      Intensity: 6

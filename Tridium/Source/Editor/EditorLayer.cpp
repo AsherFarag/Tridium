@@ -329,7 +329,7 @@ namespace Tridium::Editor {
 				if ( ImGui::MenuItem( "Content Browser" ) ) m_PanelStack.PushPanel<ContentBrowserPanel>();
 				if ( ImGui::MenuItem( "Stats" ) ) m_PanelStack.PushPanel<Stats>();
 				if ( ImGui::MenuItem( "Asset Registry" ) ) m_PanelStack.PushPanel<AssetRegistryPanel>();
-				if ( ImGui::MenuItem( "Scene Settings" ) ) m_PanelStack.PushPanel<SceneSettingsPanel>();
+				if ( ImGui::MenuItem( "Scene Renderer" ) ) m_PanelStack.PushPanel<SceneRendererPanel>();
 
 				ImGui::EndMenu();
 			}

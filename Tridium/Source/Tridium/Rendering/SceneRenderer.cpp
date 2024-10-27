@@ -1,5 +1,6 @@
 #include "tripch.h"
 #include "SceneRenderer.h"
+#include <Tridium/Scene/Scene.h>
 #include <Tridium/Asset/AssetManager.h>
 #include <Tridium/ECS/Components/Types.h>
 #include <Tridium/Rendering/Renderer.h>
@@ -13,8 +14,8 @@
 
 namespace Tridium {
 
-	SceneRenderer::SceneRenderer( const SharedPtr<Scene>& a_Scene )
-		: m_Scene( a_Scene ), m_SceneEnvironment( a_Scene->GetSceneEnvironment() )
+	SceneRenderer::SceneRenderer( Scene& a_Scene )
+		: m_Scene( a_Scene ), m_SceneEnvironment( a_Scene.GetSceneEnvironment() )
 	{
 		// Set Default Assets
 		{
@@ -112,116 +113,6 @@ namespace Tridium {
 		Flush();
 		BeginScene( a_Camera, a_View, a_CameraPosition );
 
-		// - Submit Directional Lights -
-		{
-			auto directionalLightComponents = m_Scene->m_Registry.view<DirectionalLightComponent, TransformComponent>();
-			uint32_t lightIndex = 0;
-			directionalLightComponents.each(
-				[&]( auto go, DirectionalLightComponent& lightComponent, TransformComponent& transform )
-				{
-					if ( lightIndex >= MAX_DIRECTIONAL_LIGHTS )
-						return;
-
-					m_LightEnvironment.DirectionalLights[lightIndex].Direction = transform.GetForward();
-					m_LightEnvironment.DirectionalLights[lightIndex].Color = lightComponent.LightColor;
-					m_LightEnvironment.DirectionalLights[lightIndex].Intensity = lightComponent.Intensity;
-					m_LightEnvironment.DirectionalLights[lightIndex].ShadowMap = lightComponent.ShadowMap;
-
-					// TEMP!
-					if ( !lightComponent.ShadowMap )
-					{
-						FramebufferSpecification spec =
-						{
-							.Width = (uint32_t)m_ShadowMapSize.x,
-							.Height = (uint32_t)m_ShadowMapSize.y,
-							.Attachments = { EFramebufferTextureFormat::Depth },
-						};
-
-						lightComponent.ShadowMap = Framebuffer::Create( spec );
-					}
-
-					lightIndex++;
-				}
-			);
-		}
-
-		// - Submit Point Lights -
-		{
-			auto pointLightComponents = m_Scene->m_Registry.view<PointLightComponent, TransformComponent>();
-			uint32_t lightIndex = 0;
-			pointLightComponents.each( 
-				[&]( auto go, PointLightComponent& lightComponent, TransformComponent& transform )
-				{
-					if ( lightIndex >= MAX_POINT_LIGHTS )
-						return;
-
-					m_LightEnvironment.PointLights[lightIndex].Position = transform.Position;
-					m_LightEnvironment.PointLights[lightIndex].Color = lightComponent.LightColor;
-					m_LightEnvironment.PointLights[lightIndex].Intensity = lightComponent.Intensity;
-					m_LightEnvironment.PointLights[lightIndex].FalloffExponent = lightComponent.FalloffExponent;
-					m_LightEnvironment.PointLights[lightIndex].AttenuationRadius = lightComponent.AttenuationRadius;
-					lightIndex++;
-				}
-			);
-		}
-
-		// - Submit Spot Lights -
-		{
-			auto spotLightComponents = m_Scene->m_Registry.view<SpotLightComponent, TransformComponent>();
-			uint32_t lightIndex = 0;
-			spotLightComponents.each(
-				[&]( auto go, SpotLightComponent& lightComponent, TransformComponent& transform )
-				{
-					if ( lightIndex >= MAX_SPOT_LIGHTS )
-						return;
-
-					m_LightEnvironment.SpotLights[lightIndex].Position = transform.Position;
-					m_LightEnvironment.SpotLights[lightIndex].Direction = transform.GetForward();
-					m_LightEnvironment.SpotLights[lightIndex].Color = lightComponent.LightColor;
-					m_LightEnvironment.SpotLights[lightIndex].Intensity = lightComponent.Intensity;
-					m_LightEnvironment.SpotLights[lightIndex].FalloffExponent = lightComponent.FalloffExponent;
-					m_LightEnvironment.SpotLights[lightIndex].AttenuationRadius = lightComponent.AttenuationRadius;
-					m_LightEnvironment.SpotLights[lightIndex].InnerConeAngle =  glm::radians( lightComponent.InnerConeAngle );
-					m_LightEnvironment.SpotLights[lightIndex].OuterConeAngle = glm::radians( lightComponent.OuterConeAngle );
-					lightIndex++;
-				}
-			);
-		}
-
-		// - Submit Draw Calls -
-		{
-			auto meshComponents = m_Scene->m_Registry.view<StaticMeshComponent, TransformComponent>();
-			meshComponents.each( [&]( auto go, StaticMeshComponent& meshComponent, TransformComponent& transform )
-				{
-					SharedPtr<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>( meshComponent.Mesh );
-					if ( !staticMesh )
-						return;
-
-					SharedPtr<MeshSource> meshSource = AssetManager::GetAsset<MeshSource>( staticMesh->GetMeshSource() );
-					if ( !meshSource )
-						return;
-
-					DrawCall drawCall;
-					drawCall.VAO = meshSource->GetVAO();
-
-					// If the mesh component has an override material, use that
-					if ( meshComponent.Materials.size() > 0 )
-					{
-						drawCall.Material = meshComponent.Materials[0];
-					}
-					// Otherwise, use the first material from the mesh source
-					else if ( meshSource->GetMaterials().size() > 0 )
-					{
-						drawCall.Material = meshSource->GetMaterials()[0];
-					}
-
-					drawCall.Transform = transform.GetWorldTransform();
-
-					SubmitDrawCall( drawCall );
-				} 
-			);
-		}
-
 		// - Generate Shadow Maps -
 		{
 			// TEMP!
@@ -264,7 +155,7 @@ namespace Tridium {
 		}
 
 		a_FBO->Bind();
-		BeginScene( a_Camera, a_View, a_CameraPosition ); // Temp ?
+		RenderCommand::Clear();
 
 		// - Reset Viewport -
 		RenderCommand::SetViewport( 0, 0, a_Camera.GetViewportSize().x, a_Camera.GetViewportSize().y );
@@ -322,10 +213,117 @@ namespace Tridium {
 
 	void SceneRenderer::BeginScene( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition )
 	{
-		RenderCommand::SetClearColor( { 0.1, 0.1, 0.12, 1.0 } );
-		RenderCommand::Clear();
-
 		m_CameraPosition = a_CameraPosition;
+
+		// - Submit Directional Lights -
+		{
+			auto directionalLightComponents = m_Scene.m_Registry.view<DirectionalLightComponent, TransformComponent>();
+			uint32_t lightIndex = 0;
+			directionalLightComponents.each(
+				[&]( auto go, DirectionalLightComponent& lightComponent, TransformComponent& transform )
+				{
+					if ( lightIndex >= MAX_DIRECTIONAL_LIGHTS )
+						return;
+
+					m_LightEnvironment.DirectionalLights[lightIndex].Direction = transform.GetForward();
+					m_LightEnvironment.DirectionalLights[lightIndex].Color = lightComponent.LightColor;
+					m_LightEnvironment.DirectionalLights[lightIndex].Intensity = lightComponent.Intensity;
+					m_LightEnvironment.DirectionalLights[lightIndex].ShadowMap = lightComponent.ShadowMap;
+
+					// TEMP!
+					if ( !lightComponent.ShadowMap )
+					{
+						FramebufferSpecification spec =
+						{
+							.Width = (uint32_t)m_ShadowMapSize.x,
+							.Height = (uint32_t)m_ShadowMapSize.y,
+							.Attachments = { EFramebufferTextureFormat::Depth },
+						};
+
+						lightComponent.ShadowMap = Framebuffer::Create( spec );
+					}
+
+					lightIndex++;
+				}
+			);
+		}
+
+		// - Submit Point Lights -
+		{
+			auto pointLightComponents = m_Scene.m_Registry.view<PointLightComponent, TransformComponent>();
+			uint32_t lightIndex = 0;
+			pointLightComponents.each(
+				[&]( auto go, PointLightComponent& lightComponent, TransformComponent& transform )
+				{
+					if ( lightIndex >= MAX_POINT_LIGHTS )
+						return;
+
+					m_LightEnvironment.PointLights[lightIndex].Position = transform.Position;
+					m_LightEnvironment.PointLights[lightIndex].Color = lightComponent.LightColor;
+					m_LightEnvironment.PointLights[lightIndex].Intensity = lightComponent.Intensity;
+					m_LightEnvironment.PointLights[lightIndex].FalloffExponent = lightComponent.FalloffExponent;
+					m_LightEnvironment.PointLights[lightIndex].AttenuationRadius = lightComponent.AttenuationRadius;
+					lightIndex++;
+				}
+			);
+		}
+
+		// - Submit Spot Lights -
+		{
+			auto spotLightComponents = m_Scene.m_Registry.view<SpotLightComponent, TransformComponent>();
+			uint32_t lightIndex = 0;
+			spotLightComponents.each(
+				[&]( auto go, SpotLightComponent& lightComponent, TransformComponent& transform )
+				{
+					if ( lightIndex >= MAX_SPOT_LIGHTS )
+						return;
+
+					m_LightEnvironment.SpotLights[lightIndex].Position = transform.Position;
+					m_LightEnvironment.SpotLights[lightIndex].Direction = transform.GetForward();
+					m_LightEnvironment.SpotLights[lightIndex].Color = lightComponent.LightColor;
+					m_LightEnvironment.SpotLights[lightIndex].Intensity = lightComponent.Intensity;
+					m_LightEnvironment.SpotLights[lightIndex].FalloffExponent = lightComponent.FalloffExponent;
+					m_LightEnvironment.SpotLights[lightIndex].AttenuationRadius = lightComponent.AttenuationRadius;
+					m_LightEnvironment.SpotLights[lightIndex].InnerConeAngle = glm::radians( lightComponent.InnerConeAngle );
+					m_LightEnvironment.SpotLights[lightIndex].OuterConeAngle = glm::radians( lightComponent.OuterConeAngle );
+					lightIndex++;
+				}
+			);
+		}
+
+		// - Submit Draw Calls -
+		{
+			auto meshComponents = m_Scene.m_Registry.view<StaticMeshComponent, TransformComponent>();
+			meshComponents.each( [&]( auto go, StaticMeshComponent& meshComponent, TransformComponent& transform )
+				{
+					SharedPtr<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>( meshComponent.Mesh );
+					if ( !staticMesh )
+						return;
+
+					SharedPtr<MeshSource> meshSource = AssetManager::GetAsset<MeshSource>( staticMesh->GetMeshSource() );
+					if ( !meshSource )
+						return;
+
+					DrawCall drawCall;
+					drawCall.VAO = meshSource->GetVAO();
+
+					// If the mesh component has an override material, use that
+					if ( meshComponent.Materials.size() > 0 )
+					{
+						drawCall.Material = meshComponent.Materials[0];
+					}
+					// Otherwise, use the first material from the mesh source
+					else if ( meshSource->GetMaterials().size() > 0 )
+					{
+						drawCall.Material = meshSource->GetMaterials()[0];
+					}
+
+					drawCall.Transform = transform.GetWorldTransform();
+
+					SubmitDrawCall( drawCall );
+				}
+			);
+		}
 	}
 
 	void SceneRenderer::EndScene()
