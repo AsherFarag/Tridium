@@ -63,7 +63,7 @@ namespace Tridium::Editor {
 		void RecurseDrawFolderHierarchy( const IO::FilePath& a_Directory );
 		void DrawContentBrowserHeader();
 		void DrawContentItems();
-		void DrawContentItemContextMenu( const ContentItem& a_Item );
+		bool DrawContentItemContextMenu( const ContentItem& a_Item ); // Returns true if the ContentItems Draw Loop should break.
 		void DrawContentBrowserSettings();
 
 		// Returns true if the ContentItems Draw Loop should break.
@@ -72,6 +72,7 @@ namespace Tridium::Editor {
 	private:
 		IO::FilePath m_CurrentDirectory;
 		std::string m_DirectoryInputBuffer;
+		std::string m_ContentSearchFilter;
 		std::list<std::string> m_DirectoryStack;
 		FolderHeirarchy m_FolderHeirarchy;
 

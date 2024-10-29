@@ -151,7 +151,21 @@ GameObjects:
       Children: []
     StaticMeshComponent:
       Mesh: 2
-      Materials: []
+      Materials: [0]
+    DirectionalLightComponent:
+      LightColor: [1, 1, 1, 1]
+      Intensity: 1
+    CameraComponent:
+      SceneCamera:
+        m_Perspective:
+          FOV: 45
+          Near: 0.00999999978
+          Far: 1000
+        m_Orthographic:
+          Size: 10
+          Near: -1000
+          Far: 1000
+        m_ProjectionType: "Refl Error: No serialize function for type <enum Tridium::ProjectionType>(void) noexcept"
   - GameObject: 10242708954756087398
     Tag: Cube
     Transform:
@@ -182,3 +196,13 @@ GameObjects:
     DirectionalLightComponent:
       LightColor: [0.988326848, 0.557825744, 0.180744603, 1]
       Intensity: 6
+  - GameObject: 14605120860605245706
+    Tag: Torus
+    Transform:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 6
+      Materials: []

@@ -31,6 +31,8 @@ namespace Tridium::Editor {
 		SharedPtr<Scene> m_Context = nullptr;
 		InspectorPanel* m_Inspector = nullptr;
 		GameObject m_SelectedGameObject;
+
+		std::string m_SearchBuffer;
 	};
 }
 

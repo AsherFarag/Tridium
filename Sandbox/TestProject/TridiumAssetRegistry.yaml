@@ -199,6 +199,10 @@ AssetMetaData:
     AssetType: Scene
     Path: Content/Scenes/TestScene.tscene
     Name: TestScene
+  - Handle: 14066894379008378117
+    AssetType: Scene
+    Path: Content/Scenes/NewScene.tscene
+    Name: NewScene
 AssetDependencies:
   2752145153444275711:
     - 5742226400149584207

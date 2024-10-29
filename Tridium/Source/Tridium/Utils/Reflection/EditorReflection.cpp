@@ -2,6 +2,7 @@
 #ifdef IS_EDITOR
 
 #include "EditorReflection.h"
+#include <Tridium/ImGui/IconsFontAwesome6.h>
 
 namespace Tridium {
 
@@ -34,7 +35,7 @@ namespace Tridium {
             if ( HasFlag( a_Flags, EPropertyFlag::EditAnywhere ) )
             {
                 ImGui::SameLine();
-                ret.WasRemoved = DrawRemoveElementButton( "Remove" );
+                ret.WasRemoved = DrawRemoveElementButton( TE_ICON_TRASH_CAN );
             }
 
             return ret;
@@ -190,7 +191,7 @@ namespace Tridium {
                     {
 						ImGui::ScopedID elementID( index );
 						ImGui::SetCursorPosY( oldCursorPosY + 2.5f );
-                        if ( DrawRemoveElementButton( "Remove" ) )
+                        if ( DrawRemoveElementButton( TE_ICON_TRASH_CAN ) )
                         {
                             a_SequenceContainer.erase( it );
                             wasChanged = true;

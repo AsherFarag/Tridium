@@ -35,6 +35,7 @@ namespace Tridium::Editor {
 		void DrawManipulationGizmos( const Vector2& viewportBoundsMin, const Vector2& viewportBoundsMax );
 
 		void RenderGameObjectIDs();
+		void RenderSelectionOutline();
 
 		SceneHeirarchyPanel* GetSceneHeirarchy();
 
@@ -45,6 +46,7 @@ namespace Tridium::Editor {
 
 		SharedPtr<Framebuffer> m_IDFBO;
 		SharedPtr<Shader> m_GameObjectIDShader;
+		SharedPtr<Shader> m_OutlineShader;
 	};
 
 }

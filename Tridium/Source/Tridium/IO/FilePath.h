@@ -85,6 +85,8 @@ namespace Tridium::IO {
 
         bool IsRoot() const { return root_path() == static_cast<const std::filesystem::path&>( *this ); }
 
+		bool Remove() { return fs::remove( *this ); }
+
 		static FilePath Absolute( const FilePath& a_Path ) { return fs::absolute( a_Path ); }
 
 		static FilePath Relative( const FilePath& a_Path, const FilePath& a_Base ) { return fs::relative( a_Path, a_Base ); }

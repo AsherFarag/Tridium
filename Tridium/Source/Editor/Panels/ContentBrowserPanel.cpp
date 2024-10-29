@@ -6,6 +6,7 @@
 #include <fstream>
 #include <Tridium/Core/Application.h>
 #include "ScriptEditorPanel.h"
+#include <Tridium/Asset/EditorAssetManager.h>
 
 #include <Tridium/Rendering/Material.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
@@ -230,13 +231,42 @@ namespace Tridium::Editor {
 
 		const bool isDirectoryInputActive = ImGui::IsItemActive();
 
-		ImGui::SameLine();
-		if ( ImGui::Button( TE_ICON_REPEAT ) )
-			ReconstructFolderHierarchy();
+		// Draw Refresh Button
+		{
+			ImGui::SameLine();
+			if ( ImGui::Button( TE_ICON_ROTATE ) )
+				ReconstructFolderHierarchy();
+		}
 
-		ImGui::SameLine( ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize( TE_ICON_GEAR ).x - ImGui::GetStyle().WindowPadding.x );
-		if ( ImGui::Button( TE_ICON_GEAR ) )
-			ImGui::OpenPopup( "Content Browser Settings" );
+		// Draw Seperator
+		{
+			ImGui::SameLine();
+			ImGui::Text( " | " );
+		}
+
+		// Draw Content Search Filter
+		{
+			ImGui::SameLine();
+			ImGui::Text( TE_ICON_MAGNIFYING_GLASS );
+			ImGui::SameLine();
+			float width = ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize( TE_ICON_GEAR ).x - ImGui::GetStyle().WindowPadding.x * 2 - 5.0f;
+			ImGui::SetNextItemWidth( width );
+			ImGui::SetNextItemAllowOverlap();
+			ImGui::InputText( "##Content Search Filter", &m_ContentSearchFilter );
+
+			//float buttonWidth = ImGui::CalcTextSize( TE_ICON_X ).x + ImGui::GetStyle().FramePadding.x * 2;
+			//ImGui::SameLine( );
+			//if ( ImGui::Button( TE_ICON_X ) )
+			//	m_ContentSearchFilter.clear();
+		}
+
+
+		// Draw the settings button
+		{
+			ImGui::SameLine( ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize( TE_ICON_GEAR ).x - ImGui::GetStyle().WindowPadding.x );
+			if ( ImGui::Button( TE_ICON_GEAR ) )
+				ImGui::OpenPopup( "Content Browser Settings" );
+		}
 
 
 		// If the directory input text box is active, don't draw the directory path buttons
@@ -295,8 +325,13 @@ namespace Tridium::Editor {
 
 		if ( ImGui::BeginTable( "Folder Contents Items", columnCount ) )
 		{
+			ImGuiTextFilter filter( m_ContentSearchFilter.c_str() );
+
 			for ( auto& item : m_FolderHeirarchy[m_CurrentDirectory] )
 			{
+				if ( !filter.PassFilter( item.Name.c_str() ) )
+					continue;
+
 				ImGui::TableNextColumn();
 				const bool wasOpened = item.OnImGuiDraw( { m_ContentThumbnailSize, m_ContentThumbnailSize } );
 
@@ -309,13 +344,11 @@ namespace Tridium::Editor {
 
 				// If the item is right clicked, open the context menu
 				if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
-					ImGui::OpenPopup( "Context Menu", ImGuiPopupFlags_::ImGuiPopupFlags_MouseButtonRight );
+					ImGui::OpenPopup( item.Name.c_str(), ImGuiPopupFlags_::ImGuiPopupFlags_MouseButtonRight);
 
-				if ( ImGui::BeginPopup( "Context Menu" ) )
-				{
-					DrawContentItemContextMenu( item );
-					ImGui::EndPopup();
-				}
+
+				if ( DrawContentItemContextMenu( item ) )
+					break;
 			}
 
 			ImGui::EndTable();
@@ -324,9 +357,47 @@ namespace Tridium::Editor {
 		ImGui::EndChild();
 	}
 
-	void ContentBrowserPanel::DrawContentItemContextMenu( const ContentItem& a_Item )
+	bool ContentBrowserPanel::DrawContentItemContextMenu( const ContentItem& a_Item )
 	{
-		ImGui::Text( "Asher set up a context menu you idiot!" );
+		if ( !ImGui::BeginPopup( a_Item.Name.c_str() ) )
+			return false;
+
+		ImGui::FunctionScope endPopup( &ImGui::EndPopup );
+
+		if ( ImGui::MenuItem( "Open" ) )
+		{
+			if ( OnContentItemOpened( a_Item ) )
+			{
+				// If the item was opened, break the content items loop.
+				return true;
+			}
+		}
+
+		if ( ImGui::MenuItem( "Rename" ) )
+		{
+
+		}
+
+		// Delete Option
+		{
+			ImGui::Separator();
+			ImGui::ScopedStyleCol textColor( ImGuiCol_Text, ImVec4(Editor::Style::Colors::Red) );
+			if ( ImGui::MenuItem( "Delete" ) )
+			{
+				IO::FilePath filePath = m_CurrentDirectory / a_Item.Name;
+				if ( filePath.Remove() )
+				{
+					TE_CORE_INFO( "Deleted file: {0}", filePath.ToString() );
+					ReconstructFolderHierarchy();
+					return true;
+				}
+				else
+				{
+					TE_CORE_ERROR( "Failed to delete file: {0}", filePath.ToString() );
+				}
+			}
+		}
+		return false;
 	}
 
 	void ContentBrowserPanel::DrawContentBrowserSettings()
@@ -386,7 +457,8 @@ namespace Tridium::Editor {
 			if ( ImGui::BeginDragDropSource() )
 			{
 				std::string filePath = ( Owner.GetDirectory() / Name ).ToString();
-				ImGui::SetDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM, filePath.c_str(), filePath.size() + 1);
+				AssetHandle assetHandle = AssetManager::Get<EditorAssetManager>()->GetAssetMetaData( filePath ).Handle;
+				ImGui::SetDragDropPayload( TE_PAYLOAD_ASSET_HANDLE, &assetHandle, sizeof(AssetHandle) );
 				ImGui::Image( 
 					(ImTextureID)icon->GetRendererID(),
 					{ a_Size.x - paddingX * 2, a_Size.y - paddingY * 2 },

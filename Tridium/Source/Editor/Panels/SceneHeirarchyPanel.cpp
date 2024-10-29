@@ -97,7 +97,8 @@ namespace Tridium::Editor {
 		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2( 1, 1 ) );
 		ImGui::ScopedStyleCol winBg( ImGuiCol_::ImGuiCol_WindowBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg) * 0.5f );
 		ImGui::FunctionScope endWindow( +[]() { ImGui::End(); } );
-		if ( !ImGui::Begin( "Scene Heirarchy" ) )
+
+		if ( !ImGui::Begin( ( TE_ICON_MOUNTAIN_SUN " " + m_Context->GetName() + "##Scene Heirarchy" ).c_str() ) )
 		{
 			m_IsHovered = false;
 			m_IsFocused = false;
@@ -107,31 +108,50 @@ namespace Tridium::Editor {
 		m_IsHovered = ImGui::IsWindowHovered();
 		m_IsFocused = ImGui::IsWindowFocused() || ImGui::IsItemFocused();
 
-		ImGui::PushFont( ImGui::GetBoldFont() );
-		ImGui::Text( m_Context->GetName().c_str() );
-		ImGui::PopFont();
 
-		ImGui::SameLine( ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize( "+" ).x - 10 );
-
+		// Draw list header (Search Bar and Add Game Object button).
 		{
-			ImGui::ScopedStyleCol buttonBg( ImGuiCol_Button, ImVec4( 0.0f, 0.0f, 0.0f, 0.0f ) );
-			if ( ImGui::Button( TE_ICON_PLUS ) )
-				OpenAddPopUp();
-		}
+			float addGameObjectButtonWidth = ImGui::CalcTextSize( TE_ICON_PLUS ).x + ImGui::GetStyle().FramePadding.x * 2.0f;
 
-		DrawAddPopUp();
+			// Search Bar
+			{
+				ImGui::Text( TE_ICON_MAGNIFYING_GLASS );
+				ImGui::SameLine();
+				ImGui::ScopedStyleCol border( ImGuiCol_Border, ImVec4( 1.0f, 1.0f, 1.0f, 0.15f ) );
+				ImGui::ScopedStyleVar borderSize( ImGuiStyleVar_::ImGuiStyleVar_FrameBorderSize, 1.0f );
+				ImGui::SetNextItemWidth( ImGui::GetContentRegionAvail().x - addGameObjectButtonWidth - 5.0f );
+				ImGui::InputText( "##Search", &m_SearchBuffer );
+			}
+
+			// Add GameObject Button
+			{
+				ImGui::SameLine( ImGui::GetContentRegionAvail().x - addGameObjectButtonWidth );
+				ImGui::ScopedStyleCol buttonBg( ImGuiCol_Button, ImVec4( 0.0f, 0.0f, 0.0f, 0.0f ) );
+				if ( ImGui::Button( TE_ICON_PLUS ) )
+					OpenAddPopUp();
+			}
+
+			DrawAddPopUp();
+		}
 
 		ImGui::Separator();
 
 		auto gameObjects = m_Context->GetRegistry().view<TagComponent>();
-
 		ImGui::ScopedStyleVar itemSpacing( ImGuiStyleVar_::ImGuiStyleVar_ItemSpacing, ImVec2( 0, 1 ) );
+		ImGuiTextFilter filter( m_SearchBuffer.c_str() );
 		for ( int i = 0; i < gameObjects.size(); ++i )
 		{
 			GameObject go = gameObjects[i];
 			// We are only drawing root objects in this loop
 			if ( go.GetParent().IsValid() )
 				continue;
+
+			if ( !m_SearchBuffer.empty() )
+			{
+				TODO( "Make this search filter include children objects!" );
+				if ( !filter.PassFilter( go.GetTag().c_str() ) )
+					continue;
+			}
 
 			DrawSceneNode( go );
 		}

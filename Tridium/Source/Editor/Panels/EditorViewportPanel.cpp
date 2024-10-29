@@ -10,6 +10,7 @@
 #include <Tridium/ECS/Components/Types.h>
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Rendering/SceneRenderer.h>
+#include <Tridium/Asset/EditorAssetManager.h>
 
 // TEMP ?
 #include "Tridium/Asset/AssetManager.h"
@@ -76,6 +77,9 @@ namespace Tridium::Editor {
 		)";
 
 		m_GameObjectIDShader.reset( Shader::Create( idVert, idFrag ) );
+
+		m_OutlineShader.reset( Shader::Create() );
+		m_OutlineShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Simple.glsl");
 	}
 
 	bool EditorViewportPanel::OnKeyPressed( KeyPressedEvent& e )
@@ -137,6 +141,7 @@ namespace Tridium::Editor {
 			m_FBO->Resize( regionAvail.x, regionAvail.y );
 
 			GetEditorLayer()->GetActiveScene()->GetSceneRenderer().Render(m_FBO, *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position);
+			RenderSelectionOutline();
 
 			// Draw the Editor Camera ViewPort
 			ImGui::Image( (ImTextureID)m_FBO->GetColorAttachmentID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
@@ -165,6 +170,7 @@ namespace Tridium::Editor {
 				GetSceneHeirarchy()->SetSelectedGameObject((EntityID)goID);
 			}
 		}
+
 		m_IsHovered = ImGui::IsWindowHovered();
 		m_IsFocused = ImGui::IsWindowFocused();
 		m_EditorCamera->Focused = m_IsFocused && !ImGuizmo::IsUsingAny();
@@ -177,13 +183,25 @@ namespace Tridium::Editor {
 		if ( !( scopedDragDropTarget ) )
 			return;
 
-		const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM, ImGuiDragDropFlags_::ImGuiDragDropFlags_SourceAllowNullID );
+		const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_ASSET_HANDLE, ImGuiDragDropFlags_::ImGuiDragDropFlags_SourceAllowNullID );
 		if ( !payload )
 			return;
 
-		IO::FilePath filePath( (const char*)payload->Data );
+		AssetHandle assetHandle( *(AssetHandle*)payload->Data );
 
-		TODO( "Add support for importing assets via dragging into the view port" );
+		const AssetMetaData& assetMetaData = EditorAssetManager::Get()->GetAssetMetaData( assetHandle );
+
+		switch ( assetMetaData.AssetType )
+		{
+		case EAssetType::Scene:
+		{
+			// Load the scene
+			GetEditorLayer()->SetActiveScene( AssetManager::GetAsset<Scene>( assetHandle ) );
+			break;
+		}
+		default:
+			break;
+		}
 	}
 
 	void EditorViewportPanel::DrawManipulationGizmos( const Vector2& viewportBoundsMin, const Vector2& viewportBoundsMax )
@@ -252,40 +270,83 @@ namespace Tridium::Editor {
 		meshComponents.each( 
 			[&]( auto go, StaticMeshComponent& meshComponent, TransformComponent& transform )
 			{
-				m_GameObjectIDShader->SetInt( "uID", (uint32_t)go );
-				m_GameObjectIDShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
+				if ( !meshComponent.Mesh.Valid() )
+					return;
 
-				if ( meshComponent.Mesh.Valid() )
+				SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( meshComponent.Mesh );
+				if ( !mesh )
+					return;
+
+				SharedPtr<MeshSource> meshSource = AssetManager::GetAsset<MeshSource>( mesh->GetMeshSource() );
+				if ( !meshSource )
+					return;
+
+				if ( SharedPtr<VertexArray> vao = meshSource->GetVAO() )
 				{
-					if ( SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( meshComponent.Mesh ) )
-					{
-						if ( SharedPtr<MeshSource> meshSource = AssetManager::GetAsset<MeshSource>( mesh->GetMeshSource() ) )
-						{
-							if ( SharedPtr<VertexArray> vao = meshSource->GetVAO() )
-							{
-								vao->Bind();
-								RenderCommand::DrawIndexed( vao );
-								vao->Unbind();
-							}
-						}
-					}
+					m_GameObjectIDShader->SetInt( "uID", (uint32_t)go );
+					m_GameObjectIDShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
+
+					vao->Bind();
+					RenderCommand::DrawIndexed( vao );
+					vao->Unbind();
 				}
 			} );
 
-		//auto quadMeshVAO = Mesh::GetQuad()->GetVAO();
-		//quadMeshVAO->Bind();
-		//auto spriteComponents = GetActiveScene()->GetRegistry().view<SpriteComponent, TransformComponent>();
-		//spriteComponents.each( 
-		//	[&]( auto go, SpriteComponent& spriteComponent, TransformComponent& transform )
-		//	{
-		//		m_GameObjectIDShader->SetInt( "uID", (uint32_t)go );
-		//		m_GameObjectIDShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
-		//		RenderCommand::DrawIndexed( quadMeshVAO );
-		//	}
-		//);
-		//quadMeshVAO->Unbind();
-
 		m_GameObjectIDShader->Unbind();
+	}
+
+	// TEMP!
+#include "glad/glad.h"
+
+	void EditorViewportPanel::RenderSelectionOutline()
+	{
+		if ( !m_FBO )
+			return;
+
+		GameObject go = GetSceneHeirarchy()->GetSelectedGameObject();
+		if ( !go )
+			return;
+
+		StaticMeshComponent* meshComponent = go.TryGetComponent<StaticMeshComponent>();
+		if ( !meshComponent )
+			return;
+
+		if ( !meshComponent->Mesh.Valid() )
+			return;
+
+		SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( meshComponent->Mesh );
+		if ( !mesh )
+			return;
+
+		SharedPtr<MeshSource> meshSource = AssetManager::GetAsset<MeshSource>( mesh->GetMeshSource() );
+		if ( !meshSource )
+			return;
+
+		if ( SharedPtr<VertexArray> vao = meshSource->GetVAO() )
+		{
+			Matrix4 pvm = m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix();
+
+			RenderCommand::SetDepthCompare( EDepthCompareOperator::Less );
+			RenderCommand::SetCullMode( ECullMode::Front );
+
+			m_FBO->Bind();
+			m_OutlineShader->Bind();
+
+			TODO( "Remove this opengl code!" );
+			glLineWidth( 5 );
+			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
+			m_OutlineShader->SetMatrix4( "u_PVM", pvm * go.GetWorldTransform() );
+
+			vao->Bind();
+			RenderCommand::DrawIndexed( vao );
+			vao->Unbind();
+
+			m_OutlineShader->Unbind();
+			m_FBO->Unbind();
+
+			glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+		}
 	}
 
 	SceneHeirarchyPanel* EditorViewportPanel::GetSceneHeirarchy()

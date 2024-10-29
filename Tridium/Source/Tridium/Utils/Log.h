@@ -41,7 +41,7 @@ namespace Tridium {
 //	return os << glm::to_string( quaternion );
 //}
 
-#define TE_USE_LOGGING 0
+#define TE_USE_LOGGING 1
 #if TE_USE_LOGGING
 
 // - Core Log Macros -

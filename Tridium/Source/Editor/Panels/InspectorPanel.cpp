@@ -29,10 +29,21 @@ namespace Tridium::Editor {
 		entt::hashed_string( "ScriptableComponent" ).value(),
 	};
 
+	static const std::unordered_map<entt::id_type, const char*> s_ComponentIcons =
+	{
+		{ entt::hashed_string( "CameraComponent" ).value(), TE_ICON_CAMERA },
+		{ entt::hashed_string( "SpriteComponent" ).value(), TE_ICON_IMAGE },
+		{ entt::hashed_string( "StaticMeshComponent" ).value(), TE_ICON_SHAPES },
+		{ entt::hashed_string( "LuaScriptComponent" ).value(), TE_ICON_FILE_CODE },
+		{ entt::hashed_string( "DirectionalLightComponent" ).value(), TE_ICON_LIGHTBULB },
+		{ entt::hashed_string( "PointLightComponent" ).value(), TE_ICON_LIGHTBULB },
+		{ entt::hashed_string( "SpotLightComponent" ).value(), TE_ICON_LIGHTBULB },
+	};
+
 	void InspectorPanel::OnImGuiDraw()
 	{
 		// Early out if there is no GameObject to inspect
-		if ( !ImGui::Begin( "Inspector" ) || !InspectedGameObject.IsValid() )
+		if ( !ImGui::Begin( TE_ICON_MAGNIFYING_GLASS " Inspector" ) || !InspectedGameObject.IsValid() )
 		{
 			ImGui::End();
 			return;
@@ -57,10 +68,10 @@ namespace Tridium::Editor {
 		{
 			ImGui::SameLine( 
 				ImGui::GetContentRegionMax().x 
-				- ImGui::CalcTextSize( "*" ).x
+				- ImGui::CalcTextSize( TE_ICON_GEAR ).x
 				- ( 2.0f * ImGui::GetStyle().FramePadding.x )
 			);
-			std::string optionsName( TE_ICON_GEAR "##", a_Name );
+			std::string optionsName = fmt::format( TE_ICON_GEAR "##{0}", a_Name );
 			if ( ImGui::SmallButton( optionsName.c_str() ) )
 				ImGui::OpenPopup( a_Name );
 		}
@@ -73,17 +84,17 @@ namespace Tridium::Editor {
 		if ( TagComponent* tagComponent = InspectedGameObject.TryGetComponent<TagComponent>() )
 		{
 			std::string tag = InspectedGameObject.GetComponent<TagComponent>().Tag;
-			if ( ImGui::InputText( "Tag", &tag, ImGuiInputTextFlags_EnterReturnsTrue ) )
+			if ( ImGui::InputText( TE_ICON_PENCIL "##Tag", &tag, ImGuiInputTextFlags_EnterReturnsTrue ) )
 			{
 				tagComponent->Tag = std::move(tag);
 			}
 		}
 
-		ImGui::SameLine( ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("Destroy").x);
+		ImGui::SameLine( ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize( TE_ICON_TRASH_CAN ).x );
 
 		ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Button, Style::Colors::Red.Value );
 
-		if ( ImGui::Button( "Destroy" ) ) 
+		if ( ImGui::Button( TE_ICON_TRASH_CAN ) ) 
 		{ 
 			InspectedGameObject.Destroy();
 		}
@@ -97,11 +108,11 @@ namespace Tridium::Editor {
 		// Draw TransformComponent first
 		if ( TransformComponent* tc = InspectedGameObject.TryGetComponent<TransformComponent>() )
 		{
-			if ( DrawComponentTreeNode( "Transform", false ) )
+			if ( DrawComponentTreeNode( TE_ICON_CUBES " Transform", false ) )
 			{
-				DrawProperty( "Pos", tc->Position, EDrawPropertyFlags::Editable );
-				DrawProperty( "Rot", tc->Rotation, EDrawPropertyFlags::Editable );
-				DrawProperty( "Sca", tc->Scale, EDrawPropertyFlags::Editable );
+				DrawProperty( "Position", tc->Position, EDrawPropertyFlags::Editable );
+				DrawProperty( "Rotation", tc->Rotation, EDrawPropertyFlags::Editable );
+				DrawProperty( "Scale   ", tc->Scale, EDrawPropertyFlags::Editable );
 
 				ImGui::TreePop();
 			}
@@ -113,12 +124,13 @@ namespace Tridium::Editor {
 			if ( s_BlacklistedComponents.contains( metaType.id() ) )
 				continue;
 
-			const char* className = Refl::MetaRegistry::GetCleanTypeName( metaType );
+			const char* icon = s_ComponentIcons.contains( metaType.id() ) ? s_ComponentIcons.at( metaType.id() ) : TE_ICON_GEARS;
+			std::string className = fmt::format( "{0} {1}", icon, Refl::MetaRegistry::GetCleanTypeName( metaType ) );
 
 			// Component options popup
-			if ( ImGui::BeginPopup( className ) )
+			if ( ImGui::BeginPopup( className.c_str() ) )
 			{
-				if ( ImGui::MenuItem( "Remove Component" ) )
+				if ( ImGui::MenuItem( TE_ICON_X " Remove Component" ) )
 				{
 					Tridium::Refl::Internal::RemoveFromGameObjectFunc removeFunc;
 					if ( Tridium::Refl::MetaRegistry::TryGetMetaPropertyFromClass( metaType, removeFunc, Tridium::Refl::Internal::RemoveFromGameObjectPropID ) )
@@ -130,7 +142,7 @@ namespace Tridium::Editor {
 				ImGui::EndPopup();
 			}
 
-			if ( !DrawComponentTreeNode( className, true ) )
+			if ( !DrawComponentTreeNode( className.c_str(), true) )
 				continue;
 
 			Refl::MetaAny handle = metaType.from_void( component );
@@ -158,7 +170,7 @@ namespace Tridium::Editor {
 		if ( off > 0.0f )
 			ImGui::SetCursorPosX( ImGui::GetCursorPosX() + off );
 
-		if ( ImGui::Button( "Add Component" ) )
+		if ( ImGui::Button( TE_ICON_PLUS " Add Component" ) )
 			ImGui::OpenPopup( "AddComponent" );
 
 		if ( ImGui::BeginDragDropTarget() )

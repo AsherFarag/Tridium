@@ -28,6 +28,8 @@ namespace Tridium::Editor {
 		void UnregisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) override;
 
 		// - Editor -
+		static auto Get() { return AssetManager::Get<EditorAssetManager>(); }
+
 		const AssetMetaData& GetAssetMetaData( AssetHandle a_Handle ) const;
 		const AssetMetaData& GetAssetMetaData( const IO::FilePath& a_Path ) const;
 		void SetAssetMetaData( const AssetMetaData& a_MetaData );
