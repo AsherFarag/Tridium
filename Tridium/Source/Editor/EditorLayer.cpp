@@ -233,19 +233,19 @@ namespace Tridium::Editor {
 		if ( ImGui::BeginMenu( "File" ) )
 		{
 			// Project
-			if ( ImGui::MenuItem( "New Project", nullptr, nullptr, false ) )
+			if ( ImGui::MenuItem( TE_ICON_FILE "New Project", nullptr, nullptr, false ) )
 				TE_CORE_INFO( "New Project" );
 
-			if ( ImGui::MenuItem( "Open Project", nullptr, nullptr, false ) )
+			if ( ImGui::MenuItem( TE_ICON_FOLDER "Open Project", nullptr, nullptr, false ) )
 				TE_CORE_INFO( "Open Project" );
 
-			if ( ImGui::MenuItem( "Save Project", nullptr, nullptr, false ) )
+			if ( ImGui::MenuItem( TE_ICON_FLOPPY_DISK "Save Project", nullptr, nullptr, false ) )
 				TE_CORE_INFO( "Save Project" );
 
 			ImGui::Separator();
 
 			// Scene
-			if ( ImGui::MenuItem( "New Scene" ) )
+			if ( ImGui::MenuItem( TE_ICON_FILE "New Scene" ) )
 			{
 				Util::OpenNewFileDialog(
 					"Scene",
@@ -269,7 +269,7 @@ namespace Tridium::Editor {
 							TE_CORE_ERROR( "Failed to create scene '{0}'", path );
 					} );
 			}
-			if ( ImGui::MenuItem( "Open Scene" ) )
+			if ( ImGui::MenuItem( TE_ICON_FOLDER "Open Scene" ) )
 			{
 				Util::OpenLoadFileDialog( "",
 					[this](const std::string& path) 
@@ -280,8 +280,7 @@ namespace Tridium::Editor {
 						SetActiveScene( scene );
 					});
 			}
-
-			if ( ImGui::MenuItem( "Save Scene", "Ctrl + S" ) )
+			if ( ImGui::MenuItem( TE_ICON_FLOPPY_DISK "Save Scene", "Ctrl + S" ) )
 			{
 				if ( GetActiveScene() )
 				{
@@ -397,7 +396,7 @@ namespace Tridium::Editor {
 
 		ImVec2 buttonPadding( 4, 4 );
 		float regionAvailY = MAX( 0.0f, ImGui::GetContentRegionAvail().y - 5 - buttonPadding.y );
-		ImVec2 buttonSize( regionAvailY, regionAvailY );
+		ImVec2 buttonSize( regionAvailY * 2, regionAvailY * 2 );
 
 		EditorLayer* editor = GetEditorLayer();
 		SceneState sceneState = editor->CurrentSceneState;
@@ -412,7 +411,24 @@ namespace Tridium::Editor {
 		ImGui::BeginGroup();
 		{
 			ImGui::ScopedStyleVar padding( ImGuiStyleVar_FramePadding, buttonPadding );
+			if ( hasPlayButton && ImGui::SmallButton( TE_ICON_PLAY ) )
+			{
+				editor->OnBeginScene();
+			}
 
+			if ( hasPauseButton && ImGui::SmallButton( TE_ICON_PAUSE ) )
+			{
+				editor->GetActiveScene()->SetPaused( true );
+			}
+
+			ImGui::SameLine();
+
+			if ( hasStopButton && ImGui::SmallButton( TE_ICON_STOP ) )
+			{
+				editor->OnEndScene();
+			}
+
+		#if 0
 			if ( hasPlayButton )
 			{
 				if ( ImGui::ImageButton( "PlayButton", (ImTextureID)PlayButtonIcon->GetRendererID(),
@@ -444,6 +460,8 @@ namespace Tridium::Editor {
 					editor->OnEndScene();
 				}
 			}
+		#endif
+
 		}
 		ImGui::EndGroup();
 

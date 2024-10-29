@@ -12,52 +12,24 @@
 
 namespace Tridium::Editor {
 
-	ContentBrowserPanel::ContentBrowserPanel()
-		: Panel( "Content Browser" )
-	{
-		m_CurrentDirectory = Application::GetActiveProject()->GetConfiguration().AssetDirectory;
+	std::unordered_map<EFileType, SharedPtr<Texture>> ContentItem::s_Icons = std::unordered_map<EFileType, SharedPtr<Texture>>();
 
+	ContentBrowserPanel::ContentBrowserPanel() : Panel( "Content Browser" )
+	{
 		IO::FilePath iconFolder( Application::GetEngineAssetsDirectory() / "Editor/Icons" );
-
-		m_DefaultIcon = TextureLoader::LoadTexture( iconFolder / "file.png" );
-		m_FolderIcon = TextureLoader::LoadTexture( iconFolder / "folder.png" );
-		m_LuaIcon = TextureLoader::LoadTexture( iconFolder / "file-code.png" );
-		m_ImageMediaIcon = TextureLoader::LoadTexture( iconFolder / "file-media.png" );
-		m_TridiumProjectIcon = TextureLoader::LoadTexture( iconFolder / "EngineIcon.png" );
-	}
-
-	static void DrawDirectoryPath( IO::FilePath& a_Path )
-	{
-		std::list<IO::FilePath> parentFolderPaths;
-		parentFolderPaths.push_back( a_Path );
-
-		while ( parentFolderPaths.front().HasParentPath() )
-		{
-			parentFolderPaths.push_front( parentFolderPaths.front().GetParentPath() );
-		}
-
-		ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 0.f );
-		ImGui::PushStyleColor( ImGuiCol_Button, ImGui::GetStyleColorVec4( ImGuiCol_::ImGuiCol_WindowBg ) );
-		char uniqueID = 0;
-		for ( auto& path : parentFolderPaths )
-		{
-			if ( ImGui::Button( ( path.GetFilename().ToString() + "##" + std::to_string( uniqueID ) ).c_str() ) )
-			{
-				a_Path = path;
-			}
-			uniqueID++;
-
-			if (uniqueID < parentFolderPaths.size() )
-			{
-				ImGui::SameLine();
-				ImGui::Text( ">" );
-				ImGui::SameLine();
-			}
-		}
-		ImGui::PopStyleColor();
-		ImGui::PopStyleVar();
-
-		ImGui::Separator();
+		SharedPtr<Texture> defaultIcon = TextureLoader::LoadTexture( iconFolder / "file.png" );
+		ContentItem::s_Icons = {
+			{ EFileType::None,       defaultIcon },
+			{ EFileType::Folder,     TextureLoader::LoadTexture( iconFolder / "folder.png" ) },
+			{ EFileType::Scene,      TextureLoader::LoadTexture( iconFolder / "tridium-scene.png" ) },
+			{ EFileType::Material,   defaultIcon },
+			{ EFileType::MeshSource, defaultIcon },
+			{ EFileType::StaticMesh, defaultIcon },
+			{ EFileType::Shader,     defaultIcon },
+			{ EFileType::Texture,    TextureLoader::LoadTexture( iconFolder / "file-media.png" ) },
+			{ EFileType::CubeMap,    TextureLoader::LoadTexture( iconFolder / "file-media.png" ) },
+			{ EFileType::Lua,	     TextureLoader::LoadTexture( iconFolder / "file-code.png" ) },
+		};
 	}
 
 	void ContentBrowserPanel::OnImGuiDraw()
@@ -75,83 +47,28 @@ namespace Tridium::Editor {
 		// If the directory was deleted while we are in it,
 		// Goto to the main content directory.
 		if ( !m_CurrentDirectory.Exists() )
-			m_CurrentDirectory = "Content";
+			OpenFolder(Application::GetActiveProject()->GetAssetDirectory());
 
-		DrawDirectoryPath( m_CurrentDirectory );
-
-		static float padding = 16.0f;
-		static float thumbnailSize = 128.0f;
-		float cellSize = thumbnailSize + padding;
-
-		float panelWidth = ImGui::GetContentRegionAvail().x;
-		int columnCount = (int)( panelWidth / cellSize );
-		if ( columnCount < 1 )
-			columnCount = 1;
-
-		if ( ImGui::BeginTable( "Folder Contents Items", columnCount ) )
+		ImGui::Columns( 2, "Content Browser Columns", true );
 		{
-			//for ( auto& directoryEntry : IO::DirectoryIterator( m_CurrentDirectory ) )
-			//{
-			//	//const auto& path = directoryEntry.path();
-			//	//EAssetType type = IO::GetAssetTypeFromExtension( path.extension().string() );
-			//	//if ( type == EAssetType::None )
-			//	//	continue;
+			// ImGui does not serialize the column width, so we need to set it once on the first frame.
+			static bool s_SetColumnWidth = true;
+			if ( s_SetColumnWidth )
+			{
+				ImGui::SetColumnWidth( 0, 250.0f );
+				s_SetColumnWidth = false;
+			}
 
-			//	//ImGui::TableNextColumn();
-			//	//ContentItemOnImGuiDraw( type, path, { thumbnailSize, thumbnailSize } );
+			DrawFolderHierarchy();
 
+			ImGui::NextColumn();
 
-			//	//if ( ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left ) )
-			//	//{
-			//	//	ContentOnOpened( type, path );
-			//	//}
-			//}
+			DrawContentBrowserHeader();
 
-			ImGui::EndTable();
+			DrawContentItems();
 		}
 
-		// If the folder is right clicked, open a prompt to make a new file
-		if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
-			ImGui::OpenPopup("Create Asset", ImGuiPopupFlags_::ImGuiPopupFlags_MouseButtonRight);
-		if ( ImGui::BeginPopup( "Create Asset" ) )
-		{
-			//if ( ImGui::MenuItem( "New Material" ) )
-			//{
-			//	auto mat = MaterialLibrary::GetMaterial( MaterialLibrary::Create( ( m_CurrentDirectory / "NewMaterial.tasset" ).string() ) );
-			//	MaterialSerializer s( mat );
-			//	s.SerializeText( mat->GetPath() );
-
-			//	ImGui::CloseCurrentPopup();
-			//}
-
-			//char fileName[ 1024 ] = { "ComponentTemplate.lua" };
-			//ImGui::InputText( "File Name", fileName, 1024 );
-
-			//ImGui::SameLine();
-			//if ( ImGui::Button( "New" ) )
-			//{
-			//	std::string filePath = ( m_CurrentDirectory / fileName ).string();
-			//	std::ifstream existingFile( filePath );
-			//	// If there is no file at the filePath,
-			//	// make a new file.
-			//	if ( !existingFile )
-			//	{
-			//		std::ofstream newFile( filePath, std::ios::out | std::ios::app );
-			//		// Create a new file and write in a component template
-			//		newFile << "function OnConstruct()\nend\n\nfunction OnUpdate( deltaTime )\nend\n\nfunction OnDestroy()\nend\n";
-			//		newFile.close();
-			//	}
-			//	existingFile.close();
-
-			//	ImGui::CloseCurrentPopup();
-			//}
-
-			//ImGui::SameLine();
-			//if ( ImGui::Button( "Cancel" ) )
-			//	ImGui::CloseCurrentPopup();
-
-			ImGui::EndPopup();
-		}
+		DrawContentBrowserSettings();
 
 		ImGui::End();
 
@@ -159,85 +76,339 @@ namespace Tridium::Editor {
 			Close();
 	}
 
-	bool ContentBrowserPanel::ContentItemOnImGuiDraw( const EFileType a_Type, const IO::FilePath& a_FilePath, const ImVec2& a_Size )
+	void ContentBrowserPanel::OpenFolder( const IO::FilePath& a_Path )
 	{
-		SharedPtr<Texture> icon;
+		m_CurrentDirectory = a_Path;
+		m_DirectoryInputBuffer = m_CurrentDirectory.ToString();
+		ReconstructDirectoryStack();
+		ReconstructFolderHierarchy();
+	}
 
-		// Set Icon
-		switch ( a_Type )
+	void ContentBrowserPanel::ReconstructDirectoryStack()
+	{
+		m_DirectoryStack.clear();
+
+		IO::FilePath parentFolderPaths = m_CurrentDirectory;
+		const IO::FilePath assetDirectory = Application::GetActiveProject()->GetAssetDirectory();
+
+		int loopGuard = 0;
+		while ( parentFolderPaths.HasParentPath() )
 		{
-			using enum EFileType;
-			case Folder:
-			{
-				icon = m_FolderIcon;
+			if ( parentFolderPaths.IsRoot() || ++loopGuard > 100 )
 				break;
-			}
-			case Lua:
-			{
-				icon = m_LuaIcon;
+
+			// If the parent folder is the asset directory, stop.
+			if ( parentFolderPaths == assetDirectory )
 				break;
-			}
-			case Image:
-			{
-				icon = m_ImageMediaIcon;
-				break;
-			}
-			case Tridium_Project:
-			{
-				icon = m_TridiumProjectIcon;
-				break;
-			}
-		default:
-			icon = m_DefaultIcon;
-			break;
+
+			m_DirectoryStack.push_front( parentFolderPaths.GetFilename().ToString() );
+			parentFolderPaths = parentFolderPaths.GetParentPath();
 		}
 
+		m_DirectoryStack.push_front( Application::GetActiveProject()->GetConfiguration().AssetDirectory.GetFilename() );
+	}
+
+	void ContentBrowserPanel::ReconstructFolderHierarchy()
+	{
+		m_FolderHeirarchy.clear();
+		RecurseFolderHeirarchy( Application::GetActiveProject()->GetAssetDirectory() );
+	}
+
+	void ContentBrowserPanel::RecurseFolderHeirarchy( const IO::FilePath& a_Directory )
+	{
+		for ( auto& directoryEntry : IO::DirectoryIterator( a_Directory ) )
+		{
+			IO::FilePath filePath = directoryEntry.path();
+			std::string fileName = filePath.GetFilename().ToString();
+
+			EFileType type = EFileType::Folder;
+			if ( !directoryEntry.is_directory() )
+				type = static_cast<EFileType>( GetAssetTypeFromFileExtension( directoryEntry.path().extension().string() ) );
+
+			// Add the file to the folder heirarchy
+			m_FolderHeirarchy[a_Directory].emplace_back( *this, type, fileName );
+
+			if ( type == EFileType::Folder )
+				RecurseFolderHeirarchy( filePath );
+		}
+	}
+
+	void ContentBrowserPanel::DrawFolderHierarchy()
+	{
+		ImGui::BeginChild( "Folder Hierarchy", { 0, 0 }, ImGuiChildFlags_FrameStyle, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar );
+		{
+			const std::string& rootFolderName = m_DirectoryStack.front();
+			if ( ImGui::TreeNodeEx( ( TE_ICON_FOLDER " " + rootFolderName ).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_Framed) )
+			{
+				RecurseDrawFolderHierarchy( Application::GetActiveProject()->GetAssetDirectory() );
+				ImGui::TreePop();
+			}
+		}
+		ImGui::EndChild();
+	}
+
+	void ContentBrowserPanel::RecurseDrawFolderHierarchy( const IO::FilePath& a_Directory )
+	{
+		if ( m_FolderHeirarchy.find( a_Directory ) == m_FolderHeirarchy.end() )
+			return;
+
+		for ( auto& item : m_FolderHeirarchy[a_Directory] )
+		{
+			const char* icon = item.Type == EFileType::Folder ? TE_ICON_FOLDER " " : TE_ICON_FILE " ";
+			std::string itemName = icon + item.Name;
+
+			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
+			if ( item.Type != EFileType::Folder )
+			{
+				flags |= ImGuiTreeNodeFlags_Leaf;
+			}
+			else if ( m_CurrentDirectory == ( a_Directory / item.Name ) )
+			{
+				flags |= ImGuiTreeNodeFlags_Selected;
+			}
+
+			const bool open = ImGui::TreeNodeEx( itemName.c_str(), flags );
+
+			// Open the file if it was double clicked
+			if ( ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left ) )
+			{
+				if ( OnContentItemOpened( item ) )
+				{
+					if ( open ) ImGui::TreePop();
+					break;
+				}
+			}
+
+			if ( !open )
+				continue;
+
+			// Item is a folder, recurse into it
+
+			RecurseDrawFolderHierarchy( a_Directory / item.Name );
+			ImGui::TreePop();
+		}
+	}
+
+	void ContentBrowserPanel::DrawContentBrowserHeader()
+	{
+		// Get the cursor position and frame padding for the input text box
+		const ImVec2& framePadding = ImGui::GetStyle().FramePadding;
+		ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+		cursorPos.x += framePadding.x;
+		cursorPos.y += framePadding.y;
+
+		//  - Draw the directory path input box - 
+		// If the directory input text box is active, set the text color to the default text color
+		// Otherwise, set the text color to invisible.
+		if ( ImGui::IsItemActive( ImGui::GetID( "##Directory Path" ) ) )
+			ImGui::PushStyleColor( ImGuiCol_Text, ImGui::GetStyleColorVec4( ImGuiCol_Text ) );
+		else
+			ImGui::PushStyleColor( ImGuiCol_Text, ImVec4() );
+
+		// Allow the following folder button to overlap the input text box
+		ImGui::SetNextItemAllowOverlap();
+		if ( ImGui::InputText( "##Directory Path", &m_DirectoryInputBuffer, ImGuiInputTextFlags_EnterReturnsTrue ) )
+		{
+			IO::FilePath newDirectory = m_DirectoryInputBuffer;
+			if ( !newDirectory.IsDirectory() )
+			{
+				// The newDirectory is not a directory, attempt to open the parent directory
+				newDirectory = newDirectory.GetParentPath();
+			}
+
+			if ( newDirectory.Exists() )
+			{
+				OpenFolder( newDirectory );
+			}
+			else
+			{
+				// The new directory does not exist, reset the input buffer to the current directory
+				m_DirectoryInputBuffer = m_CurrentDirectory.ToString();
+			}
+		}
+		ImGui::PopStyleColor();
+
+		const bool isDirectoryInputActive = ImGui::IsItemActive();
+
+		ImGui::SameLine();
+		if ( ImGui::Button( TE_ICON_REPEAT ) )
+			ReconstructFolderHierarchy();
+
+		ImGui::SameLine( ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize( TE_ICON_GEAR ).x - ImGui::GetStyle().WindowPadding.x );
+		if ( ImGui::Button( TE_ICON_GEAR ) )
+			ImGui::OpenPopup( "Content Browser Settings" );
+
+
+		// If the directory input text box is active, don't draw the directory path buttons
+		if ( isDirectoryInputActive )
+			return;
+
+		// Draw the directory path buttons
+		{
+			ImGui::SetCursorScreenPos( cursorPos ); // Reset the cursor position
+
+			ImGui::Text( " " TE_ICON_FOLDER_OPEN " " );
+			ImGui::SameLine();
+
+			ImGui::ScopedStyleVar frame( ImGuiStyleVar_FrameBorderSize, 0.f );
+			ImGui::ScopedStyleCol buttonCol( ImGuiCol_Button, ImVec4() );
+			uint32_t i = 0;
+			for ( const std::string& folder : m_DirectoryStack )
+			{
+
+				ImGui::ScopedID id( i );
+				if ( ImGui::SmallButton( folder.c_str() ) )
+				{
+					for ( int j = m_DirectoryStack.size() - 1; j > i; --j )
+						m_CurrentDirectory = m_CurrentDirectory.GetParentPath();
+
+					OpenFolder( m_CurrentDirectory );
+					break;
+				}
+
+				if ( i < m_DirectoryStack.size() - 1 )
+				{
+					ImGui::SameLine();
+					ImGui::Text( ">" );
+					ImGui::SameLine();
+				}
+
+				i++;
+			}
+		}
+	}
+
+	void ContentBrowserPanel::DrawContentItems()
+	{
+		if ( !ImGui::BeginChild( "Folder Contents", { 0, 0 }, ImGuiChildFlags_FrameStyle, ImGuiWindowFlags_AlwaysVerticalScrollbar ) )
+		{
+			ImGui::EndChild();
+			return;
+		}
+
+		const float padding = 16.0f;
+		const float cellSize = m_ContentThumbnailSize + padding;
+		const float panelWidth = ImGui::GetContentRegionAvail().x;
+		int columnCount = (int)( panelWidth / cellSize );
+		if ( columnCount < 1 )
+			columnCount = 1;
+
+		if ( ImGui::BeginTable( "Folder Contents Items", columnCount ) )
+		{
+			for ( auto& item : m_FolderHeirarchy[m_CurrentDirectory] )
+			{
+				ImGui::TableNextColumn();
+				const bool wasOpened = item.OnImGuiDraw( { m_ContentThumbnailSize, m_ContentThumbnailSize } );
+
+				if ( wasOpened )
+				{
+					bool shouldBreak = OnContentItemOpened( item );
+					if ( shouldBreak )
+						break;
+				}
+
+				// If the item is right clicked, open the context menu
+				if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
+					ImGui::OpenPopup( "Context Menu", ImGuiPopupFlags_::ImGuiPopupFlags_MouseButtonRight );
+
+				if ( ImGui::BeginPopup( "Context Menu" ) )
+				{
+					DrawContentItemContextMenu( item );
+					ImGui::EndPopup();
+				}
+			}
+
+			ImGui::EndTable();
+		}
+
+		ImGui::EndChild();
+	}
+
+	void ContentBrowserPanel::DrawContentItemContextMenu( const ContentItem& a_Item )
+	{
+		ImGui::Text( "Asher set up a context menu you idiot!" );
+	}
+
+	void ContentBrowserPanel::DrawContentBrowserSettings()
+	{
+		if ( !ImGui::BeginPopup( "Content Browser Settings" ) )
+			return;
+
+		ImGui::SliderFloat( "Thumbnail Size", &m_ContentThumbnailSize, 64.0f, 256.0f );
+		ImGui::EndPopup();
+	}
+
+	bool ContentBrowserPanel::OnContentItemOpened( const ContentItem& a_Item )
+	{
+		switch ( a_Item.Type )
+		{
+		case EFileType::Folder:
+		{
+			OpenFolder( m_CurrentDirectory / a_Item.Name );
+			return true;
+		}
+		}
+
+		return false;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
+	bool ContentItem::OnImGuiDraw( const ImVec2& a_Size ) const 
+	{
 		// Create an Image Button with the file name at the bottom
 		ImGui::BeginGroup();
+		{
 			float paddingX = 25.f;
 			float paddingY = 25.f;
 			paddingX = a_Size.x < paddingX ? 0 : paddingX;
 			paddingY = a_Size.y < paddingY ? 0 : paddingY;
 
-			ImGui::PushStyleVar( ImGuiStyleVar_::ImGuiStyleVar_FramePadding, { paddingX, paddingY } );
-			ImGui::PushStyleColor( ImGuiCol_Button, ImVec4( 0.f, 0.f, 0.f, 0.f ) );
-			ImGui::PushStyleColor( ImGuiCol_ButtonActive, ImVec4( 1.f, 1.f, 1.f, 1.f ) );
-			ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 1.f, 1.f, 1.f, 0.5f ) );
+			SharedPtr<Texture> icon = s_Icons[Type];
 
-			bool result = ImGui::ImageButton(
-				a_FilePath.ToString().c_str(),
-				(ImTextureID)icon->GetRendererID(),
-				{ a_Size.x - paddingX * 2, a_Size.y - paddingY * 2 },
-				{ 0,1 }, { 1,0 } );
+			// Draw the thumbnail
+			{
+				ImGui::PushStyleVar( ImGuiStyleVar_::ImGuiStyleVar_FramePadding, { paddingX, paddingY } );
+				ImGui::PushStyleColor( ImGuiCol_Button, ImVec4( 0.f, 0.f, 0.f, 0.f ) );
+				ImGui::PushStyleColor( ImGuiCol_ButtonActive, ImVec4( 1.f, 1.f, 1.f, 1.f ) );
+				ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 1.f, 1.f, 1.f, 0.5f ) );
 
-			ImGui::PopStyleVar();
-			ImGui::PopStyleColor(3);
+				ImGui::ImageButton(
+					Name.c_str(),
+					(ImTextureID)icon->GetRendererID(),
+					{ a_Size.x - paddingX * 2, a_Size.y - paddingY * 2 },
+					{ 0,1 }, { 1,0 } );
+
+				ImGui::PopStyleVar();
+				ImGui::PopStyleColor( 3 );
+			}
 
 			if ( ImGui::BeginDragDropSource() )
 			{
-				ImGui::SetDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM, a_FilePath.ToString().c_str(), a_FilePath.ToString().size() + 1 );
-				ImGui::Image( (ImTextureID)icon->GetRendererID(),
+				std::string filePath = ( Owner.GetDirectory() / Name ).ToString();
+				ImGui::SetDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM, filePath.c_str(), filePath.size() + 1);
+				ImGui::Image( 
+					(ImTextureID)icon->GetRendererID(),
 					{ a_Size.x - paddingX * 2, a_Size.y - paddingY * 2 },
 					{ 0,1 }, { 1,0 } );
 
 				ImGui::PushTextWrapPos( a_Size.x - paddingX * 2 );
-				ImGui::Text( a_FilePath.GetFilename().ToString().c_str());
+				ImGui::Text( Name.c_str() );
 				ImGui::PopTextWrapPos();
 
 				ImGui::EndDragDropSource();
 			}
 
+			// Draw the file name
 			ImGui::PushTextWrapPos( ImGui::GetCursorPosX() + a_Size.x );
-			ImGui::Text( a_FilePath.GetFilename().ToString().c_str() );
+			ImGui::Text( Name.c_str() );
 			ImGui::PopTextWrapPos();
-
+		}
 		ImGui::EndGroup();
 
-		return result;
-	}
-
-	void ContentBrowserPanel::ContentOnOpened( const EFileType type, const IO::FilePath& a_FilePath )
-	{
+		// If the item is double clicked, open it
+		const bool wasOpened = ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left );
+		return wasOpened;
 	}
 }
 

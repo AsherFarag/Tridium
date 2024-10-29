@@ -60,8 +60,8 @@ GameObjects:
     Tag: Cone
     Transform:
       Position: [2.61753798, 3.24223638, -6.72028399]
-      Rotation: [-0.753696799, -0, 0]
-      Scale: [1, 0.999996543, 0.999996543]
+      Rotation: [-1.53909492, -0, 0]
+      Scale: [1, 0.99998939, 0.99998939]
       Children: []
     StaticMeshComponent:
       Mesh: 5

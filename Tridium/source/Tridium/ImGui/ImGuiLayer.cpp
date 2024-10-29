@@ -10,6 +10,23 @@
 
 namespace Tridium {
 
+	void AddIconsToFont()
+	{
+		const float iconFontSize = s_FontSize * 2.0f / 3.0f;
+
+		// Merge in icons from Font Awesome
+		static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
+		ImFontConfig icons_config;
+		icons_config.MergeMode = true;
+		icons_config.PixelSnapH = true;
+		icons_config.GlyphMinAdvanceX = iconFontSize;
+
+		ImGuiIO& io = ImGui::GetIO();
+		io.Fonts->AddFontFromFileTTF(
+			( Tridium::Application::GetEngineAssetsDirectory() / "Fonts" / FONT_ICON_FILE_NAME_FAS ).ToString().c_str(),
+			iconFontSize, &icons_config, icons_ranges );
+	}
+
 	ImGuiLayer::ImGuiLayer()
 		: Layer( "ImGuiLayer" )
 	{
@@ -41,9 +58,14 @@ namespace Tridium {
 
 		// - Set Default Font -
 		ImGui::GetLightFont();
+		AddIconsToFont();
 		io.FontDefault = ImGui::GetRegularFont();
+		AddIconsToFont();
 		ImGui::GetBoldFont();
+		AddIconsToFont();
 		ImGui::GetExtraBoldFont();
+		AddIconsToFont();
+
 
 		Application& app = Application::Get();
 		GLFWwindow* window = static_cast<GLFWwindow*>( app.GetWindow().GetNativeWindow() );

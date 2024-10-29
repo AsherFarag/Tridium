@@ -81,6 +81,20 @@ namespace Tridium::IO {
 
 		bool IsRelative() const { return is_relative(); }
 
+		bool IsEmpty() const { return empty(); }
+
+        bool IsRoot() const { return root_path() == static_cast<const std::filesystem::path&>( *this ); }
+
+		static FilePath Absolute( const FilePath& a_Path ) { return fs::absolute( a_Path ); }
+
+		static FilePath Relative( const FilePath& a_Path, const FilePath& a_Base ) { return fs::relative( a_Path, a_Base ); }
+
+		static FilePath Canonical( const FilePath& a_Path ) { return fs::canonical( a_Path ); }
+
+		static FilePath TempDirectoryPath() { return fs::temp_directory_path(); }
+
+		static FilePath CurrentPath() { return fs::current_path(); }
+
         static FilePath FromPath( const fs::path& a_Path ) { return FilePath( a_Path ); }
     };
 

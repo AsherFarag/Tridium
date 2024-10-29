@@ -7,7 +7,7 @@ namespace Tridium {
 
     using AssetHandle = GUID;
 
-    enum class EAssetType : Byte
+    enum class EAssetType : uint8_t
     {
         None = 0,
 		Scene,

@@ -9,12 +9,20 @@ static ImVec4 operator*( const ImVec4& a_Color, float a_Value )
 	return ImVec4( a_Color.x * a_Value, a_Color.y * a_Value, a_Color.z * a_Value, a_Color.w );
 }
 
+namespace Tridium {
+
+	static float s_FontSize = 20.f;
+
+}
+
 namespace ImGui {
 
 	ImFont* GetLightFont();
 	ImFont* GetRegularFont();
 	ImFont* GetBoldFont();
 	ImFont* GetExtraBoldFont();
+
+	bool IsItemActive( ImGuiID id );
 
 	// ImGui::InputText() with std::string
 	// Because text input needs dynamic resizing, we need to setup a callback to grow the capacity

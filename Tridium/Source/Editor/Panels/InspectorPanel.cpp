@@ -50,7 +50,8 @@ namespace Tridium::Editor {
 
 	bool DrawComponentTreeNode(const char* a_Name, bool a_HasOptionsButton)
 	{
-		const bool isOpen = ImGui::TreeNodeEx( a_Name, ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_AllowOverlap );
+		ImGui::SetNextItemAllowOverlap();
+		const bool isOpen = ImGui::TreeNodeEx( a_Name, ImGuiTreeNodeFlags_Framed );
 
 		if ( a_HasOptionsButton )
 		{
@@ -59,11 +60,9 @@ namespace Tridium::Editor {
 				- ImGui::CalcTextSize( "*" ).x
 				- ( 2.0f * ImGui::GetStyle().FramePadding.x )
 			);
-
-			if ( ImGui::SmallButton( ( std::string( "*##" ) + a_Name ).c_str() ) )
-			{
+			std::string optionsName( TE_ICON_GEAR "##", a_Name );
+			if ( ImGui::SmallButton( optionsName.c_str() ) )
 				ImGui::OpenPopup( a_Name );
-			}
 		}
 
 		return isOpen;

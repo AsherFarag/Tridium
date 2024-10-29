@@ -111,10 +111,13 @@ namespace Tridium::Editor {
 		ImGui::Text( m_Context->GetName().c_str() );
 		ImGui::PopFont();
 
-		ImGui::SameLine( ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("+").x - 10);
+		ImGui::SameLine( ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize( "+" ).x - 10 );
 
-		if ( ImGui::SmallButton( "+" ) )
-			OpenAddPopUp();
+		{
+			ImGui::ScopedStyleCol buttonBg( ImGuiCol_Button, ImVec4( 0.0f, 0.0f, 0.0f, 0.0f ) );
+			if ( ImGui::Button( TE_ICON_PLUS ) )
+				OpenAddPopUp();
+		}
 
 		DrawAddPopUp();
 
@@ -267,7 +270,7 @@ namespace Tridium::Editor {
 		if ( !hasChildren ) 
 			flags |= ImGuiTreeNodeFlags_Leaf;
 
-		bool drawChildren = ImGui::TreeNodeEx( (void*)(uint64_t)(uint32_t)go, flags, label.c_str() );
+		bool drawChildren = ImGui::TreeNodeEx( (void*)(uint64_t)(uint32_t)go, flags, ( TE_ICON_CUBE " " + label ).c_str());
 
 		if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
 			OpenAddPopUp();
