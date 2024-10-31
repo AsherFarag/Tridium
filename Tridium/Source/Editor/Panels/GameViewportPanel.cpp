@@ -23,6 +23,9 @@ namespace Tridium::Editor {
 	{
 		if ( !m_Camera )
 		{
+			if ( !GetEditorLayer()->GetActiveScene() )
+				return;
+
 			CameraComponent* mainCam = GetEditorLayer()->GetActiveScene()->GetMainCamera();
 			if ( mainCam )
 				m_Camera = mainCam->GetGameObject();

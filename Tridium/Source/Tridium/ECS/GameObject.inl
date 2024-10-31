@@ -73,4 +73,15 @@ namespace Tridium {
 			Application::GetScene()->m_Registry.remove<T>( m_ID );
 	}
 
+	inline bool Tridium::GameObject::IsValid() const
+	{
+		if ( m_ID == entt::null )
+			return false;
+
+		if ( !Application::GetScene() )
+			return false;
+
+		return Application::GetScene()->m_Registry.valid( m_ID );
+	}
+
 }

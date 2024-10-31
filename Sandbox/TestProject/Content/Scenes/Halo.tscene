@@ -1,0 +1,11 @@
+Scene: Halo
+SceneEnvironment:
+  HDRI:
+    EnvironmentMapHandle: 16699354290950884582
+    Exposure: 3.46700001
+    Gamma: 0.441000015
+    Blur: 1
+    Intensity: 1
+    RotationEular: [0, 0, 0]
+GameObjects:
+  []

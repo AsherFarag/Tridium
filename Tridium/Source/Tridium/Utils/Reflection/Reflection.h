@@ -9,6 +9,7 @@ using namespace entt::literals;
 
 namespace Tridium
 {
+	class Scene;
     class GameObject;
 	class Component;
 
@@ -30,8 +31,8 @@ namespace Tridium
             constexpr MetaIDType IsComponentPropID = entt::hashed_string( "IsComponent" ).value();
             constexpr MetaIDType AddToGameObjectPropID = entt::hashed_string( "AddToGameObject" ).value();
 			constexpr MetaIDType RemoveFromGameObjectPropID = entt::hashed_string( "RemoveFromGameObject" ).value();
-            typedef Component* ( *AddToGameObjectFunc )( ::Tridium::GameObject a_GameObject );
-			typedef void ( *RemoveFromGameObjectFunc )( ::Tridium::GameObject a_GameObject );
+            typedef Component* ( *AddToGameObjectFunc )( Scene& a_Scene, GameObject a_GameObject );
+			typedef void ( *RemoveFromGameObjectFunc )( Scene& a_Scene, GameObject a_GameObject );
         }
 
         void __Internal_InitializeReflection();
@@ -154,16 +155,16 @@ namespace Tridium::Refl::Internal {
 // Example: PROPERTY( Name, FLAGS( Serialize, VisibleAnywhere ) )
 #define FLAGS(...) _REFL_ Internal::CombineFlags(__VA_ARGS__)
 
-#define BEGIN_REFLECT_COMPONENT(ComponentClass)                          \
-    BEGIN_REFLECT(ComponentClass)                                        \
-    meta.prop(::Tridium::Refl::Internal::IsComponentPropID);	         \
-    meta.prop(::Tridium::Refl::Internal::AddToGameObjectPropID,          \
-			  +[](GameObject a_GameObject) -> Component*                 \
-			  {                                                          \
-				  return a_GameObject.TryAddComponent<ComponentClass>(); \
-			  });                                                        \
-	meta.prop(::Tridium::Refl::Internal::RemoveFromGameObjectPropID,     \
-			  +[](GameObject a_GameObject)                               \
-			  {                                                          \
-				  a_GameObject.RemoveComponent<ComponentClass>();        \
+#define BEGIN_REFLECT_COMPONENT(ComponentClass)														\
+    BEGIN_REFLECT(ComponentClass)																	\
+    meta.prop(::Tridium::Refl::Internal::IsComponentPropID);										\
+    meta.prop(::Tridium::Refl::Internal::AddToGameObjectPropID,										\
+			  +[](::Tridium::Scene& a_Scene, ::Tridium::GameObject a_GameObject) -> Component*      \
+			  {                                                                                     \
+				  return a_Scene.TryAddComponentToGameObject<ComponentClass>(a_GameObject);         \
+			  });                                                                                   \
+	meta.prop(::Tridium::Refl::Internal::RemoveFromGameObjectPropID,                                \
+			  +[](::Tridium::Scene& a_Scene, ::Tridium::GameObject a_GameObject)                    \
+			  {                                                                                     \
+				  a_Scene.RemoveComponentFromGameObject<ComponentClass>(a_GameObject);              \
 			  });

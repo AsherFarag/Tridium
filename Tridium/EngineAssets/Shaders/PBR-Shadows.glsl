@@ -60,8 +60,6 @@ uniform sampler2D u_AOTexture;
 // Shadows
 in vec4 v_FragPosLightSpace;
 uniform sampler2D u_ShadowMap;
-uniform vec3 u_LightPos;
-uniform vec3 u_ViewPos;
 
 
 struct Environment
@@ -390,8 +388,6 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal)
     // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
 
-    vec3 lightDir = normalize(u_LightPos - v_WorldPos);
-	float bias = max(0.025 * (1.0 - dot(normal, lightDir)), 0.0005);  
     float shadow = 0.0;
 
     const int sampleRadius = 2;

@@ -9,8 +9,8 @@ namespace Tridium {
 	public:
 		ProjectSerializer( const SharedPtr<Project>& a_Project );
 
-		void SerializeText( const std::string& a_Path );
-		bool DeserializeText( const std::string& a_Path );
+		void SerializeText( const IO::FilePath& a_Path );
+		bool DeserializeText( const IO::FilePath& a_Path );
 
 	private:
 		SharedPtr<Project> m_Project;

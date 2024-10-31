@@ -20,6 +20,7 @@
 #include "Panels/Asset/MaterialEditorPanel.h"
 #include "Panels/AssetRegistryPanel.h"
 #include "Panels/SceneSettingsPanel.h"
+#include "Panels/ProjectSettingsPanel.h"
 
 #include <Tridium/IO/SceneSerializer.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
@@ -317,6 +318,9 @@ namespace Tridium::Editor {
 		{
 			if ( ImGui::MenuItem( "Editor Preferences" ) )
 				m_PanelStack.PushPanel<EditorPreferencesPanel>();
+
+			if ( ImGui::MenuItem( "Project Settings" ) )
+				m_PanelStack.PushPanel<ProjectSettingsPanel>();
 
 			ImGui::EndMenu();
 		}

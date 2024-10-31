@@ -103,6 +103,8 @@ namespace Tridium::Editor::Style {
 			colors[ImGuiCol_NavWindowingDimBg] = ImVec4( 1.00f, 1.00f, 1.00f, 0.20f );
 			colors[ImGuiCol_ModalWindowDimBg] = ImVec4( 1.00f, 1.00f, 1.00f, 0.30f );
 
+			colors[ImGuiCol_DragDropTarget] = Colors::Orange;
+
 			style.WindowPadding = ImVec2( 8.00f, 8.00f );
 			style.FramePadding = ImVec2( 5.00f, 2.00f );
 			style.CellPadding = ImVec2( 6.00f, 6.00f );

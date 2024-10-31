@@ -295,13 +295,13 @@ namespace Tridium::Editor {
 
 	bool EditorAssetManager::CreateAsset( const AssetMetaData& a_MetaData, SharedPtr<Asset> a_Asset )
 	{
-		if ( auto it = m_AssetRegistry.AssetMetaData.find( a_MetaData.Handle ); it != m_AssetRegistry.AssetMetaData.end() )
+		if ( m_AssetRegistry.AssetMetaData.find( a_MetaData.Handle ) != m_AssetRegistry.AssetMetaData.end() )
 		{
 			TE_CORE_WARN( "[AssetManager] Asset already exists with handle: {0}", a_MetaData.Handle.ID() );
 			return false;
 		}
 
-		if ( auto it = m_LoadedAssets.find( a_MetaData.Handle ); it != m_LoadedAssets.end() )
+		if ( m_LoadedAssets.find( a_MetaData.Handle ) != m_LoadedAssets.end() )
 		{
 			TE_CORE_WARN( "[AssetManager] Asset already loaded with handle: {0}", a_MetaData.Handle.ID() );
 			return false;
@@ -311,6 +311,8 @@ namespace Tridium::Editor {
 		m_LoadedAssets[a_MetaData.Handle] = a_Asset;
 		if ( a_Asset )
 			a_Asset->SetHandle( a_MetaData.Handle );
+
+		SaveAsset( a_MetaData.Handle );
 
 		return true;
 	}

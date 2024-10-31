@@ -86,6 +86,14 @@ namespace Tridium::IO {
 	// ---------- Tridium Types -----------
 
 	_TRIDUM_SERIALIZE_TO_TEXT( GUID );
+	_TRIDUM_SERIALIZE_TO_TEXT( SceneHandle );
+	_TRIDUM_SERIALIZE_TO_TEXT( MaterialHandle );
+	_TRIDUM_SERIALIZE_TO_TEXT( MeshSourceHandle );
+	_TRIDUM_SERIALIZE_TO_TEXT( StaticMeshHandle );
+	_TRIDUM_SERIALIZE_TO_TEXT( ShaderHandle );
+	_TRIDUM_SERIALIZE_TO_TEXT( TextureHandle );
+	_TRIDUM_SERIALIZE_TO_TEXT( CubeMapHandle );
+	_TRIDUM_SERIALIZE_TO_TEXT( LuaHandle );
 
 
 #undef _TRIDUM_SERIALIZE_TO_TEXT
@@ -198,6 +206,14 @@ namespace Tridium::IO {
 	// ---------- Tridium Types -----------
 
 	_TRIDUM_DESERIALIZE_FROM_TEXT( GUID );
+	_TRIDUM_DESERIALIZE_FROM_TEXT( SceneHandle );
+	_TRIDUM_DESERIALIZE_FROM_TEXT( MaterialHandle );
+	_TRIDUM_DESERIALIZE_FROM_TEXT( MeshSourceHandle );
+	_TRIDUM_DESERIALIZE_FROM_TEXT( StaticMeshHandle );
+	_TRIDUM_DESERIALIZE_FROM_TEXT( ShaderHandle );
+	_TRIDUM_DESERIALIZE_FROM_TEXT( TextureHandle );
+	_TRIDUM_DESERIALIZE_FROM_TEXT( CubeMapHandle );
+	_TRIDUM_DESERIALIZE_FROM_TEXT( LuaHandle );
 
 #undef _TRIDUM_DESERIALIZE_FROM_TEXT
 

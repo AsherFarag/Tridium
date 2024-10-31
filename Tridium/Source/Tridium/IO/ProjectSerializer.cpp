@@ -12,7 +12,7 @@ namespace Tridium {
 	{
 	}
 
-	void ProjectSerializer::SerializeText( const std::string& a_Path )
+	void ProjectSerializer::SerializeText( const IO::FilePath& a_Path )
 	{
 		YAML::Emitter out;
 
@@ -23,17 +23,21 @@ namespace Tridium {
 			{
 				out << YAML::Key << "Name" << YAML::Value << m_Project->m_ProjectConfig.Name;
 				out << YAML::Key << "AssetDirectory" << YAML::Value << m_Project->m_ProjectConfig.AssetDirectory.ToString();
-				out << YAML::Key << "StartScene" << YAML::Value << m_Project->m_ProjectConfig.StartScene.ToString();
+				out << YAML::Key << "StartScene" << YAML::Value << static_cast<SceneHandle::Type>( m_Project->m_ProjectConfig.StartScene.ID() );
 			}
 			out << YAML::EndMap; // Configuration
 		}
 		out << YAML::EndMap; // Project
 
-		std::ofstream outFile( a_Path );
+		IO::FilePath path = a_Path;
+		path.ReplaceExtension( "tproject" );
+
+		std::ofstream outFile( path.ToString() );
 		outFile << out.c_str();
+		outFile.close();
 	}
 
-	bool ProjectSerializer::DeserializeText( const std::string& a_Path )
+	bool ProjectSerializer::DeserializeText( const IO::FilePath& a_Path )
 	{
 		YAML::Node data;
 
@@ -50,7 +54,7 @@ namespace Tridium {
 		{
 			m_Project->m_ProjectConfig.Name = configNode["Name"].as<std::string>();
 			m_Project->m_ProjectConfig.AssetDirectory = IO::FilePath( configNode["AssetDirectory"].as<std::string>() );
-			m_Project->m_ProjectConfig.StartScene = IO::FilePath( configNode["StartScene"].as<std::string>() );
+			m_Project->m_ProjectConfig.StartScene = configNode["StartScene"].as<SceneHandle::Type>();
 		}
 		else
 		{

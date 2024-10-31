@@ -53,7 +53,7 @@ namespace Tridium {
 		static inline GameObject Create() { return Application::GetScene()->InstantiateGameObject(); }
 		static inline GameObject Create( GUID a_GUID, const std::string& a_Name ) { return Application::GetScene()->InstantiateGameObject( a_GUID, a_Name ); }
 		inline void Destroy() { Application::GetScene()->m_Registry.destroy( m_ID ); }
-		inline bool IsValid() const { return Application::GetScene()->m_Registry.valid( m_ID ); }
+		inline bool IsValid() const;
 
 		GUID GetGUID() const;
 		const inline EntityID ID() const { return m_ID; }

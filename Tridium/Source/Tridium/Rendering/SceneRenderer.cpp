@@ -33,78 +33,14 @@ namespace Tridium {
 
 		// Initialize Shadow Info
 		{
-
 			m_ShadowMapSize = { 1024 * 4, 1024 * 4 };
-
 			m_ShadowMapShader.reset( Shader::Create() );
 			m_ShadowMapShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Shadows/ShadowMap.glsl" );
 		}
 
-		// Create the skybox VAO
+		// Create Cube Mesh
 		{
-			float skyboxVertices[] = {
-				// positions          
-				-1.0f,  1.0f, -1.0f,
-				-1.0f, -1.0f, -1.0f,
-				 1.0f, -1.0f, -1.0f,
-				 1.0f, -1.0f, -1.0f,
-				 1.0f,  1.0f, -1.0f,
-				-1.0f,  1.0f, -1.0f,
-
-				-1.0f, -1.0f,  1.0f,
-				-1.0f, -1.0f, -1.0f,
-				-1.0f,  1.0f, -1.0f,
-				-1.0f,  1.0f, -1.0f,
-				-1.0f,  1.0f,  1.0f,
-				-1.0f, -1.0f,  1.0f,
-
-				 1.0f, -1.0f, -1.0f,
-				 1.0f, -1.0f,  1.0f,
-				 1.0f,  1.0f,  1.0f,
-				 1.0f,  1.0f,  1.0f,
-				 1.0f,  1.0f, -1.0f,
-				 1.0f, -1.0f, -1.0f,
-
-				-1.0f, -1.0f,  1.0f,
-				-1.0f,  1.0f,  1.0f,
-				 1.0f,  1.0f,  1.0f,
-				 1.0f,  1.0f,  1.0f,
-				 1.0f, -1.0f,  1.0f,
-				-1.0f, -1.0f,  1.0f,
-
-				-1.0f,  1.0f, -1.0f,
-				 1.0f,  1.0f, -1.0f,
-				 1.0f,  1.0f,  1.0f,
-				 1.0f,  1.0f,  1.0f,
-				-1.0f,  1.0f,  1.0f,
-				-1.0f,  1.0f, -1.0f,
-
-				-1.0f, -1.0f, -1.0f,
-				-1.0f, -1.0f,  1.0f,
-				 1.0f, -1.0f, -1.0f,
-				 1.0f, -1.0f, -1.0f,
-				-1.0f, -1.0f,  1.0f,
-				 1.0f, -1.0f,  1.0f
-			};
-
-			uint32_t indicies[] = {
-				0, 1, 2, 3, 4, 5,
-				6, 7, 8, 9, 10, 11,
-				12, 13, 14, 15, 16, 17,
-				18, 19, 20, 21, 22, 23,
-				24, 25, 26, 27, 28, 29,
-				30, 31, 32, 33, 34, 35
-			};
-
-			m_SkyboxVAO = VertexArray::Create();
-			SharedPtr<VertexBuffer> vbo = VertexBuffer::Create( skyboxVertices, sizeof( skyboxVertices ) );
-			BufferLayout layout = {
-				{ ShaderDataType::Float3, "a_Position" }
-			};
-			vbo->SetLayout( layout );
-
-			m_SkyboxVAO->AddVertexBuffer( vbo );
-			m_SkyboxVAO->SetIndexBuffer( IndexBuffer::Create( indicies, sizeof( indicies ) / sizeof( uint32_t ) ) );
+			m_CubeMesh = MeshFactory::CreateCube();
 		}
 	}
 
@@ -181,6 +117,7 @@ namespace Tridium {
 		{
 			auto radianceMap = m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap();
 			RenderCommand::SetDepthCompare( EDepthCompareOperator::LessOrEqual );
+			RenderCommand::SetCullMode( ECullMode::None );
 			m_SkyboxShader->Bind();
 			{
 				Matrix4 skyboxView = Matrix4( Matrix3( m_ViewMatrix ) ); // Remove translation
@@ -197,9 +134,9 @@ namespace Tridium {
 
 				radianceMap->Bind();
 
-				m_SkyboxVAO->Bind();
-				RenderCommand::DrawIndexed( m_SkyboxVAO );
-				m_SkyboxVAO->Unbind();
+				m_CubeMesh->GetVAO()->Bind();
+				RenderCommand::DrawIndexed( m_CubeMesh->GetVAO() );
+				m_CubeMesh->GetVAO()->Unbind();
 
 				radianceMap->Unbind();
 			}
@@ -449,12 +386,11 @@ namespace Tridium {
 				radianceMap->Bind( 7 );
 				shader->SetInt( "u_Environment.PrefilterMap", 7 );
 			}
-
-			shader->SetFloat( "u_Environment.Roughness", m_SceneEnvironment.HDRI.Blur );
-			shader->SetFloat( "u_Environment.Exposure", m_SceneEnvironment.HDRI.Exposure );
-			shader->SetFloat( "u_Environment.Gamma", m_SceneEnvironment.HDRI.Gamma );
-			shader->SetFloat( "u_Environment.Intensity", m_SceneEnvironment.HDRI.Intensity );
 		}
+		shader->SetFloat( "u_Environment.Roughness", m_SceneEnvironment.HDRI.Blur );
+		shader->SetFloat( "u_Environment.Exposure", m_SceneEnvironment.HDRI.Exposure );
+		shader->SetFloat( "u_Environment.Gamma", m_SceneEnvironment.HDRI.Gamma );
+		shader->SetFloat( "u_Environment.Intensity", m_SceneEnvironment.HDRI.Intensity );
 
 		// Bind BRDF LUT
 		if ( m_BrdfLUT )
@@ -469,8 +405,6 @@ namespace Tridium {
 		if ( m_ShadowFBO ) m_ShadowFBO->BindDepthAttatchment( 9 );
 		shader->SetInt( "u_ShadowMap", 9 );
 		shader->SetMatrix4( "u_LightSpaceMatrix", m_LightViewProjectionMatrix );
-		shader->SetFloat3( "u_LightPos", m_LightEnvironment.DirectionalLights[0].Direction );
-		shader->SetFloat3( "u_ViewPos", m_CameraPosition );
 
 
 		a_DrawCall.VAO->Bind();

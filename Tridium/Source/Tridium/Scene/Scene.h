@@ -14,7 +14,7 @@ namespace Tridium {
 	struct SceneEnvironment
 	{
 		struct {
-			AssetHandle EnvironmentMapHandle;
+			CubeMapHandle EnvironmentMapHandle;
 			SharedPtr<EnvironmentMap> EnvironmentMap;
 			float Exposure = 1.0f;
 			float Gamma = 2.2f;
@@ -44,8 +44,6 @@ namespace Tridium {
 		void SetPaused( bool a_NewPaused ) { m_Paused = a_NewPaused; }
 		bool IsPaused() const { return m_Paused; }
 
-		GameObject InstantiateGameObject( const std::string& a_Name = "GameObject" );
-		GameObject InstantiateGameObject( GUID a_GUID, const std::string& a_Name = "GameObject" );
 		CameraComponent* GetMainCamera();
 		void SetMainCamera( const EntityID& a_Camera ) { m_MainCamera = a_Camera; }
 		void Clear();
@@ -54,6 +52,28 @@ namespace Tridium {
 		const SceneEnvironment& GetSceneEnvironment() const { return m_SceneEnvironment; }
 
 		SceneRenderer& GetSceneRenderer() { return m_SceneRenderer; }
+
+		// - GameObjects - 
+		GameObject InstantiateGameObject( const std::string& a_Name = "GameObject" );
+		GameObject InstantiateGameObject( GUID a_GUID, const std::string& a_Name = "GameObject" );
+
+		template <typename T, typename... Args>
+		T& AddComponentToGameObject( GameObject a_GameObject, Args&&... args );
+
+		template <typename T, typename... Args>
+		T* TryAddComponentToGameObject( GameObject a_GameObject, Args&&... args );
+
+		template <typename T>
+		inline T& GetComponentFromGameObject( GameObject a_GameObject );
+
+		template <typename T>
+		inline T* TryGetComponentFromGameObject( GameObject a_GameObject );
+
+		template <typename T>
+		inline bool GameObjectHasComponent( GameObject a_GameObject ) const;
+
+		template <typename T>
+		inline void RemoveComponentFromGameObject( GameObject a_GameObject );
 
 	private:
 		std::string m_Name;
@@ -66,3 +86,5 @@ namespace Tridium {
 		friend SceneRenderer;
 	};
 }
+
+#include "Scene.inl"

@@ -5,11 +5,9 @@
 
 namespace Tridium {
 
-    using AssetHandle = GUID;
-
-    enum class EAssetType : uint8_t
-    {
-        None = 0,
+	enum class EAssetType : uint8_t
+	{
+		None = 0,
 		Scene,
 		Material,
 		MeshSource,
@@ -17,8 +15,75 @@ namespace Tridium {
 		Shader,
 		Texture,
 		CubeMap,
-        Lua,
-    };
+		Lua,
+	};
+
+    using AssetHandle = GUID;
+
+	namespace Internal {
+
+		template <EAssetType _AssetType>
+		class TypedAssetHandle : public AssetHandle
+		{
+		public:
+			static constexpr EAssetType AssetType = _AssetType;
+
+			TypedAssetHandle& operator=( const AssetHandle& a_Handle )
+			{
+				AssetHandle::operator=( a_Handle );
+				return *this;
+			}
+
+			bool operator==( const AssetHandle& a_Handle ) const
+			{
+				return AssetHandle::operator==( a_Handle );
+			}
+
+			bool operator!=( const AssetHandle& a_Handle ) const
+			{
+				return AssetHandle::operator!=( a_Handle );
+			}
+
+			bool operator<( const AssetHandle& a_Handle ) const
+			{
+				return AssetHandle::operator<( a_Handle );
+			}
+
+			bool operator>( const AssetHandle& a_Handle ) const
+			{
+				return AssetHandle::operator>( a_Handle );
+			}
+
+			bool operator<=( const AssetHandle& a_Handle ) const
+			{
+				return AssetHandle::operator<=( a_Handle );
+			}
+
+			bool operator>=( const AssetHandle& a_Handle ) const
+			{
+				return AssetHandle::operator>=( a_Handle );
+			}
+
+			operator GUID() const
+			{
+				return AssetHandle::operator GUID();
+			}
+
+			operator const GUID() const
+			{
+				return AssetHandle::operator const GUID();
+			}
+		};
+	}
+
+	using SceneHandle = Internal::TypedAssetHandle<EAssetType::Scene>;
+	using MaterialHandle = Internal::TypedAssetHandle<EAssetType::Material>;
+	using MeshSourceHandle = Internal::TypedAssetHandle<EAssetType::MeshSource>;
+	using StaticMeshHandle = Internal::TypedAssetHandle<EAssetType::StaticMesh>;
+	using ShaderHandle = Internal::TypedAssetHandle<EAssetType::Shader>;
+	using TextureHandle = Internal::TypedAssetHandle<EAssetType::Texture>;
+	using CubeMapHandle = Internal::TypedAssetHandle<EAssetType::CubeMap>;
+	using LuaHandle = Internal::TypedAssetHandle<EAssetType::Lua>;
 
 	static const char* AssetTypeToString( EAssetType a_Type )
 	{

@@ -111,6 +111,48 @@ namespace Tridium::IO {
 		a_Archive << a_Value.ID();
 	}
 
+	_TRIDUM_SERIALIZE_TO_TEXT( SceneHandle )
+	{
+		a_Archive << a_Value.ID();
+	}
+
+	_TRIDUM_SERIALIZE_TO_TEXT( MaterialHandle )
+	{
+		a_Archive << a_Value.ID();
+	}
+
+	_TRIDUM_SERIALIZE_TO_TEXT( MeshSourceHandle )
+	{
+		a_Archive << a_Value.ID();
+	}
+
+	_TRIDUM_SERIALIZE_TO_TEXT( StaticMeshHandle )
+	{
+		a_Archive << a_Value.ID();
+	}
+
+	_TRIDUM_SERIALIZE_TO_TEXT( ShaderHandle )
+	{
+		a_Archive << a_Value.ID();
+	}
+
+	_TRIDUM_SERIALIZE_TO_TEXT( TextureHandle )
+	{
+		a_Archive << a_Value.ID();
+	}
+
+	_TRIDUM_SERIALIZE_TO_TEXT( CubeMapHandle )
+	{
+		a_Archive << a_Value.ID();
+	}
+
+	_TRIDUM_SERIALIZE_TO_TEXT( LuaHandle )
+	{
+		a_Archive << a_Value.ID();
+	}
+
+
+
 	// =================================================================================================
 	// DeserializeFromText
 	// =================================================================================================
@@ -232,6 +274,86 @@ namespace Tridium::IO {
 		if ( a_Node && a_Node.IsScalar() )
 		{
 			o_Value = GUID( a_Node.as<uint64_t>() );
+			return true;
+		}
+		return false;
+	}
+
+	_TRIDUM_DESERIALIZE_FROM_TEXT( SceneHandle )
+	{
+		if ( a_Node && a_Node.IsScalar() )
+		{
+			o_Value = SceneHandle( a_Node.as<uint64_t>() );
+			return true;
+		}
+		return false;
+	}
+
+	_TRIDUM_DESERIALIZE_FROM_TEXT( MaterialHandle )
+	{
+		if ( a_Node && a_Node.IsScalar() )
+		{
+			o_Value = MaterialHandle( a_Node.as<uint64_t>() );
+			return true;
+		}
+		return false;
+	}
+
+	_TRIDUM_DESERIALIZE_FROM_TEXT( MeshSourceHandle )
+	{
+		if ( a_Node && a_Node.IsScalar() )
+		{
+			o_Value = MeshSourceHandle( a_Node.as<uint64_t>() );
+			return true;
+		}
+		return false;
+	}
+
+	_TRIDUM_DESERIALIZE_FROM_TEXT( StaticMeshHandle )
+	{
+		if ( a_Node && a_Node.IsScalar() )
+		{
+			o_Value = StaticMeshHandle( a_Node.as<uint64_t>() );
+			return true;
+		}
+		return false;
+	}
+
+	_TRIDUM_DESERIALIZE_FROM_TEXT( ShaderHandle )
+	{
+		if ( a_Node && a_Node.IsScalar() )
+		{
+			o_Value = ShaderHandle( a_Node.as<uint64_t>() );
+			return true;
+		}
+		return false;
+	}
+
+	_TRIDUM_DESERIALIZE_FROM_TEXT( TextureHandle )
+	{
+		if ( a_Node && a_Node.IsScalar() )
+		{
+			o_Value = TextureHandle( a_Node.as<uint64_t>() );
+			return true;
+		}
+		return false;
+	}
+
+	_TRIDUM_DESERIALIZE_FROM_TEXT( CubeMapHandle )
+	{
+		if ( a_Node && a_Node.IsScalar() )
+		{
+			o_Value = CubeMapHandle( a_Node.as<uint64_t>() );
+			return true;
+		}
+		return false;
+	}
+
+	_TRIDUM_DESERIALIZE_FROM_TEXT( LuaHandle )
+	{
+		if ( a_Node && a_Node.IsScalar() )
+		{
+			o_Value = LuaHandle( a_Node.as<uint64_t>() );
 			return true;
 		}
 		return false;

@@ -63,6 +63,10 @@ AssetMetaData:
     AssetType: Texture
     Path: Content/troll/Troll_Normals.jpg
     Name: Troll_Normals
+  - Handle: 11170943827748727882
+    AssetType: Scene
+    Path: Content/Scenes/Halo.tscene
+    Name: Halo
   - Handle: 403840991678955900
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/shotgun/textures/COLORID_TRI_DefaultMaterial_Roughness.png
@@ -127,10 +131,6 @@ AssetMetaData:
     AssetType: Material
     Path: Content/m_Cerberus.tmat
     Name: m_Cerberus
-  - Handle: 18412146176103799929
-    AssetType: Scene
-    Path: Content/Scenes/TestScene.tscene
-    Name: TestScene
   - Handle: 4946495934512701145
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/source/Textures/Revolver_Nor.tga
@@ -187,6 +187,10 @@ AssetMetaData:
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_N.tga
     Name: Cerberus_N
+  - Handle: 11079280662566555978
+    AssetType: Scene
+    Path: Content/Scenes/Test.tscene
+    Name: Test
   - Handle: 3808192814853239745
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/T_Barrel_ORM.tga
@@ -195,14 +199,6 @@ AssetMetaData:
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/T_Barrel_Material_BaseColor.tga
     Name: T_Barrel_Material_BaseColor
-  - Handle: 10986069327451655317
-    AssetType: Scene
-    Path: Content/Scenes/TestScene.tscene
-    Name: TestScene
-  - Handle: 14066894379008378117
-    AssetType: Scene
-    Path: Content/Scenes/NewScene.tscene
-    Name: NewScene
 AssetDependencies:
   2752145153444275711:
     - 5742226400149584207
@@ -239,6 +235,8 @@ AssetDependencies:
     []
   7689658421196502889:
     - 195043704299636925
+  316072791104589991:
+    []
   3549135908215171877:
     - 709335604338777553
   11770072767574787224:
@@ -268,6 +266,8 @@ AssetDependencies:
     - 0
   11732713430778066300:
     - 10277266604553700543
+  7224770696508785986:
+    []
   18426496087389225440:
     - 16393977853805282278
   519346118941001885:
@@ -289,6 +289,8 @@ AssetDependencies:
     - 15334464935254617518
   3228463107512144107:
     - 16621613401874603449
+  33771987171409446:
+    []
   14693471984162796061:
     - 3331575371303235212
   6374648664069564329:
@@ -313,7 +315,13 @@ AssetDependencies:
     - 7291008065835380108
     - 14453273009465349364
     - 10922954378922511770
-  18412146176103799929:
+  16235613660444837420:
+    []
+  11170943827748727882:
+    []
+  11079280662566555978:
+    []
+  195043704299636925:
     []
   10742584269142510346:
     []
@@ -322,4 +330,8 @@ AssetDependencies:
   15334464935254617518:
     []
   7291008065835380108:
+    []
+  3478916749128622966:
+    []
+  4619301127283000839:
     []

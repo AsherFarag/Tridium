@@ -195,8 +195,12 @@ namespace Tridium::Editor {
 		{
 		case EAssetType::Scene:
 		{
-			// Load the scene
-			GetEditorLayer()->SetActiveScene( AssetManager::GetAsset<Scene>( assetHandle ) );
+			if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( assetHandle ) )
+			{
+				GetEditorLayer()->GetActiveScene()->Clear();
+				// Load the scene
+				GetEditorLayer()->SetActiveScene( scene );
+			}
 			break;
 		}
 		default:

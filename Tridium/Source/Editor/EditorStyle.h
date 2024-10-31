@@ -20,7 +20,7 @@ namespace Tridium::Editor {
 			static constexpr ImColor Blue = { 0.25f, 0.5f, 1.0f, 1.0f };
 			static constexpr ImColor Black = { 0.15f, 0.1f, 0.2f, 1.f };
 			static constexpr ImColor Yellow = { 1.0f, 1.0f, 0.25f, 1.0f };
-			static constexpr ImColor Orange = { 1.0f, 0.5f, 0.25f, 1.0f };
+			static constexpr ImColor Orange = { 1.0f, 0.85f, 0.00f, 1.0f };
 		};
 
 		void SetTheme( ETheme a_Theme );

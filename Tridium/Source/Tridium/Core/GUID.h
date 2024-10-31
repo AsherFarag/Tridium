@@ -26,6 +26,10 @@ namespace Tridium {
 		bool operator==( const GUID& guid ) const { return m_ID == guid.m_ID; }
 		bool operator!=( const Type& id ) const { return m_ID != id; }
 		bool operator!=( const GUID& guid ) const { return m_ID != guid.m_ID; }
+		bool operator<( const GUID& guid ) const { return m_ID < guid.m_ID; }
+		bool operator>( const GUID& guid ) const { return m_ID > guid.m_ID; }
+		bool operator<=( const GUID& guid ) const { return m_ID <= guid.m_ID; }
+		bool operator>=( const GUID& guid ) const { return m_ID >= guid.m_ID; }
 
 	private:
 		Type m_ID;

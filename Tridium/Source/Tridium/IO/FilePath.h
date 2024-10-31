@@ -59,6 +59,8 @@ namespace Tridium::IO {
 
         void Append( const std::string& a_String ) { append( a_String ); }
 
+		void ReplaceExtension( const std::string& a_Extension ) { replace_extension( a_Extension ); }
+
         FilePath GetParentPath() const { return parent_path(); }
 
         FilePath GetFilename() const { return filename();}

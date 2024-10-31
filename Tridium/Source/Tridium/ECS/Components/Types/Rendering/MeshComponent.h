@@ -12,8 +12,8 @@ namespace Tridium {
 		StaticMeshComponent();
 		~StaticMeshComponent() = default;
 
-		AssetHandle Mesh;
-		std::vector<AssetHandle> Materials;
+		StaticMeshHandle Mesh;
+		std::vector<MaterialHandle> Materials;
 	};
 
 }

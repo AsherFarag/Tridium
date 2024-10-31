@@ -98,7 +98,7 @@ namespace Tridium::Editor {
 		ImGui::ScopedStyleCol winBg( ImGuiCol_::ImGuiCol_WindowBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg) * 0.5f );
 		ImGui::FunctionScope endWindow( +[]() { ImGui::End(); } );
 
-		if ( !ImGui::Begin( ( TE_ICON_MOUNTAIN_SUN " " + m_Context->GetName() + "##Scene Heirarchy" ).c_str() ) )
+		if ( !ImGui::Begin( ( TE_ICON_MOUNTAIN_SUN " " + m_Context->GetName() + "###Scene Heirarchy" ).c_str() ) )
 		{
 			m_IsHovered = false;
 			m_IsFocused = false;
@@ -171,7 +171,7 @@ namespace Tridium::Editor {
 
 		if ( ( gameObject.IsValid() ? ImGui::BeginMenu("Add Child") : ImGui::BeginMenu( "Add GameObject" ) ) )
 		{
-			if ( ImGui::MenuItem( "Empty" ) )
+			if ( ImGui::MenuItem( TE_ICON_CUBE " Empty" ) )
 			{
 				newGO = m_Context->InstantiateGameObject();
 				SetSelectedGameObject( newGO );
@@ -179,7 +179,14 @@ namespace Tridium::Editor {
 
 			ImGui::Separator();
 
-			if ( ImGui::BeginMenu("Primatives") )
+			if ( ImGui::MenuItem( TE_ICON_CUBE " Static Mesh" ) )
+			{
+				newGO = m_Context->InstantiateGameObject( "Static Mesh" );
+				newGO.AddComponent<StaticMeshComponent>();
+				SetSelectedGameObject( newGO );
+			}
+
+			if ( ImGui::BeginMenu( TE_ICON_SHAPES " Primatives") )
 			{
 				if ( ImGui::MenuItem( "Cube" ) )
 				{
@@ -219,33 +226,32 @@ namespace Tridium::Editor {
 				ImGui::EndMenu();
 			}
 
-			if ( ImGui::BeginMenu( "Lights" ) )
+			ImGui::Separator();
+
+			if ( ImGui::MenuItem( TE_ICON_LIGHTBULB " Point Light" ) )
 			{
-				if ( ImGui::MenuItem( "Point Light" ) )
-				{
-					newGO = m_Context->InstantiateGameObject( "Point Light" );
-					newGO.AddComponent<PointLightComponent>();
-					SetSelectedGameObject( newGO );
-				}
-
-				if ( ImGui::MenuItem( "Spot Light" ) )
-				{
-					newGO = m_Context->InstantiateGameObject( "Spot Light" );
-					newGO.AddComponent<SpotLightComponent>();
-					SetSelectedGameObject( newGO );
-				}
-
-				if ( ImGui::MenuItem( "Directional Light" ) )
-				{
-					newGO = m_Context->InstantiateGameObject( "Directional Light" );
-					newGO.AddComponent<DirectionalLightComponent>();
-					SetSelectedGameObject( newGO );
-				}
-
-				ImGui::EndMenu();
+				newGO = m_Context->InstantiateGameObject( "Point Light" );
+				newGO.AddComponent<PointLightComponent>();
+				SetSelectedGameObject( newGO );
 			}
 
-			if ( ImGui::MenuItem( "Sprite" ) )
+			if ( ImGui::MenuItem( TE_ICON_LIGHTBULB " Spot Light" ) )
+			{
+				newGO = m_Context->InstantiateGameObject( "Spot Light" );
+				newGO.AddComponent<SpotLightComponent>();
+				SetSelectedGameObject( newGO );
+			}
+
+			if ( ImGui::MenuItem( TE_ICON_LIGHTBULB " Directional Light" ) )
+			{
+				newGO = m_Context->InstantiateGameObject( "Directional Light" );
+				newGO.AddComponent<DirectionalLightComponent>();
+				SetSelectedGameObject( newGO );
+			}
+
+			ImGui::Separator();
+
+			if ( ImGui::MenuItem( TE_ICON_IMAGE " Sprite" ) )
 			{
 				newGO = m_Context->InstantiateGameObject( "Sprite" );
 				newGO.AddComponent<SpriteComponent>();

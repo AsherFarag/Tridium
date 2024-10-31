@@ -12,6 +12,7 @@ namespace Tridium {
 	class SceneEnvironment;
 	class VertexArray;
 	class Texture;
+	class MeshSource;
 
 	namespace Editor { class SceneRendererPanel; }
 	// -------------------
@@ -54,7 +55,7 @@ namespace Tridium {
 		SharedPtr<Shader> m_DefaultShader;
 		SharedPtr<Material> m_DefaultMaterial;
 		SharedPtr<Shader> m_SkyboxShader;
-		SharedPtr<VertexArray> m_SkyboxVAO;
+		SharedPtr<MeshSource> m_CubeMesh;
 		SharedPtr<Texture> m_BrdfLUT;
 		SharedPtr<Texture> m_WhiteTexture;
 		SharedPtr<Texture> m_BlackTexture;

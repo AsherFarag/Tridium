@@ -32,13 +32,17 @@ namespace Tridium {
 			return nullptr;
 		}
 
-		if ( !IO::DeserializeFromText( data, *Application::GetScene() ) )
+		SharedPtr<Scene> scene = MakeShared<Scene>();
+		if ( !IO::DeserializeFromText( data, *scene ) )
 		{
 			TE_CORE_ERROR( "Failed to deserialize scene file '{0}'", path );
 			return nullptr;
 		}
 
-		return Application::GetScene();
+		TODO( "Probably should not set the name here" );
+		scene->SetName( a_MetaData.Name );
+
+		return scene;
     }
 
 }

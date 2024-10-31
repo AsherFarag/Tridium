@@ -219,7 +219,7 @@ namespace Tridium::IO {
 
 		if ( auto transformNode = a_Node["Transform"] )
 		{
-			TransformComponent& tc = go.GetTransform();
+			TransformComponent& tc = a_Scene.GetComponentFromGameObject<TransformComponent>( go );
 			tc.Position = transformNode["Position"].as<Vector3>();
 			tc.Rotation.SetFromEuler( transformNode["Rotation"].as<Vector3>() );
 			tc.Scale = transformNode["Scale"].as<Vector3>();
@@ -264,7 +264,7 @@ namespace Tridium::IO {
 				continue;
 			}
 
-			Component* component = addToGameObjectFunc( go );
+			Component* component = addToGameObjectFunc( a_Scene, go );
 			if ( !component )
 			{
 				TE_CORE_ERROR( "Failed to deserialize component '{0}' from GameObject", componentName );

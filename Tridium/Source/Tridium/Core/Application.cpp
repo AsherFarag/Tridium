@@ -40,10 +40,10 @@ namespace Tridium {
 		InitializeAssetManager();
 
 		// Initialise Scene
-		// Create a new scene, so when loading one, game objects can be added to it.
 		m_ActiveScene = MakeShared<Scene>();
 		if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( m_Project->GetConfiguration().StartScene ) )
 		{
+			m_ActiveScene = scene;
 		}
 		else
 		{

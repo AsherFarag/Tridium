@@ -587,12 +587,16 @@ namespace Tridium {
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
 
-		// Create vertices
-		vertices.reserve( ( a_Stacks + 1 ) * ( a_Slices + 1 ) );
+		// Create Vertices
 		for ( uint32_t i = 0; i <= a_Stacks; i++ )
 		{
 			float V = i / (float)a_Stacks;
 			float phi = V * glm::pi<float>() * 2;
+
+			// Center of the torus ring for this stack
+			float cx = a_Radius * cosf( phi );
+			float cy = a_Radius * sinf( phi );
+			float cz = 0.0f;
 
 			for ( uint32_t j = 0; j <= a_Slices; j++ )
 			{
@@ -605,7 +609,12 @@ namespace Tridium {
 
 				Vertex vertex;
 				vertex.Position = { x, y, z };
-				vertex.Normal = glm::normalize( glm::vec3( x, y, z ) );
+
+				// Calculate the normal as the vector from the center of the ring to the vertex
+				glm::vec3 center = { cx, cy, cz };
+				glm::vec3 normal = glm::normalize( glm::vec3( x, y, z ) - center );
+				vertex.Normal = normal;
+
 				vertex.UV = { U, V };
 				vertices.push_back( vertex );
 			}

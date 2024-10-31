@@ -50,18 +50,18 @@ namespace Tridium {
 	GameObject Scene::InstantiateGameObject( const std::string& a_Name )
 	{
 		auto go = GameObject( m_Registry.create() );
-		go.AddComponent<GUIDComponent>();
-		go.AddComponent<TagComponent>( a_Name );
-		go.AddComponent<TransformComponent>();
+		AddComponentToGameObject<GUIDComponent>( go );
+		AddComponentToGameObject<TagComponent>( go, a_Name );
+		AddComponentToGameObject<TransformComponent>( go );
 		return go;
 	}
 
 	GameObject Scene::InstantiateGameObject( GUID a_GUID, const std::string& a_Name )
 	{
 		auto go = GameObject( m_Registry.create() );
-		go.AddComponent<GUIDComponent>( a_GUID );
-		go.AddComponent<TagComponent>( a_Name );
-		go.AddComponent<TransformComponent>();
+		AddComponentToGameObject<GUIDComponent>( go, a_GUID );
+		AddComponentToGameObject<TagComponent>( go, a_Name );
+		AddComponentToGameObject<TransformComponent>( go );
 		return go;
 	}
 

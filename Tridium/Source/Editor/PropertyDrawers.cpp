@@ -211,37 +211,68 @@ namespace Tridium::Editor {
 		return ImGui::ColorEdit4( a_Name, &a_Value.r );
 	}
 
-	template<>
-	bool DrawProperty( const char* a_Name, AssetHandle& a_Value, EDrawPropertyFlags a_Flags )
+	//////////////////////////////////////////////////////////////////////////
+	// AssetHandle
+	//////////////////////////////////////////////////////////////////////////
+
+	template <EAssetType _AssetType>
+	bool _DrawAssetHandleProperty( const char* a_Name, AssetHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
-		IS_DISABLED( a_Flags );
+		AssetMetaData assetMetaData = EditorAssetManager::Get()->GetAssetMetaData(a_Value);
+		const char* assetName = "None";
+		if ( assetMetaData.IsValid() )
+			assetName = assetMetaData.Name.c_str();
+
 		bool modified = false;
 
-		auto assetManager = AssetManager::Get<EditorAssetManager>();
+		IS_DISABLED( a_Flags );
+		const bool open = ImGui::BeginCombo( a_Name, assetName );
 
-		const char* assetName = "None";
-		if ( a_Value.Valid() )
-			assetName = assetManager->GetAssetMetaData(a_Value).Name.c_str();
-
-		if ( ImGui::BeginCombo( a_Name, assetName ) )
+		ImGui::ScopedDragDropTarget scopedDragDropTarget;
+		if ( scopedDragDropTarget )
 		{
-			for ( const auto& [handle, assetMetaData] : assetManager->GetAssetRegistry().AssetMetaData )
+			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_ASSET_HANDLE, ImGuiDragDropFlags_::ImGuiDragDropFlags_SourceAllowNullID );
+			if ( payload )
 			{
+				AssetHandle assetHandle( *(AssetHandle*)payload->Data );
+				const AssetMetaData& assetMetaData = EditorAssetManager::Get()->GetAssetMetaData( assetHandle );
+				if ( assetMetaData.IsValid() && assetMetaData.AssetType == _AssetType )
 				{
-					std::string name = !assetMetaData.Name.empty() ? assetMetaData.Name : assetMetaData.Path.ToString();
-					ImGui::ScopedID id( handle.ID() );
-					if ( ImGui::Selectable( name.c_str(), a_Value == handle) )
-					{
-						a_Value = handle;
-						modified = true;
-						break;
-					}
+					a_Value = assetHandle;
+					return true;
+				}
+			}
+		}
+
+		if ( open )
+		{
+			if ( ImGui::Selectable( "None###Internal", a_Value == AssetHandle::InvalidGUID ) )
+			{
+				a_Value = AssetHandle::InvalidGUID;
+				return true;
+			}
+
+			ImGui::Separator();
+
+			for ( const auto& [handle, assetMetaData] : EditorAssetManager::Get()->GetAssetRegistry().AssetMetaData )
+			{
+				if ( assetMetaData.AssetType != _AssetType )
+					continue;
+
+
+				std::string name = !assetMetaData.Name.empty() ? assetMetaData.Name : assetMetaData.Path.ToString();
+				ImGui::ScopedID id( handle.ID() );
+				if ( ImGui::Selectable( name.c_str(), a_Value == handle ) )
+				{
+					a_Value = handle;
+					modified = true;
+					break;
 				}
 
 				if ( ImGui::BeginItemTooltip() )
 				{
 					ImGui::Text( "Asset Type: %s", AssetTypeToString( assetMetaData.AssetType ) );
-					ImGui::Text( "Path: %s", assetMetaData.Path.ToString().c_str());
+					ImGui::Text( "Path: %s", assetMetaData.Path.ToString().c_str() );
 
 					ImGui::EndTooltip();
 				}
@@ -252,6 +283,122 @@ namespace Tridium::Editor {
 
 		return modified;
 	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, AssetHandle& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		AssetMetaData assetMetaData = EditorAssetManager::Get()->GetAssetMetaData( a_Value );
+		const char* assetName = "None";
+		if ( assetMetaData.IsValid() )
+			assetName = assetMetaData.Name.c_str();
+
+		bool modified = false;
+
+		IS_DISABLED( a_Flags );
+
+		const bool open = ImGui::BeginCombo( a_Name, assetName );
+
+		ImGui::ScopedDragDropTarget scopedDragDropTarget;
+		if ( scopedDragDropTarget )
+		{
+			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_ASSET_HANDLE, ImGuiDragDropFlags_::ImGuiDragDropFlags_SourceAllowNullID );
+			if ( payload )
+			{
+				AssetHandle assetHandle( *(AssetHandle*)payload->Data );
+				const AssetMetaData& assetMetaData = EditorAssetManager::Get()->GetAssetMetaData( assetHandle );
+				if ( assetMetaData.IsValid() )
+				{
+					a_Value = assetHandle;
+					return true;
+				}
+			}
+		}
+
+		if ( open )
+		{
+			if ( ImGui::Selectable( "None###Internal", a_Value == AssetHandle::InvalidGUID ) )
+			{
+				a_Value = AssetHandle::InvalidGUID;
+				return true;
+			}
+
+			ImGui::Separator();
+
+			for ( const auto& [handle, assetMetaData] : EditorAssetManager::Get()->GetAssetRegistry().AssetMetaData )
+			{
+				std::string name = !assetMetaData.Name.empty() ? assetMetaData.Name : assetMetaData.Path.ToString();
+				ImGui::ScopedID id( handle.ID() );
+				if ( ImGui::Selectable( name.c_str(), a_Value == handle ) )
+				{
+					a_Value = handle;
+					modified = true;
+					break;
+				}
+
+				if ( ImGui::BeginItemTooltip() )
+				{
+					ImGui::Text( "Asset Type: %s", AssetTypeToString( assetMetaData.AssetType ) );
+					ImGui::Text( "Path: %s", assetMetaData.Path.ToString().c_str() );
+
+					ImGui::EndTooltip();
+				}
+			}
+
+			ImGui::EndCombo();
+		}
+
+		return modified;
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, SceneHandle& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		return _DrawAssetHandleProperty<EAssetType::Scene>( a_Name, a_Value, a_Flags );
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, MaterialHandle& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		return _DrawAssetHandleProperty<EAssetType::Material>( a_Name, a_Value, a_Flags );
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, MeshSourceHandle& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		return _DrawAssetHandleProperty<EAssetType::MeshSource>( a_Name, a_Value, a_Flags );
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, StaticMeshHandle& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		return _DrawAssetHandleProperty<EAssetType::StaticMesh>( a_Name, a_Value, a_Flags );
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, ShaderHandle& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		return _DrawAssetHandleProperty<EAssetType::Shader>( a_Name, a_Value, a_Flags );
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, TextureHandle& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		return _DrawAssetHandleProperty<EAssetType::Texture>( a_Name, a_Value, a_Flags );
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, CubeMapHandle& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		return _DrawAssetHandleProperty<EAssetType::CubeMap>( a_Name, a_Value, a_Flags );
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, LuaHandle& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		return _DrawAssetHandleProperty<EAssetType::Lua>( a_Name, a_Value, a_Flags );
+	}
+
+	//////////////////////////////////////////////////////////////////////////
 
 	template<>
 	bool DrawProperty( const char* a_Name, SharedPtr<Framebuffer>& a_Value, EDrawPropertyFlags a_Flags )

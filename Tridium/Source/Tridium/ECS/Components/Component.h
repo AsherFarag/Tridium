@@ -13,7 +13,8 @@ namespace Tridium {
 
 	class Component
 	{
-		REFLECT( Component )
+		REFLECT( Component );
+		friend class Scene;
 		friend class GameObject;
 	public:
 		Component();

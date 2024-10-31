@@ -1,0 +1,105 @@
+Scene: Test
+SceneEnvironment:
+  HDRI:
+    EnvironmentMapHandle: 12344971950102856376
+    Exposure: 1
+    Gamma: 2.20000005
+    Blur: 0.361999989
+    Intensity: 1
+    RotationEular: [0, 0, 0]
+GameObjects:
+  - GameObject: 17894983707375707960
+    Tag: Cube
+    Transform:
+      Position: [0, 0, -5.28936577]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 2
+      Materials: [0]
+  - GameObject: 16542631976287151540
+    Tag: Troll
+    Transform:
+      Position: [6.63770294, -11.1815624, -7.77366877]
+      Rotation: [0, -0, 0]
+      Scale: [0.0147000141, 0.0147000141, 0.0147000141]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 7689658421196502889
+      Materials: [15697145363054614336]
+  - GameObject: 2918692368704235263
+    Tag: Cube
+    Transform:
+      Position: [0, 0, 0]
+      Rotation: [-1.5704515, 0.785398126, -4.21468513e-08]
+      Scale: [0.0699994415, 0.0699974969, 0.069996886]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 14693471984162796061
+      Materials: [4881975585746158865]
+  - GameObject: 12906833969033052025
+    Tag: Directional Light
+    Transform:
+      Position: [0, 0, 0.0295660496]
+      Rotation: [3.84766555, -2.82677031, 0]
+      Scale: [1.00000346, 0.999999881, 1.0000006]
+      Children: []
+    DirectionalLightComponent:
+      LightColor: [1, 0.373540878, 0, 1]
+      Intensity: 5
+  - GameObject: 17099799884021532929
+    Tag: Cube
+    Transform:
+      Position: [0, -15.3634653, 0]
+      Rotation: [0, -0, 0]
+      Scale: [191.688232, 4.55000019, 337.393982]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 2
+      Materials: []
+    CameraComponent:
+      SceneCamera:
+        m_Perspective:
+          FOV: 45
+          Near: 0.00999999978
+          Far: 1000
+        m_Orthographic:
+          Size: 10
+          Near: -1000
+          Far: 1000
+        m_ProjectionType: "Refl Error: No serialize function for type <enum Tridium::ProjectionType>(void) noexcept"
+  - GameObject: 6036710402478887139
+    Tag: Sphere
+    Transform:
+      Position: [5.15405607, -8.30983543, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 3
+      Materials: []
+  - GameObject: 13039944283085260941
+    Tag: Spot Light
+    Transform:
+      Position: [0, -10.7139034, 0]
+      Rotation: [2.84717965, -0.0297323894, -0.0643088222]
+      Scale: [1, 0.999986172, 0.999984026]
+      Children: []
+    SpotLightComponent:
+      LightColor: [0, 1, 0.451361656, 1]
+      Intensity: 214
+      FalloffExponent: 2
+      AttenuationRadius: 10
+      InnerConeAngle: 30
+      OuterConeAngle: 45
+  - GameObject: 15100604637533348928
+    Tag: Torus
+    Transform:
+      Position: [0, -10.2890205, -3.8628912]
+      Rotation: [-0.948534727, -0, 0]
+      Scale: [1, 2.50239778, 0.99999994]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 6
+      Materials: []

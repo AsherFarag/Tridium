@@ -87,6 +87,32 @@ namespace Tridium::Editor {
 	template<>
 	bool DrawProperty( const char* a_Name, AssetHandle& a_Value, EDrawPropertyFlags a_Flags );
 
+	template<>
+	bool DrawProperty( const char* a_Name, SceneHandle& a_Value, EDrawPropertyFlags a_Flags );
+
+	template<>
+	bool DrawProperty( const char* a_Name, MaterialHandle& a_Value, EDrawPropertyFlags a_Flags );
+
+	template<>
+	bool DrawProperty( const char* a_Name, MeshSourceHandle& a_Value, EDrawPropertyFlags a_Flags );
+
+	template<>
+	bool DrawProperty( const char* a_Name, StaticMeshHandle& a_Value, EDrawPropertyFlags a_Flags );
+
+	template<>
+	bool DrawProperty( const char* a_Name, ShaderHandle& a_Value, EDrawPropertyFlags a_Flags );
+
+	template<>
+	bool DrawProperty( const char* a_Name, TextureHandle& a_Value, EDrawPropertyFlags a_Flags );
+
+	template<>
+	bool DrawProperty( const char* a_Name, CubeMapHandle& a_Value, EDrawPropertyFlags a_Flags );
+
+	template<>
+	bool DrawProperty( const char* a_Name, LuaHandle& a_Value, EDrawPropertyFlags a_Flags );
+
+
+
 	// Temp ?
 	template<>
 	bool DrawProperty( const char* a_Name, SharedPtr<Framebuffer>& a_Value, EDrawPropertyFlags a_Flags );

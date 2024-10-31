@@ -134,7 +134,7 @@ namespace Tridium::Editor {
 				{
 					Tridium::Refl::Internal::RemoveFromGameObjectFunc removeFunc;
 					if ( Tridium::Refl::MetaRegistry::TryGetMetaPropertyFromClass( metaType, removeFunc, Tridium::Refl::Internal::RemoveFromGameObjectPropID ) )
-						removeFunc( InspectedGameObject );
+						removeFunc( *Application::GetScene(),  InspectedGameObject );
 					else
 						TE_CORE_ERROR( "Component [{0}] does not have a RemoveFromGameObject function!", Refl::MetaRegistry::GetCleanTypeName( metaType ) );
 				}
@@ -201,7 +201,7 @@ namespace Tridium::Editor {
 
 				if ( auto addToGameObjectFunc = metaType.prop( Tridium::Refl::Internal::AddToGameObjectPropID ); addToGameObjectFunc )
 				{
-					addToGameObjectFunc.value().cast<Tridium::Refl::Internal::AddToGameObjectFunc>()( InspectedGameObject );
+					addToGameObjectFunc.value().cast<Tridium::Refl::Internal::AddToGameObjectFunc>()( *Application::GetScene(), InspectedGameObject );
 				}
 				break;
 			}
