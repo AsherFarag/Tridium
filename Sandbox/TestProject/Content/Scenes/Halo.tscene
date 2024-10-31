@@ -4,8 +4,38 @@ SceneEnvironment:
     EnvironmentMapHandle: 16699354290950884582
     Exposure: 3.46700001
     Gamma: 0.441000015
-    Blur: 1
+    Blur: 0
     Intensity: 1
     RotationEular: [0, 0, 0]
 GameObjects:
-  []
+  - GameObject: 985278685773782310
+    Tag: Cube
+    Transform:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 2
+      Materials: []
+  - GameObject: 4102275695609524910
+    Tag: Cube
+    Transform:
+      Position: [0, -1.4377811, 0]
+      Rotation: [0, -0, 0]
+      Scale: [121.884323, 1, 33.2097321]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 2
+      Materials: []
+  - GameObject: 11327267881416279348
+    Tag: Directional Light
+    Transform:
+      Position: [0, 0, 2.08098125]
+      Rotation: [-0.586954236, 0.575958669, 0]
+      Scale: [1, 0.999999762, 0.999999762]
+      Children: []
+    DirectionalLightComponent:
+      LightColor: [1, 1, 1, 1]
+      Intensity: 1
+      CastsShadows: true

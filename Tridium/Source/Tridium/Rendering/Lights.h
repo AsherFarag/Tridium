@@ -38,6 +38,7 @@ namespace Tridium {
 		Vector3 Direction;
 		Color Color;
 		float Intensity;
+		bool CastsShadows;
 
 		// Temp?
 		SharedPtr<Framebuffer> ShadowMap;

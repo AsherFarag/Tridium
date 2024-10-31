@@ -138,6 +138,8 @@ namespace Tridium::Editor {
 	{
 		ImGui::BeginChild( "Folder Hierarchy", { 0, 0 }, ImGuiChildFlags_FrameStyle, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar );
 		{
+			// Add some padding to the top of the window
+			ImGui::SetCursorPosY( ImGui::GetCursorPosY() + 2.0f );
 			const std::string& rootFolderName = m_DirectoryStack.front();
 			if ( ImGui::TreeNodeEx( ( TE_ICON_FOLDER " " + rootFolderName ).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_Framed) )
 			{

@@ -162,13 +162,8 @@ namespace Tridium {
 					if ( lightIndex >= MAX_DIRECTIONAL_LIGHTS )
 						return;
 
-					m_LightEnvironment.DirectionalLights[lightIndex].Direction = transform.GetForward();
-					m_LightEnvironment.DirectionalLights[lightIndex].Color = lightComponent.LightColor;
-					m_LightEnvironment.DirectionalLights[lightIndex].Intensity = lightComponent.Intensity;
-					m_LightEnvironment.DirectionalLights[lightIndex].ShadowMap = lightComponent.ShadowMap;
-
 					// TEMP!
-					if ( !lightComponent.ShadowMap )
+					if ( lightComponent.CastsShadows && !lightComponent.ShadowMap )
 					{
 						FramebufferSpecification spec =
 						{
@@ -179,6 +174,17 @@ namespace Tridium {
 
 						lightComponent.ShadowMap = Framebuffer::Create( spec );
 					}
+
+					if ( !lightComponent.CastsShadows )
+					{
+						lightComponent.ShadowMap.reset();
+					}
+
+					m_LightEnvironment.DirectionalLights[lightIndex].Direction = transform.GetForward();
+					m_LightEnvironment.DirectionalLights[lightIndex].Color = lightComponent.LightColor;
+					m_LightEnvironment.DirectionalLights[lightIndex].Intensity = lightComponent.Intensity;
+					m_LightEnvironment.DirectionalLights[lightIndex].CastsShadows = lightComponent.CastsShadows;
+					m_LightEnvironment.DirectionalLights[lightIndex].ShadowMap = lightComponent.ShadowMap;
 
 					lightIndex++;
 				}
@@ -402,7 +408,10 @@ namespace Tridium {
 		#pragma endregion
 
 		// Temp ?
-		if ( m_ShadowFBO ) m_ShadowFBO->BindDepthAttatchment( 9 );
+		if ( m_ShadowFBO ) 
+			m_ShadowFBO->BindDepthAttatchment( 9 );
+		else
+			m_WhiteTexture->Bind( 9 );
 		shader->SetInt( "u_ShadowMap", 9 );
 		shader->SetMatrix4( "u_LightSpaceMatrix", m_LightViewProjectionMatrix );
 

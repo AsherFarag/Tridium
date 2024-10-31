@@ -111,11 +111,14 @@ namespace Tridium::Editor {
 
 		// Draw list header (Search Bar and Add Game Object button).
 		{
+			// Add some padding to the top of the window
+			ImGui::Dummy( ImVec2( 0.0f, 0.0f ) );
+
 			float addGameObjectButtonWidth = ImGui::CalcTextSize( TE_ICON_PLUS ).x + ImGui::GetStyle().FramePadding.x * 2.0f;
 
 			// Search Bar
 			{
-				ImGui::Text( TE_ICON_MAGNIFYING_GLASS );
+				ImGui::Text( " " TE_ICON_MAGNIFYING_GLASS);
 				ImGui::SameLine();
 				ImGui::ScopedStyleCol border( ImGuiCol_Border, ImVec4( 1.0f, 1.0f, 1.0f, 0.15f ) );
 				ImGui::ScopedStyleVar borderSize( ImGuiStyleVar_::ImGuiStyleVar_FrameBorderSize, 1.0f );

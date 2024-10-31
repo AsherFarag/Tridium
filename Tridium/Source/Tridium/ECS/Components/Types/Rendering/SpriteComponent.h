@@ -11,15 +11,15 @@ namespace Tridium {
 		REFLECT( SpriteComponent );
 	public:
 		SpriteComponent() = default;
-		SpriteComponent( AssetHandle a_Texture )
+		SpriteComponent( TextureHandle a_Texture )
 			: m_Texture( a_Texture ) {}
 		~SpriteComponent() = default;
 
-		AssetHandle GetTexture() { return m_Texture; }
+		TextureHandle GetTexture() { return m_Texture; }
 		void SetTexture( AssetHandle a_Texture ) { m_Texture = a_Texture; }
 
 	private:
-		AssetHandle m_Texture;
+		TextureHandle m_Texture;
 	};
 
 	BEGIN_REFLECT_COMPONENT( SpriteComponent )

@@ -65,6 +65,27 @@ namespace Tridium {
 			return 0;
 		}
 
+		GLenum GetGLType( ETextureFormat format )
+		{
+			switch ( format )
+			{
+			case ETextureFormat::R8: return GL_UNSIGNED_BYTE;
+			case ETextureFormat::RG8: return GL_UNSIGNED_BYTE;
+			case ETextureFormat::RGB8: return GL_UNSIGNED_BYTE;
+			case ETextureFormat::RGBA8: return GL_UNSIGNED_BYTE;
+			case ETextureFormat::RG16F: return GL_FLOAT;
+			case ETextureFormat::RGB16F: return GL_FLOAT;
+			case ETextureFormat::RGBA16F: return GL_FLOAT;
+			case ETextureFormat::RGB32F: return GL_FLOAT;
+			case ETextureFormat::RGBA32F: return GL_FLOAT;
+			case ETextureFormat::SRGB: return GL_UNSIGNED_BYTE;
+			case ETextureFormat::SRGBA: return GL_UNSIGNED_BYTE;
+			}
+
+			TE_CORE_ASSERT( false );
+			return 0;
+		}
+
 		GLint TridiumTextureFilterToGLTextureFilter( ETextureFilter filter )
 		{
 			switch ( filter )
@@ -94,6 +115,8 @@ namespace Tridium {
 			TE_CORE_ASSERT( false );
 			return 0;
 		}
+
+
 
 		template<typename T>
 		std::array<T*, 6> CalculateCubeMap( SharedPtr<Texture> a_Texture, uint32_t a_Resolution, bool a_FilterLinear )
@@ -224,58 +247,6 @@ namespace Tridium {
 
 			return faces;
 		}
-
-		void ApplyGaussianBlur( float* image, int width, int height, int channels, float sigma )
-		{
-			// Create Gaussian kernel
-			int kernelRadius = static_cast<int>( std::ceil( 2.0f * sigma ) );
-			int kernelSize = 2 * kernelRadius + 1;
-			std::vector<float> kernel( kernelSize );
-			float sum = 0.0f;
-
-			// Fill the kernel with Gaussian values
-			for ( int i = -kernelRadius; i <= kernelRadius; i++ ) {
-				float value = std::exp( -( i * i ) / ( 2.0f * sigma * sigma ) );
-				kernel[i + kernelRadius] = value;
-				sum += value;
-			}
-
-			// Normalize the kernel
-			for ( int i = 0; i < kernelSize; i++ ) {
-				kernel[i] /= sum;
-			}
-
-			// Temporary image to store the results of the horizontal pass
-			std::vector<float> tempImage( width * height * channels );
-
-			// Apply Gaussian blur horizontally
-			for ( int y = 0; y < height; y++ ) {
-				for ( int x = 0; x < width; x++ ) {
-					for ( int c = 0; c < channels; c++ ) {
-						float blurredPixel = 0.0f;
-						for ( int k = -kernelRadius; k <= kernelRadius; k++ ) {
-							int sampleX = std::min( width - 1, std::max( 0, x + k ) );
-							blurredPixel += image[( y * width + sampleX ) * channels + c] * kernel[k + kernelRadius];
-						}
-						tempImage[( y * width + x ) * channels + c] = blurredPixel;
-					}
-				}
-			}
-
-			// Apply Gaussian blur vertically
-			for ( int y = 0; y < height; y++ ) {
-				for ( int x = 0; x < width; x++ ) {
-					for ( int c = 0; c < channels; c++ ) {
-						float blurredPixel = 0.0f;
-						for ( int k = -kernelRadius; k <= kernelRadius; k++ ) {
-							int sampleY = std::min( height - 1, std::max( 0, y + k ) );
-							blurredPixel += tempImage[( sampleY * width + x ) * channels + c] * kernel[k + kernelRadius];
-						}
-						image[( y * width + x ) * channels + c] = blurredPixel;
-					}
-				}
-			}
-		}
 	}
 
 
@@ -337,7 +308,9 @@ namespace Tridium {
 		uint32_t bpp = (uint32_t)Util::GLDataFormatToTridiumDataFormat( m_DataFormat );
 		TE_CORE_ASSERT( a_Size == m_Width * m_Height * bpp, "Data must be entire texture!" );
 		m_LocalData = a_Data;
-		glTextureSubImage2D( m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, m_LocalData );
+
+		GLenum type = Util::GetGLType( m_Specification.TextureFormat );
+		glTextureSubImage2D( m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, type, m_LocalData );
 	}
 
 	void OpenGLTexture::Bind( uint32_t slot ) const
@@ -358,13 +331,14 @@ namespace Tridium {
 	{
 		m_DataFormat = Util::TridiumDataFormatToGLDataFormat( m_Specification.TextureFormat );
 		m_InternalFormat = Util::TridiumDataFormatToGLInternalFormat( m_Specification.TextureFormat );
+		GLenum type = Util::GetGLType( m_Specification.TextureFormat );
 
 		glGenTextures( 1, &m_RendererID );
 		glBindTexture( GL_TEXTURE_CUBE_MAP, m_RendererID );
 
 		for ( uint32_t i = 0; i < 6; ++i )
 		{
-			glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, m_InternalFormat, m_Width, m_Width, 0, m_DataFormat, GL_FLOAT, nullptr );
+			glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, m_InternalFormat, m_Width, m_Width, 0, m_DataFormat, type, nullptr );
 		}
 
 		SetMinFilter( a_Specification.MinFilter );
@@ -440,17 +414,18 @@ namespace Tridium {
 	{
 		m_Width = a_Size;
 		m_Height = a_Size;
+		GLenum type = Util::GetGLType( m_Specification.TextureFormat );
 
 		for ( uint32_t i = 0; i < 6; i++ )
 		{
 			glTexImage2D(
 				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
 				0,
-				GL_RGB16F,
+				m_InternalFormat,
 				m_Width, m_Height,
 				0,
-				GL_RGB,
-				GL_FLOAT,
+				m_DataFormat,
+				type,
 				(void*)a_CubeMapData[i]
 			);
 		}

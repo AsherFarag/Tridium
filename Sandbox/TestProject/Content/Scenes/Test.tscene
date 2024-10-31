@@ -53,7 +53,7 @@ GameObjects:
     Transform:
       Position: [0, -15.3634653, 0]
       Rotation: [0, -0, 0]
-      Scale: [191.688232, 4.55000019, 337.393982]
+      Scale: [191.949509, 4.55000019, 337.393982]
       Children: []
     StaticMeshComponent:
       Mesh: 2
@@ -103,3 +103,17 @@ GameObjects:
     StaticMeshComponent:
       Mesh: 6
       Materials: []
+  - GameObject: 2645998972927795823
+    Tag: Spot Light
+    Transform:
+      Position: [6.1790185, -9.62352848, -5.86424208]
+      Rotation: [2.58017135, -0, 0]
+      Scale: [1, 1.00000465, 1.00000465]
+      Children: []
+    SpotLightComponent:
+      LightColor: [1, 0.120622575, 0.120622575, 1]
+      Intensity: 30
+      FalloffExponent: 2
+      AttenuationRadius: 10
+      InnerConeAngle: 30
+      OuterConeAngle: 45
