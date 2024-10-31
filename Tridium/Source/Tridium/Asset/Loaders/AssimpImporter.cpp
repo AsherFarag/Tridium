@@ -44,7 +44,7 @@ namespace Tridium {
 		| aiProcess_JoinIdenticalVertices
 		| aiProcess_LimitBoneWeights        
 		| aiProcess_ValidateDataStructure   
-		| aiProcess_GlobalScale             
+		| aiProcess_GlobalScale
 		;
 
 	AssimpImporter::AssimpImporter( const IO::FilePath& a_FilePath )
@@ -68,7 +68,7 @@ namespace Tridium {
 		}
 
 		ExtractSubmeshes( (void*)scene, meshSource );
-		ExtractMaterials( (void*)scene, meshSource );
+		//ExtractMaterials( (void*)scene, meshSource );
 
 		// Create GPU buffers
 
@@ -82,21 +82,13 @@ namespace Tridium {
 			{ ShaderDataType::Float3, "a_Bitangent" },
 			{ ShaderDataType::Float2, "a_UV" },
 		};
+		
+		meshSource->m_VBO = VertexBuffer::Create( (float*)( meshSource->m_Vertices.data() ), (uint32_t)( meshSource->m_Vertices.size() * sizeof( Vertex ) ) );
+		meshSource->m_VBO->SetLayout( layout );
+		meshSource->m_VAO->AddVertexBuffer( meshSource->m_VBO );
 
-		if ( meshSource->m_Vertices.size() )
-		{
-			meshSource->m_VBO = VertexBuffer::Create( (float*)( meshSource->m_Vertices.data() ), (uint32_t)( meshSource->m_Vertices.size() * sizeof( Vertex ) ) );
-			meshSource->m_VBO->SetLayout( layout );
-
-			meshSource->m_VAO->AddVertexBuffer( meshSource->m_VBO );
-		}
-
-		if ( meshSource->m_Indices.size() )
-		{
-			meshSource->m_IBO = IndexBuffer::Create( meshSource->m_Indices.data(), (uint32_t)( meshSource->m_Indices.size() ) );
-
-			meshSource->m_VAO->SetIndexBuffer( meshSource->m_IBO );
-		}
+		meshSource->m_IBO = IndexBuffer::Create( meshSource->m_Indices.data(), (uint32_t)( meshSource->m_Indices.size() ) );
+		meshSource->m_VAO->SetIndexBuffer( meshSource->m_IBO );
 
 		return meshSource;
 	}
@@ -141,7 +133,6 @@ namespace Tridium {
 			numIndices += mesh->mNumFaces * 3;
 
 			// Handle Vertices
-			a_MeshSource->m_Vertices.reserve( numVertices );
 			for ( uint32_t i = 0; i < mesh->mNumVertices; ++i )
 			{
 				Vertex vertex;
@@ -164,7 +155,6 @@ namespace Tridium {
 			}
 
 			// Handle Indices
-			a_MeshSource->m_Indices.reserve( numIndices );
 			for ( uint32_t i = 0; i < mesh->mNumFaces; ++i )
 			{
 				const aiFace& face = mesh->mFaces[i];

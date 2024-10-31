@@ -7,7 +7,7 @@
 
 namespace Tridium {
 
-
+	class SubMesh;
 
 	class RendererAPI
 	{
@@ -25,6 +25,7 @@ namespace Tridium {
 		virtual void Clear() = 0;
 
 		virtual void DrawIndexed( const SharedPtr<VertexArray>& a_VertexArray ) = 0;
+		virtual void DrawIndexedSubmesh( const SharedPtr<VertexArray>& a_VertexArray, const SubMesh& a_SubMesh ) = 0;
 
 		static inline const API GetAPI() { return s_API; }
 

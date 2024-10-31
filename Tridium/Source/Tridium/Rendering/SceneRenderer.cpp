@@ -247,23 +247,31 @@ namespace Tridium {
 					if ( !meshSource )
 						return;
 
-					DrawCall drawCall;
-					drawCall.VAO = meshSource->GetVAO();
-
-					// If the mesh component has an override material, use that
-					if ( meshComponent.Materials.size() > 0 )
+					for ( uint32_t submeshIndex : staticMesh->GetSubMeshes() )
 					{
-						drawCall.Material = meshComponent.Materials[0];
-					}
-					// Otherwise, use the first material from the mesh source
-					else if ( meshSource->GetMaterials().size() > 0 )
-					{
-						drawCall.Material = meshSource->GetMaterials()[0];
-					}
+						if ( submeshIndex >= meshSource->GetSubMeshes().size() )
+						{
+							TE_CORE_ASSERT( false, "Submesh index out of bounds" );
+							continue;
+						}
 
-					drawCall.Transform = transform.GetWorldTransform();
+						const SubMesh& submesh = meshSource->GetSubMeshes()[submeshIndex];
+						DrawCall drawCall = 
+						{
+							.SubMesh = submesh,
+							.VAO = meshSource->GetVAO(),
+							.Material = MaterialHandle::InvalidGUID,
+							.Transform = transform.GetWorldTransform() * submesh.Transform
+						};
 
-					SubmitDrawCall( drawCall );
+						//drawCall.Transform = glm::scale( drawCall.Transform, Vector3(submeshIndex) );
+
+						// Override material
+						if ( meshComponent.Materials.size() > submesh.MaterialIndex )
+							drawCall.Material = meshComponent.Materials[submesh.MaterialIndex];
+
+						SubmitDrawCall( std::move( drawCall ) );
+					}
 				}
 			);
 		}
@@ -290,7 +298,7 @@ namespace Tridium {
 		}
 	}
 
-	void SceneRenderer::SubmitDrawCall( const DrawCall& a_DrawCall )
+	void SceneRenderer::SubmitDrawCall( DrawCall&& a_DrawCall )
 	{
 		m_DrawCalls.push_back( a_DrawCall );
 	}
@@ -417,7 +425,7 @@ namespace Tridium {
 
 
 		a_DrawCall.VAO->Bind();
-		RenderCommand::DrawIndexed( a_DrawCall.VAO );
+		RenderCommand::DrawIndexedSubmesh( a_DrawCall.VAO, a_DrawCall.SubMesh );
 		a_DrawCall.VAO->Unbind();
 
 		#pragma region Unbind Uniforms

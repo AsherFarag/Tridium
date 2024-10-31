@@ -23,6 +23,8 @@ namespace Tridium {
 
 		static inline void DrawIndexed( const SharedPtr<VertexArray>& a_VertexArray ) { s_RendererAPI->DrawIndexed( a_VertexArray ); }
 
+		static inline void DrawIndexedSubmesh( const SharedPtr<VertexArray>& a_VertexArray, const SubMesh& a_SubMesh ) { s_RendererAPI->DrawIndexedSubmesh( a_VertexArray, a_SubMesh ); }
+
 	private:
 		static UniquePtr<RendererAPI> s_RendererAPI;
 	};

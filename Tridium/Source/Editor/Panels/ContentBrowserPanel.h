@@ -24,20 +24,24 @@ namespace Tridium::Editor {
 
 	class ContentBrowserPanel;
 
+	class ContentItemIcons final
+	{
+	public:
+		static std::unordered_map<EFileType, SharedPtr<Texture>> s_FileTypeIcons;
+		static SharedPtr<Texture> s_UnimportedAssetIcon;
+	};
+
 	struct ContentItem
 	{
-		static std::unordered_map<EFileType, SharedPtr<Texture>> s_Icons;
-
 		ContentBrowserPanel& Owner;
 		EFileType Type;
 		std::string Name;
-
-		ContentItem( ContentBrowserPanel& a_Owner, const EFileType a_Type, const IO::FilePath& a_Name )
-			: Owner(a_Owner), Type( a_Type ), Name( std::move( a_Name.ToString() ) ) {}
+		AssetHandle Handle{AssetHandle::InvalidGUID};
+		bool IsImported = false;
 
 		// Returns true if the item was opened.
 		bool OnImGuiDraw( const ImVec2& a_Size ) const;
-
+		bool IsAsset() const { return Type != EFileType::Folder && Type != EFileType::None; }
 		bool operator ==( const ContentItem & a_Other ) const { return Name == a_Other.Name; }
 	};
 

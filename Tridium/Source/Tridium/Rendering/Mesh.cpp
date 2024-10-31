@@ -71,7 +71,7 @@ namespace Tridium {
 	// StaticMesh
 	/////////////////////////////////////////////////////////////////////////////////////////
 
-	StaticMesh::StaticMesh( AssetHandle a_MeshSource )
+	StaticMesh::StaticMesh( MeshSourceHandle a_MeshSource )
 		: m_MeshSource( a_MeshSource )
 	{
 		m_Handle = AssetHandle::Create();
@@ -79,17 +79,16 @@ namespace Tridium {
 		if ( auto meshSourceRef = AssetManager::GetAsset<MeshSource>( a_MeshSource ) )
 		{
 			SetSubMeshes( meshSourceRef );
-			m_VAO = meshSourceRef->GetVAO();
-			m_IBO = meshSourceRef->GetIBO();
 
-			const std::vector<AssetHandle>& meshMaterials = meshSourceRef->GetMaterials();
+			const std::vector<MaterialHandle>& meshMaterials = meshSourceRef->GetMaterials();
 			uint32_t numMaterials = static_cast<uint32_t>( meshMaterials.size() );
+			m_Materials.resize( numMaterials );
 			for ( uint32_t i = 0; i < numMaterials; i++ )
 				m_Materials[i] = meshMaterials[i];
 		}
 	}
 
-	StaticMesh::StaticMesh( AssetHandle a_MeshSource, const std::vector<uint32_t>& a_SubMeshes )
+	StaticMesh::StaticMesh( MeshSourceHandle a_MeshSource, const std::vector<uint32_t>& a_SubMeshes )
 		: m_MeshSource( a_MeshSource )
 	{
 		m_Handle = AssetHandle::Create();
@@ -101,10 +100,11 @@ namespace Tridium {
 			else
 				SetSubMeshes( meshSourceRef );
 
-			const std::vector<AssetHandle>& meshMaterials = meshSourceRef->GetMaterials();
+			const std::vector<MaterialHandle>& meshMaterials = meshSourceRef->GetMaterials();
 			uint32_t numMaterials = static_cast<uint32_t>( meshMaterials.size() );
+			m_Materials.resize( numMaterials );
 			for ( uint32_t i = 0; i < numMaterials; i++ )
-				m_Materials.push_back( meshMaterials[i] );
+				m_Materials[i] = meshMaterials[i];
 		}
 	}
 

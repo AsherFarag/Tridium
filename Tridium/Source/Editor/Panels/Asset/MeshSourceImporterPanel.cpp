@@ -98,44 +98,60 @@ namespace Tridium::Editor {
 		// Add the MeshSource to the asset manager
 		assetManager->CreateAsset( meshSourceMetaData, m_MeshSource );
 
+		//// Create a single static mesh for the mesh source
+		SharedPtr<StaticMesh> mesh = MakeShared<StaticMesh>( m_MeshSource->GetHandle() );
+
+		AssetMetaData metaData;
+		metaData.Handle = AssetHandle::Create();
+		metaData.AssetType = EAssetType::StaticMesh;
+		metaData.Path = m_Path.GetParentPath();
+		metaData.Path.Append( m_MeshSource->m_MeshNodes[0].Name + ".tmesh" );
+		metaData.Name = m_MeshSource->m_MeshNodes[0].Name;
+		metaData.IsAssetLoaded = true;
+
+		assetManager->CreateAsset( metaData, mesh );
+		assetManager->RegisterDependency( mesh->GetHandle(), m_MeshSource->GetHandle() );
+
+
+
 		// Create a new StaticMesh for each selected submesh
-		for ( uint32_t i = 0; i < m_SelectedSubmeshes.size(); ++i )
-		{
-			if ( !m_SelectedSubmeshes[i] )
-				continue;
+		//for ( uint32_t i = 0; i < m_SelectedSubmeshes.size(); ++i )
+		//{
+		//	if ( !m_SelectedSubmeshes[i] )
+		//		continue;
 
-			std::vector<uint32_t> subMeshes = { i };
-			subMeshes.reserve( m_MeshSource->m_MeshNodes.size() );
+		//	std::vector<uint32_t> subMeshes = { i };
+		//	subMeshes.reserve( m_MeshSource->m_MeshNodes.size() );
 
-			// Find all submeshes that are children of the selected submesh
-			for ( uint32_t j = 0; j < m_MeshSource->m_MeshNodes.size(); ++j )
-			{
-				uint32_t parent = m_MeshSource->m_MeshNodes[j].Parent;
-				while ( parent != MAXUINT32 )
-				{
-					if ( parent == i )
-					{
-						subMeshes.push_back( j );
-						break;
-					}
+		//	// Find all submeshes that are children of the selected submesh
+		//	for ( uint32_t j = 0; j < m_MeshSource->m_MeshNodes.size(); ++j )
+		//	{
+		//		uint32_t parent = m_MeshSource->m_MeshNodes[j].Parent;
+		//		while ( parent != MAXUINT32 )
+		//		{
+		//			if ( parent == i )
+		//			{
+		//				subMeshes.push_back( j );
+		//				break;
+		//			}
 
-					parent = m_MeshSource->m_MeshNodes[parent].Parent;
-				}
-			}
+		//			parent = m_MeshSource->m_MeshNodes[parent].Parent;
+		//		}
+		//	}
 
-			SharedPtr<StaticMesh> mesh = MakeShared<StaticMesh>( m_MeshSource->GetHandle(), subMeshes);
+		//	SharedPtr<StaticMesh> mesh = MakeShared<StaticMesh>( m_MeshSource->GetHandle(), subMeshes);
 
-			AssetMetaData metaData;
-			metaData.Handle = AssetHandle::Create();
-			metaData.AssetType = EAssetType::StaticMesh;
-			metaData.Path = m_Path.GetParentPath();
-			metaData.Path.Append( m_MeshSource->m_MeshNodes[i].Name + ".tmesh" );
-			metaData.Name = m_MeshSource->m_MeshNodes[i].Name;
-			metaData.IsAssetLoaded = true;
+		//	AssetMetaData metaData;
+		//	metaData.Handle = AssetHandle::Create();
+		//	metaData.AssetType = EAssetType::StaticMesh;
+		//	metaData.Path = m_Path.GetParentPath();
+		//	metaData.Path.Append( m_MeshSource->m_MeshNodes[i].Name + ".tmesh" );
+		//	metaData.Name = m_MeshSource->m_MeshNodes[i].Name;
+		//	metaData.IsAssetLoaded = true;
 
-			assetManager->CreateAsset( metaData, mesh );
-			assetManager->RegisterDependency( mesh->GetHandle(), m_MeshSource->GetHandle()  );
-		}
+		//	assetManager->CreateAsset( metaData, mesh );
+		//	assetManager->RegisterDependency( mesh->GetHandle(), m_MeshSource->GetHandle()  );
+		//}
 	}
 
 }

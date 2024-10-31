@@ -287,12 +287,15 @@ namespace Tridium::Editor {
 
 				if ( SharedPtr<VertexArray> vao = meshSource->GetVAO() )
 				{
-					m_GameObjectIDShader->SetInt( "uID", (uint32_t)go );
-					m_GameObjectIDShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() );
+					for ( auto& subMesh : meshSource->GetSubMeshes() )
+					{
+						m_GameObjectIDShader->SetInt( "uID", static_cast<uint32_t>(go) );
+						m_GameObjectIDShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() * subMesh.Transform );
 
-					vao->Bind();
-					RenderCommand::DrawIndexed( vao );
-					vao->Unbind();
+						vao->Bind();
+						RenderCommand::DrawIndexedSubmesh( vao, subMesh );
+						vao->Unbind();
+					}
 				}
 			} );
 
@@ -328,8 +331,6 @@ namespace Tridium::Editor {
 
 		if ( SharedPtr<VertexArray> vao = meshSource->GetVAO() )
 		{
-			Matrix4 pvm = m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix();
-
 			RenderCommand::SetDepthCompare( EDepthCompareOperator::Less );
 			RenderCommand::SetCullMode( ECullMode::Front );
 
@@ -340,15 +341,18 @@ namespace Tridium::Editor {
 			glLineWidth( 5 );
 			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
-			m_OutlineShader->SetMatrix4( "u_PVM", pvm * go.GetWorldTransform() );
+			Matrix4 pvm = m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix();
+			for ( auto& subMesh : meshSource->GetSubMeshes() )
+			{
+				m_OutlineShader->SetMatrix4( "u_PVM", pvm * go.GetWorldTransform() * subMesh.Transform );
 
-			vao->Bind();
-			RenderCommand::DrawIndexed( vao );
-			vao->Unbind();
+				vao->Bind();
+				RenderCommand::DrawIndexedSubmesh( vao, subMesh );
+				vao->Unbind();
+			}
 
 			m_OutlineShader->Unbind();
 			m_FBO->Unbind();
-
 			glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 		}
 	}

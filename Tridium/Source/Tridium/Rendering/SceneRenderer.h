@@ -13,14 +13,16 @@ namespace Tridium {
 	class VertexArray;
 	class Texture;
 	class MeshSource;
+	class SubMesh;
 
 	namespace Editor { class SceneRendererPanel; }
 	// -------------------
 
 	struct DrawCall
 	{
+		const SubMesh& SubMesh;
 		SharedPtr<VertexArray> VAO;
-		AssetHandle Material;
+		MaterialHandle Material;
 		Matrix4 Transform;
 	};
 
@@ -44,7 +46,7 @@ namespace Tridium {
 
 		void Flush();
 
-		void SubmitDrawCall( const DrawCall& a_DrawCall );
+		void SubmitDrawCall( DrawCall&& a_DrawCall );
 		void PerformDrawCall( const DrawCall& a_DrawCall );
 
 	private:

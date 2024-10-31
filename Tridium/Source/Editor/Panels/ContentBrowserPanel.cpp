@@ -10,16 +10,18 @@
 
 #include <Tridium/Rendering/Material.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
+#include <Editor/AssetImporter.h>
 
 namespace Tridium::Editor {
 
-	std::unordered_map<EFileType, SharedPtr<Texture>> ContentItem::s_Icons = std::unordered_map<EFileType, SharedPtr<Texture>>();
+	std::unordered_map<EFileType, SharedPtr<Texture>> ContentItemIcons::s_FileTypeIcons = std::unordered_map<EFileType, SharedPtr<Texture>>();
+	SharedPtr<Texture> ContentItemIcons::s_UnimportedAssetIcon = nullptr;
 
 	ContentBrowserPanel::ContentBrowserPanel() : Panel( "Content Browser" )
 	{
 		IO::FilePath iconFolder( Application::GetEngineAssetsDirectory() / "Editor/Icons" );
 		SharedPtr<Texture> defaultIcon = TextureLoader::LoadTexture( iconFolder / "file.png" );
-		ContentItem::s_Icons = {
+		ContentItemIcons::s_FileTypeIcons = {
 			{ EFileType::None,       defaultIcon },
 			{ EFileType::Folder,     TextureLoader::LoadTexture( iconFolder / "folder.png" ) },
 			{ EFileType::Scene,      TextureLoader::LoadTexture( iconFolder / "tridium-scene.png" ) },
@@ -31,6 +33,8 @@ namespace Tridium::Editor {
 			{ EFileType::CubeMap,    TextureLoader::LoadTexture( iconFolder / "file-media.png" ) },
 			{ EFileType::Lua,	     TextureLoader::LoadTexture( iconFolder / "file-code.png" ) },
 		};
+
+		ContentItemIcons::s_UnimportedAssetIcon = TextureLoader::LoadTexture( iconFolder / "file-unimported.png" );
 	}
 
 	void ContentBrowserPanel::OnImGuiDraw()
@@ -126,8 +130,13 @@ namespace Tridium::Editor {
 			if ( !directoryEntry.is_directory() )
 				type = static_cast<EFileType>( GetAssetTypeFromFileExtension( directoryEntry.path().extension().string() ) );
 
+			AssetMetaData metaData = EditorAssetManager::Get()->GetAssetMetaData( filePath );
+
+			bool isImported = metaData.IsValid();
+			AssetHandle handle = metaData.Handle;
+
 			// Add the file to the folder heirarchy
-			m_FolderHeirarchy[a_Directory].emplace_back( *this, type, fileName );
+			m_FolderHeirarchy[a_Directory].emplace_back( *this, type, fileName, handle, isImported );
 
 			if ( type == EFileType::Folder )
 				RecurseFolderHeirarchy( filePath );
@@ -366,6 +375,16 @@ namespace Tridium::Editor {
 
 		ImGui::FunctionScope endPopup( &ImGui::EndPopup );
 
+		if ( !a_Item.IsImported && a_Item.Type != EFileType::Folder )
+		{
+			if ( ImGui::MenuItem( "Import" ) )
+			{
+				AssetImporter::ImportAsset( m_CurrentDirectory / a_Item.Name );
+				ReconstructFolderHierarchy();
+				return true;
+			}
+		}
+
 		if ( ImGui::MenuItem( "Open" ) )
 		{
 			if ( OnContentItemOpened( a_Item ) )
@@ -437,7 +456,11 @@ namespace Tridium::Editor {
 			paddingX = a_Size.x < paddingX ? 0 : paddingX;
 			paddingY = a_Size.y < paddingY ? 0 : paddingY;
 
-			SharedPtr<Texture> icon = s_Icons[Type];
+			SharedPtr<Texture> icon = nullptr;
+			if ( IsImported || !IsAsset() )
+				icon = ContentItemIcons::s_FileTypeIcons[Type];
+			else // Must be an Unimported Asset
+				icon = ContentItemIcons::s_UnimportedAssetIcon;
 
 			// Draw the thumbnail
 			{
@@ -459,8 +482,7 @@ namespace Tridium::Editor {
 			if ( ImGui::BeginDragDropSource() )
 			{
 				std::string filePath = ( Owner.GetDirectory() / Name ).ToString();
-				AssetHandle assetHandle = AssetManager::Get<EditorAssetManager>()->GetAssetMetaData( filePath ).Handle;
-				ImGui::SetDragDropPayload( TE_PAYLOAD_ASSET_HANDLE, &assetHandle, sizeof(AssetHandle) );
+				ImGui::SetDragDropPayload( TE_PAYLOAD_ASSET_HANDLE, &Handle, sizeof(AssetHandle) );
 				ImGui::Image( 
 					(ImTextureID)icon->GetRendererID(),
 					{ a_Size.x - paddingX * 2, a_Size.y - paddingY * 2 },

@@ -11,39 +11,39 @@ namespace Tridium {
 
 		// - Shader
 		//   The shader used by the material
-		AssetHandle Shader;
+		ShaderHandle Shader;
 
 		// - Albedo
 		//   The color of the material
-		AssetHandle AlbedoTexture;
+		TextureHandle AlbedoTexture;
 
 		// - Metallic
 		//   The metallic value of the material
-		AssetHandle MetallicTexture;
+		TextureHandle MetallicTexture;
 
 		// - Roughness
 		//   The roughness value of the material
-		AssetHandle RoughnessTexture;
+		TextureHandle RoughnessTexture;
 
 		// - Specular
 		//   The specular value of the material.
-		AssetHandle SpecularTexture;
+		TextureHandle SpecularTexture;
 
 		// - Normal
 		//   The normal map of the material
-		AssetHandle NormalTexture;
+		TextureHandle NormalTexture;
 
 		// - Opacity
 		//   The opacity map of the material
-		AssetHandle OpacityTexture;
+		TextureHandle OpacityTexture;
 
 		// - Emissive
 		//   The emissive map of the material
-		AssetHandle EmissiveTexture;
+		TextureHandle EmissiveTexture;
 
 		// - Ambient Occlusion
 		//   The ambient occlusion map of the material
-		AssetHandle AOTexture;
+		TextureHandle AOTexture;
 	};
 
 #if 0

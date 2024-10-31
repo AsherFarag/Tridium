@@ -1,5 +1,6 @@
 #include "tripch.h"
 #include "OpenGLRenderingAPI.h"
+#include <Tridium/Rendering/Mesh.h>
 
 #include "glad/glad.h"
 
@@ -92,6 +93,11 @@ namespace Tridium {
 	void OpenGLRenderingAPI::DrawIndexed( const SharedPtr<VertexArray>& a_VertexArray )
 	{
 		glDrawElements( GL_TRIANGLES, a_VertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr );
+	}
+
+	void OpenGLRenderingAPI::DrawIndexedSubmesh( const SharedPtr<VertexArray>& a_VertexArray, const SubMesh& a_SubMesh )
+	{
+		glDrawElements( GL_TRIANGLES, a_SubMesh.NumIndicies, GL_UNSIGNED_INT, (const void*)( a_SubMesh.BaseIndex * sizeof( uint32_t ) ) );
 	}
 
 }

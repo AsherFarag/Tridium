@@ -87,7 +87,7 @@ namespace Tridium {
 
 		SharedPtr<StaticMesh> staticMesh = MakeShared<StaticMesh>( meshSourceHandle, subMeshes );
 		for ( const auto& material : materials )
-			staticMesh->GetMaterials().push_back( AssetHandle( material ) );
+			staticMesh->GetMaterials().push_back( MaterialHandle( material ) );
 
 		return SharedPtrCast<Asset>( staticMesh );
 	}

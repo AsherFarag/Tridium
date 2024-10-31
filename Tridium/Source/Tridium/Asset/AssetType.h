@@ -28,6 +28,9 @@ namespace Tridium {
 		public:
 			static constexpr EAssetType AssetType = _AssetType;
 
+			TypedAssetHandle() = default;
+			TypedAssetHandle( const AssetHandle& a_Handle ) : AssetHandle( a_Handle ) {}
+
 			TypedAssetHandle& operator=( const AssetHandle& a_Handle )
 			{
 				AssetHandle::operator=( a_Handle );

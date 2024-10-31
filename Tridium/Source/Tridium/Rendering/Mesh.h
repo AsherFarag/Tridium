@@ -27,8 +27,8 @@ namespace Tridium {
 		uint32_t MaterialIndex;
 		uint32_t NumVerticies = 0;
 		uint32_t NumIndicies = 0;
-		Matrix4 Transform;
-		Matrix4 LocalTransform;
+		Matrix4 Transform{ 1.0f };
+		Matrix4 LocalTransform{ 1.0f };
 		std::string Name;
 	};
 
@@ -56,7 +56,7 @@ namespace Tridium {
 		std::vector<SubMesh>& GetSubMeshes() { return m_SubMeshes; }
 		const std::vector<SubMesh>& GetSubMeshes() const { return m_SubMeshes; }
 
-		const std::vector<AssetHandle>& GetMaterials() const { return m_Materials; }
+		const std::vector<MaterialHandle>& GetMaterials() const { return m_Materials; }
 
 	private:
 		// - GPU Handles -
@@ -71,12 +71,12 @@ namespace Tridium {
 		std::vector<uint32_t> m_Indices;
 
 		std::vector<SubMesh> m_SubMeshes;
-		std::vector<AssetHandle> m_Materials;
+		std::vector<MaterialHandle> m_Materials;
 
 		// A mesh node is a node in a hierarchy of nodes that make up a mesh, loaded by Assimp.
 		struct MeshNode
 		{
-			Matrix4 LocalTransform;
+			Matrix4 LocalTransform{1.0f};
 			uint32_t Parent = MAXUINT32;
 			std::vector<uint32_t> SubMeshes;
 			std::vector<uint32_t> Children;
@@ -98,25 +98,22 @@ namespace Tridium {
 	{
 	public:
 		ASSET_CLASS_TYPE( StaticMesh );
-		StaticMesh( AssetHandle a_MeshSource );
-		StaticMesh( AssetHandle a_MeshSource, const std::vector<uint32_t>& a_SubMeshes );
+		StaticMesh( MeshSourceHandle a_MeshSource );
+		StaticMesh( MeshSourceHandle a_MeshSource, const std::vector<uint32_t>& a_SubMeshes );
 		virtual ~StaticMesh() = default;
 
-		void SetMeshSource( AssetHandle a_MeshSource ) { m_MeshSource = a_MeshSource; }
-		AssetHandle GetMeshSource() const { return m_MeshSource; }
+		void SetMeshSource( MeshSourceHandle a_MeshSource ) { m_MeshSource = a_MeshSource; }
+		MeshSourceHandle GetMeshSource() const { return m_MeshSource; }
 		void SetSubMeshes( const std::vector<uint32_t>& a_SubMeshes );
 		void SetSubMeshes( SharedPtr<MeshSource> a_MeshSource );
 		const auto& GetSubMeshes() const { return m_SubMeshes; }
-		void SetMaterials( const std::vector<AssetHandle>& a_Materials ) { m_Materials = a_Materials; }
+		void SetMaterials( const std::vector<MaterialHandle>& a_Materials ) { m_Materials = a_Materials; }
 		auto& GetMaterials() { return m_Materials; }
 
 	private:
-		SharedPtr<VertexArray> m_VAO;
-		SharedPtr<IndexBuffer> m_IBO;
-
-		AssetHandle m_MeshSource;
+		MeshSourceHandle m_MeshSource;
 		std::vector<uint32_t> m_SubMeshes;
-		std::vector<AssetHandle> m_Materials;
+		std::vector<MaterialHandle> m_Materials;
 	};
 
 	// - Mesh Factory -
