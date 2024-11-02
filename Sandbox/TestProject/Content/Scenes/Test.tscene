@@ -1,11 +1,11 @@
 Scene: Test
 SceneEnvironment:
   HDRI:
-    EnvironmentMapHandle: 12344971950102856376
-    Exposure: 1
-    Gamma: 2.20000005
-    Blur: 0.361999989
-    Intensity: 1
+    EnvironmentMapHandle: 5806395090298646526
+    Exposure: 2.46199989
+    Gamma: 0.742999971
+    Blur: 0.236000001
+    Intensity: 0.59799999
     RotationEular: [0, 0, 0]
 GameObjects:
   - GameObject: 17894983707375707960
@@ -16,7 +16,7 @@ GameObjects:
       Scale: [1, 1, 1]
       Children: []
     StaticMeshComponent:
-      Mesh: 2
+      Mesh: 11662457145095035423
       Materials: [0]
   - GameObject: 16542631976287151540
     Tag: Troll
@@ -46,8 +46,9 @@ GameObjects:
       Scale: [1.00000346, 0.999999881, 1.0000006]
       Children: []
     DirectionalLightComponent:
-      LightColor: [1, 0.373540878, 0, 1]
-      Intensity: 5
+      LightColor: [0.486381352, 0.742191553, 1, 1]
+      Intensity: 0.529999971
+      CastsShadows: true
   - GameObject: 17099799884021532929
     Tag: Cube
     Transform:

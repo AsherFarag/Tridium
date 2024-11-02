@@ -39,3 +39,13 @@ GameObjects:
       LightColor: [1, 1, 1, 1]
       Intensity: 1
       CastsShadows: true
+  - GameObject: 1833451726098940142
+    Tag: Static Mesh
+    Transform:
+      Position: [5.15167141, -1.00547838, 0]
+      Rotation: [0, -0, 0]
+      Scale: [0.0500000119, 0.0500000119, 0.0500000119]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 3228463107512144107
+      Materials: []

@@ -18,8 +18,8 @@ namespace Tridium::Editor {
 		m_Path = AssetManager::Get<EditorAssetManager>()->GetAbsolutePath( a_Path );
 		AssimpImporter importer( m_Path );
 		m_MeshSource = importer.ImportMeshSource();
-		if ( m_MeshSource )
-			m_SelectedSubmeshes.resize( m_MeshSource->m_MeshNodes.size() );
+		//if ( m_MeshSource )
+			//m_SelectedSubmeshes.resize( m_MeshSource->m_MeshNodes.size() );
 
 		m_ShouldClose = m_MeshSource == nullptr;
 	}
@@ -40,16 +40,16 @@ namespace Tridium::Editor {
 			return;
 
 		// Display the submesh nodes
-		for ( uint32_t i = 0; i < m_MeshSource->m_MeshNodes.size(); ++i )
-		{
-			auto& node = m_MeshSource->m_MeshNodes[i];
-			if ( !node.IsRoot() )
-				continue;
+		//for ( uint32_t i = 0; i < m_MeshSource->m_MeshNodes.size(); ++i )
+		//{
+		//	auto& node = m_MeshSource->m_MeshNodes[i];
+		//	if ( !node.IsRoot() )
+		//		continue;
 
-			bool isSelected = m_SelectedSubmeshes[i];
-			ImGui::Checkbox( node.Name.c_str(), &isSelected );
-			m_SelectedSubmeshes[i] = isSelected;
-		}
+		//	bool isSelected = m_SelectedSubmeshes[i];
+		//	ImGui::Checkbox( node.Name.c_str(), &isSelected );
+		//	m_SelectedSubmeshes[i] = isSelected;
+		//}
 
 		ImGui::Separator();
 
@@ -105,8 +105,8 @@ namespace Tridium::Editor {
 		metaData.Handle = AssetHandle::Create();
 		metaData.AssetType = EAssetType::StaticMesh;
 		metaData.Path = m_Path.GetParentPath();
-		metaData.Path.Append( m_MeshSource->m_MeshNodes[0].Name + ".tmesh" );
-		metaData.Name = m_MeshSource->m_MeshNodes[0].Name;
+		metaData.Path.Append( meshSourceMetaData.Name + ".tmesh" );
+		metaData.Name = meshSourceMetaData.Name;
 		metaData.IsAssetLoaded = true;
 
 		assetManager->CreateAsset( metaData, mesh );

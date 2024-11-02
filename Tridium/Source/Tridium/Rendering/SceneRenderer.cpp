@@ -106,6 +106,7 @@ namespace Tridium {
 			RenderCommand::SetDepthTest( true );
 			RenderCommand::SetCullMode( ECullMode::Back );
 			RenderCommand::SetDepthCompare( EDepthCompareOperator::Less );
+
 			for ( const auto& drawCall : m_DrawCalls )
 			{
 				PerformDrawCall( drawCall );
@@ -247,6 +248,8 @@ namespace Tridium {
 					if ( !meshSource )
 						return;
 
+					Matrix4 worldTransform = transform.GetWorldTransform();
+
 					for ( uint32_t submeshIndex : staticMesh->GetSubMeshes() )
 					{
 						if ( submeshIndex >= meshSource->GetSubMeshes().size() )
@@ -261,10 +264,10 @@ namespace Tridium {
 							.SubMesh = submesh,
 							.VAO = meshSource->GetVAO(),
 							.Material = MaterialHandle::InvalidGUID,
-							.Transform = transform.GetWorldTransform() * submesh.Transform
+							.Transform = worldTransform * submesh.Transform
 						};
 
-						//drawCall.Transform = glm::scale( drawCall.Transform, Vector3(submeshIndex) );
+						drawCall.Transform = glm::translate( drawCall.Transform, Vector3(submeshIndex * 10, 0, 0) );
 
 						// Override material
 						if ( meshComponent.Materials.size() > submesh.MaterialIndex )
@@ -425,6 +428,7 @@ namespace Tridium {
 
 
 		a_DrawCall.VAO->Bind();
+		//RenderCommand::DrawIndexed( a_DrawCall.VAO );
 		RenderCommand::DrawIndexedSubmesh( a_DrawCall.VAO, a_DrawCall.SubMesh );
 		a_DrawCall.VAO->Unbind();
 

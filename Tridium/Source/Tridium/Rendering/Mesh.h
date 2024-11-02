@@ -25,10 +25,10 @@ namespace Tridium {
 		uint32_t BaseVertex;
 		uint32_t BaseIndex;
 		uint32_t MaterialIndex;
-		uint32_t NumVerticies = 0;
+		uint32_t NumVertices = 0;
 		uint32_t NumIndicies = 0;
 		Matrix4 Transform{ 1.0f };
-		Matrix4 LocalTransform{ 1.0f };
+		Matrix4 LocalTransform{ 1.0f }; // Do we need this?
 		std::string Name;
 	};
 
@@ -67,25 +67,24 @@ namespace Tridium {
 
 		// - CPU Data -
 
+		//// A mesh node is a node in a hierarchy of nodes that make up a mesh, loaded by Assimp.
+		//struct MeshNode
+		//{
+		//	Matrix4 LocalTransform{1.0f};
+		//	uint32_t Parent = MAXUINT32; // Index of the parent node in m_MeshNodes
+		//	std::vector<uint32_t> SubMeshes;
+		//	std::vector<uint32_t> Children;
+		//	std::string Name;
+
+		//	bool IsRoot() const { return Parent == MAXUINT32; }
+		//};
+
+		//std::vector<MeshNode> m_MeshNodes;
 		std::vector<Vertex> m_Vertices;
 		std::vector<uint32_t> m_Indices;
 
 		std::vector<SubMesh> m_SubMeshes;
 		std::vector<MaterialHandle> m_Materials;
-
-		// A mesh node is a node in a hierarchy of nodes that make up a mesh, loaded by Assimp.
-		struct MeshNode
-		{
-			Matrix4 LocalTransform{1.0f};
-			uint32_t Parent = MAXUINT32;
-			std::vector<uint32_t> SubMeshes;
-			std::vector<uint32_t> Children;
-			std::string Name;
-
-			bool IsRoot() const { return Parent == MAXUINT32; }
-		};
-
-		std::vector<MeshNode> m_MeshNodes;
 
 		friend class AssimpImporter;
 		friend class Editor::MeshSourceImporterPanel;

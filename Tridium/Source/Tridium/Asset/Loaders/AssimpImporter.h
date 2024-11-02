@@ -14,12 +14,17 @@ namespace Tridium {
 		SharedPtr<MeshSource> ImportMeshSource( const MeshSourceImportSettings& a_ImportSettings = {} );
 
 	private:
+		void ProcessNode( SharedPtr<MeshSource>& a_MeshSource, const void* a_AssimpScene, void* a_AssimpNode, const Matrix4& a_ParentTransform );
+		SubMesh ProcessSubMesh( SharedPtr<MeshSource>& a_MeshSource, const void* a_AssimpScene, void* a_AssimpMesh );
 
-		void ExtractSubmeshes( void* a_AssimpScene, SharedPtr<MeshSource>& a_MeshSource);
-		void ExtractMaterials( void* a_AssimpScene, SharedPtr<MeshSource>& a_MeshSource );
-		AssetHandle ExtractTexture( void* a_AssimpScene, void* a_AssimpMaterial, int a_AssimpTextureType );
+		//MeshSource::MeshNode* ProcessNode( void* a_AssimpScene, void* a_AssimpNode, SharedPtr<MeshSource>& a_MeshSource, uint32_t a_ParentNodeIndex, const Matrix4& a_ParentTransform = Matrix4( 1.0f ) );
+		//SubMesh ProcessSubMesh( void* a_AssimpScene, void* a_AssimpMesh, SharedPtr<MeshSource>& a_MeshSource );
 
-		void TraverseNodes( SharedPtr<MeshSource> a_MeshSource, void* a_AssimpNode, uint32_t a_NodeIndex, const Matrix4& a_ParentTransform = Matrix4( 1.0f ), uint32_t a_Level = 0 );
+		//void ExtractSubmeshes( void* a_AssimpScene, SharedPtr<MeshSource>& a_MeshSource);
+		//void ExtractMaterials( void* a_AssimpScene, SharedPtr<MeshSource>& a_MeshSource );
+		//AssetHandle ExtractTexture( void* a_AssimpScene, void* a_AssimpMaterial, int a_AssimpTextureType );
+
+		//void TraverseNodes( SharedPtr<MeshSource> a_MeshSource, void* a_AssimpNode, uint32_t a_NodeIndex, const Matrix4& a_ParentTransform = Matrix4( 1.0f ), uint32_t a_Level = 0 );
 
 	private:
 		const IO::FilePath m_FilePath;

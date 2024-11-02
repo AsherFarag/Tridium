@@ -20,6 +20,7 @@ namespace Tridium {
 		SubMesh submesh;
 		submesh.BaseVertex = 0;
 		submesh.BaseIndex = 0;
+		submesh.NumVertices = (uint32_t)a_Vertices.size();
 		submesh.NumIndicies = (uint32_t)a_Indices.size() * 3u;
 		submesh.Transform = a_Transform;
 		m_SubMeshes.push_back( submesh );
@@ -115,9 +116,9 @@ namespace Tridium {
 
 	void StaticMesh::SetSubMeshes( SharedPtr<MeshSource> a_MeshSource )
 	{
-		const auto& subMeshes = a_MeshSource->GetSubMeshes();
-		m_SubMeshes.resize( subMeshes.size() );
-		for ( uint32_t i = 0; i < subMeshes.size(); ++i )
+		const auto& submeshes = a_MeshSource->GetSubMeshes();
+		m_SubMeshes.resize( submeshes.size() );
+		for ( uint32_t i = 0; i < submeshes.size(); i++ )
 			m_SubMeshes[i] = i;
 	}
 
