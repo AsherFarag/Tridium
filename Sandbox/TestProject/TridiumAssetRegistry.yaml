@@ -1,4 +1,28 @@
 AssetMetaData:
+  - Handle: 7765604732595779487
+    AssetType: MeshSource
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX
+    Name: Cerberus_LP.FBX
+  - Handle: 6932676496202442266
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_AO.jpg
+    Name: Troll_AO
+  - Handle: 6680786823534590809
+    AssetType: Mesh
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/TrollApose_low.fbx.tmesh
+    Name: TrollApose_low.fbx
+  - Handle: 4086619935004974763
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Raw/Cerberus_AO.tga
+    Name: Cerberus_AO
+  - Handle: 16415605052835439519
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Roughness.png
+    Name: 1001_Roughness
+  - Handle: 16380598107030547843
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/textures/Revolver_Rou.tga.png
+    Name: Revolver_Rou.tga
   - Handle: 1303307644901636996
     AssetType: Scene
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Scenes/Test.tscene
@@ -15,10 +39,199 @@ AssetMetaData:
     AssetType: MeshSource
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/source/wpn_Revolver_Final_LP.fbx
     Name: wpn_Revolver_Final_LP.fbx
+  - Handle: 18301043363865490591
+    AssetType: CubeMap
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/resting_place_2_4k.hdr
+    Name: resting_place_2_4k
   - Handle: 11662457145095035423
     AssetType: Mesh
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/source/RootNode.tmesh
     Name: RootNode
+  - Handle: 12460669345156542809
+    AssetType: MeshSource
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/TrollApose_low.fbx
+    Name: TrollApose_low.fbx
+  - Handle: 5282163452782371408
+    AssetType: Material
+    Path: Content/revolver/textures/m_Revolver.tmat
+    Name: m_Revolver
+  - Handle: 14893352513169714491
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/textures/Revolver_AO.tga.png
+    Name: Revolver_AO.tga
+  - Handle: 14188683678562521315
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_R.tga
+    Name: Cerberus_R
+  - Handle: 3075343844041195536
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/textures/Revolver_Dif.png
+    Name: Revolver_Dif
+  - Handle: 2201683880744401789
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/textures/Revolver_Nor.png
+    Name: Revolver_Nor
+  - Handle: 16276606433639203390
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/textures/Revolver_Met.tga.png
+    Name: Revolver_Met.tga
+  - Handle: 10414866762872322182
+    AssetType: Material
+    Path: Content/Cerberus_by_Andrew_Maximov/m_Cerberus.tmat
+    Name: m_Cerberus
+  - Handle: 13329440684517550564
+    AssetType: Material
+    Path: Content/troll/m_Troll.tmat
+    Name: m_Troll
+  - Handle: 18397644629807743083
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_Albedo.jpg
+    Name: Troll_Albedo
+  - Handle: 13191145128629468662
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_Emissive.jpg
+    Name: Troll_Emissive
+  - Handle: 1945590970306288314
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_Normals.jpg
+    Name: Troll_Normals
+  - Handle: 1488970255538859377
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Raw/Cerberus_N.tga
+    Name: Cerberus_N
+  - Handle: 3813953115817308555
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_SSS2.jpg
+    Name: Troll_SSS2
+  - Handle: 6222639399811775340
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_Roughness2.jpg
+    Name: Troll_Roughness2
+  - Handle: 12209339836386338127
+    AssetType: Material
+    Path: Content/troll/m_TrollPants.tmat
+    Name: m_TrollPants
+  - Handle: 17890256965985546415
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Base_Color.png
+    Name: 1001_Base_Color
+  - Handle: 4469917185899783065
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_N.tga
+    Name: Cerberus_N
+  - Handle: 6887469768157097513
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Metallic.png
+    Name: 1001_Metallic
+  - Handle: 16966243146113793245
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Normal_DirectX.png
+    Name: 1001_Normal_DirectX
+  - Handle: 17898417794084169511
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Opacity.png
+    Name: 1001_Opacity
+  - Handle: 11646296566683283447
+    AssetType: MeshSource
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Sponza/glTF/Sponza.gltf
+    Name: Sponza.gltf
+  - Handle: 16269481744891761788
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_A.tga
+    Name: Cerberus_A
+  - Handle: 4642065102083697686
+    AssetType: Mesh
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Sponza/glTF/Sponza.gltf.tmesh
+    Name: Sponza.gltf
+  - Handle: 15869680136431924042
+    AssetType: Mesh
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX.tmesh
+    Name: Cerberus_LP.FBX
+  - Handle: 7373746697082174760
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_M.tga
+    Name: Cerberus_M
 AssetDependencies:
   11662457145095035423:
     - 5035549482378428079
+  5282163452782371408:
+    - 0
+    - 3075343844041195536
+    - 2201683880744401789
+    - 16276606433639203390
+    - 16380598107030547843
+    - 14893352513169714491
+  6932676496202442266:
+    []
+  7765604732595779487:
+    []
+  6680786823534590809:
+    - 12460669345156542809
+  16276606433639203390:
+    []
+  10414866762872322182:
+    - 0
+    - 16269481744891761788
+    - 7373746697082174760
+    - 14188683678562521315
+    - 4086619935004974763
+    - 4469917185899783065
+  13329440684517550564:
+    - 0
+    - 18397644629807743083
+    - 6222639399811775340
+    - 6932676496202442266
+    - 1945590970306288314
+    - 13191145128629468662
+  12209339836386338127:
+    - 0
+    - 17890256965985546415
+    - 6887469768157097513
+    - 16415605052835439519
+    - 16966243146113793245
+  4642065102083697686:
+    - 11646296566683283447
+  15869680136431924042:
+    - 7765604732595779487
+  16380598107030547843:
+    []
+  16415605052835439519:
+    []
+  4086619935004974763:
+    []
+  1303307644901636996:
+    []
+  16269481744891761788:
+    []
+  11646296566683283447:
+    []
+  12460669345156542809:
+    []
+  5035549482378428079:
+    []
+  7373746697082174760:
+    []
+  14893352513169714491:
+    []
+  14188683678562521315:
+    []
+  17890256965985546415:
+    []
+  4469917185899783065:
+    []
+  18397644629807743083:
+    []
+  6222639399811775340:
+    []
+  1945590970306288314:
+    []
+  13191145128629468662:
+    []
+  6887469768157097513:
+    []
+  16966243146113793245:
+    []
+  2201683880744401789:
+    []
+  3075343844041195536:
+    []

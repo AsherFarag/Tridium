@@ -46,7 +46,7 @@ namespace Tridium {
 		uint32_t Depth = 0u;
 		ETextureFormat TextureFormat = ETextureFormat::RGBA8;
 		bool GenerateMips = true;
-		ETextureFilter MinFilter = ETextureFilter::Linear;
+		ETextureFilter MinFilter = ETextureFilter::LinearMipmapLinear;
 		ETextureFilter MagFilter = ETextureFilter::Linear;
 		ETextureWrap WrapS = ETextureWrap::Repeat;
 		ETextureWrap WrapT = ETextureWrap::Repeat;

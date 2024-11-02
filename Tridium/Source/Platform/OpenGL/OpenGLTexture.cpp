@@ -265,11 +265,15 @@ namespace Tridium {
 		glCreateTextures( GL_TEXTURE_2D, 1, &m_RendererID );
 		glTextureStorage2D( m_RendererID, 1, m_InternalFormat, m_Width, m_Height );
 
+		Bind();
 		SetMinFilter( a_Specification.MinFilter );
 		SetMagFilter( a_Specification.MagFilter );
 		SetWrapS( a_Specification.WrapS );
 		SetWrapT( a_Specification.WrapT );
 		SetWrapR( a_Specification.WrapR );
+		if ( m_Specification.GenerateMips )
+			glGenerateMipmap( GL_TEXTURE_2D );
+		Unbind();
 	}
 
 	OpenGLTexture::~OpenGLTexture()

@@ -11,7 +11,7 @@ namespace Tridium::Editor {
 	{
 	}
 
-	MaterialEditorPanel::MaterialEditorPanel( const AssetHandle& a_Material )
+	MaterialEditorPanel::MaterialEditorPanel( const MaterialHandle& a_Material )
 		: Panel( "Material Editor##" ), m_Material( a_Material )
 	{
 	}

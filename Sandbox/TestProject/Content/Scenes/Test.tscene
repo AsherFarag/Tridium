@@ -1,23 +1,23 @@
 Scene: Test
 SceneEnvironment:
   HDRI:
-    EnvironmentMapHandle: 5806395090298646526
-    Exposure: 2.46199989
-    Gamma: 0.742999971
-    Blur: 0.236000001
-    Intensity: 0.59799999
+    EnvironmentMapHandle: 18301043363865490591
+    Exposure: 1
+    Gamma: 2.20000005
+    Blur: 0
+    Intensity: 0.150999993
     RotationEular: [0, 0, 0]
 GameObjects:
   - GameObject: 17894983707375707960
     Tag: Cube
     Transform:
-      Position: [0, 0, -5.28936577]
+      Position: [5.76444721, -11.8972006, -8.39933872]
       Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
+      Scale: [0.030000031, 0.030000031, 0.030000031]
       Children: []
     StaticMeshComponent:
       Mesh: 11662457145095035423
-      Materials: [0]
+      Materials: [5282163452782371408]
   - GameObject: 16542631976287151540
     Tag: Troll
     Transform:
@@ -42,12 +42,12 @@ GameObjects:
     Tag: Directional Light
     Transform:
       Position: [0, 0, 0.0295660496]
-      Rotation: [3.84766555, -2.82677031, 0]
+      Rotation: [3.84766555, -4.57209969, 0]
       Scale: [1.00000346, 0.999999881, 1.0000006]
       Children: []
     DirectionalLightComponent:
-      LightColor: [0.486381352, 0.742191553, 1, 1]
-      Intensity: 0.529999971
+      LightColor: [1, 0.782812774, 0.412451386, 1]
+      Intensity: 5
       CastsShadows: true
   - GameObject: 17099799884021532929
     Tag: Cube
@@ -83,29 +83,29 @@ GameObjects:
   - GameObject: 13039944283085260941
     Tag: Spot Light
     Transform:
-      Position: [0, -10.7139034, 0]
-      Rotation: [2.84717965, -0.0297323894, -0.0643088222]
-      Scale: [1, 0.999986172, 0.999984026]
+      Position: [-14.4609127, -10.7956724, 0.0497075319]
+      Rotation: [1.57079625, -0, 0]
+      Scale: [1, 1.00000036, 0.999986947]
       Children: []
     SpotLightComponent:
-      LightColor: [0, 1, 0.451361656, 1]
-      Intensity: 214
+      LightColor: [1, 0.466926038, 0, 1]
+      Intensity: 17
       FalloffExponent: 2
       AttenuationRadius: 10
-      InnerConeAngle: 30
-      OuterConeAngle: 45
+      InnerConeAngle: -20
+      OuterConeAngle: 26
   - GameObject: 15100604637533348928
     Tag: Torus
     Transform:
       Position: [0, -10.2890205, -3.8628912]
       Rotation: [-0.948534727, -0, 0]
-      Scale: [1, 2.50239778, 0.99999994]
+      Scale: [1, 1.10275054, 0.99999994]
       Children: []
     StaticMeshComponent:
       Mesh: 6
       Materials: []
   - GameObject: 2645998972927795823
-    Tag: Spot Light
+    Tag: Red Spot Light
     Transform:
       Position: [6.1790185, -9.62352848, -5.86424208]
       Rotation: [2.58017135, -0, 0]
@@ -118,3 +118,45 @@ GameObjects:
       AttenuationRadius: 10
       InnerConeAngle: 30
       OuterConeAngle: 45
+  - GameObject: 14393783786027614707
+    Tag: Static Mesh
+    Transform:
+      Position: [12.5631285, -13.0478687, 0]
+      Rotation: [0, -0, 0]
+      Scale: [0.00644000014, 0.00644000014, 0.00644000014]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 6680786823534590809
+      Materials: [13329440684517550564, 12209339836386338127]
+  - GameObject: 11313647683901471035
+    Tag: Point Light
+    Transform:
+      Position: [11.8521633, -10.9322796, 2.31626964]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    PointLightComponent:
+      LightColor: [1, 1, 1, 1]
+      Intensity: 10
+      FalloffExponent: 2
+      AttenuationRadius: 10
+  - GameObject: 45953374794035966
+    Tag: Sponza
+    Transform:
+      Position: [-17.070097, -12, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 4642065102083697686
+      Materials: []
+  - GameObject: 5486510618539794370
+    Tag: Static Mesh
+    Transform:
+      Position: [6.42505455, -10.1451273, 0.974243164]
+      Rotation: [0, -0, 0]
+      Scale: [0.025000006, 0.025000006, 0.025000006]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 15869680136431924042
+      Materials: [10414866762872322182]

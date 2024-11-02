@@ -264,7 +264,7 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 // F0 is the surface reflection at zero incidence
 vec3 FresnelSchlick(float cosTheta, vec3 F0)
 {
-    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+    return F0 + (vec3(1.0) - F0) * pow(1.0 - cosTheta, 5.0);
 }
 // F0 is the surface reflection at zero incidence
 vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
@@ -348,7 +348,7 @@ vec3 CalcSpotLightRadiance(SpotLight light, vec3 normal, vec3 fragPos, vec3 view
     // Spotlight angle attenuation based on cone angles
     float theta = dot(-L, normalize(-light.Direction)); // Align light direction
     float epsilon = light.InnerConeAngle - light.OuterConeAngle;
-    float intensityFactor = 1.0 - clamp((theta - light.OuterConeAngle) / epsilon, 0.0, 1.0); 
+	float intensityFactor = smoothstep(light.InnerConeAngle, light.OuterConeAngle, theta);
 
     // Distance attenuation (similar to point light attenuation)
     float distance = length(light.Position - fragPos);

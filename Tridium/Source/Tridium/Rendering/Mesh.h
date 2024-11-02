@@ -22,11 +22,12 @@ namespace Tridium {
 
 	struct SubMesh
 	{
-		uint32_t BaseVertex;
-		uint32_t BaseIndex;
+		SharedPtr<VertexArray> VAO;
+		SharedPtr<VertexBuffer> VBO;
+		SharedPtr<IndexBuffer> IBO;
+		std::vector<Vertex> Vertices;
+		std::vector<uint32_t> Indices;
 		uint32_t MaterialIndex;
-		uint32_t NumVertices = 0;
-		uint32_t NumIndicies = 0;
 		Matrix4 Transform{ 1.0f };
 		Matrix4 LocalTransform{ 1.0f }; // Do we need this?
 		std::string Name;
@@ -43,46 +44,13 @@ namespace Tridium {
 		ASSET_CLASS_TYPE( MeshSource );
 		MeshSource() = default;
 		MeshSource( const std::vector<Vertex>& a_Vertices, const std::vector<uint32_t>& a_Indices, const Matrix4& a_Transform );
-		MeshSource( const std::vector<Vertex>& a_Vertices, const std::vector<uint32_t>& a_Indices, const std::vector<SubMesh>& a_SubMeshes );
 		virtual ~MeshSource() = default;
-
-		SharedPtr<VertexArray>  GetVAO() const { return m_VAO; }
-		SharedPtr<VertexBuffer> GetVBO() const { return m_VBO; }
-		SharedPtr<IndexBuffer>  GetIBO() const { return m_IBO; }
-
-		const auto& GetVertices() const { return m_Vertices; }
-		const auto& GetIndices() const { return m_Indices; }
 
 		std::vector<SubMesh>& GetSubMeshes() { return m_SubMeshes; }
 		const std::vector<SubMesh>& GetSubMeshes() const { return m_SubMeshes; }
-
 		const std::vector<MaterialHandle>& GetMaterials() const { return m_Materials; }
 
 	private:
-		// - GPU Handles -
-
-		SharedPtr<VertexArray> m_VAO;
-		SharedPtr<VertexBuffer> m_VBO;
-		SharedPtr<IndexBuffer> m_IBO;
-
-		// - CPU Data -
-
-		//// A mesh node is a node in a hierarchy of nodes that make up a mesh, loaded by Assimp.
-		//struct MeshNode
-		//{
-		//	Matrix4 LocalTransform{1.0f};
-		//	uint32_t Parent = MAXUINT32; // Index of the parent node in m_MeshNodes
-		//	std::vector<uint32_t> SubMeshes;
-		//	std::vector<uint32_t> Children;
-		//	std::string Name;
-
-		//	bool IsRoot() const { return Parent == MAXUINT32; }
-		//};
-
-		//std::vector<MeshNode> m_MeshNodes;
-		std::vector<Vertex> m_Vertices;
-		std::vector<uint32_t> m_Indices;
-
 		std::vector<SubMesh> m_SubMeshes;
 		std::vector<MaterialHandle> m_Materials;
 

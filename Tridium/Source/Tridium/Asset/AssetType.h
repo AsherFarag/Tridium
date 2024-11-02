@@ -30,6 +30,7 @@ namespace Tridium {
 
 			TypedAssetHandle() = default;
 			TypedAssetHandle( const AssetHandle& a_Handle ) : AssetHandle( a_Handle ) {}
+			TypedAssetHandle( AssetHandle::Type a_Handle ) : AssetHandle( a_Handle ) {}
 
 			TypedAssetHandle& operator=( const AssetHandle& a_Handle )
 			{

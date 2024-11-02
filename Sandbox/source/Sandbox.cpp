@@ -64,102 +64,6 @@ class CreateNewAssetLayer : public Layer
 	std::string AssetPath;
 };
 
-class ImportLayer : public Layer
-{
-	virtual void OnImGuiDraw() override
-	{
-		if ( !ImGui::Begin( "Import Asset" ) )
-		{
-			ImGui::End();
-			return;
-		}
-
-		ImGui::InputText( "FilePath ", &FilePath );
-
-		ImGui::SameLine();
-
-		if ( ImGui::ArrowButton( "Browse", ImGuiDir_Down ) )
-			ImGui::OpenPopup( "ImportAssetPopup" );
-
-		if ( ImGui::BeginPopup( "ImportAssetPopup" ) )
-		{
-			auto assetmanager = AssetManager::Get<Editor::EditorAssetManager>();
-			for ( auto entry : std::filesystem::recursive_directory_iterator( Application::GetActiveProject()->GetAssetDirectory().ToString() ) )
-			{
-				if ( entry.is_directory() )
-					continue;
-
-				if ( assetmanager->GetAssetMetaData( entry.path() ).IsValid() )
-					continue;
-
-				std::string asString = entry.path().generic_string();
-				if ( ImGui::Selectable( asString.c_str() ) )
-				{
-					FilePath = asString;
-					ImGui::CloseCurrentPopup();
-					break;
-				}
-			}
-
-			ImGui::EndPopup();
-		}
-
-		if ( ImGui::Button( "Import" ) )
-		{
-			IO::FilePath path( FilePath );
-			if ( GetAssetTypeFromFileExtension( path.GetExtension() ) == EAssetType::MeshSource )
-				Application::Get().PushOverlay( new Editor::MeshSourceImporterPanel( FilePath ) );
-			else
-				Tridium::AssetManager::Get<Tridium::Editor::EditorAssetManager>()->ImportAsset( FilePath );
-		}
-
-		ImGui::End();
-	}
-
-	std::string FilePath;
-};
-
-bool DrawAssetHandle( const char* a_Name, AssetHandle& a_Value, EAssetType a_Type )
-{
-	bool modified = false;
-
-	auto assetManager = AssetManager::Get<Editor::EditorAssetManager>();
-
-	const char* assetName = "None";
-	if ( a_Value.Valid() )
-		assetName = assetManager->GetAssetMetaData( a_Value ).Name.c_str();
-
-	if ( ImGui::BeginCombo( a_Name, assetName ) )
-	{
-		for ( const auto& [handle, assetMetaData] : assetManager->GetAssetRegistry().AssetMetaData )
-		{
-			if ( assetMetaData.AssetType != a_Type )
-				continue;
-
-			std::string name = !assetMetaData.Name.empty() ? assetMetaData.Name : assetMetaData.Path.ToString();
-			ImGui::ScopedID id( handle.ID() );
-			if ( ImGui::Selectable( name.c_str(), a_Value == handle ) )
-			{
-				a_Value = handle;
-				modified = true;
-				break;
-			}
-
-			if ( ImGui::BeginItemTooltip() )
-			{
-				ImGui::Text( "Asset Type: %s", AssetTypeToString( assetMetaData.AssetType ) );
-				ImGui::Text( "Path: %s", assetMetaData.Path.ToString().c_str() );
-
-				ImGui::EndTooltip();
-			}
-		}
-
-		ImGui::EndCombo();
-	}
-
-	return modified;
-}
-
 
 class MaterialEditorLayer : public Layer
 {
@@ -171,24 +75,24 @@ class MaterialEditorLayer : public Layer
 			return;
 		}
 
-		DrawAssetHandle( "Material", MaterialHandle, EAssetType::Material );
+		Editor::DrawProperty( "Material", MaterialHandle, Editor::EDrawPropertyFlags::Editable );
 
 		if ( SharedPtr<Material> material = AssetManager::GetAsset<Material>( MaterialHandle ) )
 		{
-			DrawAssetHandle( "Albedo Texture", material->AlbedoTexture, EAssetType::Texture );
-			DrawAssetHandle( "Metallic Texture", material->MetallicTexture, EAssetType::Texture );
-			DrawAssetHandle( "Roughness Texture", material->RoughnessTexture, EAssetType::Texture );
-			DrawAssetHandle( "Specular Texture", material->SpecularTexture, EAssetType::Texture );
-			DrawAssetHandle( "Normal Texture", material->NormalTexture, EAssetType::Texture );
-			DrawAssetHandle( "Opacity Texture", material->OpacityTexture, EAssetType::Texture );
-			DrawAssetHandle( "Emissive Texture", material->EmissiveTexture, EAssetType::Texture );
-			DrawAssetHandle( "AO Texture", material->AOTexture, EAssetType::Texture );
+			DrawProperty( "Albedo Texture", material->AlbedoTexture, Editor::EDrawPropertyFlags::Editable );
+			DrawProperty( "Metallic Texture", material->MetallicTexture, Editor::EDrawPropertyFlags::Editable );
+			DrawProperty( "Roughness Texture", material->RoughnessTexture, Editor::EDrawPropertyFlags::Editable );
+			DrawProperty( "Specular Texture", material->SpecularTexture, Editor::EDrawPropertyFlags::Editable );
+			DrawProperty( "Normal Texture", material->NormalTexture, Editor::EDrawPropertyFlags::Editable );
+			DrawProperty( "Opacity Texture", material->OpacityTexture, Editor::EDrawPropertyFlags::Editable );
+			DrawProperty( "Emissive Texture", material->EmissiveTexture, Editor::EDrawPropertyFlags::Editable );
+			DrawProperty( "AO Texture", material->AOTexture, Editor::EDrawPropertyFlags::Editable );
 		}
 
 		ImGui::End();
 	}
 
-	AssetHandle MaterialHandle;
+	MaterialHandle MaterialHandle;
 };
 
 class SandboxGameInstance : public Tridium::GameInstance
@@ -196,7 +100,6 @@ class SandboxGameInstance : public Tridium::GameInstance
 	virtual void Init() override
 	{
 		Tridium::Application::Get().PushOverlay( new CreateNewAssetLayer() );
-		Tridium::Application::Get().PushOverlay( new ImportLayer() );
 		Tridium::Application::Get().PushOverlay( new MaterialEditorLayer() );
 	}
 };

@@ -285,15 +285,16 @@ namespace Tridium::Editor {
 				if ( !meshSource )
 					return;
 
-				if ( SharedPtr<VertexArray> vao = meshSource->GetVAO() )
+				m_GameObjectIDShader->SetInt( "uID", static_cast<uint32_t>( go ) );
+				for ( uint32_t subMeshIndex : mesh->GetSubMeshes() )
 				{
-					for ( auto& subMesh : meshSource->GetSubMeshes() )
+					const SubMesh& subMesh = meshSource->GetSubMeshes()[subMeshIndex];
+					if ( const SharedPtr<VertexArray>& vao = subMesh.VAO )
 					{
-						m_GameObjectIDShader->SetInt( "uID", static_cast<uint32_t>(go) );
 						m_GameObjectIDShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() * subMesh.Transform );
 
 						vao->Bind();
-						RenderCommand::DrawIndexedSubmesh( vao, subMesh );
+						RenderCommand::DrawIndexed( vao );
 						vao->Unbind();
 					}
 				}
@@ -304,6 +305,7 @@ namespace Tridium::Editor {
 
 	// TEMP!
 #include "glad/glad.h"
+
 
 	void EditorViewportPanel::RenderSelectionOutline()
 	{
@@ -329,32 +331,33 @@ namespace Tridium::Editor {
 		if ( !meshSource )
 			return;
 
-		if ( SharedPtr<VertexArray> vao = meshSource->GetVAO() )
+		RenderCommand::SetDepthCompare( EDepthCompareOperator::Less );
+		RenderCommand::SetCullMode( ECullMode::Front );
+
+		m_FBO->Bind();
+		m_OutlineShader->Bind();
+
+		TODO( "Remove this opengl code!" );
+		glLineWidth( 5 );
+		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
+		Matrix4 pvm = m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix();
+		for ( uint32_t subMeshIndex : mesh->GetSubMeshes() )
 		{
-			RenderCommand::SetDepthCompare( EDepthCompareOperator::Less );
-			RenderCommand::SetCullMode( ECullMode::Front );
-
-			m_FBO->Bind();
-			m_OutlineShader->Bind();
-
-			TODO( "Remove this opengl code!" );
-			glLineWidth( 5 );
-			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-
-			Matrix4 pvm = m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix();
-			for ( auto& subMesh : meshSource->GetSubMeshes() )
+			const SubMesh& subMesh = meshSource->GetSubMeshes()[subMeshIndex];
+			if ( const SharedPtr<VertexArray>& vao = subMesh.VAO )
 			{
 				m_OutlineShader->SetMatrix4( "u_PVM", pvm * go.GetWorldTransform() * subMesh.Transform );
 
 				vao->Bind();
-				RenderCommand::DrawIndexedSubmesh( vao, subMesh );
+				RenderCommand::DrawIndexed( vao );
 				vao->Unbind();
 			}
-
-			m_OutlineShader->Unbind();
-			m_FBO->Unbind();
-			glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 		}
+
+		m_OutlineShader->Unbind();
+		m_FBO->Unbind();
+		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	}
 
 	SceneHeirarchyPanel* EditorViewportPanel::GetSceneHeirarchy()

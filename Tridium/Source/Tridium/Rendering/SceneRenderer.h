@@ -20,7 +20,6 @@ namespace Tridium {
 
 	struct DrawCall
 	{
-		const SubMesh& SubMesh;
 		SharedPtr<VertexArray> VAO;
 		MaterialHandle Material;
 		Matrix4 Transform;
@@ -48,6 +47,8 @@ namespace Tridium {
 
 		void SubmitDrawCall( DrawCall&& a_DrawCall );
 		void PerformDrawCall( const DrawCall& a_DrawCall );
+
+		void GeometryPass();
 
 	private:
 		Scene& m_Scene;

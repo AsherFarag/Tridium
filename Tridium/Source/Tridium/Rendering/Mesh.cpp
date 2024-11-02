@@ -13,43 +13,15 @@ namespace Tridium {
 	/////////////////////////////////////////////////////////////////////////////////////////
 
 	MeshSource::MeshSource( const std::vector<Vertex>& a_Vertices, const std::vector<uint32_t>& a_Indices, const Matrix4& a_Transform )
-		: m_Vertices( a_Vertices ), m_Indices( a_Indices )
 	{
 		m_Handle = AssetHandle::Create();
 
-		SubMesh submesh;
-		submesh.BaseVertex = 0;
-		submesh.BaseIndex = 0;
-		submesh.NumVertices = (uint32_t)a_Vertices.size();
-		submesh.NumIndicies = (uint32_t)a_Indices.size() * 3u;
+		SubMesh& submesh = m_SubMeshes.emplace_back();
+		submesh.Vertices = a_Vertices;
+		submesh.Indices = a_Indices;
 		submesh.Transform = a_Transform;
-		m_SubMeshes.push_back( submesh );
 
-		m_VAO = VertexArray::Create();
-
-		BufferLayout layout =
-		{
-			{ ShaderDataType::Float3, "a_Position" },
-			{ ShaderDataType::Float3, "a_Normal" },
-			{ ShaderDataType::Float3, "a_Bitangent" },
-			{ ShaderDataType::Float3, "a_Tangent" },
-			{ ShaderDataType::Float2, "a_UV" }
-		};
-
-		m_VBO = VertexBuffer::Create( (float*)( m_Vertices.data() ), (uint32_t)( m_Vertices.size() * sizeof( Vertex ) ) );
-		m_VBO->SetLayout( layout );
-		m_VAO->AddVertexBuffer( m_VBO );
-
-		m_IBO = IndexBuffer::Create( m_Indices.data(), (uint32_t)( m_Indices.size() ) );
-		m_VAO->SetIndexBuffer( m_IBO );
-	}
-
-	MeshSource::MeshSource( const std::vector<Vertex>& a_Vertices, const std::vector<uint32_t>& a_Indices, const std::vector<SubMesh>& a_SubMeshes )
-		: m_Vertices( a_Vertices ), m_Indices( a_Indices ), m_SubMeshes( a_SubMeshes )
-	{
-		m_Handle = AssetHandle::Create();
-
-		m_VAO = VertexArray::Create();
+		submesh.VAO = VertexArray::Create();
 
 		BufferLayout layout =
 		{
@@ -60,12 +32,12 @@ namespace Tridium {
 			{ ShaderDataType::Float2, "a_UV" }
 		};
 
-		m_VBO = VertexBuffer::Create( (float*)( m_Vertices.data() ), (uint32_t)( m_Vertices.size() * sizeof( Vertex ) ) );
-		m_VBO->SetLayout( layout );
-		m_VAO->AddVertexBuffer( m_VBO );
+		submesh.VBO = VertexBuffer::Create( (float*)( submesh.Vertices.data() ), (uint32_t)( submesh.Vertices.size() * sizeof( Vertex ) ) );
+		submesh.VBO->SetLayout( layout );
+		submesh.VAO->AddVertexBuffer( submesh.VBO );
 
-		m_IBO = IndexBuffer::Create( m_Indices.data(), (uint32_t)( m_Indices.size() ) );
-		m_VAO->SetIndexBuffer( m_IBO );
+		submesh.IBO = IndexBuffer::Create( submesh.Indices.data(), (uint32_t)( submesh.Indices.size() ) );
+		submesh.VAO->SetIndexBuffer( submesh.IBO );
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////
