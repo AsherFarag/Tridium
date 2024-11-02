@@ -1,0 +1,15 @@
+-- Tridium Dependencies
+IncludeDir = {}
+IncludeDir["spdlog"] = "%{wks.location}/Tridium/Dependencies/spdlog/include"
+IncludeDir["glfw"] = "%{wks.location}/Tridium/Dependencies/glfw/include"
+IncludeDir["glad"] = "%{wks.location}/Tridium/Dependencies/glad/include"
+IncludeDir["ImGui"] = "%{wks.location}/Tridium/Dependencies/ImGui"
+IncludeDir["ImGuizmo"] = "%{wks.location}/Tridium/Dependencies/ImGuizmo"
+IncludeDir["glm"] = "%{wks.location}/Tridium/Dependencies/glm"
+IncludeDir["lua"] = "%{wks.location}/Tridium/Dependencies/lua/x64"
+IncludeDir["sol2"] = "%{wks.location}/Tridium/Dependencies/sol2"
+IncludeDir["entt"] = "%{wks.location}/Tridium/Dependencies/entt/include"
+IncludeDir["stbi"] = "%{wks.location}/Tridium/Dependencies/stbi/include"
+IncludeDir["yaml"] = "%{wks.location}/Tridium/Dependencies/yaml-cpp"
+IncludeDir["assimp"] = "%{wks.location}/Tridium/Dependencies/assimp"
+IncludeDir["refl"] = "%{wks.location}/Tridium/Dependencies/refl/include"

@@ -1,10 +1,36 @@
 #pragma once
 #include <imgui.h>
+#include "ImGuiHelpers.h"	
 
 #define TE_PAYLOAD_CONTENT_BROWSER_ITEM "ContentBrowserItem"
+#define TE_PAYLOAD_ASSET_HANDLE "AssetHandle"
+
+static ImVec4 operator*( const ImVec4& a_Color, float a_Value )
+{
+	return ImVec4( a_Color.x * a_Value, a_Color.y * a_Value, a_Color.z * a_Value, a_Color.w );
+}
+
+namespace Tridium {
+
+	static float s_FontSize = 20.f;
+
+}
 
 namespace ImGui {
-	
+
+	ImFont* GetLightFont();
+	ImFont* GetRegularFont();
+	ImFont* GetBoldFont();
+	ImFont* GetExtraBoldFont();
+
+	bool IsItemActive( ImGuiID id );
+
+	// ImGui::InputText() with std::string
+	// Because text input needs dynamic resizing, we need to setup a callback to grow the capacity
+	bool InputText( const char* label, std::string* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr );
+	bool InputTextMultiline( const char* label, std::string* str, const ImVec2& size = ImVec2( 0, 0 ), ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr );
+	bool InputTextWithHint( const char* label, const char* hint, std::string* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr );
+
 	bool BorderedSelectable( const char* label, bool selected, ImGuiSelectableFlags flags = 0, const float borderThickness = 1.0f, ImU32 borderColor = IM_COL32( 255, 255, 255, 255 ), float rounding = 0.0f, const ImVec2& size = ImVec2( 0, 0 ) );
 	template <typename PayloadFunction >
 	bool DragDropSelectable( const char* label, bool isValid, const char* text, const char* payloadType, PayloadFunction payloadFunction )
@@ -56,7 +82,6 @@ namespace ImGui {
 
 	struct ScopedStyleVar
 	{
-	public:
 		ScopedStyleVar( ImGuiStyleVar_ styleVar, float val ) { ImGui::PushStyleVar( styleVar, val ); }
 		ScopedStyleVar( ImGuiStyleVar_ styleVar, ImVec2 val ) { ImGui::PushStyleVar( styleVar, val ); }
 		~ScopedStyleVar() { ImGui::PopStyleVar(); }
@@ -64,14 +89,18 @@ namespace ImGui {
 
 	struct ScopedStyleCol
 	{
-	public:
 		ScopedStyleCol( ImGuiCol styleCol, ImVec4 col ) { ImGui::PushStyleColor( styleCol, col ); }
 		ScopedStyleCol( ImGuiCol styleCol, ImU32 col ) { ImGui::PushStyleColor( styleCol, col ); }
 		~ScopedStyleCol() { ImGui::PopStyleColor(); }
 	};
 
-	ImFont* GetLightFont();
-	ImFont* GetRegularFont();
-	ImFont* GetBoldFont();
-	ImFont* GetExtraBoldFont();
+	struct ScopedID
+	{
+		ScopedID( int a_ID ) { ImGui::PushID( a_ID ); }
+		ScopedID( const char* a_ID ) { ImGui::PushID( a_ID ); }
+		ScopedID( const char* str_id_begin, const char* str_id_end ) { ImGui::PushID( str_id_begin, str_id_end ); }
+		ScopedID( const void* a_ID ) { ImGui::PushID( a_ID ); }
+		~ScopedID() { ImGui::PopID(); }
+	};
+
 }

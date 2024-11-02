@@ -32,6 +32,7 @@ namespace Tridium::Editor {
 		void ImGuiEnd();
 
 		void Close();
+		virtual void OnClose() {};
 
 	protected:
 		std::string m_Name;
@@ -76,7 +77,7 @@ namespace Tridium::Editor {
 		template <typename T>
 		T* PullPanel()
 		{
-			StaticAssert< constexpr( std::is_base_of_v( T, Panel ) ) >::Assert();
+			//static_assert< constexpr( std::is_base_of_v( T, Panel ) ) >();
 			auto typeHash = typeid( T ).hash_code();
 
 			// If panel exists

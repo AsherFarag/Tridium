@@ -1,17 +1,23 @@
 #pragma once
-#include <type_traits>
+#include <Tridium/Utils/Reflection/Reflection.h>
 #include <Tridium/Core/Core.h>
 #include <Tridium/ECS/GameObject.h>
 #include "entt.hpp"
-#include <Tridium/ECS/Reflection.h>
+#include <Tridium/Utils/Reflection/ReflectionFwd.h>
 
 namespace Tridium {
 
+	namespace Refl {
+		constexpr MetaIDType IsComponentID = entt::hashed_string( "IsComponent" ).value();
+	}
+
 	class Component
 	{
+		REFLECT( Component );
+		friend class Scene;
 		friend class GameObject;
 	public:
-		Component() {}
+		Component();
 		virtual ~Component() = default;
 		virtual void OnDestroy() {}
 
@@ -21,17 +27,9 @@ namespace Tridium {
 		GameObject m_GameObject;
 	};
 
-
-
-#define DEFINE_BASE_COMPONENT( Name ) class Name : public Component
-#define DEFINE_INHERITED_COMPONENT( Name, Base ) class Name : public Base
-
-#define DEFINE_COMPONENT(...) EXPAND(SELECT_MACRO_2( __VA_ARGS__, DEFINE_INHERITED_COMPONENT, DEFINE_BASE_COMPONENT )(__VA_ARGS__))
-
-
-
-	DEFINE_COMPONENT( ScriptableComponent )
+	class ScriptableComponent : public Component
 	{
+		REFLECT( ScriptableComponent );
 		friend class Scene;
 		friend class GameObject;
 

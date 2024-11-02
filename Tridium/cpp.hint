@@ -5,3 +5,18 @@
 #define DEFINE_COMPONENT(__VA_ARGS__) EXPAND(SELECT_MACRO_2( __VA_ARGS__, DEFINE_INHERITED_COMPONENT, DEFINE_BASE_COMPONENT )(__VA_ARGS__))
 #define BEGIN_REFLECT(Class) void Class::OnReflect() { entt::meta<Class>().type(entt::type_hash<Class>::value())
 #define PROPERTY(Class, Name) .data<&Class::Name>(entt::hashed_string( #Name ))
+#define ASSET_CLASS_TYPE(type) static EAssetType GetStaticType() { return EventType::type; } virtual EAssetType GetAssetType() { return GetStaticType(); } virtual const char* AssetTypeName() { return #type; }
+#define ASSET_LOADER_TYPE(type)
+// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+// such as names of functions and macros.
+// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+#define FLAGS(__VA_ARGS__) static_cast<_REFL_ EPropertyFlag>(static_cast<std::underlying_type_t<_REFL_ EPropertyFlag>>(__VA_ARGS__))
+// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+// such as names of functions and macros.
+// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+#define PROPERTY(__VA_ARGS__) EXPAND(SELECT_MACRO_2( __VA_ARGS__, _REFLECT_PROPERTY_FLAGS, _REFLECT_PROPERTY_NO_FLAGS )(__VA_ARGS__))
+// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+// such as names of functions and macros.
+// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+#define FLAGS(__VA_ARGS__) static_cast<_REFL_ EPropertyFlag>(static_cast<std::underlying_type_t<_REFL_ EPropertyFlag>>((__VA_ARGS__)))
+#define BEGIN_REFLECT_COMPONENT(ComponentClass) BEGIN_REFLECT(ComponentClass) meta.prop(::Tridium::Refl::Internal::IsComponentPropID); meta.prop(::Tridium::Refl::Internal::AddToGameObjectPropID, +[](GameObject a_GameObject) { a_GameObject.TryAddComponent<ComponentClass>(); }); meta.prop(::Tridium::Refl::Internal::RemoveFromGameObjectPropID, +[](GameObject a_GameObject) { a_GameObject.RemoveComponent<ComponentClass>(); });

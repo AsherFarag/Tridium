@@ -1,0 +1,11 @@
+Scene: Untitled
+SceneEnvironment:
+  HDRI:
+    EnvironmentMapHandle: 5806395090298646526
+    Exposure: 1
+    Gamma: 2.20000005
+    Blur: 0
+    Intensity: 1
+    RotationEular: [0, 0, 0]
+GameObjects:
+  []

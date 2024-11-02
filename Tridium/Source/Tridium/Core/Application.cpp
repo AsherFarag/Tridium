@@ -2,7 +2,10 @@
 #include "Application.h"
 
 #ifdef IS_EDITOR
-#include <Editor/Editor.h>
+	#include <Editor/Editor.h>
+	#include <Tridium/Asset/EditorAssetManager.h>
+#else
+	#include <Tridium/Asset/RuntimeAssetManager.h>
 #endif // IS_EDITOR
 
 // TEMP ?
@@ -14,37 +17,52 @@ namespace Tridium {
 
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application()
+	Application::Application( const std::string& a_ProjectPath )
 	{
+		// Set the singleton instance
 		TE_CORE_ASSERT( !s_Instance, "Application already exists!" );
 		s_Instance = this;
+
+		// Initialise Project
+		m_Project = MakeShared<Project>();
+		if ( !a_ProjectPath.empty() )
+		{
+			ProjectSerializer s( m_Project );
+			s.DeserializeText( a_ProjectPath );
+			m_Project->GetConfiguration().ProjectDirectory = IO::FilePath( a_ProjectPath ).GetParentPath();
+		}
+
+		// Initialise Window
 		m_Window = Window::Create();
 		m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
 
+		// Initialise Asset Manager
+		InitializeAssetManager();
 
-		m_Project = MakeRef<Project>();
-		ProjectSerializer s( m_Project );
-		s.SerializeText( "test.tproject" );
-
-		TODO( "Setup a proper scene initialiser!" );
-		m_ActiveScene = MakeRef<Scene>();
+		// Initialise Scene
+		m_ActiveScene = MakeShared<Scene>();
+		if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( m_Project->GetConfiguration().StartScene ) )
+		{
+			m_ActiveScene = scene;
+		}
+		else
+		{
+			TE_CORE_WARN( "Failed to load start scene! - Creating new scene" );
+		}
 
 		// Initialise ImGui
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay( m_ImGuiLayer );
 
-#ifdef IS_EDITOR
-
-		Editor::EditorApplication::Init();
-		Editor::GetEditorLayer()->SetActiveScene( m_ActiveScene );
-
-#endif // IS_EDITOR
-
-
 		// Initialise the render pipeline
 		RenderCommand::Init();
+
+		// Initialise the editor
+#ifdef IS_EDITOR
+		Editor::EditorApplication::Init();
+#endif // IS_EDITOR
 	}
-	
+
 	Application::~Application()
 	{
 	}
@@ -52,6 +70,9 @@ namespace Tridium {
 	void Application::Run()
 	{
 		m_Running = true;
+
+		m_GameInstance.reset( CreateGameInstance() );
+		m_GameInstance->Init();
 
 		while ( m_Running )
 		{
@@ -84,16 +105,20 @@ namespace Tridium {
 			// - ImGui -
 			m_ImGuiLayer->Begin();
 
-			for ( Layer* layer : m_LayerStack )
-				layer->OnImGuiDraw();
+			for ( int i = 0; i < m_LayerStack.NumLayers(); i++ )
+				m_LayerStack[i]->OnImGuiDraw();
 
 			m_ImGuiLayer->End();
+
 			// ---------
 			
 			// ====================================================================================================
 
 			m_Window->OnUpdate();
 		}
+
+		m_GameInstance->Shutdown();
+		m_AssetManager->Shutdown();
 
 		#ifdef IS_EDITOR
 
@@ -124,16 +149,17 @@ namespace Tridium {
 		}
 	}
 	
-	void Application::PushLayer( Layer* layer )
+	void Application::InitializeAssetManager()
 	{
-		m_LayerStack.PushLayer( layer );
+#ifdef IS_EDITOR
+		m_AssetManager = MakeShared<Editor::EditorAssetManager>();
+#else
+		m_AssetManager = MakeShared<RuntimeAssetManager>();
+#endif // IS_EDITOR
+
+		m_AssetManager->Init();
 	}
-	
-	void Application::PushOverlay( Layer* overlay )
-	{
-		m_LayerStack.PushOverlay( overlay );
-	}
-	
+
 	bool Application::OnWindowClosed( WindowCloseEvent& e )
 	{
 		Shutdown();
@@ -144,4 +170,5 @@ namespace Tridium {
 	{
 		m_Running = false;
 	}
-}
+
+} // namespace Tridium

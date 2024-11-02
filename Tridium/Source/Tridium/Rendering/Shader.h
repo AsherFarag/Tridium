@@ -1,9 +1,7 @@
 #pragma once
-#include <Tridium/Core/Asset.h>
+#include <Tridium/Asset/Asset.h>
 
 namespace Tridium {
-
-	using ShaderHandle = AssetHandle;
 
 	enum class ShaderDataType : uint8_t
 	{
@@ -38,11 +36,13 @@ namespace Tridium {
 	class Shader : public Asset
 	{
 	public:
-		static Ref<Shader> Create( const std::string& filePath );
-		static Ref<Shader> Create( const std::string& path, const std::string& vertex, const std::string& frag );
+		ASSET_CLASS_TYPE( Shader )
+
+		static Shader* Create();
+		static Shader* Create( const std::string& a_Vertex, const std::string& a_Frag );
 		virtual ~Shader() = default;
 
-		virtual bool Recompile() = 0;
+		virtual bool Compile( const IO::FilePath& a_Path ) = 0;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
@@ -79,30 +79,6 @@ namespace Tridium {
 		virtual bool SetMatrix3( const char* name, const uint32_t count, const Matrix3* val ) = 0;
 		virtual bool SetMatrix4( const char* name, const uint32_t count, const Matrix4* val ) = 0;
 	};
-
-	class ShaderLibrary : public AssetLibrary<ShaderLibrary, ShaderHandle, Shader>
-	{
-	public:
-		static inline Ref<Shader> GetShader( const ShaderHandle& shaderHandle ) { return Get().GetAsset( shaderHandle ); }
-		static inline bool GetShaderHandle( const std::string& path, ShaderHandle& outShaderHandle ) { return Get().GetHandle( path, outShaderHandle ); }
-		static inline ShaderHandle GetShaderHandle( const std::string& path ) { return Get().GetHandle( path ); }
-		static inline bool HasShaderHandle( const std::string& path ) { return Get().HasHandle( path ); }
-		static inline bool AddShader( const std::string& path, const Ref<Shader>& shader ) { return Get().AddAsset( path, shader ); }
-		static inline bool RemoveShader( const ShaderHandle& shaderHandle ) { return Get().RemoveAsset( shaderHandle ); }
-
-		static inline ShaderHandle GetDefaultShader() { return Get().m_Default; }
-		static inline ShaderHandle GetSpriteShader() { return Get().m_Sprite; }
-
-		static void RecompileAll();
-
-		virtual void Init() override;
-
-	private:
-		ShaderHandle m_Default;
-		ShaderHandle m_Sprite;
-
-	};
-
 }
 
 

@@ -114,6 +114,7 @@ namespace Tridium::Editor {
 		float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
 		Yaw += yawSign * mouseDelta.x * Sensitivity;
 		Pitch += mouseDelta.y * Sensitivity;
+		Pitch = glm::clamp( Pitch, glm::radians( -89.0f ), glm::radians( 89.0f ) );
 	}
 
 	void EditorCamera::RecalculateView()

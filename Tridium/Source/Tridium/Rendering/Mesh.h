@@ -1,10 +1,11 @@
 #pragma once
-#include <Tridium/Core/Asset.h>
-#include "Material.h"
+#include <Tridium/Asset/Asset.h>
+#include <Tridium/Rendering/Material.h>
+
+// - Forward Declarations -
+namespace Tridium { namespace Editor { class MeshSourceImporterPanel; } }
 
 namespace Tridium {
-
-	using MeshHandle = AssetHandle;
 
 	class VertexArray;
 	class VertexBuffer;
@@ -12,87 +13,95 @@ namespace Tridium {
 
 	struct Vertex
 	{
-		static constexpr size_t NumUVChannels = 8;
-
 		Vector3 Position;
 		Vector3 Normal;
-		Vector2 UV[NumUVChannels];
+		Vector3 Bitangent;
 		Vector3 Tangent;
+		Vector2 UV;
 	};
 
-	class Mesh : public Asset
+	struct SubMesh
 	{
-		friend class MeshLoader;
-		friend class MeshLibrary;
+		SharedPtr<VertexArray> VAO;
+		SharedPtr<VertexBuffer> VBO;
+		SharedPtr<IndexBuffer> IBO;
+		std::vector<Vertex> Vertices;
+		std::vector<uint32_t> Indices;
+		uint32_t MaterialIndex;
+		Matrix4 Transform{ 1.0f };
+		Matrix4 LocalTransform{ 1.0f }; // Do we need this?
+		std::string Name;
+	};
 
+	void CalculateTangents( std::vector<Vertex>& a_Vertices, const std::vector<uint32_t>& a_Indices );
+
+	// - Mesh Source -
+	// A mesh source is a collection of assets such as meshes, materials, textures, animations and skeletons,
+	// loaded from a file format such as FBX or glTF.
+	class MeshSource final : public Asset
+	{
 	public:
-		inline auto GetVAO() const { return m_VAO; }
-		inline auto GetVBO() const { return m_VBO; }
-		inline auto GetIBO() const { return m_IBO; }
+		ASSET_CLASS_TYPE( MeshSource );
+		MeshSource() = default;
+		MeshSource( const std::vector<Vertex>& a_Vertices, const std::vector<uint32_t>& a_Indices, const Matrix4& a_Transform );
+		virtual ~MeshSource() = default;
 
-		const inline size_t GetNumOfVerticies() const { return m_NumVerticies; }
-		const inline size_t GetNumOfPolygons() const { return (size_t)( m_NumVerticies / 3u ); }
+		std::vector<SubMesh>& GetSubMeshes() { return m_SubMeshes; }
+		const std::vector<SubMesh>& GetSubMeshes() const { return m_SubMeshes; }
+		const std::vector<MaterialHandle>& GetMaterials() const { return m_Materials; }
 
 	private:
-		Ref<VertexArray> m_VAO;
-		Ref<VertexBuffer> m_VBO;
-		Ref<IndexBuffer> m_IBO;
-
-		size_t m_NumVerticies = 0;
-		size_t m_NumIndicies = 0;
-
-		std::vector<Vertex> m_Verticies;
-
-		struct SubMesh
-		{
-			Ref<IndexBuffer> IBO;
-			uint32_t MaterialIndex;
-		};
 		std::vector<SubMesh> m_SubMeshes;
+		std::vector<MaterialHandle> m_Materials;
+
+		friend class AssimpImporter;
+		friend class Editor::MeshSourceImporterPanel;
+	};
+
+	// - Static Mesh -
+	// A static mesh is an unanimated mesh that is not deformed by bones or other deformations.
+	// It can still be composed of multiple sub-meshes and materials.
+	class StaticMesh final : public Asset
+	{
+	public:
+		ASSET_CLASS_TYPE( StaticMesh );
+		StaticMesh( MeshSourceHandle a_MeshSource );
+		StaticMesh( MeshSourceHandle a_MeshSource, const std::vector<uint32_t>& a_SubMeshes );
+		virtual ~StaticMesh() = default;
+
+		void SetMeshSource( MeshSourceHandle a_MeshSource ) { m_MeshSource = a_MeshSource; }
+		MeshSourceHandle GetMeshSource() const { return m_MeshSource; }
+		void SetSubMeshes( const std::vector<uint32_t>& a_SubMeshes );
+		void SetSubMeshes( SharedPtr<MeshSource> a_MeshSource );
+		const auto& GetSubMeshes() const { return m_SubMeshes; }
+		void SetMaterials( const std::vector<MaterialHandle>& a_Materials ) { m_Materials = a_Materials; }
+		auto& GetMaterials() { return m_Materials; }
+
+	private:
+		MeshSourceHandle m_MeshSource;
+		std::vector<uint32_t> m_SubMeshes;
 		std::vector<MaterialHandle> m_Materials;
 	};
 
-
-	struct MeshImportSettings
-	{
-		MeshImportSettings();
-		unsigned int PostProcessFlags;
-		float Scale = 1.f;
-		bool DiscardLocalData = false; /* If true, once the mesh has been loaded onto the GPU, the local Vertex Data will be deleted. */
-	};
-
-	class MeshLoader
+	// - Mesh Factory -
+	// A factory class for creating common mesh types such as quads and cubes.
+	class MeshFactory
 	{
 	public:
-		static Ref<Mesh> Import( const std::string& filepath, const MeshImportSettings& importSettings = {} );
+		static void Init();
 
-		static MeshHandle Load( const std::string& filepath, const MeshImportSettings& importSettings = {} );
-	};
+		static SharedPtr<MeshSource> CreateQuad( const Vector2& a_Size = Vector2( 1.0f ) );
+		static SharedPtr<MeshSource> CreateCube( const Vector3& a_Size = Vector3( 1.0f ) );
+		static SharedPtr<MeshSource> CreateSphere( float a_Radius = 0.5f, uint32_t a_Stacks = 16, uint32_t a_Slices = 16 );
+		static SharedPtr<MeshSource> CreateCylinder( float a_BaseRadius = 0.5f, float a_TopRadius = 0.5f, float a_Height = 1.0f, uint32_t a_Stacks = 16, uint32_t a_Slices = 16 );
+		static SharedPtr<MeshSource> CreateCone( float a_Radius = 0.5f, float a_Height = 1.0f, uint32_t a_Stacks = 16, uint32_t a_Slices = 16 ) { return CreateCylinder( a_Radius, 0.0f, a_Height, a_Stacks, a_Slices ); }
+		static SharedPtr<MeshSource> CreateTorus( float a_Radius = 0.5f, float a_Radius2 = 0.25f, uint32_t a_Stacks = 32, uint32_t a_Slices = 32 );
 
-	class MeshLibrary : public AssetLibrary<MeshLibrary, MeshHandle, Mesh>
-	{
-		friend MeshLoader;
-	public:
-		static inline Ref<Mesh> GetMesh( const MeshHandle& meshHandle ) { return Get().GetAsset( meshHandle ); }
-		static inline bool GetMeshHandle( const std::string& path, MeshHandle& outMeshHandle ) { return Get().GetHandle( path, outMeshHandle ); }
-		static inline MeshHandle GetMeshHandle( const std::string& path ) { return Get().GetHandle( path ); }
-		static inline bool HasMeshHandle( const std::string& path ) { return Get().HasHandle( path ); }
-		static inline bool AddMesh( const std::string& path, const Ref<Mesh>& mesh ) { return Get().AddAsset( path, mesh ); }
-		static inline bool RemoveMesh( const MeshHandle& meshHandle ) { return Get().RemoveAsset( meshHandle ); }
-
-		// - Primatives -
-		static inline MeshHandle GetQuad() { return Get().m_Quad; }
-		static inline MeshHandle GetCube() { return Get().m_Cube; }
-		static inline MeshHandle GetSphere() { return Get().m_Sphere; }
-
-		virtual void Init() override;
-
-	private:
-		void InitPrimatives();
-
-		// - Primatives -
-		MeshHandle m_Quad;
-		MeshHandle m_Cube;
-		MeshHandle m_Sphere;
+		static AssetHandle GetDefaultQuad();
+		static AssetHandle GetDefaultCube();
+		static AssetHandle GetDefaultSphere();
+		static AssetHandle GetDefaultCylinder();
+		static AssetHandle GetDefaultCone();
+		static AssetHandle GetDefaultTorus();
 	};
 }

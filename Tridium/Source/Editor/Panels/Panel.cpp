@@ -33,6 +33,8 @@ namespace Tridium::Editor {
 
 	void Panel::Close()
 	{
+		OnClose();
+
 		TE_ASSERT( m_Owner, "Panel does not have an owner!" );
 		m_Owner->DestroyPanel( this );
 	}

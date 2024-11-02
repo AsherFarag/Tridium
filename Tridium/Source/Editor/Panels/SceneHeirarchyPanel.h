@@ -28,9 +28,11 @@ namespace Tridium::Editor {
 		void DrawSceneNode( GameObject go );
 
 	private:
-		Ref<Scene> m_Context = nullptr;
+		SharedPtr<Scene> m_Context = nullptr;
 		InspectorPanel* m_Inspector = nullptr;
 		GameObject m_SelectedGameObject;
+
+		std::string m_SearchBuffer;
 	};
 }
 

@@ -1,111 +1,267 @@
 #include "tripch.h"
 #include "Material.h"
 
-#include <Tridium/IO/MaterialSerializer.h>
-
 namespace Tridium {
 
+#if 0
+
 	Material::Material()
-		: BlendMode( EBlendMode::Additive ),
-		Color( 1.0f, 1.0f, 1.0f, 1.0f ),
-		Reflectivity( 0.0f ), Refraction( 1.0f )
+		: BlendMode( EBlendMode::Additive )
 	{
 
 	}
 
-	Material::Material( const ShaderHandle& shader )
+	Material::Material( const AssetHandle& a_Shader )
 		: Material()
 	{
-		m_Shader = shader;
+		m_Shader = a_Shader;
 	}
 
 	void Material::Bind()
 	{
-		auto col = TextureLibrary::GetTexture( BaseColorTexture );
-		if ( col )
-		{
-			col->Bind( 0 );
-		}
-		auto norm = TextureLibrary::GetTexture( NormalMapTexture );
-		if ( norm )
-		{
-			norm->Bind( 1 );
-		}
-		auto metal = TextureLibrary::GetTexture( MetallicTexture );
-		if ( metal )
-		{
-			metal->Bind( 2 );
-		}
-		auto rough = TextureLibrary::GetTexture( RoughnessTexture );
-		if ( rough )
-		{
-			rough->Bind( 3 );
-		}
-		auto emissive = TextureLibrary::GetTexture( EmissiveTexture );
-		if ( emissive )
-		{
-			emissive->Bind( 4 );
-		}
+		//if ( !m_Shader )
+		//	return;
+
+		//for ( auto& [name, prop] : m_Properties )
+		//{
+		//	switch ( prop.Type )
+		//	{
+		//	case EPropertyType::Int:
+		//	{
+		//		m_Shader->SetInt( name.c_str(), std::get<int>( prop.Value ) );
+		//		break;
+		//	}
+		//	case EPropertyType::IntArray:
+		//	{
+		//		auto& arr = std::get<std::vector<int>>( prop.Value );
+		//		m_Shader->SetInt( name.c_str(), arr.size(), arr.data() );
+		//		break;
+		//	}
+		//	case EPropertyType::Float:
+		//	{
+		//		m_Shader->SetFloat( name.c_str(), std::get<float>( prop.Value ) );
+		//		break;
+		//	}
+		//	case EPropertyType::FloatArray:
+		//	{
+		//		auto& arr = std::get<std::vector<float>>( prop.Value );
+		//		m_Shader->SetFloat( name.c_str(), arr.size(), arr.data() );
+		//		break;
+		//	}
+		//	case EPropertyType::Color:
+		//	{
+		//		m_Shader->SetFloat4( name.c_str(), std::get<Color>( prop.Value ) );
+		//		break;
+		//	}
+		//	case EPropertyType::ColorArray:
+		//	{
+		//		auto& arr = std::get<std::vector<float>>( prop.Value );
+		//		m_Shader->SetFloat( name.c_str(), arr.size(), arr.data() );
+		//		break;
+		//	}
+		//	case EPropertyType::Vector4:
+		//		break;
+		//	case EPropertyType::Vector4Array:
+		//		break;
+		//	case EPropertyType::Matrix4:
+		//		break;
+		//	case EPropertyType::Matrix4Array:
+		//		break;
+		//	case EPropertyType::Texture:
+		//		break;
+		//	case EPropertyType::None:
+		//		break;
+		//	default:
+		//		break;
+		//	}
+		//}
 	}
 
 	void Material::Unbind()
 	{
-		auto col = TextureLibrary::GetTexture( BaseColorTexture );
-		if ( col )
-		{
-			col->Unbind( 0 );
-		}
-		auto norm = TextureLibrary::GetTexture( NormalMapTexture );
-		if ( norm )
-		{
-			norm->Unbind( 1 );
-		}
-		auto metal = TextureLibrary::GetTexture( MetallicTexture );
-		if ( metal )
-		{
-			metal->Unbind( 2 );
-		}
-		auto rough = TextureLibrary::GetTexture( RoughnessTexture );
-		if ( rough )
-		{
-			rough->Unbind( 3 );
-		}
-		auto emissive = TextureLibrary::GetTexture( EmissiveTexture );
-		if ( emissive )
-		{
-			emissive->Unbind( 4 );
-		}
 	}
 
-	TextureHandle Material::GetTexture( const std::string& name ) const
+	bool Material::AddProperty( const std::string& a_Name, const Property& a_Property )
 	{
-		auto it = m_Textures.find( name );
-		if ( it != m_Textures.end() )
-			return it->second;
+		if ( m_Properties.find(a_Name) != m_Properties.end() )
+			return false;
 
-		return {};
+		m_Properties.insert( { a_Name, a_Property } );
+		return true;
 	}
 
-	bool Material::GetTexture( const std::string& name, TextureHandle& outTextureHandle ) const
+	bool Material::RemoveProperty( const std::string& a_Name )
 	{
-		auto it = m_Textures.find( name );
-		if ( it != m_Textures.end() )
-		{
-			outTextureHandle = it->second;
-			return true;
-		}
+		auto it = m_Properties.find( a_Name );
+		if ( it == m_Properties.end() )
+			return false;
 
-		return false;
+		m_Properties.erase( it );
+		return true;
 	}
 
-	Ref<Material> MaterialLoader::Import( const std::string& filePath )
+	//bool Material::SetProperty( const std::string& a_Name, const Property& a_Property )
+	//{
+	//	auto it = m_Properties.find( a_Name );
+	//	if (  it == m_Properties.end() )
+	//	{
+	//		TE_CORE_WARN( "Attempting to set non-existent property '{0}' on a material!", a_Name );
+	//		return false;
+	//	}
+
+	//	if ( it->second.Type != a_Property.Type )
+	//	{
+	//		TE_CORE_WARN( "Attempting to set material property '{0}' with a different type!", a_Name );
+	//		return false;
+	//	}
+
+	//	it->second.Value = a_Property.Value;
+	//	return true;
+	//}
+
+#pragma region Property Getters
+
+#define GET_PROPERTY_BODY(type)\
+	auto it = m_Properties.find( a_Name );\
+	if ( it == m_Properties.end() )\
+		return nullptr;\
+	return std::get_if<(int)EPropertyType::type>( &it->second.Value );
+
+
+	int* Material::GetInt( const std::string& a_Name )
 	{
-		auto mat = MakeRef<Material>();
-		MaterialSerializer serializer( mat );
-		if ( serializer.DeserializeText( filePath ) )
-			return mat;
-
-		return false;
+		GET_PROPERTY_BODY( Int );
 	}
 
+	std::vector<int>* Material::GetIntVector( const std::string& a_Name )
+	{
+		GET_PROPERTY_BODY( IntArray );
+	}
+
+	float* Material::GetFloat( const std::string& a_Name )
+	{
+		GET_PROPERTY_BODY( Float );
+	}
+
+	std::vector<float>* Material::GetFloatArray( const std::string& a_Name ) 
+	{ 
+		GET_PROPERTY_BODY( FloatArray );
+	}
+
+	Color* Material::GetColor( const std::string& a_Name )
+	{
+		GET_PROPERTY_BODY( Color );
+	}
+
+	std::vector<Color>* Material::GetColorArray( const std::string& a_Name )
+	{
+		GET_PROPERTY_BODY( ColorArray );
+	}
+
+	Vector4* Material::GetVector4( const std::string& a_Name )
+	{
+		GET_PROPERTY_BODY( Vector4 );
+	}
+
+	std::vector<Vector4>* Material::GetVector4Array( const std::string& a_Name )
+	{
+		GET_PROPERTY_BODY( Vector4Array );
+	}
+
+	Matrix4* Material::GetMatrix4( const std::string& a_Name )
+	{
+		GET_PROPERTY_BODY( Matrix4 );
+	}
+
+	std::vector<Matrix4>* Material::GetMatrix4Array( const std::string& a_Name )
+	{
+		GET_PROPERTY_BODY( Matrix4Array );
+	}
+
+	AssetHandle* Material::GetTexture( const std::string& a_Name )
+	{
+		GET_PROPERTY_BODY( Texture );
+	}
+
+#undef GET_PROPERTY_BODY
+
+#pragma endregion
+
+#pragma region Property Setters
+
+#define SET_PROPERTY_BODY(type)\
+	auto it = m_Properties.find( a_Name );\
+	if ( it == m_Properties.end() )\
+	{\
+		TE_CORE_WARN( "Attempting to set non-existent property '{0}' on a material!", a_Name );\
+		return false;\
+	}\
+	if ( it->second.Type != EPropertyType::type )\
+	{\
+		TE_CORE_WARN( "Attempting to set material property '{0}' with a different type!", a_Name );\
+		return false;\
+	}\
+	std::get<(int)EPropertyType::type>(it->second.Value) = a_Value;\
+	return true;
+
+	bool Material::SetInt( const std::string& a_Name, int a_Value )
+	{
+		SET_PROPERTY_BODY( Int );
+	}
+
+	bool Material::SetIntArray( const std::string& a_Name, const std::vector<int>& a_Value )
+	{
+		SET_PROPERTY_BODY( IntArray );
+	}
+
+	bool Material::SetFloat( const std::string& a_Name, float a_Value )
+	{
+		SET_PROPERTY_BODY( Float );
+	}
+
+	bool Material::SetFloatArray( const std::string& a_Name, const std::vector<float>& a_Value )
+	{
+		SET_PROPERTY_BODY( FloatArray );
+	}
+
+	bool Material::SetColor( const std::string& a_Name, const Color& a_Value )
+	{
+		SET_PROPERTY_BODY( Color );
+	}
+
+	bool Material::SetColorArray( const std::string& a_Name, const std::vector<Color>& a_Value )
+	{
+		SET_PROPERTY_BODY( ColorArray );
+	}
+
+	bool Material::SetVector4( const std::string& a_Name, const Vector4& a_Value )
+	{
+		SET_PROPERTY_BODY( Vector4 );
+	}
+
+	bool Material::SetVector4Array( const std::string& a_Name, const std::vector<Vector4>& a_Value )
+	{
+		SET_PROPERTY_BODY( Vector4Array );
+	}
+
+	bool Material::SetMatrix4( const std::string& a_Name, const Matrix4& a_Value )
+	{
+		SET_PROPERTY_BODY( Matrix4 );
+	}
+
+	bool Material::SetMatrix4Array( const std::string& a_Name, const std::vector<Matrix4>& a_Value )
+	{
+		SET_PROPERTY_BODY( Matrix4Array );
+	}
+
+	bool Material::SetTexture( const std::string& a_Name, const AssetHandle& a_Value )
+	{
+		SET_PROPERTY_BODY( Texture );
+	}
+
+#undef SET_PROPERTY_BODY
+
+#pragma endregion
+
+#endif
 }

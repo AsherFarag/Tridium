@@ -13,7 +13,7 @@ namespace Tridium {
 		bool Normalised;
 
 		BufferElement() {}
-		BufferElement( ShaderDataType type, const std::string& name, uint32_t count = 1, bool normalised = false );
+		BufferElement( ShaderDataType a_Type, const std::string& a_Name, uint32_t a_Count = 1, bool a_Normalised = false );
 
 		uint32_t GetComponentCount() const;
 	};
@@ -23,7 +23,7 @@ namespace Tridium {
 	class BufferLayout
 	{
 	public:
-		BufferLayout() {}
+		BufferLayout() = default;
 		BufferLayout( const std::initializer_list<BufferElement>& a_Elements );
 
 		inline const auto& GetElements() const { return m_Elements; }
@@ -45,7 +45,7 @@ namespace Tridium {
 	class VertexBuffer
 	{
 	public:
-		static Ref<VertexBuffer> Create(float* a_Verticies, uint32_t a_Size);
+		static SharedPtr<VertexBuffer> Create(float* a_Verticies, uint32_t a_Size);
 		virtual ~VertexBuffer() = default;
 
 		virtual void Bind() const = 0;
@@ -60,7 +60,7 @@ namespace Tridium {
 	class IndexBuffer
 	{
 	public:
-		static Ref<IndexBuffer> Create( uint32_t* a_Indicies, uint32_t a_Count );
+		static SharedPtr<IndexBuffer> Create( uint32_t* a_Indicies, uint32_t a_Count );
 		virtual ~IndexBuffer() = default;
 
 		virtual void Bind() const = 0;

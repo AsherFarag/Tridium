@@ -1,13 +1,54 @@
 #pragma once
-#include <Tridium/Core/Asset.h>
-#include <Tridium/Rendering/Texture.h>
-#include <Tridium/Rendering/Shader.h>
+#include <Tridium/Asset/Asset.h>
 
 namespace Tridium {
 
-	using MaterialHandle = AssetHandle;
+	class Material : public Asset
+	{
+	public:
+		Material() = default;
+		virtual ~Material() = default;
 
-	enum class EBlendMode
+		// - Shader
+		//   The shader used by the material
+		ShaderHandle Shader;
+
+		// - Albedo
+		//   The color of the material
+		TextureHandle AlbedoTexture;
+
+		// - Metallic
+		//   The metallic value of the material
+		TextureHandle MetallicTexture;
+
+		// - Roughness
+		//   The roughness value of the material
+		TextureHandle RoughnessTexture;
+
+		// - Specular
+		//   The specular value of the material.
+		TextureHandle SpecularTexture;
+
+		// - Normal
+		//   The normal map of the material
+		TextureHandle NormalTexture;
+
+		// - Opacity
+		//   The opacity map of the material
+		TextureHandle OpacityTexture;
+
+		// - Emissive
+		//   The emissive map of the material
+		TextureHandle EmissiveTexture;
+
+		// - Ambient Occlusion
+		//   The ambient occlusion map of the material
+		TextureHandle AOTexture;
+	};
+
+#if 0
+
+	enum class EBlendMode : uint8_t
 	{
 		Additive = 0, Subtractive, Multiplicative, Alpha
 	};
@@ -15,55 +56,85 @@ namespace Tridium {
 	class Material : public Asset
 	{
 		friend class MaterialSerializer;
-
 	public:
+		ASSET_CLASS_TYPE( Material )
+
+		enum class EPropertyType : uint8_t
+		{
+			Int, IntArray,
+			Float, FloatArray,
+			Color, ColorArray,
+			Vector4, Vector4Array,
+			Matrix4, Matrix4Array,
+			Texture,
+			None
+		};
+
+		struct Property
+		{
+			EPropertyType Type = EPropertyType::Int;
+			std::variant<
+				int, std::vector<int>,
+				float, std::vector<float>,
+				Color, std::vector<Color>,
+				Vector4, std::vector<Vector4>,
+				Matrix4, std::vector<Matrix4>,
+				AssetHandle > Value;
+		};
+
+		using PropertyTable = std::map<std::string, Property>;
+
 		Material();
-		Material( const ShaderHandle& shader );
-		~Material() = default;
+		Material( const AssetHandle& a_Shader );
 
 		void Bind();
 		void Unbind();
 
-		ShaderHandle GetShader() const { return m_Shader; }
-		void SetShader( const ShaderHandle& shader ) { m_Shader = shader; }
-		MaterialHandle GetParent() const { return m_Parent; }
+		const AssetHandle& GetShader() const { return m_Shader; }
+		void SetShader( const AssetHandle& a_Shader ) { m_Shader = a_Shader; }
+		const AssetHandle& GetParent() const { return m_ParentMaterial; }
 
-		void SetTexture( const std::string& name, const TextureHandle& texture ) { m_Textures[name] = texture; }
-		TextureHandle GetTexture( const std::string& name ) const;
-		bool GetTexture( const std::string& name, TextureHandle& outTextureHandle ) const;
+		bool AddProperty( const std::string& a_Name, const Property& a_Property );
+		bool RemoveProperty( const std::string& a_Name );
+
+		// - Getters -
+
+		auto& GetProperties() { return m_Properties; }
+
+		int*			      GetInt( const std::string& a_Name );
+		std::vector<int>*     GetIntVector( const std::string& a_Name );
+		float*                GetFloat( const std::string& a_Name );
+		std::vector<float>*   GetFloatArray( const std::string& a_Name );
+		Color*                GetColor( const std::string& a_Name );
+		std::vector<Color>*   GetColorArray( const std::string& a_Name );
+		Vector4*              GetVector4( const std::string& a_Name );
+		std::vector<Vector4>* GetVector4Array( const std::string& a_Name );
+		Matrix4*              GetMatrix4( const std::string& a_Name );
+		std::vector<Matrix4>* GetMatrix4Array( const std::string& a_Name );
+		AssetHandle*		  GetTexture( const std::string& a_Name );
+
+		// - Setters -
+
+		bool SetInt( const std::string& a_Name, int a_Value );
+		bool SetIntArray( const std::string& a_Name, const std::vector<int>& a_Value );
+		bool SetFloat( const std::string& a_Name, float a_Value );
+		bool SetFloatArray( const std::string& a_Name, const std::vector<float>& a_Value );
+		bool SetColor( const std::string& a_Name, const Color& a_Value );
+		bool SetColorArray( const std::string& a_Name, const std::vector<Color>& a_Value );
+		bool SetVector4( const std::string& a_Name, const Vector4& a_Value );
+		bool SetVector4Array( const std::string& a_Name, const std::vector<Vector4>& a_Value );
+		bool SetMatrix4( const std::string& a_Name, const Matrix4& a_Value );
+		bool SetMatrix4Array( const std::string& a_Name, const std::vector<Matrix4>& a_Value );
+		bool SetTexture( const std::string& a_Name, const AssetHandle& a_Value );
 
 		EBlendMode BlendMode;
-		Color Color;
-		float Reflectivity;
-		float Refraction;
-
-		TextureHandle BaseColorTexture;
-		TextureHandle NormalMapTexture;
-		TextureHandle MetallicTexture;
-		TextureHandle RoughnessTexture;
-		TextureHandle EmissiveTexture;
 
 	private:
-		ShaderHandle m_Shader;
-		MaterialHandle m_Parent;
-		std::unordered_map<std::string, TextureHandle> m_Textures;
+		AssetHandle m_Shader;
+		AssetHandle m_ParentMaterial;
+		PropertyTable m_Properties;
 	};
 
-	class MaterialLoader
-	{
-	public:
-		static Ref<Material> Import( const std::string& filePath );
-	};
+#endif
 
-	class MaterialLibrary : public AssetLibrary<MaterialLibrary, MaterialHandle, Material>
-	{
-	public:
-		static inline Ref<Material> GetMaterial( const MaterialHandle& materialHandle ) { return Get().GetAsset( materialHandle ); }
-		static inline bool GetMaterialHandle( const std::string& path, MaterialHandle& outMaterialHandle ) { return Get().GetHandle( path, outMaterialHandle ); }
-		static inline MaterialHandle GetMaterialHandle( const std::string& path ) { return Get().GetHandle( path ); }
-		static inline bool HasMaterialHandle( const std::string& path ) { return Get().HasHandle( path ); }
-		static inline bool AddMaterial( const std::string& path, const Ref<Material>& material ) { return Get().AddAsset( path, material ); }
-		static inline bool RemoveMaterial( const MaterialHandle& materialHandle ) { return Get().RemoveAsset( materialHandle ); }
-	};
-
-}
+} // namespace Tridium

@@ -4,6 +4,8 @@
 #include "GameViewportPanel.h"
 #include <Tridium/ECS/Components/Types/Rendering/CameraComponent.h>
 #include <Editor/Editor.h>
+#include <Tridium/Rendering/SceneRenderer.h>
+#include <Tridium/ECS/Components/Types.h>
 
 namespace Tridium::Editor {
 
@@ -11,7 +13,7 @@ namespace Tridium::Editor {
 		: ViewportPanel("Game##GameViewportPanel"), m_Camera(camera)
 	{
 		FramebufferSpecification FBOspecification;
-		FBOspecification.Attachments = { EFramebufferTextureFormat::RGBA8, EFramebufferTextureFormat::Depth };
+		FBOspecification.Attachments = { EFramebufferTextureFormat::RGBA16F, EFramebufferTextureFormat::Depth };
 		FBOspecification.Width = 1280;
 		FBOspecification.Height = 720;
 		m_FBO = Framebuffer::Create( FBOspecification );
@@ -21,6 +23,9 @@ namespace Tridium::Editor {
 	{
 		if ( !m_Camera )
 		{
+			if ( !GetEditorLayer()->GetActiveScene() )
+				return;
+
 			CameraComponent* mainCam = GetEditorLayer()->GetActiveScene()->GetMainCamera();
 			if ( mainCam )
 				m_Camera = mainCam->GetGameObject();
@@ -41,9 +46,7 @@ namespace Tridium::Editor {
 			sceneCamera.SetViewportSize( regionAvail.x, regionAvail.y );
 			m_FBO->Resize( regionAvail.x, regionAvail.y );
 
-			m_FBO->Bind();
-			GetEditorLayer()->GetActiveScene()->Render( sceneCamera, camera->GetView() );
-			m_FBO->Unbind();
+			GetEditorLayer()->GetActiveScene()->GetSceneRenderer().Render( m_FBO, sceneCamera, camera->GetView(), m_Camera.GetTransform().Position );
 
 			ImGui::Image( (ImTextureID)m_FBO->GetColorAttachmentID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
 		}

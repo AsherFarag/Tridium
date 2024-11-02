@@ -1,5 +1,36 @@
 // IWYU pragma: begin_exports
 // #include "config/config.h"
+
+
+// IWYU pragma: begin_exports
+// #include "config/config.h"
+
+/* Begin Tridium */
+
+#ifndef ENTT_HPP
+#define ENTT_HPP
+
+namespace Tridium {
+    namespace Refl {
+
+        enum class EPropertyFlag : unsigned short 
+        {
+            None                = 0,
+			Serialize           = BIT( 0 ), /* Defines this property as serializable. */
+            EditAnywhere        = BIT( 1 ), /* Defines this property as Editable from the Editor Inspector. */
+            VisibleAnywhere     = BIT( 2 ), /* Defines this property as Visible from the Editor Inspector. */
+        };
+
+        typedef unsigned short PropertyFlags;
+
+    } // namespace Refl
+} // namespace Tridium
+
+#endif // ENTT_HPP
+
+/* End Tridium */
+
+
 #ifndef ENTT_CONFIG_CONFIG_H
 #define ENTT_CONFIG_CONFIG_H
 
@@ -60400,6 +60431,14 @@ struct meta_dtor_node {
 struct meta_data_node {
     using size_type = std::size_t;
 
+    
+    /* Begin Tridium */
+
+    Tridium::Refl::PropertyFlags propFlags{ 0u };
+	std::string name{};
+
+    /* End Tridium */
+
     meta_traits traits{meta_traits::is_none};
     size_type arity{0u};
     meta_type_node (*type)(const meta_context &) noexcept {};
@@ -61578,6 +61617,27 @@ struct meta_data {
     meta_data(const meta_ctx &area, const internal::meta_data_node &curr) noexcept
         : node{&curr},
           ctx{&area} {}
+
+
+    /* <Tridium> */
+
+     /**
+     * @brief Returns the Property Flags of this meta data.
+     * @return The EPropertyFlags of this meta data.
+     */
+    [[nodiscard]] const std::string& name() const noexcept {
+        return node->name;
+    }
+
+    /**
+     * @brief Returns the Property Flags of this meta data.
+     * @return The EPropertyFlags of this meta data.
+     */
+    [[nodiscard]] Tridium::Refl::PropertyFlags propFlags() const noexcept {
+        return node->propFlags;
+    }
+
+    /* </Tridium> */
 
     /**
      * @brief Returns the number of setters available.
@@ -63623,13 +63683,19 @@ template<typename Type, auto Data, typename Policy = as_is_t>
         if constexpr(!std::is_array_v<std::remove_cv_t<std::remove_reference_t<std::invoke_result_t<decltype(Data), Type &>>>>) {
             if constexpr(std::is_invocable_v<decltype(Data), Type &>) {
                 if(auto *clazz = instance->try_cast<Type>(); clazz) {
-                    return meta_dispatch<Policy>(ctx, std::invoke(Data, *clazz));
+                    /* <Tridium> */
+                    //return meta_dispatch<Policy>(ctx, std::invoke(Data, *clazz));
+                    return meta_dispatch<Policy>( ctx, &( clazz->*Data ) );
+                    /* </Tridium> */
                 }
             }
 
             if constexpr(std::is_invocable_v<decltype(Data), const Type &>) {
                 if(auto *fallback = instance->try_cast<const Type>(); fallback) {
-                    return meta_dispatch<Policy>(ctx, std::invoke(Data, *fallback));
+                    /* <Tridium> */
+                    //return meta_dispatch<Policy>( ctx, std::invoke( Data, *fallback ) );
+                    return meta_dispatch<Policy>( ctx, &(fallback->*Data) );
+                    /* </Tridium> */
                 }
             }
         }
@@ -64119,7 +64185,9 @@ public:
      * @return A meta factory for the parent type.
      */
     template<auto Data, typename Policy = as_is_t>
-    auto data(const id_type id) noexcept {
+    auto data(const id_type id,
+        /* Begin Tridium */ const Tridium::Refl::PropertyFlags propFlags = 0u, const char* nameID = "NoNameSet" /* End Tridium */) noexcept {
+
         if constexpr(std::is_member_object_pointer_v<decltype(Data)>) {
             using data_type = std::invoke_result_t<decltype(Data), Type &>;
             static_assert(Policy::template value<data_type>, "Invalid return type for the given policy");
@@ -64128,6 +64196,14 @@ public:
                 internal::owner(*ctx, *info),
                 id,
                 internal::meta_data_node{
+
+                    /* Begin Tridium */
+
+                    propFlags,
+                    nameID,
+
+                    /* End Tridium */
+
                     /* this is never static */
                     std::is_const_v<std::remove_reference_t<data_type>> ? internal::meta_traits::is_const : internal::meta_traits::is_none,
                     1u,
@@ -64150,12 +64226,20 @@ public:
                 internal::owner(*ctx, *info),
                 id,
                 internal::meta_data_node{
-                    ((std::is_same_v<Type, std::remove_cv_t<std::remove_reference_t<data_type>>> || std::is_const_v<std::remove_reference_t<data_type>>) ? internal::meta_traits::is_const : internal::meta_traits::is_none) | internal::meta_traits::is_static,
+
+                    /* Begin Tridium */
+
+                    propFlags,
+                    nameID,
+
+                    /* End Tridium */
+
+                    ( ( std::is_same_v<Type, std::remove_cv_t<std::remove_reference_t<data_type>>> || std::is_const_v<std::remove_reference_t<data_type>> ) ? internal::meta_traits::is_const : internal::meta_traits::is_none ) | internal::meta_traits::is_static,
                     1u,
                     &internal::resolve<std::remove_cv_t<std::remove_reference_t<data_type>>>,
                     &meta_arg<type_list<std::remove_cv_t<std::remove_reference_t<data_type>>>>,
                     &meta_setter<Type, Data>,
-                    &meta_getter<Type, Data, Policy>});
+                    &meta_getter<Type, Data, Policy> } );
 
             bucket = &elem.prop;
         }

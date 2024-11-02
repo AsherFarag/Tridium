@@ -75,7 +75,7 @@ namespace Tridium::Editor {
 					if ( m_SelectedGameObject.HasComponent<TransformComponent>() )
 					{
 						auto& goTransform = m_SelectedGameObject.GetComponent<TransformComponent>();
-						auto& editorCam = GetEditorLayer()->GetEditorCamera();
+						auto editorCam = GetEditorLayer()->GetEditorCamera();
 						editorCam->LerpTo( goTransform.Position - ( editorCam->GetForwardDirection() * 5.f ) );
 						return true;
 					}
@@ -95,62 +95,69 @@ namespace Tridium::Editor {
 			return;
 
 		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2( 1, 1 ) );
+		ImGui::ScopedStyleCol winBg( ImGuiCol_::ImGuiCol_WindowBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg) * 0.5f );
+		ImGui::FunctionScope endWindow( +[]() { ImGui::End(); } );
 
-		if ( !ImGui::Begin( "Scene Heirarchy" ) )
+		if ( !ImGui::Begin( ( TE_ICON_MOUNTAIN_SUN " " + m_Context->GetName() + "###Scene Heirarchy" ).c_str() ) )
 		{
 			m_IsHovered = false;
 			m_IsFocused = false;
-			ImGui::End();
 			return;
 		}
 
 		m_IsHovered = ImGui::IsWindowHovered();
 		m_IsFocused = ImGui::IsWindowFocused() || ImGui::IsItemFocused();
 
-		auto gameObjects = m_Context->GetRegistry().view<TagComponent>();
-		ImGui::Text( "Game Objects: %i", gameObjects.size() );
 
-		ImGui::SameLine();
+		// Draw list header (Search Bar and Add Game Object button).
+		{
+			// Add some padding to the top of the window
+			ImGui::Dummy( ImVec2( 0.0f, 0.0f ) );
 
-		// Draw Add-GameObject Button
-		// Align the button to the right
-		float addGameObjectButtonWidth = ImGui::CalcTextSize( "+" ).x + ImGui::GetStyle().FramePadding.x * 2.f;
-		ImGui::SetCursorPosX( ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - addGameObjectButtonWidth - 5 );
+			float addGameObjectButtonWidth = ImGui::CalcTextSize( TE_ICON_PLUS ).x + ImGui::GetStyle().FramePadding.x * 2.0f;
 
-		ImGui::PushStyleVar( ImGuiStyleVar_::ImGuiStyleVar_FramePadding, { 0,0 } );
+			// Search Bar
+			{
+				ImGui::Text( " " TE_ICON_MAGNIFYING_GLASS);
+				ImGui::SameLine();
+				ImGui::ScopedStyleCol border( ImGuiCol_Border, ImVec4( 1.0f, 1.0f, 1.0f, 0.15f ) );
+				ImGui::ScopedStyleVar borderSize( ImGuiStyleVar_::ImGuiStyleVar_FrameBorderSize, 1.0f );
+				ImGui::SetNextItemWidth( ImGui::GetContentRegionAvail().x - addGameObjectButtonWidth - 5.0f );
+				ImGui::InputText( "##Search", &m_SearchBuffer );
+			}
 
-		if ( ImGui::Button( "+", { addGameObjectButtonWidth, addGameObjectButtonWidth } ) )
-			OpenAddPopUp();
+			// Add GameObject Button
+			{
+				ImGui::SameLine( ImGui::GetContentRegionAvail().x - addGameObjectButtonWidth );
+				ImGui::ScopedStyleCol buttonBg( ImGuiCol_Button, ImVec4( 0.0f, 0.0f, 0.0f, 0.0f ) );
+				if ( ImGui::Button( TE_ICON_PLUS ) )
+					OpenAddPopUp();
+			}
 
-		ImGui::PopStyleVar();
-
-		DrawAddPopUp();
+			DrawAddPopUp();
+		}
 
 		ImGui::Separator();
 
-		// Draw Heirarchy List
-		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_Framed;
-		flags |= gameObjects.size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0;
-		ImGui::PushFont( ImGui::GetBoldFont() );
-		if ( ImGui::TreeNodeEx( m_Context->GetName().c_str(), flags ) )
+		auto gameObjects = m_Context->GetRegistry().view<TagComponent>();
+		ImGui::ScopedStyleVar itemSpacing( ImGuiStyleVar_::ImGuiStyleVar_ItemSpacing, ImVec2( 0, 1 ) );
+		ImGuiTextFilter filter( m_SearchBuffer.c_str() );
+		for ( int i = 0; i < gameObjects.size(); ++i )
 		{
-			ImGui::PopFont();
-			for ( int i = 0; i < gameObjects.size(); ++i )
-			{
-				GameObject go = gameObjects[i];
-				// We are only drawing root objects in this loop
-				if ( go.GetParent().IsValid() )
-					continue;
+			GameObject go = gameObjects[i];
+			// We are only drawing root objects in this loop
+			if ( go.GetParent().IsValid() )
+				continue;
 
-				DrawSceneNode( go );
+			if ( !m_SearchBuffer.empty() )
+			{
+				TODO( "Make this search filter include children objects!" );
+				if ( !filter.PassFilter( go.GetTag().c_str() ) )
+					continue;
 			}
 
-			ImGui::TreePop();
+			DrawSceneNode( go );
 		}
-		else
-			ImGui::PopFont();
-
-		ImGui::End();
 	}
 
 	void SceneHeirarchyPanel::OpenAddPopUp()
@@ -167,7 +174,7 @@ namespace Tridium::Editor {
 
 		if ( ( gameObject.IsValid() ? ImGui::BeginMenu("Add Child") : ImGui::BeginMenu( "Add GameObject" ) ) )
 		{
-			if ( ImGui::MenuItem( "Empty" ) )
+			if ( ImGui::MenuItem( TE_ICON_CUBE " Empty" ) )
 			{
 				newGO = m_Context->InstantiateGameObject();
 				SetSelectedGameObject( newGO );
@@ -175,26 +182,79 @@ namespace Tridium::Editor {
 
 			ImGui::Separator();
 
-			if ( ImGui::BeginMenu("Primatives") )
+			if ( ImGui::MenuItem( TE_ICON_CUBE " Static Mesh" ) )
+			{
+				newGO = m_Context->InstantiateGameObject( "Static Mesh" );
+				newGO.AddComponent<StaticMeshComponent>();
+				SetSelectedGameObject( newGO );
+			}
+
+			if ( ImGui::BeginMenu( TE_ICON_SHAPES " Primatives") )
 			{
 				if ( ImGui::MenuItem( "Cube" ) )
 				{
 					newGO = m_Context->InstantiateGameObject( "Cube" );
-					newGO.AddComponent<MeshComponent>().SetMesh( MeshLibrary::GetCube() );
+					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCube();
 					SetSelectedGameObject( newGO );
 				}
 
 				if ( ImGui::MenuItem( "Sphere" ) )
 				{
 					newGO = m_Context->InstantiateGameObject( "Sphere" );
-					newGO.AddComponent<MeshComponent>().SetMesh( MeshLibrary::GetSphere() );
+					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultSphere();
+					SetSelectedGameObject( newGO );
+				}
+
+				if ( ImGui::MenuItem( "Cylinder" ) )
+				{
+					newGO = m_Context->InstantiateGameObject( "Cylinder" );
+					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCylinder();
+					SetSelectedGameObject( newGO );
+				}
+
+				if ( ImGui::MenuItem( "Cone" ) )
+				{
+					newGO = m_Context->InstantiateGameObject( "Cone" );
+					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCone();
+					SetSelectedGameObject( newGO );
+				}
+
+				if ( ImGui::MenuItem( "Torus" ) )
+				{
+					newGO = m_Context->InstantiateGameObject( "Torus" );
+					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultTorus();
 					SetSelectedGameObject( newGO );
 				}
 
 				ImGui::EndMenu();
 			}
 
-			if ( ImGui::MenuItem( "Sprite" ) )
+			ImGui::Separator();
+
+			if ( ImGui::MenuItem( TE_ICON_LIGHTBULB " Point Light" ) )
+			{
+				newGO = m_Context->InstantiateGameObject( "Point Light" );
+				newGO.AddComponent<PointLightComponent>();
+				SetSelectedGameObject( newGO );
+			}
+
+			if ( ImGui::MenuItem( TE_ICON_LIGHTBULB " Spot Light" ) )
+			{
+				newGO = m_Context->InstantiateGameObject( "Spot Light" );
+				newGO.AddComponent<SpotLightComponent>();
+				SetSelectedGameObject( newGO );
+			}
+
+			if ( ImGui::MenuItem( TE_ICON_LIGHTBULB " Directional Light" ) )
+			{
+				newGO = m_Context->InstantiateGameObject( "Directional Light" );
+				newGO.AddComponent<DirectionalLightComponent>();
+				SetSelectedGameObject( newGO );
+			}
+
+			ImGui::Separator();
+
+			if ( ImGui::MenuItem( TE_ICON_IMAGE " Sprite" ) )
 			{
 				newGO = m_Context->InstantiateGameObject( "Sprite" );
 				newGO.AddComponent<SpriteComponent>();
@@ -208,7 +268,7 @@ namespace Tridium::Editor {
 		{
 			ImGui::Separator();
 
-			ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Text, { 0.8, 0.1, 0.1, 0.8 } );
+			ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Text, ImVec4( Editor::Style::Colors::Red ) );
 			if ( ImGui::MenuItem( " - Remove All - " ) ) m_Context->Clear();
 			ImGui::PopStyleColor();
 		}
@@ -239,9 +299,8 @@ namespace Tridium::Editor {
 		if ( !hasChildren ) 
 			flags |= ImGuiTreeNodeFlags_Leaf;
 
-		bool drawChildren = ImGui::TreeNodeEx( (void*)(uint64_t)(uint32_t)go, flags, label.c_str() );
+		bool drawChildren = ImGui::TreeNodeEx( (void*)(uint64_t)(uint32_t)go, flags, ( TE_ICON_CUBE " " + label ).c_str());
 
-		auto goAsString = std::to_string( go );
 		if ( ImGui::IsItemClicked( ImGuiMouseButton_Right ) )
 			OpenAddPopUp();
 

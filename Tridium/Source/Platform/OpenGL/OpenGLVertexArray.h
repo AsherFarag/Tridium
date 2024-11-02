@@ -12,17 +12,17 @@ namespace Tridium {
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
 
-		virtual void AddVertexBuffer( const Ref<VertexBuffer>& a_VertexBuffer ) override;
-		virtual void SetIndexBuffer( const Ref<IndexBuffer>& a_IndexBuffer ) override;
+		virtual void AddVertexBuffer( const SharedPtr<VertexBuffer>& a_VertexBuffer ) override;
+		virtual void SetIndexBuffer( const SharedPtr<IndexBuffer>& a_IndexBuffer ) override;
 
-		virtual const std::vector<Ref<VertexBuffer>>& GetVertexBuffers() const { return m_VertexBuffers; }
-		virtual const Ref<IndexBuffer>& GetIndexBuffer() const { return m_IndexBuffer; }
+		virtual const std::vector<SharedPtr<VertexBuffer>>& GetVertexBuffers() const { return m_VertexBuffers; }
+		virtual const SharedPtr<IndexBuffer>& GetIndexBuffer() const { return m_IndexBuffer; }
 
 	private:
 		uint32_t m_RendererID;
 
-		std::vector<Ref<VertexBuffer>> m_VertexBuffers;
-		Ref<IndexBuffer> m_IndexBuffer;
+		std::vector<SharedPtr<VertexBuffer>> m_VertexBuffers;
+		SharedPtr<IndexBuffer> m_IndexBuffer;
 	};
 
 }

@@ -4,35 +4,94 @@
 
 #include "Panel.h"
 #include <Tridium/Rendering/Texture.h>
+#include <Tridium/Asset/AssetType.h>
 
 namespace Tridium::Editor {
 
-	enum class ContentType
+	enum class EFileType : uint8_t
 	{
-		None = 0, Folder, Lua, Texture, Tridium_Project
+		None = 0,
+		Scene,
+		Material,
+		MeshSource,
+		StaticMesh,
+		Shader,
+		Texture,
+		CubeMap,
+		Lua,
+		Folder,
+	};
+
+	class ContentBrowserPanel;
+
+	class ContentItemIcons final
+	{
+	public:
+		static std::unordered_map<EFileType, SharedPtr<Texture>> s_FileTypeIcons;
+		static SharedPtr<Texture> s_UnimportedAssetIcon;
+	};
+
+	struct ContentItem
+	{
+		ContentBrowserPanel& Owner;
+		EFileType Type;
+		std::string Name;
+		AssetHandle Handle{AssetHandle::InvalidGUID};
+		bool IsImported = false;
+
+		// Returns true if the item was opened.
+		bool OnImGuiDraw( const ImVec2& a_Size ) const;
+		bool IsAsset() const { return Type != EFileType::Folder && Type != EFileType::None; }
+		bool operator ==( const ContentItem & a_Other ) const { return Name == a_Other.Name; }
 	};
 
 	class ContentBrowserPanel final : public Panel
 	{
 	public:
+		using Directory = IO::FilePath;
+		using FolderHeirarchy = std::unordered_map<Directory, std::vector<ContentItem>>;
+
 		ContentBrowserPanel();
 		virtual ~ContentBrowserPanel() = default;
 		
 		virtual void OnImGuiDraw() override;
+		void OpenFolder( const IO::FilePath& a_Path );
+		const IO::FilePath& GetDirectory() const { return m_CurrentDirectory; }
+
+	protected:
+		void ReconstructDirectoryStack();
+		void ReconstructFolderHierarchy();
+		void RecurseFolderHeirarchy( const IO::FilePath& a_Directory );
+
+		void DrawFolderHierarchy();
+		void RecurseDrawFolderHierarchy( const IO::FilePath& a_Directory );
+		void DrawContentBrowserHeader();
+		void DrawContentItems();
+		bool DrawContentItemContextMenu( const ContentItem& a_Item ); // Returns true if the ContentItems Draw Loop should break.
+		void DrawContentBrowserSettings();
+
+		// Returns true if the ContentItems Draw Loop should break.
+		bool OnContentItemOpened( const ContentItem& a_Item );
 
 	private:
-		static ContentType GetContentType( const fs::path& a_FilePath );
-		bool ContentItemOnImGuiDraw( const ContentType a_Type, const fs::path& a_FilePath, const ImVec2& a_Size );
-		void ContentOnOpened( const ContentType a_Type, const fs::path& a_FilePath );
+		IO::FilePath m_CurrentDirectory;
+		std::string m_DirectoryInputBuffer;
+		std::string m_ContentSearchFilter;
+		std::list<std::string> m_DirectoryStack;
+		FolderHeirarchy m_FolderHeirarchy;
 
-	private:
-		fs::path m_CurrentDirectory;
+		float m_ContentThumbnailSize = 128.0f;
+	};
+}
 
-		Ref<Texture> m_DefaultIcon;
-		Ref<Texture> m_FolderIcon;
-		Ref<Texture> m_LuaIcon;
-		Ref<Texture> m_ImageMediaIcon;
-		Ref<Texture> m_TridiumProjectIcon;
+namespace std {
+	template<>
+	struct hash<Tridium::Editor::ContentItem>
+	{
+		size_t operator()( const Tridium::Editor::ContentItem& a_ContentItem ) const noexcept
+		{
+			return std::hash<std::string>{}( a_ContentItem.Name );
+		}
 	};
 }
 

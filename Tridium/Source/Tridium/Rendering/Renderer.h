@@ -13,8 +13,7 @@ namespace Tridium {
 		static void BeginScene( const Camera& a_Camera, const Matrix4& a_ViewMatrix );
 		static void EndScene();
 
-		static void Submit( const Ref<Shader>& a_Shader, const Ref<VertexArray>& a_VertexArray, const Matrix4& a_Transform );
-		static void Submit( const Ref<Material>& a_Material, const Ref<VertexArray>& a_VertexArray, const Matrix4& a_Transform );
+		static void Submit( const SharedPtr<Shader>& a_Shader, const SharedPtr<VertexArray>& a_VertexArray, const Matrix4& a_Transform );
 
 		static inline auto GetAPI() { return RendererAPI::GetAPI(); }
 

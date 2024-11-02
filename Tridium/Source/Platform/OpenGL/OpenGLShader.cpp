@@ -30,18 +30,11 @@ namespace Tridium {
 		return 0;
 	}
 
-	OpenGLShader::OpenGLShader( const std::string& filePath )
+	OpenGLShader::OpenGLShader( const std::string& a_VertexSource, const std::string& a_FragmentSource )
 	{
-		m_Path = filePath;
-		Recompile();
-	}
-
-	OpenGLShader::OpenGLShader( const std::string& path, const std::string& vertexSource, const std::string& fragmentSource )
-	{
-		_SetPath( path );
 		ShaderSources sources;
-		sources[ GL_VERTEX_SHADER ] = vertexSource;
-		sources[ GL_FRAGMENT_SHADER ] = fragmentSource;
+		sources[ GL_VERTEX_SHADER ] = a_VertexSource;
+		sources[ GL_FRAGMENT_SHADER ] = a_FragmentSource;
 		Compile( sources );
 	}
 
@@ -145,6 +138,12 @@ namespace Tridium {
 			GLint maxLength = 0;
 			glGetProgramiv( program, GL_INFO_LOG_LENGTH, &maxLength );
 
+			if ( maxLength == 0 )
+			{
+				TE_CORE_ASSERT( false );
+				return;
+			}
+
 			std::vector<GLchar> infoLog;
 			infoLog.resize( maxLength );
 			glGetProgramInfoLog( program, maxLength, &maxLength, &infoLog[ 0 ] );
@@ -177,14 +176,14 @@ namespace Tridium {
 		glDeleteProgram( m_RendererID );
 	}
 
-	bool OpenGLShader::Recompile()
+	bool OpenGLShader::Compile( const IO::FilePath& a_Path )
 	{
 		glDeleteProgram( m_RendererID );
 
-		std::string source = ReadFile( m_Path );
+		std::string source = ReadFile( a_Path );
 		auto shaderSources = PreProcess( source );
 		Compile( shaderSources );
-		return false;
+		return true;
 	}
 
 	void OpenGLShader::Bind() const
@@ -196,6 +195,8 @@ namespace Tridium {
 	{
 		glUseProgram( 0 );
 	}
+
+#pragma region Uniform Setters
 
 	bool OpenGLShader::SetInt( const char* name, const int val )
 	{
@@ -481,4 +482,6 @@ namespace Tridium {
 		glUniformMatrix4fv( i, count, GL_FALSE, (float*)val );
 		return true;
 	}
+
+#pragma endregion
 }

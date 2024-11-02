@@ -1089,7 +1089,7 @@ static void ImGui_ImplGlfw_DestroyWindow(ImGuiViewport* viewport)
             ::RemovePropA(hwnd, "IMGUI_VIEWPORT");
 #endif
 
-            // Release any keys that were pressed in the window being destroyed and are still held down,
+            // ReleaseRef any keys that were pressed in the window being destroyed and are still held down,
             // because we will not receive any release events after window is destroyed.
             for (int i = 0; i < IM_ARRAYSIZE(bd->KeyOwnerWindows); i++)
                 if (bd->KeyOwnerWindows[i] == vd->Window)

@@ -9,6 +9,13 @@ namespace Tridium {
 		return out;
 	}
 
+	YAML::Emitter& operator<<( YAML::Emitter& out, const Vector2& v )
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
+		return out;
+	}
+
 	YAML::Emitter& operator<<( YAML::Emitter& out, const Vector3& v )
 	{
 		out << YAML::Flow;
@@ -23,20 +30,27 @@ namespace Tridium {
 		return out;
 	}
 
-	TextureHandle GetTexture( const std::string& path )
+	YAML::Emitter& operator<<( YAML::Emitter& out, const Color& v )
 	{
-		TextureHandle handle;
-		if ( TextureLibrary::GetTextureHandle( path, handle ) )
-			return handle;
-
-		if ( auto tex = TextureLoader::Import( path ) )
-		{
-			handle = TextureHandle::Create();
-			tex->_SetHandle( handle );
-			TextureLibrary::AddTexture( path, tex );
-		}
-
-		return handle;
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.r << v.g << v.b << v.a << YAML::EndSeq;
+		return out;
 	}
 
+	YAML::Emitter& operator<<( YAML::Emitter& out, const Matrix4& v )
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq;
+
+		for ( int i = 0; i < 4; ++i ) 
+		{
+			for ( int j = 0; j < 4; ++j ) 
+			{
+				out << v[i][j];
+			}
+		}
+
+		out << YAML::EndSeq;
+		return out;
+	}
 }

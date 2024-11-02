@@ -6,9 +6,15 @@
 
 namespace Tridium {
 
+	CameraControllerComponent::CameraControllerComponent()
+		: LookSensitivity( 0.75f ), Speed( 1.0f )
+	{
+
+	}
+
 	void CameraControllerComponent::OnUpdate()
 	{
-		auto& go = GetGameObject();
+		auto go = GetGameObject();
 		if ( !go.HasComponent<TransformComponent>() )
 			return;
 
@@ -52,14 +58,19 @@ namespace Tridium {
 		// Mouse Rotation
 		Vector2 mouseDelta = Input::GetMousePosition() - m_LastMousePos;
 		float yawSign = up.y < 0 ? -1.0f : 1.0f;
-		transform.Rotation.y += yawSign * glm::radians( mouseDelta.x ) * LookSensitivity;
-		transform.Rotation.x += glm::radians( mouseDelta.y ) * LookSensitivity;
 
-		constexpr float clampZone = glm::radians( 89.f );
-		if ( transform.Rotation.x < -clampZone )
-			transform.Rotation.x = -clampZone;
-		else if ( transform.Rotation.x > clampZone )
-			transform.Rotation.x = clampZone;
+		Vector3 euler = transform.Rotation.Euler;
+
+		euler.y += yawSign * mouseDelta.x * LookSensitivity;
+		euler.x += mouseDelta.y * LookSensitivity;
+
+		constexpr float clampZone = 89.f;
+		if ( euler.x < -clampZone )
+			euler.x = -clampZone;
+		else if ( euler.x > clampZone )
+			euler.x = clampZone;
+
+		transform.Rotation.SetFromEuler( euler );
 
 		m_LastMousePos = Input::GetMousePosition();
 		m_LastMouseScroll = Input::GetMouseScrollYOffset();

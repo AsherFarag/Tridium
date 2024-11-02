@@ -1,19 +1,19 @@
 #pragma once
 #include <Tridium/ECS/Components/Component.h>
+#include <Tridium/Math/Rotator.h>
 
 namespace Tridium {
 
-	DEFINE_COMPONENT( TransformComponent )
+	class TransformComponent : public Component
 	{
-		REFLECT;
-
+		REFLECT(TransformComponent);
 	public:
 		TransformComponent() = default;
 		TransformComponent( const Vector3& a_Position );
 		virtual void OnDestroy() override;
 
-		operator Matrix4&() { return GetWorldTransform(); }
-		operator const Matrix4&() const { return GetWorldTransform(); }
+		operator Matrix4() { return GetWorldTransform(); }
+		operator const Matrix4() const { return GetWorldTransform(); }
 
 		Matrix4 GetWorldTransform() const; /* Returns the transform matrix in world space. */
 		Matrix4 GetLocalTransform() const; /* Returns the transform matrix in local space. */
@@ -31,7 +31,7 @@ namespace Tridium {
 
 	public:
 		Vector3 Position = Vector3( 0.0f );
-		Vector3 Rotation = Vector3( 0.0f );
+		Rotator Rotation = Rotator( Vector3( 0.0f ) );
 		Vector3 Scale = Vector3( 1.0f );
 
 	private:

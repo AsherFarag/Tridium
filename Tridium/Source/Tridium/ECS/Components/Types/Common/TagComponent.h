@@ -3,23 +3,16 @@
 
 namespace Tridium {
 
-	DEFINE_COMPONENT( TagComponent )
+	class TagComponent : public Component
 	{
-	public:
-		TagComponent()
-			: Tag("Tag") {}
-		TagComponent( const TagComponent& ) = default;
-		TagComponent( const std::string & a_Tag )
-			: Tag( a_Tag ) {}
-
-		operator std::string& ( ) { return Tag; }
-		operator const std::string& ( ) const { return Tag; }
-		bool operator ==( const TagComponent & other ) const { return other.Tag == Tag; }
-
-		static inline const uint32_t MaxSize() { return 256u; }
+		REFLECT( TagComponent );
 
 	public:
+		TagComponent();
+		TagComponent( const std::string& a_Tag );
+		TagComponent( std::string&& a_Tag );
+		static inline const uint32_t MaxSize() { return 255u; }
+
 		std::string Tag;
 	};
-
 }

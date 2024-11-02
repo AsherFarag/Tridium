@@ -9,12 +9,12 @@ namespace Tridium {
 
 #pragma region - Vertex Buffer -
 
-	Ref<VertexBuffer> VertexBuffer::Create( float* a_Verticies, uint32_t a_Size )
+	SharedPtr<VertexBuffer> VertexBuffer::Create( float* a_Verticies, uint32_t a_Size )
 	{
 		switch ( RendererAPI::GetAPI() )
 		{
 		case RendererAPI::API::OpenGL:
-			return MakeRef<OpenGLVertexBuffer>( a_Verticies, a_Size );
+			return MakeShared<OpenGLVertexBuffer>( a_Verticies, a_Size );
 			break;
 		default:
 			return nullptr;
@@ -27,12 +27,12 @@ namespace Tridium {
 
 #pragma region - Index Buffer -
 
-	Ref<IndexBuffer> IndexBuffer::Create( uint32_t* a_Indicies, uint32_t a_Count )
+	SharedPtr<IndexBuffer> IndexBuffer::Create( uint32_t* a_Indicies, uint32_t a_Count )
 	{
 		switch ( RendererAPI::GetAPI() )
 		{
 		case RendererAPI::API::OpenGL:
-			return MakeRef<OpenGLIndexBuffer>( a_Indicies, a_Count );
+			return MakeShared<OpenGLIndexBuffer>( a_Indicies, a_Count );
 			break;
 		default:
 			return nullptr;

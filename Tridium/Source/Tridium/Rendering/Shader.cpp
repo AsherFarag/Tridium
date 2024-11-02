@@ -6,62 +6,35 @@
 #include <Platform/OpenGL/OpenGLShader.h>
 
 namespace Tridium {
-	Ref<Shader> Shader::Create( const std::string& filePath )
+
+	Shader* Shader::Create( const std::string& a_Vertex, const std::string& a_Frag )
 	{
-		Ref<Shader> shader = nullptr;
-		//TE_CORE_ASSERT( ShaderLibrary::Get()->m_Shaders.find( name ) == ShaderLibrary::Get()->m_Shaders.end(), "Shader already exists with that name!" );
+		Shader* shader = nullptr;
 
 		switch ( RendererAPI::GetAPI() )
 		{
 		case RendererAPI::API::OpenGL:
-			shader = MakeRef<OpenGLShader>( filePath );
-			break;
-		default:
-			return nullptr;
-			break;
-		}
-
-		shader->_SetHandle( ShaderHandle::Create() );
-		ShaderLibrary::AddShader( filePath, shader );
-		return shader;
-	}
-
-	Ref<Shader> Shader::Create( const std::string& name, const std::string& vertex, const std::string& frag )
-	{
-		Ref<Shader> shader = nullptr;
-		TE_CORE_ASSERT( !ShaderLibrary::HasShaderHandle(name), "Shader already exists with that name!");
-
-		switch ( RendererAPI::GetAPI() )
-		{
-		case RendererAPI::API::OpenGL:
-			shader = MakeRef<OpenGLShader>( name, vertex, frag );
+			shader = new OpenGLShader( a_Vertex, a_Frag );
 			break;
 		default:
 			return nullptr;
 			break;
 		}
 		
-		shader->_SetPath( name );
-		shader->_SetHandle( ShaderHandle::Create() );
-		ShaderLibrary::AddShader( name, shader );
+		shader->m_Handle = AssetHandle::Create();
 		return shader;
-	}
+	} 
 
-	void ShaderLibrary::RecompileAll()
+	Shader* Shader::Create()
 	{
-		for ( auto it = Get().m_Library.begin(); it != Get().m_Library.end(); ++it )
-			it->second->Recompile();
-	}
-
-	void ShaderLibrary::Init()
-	{
-		auto defaultShader = Shader::Create( ( Application::GetAssetDirectory() / "Engine" / "Shaders" / "Default.glsl" ).string() );
-		m_Default = defaultShader->GetHandle();
-		AddAsset( defaultShader->GetPath(), defaultShader );
-
-		auto spriteShader = Shader::Create( ( Application::GetAssetDirectory() / "Engine" / "Shaders" / "Sprite.glsl" ).string() );
-		m_Sprite = spriteShader->GetHandle();
-		AddAsset( spriteShader->GetPath(), spriteShader );
+		switch ( RendererAPI::GetAPI() )
+		{
+			using enum RendererAPI::API;
+		case OpenGL:
+			return new OpenGLShader();
+		default:
+			return nullptr;
+		}
 	}
 
 }

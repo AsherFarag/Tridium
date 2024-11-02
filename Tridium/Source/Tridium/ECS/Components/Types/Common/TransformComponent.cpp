@@ -3,14 +3,18 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <Tridium/Utils/Reflection/Reflection.h>
+
 namespace Tridium {
 
-	BEGIN_REFLECT( TransformComponent )
-		PROPERTY( TransformComponent, Position )
-		PROPERTY( TransformComponent, Rotation )
-		PROPERTY( TransformComponent, Scale )
-		FUNCTION( TransformComponent, GetForward )
-	END_REFLECT
+	BEGIN_REFLECT_COMPONENT( TransformComponent )
+		BASE( Component )
+		PROPERTY( Position, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( Rotation, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( Scale, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( m_Parent, FLAGS( Serialize ) )
+		PROPERTY( m_Children, FLAGS( Serialize ) )
+	END_REFLECT( TransformComponent )
 
 	TransformComponent::TransformComponent( const Vector3& a_Translation )
 		: Position( a_Translation ) {}
@@ -35,7 +39,7 @@ namespace Tridium {
 
 	Matrix4 TransformComponent::GetLocalTransform() const
 	{
-		Matrix4 rotationMatrix = glm::toMat4( Quaternion( Rotation ) );
+		Matrix4 rotationMatrix = glm::toMat4( Rotation.Quat );
 
 		constexpr Matrix4 identity = Matrix4( 1.0f );
 
@@ -46,12 +50,7 @@ namespace Tridium {
 
 	Vector3 TransformComponent::GetForward() const
 	{
-		return glm::rotate( GetOrientation(), Vector3( 0.0f, 0.0f, -1.0f ) );
-	}
-
-	Quaternion TransformComponent::GetOrientation() const
-	{
-		return Quaternion( Vector3( -Rotation.x, -Rotation.y, 0.f ) );
+		return Rotation.GetForward();
 	}
 
 	void TransformComponent::AttachToParent( GameObject a_Parent )
@@ -71,11 +70,7 @@ namespace Tridium {
 		if ( childTransform.GetParent() != GetGameObject() && a_Child != GetParent() )
 		{
 			childTransform.DetachFromParent();
-
-			// We want to keep the child's world transform, so we need to change the childs local transform
-			Matrix4 newLocalTransform = glm::inverse( GetWorldTransform() ) * a_Child.GetWorldTransform();
 			TransformComponent& tc = a_Child.GetTransform();
-			Math::DecomposeTransform( newLocalTransform, tc.Position, tc.Rotation, tc.Scale );
 
 			childTransform.SetParent( GetGameObject() );
 			m_Children.push_back( a_Child );
@@ -87,7 +82,9 @@ namespace Tridium {
 		auto& childTransform = a_Child.GetTransform();
 		if ( childTransform.GetParent() == GetGameObject() )
 		{
-			Math::DecomposeTransform( childTransform.GetWorldTransform(), childTransform.Position, childTransform.Rotation, childTransform.Scale);
+			Quaternion rotation = childTransform.Rotation.Quat;
+			Math::DecomposeTransform( childTransform.GetWorldTransform(), childTransform.Position, rotation, childTransform.Scale);
+			childTransform.Rotation.SetFromQuaternion( rotation );
 
 			childTransform.SetParent();
 			RemoveChild( a_Child );

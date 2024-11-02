@@ -2,15 +2,48 @@
 #include "GameObject.h"
 #include "Components/Types.h"
 
+#include <Tridium/Utils/Reflection/Reflection.h>
+
 namespace Tridium {
 
     BEGIN_REFLECT( GameObject )
-        PROPERTY( GameObject, m_ID )
-    END_REFLECT
+		FUNCTION( GetGUID )
+		FUNCTION( GetTag )
+		FUNCTION( GetTransform )
+		FUNCTION( GetWorldTransform )
+		FUNCTION( GetLocalTransform )
+		FUNCTION( HasParent )
+		FUNCTION( GetParent )
+		FUNCTION( AttachToParent )
+		FUNCTION( DetachFromParent )
+		FUNCTION( AttachChild )
+		FUNCTION( DetachChild )
+		FUNCTION( GetChild )
+		FUNCTION( GetChildren )
+        PROPERTY( m_ID )
+    END_REFLECT( GameObject )
 
     GameObject::GameObject( EntityID a_ID )
         : m_ID( a_ID )
     {
+    }
+
+    std::vector<std::pair<Refl::MetaType, Component*>> Tridium::GameObject::GetAllComponents() const
+    {
+        std::vector<std::pair<Refl::MetaType, Component*>> components;
+		// Reserve a magic number of components
+		components.reserve( 16 );
+
+		for ( auto&& [id, componentStorage] : Application::GetScene()->m_Registry.storage() )
+		{
+            if ( componentStorage.contains( m_ID ) )
+                components.emplace_back( 
+                    entt::resolve( componentStorage.type() ),
+                    static_cast<Component*>( componentStorage.value( m_ID ) ) 
+                );
+		}
+
+        return std::move(components);
     }
 
     GUID GameObject::GetGUID() const {

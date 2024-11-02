@@ -8,40 +8,41 @@
 #include <Tridium/ImGui/ImGuiLayer.h>
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Project/Project.h>
+#include <Tridium/Core/GameInstance.h>
 
 namespace Tridium
 {
-#ifdef IS_EDITOR
-	namespace Editor { class EditorLayer; }
-#endif // IS_EDITOR
-
-	class Application
+	class Application final
 	{
 	public:
-		Application();
+		Application( const std::string& a_ProjectPath );
 		virtual ~Application();
 
 		void Run();
 		static void Quit();
 
+		// - Event Handling -
 		void OnEvent( Event& e );
 
-		void PushLayer( Layer* layer );
-		void PushOverlay( Layer* overlay );
+		// - Layer Stack -
+		void PushLayer( Layer* a_Layer ) { m_LayerStack.PushLayer( a_Layer ); }
+		void PushOverlay( Layer* a_Overlay ) { m_LayerStack.PushOverlay( a_Overlay ); }
+		void PopLayer( Layer* a_Layer, bool a_Destroy = false ) { m_LayerStack.PopLayer( a_Layer, a_Destroy ); }
+		void PopOverlay( Layer* a_Overlay, bool a_Destroy = false ) { m_LayerStack.PopOverlay( a_Overlay, a_Destroy ); }
 
 		static Application& Get() { return *s_Instance; }
-		static Ref<Project> GetActiveProject() { return Get().m_Project; }
-		static const fs::path& GetAssetDirectory() { return Get().m_Project->GetAssetDirectory(); }
+		static SharedPtr<Project> GetActiveProject() { return Get().m_Project; }
+		static IO::FilePath GetEngineAssetsDirectory() { return "../Tridium/EngineAssets"; }
 
 		Window& GetWindow() { return *m_Window; }
 		uint32_t GetFPS() const { return m_FPS; }
 
 		// - Scene -
-		static Ref<Scene> GetScene() { return s_Instance->m_ActiveScene; }
-
+		static SharedPtr<Scene> GetScene() { return s_Instance->m_ActiveScene; }
+		static void SetScene( SharedPtr<Scene> a_Scene ) { s_Instance->m_ActiveScene = a_Scene; }
 	private:
+		void InitializeAssetManager();
 		bool OnWindowClosed( WindowCloseEvent& e );
-
 		void Shutdown();
 
 	private:
@@ -50,16 +51,20 @@ namespace Tridium
 		ImGuiLayer* m_ImGuiLayer;
 		LayerStack m_LayerStack;
 
-		Ref<Project> m_Project;
-		Ref<Scene> m_ActiveScene;
+		SharedPtr<class AssetManagerBase> m_AssetManager;
+		SharedPtr<Project> m_Project;
+		SharedPtr<Scene> m_ActiveScene;
+		SharedPtr<GameInstance> m_GameInstance;
 
 		uint32_t m_FPS = 0u;
 
 	private:
+		friend class AssetManager;
+
 		static Application* s_Instance;
 	};
 
 	// To be defined in CLIENT
-	Application* CreateApplication();
+	GameInstance* CreateGameInstance();
 }
 

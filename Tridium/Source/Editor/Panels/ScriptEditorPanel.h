@@ -8,16 +8,16 @@ namespace Tridium::Editor {
     {
     public:
         ScriptTextFile() = default;
-        ScriptTextFile( const  fs::path& a_FilePath );
+        ScriptTextFile( const  IO::FilePath& a_FilePath );
 
         std::string& GetContent() { return m_Content; }
 
-        inline std::string GetFileName() { return m_Path.filename().string(); }
+        inline std::string GetFileName() { return m_Path.GetFilename().ToString(); }
         inline auto& GetPath() { return m_Path; }
 
-        bool LoadFile( const fs::path& a_FilePath );
-        bool SaveFile( const fs::path& a_FilePath );
-        bool SaveFile() { return SaveFile( GetPath().string() ); }
+        bool LoadFile( const IO::FilePath& a_FilePath );
+        bool SaveFile( const IO::FilePath& a_FilePath );
+        bool SaveFile() { return SaveFile( GetPath().ToString() ); }
 
     public:
         bool Modified = false;
@@ -27,7 +27,7 @@ namespace Tridium::Editor {
         static std::string GetFileName( const std::string& a_FilePath );
 
     private:
-        fs::path m_Path;
+        IO::FilePath m_Path;
         std::string m_Content;
     };
 
@@ -38,7 +38,7 @@ namespace Tridium::Editor {
 
         virtual void OnImGuiDraw() override;
 
-        void OpenFile( const fs::path& a_FilePath );
+        void OpenFile( const IO::FilePath& a_FilePath );
 
     private:
         virtual bool OnKeyPressed( KeyPressedEvent& e ) override;

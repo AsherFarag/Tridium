@@ -26,7 +26,7 @@ namespace Tridium::Editor {
 		virtual bool OnKeyPressed( KeyPressedEvent& e ) { return false; };
 
 	protected:
-		Ref<Framebuffer> m_FBO;
+		SharedPtr<Framebuffer> m_FBO;
 		Vector2 m_ViewportSize;
 	};
 

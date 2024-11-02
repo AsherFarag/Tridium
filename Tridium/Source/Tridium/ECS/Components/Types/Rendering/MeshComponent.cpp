@@ -1,26 +1,18 @@
 #include "tripch.h"
 #include "MeshComponent.h"
-#include <Tridium/Rendering/Shader.h>
+#include <Tridium/Rendering/Mesh.h>
 
 namespace Tridium {
 
-	MeshComponent::MeshComponent()
-	{
-	}
+	BEGIN_REFLECT_COMPONENT( StaticMeshComponent )
+		BASE( Component )
+		PROPERTY( Mesh, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( Materials, FLAGS( Serialize, EditAnywhere ) )
+	END_REFLECT( StaticMeshComponent )
 
-	MeshComponent::MeshComponent( const MeshHandle& meshHandle )
-		: MeshComponent()
+	StaticMeshComponent::StaticMeshComponent()
+		: Mesh( AssetHandle::InvalidGUID )
 	{
-		m_Mesh = meshHandle;
-	}
 
-	void MeshComponent::SetMesh( const MeshHandle& meshHandle )
-	{
-		m_Mesh = meshHandle;
-	}
-
-	void MeshComponent::SetMaterial( const MaterialHandle& materialHandle )
-	{
-		m_Material = materialHandle;
 	}
 }

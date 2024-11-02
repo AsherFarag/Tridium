@@ -2,13 +2,13 @@
 #ifdef IS_EDITOR
 
 #include <Tridium/Core/Layer.h>
+#include <Tridium/Rendering/Texture.h>
 #include <Tridium/Events/Eventsfwd.h>
 
 #include "Panels/Panel.h"
 
 namespace Tridium {
 	class Scene;
-	class Texture;
 }
 
 namespace Tridium::Editor {
@@ -29,11 +29,11 @@ namespace Tridium::Editor {
 
 	struct UIToolBar
 	{
-		Ref<Texture> PlayButtonIcon;
-		Ref<Texture> PauseButtonIcon;
-		Ref<Texture> StopButtonIcon;
-		Ref<Texture> StepOnceButtonIcon;
-		Ref<Texture> SimulateButtonIcon;
+		SharedPtr<Texture> PlayButtonIcon;
+		SharedPtr<Texture> PauseButtonIcon;
+		SharedPtr<Texture> StopButtonIcon;
+		SharedPtr<Texture> StepOnceButtonIcon;
+		SharedPtr<Texture> SimulateButtonIcon;
 
 		UIToolBar();
 		void OnImGuiDraw();
@@ -58,15 +58,12 @@ namespace Tridium::Editor {
 		template <typename T>
 		inline T* GetPanel();
 
-		Ref<EditorCamera> GetEditorCamera() { return m_EditorCamera; }
+		SharedPtr<EditorCamera> GetEditorCamera() { return m_EditorCamera; }
 
-		void SetActiveScene( const Ref<Scene>& a_Scene ) { m_ActiveScene = a_Scene; }
-		Ref<Scene> GetActiveScene() const { return m_ActiveScene; }
+		void SetActiveScene( const SharedPtr<Scene>& a_Scene );
+		SharedPtr<Scene> GetActiveScene() const;
 		void OnBeginScene();
 		void OnEndScene();
-
-		bool LoadScene( const std::string& filepath );
-		bool SaveScene( const std::string& filepath );
 
 		SceneState CurrentSceneState = SceneState::Edit;
 
@@ -76,9 +73,7 @@ namespace Tridium::Editor {
 		void DrawMenuBar();
 
 	private:
-		Ref<Scene> m_ActiveScene;
-
-		Ref<EditorCamera> m_EditorCamera;
+		SharedPtr<EditorCamera> m_EditorCamera;
 
 		PanelStack m_PanelStack;
 		ContentBrowserPanel* m_ContentBrowser;
@@ -86,6 +81,8 @@ namespace Tridium::Editor {
 		EditorViewportPanel* m_EditorViewportPanel;
 		GameViewportPanel* m_GameViewportPanel;
 		UIToolBar m_UIToolBar;
+
+		friend ::Tridium::Application;
 	};
 
 	template<typename T, typename ...Args>

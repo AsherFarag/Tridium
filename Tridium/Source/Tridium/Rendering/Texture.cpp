@@ -3,72 +3,94 @@
 
 #include <Tridium/Rendering/Renderer.h>
 #include <Platform/OpenGL/OpenGLTexture.h>
-
-#include <stb_image.h>
+#include <Tridium/Asset/Loaders/TextureLoader.h>
+#include <Tridium/Core/Application.h>
+#include <Tridium/Asset/AssetManager.h>
 
 namespace Tridium {
 
-	Ref<Texture> Texture::Create( const TextureSpecification& specification )
+	Texture* Texture::Create( const TextureSpecification& a_Specification )
 	{
 		switch ( Renderer::GetAPI() )
 		{
-		case RendererAPI::API::None:    TE_CORE_ASSERT( false, "RendererAPI::None is currently not supported!" ); return nullptr;
-		case RendererAPI::API::OpenGL:  return MakeRef<OpenGLTexture>( specification );
+			using enum RendererAPI::API;
+		case OpenGL: 
+			return new OpenGLTexture( a_Specification );
 		}
 
 		TE_CORE_ASSERT( false, "Unknown RendererAPI!" );
 		return nullptr;
 	}
 
-	Ref<Texture> TextureLoader::Import( const std::string& path )
+	Texture* Texture::Create( const TextureSpecification& a_Specification, void* a_TextureData )
 	{
-		TextureSpecification specification;
-
-		int width, height, channels;
-		stbi_set_flip_vertically_on_load( 1 );
-		stbi_uc* data = stbi_load( path.c_str(), &width, &height, &channels, 0 );
-
-		if ( !data )
-			return nullptr;
-
-		specification.Width = static_cast<uint32_t>( width );
-		specification.Height = static_cast<uint32_t>( height );
-
-		switch ( channels )
+		switch ( Renderer::GetAPI() )
 		{
-			case 1:
-			{
-				specification.ImageFormat = EImageFormat::R;
-				specification.DataFormat = EDataFormat::R8;
-				break;
-			}
-			case 2:
-			{
-				specification.ImageFormat = EImageFormat::RG;
-				specification.DataFormat = EDataFormat::RG8;
-				break;
-			}
-			case 3:
-			{
-				specification.ImageFormat = EImageFormat::RGB;
-				specification.DataFormat = EDataFormat::RGB8;
-				break;
-			}
-			case 4:
-			{
-				specification.ImageFormat = EImageFormat::RGBA;
-				specification.DataFormat = EDataFormat::RGBA8;
-				break;
-			}
+			using enum RendererAPI::API;
+		case OpenGL:
+			return new OpenGLTexture( a_Specification, a_TextureData );
 		}
 
-		Ref<Texture> tex = Texture::Create( specification );
-		tex->_SetPath( path );
-		tex->SetIsLoaded( true );
-		tex->SetData( data, width * height * channels );
+		TE_CORE_ASSERT( false, "Unknown RendererAPI!" );
+		return nullptr;
+	}
 
-		stbi_image_free( data );
+	CubeMap* CubeMap::Create( const TextureSpecification& a_Specification, const SharedPtr<Texture>& a_Texture )
+	{
+		switch ( Renderer::GetAPI() )
+		{
+			using enum RendererAPI::API;
+		case OpenGL:
+			return new OpenGLCubeMap( a_Specification, a_Texture );
+		}
+		TE_CORE_ASSERT( false, "Unknown RendererAPI!" );
+		return nullptr;
+	}
 
-		return tex;
+	CubeMap* CubeMap::Create( const TextureSpecification& a_Specification, const std::array<float*, 6>& a_CubeMapData )
+	{
+		switch ( Renderer::GetAPI() )
+		{
+			using enum RendererAPI::API;
+		case OpenGL:
+			return new OpenGLCubeMap( a_Specification, a_CubeMapData );
+		}
+		TE_CORE_ASSERT( false, "Unknown RendererAPI!" );
+		return nullptr;
+	}
+
+	void TextureFactory::Init()
+	{
+		// Load the default textures
+		GetWhiteTexture();
+		GetBlackTexture();
+		GetNormalTexture();
+	}
+
+	AssetHandle TextureFactory::GetWhiteTexture()
+	{
+		static SharedPtr<Texture> s_WhiteTexture = TextureLoader::LoadTexture( Application::GetEngineAssetsDirectory() / "Textures/White.tga" );
+		static AssetHandle s_WhiteTextureHandle = ( s_WhiteTexture->SetHandle(30), 30 );
+		static bool s_TextureInitialized = AssetManager::AddMemoryOnlyAsset( s_WhiteTextureHandle, s_WhiteTexture );
+
+		return s_WhiteTextureHandle;
+	}
+
+	AssetHandle TextureFactory::GetBlackTexture()
+	{
+		static SharedPtr<Texture> s_BlackTexture = TextureLoader::LoadTexture( Application::GetEngineAssetsDirectory() / "Textures/Black.tga" );
+		static AssetHandle s_BlackTextureHandle = ( s_BlackTexture->SetHandle( 31 ), 31 );
+		static bool s_TextureInitialized = AssetManager::AddMemoryOnlyAsset( s_BlackTextureHandle, s_BlackTexture );
+
+		return s_BlackTextureHandle;
+	}
+
+	AssetHandle TextureFactory::GetNormalTexture()
+	{
+		static SharedPtr<Texture> s_NormalTexture = TextureLoader::LoadTexture( Application::GetEngineAssetsDirectory() / "Textures/Normal.tga" );
+		static AssetHandle s_NormalTextureHandle = ( s_NormalTexture->SetHandle( 32 ), 32 );
+		static bool s_TextureInitialized = AssetManager::AddMemoryOnlyAsset( s_NormalTextureHandle, s_NormalTexture );
+
+		return s_NormalTextureHandle;
 	}
 }
