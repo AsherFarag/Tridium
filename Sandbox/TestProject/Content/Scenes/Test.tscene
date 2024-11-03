@@ -1,17 +1,17 @@
 Scene: Test
 SceneEnvironment:
   HDRI:
-    EnvironmentMapHandle: 18301043363865490591
-    Exposure: 1
-    Gamma: 2.20000005
+    EnvironmentMapHandle: 5806395090298646526
+    Exposure: 2
+    Gamma: 1
     Blur: 0
-    Intensity: 0.150999993
+    Intensity: 0.300000012
     RotationEular: [0, 0, 0]
 GameObjects:
   - GameObject: 17894983707375707960
     Tag: Cube
     Transform:
-      Position: [5.76444721, -11.8972006, -8.39933872]
+      Position: [16.9929237, -11.8972006, -8.39933872]
       Rotation: [0, -0, 0]
       Scale: [0.030000031, 0.030000031, 0.030000031]
       Children: []
@@ -41,13 +41,13 @@ GameObjects:
   - GameObject: 12906833969033052025
     Tag: Directional Light
     Transform:
-      Position: [0, 0, 0.0295660496]
-      Rotation: [3.84766555, -4.57209969, 0]
-      Scale: [1.00000346, 0.999999881, 1.0000006]
+      Position: [0, 0, 0.029566288]
+      Rotation: [1.69982982, -0, 0]
+      Scale: [0.999999881, 0.999999762, 0.999999762]
       Children: []
     DirectionalLightComponent:
-      LightColor: [1, 0.782812774, 0.412451386, 1]
-      Intensity: 5
+      LightColor: [0.412451386, 0.567911863, 1, 1]
+      Intensity: 2.08999991
       CastsShadows: true
   - GameObject: 17099799884021532929
     Tag: Cube
@@ -83,17 +83,17 @@ GameObjects:
   - GameObject: 13039944283085260941
     Tag: Spot Light
     Transform:
-      Position: [-14.4609127, -10.7956724, 0.0497075319]
+      Position: [-14.4609127, -12.9236841, 0.049707517]
       Rotation: [1.57079625, -0, 0]
       Scale: [1, 1.00000036, 0.999986947]
       Children: []
     SpotLightComponent:
       LightColor: [1, 0.466926038, 0, 1]
-      Intensity: 17
+      Intensity: 157
       FalloffExponent: 2
       AttenuationRadius: 10
-      InnerConeAngle: -20
-      OuterConeAngle: 26
+      InnerConeAngle: -2355
+      OuterConeAngle: 40
   - GameObject: 15100604637533348928
     Tag: Torus
     Transform:
@@ -107,9 +107,9 @@ GameObjects:
   - GameObject: 2645998972927795823
     Tag: Red Spot Light
     Transform:
-      Position: [6.1790185, -9.62352848, -5.86424208]
-      Rotation: [2.58017135, -0, 0]
-      Scale: [1, 1.00000465, 1.00000465]
+      Position: [7.54699945, -9.71184635, 9.05828857]
+      Rotation: [2.75814605, -0, 0]
+      Scale: [1, 0.999902666, 0.999902666]
       Children: []
     SpotLightComponent:
       LightColor: [1, 0.120622575, 0.120622575, 1]
@@ -121,42 +121,54 @@ GameObjects:
   - GameObject: 14393783786027614707
     Tag: Static Mesh
     Transform:
-      Position: [12.5631285, -13.0478687, 0]
+      Position: [20.2624493, -13.047863, -2.21813941]
       Rotation: [0, -0, 0]
       Scale: [0.00644000014, 0.00644000014, 0.00644000014]
       Children: []
     StaticMeshComponent:
       Mesh: 6680786823534590809
       Materials: [13329440684517550564, 12209339836386338127]
-  - GameObject: 11313647683901471035
-    Tag: Point Light
-    Transform:
-      Position: [11.8521633, -10.9322796, 2.31626964]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Children: []
-    PointLightComponent:
-      LightColor: [1, 1, 1, 1]
-      Intensity: 10
-      FalloffExponent: 2
-      AttenuationRadius: 10
-  - GameObject: 45953374794035966
-    Tag: Sponza
-    Transform:
-      Position: [-17.070097, -12, 0]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 4642065102083697686
-      Materials: []
   - GameObject: 5486510618539794370
     Tag: Static Mesh
     Transform:
-      Position: [6.42505455, -10.1451273, 0.974243164]
+      Position: [6.42505455, -10.1451273, 8.41540718]
       Rotation: [0, -0, 0]
       Scale: [0.025000006, 0.025000006, 0.025000006]
       Children: []
     StaticMeshComponent:
       Mesh: 15869680136431924042
       Materials: [10414866762872322182]
+  - GameObject: 45953374794035966
+    Tag: Sponza
+    Transform:
+      Position: [0, 0, -2.40877795]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 4642065102083697686
+      Materials: []
+  - GameObject: 14850510313907076365
+    Tag: Point Light
+    Transform:
+      Position: [8.25422668, 0.97096771, -4.33819962]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    PointLightComponent:
+      LightColor: [1, 0.607003868, 0, 1]
+      Intensity: 5
+      FalloffExponent: 2
+      AttenuationRadius: 10
+      CastsShadows: true
+  - GameObject: 14853496706002173942
+    Tag: Directional Light
+    Transform:
+      Position: [0, 0, 0]
+      Rotation: [0.258840442, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    DirectionalLightComponent:
+      LightColor: [1, 1, 1, 1]
+      Intensity: 1
+      CastsShadows: true

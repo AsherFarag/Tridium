@@ -44,11 +44,12 @@ namespace Tridium {
 		void EndScene();
 
 		void Flush();
-
+		void GenerateShadowMaps();
 		void SubmitDrawCall( DrawCall&& a_DrawCall );
-		void PerformDrawCall( const DrawCall& a_DrawCall );
 
+		void RenderPass();
 		void GeometryPass();
+		void PostProcessPass();
 
 	private:
 		Scene& m_Scene;
@@ -65,10 +66,14 @@ namespace Tridium {
 		SharedPtr<Texture> m_NormalTexture;
 
 		// Per frame data
-		Vector3 m_CameraPosition;
-		Matrix4 m_ViewMatrix;
-		Matrix4 m_ProjectionMatrix;
-		Matrix4 m_ViewProjectionMatrix;
+		struct SceneData
+		{
+			Matrix4 ProjectionMatrix;
+			Matrix4 ViewMatrix;
+			Matrix4 ViewProjectionMatrix;
+			Vector3 CameraPosition;
+			Camera Camera;
+		} m_SceneData;
 		std::vector<DrawCall> m_DrawCalls;
 		LightEnvironment m_LightEnvironment;
 
@@ -77,6 +82,7 @@ namespace Tridium {
 		Vector2 m_ShadowMapSize{1024, 1024};
 		SharedPtr<Shader> m_ShadowMapShader;
 		Matrix4 m_LightViewProjectionMatrix;
+		SharedPtr<Shader> m_ShadowCubeMapShader;
 
 		friend class Editor::SceneRendererPanel;
 	};

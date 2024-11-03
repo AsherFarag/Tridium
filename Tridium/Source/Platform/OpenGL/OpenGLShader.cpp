@@ -13,6 +13,8 @@ namespace Tridium {
 			return true;
 		if ( type == "fragment" )
 			return true;
+		if ( type == "geometry" )
+			return true;
 
 		return false;
 	}
@@ -25,6 +27,8 @@ namespace Tridium {
 			return GL_VERTEX_SHADER;
 		if ( type == "fragment" )
 			return GL_FRAGMENT_SHADER;
+		if ( type == "geometry" )
+			return GL_GEOMETRY_SHADER;
 
 		TE_CORE_ASSERT( false, "Invalid shader type!" );
 		return 0;
@@ -64,7 +68,7 @@ namespace Tridium {
 
 		ShaderSources shaderSources;
 
-		const char* typeToken = "#type";
+		const char* typeToken = "#pragma type";
 		const size_t typeTokenLength = strlen( typeToken );
 		size_t pos = source.find( typeToken, 0 );
 
@@ -89,8 +93,8 @@ namespace Tridium {
 	void OpenGLShader::Compile( const ShaderSources& shaderSources )
 	{
 		GLuint program = glCreateProgram();
-		TE_CORE_ASSERT( shaderSources.size() <= 2, "Only 2 shaders are supported currently!" );
-		std::array<GLenum, 2> glShaderIDs;
+		TE_CORE_ASSERT( shaderSources.size() <= 3, "Only 3 shaders are supported currently!" );
+		std::array<GLenum, 3> glShaderIDs;
 
 		uint32_t glShaderIDIndex = 0;
 		for ( auto&& [key, value] : shaderSources )

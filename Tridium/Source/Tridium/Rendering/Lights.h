@@ -3,6 +3,10 @@
 #include <Tridium/Core/Color.h>
 
 namespace Tridium {
+
+	// Temp?
+	class Framebuffer;
+
 	constexpr uint32_t MAX_POINT_LIGHTS = 4;
 
 	struct PointLight
@@ -12,6 +16,9 @@ namespace Tridium {
 		float Intensity;
 		float FalloffExponent;
 		float AttenuationRadius;
+
+		// Temp?
+		SharedPtr<Framebuffer> ShadowMap;
 	};
 
 	constexpr uint32_t MAX_SPOT_LIGHTS = 4;
@@ -29,9 +36,6 @@ namespace Tridium {
 	};
 
 	constexpr uint32_t MAX_DIRECTIONAL_LIGHTS = 1;
-
-	// Temp?
-	class Framebuffer;
 
 	struct DirectionalLight
 	{

@@ -151,7 +151,7 @@ namespace Tridium::Editor {
 
 			DrawManipulationGizmos( viewportBoundsMin, viewportBoundsMax );
 
-			if ( m_IsFocused && ImGui::IsItemClicked() && !ImGuizmo::IsUsingAny() )
+			if ( m_IsHovered && ImGui::IsItemClicked() && !ImGuizmo::IsUsingAny() )
 			{
 				m_IDFBO->Resize( regionAvail.x, regionAvail.y );
 

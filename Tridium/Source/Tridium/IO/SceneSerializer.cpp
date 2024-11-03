@@ -126,8 +126,10 @@ namespace Tridium::IO {
 			{
 				if ( auto parent = deserializedGameObjects.find( go.Parent.value() ); parent != deserializedGameObjects.end() )
 				{
-					TransformComponent& tc = go.GameObject.GetComponent<TransformComponent>();
-					tc.AttachToParent( parent->second.GameObject );
+					TransformComponent& tc = a_Data.GetComponentFromGameObject<TransformComponent>( go.GameObject );
+					tc.SetParent( parent->second.GameObject );
+					TransformComponent& parentTc = a_Data.GetComponentFromGameObject<TransformComponent>( parent->second.GameObject );
+					parentTc.m_Children.push_back( go.GameObject );
 				}
 			}
 		}

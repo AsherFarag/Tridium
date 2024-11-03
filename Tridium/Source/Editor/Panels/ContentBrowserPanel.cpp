@@ -300,7 +300,7 @@ namespace Tridium::Editor {
 				ImGui::ScopedID id( i );
 				if ( ImGui::SmallButton( folder.c_str() ) )
 				{
-					for ( int j = m_DirectoryStack.size() - 1; j > i; --j )
+					for ( uint32_t j = m_DirectoryStack.size() - 1; j > i; --j )
 						m_CurrentDirectory = m_CurrentDirectory.GetParentPath();
 
 					OpenFolder( m_CurrentDirectory );

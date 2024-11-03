@@ -1,4 +1,4 @@
-#type Vertex
+#pragma type Vertex
 #version 420 core
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec3 a_Normal;
@@ -35,7 +35,7 @@ void main()
 	gl_Position = u_PVM * vec4(a_Position, 1.0);
 }
 
-#type Fragment
+#pragma type Fragment
 #version 420 core
 layout(location = 0) out vec4 o_Color;
 
@@ -56,11 +56,6 @@ uniform sampler2D u_NormalTexture;
 uniform sampler2D u_OpacityTexture;
 uniform sampler2D u_EmissiveTexture;
 uniform sampler2D u_AOTexture;
-
-// Shadows
-in vec4 v_FragPosLightSpace;
-uniform sampler2D u_ShadowMap;
-
 
 struct Environment
 {
@@ -110,8 +105,14 @@ struct DirectionalLight
 	vec3 Color;
 	float Intensity;
 };
-const int MAX_NUM_DIRECTIONAL_LIGHTS = 1;
+const int MAX_NUM_DIRECTIONAL_LIGHTS = 4;
 uniform DirectionalLight u_DirectionalLights[MAX_NUM_DIRECTIONAL_LIGHTS];
+
+// Shadows
+in vec4 v_FragPosLightSpace;
+uniform sampler2D u_PointShadowMaps[MAX_NUM_POINT_LIGHTS];
+uniform sampler2D u_SpotShadowMaps[MAX_NUM_SPOT_LIGHTS];
+uniform sampler2D u_DirectionalShadowMaps[MAX_NUM_DIRECTIONAL_LIGHTS];
 
 // ====================================================
 
@@ -139,10 +140,14 @@ vec3 GammaCorrection(vec3 color, float gamma)
 }
 
 // TEMP ?
-float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal);
+float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadowMap);
 
 void main()
 {
+	// Temp Opacity calculation
+	if ( texture(u_OpacityTexture, v_UV).a < 0.2 )
+		discard; 
+
 	vec3 albedo = texture(u_AlbedoTexture, v_UV).rgb;
 	// NOTE: AO, Roughness, and Metallic could all use the same texture as we only need one channel for each. 
 	// r = ambient occlusion
@@ -174,7 +179,7 @@ void main()
 	{
 	    DirectionalLight dirLight = u_DirectionalLights[i];
 	    vec3 light = CalcDirectionalLightRadiance(dirLight, normal, V, albedo, roughness, metallic, F0);
-        Lo += light * ( 1.0 - ShadowCalculation(v_FragPosLightSpace, normal) );
+        Lo += light * ( 1.0 - ShadowCalculation(v_FragPosLightSpace, normal, u_DirectionalShadowMaps[i]) );
 	}
 	// Point Lights
 	for (int i = 0; i < MAX_NUM_POINT_LIGHTS; ++i)
@@ -346,9 +351,11 @@ vec3 CalcSpotLightRadiance(SpotLight light, vec3 normal, vec3 fragPos, vec3 view
     vec3 H = normalize(viewDir + L);               // Half-vector
 
     // Spotlight angle attenuation based on cone angles
-    float theta = dot(-L, normalize(-light.Direction)); // Align light direction
-    float epsilon = light.InnerConeAngle - light.OuterConeAngle;
-	float intensityFactor = smoothstep(light.InnerConeAngle, light.OuterConeAngle, theta);
+    float theta = dot(-L, normalize(-light.Direction)); // Cosine of the angle between light direction and fragment direction
+	float epsilon = light.InnerConeAngle - light.OuterConeAngle;
+	float intensityFactor = clamp((theta - light.OuterConeAngle) / epsilon, 0.0, 1.0);
+    // Ensure that the smoothstep arguments are in the correct order for a smooth transition
+	//float intensityFactor = 1.0 - smoothstep(cos(light.OuterConeAngle), cos(light.InnerConeAngle), theta);
 
     // Distance attenuation (similar to point light attenuation)
     float distance = length(light.Position - fragPos);
@@ -376,7 +383,7 @@ vec3 CalcSpotLightRadiance(SpotLight light, vec3 normal, vec3 fragPos, vec3 view
 }
 
 // TEMP ?
-float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal)
+float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadowMap)
 {
     // perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -391,13 +398,13 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal)
     float shadow = 0.0;
 
     const int sampleRadius = 2;
-    const vec2 pixelSize = 1.0 / textureSize(u_ShadowMap, 0);
+    const vec2 pixelSize = 1.0 / textureSize(shadowMap, 0);
     for (int y = -sampleRadius; y <= sampleRadius; y++)
     {
         for (int x = -sampleRadius; x <= sampleRadius; x++)
         {
             // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-            float closestDepth = texture(u_ShadowMap, projCoords.xy + vec2(x, y) * pixelSize).r;
+            float closestDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * pixelSize).r;
             if (currentDepth > closestDepth)
                 shadow += 1.0;
         }
