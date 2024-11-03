@@ -40,7 +40,7 @@ namespace Tridium::Editor {
 		FBOspecification.Height = 720;
 		m_FBO = Framebuffer::Create( FBOspecification );
 
-		FBOspecification.Attachments = { EFramebufferTextureFormat::RED_INT };
+		FBOspecification.Attachments = { EFramebufferTextureFormat::RED_INT, EFramebufferTextureFormat::Depth };
 		m_IDFBO = Framebuffer::Create( FBOspecification );
 
 		std::string idVert =
@@ -128,6 +128,9 @@ namespace Tridium::Editor {
 
 		if ( ImGui::Begin( m_Name.c_str() ) )
 		{
+			if ( ImGui::IsWindowHovered && ImGui::IsMouseClicked( ImGuiMouseButton_Right ) )
+				ImGui::SetWindowFocus();
+
 			Vector2 regionAvail = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
 			auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 			auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -261,6 +264,7 @@ namespace Tridium::Editor {
 
 	void EditorViewportPanel::RenderGameObjectIDs()
 	{
+		RenderCommand::SetDepthTest( true );
 		RenderCommand::SetDepthCompare( EDepthCompareOperator::Less );
 		RenderCommand::SetCullMode( ECullMode::Back );
 		RenderCommand::SetClearColor( { 0.1, 0.1, 0.12, 1.0 } );

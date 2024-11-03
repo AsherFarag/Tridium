@@ -12,6 +12,8 @@ namespace Tridium {
 		void Invalidate();
 
 		virtual void Bind() override;
+		virtual void BindRead() override;
+		virtual void BindWrite() override;
 		virtual void Unbind() override;
 
 		virtual void Resize( uint32_t width, uint32_t height ) override;
@@ -19,6 +21,9 @@ namespace Tridium {
 
 		virtual void ClearAttachment( uint32_t attachmentIndex, int value ) override;
 
+		virtual void BlitTo( SharedPtr<Framebuffer> target, Vector2 srcMin, Vector2 srcMax, Vector2 dstMin, Vector2 dstMax, EFramebufferTextureFormat bufferMask, ETextureFilter filter ) override;
+
+		virtual uint32_t GetRendererID() const override { return m_RendererID; }
 		virtual uint32_t GetColorAttachmentID( uint32_t index = 0 ) const override { TE_CORE_ASSERT( index < m_ColorAttachments.size(), "Attempting to access outside of m_ColorAttachments!"); return m_ColorAttachments[index]; }
 		virtual uint32_t GetDepthAttachmentID() const override { return m_DepthAttachment; }
 

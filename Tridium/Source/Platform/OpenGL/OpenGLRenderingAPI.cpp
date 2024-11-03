@@ -45,8 +45,33 @@ namespace Tridium {
 		glViewport( x, y, width, height );
 	}
 
+	void OpenGLRenderingAPI::SetBlendmode( EBlendMode a_BlendMode )
+	{
+		switch ( a_BlendMode )
+		{
+		case EBlendMode::None:
+			glDisable( GL_BLEND );
+			break;
+		case EBlendMode::Alpha:
+			glEnable( GL_BLEND );
+			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+			break;
+		case EBlendMode::Additive:
+			glEnable( GL_BLEND );
+			glBlendFunc( GL_SRC_ALPHA, GL_ONE );
+			break;
+		default:
+			TE_CORE_ASSERT( false, "Unknown blend mode!" );
+			break;
+		}
+	}
+
 	void OpenGLRenderingAPI::SetDepthTest( bool enabled )
 	{
+		if ( enabled )
+			glEnable( GL_DEPTH_TEST );
+		else
+			glDisable( GL_DEPTH_TEST );
 	}
 
 	void OpenGLRenderingAPI::SetDepthCompare( EDepthCompareOperator a_DepthCompareOperator )

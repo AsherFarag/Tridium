@@ -7,13 +7,13 @@ namespace Tridium {
 	struct BufferElement
 	{
 		std::string Name;
-		ShaderDataType Type;
+		EShaderDataType Type;
 		uint32_t Offset;
 		uint32_t Size;
 		bool Normalised;
 
 		BufferElement() {}
-		BufferElement( ShaderDataType a_Type, const std::string& a_Name, uint32_t a_Count = 1, bool a_Normalised = false );
+		BufferElement( EShaderDataType a_Type, const std::string& a_Name, uint32_t a_Count = 1, bool a_Normalised = false );
 
 		uint32_t GetComponentCount() const;
 	};

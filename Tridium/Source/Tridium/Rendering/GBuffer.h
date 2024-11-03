@@ -12,6 +12,8 @@ namespace Tridium {
 		GBuffer( uint32_t a_Width, uint32_t a_Height );
 		~GBuffer() = default;
 
+		void Bind() { m_Framebuffer->Bind(); }
+		void Unbind() { m_Framebuffer->Unbind(); }
 		void Resize( uint32_t a_Width, uint32_t a_Height ) { m_Framebuffer->Resize( a_Width, a_Height ); }
 
 		SharedPtr<Framebuffer> GetFramebuffer() const { return m_Framebuffer; }

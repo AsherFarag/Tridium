@@ -7,7 +7,7 @@ namespace Tridium {
 	// Temp?
 	class Framebuffer;
 
-	constexpr uint32_t MAX_POINT_LIGHTS = 4;
+	constexpr uint32_t MAX_POINT_LIGHTS = 32;
 
 	struct PointLight
 	{
@@ -21,7 +21,7 @@ namespace Tridium {
 		SharedPtr<Framebuffer> ShadowMap;
 	};
 
-	constexpr uint32_t MAX_SPOT_LIGHTS = 4;
+	constexpr uint32_t MAX_SPOT_LIGHTS = 32;
 
 	struct SpotLight
 	{

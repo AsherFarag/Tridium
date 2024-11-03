@@ -1,43 +1,20 @@
 #pragma type Vertex
 #version 420 core
 layout(location = 0) in vec3 a_Position;
-layout(location = 1) in vec3 a_Normal;
-layout(location = 2) in vec3 a_Tangent;
-layout(location = 3) in vec3 a_Bitangent;
-layout(location = 4) in vec2 a_UV;
-uniform mat4 u_PVM;
-uniform mat4 u_Model;
+layout(location = 1) in vec2 a_UV;
 
-out vec3 v_WorldPos;
-out mat3 v_TBN; 
 out vec2 v_UV;
-
-// Shadows
-uniform mat4 u_LightSpaceMatrix;
-out vec4 v_FragPosLightSpace;
 
 void main()
 {
-	vec3 T = normalize(vec3(u_Model * vec4(a_Tangent,   0.0)));
-    vec3 N = normalize(vec3(u_Model * vec4(a_Normal,    0.0)));
-	// re-orthogonalize T with respect to N
-	T = normalize(T - dot(T, N) * N);
-	// then retrieve perpendicular vector B with the cross product of T and N
-	vec3 B = cross(N, T);
-    v_TBN = mat3(T, B, N);
-
-	v_WorldPos = ( u_Model * vec4(a_Position, 1.0) ).xyz;
 	v_UV = a_UV;
-
-    // Shadows
-	v_FragPosLightSpace = u_LightSpaceMatrix * vec4( v_WorldPos, 1.0 );
-
-	gl_Position = u_PVM * vec4(a_Position, 1.0);
+	gl_Position = vec4(a_Position, 1.0);
 }
 
 #pragma type Fragment
 #version 420 core
 layout(location = 0) out vec4 o_Color;
+in vec2 v_UV;
 
 const float PI = 3.14159265359;
 const float MAX_REFLECTION_LOD = 4.0;
@@ -46,19 +23,12 @@ const float EPSILON = 0.0001;
 
 uniform vec3 u_CameraPosition;
 
-// Vertex Attributes
-in vec3 v_WorldPos;
-in mat3 v_TBN;
-in vec2 v_UV;
-
-// PBR Textures
-uniform sampler2D u_AlbedoTexture;
-uniform sampler2D u_MetallicTexture;
-uniform sampler2D u_RoughnessTexture;
-uniform sampler2D u_NormalTexture;
-uniform sampler2D u_OpacityTexture;
-uniform sampler2D u_EmissiveTexture;
-uniform sampler2D u_AOTexture;
+// GBuffer Textures
+uniform sampler2D g_Position;
+uniform sampler2D g_Normal;
+uniform sampler2D g_Albedo;
+uniform sampler2D g_AORM;
+uniform sampler2D g_Emission;
 
 struct Environment
 {
@@ -108,7 +78,6 @@ const int MAX_NUM_DIRECTIONAL_LIGHTS = 1;
 uniform DirectionalLight u_DirectionalLights[MAX_NUM_DIRECTIONAL_LIGHTS];
 
 // Shadows
-in vec4 v_FragPosLightSpace;
 uniform sampler2D u_PointShadowMaps[MAX_NUM_POINT_LIGHTS];
 uniform sampler2D u_SpotShadowMaps[MAX_NUM_SPOT_LIGHTS];
 uniform sampler2D u_DirectionalShadowMaps[MAX_NUM_DIRECTIONAL_LIGHTS];
@@ -141,35 +110,32 @@ vec3 GammaCorrection(vec3 color, float gamma)
 // TEMP ?
 float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadowMap);
 
+uniform mat4 u_LightSpaceMatrix;
+
 void main()
 {
-	// Temp Opacity calculation
-	if ( texture(u_OpacityTexture, v_UV).a < 0.2 )
-		discard; 
-
-	vec3 albedo = texture(u_AlbedoTexture, v_UV).rgb;
+	vec3 worldPos = texture(g_Position, v_UV).rgb;
+	vec3 albedo = texture(g_Albedo, v_UV).rgb;
 	// NOTE: AO, Roughness, and Metallic could all use the same texture as we only need one channel for each. 
 	// r = ambient occlusion
 	// g = roughness
 	// b = metallic
-	float ao = texture(u_AOTexture, v_UV).r;
-	float roughness = texture(u_RoughnessTexture, v_UV).g;
-	float metallic = texture(u_MetallicTexture, v_UV).b;
-	vec3 emissive = texture(u_EmissiveTexture, v_UV).rgb;
+	float ao = texture(g_AORM, v_UV).r;
+	float roughness = texture(g_AORM, v_UV).g;
+	float metallic = texture(g_AORM, v_UV).b;
+	vec3 emissive = texture(g_Emission, v_UV).rgb;
+	vec3 normal = texture(g_Normal, v_UV).rgb;
 
-	// Calculate Normal using the normal map and TBN matrix
-	vec3 normal = texture(u_NormalTexture, v_UV).rgb;
-	//normal.g = 1.0 - normal.g; 
-	normal = normal * 2.0 - 1.0;
-	normal = normalize(v_TBN * normal);
-
-	vec3 V = normalize(u_CameraPosition - v_WorldPos);
+	vec3 V = normalize(u_CameraPosition - worldPos);
 	vec3 R = reflect(-V, normal);
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)  
 	vec3 F0 = vec3(0.04);
 	F0 = mix(F0, albedo, metallic);
+
+	// Temp?
+	vec4 fragPosLightSpace = u_LightSpaceMatrix * vec4( worldPos, 1.0 );
 
 	// Calculate Light Output
 	vec3 Lo = vec3(0.0);
@@ -178,19 +144,19 @@ void main()
 	{
 	    DirectionalLight dirLight = u_DirectionalLights[i];
 	    vec3 light = CalcDirectionalLightRadiance(dirLight, normal, V, albedo, roughness, metallic, F0);
-        Lo += light * ( 1.0 - ShadowCalculation(v_FragPosLightSpace, normal, u_DirectionalShadowMaps[i]) );
+        Lo += light * ( 1.0 - ShadowCalculation(fragPosLightSpace, normal, u_DirectionalShadowMaps[i]) );
 	}
 	// Point Lights
 	for (int i = 0; i < MAX_NUM_POINT_LIGHTS; ++i)
 	{
 		PointLight pointLight = u_PointLights[i];
-		Lo += CalcPointLightRadiance(pointLight, normal, v_WorldPos, V, albedo, roughness, metallic, F0);
+		Lo += CalcPointLightRadiance(pointLight, normal, worldPos, V, albedo, roughness, metallic, F0);
 	}
 	// Spot Lights
 	for (int i = 0; i < MAX_NUM_SPOT_LIGHTS; ++i)
 	{
 	    SpotLight spotLight = u_SpotLights[i];
-	    Lo += CalcSpotLightRadiance(spotLight, normal, v_WorldPos, V, albedo, roughness, metallic, F0);
+	    Lo += CalcSpotLightRadiance(spotLight, normal, worldPos, V, albedo, roughness, metallic, F0);
 	}
 
 	// =======================================================================

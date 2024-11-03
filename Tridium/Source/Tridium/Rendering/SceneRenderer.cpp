@@ -31,6 +31,41 @@ namespace Tridium {
 			m_BrdfLUT = TextureLoader::LoadTexture( Application::GetEngineAssetsDirectory() / "Renderer/BRDF_LUT.png" );
 		}
 
+		// Initalize Deferred Data
+		{
+			m_DeferredData.GBufferShader.reset( Shader::Create() );
+			m_DeferredData.GBufferShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Deferred/GBuffer.glsl" );
+
+			m_DeferredData.LightingShader.reset( Shader::Create() );
+			m_DeferredData.LightingShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Deferred/DeferredPBR.glsl" );
+
+			// Create Quad VAO
+			{
+				BufferLayout layout =
+				{
+					{ EShaderDataType::Float3, "a_Position" },
+					{ EShaderDataType::Float2, "a_UV" }
+				};
+
+				float vertices[] =
+				{
+					-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+					1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+					1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+					-1.0f, 1.0f, 0.0f, 0.0f, 1.0f
+				};
+
+				uint32_t indices[] = { 0, 1, 2, 2, 3, 0 };
+
+				m_DeferredData.QuadVAO = VertexArray::Create();
+				SharedPtr<VertexBuffer> vertexBuffer = VertexBuffer::Create( vertices, sizeof( vertices ) );
+				vertexBuffer->SetLayout( layout );
+				m_DeferredData.QuadVAO->AddVertexBuffer( vertexBuffer );
+				SharedPtr<IndexBuffer> indexBuffer = IndexBuffer::Create( indices, sizeof( indices ) / sizeof( uint32_t ) );
+				m_DeferredData.QuadVAO->SetIndexBuffer( indexBuffer );
+			}
+		}
+
 		// Initialize Shadow Info
 		{
 			m_ShadowMapSize = { 1024 * 8, 1024 * 8 };
@@ -48,7 +83,7 @@ namespace Tridium {
 
 	void SceneRenderer::Render( const SharedPtr<Framebuffer>& a_FBO, const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition )
 	{
-		Flush();
+		Clear();
 		m_RenderTarget = a_FBO;
 
 		BeginScene( a_Camera, a_View, a_CameraPosition );
@@ -245,7 +280,7 @@ namespace Tridium {
 		m_RenderTarget.reset();
 	}
 
-	void SceneRenderer::Flush()
+	void SceneRenderer::Clear()
 	{
 		m_DrawCalls.clear();
 
@@ -321,10 +356,262 @@ namespace Tridium {
 
 	void SceneRenderer::DeferredRenderPass()
 	{
+		const iVector2 viewportSize = m_SceneInfo.Camera.GetViewportSize();
+		// - GBuffer Pass -
+		{
+			m_DeferredData.GBuffer.Resize( viewportSize.x, viewportSize.y );
+			m_DeferredData.GBuffer.Bind();
+			RenderCommand::Clear();
+			RenderCommand::SetBlendmode( EBlendMode::None );
+
+			// - Reset Viewport -
+			RenderCommand::SetViewport( 0, 0, viewportSize.x, viewportSize.y );
+
+			// Geometry Pass
+			{
+				DeferredGBufferPass();
+			}
+
+			m_DeferredData.GBuffer.Unbind();
+		}
+
+		m_RenderTarget->Resize( viewportSize.x, viewportSize.y );
+		m_RenderTarget->Bind();
+		RenderCommand::Clear();
+
+		// - Lighting Pass -
+		{
+			DeferredLightingPass();
+		}
+
+		// Copy Depth Buffer
+		{
+			m_DeferredData.GBuffer.GetFramebuffer()->BlitTo( 
+				m_RenderTarget,
+				{ 0, 0 }, { viewportSize.x, viewportSize.y }, // Source min, max
+				{ 0, 0 }, { viewportSize.x, viewportSize.y }, // Destination min, max
+				EFramebufferTextureFormat::Depth, ETextureFilter::Nearest );
+		}
+
+		m_RenderTarget->Bind();
+
+		// - Draw Skybox -
+		{
+			RenderSkybox();
+		}
+
+		// - Apply Post-Processing Pass -
+		{
+			PostProcessPass();
+		}
+
+		m_RenderTarget->Unbind();
 	}
 
-	void SceneRenderer::DeferredGeometryPass()
+	void SceneRenderer::DeferredGBufferPass()
 	{
+		RenderCommand::SetDepthTest( true );
+		RenderCommand::SetCullMode( ECullMode::Back );
+		RenderCommand::SetDepthCompare( EDepthCompareOperator::Less );
+
+		m_DeferredData.GBufferShader->Bind();
+		MaterialHandle lastMaterial = MaterialHandle::InvalidGUID;
+
+		auto bindMaterial = [&]( SharedPtr<Material>& material, SharedPtr<Shader>& shader )
+			{
+				// Bind Textures
+				uint32_t textureSlot = 0;
+				auto albedoTexture = AssetManager::GetAsset<Texture>( material->AlbedoTexture );
+				if ( !albedoTexture ) albedoTexture = m_WhiteTexture;
+				albedoTexture->Bind( textureSlot );
+				shader->SetInt( "u_AlbedoTexture", textureSlot );
+
+				textureSlot++;
+				auto metallicTexture = AssetManager::GetAsset<Texture>( material->MetallicTexture );
+				if ( !metallicTexture ) metallicTexture = m_BlackTexture;
+				metallicTexture->Bind( textureSlot );
+				shader->SetInt( "u_MetallicTexture", textureSlot );
+
+				textureSlot++;
+				auto roughnessTexture = AssetManager::GetAsset<Texture>( material->RoughnessTexture );
+				if ( !roughnessTexture ) roughnessTexture = m_WhiteTexture;
+				roughnessTexture->Bind( textureSlot );
+				shader->SetInt( "u_RoughnessTexture", textureSlot );
+
+				textureSlot++;
+				auto normalTexture = AssetManager::GetAsset<Texture>( material->NormalTexture );
+				if ( !normalTexture ) normalTexture = m_NormalTexture;
+				normalTexture->Bind( textureSlot );
+				shader->SetInt( "u_NormalTexture", textureSlot );
+
+				textureSlot++;
+				TODO( "Should we be setting the opacity texture to the albedo if there isn't an opacity texture?" );
+				auto opacityTexture = AssetManager::GetAsset<Texture>( material->OpacityTexture );
+				if ( !opacityTexture ) opacityTexture = albedoTexture;
+				opacityTexture->Bind( textureSlot );
+				shader->SetInt( "u_OpacityTexture", textureSlot );
+
+				textureSlot++;
+				auto emissiveTexture = AssetManager::GetAsset<Texture>( material->EmissiveTexture );
+				if ( !emissiveTexture ) emissiveTexture = m_BlackTexture;
+				emissiveTexture->Bind( textureSlot );
+				shader->SetInt( "u_EmissiveTexture", textureSlot );
+
+				textureSlot++;
+				auto aoTexture = AssetManager::GetAsset<Texture>( material->AOTexture );
+				if ( !aoTexture ) aoTexture = m_WhiteTexture;
+				aoTexture->Bind( textureSlot );
+				shader->SetInt( "u_AOTexture", textureSlot );
+			};
+
+		bindMaterial( m_DefaultMaterial, m_DeferredData.GBufferShader );
+
+		for ( const auto& drawCall : m_DrawCalls )
+		{
+			if ( drawCall.Material != lastMaterial )
+			{
+				auto material = AssetManager::GetAsset<Material>( drawCall.Material );
+				if ( !material ) material = m_DefaultMaterial;
+				bindMaterial( material, m_DeferredData.GBufferShader );
+				lastMaterial = drawCall.Material;
+			}
+
+			m_DeferredData.GBufferShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * drawCall.Transform );
+			m_DeferredData.GBufferShader->SetMatrix4( "u_Model", drawCall.Transform );
+
+			drawCall.VAO->Bind();
+			RenderCommand::DrawIndexed( drawCall.VAO );
+			drawCall.VAO->Unbind();
+		}
+
+		m_DeferredData.GBufferShader->Unbind();
+
+	}
+
+	void SceneRenderer::DeferredLightingPass()
+	{
+		m_DeferredData.LightingShader->Bind();
+
+		// Bind Shader Uniforms
+		{
+			// - Bind Scene Info -
+			m_DeferredData.LightingShader->SetFloat3( "u_CameraPosition", m_SceneInfo.CameraPosition );
+
+			// Incremented every time a texture is bound
+			uint32_t textureSlot = 0;
+
+			// - Bind GBuffer Textures -
+			{
+				m_DeferredData.GBuffer.GetFramebuffer()->BindAttatchment( m_DeferredData.GBuffer.GetPositionAttachment(), 0 );
+				m_DeferredData.GBuffer.GetFramebuffer()->BindAttatchment( m_DeferredData.GBuffer.GetNormalAttachment(), 1 );
+				m_DeferredData.GBuffer.GetFramebuffer()->BindAttatchment( m_DeferredData.GBuffer.GetAlbedoAttachment(), 2 );
+				m_DeferredData.GBuffer.GetFramebuffer()->BindAttatchment( m_DeferredData.GBuffer.GetAOMRAttachment(), 3 );
+				m_DeferredData.GBuffer.GetFramebuffer()->BindAttatchment( m_DeferredData.GBuffer.GetEmissionAttachment(), 4 );
+
+				m_DeferredData.LightingShader->SetInt( "g_Position", 0 );
+				m_DeferredData.LightingShader->SetInt( "g_Normal", 1 );
+				m_DeferredData.LightingShader->SetInt( "g_Albedo", 2 );
+				m_DeferredData.LightingShader->SetInt( "g_AORM", 3 );
+				m_DeferredData.LightingShader->SetInt( "g_Emission", 4 );
+
+				textureSlot = 5;
+			}
+
+			// - Bind Shadow Maps -
+			{
+				// Directional Lights
+				for ( uint32_t i = 0; i < MAX_DIRECTIONAL_LIGHTS; ++i )
+				{
+					DirectionalLight& directionalLight = m_LightEnvironment.DirectionalLights[i];
+
+					if ( directionalLight.ShadowMap )
+					{
+						directionalLight.ShadowMap->BindDepthAttatchment( textureSlot );
+						m_DeferredData.LightingShader->SetInt( ( "u_DirectionalShadowMaps[" + std::to_string( i ) + "]" ).c_str(), textureSlot );
+						m_DeferredData.LightingShader->SetMatrix4( "u_LightSpaceMatrix", m_LightViewProjectionMatrix );
+					}
+
+					textureSlot++;
+				}
+			}
+
+			// - Bind Environment Map -
+			{
+				// Bind BRDF LUT
+				if ( m_BrdfLUT )
+				{
+					m_BrdfLUT->Bind( textureSlot );
+					m_DeferredData.LightingShader->SetInt( "u_Environment.BrdfLUT", textureSlot );
+				}
+
+				// Bind Environment Map
+				if ( m_SceneEnvironment.HDRI.EnvironmentMap && m_SceneEnvironment.HDRI.EnvironmentMap->GetIrradianceMap() )
+				{
+					if ( auto radianceMap = m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap() )
+					{
+						radianceMap->Bind( textureSlot );
+						m_DeferredData.LightingShader->SetInt( "u_Environment.PrefilterMap", textureSlot );
+						textureSlot++;
+					}
+				}
+				m_DeferredData.LightingShader->SetFloat( "u_Environment.Roughness", m_SceneEnvironment.HDRI.Blur );
+				m_DeferredData.LightingShader->SetFloat( "u_Environment.Exposure", m_SceneEnvironment.HDRI.Exposure );
+				m_DeferredData.LightingShader->SetFloat( "u_Environment.Gamma", m_SceneEnvironment.HDRI.Gamma );
+				m_DeferredData.LightingShader->SetFloat( "u_Environment.Intensity", m_SceneEnvironment.HDRI.Intensity );
+			}
+
+			// - Bind Lights -
+			{
+				// Directional Lights
+				for ( uint32_t i = 0; i < MAX_DIRECTIONAL_LIGHTS; ++i )
+				{
+					DirectionalLight& directionalLight = m_LightEnvironment.DirectionalLights[i];
+					std::string uniformName = "u_DirectionalLights[" + std::to_string( i ) + "].";
+					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Direction" ).c_str(), directionalLight.Direction );
+					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Color" ).c_str(), directionalLight.Color );
+					m_DeferredData.LightingShader->SetFloat( ( uniformName + "Intensity" ).c_str(), directionalLight.Intensity );
+				}
+
+				// Point Lights
+				for ( uint32_t i = 0; i < MAX_POINT_LIGHTS; i++ )
+				{
+					PointLight& pointLight = m_LightEnvironment.PointLights[i];
+					std::string uniformName = "u_PointLights[" + std::to_string( i ) + "].";
+					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Position" ).c_str(), pointLight.Position );
+					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Color" ).c_str(), pointLight.Color );
+					m_DeferredData.LightingShader->SetFloat( ( uniformName + "Intensity" ).c_str(), pointLight.Intensity );
+					m_DeferredData.LightingShader->SetFloat( ( uniformName + "FalloffExponent" ).c_str(), pointLight.FalloffExponent );
+					m_DeferredData.LightingShader->SetFloat( ( uniformName + "AttenuationRadius" ).c_str(), pointLight.AttenuationRadius );
+				}
+
+				// Spot Lights
+				for ( uint32_t i = 0; i < MAX_SPOT_LIGHTS; ++i )
+				{
+					SpotLight& spotLight = m_LightEnvironment.SpotLights[i];
+					std::string uniformName = "u_SpotLights[" + std::to_string( i ) + "].";
+					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Position" ).c_str(), spotLight.Position );
+					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Direction" ).c_str(), spotLight.Direction );
+					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Color" ).c_str(), spotLight.Color );
+					m_DeferredData.LightingShader->SetFloat( ( uniformName + "Intensity" ).c_str(), spotLight.Intensity );
+					m_DeferredData.LightingShader->SetFloat( ( uniformName + "FalloffExponent" ).c_str(), spotLight.FalloffExponent );
+					m_DeferredData.LightingShader->SetFloat( ( uniformName + "AttenuationRadius" ).c_str(), spotLight.AttenuationRadius );
+					m_DeferredData.LightingShader->SetFloat( ( uniformName + "InnerConeAngle" ).c_str(), spotLight.InnerConeAngle );
+					m_DeferredData.LightingShader->SetFloat( ( uniformName + "OuterConeAngle" ).c_str(), spotLight.OuterConeAngle );
+				}
+			}
+		}
+
+		// Draw Quad
+		{
+			RenderCommand::SetDepthTest( false );
+			RenderCommand::SetCullMode( ECullMode::None );
+
+			m_DeferredData.QuadVAO->Bind();
+			RenderCommand::DrawIndexed( m_DeferredData.QuadVAO );
+			m_DeferredData.QuadVAO->Unbind();
+		}
+
+		m_DeferredData.LightingShader->Unbind();
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -547,6 +834,7 @@ namespace Tridium {
 		if ( m_SceneEnvironment.HDRI.EnvironmentMap && m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap() )
 		{
 			auto radianceMap = m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap();
+			RenderCommand::SetDepthTest( true );
 			RenderCommand::SetDepthCompare( EDepthCompareOperator::LessOrEqual );
 			RenderCommand::SetCullMode( ECullMode::None );
 			m_SkyboxShader->Bind();

@@ -18,6 +18,7 @@ namespace Tridium {
 		virtual void Init() {}
 		virtual void SetViewport( uint32_t a_X, uint32_t a_Y, uint32_t a_Width, uint32_t a_Height ) = 0;
 
+		virtual void SetBlendmode( EBlendMode a_BlendMode ) = 0;
 		virtual void SetDepthTest( bool a_Enabled ) = 0;
 		virtual void SetDepthCompare( EDepthCompareOperator a_DepthCompareOperator ) = 0;
 		virtual void SetCullMode( ECullMode a_CullMode ) = 0;

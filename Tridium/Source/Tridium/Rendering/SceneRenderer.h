@@ -48,13 +48,14 @@ namespace Tridium {
 		void BeginScene( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition );
 		void EndScene();
 
-		void Flush();
+		void Clear(); // Clears all the per frame data
 		void GenerateShadowMaps();
 		void SubmitDrawCall( DrawCall&& a_DrawCall );
 
 		// - Deferred Rendering -
 		void DeferredRenderPass();
-		void DeferredGeometryPass();
+		void DeferredGBufferPass();
+		void DeferredLightingPass();
 		// ----------------------
 
 		// - Forward Rendering -
@@ -100,6 +101,9 @@ namespace Tridium {
 		struct DeferredData
 		{
 			GBuffer GBuffer{ 1280u, 720u };
+			SharedPtr<Shader> GBufferShader;
+			SharedPtr<Shader> LightingShader;
+			SharedPtr<VertexArray> QuadVAO;
 		} m_DeferredData;
 
 		struct ForwardData
