@@ -2,6 +2,13 @@
 
 namespace Tridium {
 
+	enum class ERenderMode
+	{
+		None = 0,
+		Forward,
+		Deferred,
+	};
+
 	enum class EDepthCompareOperator
 	{
 		None = 0,

@@ -11,7 +11,7 @@ namespace Tridium {
 
 	Texture* Texture::Create( const TextureSpecification& a_Specification )
 	{
-		switch ( Renderer::GetAPI() )
+		switch ( RendererAPI::GetAPI() )
 		{
 			using enum RendererAPI::API;
 		case OpenGL: 
@@ -24,7 +24,7 @@ namespace Tridium {
 
 	Texture* Texture::Create( const TextureSpecification& a_Specification, void* a_TextureData )
 	{
-		switch ( Renderer::GetAPI() )
+		switch ( RendererAPI::GetAPI() )
 		{
 			using enum RendererAPI::API;
 		case OpenGL:
@@ -37,7 +37,7 @@ namespace Tridium {
 
 	CubeMap* CubeMap::Create( const TextureSpecification& a_Specification, const SharedPtr<Texture>& a_Texture )
 	{
-		switch ( Renderer::GetAPI() )
+		switch ( RendererAPI::GetAPI() )
 		{
 			using enum RendererAPI::API;
 		case OpenGL:
@@ -49,7 +49,7 @@ namespace Tridium {
 
 	CubeMap* CubeMap::Create( const TextureSpecification& a_Specification, const std::array<float*, 6>& a_CubeMapData )
 	{
-		switch ( Renderer::GetAPI() )
+		switch ( RendererAPI::GetAPI() )
 		{
 			using enum RendererAPI::API;
 		case OpenGL:

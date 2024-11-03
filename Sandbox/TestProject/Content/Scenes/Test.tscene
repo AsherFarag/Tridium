@@ -151,7 +151,7 @@ GameObjects:
   - GameObject: 14850510313907076365
     Tag: Point Light
     Transform:
-      Position: [8.25422668, 0.97096771, -4.33819962]
+      Position: [8.28016663, 1.40968847, -5.01645279]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
       Children: []
@@ -160,15 +160,4 @@ GameObjects:
       Intensity: 5
       FalloffExponent: 2
       AttenuationRadius: 10
-      CastsShadows: true
-  - GameObject: 14853496706002173942
-    Tag: Directional Light
-    Transform:
-      Position: [0, 0, 0]
-      Rotation: [0.258840442, -0, 0]
-      Scale: [1, 1, 1]
-      Children: []
-    DirectionalLightComponent:
-      LightColor: [1, 1, 1, 1]
-      Intensity: 1
       CastsShadows: true

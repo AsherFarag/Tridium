@@ -50,6 +50,7 @@ namespace Tridium {
 	{
 		Flush();
 		BeginScene( a_Camera, a_View, a_CameraPosition );
+		m_RenderTarget = a_FBO;
 
 		// - Generate Shadow Maps -
 		{
@@ -57,12 +58,23 @@ namespace Tridium {
 		}
 
 		// - Render Pass -
+		switch ( m_RenderMode )
 		{
-			a_FBO->Bind();
-
-			RenderPass();
-
-			a_FBO->Unbind();
+			case ERenderMode::Forward:
+			{
+				ForwardRenderPass();
+				break;
+			}
+			case ERenderMode::Deferred:
+			{
+				DeferredRenderPass();
+				break;
+			}
+			default:
+			{
+				TE_CORE_ASSERT( false, "Unknown render mode" );
+				break;
+			}
 		}
 
 		EndScene();
@@ -70,7 +82,7 @@ namespace Tridium {
 
 	void SceneRenderer::BeginScene( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition )
 	{
-		m_SceneData = SceneData
+		m_SceneInfo = SceneInfo
 		{
 			.ProjectionMatrix = a_Camera.GetProjection(),
 			.ViewMatrix = a_View,
@@ -228,24 +240,32 @@ namespace Tridium {
 
 	void SceneRenderer::EndScene()
 	{
+		// Release ownership of the render target
+		m_RenderTarget.reset();
 	}
 
 	void SceneRenderer::Flush()
 	{
 		m_DrawCalls.clear();
+
 		for ( auto& pointLight : m_LightEnvironment.PointLights )
-		{
 			pointLight = {};
-		}
+
 		for ( auto& spotLight : m_LightEnvironment.SpotLights )
-		{
 			spotLight = {};
-		}
+
 		for ( auto& directionalLight : m_LightEnvironment.DirectionalLights )
-		{
 			directionalLight = {};
-		}
 	}
+
+	void SceneRenderer::SubmitDrawCall( DrawCall&& a_DrawCall )
+	{
+		m_DrawCalls.emplace_back( a_DrawCall );
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Shadows
+	//////////////////////////////////////////////////////////////////////////
 
 	void SceneRenderer::GenerateShadowMaps()
 	{
@@ -272,8 +292,8 @@ namespace Tridium {
 				// - Update View Projection Matrix -
 				float lightNearPlane = -1000.0f; float lightFarPlane = 1000.0f;
 				Matrix4 lightView = glm::lookAt(
-					m_SceneData.CameraPosition + ( m_LightEnvironment.DirectionalLights[0].Direction * -20.f ),
-					m_SceneData.CameraPosition,
+					m_SceneInfo.CameraPosition + ( m_LightEnvironment.DirectionalLights[0].Direction * -20.f ),
+					m_SceneInfo.CameraPosition,
 					{ 0.0f, 1.0f, 0.0f } );
 				Matrix4 lightProjection = glm::ortho( -35.0f, 35.0f, -35.0f, 35.0f, lightNearPlane, lightFarPlane );
 				m_LightViewProjectionMatrix = lightProjection * lightView;
@@ -294,63 +314,50 @@ namespace Tridium {
 		}
 	}
 
-	void SceneRenderer::SubmitDrawCall( DrawCall&& a_DrawCall )
+	//////////////////////////////////////////////////////////////////////////
+	// Deferred Rendering
+	//////////////////////////////////////////////////////////////////////////
+
+	void SceneRenderer::DeferredRenderPass()
 	{
-		m_DrawCalls.push_back( a_DrawCall );
 	}
 
-	void SceneRenderer::RenderPass()
+	void SceneRenderer::DeferredGeometryPass()
 	{
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Forward Rendering
+	//////////////////////////////////////////////////////////////////////////
+
+	void SceneRenderer::ForwardRenderPass()
+	{
+		m_RenderTarget->Bind();
 		RenderCommand::Clear();
 
 		// - Reset Viewport -
-		const iVector2 viewportSize = m_SceneData.Camera.GetViewportSize();
+		const iVector2 viewportSize = m_SceneInfo.Camera.GetViewportSize();
 		RenderCommand::SetViewport( 0, 0, viewportSize.x, viewportSize.y );
 
 		// - Geometry Pass -
 		{
-			GeometryPass();
+			ForwardGeometryPass();
 		}
 
 		// - Draw Skybox -
-		if ( m_SceneEnvironment.HDRI.EnvironmentMap && m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap() )
 		{
-			auto radianceMap = m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap();
-			RenderCommand::SetDepthCompare( EDepthCompareOperator::LessOrEqual );
-			RenderCommand::SetCullMode( ECullMode::None );
-			m_SkyboxShader->Bind();
-			{
-				Matrix4 skyboxView = Matrix4( Matrix3( m_SceneData.ViewMatrix ) ); // Remove translation
-				Matrix4 skyboxTransform = glm::scale( Matrix4( 1.0f ), { 100.0f, 100.0f, 100.0f } );
-
-				m_SkyboxShader->SetMatrix4( "u_Projection", m_SceneData.ProjectionMatrix );
-				m_SkyboxShader->SetMatrix4( "u_View", skyboxView );
-				m_SkyboxShader->SetMatrix4( "u_Model", skyboxTransform );
-				m_SkyboxShader->SetFloat( "u_Exposure", m_SceneEnvironment.HDRI.Exposure );
-				m_SkyboxShader->SetFloat( "u_Gamma", m_SceneEnvironment.HDRI.Gamma );
-				const uint32_t MaxMipLevels = 5;
-				float roughness = static_cast<float>( m_SceneEnvironment.HDRI.Blur * ( MaxMipLevels - 1 ) );
-				m_SkyboxShader->SetFloat( "u_Roughness", roughness );
-
-				radianceMap->Bind();
-
-				SharedPtr<VertexArray>& cubeVAO = m_CubeMesh->GetSubMeshes()[0].VAO;
-				cubeVAO->Bind();
-				RenderCommand::DrawIndexed( cubeVAO );
-				cubeVAO->Unbind();
-
-				radianceMap->Unbind();
-			}
-			m_SkyboxShader->Unbind();
+			RenderSkybox();
 		}
 
 		// - Apply Post-Processing Pass -
 		{
 			PostProcessPass();
 		}
+
+		m_RenderTarget->Unbind();
 	}
 
-	void SceneRenderer::GeometryPass()
+	void SceneRenderer::ForwardGeometryPass()
 	{
 		RenderCommand::SetDepthTest( true );
 		RenderCommand::SetCullMode( ECullMode::Back );
@@ -520,15 +527,57 @@ namespace Tridium {
 				bindMaterialUniforms();
 			}
 
-			shader->SetMatrix4( "u_PVM", m_SceneData.ViewProjectionMatrix * drawCall.Transform );
+			shader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * drawCall.Transform );
 			shader->SetMatrix4( "u_Model", drawCall.Transform );
-			shader->SetFloat3( "u_CameraPosition", m_SceneData.CameraPosition );
+			shader->SetFloat3( "u_CameraPosition", m_SceneInfo.CameraPosition );
 
 			drawCall.VAO->Bind();
 			RenderCommand::DrawIndexed( drawCall.VAO );
 			drawCall.VAO->Unbind();
 		}
 	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Skybox
+	//////////////////////////////////////////////////////////////////////////
+
+	void SceneRenderer::RenderSkybox()
+	{
+		if ( m_SceneEnvironment.HDRI.EnvironmentMap && m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap() )
+		{
+			auto radianceMap = m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap();
+			RenderCommand::SetDepthCompare( EDepthCompareOperator::LessOrEqual );
+			RenderCommand::SetCullMode( ECullMode::None );
+			m_SkyboxShader->Bind();
+			{
+				Matrix4 skyboxView = Matrix4( Matrix3( m_SceneInfo.ViewMatrix ) ); // Remove translation
+				Matrix4 skyboxTransform = glm::scale( Matrix4( 1.0f ), { 100.0f, 100.0f, 100.0f } );
+
+				m_SkyboxShader->SetMatrix4( "u_Projection", m_SceneInfo.ProjectionMatrix );
+				m_SkyboxShader->SetMatrix4( "u_View", skyboxView );
+				m_SkyboxShader->SetMatrix4( "u_Model", skyboxTransform );
+				m_SkyboxShader->SetFloat( "u_Exposure", m_SceneEnvironment.HDRI.Exposure );
+				m_SkyboxShader->SetFloat( "u_Gamma", m_SceneEnvironment.HDRI.Gamma );
+				const uint32_t MaxMipLevels = 5;
+				float roughness = static_cast<float>( m_SceneEnvironment.HDRI.Blur * ( MaxMipLevels - 1 ) );
+				m_SkyboxShader->SetFloat( "u_Roughness", roughness );
+
+				radianceMap->Bind();
+
+				SharedPtr<VertexArray>& cubeVAO = m_CubeMesh->GetSubMeshes()[0].VAO;
+				cubeVAO->Bind();
+				RenderCommand::DrawIndexed( cubeVAO );
+				cubeVAO->Unbind();
+
+				radianceMap->Unbind();
+			}
+			m_SkyboxShader->Unbind();
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Post Processing
+	//////////////////////////////////////////////////////////////////////////
 
 	void SceneRenderer::PostProcessPass()
 	{
