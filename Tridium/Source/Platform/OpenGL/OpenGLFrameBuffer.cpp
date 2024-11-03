@@ -215,8 +215,9 @@ namespace Tridium {
 
 		if ( m_ColorAttachments.size() > 1 )
 		{
-			TE_CORE_ASSERT( m_ColorAttachments.size() <= 4, "More than 4 color attachments when invalidating this Framebuffer");
-			GLenum buffers[ 4 ] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+			TE_CORE_ASSERT( m_ColorAttachments.size() <= 8, "More than 8 color attachments when invalidating this Framebuffer");
+			GLenum buffers[ 8 ] =
+			{ GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7 };
 			glDrawBuffers( m_ColorAttachments.size(), buffers );
 		}
 

@@ -99,7 +99,7 @@ namespace Tridium {
 
 		struct DeferredData
 		{
-			GBuffer GBuffer;
+			GBuffer GBuffer{ 1280u, 720u };
 		} m_DeferredData;
 
 		struct ForwardData

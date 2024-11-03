@@ -49,8 +49,9 @@ namespace Tridium {
 	void SceneRenderer::Render( const SharedPtr<Framebuffer>& a_FBO, const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition )
 	{
 		Flush();
-		BeginScene( a_Camera, a_View, a_CameraPosition );
 		m_RenderTarget = a_FBO;
+
+		BeginScene( a_Camera, a_View, a_CameraPosition );
 
 		// - Generate Shadow Maps -
 		{

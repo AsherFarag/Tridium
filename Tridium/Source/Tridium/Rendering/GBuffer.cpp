@@ -11,10 +11,10 @@ namespace Tridium {
 		spec.Attachments =
 		{
 			{ EFramebufferTextureFormat::RGBA16F }, // Position
-			//{ EFramebufferTextureFormat::RGBA16F }, // Normal
-			//{ EFramebufferTextureFormat::RGBA8 }, // Albedo
-			//{ EFramebufferTextureFormat::RGBA8 }, // Ambient Occlusion + Metalness + Roughness (AOMR)
-			//{ EFramebufferTextureFormat::RGBA8 }, // Emission
+			{ EFramebufferTextureFormat::RGBA16F }, // Normal
+			{ EFramebufferTextureFormat::RGBA8 }, // Albedo
+			{ EFramebufferTextureFormat::RGBA8 }, // Ambient Occlusion + Metalness + Roughness (AOMR)
+			{ EFramebufferTextureFormat::RGBA8 }, // Emission
 			{ EFramebufferTextureFormat::DEPTH24STENCIL8 } // Depth
 		};
 
