@@ -28,7 +28,12 @@ namespace Tridium {
 			m_WhiteTexture = AssetManager::GetAsset<Texture>( TextureFactory::GetWhiteTexture() );
 			m_BlackTexture = AssetManager::GetAsset<Texture>( TextureFactory::GetBlackTexture() );
 			m_NormalTexture = AssetManager::GetAsset<Texture>( TextureFactory::GetNormalTexture() );
-			m_BrdfLUT = TextureLoader::LoadTexture( Application::GetEngineAssetsDirectory() / "Renderer/BRDF_LUT.png" );
+
+			// Load BRDF LUT
+			TextureSpecification spec;
+			spec.WrapS = ETextureWrap::ClampToEdge;
+			spec.WrapT = ETextureWrap::ClampToEdge;
+			m_BrdfLUT = TextureLoader::LoadTexture( spec, Application::GetEngineAssetsDirectory() / "Renderer/BRDF_LUT.png" );
 		}
 
 		// Initalize Deferred Data
@@ -331,7 +336,8 @@ namespace Tridium {
 					m_SceneInfo.CameraPosition + ( m_LightEnvironment.DirectionalLights[0].Direction * -20.f ),
 					m_SceneInfo.CameraPosition,
 					{ 0.0f, 1.0f, 0.0f } );
-				Matrix4 lightProjection = glm::ortho( -35.0f, 35.0f, -35.0f, 35.0f, lightNearPlane, lightFarPlane );
+				float size = 100.0f;
+				Matrix4 lightProjection = glm::ortho( -size, size, -size, size, lightNearPlane, lightFarPlane );
 				m_LightViewProjectionMatrix = lightProjection * lightView;
 
 				for ( const auto& drawCall : m_DrawCalls )
@@ -529,6 +535,11 @@ namespace Tridium {
 						directionalLight.ShadowMap->BindDepthAttatchment( textureSlot );
 						m_DeferredData.LightingShader->SetInt( ( "u_DirectionalShadowMaps[" + std::to_string( i ) + "]" ).c_str(), textureSlot );
 						m_DeferredData.LightingShader->SetMatrix4( "u_LightSpaceMatrix", m_LightViewProjectionMatrix );
+					}
+					else
+					{
+						m_WhiteTexture->Bind( textureSlot );
+						m_DeferredData.LightingShader->SetInt( ( "u_DirectionalShadowMaps[" + std::to_string( i ) + "]" ).c_str(), textureSlot );
 					}
 
 					textureSlot++;

@@ -2,10 +2,10 @@ Scene: Test
 SceneEnvironment:
   HDRI:
     EnvironmentMapHandle: 5806395090298646526
-    Exposure: 2
-    Gamma: 1
-    Blur: 0
-    Intensity: 0.300000012
+    Exposure: 1
+    Gamma: 2.20000005
+    Blur: 0.216000006
+    Intensity: 1
     RotationEular: [0, 0, 0]
 GameObjects:
   - GameObject: 17894983707375707960
@@ -42,11 +42,11 @@ GameObjects:
     Tag: Directional Light
     Transform:
       Position: [0, 0, 0.029566288]
-      Rotation: [1.69982982, -0, 0]
+      Rotation: [0.785398185, 3.14159274, 0]
       Scale: [0.999999881, 0.999999762, 0.999999762]
       Children: []
     DirectionalLightComponent:
-      LightColor: [0.210116744, 0.363790631, 1, 1]
+      LightColor: [0.140077829, 0.287302077, 1, 1]
       Intensity: 3
       CastsShadows: true
   - GameObject: 17099799884021532929
@@ -133,3 +133,13 @@ GameObjects:
     StaticMeshComponent:
       Mesh: 15869680136431924042
       Materials: [10414866762872322182]
+  - GameObject: 3897269542424139733
+    Tag: Static Mesh
+    Transform:
+      Position: [-8.22602558, -9.67675781, 0]
+      Rotation: [0, -0, 0]
+      Scale: [0.0699999928, 0.0699999928, 0.0699999928]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 11662457145095035423
+      Materials: [5282163452782371408]

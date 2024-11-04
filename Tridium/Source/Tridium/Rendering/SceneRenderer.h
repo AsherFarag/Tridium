@@ -68,7 +68,7 @@ namespace Tridium {
 		void PostProcessPass();
 
 	private:
-		ERenderMode m_RenderMode = ERenderMode::Forward;
+		ERenderMode m_RenderMode = ERenderMode::Deferred;
 
 		Scene& m_Scene;
 		SceneEnvironment& m_SceneEnvironment;

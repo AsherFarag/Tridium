@@ -175,15 +175,14 @@ void main()
 	vec3 prefilteredColor = textureLod(u_Environment.PrefilterMap, R, prefilteredRoughness).rgb;
     prefilteredColor *= u_Environment.Intensity;
 
-	vec2 envBRDF = texture(u_Environment.BrdfLUT, vec2(max(dot(normal, -V), 0.0)), u_Environment.Roughness + roughness).rg;
-	vec3 specular = prefilteredColor;
-	// Calculate Fresnel using Schlick's approximation
-	float fresnel = pow(clamp(1.0 - max(dot(normal, V), 0.0), 0.0, 1.0), 5.0); // Use ^5 for more accurate Fresnel
+    vec2 brdf  = texture(u_Environment.BrdfLUT, vec2(max(dot(normal, V), 0.0), roughness)).rg;
+    vec3 specular = prefilteredColor;// * (F * brdf.x + brdf.y);
+	//specular = clamp(specular, vec3(0.0),vec3(1.0));
 
 	// Apply fresnel factor to the specular term, ensuring roughness impact
-	//specular *= max( (1.0 - roughness), EPSILON );  // Reduce specular based on roughness
-	specular *= 0.65 + fresnel * 0.35;  // Add a slight minimum base reflectivity (0.1) and clamp at 1.0
-	//specular *= mix(vec3(1.0), albedo / max( dot(GRAY_SCALE, albedo), metallic), 0.01 );
+	specular *= max( (1.0 - roughness), EPSILON );  // Reduce specular based on roughness
+	specular *= 0.1 + F * 0.9;  // Add a slight minimum base reflectivity (0.1) and clamp at 1.0
+	specular *= mix(vec3(1.0), albedo / max( dot(GRAY_SCALE, albedo), metallic), 0.01 );
 
 	vec3 ambient = (kD * diffuse + specular ) * max(ao, 0.05); // Minimum AO is 0.05
 	vec3 color = ambient + Lo;
@@ -263,7 +262,7 @@ vec3 CalcDirectionalLightRadiance(DirectionalLight light, vec3 normal, vec3 view
     // Cook-Torrance BRDF terms
     float NDF = DistributionGGX(normal, H, roughness);
     float G = GeometrySmith(normal, viewDir, L, roughness);
-    vec3 fresnel = FresnelSchlick(max(dot(H, viewDir), 0.0), F0);
+    vec3 fresnel = FresnelSchlickRoughness(max(dot(H, viewDir), 0.0), F0, roughness);
 
     // Specular and diffuse contributions
     vec3 kS = fresnel;
@@ -290,7 +289,7 @@ vec3 CalcPointLightRadiance(PointLight light, vec3 normal, vec3 fragPos, vec3 vi
 	// Cook-Torrance BRDF
 	float NDF = DistributionGGX(normal, H, roughness);
 	float G = GeometrySmith(normal, viewDir, L, roughness);
-	vec3 fresnel = FresnelSchlick(max(dot(H, viewDir), 0.0), F0);
+	vec3 fresnel = FresnelSchlickRoughness(max(dot(H, viewDir), 0.0), F0, roughness);
 
 	vec3 kS = fresnel;
 	// for energy conservation, the diffuse and specular light can't
@@ -332,7 +331,7 @@ vec3 CalcSpotLightRadiance(SpotLight light, vec3 normal, vec3 fragPos, vec3 view
     // Cook-Torrance BRDF terms
     float NDF = DistributionGGX(normal, H, roughness);
     float G = GeometrySmith(normal, viewDir, L, roughness);
-    vec3 fresnel = FresnelSchlick(max(dot(H, viewDir), 0.0), F0);
+    vec3 fresnel = FresnelSchlickRoughness(max(dot(H, viewDir), 0.0), F0, roughness);
 
     // Specular and diffuse contributions
     vec3 kS = fresnel;
@@ -362,7 +361,7 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadowMap
 
     float shadow = 0.0;
 
-    const int sampleRadius = 2;
+    const int sampleRadius = 4;
     const vec2 pixelSize = 1.0 / textureSize(shadowMap, 0);
     for (int y = -sampleRadius; y <= sampleRadius; y++)
     {

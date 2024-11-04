@@ -6,6 +6,73 @@
 #include <assimp/Bitmap.h>
 
 namespace Tridium {
+	SharedPtr<Texture> TextureLoader::LoadTexture( TextureSpecification a_Specification, const IO::FilePath& a_FilePath )
+	{
+		int width, height, channels;
+		stbi_set_flip_vertically_on_load( 1 );
+		if ( stbi_is_hdr( a_FilePath.ToString().c_str() ) )
+		{
+			float* data = stbi_loadf( a_FilePath.ToString().c_str(), &width, &height, &channels, 0 );
+
+			if ( !data )
+				return nullptr;
+
+			a_Specification.Width = static_cast<uint32_t>( width );
+			a_Specification.Height = static_cast<uint32_t>( height );
+			switch ( channels )
+			{
+			case 3:
+				a_Specification.TextureFormat = ETextureFormat::RGB32F;
+				break;
+			case 4:
+				a_Specification.TextureFormat = ETextureFormat::RGBA32F;
+				break;
+			default:
+				TE_CORE_ASSERT( false, "Unknown texture format!" );
+				break;
+			}
+
+			Texture* tex = Texture::Create( a_Specification );
+			tex->SetData( data, width * height * channels );
+
+			return SharedPtr<Texture>( tex );
+		}
+		else
+		{
+			stbi_uc* data = stbi_load( a_FilePath.ToString().c_str(), &width, &height, &channels, 0 );
+
+			if ( !data )
+				return nullptr;
+
+			a_Specification.Width = static_cast<uint32_t>( width );
+			a_Specification.Height = static_cast<uint32_t>( height );
+			switch ( channels )
+			{
+			case 1:
+				a_Specification.TextureFormat = ETextureFormat::R8;
+				break;
+			case 2:
+				a_Specification.TextureFormat = ETextureFormat::RG8;
+				break;
+			case 3:
+				a_Specification.TextureFormat = ETextureFormat::RGB8;
+				break;
+			case 4:
+				a_Specification.TextureFormat = ETextureFormat::RGBA8;
+				break;
+			default:
+				TE_CORE_ASSERT( false, "Unknown texture format!" );
+				break;
+			}
+
+			Texture* tex = Texture::Create( a_Specification );
+			tex->SetData( data, width * height * channels );
+
+			//stbi_image_free( data );
+
+			return SharedPtr<Texture>( tex );
+		}
+	}
 
 	void TextureLoader::SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
 	{

@@ -211,13 +211,11 @@ void main()
 
 	vec2 envBRDF = texture(u_Environment.BrdfLUT, vec2(max(dot(normal, -V), 0.0)), u_Environment.Roughness + roughness).rg;
 	vec3 specular = prefilteredColor;
-	// Calculate Fresnel using Schlick's approximation
-	float fresnel = pow(clamp(1.0 - max(dot(normal, V), 0.0), 0.0, 1.0), 5.0); // Use ^5 for more accurate Fresnel
 
 	// Apply fresnel factor to the specular term, ensuring roughness impact
-	//specular *= max( (1.0 - roughness), EPSILON );  // Reduce specular based on roughness
-	specular *= 0.65 + fresnel * 0.35;  // Add a slight minimum base reflectivity (0.1) and clamp at 1.0
-	//specular *= mix(vec3(1.0), albedo / max( dot(GRAY_SCALE, albedo), metallic), 0.01 );
+	specular *= max( (1.0 - roughness), EPSILON );  // Reduce specular based on roughness
+	specular *= 0.1 + F * 0.9;  // Add a slight minimum base reflectivity (0.1) and clamp at 1.0
+	specular *= mix(vec3(1.0), albedo / max( dot(GRAY_SCALE, albedo), metallic), 0.01 );
 
 	vec3 ambient = (kD * diffuse + specular ) * max(ao, 0.05); // Minimum AO is 0.05
 	vec3 color = ambient + Lo;
