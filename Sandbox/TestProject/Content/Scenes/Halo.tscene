@@ -1,7 +1,7 @@
 Scene: Halo
 SceneEnvironment:
   HDRI:
-    EnvironmentMapHandle: 16699354290950884582
+    EnvironmentMapHandle: 5806395090298646526
     Exposure: 3.46700001
     Gamma: 0.441000015
     Blur: 0
@@ -23,7 +23,7 @@ GameObjects:
     Transform:
       Position: [0, -1.4377811, 0]
       Rotation: [0, -0, 0]
-      Scale: [121.884323, 1, 33.2097321]
+      Scale: [121.884315, 1, 33.2097321]
       Children: []
     StaticMeshComponent:
       Mesh: 2
@@ -42,10 +42,10 @@ GameObjects:
   - GameObject: 1833451726098940142
     Tag: Static Mesh
     Transform:
-      Position: [5.15167141, -1.00547838, 0]
+      Position: [12.2762756, -1.00547838, 0]
       Rotation: [0, -0, 0]
-      Scale: [0.0500000119, 0.0500000119, 0.0500000119]
+      Scale: [0.00650000153, 0.00650000153, 0.00650000153]
       Children: []
     StaticMeshComponent:
-      Mesh: 3228463107512144107
+      Mesh: 6680786823534590809
       Materials: []

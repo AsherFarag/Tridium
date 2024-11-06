@@ -51,6 +51,10 @@ AssetMetaData:
     AssetType: MeshSource
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/TrollApose_low.fbx
     Name: TrollApose_low.fbx
+  - Handle: 10968084403603889823
+    AssetType: Mesh
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/Water Gun/PaintedApocalypticWaterGun.fbx.tmesh
+    Name: PaintedApocalypticWaterGun.fbx
   - Handle: 5282163452782371408
     AssetType: Material
     Path: Content/revolver/textures/m_Revolver.tmat
@@ -83,6 +87,10 @@ AssetMetaData:
     AssetType: Material
     Path: Content/troll/m_Troll.tmat
     Name: m_Troll
+  - Handle: 11722021730479237657
+    AssetType: MeshSource
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/Water Gun/PaintedApocalypticWaterGun.fbx
+    Name: PaintedApocalypticWaterGun.fbx
   - Handle: 18397644629807743083
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_Albedo.jpg
@@ -131,6 +139,10 @@ AssetMetaData:
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Opacity.png
     Name: 1001_Opacity
+  - Handle: 10534474357456196390
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/Water Gun/PaintedApocalypticWaterGun_Gun_Opacity.png
+    Name: PaintedApocalypticWaterGun_Gun_Opacity
   - Handle: 16269481744891761788
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_A.tga
@@ -139,6 +151,10 @@ AssetMetaData:
     AssetType: MeshSource
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Sponza/glTF/Sponza.gltf
     Name: Sponza.gltf
+  - Handle: 9231485947035289014
+    AssetType: Material
+    Path: Content/Charles/Water Gun/m_WaterGun.tmat
+    Name: m_WaterGun
   - Handle: 4642065102083697686
     AssetType: Mesh
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Sponza/glTF/Sponza.gltf.tmesh
@@ -151,6 +167,34 @@ AssetMetaData:
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_M.tga
     Name: Cerberus_M
+  - Handle: 2212840204912943820
+    AssetType: MeshSource
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/Barrel_EdgeNormals.fbx
+    Name: Barrel_EdgeNormals.fbx
+  - Handle: 7188536080500764428
+    AssetType: Material
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/m_Barrel.tmat
+    Name: m_Barrel
+  - Handle: 9964583292748655515
+    AssetType: Mesh
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/Barrel_EdgeNormals.fbx.tmesh
+    Name: Barrel_EdgeNormals.fbx
+  - Handle: 766060415190171393
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/T_Barrel_ORM.tga
+    Name: T_Barrel_ORM
+  - Handle: 16408492395898835681
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/T_Barrel_Material_BaseColor.tga
+    Name: T_Barrel_Material_BaseColor
+  - Handle: 5151884661488856455
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/T_Barrel_Material_Normal.tga
+    Name: T_Barrel_Material_Normal
+  - Handle: 3815141893059037979
+    AssetType: Scene
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Scenes/Halo.tscene
+    Name: Halo
 AssetDependencies:
   5282163452782371408:
     - 0
@@ -161,10 +205,6 @@ AssetDependencies:
     - 16380598107030547843
   11662457145095035423:
     - 5035549482378428079
-  6932676496202442266:
-    []
-  7765604732595779487:
-    []
   6680786823534590809:
     - 12460669345156542809
   13329440684517550564:
@@ -174,8 +214,6 @@ AssetDependencies:
     - 1945590970306288314
     - 6932676496202442266
     - 13191145128629468662
-  16276606433639203390:
-    []
   10414866762872322182:
     - 0
     - 16269481744891761788
@@ -193,45 +231,14 @@ AssetDependencies:
     - 11646296566683283447
   15869680136431924042:
     - 7765604732595779487
-  16415605052835439519:
-    []
-  4086619935004974763:
-    []
-  16380598107030547843:
-    []
-  1303307644901636996:
-    []
-  5035549482378428079:
-    []
-  12460669345156542809:
-    []
-  16269481744891761788:
-    []
-  11646296566683283447:
-    []
-  3075343844041195536:
-    []
-  2201683880744401789:
-    []
-  14188683678562521315:
-    []
-  14893352513169714491:
-    []
-  7373746697082174760:
-    []
-  17890256965985546415:
-    []
-  4469917185899783065:
-    []
-  18397644629807743083:
-    []
-  6222639399811775340:
-    []
-  1945590970306288314:
-    []
-  13191145128629468662:
-    []
-  6887469768157097513:
-    []
-  16966243146113793245:
-    []
+  10968084403603889823:
+    - 11722021730479237657
+  9231485947035289014:
+    - 0
+    - 10534474357456196390
+  9964583292748655515:
+    - 2212840204912943820
+  7188536080500764428:
+    - 16408492395898835681
+    - 766060415190171393
+    - 0

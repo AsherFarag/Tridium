@@ -12,10 +12,32 @@
 #include <Tridium/Asset/Loaders/TextureLoader.h>
 #include <Editor/AssetImporter.h>
 
+#include "imgui_internal.h"
+
 namespace Tridium::Editor {
 
 	std::unordered_map<EFileType, SharedPtr<Texture>> ContentItemIcons::s_FileTypeIcons = std::unordered_map<EFileType, SharedPtr<Texture>>();
 	SharedPtr<Texture> ContentItemIcons::s_UnimportedAssetIcon = nullptr;
+
+	const char* FileTypeToString( EFileType a_Type )
+	{
+		switch ( a_Type )
+		{
+		case EFileType::None:       return "None";
+		case EFileType::Scene:      return "Scene";
+		case EFileType::Material:   return "Material";
+		case EFileType::MeshSource: return "Mesh Source";
+		case EFileType::StaticMesh: return "Static Mesh";
+		case EFileType::Shader:     return "Shader";
+		case EFileType::Texture:    return "Texture";
+		case EFileType::CubeMap:    return "Cube Map";
+		case EFileType::Lua:        return "Lua";
+		case EFileType::Folder:     return "Folder";
+		}
+
+		return "Unknown";
+
+	}
 
 	ContentBrowserPanel::ContentBrowserPanel() : Panel( "Content Browser" )
 	{
@@ -296,7 +318,6 @@ namespace Tridium::Editor {
 			uint32_t i = 0;
 			for ( const std::string& folder : m_DirectoryStack )
 			{
-
 				ImGui::ScopedID id( i );
 				if ( ImGui::SmallButton( folder.c_str() ) )
 				{
@@ -327,13 +348,44 @@ namespace Tridium::Editor {
 			return;
 		}
 
-		const float padding = 16.0f;
-		const float cellSize = m_ContentThumbnailSize + padding;
+		// If the empty space is right clicked, open the content browser context menu
+		{
+			if ( ImGui::IsWindowHovered( ImGuiHoveredFlags_ChildWindows ) && ImGui::IsMouseClicked( ImGuiMouseButton_Right ) )
+				ImGui::OpenPopup( "Content Browser Context Menu" );
+
+			if ( ImGui::BeginPopup( "Content Browser Context Menu" ) )
+			{
+				if ( ImGui::MenuItem( "Create Folder" ) )
+				{
+				}
+
+				ImGui::Separator();
+
+				if ( ImGui::BeginMenu( "Create Asset" ) )
+				{
+					if ( ImGui::MenuItem( "Material" ) )
+					{
+					}
+
+					if ( ImGui::MenuItem( "Lua Script" ) )
+					{
+					}
+
+					ImGui::EndMenu();
+				}
+
+				ImGui::EndPopup();
+			}
+		}
+
+		const float padding = 6.0f;
+		const float cellSize = 100.0f * m_ContentThumbnailSize + padding;
 		const float panelWidth = ImGui::GetContentRegionAvail().x;
 		int columnCount = (int)( panelWidth / cellSize );
 		if ( columnCount < 1 )
 			columnCount = 1;
 
+		ImGui::ScopedStyleVar cellPadding( ImGuiStyleVar_CellPadding, { padding, padding } );
 		if ( ImGui::BeginTable( "Folder Contents Items", columnCount ) )
 		{
 			ImGuiTextFilter filter( m_ContentSearchFilter.c_str() );
@@ -344,7 +396,7 @@ namespace Tridium::Editor {
 					continue;
 
 				ImGui::TableNextColumn();
-				const bool wasOpened = item.OnImGuiDraw( { m_ContentThumbnailSize, m_ContentThumbnailSize } );
+				const bool wasOpened = item.OnImGuiDraw( m_ContentThumbnailSize );
 
 				if ( wasOpened )
 				{
@@ -426,7 +478,7 @@ namespace Tridium::Editor {
 		if ( !ImGui::BeginPopup( "Content Browser Settings" ) )
 			return;
 
-		ImGui::SliderFloat( "Thumbnail Size", &m_ContentThumbnailSize, 64.0f, 256.0f );
+		ImGui::SliderFloat( "Thumbnail Size", &m_ContentThumbnailSize, 0.1f, 5.0f );
 		ImGui::EndPopup();
 	}
 
@@ -446,64 +498,104 @@ namespace Tridium::Editor {
 
 	//////////////////////////////////////////////////////////////////////////
 
-	bool ContentItem::OnImGuiDraw( const ImVec2& a_Size ) const 
+	ImVec2 operator+( const ImVec2& a, const ImVec2& b )
 	{
-		// Create an Image Button with the file name at the bottom
-		ImGui::BeginGroup();
-		{
-			float paddingX = 25.f;
-			float paddingY = 25.f;
-			paddingX = a_Size.x < paddingX ? 0 : paddingX;
-			paddingY = a_Size.y < paddingY ? 0 : paddingY;
+		return ImVec2( a.x + b.x, a.y + b.y );
+	}
 
-			SharedPtr<Texture> icon = nullptr;
-			if ( IsImported || !IsAsset() )
-				icon = ContentItemIcons::s_FileTypeIcons[Type];
-			else // Must be an Unimported Asset
-				icon = ContentItemIcons::s_UnimportedAssetIcon;
+	ImVec2 operator-( const ImVec2& a, const ImVec2& b )
+	{
+		return ImVec2( a.x - b.x, a.y - b.y );
+	}
 
-			// Draw the thumbnail
-			{
-				ImGui::PushStyleVar( ImGuiStyleVar_::ImGuiStyleVar_FramePadding, { paddingX, paddingY } );
-				ImGui::PushStyleColor( ImGuiCol_Button, ImVec4( 0.f, 0.f, 0.f, 0.f ) );
-				ImGui::PushStyleColor( ImGuiCol_ButtonActive, ImVec4( 1.f, 1.f, 1.f, 1.f ) );
-				ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 1.f, 1.f, 1.f, 0.5f ) );
+	ImVec2 operator*( const ImVec2& a, const ImVec2& b )
+	{
+		return ImVec2( a.x * b.x, a.y * b.y );
+	}
 
-				ImGui::ImageButton(
-					Name.c_str(),
-					(ImTextureID)icon->GetRendererID(),
-					{ a_Size.x - paddingX * 2, a_Size.y - paddingY * 2 },
-					{ 0,1 }, { 1,0 } );
+	ImVec2 operator*( const ImVec2& a, float b )
+	{
+		return ImVec2( a.x * b, a.y * b );
+	}
 
-				ImGui::PopStyleVar();
-				ImGui::PopStyleColor( 3 );
-			}
+	bool RenderContentBrowserThumbnail( const char* a_FileName, ImTextureID a_ThumbnailIcon, const char* a_AssetType, float a_SizeMultiplier = 1.0f )
+	{
+		ImGuiWindow* window = ImGui::GetCurrentWindow();
+		if ( window->SkipItems )
+			return false;
 
-			if ( ImGui::BeginDragDropSource() )
-			{
-				std::string filePath = ( Owner.GetDirectory() / Name ).ToString();
-				ImGui::SetDragDropPayload( TE_PAYLOAD_ASSET_HANDLE, &Handle, sizeof(AssetHandle) );
-				ImGui::Image( 
-					(ImTextureID)icon->GetRendererID(),
-					{ a_Size.x - paddingX * 2, a_Size.y - paddingY * 2 },
-					{ 0,1 }, { 1,0 } );
+		ImGuiContext& g = *GImGui;
+		const ImGuiStyle& style = g.Style;
+		const ImGuiID id = window->GetID( a_FileName );
 
-				ImGui::PushTextWrapPos( a_Size.x - paddingX * 2 );
-				ImGui::Text( Name.c_str() );
-				ImGui::PopTextWrapPos();
+		ImVec2 pos = window->DC.CursorPos;
+		ImVec2 size = ImVec2( 100.0f, 150.0f ) * a_SizeMultiplier;
 
-				ImGui::EndDragDropSource();
-			}
+		const ImRect bb( pos, pos + size );
+		const ImVec2 innerPadding = ImVec2( 6.0f, 6.0f );
+		const ImRect bbInner( bb.Min + innerPadding, bb.Max - innerPadding );
+		const ImRect bbIcon( bbInner.Min, bbInner.Min + ImVec2( bbInner.GetWidth(), bbInner.GetWidth() ) );
 
-			// Draw the file name
-			ImGui::PushTextWrapPos( ImGui::GetCursorPosX() + a_Size.x );
-			ImGui::Text( Name.c_str() );
-			ImGui::PopTextWrapPos();
-		}
-		ImGui::EndGroup();
+		ImGui::ItemSize( bb, 0.0f );
+		if ( !ImGui::ItemAdd( bb, id ) )
+			return false;
 
+		bool hovered, held;
+		bool pressed = ImGui::ButtonBehavior( bb, id, &hovered, &held, ImGuiButtonFlags_None );
+		const ImU32 col = ImGui::GetColorU32( ( held && hovered ) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_WindowBg );
+
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+		// Draw thumbnail Background
+		drawList->AddRectFilled( bb.Min, bb.Max, col, 5.0f, ImDrawFlags_RoundCornersAll );
+		// Draw thumbnail Icon
+		drawList->AddImageRounded( a_ThumbnailIcon, bbIcon.Min, bbIcon.Max, ImVec2( 0, 1 ), ImVec2( 1, 0 ), ImGui::GetColorU32( ImVec4( 1, 1, 1, 1 ) ), 2.5f );
+
+		// Draw file name
+		const float fontSize = 16.0f * a_SizeMultiplier;
+		const ImVec4 bbText( bbInner.Min.x, bbIcon.Max.y + 2.0f, bbInner.Max.x, bbIcon.Max.y + fontSize + 4.0f );
+		drawList->AddText(
+			ImGui::GetLightFont(), fontSize,
+			ImVec2( bbInner.Min.x, bbIcon.Max.y + 2.0f ),
+			ImGui::GetColorU32( ImVec4( 1, 1, 1, 0.9f ) ),
+			a_FileName,
+			nullptr, bbInner.Max.x, &bbText );
+
+		// Draw asset type at the bottom right corner
+		const float assetTypeFontSize = 14.0f * a_SizeMultiplier;
+		const ImVec4 bbAssetType( bbInner.Min.x, bbInner.Max.y - assetTypeFontSize - 2.0f, bbInner.Max.x, bbInner.Max.y );
+		drawList->AddText(
+			ImGui::GetLightFont(), assetTypeFontSize,
+			ImVec2( bbInner.Min.x, bbInner.Max.y - assetTypeFontSize - 2.0f ),
+			ImGui::GetColorU32( ImVec4( 1, 1, 1, 0.5f ) ),
+			a_AssetType,
+			nullptr, bbInner.Max.x, &bbAssetType );
+
+		return pressed;
+	}
+
+	bool ContentItem::OnImGuiDraw( float a_Size ) const 
+	{
+		SharedPtr<Texture> icon = nullptr;
+		if ( IsImported || !IsAsset() )
+			icon = ContentItemIcons::s_FileTypeIcons[Type];
+		else // Must be an Unimported Asset
+			icon = ContentItemIcons::s_UnimportedAssetIcon;
+
+		RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), a_Size );
 		// If the item is double clicked, open it
 		const bool wasOpened = ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left );
+
+		if ( ImGui::BeginDragDropSource() )
+		{
+			std::string filePath = ( Owner.GetDirectory() / Name ).ToString();
+			ImGui::SetDragDropPayload( TE_PAYLOAD_ASSET_HANDLE, &Handle, sizeof( AssetHandle ) );
+
+			RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), a_Size );
+
+			ImGui::EndDragDropSource();
+		}
+
 		return wasOpened;
 	}
 }

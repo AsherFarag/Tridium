@@ -1,10 +1,10 @@
 Scene: Test
 SceneEnvironment:
   HDRI:
-    EnvironmentMapHandle: 5806395090298646526
+    EnvironmentMapHandle: 18301043363865490591
     Exposure: 1
     Gamma: 2.20000005
-    Blur: 0.216000006
+    Blur: 0.280999988
     Intensity: 1
     RotationEular: [0, 0, 0]
 GameObjects:
@@ -42,12 +42,12 @@ GameObjects:
     Tag: Directional Light
     Transform:
       Position: [0, 0, 0.029566288]
-      Rotation: [0.785398185, 3.14159274, 0]
+      Rotation: [0.471238881, 1.83259571, 0]
       Scale: [0.999999881, 0.999999762, 0.999999762]
       Children: []
     DirectionalLightComponent:
-      LightColor: [0.140077829, 0.287302077, 1, 1]
-      Intensity: 3
+      LightColor: [1, 0.581749916, 0.140077829, 1]
+      Intensity: 5
       CastsShadows: true
   - GameObject: 17099799884021532929
     Tag: Cube
@@ -79,7 +79,7 @@ GameObjects:
       Children: []
     StaticMeshComponent:
       Mesh: 3
-      Materials: []
+      Materials: [13329440684517550564]
   - GameObject: 45953374794035966
     Tag: Sponza
     Transform:
@@ -116,9 +116,9 @@ GameObjects:
   - GameObject: 14393783786027614707
     Tag: Static Mesh
     Transform:
-      Position: [20.2624493, -13.047863, -2.21813941]
-      Rotation: [0, -0, 0]
-      Scale: [0.00644000014, 0.00644000014, 0.00644000014]
+      Position: [20.2624493, -13.047863, 3.28382516]
+      Rotation: [0, 0.231313169, 0]
+      Scale: [0.00643999595, 0.00644000014, 0.00643999595]
       Children: []
     StaticMeshComponent:
       Mesh: 6680786823534590809
@@ -143,3 +143,23 @@ GameObjects:
     StaticMeshComponent:
       Mesh: 11662457145095035423
       Materials: [5282163452782371408]
+  - GameObject: 3127853732003194947
+    Tag: Charles Barrel
+    Transform:
+      Position: [2.48641443, -11.8621883, 3.02235842]
+      Rotation: [-3.14159226, -0.688419342, 3.1415925]
+      Scale: [0.004416171, 0.00441616634, 0.004416171]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 9964583292748655515
+      Materials: [7188536080500764428]
+  - GameObject: 12710995830876031090
+    Tag: Static Mesh
+    Transform:
+      Position: [0, -2.0279963, 15.3730755]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 10968084403603889823
+      Materials: [9231485947035289014]

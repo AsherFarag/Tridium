@@ -128,7 +128,7 @@ namespace Tridium::Editor {
 
 		if ( ImGui::Begin( m_Name.c_str() ) )
 		{
-			if ( ImGui::IsWindowHovered && ImGui::IsMouseClicked( ImGuiMouseButton_Right ) )
+			if ( ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right) )
 				ImGui::SetWindowFocus();
 
 			Vector2 regionAvail = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };

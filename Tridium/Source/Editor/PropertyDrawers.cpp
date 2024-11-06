@@ -249,6 +249,7 @@ namespace Tridium::Editor {
 			if ( ImGui::Selectable( "None###Internal", a_Value == AssetHandle::InvalidGUID ) )
 			{
 				a_Value = AssetHandle::InvalidGUID;
+				ImGui::EndCombo();
 				return true;
 			}
 
@@ -320,6 +321,7 @@ namespace Tridium::Editor {
 			if ( ImGui::Selectable( "None###Internal", a_Value == AssetHandle::InvalidGUID ) )
 			{
 				a_Value = AssetHandle::InvalidGUID;
+				ImGui::EndCombo();
 				return true;
 			}
 

@@ -5,6 +5,7 @@
 #include <Editor/Panels/Asset/MeshSourceImporterPanel.h>
 #include <Tridium/Rendering/SceneRenderer.h>
 #include <Tridium/Asset/AssetFactory.h>
+#include <Tridium/Asset/Loaders/TextureLoader.h> 
 
 using namespace Tridium;
 

@@ -139,6 +139,8 @@ namespace Tridium {
 			submesh.Indices.push_back( face.mIndices[2] );
 		}
 
+		CalculateTangents( submesh.Vertices, submesh.Indices );
+
 		submesh.VAO = VertexArray::Create();
 		BufferLayout layout =
 		{
