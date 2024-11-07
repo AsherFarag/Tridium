@@ -11,7 +11,7 @@ GameObjects:
   - GameObject: 17894983707375707960
     Tag: Cube
     Transform:
-      Position: [16.9929237, -13.2505016, -8.39933872]
+      Position: [16.9929237, -9.54849052, -8.39933872]
       Rotation: [0, -0, 0]
       Scale: [0.030000031, 0.030000031, 0.030000031]
       Children: []
@@ -42,7 +42,7 @@ GameObjects:
     Tag: Directional Light
     Transform:
       Position: [0, 0, 0.029566288]
-      Rotation: [0.471238881, 1.83259571, 0]
+      Rotation: [0.558505356, 3.92699075, 0]
       Scale: [0.999999881, 0.999999762, 0.999999762]
       Children: []
     DirectionalLightComponent:
@@ -52,9 +52,9 @@ GameObjects:
   - GameObject: 17099799884021532929
     Tag: Cube
     Transform:
-      Position: [0, -15.398098, 0]
+      Position: [0, -13.5689983, 0]
       Rotation: [0, -0, 0]
-      Scale: [191.949509, 4.55000019, 337.393982]
+      Scale: [191.949509, 1, 337.393982]
       Children: []
     StaticMeshComponent:
       Mesh: 2
@@ -69,16 +69,27 @@ GameObjects:
     StaticMeshComponent:
       Mesh: 3
       Materials: [0]
-  - GameObject: 45953374794035966
-    Tag: Sponza
+  - GameObject: 4382316422698559860
+    Tag: Player
     Transform:
-      Position: [0, -12.0269508, -19.005991]
-      Rotation: [0, -0, 0]
+      Position: [-2.05353284, -11.4937649, 3.96947408]
+      Rotation: [-9.54996681, -38.7996292, 0]
       Scale: [1, 1, 1]
       Children: []
-    StaticMeshComponent:
-      Mesh: 4642065102083697686
-      Materials: []
+    CameraComponent:
+      SceneCamera:
+        m_Perspective:
+          FOV: 2.61799383
+          Near: 0.100000001
+          Far: 1000
+        m_Orthographic:
+          Size: 339
+          Near: -1000
+          Far: 1000
+        m_ProjectionType: Perspective
+    CameraControllerComponent:
+      Speed: 5
+      LookSensitivity: 0.100000001
   - GameObject: 15100604637533348928
     Tag: Torus
     Transform:
@@ -136,8 +147,8 @@ GameObjects:
     Tag: Charles Barrel
     Transform:
       Position: [2.48641443, -11.7134457, 3.02235842]
-      Rotation: [-3.14159226, -0.688419342, 3.1415925]
-      Scale: [0.004416171, 0.00441616634, 0.004416171]
+      Rotation: [1.63716312e-08, -0.953796268, 3.25355067e-08]
+      Scale: [0.00441617426, 0.00441616634, 0.00441617426]
       Children: []
     StaticMeshComponent:
       Mesh: 9964583292748655515
@@ -155,24 +166,23 @@ GameObjects:
       FalloffExponent: 2
       AttenuationRadius: 10
       CastsShadows: true
-  - GameObject: 4382316422698559860
-    Tag: Player
+  - GameObject: 18107062901687606694
+    Tag: Capsule
     Transform:
-      Position: [-2.05353284, -11.4937649, 3.96947408]
-      Rotation: [-9.54996681, -38.7996292, 0]
+      Position: [0, -8.52424049, 0]
+      Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
       Children: []
-    CameraComponent:
-      SceneCamera:
-        m_Perspective:
-          FOV: 2.61799383
-          Near: 0.100000001
-          Far: 1000
-        m_Orthographic:
-          Size: 339
-          Near: -1000
-          Far: 1000
-        m_ProjectionType: Perspective
-    CameraControllerComponent:
-      Speed: 5
-      LookSensitivity: 0.1
+    StaticMeshComponent:
+      Mesh: 10
+      Materials: []
+  - GameObject: 4173206296065635594
+    Tag: Static Mesh
+    Transform:
+      Position: [0, -12.0113049, -20.1777554]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 4642065102083697686
+      Materials: []

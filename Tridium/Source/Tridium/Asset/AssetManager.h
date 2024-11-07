@@ -77,5 +77,7 @@ namespace Tridium {
 		static bool IsMemoryAsset( AssetHandle a_Handle ) { return Application::Get().m_AssetManager->IsMemoryAsset( a_Handle ); }
 		static void RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) { Application::Get().m_AssetManager->RegisterDependency( a_Dependent, a_Dependency ); }
 		static void UnregisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) { Application::Get().m_AssetManager->UnregisterDependency( a_Dependent, a_Dependency ); }
+
+		static AssetHandle GetNextMemoryAssetHandle() { static AssetHandle::Type s_NextHandle = 0; return ++s_NextHandle; }
 	};
 }

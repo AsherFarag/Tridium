@@ -249,6 +249,13 @@ namespace Tridium::Editor {
 					SetSelectedGameObject( newGO );
 				}
 
+				if ( ImGui::MenuItem( "Capsule" ) )
+				{
+					newGO = m_Context->InstantiateGameObject( "Capsule" );
+					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCapsule();
+					SetSelectedGameObject( newGO );
+				}
+
 				if ( ImGui::MenuItem( "Cone" ) )
 				{
 					newGO = m_Context->InstantiateGameObject( "Cone" );

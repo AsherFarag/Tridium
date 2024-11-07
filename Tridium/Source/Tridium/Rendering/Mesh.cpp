@@ -434,126 +434,133 @@ namespace Tridium {
 			}
 		}
 
-#if 0
-		float sectorStep = ( 2 * glm::pi<float>() ) / a_Slices;
-		float sectorAngle;  // radian
-
-		std::vector<Vector3> unitCircleVertices;
-		unitCircleVertices.reserve( a_Slices + 1 );
-		for ( int i = 0; i <= a_Slices; ++i )
-		{
-			sectorAngle = i * sectorStep;
-			unitCircleVertices.emplace_back( cosf( sectorAngle ), sinf( sectorAngle ), 0.0f );
-		}
-
-		// Put side vertices to arrays
-		for ( int i = 0; i < 2; ++i )
-		{
-			float h = -a_Height / 2.0f + i * a_Height;           // z value; -h/2 to h/2
-			float t = 1.0f - i;                              // vertical tex coord; 1 to 0
-
-
-			for ( int j = 0; j <= a_Slices; ++j )
-			{
-				Vector3 u = unitCircleVertices[j];
-				Vertex& vertex = vertices.emplace_back();
-
-				vertex.Position = { u.x * a_BaseRadius, u.y * a_BaseRadius, h };
-				vertex.Normal = u;
-				vertex.UV = { (float)j / a_Slices, t };
-			}
-		}
-
-		// The starting index for the base/top surface
-		// NOTE: it is used for generating indices later 
-		uint32_t baseCenterIndex = (uint32_t)(vertices.size());
-		uint32_t topCenterIndex = baseCenterIndex + a_Slices + 1; // include center vertex
-
-		// Put base and top vertices to arrays
-		for ( int i = 0; i < 2; ++i )
-		{
-			float h = -a_Height / 2.0f + i * a_Height;           // z value; -h/2 to h/2
-			float nz = ( i == 0 ) ? -1.0f : 1.0f;               // normal z; -1 to 1
-
-			// center point
-			Vertex& vertex = vertices.emplace_back();
-			vertex.Position = { 0.0f, 0.0f, h };
-			vertex.Normal = { 0.0f, 0.0f, nz };
-			vertex.UV = { 0.5f, 0.5f };
-
-			for ( int j = 0; j < a_Slices; ++j )
-			{
-				Vector3 u = unitCircleVertices[j];
-				Vertex& vertex = vertices.emplace_back();
-
-				vertex.Position = { u.x * ( ( i == 0 ) ? a_BaseRadius : a_TopRadius ), u.y * ( ( i == 0 ) ? a_BaseRadius : a_TopRadius ), h };
-				vertex.Normal = { 0.0f, 0.0f, nz };
-				vertex.UV = { u.x * 0.5f + 0.5f, u.y * 0.5f + 0.5f };
-			}
-		}
-
-		// generate CCW index list of cylinder triangles
-		int k1 = 0;                         // 1st vertex index at base
-		int k2 = a_Slices + 1;           // 1st vertex index at top
-
-		// indices for the side surface
-		for ( int i = 0; i < a_Slices; ++i, ++k1, ++k2 )
-		{
-			// 2 triangles per sector
-			// k1 => k1+1 => k2
-			indices.push_back( k1 );
-			indices.push_back( k1 + 1 );
-			indices.push_back( k2 );
-
-			// k2 => k1+1 => k2+1
-			indices.push_back( k2 );
-			indices.push_back( k1 + 1 );
-			indices.push_back( k2 + 1 );
-		}
-		
-		// indices for the base surface
-		//NOTE: baseCenterIndex and topCenterIndices are pre-computed during vertex generation
-		//      please see the previous code snippet
-		for ( int i = 0, k = baseCenterIndex + 1; i < a_Slices; ++i, ++k )
-		{
-			if ( i < a_Slices - 1 )
-			{
-				indices.push_back( baseCenterIndex );
-				indices.push_back( k + 1 );
-				indices.push_back( k );
-			}
-			else // last triangle
-			{
-				indices.push_back( baseCenterIndex );
-				indices.push_back( baseCenterIndex + 1 );
-				indices.push_back( k );
-			}
-		}
-
-		// indices for the top surface
-		for ( int i = 0, k = topCenterIndex + 1; i < a_Slices; ++i, ++k )
-		{
-			if ( i < a_Slices - 1 )
-			{
-				indices.push_back( topCenterIndex );
-				indices.push_back( k );
-				indices.push_back( k + 1 );
-			}
-			else // last triangle
-			{
-				indices.push_back( topCenterIndex );
-				indices.push_back( k );
-				indices.push_back( topCenterIndex + 1 );
-			}
-		}
-
-#endif
-
 		CalculateTangents( vertices, indices );
 
 		SharedPtr<MeshSource> meshSource = MakeShared<MeshSource>( vertices, indices, Matrix4( 1.0 ) );
 		return meshSource;
 	}
+
+	SharedPtr<MeshSource> MeshFactory::CreateCapsule( float a_Radius, float a_Height, uint32_t a_Stacks, uint32_t a_Slices )
+	{
+		std::vector<Vertex> vertices;
+		std::vector<uint32_t> indices;
+
+		vertices.reserve( ( a_Stacks + 1 ) * ( a_Slices + 1 ) * 2 );
+		indices.reserve( a_Stacks * a_Slices * 6 * 2 );
+
+		float halfHeight = a_Height / 2.0f;
+
+		// --- Top Hemisphere ---
+		for ( uint32_t i = 0; i <= a_Stacks / 2; ++i ) {
+			float V = i / (float)( a_Stacks / 2 );
+			float phi = V * glm::half_pi<float>();
+
+			for ( uint32_t j = 0; j <= a_Slices; ++j ) {
+				float U = j / (float)a_Slices;
+				float theta = U * ( glm::pi<float>() * 2 );
+
+				float x = cosf( theta ) * sinf( phi );
+				float y = sinf( phi );
+				float z = sinf( theta ) * sinf( phi );
+
+				Vertex vertex;
+				vertex.Position = { x * a_Radius, halfHeight + cosf( phi ) * a_Radius, z * a_Radius };
+				vertex.Normal = { x, cosf( phi ), z };
+				vertex.UV = { U, V * 0.5f };
+				vertices.push_back( vertex );
+			}
+		}
+
+		// --- Cylinder Section ---
+		for ( uint32_t i = 0; i <= a_Stacks; ++i ) {
+			float V = i / (float)a_Stacks;
+			float y = halfHeight - ( V * a_Height );
+
+			for ( uint32_t j = 0; j <= a_Slices; ++j ) {
+				float U = j / (float)a_Slices;
+				float theta = U * ( glm::pi<float>() * 2 );
+
+				float x = cosf( theta );
+				float z = sinf( theta );
+
+				Vertex vertex;
+				vertex.Position = { x * a_Radius, y, z * a_Radius };
+				vertex.Normal = { x, 0.0f, z };
+				vertex.UV = { U, 0.5f + V * 0.5f };
+				vertices.push_back( vertex );
+			}
+		}
+
+		// --- Bottom Hemisphere ---
+		for ( uint32_t i = 0; i <= a_Stacks / 2; ++i ) {
+			float V = i / (float)( a_Stacks / 2 );
+			float phi = glm::half_pi<float>() + V * glm::half_pi<float>();
+
+			for ( uint32_t j = 0; j <= a_Slices; ++j ) {
+				float U = j / (float)a_Slices;
+				float theta = U * ( glm::pi<float>() * 2 );
+
+				float x = cosf( theta ) * sinf( phi );
+				float y = sinf( phi );
+				float z = sinf( theta ) * sinf( phi );
+
+				Vertex vertex;
+				vertex.Position = { x * a_Radius, -halfHeight + cosf( phi ) * a_Radius, z * a_Radius };
+				vertex.Normal = { x, cosf( phi ), z };
+				vertex.UV = { U, 0.5f + V * 0.5f };
+				vertices.push_back( vertex );
+			}
+		}
+
+		// Generate indices with flipped winding order
+		// Top Hemisphere
+		for ( uint32_t i = 0; i < a_Stacks / 2; ++i ) {
+			for ( uint32_t j = 0; j < a_Slices; ++j ) {
+				indices.push_back( ( i + 1 ) * ( a_Slices + 1 ) + j );
+				indices.push_back( i * ( a_Slices + 1 ) + j );
+				indices.push_back( i * ( a_Slices + 1 ) + ( j + 1 ) );
+
+				indices.push_back( ( i + 1 ) * ( a_Slices + 1 ) + ( j + 1 ) );
+				indices.push_back( ( i + 1 ) * ( a_Slices + 1 ) + j );
+				indices.push_back( i * ( a_Slices + 1 ) + ( j + 1 ) );
+			}
+		}
+
+		// Cylinder Section
+		uint32_t baseIndex = ( a_Stacks / 2 + 1 ) * ( a_Slices + 1 );
+		for ( uint32_t i = 0; i < a_Stacks; ++i ) {
+			for ( uint32_t j = 0; j < a_Slices; ++j ) {
+				indices.push_back( baseIndex + ( i + 1 ) * ( a_Slices + 1 ) + j );
+				indices.push_back( baseIndex + i * ( a_Slices + 1 ) + j );
+				indices.push_back( baseIndex + i * ( a_Slices + 1 ) + ( j + 1 ) );
+
+				indices.push_back( baseIndex + ( i + 1 ) * ( a_Slices + 1 ) + ( j + 1 ) );
+				indices.push_back( baseIndex + ( i + 1 ) * ( a_Slices + 1 ) + j );
+				indices.push_back( baseIndex + i * ( a_Slices + 1 ) + ( j + 1 ) );
+			}
+		}
+
+		// Bottom Hemisphere
+		baseIndex += ( a_Stacks + 1 ) * ( a_Slices + 1 );
+		for ( uint32_t i = 0; i < a_Stacks / 2; ++i ) {
+			for ( uint32_t j = 0; j < a_Slices; ++j ) {
+				indices.push_back( baseIndex + ( i + 1 ) * ( a_Slices + 1 ) + j );
+				indices.push_back( baseIndex + i * ( a_Slices + 1 ) + j );
+				indices.push_back( baseIndex + i * ( a_Slices + 1 ) + ( j + 1 ) );
+
+				indices.push_back( baseIndex + ( i + 1 ) * ( a_Slices + 1 ) + ( j + 1 ) );
+				indices.push_back( baseIndex + ( i + 1 ) * ( a_Slices + 1 ) + j );
+				indices.push_back( baseIndex + i * ( a_Slices + 1 ) + ( j + 1 ) );
+			}
+		}
+
+		CalculateTangents( vertices, indices );
+
+		SharedPtr<MeshSource> meshSource = MakeShared<MeshSource>( vertices, indices, Matrix4( 1.0f ) );
+		return meshSource;
+	}
+
+
 
 	SharedPtr<MeshSource> MeshFactory::CreateTorus( float a_Radius, float a_Radius2, uint32_t a_Stacks, uint32_t a_Slices )
 	{
@@ -623,7 +630,7 @@ namespace Tridium {
 		static bool s_QuadSourceInit = AssetManager::AddMemoryOnlyAsset( s_QuadSourceHandle, s_QuadSource );
 
 		static SharedPtr<StaticMesh> s_StaticMesh = MakeShared<StaticMesh>( s_QuadSourceHandle );
-		static AssetHandle s_StaticMeshHandle = 1;
+		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
 		return s_StaticMeshHandle;
@@ -636,7 +643,7 @@ namespace Tridium {
 		static bool s_CubeSourceInit = AssetManager::AddMemoryOnlyAsset( s_CubeSourceHandle, s_CubeSource );
 
 		static SharedPtr<StaticMesh> s_StaticMesh = MakeShared<StaticMesh>( s_CubeSourceHandle );
-		static AssetHandle s_StaticMeshHandle = 2;
+		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
 		return s_StaticMeshHandle;
@@ -649,7 +656,7 @@ namespace Tridium {
 		static bool s_SphereSourceInit = AssetManager::AddMemoryOnlyAsset( s_SphereSourceHandle, s_SphereSource );
 
 		static SharedPtr<StaticMesh> s_StaticMesh = MakeShared<StaticMesh>( s_SphereSourceHandle );
-		static AssetHandle s_StaticMeshHandle = 3;
+		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
 		return s_StaticMeshHandle;
@@ -662,7 +669,20 @@ namespace Tridium {
 		static bool s_CylinderSourceInit = AssetManager::AddMemoryOnlyAsset( s_CylinderSourceHandle, s_CylinderSource );
 
 		static SharedPtr<StaticMesh> s_StaticMesh = MakeShared<StaticMesh>( s_CylinderSourceHandle );
-		static AssetHandle s_StaticMeshHandle = 4;
+		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
+		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
+
+		return s_StaticMeshHandle;
+	}
+
+	AssetHandle MeshFactory::GetDefaultCapsule()
+	{
+		static SharedPtr<MeshSource> s_CapsuleSource = CreateCapsule();
+		static AssetHandle s_CapsuleSourceHandle = AssetHandle::Create();
+		static bool s_CapsuleSourceInit = AssetManager::AddMemoryOnlyAsset( s_CapsuleSourceHandle, s_CapsuleSource );
+
+		static SharedPtr<StaticMesh> s_StaticMesh = MakeShared<StaticMesh>( s_CapsuleSourceHandle );
+		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
 		return s_StaticMeshHandle;
@@ -675,7 +695,7 @@ namespace Tridium {
 		static bool s_ConeSourceInit = AssetManager::AddMemoryOnlyAsset( s_ConeSourceHandle, s_ConeSource );
 
 		static SharedPtr<StaticMesh> s_StaticMesh = MakeShared<StaticMesh>( s_ConeSourceHandle );
-		static AssetHandle s_StaticMeshHandle = 5;
+		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
 		return s_StaticMeshHandle;
@@ -688,7 +708,7 @@ namespace Tridium {
 		static bool s_TorusSourceInit = AssetManager::AddMemoryOnlyAsset( s_TorusSourceHandle, s_TorusSource );
 
 		static SharedPtr<StaticMesh> s_StaticMesh = MakeShared<StaticMesh>( s_TorusSourceHandle );
-		static AssetHandle s_StaticMeshHandle = 6;
+		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
 		return s_StaticMeshHandle;
