@@ -56,6 +56,8 @@ namespace Tridium {
 		// - GameObjects - 
 		GameObject InstantiateGameObject( const std::string& a_Name = "GameObject" );
 		GameObject InstantiateGameObject( GUID a_GUID, const std::string& a_Name = "GameObject" );
+		GameObject InstantiateGameObjectFrom( GameObject a_Source );
+		void CopyGameObject( GameObject a_Destination, GameObject a_Source );
 
 		template <typename T, typename... Args>
 		T& AddComponentToGameObject( GameObject a_GameObject, Args&&... args );

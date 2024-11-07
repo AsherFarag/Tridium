@@ -65,6 +65,44 @@ namespace Tridium {
 		return go;
 	}
 
+	GameObject Scene::InstantiateGameObjectFrom( GameObject a_Source )
+	{
+		GameObject dst( m_Registry.create() );
+		AddComponentToGameObject<GUIDComponent>( dst );
+		AddComponentToGameObject<TagComponent>( dst, a_Source.GetTag() );
+		TransformComponent& tc = AddComponentToGameObject<TransformComponent>( dst );
+		tc.Position = a_Source.GetTransform().Position;
+		tc.Rotation = a_Source.GetTransform().Rotation;
+		tc.Scale = a_Source.GetTransform().Scale;
+
+		for ( auto [id, storage] : m_Registry.storage() )
+		{
+			if ( !storage.contains( a_Source ) )
+				continue;
+
+			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<GUIDComponent>().info() )
+				continue;
+
+			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<TagComponent>().info() )
+				continue;
+
+			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<TransformComponent>().info() )
+				continue;
+
+			if ( storage.contains(dst) )
+				storage.erase( dst );
+
+			storage.push( dst, storage.value( a_Source ) );
+		}
+
+		return dst;
+	}
+
+	void Scene::CopyGameObject( GameObject a_Destination, GameObject a_Source )
+	{
+
+	}
+
 	void Scene::Clear()
 	{
 		m_Registry.clear();

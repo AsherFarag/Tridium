@@ -110,6 +110,30 @@ namespace Tridium::Editor {
 
 				return true;
 			}
+			case Input::KEY_C:
+			{
+				if ( Input::IsKeyPressed( Input::KEY_LEFT_CONTROL ) )
+				{
+					if ( GameObject selectedGO = GetSceneHeirarchy()->GetSelectedGameObject() )
+					{
+						EditorApplication::GetPayloadManager().SetPayload( "GameObject", selectedGO );
+					}
+				}
+				return true;
+			}
+			case Input::KEY_V:
+			{
+				if ( Input::IsKeyPressed( Input::KEY_LEFT_CONTROL ) )
+				{
+					if ( auto payload = EditorApplication::GetPayloadManager().GetPayload( "GameObject" ); payload.has_value() )
+					{
+						GameObject go = std::any_cast<GameObject>( payload );
+						GameObject newGO = GetActiveScene()->InstantiateGameObjectFrom( go );
+						GetSceneHeirarchy()->SetSelectedGameObject( newGO );
+					}
+				}
+				return true;
+			}
 			}
 		}
 

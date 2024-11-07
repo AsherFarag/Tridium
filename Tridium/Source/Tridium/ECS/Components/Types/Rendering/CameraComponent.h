@@ -16,4 +16,9 @@ namespace Tridium {
 		Camera SceneCamera;
 	};
 
+	BEGIN_REFLECT_COMPONENT( CameraComponent )
+		BASE( Component )
+		PROPERTY( SceneCamera, FLAGS( Serialize, EditAnywhere ) )
+	END_REFLECT( CameraComponent )
+
 }

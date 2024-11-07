@@ -10,6 +10,9 @@ int main( int argc, char** argv )
 
 	const char* ProjectPath = argc >= 2 ? argv[1] : "";
 
+	TE_CORE_INFO( "Starting Tridium Engine" );
+	TE_CORE_INFO( "Project Path: {0}", ProjectPath );
+
 	Tridium::Application app(ProjectPath);
 	app.Run();
 }

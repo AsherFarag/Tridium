@@ -1,4 +1,6 @@
 #pragma once
+#ifdef IS_EDITOR
+
 #include "Panel.h"
 #include <Tridium/Project/Project.h>
 
@@ -17,3 +19,5 @@ namespace Tridium::Editor {
     };
 
 }
+
+#endif // IS_EDITOR

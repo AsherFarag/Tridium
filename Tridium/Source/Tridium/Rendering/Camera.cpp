@@ -10,13 +10,13 @@ namespace Tridium {
 
 	void Camera::SetPerspective()
 	{
-		m_ProjectionType = ProjectionType::Perspective;
+		m_ProjectionType = EProjectionType::Perspective;
 		RecalculateProjection();
 	}
 
 	void Camera::SetOrthographic()
 	{
-		m_ProjectionType = ProjectionType::Orthographic;
+		m_ProjectionType = EProjectionType::Orthographic;
 		RecalculateProjection();
 	}
 
@@ -45,7 +45,7 @@ namespace Tridium {
 
 	void Camera::RecalculateProjection()
 	{
-		if ( m_ProjectionType == ProjectionType::Perspective )
+		if ( m_ProjectionType == EProjectionType::Perspective )
 		{
 			m_Projection = glm::perspective( glm::radians( m_Perspective.FOV ), GetAspectRatio(), m_Perspective.Near, m_Perspective.Far);
 		}

@@ -155,6 +155,39 @@ namespace Tridium::Refl::Internal {
 // Example: PROPERTY( Name, FLAGS( Serialize, VisibleAnywhere ) )
 #define FLAGS(...) _REFL_ Internal::CombineFlags(__VA_ARGS__)
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#define BEGIN_REFLECT_ENUM(EnumClass)                                                                      \
+    _BEGIN_REFLECT_BODY_HELPER(EnumClass)                                                                  \
+    _DRAW_ENUM_FUNC(EnumClass)                                                                             \
+    meta.prop(_REFL_ Internal::YAMLSerializeFuncID,                                                        \
+              +[](::Tridium::IO::Archive& a_Archive, const _REFL_ MetaAny& a_Data)                         \
+              {                                                                                            \
+                  a_Archive <<  s_EnumToString.at(a_Data.cast<ClassType>());                               \
+              });                                                                                          \
+    meta.prop(_REFL_ Internal::YAMLDeserializeFuncID,                                                      \
+              +[](const YAML::Node& a_Node, _REFL_ MetaAny& a_Data)                                        \
+              {                                                                                            \
+                  std::string enumString = a_Node.as<std::string>();                                       \
+                  a_Data = entt::resolve<ClassType>().data(entt::hashed_string(enumString.c_str()))        \
+                              .get({}).cast<ClassType>();                                                  \
+              });
+
+#define ENUM_VAL(EnumVal)                                                                                  \
+    constexpr entt::hashed_string Hashed_##EnumVal(#EnumVal);                                              \
+    meta.data<ClassType::EnumVal>(Hashed_##EnumVal,                                                        \
+                                  static_cast<::Tridium::Refl::PropertyFlags>(::Tridium::Refl::EPropertyFlag::None), \
+                                  #EnumVal);                                                               \
+     s_EnumToString.insert({ClassType::EnumVal, #EnumVal});
+
+#define END_REFLECT_ENUM(EnumClass)                                                                        \
+    }                                                                                                      \
+    inline static std::unordered_map<EnumClass, std::string> s_EnumToString;                               \
+    };                                                                                                     \
+    static volatile ::Tridium::Refl::Reflector<EnumClass> ___StaticInitializer_##EnumClass;
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #define BEGIN_REFLECT_COMPONENT(ComponentClass)														\
     BEGIN_REFLECT(ComponentClass)																	\
     meta.prop(::Tridium::Refl::Internal::IsComponentPropID);										\

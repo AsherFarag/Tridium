@@ -1,4 +1,5 @@
 #include "tripch.h"
+#ifdef IS_EDITOR
 #include "ProjectSettingsPanel.h"
 #include <Tridium/IO/ProjectSerializer.h>
 #include <Tridium/Core/Application.h>
@@ -40,3 +41,5 @@ namespace Tridium::Editor {
 	}
 
 }
+
+#endif // IS_EDITOR

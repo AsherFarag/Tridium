@@ -2,12 +2,47 @@
 #ifdef IS_EDITOR
 #include "EditorLayer.h"
 #include "Tridium/Core/Core.h"
-
-namespace Tridium {
-	class Asset;
-}
+#include <any>
 
 namespace Tridium::Editor {
+
+	class PayloadManager
+	{
+	public:
+		PayloadManager() = default;
+
+		const std::string& GetPayloadType() const { return m_PayloadType; }
+		const std::any& GetPayload() const { return m_Payload; }
+		bool HasPayload() const { return !m_PayloadType.empty(); }
+
+		std::any GetPayload( const std::string& a_PayloadType ) const
+		{
+			if ( m_PayloadType == a_PayloadType )
+			{
+				return m_Payload;
+			}
+
+			return std::any();
+		}
+
+		void SetPayload( const std::string& a_PayloadType, const std::any& a_Payload )
+		{
+			m_PayloadType = a_PayloadType;
+			m_Payload = a_Payload;
+		}
+
+		void ClearPayload()
+		{
+			m_PayloadType.clear();
+			m_Payload.reset();
+		}
+
+	private:
+		std::string m_PayloadType;
+		std::any m_Payload;
+	};
+
+	//////////////////////////////////////////////////////////////////////////
 
 	class EditorApplication
 	{
@@ -16,10 +51,13 @@ namespace Tridium::Editor {
 		static bool Init();
 		static bool Shutdown();
 
+		static PayloadManager& GetPayloadManager() { return s_Instance->m_PayloadManager; }
+
 		EditorLayer* GetEditorLayer() { return m_EditorLayer; }
 
 	private:
 		EditorLayer* m_EditorLayer;
+		PayloadManager m_PayloadManager;
 
 	private:
 		EditorApplication();

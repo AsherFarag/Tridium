@@ -83,6 +83,43 @@ namespace Tridium::Editor {
 			}
 			break;
 		}
+		case Input::KEY_C:
+		{
+			// Control + C
+			// Copy the selected game object
+			if ( control )
+			{
+				if ( m_SelectedGameObject.IsValid() )
+				{
+					EditorApplication::GetPayloadManager().SetPayload( "GameObject", m_SelectedGameObject );
+					return true;
+				}
+			}
+			break;
+		}
+		case Input::KEY_V:
+		{
+			// Control + V
+			// Paste the copied game object
+			if ( control )
+			{
+				if ( EditorApplication::GetPayloadManager().HasPayload() )
+				{
+					std::any payload = EditorApplication::GetPayloadManager().GetPayload( "GameObject" );
+					if ( payload.has_value() )
+					{
+						GameObject copiedGO = std::any_cast<GameObject>( payload );
+						if ( copiedGO.IsValid() )
+						{
+							GameObject newGO = m_Context->InstantiateGameObjectFrom( copiedGO );
+							SetSelectedGameObject( newGO );
+							return true;
+						}
+					}
+				}
+			}
+			break;
+		}
 		}
 
 		return false;

@@ -9,6 +9,9 @@
 #endif // IS_EDITOR
 
 // TEMP ?
+#include <Tridium/Rendering/GameViewport.h>
+#include <Tridium/ECS/Components/Types.h>
+#include <Tridium/Asset/EditorAssetManager.h>
 #include <Tridium/Rendering/RenderCommand.h>
 #include "Tridium/IO/ProjectSerializer.h"
 
@@ -74,6 +77,12 @@ namespace Tridium {
 		m_GameInstance.reset( CreateGameInstance() );
 		m_GameInstance->Init();
 
+#ifndef IS_EDITOR
+
+		GameViewport gameViewport;
+
+#endif // !IS_EDITOR
+
 		while ( m_Running )
 		{
 			Time::Update();
@@ -84,6 +93,8 @@ namespace Tridium {
 
 			#ifndef IS_EDITOR
 
+			Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled );
+
 			m_ActiveScene->OnUpdate();
 
 			#endif // IS_EDITOR
@@ -93,6 +104,32 @@ namespace Tridium {
 
 
 			// Render Loop ========================================================================================
+			
+			#ifndef IS_EDITOR
+
+			if ( !m_ActiveScene->GetMainCamera() )
+			{
+				auto view = m_ActiveScene->GetRegistry().view<CameraComponent>();
+				if ( !view.empty() )
+					m_ActiveScene->SetMainCamera( view.begin()[0] );
+			}
+
+			if ( m_ActiveScene->GetMainCamera() )
+			{
+				Vector3 cameraPos = m_ActiveScene->GetMainCamera()->GetGameObject().GetTransform().Position;
+				m_ActiveScene->GetSceneRenderer().Render(
+					gameViewport.GetFramebuffer(),
+					m_ActiveScene->GetMainCamera()->SceneCamera,
+					m_ActiveScene->GetMainCamera()->GetView(),
+					cameraPos );
+			}
+
+			gameViewport.Resize( m_Window->GetWidth(), m_Window->GetHeight() );
+			gameViewport.RenderToWindow();
+
+			#endif // !IS_EDITOR
+
+			
 			// ====================================================================================================
 
 
@@ -154,9 +191,9 @@ namespace Tridium {
 #ifdef IS_EDITOR
 		m_AssetManager = MakeShared<Editor::EditorAssetManager>();
 #else
-		m_AssetManager = MakeShared<RuntimeAssetManager>();
+		//m_AssetManager = MakeShared<RuntimeAssetManager>();
 #endif // IS_EDITOR
-
+		m_AssetManager = MakeShared<Editor::EditorAssetManager>();
 		m_AssetManager->Init();
 	}
 

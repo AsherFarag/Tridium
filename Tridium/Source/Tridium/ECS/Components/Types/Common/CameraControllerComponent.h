@@ -14,7 +14,7 @@ namespace Tridium {
 
 	public:
 		float Speed = 1.0f;
-		float LookSensitivity;
+		float LookSensitivity = 0.1f;
 
 	private:
 		Vector2 m_LastMousePos;

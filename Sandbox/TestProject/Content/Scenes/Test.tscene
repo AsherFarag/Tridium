@@ -158,21 +158,21 @@ GameObjects:
   - GameObject: 4382316422698559860
     Tag: Player
     Transform:
-      Position: [0, 0, 0]
-      Rotation: [68.318161, 53.7358818, 0]
+      Position: [-2.05353284, -11.4937649, 3.96947408]
+      Rotation: [-9.54996681, -38.7996292, 0]
       Scale: [1, 1, 1]
       Children: []
     CameraComponent:
       SceneCamera:
         m_Perspective:
-          FOV: 70
+          FOV: 2.61799383
           Near: 0.100000001
           Far: 1000
         m_Orthographic:
-          Size: 10
+          Size: 339
           Near: -1000
           Far: 1000
-        m_ProjectionType: "Refl Error: No serialize function for type <enum Tridium::ProjectionType>(void) noexcept"
+        m_ProjectionType: Perspective
     CameraControllerComponent:
-      Speed: 1
-      LookSensitivity: 0.00100000005
+      Speed: 5
+      LookSensitivity: 0.1

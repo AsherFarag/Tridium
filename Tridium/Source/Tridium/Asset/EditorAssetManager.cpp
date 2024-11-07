@@ -1,5 +1,5 @@
 #include "tripch.h"
-#ifdef IS_EDITOR
+#if 1// IS_EDITOR
 #include "EditorAssetManager.h"
 #include <Tridium/Asset/AssetFactory.h>
 #include <yaml-cpp/yaml.h>
