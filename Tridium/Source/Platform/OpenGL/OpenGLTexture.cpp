@@ -260,20 +260,23 @@ namespace Tridium {
 		m_DataFormat = Util::TridiumDataFormatToGLDataFormat( m_Specification.TextureFormat );
 		m_InternalFormat = Util::TridiumDataFormatToGLInternalFormat( m_Specification.TextureFormat );
 
-		SetData( a_TextureData, m_Width * m_Height * (uint32_t)Util::GLDataFormatToTridiumDataFormat( m_DataFormat ) );
+		//glGenTextures( GL_TEXTURE_2D, 1, &m_RendererID );
+		const int mipLevels = 4;
+		//glTextureStorage2D( m_RendererID, mipLevels, m_InternalFormat, m_Width, m_Height );
 
-		glCreateTextures( GL_TEXTURE_2D, 1, &m_RendererID );
-		glTextureStorage2D( m_RendererID, 1, m_InternalFormat, m_Width, m_Height );
+		glGenTextures( 1, &m_RendererID );
+		glBindTexture( GL_TEXTURE_2D, m_RendererID );
 
-		Bind();
+		//Bind();
 		SetMinFilter( a_Specification.MinFilter );
 		SetMagFilter( a_Specification.MagFilter );
 		SetWrapS( a_Specification.WrapS );
 		SetWrapT( a_Specification.WrapT );
 		SetWrapR( a_Specification.WrapR );
-		if ( m_Specification.GenerateMips )
-			glGenerateMipmap( GL_TEXTURE_2D );
-		Unbind();
+		//Unbind();
+
+		if ( a_TextureData )
+			SetData( a_TextureData, m_Width * m_Height * (uint32_t)Util::GLDataFormatToTridiumDataFormat( m_DataFormat ) );
 	}
 
 	OpenGLTexture::~OpenGLTexture()
@@ -314,16 +317,23 @@ namespace Tridium {
 		m_LocalData = a_Data;
 
 		GLenum type = Util::GetGLType( m_Specification.TextureFormat );
-		glTextureSubImage2D( m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, type, m_LocalData );
+		//glTextureSubImage2D( m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, type, m_LocalData );
+		//glGenerateMipmap( GL_TEXTURE_2D );
+		glTexImage2D( GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_DataFormat, type, m_LocalData );
+		glGenerateMipmap( GL_TEXTURE_2D );
 	}
 
 	void OpenGLTexture::Bind( uint32_t slot ) const
 	{
-		glBindTextureUnit( slot, m_RendererID );
+		glActiveTexture( GL_TEXTURE0 + slot );
+		glBindTexture( GL_TEXTURE_2D, m_RendererID );
+		//glBindTextureUnit( slot, m_RendererID );
 	}
 	void OpenGLTexture::Unbind( uint32_t slot ) const
 	{
-		glBindTextureUnit( slot, 0 );
+		glActiveTexture( GL_TEXTURE0 + slot );
+		glBindTexture( GL_TEXTURE_2D, 0 );
+		//glBindTextureUnit( slot, 0 );
 	}
 
 	//////////////////////////////////////////////////////////////////////////

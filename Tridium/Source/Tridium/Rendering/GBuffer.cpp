@@ -10,10 +10,10 @@ namespace Tridium {
 		spec.Height = a_Height;
 		spec.Attachments =
 		{
-			{ EFramebufferTextureFormat::RGBA16F },		   // Position
+			{ EFramebufferTextureFormat::RGB32F },		   // Position
 			{ EFramebufferTextureFormat::RGB16F },		   // Normal
 			{ EFramebufferTextureFormat::RGB8 },		   // Albedo
-			{ EFramebufferTextureFormat::RGB8 },		   // Ambient Occlusion + Metalness + Roughness (AOMR)
+			{ EFramebufferTextureFormat::RGB8 },		   // Ambient Occlusion + Metalness + Roughness (OMR)
 			{ EFramebufferTextureFormat::RGB8 },		   // Emission
 			{ EFramebufferTextureFormat::DEPTH24STENCIL8 } // Depth
 		};

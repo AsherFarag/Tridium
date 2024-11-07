@@ -511,7 +511,7 @@ namespace Tridium {
 				m_DeferredData.GBuffer.GetFramebuffer()->BindAttatchment( m_DeferredData.GBuffer.GetPositionAttachment(), 0 );
 				m_DeferredData.GBuffer.GetFramebuffer()->BindAttatchment( m_DeferredData.GBuffer.GetNormalAttachment(), 1 );
 				m_DeferredData.GBuffer.GetFramebuffer()->BindAttatchment( m_DeferredData.GBuffer.GetAlbedoAttachment(), 2 );
-				m_DeferredData.GBuffer.GetFramebuffer()->BindAttatchment( m_DeferredData.GBuffer.GetAOMRAttachment(), 3 );
+				m_DeferredData.GBuffer.GetFramebuffer()->BindAttatchment( m_DeferredData.GBuffer.GetOMRAttachment(), 3 );
 				m_DeferredData.GBuffer.GetFramebuffer()->BindAttatchment( m_DeferredData.GBuffer.GetEmissionAttachment(), 4 );
 
 				m_DeferredData.LightingShader->SetInt( "g_Position", 0 );

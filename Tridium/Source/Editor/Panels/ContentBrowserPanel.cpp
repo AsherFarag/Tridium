@@ -11,6 +11,7 @@
 #include <Tridium/Rendering/Material.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
 #include <Editor/AssetImporter.h>
+#include <Editor/EditorUtil.h>
 
 #include "imgui_internal.h"
 
@@ -365,6 +366,20 @@ namespace Tridium::Editor {
 				{
 					if ( ImGui::MenuItem( "Material" ) )
 					{
+						Util::OpenNewFileDialog( "Material", m_CurrentDirectory.ToString(), []( const std::string& a_FilePath )
+							{
+								SharedPtr<Material> material = MakeShared<Material>();
+
+								AssetMetaData metaData;
+								metaData.Handle = AssetHandle::Create();
+								metaData.Path = a_FilePath;
+								metaData.AssetType = EAssetType::Material;
+								metaData.Name = metaData.Path.GetFilenameWithoutExtension();
+								metaData.IsAssetLoaded = true;
+
+								EditorAssetManager::Get()->CreateAsset( metaData, material );
+								AssetFactory::SaveAsset( metaData, material );
+							} );
 					}
 
 					if ( ImGui::MenuItem( "Lua Script" ) )

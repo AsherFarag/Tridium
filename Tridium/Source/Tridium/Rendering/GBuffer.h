@@ -25,7 +25,7 @@ namespace Tridium {
 		uint32_t GetPositionAttachment() const { return m_PositionAttachment; }
 		uint32_t GetNormalAttachment() const { return m_NormalAttachment; }
 		uint32_t GetAlbedoAttachment() const { return m_AlbedoAttachment; }
-		uint32_t GetAOMRAttachment() const { return m_AOMRAttachment; }
+		uint32_t GetOMRAttachment() const { return m_OMRAttachment; }
 		uint32_t GetEmissionAttachment() const { return m_EmissionAttachment; }
 		uint32_t GetDepthAttachment() const { return m_DepthAttachment; }
 
@@ -33,7 +33,7 @@ namespace Tridium {
 		uint32_t m_PositionAttachment = 0;
 		uint32_t m_NormalAttachment = 1;
 		uint32_t m_AlbedoAttachment = 2;
-		uint32_t m_AOMRAttachment = 3; // Ambient Occlusion + Metalness + Roughness (AOMR)
+		uint32_t m_OMRAttachment = 3; // Ambient Occlusion + Metalness + Roughness (OMR)
 		uint32_t m_EmissionAttachment = 4;
 		uint32_t m_DepthAttachment = 5;
 

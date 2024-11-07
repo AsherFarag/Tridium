@@ -52,24 +52,13 @@ GameObjects:
   - GameObject: 17099799884021532929
     Tag: Cube
     Transform:
-      Position: [0, -15.3634653, 0]
+      Position: [0, -15.398098, 0]
       Rotation: [0, -0, 0]
       Scale: [191.949509, 4.55000019, 337.393982]
       Children: []
     StaticMeshComponent:
       Mesh: 2
       Materials: []
-    CameraComponent:
-      SceneCamera:
-        m_Perspective:
-          FOV: 45
-          Near: 0.00999999978
-          Far: 1000
-        m_Orthographic:
-          Size: 10
-          Near: -1000
-          Far: 1000
-        m_ProjectionType: "Refl Error: No serialize function for type <enum Tridium::ProjectionType>(void) noexcept"
   - GameObject: 6036710402478887139
     Tag: Sphere
     Transform:
@@ -79,7 +68,7 @@ GameObjects:
       Children: []
     StaticMeshComponent:
       Mesh: 3
-      Materials: [13329440684517550564]
+      Materials: [0]
   - GameObject: 45953374794035966
     Tag: Sponza
     Transform:
@@ -146,20 +135,44 @@ GameObjects:
   - GameObject: 3127853732003194947
     Tag: Charles Barrel
     Transform:
-      Position: [2.48641443, -11.8621883, 3.02235842]
+      Position: [2.48641443, -11.7134457, 3.02235842]
       Rotation: [-3.14159226, -0.688419342, 3.1415925]
       Scale: [0.004416171, 0.00441616634, 0.004416171]
       Children: []
     StaticMeshComponent:
       Mesh: 9964583292748655515
       Materials: [7188536080500764428]
-  - GameObject: 12710995830876031090
-    Tag: Static Mesh
+  - GameObject: 17295681563137522056
+    Tag: Point Light
     Transform:
-      Position: [0, -2.0279963, 15.3730755]
+      Position: [0.0699464679, -8.53649902, -19.921999]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
       Children: []
-    StaticMeshComponent:
-      Mesh: 10968084403603889823
-      Materials: [9231485947035289014]
+    PointLightComponent:
+      LightColor: [1, 0.108949423, 0.108949423, 1]
+      Intensity: 7
+      FalloffExponent: 2
+      AttenuationRadius: 10
+      CastsShadows: true
+  - GameObject: 4382316422698559860
+    Tag: Player
+    Transform:
+      Position: [0, 0, 0]
+      Rotation: [68.318161, 53.7358818, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    CameraComponent:
+      SceneCamera:
+        m_Perspective:
+          FOV: 70
+          Near: 0.100000001
+          Far: 1000
+        m_Orthographic:
+          Size: 10
+          Near: -1000
+          Far: 1000
+        m_ProjectionType: "Refl Error: No serialize function for type <enum Tridium::ProjectionType>(void) noexcept"
+    CameraControllerComponent:
+      Speed: 1
+      LookSensitivity: 0.00100000005

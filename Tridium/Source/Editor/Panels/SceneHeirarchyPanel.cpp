@@ -144,7 +144,7 @@ namespace Tridium::Editor {
 		ImGuiTextFilter filter( m_SearchBuffer.c_str() );
 		for ( int i = 0; i < gameObjects.size(); ++i )
 		{
-			GameObject go = gameObjects[i];
+			GameObject go = gameObjects.begin()[i];
 			// We are only drawing root objects in this loop
 			if ( go.GetParent().IsValid() )
 				continue;
