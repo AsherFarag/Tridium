@@ -5,8 +5,11 @@
 #include <Editor/Panels/Asset/MeshSourceImporterPanel.h>
 #include <Tridium/Rendering/SceneRenderer.h>
 #include <Tridium/Asset/AssetFactory.h>
+#include <Tridium/Asset/Loaders/TextureLoader.h> 
 
 using namespace Tridium;
+
+#ifdef IS_EDITOR
 
 class CreateNewAssetLayer : public Layer
 {
@@ -64,7 +67,6 @@ class CreateNewAssetLayer : public Layer
 	std::string AssetPath;
 };
 
-
 class MaterialEditorLayer : public Layer
 {
 	virtual void OnImGuiDraw() override
@@ -94,13 +96,14 @@ class MaterialEditorLayer : public Layer
 
 	MaterialHandle MaterialHandle;
 };
+#endif
 
 class SandboxGameInstance : public Tridium::GameInstance
 {
 	virtual void Init() override
 	{
-		Tridium::Application::Get().PushOverlay( new CreateNewAssetLayer() );
-		Tridium::Application::Get().PushOverlay( new MaterialEditorLayer() );
+		//Tridium::Application::Get().PushOverlay( new CreateNewAssetLayer() );
+		//Tridium::Application::Get().PushOverlay( new MaterialEditorLayer() );
 	}
 };
 

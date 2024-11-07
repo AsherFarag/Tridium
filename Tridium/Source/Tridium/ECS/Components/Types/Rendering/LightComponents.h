@@ -16,6 +16,10 @@ namespace Tridium {
 		float Intensity = 1.0f;
 		float FalloffExponent = 2.0f;
 		float AttenuationRadius = 10.0f;
+		bool CastsShadows = true;
+
+		// Temp?
+		SharedPtr<Framebuffer> ShadowMap;
 	};
 
 	BEGIN_REFLECT_COMPONENT( PointLightComponent )
@@ -23,6 +27,8 @@ namespace Tridium {
 		PROPERTY( Intensity,         FLAGS( Serialize, EditAnywhere ) )
 		PROPERTY( FalloffExponent,   FLAGS( Serialize, EditAnywhere ) )
 		PROPERTY( AttenuationRadius, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( CastsShadows,      FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( ShadowMap,		 FLAGS( VisibleAnywhere ) )
 	END_REFLECT( PointLightComponent );
 
 	class SpotLightComponent : public Component

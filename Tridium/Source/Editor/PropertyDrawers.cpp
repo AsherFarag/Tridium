@@ -249,6 +249,7 @@ namespace Tridium::Editor {
 			if ( ImGui::Selectable( "None###Internal", a_Value == AssetHandle::InvalidGUID ) )
 			{
 				a_Value = AssetHandle::InvalidGUID;
+				ImGui::EndCombo();
 				return true;
 			}
 
@@ -262,7 +263,8 @@ namespace Tridium::Editor {
 
 				std::string name = !assetMetaData.Name.empty() ? assetMetaData.Name : assetMetaData.Path.ToString();
 				ImGui::ScopedID id( handle.ID() );
-				if ( ImGui::Selectable( name.c_str(), a_Value == handle ) )
+				bool selected = a_Value == handle;
+				if ( ImGui::Selectable( name.c_str(), selected ) && !selected )
 				{
 					a_Value = handle;
 					modified = true;
@@ -319,6 +321,7 @@ namespace Tridium::Editor {
 			if ( ImGui::Selectable( "None###Internal", a_Value == AssetHandle::InvalidGUID ) )
 			{
 				a_Value = AssetHandle::InvalidGUID;
+				ImGui::EndCombo();
 				return true;
 			}
 

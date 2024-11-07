@@ -1,4 +1,4 @@
-#type Vertex
+#pragma type Vertex
 #version 410
 
 layout(location = 0) in vec3 aPosition;
@@ -14,7 +14,7 @@ void main()
 	vUV = aUV;
 }
 
-#type Fragment
+#pragma type Fragment
 #version 410 core
 
 out vec4 oFragColor;

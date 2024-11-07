@@ -1,4 +1,4 @@
-#type Vertex
+#pragma type Vertex
 #version 420 core
 layout (location = 0) in vec3 a_Pos;
 
@@ -13,7 +13,7 @@ void main()
     gl_Position =  u_Projection * u_View * vec4(v_WorldPos, 1.0);
 }
 
-#type Fragment
+#pragma type Fragment
 #version 420 core
 out vec4 o_Color;
 in vec3 v_WorldPos;

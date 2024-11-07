@@ -4,6 +4,8 @@
 #include "Material.h"
 #include <Tridium/Rendering/Lights.h>
 #include <Tridium/Rendering/FrameBuffer.h>
+#include <Tridium/Rendering/Pipeline.h>
+#include <Tridium/Rendering/GBuffer.h>
 
 namespace Tridium {
 
@@ -37,20 +39,37 @@ namespace Tridium {
 	public:
 		SceneRenderer( Scene& a_Scene );
 
-		void Render( const SharedPtr<Framebuffer>& a_FBO, const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition );
+		void Render( const SharedPtr<Framebuffer>& a_RenderTarget, const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition );
+
+		ERenderMode GetRenderMode() const { return m_RenderMode; }
+		void SetRenderMode( ERenderMode a_RenderMode ) { m_RenderMode = a_RenderMode; }
 
 	protected:
 		void BeginScene( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition );
 		void EndScene();
 
-		void Flush();
-
+		void Clear(); // Clears all the per frame data
+		void GenerateShadowMaps();
 		void SubmitDrawCall( DrawCall&& a_DrawCall );
-		void PerformDrawCall( const DrawCall& a_DrawCall );
 
-		void GeometryPass();
+		// - Deferred Rendering -
+		void DeferredRenderPass();
+		void DeferredGBufferPass();
+		void DeferredLightingPass();
+		// ----------------------
+
+		// - Forward Rendering -
+		void ForwardRenderPass();
+		void ForwardGeometryPass();
+		// ----------------------
+
+		void RenderSkybox();
+
+		void PostProcessPass();
 
 	private:
+		ERenderMode m_RenderMode = ERenderMode::Deferred;
+
 		Scene& m_Scene;
 		SceneEnvironment& m_SceneEnvironment;
 
@@ -63,20 +82,41 @@ namespace Tridium {
 		SharedPtr<Texture> m_WhiteTexture;
 		SharedPtr<Texture> m_BlackTexture;
 		SharedPtr<Texture> m_NormalTexture;
+		// ---------------
 
 		// Per frame data
-		Vector3 m_CameraPosition;
-		Matrix4 m_ViewMatrix;
-		Matrix4 m_ProjectionMatrix;
-		Matrix4 m_ViewProjectionMatrix;
+		struct SceneInfo
+		{
+			Matrix4 ProjectionMatrix;
+			Matrix4 ViewMatrix;
+			Matrix4 ViewProjectionMatrix;
+			Vector3 CameraPosition;
+			Camera Camera;
+		} m_SceneInfo;
 		std::vector<DrawCall> m_DrawCalls;
 		LightEnvironment m_LightEnvironment;
+		SharedPtr<Framebuffer> m_RenderTarget;
+		// ---------------
+
+		struct DeferredData
+		{
+			GBuffer GBuffer{ 1280u, 720u };
+			SharedPtr<Shader> GBufferShader;
+			SharedPtr<Shader> LightingShader;
+			SharedPtr<VertexArray> QuadVAO;
+		} m_DeferredData;
+
+		struct ForwardData
+		{
+		} m_ForwardData;
 
 		// Shadows
 		SharedPtr<Framebuffer> m_ShadowFBO;
 		Vector2 m_ShadowMapSize{1024, 1024};
 		SharedPtr<Shader> m_ShadowMapShader;
-		Matrix4 m_LightViewProjectionMatrix;
+		Matrix4 m_LightViewProjectionMatrix{ 1.0f };
+		SharedPtr<Shader> m_ShadowCubeMapShader;
+		// -------
 
 		friend class Editor::SceneRendererPanel;
 	};

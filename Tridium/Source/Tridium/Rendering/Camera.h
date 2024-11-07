@@ -17,7 +17,7 @@ namespace Tridium {
 		float Near = -1000.0f, Far = 1000.0f;
 	};
 
-	enum class ProjectionType { Perspective = 0, Orthographic = 1 };
+	enum class EProjectionType { Perspective = 0, Orthographic = 1 };
 
 	class Camera
 	{
@@ -53,14 +53,14 @@ namespace Tridium {
 		float GetOrthographicFarClip() const { return m_Orthographic.Far; }
 		void  SetOrthographicFarClip( float farClip ) { m_Orthographic.Far = farClip; RecalculateProjection(); }
 
-		ProjectionType GetProjectionType() const { return m_ProjectionType; }
-		void SetProjectionType( ProjectionType type ) { m_ProjectionType = type; RecalculateProjection(); }
+		EProjectionType GetProjectionType() const { return m_ProjectionType; }
+		void SetProjectionType( EProjectionType type ) { m_ProjectionType = type; RecalculateProjection(); }
 
 	private:
 		void RecalculateProjection();
 
 	private:
-		ProjectionType m_ProjectionType = ProjectionType::Perspective;
+		EProjectionType m_ProjectionType = EProjectionType::Perspective;
 		Matrix4 m_Projection = Matrix4( 1.0f );
 
 		PerspectiveData m_Perspective;
@@ -68,6 +68,11 @@ namespace Tridium {
 
 		Vector2 m_ViewportSize = { 1280, 720 };
 	};
+
+	BEGIN_REFLECT_ENUM( EProjectionType )
+		ENUM_VAL( Perspective )
+		ENUM_VAL( Orthographic )
+	END_REFLECT_ENUM( EProjectionType )
 
 	BEGIN_REFLECT( PerspectiveData )
 		PROPERTY( FOV, FLAGS( Serialize, EditAnywhere ) )

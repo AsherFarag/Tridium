@@ -66,6 +66,9 @@ project "Tridium"
 		"YAML_CPP_STATIC_DEFINE"
 	}
 
+	filter "files:Dependencies/stbi/include/stb_image.h"
+		optimize "On"
+
 	filter "files:Dependencies/ImGuizmo/**.cpp"
 		flags { "NoPCH" }
 

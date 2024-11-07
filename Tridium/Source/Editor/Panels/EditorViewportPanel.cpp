@@ -40,7 +40,7 @@ namespace Tridium::Editor {
 		FBOspecification.Height = 720;
 		m_FBO = Framebuffer::Create( FBOspecification );
 
-		FBOspecification.Attachments = { EFramebufferTextureFormat::RED_INT };
+		FBOspecification.Attachments = { EFramebufferTextureFormat::RED_INT, EFramebufferTextureFormat::Depth };
 		m_IDFBO = Framebuffer::Create( FBOspecification );
 
 		std::string idVert =
@@ -110,6 +110,30 @@ namespace Tridium::Editor {
 
 				return true;
 			}
+			case Input::KEY_C:
+			{
+				if ( Input::IsKeyPressed( Input::KEY_LEFT_CONTROL ) )
+				{
+					if ( GameObject selectedGO = GetSceneHeirarchy()->GetSelectedGameObject() )
+					{
+						EditorApplication::GetPayloadManager().SetPayload( "GameObject", selectedGO );
+					}
+				}
+				return true;
+			}
+			case Input::KEY_V:
+			{
+				if ( Input::IsKeyPressed( Input::KEY_LEFT_CONTROL ) )
+				{
+					if ( auto payload = EditorApplication::GetPayloadManager().GetPayload( "GameObject" ); payload.has_value() )
+					{
+						GameObject go = std::any_cast<GameObject>( payload );
+						GameObject newGO = GetActiveScene()->InstantiateGameObjectFrom( go );
+						GetSceneHeirarchy()->SetSelectedGameObject( newGO );
+					}
+				}
+				return true;
+			}
 			}
 		}
 
@@ -128,6 +152,9 @@ namespace Tridium::Editor {
 
 		if ( ImGui::Begin( m_Name.c_str() ) )
 		{
+			if ( ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right) )
+				ImGui::SetWindowFocus();
+
 			Vector2 regionAvail = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
 			auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 			auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -151,7 +178,7 @@ namespace Tridium::Editor {
 
 			DrawManipulationGizmos( viewportBoundsMin, viewportBoundsMax );
 
-			if ( m_IsFocused && ImGui::IsItemClicked() && !ImGuizmo::IsUsingAny() )
+			if ( m_IsHovered && ImGui::IsItemClicked() && !ImGuizmo::IsUsingAny() )
 			{
 				m_IDFBO->Resize( regionAvail.x, regionAvail.y );
 
@@ -261,6 +288,7 @@ namespace Tridium::Editor {
 
 	void EditorViewportPanel::RenderGameObjectIDs()
 	{
+		RenderCommand::SetDepthTest( true );
 		RenderCommand::SetDepthCompare( EDepthCompareOperator::Less );
 		RenderCommand::SetCullMode( ECullMode::Back );
 		RenderCommand::SetClearColor( { 0.1, 0.1, 0.12, 1.0 } );

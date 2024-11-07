@@ -13,8 +13,10 @@ namespace Tridium {
 		{
 			switch ( format )
 			{
+			case EFramebufferTextureFormat::RGB8:        return GL_UNSIGNED_BYTE;
 			case EFramebufferTextureFormat::RGBA8:       return GL_UNSIGNED_BYTE;
 			case EFramebufferTextureFormat::RG16F:       return GL_FLOAT;
+			case EFramebufferTextureFormat::RGB16F:      return GL_FLOAT;
 			case EFramebufferTextureFormat::RGBA16F:     return GL_FLOAT;
 			case EFramebufferTextureFormat::RGB32F:      return GL_FLOAT;
 			case EFramebufferTextureFormat::RGBA32F:     return GL_FLOAT;
@@ -29,8 +31,10 @@ namespace Tridium {
 		{
 			switch ( format )
 			{
+			case GL_RGB8:        return EFramebufferTextureFormat::RGB8;
 			case GL_RGBA8:       return EFramebufferTextureFormat::RGBA8;
 			case GL_RG16F:       return EFramebufferTextureFormat::RG16F;
+			case GL_RGB16F:      return EFramebufferTextureFormat::RGB16F;
 			case GL_RGBA16F:     return EFramebufferTextureFormat::RGBA16F;
 			case GL_RGB32F:      return EFramebufferTextureFormat::RGB32F;
 			case GL_RGBA32F:     return EFramebufferTextureFormat::RGBA32F;
@@ -45,12 +49,32 @@ namespace Tridium {
 		{
 			switch ( format )
 			{
+			case EFramebufferTextureFormat::RGB8:        return GL_RGB8;
 			case EFramebufferTextureFormat::RGBA8:       return GL_RGBA8;
 			case EFramebufferTextureFormat::RG16F:       return GL_RG16F;
+			case EFramebufferTextureFormat::RGB16F:      return GL_RGB16F;
 			case EFramebufferTextureFormat::RGBA16F:     return GL_RGBA16F;
 			case EFramebufferTextureFormat::RGB32F:      return GL_RGB32F;
 			case EFramebufferTextureFormat::RGBA32F:     return GL_RGBA32F;
 			case EFramebufferTextureFormat::RED_INT:	 return GL_R32I;
+			}
+
+			return 0;
+		}
+
+		static GLenum TridiumFBTextureFormatToGLData( EFramebufferTextureFormat format )
+		{
+			switch ( format )
+			{
+			case EFramebufferTextureFormat::RGB8:        return GL_RGB;
+			case EFramebufferTextureFormat::RGBA8:       return GL_RGBA;
+			case EFramebufferTextureFormat::RG16F:       return GL_RG;
+			case EFramebufferTextureFormat::RGB16F:      return GL_RGB;
+			case EFramebufferTextureFormat::RGBA16F:     return GL_RGBA;
+			case EFramebufferTextureFormat::RGB32F:      return GL_RGB;
+			case EFramebufferTextureFormat::RGBA32F:     return GL_RGBA;
+			case EFramebufferTextureFormat::RED_INT:     return GL_RED_INTEGER;
+
 			}
 
 			return 0;
@@ -177,27 +201,12 @@ namespace Tridium {
 			for ( size_t i = 0; i < m_ColorAttachments.size(); i++ )
 			{
 				Util::BindTexture( multisample, m_ColorAttachments[ i ] );
-				switch ( m_ColorAttachmentSpecifications[ i ].TextureFormat )
-				{
-				case EFramebufferTextureFormat::RGBA8:
-					Util::AttachColorTexture( m_ColorAttachments[ i ], m_Specification.Samples, GL_RGBA8, GL_RGBA, m_Specification.Width, m_Specification.Height, i );
-					break;
-				case EFramebufferTextureFormat::RG16F:
-					Util::AttachColorTexture( m_ColorAttachments[i], m_Specification.Samples, GL_RG16F, GL_RG, m_Specification.Width, m_Specification.Height, i );
-					break;
-				case EFramebufferTextureFormat::RGBA16F:
-					Util::AttachColorTexture( m_ColorAttachments[i], m_Specification.Samples, GL_RGBA16F, GL_RGBA, m_Specification.Width, m_Specification.Height, i );
-					break;
-				case EFramebufferTextureFormat::RGB32F:
-					Util::AttachColorTexture( m_ColorAttachments[i], m_Specification.Samples, GL_RGB32F, GL_RGB, m_Specification.Width, m_Specification.Height, i );
-					break;
-				case EFramebufferTextureFormat::RGBA32F:
-					Util::AttachColorTexture( m_ColorAttachments[i], m_Specification.Samples, GL_RGBA32F, GL_RGBA, m_Specification.Width, m_Specification.Height, i );
-					break;
-				case EFramebufferTextureFormat::RED_INT:
-					Util::AttachColorTexture( m_ColorAttachments[ i ], m_Specification.Samples, GL_R32I, GL_RED_INTEGER, m_Specification.Width, m_Specification.Height, i );
-					break;
-				}
+				Util::AttachColorTexture( 
+					m_ColorAttachments[i],
+					m_Specification.Samples,
+					Util::TridiumFBTextureFormatToGL( m_ColorAttachmentSpecifications[i].TextureFormat ),
+					Util::TridiumFBTextureFormatToGLData( m_ColorAttachmentSpecifications[i].TextureFormat ),
+					m_Specification.Width, m_Specification.Height, i );
 			}
 		}
 
@@ -215,8 +224,9 @@ namespace Tridium {
 
 		if ( m_ColorAttachments.size() > 1 )
 		{
-			TE_CORE_ASSERT( m_ColorAttachments.size() <= 4, "More than 4 color attachments when invalidating this Framebuffer");
-			GLenum buffers[ 4 ] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+			TE_CORE_ASSERT( m_ColorAttachments.size() <= 8, "More than 8 color attachments when invalidating this Framebuffer");
+			GLenum buffers[ 8 ] =
+			{ GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7 };
 			glDrawBuffers( m_ColorAttachments.size(), buffers );
 		}
 
@@ -236,6 +246,17 @@ namespace Tridium {
 	{
 		glBindFramebuffer( GL_FRAMEBUFFER, m_RendererID );
 		glViewport( 0, 0, m_Specification.Width, m_Specification.Height );
+	}
+
+	void OpenGLFramebuffer::BindRead()
+	{
+		glBindFramebuffer( GL_READ_FRAMEBUFFER, m_RendererID );
+	}
+
+	void OpenGLFramebuffer::BindWrite()
+	{
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_RendererID );
+
 	}
 
 	void OpenGLFramebuffer::Unbind()
@@ -278,6 +299,16 @@ namespace Tridium {
 		auto& spec = m_ColorAttachmentSpecifications[ attachmentIndex ];
 		glClearTexImage( m_ColorAttachments[ attachmentIndex ], 0,
 			Util::TridiumFBTextureFormatToGL( spec.TextureFormat ), GL_INT, &value );
+	}
+
+	void OpenGLFramebuffer::BlitTo( SharedPtr<Framebuffer> target, Vector2 srcMin, Vector2 srcMax, Vector2 dstMin, Vector2 dstMax, EFramebufferTextureFormat bufferMask, ETextureFilter filter )
+	{
+		GLbitfield mask = Util::IsDepthFormat( bufferMask ) ? GL_DEPTH_BUFFER_BIT : GL_COLOR_BUFFER_BIT;
+
+		TODO( "Not sure if this is correct, fix this later! " );
+		glBindFramebuffer( GL_READ_FRAMEBUFFER, m_RendererID );
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, target->GetRendererID() );
+		glBlitFramebuffer( srcMin.x, srcMin.y, srcMax.x, srcMax.y, dstMin.x, dstMin.y, dstMax.x, dstMax.y, mask, filter == ETextureFilter::Linear ? GL_LINEAR : GL_NEAREST );
 	}
 
 	void OpenGLFramebuffer::BindAttatchment( uint32_t a_AttachmentIndex, uint32_t a_Slot )

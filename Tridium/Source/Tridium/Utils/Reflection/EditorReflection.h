@@ -3,6 +3,7 @@
 #ifndef IS_EDITOR
 
 #define _DRAW_PROPERTY_FUNC(Class)
+#define _DRAW_ENUM_FUNC(EnumClass)
 
 #endif // IS_EDITOR
 
@@ -51,6 +52,43 @@ namespace Tridium::Refl::Internal {
 
 		return wasChanged;
     }
+
+	enum class myEnum
+	{
+		Value1,
+		Value2,
+		Value3
+	};
+
+	template <typename T>
+	bool DrawEnumAsProperty( const char* a_Name, MetaAny& a_Handle, PropertyFlags a_Flags, const std::unordered_map<T, std::string>& a_EnumToString )
+	{
+		static const auto metaType = MetaRegistry::ResolveMetaType<T>();
+		bool wasChanged = false;
+		T* value = const_cast<T*>( a_Handle.cast<const T*>() );
+		const std::string& valueStr = a_EnumToString.at( *value );
+
+		if ( ImGui::BeginCombo( a_Name, valueStr.c_str() ) )
+		{
+			for ( auto&& [enumValue, enumStr] : a_EnumToString )
+			{
+				bool isSelected = *value == enumValue;
+				if ( ImGui::Selectable( enumStr.c_str(), isSelected ) )
+				{
+					*value = enumValue;
+					wasChanged = true;
+				}
+				if ( isSelected )
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+		return wasChanged;
+	}
+
 }
 
 
@@ -62,6 +100,14 @@ namespace Tridium::Refl::Internal {
             -> bool                                                                                                    \
 		{                                                                                                              \
 			 return ::Tridium::Refl::Internal::DrawClassAsProperty<Class>( a_Name, a_Handle, a_Flags );                \
-		} );\
+		} );
+
+#define _DRAW_ENUM_FUNC(EnumClass)                                                                                     \
+	meta.prop( ::Tridium::Editor::Internal::DrawPropFuncID,  														   \
+		+[]( const char* a_Name, ::Tridium::Refl::MetaAny& a_Handle, ::Tridium::Refl::PropertyFlags a_Flags )          \
+			-> bool                                                                                                    \
+		{                                                                                                              \
+			return ::Tridium::Refl::Internal::DrawEnumAsProperty<EnumClass>( a_Name, a_Handle, a_Flags, s_EnumToString ); \
+		} );
 
 #endif // IS_EDITOR

@@ -4,14 +4,14 @@ SceneEnvironment:
     EnvironmentMapHandle: 18301043363865490591
     Exposure: 1
     Gamma: 2.20000005
-    Blur: 0
-    Intensity: 0.150999993
+    Blur: 0.280999988
+    Intensity: 1
     RotationEular: [0, 0, 0]
 GameObjects:
   - GameObject: 17894983707375707960
     Tag: Cube
     Transform:
-      Position: [5.76444721, -11.8972006, -8.39933872]
+      Position: [16.9929237, -9.54849052, -8.39933872]
       Rotation: [0, -0, 0]
       Scale: [0.030000031, 0.030000031, 0.030000031]
       Children: []
@@ -41,35 +41,24 @@ GameObjects:
   - GameObject: 12906833969033052025
     Tag: Directional Light
     Transform:
-      Position: [0, 0, 0.0295660496]
-      Rotation: [3.84766555, -4.57209969, 0]
-      Scale: [1.00000346, 0.999999881, 1.0000006]
+      Position: [0, 0, 0.029566288]
+      Rotation: [0.558505356, 3.92699075, 0]
+      Scale: [0.999999881, 0.999999762, 0.999999762]
       Children: []
     DirectionalLightComponent:
-      LightColor: [1, 0.782812774, 0.412451386, 1]
+      LightColor: [1, 0.581749916, 0.140077829, 1]
       Intensity: 5
       CastsShadows: true
   - GameObject: 17099799884021532929
     Tag: Cube
     Transform:
-      Position: [0, -15.3634653, 0]
+      Position: [0, -13.5689983, 0]
       Rotation: [0, -0, 0]
-      Scale: [191.949509, 4.55000019, 337.393982]
+      Scale: [191.949509, 1, 337.393982]
       Children: []
     StaticMeshComponent:
       Mesh: 2
       Materials: []
-    CameraComponent:
-      SceneCamera:
-        m_Perspective:
-          FOV: 45
-          Near: 0.00999999978
-          Far: 1000
-        m_Orthographic:
-          Size: 10
-          Near: -1000
-          Far: 1000
-        m_ProjectionType: "Refl Error: No serialize function for type <enum Tridium::ProjectionType>(void) noexcept"
   - GameObject: 6036710402478887139
     Tag: Sphere
     Transform:
@@ -79,21 +68,28 @@ GameObjects:
       Children: []
     StaticMeshComponent:
       Mesh: 3
-      Materials: []
-  - GameObject: 13039944283085260941
-    Tag: Spot Light
+      Materials: [0]
+  - GameObject: 4382316422698559860
+    Tag: Player
     Transform:
-      Position: [-14.4609127, -10.7956724, 0.0497075319]
-      Rotation: [1.57079625, -0, 0]
-      Scale: [1, 1.00000036, 0.999986947]
+      Position: [-2.05353284, -11.4937649, 3.96947408]
+      Rotation: [-9.54996681, -38.7996292, 0]
+      Scale: [1, 1, 1]
       Children: []
-    SpotLightComponent:
-      LightColor: [1, 0.466926038, 0, 1]
-      Intensity: 17
-      FalloffExponent: 2
-      AttenuationRadius: 10
-      InnerConeAngle: -20
-      OuterConeAngle: 26
+    CameraComponent:
+      SceneCamera:
+        m_Perspective:
+          FOV: 2.61799383
+          Near: 0.100000001
+          Far: 1000
+        m_Orthographic:
+          Size: 339
+          Near: -1000
+          Far: 1000
+        m_ProjectionType: Perspective
+    CameraControllerComponent:
+      Speed: 5
+      LookSensitivity: 0.100000001
   - GameObject: 15100604637533348928
     Tag: Torus
     Transform:
@@ -104,59 +100,89 @@ GameObjects:
     StaticMeshComponent:
       Mesh: 6
       Materials: []
-  - GameObject: 2645998972927795823
-    Tag: Red Spot Light
-    Transform:
-      Position: [6.1790185, -9.62352848, -5.86424208]
-      Rotation: [2.58017135, -0, 0]
-      Scale: [1, 1.00000465, 1.00000465]
-      Children: []
-    SpotLightComponent:
-      LightColor: [1, 0.120622575, 0.120622575, 1]
-      Intensity: 30
-      FalloffExponent: 2
-      AttenuationRadius: 10
-      InnerConeAngle: 30
-      OuterConeAngle: 45
-  - GameObject: 14393783786027614707
-    Tag: Static Mesh
-    Transform:
-      Position: [12.5631285, -13.0478687, 0]
-      Rotation: [0, -0, 0]
-      Scale: [0.00644000014, 0.00644000014, 0.00644000014]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 6680786823534590809
-      Materials: [13329440684517550564, 12209339836386338127]
-  - GameObject: 11313647683901471035
+  - GameObject: 14850510313907076365
     Tag: Point Light
     Transform:
-      Position: [11.8521633, -10.9322796, 2.31626964]
+      Position: [8.28016663, 1.40968847, -5.01645279]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
       Children: []
     PointLightComponent:
-      LightColor: [1, 1, 1, 1]
-      Intensity: 10
+      LightColor: [1, 0.607003868, 0, 1]
+      Intensity: 5
       FalloffExponent: 2
       AttenuationRadius: 10
-  - GameObject: 45953374794035966
-    Tag: Sponza
+      CastsShadows: true
+  - GameObject: 14393783786027614707
+    Tag: Static Mesh
     Transform:
-      Position: [-17.070097, -12, 0]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
+      Position: [20.2624493, -13.047863, 3.28382516]
+      Rotation: [0, 0.231313169, 0]
+      Scale: [0.00643999595, 0.00644000014, 0.00643999595]
       Children: []
     StaticMeshComponent:
-      Mesh: 4642065102083697686
-      Materials: []
+      Mesh: 6680786823534590809
+      Materials: [13329440684517550564, 12209339836386338127]
   - GameObject: 5486510618539794370
     Tag: Static Mesh
     Transform:
-      Position: [6.42505455, -10.1451273, 0.974243164]
+      Position: [-13.7371893, -10.1450977, 17.325119]
       Rotation: [0, -0, 0]
       Scale: [0.025000006, 0.025000006, 0.025000006]
       Children: []
     StaticMeshComponent:
       Mesh: 15869680136431924042
       Materials: [10414866762872322182]
+  - GameObject: 3897269542424139733
+    Tag: Static Mesh
+    Transform:
+      Position: [-8.22602558, -9.67675781, 0]
+      Rotation: [0, -0, 0]
+      Scale: [0.0699999928, 0.0699999928, 0.0699999928]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 11662457145095035423
+      Materials: [5282163452782371408]
+  - GameObject: 3127853732003194947
+    Tag: Charles Barrel
+    Transform:
+      Position: [2.48641443, -11.7134457, 3.02235842]
+      Rotation: [1.63716312e-08, -0.953796268, 3.25355067e-08]
+      Scale: [0.00441617426, 0.00441616634, 0.00441617426]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 9964583292748655515
+      Materials: [7188536080500764428]
+  - GameObject: 17295681563137522056
+    Tag: Point Light
+    Transform:
+      Position: [0.0699464679, -8.53649902, -19.921999]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    PointLightComponent:
+      LightColor: [1, 0.108949423, 0.108949423, 1]
+      Intensity: 7
+      FalloffExponent: 2
+      AttenuationRadius: 10
+      CastsShadows: true
+  - GameObject: 18107062901687606694
+    Tag: Capsule
+    Transform:
+      Position: [0, -8.52424049, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 10
+      Materials: []
+  - GameObject: 4173206296065635594
+    Tag: Static Mesh
+    Transform:
+      Position: [0, -12.0113049, -20.1777554]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 4642065102083697686
+      Materials: []

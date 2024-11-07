@@ -1,4 +1,4 @@
-#type Vertex
+#pragma type Vertex
 #version 420 core
 layout(location = 0) in vec3 a_Position;
 
@@ -9,7 +9,7 @@ void main()
     gl_Position = u_PVM * vec4(a_Position, 1.0);
 }
 
-#type Fragment
+#pragma type Fragment
 #version 420 core
 
 void main()

@@ -11,6 +11,8 @@ namespace Tridium {
 
 		static inline void SetViewport( uint32_t a_X, uint32_t a_Y, uint32_t a_Width, uint32_t a_Height ) { s_RendererAPI->SetViewport( a_X, a_Y, a_Width, a_Height ); }
 
+		static inline void SetBlendmode( EBlendMode a_BlendMode ) { s_RendererAPI->SetBlendmode( a_BlendMode ); }
+
 		static inline void SetDepthTest( bool a_Enabled ) { s_RendererAPI->SetDepthTest( a_Enabled ); }
 
 		static inline void SetDepthCompare( EDepthCompareOperator a_DepthCompareOperator ) { s_RendererAPI->SetDepthCompare( a_DepthCompareOperator ); }

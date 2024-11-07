@@ -15,6 +15,8 @@ namespace Tridium::Editor {
 	{
 	}
 
+
+
 	void SceneRendererPanel::OnImGuiDraw()
 	{
 		if ( !ImGui::Begin( m_Name.c_str() ) )
@@ -24,6 +26,33 @@ namespace Tridium::Editor {
 		}
 
 		SharedPtr<Scene> scene = Application::GetScene();
+
+		if ( !scene )
+		{
+			ImGui::Text( "No scene loaded" );
+			ImGui::End();
+			return;
+		}
+
+		const char* renderModes[] = { "None", "Forward", "Deferred" };
+		ERenderMode renderMode = scene->GetSceneRenderer().GetRenderMode();
+		if ( ImGui::BeginCombo( "Render Mode", renderModes[ (uint8_t)renderMode] ) )
+		{
+			bool isSelected = renderMode == ERenderMode::Forward;
+			if ( ImGui::Selectable( renderModes[(uint8_t)ERenderMode::Forward], isSelected ) )
+				scene->GetSceneRenderer().SetRenderMode( ERenderMode::Forward );
+			if ( isSelected )
+				ImGui::SetItemDefaultFocus();
+
+			isSelected = renderMode == ERenderMode::Deferred;
+			if ( ImGui::Selectable( renderModes[(uint8_t)ERenderMode::Deferred], isSelected ) )
+				scene->GetSceneRenderer().SetRenderMode( ERenderMode::Deferred );
+			if ( isSelected )
+				ImGui::SetItemDefaultFocus();
+
+			ImGui::EndCombo();
+		}
+
 		if ( ImGui::TreeNode( "Scene Environment" ) )
 		{
 			if ( ImGui::TreeNode( "HDRI" ) )
@@ -52,6 +81,8 @@ namespace Tridium::Editor {
 		if ( ImGui::Button( "Temp! Recompile Shader" ) )
 		{
 			scene->GetSceneRenderer().m_DefaultShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/PBR-Shadows.glsl" );
+			scene->GetSceneRenderer().m_DeferredData.GBufferShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Deferred/GBuffer.glsl" );
+			scene->GetSceneRenderer().m_DeferredData.LightingShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Deferred/DeferredPBR.glsl" );
 		}
 
 		ImGui::End();

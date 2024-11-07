@@ -28,14 +28,56 @@ namespace Tridium {
 			m_WhiteTexture = AssetManager::GetAsset<Texture>( TextureFactory::GetWhiteTexture() );
 			m_BlackTexture = AssetManager::GetAsset<Texture>( TextureFactory::GetBlackTexture() );
 			m_NormalTexture = AssetManager::GetAsset<Texture>( TextureFactory::GetNormalTexture() );
-			m_BrdfLUT = TextureLoader::LoadTexture( Application::GetEngineAssetsDirectory() / "Renderer/BRDF_LUT.png" );
+
+			// Load BRDF LUT
+			TextureSpecification spec;
+			spec.WrapS = ETextureWrap::ClampToEdge;
+			spec.WrapT = ETextureWrap::ClampToEdge;
+			m_BrdfLUT = TextureLoader::LoadTexture( spec, Application::GetEngineAssetsDirectory() / "Renderer/BRDF_LUT.png" );
+		}
+
+		// Initalize Deferred Data
+		{
+			m_DeferredData.GBufferShader.reset( Shader::Create() );
+			m_DeferredData.GBufferShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Deferred/GBuffer.glsl" );
+
+			m_DeferredData.LightingShader.reset( Shader::Create() );
+			m_DeferredData.LightingShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Deferred/DeferredPBR.glsl" );
+
+			// Create Quad VAO
+			{
+				BufferLayout layout =
+				{
+					{ EShaderDataType::Float3, "a_Position" },
+					{ EShaderDataType::Float2, "a_UV" }
+				};
+
+				float vertices[] =
+				{
+					-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+					1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+					1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+					-1.0f, 1.0f, 0.0f, 0.0f, 1.0f
+				};
+
+				uint32_t indices[] = { 0, 1, 2, 2, 3, 0 };
+
+				m_DeferredData.QuadVAO = VertexArray::Create();
+				SharedPtr<VertexBuffer> vertexBuffer = VertexBuffer::Create( vertices, sizeof( vertices ) );
+				vertexBuffer->SetLayout( layout );
+				m_DeferredData.QuadVAO->AddVertexBuffer( vertexBuffer );
+				SharedPtr<IndexBuffer> indexBuffer = IndexBuffer::Create( indices, sizeof( indices ) / sizeof( uint32_t ) );
+				m_DeferredData.QuadVAO->SetIndexBuffer( indexBuffer );
+			}
 		}
 
 		// Initialize Shadow Info
 		{
-			m_ShadowMapSize = { 1024 * 4, 1024 * 4 };
+			m_ShadowMapSize = { 1024 * 8, 1024 * 8 };
 			m_ShadowMapShader.reset( Shader::Create() );
 			m_ShadowMapShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Shadows/ShadowMap.glsl" );
+			m_ShadowCubeMapShader.reset( Shader::Create() );
+			m_ShadowCubeMapShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Shadows/CubeShadowMap.glsl" );
 		}
 
 		// Create Cube Mesh
@@ -46,106 +88,49 @@ namespace Tridium {
 
 	void SceneRenderer::Render( const SharedPtr<Framebuffer>& a_FBO, const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition )
 	{
-		Flush();
+		Clear();
+		m_RenderTarget = a_FBO;
+
 		BeginScene( a_Camera, a_View, a_CameraPosition );
 
 		// - Generate Shadow Maps -
 		{
-			// TEMP!
-			m_ShadowFBO = m_LightEnvironment.DirectionalLights[0].ShadowMap;
+			GenerateShadowMaps();
+		}
 
-			// - Directional Light Shadow Pass -
-			if ( m_ShadowFBO )
+		// - Render Pass -
+		switch ( m_RenderMode )
+		{
+			case ERenderMode::Forward:
 			{
-				RenderCommand::SetDepthTest( true );
-				RenderCommand::SetCullMode( ECullMode::Front );
-				RenderCommand::SetDepthCompare( EDepthCompareOperator::Less );
-				RenderCommand::SetViewport( 0, 0, m_ShadowMapSize.x, m_ShadowMapSize.y );
-				m_ShadowFBO->Bind();
-				RenderCommand::Clear();
-
-				// - Update View Projection Matrix -
-				float lightNearPlane = -1000.0f; float lightFarPlane = 1000.0f;
-				Matrix4 lightView = glm::lookAt( 
-					m_CameraPosition + ( m_LightEnvironment.DirectionalLights[0].Direction * -20.f ),
-					m_CameraPosition,
-					{ 0.0f, 1.0f, 0.0f } );
-				Matrix4 lightProjection = glm::ortho( -35.0f, 35.0f, -35.0f, 35.0f, lightNearPlane, lightFarPlane );
-				m_LightViewProjectionMatrix = lightProjection * lightView;
-
-				m_ShadowMapShader->Bind();
-
-				for ( const auto& drawCall : m_DrawCalls )
-				{
-					m_ShadowMapShader->SetMatrix4( "u_PVM", m_LightViewProjectionMatrix * drawCall.Transform );
-
-					drawCall.VAO->Bind();
-					RenderCommand::DrawIndexed( drawCall.VAO );
-					drawCall.VAO->Unbind();
-				}
-
-				m_ShadowMapShader->Unbind();
-
-				m_ShadowFBO->Unbind();
+				ForwardRenderPass();
+				break;
+			}
+			case ERenderMode::Deferred:
+			{
+				DeferredRenderPass();
+				break;
+			}
+			default:
+			{
+				TE_CORE_ASSERT( false, "Unknown render mode" );
+				break;
 			}
 		}
-
-		a_FBO->Bind();
-		RenderCommand::Clear();
-
-		// - Reset Viewport -
-		RenderCommand::SetViewport( 0, 0, a_Camera.GetViewportSize().x, a_Camera.GetViewportSize().y );
-		
-		// - Update View Projection Matrix -
-		m_ViewMatrix = a_View;
-		m_ProjectionMatrix = a_Camera.GetProjection();
-		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
-
-		// - Geometry Pass -
-		{
-			GeometryPass();
-		}
-
-		// - Draw Skybox -
-		if ( m_SceneEnvironment.HDRI.EnvironmentMap && m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap() )
-		{
-			auto radianceMap = m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap();
-			RenderCommand::SetDepthCompare( EDepthCompareOperator::LessOrEqual );
-			RenderCommand::SetCullMode( ECullMode::None );
-			m_SkyboxShader->Bind();
-			{
-				Matrix4 skyboxView = Matrix4( Matrix3( m_ViewMatrix ) ); // Remove translation
-				Matrix4 skyboxTransform = glm::scale( Matrix4( 1.0f ), { 100.0f, 100.0f, 100.0f } );
-
-				m_SkyboxShader->SetMatrix4( "u_Projection", m_ProjectionMatrix );
-				m_SkyboxShader->SetMatrix4( "u_View", skyboxView );
-				m_SkyboxShader->SetMatrix4( "u_Model", skyboxTransform );
-				m_SkyboxShader->SetFloat( "u_Exposure", m_SceneEnvironment.HDRI.Exposure );
-				m_SkyboxShader->SetFloat( "u_Gamma", m_SceneEnvironment.HDRI.Gamma );
-				const uint32_t MaxMipLevels = 5;
-				float roughness = static_cast<float>( m_SceneEnvironment.HDRI.Blur * ( MaxMipLevels - 1 ) );
-				m_SkyboxShader->SetFloat( "u_Roughness", roughness );
-
-				radianceMap->Bind();
-
-				SharedPtr<VertexArray>& cubeVAO = m_CubeMesh->GetSubMeshes()[0].VAO;
-				cubeVAO->Bind();
-				RenderCommand::DrawIndexed( cubeVAO );
-				cubeVAO->Unbind();
-
-				radianceMap->Unbind();
-			}
-			m_SkyboxShader->Unbind();
-		}
-
-		a_FBO->Unbind();
 
 		EndScene();
 	}
 
 	void SceneRenderer::BeginScene( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition )
 	{
-		m_CameraPosition = a_CameraPosition;
+		m_SceneInfo = SceneInfo
+		{
+			.ProjectionMatrix = a_Camera.GetProjection(),
+			.ViewMatrix = a_View,
+			.ViewProjectionMatrix = a_Camera.GetProjection() * a_View,
+			.CameraPosition = a_CameraPosition,
+			.Camera = a_Camera,
+		};
 
 		// - Submit Directional Lights -
 		{
@@ -196,7 +181,25 @@ namespace Tridium {
 					if ( lightIndex >= MAX_POINT_LIGHTS )
 						return;
 
-					m_LightEnvironment.PointLights[lightIndex].Position = transform.Position;
+					// TEMP!
+					if ( lightComponent.CastsShadows && !lightComponent.ShadowMap )
+					{
+						FramebufferSpecification spec =
+						{
+							.Width = (uint32_t)m_ShadowMapSize.x,
+							.Height = (uint32_t)m_ShadowMapSize.y,
+							.Attachments = { EFramebufferTextureFormat::Depth },
+						};
+
+						lightComponent.ShadowMap = Framebuffer::Create( spec );
+					}
+
+					if ( !lightComponent.CastsShadows )
+					{
+						lightComponent.ShadowMap.reset();
+					}
+
+					m_LightEnvironment.PointLights[lightIndex].Position = transform.GetWorldPosition();
 					m_LightEnvironment.PointLights[lightIndex].Color = lightComponent.LightColor;
 					m_LightEnvironment.PointLights[lightIndex].Intensity = lightComponent.Intensity;
 					m_LightEnvironment.PointLights[lightIndex].FalloffExponent = lightComponent.FalloffExponent;
@@ -216,7 +219,7 @@ namespace Tridium {
 					if ( lightIndex >= MAX_SPOT_LIGHTS )
 						return;
 
-					m_LightEnvironment.SpotLights[lightIndex].Position = transform.Position;
+					m_LightEnvironment.SpotLights[lightIndex].Position = transform.GetWorldPosition();
 					m_LightEnvironment.SpotLights[lightIndex].Direction = transform.GetForward();
 					m_LightEnvironment.SpotLights[lightIndex].Color = lightComponent.LightColor;
 					m_LightEnvironment.SpotLights[lightIndex].Intensity = lightComponent.Intensity;
@@ -278,36 +281,382 @@ namespace Tridium {
 
 	void SceneRenderer::EndScene()
 	{
+		// Release ownership of the render target
+		m_RenderTarget.reset();
 	}
 
-	void SceneRenderer::Flush()
+	void SceneRenderer::Clear()
 	{
 		m_DrawCalls.clear();
+
 		for ( auto& pointLight : m_LightEnvironment.PointLights )
-		{
 			pointLight = {};
-		}
+
 		for ( auto& spotLight : m_LightEnvironment.SpotLights )
-		{
 			spotLight = {};
-		}
+
 		for ( auto& directionalLight : m_LightEnvironment.DirectionalLights )
-		{
 			directionalLight = {};
-		}
 	}
 
 	void SceneRenderer::SubmitDrawCall( DrawCall&& a_DrawCall )
 	{
-		m_DrawCalls.push_back( a_DrawCall );
+		m_DrawCalls.emplace_back( a_DrawCall );
 	}
 
-	void SceneRenderer::PerformDrawCall( const DrawCall& a_DrawCall )
+	//////////////////////////////////////////////////////////////////////////
+	// Shadows
+	//////////////////////////////////////////////////////////////////////////
+
+	void SceneRenderer::GenerateShadowMaps()
 	{
+		RenderCommand::SetDepthTest( true );
+
+		TODO( "Front face culling only works on opaque objects, need to handle transparent objects by using a bias." );
+		// Set Cull Mode to front to avoid peter panning
+		RenderCommand::SetCullMode( ECullMode::Front );
+		RenderCommand::SetDepthCompare( EDepthCompareOperator::Less );
+		RenderCommand::SetViewport( 0, 0, m_ShadowMapSize.x, m_ShadowMapSize.y );
+
+		// Generate Directional Light Shadow Maps
+		{
+			m_ShadowMapShader->Bind();
+
+			for ( auto& directionalLight : m_LightEnvironment.DirectionalLights )
+			{
+				if ( !directionalLight.CastsShadows )
+					continue;
+
+				directionalLight.ShadowMap->Bind();
+				RenderCommand::Clear();
+
+				// - Update View Projection Matrix -
+				float lightNearPlane = -1000.0f; float lightFarPlane = 1000.0f;
+				Matrix4 lightView = glm::lookAt(
+					m_SceneInfo.CameraPosition + ( m_LightEnvironment.DirectionalLights[0].Direction * -20.f ),
+					m_SceneInfo.CameraPosition,
+					{ 0.0f, 1.0f, 0.0f } );
+				float size = 100.0f;
+				Matrix4 lightProjection = glm::ortho( -size, size, -size, size, lightNearPlane, lightFarPlane );
+				m_LightViewProjectionMatrix = lightProjection * lightView;
+
+				for ( const auto& drawCall : m_DrawCalls )
+				{
+					m_ShadowMapShader->SetMatrix4( "u_PVM", m_LightViewProjectionMatrix * drawCall.Transform );
+
+					drawCall.VAO->Bind();
+					RenderCommand::DrawIndexed( drawCall.VAO );
+					drawCall.VAO->Unbind();
+				}
+
+				directionalLight.ShadowMap->Unbind();
+			}
+
+			m_ShadowMapShader->Unbind();
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Deferred Rendering
+	//////////////////////////////////////////////////////////////////////////
+
+	void SceneRenderer::DeferredRenderPass()
+	{
+		const iVector2 viewportSize = m_SceneInfo.Camera.GetViewportSize();
+		// - GBuffer Pass -
+		{
+			m_DeferredData.GBuffer.Resize( viewportSize.x, viewportSize.y );
+			m_DeferredData.GBuffer.Bind();
+			RenderCommand::Clear();
+			RenderCommand::SetBlendmode( EBlendMode::None );
+
+			// - Reset Viewport -
+			RenderCommand::SetViewport( 0, 0, viewportSize.x, viewportSize.y );
+
+			// Geometry Pass
+			{
+				DeferredGBufferPass();
+			}
+
+			m_DeferredData.GBuffer.Unbind();
+		}
+
+		m_RenderTarget->Resize( viewportSize.x, viewportSize.y );
+		m_RenderTarget->Bind();
+		RenderCommand::Clear();
+
+		// - Lighting Pass -
+		{
+			DeferredLightingPass();
+		}
+
+		// Copy Depth Buffer
+		{
+			m_DeferredData.GBuffer.GetFramebuffer()->BlitTo( 
+				m_RenderTarget,
+				{ 0, 0 }, { viewportSize.x, viewportSize.y }, // Source min, max
+				{ 0, 0 }, { viewportSize.x, viewportSize.y }, // Destination min, max
+				EFramebufferTextureFormat::Depth, ETextureFilter::Nearest );
+		}
+
+		m_RenderTarget->Bind();
+
+		// - Draw Skybox -
+		{
+			RenderSkybox();
+		}
+
+		// - Apply Post-Processing Pass -
+		{
+			PostProcessPass();
+		}
+
+		m_RenderTarget->Unbind();
+	}
+
+	void SceneRenderer::DeferredGBufferPass()
+	{
+		RenderCommand::SetDepthTest( true );
+		RenderCommand::SetCullMode( ECullMode::Back );
+		RenderCommand::SetDepthCompare( EDepthCompareOperator::Less );
+
+		m_DeferredData.GBufferShader->Bind();
+		MaterialHandle lastMaterial = MaterialHandle::InvalidGUID;
+
+		auto bindMaterial = [&]( SharedPtr<Material>& material, SharedPtr<Shader>& shader )
+			{
+				// Bind Textures
+				uint32_t textureSlot = 0;
+				auto albedoTexture = AssetManager::GetAsset<Texture>( material->AlbedoTexture );
+				if ( !albedoTexture ) albedoTexture = m_WhiteTexture;
+				albedoTexture->Bind( textureSlot );
+				shader->SetInt( "u_AlbedoTexture", textureSlot );
+
+				textureSlot++;
+				auto metallicTexture = AssetManager::GetAsset<Texture>( material->MetallicTexture );
+				if ( !metallicTexture ) metallicTexture = m_BlackTexture;
+				metallicTexture->Bind( textureSlot );
+				shader->SetInt( "u_MetallicTexture", textureSlot );
+
+				textureSlot++;
+				auto roughnessTexture = AssetManager::GetAsset<Texture>( material->RoughnessTexture );
+				if ( !roughnessTexture ) roughnessTexture = m_WhiteTexture;
+				roughnessTexture->Bind( textureSlot );
+				shader->SetInt( "u_RoughnessTexture", textureSlot );
+
+				textureSlot++;
+				auto normalTexture = AssetManager::GetAsset<Texture>( material->NormalTexture );
+				if ( !normalTexture ) normalTexture = m_NormalTexture;
+				normalTexture->Bind( textureSlot );
+				shader->SetInt( "u_NormalTexture", textureSlot );
+
+				textureSlot++;
+				TODO( "Should we be setting the opacity texture to the albedo if there isn't an opacity texture?" );
+				auto opacityTexture = AssetManager::GetAsset<Texture>( material->OpacityTexture );
+				if ( !opacityTexture ) opacityTexture = albedoTexture;
+				opacityTexture->Bind( textureSlot );
+				shader->SetInt( "u_OpacityTexture", textureSlot );
+
+				textureSlot++;
+				auto emissiveTexture = AssetManager::GetAsset<Texture>( material->EmissiveTexture );
+				if ( !emissiveTexture ) emissiveTexture = m_BlackTexture;
+				emissiveTexture->Bind( textureSlot );
+				shader->SetInt( "u_EmissiveTexture", textureSlot );
+
+				textureSlot++;
+				auto aoTexture = AssetManager::GetAsset<Texture>( material->AOTexture );
+				if ( !aoTexture ) aoTexture = m_WhiteTexture;
+				aoTexture->Bind( textureSlot );
+				shader->SetInt( "u_AOTexture", textureSlot );
+			};
+
+		bindMaterial( m_DefaultMaterial, m_DeferredData.GBufferShader );
+
+		for ( const auto& drawCall : m_DrawCalls )
+		{
+			if ( drawCall.Material != lastMaterial )
+			{
+				auto material = AssetManager::GetAsset<Material>( drawCall.Material );
+				if ( !material ) material = m_DefaultMaterial;
+				bindMaterial( material, m_DeferredData.GBufferShader );
+				lastMaterial = drawCall.Material;
+			}
+
+			m_DeferredData.GBufferShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * drawCall.Transform );
+			m_DeferredData.GBufferShader->SetMatrix4( "u_Model", drawCall.Transform );
+
+			drawCall.VAO->Bind();
+			RenderCommand::DrawIndexed( drawCall.VAO );
+			drawCall.VAO->Unbind();
+		}
+
+		m_DeferredData.GBufferShader->Unbind();
 
 	}
 
-	void SceneRenderer::GeometryPass()
+	void SceneRenderer::DeferredLightingPass()
+	{
+		m_DeferredData.LightingShader->Bind();
+
+		// Bind Shader Uniforms
+		{
+			// - Bind Scene Info -
+			m_DeferredData.LightingShader->SetFloat3( "u_CameraPosition", m_SceneInfo.CameraPosition );
+
+			// Incremented every time a texture is bound
+			uint32_t textureSlot = 0;
+
+			// - Bind GBuffer Textures -
+			{
+				m_DeferredData.GBuffer.GetFramebuffer()->BindAttatchment( m_DeferredData.GBuffer.GetPositionAttachment(), 0 );
+				m_DeferredData.GBuffer.GetFramebuffer()->BindAttatchment( m_DeferredData.GBuffer.GetNormalAttachment(), 1 );
+				m_DeferredData.GBuffer.GetFramebuffer()->BindAttatchment( m_DeferredData.GBuffer.GetAlbedoAttachment(), 2 );
+				m_DeferredData.GBuffer.GetFramebuffer()->BindAttatchment( m_DeferredData.GBuffer.GetOMRAttachment(), 3 );
+				m_DeferredData.GBuffer.GetFramebuffer()->BindAttatchment( m_DeferredData.GBuffer.GetEmissionAttachment(), 4 );
+
+				m_DeferredData.LightingShader->SetInt( "g_Position", 0 );
+				m_DeferredData.LightingShader->SetInt( "g_Normal", 1 );
+				m_DeferredData.LightingShader->SetInt( "g_Albedo", 2 );
+				m_DeferredData.LightingShader->SetInt( "g_AORM", 3 );
+				m_DeferredData.LightingShader->SetInt( "g_Emission", 4 );
+
+				textureSlot = 5;
+			}
+
+			// - Bind Shadow Maps -
+			{
+				// Directional Lights
+				for ( uint32_t i = 0; i < MAX_DIRECTIONAL_LIGHTS; ++i )
+				{
+					DirectionalLight& directionalLight = m_LightEnvironment.DirectionalLights[i];
+
+					if ( directionalLight.ShadowMap )
+					{
+						directionalLight.ShadowMap->BindDepthAttatchment( textureSlot );
+						m_DeferredData.LightingShader->SetInt( ( "u_DirectionalShadowMaps[" + std::to_string( i ) + "]" ).c_str(), textureSlot );
+						m_DeferredData.LightingShader->SetMatrix4( "u_LightSpaceMatrix", m_LightViewProjectionMatrix );
+					}
+					else
+					{
+						m_WhiteTexture->Bind( textureSlot );
+						m_DeferredData.LightingShader->SetInt( ( "u_DirectionalShadowMaps[" + std::to_string( i ) + "]" ).c_str(), textureSlot );
+					}
+
+					textureSlot++;
+				}
+			}
+
+			// - Bind Environment Map -
+			{
+				// Bind BRDF LUT
+				if ( m_BrdfLUT )
+				{
+					m_BrdfLUT->Bind( textureSlot );
+					m_DeferredData.LightingShader->SetInt( "u_Environment.BrdfLUT", textureSlot );
+				}
+
+				// Bind Environment Map
+				if ( m_SceneEnvironment.HDRI.EnvironmentMap && m_SceneEnvironment.HDRI.EnvironmentMap->GetIrradianceMap() )
+				{
+					if ( auto radianceMap = m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap() )
+					{
+						radianceMap->Bind( textureSlot );
+						m_DeferredData.LightingShader->SetInt( "u_Environment.PrefilterMap", textureSlot );
+						textureSlot++;
+					}
+				}
+				m_DeferredData.LightingShader->SetFloat( "u_Environment.Roughness", m_SceneEnvironment.HDRI.Blur );
+				m_DeferredData.LightingShader->SetFloat( "u_Environment.Exposure", m_SceneEnvironment.HDRI.Exposure );
+				m_DeferredData.LightingShader->SetFloat( "u_Environment.Gamma", m_SceneEnvironment.HDRI.Gamma );
+				m_DeferredData.LightingShader->SetFloat( "u_Environment.Intensity", m_SceneEnvironment.HDRI.Intensity );
+			}
+
+			// - Bind Lights -
+			{
+				// Directional Lights
+				for ( uint32_t i = 0; i < MAX_DIRECTIONAL_LIGHTS; ++i )
+				{
+					DirectionalLight& directionalLight = m_LightEnvironment.DirectionalLights[i];
+					std::string uniformName = "u_DirectionalLights[" + std::to_string( i ) + "].";
+					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Direction" ).c_str(), directionalLight.Direction );
+					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Color" ).c_str(), directionalLight.Color );
+					m_DeferredData.LightingShader->SetFloat( ( uniformName + "Intensity" ).c_str(), directionalLight.Intensity );
+				}
+
+				// Point Lights
+				for ( uint32_t i = 0; i < MAX_POINT_LIGHTS; i++ )
+				{
+					PointLight& pointLight = m_LightEnvironment.PointLights[i];
+					std::string uniformName = "u_PointLights[" + std::to_string( i ) + "].";
+					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Position" ).c_str(), pointLight.Position );
+					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Color" ).c_str(), pointLight.Color );
+					m_DeferredData.LightingShader->SetFloat( ( uniformName + "Intensity" ).c_str(), pointLight.Intensity );
+					m_DeferredData.LightingShader->SetFloat( ( uniformName + "FalloffExponent" ).c_str(), pointLight.FalloffExponent );
+					m_DeferredData.LightingShader->SetFloat( ( uniformName + "AttenuationRadius" ).c_str(), pointLight.AttenuationRadius );
+				}
+
+				// Spot Lights
+				for ( uint32_t i = 0; i < MAX_SPOT_LIGHTS; ++i )
+				{
+					SpotLight& spotLight = m_LightEnvironment.SpotLights[i];
+					std::string uniformName = "u_SpotLights[" + std::to_string( i ) + "].";
+					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Position" ).c_str(), spotLight.Position );
+					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Direction" ).c_str(), spotLight.Direction );
+					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Color" ).c_str(), spotLight.Color );
+					m_DeferredData.LightingShader->SetFloat( ( uniformName + "Intensity" ).c_str(), spotLight.Intensity );
+					m_DeferredData.LightingShader->SetFloat( ( uniformName + "FalloffExponent" ).c_str(), spotLight.FalloffExponent );
+					m_DeferredData.LightingShader->SetFloat( ( uniformName + "AttenuationRadius" ).c_str(), spotLight.AttenuationRadius );
+					m_DeferredData.LightingShader->SetFloat( ( uniformName + "InnerConeAngle" ).c_str(), spotLight.InnerConeAngle );
+					m_DeferredData.LightingShader->SetFloat( ( uniformName + "OuterConeAngle" ).c_str(), spotLight.OuterConeAngle );
+				}
+			}
+		}
+
+		// Draw Quad
+		{
+			RenderCommand::SetDepthTest( false );
+			RenderCommand::SetCullMode( ECullMode::None );
+
+			m_DeferredData.QuadVAO->Bind();
+			RenderCommand::DrawIndexed( m_DeferredData.QuadVAO );
+			m_DeferredData.QuadVAO->Unbind();
+		}
+
+		m_DeferredData.LightingShader->Unbind();
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Forward Rendering
+	//////////////////////////////////////////////////////////////////////////
+
+	void SceneRenderer::ForwardRenderPass()
+	{
+		m_RenderTarget->Bind();
+		RenderCommand::Clear();
+
+		// - Reset Viewport -
+		const iVector2 viewportSize = m_SceneInfo.Camera.GetViewportSize();
+		RenderCommand::SetViewport( 0, 0, viewportSize.x, viewportSize.y );
+
+		// - Geometry Pass -
+		{
+			ForwardGeometryPass();
+		}
+
+		// - Draw Skybox -
+		{
+			RenderSkybox();
+		}
+
+		// - Apply Post-Processing Pass -
+		{
+			PostProcessPass();
+		}
+
+		m_RenderTarget->Unbind();
+	}
+
+	void SceneRenderer::ForwardGeometryPass()
 	{
 		RenderCommand::SetDepthTest( true );
 		RenderCommand::SetCullMode( ECullMode::Back );
@@ -318,31 +667,8 @@ namespace Tridium {
 		SharedPtr<Shader> shader = m_DefaultShader;
 		SharedPtr<Material> material = m_DefaultMaterial;
 
-		for ( const auto& drawCall : m_DrawCalls )
-		{
-			bool shaderChanged = false;
-			bool materialChanged = lastMaterial != drawCall.Material;
-			if ( materialChanged )
+		const auto bindShaderUniforms = [this, &shader, &material]()
 			{
-				lastMaterial = drawCall.Material;
-				material = AssetManager::GetAsset<Material>( drawCall.Material );
-				if ( !material )
-					material = m_DefaultMaterial;
-
-				if ( lastShader != material->Shader )
-				{
-					shader = AssetManager::GetAsset<Shader>( material->Shader );
-					if ( !shader )
-						shader = m_DefaultShader;
-
-					lastShader = material->Shader;
-					shaderChanged = true;
-				}
-			}
-
-			if ( shaderChanged )
-			{
-				shader->Bind();
 				// Bind Point Lights
 				for ( uint32_t i = 0; i < MAX_POINT_LIGHTS; i++ )
 				{
@@ -385,8 +711,8 @@ namespace Tridium {
 				{
 					if ( auto radianceMap = m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap() )
 					{
-						radianceMap->Bind( 7 );
-						shader->SetInt( "u_Environment.PrefilterMap", 7 );
+						radianceMap->Bind( 0 );
+						shader->SetInt( "u_Environment.PrefilterMap", 0 );
 					}
 				}
 				shader->SetFloat( "u_Environment.Roughness", m_SceneEnvironment.HDRI.Blur );
@@ -397,65 +723,177 @@ namespace Tridium {
 				// Bind BRDF LUT
 				if ( m_BrdfLUT )
 				{
-					m_BrdfLUT->Bind( 8 );
-					shader->SetInt( "u_Environment.BrdfLUT", 8 );
+					m_BrdfLUT->Bind( 1 );
+					shader->SetInt( "u_Environment.BrdfLUT", 1 );
 				}
 
 				// Temp ?
-				if ( m_ShadowFBO )
-					m_ShadowFBO->BindDepthAttatchment( 9 );
-				else
-					m_WhiteTexture->Bind( 9 );
-				shader->SetInt( "u_ShadowMap", 9 );
-				shader->SetMatrix4( "u_LightSpaceMatrix", m_LightViewProjectionMatrix );
+				// Bind Shadow Maps
+				{
+					uint32_t textureSlot = 2;
+					for ( uint32_t i = 0; i < MAX_DIRECTIONAL_LIGHTS; ++i )
+					{
+						DirectionalLight& directionalLight = m_LightEnvironment.DirectionalLights[i];
+
+						if ( directionalLight.ShadowMap )
+							directionalLight.ShadowMap->BindDepthAttatchment( textureSlot );
+						else
+							m_WhiteTexture->Bind( textureSlot );
+						shader->SetInt( ( "u_DirectionalShadowMaps[" + std::to_string( i ) + "]" ).c_str(), textureSlot );
+						shader->SetMatrix4( "u_LightSpaceMatrix", m_LightViewProjectionMatrix );
+						textureSlot++;
+					}
+				}
+			};
+
+		const auto bindMaterialUniforms = [this, &material, &shader]()
+			{
+				// Bind Textures
+				uint32_t textureSlot = 2 + MAX_DIRECTIONAL_LIGHTS;
+				auto albedoTexture = AssetManager::GetAsset<Texture>( material->AlbedoTexture );
+				if ( !albedoTexture ) albedoTexture = m_WhiteTexture;
+				albedoTexture->Bind( textureSlot );
+				shader->SetInt( "u_AlbedoTexture", textureSlot );
+
+				textureSlot++;
+				auto metallicTexture = AssetManager::GetAsset<Texture>( material->MetallicTexture );
+				if ( !metallicTexture ) metallicTexture = m_BlackTexture;
+				metallicTexture->Bind( textureSlot );
+				shader->SetInt( "u_MetallicTexture", textureSlot );
+
+				textureSlot++;
+				auto roughnessTexture = AssetManager::GetAsset<Texture>( material->RoughnessTexture );
+				if ( !roughnessTexture ) roughnessTexture = m_WhiteTexture;
+				roughnessTexture->Bind( textureSlot );
+				shader->SetInt( "u_RoughnessTexture", textureSlot );
+
+				textureSlot++;
+				auto normalTexture = AssetManager::GetAsset<Texture>( material->NormalTexture );
+				if ( !normalTexture ) normalTexture = m_NormalTexture;
+				normalTexture->Bind( textureSlot );
+				shader->SetInt( "u_NormalTexture", textureSlot );
+
+				textureSlot++;
+				TODO( "Should we be setting the opacity texture to the albedo if there isn't an opacity texture?" );
+				auto opacityTexture = AssetManager::GetAsset<Texture>( material->OpacityTexture );
+				if ( !opacityTexture ) opacityTexture = albedoTexture;
+				opacityTexture->Bind( textureSlot );
+				shader->SetInt( "u_OpacityTexture", textureSlot );
+
+				textureSlot++;
+				auto emissiveTexture = AssetManager::GetAsset<Texture>( material->EmissiveTexture );
+				if ( !emissiveTexture ) emissiveTexture = m_BlackTexture;
+				emissiveTexture->Bind( textureSlot );
+				shader->SetInt( "u_EmissiveTexture", textureSlot );
+
+				textureSlot++;
+				auto aoTexture = AssetManager::GetAsset<Texture>( material->AOTexture );
+				if ( !aoTexture ) aoTexture = m_WhiteTexture;
+				aoTexture->Bind( textureSlot );
+				shader->SetInt( "u_AOTexture", textureSlot );
+			};
+
+		for ( const auto& drawCall : m_DrawCalls )
+		{
+			bool shaderChanged = false;
+			bool materialChanged = lastMaterial != drawCall.Material;
+			if ( materialChanged )
+			{
+				lastMaterial = drawCall.Material;
+				material = AssetManager::GetAsset<Material>( drawCall.Material );
+				if ( !material )
+					material = m_DefaultMaterial;
+
+				if ( lastShader != material->Shader )
+				{
+					shader = AssetManager::GetAsset<Shader>( material->Shader );
+					if ( !shader )
+						shader = m_DefaultShader;
+
+					lastShader = material->Shader;
+					shaderChanged = true;
+				}
+			}
+
+			if ( shaderChanged )
+			{
+				shader->Bind();
+				bindShaderUniforms();
 			}
 
 			if ( materialChanged )
 			{
-				// Bind Textures
-				auto albedoTexture = AssetManager::GetAsset<Texture>( material->AlbedoTexture );
-				if ( !albedoTexture ) albedoTexture = m_WhiteTexture;
-				albedoTexture->Bind( 0 );
-				shader->SetInt( "u_AlbedoTexture", 0 );
-
-				auto metallicTexture = AssetManager::GetAsset<Texture>( material->MetallicTexture );
-				if ( !metallicTexture ) metallicTexture = m_BlackTexture;
-				metallicTexture->Bind( 1 );
-				shader->SetInt( "u_MetallicTexture", 1 );
-
-				auto roughnessTexture = AssetManager::GetAsset<Texture>( material->RoughnessTexture );
-				if ( !roughnessTexture ) roughnessTexture = m_WhiteTexture;
-				roughnessTexture->Bind( 2 );
-				shader->SetInt( "u_RoughnessTexture", 2 );
-
-				auto normalTexture = AssetManager::GetAsset<Texture>( material->NormalTexture );
-				if ( !normalTexture ) normalTexture = m_NormalTexture;
-				normalTexture->Bind( 3 );
-				shader->SetInt( "u_NormalTexture", 3 );
-
-				//auto opacityTexture = AssetManager::GetAsset<Texture>( material->OpacityTexture );
-				//if ( !opacityTexture ) opacityTexture = m_WhiteTexture;
-				//opacityTexture->Bind( 4 );
-				//shader->SetInt( "u_OpacityTexture", 4 );
-
-				auto emissiveTexture = AssetManager::GetAsset<Texture>( material->EmissiveTexture );
-				if ( !emissiveTexture ) emissiveTexture = m_BlackTexture;
-				emissiveTexture->Bind( 5 );
-				shader->SetInt( "u_EmissiveTexture", 5 );
-
-				auto aoTexture = AssetManager::GetAsset<Texture>( material->AOTexture );
-				if ( !aoTexture ) aoTexture = m_WhiteTexture;
-				aoTexture->Bind( 6 );
-				shader->SetInt( "u_AOTexture", 6 );
+				bindMaterialUniforms();
 			}
 
-			shader->SetMatrix4( "u_PVM", m_ViewProjectionMatrix * drawCall.Transform );
+			shader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * drawCall.Transform );
 			shader->SetMatrix4( "u_Model", drawCall.Transform );
-			shader->SetFloat3( "u_CameraPosition", m_CameraPosition );
+			shader->SetFloat3( "u_CameraPosition", m_SceneInfo.CameraPosition );
 
 			drawCall.VAO->Bind();
 			RenderCommand::DrawIndexed( drawCall.VAO );
 			drawCall.VAO->Unbind();
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Skybox
+	//////////////////////////////////////////////////////////////////////////
+
+	void SceneRenderer::RenderSkybox()
+	{
+		if ( m_SceneEnvironment.HDRI.EnvironmentMap && m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap() )
+		{
+			auto radianceMap = m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap();
+			RenderCommand::SetDepthTest( true );
+			RenderCommand::SetDepthCompare( EDepthCompareOperator::LessOrEqual );
+			RenderCommand::SetCullMode( ECullMode::None );
+			m_SkyboxShader->Bind();
+			{
+				Matrix4 skyboxView = Matrix4( Matrix3( m_SceneInfo.ViewMatrix ) ); // Remove translation
+				Matrix4 skyboxTransform = glm::scale( Matrix4( 1.0f ), { 100.0f, 100.0f, 100.0f } );
+
+				m_SkyboxShader->SetMatrix4( "u_Projection", m_SceneInfo.ProjectionMatrix );
+				m_SkyboxShader->SetMatrix4( "u_View", skyboxView );
+				m_SkyboxShader->SetMatrix4( "u_Model", skyboxTransform );
+				m_SkyboxShader->SetFloat( "u_Exposure", m_SceneEnvironment.HDRI.Exposure );
+				m_SkyboxShader->SetFloat( "u_Gamma", m_SceneEnvironment.HDRI.Gamma );
+				const uint32_t MaxMipLevels = 5;
+				float roughness = static_cast<float>( m_SceneEnvironment.HDRI.Blur * ( MaxMipLevels - 1 ) );
+				m_SkyboxShader->SetFloat( "u_Roughness", roughness );
+
+				radianceMap->Bind();
+
+				SharedPtr<VertexArray>& cubeVAO = m_CubeMesh->GetSubMeshes()[0].VAO;
+				cubeVAO->Bind();
+				RenderCommand::DrawIndexed( cubeVAO );
+				cubeVAO->Unbind();
+
+				radianceMap->Unbind();
+			}
+			m_SkyboxShader->Unbind();
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Post Processing
+	//////////////////////////////////////////////////////////////////////////
+
+	void SceneRenderer::PostProcessPass()
+	{
+		// - Apply Bloom -
+		{
+
+		}
+
+		// - Apply Tone Mapping -
+		{
+
+		}
+
+		// - Apply Anti-Aliasing -
+		{
+
 		}
 	}
 

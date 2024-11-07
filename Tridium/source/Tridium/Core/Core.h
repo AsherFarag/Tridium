@@ -1,45 +1,31 @@
 #pragma once
 
 // - Common Includes -
-#include <Tridium/Math/Math.h>
+#include <Tridium/Core/Types.h>
+#include <Tridium/Core/Hash.h>
+#include <Tridium/Core/Memory.h>
 #include <Tridium/Core/Time.h>
 #include <Tridium/Core/GUID.h>
 #include <Tridium/Core/Color.h>
-#include <memory>
-#include <filesystem>
-namespace fs = std::filesystem;
+#include <Tridium/Math/Math.h>
+#include <Tridium/Math/Rotator.h>
+#include <Tridium/Asset/Asset.h>
+#include <Tridium/IO/FilePath.h>
+#include <Tridium/Utils/Macro.h>
+#include <Tridium/Utils/Reflection/ReflectionFwd.h>
 
-#pragma region Macro Helpers
+namespace Tridium {
 
-#define BIT(x) (1 << x)
+	template<typename _Flags, typename _EnumFlag>
+	bool HasFlag( _Flags Flags, _EnumFlag Flag )
+	{
+		std::underlying_type_t<_EnumFlag> flag = static_cast<std::underlying_type_t<_EnumFlag>>( Flag );
+		return ( Flags & static_cast<std::underlying_type_t<_EnumFlag>>( Flag ) ) == flag;
+	}
 
-#define Stringize( x ) #x 
-#define WRAP( m, x ) m(x)
-#define PRAGMA(p) _Pragma(#p)
-#define EXPAND(x) x
+}
 
-#define STD_PLACEHOLDERS std::placeholders::_
-#define TE_BIND_EVENT_FN(fn, PlaceHolder) std::bind( &fn, this, EXPAND(STD_PLACEHOLDERS)PlaceHolder )
-
-#pragma region Selectors
-
-#define SELECT_MACRO_2(_1, _2, x, ...) x
-#define SELECT_MACRO_3(_1, _2, _3, x, ...) x
-#define SELECT_MACRO_4(_1, _2, _3, _4, x, ...) x
-#define SELECT_MACRO_5(_1, _2, _3, _4, _5, x, ...) x
-#define SELECT_MACRO_6(_1, _2, _3, _4, _5, _6, x, ...) x
-#define SELECT_MACRO_7(_1, _2, _3, _4, _5, _6, _7, x, ...) x
-#define SELECT_MACRO_8(_1, _2, _3, _4, _5, _6, _7, _8, x, ...) x
-#define SELECT_MACRO_9(_1, _2, _3, _4, _5, _6, _7, _8, _9, x, ...) x
-#define SELECT_MACRO_10(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, x, ...) x
-
-#pragma endregion
-
-#define MIN(x, y) (x > y ? y : x)
-#define MAX(x, y) (x > y ? x : y)
-#define CLAMP(min, max, val) (MAX(min, val) == val ? MIN(max, val) : MAX(min, val))
-
-#pragma endregion
+#define TE_BIND_EVENT_FN(fn, PlaceHolder) std::bind( &fn, this, std::placeholders::_##PlaceHolder )
 
 #ifdef TE_PLATFORM_WINDOWS
 
@@ -70,39 +56,13 @@ namespace fs = std::filesystem;
 	#define TE_CORE_ASSERT(x, ...)
 #endif // TE_ENABLE_ASSERTS
 
-namespace Tridium {
+#ifdef TE_DEBUG
+	#define TE_ENABLE_CHECKS
+#endif // TE_DEBUG
 
-#pragma region Memory
 
-	template <typename T>
-	using UniquePtr = std::unique_ptr<T>;
-
-	template<typename T, typename ... Args>
-	constexpr UniquePtr<T> MakeUnique( Args&& ... args )
-	{
-		return std::make_unique<T>( std::forward<Args>( args )... );
-	}
-
-	template<typename T>
-	using Ref = std::shared_ptr<T>;
-
-	template<typename T, typename ... Args>
-	constexpr Ref<T> MakeRef( Args&& ... args )
-	{
-		return std::make_shared<T>( std::forward<Args>( args )... );
-	}
-
-	// Type alias for std::weak_ptr
-	template<typename T>
-	using WeakRef = std::weak_ptr<T>;
-
-	// Function to convert std::shared_ptr to std::weak_ptr
-	template<typename T>
-	constexpr WeakRef<T> MakeWeakRef( const std::shared_ptr<T>& sharedPtr )
-	{
-		return WeakRef<T>( sharedPtr );
-	}
-
-#pragma endregion
-
-}
+#ifdef TE_ENABLE_CHECKS
+	#define CHECK(x) { if (!(x)) { __debugbreak(); } }
+#else
+	#define CHECK(x)
+#endif // TE_ENABLE_CHECKS

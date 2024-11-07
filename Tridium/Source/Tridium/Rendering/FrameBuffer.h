@@ -1,4 +1,5 @@
 #pragma once
+#include "Texture.h"
 
 namespace Tridium {
 
@@ -7,6 +8,7 @@ namespace Tridium {
 		None = 0,
 
 		// Color
+		RGB8,
 		RGBA8,
 		RED_INT,
 		RG16F,
@@ -56,14 +58,19 @@ namespace Tridium {
 		virtual ~Framebuffer() = default;
 
 		virtual void Bind() = 0;
+		virtual void BindRead() = 0;
+		virtual void BindWrite() = 0;
 		virtual void Unbind() = 0;
 		virtual void Invalidate() = 0;
 		virtual void ClearAttachment( uint32_t a_AttachmentIndex, int value ) = 0;
+
+		virtual void BlitTo( SharedPtr<Framebuffer> a_Target, Vector2 a_SrcMin, Vector2 a_SrcMax, Vector2 a_DstMin, Vector2 a_DstMax, EFramebufferTextureFormat a_BufferMask, ETextureFilter a_Filter ) = 0;
 
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
 		virtual int ReadPixel( uint32_t a_AttachmentIndex, int x, int y ) = 0;
 
+		virtual uint32_t GetRendererID() const = 0;
 		virtual uint32_t GetColorAttachmentID( uint32_t index = 0 ) const = 0;
 		virtual uint32_t GetDepthAttachmentID() const = 0;
 		virtual const FramebufferSpecification& GetSpecification() const = 0;

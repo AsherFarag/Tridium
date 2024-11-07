@@ -1,5 +1,5 @@
 #pragma once
-#ifdef IS_EDITOR
+#if 1 //IS_EDITOR
 #include "AssetManager.h"
 #include "AssetRegistry.h"
 

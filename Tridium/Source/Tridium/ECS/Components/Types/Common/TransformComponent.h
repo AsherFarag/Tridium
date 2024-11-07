@@ -4,6 +4,8 @@
 
 namespace Tridium {
 
+	class Scene;
+
 	class TransformComponent : public Component
 	{
 		REFLECT(TransformComponent);
@@ -19,6 +21,10 @@ namespace Tridium {
 		Matrix4 GetLocalTransform() const; /* Returns the transform matrix in local space. */
 		Vector3 GetForward() const;
 		Quaternion GetOrientation() const;
+		Vector3 GetWorldPosition() const { return GetWorldTransform()[3]; }
+		Vector3 GetLocalPosition() const { return Position; }
+		Vector3 GetWorldScale() const;
+		Vector3 GetLocalScale() const { return Scale; }
 
 		bool HasParent() const { return m_Parent.IsValid(); }
 		GameObject GetParent() const { return m_Parent; }
@@ -35,13 +41,14 @@ namespace Tridium {
 		Vector3 Scale = Vector3( 1.0f );
 
 	private:
-		void SetParent() { m_Parent = GameObject(); }
-		void SetParent( const GameObject a_Parent ) { m_Parent = a_Parent; }
+		void SetParent( GameObject a_Parent = GameObject() ) { m_Parent = a_Parent; }
 		void RemoveChild( GameObject a_Child );
 
 	private:
 		// - Heirarchy - 
 		GameObject m_Parent; // The gameobject this is a child of.
 		std::vector<GameObject> m_Children;
+
+		friend bool IO::DeserializeFromText<Scene>( const YAML::Node& a_Node, Scene& a_Data );
 	};
 }

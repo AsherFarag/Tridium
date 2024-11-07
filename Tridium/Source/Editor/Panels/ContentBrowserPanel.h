@@ -22,6 +22,8 @@ namespace Tridium::Editor {
 		Folder,
 	};
 
+	const char* FileTypeToString( EFileType a_Type );
+
 	class ContentBrowserPanel;
 
 	class ContentItemIcons final
@@ -40,7 +42,7 @@ namespace Tridium::Editor {
 		bool IsImported = false;
 
 		// Returns true if the item was opened.
-		bool OnImGuiDraw( const ImVec2& a_Size ) const;
+		bool OnImGuiDraw( float a_Size ) const;
 		bool IsAsset() const { return Type != EFileType::Folder && Type != EFileType::None; }
 		bool operator ==( const ContentItem & a_Other ) const { return Name == a_Other.Name; }
 	};
@@ -80,7 +82,7 @@ namespace Tridium::Editor {
 		std::list<std::string> m_DirectoryStack;
 		FolderHeirarchy m_FolderHeirarchy;
 
-		float m_ContentThumbnailSize = 128.0f;
+		float m_ContentThumbnailSize = 1.0f;
 	};
 }
 

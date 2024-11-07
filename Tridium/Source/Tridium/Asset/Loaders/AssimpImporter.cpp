@@ -139,14 +139,16 @@ namespace Tridium {
 			submesh.Indices.push_back( face.mIndices[2] );
 		}
 
+		CalculateTangents( submesh.Vertices, submesh.Indices );
+
 		submesh.VAO = VertexArray::Create();
 		BufferLayout layout =
 		{
-			{ ShaderDataType::Float3, "a_Position" },
-			{ ShaderDataType::Float3, "a_Normal" },
-			{ ShaderDataType::Float3, "a_Tangent" },
-			{ ShaderDataType::Float3, "a_Bitangent" },
-			{ ShaderDataType::Float2, "a_UV" },
+			{ EShaderDataType::Float3, "a_Position" },
+			{ EShaderDataType::Float3, "a_Normal" },
+			{ EShaderDataType::Float3, "a_Tangent" },
+			{ EShaderDataType::Float3, "a_Bitangent" },
+			{ EShaderDataType::Float2, "a_UV" },
 		};
 
 		submesh.VBO = VertexBuffer::Create( (float*)( submesh.Vertices.data() ), (uint32_t)( submesh.Vertices.size() * sizeof( Vertex ) ) );
@@ -181,6 +183,10 @@ namespace Tridium {
 			material->MetallicTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_SPECULAR );
 			// Roughness
 			material->RoughnessTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_SHININESS );
+			// Opacity
+			material->OpacityTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_OPACITY );
+			// Ambient Occlusion
+			material->AOTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_AMBIENT );
 			// Emissive
 			material->EmissiveTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_EMISSIVE );
 

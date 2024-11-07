@@ -1,5 +1,5 @@
 #include "tripch.h"
-#ifdef IS_EDITOR
+#if 1// IS_EDITOR
 #include "EditorAssetManager.h"
 #include <Tridium/Asset/AssetFactory.h>
 #include <yaml-cpp/yaml.h>
@@ -76,11 +76,11 @@ namespace Tridium::Editor {
 		// Load the asset
 		AssetMetaData newMetaData =
 		{
-				.Handle = metaData.Handle,
-				.AssetType = metaData.AssetType,
-				.Path = GetAbsolutePath( metaData.Path ),
-				.Name = metaData.Name,
-				.IsAssetLoaded = false
+			.Handle = metaData.Handle,
+			.AssetType = metaData.AssetType,
+			.Path = GetAbsolutePath( metaData.Path ),
+			.Name = metaData.Name,
+			.IsAssetLoaded = false
 		};
 
 		TE_CORE_INFO( "[AssetManager] Loading asset from: {0}", newMetaData.Path.ToString() );
@@ -201,8 +201,6 @@ namespace Tridium::Editor {
 		}
 	}
 
-
-
 	//////////////////////////////////////////////////////////////////////////
 	// Editor Only
 	//////////////////////////////////////////////////////////////////////////
@@ -215,6 +213,7 @@ namespace Tridium::Editor {
 		return AssetMetaData::s_InvalidMetaData;
 	}
 
+	//////////////////////////////////////////////////////////////////////////
 	const AssetMetaData& EditorAssetManager::GetAssetMetaData( const IO::FilePath& a_Path ) const
 	{
 		TODO( "Incredibly inefficient, fix this" );
@@ -228,11 +227,13 @@ namespace Tridium::Editor {
 		return AssetMetaData::s_InvalidMetaData;
 	}
 
+	//////////////////////////////////////////////////////////////////////////
 	void EditorAssetManager::SetAssetMetaData( const AssetMetaData& a_MetaData )
 	{
 		m_AssetRegistry.AssetMetaData[a_MetaData.Handle] = a_MetaData;
 	}
 
+	//////////////////////////////////////////////////////////////////////////
 	bool EditorAssetManager::SaveAsset( AssetHandle a_Handle )
 	{
 		const AssetMetaData& metaData = GetAssetMetaData( a_Handle );
@@ -254,6 +255,7 @@ namespace Tridium::Editor {
 		return false;
 	}
 
+	//////////////////////////////////////////////////////////////////////////
 	AssetHandle EditorAssetManager::ImportAsset( const IO::FilePath& a_Path )
 	{
 		if ( auto metaData = GetAssetMetaData( a_Path ); metaData.IsValid() )
@@ -293,6 +295,7 @@ namespace Tridium::Editor {
 		return metaData.Handle;
 	}
 
+	//////////////////////////////////////////////////////////////////////////
 	bool EditorAssetManager::CreateAsset( const AssetMetaData& a_MetaData, SharedPtr<Asset> a_Asset )
 	{
 		if ( m_AssetRegistry.AssetMetaData.find( a_MetaData.Handle ) != m_AssetRegistry.AssetMetaData.end() )
@@ -317,6 +320,7 @@ namespace Tridium::Editor {
 		return true;
 	}
 
+	//////////////////////////////////////////////////////////////////////////
 	IO::FilePath EditorAssetManager::GetAbsolutePath( const IO::FilePath& a_Path ) const
 	{
 		// If the path is already absolute, return it
@@ -327,6 +331,7 @@ namespace Tridium::Editor {
 		return Application::GetActiveProject()->GetConfiguration().ProjectDirectory / a_Path;
 	}
 
+	//////////////////////////////////////////////////////////////////////////
 	bool EditorAssetManager::SerializeAssetRegistry()
 	{
 		TE_CORE_INFO( "[AssetManager] Serializing asset registry" );
@@ -380,6 +385,7 @@ namespace Tridium::Editor {
 		return true;
 	}
 
+	//////////////////////////////////////////////////////////////////////////
 	bool EditorAssetManager::DeserializeAssetRegistry()
 	{
 		YAML::Node data;

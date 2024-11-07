@@ -83,6 +83,43 @@ namespace Tridium::Editor {
 			}
 			break;
 		}
+		case Input::KEY_C:
+		{
+			// Control + C
+			// Copy the selected game object
+			if ( control )
+			{
+				if ( m_SelectedGameObject.IsValid() )
+				{
+					EditorApplication::GetPayloadManager().SetPayload( "GameObject", m_SelectedGameObject );
+					return true;
+				}
+			}
+			break;
+		}
+		case Input::KEY_V:
+		{
+			// Control + V
+			// Paste the copied game object
+			if ( control )
+			{
+				if ( EditorApplication::GetPayloadManager().HasPayload() )
+				{
+					std::any payload = EditorApplication::GetPayloadManager().GetPayload( "GameObject" );
+					if ( payload.has_value() )
+					{
+						GameObject copiedGO = std::any_cast<GameObject>( payload );
+						if ( copiedGO.IsValid() )
+						{
+							GameObject newGO = m_Context->InstantiateGameObjectFrom( copiedGO );
+							SetSelectedGameObject( newGO );
+							return true;
+						}
+					}
+				}
+			}
+			break;
+		}
 		}
 
 		return false;
@@ -144,7 +181,7 @@ namespace Tridium::Editor {
 		ImGuiTextFilter filter( m_SearchBuffer.c_str() );
 		for ( int i = 0; i < gameObjects.size(); ++i )
 		{
-			GameObject go = gameObjects[i];
+			GameObject go = gameObjects.begin()[i];
 			// We are only drawing root objects in this loop
 			if ( go.GetParent().IsValid() )
 				continue;
@@ -209,6 +246,13 @@ namespace Tridium::Editor {
 				{
 					newGO = m_Context->InstantiateGameObject( "Cylinder" );
 					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCylinder();
+					SetSelectedGameObject( newGO );
+				}
+
+				if ( ImGui::MenuItem( "Capsule" ) )
+				{
+					newGO = m_Context->InstantiateGameObject( "Capsule" );
+					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCapsule();
 					SetSelectedGameObject( newGO );
 				}
 

@@ -9,7 +9,7 @@ namespace Tridium {
 
 	SharedPtr<EnvironmentMap> EnvironmentMap::Create( const SharedPtr<Texture>& a_EquirectangularTexture )
     {
-		switch ( Renderer::GetAPI() )
+		switch ( RendererAPI::GetAPI() )
 		{
 		case RendererAPI::API::OpenGL:
 			return MakeShared<OpenGLEnvironmentMap>( a_EquirectangularTexture );

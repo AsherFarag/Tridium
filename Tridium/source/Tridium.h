@@ -13,7 +13,3 @@
 #include "Tridium/ImGui/ImGui.h"
 #include "Tridium/ImGui/ImGuiLayer.h"
 #include "Tridium/Project/Project.h"
-
-// ===== Entry Point =====
-#include "Tridium/Core/EntryPoint.h"
-// =======================

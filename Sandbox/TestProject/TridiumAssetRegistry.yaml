@@ -47,6 +47,10 @@ AssetMetaData:
     AssetType: Mesh
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/source/RootNode.tmesh
     Name: RootNode
+  - Handle: 10968084403603889823
+    AssetType: Mesh
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/Water Gun/PaintedApocalypticWaterGun.fbx.tmesh
+    Name: PaintedApocalypticWaterGun.fbx
   - Handle: 12460669345156542809
     AssetType: MeshSource
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/TrollApose_low.fbx
@@ -79,6 +83,10 @@ AssetMetaData:
     AssetType: Material
     Path: Content/Cerberus_by_Andrew_Maximov/m_Cerberus.tmat
     Name: m_Cerberus
+  - Handle: 11722021730479237657
+    AssetType: MeshSource
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/Water Gun/PaintedApocalypticWaterGun.fbx
+    Name: PaintedApocalypticWaterGun.fbx
   - Handle: 13329440684517550564
     AssetType: Material
     Path: Content/troll/m_Troll.tmat
@@ -127,10 +135,18 @@ AssetMetaData:
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Normal_DirectX.png
     Name: 1001_Normal_DirectX
+  - Handle: 10534474357456196390
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/Water Gun/PaintedApocalypticWaterGun_Gun_Opacity.png
+    Name: PaintedApocalypticWaterGun_Gun_Opacity
   - Handle: 17898417794084169511
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Opacity.png
     Name: 1001_Opacity
+  - Handle: 9231485947035289014
+    AssetType: Material
+    Path: Content/Charles/Water Gun/m_WaterGun.tmat
+    Name: m_WaterGun
   - Handle: 11646296566683283447
     AssetType: MeshSource
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Sponza/glTF/Sponza.gltf
@@ -151,6 +167,34 @@ AssetMetaData:
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_M.tga
     Name: Cerberus_M
+  - Handle: 7188536080500764428
+    AssetType: Material
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/m_Barrel.tmat
+    Name: m_Barrel
+  - Handle: 2212840204912943820
+    AssetType: MeshSource
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/Barrel_EdgeNormals.fbx
+    Name: Barrel_EdgeNormals.fbx
+  - Handle: 9964583292748655515
+    AssetType: Mesh
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/Barrel_EdgeNormals.fbx.tmesh
+    Name: Barrel_EdgeNormals.fbx
+  - Handle: 16408492395898835681
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/T_Barrel_Material_BaseColor.tga
+    Name: T_Barrel_Material_BaseColor
+  - Handle: 766060415190171393
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/T_Barrel_ORM.tga
+    Name: T_Barrel_ORM
+  - Handle: 5151884661488856455
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/T_Barrel_Material_Normal.tga
+    Name: T_Barrel_Material_Normal
+  - Handle: 3815141893059037979
+    AssetType: Scene
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Scenes/Halo.tscene
+    Name: Halo
 AssetDependencies:
   11662457145095035423:
     - 5035549482378428079
@@ -193,27 +237,48 @@ AssetDependencies:
     - 11646296566683283447
   15869680136431924042:
     - 7765604732595779487
-  16380598107030547843:
+  12460669345156542809:
     []
+  10968084403603889823:
+    - 11722021730479237657
+  11646296566683283447:
+    []
+  16269481744891761788:
+    []
+  9231485947035289014:
+    - 0
+    - 10534474357456196390
+  9964583292748655515:
+    - 2212840204912943820
+  2212840204912943820:
+    []
+  7188536080500764428:
+    - 766060415190171393
+    - 16408492395898835681
+    - 0
   16415605052835439519:
     []
   4086619935004974763:
     []
+  16380598107030547843:
+    []
   1303307644901636996:
-    []
-  16269481744891761788:
-    []
-  11646296566683283447:
-    []
-  12460669345156542809:
     []
   5035549482378428079:
     []
-  7373746697082174760:
+  16408492395898835681:
+    []
+  766060415190171393:
+    []
+  2201683880744401789:
+    []
+  3075343844041195536:
+    []
+  14188683678562521315:
     []
   14893352513169714491:
     []
-  14188683678562521315:
+  7373746697082174760:
     []
   17890256965985546415:
     []
@@ -230,8 +295,4 @@ AssetDependencies:
   6887469768157097513:
     []
   16966243146113793245:
-    []
-  2201683880744401789:
-    []
-  3075343844041195536:
     []

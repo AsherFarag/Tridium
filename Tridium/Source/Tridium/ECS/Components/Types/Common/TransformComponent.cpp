@@ -50,7 +50,26 @@ namespace Tridium {
 
 	Vector3 TransformComponent::GetForward() const
 	{
-		return Rotation.GetForward();
+		if ( m_Parent.IsValid() )
+			return m_Parent.GetTransform().GetForward() * Rotation.Quat * Vector3( 0.0f, 0.0f, 1.0f );
+		else
+			return Rotation.Quat * Vector3( 0.0f, 0.0f, 1.0f );
+	}
+
+	Quaternion TransformComponent::GetOrientation() const
+	{
+		if ( m_Parent.IsValid() )
+			return m_Parent.GetTransform().GetOrientation() * Rotation.Quat;
+		else
+			return Rotation.Quat;
+	}
+
+	Vector3 TransformComponent::GetWorldScale() const
+	{
+		if ( m_Parent.IsValid() )
+			return m_Parent.GetTransform().GetWorldScale() * Scale;
+		else
+			return Scale;
 	}
 
 	void TransformComponent::AttachToParent( GameObject a_Parent )
@@ -66,12 +85,10 @@ namespace Tridium {
 
 	void TransformComponent::AttachChild( GameObject a_Child )
 	{
-		auto& childTransform = a_Child.GetTransform();
+		TransformComponent& childTransform = a_Child.GetTransform();
 		if ( childTransform.GetParent() != GetGameObject() && a_Child != GetParent() )
 		{
 			childTransform.DetachFromParent();
-			TransformComponent& tc = a_Child.GetTransform();
-
 			childTransform.SetParent( GetGameObject() );
 			m_Children.push_back( a_Child );
 		}
