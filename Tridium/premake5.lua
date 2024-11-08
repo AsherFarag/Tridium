@@ -37,6 +37,7 @@ project "Tridium"
 		"%{IncludeDir.yaml}/include",
 		"%{IncludeDir.assimp}/include",
 		"%{IncludeDir.refl}",
+		"%{IncludeDir.JoltPhysics}",
 		"Dependencies/HdriToCubemap"
 	}
 
@@ -48,6 +49,7 @@ project "Tridium"
 		"Dependencies/ImGui/bin/" .. outputdir .. "/ImGui",
 		"Dependencies/yaml-cpp/bin/" .. outputdir .. "/yaml-cpp",
 		"Dependencies/assimp/bin/" .. outputdir .. "/assimp",
+		"Dependencies/JoltPhysics/bin/" .. outputdir .. "/JoltPhysics",
 	}
 
 	links
@@ -58,6 +60,7 @@ project "Tridium"
 		"lua54.lib",
 		"yaml-cpp.lib",
 		"assimp.lib",
+		"JoltPhysics.lib",
 		"opengl32.lib"
 	}
 

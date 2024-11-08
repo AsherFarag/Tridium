@@ -5,8 +5,8 @@ namespace Tridium
 	class PhysicsEngine
 	{
 	public:
-		PhysicsEngine();
-		~PhysicsEngine();
+		PhysicsEngine() = default;
+		~PhysicsEngine() = default;
 	};
 
 }
