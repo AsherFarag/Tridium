@@ -5,11 +5,27 @@
 #include <Tridium/ECS/Components/Types.h>
 
 
+// TEMP!!!!
+#include <Tridium/Physics/Jolt/JoltPhysicsScene.h>
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/PhysicsSystem.h>
+#include <Jolt/Physics/Body/BodyInterface.h>
+#include <Jolt/Physics/Collision/Shape/SphereShape.h>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
+#include <Jolt/Physics/Collision/Shape/CompoundShape.h>
+#include <Jolt/Physics/Collision/Shape/MutableCompoundShape.h>
+#include <Jolt/Physics/Body/BodyCreationSettings.h>
+
+
 namespace Tridium {
+
+	static std::vector<JPH::Ref<JPH::Shape>> s_Shapes;
 
 	Scene::Scene(const std::string& name)
 		: m_Name( name ), m_SceneRenderer(*this)
 	{
+		m_PhysicsScene = PhysicsScene::Create();
 	}
 
 	Scene::~Scene()
@@ -18,11 +34,72 @@ namespace Tridium {
 
 	void Scene::OnBegin()
 	{
-		// Can call 'OnBegin' on all game objects or something
+		// Initialize Physics Scene
+		{
+			m_PhysicsScene->Init();
+
+			// Add all GameObjects with RigidBodyComponent to the physics scene
+			auto view = m_Registry.view<RigidBodyComponent, TransformComponent>();
+			for ( auto entity : view )
+			{
+				auto& rb = view.get<RigidBodyComponent>( entity );
+				auto& tc = view.get<TransformComponent>( entity );
+
+				JPH::Ref<JPH::MutableCompoundShapeSettings> compoundSettings = new JPH::MutableCompoundShapeSettings();
+
+				if ( auto* sc = TryGetComponentFromGameObject<SphereColliderComponent>( entity ) )
+				{
+					JPH::Ref<JPH::SphereShape> sphereShape = new JPH::SphereShape( sc->GetRadius() );
+					s_Shapes.push_back( sphereShape.GetPtr() );
+					JPH::Vec3 center = JPH::Vec3( sc->GetCenter().x, sc->GetCenter().y, sc->GetCenter().z );
+					compoundSettings->AddShape( center, JPH::Quat::sIdentity(), sphereShape );
+				}
+
+				UniquePtr<JPH::BoxShape> boxShape;
+				if ( auto* bc = TryGetComponentFromGameObject<BoxColliderComponent>( entity ) )
+				{
+					Vector3 scale = tc.GetWorldScale();
+					JPH::Vec3 halfExtents = JPH::Vec3( bc->GetHalfExtents().x * scale.x, bc->GetHalfExtents().y * scale.y, bc->GetHalfExtents().z * scale .z);
+					JPH::Ref<JPH::BoxShape> boxShape = new JPH::BoxShape( halfExtents );
+					s_Shapes.push_back( boxShape.GetPtr() );
+					JPH::Vec3 center = JPH::Vec3( bc->GetCenter().x, bc->GetCenter().y, bc->GetCenter().z );
+					compoundSettings->AddShape( center, JPH::Quat::sIdentity(), boxShape );
+				}
+
+				JPH::Vec3 position = { tc.Position.x, tc.Position.y, tc.Position.z };
+				JPH::Quat rotation = { tc.Rotation.Quat.x, tc.Rotation.Quat.y, tc.Rotation.Quat.z, tc.Rotation.Quat.w };
+				JPH::EMotionType motionType = (JPH::EMotionType)rb.GetMotionType();
+				JPH::BodyCreationSettings bodySettings( compoundSettings, position, rotation, motionType, (JPH::ObjectLayer)1 );
+
+				bodySettings.mRestitution = 0.5f;
+
+				rb.BodyID = m_PhysicsScene->AddPhysicsBody(&bodySettings);
+			}
+		}
 	}
 
 	void Scene::OnUpdate()
 	{
+		// Update physics
+		{
+			m_PhysicsScene->Tick( 1.0f / 60.0f );
+
+			JPH::PhysicsSystem& physicsSystem = static_cast<JoltPhysicsScene*>( m_PhysicsScene.get() )->m_PhysicsSystem;
+			JPH::BodyInterface& bodyInterface = physicsSystem.GetBodyInterface();
+
+			auto view = m_Registry.view<RigidBodyComponent, TransformComponent>();
+			for ( auto entity : view )
+			{
+				auto& rb = view.get<RigidBodyComponent>( entity );
+				auto& tc = view.get<TransformComponent>( entity );
+
+				JPH::Vec3 position = bodyInterface.GetPosition( JPH::BodyID{ rb.BodyID } );
+				JPH::Quat rotation = bodyInterface.GetRotation( JPH::BodyID{ rb.BodyID } );
+				tc.Position = { position.GetX(), position.GetY(), position.GetZ() };
+				tc.Rotation.SetFromQuaternion( { rotation.GetW(), rotation.GetX(), rotation.GetY(), rotation.GetZ() } );
+			}
+		}
+
 		// Update scriptable objects
 		for ( const auto& storage : m_Registry.storage() )
 		{
@@ -45,6 +122,10 @@ namespace Tridium {
 
 	void Scene::OnEnd()
 	{
+		// Shutdown Physics Scene
+		{
+			m_PhysicsScene->Shutdown();
+		}
 	}
 
 	GameObject Scene::InstantiateGameObject( const std::string& a_Name )

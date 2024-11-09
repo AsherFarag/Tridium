@@ -1,5 +1,6 @@
 #pragma once
 
+
 namespace Tridium
 {
 	class PhysicsEngine
@@ -7,6 +8,9 @@ namespace Tridium
 	public:
 		PhysicsEngine() = default;
 		~PhysicsEngine() = default;
+
+		void Init();
+		void Shutdown();
 	};
 
 }

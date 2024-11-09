@@ -65,7 +65,10 @@ namespace Tridium::Refl::Internal {
 	{
 		static const auto metaType = MetaRegistry::ResolveMetaType<T>();
 		bool wasChanged = false;
-		T* value = const_cast<T*>( a_Handle.cast<const T*>() );
+		if ( !a_Handle.allow_cast<T*>( ) )
+			return false;
+
+		T* value = a_Handle.cast<T*>();
 		const std::string& valueStr = a_EnumToString.at( *value );
 
 		if ( ImGui::BeginCombo( a_Name, valueStr.c_str() ) )

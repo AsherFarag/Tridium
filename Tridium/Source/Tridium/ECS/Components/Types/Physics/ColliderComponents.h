@@ -1,0 +1,45 @@
+#pragma once
+#include <Tridium/ECS/Components/Component.h>
+
+namespace Tridium {
+
+	class SphereColliderComponent : public Component
+	{
+		REFLECT( SphereColliderComponent )
+	public:
+		void SetRadius( float a_Radius ) { m_Radius = a_Radius; }
+		float GetRadius() const { return m_Radius; }
+
+		void SetCenter( const Vector3& a_Center ) { m_Center = a_Center; }
+		const Vector3& GetCenter() const { return m_Center; }
+
+	protected:
+		Vector3 m_Center = { 0.0f, 0.0f, 0.0f };
+		float m_Radius = 0.5f;
+	};
+
+	class BoxColliderComponent : public Component
+	{
+		REFLECT( BoxColliderComponent )
+	public:
+		void SetHalfExtents( const Vector3& a_HalfExtents ) { m_HalfExtents = a_HalfExtents; }
+		const Vector3& GetHalfExtents() const { return m_HalfExtents; }
+
+		void SetCenter( const Vector3& a_Center ) { m_Center = a_Center; }
+		const Vector3& GetCenter() const { return m_Center; }
+
+	protected:
+		Vector3 m_Center = { 0.0f, 0.0f, 0.0f };
+		Vector3 m_HalfExtents = { 0.5f, 0.5f, 0.5f };
+	};
+
+	BEGIN_REFLECT_COMPONENT( SphereColliderComponent )
+		PROPERTY( m_Center, FLAGS( EditAnywhere, Serialize ) )
+		PROPERTY( m_Radius, FLAGS( EditAnywhere, Serialize ) )
+	END_REFLECT( SphereColliderComponent )
+
+	BEGIN_REFLECT_COMPONENT( BoxColliderComponent )
+		PROPERTY( m_Center, FLAGS( EditAnywhere, Serialize ) )
+		PROPERTY( m_HalfExtents, FLAGS( EditAnywhere, Serialize ) )
+	END_REFLECT( BoxColliderComponent )
+}

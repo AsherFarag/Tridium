@@ -3,6 +3,7 @@
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/Rendering/Lights.h>
 #include <Tridium/Rendering/SceneRenderer.h>
+#include <Tridium/Physics/PhysicsScene.h>
 
 namespace Tridium {
 	typedef entt::entity EntityID;
@@ -85,6 +86,8 @@ namespace Tridium {
 		EntityID m_MainCamera;
 
 		SceneRenderer m_SceneRenderer;
+		UniquePtr<PhysicsScene> m_PhysicsScene;
+
 		friend SceneRenderer;
 	};
 }

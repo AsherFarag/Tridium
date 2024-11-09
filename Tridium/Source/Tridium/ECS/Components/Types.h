@@ -7,6 +7,10 @@
 #include "Types/Common/LuaScriptComponent.h"
 #include "Types/Common/CameraControllerComponent.h"
 
+// - Physics -
+#include "Types/Physics/ColliderComponents.h"
+#include "Types/Physics/RigidBodyComponent.h"
+
 // - Rendering -
 #include "Types/Rendering/CameraComponent.h"
 #include "Types/Rendering/MeshComponent.h"
