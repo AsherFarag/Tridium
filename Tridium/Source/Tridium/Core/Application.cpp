@@ -27,35 +27,51 @@ namespace Tridium {
 		s_Instance = this;
 
 		// Initialise Project
-		m_Project = MakeShared<Project>();
-		if ( !a_ProjectPath.empty() )
 		{
-			ProjectSerializer s( m_Project );
-			s.DeserializeText( a_ProjectPath );
-			m_Project->GetConfiguration().ProjectDirectory = IO::FilePath( a_ProjectPath ).GetParentPath();
+			m_Project = MakeShared<Project>();
+			if ( !a_ProjectPath.empty() )
+			{
+				ProjectSerializer s( m_Project );
+				s.DeserializeText( a_ProjectPath );
+				m_Project->GetConfiguration().ProjectDirectory = IO::FilePath( a_ProjectPath ).GetParentPath();
+			}
 		}
 
 		// Initialise Window
-		m_Window = Window::Create();
-		m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
+		{
+			m_Window = Window::Create();
+			m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
+		}
 
 		// Initialise Asset Manager
-		InitializeAssetManager();
+		{
+			InitializeAssetManager();
+		}
+
+		// Initialise Physics Engine
+		{
+			m_PhysicsEngine = PhysicsEngine::Create();
+			m_PhysicsEngine->Init();
+		}
 
 		// Initialise Scene
-		m_ActiveScene = MakeShared<Scene>();
-		if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( m_Project->GetConfiguration().StartScene ) )
 		{
-			m_ActiveScene = scene;
-		}
-		else
-		{
-			TE_CORE_WARN( "Failed to load start scene! - Creating new scene" );
+			m_ActiveScene = MakeShared<Scene>();
+			if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( m_Project->GetConfiguration().StartScene ) )
+			{
+				m_ActiveScene = scene;
+			}
+			else
+			{
+				TE_CORE_WARN( "Failed to load start scene! - Creating new scene" );
+			}
 		}
 
 		// Initialise ImGui
-		m_ImGuiLayer = new ImGuiLayer();
-		PushOverlay( m_ImGuiLayer );
+		{
+			m_ImGuiLayer = new ImGuiLayer();
+			PushOverlay( m_ImGuiLayer );
+		}
 
 		// Initialise the render pipeline
 		RenderCommand::Init();
@@ -146,7 +162,6 @@ namespace Tridium {
 				m_LayerStack[i]->OnImGuiDraw();
 
 			m_ImGuiLayer->End();
-
 			// ---------
 			
 			// ====================================================================================================
@@ -154,14 +169,16 @@ namespace Tridium {
 			m_Window->OnUpdate();
 		}
 
-		m_GameInstance->Shutdown();
-		m_AssetManager->Shutdown();
+		// Shutdown Sequence
+		{
+			m_GameInstance->Shutdown();
+			m_PhysicsEngine->Shutdown();
+			m_AssetManager->Shutdown();
 
-		#ifdef IS_EDITOR
-
-		Editor::EditorApplication::Shutdown();
-
-		#endif // IS_EDITOR
+			#ifdef IS_EDITOR
+			Editor::EditorApplication::Shutdown();
+			#endif // IS_EDITOR
+		}
 	}
 
 	void Application::Quit()
@@ -188,11 +205,11 @@ namespace Tridium {
 	
 	void Application::InitializeAssetManager()
 	{
-#ifdef IS_EDITOR
+	#ifdef IS_EDITOR
 		m_AssetManager = MakeShared<Editor::EditorAssetManager>();
-#else
+	#else
 		//m_AssetManager = MakeShared<RuntimeAssetManager>();
-#endif // IS_EDITOR
+	#endif // IS_EDITOR
 		m_AssetManager = MakeShared<Editor::EditorAssetManager>();
 		m_AssetManager->Init();
 	}

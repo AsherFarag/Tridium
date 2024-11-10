@@ -26,6 +26,56 @@ namespace Tridium {
 		: m_Name( name ), m_SceneRenderer(*this)
 	{
 		m_PhysicsScene = PhysicsScene::Create();
+		m_PhysicsScene->m_Scene = this;
+	}
+
+	Scene::Scene( const Scene& a_Other )
+		: m_Name( a_Other.m_Name ), m_SceneRenderer( *this )
+	{
+		m_MainCamera = a_Other.m_MainCamera;
+		m_SceneEnvironment = a_Other.m_SceneEnvironment;
+		m_Paused = a_Other.m_Paused;
+		m_SceneRenderer.m_LightEnvironment = a_Other.m_SceneRenderer.m_LightEnvironment;
+
+		m_PhysicsScene = PhysicsScene::Create();
+		m_PhysicsScene->m_Scene = this;
+
+		// Copy registry
+		{
+			const entt::registry& src = a_Other.m_Registry;
+
+			// Map from old entity IDs to new entity IDs
+			std::unordered_map<entt::entity, entt::entity> entityMap;
+
+			// Step 1: Create entities in the new registry
+			for ( auto entity : src.view<GUIDComponent>() )
+			{
+				entt::entity newEntity = m_Registry.create();
+				entityMap[entity] = newEntity;
+			}
+
+			// Step 2: Copy components
+			for ( auto [id, srcStorage] : src.storage() )
+			{
+				auto* dstStorage = m_Registry.storage( id );
+				for ( auto entity : srcStorage )
+				{
+					entt::entity newEntity = entityMap[entity];
+
+					Refl::MetaType componentType = entt::resolve( srcStorage.type() );
+					Refl::Internal::AddToGameObjectFunc addToGameObjectFunc;
+					if ( !Refl::MetaRegistry::TryGetMetaPropertyFromClass( componentType, addToGameObjectFunc, Refl::Internal::AddToGameObjectPropID ) )
+					{
+						TE_CORE_ASSERT( false );
+						continue;
+					}
+
+					Refl::MetaAny dstComponent = componentType.from_void( addToGameObjectFunc( *this, newEntity ) );
+					Refl::MetaAny srcComponent = componentType.from_void( srcStorage.value( entity ) );
+					dstComponent.assign( srcComponent );
+				}
+			}
+		}
 	}
 
 	Scene::~Scene()
@@ -34,6 +84,8 @@ namespace Tridium {
 
 	void Scene::OnBegin()
 	{
+		m_IsRunning = true;
+
 		// Initialize Physics Scene
 		{
 			m_PhysicsScene->Init();
@@ -45,35 +97,7 @@ namespace Tridium {
 				auto& rb = view.get<RigidBodyComponent>( entity );
 				auto& tc = view.get<TransformComponent>( entity );
 
-				JPH::Ref<JPH::MutableCompoundShapeSettings> compoundSettings = new JPH::MutableCompoundShapeSettings();
-
-				if ( auto* sc = TryGetComponentFromGameObject<SphereColliderComponent>( entity ) )
-				{
-					JPH::Ref<JPH::SphereShape> sphereShape = new JPH::SphereShape( sc->GetRadius() );
-					s_Shapes.push_back( sphereShape.GetPtr() );
-					JPH::Vec3 center = JPH::Vec3( sc->GetCenter().x, sc->GetCenter().y, sc->GetCenter().z );
-					compoundSettings->AddShape( center, JPH::Quat::sIdentity(), sphereShape );
-				}
-
-				UniquePtr<JPH::BoxShape> boxShape;
-				if ( auto* bc = TryGetComponentFromGameObject<BoxColliderComponent>( entity ) )
-				{
-					Vector3 scale = tc.GetWorldScale();
-					JPH::Vec3 halfExtents = JPH::Vec3( bc->GetHalfExtents().x * scale.x, bc->GetHalfExtents().y * scale.y, bc->GetHalfExtents().z * scale .z);
-					JPH::Ref<JPH::BoxShape> boxShape = new JPH::BoxShape( halfExtents );
-					s_Shapes.push_back( boxShape.GetPtr() );
-					JPH::Vec3 center = JPH::Vec3( bc->GetCenter().x, bc->GetCenter().y, bc->GetCenter().z );
-					compoundSettings->AddShape( center, JPH::Quat::sIdentity(), boxShape );
-				}
-
-				JPH::Vec3 position = { tc.Position.x, tc.Position.y, tc.Position.z };
-				JPH::Quat rotation = { tc.Rotation.Quat.x, tc.Rotation.Quat.y, tc.Rotation.Quat.z, tc.Rotation.Quat.w };
-				JPH::EMotionType motionType = (JPH::EMotionType)rb.GetMotionType();
-				JPH::BodyCreationSettings bodySettings( compoundSettings, position, rotation, motionType, (JPH::ObjectLayer)1 );
-
-				bodySettings.mRestitution = 0.5f;
-
-				rb.BodyID = m_PhysicsScene->AddPhysicsBody(&bodySettings);
+				m_PhysicsScene->AddPhysicsBody( GameObject( entity ), rb, tc );
 			}
 		}
 	}
@@ -82,22 +106,31 @@ namespace Tridium {
 	{
 		// Update physics
 		{
+			TODO( "We should not be constantly updating transforms unless they are dirty." );
+
+			auto view = m_Registry.view<RigidBodyComponent, TransformComponent>();
+
+			// Update the transforms in the physics scene
+			{
+				view.each( [&]( auto entity, RigidBodyComponent& rb, TransformComponent& tc )
+					{
+						m_PhysicsScene->UpdatePhysicsBodyTransform( rb, tc );
+					} );
+			}
+
 			m_PhysicsScene->Tick( 1.0f / 60.0f );
 
 			JPH::PhysicsSystem& physicsSystem = static_cast<JoltPhysicsScene*>( m_PhysicsScene.get() )->m_PhysicsSystem;
 			JPH::BodyInterface& bodyInterface = physicsSystem.GetBodyInterface();
 
-			auto view = m_Registry.view<RigidBodyComponent, TransformComponent>();
-			for ( auto entity : view )
-			{
-				auto& rb = view.get<RigidBodyComponent>( entity );
-				auto& tc = view.get<TransformComponent>( entity );
-
-				JPH::Vec3 position = bodyInterface.GetPosition( JPH::BodyID{ rb.BodyID } );
-				JPH::Quat rotation = bodyInterface.GetRotation( JPH::BodyID{ rb.BodyID } );
-				tc.Position = { position.GetX(), position.GetY(), position.GetZ() };
-				tc.Rotation.SetFromQuaternion( { rotation.GetW(), rotation.GetX(), rotation.GetY(), rotation.GetZ() } );
-			}
+			// Update the transforms from the physics scene
+			view.each( [&]( auto entity, RigidBodyComponent& rb, TransformComponent& tc )
+				{
+					JPH::Vec3 position = bodyInterface.GetPosition( JPH::BodyID{ rb.BodyID } );
+					JPH::Quat rotation = bodyInterface.GetRotation( JPH::BodyID{ rb.BodyID } );
+					tc.Position = { position.GetX(), position.GetY(), position.GetZ() };
+					tc.Rotation.SetFromQuaternion( { rotation.GetW(), rotation.GetX(), rotation.GetY(), rotation.GetZ() } );
+				} );
 		}
 
 		// Update scriptable objects
@@ -122,6 +155,8 @@ namespace Tridium {
 
 	void Scene::OnEnd()
 	{
+		m_IsRunning = false;
+
 		// Shutdown Physics Scene
 		{
 			m_PhysicsScene->Shutdown();
@@ -184,6 +219,11 @@ namespace Tridium {
 
 	}
 
+	bool Scene::IsGameObjectValid( GameObject a_GameObject ) const
+	{
+		return m_Registry.valid( a_GameObject.m_ID );
+	}
+
 	void Scene::Clear()
 	{
 		m_Registry.clear();
@@ -203,6 +243,48 @@ namespace Tridium {
 			m_MainCamera = cameras.front();
 		}
 		return m_Registry.try_get<CameraComponent>( m_MainCamera );
+	}
+
+	template<>
+	void Scene::InitComponent( RigidBodyComponent& a_Component )
+	{
+		if ( !m_IsRunning )
+			return;
+
+		GameObject go = a_Component.GetGameObject();
+
+		if ( auto* tc = TryGetComponentFromGameObject<TransformComponent>( go ) )
+		{
+			m_PhysicsScene->UpdatePhysicsBody( go, a_Component, *tc );
+		}
+	}
+
+	template<>
+	void Scene::InitComponent( SphereColliderComponent& a_Component )
+	{
+		if ( auto* rb = TryGetComponentFromGameObject<RigidBodyComponent>( a_Component.GetGameObject() ) )
+			InitComponent( *rb );
+	}
+
+	template<>
+	void Scene::InitComponent( BoxColliderComponent& a_Component )
+	{
+		if ( auto* rb = TryGetComponentFromGameObject<RigidBodyComponent>( a_Component.GetGameObject() ) )
+			InitComponent( *rb );
+	}
+
+	template<>
+	void Scene::InitComponent( CapsuleColliderComponent& a_Component )
+	{
+		if ( auto* rb = TryGetComponentFromGameObject<RigidBodyComponent>( a_Component.GetGameObject() ) )
+			InitComponent( *rb );
+	}
+
+	template<>
+	void Scene::InitComponent( MeshColliderComponent& a_Component )
+	{
+		if ( auto* rb = TryGetComponentFromGameObject<RigidBodyComponent>( a_Component.GetGameObject() ) )
+			InitComponent( *rb );
 	}
 
 }

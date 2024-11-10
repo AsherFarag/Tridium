@@ -38,6 +38,10 @@ namespace Tridium::Editor {
 		{ entt::hashed_string( "DirectionalLightComponent" ).value(), TE_ICON_LIGHTBULB },
 		{ entt::hashed_string( "PointLightComponent" ).value(), TE_ICON_LIGHTBULB },
 		{ entt::hashed_string( "SpotLightComponent" ).value(), TE_ICON_LIGHTBULB },
+		{ entt::hashed_string( "BoxColliderComponent" ).value(), TE_ICON_CUBE },
+		{ entt::hashed_string( "SphereColliderComponent" ).value(), TE_ICON_CIRCLE },
+		{ entt::hashed_string( "CapsuleColliderComponent" ).value(), TE_ICON_CAPSULES },
+		{ entt::hashed_string( "MeshColliderComponent" ).value(), TE_ICON_SHAPES },
 	};
 
 	void InspectorPanel::OnImGuiDraw()

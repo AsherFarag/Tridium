@@ -59,7 +59,7 @@ namespace Tridium::Editor {
 		EditorLayer* m_EditorLayer;
 		PayloadManager m_PayloadManager;
 
-	private:
+	private: // Singleton
 		EditorApplication();
 		EditorApplication( const EditorApplication& ) = delete;
 		EditorApplication& operator=( const EditorApplication& ) = delete;

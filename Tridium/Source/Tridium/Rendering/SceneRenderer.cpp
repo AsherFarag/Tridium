@@ -17,6 +17,8 @@ namespace Tridium {
 	SceneRenderer::SceneRenderer( Scene& a_Scene )
 		: m_Scene( a_Scene ), m_SceneEnvironment( a_Scene.GetSceneEnvironment() )
 	{
+		Clear();
+
 		// Set Default Assets
 		{
 			TODO( "Use the asset manager instead." );
@@ -34,6 +36,17 @@ namespace Tridium {
 			spec.WrapS = ETextureWrap::ClampToEdge;
 			spec.WrapT = ETextureWrap::ClampToEdge;
 			m_BrdfLUT = TextureLoader::LoadTexture( spec, Application::GetEngineAssetsDirectory() / "Renderer/BRDF_LUT.png" );
+		}
+
+		// Set Debug Assets
+		{
+			m_DebugSimpleShader.reset( Shader::Create() );
+			m_DebugSimpleShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Simple.glsl" );
+
+			m_DebugSphereVAO = MeshFactory::CreateSphere()->GetSubMeshes()[0].VAO;
+			m_DebugCubeVAO = MeshFactory::CreateCube()->GetSubMeshes()[0].VAO;
+			m_DebugCapsuleVAO = MeshFactory::CreateCapsule( 0.5f, 1.0f, 1u )->GetSubMeshes()[0].VAO;
+			m_DebugCylinderVAO = MeshFactory::CreateCylinder( 0.5f, 0.5f, 1.0f, 1 )->GetSubMeshes()[0].VAO;
 		}
 
 		// Initalize Deferred Data
@@ -99,7 +112,7 @@ namespace Tridium {
 		}
 
 		// - Render Pass -
-		switch ( m_RenderMode )
+		switch ( m_RenderSettings.RenderMode )
 		{
 			case ERenderMode::Forward:
 			{
@@ -362,7 +375,9 @@ namespace Tridium {
 
 	void SceneRenderer::DeferredRenderPass()
 	{
-		const iVector2 viewportSize = m_SceneInfo.Camera.GetViewportSize();
+		Vector2 viewportSize = m_SceneInfo.Camera.GetViewportSize();
+		viewportSize *= m_RenderSettings.RenderScale;
+
 		// - GBuffer Pass -
 		{
 			m_DeferredData.GBuffer.Resize( viewportSize.x, viewportSize.y );
@@ -409,6 +424,11 @@ namespace Tridium {
 		// - Apply Post-Processing Pass -
 		{
 			PostProcessPass();
+		}
+
+		if ( m_RenderSettings.DebugDrawColliders )
+		{
+			DebugRenderColliders();
 		}
 
 		m_RenderTarget->Unbind();
@@ -895,6 +915,112 @@ namespace Tridium {
 		{
 
 		}
+	}
+
+	void SceneRenderer::DebugRenderColliders()
+	{
+		const Vector4 ColliderColor = { 0.72f, 0.85f, 0.65f, 1.0f };
+
+		m_DebugSimpleShader->Bind();
+		m_DebugSimpleShader->SetFloat4( "u_Color", ColliderColor );
+
+		RenderCommand::SetLineWidth( 3 );
+		RenderCommand::SetPolygonMode( EFaces::FrontAndBack, EPolygonMode::Line );
+		RenderCommand::SetCullMode( ECullMode::None );
+
+		// - Draw Sphere Colliders -
+		{
+			m_DebugSphereVAO->Bind();
+
+			auto sphereColliders = m_Scene.m_Registry.view<SphereColliderComponent, TransformComponent>();
+			sphereColliders.each(
+				[&]( auto go, SphereColliderComponent& collider, TransformComponent& transform )
+				{
+					Vector3 position = transform.GetWorldPosition() + collider.GetCenter();
+					Quaternion rotation = transform.GetOrientation();
+					Matrix4 model = glm::translate( Matrix4( 1.0f ), position )
+						* glm::toMat4( rotation )
+						* glm::scale( Matrix4( 1.0f ), Vector3( collider.GetRadius() ) * 2.0f );
+
+					m_DebugSimpleShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * model );
+
+					RenderCommand::DrawIndexed( m_DebugSphereVAO );
+				}
+			);
+
+			m_DebugSphereVAO->Unbind();
+		}
+
+		// - Draw Box Colliders -
+		{
+			m_DebugCubeVAO->Bind();
+
+			auto boxColliders = m_Scene.m_Registry.view<BoxColliderComponent, TransformComponent>();
+			boxColliders.each(
+				[&]( auto go, BoxColliderComponent& collider, TransformComponent& transform )
+				{
+					Vector3 position = transform.GetWorldPosition() + collider.GetCenter();
+					Quaternion rotation = transform.GetOrientation();
+					Matrix4 model = glm::translate( Matrix4( 1.0f ), position )
+						* glm::toMat4( rotation )
+						* glm::scale( Matrix4( 1.0f ), transform.GetWorldScale() * collider.GetHalfExtents() * 2.0f );
+
+					m_DebugSimpleShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * model );
+
+					RenderCommand::DrawIndexed( m_DebugCubeVAO );
+				}
+			);
+
+			m_DebugCubeVAO->Unbind();
+		}
+
+		// - Draw Capsule Colliders -
+		{
+			m_DebugCapsuleVAO->Bind();
+
+			auto capsuleColliders = m_Scene.m_Registry.view<CapsuleColliderComponent, TransformComponent>();
+			capsuleColliders.each(
+				[&]( auto go, CapsuleColliderComponent& collider, TransformComponent& transform )
+				{
+					Vector3 position = transform.GetWorldPosition() + collider.GetCenter();
+					Quaternion rotation = transform.GetOrientation();
+					Matrix4 model = glm::translate( Matrix4( 1.0f ), position )
+						* glm::toMat4( rotation )
+						* glm::scale( Matrix4( 1.0f ), Vector3( collider.GetRadius() * 2.0f, collider.GetHalfHeight() * 2.0f, collider.GetRadius() * 2.0f ) );
+
+					m_DebugSimpleShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * model );
+
+					RenderCommand::DrawIndexed( m_DebugCapsuleVAO );
+				}
+			);
+
+			m_DebugCapsuleVAO->Unbind();
+		}
+
+		// - Draw Cylinder Colliders -
+		{
+			m_DebugCylinderVAO->Bind();
+
+			auto cylinderColliders = m_Scene.m_Registry.view<CylinderColliderComponent, TransformComponent>();
+			cylinderColliders.each(
+				[&]( auto go, CylinderColliderComponent& collider, TransformComponent& transform )
+				{
+					Vector3 position = transform.GetWorldPosition() + collider.GetCenter();
+					Quaternion rotation = transform.GetOrientation();
+					Matrix4 model = glm::translate( Matrix4( 1.0f ), position )
+						* glm::toMat4( rotation )
+						* glm::scale( Matrix4( 1.0f ), Vector3( collider.GetRadius() * 2.0f, collider.GetHalfHeight() * 2.0f, collider.GetRadius() * 2.0f ) );
+
+					m_DebugSimpleShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * model );
+
+					RenderCommand::DrawIndexed( m_DebugCylinderVAO );
+				}
+			);
+
+			m_DebugCylinderVAO->Unbind();
+		}
+
+		RenderCommand::SetPolygonMode( EFaces::FrontAndBack, EPolygonMode::Fill );
 	}
 
 }

@@ -9,9 +9,13 @@
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Project/Project.h>
 #include <Tridium/Core/GameInstance.h>
+#include <Tridium/Physics/PhysicsEngine.h>
 
-namespace Tridium
-{
+namespace Tridium {
+
+	// Forward Declarations
+	class AssetManagerBase;
+
 	class Application final
 	{
 	public:
@@ -51,7 +55,8 @@ namespace Tridium
 		ImGuiLayer* m_ImGuiLayer;
 		LayerStack m_LayerStack;
 
-		SharedPtr<class AssetManagerBase> m_AssetManager;
+		UniquePtr<PhysicsEngine> m_PhysicsEngine;
+		SharedPtr<AssetManagerBase> m_AssetManager;
 		SharedPtr<Project> m_Project;
 		SharedPtr<Scene> m_ActiveScene;
 		SharedPtr<GameInstance> m_GameInstance;

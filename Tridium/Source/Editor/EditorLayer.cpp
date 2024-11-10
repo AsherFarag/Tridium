@@ -168,9 +168,11 @@ namespace Tridium::Editor {
 
 	void EditorLayer::OnBeginScene()
 	{
+		// Store a copy of the current scene in storage
+		m_SceneSnapshot = MakeUnique<Scene>( *GetActiveScene() );
+
 		GetActiveScene()->OnBegin();
 		GetActiveScene()->SetPaused( false );
-
 
 		m_GameViewportPanel->Focus();
 		CurrentSceneState = SceneState::Play;
@@ -182,8 +184,13 @@ namespace Tridium::Editor {
 
 		CurrentSceneState = SceneState::Edit;
 		m_EditorViewportPanel->Focus();
-		TODO("Make this not hard coded!")
-		//LoadScene( GetActiveScene() );
+
+		// Restore the scene from storage
+		if ( m_SceneSnapshot )
+		{
+			Scene* scene = m_SceneSnapshot.release();
+			SetActiveScene( SharedPtr<Scene>( scene ) );
+		}
 	}
 
 	bool EditorLayer::OnKeyPressed( KeyPressedEvent& e )
@@ -417,7 +424,10 @@ namespace Tridium::Editor {
 			ImGui::ScopedStyleVar padding( ImGuiStyleVar_FramePadding, buttonPadding );
 			if ( hasPlayButton && ImGui::SmallButton( TE_ICON_PLAY ) )
 			{
-				editor->OnBeginScene();
+				if ( editor->GetActiveScene()->IsPaused() )
+					editor->GetActiveScene()->SetPaused( false );
+				else
+					editor->OnBeginScene();
 			}
 
 			if ( hasPauseButton && ImGui::SmallButton( TE_ICON_PAUSE ) )

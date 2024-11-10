@@ -1,9 +1,20 @@
 #include "tripch.h"
 #include "JoltPhysicsScene.h"
+#include "JoltUtil.h"
+
+#include <Tridium/ECS/Components/Types.h>
+
+#include <Jolt/Physics/Collision/Shape/SphereShape.h>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
+#include <Jolt/Physics/Collision/Shape/CylinderShape.h>
+#include <Jolt/Physics/Collision/Shape/CompoundShape.h>
+#include <Jolt/Physics/Collision/Shape/MutableCompoundShape.h>
+#include <Jolt/Physics/Body/BodyCreationSettings.h>
 
 namespace Tridium
 {
-	namespace Layer {
+	namespace Layers {
 		static constexpr JPH::ObjectLayer NON_MOVING = 0;
 		static constexpr JPH::ObjectLayer MOVING = 1;
 		static constexpr JPH::ObjectLayer NUM_LAYERS = 2;
@@ -16,9 +27,9 @@ namespace Tridium
 			{
 				switch ( inObject1 )
 				{
-				case Layer::NON_MOVING:
-					return inObject2 == Layer::MOVING; // Non moving only collides with moving
-				case Layer::MOVING:
+				case Layers::NON_MOVING:
+					return inObject2 == Layers::MOVING; // Non moving only collides with moving
+				case Layers::MOVING:
 					return true; // Moving collides with everything
 				default:
 					JPH_ASSERT( false );
@@ -47,8 +58,8 @@ namespace Tridium
 			BPLayerInterfaceImpl()
 			{
 				// Create a mapping table from object to broad phase layer
-				mObjectToBroadPhase[Layer::NON_MOVING] = BroadPhaseLayers::NON_MOVING;
-				mObjectToBroadPhase[Layer::MOVING] = BroadPhaseLayers::MOVING;
+				mObjectToBroadPhase[Layers::NON_MOVING] = BroadPhaseLayers::NON_MOVING;
+				mObjectToBroadPhase[Layers::MOVING] = BroadPhaseLayers::MOVING;
 			}
 
 			virtual JPH::uint GetNumBroadPhaseLayers() const override
@@ -58,11 +69,11 @@ namespace Tridium
 
 			virtual JPH::BroadPhaseLayer GetBroadPhaseLayer( JPH::ObjectLayer inLayer ) const override
 			{
-				JPH_ASSERT( inLayer < Layer::NUM_LAYERS );
+				JPH_ASSERT( inLayer < Layers::NUM_LAYERS );
 				return mObjectToBroadPhase[inLayer];
 			}
 		private:
-			JPH::BroadPhaseLayer mObjectToBroadPhase[Layer::NUM_LAYERS];
+			JPH::BroadPhaseLayer mObjectToBroadPhase[Layers::NUM_LAYERS];
 		};
 
 		// Class that determines if an object layer can collide with a broadphase layer
@@ -73,9 +84,9 @@ namespace Tridium
 			{
 				switch ( inLayer1 )
 				{
-				case Layer::NON_MOVING:
+				case Layers::NON_MOVING:
 					return inLayer2 == BroadPhaseLayers::MOVING;
-				case Layer::MOVING:
+				case Layers::MOVING:
 					return true;
 				default:
 					JPH_ASSERT( false );
@@ -86,15 +97,8 @@ namespace Tridium
 	}
 
 	JoltPhysicsScene::JoltPhysicsScene()
+		: m_BodyInterface( m_PhysicsSystem.GetBodyInterface() )
 	{
-		// Register allocation hook.
-		JPH::RegisterDefaultAllocator();
-
-		// Create a factory, this class is responsible for creating instances of classes based on their name or hash and is mainly used for deserialization of saved data.
-		JPH::Factory::sInstance = new JPH::Factory();
-
-		JPH::RegisterTypes();
-
 		m_JobSystem = MakeUnique<JPH::JobSystemThreadPool>( JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1 );
 		m_TempAllocator = MakeUnique<JPH::TempAllocatorImpl>( 10 * 1024 * 1024 );
 	}
@@ -102,13 +106,13 @@ namespace Tridium
 	void JoltPhysicsScene::Init()
 	{
 		// Create the broad phase layer interface
-		m_BroadPhaseLayerInterface = MakeUnique<Layer::BPLayerInterfaceImpl>();
+		m_BroadPhaseLayerInterface = MakeUnique<Layers::BPLayerInterfaceImpl>();
 
 		// Create the object vs broad phase layer filter
-		m_ObjectVsBroadPhaseLayerFilter = MakeUnique<Layer::ObjectVsBroadPhaseLayerFilterImpl>();
+		m_ObjectVsBroadPhaseLayerFilter = MakeUnique<Layers::ObjectVsBroadPhaseLayerFilterImpl>();
 
 		// Create the object layer pair filter
-		m_ObjectLayerPairFilter = MakeUnique<Layer::ObjectLayerPairFilterImpl>();
+		m_ObjectLayerPairFilter = MakeUnique<Layers::ObjectLayerPairFilterImpl>();
 
 
 		// Init the physics system with the settings we defined
@@ -124,12 +128,7 @@ namespace Tridium
 
 	void JoltPhysicsScene::Shutdown()
 	{
-		// Unregisters all types with the factory and cleans up the default material
-		JPH::UnregisterTypes();
 
-		// Delete the factory
-		delete JPH::Factory::sInstance;
-		JPH::Factory::sInstance = nullptr;
 	}
 
 	void JoltPhysicsScene::Tick( float a_TimeStep )
@@ -139,17 +138,107 @@ namespace Tridium
 		++m_CurrentStep;
 	}
 
-	PhysicsBodyID JoltPhysicsScene::AddPhysicsBody( void* a_CreationSettings )
+	void JoltPhysicsScene::RemovePhysicsBody( RigidBodyComponent& a_RigidBody )
 	{
-		JPH::BodyCreationSettings* bodySettings = (JPH::BodyCreationSettings*)a_CreationSettings;
-		JPH::BodyInterface& bodyInterface = m_PhysicsSystem.GetBodyInterface();
-		JPH::Body* body = bodyInterface.CreateBody( *bodySettings );
-		if ( body )
+		m_BodyInterface.RemoveBody( JPH::BodyID( a_RigidBody.BodyID ) );
+		a_RigidBody.BodyID = JPH::BodyID::cInvalidBodyID;
+	}
+
+	bool JoltPhysicsScene::AddPhysicsBody( const GameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent )
+	{
+		a_RigidBody.BodyID = JPH::BodyID::cInvalidBodyID;
+
+		const Vector3 scale = a_TransformComponent.GetWorldScale();
+
+		JPH::Ref<JPH::MutableCompoundShapeSettings> compoundSettings = new JPH::MutableCompoundShapeSettings();
+		uint32_t numShapes = 0;
+
+		// Add all ColliderComponents to the compound shape
 		{
-			bodyInterface.AddBody( body->GetID(), JPH::EActivation::Activate );
-			return body->GetID().GetIndexAndSequenceNumber();
+			// Sphere Collider
+			if ( auto* sc = m_Scene->TryGetComponentFromGameObject<SphereColliderComponent>( a_GameObject ) )
+			{
+				const JPH::Ref<JPH::SphereShape> sphereShape = new JPH::SphereShape( sc->GetRadius() );
+				const JPH::Vec3 center = Util::ToJoltVec3( sc->GetCenter() );
+				compoundSettings->AddShape( center, JPH::Quat::sIdentity(), sphereShape );
+
+				++numShapes;
+			}
+			// Box Collider
+			if ( auto* bc = m_Scene->TryGetComponentFromGameObject<BoxColliderComponent>( a_GameObject ) )
+			{
+				const JPH::Vec3 halfExtents = JPH::Vec3( bc->GetHalfExtents().x * scale.x, bc->GetHalfExtents().y * scale.y, bc->GetHalfExtents().z * scale.z );
+				const JPH::Ref<JPH::BoxShape> boxShape = new JPH::BoxShape( halfExtents );
+				const JPH::Vec3 center = Util::ToJoltVec3( bc->GetCenter() );
+				compoundSettings->AddShape( center, JPH::Quat::sIdentity(), boxShape );
+
+				++numShapes;
+			}
+			// Capsule Collider
+			if ( auto* cc = m_Scene->TryGetComponentFromGameObject<CapsuleColliderComponent>( a_GameObject ) )
+			{
+				const JPH::Ref<JPH::CapsuleShape> capsuleShape = new JPH::CapsuleShape( cc->GetHalfHeight(), cc->GetRadius() );
+				const JPH::Vec3 center = Util::ToJoltVec3( cc->GetCenter() );
+				compoundSettings->AddShape( center, JPH::Quat::sIdentity(), capsuleShape );
+
+				++numShapes;
+			}
+
+			// Cylinder Collider
+			if ( auto* cc = m_Scene->TryGetComponentFromGameObject<CylinderColliderComponent>( a_GameObject ) )
+			{
+				const JPH::Ref<JPH::CylinderShape> cylinderShape = new JPH::CylinderShape( cc->GetHalfHeight(), cc->GetRadius() );
+				const JPH::Vec3 center = Util::ToJoltVec3( cc->GetCenter() );
+				compoundSettings->AddShape( center, JPH::Quat::sIdentity(), cylinderShape );
+
+				++numShapes;
+			}
 		}
 
-		return JPH::BodyID::cInvalidBodyID;
+		// Failed to add body if there are no shapes
+		if ( numShapes == 0 )
+		{
+			return false;
+		}
+
+		// Create the body creation settings
+		const JPH::Vec3 position = Util::ToJoltVec3( a_TransformComponent.GetWorldPosition() );
+		const JPH::Quat rotation = Util::ToJoltQuat( a_TransformComponent.GetOrientation() );
+		const JPH::EMotionType motionType = Util::ToJoltMotionType( a_RigidBody.GetMotionType() );
+		const JPH::ObjectLayer layer = motionType == JPH::EMotionType::Static ? Layers::NON_MOVING : Layers::MOVING;
+		JPH::BodyCreationSettings bodySettings( compoundSettings, position, rotation, motionType, layer );
+		bodySettings.mRestitution = 0.5f; // TEMP!
+
+		if ( JPH::Body* body = m_BodyInterface.CreateBody( bodySettings ) )
+		{
+			// Successfully created body
+
+			if ( a_RigidBody.GetMotionType() != EMotionType::Static )
+			{
+				body->GetMotionProperties()->SetGravityFactor( a_RigidBody.GetGravityScale() );
+			}
+
+			m_BodyInterface.AddBody( body->GetID(), JPH::EActivation::Activate );
+			a_RigidBody.BodyID = body->GetID().GetIndexAndSequenceNumber();
+			return true;
+		}
+
+		// Failed to create body
+		return false;
+	}
+
+	bool JoltPhysicsScene::UpdatePhysicsBody( const GameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent )
+	{
+		RemovePhysicsBody( a_RigidBody );
+		return AddPhysicsBody( a_GameObject, a_RigidBody, a_TransformComponent );
+	}
+
+	void JoltPhysicsScene::UpdatePhysicsBodyTransform( const RigidBodyComponent& a_RigidBody, const TransformComponent& a_TransformComponent )
+	{
+		m_BodyInterface.SetPositionAndRotation( 
+			JPH::BodyID( a_RigidBody.BodyID ),
+			Util::ToJoltVec3( a_TransformComponent.GetWorldPosition() ),
+			Util::ToJoltQuat( a_TransformComponent.GetOrientation() ),
+			JPH::EActivation::Activate );
 	}
 }

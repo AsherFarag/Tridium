@@ -7,6 +7,18 @@ namespace Tridium {
 	class TagComponent;
 	class GUIDComponent;
 	class TransformComponent;
+	// Physics Components
+	class RigidBodyComponent;
+	class SphereColliderComponent;
+	class BoxColliderComponent;
+	class CapsuleColliderComponent;
+	class MeshColliderComponent;
+
+	template<> void Scene::InitComponent( RigidBodyComponent& a_Component );
+	template<> void Scene::InitComponent( SphereColliderComponent& a_Component );
+	template<> void Scene::InitComponent( BoxColliderComponent& a_Component );
+	template<> void Scene::InitComponent( CapsuleColliderComponent& a_Component );
+	template<> void Scene::InitComponent( MeshColliderComponent& a_Component );
 
 	template <typename T, typename... Args>
 	inline T& Scene::AddComponentToGameObject( GameObject a_GameObject, Args&&... args )
@@ -35,6 +47,8 @@ namespace Tridium {
 
 			scriptable->OnConstruct();
 		}
+
+		InitComponent( component );
 
 		return component;
 	}

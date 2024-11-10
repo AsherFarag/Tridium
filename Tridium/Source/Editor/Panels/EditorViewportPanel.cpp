@@ -248,7 +248,8 @@ namespace Tridium::Editor {
 		ImGuizmo::SetRect( viewportBoundsMin.x, viewportBoundsMin.y,
 			viewportBoundsMax.x - viewportBoundsMin.x, viewportBoundsMax.y - viewportBoundsMin.y );
 
-		if ( GameObject selectedGO = GetSceneHeirarchy()->GetSelectedGameObject() )
+		GameObject selectedGO = GetSceneHeirarchy()->GetSelectedGameObject();
+		if ( selectedGO.IsValid() )
 		{
 			// Selected Game Object
 			TransformComponent& goTransform = selectedGO.GetTransform();
@@ -364,10 +365,10 @@ namespace Tridium::Editor {
 
 		m_FBO->Bind();
 		m_OutlineShader->Bind();
+		m_OutlineShader->SetFloat4( "u_Color", { 1.0f, 0.85f, 0.0f, 1.0f } );
 
-		TODO( "Remove this opengl code!" );
-		glLineWidth( 5 );
-		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		RenderCommand::SetLineWidth( 5 );
+		RenderCommand::SetPolygonMode( EFaces::FrontAndBack, EPolygonMode::Line );
 
 		Matrix4 pvm = m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix();
 		for ( uint32_t subMeshIndex : mesh->GetSubMeshes() )
@@ -385,7 +386,8 @@ namespace Tridium::Editor {
 
 		m_OutlineShader->Unbind();
 		m_FBO->Unbind();
-		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+
+		RenderCommand::SetPolygonMode( EFaces::FrontAndBack, EPolygonMode::Fill );
 	}
 
 	SceneHeirarchyPanel* EditorViewportPanel::GetSceneHeirarchy()

@@ -31,11 +31,16 @@ namespace Tridium {
 		virtual void Shutdown() override;
 		virtual void Tick( float a_TimeStep ) override;
 
-		virtual PhysicsBodyID AddPhysicsBody( void* a_CreationSettings ) override;
+		virtual void RemovePhysicsBody( RigidBodyComponent& a_RigidBody ) override;
+		virtual bool AddPhysicsBody( const GameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent ) override;
+		virtual bool UpdatePhysicsBody( const GameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent ) override;
+
+		virtual void UpdatePhysicsBodyTransform( const RigidBodyComponent& a_RigidBody, const TransformComponent& a_TransformComponent ) override;
 
 	protected:
 		PhysicsLayerManager m_LayerManager;
 		JPH::PhysicsSystem m_PhysicsSystem;
+		JPH::BodyInterface& m_BodyInterface;
 
 		UniquePtr<JPH::JobSystemThreadPool> m_JobSystem;
 		UniquePtr<JPH::TempAllocatorImpl> m_TempAllocator;

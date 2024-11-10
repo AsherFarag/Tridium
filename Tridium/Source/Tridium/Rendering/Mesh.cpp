@@ -271,7 +271,7 @@ namespace Tridium {
 		std::vector<Vector3> normals;
 		std::vector<Vector3> unitCircleVertices;
 
-		// Get unit circle
+		// Get unit circle in X-Z plane
 		{
 			float sectorStep = ( 2 * glm::pi<float>() ) / a_Slices;
 			float sectorAngle;  // radian
@@ -279,7 +279,7 @@ namespace Tridium {
 			for ( int i = 0; i <= a_Slices; ++i )
 			{
 				sectorAngle = i * sectorStep;
-				unitCircleVertices.emplace_back( cosf( sectorAngle ), sinf( sectorAngle ), 0.0f );
+				unitCircleVertices.emplace_back( cosf( sectorAngle ), 0.0f, sinf( sectorAngle ) ); // X-Z circle
 			}
 		}
 
@@ -287,23 +287,19 @@ namespace Tridium {
 		{
 			float sectorStep = 2 * glm::pi<float>() / a_Slices;
 			float sectorAngle;  // radian
+			float yAngle = atan2( a_BaseRadius - a_TopRadius, a_Height ); // Now affects Y-axis
+			float x0 = cos( yAngle );     // nx
+			float y0 = sin( yAngle );     // ny
+			float z0 = 0.0f;            // nz
 
-			// compute the normal vector at 0 degree first
-			// tanA = (baseRadius-topRadius) / height
-			float zAngle = atan2( a_BaseRadius - a_TopRadius, a_Height );
-			float x0 = cos( zAngle );     // nx
-			float y0 = 0;               // ny
-			float z0 = sin( zAngle );     // nz
-
-			// rotate (x0,y0,z0) per sector angle
+			// Rotate normal per sector angle
 			normals.reserve( a_Slices );
 			for ( int i = 0; i <= a_Slices; ++i )
 			{
 				sectorAngle = i * sectorStep;
-				normals.emplace_back( cos( sectorAngle ) * x0 - sin( sectorAngle ) * y0, sin( sectorAngle ) * x0 + cos( sectorAngle ) * y0, z0 );
+				normals.emplace_back( cos( sectorAngle ) * x0, y0, sin( sectorAngle ) * x0 );
 			}
 		}
-
 
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
@@ -313,33 +309,33 @@ namespace Tridium {
 
 		float radius;
 
-		// put vertices of side cylinder to array by scaling unit circle
+		// Generate vertices along the Y-axis for cylinder sides
 		for ( int i = 0; i <= a_Stacks; ++i )
 		{
-			float z = -( a_Height * 0.5f ) + (float)i / a_Stacks * a_Height;      // vertex position z
-			radius = a_BaseRadius + (float)i / a_Stacks * ( a_TopRadius - a_BaseRadius );     // lerp
-			float t = 1.0f - (float)i / a_Stacks;   // top-to-bottom
+			float y = -( a_Height * 0.5f ) + (float)i / a_Stacks * a_Height; // vertex position along Y
+			radius = a_BaseRadius + (float)i / a_Stacks * ( a_TopRadius - a_BaseRadius ); // lerp radius
+			float t = 1.0f - (float)i / a_Stacks; // top-to-bottom
 
 			for ( int j = 0; j <= a_Slices; ++j )
 			{
 				Vector3& u = unitCircleVertices[j];
 
 				Vertex& vertex = vertices.emplace_back();
-				vertex.Position = { u.x * radius, u.y * radius, z };
+				vertex.Position = { u.x * radius, y, u.z * radius }; // X-Y-Z format
 				vertex.Normal = normals[j];
 				vertex.UV = { (float)j / a_Slices, t };
 			}
 		}
 
-		// remember where the base.top vertices start
+		// Index base vertices
 		uint32_t baseVertexIndex = vertices.size();
 
-		// put vertices of base of cylinder
-		float z = -a_Height * 0.5f;
+		// Base of cylinder
+		float y = -a_Height * 0.5f;
 		{
 			Vertex& vertex = vertices.emplace_back();
-			vertex.Position = Vector3( 0.0f, 0.0f, z );
-			vertex.Normal = Vector3( 0.0f, 0.0f, -1.0f );
+			vertex.Position = Vector3( 0.0f, y, 0.0f );
+			vertex.Normal = Vector3( 0.0f, -1.0f, 0.0f );
 			vertex.UV = Vector2( 0.5f, 0.5f );
 		}
 
@@ -348,20 +344,19 @@ namespace Tridium {
 			Vector3& u = unitCircleVertices[i];
 
 			Vertex& vertex = vertices.emplace_back();
-			vertex.Position = { u.x * a_BaseRadius, u.y * a_BaseRadius, z };
-			vertex.Normal = { 0.0f, 0.0f, -1.0f };
-			vertex.UV = { -u.x * 0.5f + 0.5f, -u.y * 0.5f + 0.5f }; // flip horizontal
+			vertex.Position = { u.x * a_BaseRadius, y, u.z * a_BaseRadius };
+			vertex.Normal = { 0.0f, -1.0f, 0.0f };
+			vertex.UV = { -u.x * 0.5f + 0.5f, -u.z * 0.5f + 0.5f }; // flip horizontal
 		}
 
-		// remember where the base vertices start
 		uint32_t topVertexIndex = vertices.size();
 
-		// put vertices of top of cylinder
-		z = a_Height * 0.5f;
+		// Top of cylinder
+		y = a_Height * 0.5f;
 		{
 			Vertex& vertex = vertices.emplace_back();
-			vertex.Position = Vector3( 0.0f, 0.0f, z );
-			vertex.Normal = Vector3( 0.0f, 0.0f, 1.0f );
+			vertex.Position = Vector3( 0.0f, y, 0.0f );
+			vertex.Normal = Vector3( 0.0f, 1.0f, 0.0f );
 			vertex.UV = Vector2( 0.5f, 0.5f );
 		}
 
@@ -370,9 +365,9 @@ namespace Tridium {
 			Vector3& u = unitCircleVertices[i];
 
 			Vertex& vertex = vertices.emplace_back();
-			vertex.Position = { u.x * a_TopRadius, u.y * a_TopRadius, z };
-			vertex.Normal = { 0.0f, 0.0f, 1.0f };
-			vertex.UV = { u.x * 0.5f + 0.5f, -u.y * 0.5f + 0.5f };
+			vertex.Position = { u.x * a_TopRadius, y, u.z * a_TopRadius };
+			vertex.Normal = { 0.0f, 1.0f, 0.0f };
+			vertex.UV = { u.x * 0.5f + 0.5f, -u.z * 0.5f + 0.5f };
 		}
 
 		// put indices for sides
@@ -384,19 +379,16 @@ namespace Tridium {
 
 			for ( int j = 0; j < a_Slices; ++j, ++k1, ++k2 )
 			{
-				// 2 triangles per sector
+				// Invert the winding order
 				indices.push_back( k1 );
-				indices.push_back( k1 + 1 );
 				indices.push_back( k2 );
+				indices.push_back( k1 + 1 );
 
 				indices.push_back( k2 );
-				indices.push_back( k1 + 1 );
 				indices.push_back( k2 + 1 );
+				indices.push_back( k1 + 1 );
 			}
 		}
-
-		// remember where the base indices start
-		uint32_t baseIndex = indices.size();
 
 		// put indices for base
 		for ( int i = 0, k = baseVertexIndex + 1; i < a_Slices; ++i, ++k )
@@ -404,33 +396,31 @@ namespace Tridium {
 			if ( i < ( a_Slices - 1 ) )
 			{
 				indices.push_back( baseVertexIndex );
-				indices.push_back( k + 1 );
 				indices.push_back( k );
+				indices.push_back( k + 1 );
 			}
 			else    // last triangle
 			{
 				indices.push_back( baseVertexIndex );
-				indices.push_back( baseVertexIndex + 1 );
 				indices.push_back( k );
+				indices.push_back( baseVertexIndex + 1 );
 			}
 		}
 
-		// remember where the base indices start
-		uint32_t topIndex = indices.size();
-
+		// put indices for top
 		for ( int i = 0, k = topVertexIndex + 1; i < a_Slices; ++i, ++k )
 		{
 			if ( i < ( a_Slices - 1 ) )
 			{
 				indices.push_back( topVertexIndex );
-				indices.push_back( k );
 				indices.push_back( k + 1 );
+				indices.push_back( k );
 			}
 			else
 			{
 				indices.push_back( topVertexIndex );
-				indices.push_back( k );
 				indices.push_back( topVertexIndex + 1 );
+				indices.push_back( k );
 			}
 		}
 
@@ -440,23 +430,23 @@ namespace Tridium {
 		return meshSource;
 	}
 
-	SharedPtr<MeshSource> MeshFactory::CreateCapsule( float a_Radius, float a_Height, uint32_t a_Stacks, uint32_t a_Slices )
+	SharedPtr<MeshSource> MeshFactory::CreateCapsule( float a_Radius, float a_Height, uint32_t a_Stacks, uint32_t a_Slices, uint32_t a_SphereStacks, uint32_t a_SphereSlices )
 	{
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
 
-		vertices.reserve( ( a_Stacks + 1 ) * ( a_Slices + 1 ) * 2 );
-		indices.reserve( a_Stacks * a_Slices * 6 * 2 );
+		vertices.reserve( ( a_Stacks + 1 ) * ( a_Slices + 1 ) + ( a_SphereStacks + 1 ) * ( a_SphereSlices + 1 ) * 2 );
+		indices.reserve( a_Stacks * a_Slices * 6 + a_SphereStacks * a_SphereSlices * 6 * 2 );
 
 		float halfHeight = a_Height / 2.0f;
 
 		// --- Top Hemisphere ---
-		for ( uint32_t i = 0; i <= a_Stacks / 2; ++i ) {
-			float V = i / (float)( a_Stacks / 2 );
+		for ( uint32_t i = 0; i <= a_SphereStacks / 2; ++i ) {
+			float V = i / (float)( a_SphereStacks / 2 );
 			float phi = V * glm::half_pi<float>();
 
-			for ( uint32_t j = 0; j <= a_Slices; ++j ) {
-				float U = j / (float)a_Slices;
+			for ( uint32_t j = 0; j <= a_SphereSlices; ++j ) {
+				float U = j / (float)a_SphereSlices;
 				float theta = U * ( glm::pi<float>() * 2 );
 
 				float x = cosf( theta ) * sinf( phi );
@@ -492,12 +482,12 @@ namespace Tridium {
 		}
 
 		// --- Bottom Hemisphere ---
-		for ( uint32_t i = 0; i <= a_Stacks / 2; ++i ) {
-			float V = i / (float)( a_Stacks / 2 );
+		for ( uint32_t i = 0; i <= a_SphereStacks / 2; ++i ) {
+			float V = i / (float)( a_SphereStacks / 2 );
 			float phi = glm::half_pi<float>() + V * glm::half_pi<float>();
 
-			for ( uint32_t j = 0; j <= a_Slices; ++j ) {
-				float U = j / (float)a_Slices;
+			for ( uint32_t j = 0; j <= a_SphereSlices; ++j ) {
+				float U = j / (float)a_SphereSlices;
 				float theta = U * ( glm::pi<float>() * 2 );
 
 				float x = cosf( theta ) * sinf( phi );
@@ -513,44 +503,53 @@ namespace Tridium {
 		}
 
 		// Generate indices with flipped winding order
-		// Top Hemisphere
-		for ( uint32_t i = 0; i < a_Stacks / 2; ++i ) {
-			for ( uint32_t j = 0; j < a_Slices; ++j ) {
-				indices.push_back( ( i + 1 ) * ( a_Slices + 1 ) + j );
-				indices.push_back( i * ( a_Slices + 1 ) + j );
-				indices.push_back( i * ( a_Slices + 1 ) + ( j + 1 ) );
+		// --- Top Hemisphere ---
+		for ( uint32_t i = 0; i < a_SphereStacks / 2; ++i ) {
+			for ( uint32_t j = 0; j < a_SphereSlices; ++j ) {
+				uint32_t first = i * ( a_SphereSlices + 1 ) + j;
+				uint32_t second = first + a_SphereSlices + 1;
 
-				indices.push_back( ( i + 1 ) * ( a_Slices + 1 ) + ( j + 1 ) );
-				indices.push_back( ( i + 1 ) * ( a_Slices + 1 ) + j );
-				indices.push_back( i * ( a_Slices + 1 ) + ( j + 1 ) );
+				indices.push_back( second );
+				indices.push_back( first );
+				indices.push_back( first + 1 );
+
+				indices.push_back( second + 1 );
+				indices.push_back( second );
+				indices.push_back( first + 1 );
 			}
 		}
 
-		// Cylinder Section
-		uint32_t baseIndex = ( a_Stacks / 2 + 1 ) * ( a_Slices + 1 );
+		// --- Cylinder Section ---
+		uint32_t baseIndex = ( a_SphereStacks / 2 + 1 ) * ( a_SphereSlices + 1 );
 		for ( uint32_t i = 0; i < a_Stacks; ++i ) {
 			for ( uint32_t j = 0; j < a_Slices; ++j ) {
-				indices.push_back( baseIndex + ( i + 1 ) * ( a_Slices + 1 ) + j );
-				indices.push_back( baseIndex + i * ( a_Slices + 1 ) + j );
-				indices.push_back( baseIndex + i * ( a_Slices + 1 ) + ( j + 1 ) );
+				uint32_t first = baseIndex + i * ( a_Slices + 1 ) + j;
+				uint32_t second = first + a_Slices + 1;
 
-				indices.push_back( baseIndex + ( i + 1 ) * ( a_Slices + 1 ) + ( j + 1 ) );
-				indices.push_back( baseIndex + ( i + 1 ) * ( a_Slices + 1 ) + j );
-				indices.push_back( baseIndex + i * ( a_Slices + 1 ) + ( j + 1 ) );
+				indices.push_back( second );
+				indices.push_back( first );
+				indices.push_back( first + 1 );
+
+				indices.push_back( second + 1 );
+				indices.push_back( second );
+				indices.push_back( first + 1 );
 			}
 		}
 
-		// Bottom Hemisphere
+		// --- Bottom Hemisphere ---
 		baseIndex += ( a_Stacks + 1 ) * ( a_Slices + 1 );
-		for ( uint32_t i = 0; i < a_Stacks / 2; ++i ) {
-			for ( uint32_t j = 0; j < a_Slices; ++j ) {
-				indices.push_back( baseIndex + ( i + 1 ) * ( a_Slices + 1 ) + j );
-				indices.push_back( baseIndex + i * ( a_Slices + 1 ) + j );
-				indices.push_back( baseIndex + i * ( a_Slices + 1 ) + ( j + 1 ) );
+		for ( uint32_t i = 0; i < a_SphereStacks / 2; ++i ) {
+			for ( uint32_t j = 0; j < a_SphereSlices; ++j ) {
+				uint32_t first = baseIndex + i * ( a_SphereSlices + 1 ) + j;
+				uint32_t second = first + a_SphereSlices + 1;
 
-				indices.push_back( baseIndex + ( i + 1 ) * ( a_Slices + 1 ) + ( j + 1 ) );
-				indices.push_back( baseIndex + ( i + 1 ) * ( a_Slices + 1 ) + j );
-				indices.push_back( baseIndex + i * ( a_Slices + 1 ) + ( j + 1 ) );
+				indices.push_back( second );
+				indices.push_back( first );
+				indices.push_back( first + 1 );
+
+				indices.push_back( second + 1 );
+				indices.push_back( second );
+				indices.push_back( first + 1 );
 			}
 		}
 

@@ -12,6 +12,8 @@ namespace Tridium {
 		virtual void SetDepthCompare( EDepthCompareOperator a_DepthCompareOperator ) override;
 		virtual void SetCullMode( ECullMode a_CullMode ) override;
 		virtual void SetClearColor( const Vector4& color ) override;
+		virtual void SetLineWidth( float width ) override;
+		virtual void SetPolygonMode( EFaces a_Faces, EPolygonMode a_PolygonMode ) override;
 		virtual void Clear() override;
 
 		virtual void DrawIndexed( const SharedPtr<VertexArray>& a_VertexArray ) override;

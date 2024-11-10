@@ -34,6 +34,15 @@ namespace Tridium {
 		DirectionalLight DirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 	};
 
+	struct RenderSettings
+	{
+		ERenderMode RenderMode = ERenderMode::Deferred;
+		float RenderScale = 1.0f;
+
+		// Temp?
+		bool DebugDrawColliders = false;
+	};
+
 	class SceneRenderer
 	{
 	public:
@@ -41,8 +50,8 @@ namespace Tridium {
 
 		void Render( const SharedPtr<Framebuffer>& a_RenderTarget, const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition );
 
-		ERenderMode GetRenderMode() const { return m_RenderMode; }
-		void SetRenderMode( ERenderMode a_RenderMode ) { m_RenderMode = a_RenderMode; }
+		const RenderSettings& GetRenderSettings() const { return m_RenderSettings; }
+		void SetRenderSettings( const RenderSettings& a_RenderSettings ) { m_RenderSettings = a_RenderSettings; }
 
 	protected:
 		void BeginScene( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition );
@@ -64,11 +73,12 @@ namespace Tridium {
 		// ----------------------
 
 		void RenderSkybox();
-
 		void PostProcessPass();
 
+		void DebugRenderColliders();
+
 	private:
-		ERenderMode m_RenderMode = ERenderMode::Deferred;
+		RenderSettings m_RenderSettings;
 
 		Scene& m_Scene;
 		SceneEnvironment& m_SceneEnvironment;
@@ -83,6 +93,14 @@ namespace Tridium {
 		SharedPtr<Texture> m_BlackTexture;
 		SharedPtr<Texture> m_NormalTexture;
 		// ---------------
+
+		// Debug assets
+		SharedPtr<Shader> m_DebugSimpleShader;
+		SharedPtr<VertexArray> m_DebugSphereVAO;
+		SharedPtr<VertexArray> m_DebugCubeVAO;
+		SharedPtr<VertexArray> m_DebugCapsuleVAO;
+		SharedPtr<VertexArray> m_DebugCylinderVAO;
+		// ------------
 
 		// Per frame data
 		struct SceneInfo
@@ -117,7 +135,8 @@ namespace Tridium {
 		Matrix4 m_LightViewProjectionMatrix{ 1.0f };
 		SharedPtr<Shader> m_ShadowCubeMapShader;
 		// -------
-
+		
+		friend class Scene;
 		friend class Editor::SceneRendererPanel;
 	};
 

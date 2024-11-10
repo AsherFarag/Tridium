@@ -232,6 +232,8 @@ namespace Tridium::Editor {
 				{
 					newGO = m_Context->InstantiateGameObject( "Cube" );
 					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCube();
+					newGO.AddComponent<BoxColliderComponent>();
+					newGO.AddComponent<RigidBodyComponent>();
 					SetSelectedGameObject( newGO );
 				}
 
@@ -239,6 +241,8 @@ namespace Tridium::Editor {
 				{
 					newGO = m_Context->InstantiateGameObject( "Sphere" );
 					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultSphere();
+					newGO.AddComponent<SphereColliderComponent>();
+					newGO.AddComponent<RigidBodyComponent>();
 					SetSelectedGameObject( newGO );
 				}
 
@@ -246,6 +250,8 @@ namespace Tridium::Editor {
 				{
 					newGO = m_Context->InstantiateGameObject( "Cylinder" );
 					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCylinder();
+					newGO.AddComponent<CylinderColliderComponent>();
+					newGO.AddComponent<RigidBodyComponent>();
 					SetSelectedGameObject( newGO );
 				}
 
@@ -253,6 +259,8 @@ namespace Tridium::Editor {
 				{
 					newGO = m_Context->InstantiateGameObject( "Capsule" );
 					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCapsule();
+					newGO.AddComponent<CapsuleColliderComponent>();
+					newGO.AddComponent<RigidBodyComponent>();
 					SetSelectedGameObject( newGO );
 				}
 

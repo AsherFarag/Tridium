@@ -30,7 +30,8 @@ namespace Tridium {
 		friend class GameObject;
 
 	public:
-		Scene( const std::string& name = "Untitled");
+		Scene( const std::string& a_Name = "Untitled");
+		Scene( const Scene& a_Other );
 		~Scene();
 
 		void OnBegin();
@@ -44,6 +45,8 @@ namespace Tridium {
 
 		void SetPaused( bool a_NewPaused ) { m_Paused = a_NewPaused; }
 		bool IsPaused() const { return m_Paused; }
+
+		bool IsRunning() const { return m_IsRunning; }
 
 		CameraComponent* GetMainCamera();
 		void SetMainCamera( const EntityID& a_Camera ) { m_MainCamera = a_Camera; }
@@ -59,6 +62,7 @@ namespace Tridium {
 		GameObject InstantiateGameObject( GUID a_GUID, const std::string& a_Name = "GameObject" );
 		GameObject InstantiateGameObjectFrom( GameObject a_Source );
 		void CopyGameObject( GameObject a_Destination, GameObject a_Source );
+		bool IsGameObjectValid( GameObject a_GameObject ) const;
 
 		template <typename T, typename... Args>
 		T& AddComponentToGameObject( GameObject a_GameObject, Args&&... args );
@@ -79,10 +83,15 @@ namespace Tridium {
 		inline void RemoveComponentFromGameObject( GameObject a_GameObject );
 
 	private:
+		template <typename T>
+		void InitComponent( T& a_Component ) {}
+
+	private:
 		std::string m_Name;
 		entt::registry m_Registry;
 		SceneEnvironment m_SceneEnvironment;
 		bool m_Paused = false;
+		bool m_IsRunning = false;
 		EntityID m_MainCamera;
 
 		SceneRenderer m_SceneRenderer;

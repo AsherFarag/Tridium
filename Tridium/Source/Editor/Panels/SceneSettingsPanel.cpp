@@ -34,23 +34,55 @@ namespace Tridium::Editor {
 			return;
 		}
 
-		const char* renderModes[] = { "None", "Forward", "Deferred" };
-		ERenderMode renderMode = scene->GetSceneRenderer().GetRenderMode();
-		if ( ImGui::BeginCombo( "Render Mode", renderModes[ (uint8_t)renderMode] ) )
+		// Render Settings
+		if ( ImGui::TreeNode( "Render Settings" ) )
 		{
-			bool isSelected = renderMode == ERenderMode::Forward;
-			if ( ImGui::Selectable( renderModes[(uint8_t)ERenderMode::Forward], isSelected ) )
-				scene->GetSceneRenderer().SetRenderMode( ERenderMode::Forward );
-			if ( isSelected )
-				ImGui::SetItemDefaultFocus();
+			bool changed = false;
+			RenderSettings renderSettings = scene->GetSceneRenderer().GetRenderSettings();
 
-			isSelected = renderMode == ERenderMode::Deferred;
-			if ( ImGui::Selectable( renderModes[(uint8_t)ERenderMode::Deferred], isSelected ) )
-				scene->GetSceneRenderer().SetRenderMode( ERenderMode::Deferred );
-			if ( isSelected )
-				ImGui::SetItemDefaultFocus();
+			// Render Mode
+			{
+				const char* renderModes[] = { "None", "Forward", "Deferred" };
+				if ( ImGui::BeginCombo( "Render Mode", renderModes[(uint8_t)renderSettings.RenderMode] ) )
+				{
+					bool isSelected = renderSettings.RenderMode == ERenderMode::Forward;
+					if ( ImGui::Selectable( renderModes[(uint8_t)ERenderMode::Forward], isSelected ) )
+					{
+						renderSettings.RenderMode = ERenderMode::Forward;
+						changed = true;
+					}
 
-			ImGui::EndCombo();
+					if ( isSelected )
+						ImGui::SetItemDefaultFocus();
+
+					isSelected = renderSettings.RenderMode == ERenderMode::Deferred;
+					if ( ImGui::Selectable( renderModes[(uint8_t)ERenderMode::Deferred], isSelected ) )
+					{
+						renderSettings.RenderMode = ERenderMode::Deferred;
+						changed = true;
+					}
+
+					if ( isSelected )
+						ImGui::SetItemDefaultFocus();
+
+					ImGui::EndCombo();
+				}
+			}
+
+			// Render Scale
+			{
+				changed |= ImGui::SliderFloat( "Render Scale", &renderSettings.RenderScale, 0.1f, 2.0f );
+			}
+
+			// Debug Draw Colliders
+			{
+				changed |= ImGui::Checkbox( "Debug Draw Colliders", &renderSettings.DebugDrawColliders );
+			}
+
+			if ( changed )
+				scene->GetSceneRenderer().SetRenderSettings( renderSettings );
+
+			ImGui::TreePop();
 		}
 
 		if ( ImGui::TreeNode( "Scene Environment" ) )

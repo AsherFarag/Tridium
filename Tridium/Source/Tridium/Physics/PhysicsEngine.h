@@ -1,16 +1,16 @@
 #pragma once
-
+#include "PhysicsAPI.h"
+#include <Tridium/Core/Memory.h>
 
 namespace Tridium
 {
 	class PhysicsEngine
 	{
 	public:
-		PhysicsEngine() = default;
-		~PhysicsEngine() = default;
+		static UniquePtr<PhysicsEngine> Create();
 
-		void Init();
-		void Shutdown();
+		virtual void Init() = 0;
+		virtual void Shutdown() = 0;
 	};
 
 }

@@ -7,17 +7,20 @@
 
 #include "Panels/Panel.h"
 
+// Forward Declarations
 namespace Tridium {
 	class Scene;
+
+	namespace Editor {
+		class EditorCamera;
+		class ContentBrowserPanel;
+		class SceneHeirarchyPanel;
+		class EditorViewportPanel;
+		class GameViewportPanel;
+	}
 }
 
 namespace Tridium::Editor {
-	class EditorCamera;
-	class ContentBrowserPanel;
-	class SceneHeirarchyPanel;
-	class EditorViewportPanel;
-	class GameViewportPanel;
-
 
 	enum class SceneState
 	{
@@ -69,10 +72,13 @@ namespace Tridium::Editor {
 
 	private:
 		bool OnKeyPressed( KeyPressedEvent& e );
-
 		void DrawMenuBar();
 
 	private:
+		// Used as a temporary storage for the current scene when in a PIE session.
+		// Once a PIE session is ended, the scene is restored to the active scene.
+		UniquePtr<Scene> m_SceneSnapshot;
+
 		SharedPtr<EditorCamera> m_EditorCamera;
 
 		PanelStack m_PanelStack;
