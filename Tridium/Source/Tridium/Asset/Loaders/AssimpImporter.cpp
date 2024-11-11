@@ -68,6 +68,10 @@ namespace Tridium {
 		ProcessNode( meshSource, (void*)scene, scene->mRootNode, Matrix4( 1.0f ) );
 		ExtractMaterials( (void*)scene, meshSource );
 
+		// Calculate bounding box for the mesh source
+		for ( const auto& submesh : meshSource->m_SubMeshes )
+			meshSource->m_BoundingBox.Expand( submesh.BoundingBox );
+
 		return meshSource;
 	}
 
@@ -126,6 +130,9 @@ namespace Tridium {
 			{
 				vertex.UV = { a_Mesh->mTextureCoords[0][i].x, a_Mesh->mTextureCoords[0][i].y };
 			}
+
+			// Update bounding box
+			submesh.BoundingBox.Expand( vertex.Position );
 		}
 
 		// Process Indices

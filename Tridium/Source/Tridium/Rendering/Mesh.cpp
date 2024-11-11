@@ -38,6 +38,10 @@ namespace Tridium {
 
 		submesh.IBO = IndexBuffer::Create( submesh.Indices.data(), (uint32_t)( submesh.Indices.size() ) );
 		submesh.VAO->SetIndexBuffer( submesh.IBO );
+
+		// Calculate bounding box
+		for ( const Vertex& vertex : a_Vertices )
+			m_BoundingBox.Expand( vertex.Position );
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////
@@ -52,6 +56,7 @@ namespace Tridium {
 		if ( auto meshSourceRef = AssetManager::GetAsset<MeshSource>( a_MeshSource ) )
 		{
 			SetSubMeshes( meshSourceRef );
+			m_BoundingBox = meshSourceRef->GetBoundingBox();
 
 			const std::vector<MaterialHandle>& meshMaterials = meshSourceRef->GetMaterials();
 			uint32_t numMaterials = static_cast<uint32_t>( meshMaterials.size() );
@@ -69,9 +74,18 @@ namespace Tridium {
 		if ( auto meshSourceRef = AssetManager::GetAsset<MeshSource>( a_MeshSource ) )
 		{
 			if ( !a_SubMeshes.empty() )
+			{
 				SetSubMeshes( a_SubMeshes );
+				for ( uint32_t subMeshIndex : a_SubMeshes )
+				{
+					m_BoundingBox.Expand( meshSourceRef->GetSubMesh( subMeshIndex ).BoundingBox );
+				}
+			}
 			else
+			{
 				SetSubMeshes( meshSourceRef );
+				m_BoundingBox = meshSourceRef->GetBoundingBox();
+			}
 
 			const std::vector<MaterialHandle>& meshMaterials = meshSourceRef->GetMaterials();
 			uint32_t numMaterials = static_cast<uint32_t>( meshMaterials.size() );
