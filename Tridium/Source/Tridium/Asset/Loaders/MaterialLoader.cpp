@@ -28,12 +28,16 @@ namespace Tridium {
 		{
 			out << YAML::Key << "Shader" << YAML::Value << material->Shader.ID();
 			out << YAML::Key << "AlbedoTexture" << YAML::Value << material->AlbedoTexture.ID();
+			out << YAML::Key << "AlbedoIntensity" << YAML::Value << material->AlbedoIntensity;
 			out << YAML::Key << "MetallicTexture" << YAML::Value << material->MetallicTexture.ID();
+			out << YAML::Key << "MetallicIntensity" << YAML::Value << material->MetallicIntensity;
 			out << YAML::Key << "RoughnessTexture" << YAML::Value << material->RoughnessTexture.ID();
+			out << YAML::Key << "RoughnessIntensity" << YAML::Value << material->RoughnessIntensity;
 			out << YAML::Key << "SpecularTexture" << YAML::Value << material->SpecularTexture.ID();
 			out << YAML::Key << "NormalTexture" << YAML::Value << material->NormalTexture.ID();
 			out << YAML::Key << "OpacityTexture" << YAML::Value << material->OpacityTexture.ID();
 			out << YAML::Key << "EmissiveTexture" << YAML::Value << material->EmissiveTexture.ID();
+			out << YAML::Key << "EmissiveIntensity" << YAML::Value << material->EmissiveIntensity;
 			out << YAML::Key << "AOTexture" << YAML::Value << material->AOTexture.ID();
 		}
 		out << YAML::EndMap;
@@ -55,26 +59,26 @@ namespace Tridium {
 			return nullptr;
 		}
 
-#define LOAD_MATERIAL_PROPERTY( prop ) \
+#define LOAD_MATERIAL_PROPERTY( type, prop ) \
 		if ( auto propNode = data[#prop] ) \
 		{\
-			material->prop = propNode.as<AssetHandle::Type>(); \
+			material->prop = propNode.as<type>(); \
 		} \
-		else \
-		{\
-			return nullptr; \
-		}
 
 		SharedPtr<Material> material = MakeShared<Material>();
-		LOAD_MATERIAL_PROPERTY( Shader );
-		LOAD_MATERIAL_PROPERTY( AlbedoTexture );
-		LOAD_MATERIAL_PROPERTY( MetallicTexture );
-		LOAD_MATERIAL_PROPERTY( RoughnessTexture );
-		LOAD_MATERIAL_PROPERTY( SpecularTexture );
-		LOAD_MATERIAL_PROPERTY( NormalTexture );
-		LOAD_MATERIAL_PROPERTY( OpacityTexture );
-		LOAD_MATERIAL_PROPERTY( EmissiveTexture );
-		LOAD_MATERIAL_PROPERTY( AOTexture );
+		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, Shader );
+		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, AlbedoTexture );
+		LOAD_MATERIAL_PROPERTY( float, AlbedoIntensity );
+		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, MetallicTexture );
+		LOAD_MATERIAL_PROPERTY( float, MetallicIntensity );
+		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, RoughnessTexture );
+		LOAD_MATERIAL_PROPERTY( float, RoughnessIntensity );
+		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, SpecularTexture );
+		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, NormalTexture );
+		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, OpacityTexture );
+		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, EmissiveTexture );
+		LOAD_MATERIAL_PROPERTY( float, EmissiveIntensity );
+		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, AOTexture );
 
 		return material;
 	}

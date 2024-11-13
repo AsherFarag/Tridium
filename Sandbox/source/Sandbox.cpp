@@ -81,6 +81,12 @@ class MaterialEditorLayer : public Layer
 
 		if ( SharedPtr<Material> material = AssetManager::GetAsset<Material>( MaterialHandle ) )
 		{
+			ImGui::SliderFloat( "Albedo Intensity", &material->AlbedoIntensity, 0.0f, 1.0f );
+			ImGui::SliderFloat( "Metallic Intensity", &material->MetallicIntensity, 0.0f, 1.0f );
+			ImGui::SliderFloat( "Roughness Intensity", &material->RoughnessIntensity, 0.0f, 1.0f );
+
+			ImGui::Separator();
+
 			DrawProperty( "Albedo Texture", material->AlbedoTexture, Editor::EDrawPropertyFlags::Editable );
 			DrawProperty( "Metallic Texture", material->MetallicTexture, Editor::EDrawPropertyFlags::Editable );
 			DrawProperty( "Roughness Texture", material->RoughnessTexture, Editor::EDrawPropertyFlags::Editable );
@@ -103,7 +109,7 @@ class SandboxGameInstance : public Tridium::GameInstance
 	virtual void Init() override
 	{
 		//Tridium::Application::Get().PushOverlay( new CreateNewAssetLayer() );
-		//Tridium::Application::Get().PushOverlay( new MaterialEditorLayer() );
+		Tridium::Application::Get().PushOverlay( new MaterialEditorLayer() );
 	}
 };
 

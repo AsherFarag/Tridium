@@ -51,7 +51,11 @@ in vec3 v_WorldPos;
 in mat3 v_TBN;
 in vec2 v_UV;
 
-// PBR Textures
+// PBR
+uniform float u_AlbedoIntensity;
+uniform float u_MetallicIntensity;
+uniform float u_RoughnessIntensity;
+uniform float u_EmissiveIntensity;
 uniform sampler2D u_AlbedoTexture;
 uniform sampler2D u_MetallicTexture;
 uniform sampler2D u_RoughnessTexture;
@@ -147,15 +151,15 @@ void main()
 	if ( texture(u_OpacityTexture, v_UV).a < 0.2 )
 		discard; 
 
-	vec3 albedo = texture(u_AlbedoTexture, v_UV).rgb;
+	vec3 albedo = texture(u_AlbedoTexture, v_UV).rgb * u_AlbedoIntensity;
 	// NOTE: AO, Roughness, and Metallic could all use the same texture as we only need one channel for each. 
 	// r = ambient occlusion
 	// g = roughness
 	// b = metallic
 	float ao = texture(u_AOTexture, v_UV).r;
-	float roughness = texture(u_RoughnessTexture, v_UV).g;
-	float metallic = texture(u_MetallicTexture, v_UV).b;
-	vec3 emissive = texture(u_EmissiveTexture, v_UV).rgb;
+	float roughness = texture(u_RoughnessTexture, v_UV).g * u_RoughnessIntensity;
+	float metallic = texture(u_MetallicTexture, v_UV).b * u_MetallicIntensity;
+	vec3 emissive = texture(u_EmissiveTexture, v_UV).rgb * u_EmissiveIntensity;
 
 	// Calculate Normal using the normal map and TBN matrix
 	vec3 normal = texture(u_NormalTexture, v_UV).rgb;

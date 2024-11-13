@@ -22,6 +22,7 @@ namespace Tridium {
 		virtual void Shutdown() = 0;
 		virtual void Tick( float a_TimeStep ) = 0;
 
+		virtual void RemovePhysicsBody( PhysicsBodyID a_PhysicsBodyID ) = 0;
 		virtual void RemovePhysicsBody( RigidBodyComponent& a_RigidBody ) = 0;
 		virtual bool AddPhysicsBody( const GameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent ) = 0;
 		virtual bool UpdatePhysicsBody( const GameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent ) = 0;

@@ -180,9 +180,9 @@ void main()
 	//specular = clamp(specular, vec3(0.0),vec3(1.0));
 
 	// Apply fresnel factor to the specular term, ensuring roughness impact
-	specular *= max( (1.0 - roughness), EPSILON );  // Reduce specular based on roughness
-	specular *= 0.1 + F * 0.9;  // Add a slight minimum base reflectivity (0.1) and clamp at 1.0
-	specular *= mix(vec3(1.0), albedo / max( dot(GRAY_SCALE, albedo), metallic), 0.01 );
+	//specular *= max( (1.0 - roughness), EPSILON );  // Reduce specular based on roughness
+	//specular *= 0.1 + F * 0.9;  // Add a slight minimum base reflectivity (0.1) and clamp at 1.0
+	//specular *= mix(vec3(1.0), albedo / max( dot(GRAY_SCALE, albedo), metallic), 0.01 );
 
 	vec3 ambient = (kD * diffuse + specular ) * max(ao, 0.05); // Minimum AO is 0.05
 	vec3 color = ambient + Lo;

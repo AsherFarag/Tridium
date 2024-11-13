@@ -8,93 +8,79 @@ SceneEnvironment:
     Intensity: 1
     RotationEular: [0, 0, 0]
 GameObjects:
-  - GameObject: 17621319138191516720
+  - GameObject: 16655412046026613684
+    Tag: Capsule
+    Transform:
+      Position: [0, 27.4917259, -9.32355118]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 10
+      Materials: []
+    RigidBodyComponent:
+      m_MotionType: Dynamic
+      m_Mass: 1
+      m_GravityScale: 1
+    CapsuleColliderComponent:
+      m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
+      m_Rotation: [0, 0, 0]
+      m_Radius: 0.5
+      m_HalfHeight: 0.5
+  - GameObject: 12906833969033052025
+    Tag: Directional Light
+    Transform:
+      Position: [0, 0, 0.029566288]
+      Rotation: [0.558505356, 3.92699075, 0]
+      Scale: [0.999999881, 0.999999762, 0.999999762]
+      Children: []
+    DirectionalLightComponent:
+      LightColor: [1, 0.581749916, 0.140077829, 1]
+      Intensity: 5
+      CastsShadows: true
+  - GameObject: 2918692368704235263
     Tag: Cube
     Transform:
-      Position: [0, 37.579052, -8.47596931]
-      Rotation: [0, -0, 0]
-      Scale: [6.94999981, 6.94999981, 6.94999981]
+      Position: [0, 0, 0]
+      Rotation: [-1.5704515, 0.785398126, -4.21468513e-08]
+      Scale: [0.0699994415, 0.0699974969, 0.069996886]
       Children: []
     StaticMeshComponent:
-      Mesh: 2
-      Materials: []
-    BoxColliderComponent:
-      m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
-      m_HalfExtents: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
-    RigidBodyComponent:
-      m_MotionType: Dynamic
-      m_Mass: 100
-  - GameObject: 11649342439354225944
+      Mesh: 14693471984162796061
+      Materials: [4881975585746158865]
+  - GameObject: 16542631976287151540
+    Tag: Troll
+    Transform:
+      Position: [6.63770294, -11.1815624, -7.77366877]
+      Rotation: [0, -0, 0]
+      Scale: [0.0147000141, 0.0147000141, 0.0147000141]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 7689658421196502889
+      Materials: [15697145363054614336]
+  - GameObject: 17894983707375707960
     Tag: Cube
     Transform:
-      Position: [0, 29.1640835, 0]
+      Position: [16.9929237, -9.54849052, -8.39933872]
       Rotation: [0, -0, 0]
-      Scale: [6.94999981, 6.94999981, 6.94999981]
+      Scale: [0.030000031, 0.030000031, 0.030000031]
       Children: []
     StaticMeshComponent:
-      Mesh: 2
-      Materials: []
-    BoxColliderComponent:
-      m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
-      m_HalfExtents: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
-    RigidBodyComponent:
-      m_MotionType: Dynamic
-      m_Mass: 100
-  - GameObject: 9708134265807987826
-    Tag: Capsule
-    Transform:
-      Position: [-1.96237695, 28.4197063, -16.6200104]
-      Rotation: [0.442657769, -0, 0]
-      Scale: [1, 1, 1]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 10
-      Materials: []
+      Mesh: 11662457145095035423
+      Materials: [5282163452782371408]
     RigidBodyComponent:
       m_MotionType: Dynamic
       m_Mass: 1
+      m_GravityScale: 1
     CapsuleColliderComponent:
       m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
-      m_Radius: 0.5
-      m_HalfHeight: 0.5
-  - GameObject: 12179247824379703973
-    Tag: Capsule
-    Transform:
-      Position: [6.10351562e-05, 28.4197063, -16.6200104]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 10
-      Materials: []
-    RigidBodyComponent:
-      m_MotionType: Dynamic
-      m_Mass: 1
-    CapsuleColliderComponent:
-      m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
-      m_Radius: 0.5
-      m_HalfHeight: 0.5
-  - GameObject: 14248816815786998946
-    Tag: Capsule
-    Transform:
-      Position: [6.10351562e-05, 28.4197063, -7.70303249]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 10
-      Materials: []
-    RigidBodyComponent:
-      m_MotionType: Dynamic
-      m_Mass: 1
-    CapsuleColliderComponent:
-      m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
-      m_Radius: 0.5
-      m_HalfHeight: 0.5
-  - GameObject: 913130605558313238
+      m_Rotation: [0, 0, 1.57079637]
+      m_Radius: 0.180000007
+      m_HalfHeight: 1
+  - GameObject: 17896645852063731376
     Tag: Sphere
     Transform:
-      Position: [0.0238202959, 30.6268139, -20.6132145]
+      Position: [0.0237584319, 29.5970955, -17.7448673]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
       Children: []
@@ -104,24 +90,10 @@ GameObjects:
     RigidBodyComponent:
       m_MotionType: Dynamic
       m_Mass: 1
+      m_GravityScale: 1
     SphereColliderComponent:
       m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
-      m_Radius: 0.5
-  - GameObject: 12369980970453501489
-    Tag: Sphere
-    Transform:
-      Position: [0.0238201264, 33.476017, -20.4472542]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 3
-      Materials: [0]
-    RigidBodyComponent:
-      m_MotionType: Dynamic
-      m_Mass: 1
-    SphereColliderComponent:
-      m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
+      m_Rotation: [0, 0, 0]
       m_Radius: 0.5
   - GameObject: 12024860937046961058
     Tag: Sphere
@@ -136,13 +108,15 @@ GameObjects:
     RigidBodyComponent:
       m_MotionType: Dynamic
       m_Mass: 1
+      m_GravityScale: 1
     SphereColliderComponent:
       m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
+      m_Rotation: [0, 0, 0]
       m_Radius: 0.5
-  - GameObject: 17896645852063731376
+  - GameObject: 12369980970453501489
     Tag: Sphere
     Transform:
-      Position: [0.0237584319, 29.5970955, -17.7448673]
+      Position: [0.0238201264, 33.476017, -20.4472542]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
       Children: []
@@ -152,70 +126,15 @@ GameObjects:
     RigidBodyComponent:
       m_MotionType: Dynamic
       m_Mass: 1
+      m_GravityScale: 1
     SphereColliderComponent:
       m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
+      m_Rotation: [0, 0, 0]
       m_Radius: 0.5
-  - GameObject: 17894983707375707960
-    Tag: Cube
-    Transform:
-      Position: [16.9929237, -9.54849052, -8.39933872]
-      Rotation: [0, -0, 0]
-      Scale: [0.030000031, 0.030000031, 0.030000031]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 11662457145095035423
-      Materials: [5282163452782371408]
-  - GameObject: 16542631976287151540
-    Tag: Troll
-    Transform:
-      Position: [6.63770294, -11.1815624, -7.77366877]
-      Rotation: [0, -0, 0]
-      Scale: [0.0147000141, 0.0147000141, 0.0147000141]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 7689658421196502889
-      Materials: [15697145363054614336]
-  - GameObject: 2918692368704235263
-    Tag: Cube
-    Transform:
-      Position: [0, 0, 0]
-      Rotation: [-1.5704515, 0.785398126, -4.21468513e-08]
-      Scale: [0.0699994415, 0.0699974969, 0.069996886]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 14693471984162796061
-      Materials: [4881975585746158865]
-  - GameObject: 12906833969033052025
-    Tag: Directional Light
-    Transform:
-      Position: [0, 0, 0.029566288]
-      Rotation: [0.558505356, 3.92699075, 0]
-      Scale: [0.999999881, 0.999999762, 0.999999762]
-      Children: []
-    DirectionalLightComponent:
-      LightColor: [1, 0.581749916, 0.140077829, 1]
-      Intensity: 5
-      CastsShadows: true
-  - GameObject: 17099799884021532929
-    Tag: Cube
-    Transform:
-      Position: [0, -13.5689983, 0]
-      Rotation: [0, -0, 0]
-      Scale: [191.949509, 1, 337.393982]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 2
-      Materials: []
-    BoxColliderComponent:
-      m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
-      m_HalfExtents: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
-    RigidBodyComponent:
-      m_MotionType: Static
-      m_Mass: 1
-  - GameObject: 6036710402478887139
+  - GameObject: 913130605558313238
     Tag: Sphere
     Transform:
-      Position: [0.0237593651, 28.3830891, -20.6850243]
+      Position: [0.0238202959, 30.6268139, -20.6132145]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
       Children: []
@@ -225,8 +144,10 @@ GameObjects:
     RigidBodyComponent:
       m_MotionType: Dynamic
       m_Mass: 1
+      m_GravityScale: 1
     SphereColliderComponent:
       m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
+      m_Rotation: [0, 0, 0]
       m_Radius: 0.5
   - GameObject: 17659059585348689649
     Tag: Cube
@@ -240,7 +161,81 @@ GameObjects:
       Materials: []
     BoxColliderComponent:
       m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
+      m_Rotation: [0, 0, 0]
+      m_HalfExtents: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
+    RigidBodyComponent:
+      m_MotionType: Dynamic
+      m_Mass: 1
+      m_GravityScale: 1
+  - GameObject: 6036710402478887139
+    Tag: Sphere
+    Transform:
+      Position: [0.0237593651, 28.3830891, -20.6850243]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 3
+      Materials: [0]
+    RigidBodyComponent:
+      m_MotionType: Dynamic
+      m_Mass: 1
+      m_GravityScale: 1
+    SphereColliderComponent:
+      m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
+      m_Rotation: [0, 0, 0]
+      m_Radius: 0.5
+  - GameObject: 17099799884021532929
+    Tag: Cube
+    Transform:
+      Position: [0, -13.5689983, 0]
+      Rotation: [0, -0, 0]
+      Scale: [191.949509, 1, 337.393982]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 2
+      Materials: []
+    BoxColliderComponent:
+      m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
+      m_Rotation: [0, 0, 0]
       m_HalfExtents: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
     RigidBodyComponent:
       m_MotionType: Static
       m_Mass: 1
+      m_GravityScale: 1
+  - GameObject: 11649342439354225944
+    Tag: Cube
+    Transform:
+      Position: [0, 29.1640835, 0]
+      Rotation: [0, -0, 0]
+      Scale: [6.94999981, 6.94999981, 6.94999981]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 2
+      Materials: []
+    BoxColliderComponent:
+      m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
+      m_Rotation: [0, 0, 0]
+      m_HalfExtents: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
+    RigidBodyComponent:
+      m_MotionType: Dynamic
+      m_Mass: 1
+      m_GravityScale: 1
+  - GameObject: 17621319138191516720
+    Tag: Cube
+    Transform:
+      Position: [0, 37.579052, -8.47596931]
+      Rotation: [0, -0, 0]
+      Scale: [6.94999981, 6.94999981, 6.94999981]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 2
+      Materials: []
+    BoxColliderComponent:
+      m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
+      m_Rotation: [0, 0, 0]
+      m_HalfExtents: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
+    RigidBodyComponent:
+      m_MotionType: Dynamic
+      m_Mass: 1
+      m_GravityScale: 1

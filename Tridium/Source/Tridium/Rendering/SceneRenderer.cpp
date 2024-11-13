@@ -27,6 +27,7 @@ namespace Tridium {
 			m_SkyboxShader.reset( Shader::Create() );
 			m_SkyboxShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/EnvironmentMap/SkyBox.glsl" );
 			m_DefaultMaterial = MakeShared<Material>();
+			m_DefaultMaterial->MetallicIntensity = 0.0f;
 			m_WhiteTexture = AssetManager::GetAsset<Texture>( TextureFactory::GetWhiteTexture() );
 			m_BlackTexture = AssetManager::GetAsset<Texture>( TextureFactory::GetBlackTexture() );
 			m_NormalTexture = AssetManager::GetAsset<Texture>( TextureFactory::GetNormalTexture() );
@@ -445,6 +446,12 @@ namespace Tridium {
 
 		auto bindMaterial = [&]( SharedPtr<Material>& material, SharedPtr<Shader>& shader )
 			{
+				// Bind Material Properties
+				shader->SetFloat( "u_AlbedoIntensity", material->AlbedoIntensity );
+				shader->SetFloat( "u_MetallicIntensity", material->MetallicIntensity );
+				shader->SetFloat( "u_RoughnessIntensity", material->RoughnessIntensity );
+				shader->SetFloat( "u_EmissiveIntensity", material->EmissiveIntensity );
+
 				// Bind Textures
 				uint32_t textureSlot = 0;
 				auto albedoTexture = AssetManager::GetAsset<Texture>( material->AlbedoTexture );
@@ -454,7 +461,7 @@ namespace Tridium {
 
 				textureSlot++;
 				auto metallicTexture = AssetManager::GetAsset<Texture>( material->MetallicTexture );
-				if ( !metallicTexture ) metallicTexture = m_BlackTexture;
+				if ( !metallicTexture ) metallicTexture = m_WhiteTexture;
 				metallicTexture->Bind( textureSlot );
 				shader->SetInt( "u_MetallicTexture", textureSlot );
 
@@ -768,6 +775,12 @@ namespace Tridium {
 
 		const auto bindMaterialUniforms = [this, &material, &shader]()
 			{
+				// Bind Material Properties
+				shader->SetFloat( "u_AlbedoIntensity", material->AlbedoIntensity );
+				shader->SetFloat( "u_MetallicIntensity", material->MetallicIntensity );
+				shader->SetFloat( "u_RoughnessIntensity", material->RoughnessIntensity );
+				shader->SetFloat( "u_EmissiveIntensity", material->EmissiveIntensity );
+
 				// Bind Textures
 				uint32_t textureSlot = 2 + MAX_DIRECTIONAL_LIGHTS;
 				auto albedoTexture = AssetManager::GetAsset<Texture>( material->AlbedoTexture );
@@ -777,7 +790,7 @@ namespace Tridium {
 
 				textureSlot++;
 				auto metallicTexture = AssetManager::GetAsset<Texture>( material->MetallicTexture );
-				if ( !metallicTexture ) metallicTexture = m_BlackTexture;
+				if ( !metallicTexture ) metallicTexture = m_WhiteTexture;
 				metallicTexture->Bind( textureSlot );
 				shader->SetInt( "u_MetallicTexture", textureSlot );
 
@@ -936,11 +949,12 @@ namespace Tridium {
 			sphereColliders.each(
 				[&]( auto go, SphereColliderComponent& collider, TransformComponent& transform )
 				{
-					Vector3 position = transform.GetWorldPosition() + collider.GetCenter();
-					Quaternion rotation = transform.GetOrientation();
-					Matrix4 model = glm::translate( Matrix4( 1.0f ), position )
-						* glm::toMat4( rotation )
-						* glm::scale( Matrix4( 1.0f ), Vector3( collider.GetRadius() ) * 2.0f );
+					Matrix4 model = 
+						glm::translate( Matrix4( 1.0f ), transform.GetWorldPosition() + collider.GetCenter() )
+						* glm::toMat4( transform.GetOrientation() )
+						* glm::scale( Matrix4( 1.0f ), Vector3( collider.GetRadius() * 2.0f ) );
+
+					model *= glm::toMat4( collider.GetRotation().Quat );
 
 					m_DebugSimpleShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * model );
 
@@ -959,11 +973,11 @@ namespace Tridium {
 			boxColliders.each(
 				[&]( auto go, BoxColliderComponent& collider, TransformComponent& transform )
 				{
-					Vector3 position = transform.GetWorldPosition() + collider.GetCenter();
-					Quaternion rotation = transform.GetOrientation();
-					Matrix4 model = glm::translate( Matrix4( 1.0f ), position )
-						* glm::toMat4( rotation )
-						* glm::scale( Matrix4( 1.0f ), transform.GetWorldScale() * collider.GetHalfExtents() * 2.0f );
+					Matrix4 localTransform = glm::translate( Matrix4( 1.0f ), collider.GetCenter() )
+						* glm::toMat4( collider.GetRotation().Quat )
+						* glm::scale( Matrix4( 1.0f ), collider.GetHalfExtents() * 2.0f );
+
+					Matrix4 model = transform.GetWorldTransform() * localTransform;
 
 					m_DebugSimpleShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * model );
 
@@ -976,48 +990,47 @@ namespace Tridium {
 
 		// - Draw Capsule Colliders -
 		{
-			m_DebugCapsuleVAO->Bind();
-
 			auto capsuleColliders = m_Scene.m_Registry.view<CapsuleColliderComponent, TransformComponent>();
 			capsuleColliders.each(
 				[&]( auto go, CapsuleColliderComponent& collider, TransformComponent& transform )
 				{
-					Vector3 position = transform.GetWorldPosition() + collider.GetCenter();
-					Quaternion rotation = transform.GetOrientation();
-					Matrix4 model = glm::translate( Matrix4( 1.0f ), position )
-						* glm::toMat4( rotation )
-						* glm::scale( Matrix4( 1.0f ), Vector3( collider.GetRadius() * 2.0f, collider.GetHalfHeight() * 2.0f, collider.GetRadius() * 2.0f ) );
+					Matrix4 model = glm::translate( Matrix4( 1.0f ), transform.GetWorldPosition() + collider.GetCenter() )
+						* glm::toMat4( transform.GetOrientation() );
+
+					model *= glm::toMat4( collider.GetRotation().Quat );
 
 					m_DebugSimpleShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * model );
 
-					RenderCommand::DrawIndexed( m_DebugCapsuleVAO );
+					SharedPtr<MeshSource> mesh = MeshFactory::CreateCapsule( collider.GetRadius(), collider.GetHalfHeight() * 2.0f, 1u, 16u, 8u );
+					SharedPtr<VertexArray> vao = mesh->GetSubMeshes()[0].VAO;
+					vao->Bind();
+					RenderCommand::DrawIndexed( vao );
+					vao->Unbind();
 				}
 			);
-
-			m_DebugCapsuleVAO->Unbind();
 		}
 
 		// - Draw Cylinder Colliders -
 		{
-			m_DebugCylinderVAO->Bind();
-
 			auto cylinderColliders = m_Scene.m_Registry.view<CylinderColliderComponent, TransformComponent>();
 			cylinderColliders.each(
 				[&]( auto go, CylinderColliderComponent& collider, TransformComponent& transform )
 				{
-					Vector3 position = transform.GetWorldPosition() + collider.GetCenter();
-					Quaternion rotation = transform.GetOrientation();
-					Matrix4 model = glm::translate( Matrix4( 1.0f ), position )
-						* glm::toMat4( rotation )
-						* glm::scale( Matrix4( 1.0f ), Vector3( collider.GetRadius() * 2.0f, collider.GetHalfHeight() * 2.0f, collider.GetRadius() * 2.0f ) );
+					Matrix4 model =
+						glm::translate( Matrix4( 1.0f ), transform.GetWorldPosition() + collider.GetCenter() )
+						* glm::toMat4( transform.GetOrientation() );
+
+					model *= glm::toMat4( collider.GetRotation().Quat );
 
 					m_DebugSimpleShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * model );
 
-					RenderCommand::DrawIndexed( m_DebugCylinderVAO );
+					SharedPtr<MeshSource> mesh = MeshFactory::CreateCylinder( collider.GetRadius(), collider.GetRadius(), collider.GetHalfHeight() * 2.0f, 1u );
+					SharedPtr<VertexArray> vao = mesh->GetSubMeshes()[0].VAO;
+					vao->Bind();
+					RenderCommand::DrawIndexed( vao );
+					vao->Unbind();
 				}
 			);
-
-			m_DebugCylinderVAO->Unbind();
 		}
 
 		RenderCommand::SetPolygonMode( EFaces::FrontAndBack, EPolygonMode::Fill );

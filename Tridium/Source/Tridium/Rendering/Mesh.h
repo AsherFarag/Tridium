@@ -4,13 +4,16 @@
 #include <Tridium/Math/AABB.h>
 
 // - Forward Declarations -
-namespace Tridium { namespace Editor { class MeshSourceImporterPanel; } }
-
-namespace Tridium {
-
+namespace Tridium { 
 	class VertexArray;
 	class VertexBuffer;
 	class IndexBuffer;
+	class MeshCollider;
+
+	namespace Editor { class MeshSourceImporterPanel; } 
+}
+
+namespace Tridium {
 
 	struct Vertex
 	{
@@ -32,7 +35,9 @@ namespace Tridium {
 		Matrix4 Transform{ 1.0f };
 		Matrix4 LocalTransform{ 1.0f }; // Do we need this?
 		std::string Name;
-		AABB BoundingBox = AABB::s_MaxAABB;
+		AABB BoundingBox;
+		SharedPtr<MeshCollider> Collider;
+		void GenerateMeshCollider();
 	};
 
 	void CalculateTangents( std::vector<Vertex>& a_Vertices, const std::vector<uint32_t>& a_Indices );
@@ -57,7 +62,7 @@ namespace Tridium {
 	private:
 		std::vector<SubMesh> m_SubMeshes;
 		std::vector<MaterialHandle> m_Materials;
-		AABB m_BoundingBox = AABB::s_MaxAABB;
+		AABB m_BoundingBox;
 
 		friend class AssimpImporter;
 		friend class Editor::MeshSourceImporterPanel;
@@ -89,7 +94,7 @@ namespace Tridium {
 		MeshSourceHandle m_MeshSource;
 		std::vector<uint32_t> m_SubMeshes;
 		std::vector<MaterialHandle> m_Materials;
-		AABB m_BoundingBox = AABB::s_MaxAABB;
+		AABB m_BoundingBox;
 	};
 
 	// - Mesh Factory -

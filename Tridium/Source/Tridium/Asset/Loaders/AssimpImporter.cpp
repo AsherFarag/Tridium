@@ -91,6 +91,7 @@ namespace Tridium {
 			submesh.Name = a_Node->mName.C_Str();
 			submesh.Transform = transform;
 			submesh.LocalTransform = localTransform;
+			submesh.GenerateMeshCollider();
 
 			a_MeshSource->m_SubMeshes.emplace_back( std::move( submesh ) );
 		}

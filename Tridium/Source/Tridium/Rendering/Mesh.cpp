@@ -6,7 +6,29 @@
 #include <Tridium/Rendering/VertexArray.h>
 #include <Tridium/Asset/AssetManager.h>
 
+#include <Tridium/Physics/Colliders.h>
+
 namespace Tridium {
+
+	/////////////////////////////////////////////////////////////////////////////////////////
+	// SubMesh
+	/////////////////////////////////////////////////////////////////////////////////////////
+
+	void SubMesh::GenerateMeshCollider()
+	{
+		std::vector<Vector3> vertices;
+		std::vector<uint32_t> indices;
+		vertices.reserve( Vertices.size() );
+		indices.reserve( Indices.size() );
+
+		for ( const Vertex& vertex : Vertices )
+			vertices.push_back( vertex.Position );
+
+		for ( uint32_t index : Indices )
+			indices.push_back( index );
+
+		Collider = MeshCollider::Create( vertices, indices, BoundingBox );
+	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////
 	// MeshSource

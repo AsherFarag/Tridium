@@ -43,15 +43,15 @@ namespace Tridium {
 			m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
 		}
 
-		// Initialise Asset Manager
-		{
-			InitializeAssetManager();
-		}
-
 		// Initialise Physics Engine
 		{
 			m_PhysicsEngine = PhysicsEngine::Create();
 			m_PhysicsEngine->Init();
+		}
+
+		// Initialise Asset Manager
+		{
+			InitializeAssetManager();
 		}
 
 		// Initialise Scene
@@ -99,11 +99,21 @@ namespace Tridium {
 
 #endif // !IS_EDITOR
 
+		uint32_t frameCounter = 0;
+		double fpsInterval = 0.0;
+
 		while ( m_Running )
 		{
 			Time::Update();
 
-			m_FPS = (uint32_t)( 1.0 / Time::DeltaTime() );
+			++frameCounter;
+			fpsInterval += Time::DeltaTime();
+			if ( fpsInterval >= 1.0 )
+			{
+				m_FPS = frameCounter;
+				frameCounter = 0;
+				fpsInterval -= 1.0;
+			}
 
 			// Update Loop ========================================================================================
 

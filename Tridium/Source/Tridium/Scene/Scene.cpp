@@ -36,6 +36,7 @@ namespace Tridium {
 		m_SceneEnvironment = a_Other.m_SceneEnvironment;
 		m_Paused = a_Other.m_Paused;
 		m_SceneRenderer.m_LightEnvironment = a_Other.m_SceneRenderer.m_LightEnvironment;
+		m_SceneRenderer.m_RenderSettings = a_Other.m_SceneRenderer.m_RenderSettings;
 
 		m_PhysicsScene = PhysicsScene::Create();
 		m_PhysicsScene->m_Scene = this;

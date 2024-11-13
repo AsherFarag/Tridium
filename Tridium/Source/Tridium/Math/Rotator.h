@@ -11,21 +11,23 @@ namespace Tridium {
 		Quaternion Quat;
 
 		Rotator()
-			: Euler( 0.0f )
-			, Quat( 0.0f, 0.0f, 0.0f, 1.0f )
 		{
+			SetFromEuler( Vector3( 0.0f, 0.0f, 0.0f ) );
 		}
 
-		Rotator( const Vector3& a_Euler )
-			: Euler( a_Euler )
-			, Quat( a_Euler )
+		Rotator( float a_XRad, float a_YRad, float a_ZRad )
 		{
+			SetFromEuler( Vector3( a_XRad, a_YRad, a_ZRad ) );
+		}
+
+		Rotator( const Vector3& a_EulerRad )
+		{
+			SetFromEuler( a_EulerRad );
 		}
 
 		Rotator( const Quaternion& a_Quat )
-			: Euler( glm::eulerAngles( a_Quat ) )
-			, Quat( a_Quat )
 		{
+			SetFromQuaternion( a_Quat );
 		}
 
 		Vector3 GetForward() const

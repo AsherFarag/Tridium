@@ -8,6 +8,7 @@ namespace Tridium {
 	{
 		REFLECT( RigidBodyComponent )
 	public:
+		virtual ~RigidBodyComponent();
 
 		void SetMotionType( EMotionType a_MotionType ) { m_MotionType = a_MotionType; }
 		EMotionType GetMotionType() const { return m_MotionType; }

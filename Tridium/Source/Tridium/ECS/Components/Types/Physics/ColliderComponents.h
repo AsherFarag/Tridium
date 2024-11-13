@@ -13,8 +13,12 @@ namespace Tridium {
 		void SetCenter( const Vector3& a_Center ) { m_Center = a_Center; }
 		const Vector3& GetCenter() const { return m_Center; }
 
+		void SetRotation( const Rotator& a_Rotation ) { m_Rotation = a_Rotation; }
+		const Rotator& GetRotation() const { return m_Rotation; }
+
 	protected:
 		Vector3 m_Center = { 0.0f, 0.0f, 0.0f };
+		Rotator m_Rotation = { 0.0f, 0.0f, 0.0f };
 		float m_Radius = 0.5f;
 	};
 
@@ -28,8 +32,12 @@ namespace Tridium {
 		void SetCenter( const Vector3& a_Center ) { m_Center = a_Center; }
 		const Vector3& GetCenter() const { return m_Center; }
 
+		void SetRotation( const Rotator& a_Rotation ) { m_Rotation = a_Rotation; }
+		const Rotator& GetRotation() const { return m_Rotation; }
+
 	protected:
 		Vector3 m_Center = { 0.0f, 0.0f, 0.0f };
+		Rotator m_Rotation = { 0.0f, 0.0f, 0.0f };
 		Vector3 m_HalfExtents = { 0.5f, 0.5f, 0.5f };
 	};
 
@@ -46,8 +54,12 @@ namespace Tridium {
 		void SetCenter( const Vector3& a_Center ) { m_Center = a_Center; }
 		const Vector3& GetCenter() const { return m_Center; }
 
+		void SetRotation( const Rotator& a_Rotation ) { m_Rotation = a_Rotation; }
+		const Rotator& GetRotation() const { return m_Rotation; }
+
 	protected:
 		Vector3 m_Center = { 0.0f, 0.0f, 0.0f };
+		Rotator m_Rotation = { 0.0f, 0.0f, 0.0f };
 		float m_Radius = 0.5f;
 		float m_HalfHeight = 0.5f;
 	};
@@ -65,8 +77,12 @@ namespace Tridium {
 		void SetCenter( const Vector3& a_Center ) { m_Center = a_Center; }
 		const Vector3& GetCenter() const { return m_Center; }
 
+		void SetRotation( const Rotator& a_Rotation ) { m_Rotation = a_Rotation; }
+		const Rotator& GetRotation() const { return m_Rotation; }
+
 	protected:
 		Vector3 m_Center = { 0.0f, 0.0f, 0.0f };
+		Rotator m_Rotation = { 0.0f, 0.0f, 0.0f };
 		float m_Radius = 0.5f;
 		float m_HalfHeight = 0.5f;
 	};
@@ -84,22 +100,26 @@ namespace Tridium {
 
 	BEGIN_REFLECT_COMPONENT( SphereColliderComponent )
 		PROPERTY( m_Center, FLAGS( EditAnywhere, Serialize ) )
+		PROPERTY( m_Rotation, FLAGS( EditAnywhere, Serialize ) )
 		PROPERTY( m_Radius, FLAGS( EditAnywhere, Serialize ) )
 	END_REFLECT( SphereColliderComponent )
 
 	BEGIN_REFLECT_COMPONENT( BoxColliderComponent )
 		PROPERTY( m_Center, FLAGS( EditAnywhere, Serialize ) )
+		PROPERTY( m_Rotation, FLAGS( EditAnywhere, Serialize ) )
 		PROPERTY( m_HalfExtents, FLAGS( EditAnywhere, Serialize ) )
 	END_REFLECT( BoxColliderComponent )
 
 	BEGIN_REFLECT_COMPONENT( CapsuleColliderComponent )
 		PROPERTY( m_Center, FLAGS( EditAnywhere, Serialize ) )
+		PROPERTY( m_Rotation, FLAGS( EditAnywhere, Serialize ) )
 		PROPERTY( m_Radius, FLAGS( EditAnywhere, Serialize ) )
 		PROPERTY( m_HalfHeight, FLAGS( EditAnywhere, Serialize ) )
 	END_REFLECT( CapsuleColliderComponent )
 
 	BEGIN_REFLECT_COMPONENT( CylinderColliderComponent )
 		PROPERTY( m_Center, FLAGS( EditAnywhere, Serialize ) )
+		PROPERTY( m_Rotation, FLAGS( EditAnywhere, Serialize ) )
 		PROPERTY( m_Radius, FLAGS( EditAnywhere, Serialize ) )
 		PROPERTY( m_HalfHeight, FLAGS( EditAnywhere, Serialize ) )
 	END_REFLECT( CylinderColliderComponent )

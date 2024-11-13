@@ -40,7 +40,11 @@ in vec3 v_WorldPos;
 in mat3 v_TBN; 
 in vec2 v_UV;
 
-// PBR Textures
+// PBR
+uniform float u_AlbedoIntensity;
+uniform float u_MetallicIntensity;
+uniform float u_RoughnessIntensity;
+uniform float u_EmissiveIntensity;
 uniform sampler2D u_AlbedoTexture;
 uniform sampler2D u_MetallicTexture;
 uniform sampler2D u_RoughnessTexture;
@@ -56,7 +60,7 @@ void main()
 		discard; 
 
 	g_Position = v_WorldPos;
-	g_Albedo = texture(u_AlbedoTexture, v_UV).rgb;
+	g_Albedo = texture(u_AlbedoTexture, v_UV).rgb * u_AlbedoIntensity;
 
 	// Calculate Normal using the normal map and TBN matrix
 	g_Normal = texture(u_NormalTexture, v_UV).rgb;
@@ -68,7 +72,7 @@ void main()
 	// g = roughness
 	// b = metallic
 	g_AORM.r = texture(u_AOTexture, v_UV).r;
-	g_AORM.g = texture(u_RoughnessTexture, v_UV).g;
-	g_AORM.b = texture(u_MetallicTexture, v_UV).b;
-	g_Emission = texture(u_EmissiveTexture, v_UV).rgb;
+	g_AORM.g = texture(u_RoughnessTexture, v_UV).g * u_RoughnessIntensity;
+	g_AORM.b = texture(u_MetallicTexture, v_UV).b * u_MetallicIntensity;
+	g_Emission = texture(u_EmissiveTexture, v_UV).rgb * u_EmissiveIntensity;
 }
