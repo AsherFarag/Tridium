@@ -39,6 +39,8 @@ namespace Tridium {
 		virtual void UpdatePhysicsBodyTransform( const RigidBodyComponent& a_RigidBody, const TransformComponent& a_TransformComponent ) override;
 
 	protected:
+		bool m_Initialised = false;
+
 		PhysicsLayerManager m_LayerManager;
 		JPH::PhysicsSystem m_PhysicsSystem;
 		JPH::BodyInterface& m_BodyInterface;

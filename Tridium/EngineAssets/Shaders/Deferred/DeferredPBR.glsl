@@ -50,6 +50,7 @@ struct PointLight
 	float Intensity;
 	float AttenuationRadius;
 	float FalloffExponent;
+	mat4 LightSpaceMatrix;
 };
 const int MAX_NUM_POINT_LIGHTS = 32;
 uniform PointLight u_PointLights[MAX_NUM_POINT_LIGHTS];
@@ -64,6 +65,7 @@ struct SpotLight
 	float AttenuationRadius;
 	float InnerConeAngle;
 	float OuterConeAngle;
+	mat4 LightSpaceMatrix;
 };
 const int MAX_NUM_SPOT_LIGHTS = 32;
 uniform SpotLight u_SpotLights[MAX_NUM_SPOT_LIGHTS];
@@ -73,6 +75,7 @@ struct DirectionalLight
 	vec3 Direction;
 	vec3 Color;
 	float Intensity;
+	mat4 LightSpaceMatrix;
 };
 const int MAX_NUM_DIRECTIONAL_LIGHTS = 1;
 uniform DirectionalLight u_DirectionalLights[MAX_NUM_DIRECTIONAL_LIGHTS];
@@ -108,9 +111,8 @@ vec3 GammaCorrection(vec3 color, float gamma)
 }
 
 // TEMP ?
-float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadowMap);
-
-uniform mat4 u_LightSpaceMatrix;
+float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadowMap);
+float SpotShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadowMap);
 
 void main()
 {
@@ -128,14 +130,12 @@ void main()
 
 	vec3 V = normalize(u_CameraPosition - worldPos);
 	vec3 R = reflect(-V, normal);
+	float NdotV = max(dot(normal, V), 0.0);   // Cosine of angle between N and V
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)  
 	vec3 F0 = vec3(0.04);
 	F0 = mix(F0, albedo, metallic);
-
-	// Temp?
-	vec4 fragPosLightSpace = u_LightSpaceMatrix * vec4( worldPos, 1.0 );
 
 	// Calculate Light Output
 	vec3 Lo = vec3(0.0);
@@ -144,7 +144,8 @@ void main()
 	{
 	    DirectionalLight dirLight = u_DirectionalLights[i];
 	    vec3 light = CalcDirectionalLightRadiance(dirLight, normal, V, albedo, roughness, metallic, F0);
-        Lo += light * ( 1.0 - ShadowCalculation(fragPosLightSpace, normal, u_DirectionalShadowMaps[i]) );
+		vec4 fragPosLightSpace = dirLight.LightSpaceMatrix * vec4( worldPos, 1.0 );
+        Lo += light * ( 1.0 - DirShadowCalculation(fragPosLightSpace, normal, u_DirectionalShadowMaps[i]) );
 	}
 	// Point Lights
 	for (int i = 0; i < MAX_NUM_POINT_LIGHTS; ++i)
@@ -156,15 +157,17 @@ void main()
 	for (int i = 0; i < MAX_NUM_SPOT_LIGHTS; ++i)
 	{
 	    SpotLight spotLight = u_SpotLights[i];
-	    Lo += CalcSpotLightRadiance(spotLight, normal, worldPos, V, albedo, roughness, metallic, F0);
+	    vec3 light = CalcSpotLightRadiance(spotLight, normal, worldPos, V, albedo, roughness, metallic, F0);
+		vec4 fragPosLightSpace = spotLight.LightSpaceMatrix * vec4( worldPos, 1.0 );
+		Lo += light * ( 1.0 - SpotShadowCalculation(fragPosLightSpace, normal, u_SpotShadowMaps[i]) );
 	}
 
 	// =======================================================================
 
-	vec3 F = FresnelSchlickRoughness(max(dot(normal, V), 0.0), F0, roughness);
+	vec3 F = FresnelSchlickRoughness(NdotV, F0, roughness);
 
 	vec3 kS = F;
-	vec3 kD = vec3(1.0) - kS;
+	vec3 kD = 1.0 - kS;
 	kD *= 1.0 - metallic;
 
 	vec3 irradiance = textureLod(u_Environment.PrefilterMap, normal, MAX_REFLECTION_LOD).rgb;
@@ -175,16 +178,14 @@ void main()
 	vec3 prefilteredColor = textureLod(u_Environment.PrefilterMap, R, prefilteredRoughness).rgb;
     prefilteredColor *= u_Environment.Intensity;
 
-    vec2 brdf  = texture(u_Environment.BrdfLUT, vec2(max(dot(normal, V), 0.0), roughness)).rg;
-    vec3 specular = prefilteredColor;// * (F * brdf.x + brdf.y);
-	//specular = clamp(specular, vec3(0.0),vec3(1.0));
-
+	vec2 brdf = texture(u_Environment.BrdfLUT, vec2(max(dot(normal, V), 0.0), roughness)).rg;
+    vec3 specular = prefilteredColor * F;// * ( F * 1.0);// * (F * brdf.x + brdf.y);
 	// Apply fresnel factor to the specular term, ensuring roughness impact
 	//specular *= max( (1.0 - roughness), EPSILON );  // Reduce specular based on roughness
 	//specular *= 0.1 + F * 0.9;  // Add a slight minimum base reflectivity (0.1) and clamp at 1.0
 	//specular *= mix(vec3(1.0), albedo / max( dot(GRAY_SCALE, albedo), metallic), 0.01 );
 
-	vec3 ambient = (kD * diffuse + specular ) * max(ao, 0.05); // Minimum AO is 0.05
+	vec3 ambient = (kD * diffuse + specular) * max(ao, 0.05); // Minimum AO is 0.05
 	vec3 color = ambient + Lo;
 
 	color += emissive * 5.0;
@@ -233,11 +234,13 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 // F0 is the surface reflection at zero incidence
 vec3 FresnelSchlick(float cosTheta, vec3 F0)
 {
+	cosTheta += 0.001;
     return F0 + (vec3(1.0) - F0) * pow(1.0 - cosTheta, 5.0);
 }
 // F0 is the surface reflection at zero incidence
 vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
+	cosTheta += 0.001;
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 } 
 
@@ -314,12 +317,10 @@ vec3 CalcSpotLightRadiance(SpotLight light, vec3 normal, vec3 fragPos, vec3 view
     vec3 L = normalize(light.Position - fragPos);  // Direction to light
     vec3 H = normalize(viewDir + L);               // Half-vector
 
-    // Spotlight angle attenuation based on cone angles
-    float theta = dot(-L, normalize(-light.Direction)); // Cosine of the angle between light direction and fragment direction
-	float epsilon = light.InnerConeAngle - light.OuterConeAngle;
-	float intensityFactor = clamp((theta - light.OuterConeAngle) / epsilon, 0.0, 1.0);
-    // Ensure that the smoothstep arguments are in the correct order for a smooth transition
-	//float intensityFactor = 1.0 - smoothstep(cos(light.OuterConeAngle), cos(light.InnerConeAngle), theta);
+	float cosThetaInner = cos(radians(light.InnerConeAngle));
+	float cosThetaOuter = cos(radians(light.OuterConeAngle));
+	float cosTheta = dot(L, light.Direction);
+	float intensityFactor = clamp((cosTheta - cosThetaOuter) / (cosThetaInner - cosThetaOuter), 0.0, 1.0);
 
     // Distance attenuation (similar to point light attenuation)
     float distance = length(light.Position - fragPos);
@@ -347,9 +348,41 @@ vec3 CalcSpotLightRadiance(SpotLight light, vec3 normal, vec3 fragPos, vec3 view
 }
 
 // TEMP ?
-float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadowMap)
+float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadowMap)
 {
     // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+	if(projCoords.z > 1.0)
+        return 0.0;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+
+    float shadow = 0.0;
+
+    const int sampleRadius = 4;
+    const vec2 pixelSize = 1.0 / textureSize(shadowMap, 0);
+    for (int y = -sampleRadius; y <= sampleRadius; y++)
+    {
+        for (int x = -sampleRadius; x <= sampleRadius; x++)
+        {
+            // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+            float closestDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * pixelSize).r;
+            if (currentDepth > closestDepth)
+                shadow += 1.0;
+        }
+    }
+
+    shadow /= pow((sampleRadius * 2 + 1), 2);
+
+	return shadow;
+}
+
+float SpotShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadowMap)
+{
+	    // perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 	if(projCoords.z > 1.0)
         return 0.0;

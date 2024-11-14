@@ -1,0 +1,12 @@
+Shader: 0
+AlbedoTexture: 0
+AlbedoIntensity: 1
+MetallicTexture: 0
+MetallicIntensity: 1
+RoughnessTexture: 0
+RoughnessIntensity: 1
+NormalTexture: 0
+OpacityTexture: 0
+EmissiveTexture: 0
+EmissiveIntensity: 1
+AOTexture: 0

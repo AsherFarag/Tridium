@@ -36,7 +36,11 @@ namespace Tridium {
 			TextureSpecification spec;
 			spec.WrapS = ETextureWrap::ClampToEdge;
 			spec.WrapT = ETextureWrap::ClampToEdge;
-			m_BrdfLUT = TextureLoader::LoadTexture( spec, Application::GetEngineAssetsDirectory() / "Renderer/BRDF_LUT.png" );
+			spec.WrapR = ETextureWrap::ClampToEdge;
+			spec.MinFilter = ETextureFilter::Linear;
+			spec.MagFilter = ETextureFilter::Linear;
+			m_BrdfLUT = TextureLoader::LoadTexture( spec, Application::GetEngineAssetsDirectory() / "Renderer/BRDF-LUT.png" );
+			TE_CORE_ASSERT( m_BrdfLUT, "Failed to load BRDF LUT" );
 		}
 
 		// Set Debug Assets
@@ -87,7 +91,6 @@ namespace Tridium {
 
 		// Initialize Shadow Info
 		{
-			m_ShadowMapSize = { 1024 * 8, 1024 * 8 };
 			m_ShadowMapShader.reset( Shader::Create() );
 			m_ShadowMapShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Shadows/ShadowMap.glsl" );
 			m_ShadowCubeMapShader.reset( Shader::Create() );
@@ -161,8 +164,8 @@ namespace Tridium {
 					{
 						FramebufferSpecification spec =
 						{
-							.Width = (uint32_t)m_ShadowMapSize.x,
-							.Height = (uint32_t)m_ShadowMapSize.y,
+							.Width = (uint32_t)lightComponent.ShadowMapSize.x,
+							.Height = (uint32_t)lightComponent.ShadowMapSize.y,
 							.Attachments = { EFramebufferTextureFormat::Depth },
 						};
 
@@ -174,11 +177,24 @@ namespace Tridium {
 						lightComponent.ShadowMap.reset();
 					}
 
-					m_LightEnvironment.DirectionalLights[lightIndex].Direction = transform.GetForward();
-					m_LightEnvironment.DirectionalLights[lightIndex].Color = lightComponent.LightColor;
-					m_LightEnvironment.DirectionalLights[lightIndex].Intensity = lightComponent.Intensity;
-					m_LightEnvironment.DirectionalLights[lightIndex].CastsShadows = lightComponent.CastsShadows;
-					m_LightEnvironment.DirectionalLights[lightIndex].ShadowMap = lightComponent.ShadowMap;
+					DirectionalLight& light = m_LightEnvironment.DirectionalLights[lightIndex];
+
+					light.Direction = transform.GetForward();
+					light.Color = lightComponent.LightColor;
+					light.Intensity = lightComponent.Intensity;
+					light.CastsShadows = lightComponent.CastsShadows;
+					light.ShadowMapSize = lightComponent.ShadowMapSize;
+					light.ShadowMap = lightComponent.ShadowMap;
+
+					// - Update View Projection Matrix -
+					float lightNearPlane = -1000.0f; float lightFarPlane = 1000.0f;
+					Matrix4 lightView = glm::lookAt(
+						m_SceneInfo.CameraPosition + ( light.Direction * -20.f ),
+						m_SceneInfo.CameraPosition,
+						{ 0.0f, 1.0f, 0.0f } );
+					float size = 100.0f;
+					Matrix4 lightProjection = glm::ortho( -size, size, -size, size, lightNearPlane, lightFarPlane );
+					light.LightSpaceMatrix = lightProjection * lightView;
 
 					lightIndex++;
 				}
@@ -200,8 +216,8 @@ namespace Tridium {
 					{
 						FramebufferSpecification spec =
 						{
-							.Width = (uint32_t)m_ShadowMapSize.x,
-							.Height = (uint32_t)m_ShadowMapSize.y,
+							.Width = (uint32_t)lightComponent.ShadowMapSize.x,
+							.Height = (uint32_t)lightComponent.ShadowMapSize.y,
 							.Attachments = { EFramebufferTextureFormat::Depth },
 						};
 
@@ -213,11 +229,15 @@ namespace Tridium {
 						lightComponent.ShadowMap.reset();
 					}
 
-					m_LightEnvironment.PointLights[lightIndex].Position = transform.GetWorldPosition();
-					m_LightEnvironment.PointLights[lightIndex].Color = lightComponent.LightColor;
-					m_LightEnvironment.PointLights[lightIndex].Intensity = lightComponent.Intensity;
-					m_LightEnvironment.PointLights[lightIndex].FalloffExponent = lightComponent.FalloffExponent;
-					m_LightEnvironment.PointLights[lightIndex].AttenuationRadius = lightComponent.AttenuationRadius;
+					PointLight& light = m_LightEnvironment.PointLights[lightIndex];
+
+					light.Position = transform.GetWorldPosition();
+					light.Color = lightComponent.LightColor;
+					light.Intensity = lightComponent.Intensity;
+					light.FalloffExponent = lightComponent.FalloffExponent;
+					light.AttenuationRadius = lightComponent.AttenuationRadius;
+					//light.CastsShadows = lightComponent.CastsShadows;
+					//light.ShadowMapSize = lightComponent.ShadowMapSize;
 					lightIndex++;
 				}
 			);
@@ -233,14 +253,38 @@ namespace Tridium {
 					if ( lightIndex >= MAX_SPOT_LIGHTS )
 						return;
 
-					m_LightEnvironment.SpotLights[lightIndex].Position = transform.GetWorldPosition();
-					m_LightEnvironment.SpotLights[lightIndex].Direction = transform.GetForward();
-					m_LightEnvironment.SpotLights[lightIndex].Color = lightComponent.LightColor;
-					m_LightEnvironment.SpotLights[lightIndex].Intensity = lightComponent.Intensity;
-					m_LightEnvironment.SpotLights[lightIndex].FalloffExponent = lightComponent.FalloffExponent;
-					m_LightEnvironment.SpotLights[lightIndex].AttenuationRadius = lightComponent.AttenuationRadius;
-					m_LightEnvironment.SpotLights[lightIndex].InnerConeAngle = glm::radians( lightComponent.InnerConeAngle );
-					m_LightEnvironment.SpotLights[lightIndex].OuterConeAngle = glm::radians( lightComponent.OuterConeAngle );
+					// TEMP!
+					if ( lightComponent.CastsShadows && !lightComponent.ShadowMap )
+					{
+						FramebufferSpecification spec =
+						{
+							.Width = (uint32_t)lightComponent.ShadowMapSize.x,
+							.Height = (uint32_t)lightComponent.ShadowMapSize.y,
+							.Attachments = { EFramebufferTextureFormat::Depth },
+						};
+
+						lightComponent.ShadowMap = Framebuffer::Create( spec );
+					}
+
+					SpotLight& light = m_LightEnvironment.SpotLights[lightIndex];
+
+					light.Position = transform.GetWorldPosition();
+					light.Direction = transform.GetForward();
+					light.Color = lightComponent.LightColor;
+					light.Intensity = lightComponent.Intensity;
+					light.FalloffExponent = lightComponent.FalloffExponent;
+					light.AttenuationRadius = lightComponent.AttenuationRadius;
+					light.InnerConeAngle = glm::radians( lightComponent.InnerConeAngle );
+					light.OuterConeAngle = glm::radians( lightComponent.OuterConeAngle );
+					light.CastsShadows = lightComponent.CastsShadows;
+					light.ShadowMapSize = lightComponent.ShadowMapSize;
+					light.ShadowMap = lightComponent.ShadowMap;
+
+					float nearPlane = 0.1f; float farPlane = 1000.0f;
+					Matrix4 lightView = glm::lookAt( light.Position, light.Position + light.Direction, { 0.0f, 1.0f, 0.0f } );
+					Matrix4 lightProjection = glm::perspective( light.OuterConeAngle * 2.0f, 1.0f, nearPlane, farPlane );
+					light.LightSpaceMatrix = lightProjection * lightView;
+
 					lightIndex++;
 				}
 			);
@@ -330,7 +374,6 @@ namespace Tridium {
 		// Set Cull Mode to front to avoid peter panning
 		RenderCommand::SetCullMode( ECullMode::Front );
 		RenderCommand::SetDepthCompare( EDepthCompareOperator::Less );
-		RenderCommand::SetViewport( 0, 0, m_ShadowMapSize.x, m_ShadowMapSize.y );
 
 		// Generate Directional Light Shadow Maps
 		{
@@ -341,22 +384,14 @@ namespace Tridium {
 				if ( !directionalLight.CastsShadows )
 					continue;
 
+				RenderCommand::SetViewport( 0, 0, directionalLight.ShadowMapSize.x, directionalLight.ShadowMapSize.y );
+				directionalLight.ShadowMap->Resize( directionalLight.ShadowMapSize.x, directionalLight.ShadowMapSize.y );
 				directionalLight.ShadowMap->Bind();
 				RenderCommand::Clear();
 
-				// - Update View Projection Matrix -
-				float lightNearPlane = -1000.0f; float lightFarPlane = 1000.0f;
-				Matrix4 lightView = glm::lookAt(
-					m_SceneInfo.CameraPosition + ( m_LightEnvironment.DirectionalLights[0].Direction * -20.f ),
-					m_SceneInfo.CameraPosition,
-					{ 0.0f, 1.0f, 0.0f } );
-				float size = 100.0f;
-				Matrix4 lightProjection = glm::ortho( -size, size, -size, size, lightNearPlane, lightFarPlane );
-				m_LightViewProjectionMatrix = lightProjection * lightView;
-
 				for ( const auto& drawCall : m_DrawCalls )
 				{
-					m_ShadowMapShader->SetMatrix4( "u_PVM", m_LightViewProjectionMatrix * drawCall.Transform );
+					m_ShadowMapShader->SetMatrix4( "u_PVM", directionalLight.LightSpaceMatrix * drawCall.Transform );
 
 					drawCall.VAO->Bind();
 					RenderCommand::DrawIndexed( drawCall.VAO );
@@ -364,6 +399,35 @@ namespace Tridium {
 				}
 
 				directionalLight.ShadowMap->Unbind();
+			}
+
+			m_ShadowMapShader->Unbind();
+		}
+
+		// Generate Spot Light Shadow maps
+		{
+			m_ShadowMapShader->Bind();
+
+			for ( auto& spotLight : m_LightEnvironment.SpotLights )
+			{
+				if ( !spotLight.CastsShadows )
+					continue;
+
+				RenderCommand::SetViewport( 0, 0, spotLight.ShadowMapSize.x, spotLight.ShadowMapSize.y );
+				spotLight.ShadowMap->Resize( spotLight.ShadowMapSize.x, spotLight.ShadowMapSize.y );
+				spotLight.ShadowMap->Bind();
+				RenderCommand::Clear();
+
+				for ( const auto& drawCall : m_DrawCalls )
+				{
+					m_ShadowMapShader->SetMatrix4( "u_PVM", spotLight.LightSpaceMatrix * drawCall.Transform );
+
+					drawCall.VAO->Bind();
+					RenderCommand::DrawIndexed( drawCall.VAO );
+					drawCall.VAO->Unbind();
+				}
+
+				spotLight.ShadowMap->Unbind();
 			}
 
 			m_ShadowMapShader->Unbind();
@@ -447,7 +511,7 @@ namespace Tridium {
 		auto bindMaterial = [&]( SharedPtr<Material>& material, SharedPtr<Shader>& shader )
 			{
 				// Bind Material Properties
-				shader->SetFloat( "u_AlbedoIntensity", material->AlbedoIntensity );
+				shader->SetFloat3( "u_AlbedoColor", material->AlbedoColor );
 				shader->SetFloat( "u_MetallicIntensity", material->MetallicIntensity );
 				shader->SetFloat( "u_RoughnessIntensity", material->RoughnessIntensity );
 				shader->SetFloat( "u_EmissiveIntensity", material->EmissiveIntensity );
@@ -561,7 +625,6 @@ namespace Tridium {
 					{
 						directionalLight.ShadowMap->BindDepthAttatchment( textureSlot );
 						m_DeferredData.LightingShader->SetInt( ( "u_DirectionalShadowMaps[" + std::to_string( i ) + "]" ).c_str(), textureSlot );
-						m_DeferredData.LightingShader->SetMatrix4( "u_LightSpaceMatrix", m_LightViewProjectionMatrix );
 					}
 					else
 					{
@@ -571,16 +634,35 @@ namespace Tridium {
 
 					textureSlot++;
 				}
+
+				// Spot Lights
+				for ( uint32_t i = 0; i < MAX_SPOT_LIGHTS; ++i )
+				{
+					SpotLight& spotLight = m_LightEnvironment.SpotLights[i];
+
+					if ( spotLight.ShadowMap )
+					{
+						spotLight.ShadowMap->BindDepthAttatchment( textureSlot );
+						m_DeferredData.LightingShader->SetInt( ( "u_SpotShadowMaps[" + std::to_string( i ) + "]" ).c_str(), textureSlot );
+					}
+					else
+					{
+						m_WhiteTexture->Bind( textureSlot );
+						m_DeferredData.LightingShader->SetInt( ( "u_SpotShadowMaps[" + std::to_string( i ) + "]" ).c_str(), textureSlot );
+					}
+
+					textureSlot++;
+				}
 			}
 
 			// - Bind Environment Map -
 			{
 				// Bind BRDF LUT
-				if ( m_BrdfLUT )
-				{
-					m_BrdfLUT->Bind( textureSlot );
-					m_DeferredData.LightingShader->SetInt( "u_Environment.BrdfLUT", textureSlot );
-				}
+				//if ( m_BrdfLUT )
+				//{
+				//	m_BrdfLUT->Bind( textureSlot );
+				//	m_DeferredData.LightingShader->SetInt( "u_Environment.BrdfLUT", textureSlot );
+				//}
 
 				// Bind Environment Map
 				if ( m_SceneEnvironment.HDRI.EnvironmentMap && m_SceneEnvironment.HDRI.EnvironmentMap->GetIrradianceMap() )
@@ -608,6 +690,7 @@ namespace Tridium {
 					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Direction" ).c_str(), directionalLight.Direction );
 					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Color" ).c_str(), directionalLight.Color );
 					m_DeferredData.LightingShader->SetFloat( ( uniformName + "Intensity" ).c_str(), directionalLight.Intensity );
+					m_DeferredData.LightingShader->SetMatrix4( ( uniformName + "LightSpaceMatrix" ).c_str(), directionalLight.LightSpaceMatrix );
 				}
 
 				// Point Lights
@@ -635,6 +718,7 @@ namespace Tridium {
 					m_DeferredData.LightingShader->SetFloat( ( uniformName + "AttenuationRadius" ).c_str(), spotLight.AttenuationRadius );
 					m_DeferredData.LightingShader->SetFloat( ( uniformName + "InnerConeAngle" ).c_str(), spotLight.InnerConeAngle );
 					m_DeferredData.LightingShader->SetFloat( ( uniformName + "OuterConeAngle" ).c_str(), spotLight.OuterConeAngle );
+					m_DeferredData.LightingShader->SetMatrix4( ( uniformName + "LightSpaceMatrix" ).c_str(), spotLight.LightSpaceMatrix );
 				}
 			}
 		}
@@ -756,27 +840,27 @@ namespace Tridium {
 
 				// Temp ?
 				// Bind Shadow Maps
-				{
-					uint32_t textureSlot = 2;
-					for ( uint32_t i = 0; i < MAX_DIRECTIONAL_LIGHTS; ++i )
-					{
-						DirectionalLight& directionalLight = m_LightEnvironment.DirectionalLights[i];
+				//{
+				//	uint32_t textureSlot = 2;
+				//	for ( uint32_t i = 0; i < MAX_DIRECTIONAL_LIGHTS; ++i )
+				//	{
+				//		DirectionalLight& directionalLight = m_LightEnvironment.DirectionalLights[i];
 
-						if ( directionalLight.ShadowMap )
-							directionalLight.ShadowMap->BindDepthAttatchment( textureSlot );
-						else
-							m_WhiteTexture->Bind( textureSlot );
-						shader->SetInt( ( "u_DirectionalShadowMaps[" + std::to_string( i ) + "]" ).c_str(), textureSlot );
-						shader->SetMatrix4( "u_LightSpaceMatrix", m_LightViewProjectionMatrix );
-						textureSlot++;
-					}
-				}
+				//		if ( directionalLight.ShadowMap )
+				//			directionalLight.ShadowMap->BindDepthAttatchment( textureSlot );
+				//		else
+				//			m_WhiteTexture->Bind( textureSlot );
+				//		shader->SetInt( ( "u_DirectionalShadowMaps[" + std::to_string( i ) + "]" ).c_str(), textureSlot );
+				//		shader->SetMatrix4( "u_LightSpaceMatrix", m_LightViewProjectionMatrix );
+				//		textureSlot++;
+				//	}
+				//}
 			};
 
 		const auto bindMaterialUniforms = [this, &material, &shader]()
 			{
 				// Bind Material Properties
-				shader->SetFloat( "u_AlbedoIntensity", material->AlbedoIntensity );
+				shader->SetFloat3( "u_AlbedoColor", material->AlbedoColor );
 				shader->SetFloat( "u_MetallicIntensity", material->MetallicIntensity );
 				shader->SetFloat( "u_RoughnessIntensity", material->RoughnessIntensity );
 				shader->SetFloat( "u_EmissiveIntensity", material->EmissiveIntensity );

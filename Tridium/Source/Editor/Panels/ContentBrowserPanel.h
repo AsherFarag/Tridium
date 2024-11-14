@@ -83,6 +83,11 @@ namespace Tridium::Editor {
 		FolderHeirarchy m_FolderHeirarchy;
 
 		float m_ContentThumbnailSize = 1.0f;
+		float m_RefreshTimer = 0.0f;
+		const float m_RefreshTime = 1.0f;
+
+		//std::mutex m_Mutex;
+		//std::atomic<bool> m_IsReconstructingFolderHeirarchy = false;
 	};
 }
 

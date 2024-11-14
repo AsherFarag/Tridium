@@ -52,7 +52,7 @@ in mat3 v_TBN;
 in vec2 v_UV;
 
 // PBR
-uniform float u_AlbedoIntensity;
+uniform vec3 u_AlbedoColor;
 uniform float u_MetallicIntensity;
 uniform float u_RoughnessIntensity;
 uniform float u_EmissiveIntensity;
@@ -151,7 +151,7 @@ void main()
 	if ( texture(u_OpacityTexture, v_UV).a < 0.2 )
 		discard; 
 
-	vec3 albedo = texture(u_AlbedoTexture, v_UV).rgb * u_AlbedoIntensity;
+	vec3 albedo = texture(u_AlbedoTexture, v_UV).rgb * u_AlbedoColor;
 	// NOTE: AO, Roughness, and Metallic could all use the same texture as we only need one channel for each. 
 	// r = ambient occlusion
 	// g = roughness

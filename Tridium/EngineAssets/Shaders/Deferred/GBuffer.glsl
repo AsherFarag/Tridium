@@ -41,7 +41,7 @@ in mat3 v_TBN;
 in vec2 v_UV;
 
 // PBR
-uniform float u_AlbedoIntensity;
+uniform vec3 u_AlbedoColor;
 uniform float u_MetallicIntensity;
 uniform float u_RoughnessIntensity;
 uniform float u_EmissiveIntensity;
@@ -60,7 +60,7 @@ void main()
 		discard; 
 
 	g_Position = v_WorldPos;
-	g_Albedo = texture(u_AlbedoTexture, v_UV).rgb * u_AlbedoIntensity;
+	g_Albedo = texture(u_AlbedoTexture, v_UV).rgb * u_AlbedoColor;
 
 	// Calculate Normal using the normal map and TBN matrix
 	g_Normal = texture(u_NormalTexture, v_UV).rgb;

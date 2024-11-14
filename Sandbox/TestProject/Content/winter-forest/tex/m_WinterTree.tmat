@@ -1,0 +1,12 @@
+Shader: 0
+AlbedoTexture: 10539649949974465948
+AlbedoColor: [1, 1, 1]
+MetallicTexture: 0
+MetallicIntensity: 1
+RoughnessTexture: 0
+RoughnessIntensity: 1
+NormalTexture: 0
+OpacityTexture: 13798379159387052283
+EmissiveTexture: 0
+EmissiveIntensity: 1
+AOTexture: 0

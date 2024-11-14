@@ -188,9 +188,9 @@ namespace Tridium {
 			// Normal
 			material->NormalTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_NORMALS );
 			// Metallic
-			material->MetallicTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_SPECULAR );
+			//material->MetallicTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_SPECULAR );
 			// Roughness
-			material->RoughnessTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_SHININESS );
+			//material->RoughnessTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_SHININESS );
 			// Opacity
 			material->OpacityTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_OPACITY );
 			// Ambient Occlusion

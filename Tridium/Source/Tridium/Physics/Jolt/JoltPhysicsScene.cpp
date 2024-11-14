@@ -128,6 +128,8 @@ namespace Tridium {
 			*m_ObjectLayerPairFilter );
 
 		m_PhysicsSystem.OptimizeBroadPhase();
+
+		m_Initialised = true;
 	}
 
 	void JoltPhysicsScene::Shutdown()
@@ -144,6 +146,13 @@ namespace Tridium {
 
 	void JoltPhysicsScene::RemovePhysicsBody( PhysicsBodyID a_PhysicsBodyID )
 	{
+		//TE_CORE_ASSERT( m_Initialised );
+		if ( !m_Initialised )
+			return;
+
+		if ( a_PhysicsBodyID == JPH::BodyID::cInvalidBodyID )
+			return;
+
 		m_BodyInterface.RemoveBody( JPH::BodyID( a_PhysicsBodyID ) );
 		m_BodyInterface.DestroyBody( JPH::BodyID( a_PhysicsBodyID ) );
 	}
@@ -156,6 +165,10 @@ namespace Tridium {
 
 	bool JoltPhysicsScene::AddPhysicsBody( const GameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent )
 	{
+		TE_CORE_ASSERT( m_Initialised );
+		if ( !m_Initialised )
+			return false;
+
 		a_RigidBody.BodyID = JPH::BodyID::cInvalidBodyID;
 
 		const JPH::Vec3 position = Util::ToJoltVec3( a_TransformComponent.GetWorldPosition() );

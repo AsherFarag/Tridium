@@ -129,10 +129,7 @@ namespace Tridium {
 		} m_ForwardData;
 
 		// Shadows
-		SharedPtr<Framebuffer> m_ShadowFBO;
-		Vector2 m_ShadowMapSize{1024, 1024};
 		SharedPtr<Shader> m_ShadowMapShader;
-		Matrix4 m_LightViewProjectionMatrix{ 1.0f };
 		SharedPtr<Shader> m_ShadowCubeMapShader;
 		// -------
 		

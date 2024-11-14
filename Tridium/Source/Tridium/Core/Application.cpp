@@ -104,15 +104,32 @@ namespace Tridium {
 
 		while ( m_Running )
 		{
+			if ( m_Window->IsMinimized() )
+			{
+				m_Window->OnUpdate();
+				continue;
+			}
+
 			Time::Update();
+			const double deltaTime = Time::DeltaTime();
 
 			++frameCounter;
-			fpsInterval += Time::DeltaTime();
+			fpsInterval += deltaTime;
 			if ( fpsInterval >= 1.0 )
 			{
 				m_FPS = frameCounter;
 				frameCounter = 0;
 				fpsInterval -= 1.0;
+			}
+
+			// If the current frame time is less than the desired frame time,
+			// Sleep until the desired frame time is reached
+			const double desiredFrameTime = 1.0 / (double)m_MaxFPS;
+			if ( deltaTime < desiredFrameTime )
+			{
+				double sleepTime = desiredFrameTime - deltaTime;
+				Time::s_DeltaTime += sleepTime;
+				std::this_thread::sleep_for( std::chrono::milliseconds( (int)( 1000.0 * sleepTime ) ) );
 			}
 
 			// Update Loop ========================================================================================

@@ -282,7 +282,7 @@ namespace Tridium {
 	OpenGLTexture::~OpenGLTexture()
 	{
 		glDeleteTextures( 1, &m_RendererID );
-		delete m_LocalData;
+		TODO( "delete m_LocalData;" );
 	}
 
 	void OpenGLTexture::SetMinFilter( ETextureFilter a_Filter )

@@ -81,16 +81,16 @@ class MaterialEditorLayer : public Layer
 
 		if ( SharedPtr<Material> material = AssetManager::GetAsset<Material>( MaterialHandle ) )
 		{
-			ImGui::SliderFloat( "Albedo Intensity", &material->AlbedoIntensity, 0.0f, 1.0f );
+			ImGui::ColorEdit3( "Albedo Color", &material->AlbedoColor[0] );
 			ImGui::SliderFloat( "Metallic Intensity", &material->MetallicIntensity, 0.0f, 1.0f );
 			ImGui::SliderFloat( "Roughness Intensity", &material->RoughnessIntensity, 0.0f, 1.0f );
+			ImGui::SliderFloat( "Emissive Intensity", &material->EmissiveIntensity, 0.0f, 1.0f );
 
 			ImGui::Separator();
 
 			DrawProperty( "Albedo Texture", material->AlbedoTexture, Editor::EDrawPropertyFlags::Editable );
 			DrawProperty( "Metallic Texture", material->MetallicTexture, Editor::EDrawPropertyFlags::Editable );
 			DrawProperty( "Roughness Texture", material->RoughnessTexture, Editor::EDrawPropertyFlags::Editable );
-			DrawProperty( "Specular Texture", material->SpecularTexture, Editor::EDrawPropertyFlags::Editable );
 			DrawProperty( "Normal Texture", material->NormalTexture, Editor::EDrawPropertyFlags::Editable );
 			DrawProperty( "Opacity Texture", material->OpacityTexture, Editor::EDrawPropertyFlags::Editable );
 			DrawProperty( "Emissive Texture", material->EmissiveTexture, Editor::EDrawPropertyFlags::Editable );

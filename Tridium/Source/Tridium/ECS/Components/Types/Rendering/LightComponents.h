@@ -1,5 +1,6 @@
 #pragma once
 #include <Tridium/ECS/Components/Component.h>
+#include <Tridium/Rendering/Lights.h>
 
 // Temp?
 #include <Tridium/Rendering/FrameBuffer.h>
@@ -19,6 +20,7 @@ namespace Tridium {
 		bool CastsShadows = true;
 
 		// Temp?
+		iVector2 ShadowMapSize{ 1024, 1024 };
 		SharedPtr<Framebuffer> ShadowMap;
 	};
 
@@ -28,6 +30,7 @@ namespace Tridium {
 		PROPERTY( FalloffExponent,   FLAGS( Serialize, EditAnywhere ) )
 		PROPERTY( AttenuationRadius, FLAGS( Serialize, EditAnywhere ) )
 		PROPERTY( CastsShadows,      FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( ShadowMapSize,	 FLAGS( Serialize, EditAnywhere ) )
 		PROPERTY( ShadowMap,		 FLAGS( VisibleAnywhere ) )
 	END_REFLECT( PointLightComponent );
 
@@ -43,6 +46,11 @@ namespace Tridium {
 		float AttenuationRadius = 10.0f;
 		float InnerConeAngle = 30.0f;
 		float OuterConeAngle = 45.0f;
+		bool CastsShadows = true;
+
+		// Temp?
+		iVector2 ShadowMapSize{ 1024, 1024 };
+		SharedPtr<Framebuffer> ShadowMap;
 	};
 
 	BEGIN_REFLECT_COMPONENT( SpotLightComponent )
@@ -52,6 +60,9 @@ namespace Tridium {
 		PROPERTY( AttenuationRadius, FLAGS( Serialize, EditAnywhere ) )
 		PROPERTY( InnerConeAngle,    FLAGS( Serialize, EditAnywhere ) )
 		PROPERTY( OuterConeAngle,    FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( CastsShadows,		 FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( ShadowMapSize,	 FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( ShadowMap,		 FLAGS( VisibleAnywhere ) )
 	END_REFLECT( SpotLightComponent );
 
 	class DirectionalLightComponent : public Component
@@ -65,14 +76,16 @@ namespace Tridium {
 		bool CastsShadows = true;
 
 		// Temp?
+		iVector2 ShadowMapSize{ 1024 * 8, 1024 * 8 };
 		SharedPtr<Framebuffer> ShadowMap;
 	};
 
 	BEGIN_REFLECT_COMPONENT( DirectionalLightComponent )
-		PROPERTY( LightColor,   FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( Intensity,    FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( CastsShadows, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( ShadowMap,    FLAGS( VisibleAnywhere ) )
+		PROPERTY( LightColor,    FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( Intensity,     FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( CastsShadows,  FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( ShadowMapSize, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( ShadowMap,     FLAGS( VisibleAnywhere ) )
 	END_REFLECT( DirectionalLightComponent );
 
 }

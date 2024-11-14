@@ -62,6 +62,7 @@ namespace Tridium {
 		SharedPtr<GameInstance> m_GameInstance;
 
 		uint32_t m_FPS = 0u;
+		uint32_t m_MaxFPS = 144u;
 
 	private:
 		friend class AssetManager;

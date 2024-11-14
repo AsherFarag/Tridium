@@ -15,6 +15,8 @@
 
 #include "imgui_internal.h"
 
+#include <thread>
+
 namespace Tridium::Editor {
 
 	std::unordered_map<EFileType, SharedPtr<Texture>> ContentItemIcons::s_FileTypeIcons = std::unordered_map<EFileType, SharedPtr<Texture>>();
@@ -366,16 +368,18 @@ namespace Tridium::Editor {
 				{
 					if ( ImGui::MenuItem( "Material" ) )
 					{
-						Util::OpenNewFileDialog( "Material", m_CurrentDirectory.ToString(), []( const std::string& a_FilePath )
+						Util::OpenNewFileDialog( "Material", "m_NewMaterial.tmat", [&](const std::string& a_FilePath)
 							{
 								SharedPtr<Material> material = MakeShared<Material>();
 
-								AssetMetaData metaData;
-								metaData.Handle = AssetHandle::Create();
-								metaData.Path = a_FilePath;
-								metaData.AssetType = EAssetType::Material;
-								metaData.Name = metaData.Path.GetFilenameWithoutExtension();
-								metaData.IsAssetLoaded = true;
+								AssetMetaData metaData =
+								{
+									.Handle = AssetHandle::Create(),
+									.AssetType = EAssetType::Material,
+									.Path = m_CurrentDirectory / a_FilePath,
+									.Name = a_FilePath,
+									.IsAssetLoaded = true,
+								};
 
 								EditorAssetManager::Get()->CreateAsset( metaData, material );
 								AssetFactory::SaveAsset( metaData, material );
@@ -600,6 +604,12 @@ namespace Tridium::Editor {
 		RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), a_Size );
 		// If the item is double clicked, open it
 		const bool wasOpened = ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left );
+
+		if ( ImGui::BeginItemTooltip() )
+		{
+			ImGui::Text( Name.c_str() );
+			ImGui::EndTooltip();
+		}
 
 		if ( ImGui::BeginDragDropSource() )
 		{

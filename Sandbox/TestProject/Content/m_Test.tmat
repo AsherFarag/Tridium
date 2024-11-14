@@ -1,13 +1,12 @@
 Shader: 0
 AlbedoTexture: 0
-AlbedoIntensity: 1
+AlbedoColor: [1, 0.466926038, 0]
 MetallicTexture: 0
 MetallicIntensity: 1
 RoughnessTexture: 0
-RoughnessIntensity: 1
-SpecularTexture: 0
+RoughnessIntensity: 0
 NormalTexture: 0
 OpacityTexture: 0
-EmissiveTexture: 0
-EmissiveIntensity: 1
+EmissiveTexture: 6932676496202442266
+EmissiveIntensity: 0
 AOTexture: 0

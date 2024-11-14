@@ -42,6 +42,11 @@ namespace Tridium {
 		m_RenderingContext->SwapBuffers();
 	}
 
+	bool WindowsWindow::IsMinimized() const
+	{
+		return glfwGetWindowAttrib( m_Window, GLFW_ICONIFIED );
+	}
+
 	void WindowsWindow::SetVSync( bool enabled )
 	{
 		if ( enabled )

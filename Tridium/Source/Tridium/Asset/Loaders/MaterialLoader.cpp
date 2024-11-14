@@ -2,6 +2,7 @@
 #include "MaterialLoader.h"
 #include <Tridium/IO/Serializer.h>
 #include <yaml-cpp/yaml.h>
+#include <Tridium/IO/SerializationUtil.h>
 #include <fstream>
 #include <Tridium/Asset/AssetManager.h>
 #include <Tridium/Asset/EditorAssetManager.h>
@@ -17,7 +18,6 @@ namespace Tridium {
 		AssetManager::RegisterDependency( a_MetaData.Handle, material->AlbedoTexture );
 		AssetManager::RegisterDependency( a_MetaData.Handle, material->MetallicTexture );
 		AssetManager::RegisterDependency( a_MetaData.Handle, material->RoughnessTexture );
-		AssetManager::RegisterDependency( a_MetaData.Handle, material->SpecularTexture );
 		AssetManager::RegisterDependency( a_MetaData.Handle, material->NormalTexture );
 		AssetManager::RegisterDependency( a_MetaData.Handle, material->OpacityTexture );
 		AssetManager::RegisterDependency( a_MetaData.Handle, material->EmissiveTexture );
@@ -28,12 +28,11 @@ namespace Tridium {
 		{
 			out << YAML::Key << "Shader" << YAML::Value << material->Shader.ID();
 			out << YAML::Key << "AlbedoTexture" << YAML::Value << material->AlbedoTexture.ID();
-			out << YAML::Key << "AlbedoIntensity" << YAML::Value << material->AlbedoIntensity;
+			out << YAML::Key << "AlbedoColor" << YAML::Value << material->AlbedoColor;
 			out << YAML::Key << "MetallicTexture" << YAML::Value << material->MetallicTexture.ID();
 			out << YAML::Key << "MetallicIntensity" << YAML::Value << material->MetallicIntensity;
 			out << YAML::Key << "RoughnessTexture" << YAML::Value << material->RoughnessTexture.ID();
 			out << YAML::Key << "RoughnessIntensity" << YAML::Value << material->RoughnessIntensity;
-			out << YAML::Key << "SpecularTexture" << YAML::Value << material->SpecularTexture.ID();
 			out << YAML::Key << "NormalTexture" << YAML::Value << material->NormalTexture.ID();
 			out << YAML::Key << "OpacityTexture" << YAML::Value << material->OpacityTexture.ID();
 			out << YAML::Key << "EmissiveTexture" << YAML::Value << material->EmissiveTexture.ID();
@@ -68,12 +67,11 @@ namespace Tridium {
 		SharedPtr<Material> material = MakeShared<Material>();
 		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, Shader );
 		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, AlbedoTexture );
-		LOAD_MATERIAL_PROPERTY( float, AlbedoIntensity );
+		LOAD_MATERIAL_PROPERTY( Vector3, AlbedoColor );
 		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, MetallicTexture );
 		LOAD_MATERIAL_PROPERTY( float, MetallicIntensity );
 		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, RoughnessTexture );
 		LOAD_MATERIAL_PROPERTY( float, RoughnessIntensity );
-		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, SpecularTexture );
 		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, NormalTexture );
 		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, OpacityTexture );
 		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, EmissiveTexture );
