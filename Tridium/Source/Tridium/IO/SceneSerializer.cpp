@@ -139,6 +139,12 @@ namespace Tridium::IO {
 
 	void SerializeGameObject( Archive& out, GameObject go )
 	{
+		if ( !go.IsValid() || !go.TryGetComponent<GUIDComponent>() )
+		{
+			TE_CORE_ASSERT( false, "GameObject is invalid or does not have a GUIDComponent!" )
+			return;
+		}
+
 		out << YAML::BeginMap; // Begin GameObject
 
 		// GUID

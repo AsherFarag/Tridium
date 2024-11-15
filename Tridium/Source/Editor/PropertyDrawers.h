@@ -61,10 +61,34 @@ namespace Tridium::Editor {
 	bool DrawProperty( const char* a_Name, bool& a_Value, EDrawPropertyFlags a_Flags );
 
 	template<>
-	bool DrawProperty( const char* a_Name, int& a_Value, EDrawPropertyFlags a_Flags );
+	bool DrawProperty( const char* a_Name, int8_t& a_Value, EDrawPropertyFlags a_Flags );
+
+	template<>
+	bool DrawProperty( const char* a_Name, int16_t& a_Value, EDrawPropertyFlags a_Flags );
+
+	template<>
+	bool DrawProperty( const char* a_Name, int32_t& a_Value, EDrawPropertyFlags a_Flags );
+
+	template<>
+	bool DrawProperty( const char* a_Name, int64_t& a_Value, EDrawPropertyFlags a_Flags );
+
+	template<>
+	bool DrawProperty( const char* a_Name, uint8_t& a_Value, EDrawPropertyFlags a_Flags );
+
+	template<>
+	bool DrawProperty( const char* a_Name, uint16_t& a_Value, EDrawPropertyFlags a_Flags );
+
+	template<>
+	bool DrawProperty( const char* a_Name, uint32_t& a_Value, EDrawPropertyFlags a_Flags );
+
+	template<>
+	bool DrawProperty( const char* a_Name, uint64_t& a_Value, EDrawPropertyFlags a_Flags );
 
 	template<>
 	bool DrawProperty( const char* a_Name, float& a_Value, EDrawPropertyFlags a_Flags );
+
+	template<>
+	bool DrawProperty( const char* a_Name, double& a_Value, EDrawPropertyFlags a_Flags );
 
 	template<>
 	bool DrawProperty( const char* a_Name, std::string& a_Value, EDrawPropertyFlags a_Flags );
@@ -77,6 +101,15 @@ namespace Tridium::Editor {
 
 	template<>
 	bool DrawProperty( const char* a_Name, Vector4& a_Value, EDrawPropertyFlags a_Flags );
+
+	template<>
+	bool DrawProperty( const char* a_Name, iVector2& a_Value, EDrawPropertyFlags a_Flags );
+
+	template<>
+	bool DrawProperty( const char* a_Name, iVector3& a_Value, EDrawPropertyFlags a_Flags );
+
+	template<>
+	bool DrawProperty( const char* a_Name, iVector4& a_Value, EDrawPropertyFlags a_Flags );
 
 	template<>
 	bool DrawProperty( const char* a_Name, Rotator& a_Value, EDrawPropertyFlags a_Flags );

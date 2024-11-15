@@ -1,4 +1,8 @@
 AssetMetaData:
+  - Handle: 6932676496202442266
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_AO.jpg
+    Name: Troll_AO
   - Handle: 6680786823534590809
     AssetType: Mesh
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/TrollApose_low.fbx.tmesh
@@ -7,10 +11,14 @@ AssetMetaData:
     AssetType: MeshSource
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX
     Name: Cerberus_LP.FBX
-  - Handle: 6932676496202442266
+  - Handle: 1303307644901636996
+    AssetType: Scene
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Scenes/Test.tscene
+    Name: Test
+  - Handle: 4086619935004974763
     AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_AO.jpg
-    Name: Troll_AO
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Raw/Cerberus_AO.tga
+    Name: Cerberus_AO
   - Handle: 11722823617488748144
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/tree-stump/textures/occlusion.jpeg
@@ -27,14 +35,6 @@ AssetMetaData:
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Roughness.png
     Name: 1001_Roughness
-  - Handle: 4086619935004974763
-    AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Raw/Cerberus_AO.tga
-    Name: Cerberus_AO
-  - Handle: 1303307644901636996
-    AssetType: Scene
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Scenes/Test.tscene
-    Name: Test
   - Handle: 5806395090298646526
     AssetType: CubeMap
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/kloppenheim_02_puresky_4k.hdr

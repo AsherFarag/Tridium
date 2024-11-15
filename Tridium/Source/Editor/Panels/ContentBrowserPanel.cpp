@@ -1,21 +1,21 @@
 #include "tripch.h"
-#ifdef IS_EDITOR
-
+#if IS_EDITOR
 #include "ContentBrowserPanel.h"
-#include "Editor/Editor.h"
-#include <fstream>
-#include <Tridium/Core/Application.h>
-#include "ScriptEditorPanel.h"
-#include <Tridium/Asset/EditorAssetManager.h>
 
 #include <Tridium/Rendering/Material.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
+#include <Tridium/Core/Application.h>
+#include <Tridium/Asset/EditorAssetManager.h>
+
+#include <Editor/Editor.h>
 #include <Editor/AssetImporter.h>
 #include <Editor/EditorUtil.h>
+#include "ScriptEditorPanel.h"
+#include "Asset/MaterialEditorPanel.h"
 
 #include "imgui_internal.h"
-
 #include <thread>
+#include <fstream>
 
 namespace Tridium::Editor {
 
@@ -505,13 +505,21 @@ namespace Tridium::Editor {
 	{
 		switch ( a_Item.Type )
 		{
-		case EFileType::Folder:
-		{
-			OpenFolder( m_CurrentDirectory / a_Item.Name );
-			return true;
+			case EFileType::Folder:
+			{
+				OpenFolder( m_CurrentDirectory / a_Item.Name );
+				return true;
+			}
+			case EFileType::Material:
+			{
+				SharedPtr<Material> material = AssetManager::GetAsset<Material>( a_Item.Handle );
+				if ( material )
+				{
+					GetEditorLayer()->GetOrEmplacePanel<MaterialEditorPanel>()->SetMaterial( a_Item.Handle );
+				}
+				break;
+			}
 		}
-		}
-
 		return false;
 	}
 

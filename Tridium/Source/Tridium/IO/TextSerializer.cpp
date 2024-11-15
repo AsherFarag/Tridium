@@ -42,6 +42,36 @@ namespace Tridium::IO {
 		a_Archive << YAML::EndSeq;
 	}
 
+	_TRIDUM_SERIALIZE_TO_TEXT( iVector2 )
+	{
+		a_Archive << YAML::Flow;
+		a_Archive << YAML::BeginSeq;
+		a_Archive << a_Value.x;
+		a_Archive << a_Value.y;
+		a_Archive << YAML::EndSeq;
+	}
+
+	_TRIDUM_SERIALIZE_TO_TEXT( iVector3 )
+	{
+		a_Archive << YAML::Flow;
+		a_Archive << YAML::BeginSeq;
+		a_Archive << a_Value.x;
+		a_Archive << a_Value.y;
+		a_Archive << a_Value.z;
+		a_Archive << YAML::EndSeq;
+	}
+
+	_TRIDUM_SERIALIZE_TO_TEXT( iVector4 )
+	{
+		a_Archive << YAML::Flow;
+		a_Archive << YAML::BeginSeq;
+		a_Archive << a_Value.x;
+		a_Archive << a_Value.y;
+		a_Archive << a_Value.z;
+		a_Archive << a_Value.w;
+		a_Archive << YAML::EndSeq;
+	}
+
 	_TRIDUM_SERIALIZE_TO_TEXT( Color )
 	{
 		a_Archive << YAML::Flow;
@@ -192,6 +222,42 @@ namespace Tridium::IO {
 			o_Value.y = a_Node[1].as<float>();
 			o_Value.z = a_Node[2].as<float>();
 			o_Value.w = a_Node[3].as<float>();
+			return true;
+		}
+		return false;
+	}
+
+	_TRIDUM_DESERIALIZE_FROM_TEXT( iVector2 )
+	{
+		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 2 )
+		{
+			o_Value.x = a_Node[0].as<int>();
+			o_Value.y = a_Node[1].as<int>();
+			return true;
+		}
+		return false;
+	}
+
+	_TRIDUM_DESERIALIZE_FROM_TEXT( iVector3 )
+	{
+		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 3 )
+		{
+			o_Value.x = a_Node[0].as<int>();
+			o_Value.y = a_Node[1].as<int>();
+			o_Value.z = a_Node[2].as<int>();
+			return true;
+		}
+		return false;
+	}
+
+	_TRIDUM_DESERIALIZE_FROM_TEXT( iVector4 )
+	{
+		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 4 )
+		{
+			o_Value.x = a_Node[0].as<int>();
+			o_Value.y = a_Node[1].as<int>();
+			o_Value.z = a_Node[2].as<int>();
+			o_Value.w = a_Node[3].as<int>();
 			return true;
 		}
 		return false;

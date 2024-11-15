@@ -14,7 +14,7 @@ void main()
 layout (triangles) in;
 layout (triangle_strip, max_vertices = 18) out;
 
-uniform mat4 u_ShadowMatrices[6];
+uniform mat4 u_LightSpaceMatrices[6];
 
 out vec4 o_FragPos; // FragPos from Geometry Shader (output per emitvertex)
 
@@ -26,7 +26,7 @@ void main()
         for ( int i = 0; i < 3; ++i )
         {
             o_FragPos = gl_in[i].gl_Position;
-            gl_Position = u_ShadowMatrices[face] * o_FragPos;
+            gl_Position = u_LightSpaceMatrices[face] * o_FragPos;
             EmitVertex();
         }
         EndPrimitive();

@@ -80,6 +80,17 @@ namespace Tridium {
 			return 0;
 		}
 
+		static GLenum TridiumFBTextureTypeToGL( EFramebufferTextureType type )
+		{
+			switch ( type )
+			{
+			case EFramebufferTextureType::Texture2D:      return GL_TEXTURE_2D;
+			case EFramebufferTextureType::TextureCubeMap: return GL_TEXTURE_CUBE_MAP;
+			}
+
+			return 0;
+		}
+
 		static GLenum TextureTarget( bool multisampled )
 		{
 			return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
@@ -117,7 +128,7 @@ namespace Tridium {
 			glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, TextureTarget( multisampled ), id, 0 );
 		}
 
-		static void AttachDepthTexture( uint32_t id, int samples, GLenum format, GLenum attachmentType, uint32_t width, uint32_t height )
+		static void AttachDepthTexture( uint32_t id, GLenum textureType, int samples, GLenum format, GLenum attachmentType, uint32_t width, uint32_t height )
 		{
 			bool multisampled = samples > 1;
 			if ( multisampled )
@@ -126,20 +137,33 @@ namespace Tridium {
 			}
 			else
 			{
-				glTexStorage2D( GL_TEXTURE_2D, 1, format, width, height );
+				if ( textureType == GL_TEXTURE_2D )
+				{
+					glTexStorage2D( textureType, 1, format, width, height );
+				}
 
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+
+				glTexParameteri( textureType, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+				glTexParameteri( textureType, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 				// Fix for shadow mapping
 				// Should probably be a parameter
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER );
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER );
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER );
+				glTexParameteri( textureType, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER );
+				glTexParameteri( textureType, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER );
+				glTexParameteri( textureType, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER );
 				float color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-				glTexParameterfv( GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color );
+				glTexParameterfv( textureType, GL_TEXTURE_BORDER_COLOR, color );
 			}
 
-			glFramebufferTexture2D( GL_FRAMEBUFFER, attachmentType, TextureTarget( multisampled ), id, 0 );
+			glBindFramebuffer( GL_FRAMEBUFFER, id );
+
+			if ( textureType == GL_TEXTURE_2D )
+			{
+				glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textureType, id, 0 );
+			}
+			else
+			{
+				glFramebufferTexture( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, id, 0 );
+			}
 		}
 
 		static bool IsDepthFormat( EFramebufferTextureFormat format )
@@ -212,12 +236,26 @@ namespace Tridium {
 
 		if ( m_DepthAttachmentSpecification.TextureFormat != EFramebufferTextureFormat::None )
 		{
-			Util::CreateTextures( multisample, &m_DepthAttachment, 1 );
-			Util::BindTexture( multisample, m_DepthAttachment );
+			switch ( m_DepthAttachmentSpecification.TextureType )
+			{
+			case EFramebufferTextureType::Texture2D:
+				Util::CreateTextures( multisample, &m_DepthAttachment, 1 );
+				Util::BindTexture( multisample, m_DepthAttachment );
+				break;
+			case EFramebufferTextureType::TextureCubeMap:
+				glGenTextures( 1, &m_DepthAttachment );
+				glBindTexture( GL_TEXTURE_CUBE_MAP, m_DepthAttachment );
+				for ( int i = 0; i < 6; i++ )
+				{
+					glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, m_Specification.Width, m_Specification.Height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr );
+				}
+				break;
+			}
+
 			switch ( m_DepthAttachmentSpecification.TextureFormat )
 			{
 			case EFramebufferTextureFormat::DEPTH24STENCIL8:
-				Util::AttachDepthTexture( m_DepthAttachment, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height );
+				Util::AttachDepthTexture( m_DepthAttachment, Util::TridiumFBTextureTypeToGL(m_DepthAttachmentSpecification.TextureType), m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height );
 				break;
 			}
 		}

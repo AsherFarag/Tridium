@@ -83,8 +83,8 @@ GameObjects:
   - GameObject: 11959567654399208421
     Tag: Cube
     Transform:
-      Position: [0, -0.5, 0]
-      Rotation: [0, 0, 0]
+      Position: [0, -1, 0]
+      Rotation: [0, -0, 0]
       Scale: [100, 1, 100]
       Children: []
     StaticMeshComponent:
@@ -107,6 +107,56 @@ GameObjects:
       Children: []
     DirectionalLightComponent:
       LightColor: [1, 0.657754064, 0.357976675, 1]
-      Intensity: 5
+      Intensity: 0
       CastsShadows: true
       ShadowMapSize: "Refl Error: No serialize function for type <struct glm::vec<2,int,0>>(void) noexcept"
+  - GameObject: 17437318913938749274
+    Tag: Cube
+    Transform:
+      Position: [0, -0.0611167252, -0.288623393]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 2
+      Materials: []
+    RigidBodyComponent:
+      m_MotionType: Dynamic
+      m_Mass: 1
+      m_GravityScale: 1
+    BoxColliderComponent:
+      m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
+      m_Rotation: [0, 0, 0]
+      m_HalfExtents: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
+  - GameObject: 10146863388238961059
+    Tag: Point Light
+    Transform:
+      Position: [0.133790493, -0.364458919, -0.968132973]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    PointLightComponent:
+      LightColor: [1, 1, 1, 1]
+      Intensity: 133
+      FalloffExponent: 2
+      AttenuationRadius: 4
+      CastsShadows: true
+      ShadowMapSize: 256
+  - GameObject: 9504824549876532938
+    Tag: Cube
+    Transform:
+      Position: [0, -0.0611167252, -1.74478543]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 2
+      Materials: []
+    RigidBodyComponent:
+      m_MotionType: Dynamic
+      m_Mass: 1
+      m_GravityScale: 1
+    BoxColliderComponent:
+      m_Center: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"
+      m_Rotation: [0, 0, 0]
+      m_HalfExtents: "Refl Error: No serialize function for type <struct glm::vec<3,float,0>>(void) noexcept"

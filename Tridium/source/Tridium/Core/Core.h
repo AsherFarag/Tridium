@@ -27,9 +27,39 @@ namespace Tridium {
 
 #define TE_BIND_EVENT_FN(fn, PlaceHolder) std::bind( &fn, this, std::placeholders::_##PlaceHolder )
 
+// - Configuration -
+
+#ifdef IS_EDITOR
+	#define IS_EDITOR 1
+#else
+	#define IS_EDITOR 0
+#endif // IS_EDITOR
+
+#ifdef TE_DEBUG
+	#define TE_DEBUG 1
+#else
+	#define TE_DEBUG 0
+#endif // TE_DEBUG
+
+#ifdef TE_RELEASE
+	#define TE_RELEASE 1
+#else
+	#define TE_RELEASE 0
+#endif // TE_RELEASE
+
+#ifdef TE_SHIPPING
+	#define TE_SHIPPING 1
+#else
+	#define TE_SHIPPING 0
+#endif // TE_SHIPPING
+
+// ------------------
+
 #ifdef TE_PLATFORM_WINDOWS
 
-	#ifdef TE_DLL
+	#define TE_DLL 0
+
+	#if TE_DLL
 		#ifdef TE_BUILD_DLL
 			#define TRIDIUM_API __declspec(dllexport)
 		#else

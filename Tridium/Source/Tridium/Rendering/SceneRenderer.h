@@ -32,6 +32,10 @@ namespace Tridium {
 		PointLight PointLights[MAX_POINT_LIGHTS];
 		SpotLight SpotLights[MAX_SPOT_LIGHTS];
 		DirectionalLight DirectionalLights[MAX_DIRECTIONAL_LIGHTS];
+
+		uint32_t NumPointLights = 0u;
+		uint32_t NumSpotLights = 0u;
+		uint32_t NumDirectionalLights = 0u;
 	};
 
 	struct RenderSettings

@@ -159,11 +159,11 @@ namespace Tridium {
 		// - Submit Directional Lights -
 		{
 			auto directionalLightComponents = m_Scene.m_Registry.view<DirectionalLightComponent, TransformComponent>();
-			uint32_t lightIndex = 0;
+			m_LightEnvironment.NumDirectionalLights = 0;
 			directionalLightComponents.each(
 				[&]( auto go, DirectionalLightComponent& lightComponent, TransformComponent& transform )
 				{
-					if ( lightIndex >= MAX_DIRECTIONAL_LIGHTS )
+					if ( m_LightEnvironment.NumDirectionalLights >= MAX_DIRECTIONAL_LIGHTS )
 						return;
 
 					// TEMP!
@@ -184,7 +184,7 @@ namespace Tridium {
 						lightComponent.ShadowMap.reset();
 					}
 
-					DirectionalLight& light = m_LightEnvironment.DirectionalLights[lightIndex];
+					DirectionalLight& light = m_LightEnvironment.DirectionalLights[m_LightEnvironment.NumDirectionalLights];
 
 					light.Direction = transform.GetForward();
 					light.Color = lightComponent.LightColor;
@@ -203,7 +203,7 @@ namespace Tridium {
 					Matrix4 lightProjection = glm::ortho( -size, size, -size, size, lightNearPlane, lightFarPlane );
 					light.LightSpaceMatrix = lightProjection * lightView;
 
-					lightIndex++;
+					m_LightEnvironment.NumDirectionalLights++;
 				}
 			);
 		}
@@ -211,21 +211,23 @@ namespace Tridium {
 		// - Submit Point Lights -
 		{
 			auto pointLightComponents = m_Scene.m_Registry.view<PointLightComponent, TransformComponent>();
-			uint32_t lightIndex = 0;
+			m_LightEnvironment.NumPointLights = 0;
 			pointLightComponents.each(
 				[&]( auto go, PointLightComponent& lightComponent, TransformComponent& transform )
 				{
-					if ( lightIndex >= MAX_POINT_LIGHTS )
+					if ( m_LightEnvironment.NumPointLights >= MAX_POINT_LIGHTS )
 						return;
 
 					// TEMP!
 					if ( lightComponent.CastsShadows && !lightComponent.ShadowMap )
 					{
+						FramebufferTextureSpecification cubeMapSpec( EFramebufferTextureFormat::Depth, EFramebufferTextureType::TextureCubeMap );
+
 						FramebufferSpecification spec =
 						{
-							.Width = (uint32_t)lightComponent.ShadowMapSize.x,
-							.Height = (uint32_t)lightComponent.ShadowMapSize.y,
-							.Attachments = { EFramebufferTextureFormat::Depth },
+							.Width = (uint32_t)lightComponent.ShadowMapSize,
+							.Height = (uint32_t)lightComponent.ShadowMapSize,
+							.Attachments = { cubeMapSpec }
 						};
 
 						lightComponent.ShadowMap = Framebuffer::Create( spec );
@@ -236,16 +238,26 @@ namespace Tridium {
 						lightComponent.ShadowMap.reset();
 					}
 
-					PointLight& light = m_LightEnvironment.PointLights[lightIndex];
+					PointLight& light = m_LightEnvironment.PointLights[m_LightEnvironment.NumPointLights];
 
 					light.Position = transform.GetWorldPosition();
 					light.Color = lightComponent.LightColor;
 					light.Intensity = lightComponent.Intensity;
 					light.FalloffExponent = lightComponent.FalloffExponent;
 					light.AttenuationRadius = lightComponent.AttenuationRadius;
-					//light.CastsShadows = lightComponent.CastsShadows;
-					//light.ShadowMapSize = lightComponent.ShadowMapSize;
-					lightIndex++;
+					light.CastsShadows = lightComponent.CastsShadows;
+					light.ShadowMapSize = lightComponent.ShadowMapSize;
+					light.ShadowMap = lightComponent.ShadowMap;
+
+					Matrix4 shadowProjection = glm::perspective( glm::radians( 90.0f ), 1.0f, 0.1f, light.AttenuationRadius );
+					light.LightSpaceMatrices[0] = shadowProjection * glm::lookAt( light.Position, light.Position + Vector3( 1.0f, 0.0f, 0.0f ), Vector3( 0.0f, -1.0f, 0.0f ) );
+					light.LightSpaceMatrices[1] = shadowProjection * glm::lookAt( light.Position, light.Position + Vector3( -1.0f, 0.0f, 0.0f ), Vector3( 0.0f, -1.0f, 0.0f ) );
+					light.LightSpaceMatrices[2] = shadowProjection * glm::lookAt( light.Position, light.Position + Vector3( 0.0f, 1.0f, 0.0f ), Vector3( 0.0f, 0.0f, 1.0f ) );
+					light.LightSpaceMatrices[3] = shadowProjection * glm::lookAt( light.Position, light.Position + Vector3( 0.0f, -1.0f, 0.0f ), Vector3( 0.0f, 0.0f, -1.0f ) );
+					light.LightSpaceMatrices[4] = shadowProjection * glm::lookAt( light.Position, light.Position + Vector3( 0.0f, 0.0f, 1.0f ), Vector3( 0.0f, -1.0f, 0.0f ) );
+					light.LightSpaceMatrices[5] = shadowProjection * glm::lookAt( light.Position, light.Position + Vector3( 0.0f, 0.0f, -1.0f ), Vector3( 0.0f, -1.0f, 0.0f ) );
+
+					m_LightEnvironment.NumPointLights++;
 				}
 			);
 		}
@@ -253,11 +265,11 @@ namespace Tridium {
 		// - Submit Spot Lights -
 		{
 			auto spotLightComponents = m_Scene.m_Registry.view<SpotLightComponent, TransformComponent>();
-			uint32_t lightIndex = 0;
+			m_LightEnvironment.NumSpotLights = 0;
 			spotLightComponents.each(
 				[&]( auto go, SpotLightComponent& lightComponent, TransformComponent& transform )
 				{
-					if ( lightIndex >= MAX_SPOT_LIGHTS )
+					if ( m_LightEnvironment.NumSpotLights >= MAX_SPOT_LIGHTS )
 						return;
 
 					// TEMP!
@@ -273,7 +285,7 @@ namespace Tridium {
 						lightComponent.ShadowMap = Framebuffer::Create( spec );
 					}
 
-					SpotLight& light = m_LightEnvironment.SpotLights[lightIndex];
+					SpotLight& light = m_LightEnvironment.SpotLights[m_LightEnvironment.NumSpotLights];
 
 					light.Position = transform.GetWorldPosition();
 					light.Direction = transform.GetForward();
@@ -281,18 +293,18 @@ namespace Tridium {
 					light.Intensity = lightComponent.Intensity;
 					light.FalloffExponent = lightComponent.FalloffExponent;
 					light.AttenuationRadius = lightComponent.AttenuationRadius;
-					light.InnerConeAngle = glm::radians( lightComponent.InnerConeAngle );
-					light.OuterConeAngle = glm::radians( lightComponent.OuterConeAngle );
+					light.InnerConeAngle = lightComponent.InnerConeAngle;
+					light.OuterConeAngle = lightComponent.OuterConeAngle;
 					light.CastsShadows = lightComponent.CastsShadows;
 					light.ShadowMapSize = lightComponent.ShadowMapSize;
 					light.ShadowMap = lightComponent.ShadowMap;
 
 					float nearPlane = 0.1f; float farPlane = 1000.0f;
 					Matrix4 lightView = glm::lookAt( light.Position, light.Position + light.Direction, { 0.0f, 1.0f, 0.0f } );
-					Matrix4 lightProjection = glm::perspective( light.OuterConeAngle * 2.0f, 1.0f, nearPlane, farPlane );
+					Matrix4 lightProjection = glm::perspective( glm::radians( light.OuterConeAngle ) * 2.0f, 1.0f, nearPlane, farPlane );
 					light.LightSpaceMatrix = lightProjection * lightView;
 
-					lightIndex++;
+					m_LightEnvironment.NumSpotLights++;
 				}
 			);
 		}
@@ -409,6 +421,50 @@ namespace Tridium {
 			}
 
 			m_ShadowMapShader->Unbind();
+		}
+
+		// Generate Point Light Shadow Maps
+		{
+			m_ShadowCubeMapShader->Bind();
+
+			for ( PointLight& pointLight : m_LightEnvironment.PointLights )
+			{
+				if ( !pointLight.CastsShadows )
+					continue;
+
+				// Bind Uniforms
+				{
+					for ( uint32_t i = 0; i < 6; i++ )
+					{
+						const std::string uniformName = "u_LightSpaceMatrices[" + std::to_string( i ) + "]";
+						m_ShadowCubeMapShader->SetMatrix4( uniformName.c_str(), pointLight.LightSpaceMatrices[i] );
+					}
+
+					m_ShadowCubeMapShader->SetFloat( "u_FarPlane", pointLight.AttenuationRadius );
+					m_ShadowCubeMapShader->SetFloat3( "u_LightPosition", pointLight.Position );
+				}
+
+				RenderCommand::SetViewport( 0, 0, pointLight.ShadowMapSize, pointLight.ShadowMapSize );
+				pointLight.ShadowMap->Resize( pointLight.ShadowMapSize, pointLight.ShadowMapSize );
+				pointLight.ShadowMap->Bind();
+				RenderCommand::Clear();
+
+				for ( const auto& drawCall : m_DrawCalls )
+				{
+					for ( uint32_t i = 0; i < 6; i++ )
+					{
+						m_ShadowCubeMapShader->SetMatrix4( "u_Model", drawCall.Transform );
+
+						drawCall.VAO->Bind();
+						RenderCommand::DrawIndexed( drawCall.VAO );
+						drawCall.VAO->Unbind();
+					}
+				}
+
+				pointLight.ShadowMap->Unbind();
+			}
+
+			m_ShadowCubeMapShader->Unbind();
 		}
 
 		// Generate Spot Light Shadow maps
@@ -624,7 +680,7 @@ namespace Tridium {
 			// - Bind Shadow Maps -
 			{
 				// Directional Lights
-				for ( uint32_t i = 0; i < MAX_DIRECTIONAL_LIGHTS; ++i )
+				for ( uint32_t i = 0; i < m_LightEnvironment.NumDirectionalLights; ++i )
 				{
 					DirectionalLight& directionalLight = m_LightEnvironment.DirectionalLights[i];
 
@@ -642,8 +698,27 @@ namespace Tridium {
 					textureSlot++;
 				}
 
+				// Point Lights
+				for ( uint32_t i = 0; i < m_LightEnvironment.NumPointLights; i++ )
+				{
+					PointLight& pointLight = m_LightEnvironment.PointLights[i];
+
+					if ( pointLight.ShadowMap )
+					{
+						pointLight.ShadowMap->BindDepthAttatchment( textureSlot );
+						m_DeferredData.LightingShader->SetInt( ( "u_PointShadowMaps[" + std::to_string( i ) + "]" ).c_str(), textureSlot );
+					}
+					else
+					{
+						m_WhiteTexture->Bind( textureSlot );
+						m_DeferredData.LightingShader->SetInt( ( "u_PointShadowMaps[" + std::to_string( i ) + "]" ).c_str(), textureSlot );
+					}
+
+					textureSlot++;
+				}
+
 				// Spot Lights
-				for ( uint32_t i = 0; i < MAX_SPOT_LIGHTS; ++i )
+				for ( uint32_t i = 0; i < m_LightEnvironment.NumSpotLights; ++i )
 				{
 					SpotLight& spotLight = m_LightEnvironment.SpotLights[i];
 
@@ -690,7 +765,8 @@ namespace Tridium {
 			// - Bind Lights -
 			{
 				// Directional Lights
-				for ( uint32_t i = 0; i < MAX_DIRECTIONAL_LIGHTS; ++i )
+				m_DeferredData.LightingShader->SetInt( "u_NumDirectionalLights", m_LightEnvironment.NumDirectionalLights );
+				for ( uint32_t i = 0; i < m_LightEnvironment.NumDirectionalLights; ++i )
 				{
 					DirectionalLight& directionalLight = m_LightEnvironment.DirectionalLights[i];
 					std::string uniformName = "u_DirectionalLights[" + std::to_string( i ) + "].";
@@ -701,7 +777,8 @@ namespace Tridium {
 				}
 
 				// Point Lights
-				for ( uint32_t i = 0; i < MAX_POINT_LIGHTS; i++ )
+				m_DeferredData.LightingShader->SetInt( "u_NumPointLights", m_LightEnvironment.NumPointLights );
+				for ( uint32_t i = 0; i < m_LightEnvironment.NumPointLights; i++ )
 				{
 					PointLight& pointLight = m_LightEnvironment.PointLights[i];
 					std::string uniformName = "u_PointLights[" + std::to_string( i ) + "].";
@@ -713,7 +790,8 @@ namespace Tridium {
 				}
 
 				// Spot Lights
-				for ( uint32_t i = 0; i < MAX_SPOT_LIGHTS; ++i )
+				m_DeferredData.LightingShader->SetInt( "u_NumSpotLights", m_LightEnvironment.NumSpotLights );
+				for ( uint32_t i = 0; i < m_LightEnvironment.NumSpotLights; ++i )
 				{
 					SpotLight& spotLight = m_LightEnvironment.SpotLights[i];
 					std::string uniformName = "u_SpotLights[" + std::to_string( i ) + "].";

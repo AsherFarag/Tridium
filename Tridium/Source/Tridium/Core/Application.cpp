@@ -120,7 +120,7 @@ namespace Tridium {
 			{
 				m_FPS = frameCounter;
 				frameCounter = 0;
-				fpsInterval = 0.0;
+				fpsInterval -= 1.0;
 			}
 
 			// Update Loop

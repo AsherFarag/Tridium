@@ -7,7 +7,7 @@ namespace Tridium {
 	// Temp?
 	class Framebuffer;
 
-	constexpr uint32_t MAX_POINT_LIGHTS = 32;
+	constexpr uint32_t MAX_POINT_LIGHTS = 4;
 
 	struct PointLight
 	{
@@ -17,10 +17,10 @@ namespace Tridium {
 		float FalloffExponent;
 		float AttenuationRadius;
 		bool CastsShadows;
-		Matrix4 LightSpaceMatrix;
+		Matrix4 LightSpaceMatrices[6];
 
 		// Temp?
-		iVector2 ShadowMapSize;
+		uint32_t ShadowMapSize;
 		SharedPtr<Framebuffer> ShadowMap;
 	};
 

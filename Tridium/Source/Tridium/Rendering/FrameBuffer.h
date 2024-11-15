@@ -24,13 +24,23 @@ namespace Tridium {
 		Depth = DEPTH24STENCIL8
 	};
 
+	enum class EFramebufferTextureType
+	{
+		None = 0,
+		Texture2D,
+		TextureCubeMap
+	};
+
 	struct FramebufferTextureSpecification
 	{
 		FramebufferTextureSpecification() = default;
 		FramebufferTextureSpecification( EFramebufferTextureFormat format )
 			: TextureFormat( format ) {}
+		FramebufferTextureSpecification( EFramebufferTextureFormat format, EFramebufferTextureType type )
+			: TextureFormat( format ), TextureType( type ) {}
 
 		EFramebufferTextureFormat TextureFormat = EFramebufferTextureFormat::None;
+		EFramebufferTextureType TextureType = EFramebufferTextureType::Texture2D;
 	};
 
 	struct FramebufferAttachmentSpecification

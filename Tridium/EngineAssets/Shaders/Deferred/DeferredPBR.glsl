@@ -52,7 +52,8 @@ struct PointLight
 	float FalloffExponent;
 	mat4 LightSpaceMatrix;
 };
-const int MAX_NUM_POINT_LIGHTS = 32;
+const int MAX_NUM_POINT_LIGHTS = 8;
+uniform int u_NumPointLights;
 uniform PointLight u_PointLights[MAX_NUM_POINT_LIGHTS];
 
 struct SpotLight
@@ -68,6 +69,7 @@ struct SpotLight
 	mat4 LightSpaceMatrix;
 };
 const int MAX_NUM_SPOT_LIGHTS = 32;
+uniform int u_NumSpotLights;
 uniform SpotLight u_SpotLights[MAX_NUM_SPOT_LIGHTS];
 
 struct DirectionalLight
@@ -78,10 +80,11 @@ struct DirectionalLight
 	mat4 LightSpaceMatrix;
 };
 const int MAX_NUM_DIRECTIONAL_LIGHTS = 1;
+uniform int u_NumDirectionalLights;
 uniform DirectionalLight u_DirectionalLights[MAX_NUM_DIRECTIONAL_LIGHTS];
 
 // Shadows
-uniform sampler2D u_PointShadowMaps[MAX_NUM_POINT_LIGHTS];
+uniform samplerCube u_PointShadowMaps[MAX_NUM_POINT_LIGHTS];
 uniform sampler2D u_SpotShadowMaps[MAX_NUM_SPOT_LIGHTS];
 uniform sampler2D u_DirectionalShadowMaps[MAX_NUM_DIRECTIONAL_LIGHTS];
 
@@ -110,9 +113,9 @@ vec3 GammaCorrection(vec3 color, float gamma)
     return pow(color, vec3(1.0 / gamma));
 }
 
-// TEMP ?
-float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadowMap);
-float SpotShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadowMap);
+float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadowMap, vec3 lightDir);
+float PointShadowCalculation(PointLight light, vec3 fragPosLightSpace, samplerCube shadowMap);
+float SpotShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadowMap, vec3 lightDir);
 
 void main()
 {
@@ -140,26 +143,28 @@ void main()
 	// Calculate Light Output
 	vec3 Lo = vec3(0.0);
 	// Directional Lights
-	for (int i = 0; i < MAX_NUM_DIRECTIONAL_LIGHTS; ++i)
+	for (int i = 0; i < u_NumDirectionalLights; ++i)
 	{
 	    DirectionalLight dirLight = u_DirectionalLights[i];
 	    vec3 light = CalcDirectionalLightRadiance(dirLight, normal, V, albedo, roughness, metallic, F0);
 		vec4 fragPosLightSpace = dirLight.LightSpaceMatrix * vec4( worldPos, 1.0 );
-        Lo += light * ( 1.0 - DirShadowCalculation(fragPosLightSpace, normal, u_DirectionalShadowMaps[i]) );
+        Lo += light * ( 1.0 - DirShadowCalculation(fragPosLightSpace, normal, u_DirectionalShadowMaps[i], dirLight.Direction ) );
 	}
 	// Point Lights
-	for (int i = 0; i < MAX_NUM_POINT_LIGHTS; ++i)
+	for (int i = 0; i < u_NumPointLights; ++i)
 	{
 		PointLight pointLight = u_PointLights[i];
-		Lo += CalcPointLightRadiance(pointLight, normal, worldPos, V, albedo, roughness, metallic, F0);
+		vec3 light = CalcPointLightRadiance(pointLight, normal, worldPos, V, albedo, roughness, metallic, F0);
+		vec3 fragPosLightSpace = worldPos - pointLight.Position;
+		Lo += light *= ( 1.0 - PointShadowCalculation(pointLight, fragPosLightSpace, u_PointShadowMaps[i] ) );
 	}
 	// Spot Lights
-	for (int i = 0; i < MAX_NUM_SPOT_LIGHTS; ++i)
+	for (int i = 0; i < u_NumSpotLights; ++i)
 	{
 	    SpotLight spotLight = u_SpotLights[i];
 	    vec3 light = CalcSpotLightRadiance(spotLight, normal, worldPos, V, albedo, roughness, metallic, F0);
 		vec4 fragPosLightSpace = spotLight.LightSpaceMatrix * vec4( worldPos, 1.0 );
-		Lo += light * ( 1.0 - SpotShadowCalculation(fragPosLightSpace, normal, u_SpotShadowMaps[i]) );
+		Lo += light * ( 1.0 - SpotShadowCalculation(fragPosLightSpace, normal, u_SpotShadowMaps[i], spotLight.Direction ) );
 	}
 
 	// =======================================================================
@@ -319,7 +324,7 @@ vec3 CalcSpotLightRadiance(SpotLight light, vec3 normal, vec3 fragPos, vec3 view
 
 	float cosThetaInner = cos(radians(light.InnerConeAngle));
 	float cosThetaOuter = cos(radians(light.OuterConeAngle));
-	float cosTheta = dot(L, light.Direction);
+	float cosTheta = dot(L, -light.Direction);
 	float intensityFactor = clamp((cosTheta - cosThetaOuter) / (cosThetaInner - cosThetaOuter), 0.0, 1.0);
 
     // Distance attenuation (similar to point light attenuation)
@@ -347,8 +352,7 @@ vec3 CalcSpotLightRadiance(SpotLight light, vec3 normal, vec3 fragPos, vec3 view
     return (kD * albedo / PI + specular) * radiance * NdotL;
 }
 
-// TEMP ?
-float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadowMap)
+float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadowMap, vec3 lightDir)
 {
     // perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -380,9 +384,42 @@ float DirShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadow
 	return shadow;
 }
 
-float SpotShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadowMap)
+float PointShadowCalculation(PointLight light, vec3 fragPosLightSpace, samplerCube shadowMap)
 {
-	    // perform perspective divide
+    // Get depth of current fragment from light's perspective
+    float currentDepth = length(fragPosLightSpace);
+    float shadow = 0.0;
+
+    const int sampleRadius = 2;
+    const float sampleOffset = 0.005; // Adjust this value for desired softness based on cubemap resolution
+    for (int z = -sampleRadius; z <= sampleRadius; z++)
+    {       
+        for (int y = -sampleRadius; y <= sampleRadius; y++)
+        {
+            for (int x = -sampleRadius; x <= sampleRadius; x++)
+            {
+                // Calculate the offset position in the cubemap
+                vec3 offset = vec3(x, y, z) * sampleOffset;
+                // Get the closest depth value from light's perspective
+                float closestDepth = texture(shadowMap, fragPosLightSpace + offset).r;
+                closestDepth *= light.AttenuationRadius;
+
+                // Compare depths to determine shadow
+                if (currentDepth > closestDepth)
+                    shadow += 1.0;
+            }
+        }
+    }
+
+    // Normalize shadow result
+    shadow /= pow((sampleRadius * 2 + 1), 3); // Cubic count for 3D kernel
+
+    return shadow;
+}
+
+float SpotShadowCalculation(vec4 fragPosLightSpace, vec3 normal, sampler2D shadowMap, vec3 lightDir)
+{
+	// perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 	if(projCoords.z > 1.0)
         return 0.0;

@@ -60,6 +60,8 @@ namespace Tridium::Editor {
 		inline T* PushPanel( Args&&... args );
 		template <typename T>
 		inline T* GetPanel();
+		template <typename T>
+		inline T* GetOrEmplacePanel();
 
 		SharedPtr<EditorCamera> GetEditorCamera() { return m_EditorCamera; }
 
@@ -101,6 +103,12 @@ namespace Tridium::Editor {
 	inline T* Editor::EditorLayer::GetPanel()
 	{
 		return m_PanelStack.GetPanel<T>();
+	}
+
+	template<typename T>
+	inline T* EditorLayer::GetOrEmplacePanel()
+	{
+		return m_PanelStack.GetOrEmplacePanel<T>();
 	}
 
 }
