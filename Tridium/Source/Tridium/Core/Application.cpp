@@ -93,108 +93,51 @@ namespace Tridium {
 		m_GameInstance.reset( CreateGameInstance() );
 		m_GameInstance->Init();
 
-#ifndef IS_EDITOR
-
-		GameViewport gameViewport;
-
-#endif // !IS_EDITOR
+		m_GameViewport.Init( m_Window->GetWidth(), m_Window->GetHeight() );
 
 		uint32_t frameCounter = 0;
 		double fpsInterval = 0.0;
 
+	#ifndef IS_EDITOR
+		if ( m_ActiveScene )
+		{
+			m_ActiveScene->OnBegin();
+		}
+	#endif // IS_EDITOR
+
+
 		while ( m_Running )
 		{
-			if ( m_Window->IsMinimized() )
-			{
-				m_Window->OnUpdate();
-				continue;
-			}
-
+			// Update Time
+			const double lastFrameTime = Time::Now();
 			Time::Update();
-			const double deltaTime = Time::DeltaTime();
+			Time::s_DeltaTime = Time::Now() - lastFrameTime;
 
+			// Update FPS
 			++frameCounter;
-			fpsInterval += deltaTime;
+			fpsInterval += Time::s_DeltaTime;
 			if ( fpsInterval >= 1.0 )
 			{
 				m_FPS = frameCounter;
 				frameCounter = 0;
-				fpsInterval -= 1.0;
+				fpsInterval = 0.0;
 			}
 
-			// If the current frame time is less than the desired frame time,
-			// Sleep until the desired frame time is reached
-			const double desiredFrameTime = 1.0 / (double)m_MaxFPS;
-			if ( deltaTime < desiredFrameTime )
+			// Update Loop
+			if ( !m_Window->IsMinimized() )
 			{
-				double sleepTime = desiredFrameTime - deltaTime;
-				Time::s_DeltaTime += sleepTime;
-				std::this_thread::sleep_for( std::chrono::milliseconds( (int)( 1000.0 * sleepTime ) ) );
+				Update();
 			}
-
-			// Update Loop ========================================================================================
-
-			#ifndef IS_EDITOR
-
-			Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled );
-
-			m_ActiveScene->OnUpdate();
-
-			#endif // IS_EDITOR
-
-			// ====================================================================================================
-
-
-
-			// Render Loop ========================================================================================
-			
-			#ifndef IS_EDITOR
-
-			if ( !m_ActiveScene->GetMainCamera() )
-			{
-				auto view = m_ActiveScene->GetRegistry().view<CameraComponent>();
-				if ( !view.empty() )
-					m_ActiveScene->SetMainCamera( view.begin()[0] );
-			}
-
-			if ( m_ActiveScene->GetMainCamera() )
-			{
-				Vector3 cameraPos = m_ActiveScene->GetMainCamera()->GetGameObject().GetTransform().Position;
-				m_ActiveScene->GetSceneRenderer().Render(
-					gameViewport.GetFramebuffer(),
-					m_ActiveScene->GetMainCamera()->SceneCamera,
-					m_ActiveScene->GetMainCamera()->GetView(),
-					cameraPos );
-			}
-
-			gameViewport.Resize( m_Window->GetWidth(), m_Window->GetHeight() );
-			gameViewport.RenderToWindow();
-
-			#endif // !IS_EDITOR
-
-			
-			// ====================================================================================================
-
-
-
-			// Layers =============================================================================================
-
-			for ( Layer* layer : m_LayerStack )
-				layer->OnUpdate();
-
-			// - ImGui -
-			m_ImGuiLayer->Begin();
-
-			for ( int i = 0; i < m_LayerStack.NumLayers(); i++ )
-				m_LayerStack[i]->OnImGuiDraw();
-
-			m_ImGuiLayer->End();
-			// ---------
-			
-			// ====================================================================================================
 
 			m_Window->OnUpdate();
 		}
+
+#ifndef IS_EDITOR
+		if ( m_ActiveScene )
+		{
+			m_ActiveScene->OnEnd();
+		}
+#endif // IS_EDITOR
 
 		// Shutdown Sequence
 		{
@@ -208,6 +151,82 @@ namespace Tridium {
 		}
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////
+	void Application::Update()
+	{
+		// Update Loop ========================================================================================
+
+	#ifndef IS_EDITOR
+
+		Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled );
+
+		m_ActiveScene->OnUpdate();
+
+	#endif // IS_EDITOR
+
+		// ====================================================================================================
+
+
+
+		// Render Loop ========================================================================================
+
+	#ifndef IS_EDITOR
+
+		if ( !m_ActiveScene->GetMainCamera() )
+		{
+			auto view = m_ActiveScene->GetRegistry().view<CameraComponent>();
+			if ( !view.empty() )
+				m_ActiveScene->SetMainCamera( view.begin()[0] );
+		}
+
+		if ( m_ActiveScene->GetMainCamera() )
+		{
+			// Render the scene with the main camera
+			Vector3 cameraPos = m_ActiveScene->GetMainCamera()->GetGameObject().GetTransform().Position;
+			m_ActiveScene->GetSceneRenderer().Render(
+				m_GameViewport.GetFramebuffer(),
+				m_ActiveScene->GetMainCamera()->SceneCamera,
+				m_ActiveScene->GetMainCamera()->GetView(),
+				cameraPos );
+		}
+		else
+		{
+			// If no camera is found, render the scene with a default camera
+			m_ActiveScene->GetSceneRenderer().Render(
+				m_GameViewport.GetFramebuffer(),
+				Camera(),
+				Matrix4( 1.0f ),
+				Vector3( 0.0 ) );
+		}
+
+		m_GameViewport.Resize( m_Window->GetWidth(), m_Window->GetHeight() );
+		m_GameViewport.RenderToWindow();
+
+	#endif // !IS_EDITOR
+
+
+		// ====================================================================================================
+
+
+
+		// Layers =============================================================================================
+
+		for ( Layer* layer : m_LayerStack )
+			layer->OnUpdate();
+
+		// - ImGui -
+		m_ImGuiLayer->Begin();
+
+		for ( int i = 0; i < m_LayerStack.NumLayers(); i++ )
+			m_LayerStack[i]->OnImGuiDraw();
+
+		m_ImGuiLayer->End();
+		// ---------
+
+		// ====================================================================================================
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////
 	void Application::Quit()
 	{
 	#ifdef IS_EDITOR
@@ -217,6 +236,7 @@ namespace Tridium {
 	#endif // IS_EDITOR
 	}
 	
+	///////////////////////////////////////////////////////////////////////////////////////////
 	void Application::OnEvent( Event& e )
 	{
 		EventDispatcher dispatcher( e );
@@ -230,6 +250,7 @@ namespace Tridium {
 		}
 	}
 	
+	///////////////////////////////////////////////////////////////////////////////////////////
 	void Application::InitializeAssetManager()
 	{
 	#ifdef IS_EDITOR
@@ -241,12 +262,14 @@ namespace Tridium {
 		m_AssetManager->Init();
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////
 	bool Application::OnWindowClosed( WindowCloseEvent& e )
 	{
 		Shutdown();
 		return true;
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////
 	void Application::Shutdown()
 	{
 		m_Running = false;

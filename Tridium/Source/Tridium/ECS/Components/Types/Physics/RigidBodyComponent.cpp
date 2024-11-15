@@ -2,8 +2,5 @@
 #include "RigidBodyComponent.h"
 
 namespace Tridium {
-	RigidBodyComponent::~RigidBodyComponent()
-	{
-		Application::GetScene()->GetPhysicsScene().RemovePhysicsBody( BodyID );
-	}
+
 }

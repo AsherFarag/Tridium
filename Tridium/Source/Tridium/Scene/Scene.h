@@ -42,7 +42,7 @@ namespace Tridium {
 		inline void SetName( const std::string& a_Name ) { m_Name = a_Name; }
 		inline auto& GetRegistry() { return m_Registry; }
 		inline auto& GetRegistry() const { return m_Registry; }
-		inline auto& GetPhysicsScene() { return *m_PhysicsScene; }
+		inline const auto& GetPhysicsScene() { return m_PhysicsScene; }
 
 		void SetPaused( bool a_NewPaused ) { m_Paused = a_NewPaused; }
 		bool IsPaused() const { return m_Paused; }
@@ -96,7 +96,7 @@ namespace Tridium {
 		EntityID m_MainCamera;
 
 		SceneRenderer m_SceneRenderer;
-		UniquePtr<PhysicsScene> m_PhysicsScene;
+		SharedPtr<PhysicsScene> m_PhysicsScene;
 
 		friend SceneRenderer;
 	};

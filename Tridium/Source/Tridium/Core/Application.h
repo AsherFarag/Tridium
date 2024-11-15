@@ -10,6 +10,7 @@
 #include <Tridium/Project/Project.h>
 #include <Tridium/Core/GameInstance.h>
 #include <Tridium/Physics/PhysicsEngine.h>
+#include <Tridium/Rendering/GameViewport.h>
 
 namespace Tridium {
 
@@ -48,12 +49,14 @@ namespace Tridium {
 		void InitializeAssetManager();
 		bool OnWindowClosed( WindowCloseEvent& e );
 		void Shutdown();
+		void Update();
 
 	private:
 		bool m_Running;
 		UniquePtr<Window> m_Window;
 		ImGuiLayer* m_ImGuiLayer;
 		LayerStack m_LayerStack;
+		GameViewport m_GameViewport;
 
 		UniquePtr<PhysicsEngine> m_PhysicsEngine;
 		SharedPtr<AssetManagerBase> m_AssetManager;

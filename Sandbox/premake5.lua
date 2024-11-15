@@ -4,6 +4,8 @@ project "Sandbox"
 	language "C++"
 	cppdialect "C++20"
 
+	dependson { "Tridium" }
+
 	targetdir ("Bin/%{prj.name}/" .. outputdir)
 	objdir ("Bin-Int/%{prj.name}/" .. outputdir)
 

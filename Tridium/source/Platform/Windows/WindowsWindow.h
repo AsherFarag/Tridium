@@ -47,7 +47,7 @@ namespace Tridium {
         };
 
         WindowData m_Data;
-        RenderingContext* m_RenderingContext;
+        UniquePtr<RenderingContext> m_RenderingContext;
     };
 
 }

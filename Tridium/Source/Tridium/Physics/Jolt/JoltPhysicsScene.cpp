@@ -159,8 +159,8 @@ namespace Tridium {
 
 	void JoltPhysicsScene::RemovePhysicsBody( RigidBodyComponent& a_RigidBody )
 	{
-		RemovePhysicsBody( a_RigidBody.BodyID );
-		a_RigidBody.BodyID = JPH::BodyID::cInvalidBodyID;
+		RemovePhysicsBody( a_RigidBody.GetBodyProxy().GetBodyID() );
+		a_RigidBody.GetBodyProxy().SetBodyID( JPH::BodyID::cInvalidBodyID );
 	}
 
 	bool JoltPhysicsScene::AddPhysicsBody( const GameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent )
@@ -169,7 +169,7 @@ namespace Tridium {
 		if ( !m_Initialised )
 			return false;
 
-		a_RigidBody.BodyID = JPH::BodyID::cInvalidBodyID;
+		a_RigidBody.GetBodyProxy().SetBodyID( JPH::BodyID::cInvalidBodyID );
 
 		const JPH::Vec3 position = Util::ToJoltVec3( a_TransformComponent.GetWorldPosition() );
 		const JPH::Quat rotation = Util::ToJoltQuat( a_TransformComponent.GetOrientation() );
@@ -284,7 +284,7 @@ namespace Tridium {
 			}
 
 			m_BodyInterface.AddBody( body->GetID(), JPH::EActivation::Activate );
-			a_RigidBody.BodyID = body->GetID().GetIndexAndSequenceNumber();
+			a_RigidBody.GetBodyProxy().SetBodyID( body->GetID().GetIndexAndSequenceNumber() );
 			return true;
 		}
 
@@ -301,9 +301,64 @@ namespace Tridium {
 	void JoltPhysicsScene::UpdatePhysicsBodyTransform( const RigidBodyComponent& a_RigidBody, const TransformComponent& a_TransformComponent )
 	{
 		m_BodyInterface.SetPositionAndRotation( 
-			JPH::BodyID( a_RigidBody.BodyID ),
+			JPH::BodyID( a_RigidBody.GetBodyProxy().GetBodyID() ),
 			Util::ToJoltVec3( a_TransformComponent.GetWorldPosition() ),
 			Util::ToJoltQuat( a_TransformComponent.GetOrientation() ),
 			JPH::EActivation::Activate );
 	}
-}
+
+	Vector3 JoltPhysicsScene::GetPhysicsBodyPosition( PhysicsBodyID a_BodyID ) const
+	{
+		TE_CORE_ASSERT( a_BodyID != JPH::BodyID::cInvalidBodyID );
+		return Util::ToTridiumVec3( m_BodyInterface.GetPosition( JPH::BodyID( a_BodyID ) ) );
+	}
+
+	Quaternion JoltPhysicsScene::GetPhysicsBodyRotation( PhysicsBodyID a_BodyID ) const
+	{
+		TE_CORE_ASSERT( a_BodyID != JPH::BodyID::cInvalidBodyID );
+		return Util::ToTridiumQuat( m_BodyInterface.GetRotation( JPH::BodyID( a_BodyID ) ) );
+	}
+
+	Vector3 JoltPhysicsScene::GetPhysicsBodyLinearVelocity( PhysicsBodyID a_BodyID ) const
+	{
+		TE_CORE_ASSERT( a_BodyID != JPH::BodyID::cInvalidBodyID );
+		return Util::ToTridiumVec3( m_BodyInterface.GetLinearVelocity( JPH::BodyID( a_BodyID ) ) );
+	}
+
+	Vector3 JoltPhysicsScene::GetPhysicsBodyAngularVelocity( PhysicsBodyID a_BodyID ) const
+	{
+		TE_CORE_ASSERT( a_BodyID != JPH::BodyID::cInvalidBodyID );
+		return Util::ToTridiumVec3( m_BodyInterface.GetAngularVelocity( JPH::BodyID( a_BodyID ) ) );
+	}
+
+	bool JoltPhysicsScene::IsPhysicsBodySleeping( PhysicsBodyID a_BodyID ) const
+	{
+		TE_CORE_ASSERT( a_BodyID != JPH::BodyID::cInvalidBodyID );
+		return m_BodyInterface.IsActive( JPH::BodyID( a_BodyID ) );
+	}
+
+	void JoltPhysicsScene::SetPhysicsBodyPosition( PhysicsBodyID a_BodyID, const Vector3& a_Position )
+	{
+		TE_CORE_ASSERT( a_BodyID != JPH::BodyID::cInvalidBodyID );
+		m_BodyInterface.SetPosition( JPH::BodyID( a_BodyID ), Util::ToJoltVec3( a_Position ), JPH::EActivation::Activate );
+	}
+
+	void JoltPhysicsScene::SetPhysicsBodyRotation( PhysicsBodyID a_BodyID, const Quaternion& a_Rotation )
+	{
+		TE_CORE_ASSERT( a_BodyID != JPH::BodyID::cInvalidBodyID );
+		m_BodyInterface.SetRotation( JPH::BodyID( a_BodyID ), Util::ToJoltQuat( a_Rotation ), JPH::EActivation::Activate );
+	}
+
+	void JoltPhysicsScene::SetPhysicsBodyLinearVelocity( PhysicsBodyID a_BodyID, const Vector3& a_LinearVelocity )
+	{
+		TE_CORE_ASSERT( a_BodyID != JPH::BodyID::cInvalidBodyID );
+		m_BodyInterface.SetLinearVelocity( JPH::BodyID( a_BodyID ), Util::ToJoltVec3( a_LinearVelocity ) );
+	}
+
+	void JoltPhysicsScene::SetPhysicsBodyAngularVelocity( PhysicsBodyID a_BodyID, const Vector3& a_AngularVelocity )
+	{
+		TE_CORE_ASSERT( a_BodyID != JPH::BodyID::cInvalidBodyID );
+		m_BodyInterface.SetAngularVelocity( JPH::BodyID( a_BodyID ), Util::ToJoltVec3( a_AngularVelocity ) );
+	}
+
+} // namespace Tridium

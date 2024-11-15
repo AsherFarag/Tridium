@@ -38,6 +38,17 @@ namespace Tridium {
 
 		virtual void UpdatePhysicsBodyTransform( const RigidBodyComponent& a_RigidBody, const TransformComponent& a_TransformComponent ) override;
 
+		virtual Vector3 GetPhysicsBodyPosition( PhysicsBodyID a_BodyID ) const override;
+		virtual Quaternion GetPhysicsBodyRotation( PhysicsBodyID a_BodyID ) const override;
+		virtual Vector3 GetPhysicsBodyLinearVelocity( PhysicsBodyID a_BodyID ) const override;
+		virtual Vector3 GetPhysicsBodyAngularVelocity( PhysicsBodyID a_BodyID ) const override;
+		virtual bool IsPhysicsBodySleeping( PhysicsBodyID a_BodyID ) const override;
+
+		virtual void SetPhysicsBodyPosition( PhysicsBodyID a_BodyID, const Vector3& a_Position ) override;
+		virtual void SetPhysicsBodyRotation( PhysicsBodyID a_BodyID, const Quaternion& a_Rotation ) override;
+		virtual void SetPhysicsBodyLinearVelocity( PhysicsBodyID a_BodyID, const Vector3& a_LinearVelocity ) override;
+		virtual void SetPhysicsBodyAngularVelocity( PhysicsBodyID a_BodyID, const Vector3& a_AngularVelocity ) override;
+
 	protected:
 		bool m_Initialised = false;
 

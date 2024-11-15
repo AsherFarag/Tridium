@@ -4,23 +4,7 @@
 #include <Tridium/ECS/Components/Component.h>
 #include <Tridium/ECS/Components/Types.h>
 
-
-// TEMP!!!!
-#include <Tridium/Physics/Jolt/JoltPhysicsScene.h>
-#include <Jolt/Jolt.h>
-#include <Jolt/Physics/PhysicsSystem.h>
-#include <Jolt/Physics/Body/BodyInterface.h>
-#include <Jolt/Physics/Collision/Shape/SphereShape.h>
-#include <Jolt/Physics/Collision/Shape/BoxShape.h>
-#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
-#include <Jolt/Physics/Collision/Shape/CompoundShape.h>
-#include <Jolt/Physics/Collision/Shape/MutableCompoundShape.h>
-#include <Jolt/Physics/Body/BodyCreationSettings.h>
-
-
 namespace Tridium {
-
-	static std::vector<JPH::Ref<JPH::Shape>> s_Shapes;
 
 	Scene::Scene(const std::string& name)
 		: m_Name( name ), m_SceneRenderer(*this)
@@ -81,6 +65,7 @@ namespace Tridium {
 
 	Scene::~Scene()
 	{
+		m_PhysicsScene = nullptr;
 	}
 
 	void Scene::OnBegin()
@@ -98,7 +83,8 @@ namespace Tridium {
 				auto& rb = view.get<RigidBodyComponent>( entity );
 				auto& tc = view.get<TransformComponent>( entity );
 
-				m_PhysicsScene->AddPhysicsBody( GameObject( entity ), rb, tc );
+				if ( m_PhysicsScene->AddPhysicsBody( GameObject( entity ), rb, tc ) )
+					rb.GetBodyProxy().SetPhysicsScene( m_PhysicsScene );
 			}
 		}
 	}
@@ -121,16 +107,11 @@ namespace Tridium {
 
 			m_PhysicsScene->Tick( 1.0f / 60.0f );
 
-			JPH::PhysicsSystem& physicsSystem = static_cast<JoltPhysicsScene*>( m_PhysicsScene.get() )->m_PhysicsSystem;
-			JPH::BodyInterface& bodyInterface = physicsSystem.GetBodyInterface();
-
 			// Update the transforms from the physics scene
 			view.each( [&]( auto entity, RigidBodyComponent& rb, TransformComponent& tc )
 				{
-					JPH::Vec3 position = bodyInterface.GetPosition( JPH::BodyID{ rb.BodyID } );
-					JPH::Quat rotation = bodyInterface.GetRotation( JPH::BodyID{ rb.BodyID } );
-					tc.Position = { position.GetX(), position.GetY(), position.GetZ() };
-					tc.Rotation.SetFromQuaternion( { rotation.GetW(), rotation.GetX(), rotation.GetY(), rotation.GetZ() } );
+					tc.Position = rb.m_BodyProxy.GetPosition();
+					tc.Rotation.SetFromQuaternion( rb.m_BodyProxy.GetRotation() );
 				} );
 		}
 

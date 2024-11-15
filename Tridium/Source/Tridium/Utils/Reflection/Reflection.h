@@ -169,8 +169,14 @@ namespace Tridium::Refl::Internal {
               +[](const YAML::Node& a_Node, _REFL_ MetaAny& a_Data)                                        \
               {                                                                                            \
                   std::string enumString = a_Node.as<std::string>();                                       \
-                  a_Data = entt::resolve<ClassType>().data(entt::hashed_string(enumString.c_str()))        \
-                              .get({}).cast<ClassType>();                                                  \
+				  for (auto&& [enumValue, enumStr] : s_EnumToString)                                       \
+				  {                                                                                        \
+					  if (enumStr == enumString)                                                           \
+					  {                                                                                    \
+						  a_Data.cast<ClassType&>() = enumValue;                                            \
+						  break;                                                                           \
+					  }                                                                                    \
+				  }                                                                                        \
               });
 
 #define ENUM_VAL(EnumVal)                                                                                  \

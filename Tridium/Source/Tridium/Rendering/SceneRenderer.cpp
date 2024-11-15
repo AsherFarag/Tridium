@@ -26,11 +26,18 @@ namespace Tridium {
 			m_DefaultShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/PBR-Shadows.glsl" );
 			m_SkyboxShader.reset( Shader::Create() );
 			m_SkyboxShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/EnvironmentMap/SkyBox.glsl" );
-			m_DefaultMaterial = MakeShared<Material>();
-			m_DefaultMaterial->MetallicIntensity = 0.0f;
 			m_WhiteTexture = AssetManager::GetAsset<Texture>( TextureFactory::GetWhiteTexture() );
 			m_BlackTexture = AssetManager::GetAsset<Texture>( TextureFactory::GetBlackTexture() );
 			m_NormalTexture = AssetManager::GetAsset<Texture>( TextureFactory::GetNormalTexture() );
+			m_DefaultMaterial = MakeShared<Material>();
+			m_DefaultMaterial->MetallicIntensity = 0.0f;
+			m_DefaultMaterial->RoughnessIntensity = 1.0f;
+			m_DefaultMaterial->EmissiveIntensity = 0.0f;
+			m_DefaultMaterial->AlbedoColor = { 1.0f, 1.0f, 1.0f };
+			m_DefaultMaterial->AlbedoTexture = TextureFactory::GetWhiteTexture();
+			m_DefaultMaterial->MetallicTexture = TextureFactory::GetWhiteTexture();
+			m_DefaultMaterial->RoughnessTexture = TextureFactory::GetWhiteTexture();
+
 
 			// Load BRDF LUT
 			TextureSpecification spec;
@@ -525,7 +532,7 @@ namespace Tridium {
 
 				textureSlot++;
 				auto metallicTexture = AssetManager::GetAsset<Texture>( material->MetallicTexture );
-				if ( !metallicTexture ) metallicTexture = m_WhiteTexture;
+				if ( !metallicTexture ) metallicTexture = m_BlackTexture;
 				metallicTexture->Bind( textureSlot );
 				shader->SetInt( "u_MetallicTexture", textureSlot );
 

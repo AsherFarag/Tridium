@@ -108,8 +108,7 @@ namespace Tridium {
 		MakeContextCurrent( this );
 
 		// - Rendering Context Initialisation -
-		TODO( "Make this API dependent!" );
-		m_RenderingContext = new OpenGLContext(m_Window);
+		m_RenderingContext = RenderingContext::Create( m_Window );
 		m_RenderingContext->Init();
 
 		glfwSetWindowUserPointer( m_Window, &m_Data );
