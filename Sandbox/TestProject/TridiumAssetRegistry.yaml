@@ -1,4 +1,8 @@
 AssetMetaData:
+  - Handle: 7765604732595779487
+    AssetType: MeshSource
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX
+    Name: Cerberus_LP.FBX
   - Handle: 6932676496202442266
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_AO.jpg
@@ -7,10 +11,10 @@ AssetMetaData:
     AssetType: Mesh
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/TrollApose_low.fbx.tmesh
     Name: TrollApose_low.fbx
-  - Handle: 7765604732595779487
-    AssetType: MeshSource
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX
-    Name: Cerberus_LP.FBX
+  - Handle: 16415605052835439519
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Roughness.png
+    Name: 1001_Roughness
   - Handle: 1303307644901636996
     AssetType: Scene
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Scenes/Test.tscene
@@ -31,10 +35,6 @@ AssetMetaData:
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/textures/Revolver_Rou.tga.png
     Name: Revolver_Rou.tga
-  - Handle: 16415605052835439519
-    AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Roughness.png
-    Name: 1001_Roughness
   - Handle: 5806395090298646526
     AssetType: CubeMap
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/kloppenheim_02_puresky_4k.hdr
@@ -317,6 +317,8 @@ AssetDependencies:
     - 7765604732595779487
   10968084403603889823:
     - 11722021730479237657
+  11646296566683283447:
+    []
   9231485947035289014:
     - 0
     - 10534474357456196390

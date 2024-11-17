@@ -144,4 +144,9 @@ namespace Tridium {
 		glDrawElements( GL_TRIANGLES, a_VertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr );
 	}
 
+	void OpenGLRenderingAPI::DrawInstanced( const SharedPtr<VertexArray>& a_VertexArray, uint32_t a_InstanceCount )
+	{
+		glDrawElementsInstanced( GL_TRIANGLES, a_VertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr, a_InstanceCount );
+	}
+
 }

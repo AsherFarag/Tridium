@@ -14,6 +14,7 @@ namespace Tridium {
 
 		StaticMeshHandle Mesh;
 		std::vector<MaterialHandle> Materials;
+		bool CastShadows = true;
 	};
 
 }

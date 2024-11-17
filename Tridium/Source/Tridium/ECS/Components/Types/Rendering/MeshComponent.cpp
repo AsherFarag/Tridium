@@ -8,6 +8,7 @@ namespace Tridium {
 		BASE( Component )
 		PROPERTY( Mesh, FLAGS( Serialize, EditAnywhere ) )
 		PROPERTY( Materials, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( CastShadows, FLAGS( Serialize, EditAnywhere ) )
 	END_REFLECT( StaticMeshComponent )
 
 	StaticMeshComponent::StaticMeshComponent()

@@ -1,4 +1,5 @@
 #pragma once
+#include "DrawList.h"
 #include "Camera.h"
 #include "Shader.h"
 #include "Material.h"
@@ -47,6 +48,11 @@ namespace Tridium {
 		bool DebugDrawColliders = false;
 	};
 
+	struct RenderStats
+	{
+		uint32_t NumDrawCalls = 0u;
+	};
+
 	class SceneRenderer
 	{
 	public:
@@ -63,7 +69,6 @@ namespace Tridium {
 
 		void Clear(); // Clears all the per frame data
 		void GenerateShadowMaps();
-		void SubmitDrawCall( DrawCall&& a_DrawCall );
 
 		// - Deferred Rendering -
 		void DeferredRenderPass();
@@ -115,9 +120,10 @@ namespace Tridium {
 			Vector3 CameraPosition;
 			Camera Camera;
 		} m_SceneInfo;
-		std::vector<DrawCall> m_DrawCalls;
+		DrawList m_DrawList;
 		LightEnvironment m_LightEnvironment;
 		SharedPtr<Framebuffer> m_RenderTarget;
+		RenderStats m_RenderStats;
 		// ---------------
 
 		struct DeferredData

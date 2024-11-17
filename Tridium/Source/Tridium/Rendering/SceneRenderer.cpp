@@ -309,48 +309,14 @@ namespace Tridium {
 			);
 		}
 
-		// - Submit Draw Calls -
+		// - Submit Static Mesh Components to the Draw List -
 		{
 			auto meshComponents = m_Scene.m_Registry.view<StaticMeshComponent, TransformComponent>();
 			meshComponents.each( [&]( auto go, StaticMeshComponent& meshComponent, TransformComponent& transform )
 				{
-					SharedPtr<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>( meshComponent.Mesh );
-					if ( !staticMesh )
-						return;
-
-					SharedPtr<MeshSource> meshSource = AssetManager::GetAsset<MeshSource>( staticMesh->GetMeshSource() );
-					if ( !meshSource )
-						return;
-
-					Matrix4 worldTransform = transform.GetWorldTransform();
-
-					for ( uint32_t submeshIndex : staticMesh->GetSubMeshes() )
-					{
-						if ( submeshIndex >= meshSource->GetSubMeshes().size() )
-						{
-							TE_CORE_ASSERT( false, "Submesh index out of bounds" );
-							continue;
-						}
-
-						const SubMesh& submesh = meshSource->GetSubMeshes()[submeshIndex];
-
-						MaterialHandle material = MaterialHandle::InvalidGUID;
-						if ( submesh.MaterialIndex < meshSource->GetMaterials().size() )
-							material = meshSource->GetMaterials()[submesh.MaterialIndex];
-
-						DrawCall drawCall =
-						{
-							.VAO = submesh.VAO,
-							.Material = material,
-							.Transform = worldTransform * submesh.Transform,
-						};
-
-						// Override material
-						if ( meshComponent.Materials.size() > submesh.MaterialIndex )
-							drawCall.Material = meshComponent.Materials[submesh.MaterialIndex];
-
-						SubmitDrawCall( std::move( drawCall ) );
-					}
+					DrawPass passFlags = EDrawPass::Opaque;
+					if ( meshComponent.CastShadows ) passFlags |= EDrawPass::Shadows;
+					m_DrawList.AddCommand( passFlags, meshComponent.Mesh, meshComponent.Materials, transform.GetWorldTransform() );
 				}
 			);
 		}
@@ -364,7 +330,7 @@ namespace Tridium {
 
 	void SceneRenderer::Clear()
 	{
-		m_DrawCalls.clear();
+		m_DrawList.Clear();
 
 		for ( auto& pointLight : m_LightEnvironment.PointLights )
 			pointLight = {};
@@ -374,11 +340,9 @@ namespace Tridium {
 
 		for ( auto& directionalLight : m_LightEnvironment.DirectionalLights )
 			directionalLight = {};
-	}
 
-	void SceneRenderer::SubmitDrawCall( DrawCall&& a_DrawCall )
-	{
-		m_DrawCalls.emplace_back( a_DrawCall );
+		// Reset Render Stats
+		m_RenderStats = {};
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -408,12 +372,15 @@ namespace Tridium {
 				directionalLight.ShadowMap->Bind();
 				RenderCommand::Clear();
 
-				for ( const auto& drawCall : m_DrawCalls )
+				const auto& drawCommands = m_DrawList.GetCommandListByPass( EDrawPass::Shadows );
+				for ( const auto& [key, drawCall] : drawCommands )
 				{
-					m_ShadowMapShader->SetMatrix4( "u_PVM", directionalLight.LightSpaceMatrix * drawCall.Transform );
-
 					drawCall.VAO->Bind();
-					RenderCommand::DrawIndexed( drawCall.VAO );
+					for ( const Matrix4& transform : drawCall.Transforms )
+					{
+						m_ShadowMapShader->SetMatrix4( "u_PVM", directionalLight.LightSpaceMatrix * transform );
+						RenderCommand::DrawIndexed( drawCall.VAO );
+					}
 					drawCall.VAO->Unbind();
 				}
 
@@ -449,16 +416,16 @@ namespace Tridium {
 				pointLight.ShadowMap->Bind();
 				RenderCommand::Clear();
 
-				for ( const auto& drawCall : m_DrawCalls )
+				const auto& drawCommands = m_DrawList.GetCommandListByPass( EDrawPass::Shadows );
+				for ( const auto& [key, drawCall] : drawCommands )
 				{
-					for ( uint32_t i = 0; i < 6; i++ )
+					drawCall.VAO->Bind();
+					for ( const Matrix4& transform : drawCall.Transforms )
 					{
-						m_ShadowCubeMapShader->SetMatrix4( "u_Model", drawCall.Transform );
-
-						drawCall.VAO->Bind();
+						m_ShadowCubeMapShader->SetMatrix4( "u_Model", transform );
 						RenderCommand::DrawIndexed( drawCall.VAO );
-						drawCall.VAO->Unbind();
 					}
+					drawCall.VAO->Unbind();
 				}
 
 				pointLight.ShadowMap->Unbind();
@@ -481,12 +448,15 @@ namespace Tridium {
 				spotLight.ShadowMap->Bind();
 				RenderCommand::Clear();
 
-				for ( const auto& drawCall : m_DrawCalls )
+				const auto& drawCommands = m_DrawList.GetCommandListByPass( EDrawPass::Shadows );
+				for ( const auto& [key, drawCall] : drawCommands )
 				{
-					m_ShadowMapShader->SetMatrix4( "u_PVM", spotLight.LightSpaceMatrix * drawCall.Transform );
-
 					drawCall.VAO->Bind();
-					RenderCommand::DrawIndexed( drawCall.VAO );
+					for ( const Matrix4& transform : drawCall.Transforms )
+					{
+						m_ShadowMapShader->SetMatrix4( "u_PVM", spotLight.LightSpaceMatrix * transform );
+						RenderCommand::DrawIndexed( drawCall.VAO );
+					}
 					drawCall.VAO->Unbind();
 				}
 
@@ -626,21 +596,30 @@ namespace Tridium {
 
 		bindMaterial( m_DefaultMaterial, m_DeferredData.GBufferShader );
 
-		for ( const auto& drawCall : m_DrawCalls )
+		const auto& drawCommands = m_DrawList.GetCommandListByPass( EDrawPass::Opaque );
+		for ( const auto& [key, drawCall] : drawCommands )
 		{
-			if ( drawCall.Material != lastMaterial )
+			// Bind Material
+			if ( lastMaterial != key.Material )
 			{
-				auto material = AssetManager::GetAsset<Material>( drawCall.Material );
-				if ( !material ) material = m_DefaultMaterial;
-				bindMaterial( material, m_DeferredData.GBufferShader );
-				lastMaterial = drawCall.Material;
+				lastMaterial = key.Material;
+				SharedPtr<Material> mat = AssetManager::GetAsset<Material>( key.Material );
+				if ( !mat )
+				{
+					mat = m_DefaultMaterial;
+					lastMaterial = MaterialHandle::InvalidGUID;
+				}
+
+				bindMaterial( mat, m_DeferredData.GBufferShader );
 			}
 
-			m_DeferredData.GBufferShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * drawCall.Transform );
-			m_DeferredData.GBufferShader->SetMatrix4( "u_Model", drawCall.Transform );
-
 			drawCall.VAO->Bind();
-			RenderCommand::DrawIndexed( drawCall.VAO );
+			for ( const Matrix4& transform : drawCall.Transforms )
+			{
+				m_DeferredData.GBufferShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * transform );
+				m_DeferredData.GBufferShader->SetMatrix4( "u_Model", transform );
+				RenderCommand::DrawIndexed( drawCall.VAO );
+			}
 			drawCall.VAO->Unbind();
 		}
 
@@ -995,47 +974,47 @@ namespace Tridium {
 				shader->SetInt( "u_AOTexture", textureSlot );
 			};
 
-		for ( const auto& drawCall : m_DrawCalls )
-		{
-			bool shaderChanged = false;
-			bool materialChanged = lastMaterial != drawCall.Material;
-			if ( materialChanged )
-			{
-				lastMaterial = drawCall.Material;
-				material = AssetManager::GetAsset<Material>( drawCall.Material );
-				if ( !material )
-					material = m_DefaultMaterial;
+		//for ( const auto& drawCall : m_DrawCalls )
+		//{
+		//	bool shaderChanged = false;
+		//	bool materialChanged = lastMaterial != drawCall.Material;
+		//	if ( materialChanged )
+		//	{
+		//		lastMaterial = drawCall.Material;
+		//		material = AssetManager::GetAsset<Material>( drawCall.Material );
+		//		if ( !material )
+		//			material = m_DefaultMaterial;
 
-				if ( lastShader != material->Shader )
-				{
-					shader = AssetManager::GetAsset<Shader>( material->Shader );
-					if ( !shader )
-						shader = m_DefaultShader;
+		//		if ( lastShader != material->Shader )
+		//		{
+		//			shader = AssetManager::GetAsset<Shader>( material->Shader );
+		//			if ( !shader )
+		//				shader = m_DefaultShader;
 
-					lastShader = material->Shader;
-					shaderChanged = true;
-				}
-			}
+		//			lastShader = material->Shader;
+		//			shaderChanged = true;
+		//		}
+		//	}
 
-			if ( shaderChanged )
-			{
-				shader->Bind();
-				bindShaderUniforms();
-			}
+		//	if ( shaderChanged )
+		//	{
+		//		shader->Bind();
+		//		bindShaderUniforms();
+		//	}
 
-			if ( materialChanged )
-			{
-				bindMaterialUniforms();
-			}
+		//	if ( materialChanged )
+		//	{
+		//		bindMaterialUniforms();
+		//	}
 
-			shader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * drawCall.Transform );
-			shader->SetMatrix4( "u_Model", drawCall.Transform );
-			shader->SetFloat3( "u_CameraPosition", m_SceneInfo.CameraPosition );
+		//	shader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * drawCall.Transform );
+		//	shader->SetMatrix4( "u_Model", drawCall.Transform );
+		//	shader->SetFloat3( "u_CameraPosition", m_SceneInfo.CameraPosition );
 
-			drawCall.VAO->Bind();
-			RenderCommand::DrawIndexed( drawCall.VAO );
-			drawCall.VAO->Unbind();
-		}
+		//	drawCall.VAO->Bind();
+		//	RenderCommand::DrawIndexed( drawCall.VAO );
+		//	drawCall.VAO->Unbind();
+		//}
 	}
 
 	//////////////////////////////////////////////////////////////////////////

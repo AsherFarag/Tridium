@@ -17,6 +17,7 @@ namespace Tridium {
 		virtual void Clear() override;
 
 		virtual void DrawIndexed( const SharedPtr<VertexArray>& a_VertexArray ) override;
+		virtual void DrawInstanced( const SharedPtr<VertexArray>& a_VertexArray, uint32_t a_InstanceCount ) override;
 	};
 
 }

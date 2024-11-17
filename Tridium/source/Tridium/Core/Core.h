@@ -23,6 +23,17 @@ namespace Tridium {
 		return ( Flags & static_cast<std::underlying_type_t<_EnumFlag>>( Flag ) ) == flag;
 	}
 
+	template<typename _Array>
+	bool IsValidIndex( const _Array& a_Array, uint32_t a_Index )
+	{
+		return  a_Index >= 0 && a_Index < a_Array.size();
+	}
+
+	inline void HashCombine( size_t& a_Seed, size_t a_Hash )
+	{
+		a_Seed ^= a_Hash + 0x9e3779b9 + ( a_Seed << 6 ) + ( a_Seed >> 2 );
+	}
+
 }
 
 #define TE_BIND_EVENT_FN(fn, PlaceHolder) std::bind( &fn, this, std::placeholders::_##PlaceHolder )

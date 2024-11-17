@@ -28,6 +28,7 @@ namespace Tridium {
 		virtual void Clear() = 0;
 
 		virtual void DrawIndexed( const SharedPtr<VertexArray>& a_VertexArray ) = 0;
+		virtual void DrawInstanced( const SharedPtr<VertexArray>& a_VertexArray, uint32_t a_InstanceCount ) = 0;
 
 		static inline const API GetAPI() { return s_API; }
 
