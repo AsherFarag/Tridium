@@ -85,30 +85,27 @@ namespace Tridium::Editor {
 			ImGui::TreePop();
 		}
 
-		if ( ImGui::TreeNode( "Scene Environment" ) )
+		if ( ImGui::TreeNode( "Environment" ) )
 		{
-			if ( ImGui::TreeNode( "HDRI" ) )
+
+			if ( DrawProperty( "Environment Map", scene->GetSceneEnvironment().HDRI.EnvironmentMapHandle, EDrawPropertyFlags::Editable ) )
 			{
-
-				if ( DrawProperty( "Environment Map", scene->GetSceneEnvironment().HDRI.EnvironmentMapHandle, EDrawPropertyFlags::Editable ) )
-				{
-					auto assetManager = AssetManager::Get<Editor::EditorAssetManager>();
-					auto textureMetaData = assetManager->GetAssetMetaData( scene->GetSceneEnvironment().HDRI.EnvironmentMapHandle );
-					if ( textureMetaData.IsValid() )
-						scene->GetSceneEnvironment().HDRI.EnvironmentMap = EnvironmentMap::Create( assetManager->GetAbsolutePath( textureMetaData.Path ) );
-				}
-
-				ImGui::SliderFloat( "Exposure", &scene->GetSceneEnvironment().HDRI.Exposure, 0.0f, 10.0f );
-				ImGui::SliderFloat( "Gamma", &scene->GetSceneEnvironment().HDRI.Gamma, 0.0f, 10.0f );
-				ImGui::SliderFloat( "Blur", &scene->GetSceneEnvironment().HDRI.Blur, 0.0f, 1.0f );
-				ImGui::SliderFloat( "Intensity", &scene->GetSceneEnvironment().HDRI.Intensity, 0.0f, 10.0f );
-				DrawProperty( "Rotation", scene->GetSceneEnvironment().HDRI.RotationEular, EDrawPropertyFlags::Editable );
-
-				ImGui::TreePop();
+				auto assetManager = AssetManager::Get<Editor::EditorAssetManager>();
+				auto textureMetaData = assetManager->GetAssetMetaData( scene->GetSceneEnvironment().HDRI.EnvironmentMapHandle );
+				if ( textureMetaData.IsValid() )
+					scene->GetSceneEnvironment().HDRI.EnvironmentMap = EnvironmentMap::Create( assetManager->GetAbsolutePath( textureMetaData.Path ) );
 			}
+
+			ImGui::SliderFloat( "Exposure", &scene->GetSceneEnvironment().HDRI.Exposure, 0.0f, 10.0f );
+			ImGui::SliderFloat( "Gamma", &scene->GetSceneEnvironment().HDRI.Gamma, 0.0f, 10.0f );
+			ImGui::SliderFloat( "Blur", &scene->GetSceneEnvironment().HDRI.Blur, 0.0f, 1.0f );
+			ImGui::SliderFloat( "Intensity", &scene->GetSceneEnvironment().HDRI.Intensity, 0.0f, 10.0f );
+			DrawProperty( "Rotation", scene->GetSceneEnvironment().HDRI.RotationEular, EDrawPropertyFlags::Editable );
 
 			ImGui::TreePop();
 		}
+
+		ImGui::Separator();
 
 		if ( ImGui::Button( "Temp! Recompile Shader" ) )
 		{

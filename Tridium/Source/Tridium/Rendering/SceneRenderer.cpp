@@ -11,6 +11,7 @@
 #include <Tridium/Rendering/Mesh.h>
 #include <Tridium/Rendering/EnvironmentMap.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
+#include <Tridium/Core/Profiler.h>
 
 namespace Tridium {
 
@@ -112,19 +113,26 @@ namespace Tridium {
 
 	void SceneRenderer::Render( const SharedPtr<Framebuffer>& a_FBO, const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition )
 	{
+		// Reset per frame data
 		Clear();
+
+		ScopedTimer renderTime( m_RenderStats.RenderTime );
+
 		m_RenderTarget = a_FBO;
 
 		BeginScene( a_Camera, a_View, a_CameraPosition );
 
 		// - Generate Shadow Maps -
 		{
+			ScopedTimer shadowMapTime( m_RenderStats.ShadowMapTime );
 			GenerateShadowMaps();
 		}
 
 		// - Render Pass -
-		switch ( m_RenderSettings.RenderMode )
 		{
+			ScopedTimer geometryTime( m_RenderStats.GeometryTime );
+			switch ( m_RenderSettings.RenderMode )
+			{
 			case ERenderMode::Forward:
 			{
 				ForwardRenderPass();
@@ -140,13 +148,37 @@ namespace Tridium {
 				TE_CORE_ASSERT( false, "Unknown render mode" );
 				break;
 			}
+			}
 		}
+
+		m_RenderTarget->Bind();
+
+		// - Draw Skybox -
+		{
+			RenderSkybox();
+		}
+
+		// - Apply Post-Processing Pass -
+		{
+			ScopedTimer postProcessTime( m_RenderStats.PostProcessTime );
+			PostProcessPass();
+		}
+
+		// - Debug Draw Colliders -
+		if ( m_RenderSettings.DebugDrawColliders )
+		{
+			DebugRenderColliders();
+		}
+
+		m_RenderTarget->Unbind();
 
 		EndScene();
 	}
 
 	void SceneRenderer::BeginScene( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition )
 	{
+		ScopedTimer drawListGenerationTime( m_RenderStats.DrawListGenerationTime );
+
 		m_SceneInfo = SceneInfo
 		{
 			.ProjectionMatrix = a_Camera.GetProjection(),
@@ -512,23 +544,6 @@ namespace Tridium {
 				EFramebufferTextureFormat::Depth, ETextureFilter::Nearest );
 		}
 
-		m_RenderTarget->Bind();
-
-		// - Draw Skybox -
-		{
-			RenderSkybox();
-		}
-
-		// - Apply Post-Processing Pass -
-		{
-			PostProcessPass();
-		}
-
-		if ( m_RenderSettings.DebugDrawColliders )
-		{
-			DebugRenderColliders();
-		}
-
 		m_RenderTarget->Unbind();
 	}
 
@@ -618,7 +633,7 @@ namespace Tridium {
 			{
 				m_DeferredData.GBufferShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * transform );
 				m_DeferredData.GBufferShader->SetMatrix4( "u_Model", transform );
-				RenderCommand::DrawIndexed( drawCall.VAO );
+				DrawCall( drawCall.VAO );
 			}
 			drawCall.VAO->Unbind();
 		}
@@ -793,7 +808,7 @@ namespace Tridium {
 			RenderCommand::SetCullMode( ECullMode::None );
 
 			m_DeferredData.QuadVAO->Bind();
-			RenderCommand::DrawIndexed( m_DeferredData.QuadVAO );
+			DrawCall( m_DeferredData.QuadVAO );
 			m_DeferredData.QuadVAO->Unbind();
 		}
 
@@ -816,16 +831,6 @@ namespace Tridium {
 		// - Geometry Pass -
 		{
 			ForwardGeometryPass();
-		}
-
-		// - Draw Skybox -
-		{
-			RenderSkybox();
-		}
-
-		// - Apply Post-Processing Pass -
-		{
-			PostProcessPass();
 		}
 
 		m_RenderTarget->Unbind();
@@ -1047,7 +1052,7 @@ namespace Tridium {
 
 				SharedPtr<VertexArray>& cubeVAO = m_CubeMesh->GetSubMeshes()[0].VAO;
 				cubeVAO->Bind();
-				RenderCommand::DrawIndexed( cubeVAO );
+				DrawCall( cubeVAO );
 				cubeVAO->Unbind();
 
 				radianceMap->Unbind();
@@ -1106,7 +1111,7 @@ namespace Tridium {
 
 					m_DebugSimpleShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * model );
 
-					RenderCommand::DrawIndexed( m_DebugSphereVAO );
+					DrawCall( m_DebugSphereVAO );
 				}
 			);
 
@@ -1129,7 +1134,7 @@ namespace Tridium {
 
 					m_DebugSimpleShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * model );
 
-					RenderCommand::DrawIndexed( m_DebugCubeVAO );
+					DrawCall( m_DebugCubeVAO );
 				}
 			);
 
@@ -1152,7 +1157,7 @@ namespace Tridium {
 					SharedPtr<MeshSource> mesh = MeshFactory::CreateCapsule( collider.GetRadius(), collider.GetHalfHeight() * 2.0f, 1u, 16u, 8u );
 					SharedPtr<VertexArray> vao = mesh->GetSubMeshes()[0].VAO;
 					vao->Bind();
-					RenderCommand::DrawIndexed( vao );
+					DrawCall( vao );
 					vao->Unbind();
 				}
 			);
@@ -1175,13 +1180,19 @@ namespace Tridium {
 					SharedPtr<MeshSource> mesh = MeshFactory::CreateCylinder( collider.GetRadius(), collider.GetRadius(), collider.GetHalfHeight() * 2.0f, 1u );
 					SharedPtr<VertexArray> vao = mesh->GetSubMeshes()[0].VAO;
 					vao->Bind();
-					RenderCommand::DrawIndexed( vao );
+					DrawCall( vao );
 					vao->Unbind();
 				}
 			);
 		}
 
 		RenderCommand::SetPolygonMode( EFaces::FrontAndBack, EPolygonMode::Fill );
+	}
+
+	void SceneRenderer::DrawCall( const SharedPtr<VertexArray>& a_VAO )
+	{
+		m_RenderStats.NumDrawCalls++;
+		RenderCommand::DrawIndexed( a_VAO );
 	}
 
 }

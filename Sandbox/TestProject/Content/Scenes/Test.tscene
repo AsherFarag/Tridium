@@ -8,31 +8,164 @@ SceneEnvironment:
     Intensity: 0.300000012
     RotationEular: [0, 0, 0]
 GameObjects:
-  - GameObject: 7850692757706960595
+  - GameObject: 13195549403947562278
+    Tag: Static Mesh
+    Transform:
+      Position: [0, 30.2635994, 1.46444345]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 4642065102083697686
+      Materials: []
+      CastShadows: true
+  - GameObject: 13764862465585876058
+    Tag: Static Mesh
+    Transform:
+      Position: [0, 0.92305088, -22.5279045]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 4642065102083697686
+      Materials: []
+      CastShadows: true
+  - GameObject: 11964627630093904413
+    Tag: Static Mesh
+    Transform:
+      Position: [0, 14.9987488, -22.5279045]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 4642065102083697686
+      Materials: []
+      CastShadows: true
+  - GameObject: 14780473769718333073
+    Tag: Static Mesh
+    Transform:
+      Position: [0, 14.9987488, 0.878389835]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 4642065102083697686
+      Materials: []
+      CastShadows: true
+  - GameObject: 16872424609833773133
+    Tag: Static Mesh
+    Transform:
+      Position: [0, 14.9987488, 20.8255672]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 4642065102083697686
+      Materials: []
+      CastShadows: true
+  - GameObject: 13635787890323063257
+    Tag: Static Mesh
+    Transform:
+      Position: [0, 0.205477044, 20.8255672]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 4642065102083697686
+      Materials: []
+      CastShadows: true
+  - GameObject: 164138638235364766
+    Tag: Torus
+    Transform:
+      Position: [-2.83717656, 1.11447358, -0.257724643]
+      Rotation: [0.694977224, -1.05708408, -2.72907414e-06]
+      Scale: [0.999999821, 0.999999881, 0.99999702]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 6
+      Materials: []
+      CastShadows: true
+  - GameObject: 3190713748869791094
+    Tag: Static Mesh
+    Transform:
+      Position: [0, 0.205477044, 0.59436965]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 4642065102083697686
+      Materials: []
+      CastShadows: true
+  - GameObject: 10146863388238961059
+    Tag: Point Light
+    Transform:
+      Position: [-2.67639709, 5.00089931, 3.59148932]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    PointLightComponent:
+      LightColor: [1, 1, 1, 1]
+      Intensity: 10
+      FalloffExponent: 2
+      AttenuationRadius: 29
+      CastsShadows: true
+      ShadowMapSize: 512
+  - GameObject: 17437318913938749274
     Tag: Cube
     Transform:
-      Position: [50.5, 1.00000298, 0]
-      Rotation: [0, -0, -1.57079625]
-      Scale: [5, 0.999999821, 100]
+      Position: [-1.23696315, 1.2689718, -0.786001563]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
       Children: []
     StaticMeshComponent:
       Mesh: 2
       Materials: []
       CastShadows: true
     RigidBodyComponent:
-      m_MotionType: Static
+      m_MotionType: Dynamic
       m_Mass: 1
       m_GravityScale: 1
     BoxColliderComponent:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
       m_HalfExtents: [0.5, 0.5, 0.5]
-  - GameObject: 9671124329975338571
+  - GameObject: 5552740383857674742
+    Tag: Directional Light
+    Transform:
+      Position: [0, 0, 0]
+      Rotation: [0.785398185, 0.785398185, 0]
+      Scale: [1, 0.99999994, 0.99999994]
+      Children: []
+    DirectionalLightComponent:
+      LightColor: [1, 0.657754064, 0.357976675, 1]
+      Intensity: 0.75999999
+      CastsShadows: true
+      ShadowMapSize: [1, 13]
+  - GameObject: 11959567654399208421
     Tag: Cube
     Transform:
-      Position: [0, 1.00000298, 50.5]
-      Rotation: [1.57128525, -0, -1.57079637]
-      Scale: [5.00000095, 1, 99.9999695]
+      Position: [0, -1, 0]
+      Rotation: [0, -0, 0]
+      Scale: [100, 1, 100]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 2
+      Materials: []
+      CastShadows: true
+    RigidBodyComponent:
+      m_MotionType: Dynamic
+      m_Mass: 1
+      m_GravityScale: 1
+    BoxColliderComponent:
+      m_Center: [0, 0, 0]
+      m_Rotation: [0, 0, 0]
+      m_HalfExtents: [0.5, 0.5, 0.5]
+  - GameObject: 11139421215139256591
+    Tag: Cube
+    Transform:
+      Position: [-50.5, 1.00000298, 0]
+      Rotation: [0, -0, -1.57079625]
+      Scale: [5, 0.999999821, 100]
       Children: []
     StaticMeshComponent:
       Mesh: 2
@@ -65,10 +198,29 @@ GameObjects:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
       m_HalfExtents: [0.5, 0.5, 0.5]
-  - GameObject: 11139421215139256591
+  - GameObject: 9671124329975338571
     Tag: Cube
     Transform:
-      Position: [-50.5, 1.00000298, 0]
+      Position: [0, 1.00000298, 50.5]
+      Rotation: [1.57128525, -0, -1.57079637]
+      Scale: [5.00000095, 1, 99.9999695]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 2
+      Materials: []
+      CastShadows: true
+    RigidBodyComponent:
+      m_MotionType: Static
+      m_Mass: 1
+      m_GravityScale: 1
+    BoxColliderComponent:
+      m_Center: [0, 0, 0]
+      m_Rotation: [0, 0, 0]
+      m_HalfExtents: [0.5, 0.5, 0.5]
+  - GameObject: 7850692757706960595
+    Tag: Cube
+    Transform:
+      Position: [50.5, 1.00000298, 0]
       Rotation: [0, -0, -1.57079625]
       Scale: [5, 0.999999821, 100]
       Children: []
@@ -84,89 +236,3 @@ GameObjects:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
       m_HalfExtents: [0.5, 0.5, 0.5]
-  - GameObject: 11959567654399208421
-    Tag: Cube
-    Transform:
-      Position: [0, -1, 0]
-      Rotation: [0, -0, 0]
-      Scale: [100, 1, 100]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 2
-      Materials: []
-      CastShadows: true
-    RigidBodyComponent:
-      m_MotionType: Dynamic
-      m_Mass: 1
-      m_GravityScale: 1
-    BoxColliderComponent:
-      m_Center: [0, 0, 0]
-      m_Rotation: [0, 0, 0]
-      m_HalfExtents: [0.5, 0.5, 0.5]
-  - GameObject: 5552740383857674742
-    Tag: Directional Light
-    Transform:
-      Position: [0, 0, 0]
-      Rotation: [0.785398185, 0.785398185, 0]
-      Scale: [1, 0.99999994, 0.99999994]
-      Children: []
-    DirectionalLightComponent:
-      LightColor: [1, 0.657754064, 0.357976675, 1]
-      Intensity: 0.75999999
-      CastsShadows: true
-      ShadowMapSize: [8192, 8192]
-  - GameObject: 17437318913938749274
-    Tag: Cube
-    Transform:
-      Position: [-1.23696315, 1.2689718, -0.786001563]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 2
-      Materials: []
-      CastShadows: true
-    RigidBodyComponent:
-      m_MotionType: Dynamic
-      m_Mass: 1
-      m_GravityScale: 1
-    BoxColliderComponent:
-      m_Center: [0, 0, 0]
-      m_Rotation: [0, 0, 0]
-      m_HalfExtents: [0.5, 0.5, 0.5]
-  - GameObject: 10146863388238961059
-    Tag: Point Light
-    Transform:
-      Position: [-2.67639709, 5.00089931, 3.59148932]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Children: []
-    PointLightComponent:
-      LightColor: [1, 1, 1, 1]
-      Intensity: 10
-      FalloffExponent: 2
-      AttenuationRadius: 29
-      CastsShadows: true
-      ShadowMapSize: 512
-  - GameObject: 3190713748869791094
-    Tag: Static Mesh
-    Transform:
-      Position: [0, 0.205477044, 0.59436965]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 4642065102083697686
-      Materials: []
-      CastShadows: true
-  - GameObject: 164138638235364766
-    Tag: Torus
-    Transform:
-      Position: [-2.83717656, 1.11447358, -0.257724643]
-      Rotation: [0.694977224, -1.05708408, -2.72907414e-06]
-      Scale: [0.999999821, 0.999999881, 0.99999702]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 6
-      Materials: []
-      CastShadows: true

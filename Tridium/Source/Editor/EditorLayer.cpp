@@ -21,6 +21,7 @@
 #include "Panels/AssetRegistryPanel.h"
 #include "Panels/SceneSettingsPanel.h"
 #include "Panels/ProjectSettingsPanel.h"
+#include "Panels/StatsPanel.h"
 
 #include <Tridium/IO/SceneSerializer.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
@@ -30,23 +31,6 @@
 #include <Tridium/IO/Serializer.h>
 
 namespace Tridium::Editor {
-
-	// TEMP
-	class Stats : public Panel
-	{
-	public:
-		Stats() : Panel( "Stats" ) {}
-
-		virtual void OnImGuiDraw()
-		{
-			if ( ImGuiBegin() )
-			{
-				ImGui::Text( "FPS: %i", Application::Get().GetFPS() );
-			}
-
-			ImGuiEnd();
-		}
-	};
 
 	EditorLayer::EditorLayer()
 		: Layer( "EditorLayer")
@@ -66,7 +50,7 @@ namespace Tridium::Editor {
 		m_ContentBrowser = m_PanelStack.PushPanel<ContentBrowserPanel>();
 		m_GameViewportPanel = m_PanelStack.PushPanel<GameViewportPanel>();
 		m_EditorViewportPanel = m_PanelStack.PushPanel<EditorViewportPanel>( m_EditorCamera );
-		m_PanelStack.PushPanel<Stats>();
+		m_PanelStack.PushPanel<StatsPanel>();
 	}
 
 	void EditorLayer::OnDetach()
@@ -337,7 +321,7 @@ namespace Tridium::Editor {
 			if ( ImGui::BeginMenu( "Panels" ) )
 			{
 				if ( ImGui::MenuItem( "Content Browser" ) ) m_PanelStack.PushPanel<ContentBrowserPanel>();
-				if ( ImGui::MenuItem( "Stats" ) ) m_PanelStack.PushPanel<Stats>();
+				if ( ImGui::MenuItem( "Stats" ) ) m_PanelStack.PushPanel<StatsPanel>();
 				if ( ImGui::MenuItem( "Asset Registry" ) ) m_PanelStack.PushPanel<AssetRegistryPanel>();
 				if ( ImGui::MenuItem( "Scene Renderer" ) ) m_PanelStack.PushPanel<SceneRendererPanel>();
 

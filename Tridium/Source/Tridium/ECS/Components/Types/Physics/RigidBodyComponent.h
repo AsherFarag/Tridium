@@ -9,6 +9,10 @@ namespace Tridium {
 	{
 		REFLECT( RigidBodyComponent )
 	public:
+		RigidBodyComponent( const RigidBodyComponent& a_Other );
+		RigidBodyComponent( RigidBodyComponent&& a_Other ) noexcept;
+		RigidBodyComponent& operator=( const RigidBodyComponent& a_Other );
+
 		void SetMotionType( EMotionType a_MotionType ) { m_MotionType = a_MotionType; }
 		EMotionType GetMotionType() const { return m_MotionType; }
 

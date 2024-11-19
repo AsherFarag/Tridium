@@ -43,9 +43,10 @@ namespace Tridium {
 			for ( auto [id, srcStorage] : src.storage() )
 			{
 				auto* dstStorage = m_Registry.storage( id );
-				for ( auto entity : srcStorage )
+				for ( auto it = srcStorage.rbegin(); it != srcStorage.rend(); ++it )
 				{
-					entt::entity newEntity = entityMap[entity];
+					entt::entity oldEntity = *it;
+					entt::entity newEntity = entityMap[oldEntity];
 
 					Refl::MetaType componentType = entt::resolve( srcStorage.type() );
 					Refl::Internal::AddToGameObjectFunc addToGameObjectFunc;
@@ -56,7 +57,7 @@ namespace Tridium {
 					}
 
 					Refl::MetaAny dstComponent = componentType.from_void( addToGameObjectFunc( *this, newEntity ) );
-					Refl::MetaAny srcComponent = componentType.from_void( srcStorage.value( entity ) );
+					Refl::MetaAny srcComponent = componentType.from_void( srcStorage.value( oldEntity ) );
 					dstComponent.assign( srcComponent );
 				}
 			}

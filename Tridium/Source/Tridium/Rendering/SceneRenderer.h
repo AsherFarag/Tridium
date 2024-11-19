@@ -50,6 +50,12 @@ namespace Tridium {
 
 	struct RenderStats
 	{
+		double RenderTime = 0.0;
+		double DrawListGenerationTime = 0.0;
+		double GeometryTime = 0.0;
+		double ShadowMapTime = 0.0;
+		double PostProcessTime = 0.0;
+
 		uint32_t NumDrawCalls = 0u;
 	};
 
@@ -62,6 +68,8 @@ namespace Tridium {
 
 		const RenderSettings& GetRenderSettings() const { return m_RenderSettings; }
 		void SetRenderSettings( const RenderSettings& a_RenderSettings ) { m_RenderSettings = a_RenderSettings; }
+
+		const RenderStats& GetRenderStats() const { return m_RenderStats; }
 
 	protected:
 		void BeginScene( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition );
@@ -85,6 +93,8 @@ namespace Tridium {
 		void PostProcessPass();
 
 		void DebugRenderColliders();
+
+		void DrawCall( const SharedPtr<VertexArray>& a_VAO );
 
 	private:
 		RenderSettings m_RenderSettings;

@@ -41,6 +41,7 @@ namespace Tridium {
 
 		Window& GetWindow() { return *m_Window; }
 		uint32_t GetFPS() const { return m_FPS; }
+		double GetFrameTime() const { return 1000.0 / m_FPS; }
 
 		// - Scene -
 		static SharedPtr<Scene> GetScene() { return s_Instance->m_ActiveScene; }
