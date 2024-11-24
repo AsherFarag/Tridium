@@ -82,20 +82,7 @@ namespace Tridium {
 		m_IsRunning = true;
 		m_HasBegunPlay = true;
 
-		m_MainCamera = INVALID_ENTITY_ID;
-		auto cameras = m_Registry.view<CameraComponent>();
-		for ( GameObject camera : cameras )
-		{
-			if ( cameras.get<CameraComponent>( camera ).IsMainCamera )
-			{
-				m_MainCamera = camera;
-			}
-		}
-
-		if ( !IsGameObjectValid(m_MainCamera) )
-		{
-			m_MainCamera = cameras.front();
-		}
+		GetMainCamera();
 
 		// Initialize Physics Scene
 		{
@@ -239,7 +226,31 @@ namespace Tridium {
 
 	CameraComponent* Scene::GetMainCamera()
 	{
-		return m_Registry.try_get<CameraComponent>( m_MainCamera );
+		if ( IsGameObjectValid( m_MainCamera ) )
+		{
+			if ( auto* camera = TryGetComponentFromGameObject<CameraComponent>( m_MainCamera ) )
+				return camera;
+		}
+
+		m_MainCamera = INVALID_ENTITY_ID;
+		auto cameras = m_Registry.view<CameraComponent>();
+		CameraComponent* mainCamera = nullptr;
+		for ( GameObject camera : cameras )
+		{
+			if ( cameras.get<CameraComponent>( camera ).IsMainCamera )
+			{
+				m_MainCamera = camera;
+				mainCamera = &cameras.get<CameraComponent>( camera );
+			}
+		}
+
+		if ( !IsGameObjectValid( m_MainCamera ) )
+		{
+			m_MainCamera = cameras.front();
+			mainCamera = &cameras.get<CameraComponent>( m_MainCamera );
+		}
+
+		return mainCamera;
 	}
 
 	template<>

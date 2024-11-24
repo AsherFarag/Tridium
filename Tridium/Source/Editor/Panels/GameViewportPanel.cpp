@@ -24,7 +24,7 @@ namespace Tridium::Editor {
 		auto sceneCameraInfo = GetSceneCamera();
 
 		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2( 2.f, 2.f ) );
-		if ( ImGui::Begin( m_Name.c_str() ) && sceneCameraInfo )
+		if ( sceneCameraInfo && ImGui::Begin( m_Name.c_str() ) )
 		{
 			auto&& [camera, view, position] = sceneCameraInfo.value();
 
