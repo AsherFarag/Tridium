@@ -6,7 +6,8 @@
 #include <Tridium/Physics/PhysicsScene.h>
 
 namespace Tridium {
-	typedef entt::entity EntityID;
+	using EntityID = entt::entity;
+	static constexpr EntityID INVALID_ENTITY_ID = entt::null;
 
 	class Camera;
 	class CameraComponent;
@@ -50,6 +51,7 @@ namespace Tridium {
 		bool IsRunning() const { return m_IsRunning; }
 
 		CameraComponent* GetMainCamera();
+		EntityID GetMainCameraGameObject() const { return m_MainCamera; }
 		void SetMainCamera( const EntityID& a_Camera ) { m_MainCamera = a_Camera; }
 		void Clear();
 
@@ -93,6 +95,7 @@ namespace Tridium {
 		SceneEnvironment m_SceneEnvironment;
 		bool m_Paused = false;
 		bool m_IsRunning = false;
+		bool m_HasBegunPlay = false;
 		EntityID m_MainCamera;
 
 		SceneRenderer m_SceneRenderer;

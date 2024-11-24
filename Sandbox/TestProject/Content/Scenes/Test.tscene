@@ -8,94 +8,108 @@ SceneEnvironment:
     Intensity: 0.300000012
     RotationEular: [0, 0, 0]
 GameObjects:
-  - GameObject: 13195549403947562278
-    Tag: Static Mesh
+  - GameObject: 14625890535332711082
+    Tag: Player
     Transform:
-      Position: [0, 30.2635994, 1.46444345]
+      Position: [0, 2.4026413, -18.7897606]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
       Children: []
     StaticMeshComponent:
-      Mesh: 4642065102083697686
+      Mesh: 10
       Materials: []
       CastShadows: true
-  - GameObject: 13764862465585876058
-    Tag: Static Mesh
+    RigidBodyComponent:
+      m_PhysicsLayer: Player
+      m_MotionType: Dynamic
+      m_Mass: 1
+      m_GravityScale: 1
+      m_Restitution: 0
+      m_LinearMotionConstraint:
+        XMotion: Free
+        XLimit: 0
+        YMotion: Free
+        YLimit: 0
+        ZMotion: Free
+        ZLimit: 0
+      m_AngularMotionConstraint:
+        Swing1Motion: Locked
+        Swing1Limit: 0
+        Swing2Motion: Free
+        Swing2Limit: 0
+        TwistMotion: Locked
+        TwistLimit: 0
+    CapsuleColliderComponent:
+      m_Center: [0, 0, 0]
+      m_Rotation: [0, 0, 0]
+      m_Radius: 0.5
+      m_HalfHeight: 0.5
+    CameraComponent:
+      SceneCamera:
+        m_Perspective:
+          FOV: 75
+          Near: 0.00999999978
+          Far: 1000
+        m_Orthographic:
+          Size: 10
+          Near: -1000
+          Far: 1000
+        m_ProjectionType: Perspective
+      IsMainCamera: true
+    CharacterControllerComponent:
+      m_Friction: 10
+      m_MovementSpeed: 20
+      m_MovementAcceleration: 15
+      m_AirMovementControl: 0.100000001
+      m_JumpForce: 5
+      m_LookSensitivity: 15
+  - GameObject: 5063293338346141733
+    Tag: Directional Light
     Transform:
-      Position: [0, 0.92305088, -22.5279045]
+      Position: [0, 0, 0]
+      Rotation: [0.785398364, 0.784909844, 4.00199667e-07]
+      Scale: [0.99999994, 0.999999642, 0.999999881]
+      Children: []
+    DirectionalLightComponent:
+      LightColor: [1, 0.751018167, 0.552529216, 1]
+      Intensity: 5
+      CastsShadows: true
+      ShadowMapSize: [8192, 8192]
+  - GameObject: 11269619174473686910
+    Tag: Cube
+    Transform:
+      Position: [0, 0, 0]
       Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
+      Scale: [100.18351, 1, 100.226601]
       Children: []
     StaticMeshComponent:
-      Mesh: 4642065102083697686
+      Mesh: 2
       Materials: []
       CastShadows: true
-  - GameObject: 11964627630093904413
-    Tag: Static Mesh
-    Transform:
-      Position: [0, 14.9987488, -22.5279045]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 4642065102083697686
-      Materials: []
-      CastShadows: true
-  - GameObject: 14780473769718333073
-    Tag: Static Mesh
-    Transform:
-      Position: [0, 14.9987488, 0.878389835]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 4642065102083697686
-      Materials: []
-      CastShadows: true
-  - GameObject: 16872424609833773133
-    Tag: Static Mesh
-    Transform:
-      Position: [0, 14.9987488, 20.8255672]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 4642065102083697686
-      Materials: []
-      CastShadows: true
-  - GameObject: 13635787890323063257
-    Tag: Static Mesh
-    Transform:
-      Position: [0, 0.205477044, 20.8255672]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 4642065102083697686
-      Materials: []
-      CastShadows: true
-  - GameObject: 164138638235364766
-    Tag: Torus
-    Transform:
-      Position: [-2.83717656, 1.11447358, -0.257724643]
-      Rotation: [0.694977224, -1.05708408, -2.72907414e-06]
-      Scale: [0.999999821, 0.999999881, 0.99999702]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 6
-      Materials: []
-      CastShadows: true
-  - GameObject: 3190713748869791094
-    Tag: Static Mesh
-    Transform:
-      Position: [0, 0.205477044, 0.59436965]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-      Children: []
-    StaticMeshComponent:
-      Mesh: 4642065102083697686
-      Materials: []
-      CastShadows: true
+    RigidBodyComponent:
+      m_PhysicsLayer: Static
+      m_MotionType: Static
+      m_Mass: 1
+      m_GravityScale: 1
+      m_Restitution: 0
+      m_LinearMotionConstraint:
+        XMotion: Free
+        XLimit: 0
+        YMotion: Free
+        YLimit: 0
+        ZMotion: Free
+        ZLimit: 0
+      m_AngularMotionConstraint:
+        Swing1Motion: Free
+        Swing1Limit: 0
+        Swing2Motion: Free
+        Swing2Limit: 0
+        TwistMotion: Free
+        TwistLimit: 0
+    BoxColliderComponent:
+      m_Center: [0, 0, 0]
+      m_Rotation: [0, 0, 0]
+      m_HalfExtents: [0.5, 0.5, 0.5]
   - GameObject: 10146863388238961059
     Tag: Point Light
     Transform:
@@ -122,44 +136,98 @@ GameObjects:
       Materials: []
       CastShadows: true
     RigidBodyComponent:
+      m_PhysicsLayer: Dynamic
       m_MotionType: Dynamic
       m_Mass: 1
       m_GravityScale: 1
+      m_Restitution: 0.5
+      m_LinearMotionConstraint:
+        XMotion: Free
+        XLimit: 0
+        YMotion: Free
+        YLimit: 0
+        ZMotion: Free
+        ZLimit: 0
+      m_AngularMotionConstraint:
+        Swing1Motion: Free
+        Swing1Limit: 0
+        Swing2Motion: Free
+        Swing2Limit: 0
+        TwistMotion: Free
+        TwistLimit: 0
     BoxColliderComponent:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
       m_HalfExtents: [0.5, 0.5, 0.5]
-  - GameObject: 5552740383857674742
-    Tag: Directional Light
+  - GameObject: 7464751459525842126
+    Tag: Static Mesh
     Transform:
-      Position: [0, 0, 0]
-      Rotation: [0.785398185, 0.785398185, 0]
-      Scale: [1, 0.99999994, 0.99999994]
-      Children: []
-    DirectionalLightComponent:
-      LightColor: [1, 0.657754064, 0.357976675, 1]
-      Intensity: 0.75999999
-      CastsShadows: true
-      ShadowMapSize: [1, 13]
-  - GameObject: 11959567654399208421
-    Tag: Cube
-    Transform:
-      Position: [0, -1, 0]
+      Position: [35.7697372, 6.23622036, 0]
       Rotation: [0, -0, 0]
-      Scale: [100, 1, 100]
+      Scale: [1, 1, 1]
       Children: []
     StaticMeshComponent:
-      Mesh: 2
+      Mesh: 5219398082506591880
       Materials: []
       CastShadows: true
     RigidBodyComponent:
+      m_PhysicsLayer: Dynamic
       m_MotionType: Dynamic
       m_Mass: 1
       m_GravityScale: 1
-    BoxColliderComponent:
+      m_Restitution: 0.5
+      m_LinearMotionConstraint:
+        XMotion: Free
+        XLimit: 0
+        YMotion: Free
+        YLimit: 0
+        ZMotion: Free
+        ZLimit: 0
+      m_AngularMotionConstraint:
+        Swing1Motion: Free
+        Swing1Limit: 0
+        Swing2Motion: Free
+        Swing2Limit: 0
+        TwistMotion: Free
+        TwistLimit: 0
+    MeshColliderComponent:
+      m_Mesh: 5219398082506591880
+  - GameObject: 18001477331607899909
+    Tag: Capsule
+    Transform:
+      Position: [35.9590073, 13.7651777, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 10
+      Materials: []
+      CastShadows: true
+    RigidBodyComponent:
+      m_PhysicsLayer: Dynamic
+      m_MotionType: Dynamic
+      m_Mass: 1
+      m_GravityScale: 1
+      m_Restitution: 0.5
+      m_LinearMotionConstraint:
+        XMotion: Free
+        XLimit: 0
+        YMotion: Free
+        YLimit: 0
+        ZMotion: Free
+        ZLimit: 0
+      m_AngularMotionConstraint:
+        Swing1Motion: Free
+        Swing1Limit: 0
+        Swing2Motion: Free
+        Swing2Limit: 0
+        TwistMotion: Free
+        TwistLimit: 0
+    CapsuleColliderComponent:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
-      m_HalfExtents: [0.5, 0.5, 0.5]
+      m_Radius: 0.5
+      m_HalfHeight: 0.5
   - GameObject: 11139421215139256591
     Tag: Cube
     Transform:
@@ -172,9 +240,25 @@ GameObjects:
       Materials: []
       CastShadows: true
     RigidBodyComponent:
+      m_PhysicsLayer: Static
       m_MotionType: Static
       m_Mass: 1
       m_GravityScale: 1
+      m_Restitution: 0
+      m_LinearMotionConstraint:
+        XMotion: Free
+        XLimit: 0
+        YMotion: Free
+        YLimit: 0
+        ZMotion: Free
+        ZLimit: 0
+      m_AngularMotionConstraint:
+        Swing1Motion: Free
+        Swing1Limit: 0
+        Swing2Motion: Free
+        Swing2Limit: 0
+        TwistMotion: Free
+        TwistLimit: 0
     BoxColliderComponent:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
@@ -191,9 +275,25 @@ GameObjects:
       Materials: []
       CastShadows: true
     RigidBodyComponent:
+      m_PhysicsLayer: Static
       m_MotionType: Static
-      m_Mass: 1
+      m_Mass: 0
       m_GravityScale: 1
+      m_Restitution: 0.5
+      m_LinearMotionConstraint:
+        XMotion: Free
+        XLimit: 0
+        YMotion: Free
+        YLimit: 0
+        ZMotion: Free
+        ZLimit: 0
+      m_AngularMotionConstraint:
+        Swing1Motion: Free
+        Swing1Limit: 0
+        Swing2Motion: Free
+        Swing2Limit: 0
+        TwistMotion: Free
+        TwistLimit: 0
     BoxColliderComponent:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
@@ -210,9 +310,25 @@ GameObjects:
       Materials: []
       CastShadows: true
     RigidBodyComponent:
+      m_PhysicsLayer: Static
       m_MotionType: Static
       m_Mass: 1
       m_GravityScale: 1
+      m_Restitution: 0
+      m_LinearMotionConstraint:
+        XMotion: Free
+        XLimit: 0
+        YMotion: Free
+        YLimit: 0
+        ZMotion: Free
+        ZLimit: 0
+      m_AngularMotionConstraint:
+        Swing1Motion: Free
+        Swing1Limit: 0
+        Swing2Motion: Free
+        Swing2Limit: 0
+        TwistMotion: Free
+        TwistLimit: 0
     BoxColliderComponent:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
@@ -229,10 +345,48 @@ GameObjects:
       Materials: []
       CastShadows: true
     RigidBodyComponent:
+      m_PhysicsLayer: Static
       m_MotionType: Static
-      m_Mass: 1
+      m_Mass: 0
       m_GravityScale: 1
+      m_Restitution: 0.5
+      m_LinearMotionConstraint:
+        XMotion: Free
+        XLimit: 0
+        YMotion: Free
+        YLimit: 0
+        ZMotion: Free
+        ZLimit: 0
+      m_AngularMotionConstraint:
+        Swing1Motion: Free
+        Swing1Limit: 0
+        Swing2Motion: Free
+        Swing2Limit: 0
+        TwistMotion: Free
+        TwistLimit: 0
     BoxColliderComponent:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
       m_HalfExtents: [0.5, 0.5, 0.5]
+  - GameObject: 164138638235364766
+    Tag: Torus
+    Transform:
+      Position: [-2.83717656, 1.11447358, -0.257724643]
+      Rotation: [0.694977224, -1.05708408, -2.72907414e-06]
+      Scale: [0.999999821, 0.999999881, 0.99999702]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 6
+      Materials: []
+      CastShadows: true
+  - GameObject: 3190713748869791094
+    Tag: Static Mesh
+    Transform:
+      Position: [0, 0.205477044, 0.59436965]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 4642065102083697686
+      Materials: []
+      CastShadows: true

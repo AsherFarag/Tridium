@@ -175,6 +175,9 @@ namespace Tridium::Editor {
 			Scene* scene = m_SceneSnapshot.release();
 			SetActiveScene( SharedPtr<Scene>( scene ) );
 		}
+
+		TODO( "TEMP?" );
+		Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Normal );
 	}
 
 	bool EditorLayer::OnKeyPressed( KeyPressedEvent& e )
@@ -208,6 +211,15 @@ namespace Tridium::Editor {
 			if ( control )
 			{
 				ScriptEngine::Recompile();
+				return true;
+			}
+			break;
+		}
+		case Input::KEY_ESCAPE:
+		{
+			if ( CurrentSceneState == SceneState::Play )
+			{
+				OnEndScene();
 				return true;
 			}
 			break;

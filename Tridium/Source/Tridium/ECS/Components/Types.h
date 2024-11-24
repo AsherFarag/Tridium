@@ -6,6 +6,7 @@
 #include "Types/Common/TransformComponent.h"
 #include "Types/Common/LuaScriptComponent.h"
 #include "Types/Common/CameraControllerComponent.h"
+#include "Types/Common/CharacterControllerComponent.h"
 
 // - Physics -
 #include "Types/Physics/ColliderComponents.h"

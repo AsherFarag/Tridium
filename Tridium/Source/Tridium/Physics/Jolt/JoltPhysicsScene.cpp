@@ -2,9 +2,12 @@
 #include "JoltPhysicsScene.h"
 #include "JoltUtil.h"
 #include "JoltColliders.h"
+#include "JoltPhysicsFilter.h"
+#include "JoltDebugRenderer.h"
 
 #include <Tridium/ECS/Components/Types.h>
 #include <Tridium/Asset/AssetManager.h>
+#include <Tridium/Physics/PhysicsLayer.h>
 
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
@@ -14,12 +17,40 @@
 #include <Jolt/Physics/Collision/Shape/CompoundShape.h>
 #include <Jolt/Physics/Collision/Shape/MutableCompoundShape.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <Jolt/Physics/Constraints/Constraint.h>
+#include <Jolt/Physics/Constraints/SixDOFConstraint.h>
+#include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/Physics/Collision/CastResult.h>
 
 namespace Tridium {
 	namespace Layers {
-		static constexpr JPH::ObjectLayer NON_MOVING = 0;
-		static constexpr JPH::ObjectLayer MOVING = 1;
-		static constexpr JPH::ObjectLayer NUM_LAYERS = 2;
+
+		TODO( "Set up a proper Physics Layer Manager Initialiser. Probably in the Project Settings." )
+		static PhysicsLayerManager s_PhysicsLayerManager;
+
+		static PhysicsLayerMask s_StaticPhysicsLayerMask;
+		static PhysicsLayerMask s_DynamicPhysicsLayerMask;
+		static PhysicsLayerMask s_PlayerPhysicsLayerMask;
+
+		static bool s_PhysicsLayerMasksInitialised = (
+			s_StaticPhysicsLayerMask.SetCollisionResponse( EPhysicsLayer::Static, ECollisionResponse::Ignore ),
+			s_StaticPhysicsLayerMask.SetCollisionResponse( EPhysicsLayer::Dynamic, ECollisionResponse::Block ),
+			s_StaticPhysicsLayerMask.SetCollisionResponse( EPhysicsLayer::Player, ECollisionResponse::Block ),
+			s_DynamicPhysicsLayerMask.SetCollisionResponse( EPhysicsLayer::Static, ECollisionResponse::Block ),
+			s_DynamicPhysicsLayerMask.SetCollisionResponse( EPhysicsLayer::Dynamic, ECollisionResponse::Block ),
+			s_DynamicPhysicsLayerMask.SetCollisionResponse( EPhysicsLayer::Player, ECollisionResponse::Block ),
+			s_PlayerPhysicsLayerMask.SetCollisionResponse( EPhysicsLayer::Static, ECollisionResponse::Block ),
+			s_PlayerPhysicsLayerMask.SetCollisionResponse( EPhysicsLayer::Dynamic, ECollisionResponse::Block ),
+			s_PlayerPhysicsLayerMask.SetCollisionResponse( EPhysicsLayer::Player, ECollisionResponse::Block ),
+			true
+			);
+
+		static bool s_PhysicsLayerManagerInitialised = (
+			s_PhysicsLayerManager.SetLayerMask( EPhysicsLayer::Static, s_StaticPhysicsLayerMask ),
+			s_PhysicsLayerManager.SetLayerMask( EPhysicsLayer::Dynamic, s_DynamicPhysicsLayerMask ),
+			s_PhysicsLayerManager.SetLayerMask( EPhysicsLayer::Player, s_PlayerPhysicsLayerMask ),
+			true
+			);
 
 		// Class that determines if two object layers can collide
 		class ObjectLayerPairFilterImpl : public JPH::ObjectLayerPairFilter
@@ -27,16 +58,8 @@ namespace Tridium {
 		public:
 			virtual bool ShouldCollide( JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2 ) const override
 			{
-				switch ( inObject1 )
-				{
-				case Layers::NON_MOVING:
-					return inObject2 == Layers::MOVING; // Non moving only collides with moving
-				case Layers::MOVING:
-					return true; // Moving collides with everything
-				default:
-					JPH_ASSERT( false );
-					return false;
-				}
+				ECollisionResponse response = s_PhysicsLayerManager.GetCollisionResponse( static_cast<EPhysicsLayer>( inObject1 ), static_cast<EPhysicsLayer>( inObject2 ) );
+				return response == ECollisionResponse::Block;
 			}
 		};
 
@@ -59,9 +82,9 @@ namespace Tridium {
 		public:
 			BPLayerInterfaceImpl()
 			{
-				// Create a mapping table from object to broad phase layer
-				mObjectToBroadPhase[Layers::NON_MOVING] = BroadPhaseLayers::NON_MOVING;
-				mObjectToBroadPhase[Layers::MOVING] = BroadPhaseLayers::MOVING;
+				mObjectToBroadPhase[static_cast<JPH::ObjectLayer>( EPhysicsLayer::Static  )] = BroadPhaseLayers::NON_MOVING;
+				mObjectToBroadPhase[static_cast<JPH::ObjectLayer>( EPhysicsLayer::Dynamic )] = BroadPhaseLayers::MOVING;
+				mObjectToBroadPhase[static_cast<JPH::ObjectLayer>( EPhysicsLayer::Player  )] = BroadPhaseLayers::MOVING;
 			}
 
 			virtual JPH::uint GetNumBroadPhaseLayers() const override
@@ -71,11 +94,11 @@ namespace Tridium {
 
 			virtual JPH::BroadPhaseLayer GetBroadPhaseLayer( JPH::ObjectLayer inLayer ) const override
 			{
-				JPH_ASSERT( inLayer < Layers::NUM_LAYERS );
+				JPH_ASSERT( inLayer < static_cast<JPH::ObjectLayer>( EPhysicsLayer::NUM_LAYERS ) );
 				return mObjectToBroadPhase[inLayer];
 			}
 		private:
-			JPH::BroadPhaseLayer mObjectToBroadPhase[Layers::NUM_LAYERS];
+			JPH::BroadPhaseLayer mObjectToBroadPhase[(size_t)EPhysicsLayer::NUM_LAYERS];
 		};
 
 		// Class that determines if an object layer can collide with a broadphase layer
@@ -84,11 +107,13 @@ namespace Tridium {
 		public:
 			virtual bool ShouldCollide( JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2 ) const override
 			{
-				switch ( inLayer1 )
+				switch ( static_cast<EPhysicsLayer>( inLayer1 ) )
 				{
-				case Layers::NON_MOVING:
+				case EPhysicsLayer::Static:
 					return inLayer2 == BroadPhaseLayers::MOVING;
-				case Layers::MOVING:
+				case EPhysicsLayer::Dynamic:
+					return true;
+				case EPhysicsLayer::Player:
 					return true;
 				default:
 					JPH_ASSERT( false );
@@ -142,6 +167,41 @@ namespace Tridium {
 		m_PhysicsSystem.Update( a_TimeStep, m_PhysicsSystemSettings.CollisionSteps, m_TempAllocator.get(), m_JobSystem.get());
 
 		++m_CurrentStep;
+	}
+
+	RayCastResult JoltPhysicsScene::CastRay( const Vector3& a_Start, const Vector3& a_End, ERayCastChannel a_Channel, const PhysicsBodyFilter& a_BodyFilter )
+	{
+		JPH::RRayCast ray( Util::ToJoltVec3( a_Start ), Util::ToJoltVec3( a_End ) );
+		JPH::RayCastResult rayResult;
+
+		RayCastResult hit = { false, Vector3(0.0f), Vector3( 0.0f ), 0.0f, a_Start, a_End };
+
+		if ( m_PhysicsSystem.GetNarrowPhaseQuery().CastRay( ray, rayResult, {}, JoltObjectLayerFilter(a_Channel), JoltBodyFilter(a_BodyFilter)) )
+		{
+			hit.Hit = true;
+			hit.Position = Util::ToTridiumVec3( ray.mOrigin + rayResult.mFraction * ray.mDirection );
+			hit.Normal = Util::ToTridiumVec3( ray.mDirection );
+			hit.Distance = glm::distance( a_Start, hit.Position );
+
+			// Get hit game object
+			//{
+			//	uint32_t bodyID = rayResult.mBodyID.GetIndexAndSequenceNumber();
+
+			//	// Find the entity with the bodyID
+			//	auto view = m_Scene->GetRegistry().view<RigidBodyComponent>();
+			//	for ( auto entity : view )
+			//	{
+			//		auto& rb = view.get<RigidBodyComponent>( entity );
+			//		if ( rb.GetBodyProxy().GetBodyID() == bodyID )
+			//		{
+			//			hit.HitGameObject = GameObject( entity );
+			//			break;
+			//		}
+			//	}
+			//}
+		}
+
+		return hit;
 	}
 
 	void JoltPhysicsScene::RemovePhysicsBody( PhysicsBodyID a_PhysicsBodyID )
@@ -268,28 +328,62 @@ namespace Tridium {
 
 		// Create the body creation settings
 		const JPH::EMotionType motionType = Util::ToJoltMotionType( a_RigidBody.GetMotionType() );
-		const JPH::ObjectLayer layer = motionType == JPH::EMotionType::Static ? Layers::NON_MOVING : Layers::MOVING;
+		const JPH::ObjectLayer layer = static_cast<JPH::ObjectLayer>( a_RigidBody.GetPhysicsLayer() );
 		JPH::BodyCreationSettings bodySettings( compoundSettings, position, rotation, motionType, layer );
 		bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::MassAndInertiaProvided;
 		bodySettings.mMassPropertiesOverride = massProperties;
-		bodySettings.mRestitution = 0.5f; // TEMP!
+		bodySettings.mRestitution = a_RigidBody.GetRestitution();
 
-		if ( JPH::Body* body = m_BodyInterface.CreateBody( bodySettings ) )
+		JPH::Body* body = m_BodyInterface.CreateBody( bodySettings );
+
+		if ( !body )
 		{
-			// Successfully created body
-
-			if ( a_RigidBody.GetMotionType() != EMotionType::Static )
-			{
-				body->GetMotionProperties()->SetGravityFactor( a_RigidBody.GetGravityScale() );
-			}
-
-			m_BodyInterface.AddBody( body->GetID(), JPH::EActivation::Activate );
-			a_RigidBody.GetBodyProxy().SetBodyID( body->GetID().GetIndexAndSequenceNumber() );
-			return true;
+			// Failed to create body
+			return false;
 		}
 
-		// Failed to create body
-		return false;
+		// Successfully created body
+		
+		// Set six degrees of freedom constraint
+		{
+			bool needsConstraint = false;
+			const LinearMotionConstraint& linearMotionConstraint = a_RigidBody.GetLinearMotionConstraint();
+			needsConstraint |= linearMotionConstraint.XMotion != ESixDOFConstraintMotion::Free;
+			needsConstraint |= linearMotionConstraint.YMotion != ESixDOFConstraintMotion::Free;
+			needsConstraint |= linearMotionConstraint.ZMotion != ESixDOFConstraintMotion::Free;
+
+			const AngularMotionConstraint& angularMotionConstraint = a_RigidBody.GetAngularMotionConstraint();
+			needsConstraint |= angularMotionConstraint.Swing1Motion != ESixDOFConstraintMotion::Free;
+			needsConstraint |= angularMotionConstraint.Swing2Motion != ESixDOFConstraintMotion::Free;
+			needsConstraint |= angularMotionConstraint.TwistMotion != ESixDOFConstraintMotion::Free;
+			if ( needsConstraint )
+			{
+				JPH::SixDOFConstraintSettings* constraintSettings = new JPH::SixDOFConstraintSettings();
+
+				if ( angularMotionConstraint.Swing1Motion == ESixDOFConstraintMotion::Locked )
+					constraintSettings->SetLimitedAxis( JPH::SixDOFConstraintSettings::RotationX, 0.0f, 0.0f );
+
+				if ( angularMotionConstraint.Swing2Motion == ESixDOFConstraintMotion::Locked )
+					constraintSettings->SetLimitedAxis( JPH::SixDOFConstraintSettings::RotationY, 0.0f, 0.0f );
+
+				if ( angularMotionConstraint.TwistMotion == ESixDOFConstraintMotion::Locked )
+					constraintSettings->SetLimitedAxis( JPH::SixDOFConstraintSettings::RotationZ, 0.0f, 0.0f );
+
+
+				// Add the constraint to the body
+				JPH::Constraint* constraint = m_BodyInterface.CreateConstraint( constraintSettings, body->GetID(), JPH::BodyID() );
+				m_PhysicsSystem.AddConstraint( constraint );
+			}
+		}
+
+		if ( a_RigidBody.GetMotionType() != EMotionType::Static )
+		{
+			body->GetMotionProperties()->SetGravityFactor( a_RigidBody.GetGravityScale() );
+		}
+
+		m_BodyInterface.AddBody( body->GetID(), JPH::EActivation::Activate );
+		a_RigidBody.GetBodyProxy().SetBodyID( body->GetID().GetIndexAndSequenceNumber() );
+		return true;
 	}
 
 	bool JoltPhysicsScene::UpdatePhysicsBody( const GameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent )
@@ -349,6 +443,12 @@ namespace Tridium {
 		m_BodyInterface.SetRotation( JPH::BodyID( a_BodyID ), Util::ToJoltQuat( a_Rotation ), JPH::EActivation::Activate );
 	}
 
+	void JoltPhysicsScene::SetPhysicsBodyFriction( PhysicsBodyID a_BodyID, float a_Friction )
+	{
+		TE_CORE_ASSERT( a_BodyID != JPH::BodyID::cInvalidBodyID );
+		m_BodyInterface.SetFriction( JPH::BodyID( a_BodyID ), a_Friction );
+	}
+
 	void JoltPhysicsScene::SetPhysicsBodyLinearVelocity( PhysicsBodyID a_BodyID, const Vector3& a_LinearVelocity )
 	{
 		TE_CORE_ASSERT( a_BodyID != JPH::BodyID::cInvalidBodyID );
@@ -360,5 +460,36 @@ namespace Tridium {
 		TE_CORE_ASSERT( a_BodyID != JPH::BodyID::cInvalidBodyID );
 		m_BodyInterface.SetAngularVelocity( JPH::BodyID( a_BodyID ), Util::ToJoltVec3( a_AngularVelocity ) );
 	}
+
+	void JoltPhysicsScene::AddImpulseToPhysicsBody( PhysicsBodyID a_BodyID, const Vector3& a_Impulse )
+	{
+		TE_CORE_ASSERT( a_BodyID != JPH::BodyID::cInvalidBodyID );
+		m_BodyInterface.AddImpulse( JPH::BodyID( a_BodyID ), Util::ToJoltVec3( a_Impulse ) );
+	}
+
+	void JoltPhysicsScene::AddImpulseToPhysicsBody( PhysicsBodyID a_BodyID, const Vector3& a_Impulse, const Vector3& a_Position )
+	{
+		TE_CORE_ASSERT( a_BodyID != JPH::BodyID::cInvalidBodyID );
+		m_BodyInterface.AddImpulse( JPH::BodyID( a_BodyID ), Util::ToJoltVec3( a_Impulse ), Util::ToJoltVec3( a_Position ) );
+	}
+
+#if USE_DEBUG_RENDERER
+
+	void JoltPhysicsScene::RenderDebug( const Matrix4& a_ViewProjection )
+	{
+		if ( JPH::DebugRenderer::sInstance )
+		{
+			JPH::BodyManager::DrawSettings drawSettings;
+			drawSettings.mDrawShape = true;
+			drawSettings.mDrawShapeWireframe = true;
+			drawSettings.mDrawCenterOfMassTransform = true;
+			m_PhysicsSystem.DrawBodies( drawSettings, JPH::DebugRenderer::sInstance );
+			//m_PhysicsSystem.DrawConstraints( JPH::DebugRenderer::sInstance );
+
+			static_cast<JoltDebugRenderer*>( JPH::DebugRenderer::sInstance )->Render( a_ViewProjection );
+		}
+	}
+
+#endif
 
 } // namespace Tridium

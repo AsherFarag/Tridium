@@ -23,4 +23,4 @@
 
 #define MIN(x, y) (x > y ? y : x)
 #define MAX(x, y) (x > y ? x : y)
-#define CLAMP(min, max, val) (MAX(min, val) == val ? MIN(max, val) : MAX(min, val))
+#define CLAMP(min, max, val) (val < min ? min : (val > max ? max : val))

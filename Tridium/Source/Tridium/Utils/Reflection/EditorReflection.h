@@ -53,32 +53,28 @@ namespace Tridium::Refl::Internal {
 		return wasChanged;
     }
 
-	enum class myEnum
-	{
-		Value1,
-		Value2,
-		Value3
-	};
-
 	template <typename T>
 	bool DrawEnumAsProperty( const char* a_Name, MetaAny& a_Handle, PropertyFlags a_Flags, const std::unordered_map<T, std::string>& a_EnumToString )
 	{
-		static const auto metaType = MetaRegistry::ResolveMetaType<T>();
 		bool wasChanged = false;
-		if ( !a_Handle.allow_cast<T*>( ) )
-			return false;
 
-		T* value = a_Handle.cast<T*>();
-		const std::string& valueStr = a_EnumToString.at( *value );
+		MetaAny handle = a_Handle.type().is_pointer_like() ? *a_Handle : a_Handle;
+
+		T& value = a_Handle.type().is_pointer_like() ? 
+			( a_Handle.allow_cast<const T*>( ) ?
+				*const_cast<T*>(a_Handle.cast<const T*>()) : *a_Handle.cast<T*>() )
+			: a_Handle.cast<T&>();
+
+		const std::string& valueStr = a_EnumToString.at( value );
 
 		if ( ImGui::BeginCombo( a_Name, valueStr.c_str() ) )
 		{
 			for ( auto&& [enumValue, enumStr] : a_EnumToString )
 			{
-				bool isSelected = *value == enumValue;
+				bool isSelected = value == enumValue;
 				if ( ImGui::Selectable( enumStr.c_str(), isSelected ) )
 				{
-					*value = enumValue;
+					value = enumValue;
 					wasChanged = true;
 				}
 				if ( isSelected )

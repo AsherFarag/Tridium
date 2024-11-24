@@ -47,7 +47,7 @@ namespace Tridium {
 
 	//	m_Environment[ "gameObject" ] = GetGameObject();
 
-	//	Lua_OnConstruct = m_Environment[ "OnConstruct" ];
+	//	Lua_OnConstruct = m_Environment[ "OnBeginPlay" ];
 	//	Lua_OnUpdate = m_Environment[ "OnUpdate" ];
 	//	Lua_OnDestroy = m_Environment[ "OnDestroy" ];
 	//}
@@ -64,7 +64,7 @@ namespace Tridium {
 	//	CallLuaFunction( Lua_OnUpdate, (float)Time::DeltaTime() );
 	//}
 
-	//void LuaScriptComponent::OnConstruct()
+	//void LuaScriptComponent::OnBeginPlay()
 	//{
 	//	Compile();
 

@@ -30,6 +30,16 @@ namespace Tridium {
 			SetFromQuaternion( a_Quat );
 		}
 
+		Vector3 GetEuler() const
+		{
+			return Euler;
+		}
+
+		Quaternion GetQuaternion() const
+		{
+			return Quat;
+		}
+
 		Vector3 GetForward() const
 		{
 			return glm::normalize( glm::rotate( Quat, Vector3( 0.0f, 0.0f, -1.0f ) ) );

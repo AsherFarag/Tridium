@@ -21,38 +21,52 @@ namespace Tridium::Editor {
 
 	void GameViewportPanel::OnImGuiDraw()
 	{
-		if ( !m_Camera )
-		{
-			if ( !GetEditorLayer()->GetActiveScene() )
-				return;
-
-			CameraComponent* mainCam = GetEditorLayer()->GetActiveScene()->GetMainCamera();
-			if ( mainCam )
-				m_Camera = mainCam->GetGameObject();
-			else
-				return;
-		}
-
-		auto camera = m_Camera.TryGetComponent<CameraComponent>();
+		auto sceneCameraInfo = GetSceneCamera();
 
 		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2( 2.f, 2.f ) );
-		if ( ImGui::Begin( m_Name.c_str() ) && camera )
+		if ( ImGui::Begin( m_Name.c_str() ) && sceneCameraInfo )
 		{
+			auto&& [camera, view, position] = sceneCameraInfo.value();
+
 			Vector2 regionAvail = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
 
-			Camera& sceneCamera = camera->SceneCamera;
 			// Update the viewport size
 			m_ViewportSize = regionAvail;
-			sceneCamera.SetViewportSize( regionAvail.x, regionAvail.y );
+			camera.SetViewportSize( regionAvail.x, regionAvail.y );
 			m_FBO->Resize( regionAvail.x, regionAvail.y );
 
-			GetEditorLayer()->GetActiveScene()->GetSceneRenderer().Render( m_FBO, sceneCamera, camera->GetView(), m_Camera.GetTransform().Position );
+			GetEditorLayer()->GetActiveScene()->GetSceneRenderer().Render( m_FBO, camera, view, position );
 
 			ImGui::Image( (ImTextureID)m_FBO->GetColorAttachmentID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
 		}
+
+		bool newIsFocused = ImGui::IsWindowFocused();
+		if ( newIsFocused != m_IsFocused )
+		{
+			if ( GetEditorLayer()->GetActiveScene()->IsRunning() )
+			{
+				newIsFocused ?
+					Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled ) :
+					Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Normal );
+			}
+		}
+
 		m_IsHovered = ImGui::IsWindowHovered();
-		m_IsFocused = ImGui::IsWindowFocused();
+		m_IsFocused = newIsFocused;
 		ImGui::End();
+	}
+
+	std::optional< std::tuple<Camera&, Matrix4, Vector3> > GameViewportPanel::GetSceneCamera() const
+	{
+		CameraComponent* camera = Application::GetScene()->GetMainCamera();
+		if ( !camera )
+			return {};
+
+		TransformComponent* transform = camera->GetGameObject().TryGetComponent<TransformComponent>();
+		if ( !transform )
+			return {};
+
+		return { { camera->SceneCamera, camera->GetView(), transform->Position} };
 	}
 }
 

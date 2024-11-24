@@ -45,7 +45,8 @@ namespace Tridium {
 		{
 			auto scriptable = static_cast<ScriptableComponent*>( &component );
 
-			scriptable->OnConstruct();
+			if ( m_HasBegunPlay )
+				scriptable->OnBeginPlay();
 		}
 
 		InitComponent( component );

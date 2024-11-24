@@ -1,4 +1,20 @@
 AssetMetaData:
+  - Handle: 16415605052835439519
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Roughness.png
+    Name: 1001_Roughness
+  - Handle: 1303307644901636996
+    AssetType: Scene
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Scenes/Test.tscene
+    Name: Test
+  - Handle: 4086619935004974763
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Raw/Cerberus_AO.tga
+    Name: Cerberus_AO
+  - Handle: 11722823617488748144
+    AssetType: Texture
+    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/tree-stump/textures/occlusion.jpeg
+    Name: occlusion
   - Handle: 13816705760617426555
     AssetType: Material
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/tree-stump/textures/m_Stump.tmat
@@ -7,22 +23,6 @@ AssetMetaData:
     AssetType: Texture
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/textures/Revolver_Rou.tga.png
     Name: Revolver_Rou.tga
-  - Handle: 16415605052835439519
-    AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Roughness.png
-    Name: 1001_Roughness
-  - Handle: 4086619935004974763
-    AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Raw/Cerberus_AO.tga
-    Name: Cerberus_AO
-  - Handle: 1303307644901636996
-    AssetType: Scene
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Scenes/Test.tscene
-    Name: Test
-  - Handle: 11722823617488748144
-    AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/tree-stump/textures/occlusion.jpeg
-    Name: occlusion
   - Handle: 7765604732595779487
     AssetType: MeshSource
     Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX
@@ -347,3 +347,5 @@ AssetDependencies:
   331585416164516092:
     - 0
     - 6932676496202442266
+  1863182125303376449:
+    []

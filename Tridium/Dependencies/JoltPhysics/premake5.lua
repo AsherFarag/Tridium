@@ -20,15 +20,19 @@ project "JoltPhysics"
    }
 
 	filter "configurations:Debug"
+      defines "JPH_DEBUG_RENDERER"
 		symbols "on"
 
 	filter "configurations:Release"
+      defines "JPH_DEBUG_RENDERER"
 		optimize "on"
 		
 	filter "configurations:Debug-Editor"
+      defines "JPH_DEBUG_RENDERER"
 		symbols "on"
 
 	filter "configurations:Release-Editor"
+      defines "JPH_DEBUG_RENDERER"
 		optimize "on"
 
 	filter "configurations:Shipping"

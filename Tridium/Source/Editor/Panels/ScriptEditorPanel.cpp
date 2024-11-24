@@ -59,7 +59,7 @@ namespace Tridium::Editor {
 				{
 					std::ofstream newFile( filePath, std::ios::out | std::ios::app );
 					// Create a new file and write in a component template
-					newFile << "function OnConstruct()\nend\n\nfunction OnUpdate( deltaTime )\nend\n\nfunction OnDestroy()\nend\n"; 
+					newFile << "function OnBeginPlay()\nend\n\nfunction OnUpdate( deltaTime )\nend\n\nfunction OnDestroy()\nend\n"; 
 					newFile.close();
 				}
 				existingFile.close();

@@ -29,7 +29,7 @@ namespace Tridium {
 	//	auto operator[]( T&& key )&& { return m_Environment[ key ]; }
 
 	//private:
-	//	virtual void OnConstruct() override;
+	//	virtual void OnBeginPlay() override;
 	//	virtual void OnDestroy() override;
 
 	//	void Compile();

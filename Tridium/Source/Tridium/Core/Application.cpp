@@ -56,7 +56,6 @@ namespace Tridium {
 
 		// Initialise Scene
 		{
-			m_ActiveScene = MakeShared<Scene>();
 			if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( m_Project->GetConfiguration().StartScene ) )
 			{
 				m_ActiveScene = scene;
@@ -64,6 +63,7 @@ namespace Tridium {
 			else
 			{
 				TE_CORE_WARN( "Failed to load start scene! - Creating new scene" );
+				m_ActiveScene = MakeShared<Scene>();
 			}
 		}
 
@@ -97,6 +97,8 @@ namespace Tridium {
 
 		uint32_t frameCounter = 0;
 		double fpsInterval = 0.0;
+		uint32_t minFPS = 0xFFFFFFFF;
+		uint32_t maxFPS = 0;
 
 	#ifndef IS_EDITOR
 		if ( m_ActiveScene )
@@ -115,12 +117,19 @@ namespace Tridium {
 
 			// Update FPS
 			++frameCounter;
-			fpsInterval += Time::s_DeltaTime;
+			fpsInterval += Time::DeltaTime();
+			uint32_t curFrameRate = 1.0 / Time::DeltaTime();
+			minFPS = MIN( minFPS, curFrameRate );
+			maxFPS = MAX( maxFPS, curFrameRate );
 			if ( fpsInterval >= 1.0 )
 			{
-				m_FPS = frameCounter;
+				m_PrevFrameInfo.FPS = frameCounter;
+				m_PrevFrameInfo.MinFPS = minFPS;
+				m_PrevFrameInfo.MaxFPS = maxFPS;
 				frameCounter = 0;
 				fpsInterval -= 1.0;
+				minFPS = 0xFFFFFFFF;
+				maxFPS = 0;
 			}
 
 			// Update Loop
@@ -250,6 +259,11 @@ namespace Tridium {
 		}
 	}
 	
+	void Application::SetScene( SharedPtr<Scene> a_Scene )
+	{
+		s_Instance->m_ActiveScene = a_Scene;
+	}
+
 	///////////////////////////////////////////////////////////////////////////////////////////
 	void Application::InitializeAssetManager()
 	{

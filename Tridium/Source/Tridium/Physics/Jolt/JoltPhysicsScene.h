@@ -1,4 +1,5 @@
 #pragma once
+#include <Tridium/Core/Core.h>
 #include <Tridium/Physics/PhysicsScene.h>
 #include <Tridium/Physics/PhysicsLayer.h>
 
@@ -31,6 +32,8 @@ namespace Tridium {
 		virtual void Shutdown() override;
 		virtual void Tick( float a_TimeStep ) override;
 
+		virtual RayCastResult CastRay( const Vector3& a_Start, const Vector3& a_End, ERayCastChannel a_Channel, const PhysicsBodyFilter& a_BodyFilter ) override;
+
 		virtual void RemovePhysicsBody( PhysicsBodyID a_PhysicsBodyID ) override;
 		virtual void RemovePhysicsBody( RigidBodyComponent& a_RigidBody ) override;
 		virtual bool AddPhysicsBody( const GameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent ) override;
@@ -46,8 +49,15 @@ namespace Tridium {
 
 		virtual void SetPhysicsBodyPosition( PhysicsBodyID a_BodyID, const Vector3& a_Position ) override;
 		virtual void SetPhysicsBodyRotation( PhysicsBodyID a_BodyID, const Quaternion& a_Rotation ) override;
+		virtual void SetPhysicsBodyFriction( PhysicsBodyID a_BodyID, float a_Friction ) override;
 		virtual void SetPhysicsBodyLinearVelocity( PhysicsBodyID a_BodyID, const Vector3& a_LinearVelocity ) override;
 		virtual void SetPhysicsBodyAngularVelocity( PhysicsBodyID a_BodyID, const Vector3& a_AngularVelocity ) override;
+		virtual void AddImpulseToPhysicsBody( PhysicsBodyID a_BodyID, const Vector3& a_Impulse ) override;
+		virtual void AddImpulseToPhysicsBody( PhysicsBodyID a_BodyID, const Vector3& a_Impulse, const Vector3& a_Position ) override;
+
+	#if USE_DEBUG_RENDERER
+		virtual void RenderDebug( const Matrix4& a_ViewProjection ) override;
+	#endif
 
 	protected:
 		bool m_Initialised = false;
@@ -72,9 +82,6 @@ namespace Tridium {
 		} m_PhysicsSystemSettings;
 
 		uint64_t m_CurrentStep = 0;
-
-		// TEMP!
-		friend class Scene;
 	};
 
 }

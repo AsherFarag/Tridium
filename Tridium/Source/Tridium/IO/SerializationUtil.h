@@ -27,9 +27,9 @@ namespace YAML {
 	};
 
 	template<>
-	struct convert<Vector2>
+	struct convert<Tridium::Vector2>
 	{
-		static Node encode( const Vector2& rhs )
+		static Node encode( const Tridium::Vector2& rhs )
 		{
 			Node node;
 			node.push_back( rhs.x );
@@ -37,7 +37,7 @@ namespace YAML {
 			return node;
 		}
 
-		static bool decode( const Node& node, Vector2& rhs )
+		static bool decode( const Node& node, Tridium::Vector2& rhs )
 		{
 			if ( !node.IsSequence() || node.size() != 2 )
 				return false;
@@ -49,9 +49,9 @@ namespace YAML {
 	};
 
 	template<>
-	struct convert<Vector3>
+	struct convert<Tridium::Vector3>
 	{
-		static Node encode( const Vector3& rhs )
+		static Node encode( const Tridium::Vector3& rhs )
 		{
 			Node node;
 			node.push_back( rhs.x );
@@ -60,7 +60,7 @@ namespace YAML {
 			return node;
 		}
 
-		static bool decode( const Node& node, Vector3& rhs )
+		static bool decode( const Node& node, Tridium::Vector3& rhs )
 		{
 			if ( !node.IsSequence() || node.size() != 3 )
 				return false;
@@ -73,9 +73,9 @@ namespace YAML {
 	};
 
 	template<>
-	struct convert<Vector4>
+	struct convert<Tridium::Vector4>
 	{
-		static Node encode( const Vector4& rhs )
+		static Node encode( const Tridium::Vector4& rhs )
 		{
 			Node node;
 			node.push_back( rhs.x );
@@ -85,7 +85,7 @@ namespace YAML {
 			return node;
 		}
 
-		static bool decode( const Node& node, Vector4& rhs )
+		static bool decode( const Node& node, Tridium::Vector4& rhs )
 		{
 			if ( !node.IsSequence() || node.size() != 4 )
 				return false;
@@ -125,9 +125,9 @@ namespace YAML {
 	};
 
 	template<>
-	struct convert<Matrix4>
+	struct convert<Tridium::Matrix4>
 	{
-		static Node encode( const Matrix4& rhs )
+		static Node encode( const Tridium::Matrix4& rhs )
 		{
 			Node node;
 			for ( int i = 0; i < 4; ++i )
@@ -140,7 +140,7 @@ namespace YAML {
 			return node;
 		}
 
-		static bool decode( const Node& node, Matrix4& rhs )
+		static bool decode( const Node& node, Tridium::Matrix4& rhs )
 		{
 			if ( !node.IsSequence() || node.size() != 16 )
 				return false;

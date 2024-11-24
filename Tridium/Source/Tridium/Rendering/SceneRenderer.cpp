@@ -1087,106 +1087,11 @@ namespace Tridium {
 	{
 		const Vector4 ColliderColor = { 0.72f, 0.85f, 0.65f, 1.0f };
 
-		m_DebugSimpleShader->Bind();
-		m_DebugSimpleShader->SetFloat4( "u_Color", ColliderColor );
+	#if USE_DEBUG_RENDERER
 
-		RenderCommand::SetLineWidth( 3 );
-		RenderCommand::SetPolygonMode( EFaces::FrontAndBack, EPolygonMode::Line );
-		RenderCommand::SetCullMode( ECullMode::None );
+		m_Scene.GetPhysicsScene()->RenderDebug( m_SceneInfo.ViewProjectionMatrix );
 
-		// - Draw Sphere Colliders -
-		{
-			m_DebugSphereVAO->Bind();
-
-			auto sphereColliders = m_Scene.m_Registry.view<SphereColliderComponent, TransformComponent>();
-			sphereColliders.each(
-				[&]( auto go, SphereColliderComponent& collider, TransformComponent& transform )
-				{
-					Matrix4 model = 
-						glm::translate( Matrix4( 1.0f ), transform.GetWorldPosition() + collider.GetCenter() )
-						* glm::toMat4( transform.GetOrientation() )
-						* glm::scale( Matrix4( 1.0f ), Vector3( collider.GetRadius() * 2.0f ) );
-
-					model *= glm::toMat4( collider.GetRotation().Quat );
-
-					m_DebugSimpleShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * model );
-
-					DrawCall( m_DebugSphereVAO );
-				}
-			);
-
-			m_DebugSphereVAO->Unbind();
-		}
-
-		// - Draw Box Colliders -
-		{
-			m_DebugCubeVAO->Bind();
-
-			auto boxColliders = m_Scene.m_Registry.view<BoxColliderComponent, TransformComponent>();
-			boxColliders.each(
-				[&]( auto go, BoxColliderComponent& collider, TransformComponent& transform )
-				{
-					Matrix4 localTransform = glm::translate( Matrix4( 1.0f ), collider.GetCenter() )
-						* glm::toMat4( collider.GetRotation().Quat )
-						* glm::scale( Matrix4( 1.0f ), collider.GetHalfExtents() * 2.0f );
-
-					Matrix4 model = transform.GetWorldTransform() * localTransform;
-
-					m_DebugSimpleShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * model );
-
-					DrawCall( m_DebugCubeVAO );
-				}
-			);
-
-			m_DebugCubeVAO->Unbind();
-		}
-
-		// - Draw Capsule Colliders -
-		{
-			auto capsuleColliders = m_Scene.m_Registry.view<CapsuleColliderComponent, TransformComponent>();
-			capsuleColliders.each(
-				[&]( auto go, CapsuleColliderComponent& collider, TransformComponent& transform )
-				{
-					Matrix4 model = glm::translate( Matrix4( 1.0f ), transform.GetWorldPosition() + collider.GetCenter() )
-						* glm::toMat4( transform.GetOrientation() );
-
-					model *= glm::toMat4( collider.GetRotation().Quat );
-
-					m_DebugSimpleShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * model );
-
-					SharedPtr<MeshSource> mesh = MeshFactory::CreateCapsule( collider.GetRadius(), collider.GetHalfHeight() * 2.0f, 1u, 16u, 8u );
-					SharedPtr<VertexArray> vao = mesh->GetSubMeshes()[0].VAO;
-					vao->Bind();
-					DrawCall( vao );
-					vao->Unbind();
-				}
-			);
-		}
-
-		// - Draw Cylinder Colliders -
-		{
-			auto cylinderColliders = m_Scene.m_Registry.view<CylinderColliderComponent, TransformComponent>();
-			cylinderColliders.each(
-				[&]( auto go, CylinderColliderComponent& collider, TransformComponent& transform )
-				{
-					Matrix4 model =
-						glm::translate( Matrix4( 1.0f ), transform.GetWorldPosition() + collider.GetCenter() )
-						* glm::toMat4( transform.GetOrientation() );
-
-					model *= glm::toMat4( collider.GetRotation().Quat );
-
-					m_DebugSimpleShader->SetMatrix4( "u_PVM", m_SceneInfo.ViewProjectionMatrix * model );
-
-					SharedPtr<MeshSource> mesh = MeshFactory::CreateCylinder( collider.GetRadius(), collider.GetRadius(), collider.GetHalfHeight() * 2.0f, 1u );
-					SharedPtr<VertexArray> vao = mesh->GetSubMeshes()[0].VAO;
-					vao->Bind();
-					DrawCall( vao );
-					vao->Unbind();
-				}
-			);
-		}
-
-		RenderCommand::SetPolygonMode( EFaces::FrontAndBack, EPolygonMode::Fill );
+	#endif
 	}
 
 	void SceneRenderer::DrawCall( const SharedPtr<VertexArray>& a_VAO )

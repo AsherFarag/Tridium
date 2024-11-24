@@ -17,6 +17,13 @@ namespace Tridium {
 	// Forward Declarations
 	class AssetManagerBase;
 
+	struct FrameInfo
+	{
+		uint32_t FPS = 0u;
+		uint32_t MinFPS = 0u;
+		uint32_t MaxFPS = 0u;
+	};
+
 	class Application final
 	{
 	public:
@@ -40,12 +47,14 @@ namespace Tridium {
 		static IO::FilePath GetEngineAssetsDirectory() { return "../Tridium/EngineAssets"; }
 
 		Window& GetWindow() { return *m_Window; }
-		uint32_t GetFPS() const { return m_FPS; }
-		double GetFrameTime() const { return 1000.0 / m_FPS; }
+		uint32_t GetFPS() const { return m_PrevFrameInfo.FPS; }
+		double GetFrameTime() const { return 1000.0 / m_PrevFrameInfo.FPS; }
+		const FrameInfo& GetFrameInfo() const { return m_PrevFrameInfo; }
 
 		// - Scene -
 		static SharedPtr<Scene> GetScene() { return s_Instance->m_ActiveScene; }
-		static void SetScene( SharedPtr<Scene> a_Scene ) { s_Instance->m_ActiveScene = a_Scene; }
+		static void SetScene( SharedPtr<Scene> a_Scene );
+
 	private:
 		void InitializeAssetManager();
 		bool OnWindowClosed( WindowCloseEvent& e );
@@ -65,12 +74,11 @@ namespace Tridium {
 		SharedPtr<Scene> m_ActiveScene;
 		SharedPtr<GameInstance> m_GameInstance;
 
-		uint32_t m_FPS = 0u;
+		FrameInfo m_PrevFrameInfo;
 		uint32_t m_MaxFPS = 144u;
 
 	private:
 		friend class AssetManager;
-
 		static Application* s_Instance;
 	};
 

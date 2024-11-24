@@ -1,64 +1,75 @@
 #pragma once
-#include <Tridium/Core/Core.h>
+#include <Tridium/Core/Types.h>
+#include <array>
 #include <bitset>
+#include "PhysicsBody.h"
 
 namespace Tridium {
 
 	enum class EPhysicsLayer : uint8_t
 	{
-		Layer0 = 0,
-		Layer1,
-		Layer2,
-		Layer3,
-		Layer4,
-		Layer5,
-		Layer6,
-		Layer7,
-		Layer8,
-		Layer9,
+		Static = 0, // A rigid body in this layer should have it's MotionType set to Static. Dynamic objects in a static layer can harm performance.
+		Dynamic,
+		Player,
 		NUM_LAYERS,
 		INVALID = 0xFF
 	};
 
-	using PhysicsLayerMask = std::bitset<static_cast<size_t>( EPhysicsLayer::NUM_LAYERS )>;
+	enum class ERayCastChannel : uint8_t
+	{
+		Visibility = 0,
+		Camera,
+		NUM_CHANNELS,
+		INVALID = 0xFF
+	};
+
+	enum class ECollisionResponse : uint8_t
+	{
+		Ignore = 0,
+		Overlap, // NOT IMPLEMENTED
+		Block
+	};
+
+	class PhysicsLayerMask
+	{
+	public:
+		PhysicsLayerMask();
+		PhysicsLayerMask( const std::bitset<static_cast<size_t>( EPhysicsLayer::NUM_LAYERS )>& a_LayerMask );
+
+		void SetCollisionResponse( EPhysicsLayer a_Layer, ECollisionResponse a_Response )
+		{
+			m_LayerMask.set( static_cast<size_t>( a_Layer ), a_Response != ECollisionResponse::Ignore );
+		}
+
+		ECollisionResponse GetCollisionResponse( EPhysicsLayer a_Layer ) const
+		{
+			return m_LayerMask.test( static_cast<size_t>( a_Layer ) ) ? ECollisionResponse::Block : ECollisionResponse::Ignore;
+		}
+
+	private:
+		std::bitset<static_cast<size_t>( EPhysicsLayer::NUM_LAYERS )> m_LayerMask;
+	};
 
 	class PhysicsLayerManager
 	{
 	public:
-		EPhysicsLayer GetLayerFromName( const std::string& a_LayerName ) const
-		{
-			auto it = m_LayerNames.find( a_LayerName );
-			return it != m_LayerNames.end() ? it->second : EPhysicsLayer::INVALID;
-		}
-
-		std::string_view GetLayerName( EPhysicsLayer a_Layer ) const
-		{
-			for ( auto& [name, layer] : m_LayerNames )
-				if ( layer == a_Layer ) return name;
-
-			return {};
-		}
-
-		const auto& GetLayerNames() const { return m_LayerNames; }
-
 		const PhysicsLayerMask& GetLayerMask( EPhysicsLayer a_Layer ) const
 		{
-			return m_LayerMasks.at( a_Layer );
+			return m_LayerMasks.at( static_cast<size_t>( a_Layer ) );
 		}
 
 		void SetLayerMask( EPhysicsLayer a_Layer, const PhysicsLayerMask& a_Mask )
 		{
-			m_LayerMasks[a_Layer] = a_Mask;
+			m_LayerMasks[static_cast<size_t>( a_Layer )] = a_Mask;
 		}
 
-		bool IsLayerInMask( EPhysicsLayer a_Layer, const PhysicsLayerMask& a_Mask ) const
+		ECollisionResponse GetCollisionResponse( EPhysicsLayer a_Layer, EPhysicsLayer a_OtherLayer ) const
 		{
-			return a_Mask.test( static_cast<size_t>( a_Layer ) );
+			return m_LayerMasks[static_cast<size_t>( a_Layer )].GetCollisionResponse( a_OtherLayer );
 		}
 		 
 	private:
-		std::unordered_map<EPhysicsLayer, PhysicsLayerMask> m_LayerMasks;
-		std::unordered_map<std::string, EPhysicsLayer> m_LayerNames;
+		std::array<PhysicsLayerMask, static_cast<size_t>(EPhysicsLayer::NUM_LAYERS)> m_LayerMasks;
 	};
 
 } // namespace Tridium

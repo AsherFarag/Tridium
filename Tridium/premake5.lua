@@ -88,7 +88,8 @@ project "Tridium"
 		defines
 		{ 
 			"TE_DEBUG",
-			"IS_EDITOR"
+			"IS_EDITOR",
+			"JPH_DEBUG_RENDERER"
 		}
 		symbols "On"
 
@@ -96,16 +97,25 @@ project "Tridium"
 		defines
 		{ 
 			"TE_RELEASE",
-			"IS_EDITOR"
+			"IS_EDITOR",
+			"JPH_DEBUG_RENDERER"
 		}
 		optimize "On"
 
 	filter "configurations:Debug"
-		defines "TE_DEBUG"
+		defines 
+		{
+			"TE_DEBUG",
+			"JPH_DEBUG_RENDERER"
+		}
 		symbols "On"
 
 	filter "configurations:Release"
-		defines "TE_RELEASE"
+		defines 
+		{
+			"JPH_DEBUG_RENDERER",
+			"TE_RELEASE"
+		}
 		optimize "On"
 
 	filter "configurations:Shipping"

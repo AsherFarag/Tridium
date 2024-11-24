@@ -43,6 +43,9 @@ namespace Tridium::Editor {
 				ImGui::SameLine();
 				ImGui::TextColored( fpsNumberColor, STAT_UNIT, Application::Get().GetFrameTime() );
 
+				ImGui::Text( "Min FPS: %d", Application::Get().GetFrameInfo().MinFPS );
+				ImGui::Text( "Max FPS: %d", Application::Get().GetFrameInfo().MaxFPS );
+
 				ImGui::Separator();
 			}
 

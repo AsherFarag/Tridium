@@ -20,6 +20,8 @@ namespace Tridium {
 		Matrix4 GetWorldTransform() const; /* Returns the transform matrix in world space. */
 		Matrix4 GetLocalTransform() const; /* Returns the transform matrix in local space. */
 		Vector3 GetForward() const;
+		Vector3 GetRight() const;
+		Vector3 GetUp() const;
 		Quaternion GetOrientation() const;
 		Vector3 GetWorldPosition() const { return GetWorldTransform()[3]; }
 		Vector3 GetLocalPosition() const { return Position; }

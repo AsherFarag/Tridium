@@ -14,10 +14,9 @@ namespace Tridium {
 	}
 
 	Scene::Scene( const Scene& a_Other )
-		: m_Name( a_Other.m_Name ), m_SceneRenderer( *this )
+		: m_Name( a_Other.m_Name ), m_SceneEnvironment(a_Other.m_SceneEnvironment), m_SceneRenderer( *this )
 	{
-		m_MainCamera = a_Other.m_MainCamera;
-		m_SceneEnvironment = a_Other.m_SceneEnvironment;
+		m_Handle = a_Other.m_Handle;
 		m_Paused = a_Other.m_Paused;
 		m_SceneRenderer.m_LightEnvironment = a_Other.m_SceneRenderer.m_LightEnvironment;
 		m_SceneRenderer.m_RenderSettings = a_Other.m_SceneRenderer.m_RenderSettings;
@@ -25,40 +24,47 @@ namespace Tridium {
 		m_PhysicsScene = PhysicsScene::Create();
 		m_PhysicsScene->m_Scene = this;
 
-		// Copy registry
+		// Entity registry
 		{
 			const entt::registry& src = a_Other.m_Registry;
-
-			// Map from old entity IDs to new entity IDs
 			std::unordered_map<entt::entity, entt::entity> entityMap;
 
-			// Step 1: Create entities in the new registry
-			for ( auto entity : src.view<GUIDComponent>() )
-			{
+			// Step 1: Create entities
+			for ( auto entity : src.view<GUIDComponent>() ) {
 				entt::entity newEntity = m_Registry.create();
 				entityMap[entity] = newEntity;
 			}
 
 			// Step 2: Copy components
-			for ( auto [id, srcStorage] : src.storage() )
+			for ( auto [id, srcStorage] : src.storage() ) 
 			{
-				auto* dstStorage = m_Registry.storage( id );
-				for ( auto it = srcStorage.rbegin(); it != srcStorage.rend(); ++it )
+				for ( auto it = srcStorage.begin(); it != srcStorage.end(); ++it ) 
 				{
 					entt::entity oldEntity = *it;
-					entt::entity newEntity = entityMap[oldEntity];
 
+					// Ensure mapping exists
+					auto mapIt = entityMap.find( oldEntity );
+					if ( mapIt == entityMap.end() ) 
+					{
+						TE_CORE_ASSERT( false, "Unmapped entity encountered!" );
+						continue;
+					}
+					entt::entity newEntity = mapIt->second;
+
+					// Handle component copy
 					Refl::MetaType componentType = entt::resolve( srcStorage.type() );
 					Refl::Internal::AddToGameObjectFunc addToGameObjectFunc;
-					if ( !Refl::MetaRegistry::TryGetMetaPropertyFromClass( componentType, addToGameObjectFunc, Refl::Internal::AddToGameObjectPropID ) )
+					if ( !Refl::MetaRegistry::TryGetMetaPropertyFromClass(
+						componentType, addToGameObjectFunc, Refl::Internal::AddToGameObjectPropID ) ) 
 					{
-						TE_CORE_ASSERT( false );
+						TE_CORE_ASSERT( false, "Failed to resolve AddToGameObjectFunc!" );
 						continue;
 					}
 
 					Refl::MetaAny dstComponent = componentType.from_void( addToGameObjectFunc( *this, newEntity ) );
 					Refl::MetaAny srcComponent = componentType.from_void( srcStorage.value( oldEntity ) );
 					dstComponent.assign( srcComponent );
+					reinterpret_cast<Component*>( dstComponent.data() )->m_GameObject = GameObject( newEntity );
 				}
 			}
 		}
@@ -66,12 +72,30 @@ namespace Tridium {
 
 	Scene::~Scene()
 	{
+		m_Registry.clear();
 		m_PhysicsScene = nullptr;
+		TE_CORE_DEBUG( "Scene destroyed: {0}", m_Name );
 	}
 
 	void Scene::OnBegin()
 	{
 		m_IsRunning = true;
+		m_HasBegunPlay = true;
+
+		m_MainCamera = INVALID_ENTITY_ID;
+		auto cameras = m_Registry.view<CameraComponent>();
+		for ( GameObject camera : cameras )
+		{
+			if ( cameras.get<CameraComponent>( camera ).IsMainCamera )
+			{
+				m_MainCamera = camera;
+			}
+		}
+
+		if ( !IsGameObjectValid(m_MainCamera) )
+		{
+			m_MainCamera = cameras.front();
+		}
 
 		// Initialize Physics Scene
 		{
@@ -139,6 +163,7 @@ namespace Tridium {
 	void Scene::OnEnd()
 	{
 		m_IsRunning = false;
+		m_HasBegunPlay = false;
 
 		// Shutdown Physics Scene
 		{
@@ -214,17 +239,6 @@ namespace Tridium {
 
 	CameraComponent* Scene::GetMainCamera()
 	{
-		// If the scene doesn't have a main camera,
-		// get the first camera in the scene
-		if ( !m_Registry.valid( m_MainCamera ) )
-		{
-			auto cameras = m_Registry.view<CameraComponent>();
-			// Return nullptr as there are no cameras in the scene
-			if ( cameras.empty() )
-				return nullptr;
-
-			m_MainCamera = cameras.front();
-		}
 		return m_Registry.try_get<CameraComponent>( m_MainCamera );
 	}
 

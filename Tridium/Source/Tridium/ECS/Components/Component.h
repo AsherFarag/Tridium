@@ -36,11 +36,10 @@ namespace Tridium {
 	public:
 		ScriptableComponent() {}
 		virtual ~ScriptableComponent() = default;
-		virtual void OnDestroy() {}
+		inline SharedPtr<Scene> GetScene() const { return Application::GetScene(); }
 
+		virtual void OnBeginPlay() {}
 		virtual void OnUpdate() {}
-
-	protected:
-		virtual void OnConstruct() {}
+		virtual void OnDestroy() {}
 	};
 }

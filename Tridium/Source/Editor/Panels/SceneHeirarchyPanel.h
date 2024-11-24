@@ -28,7 +28,6 @@ namespace Tridium::Editor {
 		void DrawSceneNode( GameObject go );
 
 	private:
-		SharedPtr<Scene> m_Context = nullptr;
 		InspectorPanel* m_Inspector = nullptr;
 		GameObject m_SelectedGameObject;
 

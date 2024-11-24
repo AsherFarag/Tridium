@@ -56,6 +56,22 @@ namespace Tridium {
 			return Rotation.Quat * Vector3( 0.0f, 0.0f, 1.0f );
 	}
 
+	Vector3 TransformComponent::GetRight() const
+	{
+		if ( m_Parent.IsValid() )
+			return m_Parent.GetTransform().GetRight() * Rotation.Quat * Vector3( 1.0f, 0.0f, 0.0f );
+		else
+			return Rotation.Quat * Vector3( 1.0f, 0.0f, 0.0f );
+	}
+
+	Vector3 TransformComponent::GetUp() const
+	{
+		if ( m_Parent.IsValid() )
+			return m_Parent.GetTransform().GetUp() * Rotation.Quat * Vector3( 0.0f, 1.0f, 0.0f );
+		else
+			return Rotation.Quat * Vector3( 0.0f, 1.0f, 0.0f );
+	}
+
 	Quaternion TransformComponent::GetOrientation() const
 	{
 		if ( m_Parent.IsValid() )

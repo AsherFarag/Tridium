@@ -140,6 +140,7 @@ namespace Tridium {
 		GetDefaultCube();
 		GetDefaultSphere();
 		GetDefaultCylinder();
+		GetDefaultCapsule();
 		GetDefaultCone();
 		GetDefaultTorus();
 	}

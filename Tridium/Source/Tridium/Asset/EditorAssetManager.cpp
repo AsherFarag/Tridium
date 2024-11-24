@@ -159,7 +159,7 @@ namespace Tridium::Editor {
 
 		if ( auto it = m_AssetRegistry.AssetMetaData.find( a_Handle ); it != m_AssetRegistry.AssetMetaData.end() )
 		{
-			m_AssetRegistry.AssetMetaData.erase( it );
+			( *it ).second.IsAssetLoaded = false;
 		}
 
 		// Remove dependencies
