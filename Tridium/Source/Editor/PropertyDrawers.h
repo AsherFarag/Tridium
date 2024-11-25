@@ -8,6 +8,12 @@
 // Temp?
 #include <Tridium/Rendering/FrameBuffer.h>
 
+namespace Tridium {
+	// Forward declarations
+	class GameObject;
+	// -------------------
+}
+
 namespace Tridium::Editor {
 
 	enum class EDrawPropertyFlags : Byte
@@ -144,7 +150,8 @@ namespace Tridium::Editor {
 	template<>
 	bool DrawProperty( const char* a_Name, LuaHandle& a_Value, EDrawPropertyFlags a_Flags );
 
-
+	template<>
+	bool DrawProperty( const char* a_Name, GameObject& a_Value, EDrawPropertyFlags a_Flags );
 
 	// Temp ?
 	template<>

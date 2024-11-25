@@ -2,17 +2,23 @@
 
 namespace Tridium {
 
+	// Forward declarations
 	class Component;
 	class ScriptableComponent;
 	class TagComponent;
 	class GUIDComponent;
 	class TransformComponent;
-	// Physics Components
 	class RigidBodyComponent;
 	class SphereColliderComponent;
 	class BoxColliderComponent;
 	class CapsuleColliderComponent;
 	class MeshColliderComponent;
+	// -------------------
+
+	inline RayCastResult Scene::CastRay( const Vector3& a_Origin, const Vector3& a_Direction, ERayCastChannel a_RayCastChannel, const PhysicsBodyFilter& a_BodyFilter ) const
+	{
+		return m_PhysicsScene->CastRay( a_Origin, a_Direction, a_RayCastChannel, a_BodyFilter );
+	}
 
 	template<> void Scene::InitComponent( RigidBodyComponent& a_Component );
 	template<> void Scene::InitComponent( SphereColliderComponent& a_Component );

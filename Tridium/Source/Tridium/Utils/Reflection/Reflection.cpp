@@ -8,6 +8,7 @@
 #include <Tridium/Rendering/Mesh.h>
 #include <Tridium/Rendering/Shader.h>
 #include <Tridium/Math/Rotator.h>
+#include <Tridium/ECS/GameObject.h>
 #include <Tridium/Rendering/FrameBuffer.h>
 
 
@@ -275,6 +276,7 @@ namespace Tridium::Refl {
 
         // Tridium
 		REFLECT_BASIC_TYPE( GUID )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( GUID )ADD_DRAWPROPERTY_FUNC_TO_TYPE( GUID );
+		REFLECT_BASIC_TYPE( GameObject )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( GameObject )ADD_DRAWPROPERTY_FUNC_TO_TYPE( GameObject );
 		REFLECT_BASIC_TYPE( AssetHandle )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( AssetHandle )ADD_DRAWPROPERTY_FUNC_TO_TYPE( AssetHandle );
 		REFLECT_BASIC_TYPE( SceneHandle )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( SceneHandle )ADD_DRAWPROPERTY_FUNC_TO_TYPE( SceneHandle );
 		REFLECT_BASIC_TYPE( MaterialHandle )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( MaterialHandle )ADD_DRAWPROPERTY_FUNC_TO_TYPE( MaterialHandle );

@@ -27,6 +27,36 @@ namespace Tridium {
 
 namespace Tridium::Math
 {
+	template<typename T>
+	constexpr T Min( T a, T b )
+	{
+		return a < b ? a : b;
+	}
+
+	template<typename T>
+	constexpr T Max( T a, T b )
+	{
+		return a > b ? a : b;
+	}
+
+	template<typename T>
+	constexpr T Clamp( T value, T min, T max )
+	{
+		return value < min ? min : value > max ? max : value;
+	}
+
+	template<typename T>
+	constexpr T Lerp( T a, T b, float t )
+	{
+		return a + ( b - a ) * t;
+	}
+
+	template<typename T>
+	constexpr T ClampedLerp( T a, T b, float t )
+	{
+		return Lerp( a, b, Clamp( t, 0.0f, 1.0f ) );
+	}
+
 	void DecomposeTransform( const Matrix4& a_Mat, Vector3& o_Pos, Vector3& o_Rot, Vector3& o_Scale );
 	void DecomposeTransform( const Matrix4& a_Mat, Vector3& o_Pos, Quaternion& o_Rot, Vector3& o_Scale );
 }

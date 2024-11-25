@@ -14,6 +14,33 @@
 
 #include <fstream>
 
+namespace YAML {
+
+	template<>
+	struct convert<Tridium::EntityID>
+	{
+		static Node encode( const Tridium::EntityID& rhs )
+		{
+			Node node;
+			node.push_back( static_cast<uint32_t>( rhs ) );
+			return node;
+		}
+
+		static bool decode( const Node& node, Tridium::EntityID& rhs )
+		{
+			rhs = Tridium::EntityID( node.as<uint32_t>() );
+			return true;
+		}
+	};
+
+	YAML::Emitter& operator<<( YAML::Emitter& out, const Tridium::EntityID& v )
+	{
+		out << static_cast<uint32_t>( v );
+		return out;
+	};
+
+}
+
 namespace Tridium::IO {
 
 	static const std::unordered_set<Refl::MetaIDType> s_BlacklistedComponents =
@@ -28,12 +55,26 @@ namespace Tridium::IO {
 	struct DeserializedGameObject
 	{
 		GameObject GameObject;
-		std::optional<GUID> Parent = {};
-		std::vector<GUID> Children;
+		std::optional<EntityID> Parent = {};
+		std::vector<EntityID> Children;
 	};
 
-	void SerializeGameObject( Archive& out, GameObject go );
-	bool DeserializeGameObject( const YAML::Node& a_Node, Scene& a_Scene, std::unordered_map<GUID, DeserializedGameObject>& a_DeserializedGameObjects );
+	template<>
+	struct Serializer<GameObject>
+	{
+		static void SerializeGameObject( Archive& out, GameObject go );
+		static bool DeserializeGameObject( const YAML::Node& a_Node, Scene& a_Scene );
+	};
+
+	static void SerializeGameObject( Archive& out, GameObject go )
+	{
+		Serializer<GameObject>::SerializeGameObject( out, go );
+	}
+
+	static bool DeserializeGameObject( const YAML::Node& a_Node, Scene& a_Scene )
+	{
+		return Serializer<GameObject>::DeserializeGameObject( a_Node, a_Scene );
+	}
 
 	template<>
 	void SerializeToText( Archive& a_Archive, const Scene& a_Data )
@@ -113,42 +154,32 @@ namespace Tridium::IO {
 		if ( !gameObjectsNode )
 			return false;
 
-		std::unordered_map<GUID, DeserializedGameObject> deserializedGameObjects;
 		for ( auto goNode : gameObjectsNode )
 		{
-			TE_CORE_ASSERT( DeserializeGameObject( goNode, a_Data, deserializedGameObjects ), "Failed to deserialize GameObject from a scene file!" );
-		}
-
-		// Link up gameobject references to eachother
-		for ( auto&& [guid, go] : deserializedGameObjects )
-		{
-			if ( go.Parent.has_value() )
-			{
-				if ( auto parent = deserializedGameObjects.find( go.Parent.value() ); parent != deserializedGameObjects.end() )
-				{
-					TransformComponent& tc = a_Data.GetComponentFromGameObject<TransformComponent>( go.GameObject );
-					tc.SetParent( parent->second.GameObject );
-					TransformComponent& parentTc = a_Data.GetComponentFromGameObject<TransformComponent>( parent->second.GameObject );
-					parentTc.m_Children.push_back( go.GameObject );
-				}
-			}
+			TE_CORE_ASSERT( DeserializeGameObject( goNode, a_Data ), "Failed to deserialize GameObject from a scene file!" );
 		}
 
 		return true;
 	}
 
-	void SerializeGameObject( Archive& out, GameObject go )
+	void Serializer<GameObject>::SerializeGameObject( Archive& out, GameObject go )
 	{
 		if ( !go.IsValid() || !go.TryGetComponent<GUIDComponent>() )
 		{
 			TE_CORE_ASSERT( false, "GameObject is invalid or does not have a GUIDComponent!" )
-			return;
+				return;
 		}
 
 		out << YAML::BeginMap; // Begin GameObject
 
-		// GUID
-		out << YAML::Key << "GameObject"; out << YAML::Value << go.GetGUID().ID();
+		// GameObject ID
+		out << YAML::Key << "GameObject"; out << YAML::Value << go.ID();
+
+		// GUIDComponent
+		if ( auto gc = go.TryGetComponent<GUIDComponent>() )
+		{
+			out << YAML::Key << "GUID" << YAML::Value << gc->GetID();
+		}
 
 		// TagComponent
 		if ( auto tc = go.TryGetComponent<TagComponent>() )
@@ -168,20 +199,14 @@ namespace Tridium::IO {
 				if ( go.HasParent() )
 				{
 					out << YAML::Key << "Parent";
-					out << YAML::Value << go.GetParent().GetGUID().ID();
-				}
-
-				if ( go.HasParent() )
-				{
-					out << YAML::Key << "Parent";
-					out << YAML::Value << go.GetParent().GetGUID().ID();
+					out << YAML::Value << go.GetParent().ID();
 				}
 
 				out << YAML::Key << "Children";
 				out << YAML::Value << YAML::Flow << YAML::BeginSeq;
 				for ( auto child : go.GetChildren() )
 				{
-					out << child.GetGUID().ID();
+					out << child.ID();
 				}
 				out << YAML::EndSeq;
 			}
@@ -207,10 +232,20 @@ namespace Tridium::IO {
 		out << YAML::EndMap; // End GameObject
 	}
 
-	bool DeserializeGameObject( const YAML::Node& a_Node, Scene& a_Scene, std::unordered_map<GUID, DeserializedGameObject>& a_DeserializedGameObjects )
+	bool Serializer<GameObject>::DeserializeGameObject( const YAML::Node& a_Node, Scene& a_Scene )
 	{
+		GameObject go;
+		if ( auto gameObjectIDNode = a_Node["GameObject"] )
+		{
+			go = GameObject( gameObjectIDNode.as<EntityID>() );
+		}
+		else
+		{
+			return false;
+		}
+
 		GUID guid;
-		if ( auto guidNode = a_Node["GameObject"] )
+		if ( auto guidNode = a_Node["GUID"] )
 			guid = guidNode.as<GUID>();
 		else
 			return false;
@@ -221,7 +256,11 @@ namespace Tridium::IO {
 		else
 			return false;
 
-		GameObject go = a_Scene.InstantiateGameObject( guid, tag );
+		TE_CORE_ASSERT( a_Scene.GetRegistry().create( go.ID() ) == go.ID(), "The created GameObject should be the same as the hint!" );
+		a_Scene.AddComponentToGameObject<GUIDComponent>( go, guid );
+		a_Scene.AddComponentToGameObject<TagComponent>( go, tag );
+		a_Scene.AddComponentToGameObject<TransformComponent>( go );
+
 		DeserializedGameObject deserializedGO;
 		deserializedGO.GameObject = go;
 
@@ -234,19 +273,18 @@ namespace Tridium::IO {
 
 			if ( auto parentNode = transformNode["Parent"] )
 			{
-				deserializedGO.Parent = parentNode.as<GUID>();
+				tc.m_Parent = parentNode.as<EntityID>();
 			}
 
 			for ( auto child : transformNode["Children"] )
 			{
-				deserializedGO.Children.push_back( child.as<GUID>() );
+				tc.m_Children.push_back( child.as<EntityID>() );
 			}
 		}
 
-		a_DeserializedGameObjects.emplace( guid, std::move( deserializedGO ) );
-
 		auto it = a_Node.begin();
 		++it; // Skip GameObject node
+		++it; // Skip GUID node
 		++it; // Skip Tag node
 		++it; // Skip Transform node
 

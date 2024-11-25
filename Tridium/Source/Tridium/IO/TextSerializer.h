@@ -89,6 +89,7 @@ namespace Tridium::IO {
 	// ---------- Tridium Types -----------
 
 	_TRIDUM_SERIALIZE_TO_TEXT( GUID );
+	_TRIDUM_SERIALIZE_TO_TEXT( GameObject );
 	_TRIDUM_SERIALIZE_TO_TEXT( SceneHandle );
 	_TRIDUM_SERIALIZE_TO_TEXT( MaterialHandle );
 	_TRIDUM_SERIALIZE_TO_TEXT( MeshSourceHandle );
@@ -212,6 +213,7 @@ namespace Tridium::IO {
 	// ---------- Tridium Types -----------
 
 	_TRIDUM_DESERIALIZE_FROM_TEXT( GUID );
+	_TRIDUM_DESERIALIZE_FROM_TEXT( GameObject );
 	_TRIDUM_DESERIALIZE_FROM_TEXT( SceneHandle );
 	_TRIDUM_DESERIALIZE_FROM_TEXT( MaterialHandle );
 	_TRIDUM_DESERIALIZE_FROM_TEXT( MeshSourceHandle );

@@ -8,13 +8,14 @@ SceneEnvironment:
     Intensity: 0.300000012
     RotationEular: [0, 0, 0]
 GameObjects:
-  - GameObject: 14625890535332711082
+  - GameObject: 0
+    GUID: 14625890535332711082
     Tag: Player
     Transform:
       Position: [0, 2.4026413, -18.7897606]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
-      Children: []
+      Children: [13]
     StaticMeshComponent:
       Mesh: 10
       Materials: []
@@ -44,18 +45,6 @@ GameObjects:
       m_Rotation: [0, 0, 0]
       m_Radius: 0.5
       m_HalfHeight: 0.5
-    CameraComponent:
-      SceneCamera:
-        m_Perspective:
-          FOV: 75
-          Near: 0.00999999978
-          Far: 1000
-        m_Orthographic:
-          Size: 10
-          Near: -1000
-          Far: 1000
-        m_ProjectionType: Perspective
-      IsMainCamera: true
     CharacterControllerComponent:
       m_Friction: 10
       m_MovementSpeed: 20
@@ -63,7 +52,14 @@ GameObjects:
       m_AirMovementControl: 0.100000001
       m_JumpForce: 5
       m_LookSensitivity: 15
-  - GameObject: 5063293338346141733
+    ShooterPlayerComponent:
+      m_GunModel: 15
+      m_GunRecoilDistance: 0.100000001
+      m_GunLerpSpeed: 5
+      m_FireRate: 0.300000012
+      m_Force: 1000
+  - GameObject: 1
+    GUID: 5063293338346141733
     Tag: Directional Light
     Transform:
       Position: [0, 0, 0]
@@ -75,7 +71,8 @@ GameObjects:
       Intensity: 5
       CastsShadows: true
       ShadowMapSize: [8192, 8192]
-  - GameObject: 11269619174473686910
+  - GameObject: 2
+    GUID: 11269619174473686910
     Tag: Cube
     Transform:
       Position: [0, 0, 0]
@@ -110,7 +107,8 @@ GameObjects:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
       m_HalfExtents: [0.5, 0.5, 0.5]
-  - GameObject: 10146863388238961059
+  - GameObject: 3
+    GUID: 10146863388238961059
     Tag: Point Light
     Transform:
       Position: [-2.67639709, 5.00089931, 3.59148932]
@@ -124,7 +122,8 @@ GameObjects:
       AttenuationRadius: 29
       CastsShadows: true
       ShadowMapSize: 512
-  - GameObject: 17437318913938749274
+  - GameObject: 4
+    GUID: 17437318913938749274
     Tag: Cube
     Transform:
       Position: [-1.23696315, 1.2689718, -0.786001563]
@@ -159,7 +158,8 @@ GameObjects:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
       m_HalfExtents: [0.5, 0.5, 0.5]
-  - GameObject: 7464751459525842126
+  - GameObject: 5
+    GUID: 7464751459525842126
     Tag: Static Mesh
     Transform:
       Position: [35.7697372, 6.23622036, 0]
@@ -192,7 +192,8 @@ GameObjects:
         TwistLimit: 0
     MeshColliderComponent:
       m_Mesh: 5219398082506591880
-  - GameObject: 18001477331607899909
+  - GameObject: 6
+    GUID: 18001477331607899909
     Tag: Capsule
     Transform:
       Position: [35.9590073, 13.7651777, 0]
@@ -228,7 +229,8 @@ GameObjects:
       m_Rotation: [0, 0, 0]
       m_Radius: 0.5
       m_HalfHeight: 0.5
-  - GameObject: 11139421215139256591
+  - GameObject: 7
+    GUID: 11139421215139256591
     Tag: Cube
     Transform:
       Position: [-50.5, 1.00000298, 0]
@@ -263,7 +265,8 @@ GameObjects:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
       m_HalfExtents: [0.5, 0.5, 0.5]
-  - GameObject: 9978733723948922684
+  - GameObject: 8
+    GUID: 9978733723948922684
     Tag: Cube
     Transform:
       Position: [0, 1.00000298, -50.5]
@@ -298,7 +301,8 @@ GameObjects:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
       m_HalfExtents: [0.5, 0.5, 0.5]
-  - GameObject: 9671124329975338571
+  - GameObject: 9
+    GUID: 9671124329975338571
     Tag: Cube
     Transform:
       Position: [0, 1.00000298, 50.5]
@@ -333,7 +337,8 @@ GameObjects:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
       m_HalfExtents: [0.5, 0.5, 0.5]
-  - GameObject: 7850692757706960595
+  - GameObject: 10
+    GUID: 7850692757706960595
     Tag: Cube
     Transform:
       Position: [50.5, 1.00000298, 0]
@@ -368,7 +373,8 @@ GameObjects:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
       m_HalfExtents: [0.5, 0.5, 0.5]
-  - GameObject: 164138638235364766
+  - GameObject: 11
+    GUID: 164138638235364766
     Tag: Torus
     Transform:
       Position: [-2.83717656, 1.11447358, -0.257724643]
@@ -379,7 +385,8 @@ GameObjects:
       Mesh: 6
       Materials: []
       CastShadows: true
-  - GameObject: 3190713748869791094
+  - GameObject: 12
+    GUID: 3190713748869791094
     Tag: Static Mesh
     Transform:
       Position: [0, 0.205477044, 0.59436965]
@@ -389,4 +396,74 @@ GameObjects:
     StaticMeshComponent:
       Mesh: 4642065102083697686
       Materials: []
+      CastShadows: true
+  - GameObject: 13
+    GUID: 6123642407986706601
+    Tag: Camera
+    Transform:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+      Parent: 0
+      Children: [15]
+    CameraComponent:
+      SceneCamera:
+        m_Perspective:
+          FOV: 45
+          Near: 0.00999999978
+          Far: 1000
+        m_Orthographic:
+          Size: 10
+          Near: -1000
+          Far: 1000
+        m_ProjectionType: Perspective
+      IsMainCamera: true
+  - GameObject: 14
+    GUID: 16539571455283191931
+    Tag: Sphere
+    Transform:
+      Position: [0, 6.4770956, -30.7066193]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Children: []
+    StaticMeshComponent:
+      Mesh: 3
+      Materials: []
+      CastShadows: true
+    RigidBodyComponent:
+      m_PhysicsLayer: Dynamic
+      m_MotionType: Dynamic
+      m_Mass: 1
+      m_GravityScale: 1
+      m_Restitution: 0.5
+      m_LinearMotionConstraint:
+        XMotion: Free
+        XLimit: 0
+        YMotion: Free
+        YLimit: 0
+        ZMotion: Free
+        ZLimit: 0
+      m_AngularMotionConstraint:
+        Swing1Motion: Free
+        Swing1Limit: 0
+        Swing2Motion: Free
+        Swing2Limit: 0
+        TwistMotion: Free
+        TwistLimit: 0
+    SphereColliderComponent:
+      m_Center: [0, 0, 0]
+      m_Rotation: [0, 0, 0]
+      m_Radius: 0.5
+  - GameObject: 15
+    GUID: 782535471126286490
+    Tag: Gun
+    Transform:
+      Position: [0.0199999996, 0, -0.0719999969]
+      Rotation: [0, -1.4653784, 0]
+      Scale: [0.00100000005, 0.00100000005, 0.00100000005]
+      Parent: 13
+      Children: []
+    StaticMeshComponent:
+      Mesh: 11662457145095035423
+      Materials: [5282163452782371408, 5282163452782371408, 5282163452782371408, 5282163452782371408, 5282163452782371408, 5282163452782371408, 5282163452782371408]
       CastShadows: true

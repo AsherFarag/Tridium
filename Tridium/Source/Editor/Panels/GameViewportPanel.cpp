@@ -22,9 +22,11 @@ namespace Tridium::Editor {
 	void GameViewportPanel::OnImGuiDraw()
 	{
 		auto sceneCameraInfo = GetSceneCamera();
+		if ( !sceneCameraInfo )
+			return;
 
 		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2( 2.f, 2.f ) );
-		if ( sceneCameraInfo && ImGui::Begin( m_Name.c_str() ) )
+		if ( ImGui::Begin( m_Name.c_str() ) )
 		{
 			auto&& [camera, view, position] = sceneCameraInfo.value();
 
@@ -40,19 +42,9 @@ namespace Tridium::Editor {
 			ImGui::Image( (ImTextureID)m_FBO->GetColorAttachmentID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
 		}
 
-		bool newIsFocused = ImGui::IsWindowFocused();
-		if ( newIsFocused != m_IsFocused )
-		{
-			if ( GetEditorLayer()->GetActiveScene()->IsRunning() )
-			{
-				newIsFocused ?
-					Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled ) :
-					Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Normal );
-			}
-		}
-
 		m_IsHovered = ImGui::IsWindowHovered();
-		m_IsFocused = newIsFocused;
+		m_IsFocused = ImGui::IsWindowFocused();
+
 		ImGui::End();
 	}
 
@@ -66,7 +58,7 @@ namespace Tridium::Editor {
 		if ( !transform )
 			return {};
 
-		return { { camera->SceneCamera, camera->GetView(), transform->Position} };
+		return { { camera->SceneCamera, camera->GetView(), transform->GetWorldPosition()}};
 	}
 }
 

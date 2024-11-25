@@ -7,6 +7,9 @@
 
 #include <Tridium/Rendering/Texture.h>
 
+#include <Tridium/ECS/GameObject.h>
+#include <Tridium/ECS/Components/Types.h>
+
 #include <Tridium/Rendering/Framebuffer.h>
 
 namespace Tridium::Editor {
@@ -603,6 +606,67 @@ namespace Tridium::Editor {
 	bool DrawProperty( const char* a_Name, LuaHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
 		return _DrawAssetHandleProperty<EAssetType::Lua>( a_Name, a_Value, a_Flags );
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, GameObject& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		IS_DISABLED( a_Flags );
+
+		bool modified = false;
+
+		// Get the name of the GameObject
+		const char* gameObjectName = "None";
+		if ( a_Value.IsValid() )
+		{
+			if ( TagComponent* tag = a_Value.TryGetComponent<TagComponent>() )
+			{
+				gameObjectName = tag->Tag.c_str();
+			}
+		}
+
+
+		const bool open = ImGui::BeginCombo( a_Name, gameObjectName );
+
+		ImGui::ScopedDragDropTarget scopedDragDropTarget;
+		if ( scopedDragDropTarget )
+		{
+			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_GAME_OBJECT, ImGuiDragDropFlags_::ImGuiDragDropFlags_SourceAllowNullID );
+			if ( payload )
+			{
+				GameObject gameObject( *(GameObject*)payload->Data );
+				modified |= gameObject != a_Value;
+				a_Value = gameObject;
+			}
+		}
+
+		if ( open )
+		{
+			if ( ImGui::Selectable( "None###Internal", !a_Value.IsValid() ) )
+			{
+				a_Value = {};
+				ImGui::EndCombo();
+				return true;
+			}
+
+			ImGui::Separator();
+
+			auto view = Application::GetScene()->GetRegistry().view<TagComponent>();
+			view.each( [&]( const entt::entity& entity, TagComponent& tag )
+				{
+					GameObject gameObject( entity );
+					ImGui::ScopedID id( gameObject );
+					if ( ImGui::Selectable( tag.Tag.c_str(), gameObject == a_Value ) )
+					{
+						a_Value = gameObject;
+						modified = true;
+					}
+				} );
+
+			ImGui::EndCombo();
+		}
+
+		return modified;
 	}
 
 	//////////////////////////////////////////////////////////////////////////

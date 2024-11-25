@@ -1,7 +1,5 @@
 #pragma once
 #include <Tridium/Core/Core.h>
-#include <Tridium/Core/ForEachStructMember.h>
-
 #include <fstream>
 
 #define YAML_CPP_STATIC_DEFINE
@@ -171,4 +169,10 @@ namespace Tridium {
 	YAML::Emitter& operator<<( YAML::Emitter& out, const Color& v );
 	
 	YAML::Emitter& operator<<( YAML::Emitter& out, const Matrix4& v );
+
+	namespace IO {
+
+		template<typename T> struct Serializer;
+
+	}
 }

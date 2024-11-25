@@ -50,10 +50,14 @@ namespace Tridium {
 
 	Vector3 TransformComponent::GetForward() const
 	{
+		Vector3 forward = Rotation.Quat * Vector3( 0.0f, 0.0f, 1.0f );
+
 		if ( m_Parent.IsValid() )
-			return m_Parent.GetTransform().GetForward() * Rotation.Quat * Vector3( 0.0f, 0.0f, 1.0f );
-		else
-			return Rotation.Quat * Vector3( 0.0f, 0.0f, 1.0f );
+		{
+			forward += m_Parent.GetTransform().GetForward();
+		}
+
+		return glm::normalize(forward);
 	}
 
 	Vector3 TransformComponent::GetRight() const

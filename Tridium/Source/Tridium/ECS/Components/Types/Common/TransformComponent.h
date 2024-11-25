@@ -6,6 +6,9 @@ namespace Tridium {
 
 	class Scene;
 
+	// TEMP?
+	namespace IO { template <typename T> struct Serializer; }
+
 	class TransformComponent : public Component
 	{
 		REFLECT(TransformComponent);
@@ -36,6 +39,7 @@ namespace Tridium {
 		void DetachChild( GameObject a_Child );
 		GameObject GetChild( const std::string& a_Tag ) const; /* Slow operation, avoid if possible. */
 		std::vector<GameObject>& GetChildren() { return m_Children; }
+		const std::vector<GameObject>& GetChildren() const { return m_Children; }
 
 	public:
 		Vector3 Position = Vector3( 0.0f );
@@ -52,5 +56,6 @@ namespace Tridium {
 		std::vector<GameObject> m_Children;
 
 		friend bool IO::DeserializeFromText<Scene>( const YAML::Node& a_Node, Scene& a_Data );
+		friend struct IO::Serializer<GameObject>;
 	};
 }

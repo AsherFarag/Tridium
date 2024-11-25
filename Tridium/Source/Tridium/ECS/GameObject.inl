@@ -28,6 +28,34 @@ namespace Tridium {
 		return Application::GetScene()->TryGetComponentFromGameObject<T>( *this );
 	}
 
+	template<typename T>
+	inline T* GameObject::TryGetComponentInChildren() const
+	{
+		const std::vector<GameObject>& children = GetChildren();
+		for ( auto child : children )
+		{
+			if ( T* foundComponent = child.Internal_TryGetComponentInChildren<T>() )
+				return foundComponent;
+		}
+
+		return nullptr;
+	}
+
+	template<typename T>
+	inline T* GameObject::Internal_TryGetComponentInChildren() const
+	{
+		if ( T* foundComponent = TryGetComponent<T>() )
+			return foundComponent;
+
+		for ( auto child : GetChildren() )
+		{
+			if ( T* foundComponent = child.Internal_TryGetComponentInChildren<T>() )
+				return foundComponent;
+		}
+
+		return nullptr;
+	}
+
 	template <typename T>
 	inline bool GameObject::HasComponent() const
 	{

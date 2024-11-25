@@ -160,6 +160,8 @@ namespace Tridium::Editor {
 
 		m_GameViewportPanel->Focus();
 		CurrentSceneState = SceneState::Play;
+
+		Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled );
 	}
 
 	void EditorLayer::OnEndScene()
@@ -223,6 +225,27 @@ namespace Tridium::Editor {
 				return true;
 			}
 			break;
+		}
+		case Input::KEY_TAB:
+		{
+			if ( CurrentSceneState == SceneState::Play )
+			{
+				TODO( "Bruh" );
+				static bool s_MouseIsCaptured = false;
+				if ( s_MouseIsCaptured )
+				{
+					Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Normal );
+					ImGui::SetMouseCursor( ImGuiMouseCursor_Arrow );
+					s_MouseIsCaptured = false;
+				}
+				else
+				{
+					Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled );
+					ImGui::SetMouseCursor( ImGuiMouseCursor_None );
+					s_MouseIsCaptured = true;
+				}
+				return true;
+			}
 		}
 		}
 

@@ -87,18 +87,31 @@ namespace Tridium {
 
 	void CharacterControllerComponent::AddLookInput( const Vector2& a_Input )
 	{
-		CameraComponent* camera = GetGameObject().TryGetComponent<CameraComponent>();
+		CameraComponent* camera = m_CameraGameObject.TryGetComponent<CameraComponent>();
 		if ( !camera )
-			return;
-
-		camera->Pitch += a_Input.y * m_LookSensitivity;
-		camera->Pitch = CLAMP( -89.0f, 89.0f, camera->Pitch );
+		{
+			if ( camera = GetGameObject().TryGetComponentInChildren<CameraComponent>() )
+			{
+				m_CameraGameObject = camera->GetGameObject();
+			}
+			else 
+			{
+				TE_CORE_WARN( "'{0}' does not have a Child GameObject with a CameraComponent, which the CharacterControllerComponent requires!", GetGameObject().GetTag().c_str() );
+				return;
+			}
+		}
 
 		TransformComponent& transform = GetGameObject().GetTransform();
 		Quaternion rotation = transform.Rotation.GetQuaternion();
 		Quaternion yawRotation = Quaternion( Vector3( 0.0f, -glm::radians( a_Input.x * m_LookSensitivity ), 0.0f ) );
 		rotation = yawRotation * rotation;
 		transform.Rotation.SetFromQuaternion( rotation );
+
+		TransformComponent& cameraTransform = m_CameraGameObject.GetTransform();
+		Vector3 cameraRotation = cameraTransform.Rotation.GetEuler();
+		cameraRotation.x -= glm::radians( a_Input.y * m_LookSensitivity );
+		cameraRotation.x = glm::clamp( cameraRotation.x, glm::radians( -89.0f ), glm::radians( 89.0f ) );
+		cameraTransform.Rotation.SetFromEuler( cameraRotation );
 	}
 
 	void CharacterControllerComponent::Jump()

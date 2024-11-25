@@ -141,6 +141,12 @@ namespace Tridium::IO {
 		a_Archive << a_Value.ID();
 	}
 
+	_TRIDUM_SERIALIZE_TO_TEXT( GameObject )
+	{
+		a_Archive << static_cast<EntityIDType>( a_Value.ID() );
+	}
+
+
 	_TRIDUM_SERIALIZE_TO_TEXT( SceneHandle )
 	{
 		a_Archive << a_Value.ID();
@@ -340,6 +346,16 @@ namespace Tridium::IO {
 		if ( a_Node && a_Node.IsScalar() )
 		{
 			o_Value = GUID( a_Node.as<uint64_t>() );
+			return true;
+		}
+		return false;
+	}
+
+	_TRIDUM_DESERIALIZE_FROM_TEXT( GameObject )
+	{
+		if ( a_Node && a_Node.IsScalar() )
+		{
+			o_Value = GameObject( a_Node.as<EntityIDType>() );
 			return true;
 		}
 		return false;

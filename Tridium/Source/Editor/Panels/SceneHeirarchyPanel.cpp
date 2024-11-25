@@ -339,7 +339,7 @@ namespace Tridium::Editor {
 
 	void SceneHeirarchyPanel::DrawSceneNode( GameObject go )
 	{
-		if ( !go.IsValid() )
+		if ( !go.IsValid() || !go.HasComponent<TagComponent>() )
 		{
 			TE_CORE_WARN( "Attempting to draw an invalid Game Object node!" );
 			return;
@@ -363,16 +363,18 @@ namespace Tridium::Editor {
 		DrawAddPopUp( go );
 
 		// Drag-Drop Payload handling
+		bool isDragging = false;
 		if ( ImGui::BeginDragDropSource() )
 		{
-			ImGui::SetDragDropPayload( "GameObject", (void*)&go, sizeof( go ), ImGuiCond_Once );
+			isDragging = true;
+			ImGui::SetDragDropPayload( TE_PAYLOAD_GAME_OBJECT, (void*)&go, sizeof( go ), ImGuiCond_Once );
 			ImGui::Text( label.c_str() );
 
 			ImGui::EndDragDropSource();
 		}
 		else if ( ImGui::BeginDragDropTarget() )
 		{
-			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( "GameObject" );
+			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_GAME_OBJECT );
 			if ( payload )
 			{
 				GameObject payloadGO = *(GameObject*)payload->Data;
@@ -388,7 +390,8 @@ namespace Tridium::Editor {
 			ImGui::EndDragDropTarget();
 		}
 
-		if ( ImGui::IsItemClicked() )
+		// Handle mouse release for selection, ensuring it's not part of a drag-and-drop
+		if ( !isDragging && ImGui::IsItemHovered() && ImGui::IsMouseReleased( ImGuiMouseButton_Left ) )
 		{
 			SetSelectedGameObject( go );
 		}

@@ -27,29 +27,18 @@ namespace Tridium {
 		// Entity registry
 		{
 			const entt::registry& src = a_Other.m_Registry;
-			std::unordered_map<entt::entity, entt::entity> entityMap;
 
 			// Step 1: Create entities
 			for ( auto entity : src.view<GUIDComponent>() ) {
-				entt::entity newEntity = m_Registry.create();
-				entityMap[entity] = newEntity;
+				entt::entity newEntity = m_Registry.create( entity );
 			}
 
 			// Step 2: Copy components
 			for ( auto [id, srcStorage] : src.storage() ) 
 			{
-				for ( auto it = srcStorage.begin(); it != srcStorage.end(); ++it ) 
+				for ( auto it = srcStorage.rbegin(); it != srcStorage.rend(); ++it ) 
 				{
-					entt::entity oldEntity = *it;
-
-					// Ensure mapping exists
-					auto mapIt = entityMap.find( oldEntity );
-					if ( mapIt == entityMap.end() ) 
-					{
-						TE_CORE_ASSERT( false, "Unmapped entity encountered!" );
-						continue;
-					}
-					entt::entity newEntity = mapIt->second;
+					entt::entity entity = *it;
 
 					// Handle component copy
 					Refl::MetaType componentType = entt::resolve( srcStorage.type() );
@@ -61,10 +50,10 @@ namespace Tridium {
 						continue;
 					}
 
-					Refl::MetaAny dstComponent = componentType.from_void( addToGameObjectFunc( *this, newEntity ) );
-					Refl::MetaAny srcComponent = componentType.from_void( srcStorage.value( oldEntity ) );
+					Refl::MetaAny dstComponent = componentType.from_void( addToGameObjectFunc( *this, entity ) );
+					Refl::MetaAny srcComponent = componentType.from_void( srcStorage.value( entity ) );
 					dstComponent.assign( srcComponent );
-					reinterpret_cast<Component*>( dstComponent.data() )->m_GameObject = GameObject( newEntity );
+					reinterpret_cast<Component*>( dstComponent.data() )->m_GameObject = GameObject( entity );
 				}
 			}
 		}
@@ -98,6 +87,25 @@ namespace Tridium {
 				if ( m_PhysicsScene->AddPhysicsBody( GameObject( entity ), rb, tc ) )
 					rb.GetBodyProxy().SetPhysicsScene( m_PhysicsScene );
 			}
+		}
+
+		// Initialize scriptable objects
+		for ( const auto& storage : m_Registry.storage() )
+		{
+			// Nothing to iterate through, Continue
+			if ( storage.second.size() == 0 )
+				continue;
+
+			// We know that the data will always be inherited from Component
+			void* data = storage.second.value( storage.second[0] );
+			Component* component = (Component*)data;
+
+			// If the type is not inherited from ScriptableComponent, continue 
+			if ( dynamic_cast<ScriptableComponent*>( component ) == nullptr )
+				continue;
+
+			for ( auto go : storage.second )
+				reinterpret_cast<ScriptableComponent*>( storage.second.value( go ) )->OnBeginPlay();
 		}
 	}
 
@@ -157,6 +165,14 @@ namespace Tridium {
 			m_PhysicsScene->Shutdown();
 		}
 	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Physics
+	//////////////////////////////////////////////////////////////////////////
+
+	//////////////////////////////////////////////////////////////////////////
+	// GameObjects
+	//////////////////////////////////////////////////////////////////////////
 
 	GameObject Scene::InstantiateGameObject( const std::string& a_Name )
 	{
@@ -244,7 +260,7 @@ namespace Tridium {
 			}
 		}
 
-		if ( !IsGameObjectValid( m_MainCamera ) )
+		if ( !IsGameObjectValid( m_MainCamera ) && !cameras.empty() )
 		{
 			m_MainCamera = cameras.front();
 			mainCamera = &cameras.get<CameraComponent>( m_MainCamera );

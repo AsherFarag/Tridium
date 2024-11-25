@@ -2,6 +2,8 @@
 #ifdef IS_EDITOR
 #include "EditorViewportPanel.h"
 
+#include <Tridium/ECS/GameObject.h>
+
 #include <Editor/Editor.h>
 #include <Editor/EditorUtil.h>
 #include <Editor/EditorCamera.h>

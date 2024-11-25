@@ -180,8 +180,9 @@ namespace Tridium {
 		{
 			hit.Hit = true;
 			hit.Position = Util::ToTridiumVec3( ray.mOrigin + rayResult.mFraction * ray.mDirection );
-			hit.Normal = Util::ToTridiumVec3( ray.mDirection );
+			hit.Normal = glm::normalize( Util::ToTridiumVec3( ray.mDirection ) );
 			hit.Distance = glm::distance( a_Start, hit.Position );
+			hit.HitBodyID = rayResult.mBodyID.GetIndexAndSequenceNumber();
 
 			// Get hit game object
 			//{

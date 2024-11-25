@@ -6,6 +6,7 @@
 #include <Tridium/Physics/PhysicsScene.h>
 
 namespace Tridium {
+	using EntityIDType = entt::id_type;
 	using EntityID = entt::entity;
 	static constexpr EntityID INVALID_ENTITY_ID = entt::null;
 
@@ -59,6 +60,10 @@ namespace Tridium {
 		const SceneEnvironment& GetSceneEnvironment() const { return m_SceneEnvironment; }
 
 		SceneRenderer& GetSceneRenderer() { return m_SceneRenderer; }
+
+		// - Physics -
+
+		inline RayCastResult CastRay( const Vector3& a_Origin, const Vector3& a_Direction, ERayCastChannel a_RayCastChannel, const PhysicsBodyFilter& a_BodyFilter = {} ) const;
 
 		// - GameObjects - 
 		GameObject InstantiateGameObject( const std::string& a_Name = "GameObject" );

@@ -4,6 +4,7 @@
 
 #define TE_PAYLOAD_CONTENT_BROWSER_ITEM "ContentBrowserItem"
 #define TE_PAYLOAD_ASSET_HANDLE "AssetHandle"
+#define TE_PAYLOAD_GAME_OBJECT "GameObject"
 
 static ImVec4 operator*( const ImVec4& a_Color, float a_Value )
 {
