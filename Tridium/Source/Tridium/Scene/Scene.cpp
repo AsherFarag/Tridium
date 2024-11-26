@@ -235,6 +235,32 @@ namespace Tridium {
 		return m_Registry.valid( a_GameObject.m_ID );
 	}
 
+	GameObject Scene::FindGameObjectByTag( const std::string& a_Tag ) const
+	{
+		auto view = m_Registry.view<TagComponent>();
+		for ( auto&& [ entity, tagComponent ] : view.each() )
+		{
+			if ( tagComponent.Tag == a_Tag )
+				return GameObject( entity );
+		}
+
+		return GameObject{};
+	}
+
+	std::vector<GameObject> Scene::FindAllGameObjectsByTag( const std::string& a_Tag ) const
+	{
+		std::vector<GameObject> gameObjects;
+		// Reserve an arbitrary amount of space for the vector
+		gameObjects.reserve( 8 );
+		//m_Registry.view<TagComponent>().each( [&]( auto entity, TagComponent& tag )
+		//	{
+		//		if ( tag.Tag == a_Tag )
+		//			gameObjects.push_back( GameObject( entity ) );
+		//	} );
+
+		return gameObjects;
+	}
+
 	void Scene::Clear()
 	{
 		m_Registry.clear();

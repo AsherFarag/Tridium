@@ -71,6 +71,8 @@ namespace Tridium {
 		GameObject InstantiateGameObjectFrom( GameObject a_Source );
 		void CopyGameObject( GameObject a_Destination, GameObject a_Source );
 		bool IsGameObjectValid( GameObject a_GameObject ) const;
+		GameObject FindGameObjectByTag( const std::string& a_Tag ) const;
+		std::vector<GameObject> FindAllGameObjectsByTag( const std::string& a_Tag ) const;
 
 		template <typename T, typename... Args>
 		T& AddComponentToGameObject( GameObject a_GameObject, Args&&... args );

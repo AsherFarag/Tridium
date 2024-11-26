@@ -30,6 +30,7 @@ public:
 			if ( fired )
 			{
 				m_GunLerp = 1.0f;
+				ActivateMuzzleFlash();
 			}
 		}
 
@@ -43,6 +44,20 @@ public:
 			Vector3 recoilPosition = m_DefaultGunPosition - Vector3( 0.0f, 1.0f, 0.0f ) *m_GunRecoilDistance;
 			Vector3 newPosition = Math::Lerp( m_DefaultGunPosition, recoilPosition, m_GunLerp );
 			tc.Position = newPosition;
+		}
+
+		if ( m_GunMuzzleFlashTimer > 0.0f )
+		{
+			m_GunMuzzleFlashTimer -= Time::DeltaTime();
+			if ( m_GunMuzzleFlashTimer <= 0.0f )
+			{
+				PointLightComponent* light = m_GunMuzzleFlash.TryGetComponent<PointLightComponent>();
+				if ( light )
+				{
+					light->Intensity = 0.0f;
+				}
+			}
+
 		}
 	}
 
@@ -84,8 +99,25 @@ protected:
 		return true;
 	}
 
+	void ActivateMuzzleFlash()
+	{
+		if ( !m_GunMuzzleFlash.IsValid() )
+			return;
+
+		PointLightComponent* light = m_GunMuzzleFlash.TryGetComponent<PointLightComponent>();
+		if ( !light )
+			return;
+
+		light->Intensity = m_GunMuzzleFlashIntensity;
+		m_GunMuzzleFlashTimer = m_GunMuzzleFlashDuration;
+	}
+
 protected:
 	GameObject m_GunModel;
+	GameObject m_GunMuzzleFlash;
+	float m_GunMuzzleFlashDuration = 0.1f;
+	float m_GunMuzzleFlashIntensity = 100.0f;
+	float m_GunMuzzleFlashTimer = 0.0f;
 
 	Vector3 m_DefaultGunPosition = Vector3( 0.0f, 0.0f, 0.0f );
 
@@ -100,11 +132,72 @@ protected:
 BEGIN_REFLECT_COMPONENT( ShooterPlayerComponent )
 	BASE( ScriptableComponent )
 	PROPERTY( m_GunModel, FLAGS( Serialize, EditAnywhere ) )
+	PROPERTY( m_GunMuzzleFlash, FLAGS( Serialize, EditAnywhere ) )
+	PROPERTY( m_GunMuzzleFlashDuration, FLAGS( Serialize, EditAnywhere ) )
+	PROPERTY( m_GunMuzzleFlashIntensity, FLAGS( Serialize, EditAnywhere ) )
 	PROPERTY( m_GunRecoilDistance, FLAGS( Serialize, EditAnywhere ) )
 	PROPERTY( m_GunLerpSpeed, FLAGS( Serialize, EditAnywhere ) )
 	PROPERTY( m_FireRate, FLAGS( Serialize, EditAnywhere ) )
 	PROPERTY( m_Force, FLAGS( Serialize, EditAnywhere ) )
 END_REFLECT( ShooterPlayerComponent )
+
+
+class EnemyAIComponent : public ScriptableComponent
+{
+	REFLECT( EnemyAIComponent )
+public:
+	void OnBeginPlay() override
+	{
+		GetTarget();
+	}
+
+	void OnUpdate() override
+	{
+		if ( !m_Target.IsValid() )
+		{
+			GetTarget();
+			return;
+		}
+
+		if ( RigidBodyComponent* rb = GetGameObject().TryGetComponent<RigidBodyComponent>() )
+		{
+			TransformComponent& tc = GetGameObject().GetTransform();
+			TransformComponent& targetTransform = m_Target.GetTransform();
+
+			Vector3 direction = targetTransform.GetWorldPosition() - tc.GetWorldPosition();
+			direction.y = 0.0f;
+			direction = glm::normalize( direction );
+
+			Vector3 velocity = rb->GetLinearVelocity() + direction * m_MaxSpeed;
+			if ( glm::length( velocity ) <= m_MaxSpeed )
+			{
+				rb->SetLinearVelocity( velocity );
+			}
+		}
+	}
+
+protected:
+	void GetTarget()
+	{
+		GameObject player = GetScene()->FindGameObjectByTag("Player");
+		if ( player.IsValid() )
+		{
+			m_Target = player;
+		}
+	}
+
+protected:
+	GameObject m_Target;
+	float m_Speed = 1.0f;
+	float m_MaxSpeed = 5.0f;
+};
+
+BEGIN_REFLECT_COMPONENT( EnemyAIComponent )
+	BASE( ScriptableComponent )
+	PROPERTY( m_Target, FLAGS( EditAnywhere ) )
+	PROPERTY( m_Speed, FLAGS( Serialize, EditAnywhere ) )
+	PROPERTY( m_MaxSpeed, FLAGS( Serialize, EditAnywhere ) )
+END_REFLECT( EnemyAIComponent )
 
 class SandboxGameInstance : public Tridium::GameInstance
 {
@@ -113,7 +206,7 @@ class SandboxGameInstance : public Tridium::GameInstance
 	}
 };
 
-Tridium::GameInstance* Tridium::CreateGameInstance()
+GameInstance* Tridium::CreateGameInstance()
 {
 	return new SandboxGameInstance();
 }

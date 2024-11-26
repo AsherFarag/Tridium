@@ -10,6 +10,12 @@ project "Tridium"
 	pchheader "tripch.h"
 	pchsource "Source/tripch.cpp"
 
+	dependson 
+	{ 
+		"assimp",
+		"JoltPhysics",
+	}
+
 	files
 	{
 		"Source/**.h",
