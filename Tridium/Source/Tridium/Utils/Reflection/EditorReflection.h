@@ -1,13 +1,13 @@
 #pragma once
 
-#ifndef IS_EDITOR
+#if !IS_EDITOR
 
 #define _DRAW_PROPERTY_FUNC(Class)
 #define _DRAW_ENUM_FUNC(EnumClass)
 
 #endif // IS_EDITOR
 
-#ifdef IS_EDITOR
+#if IS_EDITOR
 
 #include <Tridium/Core/Core.h>
 #include <Editor/PropertyDrawers.h>

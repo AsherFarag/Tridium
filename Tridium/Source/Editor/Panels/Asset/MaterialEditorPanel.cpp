@@ -1,5 +1,5 @@
 #include "tripch.h"
-#ifdef IS_EDITOR
+#if IS_EDITOR
 #include "Editor/EditorUtil.h"
 #include "MaterialEditorPanel.h"
 #include <Tridium/Asset/AssetManager.h>

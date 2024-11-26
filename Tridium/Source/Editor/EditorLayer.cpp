@@ -1,6 +1,6 @@
 #include "tripch.h"
 
-#ifdef IS_EDITOR
+#if IS_EDITOR
 #include "EditorLayer.h"
 #include "imgui.h"
 

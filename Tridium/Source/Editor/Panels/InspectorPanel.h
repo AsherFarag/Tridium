@@ -1,5 +1,5 @@
 #pragma once
-#ifdef IS_EDITOR
+#if IS_EDITOR
 #include "Panel.h"
 #include <Tridium/ECS/GameObject.h>
 

@@ -1,5 +1,5 @@
 #include "tripch.h"
-#ifdef  IS_EDITOR
+#if IS_EDITOR
 #include "Editor.h"
 #include "EditorStyle.h"
 

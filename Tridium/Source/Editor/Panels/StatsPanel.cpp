@@ -1,4 +1,6 @@
 #include "tripch.h"
+#if IS_EDITOR
+
 #include "StatsPanel.h"
 
 #include <Editor/EditorStyle.h>
@@ -70,3 +72,4 @@ namespace Tridium::Editor {
 		ImGuiEnd();
 	}
 }
+#endif // IS_EDITOR

@@ -1,7 +1,7 @@
 #include "tripch.h"
 #include "Application.h"
 
-#ifdef IS_EDITOR
+#if IS_EDITOR
 	#include <Editor/Editor.h>
 	#include <Tridium/Asset/EditorAssetManager.h>
 #else
@@ -77,7 +77,7 @@ namespace Tridium {
 		RenderCommand::Init();
 
 		// Initialise the editor
-#ifdef IS_EDITOR
+#if IS_EDITOR
 		Editor::EditorApplication::Init();
 #endif // IS_EDITOR
 	}
@@ -100,7 +100,7 @@ namespace Tridium {
 		uint32_t minFPS = 0xFFFFFFFF;
 		uint32_t maxFPS = 0;
 
-	#ifndef IS_EDITOR
+	#if !IS_EDITOR
 		if ( m_ActiveScene )
 		{
 			m_ActiveScene->OnBegin();
@@ -141,7 +141,7 @@ namespace Tridium {
 			m_Window->OnUpdate();
 		}
 
-#ifndef IS_EDITOR
+#if !IS_EDITOR
 		if ( m_ActiveScene )
 		{
 			m_ActiveScene->OnEnd();
@@ -154,7 +154,7 @@ namespace Tridium {
 			m_PhysicsEngine->Shutdown();
 			m_AssetManager->Shutdown();
 
-			#ifdef IS_EDITOR
+			#if IS_EDITOR
 			Editor::EditorApplication::Shutdown();
 			#endif // IS_EDITOR
 		}
@@ -165,7 +165,7 @@ namespace Tridium {
 	{
 		// Update Loop ========================================================================================
 
-	#ifndef IS_EDITOR
+	#if !IS_EDITOR
 
 		Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled );
 
@@ -179,7 +179,7 @@ namespace Tridium {
 
 		// Render Loop ========================================================================================
 
-	#ifndef IS_EDITOR
+	#if !IS_EDITOR
 
 		if ( !m_ActiveScene->GetMainCamera() )
 		{
@@ -238,7 +238,7 @@ namespace Tridium {
 	///////////////////////////////////////////////////////////////////////////////////////////
 	void Application::Quit()
 	{
-	#ifdef IS_EDITOR
+	#if IS_EDITOR
 		Editor::GetEditorLayer()->OnEndScene();
 	#else
 		Get().Shutdown();
@@ -267,7 +267,7 @@ namespace Tridium {
 	///////////////////////////////////////////////////////////////////////////////////////////
 	void Application::InitializeAssetManager()
 	{
-	#ifdef IS_EDITOR
+	#if IS_EDITOR
 		m_AssetManager = MakeShared<Editor::EditorAssetManager>();
 	#else
 		//m_AssetManager = MakeShared<RuntimeAssetManager>();

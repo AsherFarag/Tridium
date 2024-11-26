@@ -1,5 +1,5 @@
 #pragma once
-#ifdef IS_EDITOR
+#if IS_EDITOR
 
 #include <Tridium/Core/Layer.h>
 #include <Tridium/Rendering/Texture.h>

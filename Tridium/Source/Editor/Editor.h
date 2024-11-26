@@ -1,5 +1,5 @@
 #pragma once
-#ifdef IS_EDITOR
+#if IS_EDITOR
 #include "EditorLayer.h"
 #include "Tridium/Core/Core.h"
 #include <any>

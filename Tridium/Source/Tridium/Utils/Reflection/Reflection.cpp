@@ -169,7 +169,7 @@ namespace Tridium::Refl {
         }
     }
 
-#ifdef IS_EDITOR
+#if IS_EDITOR
 
     template<typename T>
     bool DrawBasicType( const char* a_Name, MetaAny& a_Handle, PropertyFlags a_Flags )
