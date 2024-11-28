@@ -63,7 +63,7 @@ namespace Tridium::Editor {
 		// Load the dependencies first
 		for ( const auto& dependency : m_AssetRegistry.AssetDependencies[a_Handle] )
 		{
-			if ( !dependency.Valid() )
+			if ( !dependency.IsValid() )
 				continue;
 
 			if ( !GetAsset( dependency ) )
@@ -266,20 +266,20 @@ namespace Tridium::Editor {
 		if ( !absolutePath.Exists() )
 		{
 			TE_CORE_ERROR( "[AssetManager] Failed to import asset: {0}, file does not exist", a_Path.ToString() );
-			return AssetHandle::InvalidGUID;
+			return AssetHandle::InvalidID;
 		}
 
 		if ( !absolutePath.HasExtension() )
 		{
 			TE_CORE_ERROR( "[AssetManager] Failed to import asset: {0}, missing file extension", a_Path.ToString() );
-			return AssetHandle::InvalidGUID;
+			return AssetHandle::InvalidID;
 		}
 
 		EAssetType assetType = GetAssetTypeFromFileExtension( a_Path.GetExtension() );
 		if ( assetType == EAssetType::None )
 		{
 			TE_CORE_ERROR( "[AssetManager] Failed to import asset: {0}, unsupported file extension", a_Path.ToString() );
-			return AssetHandle::InvalidGUID;
+			return AssetHandle::InvalidID;
 		}
 
 		// Create new asset meta data

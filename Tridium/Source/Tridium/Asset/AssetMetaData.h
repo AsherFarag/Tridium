@@ -17,6 +17,6 @@ namespace Tridium {
 
 		static const AssetMetaData s_InvalidMetaData;
 
-		bool IsValid() const { return Handle.Valid(); }
+		bool IsValid() const { return Handle.IsValid(); }
 	};
 }

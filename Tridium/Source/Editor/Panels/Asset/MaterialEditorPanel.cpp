@@ -71,7 +71,7 @@ namespace Tridium::Editor {
 		{
 			case Input::KEY_S:
 			{
-				if ( control && m_Material.Valid() )
+				if ( control && m_Material.IsValid() )
 				{
 					AssetManager::Get<EditorAssetManager>()->SaveAsset( m_Material );
 					m_Modified = false;

@@ -14,7 +14,7 @@ namespace Tridium {
 
 	const AssetMetaData AssetMetaData::s_InvalidMetaData = 
 	{ 
-		AssetHandle::InvalidGUID,
+		AssetHandle::InvalidID,
 		EAssetType::None,
 		{}, // Path
 		"", // Name

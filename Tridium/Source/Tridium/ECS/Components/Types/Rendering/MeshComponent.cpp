@@ -12,7 +12,7 @@ namespace Tridium {
 	END_REFLECT( StaticMeshComponent )
 
 	StaticMeshComponent::StaticMeshComponent()
-		: Mesh( AssetHandle::InvalidGUID )
+		: Mesh( AssetHandle::InvalidID )
 	{
 
 	}

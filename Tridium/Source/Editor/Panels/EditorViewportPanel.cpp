@@ -305,7 +305,7 @@ namespace Tridium::Editor {
 		meshComponents.each( 
 			[&]( auto go, StaticMeshComponent& meshComponent, TransformComponent& transform )
 			{
-				if ( !meshComponent.Mesh.Valid() )
+				if ( !meshComponent.Mesh.IsValid() )
 					return;
 
 				SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( meshComponent.Mesh );
@@ -351,7 +351,7 @@ namespace Tridium::Editor {
 		if ( !meshComponent )
 			return;
 
-		if ( !meshComponent->Mesh.Valid() )
+		if ( !meshComponent->Mesh.IsValid() )
 			return;
 
 		SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( meshComponent->Mesh );

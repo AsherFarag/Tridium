@@ -214,7 +214,7 @@ namespace Tridium {
 		aiString aiTexturePath;
 
 		if ( aiMat->GetTexture( aiTexType, 0, &aiTexturePath ) == AI_FAILURE )
-			return AssetHandle::InvalidGUID;
+			return AssetHandle::InvalidID;
 
 		TextureHandle texHandle = AssetHandle::Create();
 
@@ -235,7 +235,7 @@ namespace Tridium {
 				texturePath = parentPath / texturePath.GetFilename();
 
 			if ( !texturePath.Exists() )
-				return TextureHandle::InvalidGUID;
+				return TextureHandle::InvalidID;
 
 			if ( SharedPtr<Texture> texture = textureLoader->LoadTexture( texturePath ) )
 			{
@@ -244,6 +244,6 @@ namespace Tridium {
 			}
 		}
 
-		return TextureHandle::InvalidGUID;
+		return TextureHandle::InvalidID;
 	}
 }

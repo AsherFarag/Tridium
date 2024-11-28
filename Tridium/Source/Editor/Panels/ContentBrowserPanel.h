@@ -37,7 +37,7 @@ namespace Tridium::Editor {
 		ContentBrowserPanel& Owner;
 		EFileType Type;
 		std::string Name;
-		AssetHandle Handle{AssetHandle::InvalidGUID};
+		AssetHandle Handle{AssetHandle::InvalidID };
 		bool IsImported = false;
 
 		// Returns true if the item was opened.

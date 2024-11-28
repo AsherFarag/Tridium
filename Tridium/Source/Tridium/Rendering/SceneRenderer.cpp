@@ -554,7 +554,7 @@ namespace Tridium {
 		RenderCommand::SetDepthCompare( EDepthCompareOperator::Less );
 
 		m_DeferredData.GBufferShader->Bind();
-		MaterialHandle lastMaterial = MaterialHandle::InvalidGUID;
+		MaterialHandle lastMaterial = MaterialHandle::InvalidID;
 
 		auto bindMaterial = [&]( SharedPtr<Material>& material, SharedPtr<Shader>& shader )
 			{
@@ -622,7 +622,7 @@ namespace Tridium {
 				if ( !mat )
 				{
 					mat = m_DefaultMaterial;
-					lastMaterial = MaterialHandle::InvalidGUID;
+					lastMaterial = MaterialHandle::InvalidID;
 				}
 
 				bindMaterial( mat, m_DeferredData.GBufferShader );

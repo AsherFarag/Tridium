@@ -37,7 +37,7 @@ namespace Tridium {
 			const SubMesh& subMesh = meshSource->GetSubMesh( subMeshIndex );
 
 			// Get the material that will be used, either from the override list or the mesh source
-			MaterialHandle material = MaterialHandle::InvalidGUID;
+			MaterialHandle material = MaterialHandle::InvalidID;
 			if ( IsValidIndex( a_OverrideMaterials, subMeshIndex ) )
 			{
 				material = a_OverrideMaterials[subMeshIndex];

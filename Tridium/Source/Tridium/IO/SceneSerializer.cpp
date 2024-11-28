@@ -142,7 +142,7 @@ namespace Tridium::IO {
 				a_Data.GetSceneEnvironment().HDRI.Intensity = hdriNode["Intensity"].as<float>();
 				a_Data.GetSceneEnvironment().HDRI.RotationEular = hdriNode["RotationEular"].as<Vector3>();
 
-				if ( a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle.Valid() )
+				if ( a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle.IsValid() )
 				{
 					a_Data.GetSceneEnvironment().HDRI.EnvironmentMap = EnvironmentMap::Create( a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle );
 				}

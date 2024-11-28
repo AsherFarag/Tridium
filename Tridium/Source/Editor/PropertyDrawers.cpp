@@ -453,9 +453,9 @@ namespace Tridium::Editor {
 
 		if ( open )
 		{
-			if ( ImGui::Selectable( "None###Internal", a_Value == AssetHandle::InvalidGUID ) )
+			if ( ImGui::Selectable( "None###Internal", a_Value == AssetHandle::InvalidID ) )
 			{
-				a_Value = AssetHandle::InvalidGUID;
+				a_Value = AssetHandle::InvalidID;
 				ImGui::EndCombo();
 				return true;
 			}
@@ -525,9 +525,9 @@ namespace Tridium::Editor {
 
 		if ( open )
 		{
-			if ( ImGui::Selectable( "None###Internal", a_Value == AssetHandle::InvalidGUID ) )
+			if ( ImGui::Selectable( "None###Internal", a_Value == AssetHandle::InvalidID ) )
 			{
-				a_Value = AssetHandle::InvalidGUID;
+				a_Value = AssetHandle::InvalidID;
 				ImGui::EndCombo();
 				return true;
 			}

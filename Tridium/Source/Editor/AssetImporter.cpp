@@ -39,7 +39,7 @@ namespace Tridium::Editor {
             break;
         }
 
-		return AssetHandle::InvalidGUID;
+		return AssetHandle::InvalidID;
     }
 }
 
