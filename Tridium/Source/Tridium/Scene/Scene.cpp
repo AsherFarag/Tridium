@@ -20,6 +20,7 @@ namespace Tridium {
 		m_Paused = a_Other.m_Paused;
 		m_SceneRenderer.m_LightEnvironment = a_Other.m_SceneRenderer.m_LightEnvironment;
 		m_SceneRenderer.m_RenderSettings = a_Other.m_SceneRenderer.m_RenderSettings;
+		m_SceneRenderer.m_SceneEnvironment = a_Other.m_SceneRenderer.m_SceneEnvironment;
 
 		m_PhysicsScene = PhysicsScene::Create();
 		m_PhysicsScene->m_Scene = this;
@@ -125,7 +126,7 @@ namespace Tridium {
 					} );
 			}
 
-			m_PhysicsScene->Tick( 1.0f / 60.0f );
+			m_PhysicsScene->Tick( Time::DeltaTime() );
 
 			// Update the transforms from the physics scene
 			view.each( [&]( auto entity, RigidBodyComponent& rb, TransformComponent& tc )

@@ -10,6 +10,7 @@
 #include <Editor/Editor.h>
 #include <Editor/AssetImporter.h>
 #include <Editor/EditorUtil.h>
+#include <Editor/Util/AssetInfo.h>
 #include "ScriptEditorPanel.h"
 #include "Asset/MaterialEditorPanel.h"
 
@@ -545,7 +546,7 @@ namespace Tridium::Editor {
 		return ImVec2( a.x * b, a.y * b );
 	}
 
-	bool RenderContentBrowserThumbnail( const char* a_FileName, ImTextureID a_ThumbnailIcon, const char* a_AssetType, float a_SizeMultiplier = 1.0f )
+	bool RenderContentBrowserThumbnail( const char* a_FileName, ImTextureID a_ThumbnailIcon, const char* a_AssetType, const ImVec4& a_Color, float a_SizeMultiplier = 1.0f )
 	{
 		ImGuiWindow* window = ImGui::GetCurrentWindow();
 		if ( window->SkipItems )
@@ -578,12 +579,19 @@ namespace Tridium::Editor {
 		// Draw thumbnail Icon
 		drawList->AddImageRounded( a_ThumbnailIcon, bbIcon.Min, bbIcon.Max, ImVec2( 0, 1 ), ImVec2( 1, 0 ), ImGui::GetColorU32( ImVec4( 1, 1, 1, 1 ) ), 2.5f );
 
+		// Draw color rect padding under the icon
+		constexpr float colorDummyThickness = 2.0f;
+		const ImRect bbColorDummyRect( 
+			ImVec2( bb.Min.x, bbIcon.Max.y ),
+			ImVec2( bb.Max.x, bbIcon.Max.y + colorDummyThickness ) );
+		drawList->AddRectFilled( bbColorDummyRect.Min, bbColorDummyRect.Max, ImGui::GetColorU32( a_Color ) );
+
 		// Draw file name
 		const float fontSize = 16.0f * a_SizeMultiplier;
 		const ImVec4 bbText( bbInner.Min.x, bbIcon.Max.y + 2.0f, bbInner.Max.x, bbIcon.Max.y + fontSize + 4.0f );
 		drawList->AddText(
 			ImGui::GetLightFont(), fontSize,
-			ImVec2( bbInner.Min.x, bbIcon.Max.y + 2.0f ),
+			ImVec2( bbInner.Min.x, bbIcon.Max.y + 2.0f + colorDummyThickness ),
 			ImGui::GetColorU32( ImVec4( 1, 1, 1, 0.9f ) ),
 			a_FileName,
 			nullptr, bbInner.Max.x, &bbText );
@@ -609,7 +617,10 @@ namespace Tridium::Editor {
 		else // Must be an Unimported Asset
 			icon = ContentItemIcons::s_UnimportedAssetIcon;
 
-		RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), a_Size );
+		const AssetTypeInfo& typeInfo = AssetTypeManager::GetAssetTypeInfo( static_cast<EAssetType>( Type ) );
+		ImVec4 color = ImVec4( typeInfo.Color.x, typeInfo.Color.y, typeInfo.Color.z, typeInfo.Color.w );
+
+		RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), color, a_Size );
 		// If the item is double clicked, open it
 		const bool wasOpened = ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left );
 
@@ -624,7 +635,7 @@ namespace Tridium::Editor {
 			std::string filePath = ( Owner.GetDirectory() / Name ).ToString();
 			ImGui::SetDragDropPayload( TE_PAYLOAD_ASSET_HANDLE, &Handle, sizeof( AssetHandle ) );
 
-			RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), a_Size );
+			RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), color, a_Size );
 
 			ImGui::EndDragDropSource();
 		}

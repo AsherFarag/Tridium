@@ -52,7 +52,6 @@ namespace Tridium::Editor {
 
 	InspectorPanel::~InspectorPanel()
 	{
-		Events::OnGameObjectSelected.Remove( m_OnGameObjectSelectedHandle );
 	}
 
 	void InspectorPanel::OnImGuiDraw()
@@ -72,6 +71,18 @@ namespace Tridium::Editor {
 		DrawAddComponentButton();
 
 		ImGui::End();
+	}
+
+	void InspectorPanel::SetInspectedGameObject( GameObject gameObject )
+	{
+		const bool isSameGameObject = InspectedGameObject == gameObject;
+		InspectedGameObject = gameObject;
+		
+		// Bring the window to the front when a new GameObject is selected
+		if ( !isSameGameObject )
+		{
+			ImGui::SetWindowFocus( m_Name.c_str() );
+		}
 	}
 
 	bool DrawComponentTreeNode(const char* a_Name, bool a_HasOptionsButton)

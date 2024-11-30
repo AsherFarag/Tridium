@@ -90,7 +90,6 @@ namespace Tridium::Editor {
 
 	EditorViewportPanel::~EditorViewportPanel()
 	{
-		Events::OnGameObjectSelected.Remove( m_OnGameObjectSelectedHandle );
 	}
 
 	bool EditorViewportPanel::OnKeyPressed( KeyPressedEvent& e )
@@ -136,12 +135,22 @@ namespace Tridium::Editor {
 			{
 				if ( Input::IsKeyPressed( Input::KEY_LEFT_CONTROL ) )
 				{
-					if ( auto payload = EditorApplication::GetPayloadManager().GetPayload( "GameObject" ); payload.has_value() )
+					Payload* payload = EditorApplication::GetPayloadManager().GetPayload( "GameObject" );
+					if ( payload && !payload->IsEmpty() )
 					{
-						GameObject go = std::any_cast<GameObject>( payload );
+						GameObject go = payload->As<GameObject>();
 						GameObject newGO = GetActiveScene()->InstantiateGameObjectFrom( go );
 						Events::OnGameObjectSelected.Broadcast( newGO );
 					}
+				}
+				return true;
+			}
+			case Input::KEY_DELETE:
+			{
+				if ( m_SelectedGameObject )
+				{
+					m_SelectedGameObject.Destroy();
+					Events::OnGameObjectSelected.Broadcast( GameObject() );
 				}
 				return true;
 			}
@@ -181,7 +190,6 @@ namespace Tridium::Editor {
 			// Draw the Editor Camera ViewPort
 			ImGui::Image( (ImTextureID)m_FBO->GetColorAttachmentID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
 
-			// Drag-Drop for scenes
 			DragDropTarget();
 
 			DrawManipulationGizmos( viewportBoundsMin, viewportBoundsMax );
@@ -235,6 +243,21 @@ namespace Tridium::Editor {
 				GetEditorLayer()->GetActiveScene()->Clear();
 				// Load the scene
 				GetEditorLayer()->SetActiveScene( scene );
+			}
+			break;
+		}
+		case EAssetType::StaticMesh:
+		{
+			if ( SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( assetHandle ) )
+			{
+				GameObject go = GetActiveScene()->InstantiateGameObject();
+				go.AddComponent<StaticMeshComponent>().Mesh = mesh->GetHandle();
+
+				Vector3 position = m_EditorCamera->Position + m_EditorCamera->GetForwardDirection() * 5.0f;
+
+				go.GetTransform().SetWorldPosition( position );
+
+				Events::OnGameObjectSelected.Broadcast( go );
 			}
 			break;
 		}

@@ -244,6 +244,14 @@ class SandboxGameInstance : public Tridium::GameInstance
 		Delegate<void> del4;
 		del4.Bind( [&]() { TE_CORE_DEBUG( "Lamda Derived '{0}'", d.var ); } );
 		del4();
+
+		Delegate<void> del5;
+		del5.Bind( []() { TE_CORE_DEBUG( "Lamda" ); } );
+		del5();
+
+		Delegate<void> del6;
+		del6.Bind( +[]() { TE_CORE_DEBUG( "Lamda 2" ); } );
+		del6();
 	}
 };
 

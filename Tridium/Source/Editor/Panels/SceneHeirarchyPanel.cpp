@@ -23,7 +23,6 @@ namespace Tridium::Editor {
 
 	SceneHeirarchyPanel::~SceneHeirarchyPanel()
 	{
-		Events::OnGameObjectSelected.Remove( m_OnGameObjectSelectedHandle );
 	}
 
 	void SceneHeirarchyPanel::OnImGuiDraw()
@@ -101,10 +100,10 @@ namespace Tridium::Editor {
 			{
 				if ( EditorApplication::GetPayloadManager().HasPayload() )
 				{
-					std::any payload = EditorApplication::GetPayloadManager().GetPayload( "GameObject" );
-					if ( payload.has_value() )
+					Payload* payload = EditorApplication::GetPayloadManager().GetPayload( "GameObject" );
+					if ( payload && !payload->IsEmpty() )
 					{
-						GameObject copiedGO = std::any_cast<GameObject>( payload );
+						GameObject copiedGO = payload->As<GameObject>();
 						if ( copiedGO.IsValid() && Application::GetScene() )
 						{
 							GameObject newGO = Application::GetScene()->InstantiateGameObjectFrom(copiedGO);

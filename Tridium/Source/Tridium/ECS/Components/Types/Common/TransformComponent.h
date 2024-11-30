@@ -31,6 +31,15 @@ namespace Tridium {
 		Vector3 GetWorldScale() const;
 		Vector3 GetLocalScale() const { return Scale; }
 
+		void SetWorldPosition( const Vector3& a_Position );
+		void SetLocalPosition( const Vector3& a_Position );
+		void SetWorldScale( const Vector3& a_Scale );
+		void SetLocalScale( const Vector3& a_Scale );
+		void SetWorldRotation( const Quaternion& a_Rotation );
+		void SetLocalRotation( const Quaternion& a_Rotation );
+		void SetWorldTransform( const Matrix4& a_Transform );
+		void SetLocalTransform( const Matrix4& a_Transform );
+
 		bool HasParent() const { return m_Parent.IsValid(); }
 		GameObject GetParent() const { return m_Parent; }
 		void AttachToParent( GameObject a_Parent );

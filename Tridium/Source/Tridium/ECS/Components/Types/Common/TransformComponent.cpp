@@ -92,6 +92,72 @@ namespace Tridium {
 			return Scale;
 	}
 
+	void TransformComponent::SetWorldPosition( const Vector3& a_Position )
+	{
+		if ( m_Parent.IsValid() )
+			Position = a_Position - m_Parent.GetTransform().GetWorldPosition();
+		else
+			Position = a_Position;
+	}
+
+	void TransformComponent::SetLocalPosition( const Vector3& a_Position )
+	{
+		Position = a_Position;
+	}
+
+	void TransformComponent::SetWorldScale( const Vector3& a_Scale )
+	{
+		if ( m_Parent.IsValid() )
+			Scale = a_Scale / m_Parent.GetTransform().GetWorldScale();
+		else
+			Scale = a_Scale;
+	}
+
+	void TransformComponent::SetLocalScale( const Vector3& a_Scale )
+	{
+		Scale = a_Scale;
+	}
+
+	void TransformComponent::SetWorldRotation( const Quaternion& a_Rotation )
+	{
+		if ( m_Parent.IsValid() )
+			Rotation = a_Rotation * glm::inverse( m_Parent.GetTransform().GetOrientation() );
+		else
+			Rotation = a_Rotation;
+	}
+
+	void TransformComponent::SetLocalRotation( const Quaternion& a_Rotation )
+	{
+		Rotation = a_Rotation;
+	}
+
+	void TransformComponent::SetWorldTransform( const Matrix4& a_Transform )
+	{
+		if ( m_Parent.IsValid() )
+		{
+			Matrix4 parentTransform = m_Parent.GetTransform().GetWorldTransform();
+			Matrix4 parentTransformInverse = glm::inverse( parentTransform );
+			Matrix4 localTransform = parentTransformInverse * a_Transform;
+
+			Quaternion rotation;
+			Math::DecomposeTransform( localTransform, Position, rotation, Scale );
+			Rotation.SetFromQuaternion( rotation );
+		}
+		else
+		{
+			Quaternion rotation;
+			Math::DecomposeTransform( a_Transform, Position, rotation, Scale );
+			Rotation.SetFromQuaternion( rotation );
+		}
+	}
+
+	void TransformComponent::SetLocalTransform( const Matrix4& a_Transform )
+	{
+		Quaternion rotation;
+		Math::DecomposeTransform( a_Transform, Position, rotation, Scale );
+		Rotation.SetFromQuaternion( rotation );
+	}
+
 	void TransformComponent::AttachToParent( GameObject a_Parent )
 	{
 		a_Parent.GetTransform().AttachChild(GetGameObject());

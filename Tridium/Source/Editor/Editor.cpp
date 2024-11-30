@@ -4,6 +4,7 @@
 #include "EditorStyle.h"
 
 #include <Tridium/Asset/AssetManager.h>
+#include "Util/AssetInfo.h"
 
 // Assets
 #include <Tridium/Rendering/Mesh.h>
@@ -33,6 +34,9 @@ namespace Tridium::Editor {
     {
         Application::Get().GetWindow().SetTitle("Tridium Editor");
         Application::Get().GetWindow().SetIcon(  Application::GetEngineAssetsDirectory() / "Editor/Icons/EngineIcon.png" );
+
+		AssetTypeManager::s_Instance = MakeUnique<AssetTypeManager>();
+		AssetTypeManager::s_Instance->Initialize();
 
 		s_Instance = SharedPtr<EditorApplication>( new EditorApplication() );
         s_Instance->m_EditorLayer = new EditorLayer();

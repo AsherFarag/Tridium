@@ -14,7 +14,7 @@ namespace Tridium::Editor {
 
 		virtual void OnImGuiDraw() override;
 
-		void SetInspectedGameObject( GameObject gameObject ) { InspectedGameObject = gameObject; }
+		void SetInspectedGameObject( GameObject gameObject );
 
 	private:
 		void DrawInspectedGameObject();

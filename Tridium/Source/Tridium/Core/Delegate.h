@@ -11,7 +11,7 @@ namespace Tridium {
 	// They are also not memory-safe, as they do not perform any reference counting on the objects they hold.
 	// You must remove the Delegate from the MulticastDelegate before the object it points to is destroyed.
 
-	using DelegateHandle = UID<uint32_t>;
+	using DelegateHandle = std::pair<UID<uint16_t>, SharedPtr<void>>;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Delegate
@@ -163,6 +163,7 @@ namespace Tridium {
 				m_Object = a_Functor;
 				m_Deleter = nullptr; 
 			}
+			// Case 2: If the functor is a reference to an invokable object
 			else if constexpr ( std::is_lvalue_reference_v<decltype( a_Functor )> )
 			{
 				m_Function = (void*)FunctorInvocation<std::remove_pointer_t<FunctorType>>;
@@ -185,6 +186,11 @@ namespace Tridium {
 		bool IsBound() const
 		{
 			return m_Function != nullptr;
+		}
+
+		bool IsStatic() const
+		{
+			return IsBound() && m_Object == nullptr;
 		}
 
 		void Clear()
@@ -221,39 +227,41 @@ namespace Tridium {
 	{
 	public:
 		using DelegateType = Delegate<_Return, _Args...>;
-		using DelegateList = std::unordered_map<DelegateHandle, DelegateType>;
+		using DelegateList = std::unordered_map<DelegateHandle::first_type, WeakPtr<DelegateType>>;
 
 		MulticastDelegate() = default;
 
 		// Calls all delegates in the list with the given arguments
-		void Broadcast( _Args... a_Args ) const
+		void Broadcast( _Args... a_Args )
 		{
+			m_IsBroadcasting = true;
 			for ( const auto& [handle, delegate] : this->m_Delegates )
 			{
-				delegate.Invoke( std::forward<_Args>( a_Args )... );
+				if ( SharedPtr<DelegateType> lockedDel = delegate.lock() )
+					lockedDel->Invoke( std::forward<_Args>( a_Args )... );
 			}
+			m_IsBroadcasting = false;
 		}
 
 		template <auto _Func, typename T>
 		DelegateHandle Add( T* a_Object )
 		{
-			DelegateHandle handle = DelegateHandle::Create();
-			m_Delegates[handle].Bind<_Func>( a_Object );
+			SharedPtr<DelegateType> delegate = MakeShared<DelegateType>();
+			delegate->Bind<_Func>( a_Object );
+			DelegateHandle handle = MakeHandle( delegate );
 			return handle;
 		}
 
 		// Adds a new delegate to the list
 		DelegateHandle Add( DelegateType&& a_Delegate )
 		{
-			DelegateHandle handle = DelegateHandle::Create();
-			m_Delegates.emplace( handle, std::move( a_Delegate ) );
-			return handle;
+			return MakeHandle( MakeShared<DelegateType>( std::move( a_Delegate ) ) );
 		}
 
 		// Removes a delegate from the list
 		bool Remove( const DelegateHandle& a_Handle )
 		{
-			if ( auto it = m_Delegates.find( a_Handle ); it != m_Delegates.end() )
+			if ( auto it = m_Delegates.find( a_Handle.first ); it != m_Delegates.end() )
 			{
 				m_Delegates.erase( it );
 				return true;
@@ -279,8 +287,23 @@ namespace Tridium {
 			return m_Delegates.empty();
 		}
 
+		// Returns true if the delegate is currently broadcasting
+		bool IsBroadcasting() const
+		{
+			return m_IsBroadcasting;
+		}
+
+	protected:
+		DelegateHandle MakeHandle( const SharedPtr<DelegateType>& a_Delegate )
+		{
+			DelegateHandle handle = std::make_pair( DelegateHandle::first_type::Create(), SharedPtr<void>( a_Delegate ) );
+			m_Delegates[handle.first] = a_Delegate;
+			return handle;
+		}
+
 	protected:
 		DelegateList m_Delegates;
+		bool m_IsBroadcasting = false;
 	};
 
 } // namespace Tridium
