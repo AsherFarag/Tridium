@@ -44,6 +44,17 @@ namespace Tridium::Editor {
 		{ entt::hashed_string( "MeshColliderComponent" ).value(), TE_ICON_SHAPES },
 	};
 
+	InspectorPanel::InspectorPanel()
+		: Panel( "Inspector" )
+	{
+		m_OnGameObjectSelectedHandle = Events::OnGameObjectSelected.Add<&InspectorPanel::SetInspectedGameObject>( this );
+	}
+
+	InspectorPanel::~InspectorPanel()
+	{
+		Events::OnGameObjectSelected.Remove( m_OnGameObjectSelectedHandle );
+	}
+
 	void InspectorPanel::OnImGuiDraw()
 	{
 		// Early out if there is no GameObject to inspect

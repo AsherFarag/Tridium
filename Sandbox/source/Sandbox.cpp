@@ -193,16 +193,57 @@ protected:
 };
 
 BEGIN_REFLECT_COMPONENT( EnemyAIComponent )
-	BASE( ScriptableComponent )
-	PROPERTY( m_Target, FLAGS( EditAnywhere ) )
-	PROPERTY( m_Speed, FLAGS( Serialize, EditAnywhere ) )
-	PROPERTY( m_MaxSpeed, FLAGS( Serialize, EditAnywhere ) )
+BASE( ScriptableComponent )
+PROPERTY( m_Target, FLAGS( EditAnywhere ) )
+PROPERTY( m_Speed, FLAGS( Serialize, EditAnywhere ) )
+PROPERTY( m_MaxSpeed, FLAGS( Serialize, EditAnywhere ) )
 END_REFLECT( EnemyAIComponent )
+
+#include <Tridium/Core/Delegate.h>
+
+struct Base
+{
+
+	virtual void Test() { TE_CORE_DEBUG( "Base" ); };
+};
+
+struct Derived : public Base
+{
+	virtual void Test() override { TE_CORE_DEBUG( "Derived" ); };
+	std::string var = "Hello";
+};
+
+void Test( int a )
+{
+	TE_CORE_DEBUG( "Test {0}", a );
+}
 
 class SandboxGameInstance : public Tridium::GameInstance
 {
 	virtual void Init() override
 	{
+
+		struct Invokable
+		{
+			void operator()( int x ) const { std::cout << "Invokable: " << x << std::endl; }
+		};
+
+		Delegate<void, int> del;
+		Invokable obj;
+		del.Bind( obj ); // Bind pointer to invokable object
+		del(5); // Output: "Invokable: 15"
+
+		Delegate<void, int> del2(Test);
+		del2( 10 );
+
+		Derived d;
+		Delegate<void> del3;
+		del3.Bind<&Derived::Test>( &d );
+		del3();
+
+		Delegate<void> del4;
+		del4.Bind( [&]() { TE_CORE_DEBUG( "Lamda Derived '{0}'", d.var ); } );
+		del4();
 	}
 };
 

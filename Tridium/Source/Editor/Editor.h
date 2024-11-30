@@ -2,6 +2,7 @@
 #if IS_EDITOR
 #include "EditorLayer.h"
 #include "Tridium/Core/Core.h"
+#include "EditorEvents.h"
 #include <any>
 
 namespace Tridium::Editor {

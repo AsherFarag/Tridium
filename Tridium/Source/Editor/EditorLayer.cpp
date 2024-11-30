@@ -21,6 +21,7 @@
 #include "Panels/AssetRegistryPanel.h"
 #include "Panels/SceneSettingsPanel.h"
 #include "Panels/ProjectSettingsPanel.h"
+#include "Panels/InspectorPanel.h"
 #include "Panels/StatsPanel.h"
 
 #include <Tridium/IO/SceneSerializer.h>

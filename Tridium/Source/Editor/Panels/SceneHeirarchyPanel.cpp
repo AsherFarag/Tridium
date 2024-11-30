@@ -18,6 +18,12 @@ namespace Tridium::Editor {
 	SceneHeirarchyPanel::SceneHeirarchyPanel()
 		: Panel( "Scene Heirarchy" )
 	{
+		m_OnGameObjectSelectedHandle = Events::OnGameObjectSelected.Add<&SceneHeirarchyPanel::SetSelectedGameObject>( this );
+	}
+
+	SceneHeirarchyPanel::~SceneHeirarchyPanel()
+	{
+		Events::OnGameObjectSelected.Remove( m_OnGameObjectSelectedHandle );
 	}
 
 	void SceneHeirarchyPanel::OnImGuiDraw()
@@ -28,17 +34,6 @@ namespace Tridium::Editor {
 	void SceneHeirarchyPanel::SetSelectedGameObject( GameObject gameObject )
 	{
 		m_SelectedGameObject = gameObject;
-
-		if ( !m_Inspector )
-			m_Inspector = m_Owner->PushPanel<InspectorPanel>();
-
-		if ( m_Inspector->InspectedGameObject == gameObject )
-			return;
-
-		m_Inspector->InspectedGameObject = m_SelectedGameObject;
-
-		// Since a game object was selected, bring the Inspector into focus.
-		//m_Inspector->Focus();
 	}
 
 
@@ -60,6 +55,7 @@ namespace Tridium::Editor {
 			if ( m_SelectedGameObject.IsValid() )
 			{
 				m_SelectedGameObject.Destroy();
+				Events::OnGameObjectSelected.Broadcast( GameObject{} );
 				return true;
 			}
 			break;
@@ -112,7 +108,7 @@ namespace Tridium::Editor {
 						if ( copiedGO.IsValid() && Application::GetScene() )
 						{
 							GameObject newGO = Application::GetScene()->InstantiateGameObjectFrom(copiedGO);
-							SetSelectedGameObject( newGO );
+							Events::OnGameObjectSelected.Broadcast( newGO );
 							return true;
 						}
 					}
@@ -393,7 +389,7 @@ namespace Tridium::Editor {
 		// Handle mouse release for selection, ensuring it's not part of a drag-and-drop
 		if ( !isDragging && ImGui::IsItemHovered() && ImGui::IsMouseReleased( ImGuiMouseButton_Left ) )
 		{
-			SetSelectedGameObject( go );
+			Events::OnGameObjectSelected.Broadcast( go );
 		}
 
 		if ( drawChildren )

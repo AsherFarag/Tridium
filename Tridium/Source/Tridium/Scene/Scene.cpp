@@ -227,7 +227,33 @@ namespace Tridium {
 
 	void Scene::CopyGameObject( GameObject a_Destination, GameObject a_Source )
 	{
+		if ( !IsGameObjectValid( a_Destination ) || !IsGameObjectValid( a_Source ) )
+			return;
 
+		TransformComponent& tc = GetComponentFromGameObject<TransformComponent>( a_Destination );
+		tc.Position = a_Source.GetTransform().Position;
+		tc.Rotation = a_Source.GetTransform().Rotation;
+		tc.Scale = a_Source.GetTransform().Scale;
+
+		for ( auto [id, storage] : m_Registry.storage() )
+		{
+			if ( !storage.contains( a_Source ) )
+				continue;
+
+			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<GUIDComponent>().info() )
+				continue;
+
+			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<TagComponent>().info() )
+				continue;
+
+			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<TransformComponent>().info() )
+				continue;
+
+			if ( storage.contains( a_Destination ) )
+				storage.erase( a_Destination );
+
+			storage.push( a_Destination, storage.value( a_Source ) );
+		}
 	}
 
 	bool Scene::IsGameObjectValid( GameObject a_GameObject ) const
@@ -252,11 +278,12 @@ namespace Tridium {
 		std::vector<GameObject> gameObjects;
 		// Reserve an arbitrary amount of space for the vector
 		gameObjects.reserve( 8 );
-		//m_Registry.view<TagComponent>().each( [&]( auto entity, TagComponent& tag )
-		//	{
-		//		if ( tag.Tag == a_Tag )
-		//			gameObjects.push_back( GameObject( entity ) );
-		//	} );
+		auto view = m_Registry.view<TagComponent>();
+		for ( const auto&& [entity, Tag] : view.each() )
+		{
+			if ( Tag.Tag == a_Tag )
+				gameObjects.push_back( GameObject( entity ) );
+		}
 
 		return gameObjects;
 	}
