@@ -216,16 +216,11 @@ namespace Tridium::IO {
 		// Write all components
 		for ( auto [type, component] : go.GetAllComponents() )
 		{
-			if ( s_BlacklistedComponents.contains( type.id() ) )
+			if ( s_BlacklistedComponents.contains( type.ID() ) )
 				continue;
 
-			out << YAML::Key << Refl::MetaRegistry::GetCleanTypeName( type );
-
-			Refl::Internal::SerializeFunc serFunc;
-			if ( Refl::MetaRegistry::TryGetMetaPropertyFromClass( type, serFunc, Refl::Internal::YAMLSerializeFuncID ) )
-			{
-				serFunc( out, type.from_void( component ) );
-			}
+			out << YAML::Key << type.GetCleanTypeName();
+			type.Serialize( out, component );
 		}
 
 
@@ -296,29 +291,20 @@ namespace Tridium::IO {
 
 			Refl::MetaType componentType = Refl::MetaRegistry::ResolveMetaType( entt::hashed_string( componentName.c_str() ) );
 
-			Refl::Internal::AddToGameObjectFunc addToGameObjectFunc;
-			if ( !Refl::MetaRegistry::TryGetMetaPropertyFromClass( componentType, addToGameObjectFunc, Refl::Internal::AddToGameObjectPropID ) )
-			{
-				TE_CORE_ERROR( "Failed to deserialize component '{0}' from GameObject", componentName );
-				continue;
-			}
-
-			Refl::Internal::DeserializeFunc deserFunc;
-			if ( !Refl::MetaRegistry::TryGetMetaPropertyFromClass( componentType, deserFunc, Refl::Internal::YAMLDeserializeFuncID ) )
-			{
-				TE_CORE_ERROR( "Failed to deserialize component '{0}' from GameObject", componentName );
-				continue;
-			}
-
-			Component* component = addToGameObjectFunc( a_Scene, go );
+			Component* component = componentType.TryAddToGameObject( a_Scene, go );
 			if ( !component )
 			{
 				TE_CORE_ERROR( "Failed to deserialize component '{0}' from GameObject", componentName );
 				continue;
 			}
 
-			Refl::MetaAny componentAsAny = componentType.from_void( component );
-			deserFunc( componentNode.second, componentAsAny );
+			Refl::MetaAny componentAsAny = componentType.FromVoid( component );
+			if ( !componentType.TryDeserialize( componentNode.second, componentAsAny ) )
+			{
+				componentType.RemoveFromGameObject( a_Scene, go );
+				TE_CORE_ERROR( "Failed to deserialize component '{0}' from GameObject", componentName );
+				continue;
+			}
 		}
 
 		return true;

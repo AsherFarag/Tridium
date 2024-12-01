@@ -2,21 +2,8 @@
 #include <unordered_map>
 #include "entt.hpp"
 #include "Meta.h"
-#include <Tridium/IO/TextSerializer.h>
 
 namespace Tridium::Refl {
-
-	namespace Internal {
-
-		// Serialize function signature typedef.
-		typedef void ( *SerializeFunc )( IO::Archive& a_Archive, const MetaAny& a_Data );
-		typedef void ( *DeserializeFunc )( const YAML::Node& a_Node, MetaAny& a_Data );
-
-		// ID for the serialize function.
-		constexpr MetaIDType YAMLDeserializeFuncID = entt::hashed_string( "YAMLDeserializeFuncID" ).value();
-		constexpr MetaIDType YAMLSerializeFuncID = entt::hashed_string( "YAMLSerializeFuncID" ).value();
-		constexpr MetaIDType CleanClassNamePropID = entt::hashed_string( "CleanClassName" ).value();
-	}
 
 	class MetaRegistry final
 	{

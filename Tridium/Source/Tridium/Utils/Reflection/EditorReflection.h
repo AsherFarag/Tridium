@@ -40,7 +40,7 @@ namespace Tridium::Refl::Internal {
                 ImGui::EndTooltip();
             }
 
-            for ( auto&& [id, base] : metaType.base() )
+            for ( auto&& [id, base] : metaType.Base() )
             {
                 wasChanged |= DrawAllMembersOfMetaClass( base, a_Handle, overrideFlag );
             }

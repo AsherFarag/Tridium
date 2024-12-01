@@ -19,14 +19,12 @@ namespace Tridium::Editor {
         bool SaveFile( const IO::FilePath& a_FilePath );
         bool SaveFile() { return SaveFile( GetPath().ToString() ); }
 
-    public:
         bool Modified = false;
 
     private:
         static std::string GetDirectoryPath( const std::string& a_FilePath );
         static std::string GetFileName( const std::string& a_FilePath );
 
-    private:
         IO::FilePath m_Path;
         std::string m_Content;
     };

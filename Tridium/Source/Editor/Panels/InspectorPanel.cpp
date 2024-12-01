@@ -19,6 +19,27 @@ using namespace entt::literals;
 
 namespace Tridium::Editor {
 
+	// Add spaces between words in a class name
+	// Example: "EnemyAIComponent" -> "Enemy AI Component"
+	std::string ScrubClassName( const char* a_ClassName )
+	{
+		std::string scrubbedName;
+		const size_t size = strlen( a_ClassName );
+		for ( size_t i = 0; i < size; ++i )
+		{
+			if ( i > 0 && isupper( a_ClassName[i] ) )
+			{
+				if ( ( i + 1 < size && islower( a_ClassName[i + 1] ) )
+					|| 
+					 ( i - 1 > 0 && islower( a_ClassName[i - 1] ) ) )
+					scrubbedName.push_back( ' ' );
+			}
+			scrubbedName.push_back( a_ClassName[i] );
+		}
+
+		return scrubbedName;
+	}
+
 	// Create a set of blacklisted components that should not be drawn in the inspector
 	static const std::unordered_set<entt::id_type> s_BlacklistedComponents =
 	{
@@ -147,11 +168,11 @@ namespace Tridium::Editor {
 		auto components = InspectedGameObject.GetAllComponents();
 		for ( auto& [metaType, component] : components )
 		{
-			if ( s_BlacklistedComponents.contains( metaType.id() ) )
+			if ( s_BlacklistedComponents.contains( metaType.ID() ) )
 				continue;
 
-			const char* icon = s_ComponentIcons.contains( metaType.id() ) ? s_ComponentIcons.at( metaType.id() ) : TE_ICON_GEARS;
-			std::string className = fmt::format( "{0} {1}", icon, Refl::MetaRegistry::GetCleanTypeName( metaType ) );
+			const char* icon = s_ComponentIcons.contains( metaType.ID() ) ? s_ComponentIcons.at( metaType.ID() ) : TE_ICON_GEARS;
+			std::string className = fmt::format( "{0} {1}", icon, ScrubClassName( metaType.GetCleanTypeName() ) );
 
 			// Component options popup
 			if ( ImGui::BeginPopup( className.c_str() ) )
@@ -159,10 +180,8 @@ namespace Tridium::Editor {
 				if ( ImGui::MenuItem( TE_ICON_X " Remove Component" ) )
 				{
 					Tridium::Refl::Internal::RemoveFromGameObjectFunc removeFunc;
-					if ( Tridium::Refl::MetaRegistry::TryGetMetaPropertyFromClass( metaType, removeFunc, Tridium::Refl::Internal::RemoveFromGameObjectPropID ) )
-						removeFunc( *Application::GetScene(),  InspectedGameObject );
-					else
-						TE_CORE_ERROR( "Component [{0}] does not have a RemoveFromGameObject function!", Refl::MetaRegistry::GetCleanTypeName( metaType ) );
+					if ( !metaType.TryRemoveFromGameObject( *Application::GetScene(), InspectedGameObject ) )
+						TE_CORE_ERROR( "Component [{0}] does not have a RemoveFromGameObject function!", metaType.GetCleanTypeName() );
 				}
 
 				ImGui::EndPopup();
@@ -171,7 +190,7 @@ namespace Tridium::Editor {
 			if ( !DrawComponentTreeNode( className.c_str(), true) )
 				continue;
 
-			Refl::MetaAny handle = metaType.from_void( component );
+			Refl::MetaAny handle = metaType.FromVoid( component );
 			Tridium::Refl::Internal::DrawAllMembersOfMetaClass( metaType, handle );
 
 			ImGui::TreePop();
@@ -213,22 +232,20 @@ namespace Tridium::Editor {
 
 		if ( ImGui::BeginPopup( "AddComponent" ) )
 		{
-			for ( auto&& [id, metaType] : entt::resolve() )
+			for ( auto&& [id, type] : entt::resolve() )
 			{
-				if ( s_BlacklistedComponents.contains( metaType.id() ) )
+				Refl::MetaType metaType = type;
+				if ( s_BlacklistedComponents.contains( metaType.ID() ) )
 					continue;
 
-				if ( auto isComponentProp = metaType.prop( Refl::IsComponentID ); !isComponentProp )
+				if ( !metaType.IsComponent() )
 					continue;
 
-				const char* className = metaType.prop( "CleanClassName"_hs ).value().cast<const char*>();
-				if ( !ImGui::MenuItem( className ) )
+				std::string className = ScrubClassName( metaType.GetCleanTypeName() );
+				if ( !ImGui::MenuItem( className.c_str() ) )
 					continue;
 
-				if ( auto addToGameObjectFunc = metaType.prop( Tridium::Refl::Internal::AddToGameObjectPropID ); addToGameObjectFunc )
-				{
-					addToGameObjectFunc.value().cast<Tridium::Refl::Internal::AddToGameObjectFunc>()( *Application::GetScene(), InspectedGameObject );
-				}
+				metaType.TryAddToGameObject( *Application::GetScene(), InspectedGameObject );
 				break;
 			}
 

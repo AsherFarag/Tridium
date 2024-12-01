@@ -20,7 +20,7 @@ namespace Tridium::Refl {
 
 	inline const char* MetaRegistry::GetCleanTypeName( const MetaType& a_MetaType )
 	{
-		if ( auto prop = a_MetaType.prop( Internal::CleanClassNamePropID ) )
+		if ( auto prop = a_MetaType.Prop( Internal::CleanClassNamePropID ) )
 		{
 			return prop.value().cast<const char*>();
 		}
@@ -37,7 +37,7 @@ namespace Tridium::Refl {
 	template<typename _MetaProperty>
 	inline bool MetaRegistry::TryGetMetaPropertyFromClass( const MetaType& a_ClassMetaType, _MetaProperty& o_Meta, MetaIDType a_MetaID )
 	{
-		if ( auto prop = a_ClassMetaType.prop( a_MetaID ) )
+		if ( auto prop = a_ClassMetaType.Prop( a_MetaID ) )
 		{
 			if ( prop.value().try_cast<_MetaProperty>( ) )
 			{
@@ -53,7 +53,7 @@ namespace Tridium::Refl {
 	inline bool MetaRegistry::TryGetMetaPropertyFromClass( _MetaProperty& o_Meta, MetaIDType a_MetaID )
 	{
 		static const auto meta = entt::resolve<_Class>();
-		if ( auto prop = meta.prop( a_MetaID ) )
+		if ( auto prop = meta.Prop( a_MetaID ) )
 		{
 			if ( prop.value().try_cast<_MetaProperty>( ) )
 			{

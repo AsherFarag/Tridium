@@ -5,7 +5,7 @@
 
 int main( int argc, char** argv )
 {
-	Tridium::Refl::__Internal_InitializeReflection();
+	Tridium::Refl::Internal::InitializeReflection();
 	Tridium::Log::Init();
 
 	const char* ProjectPath = argc >= 2 ? argv[1] : "";

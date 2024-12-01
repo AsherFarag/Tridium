@@ -18,7 +18,7 @@ namespace Tridium::Refl {
     {
         void SerializeMembersOfMetaClass( IO::Archive& a_Archive, const MetaType& a_MetaType, const MetaAny& a_Data )
         {
-            for ( auto&& [id, metaData] : a_MetaType.data() )
+            for ( auto&& [id, metaData] : a_MetaType.Data() )
             {
                 if ( !HasFlag( metaData.propFlags(), EPropertyFlag::Serialize ) )
                 {
@@ -85,7 +85,7 @@ namespace Tridium::Refl {
         {
             a_Archive << YAML::BeginMap;
 
-            for ( auto&& [id, baseType] : a_MetaType.base() )
+            for ( auto&& [id, baseType] : a_MetaType.Base() )
             {
                 SerializeMembersOfMetaClass( a_Archive, baseType, a_Data );
             }
@@ -97,7 +97,7 @@ namespace Tridium::Refl {
 
         void DeserializeMembersOfMetaClass( const YAML::Node& a_Node, MetaAny& a_Data, const MetaType& a_MetaType )
         {
-            for ( auto&& [id, metaData] : a_MetaType.data() )
+            for ( auto&& [id, metaData] : a_MetaType.Data() )
             {
                 if ( !HasFlag( metaData.propFlags(), EPropertyFlag::Serialize ) )
                 {
@@ -160,7 +160,7 @@ namespace Tridium::Refl {
 
         void DeserializeClass( const YAML::Node& a_Node, MetaAny& a_Data, const MetaType& a_MetaType )
         {
-            for ( auto&& [id, baseType] : a_MetaType.base() )
+            for ( auto&& [id, baseType] : a_MetaType.Base() )
             {
                 DeserializeMembersOfMetaClass( a_Node, a_Data, baseType );
             }
@@ -242,7 +242,7 @@ namespace Tridium::Refl {
 			.type(entt::type_hash<Type>::value()) \
             .prop(Internal::CleanClassNamePropID, #Type)
 
-    void __Internal_InitializeReflection()
+    void Internal::InitializeReflection()
     {
 		// Basic types
 		REFLECT_BASIC_TYPE( bool )ADD_SERIALIZE_TO_TEXT_FUNC_TO_TYPE( bool )ADD_DRAWPROPERTY_FUNC_TO_TYPE( bool );

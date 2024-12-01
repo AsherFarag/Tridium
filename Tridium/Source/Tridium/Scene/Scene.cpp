@@ -51,8 +51,8 @@ namespace Tridium {
 						continue;
 					}
 
-					Refl::MetaAny dstComponent = componentType.from_void( addToGameObjectFunc( *this, entity ) );
-					Refl::MetaAny srcComponent = componentType.from_void( srcStorage.value( entity ) );
+					Refl::MetaAny dstComponent = componentType.FromVoid( addToGameObjectFunc( *this, static_cast<GameObjectID>( entity ) ) );
+					Refl::MetaAny srcComponent = componentType.FromVoid( srcStorage.value( entity ) );
 					dstComponent.assign( srcComponent );
 					reinterpret_cast<Component*>( dstComponent.data() )->m_GameObject = GameObject( entity );
 				}
@@ -208,13 +208,13 @@ namespace Tridium {
 			if ( !storage.contains( a_Source ) )
 				continue;
 
-			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<GUIDComponent>().info() )
+			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<GUIDComponent>().Info() )
 				continue;
 
-			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<TagComponent>().info() )
+			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<TagComponent>().Info() )
 				continue;
 
-			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<TransformComponent>().info() )
+			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<TransformComponent>().Info() )
 				continue;
 
 			if ( storage.contains(dst) )
@@ -241,13 +241,13 @@ namespace Tridium {
 			if ( !storage.contains( a_Source ) )
 				continue;
 
-			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<GUIDComponent>().info() )
+			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<GUIDComponent>().Info() )
 				continue;
 
-			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<TagComponent>().info() )
+			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<TagComponent>().Info() )
 				continue;
 
-			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<TransformComponent>().info() )
+			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<TransformComponent>().Info() )
 				continue;
 
 			if ( storage.contains( a_Destination ) )

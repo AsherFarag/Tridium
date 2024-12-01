@@ -5,6 +5,28 @@
 #include <Tridium/ImGui/IconsFontAwesome6.h>
 
 namespace Tridium {
+    // Removes m_ and adds spaces in between words in a Pascal Case string
+	// Example: m_MyVariableName -> My Variable Name
+    static std::string ScrubPropertyName( const std::string& name )
+    {
+		std::string scrubbedName = name;
+		// Remove m_ from the start of the string
+		if ( scrubbedName.size() > 2 && scrubbedName[0] == 'm' && scrubbedName[1] == '_' )
+		{
+			scrubbedName.erase( 0, 2 );
+		}
+
+		for ( size_t i = 1; i < scrubbedName.size(); ++i )
+		{
+			if ( std::isupper( scrubbedName[i] ) )
+			{
+				scrubbedName.insert( i, " " );
+				++i;
+			}
+		}
+
+		return scrubbedName;
+    }
 
 	namespace Refl::Internal {
         using enum ::Tridium::Refl::EPropertyFlag;
@@ -52,7 +74,7 @@ namespace Tridium {
 
         bool DrawKeyToValueAssociativeContainer( entt::meta_associative_container& a_AssociativeContainer, const MetaData& a_MetaData, PropertyFlags a_DrawFlag )
         {
-            if ( !ImGui::TreeNodeEx( a_MetaData.name().c_str() ) )
+            if ( !ImGui::TreeNodeEx( ScrubPropertyName( a_MetaData.name() ).c_str() ) )
             {
                 if ( ImGui::BeginItemTooltip() )
                 {
@@ -152,7 +174,7 @@ namespace Tridium {
 
         bool DrawSequenceContainer( entt::meta_sequence_container& a_SequenceContainer, const MetaData& a_MetaData, PropertyFlags a_DrawFlag )
         {
-            if ( !ImGui::TreeNodeEx( a_MetaData.name().c_str() ) )
+            if ( !ImGui::TreeNodeEx( ScrubPropertyName( a_MetaData.name() ).c_str() ) )
             {
                 if ( ImGui::BeginItemTooltip() )
                 {
@@ -209,7 +231,7 @@ namespace Tridium {
             {
                 if ( DrawAddElementButton( "Add Element" ) )
                 {
-                    auto newElement = MetaRegistry::ResolveMetaType( a_SequenceContainer.value_type().info() ).construct();
+                    auto newElement = MetaRegistry::ResolveMetaType( a_SequenceContainer.value_type().info() ).Construct();
                     a_SequenceContainer.insert( a_SequenceContainer.end(), std::move(newElement) );
                     wasChanged = true;
                 }
@@ -230,7 +252,7 @@ namespace Tridium {
         {
             bool wasChanged = false;
 
-            for ( auto&& [id, metaData] : a_MetaType.data() )
+            for ( auto&& [id, metaData] : a_MetaType.Data() )
             {
                 bool memberWasChanged = false;
                 PropertyFlags drawFlag = static_cast<PropertyFlags>( EPropertyFlag::None );
@@ -259,7 +281,7 @@ namespace Tridium {
                 if ( auto drawFuncProp = metaData.type().prop( DrawPropFuncID ) )
                 {
                     auto drawFunc = drawFuncProp.value().cast<DrawPropFunc>();
-                    memberWasChanged |= drawFunc( metaData.name().c_str(), memberData, drawFlag );
+                    memberWasChanged |= drawFunc( ScrubPropertyName( metaData.name() ).c_str(), memberData, drawFlag );
                 }
 				// Handle the drawing of associative containers
                 else if ( metaData.type().is_associative_container() )

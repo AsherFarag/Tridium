@@ -442,42 +442,21 @@ namespace Tridium::Editor {
 		ImGui::BeginGroup();
 		{
 			ImGui::ScopedStyleVar padding( ImGuiStyleVar_FramePadding, buttonPadding );
-			if ( hasPlayButton && ImGui::SmallButton( TE_ICON_PLAY ) )
-			{
-				if ( editor->GetActiveScene()->IsPaused() )
-					editor->GetActiveScene()->SetPaused( false );
-				else
-					editor->OnBeginScene();
-			}
-
-			if ( hasPauseButton && ImGui::SmallButton( TE_ICON_PAUSE ) )
-			{
-				editor->GetActiveScene()->SetPaused( true );
-			}
-
-			ImGui::SameLine();
-
-			if ( hasStopButton && ImGui::SmallButton( TE_ICON_STOP ) )
-			{
-				editor->OnEndScene();
-			}
-
-		#if 0
 			if ( hasPlayButton )
 			{
-				if ( ImGui::ImageButton( "PlayButton", (ImTextureID)PlayButtonIcon->GetRendererID(),
-					buttonSize, { 0,1 }, { 1,0 },
-					{ 0,0,0,0 }, { 0.5f, 1.0f, 0.5f, 1.0f } ) )
+				ImGui::ScopedStyleCol buttonCol( ImGuiCol_Text, ImVec4( Style::Colors::Green ) );
+				if ( ImGui::SmallButton( TE_ICON_PLAY ) )
 				{
-					editor->OnBeginScene();
+					if ( editor->GetActiveScene()->IsPaused() )
+						editor->GetActiveScene()->SetPaused( false );
+					else
+						editor->OnBeginScene();
 				}
 			}
 
 			if ( hasPauseButton )
 			{
-				if ( ImGui::ImageButton( "PauseButton", (ImTextureID)PauseButtonIcon->GetRendererID(),
-					buttonSize, { 0,1 }, { 1,0 },
-					{ 0,0,0,0 } ) )
+				if ( ImGui::SmallButton( TE_ICON_PAUSE ) )
 				{
 					editor->GetActiveScene()->SetPaused( true );
 				}
@@ -487,14 +466,12 @@ namespace Tridium::Editor {
 
 			if ( hasStopButton )
 			{
-				if ( ImGui::ImageButton( "StopButton", (ImTextureID)StopButtonIcon->GetRendererID(),
-					buttonSize, { 0,1 }, { 1,0 },
-					{ 0,0,0,0 }, { 1.0f, 0.5f, 0.5f, 1.0f } ) )
+				ImGui::ScopedStyleCol buttonCol( ImGuiCol_Text, ImVec4( Style::Colors::Red ) );
+				if ( ImGui::SmallButton( TE_ICON_STOP ) )
 				{
 					editor->OnEndScene();
 				}
 			}
-		#endif
 
 		}
 		ImGui::EndGroup();

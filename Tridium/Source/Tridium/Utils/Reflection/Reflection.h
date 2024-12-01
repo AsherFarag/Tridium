@@ -28,14 +28,26 @@ namespace Tridium
                 return ( static_cast<std::underlying_type_t<EnumType>>( flags ) | ... );
             }
 
-            constexpr MetaIDType IsComponentPropID = entt::hashed_string( "IsComponent" ).value();
-            constexpr MetaIDType AddToGameObjectPropID = entt::hashed_string( "AddToGameObject" ).value();
-			constexpr MetaIDType RemoveFromGameObjectPropID = entt::hashed_string( "RemoveFromGameObject" ).value();
-            typedef Component* ( *AddToGameObjectFunc )( Scene& a_Scene, GameObject a_GameObject );
-			typedef void ( *RemoveFromGameObjectFunc )( Scene& a_Scene, GameObject a_GameObject );
-        }
+            void InitializeReflection();
 
-        void __Internal_InitializeReflection();
+			void SerializeClass( IO::Archive& a_Archive, const MetaAny& a_Data, const MetaType& a_MetaType );
+
+			template <typename T>
+			void SerializeClass( IO::Archive& a_Archive, const MetaAny& a_Data )
+			{
+				static const MetaType metaType = MetaRegistry::ResolveMetaType<T>();
+				SerializeClass( a_Archive, a_Data, metaType );
+			}
+
+			void DeserializeClass( const YAML::Node& a_Node, MetaAny& a_Data, const MetaType& a_MetaType );
+
+			template <typename T>
+			void DeserializeClass( const YAML::Node& a_Node, MetaAny& a_Data )
+			{
+				static const MetaType metaType = MetaRegistry::ResolveMetaType<T>();
+				DeserializeClass( a_Node, a_Data, metaType );
+			}
+        }
     }
 
 }
@@ -44,40 +56,34 @@ namespace Tridium
 
 #define _REFL_ ::Tridium::Refl::
 
-// Serialize function signature typedef
-#define _BEGIN_REFLECT_BODY_HELPER( Class )               \
-    template<>											  \
-    struct _REFL_ Reflector<Class>			              \
-    {													  \
-		using ClassType = Class;						  \
-	    Reflector()                                       \
-	    {												  \
-            using enum _REFL_ EPropertyFlag;              \
-	        using namespace entt::literals;				  \
-            auto meta = entt::meta<Class>();              \
-			meta.type( entt::hashed_string( #Class ) );   \
-            meta.prop( _REFL_ Internal::CleanClassNamePropID, #Class );      
-
-namespace Tridium::Refl::Internal {
-
-	void SerializeClass( IO::Archive& a_Archive, const MetaAny& a_Data, const MetaType& a_MetaType );
-
-	template <typename T>
-	void SerializeClass( IO::Archive& a_Archive, const MetaAny& a_Data )
-	{
-		static const MetaType metaType = MetaRegistry::ResolveMetaType<T>();
-		SerializeClass( a_Archive, a_Data, metaType );
-	}
-
-	void DeserializeClass( const YAML::Node& a_Node, MetaAny& a_Data, const MetaType& a_MetaType );
-
-	template <typename T>
-	void DeserializeClass( const YAML::Node& a_Node, MetaAny& a_Data )
-	{
-		static const MetaType metaType = MetaRegistry::ResolveMetaType<T>();
-		DeserializeClass( a_Node, a_Data, metaType );
-	}
+#define _IF_COMPONENT( Class ) if constexpr ( std::is_base_of_v<::Tridium::Component, Class> )               \
+{                                                                                                            \
+	meta.prop( _REFL_ Internal::IsComponentPropID );                                                         \
+	meta.prop( _REFL_ Internal::AddToGameObjectPropID,                                                       \
+			   +[](::Tridium::Scene& a_Scene, ::Tridium::GameObject a_GameObject) -> ::Tridium::Component*   \
+			   {                                                                                             \
+				   return a_Scene.TryAddComponentToGameObject<Class>( a_GameObject );                        \
+			   });                                                                                           \
+	meta.prop( _REFL_ Internal::RemoveFromGameObjectPropID,                                                  \
+			   +[](::Tridium::Scene& a_Scene, ::Tridium::GameObject a_GameObject)                            \
+			   {                                                                                             \
+				   a_Scene.RemoveComponentFromGameObject<Class>( a_GameObject );                             \
+			   });                                                                                           \
 }
+
+// Serialize function signature typedef
+#define _BEGIN_REFLECT_BODY_HELPER( Class )																     \
+    template<>																							     \
+    struct _REFL_ Reflector<Class>																		     \
+    {																									     \
+		using ClassType = Class;																		     \
+	    Reflector()																						     \
+	    {																								     \
+            using enum _REFL_ EPropertyFlag;															     \
+	        using namespace entt::literals;																     \
+            auto meta = entt::meta<Class>();															     \
+			meta.type( entt::hashed_string( #Class ) );													     \
+            meta.prop( _REFL_ Internal::CleanClassNamePropID, #Class );      						         
 
 // Add a serialize static lambda function to the meta data.
 #define _REFLECT_SERIALIZE_HELPER(Class)                                                       \
@@ -173,7 +179,7 @@ namespace Tridium::Refl::Internal {
 				  {                                                                                        \
 					  if (enumStr == enumString)                                                           \
 					  {                                                                                    \
-						  a_Data.cast<ClassType&>() = enumValue;                                            \
+						  a_Data.cast<ClassType&>() = enumValue;                                           \
 						  break;                                                                           \
 					  }                                                                                    \
 				  }                                                                                        \
@@ -198,12 +204,12 @@ namespace Tridium::Refl::Internal {
     BEGIN_REFLECT(ComponentClass)																	\
     meta.prop(::Tridium::Refl::Internal::IsComponentPropID);										\
     meta.prop(::Tridium::Refl::Internal::AddToGameObjectPropID,										\
-			  +[](::Tridium::Scene& a_Scene, ::Tridium::GameObject a_GameObject) -> Component*      \
+			  +[](::Tridium::Scene& a_Scene, ::Tridium::GameObjectID a_GameObject) -> Component*      \
 			  {                                                                                     \
 				  return a_Scene.TryAddComponentToGameObject<ComponentClass>(a_GameObject);         \
 			  });                                                                                   \
 	meta.prop(::Tridium::Refl::Internal::RemoveFromGameObjectPropID,                                \
-			  +[](::Tridium::Scene& a_Scene, ::Tridium::GameObject a_GameObject)                    \
+			  +[](::Tridium::Scene& a_Scene, ::Tridium::GameObjectID a_GameObject)                    \
 			  {                                                                                     \
 				  a_Scene.RemoveComponentFromGameObject<ComponentClass>(a_GameObject);              \
 			  });
