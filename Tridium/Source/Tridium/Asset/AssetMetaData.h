@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/Utils/Reflection/ReflectionFwd.h>
+#include <Tridium/Reflection/ReflectionFwd.h>
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/IO/FilePath.h>
 

@@ -1,6 +1,5 @@
 #pragma once
 #include <Tridium/Core/Types.h>
-#include <Tridium/Utils/Reflection/Reflection.h>
 
 namespace Tridium {
 
@@ -10,10 +9,4 @@ namespace Tridium {
 		Kinematic,
 		Dynamic,
 	};
-
-	BEGIN_REFLECT_ENUM( EMotionType )
-		ENUM_VAL( Static )
-		ENUM_VAL( Kinematic )
-		ENUM_VAL( Dynamic )
-	END_REFLECT_ENUM( EMotionType )
 }

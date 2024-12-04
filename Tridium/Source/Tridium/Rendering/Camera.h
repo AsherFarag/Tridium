@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/Utils/Reflection/Reflection.h>
+#include <Tridium/Reflection/ReflectionFwd.h>
 
 namespace Tridium {
 
@@ -68,28 +68,4 @@ namespace Tridium {
 
 		Vector2 m_ViewportSize = { 1280, 720 };
 	};
-
-	BEGIN_REFLECT_ENUM( EProjectionType )
-		ENUM_VAL( Perspective )
-		ENUM_VAL( Orthographic )
-	END_REFLECT_ENUM( EProjectionType )
-
-	BEGIN_REFLECT( PerspectiveData )
-		PROPERTY( FOV, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( Near, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( Far, FLAGS( Serialize, EditAnywhere ) )
-	END_REFLECT( PerspectiveData );
-
-	BEGIN_REFLECT( OrthographicData )
-		PROPERTY( Size, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( Near, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( Far, FLAGS( Serialize, EditAnywhere ) )
-	END_REFLECT( OrthographicData )
-
-	BEGIN_REFLECT( Camera )
-		PROPERTY( m_Perspective, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( m_Orthographic, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( m_ProjectionType, FLAGS( Serialize, EditAnywhere ) )
-	END_REFLECT( Camera )
-
 }

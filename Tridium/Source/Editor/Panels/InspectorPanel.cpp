@@ -8,11 +8,13 @@
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Core/Application.h>
 #include <Tridium/ECS/Components/Types.h>
+#include <Tridium/Reflection/Reflection.h>
 
 #include <Tridium/Rendering/Texture.h>
 #include <Tridium/Rendering/Material.h>
 #include <Tridium/Rendering/Mesh.h>
 #include <Editor/EditorUtil.h>
+#include <Editor/PropertyDrawers.h>
 #include <Tridium/Asset/AssetManager.h>
 
 using namespace entt::literals;
@@ -23,6 +25,8 @@ namespace Tridium::Editor {
 	// Example: "EnemyAIComponent" -> "Enemy AI Component"
 	std::string ScrubClassName( const char* a_ClassName )
 	{
+		if ( !a_ClassName )
+			return "";
 		std::string scrubbedName;
 		const size_t size = strlen( a_ClassName );
 		for ( size_t i = 0; i < size; ++i )
@@ -179,9 +183,7 @@ namespace Tridium::Editor {
 			{
 				if ( ImGui::MenuItem( TE_ICON_X " Remove Component" ) )
 				{
-					Tridium::Refl::Internal::RemoveFromGameObjectFunc removeFunc;
-					if ( !metaType.TryRemoveFromGameObject( *Application::GetScene(), InspectedGameObject ) )
-						TE_CORE_ERROR( "Component [{0}] does not have a RemoveFromGameObject function!", metaType.GetCleanTypeName() );
+					metaType.TryRemoveFromGameObject( *Application::GetScene(), InspectedGameObject );
 				}
 
 				ImGui::EndPopup();

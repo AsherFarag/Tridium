@@ -6,6 +6,7 @@
 #include <Tridium/Rendering/SceneRenderer.h>
 #include <Tridium/Asset/AssetFactory.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h> 
+#include <Tridium/Reflection/Reflection.h>
 
 using namespace Tridium;
 
@@ -131,14 +132,17 @@ protected:
 
 BEGIN_REFLECT_COMPONENT( ShooterPlayerComponent )
 	BASE( ScriptableComponent )
-	PROPERTY( m_GunModel, FLAGS( Serialize, EditAnywhere ) )
-	PROPERTY( m_GunMuzzleFlash, FLAGS( Serialize, EditAnywhere ) )
-	PROPERTY( m_GunMuzzleFlashDuration, FLAGS( Serialize, EditAnywhere ) )
-	PROPERTY( m_GunMuzzleFlashIntensity, FLAGS( Serialize, EditAnywhere ) )
-	PROPERTY( m_GunRecoilDistance, FLAGS( Serialize, EditAnywhere ) )
-	PROPERTY( m_GunLerpSpeed, FLAGS( Serialize, EditAnywhere ) )
-	PROPERTY( m_FireRate, FLAGS( Serialize, EditAnywhere ) )
-	PROPERTY( m_Force, FLAGS( Serialize, EditAnywhere ) )
+	PROPERTY( m_GunModel, Serialize | EditAnywhere )
+	PROPERTY( m_GunMuzzleFlash, Serialize | EditAnywhere )
+	PROPERTY( m_GunMuzzleFlashDuration, Serialize | EditAnywhere )
+	PROPERTY( m_GunMuzzleFlashIntensity, Serialize | EditAnywhere )
+	PROPERTY( m_GunRecoilDistance, Serialize | EditAnywhere )
+	PROPERTY( m_GunLerp, Serialize | EditAnywhere )
+	PROPERTY( m_GunLerpSpeed, Serialize | EditAnywhere )
+	PROPERTY( m_FireRate, Serialize | EditAnywhere )
+	PROPERTY( m_Force, Serialize | EditAnywhere )
+	PROPERTY( m_GunMuzzleFlashTimer )
+	PROPERTY( m_DefaultGunPosition, EditAnywhere )
 END_REFLECT( ShooterPlayerComponent )
 
 
@@ -193,10 +197,10 @@ protected:
 };
 
 BEGIN_REFLECT_COMPONENT( EnemyAIComponent )
-BASE( ScriptableComponent )
-PROPERTY( m_Target, FLAGS( EditAnywhere ) )
-PROPERTY( m_Speed, FLAGS( Serialize, EditAnywhere ) )
-PROPERTY( m_MaxSpeed, FLAGS( Serialize, EditAnywhere ) )
+	BASE( ScriptableComponent )
+	PROPERTY( m_Target, Serialize | EditAnywhere )
+	PROPERTY( m_Speed, Serialize | EditAnywhere )
+	PROPERTY( m_MaxSpeed, Serialize | EditAnywhere )
 END_REFLECT( EnemyAIComponent )
 
 #include <Tridium/Core/Delegate.h>
@@ -222,7 +226,6 @@ class SandboxGameInstance : public Tridium::GameInstance
 {
 	virtual void Init() override
 	{
-
 		struct Invokable
 		{
 			void operator()( int x ) const { std::cout << "Invokable: " << x << std::endl; }
@@ -252,6 +255,8 @@ class SandboxGameInstance : public Tridium::GameInstance
 		Delegate<void> del6;
 		del6.Bind( +[]() { TE_CORE_DEBUG( "Lamda 2" ); } );
 		del6();
+
+		//
 	}
 };
 

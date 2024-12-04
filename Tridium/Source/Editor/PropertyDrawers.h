@@ -3,7 +3,6 @@
 #include <Tridium/Core/Core.h>
 #include <Tridium/ImGui/ImGui.h>
 #include <Editor/EditorStyle.h>
-#include <Tridium/Utils/Reflection/Meta.h>
 
 // Temp?
 #include <Tridium/Rendering/FrameBuffer.h>
@@ -40,12 +39,6 @@ namespace Tridium::Editor {
 
 			bool Enabled;
 		};
-
-		// Draw Property function signature typedef.
-		typedef bool ( *DrawPropFunc )( const char* a_Name, ::Tridium::Refl::MetaAny& a_Handle, ::Tridium::Refl::PropertyFlags a_Flags );
-
-		// ID for the  Draw Property function.
-		constexpr ::Tridium::Refl::MetaIDType DrawPropFuncID = entt::hashed_string( "DrawPropFuncID" ).value();
 
 	}
 

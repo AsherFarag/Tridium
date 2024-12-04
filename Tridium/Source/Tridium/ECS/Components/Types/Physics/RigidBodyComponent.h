@@ -9,10 +9,10 @@ namespace Tridium {
 	{
 		REFLECT( RigidBodyComponent )
 	public:
-		RigidBodyComponent() = default;
-		RigidBodyComponent( const RigidBodyComponent& a_Other ) = default;
-		RigidBodyComponent( RigidBodyComponent&& a_Other ) noexcept = default;
-		RigidBodyComponent& operator=( const RigidBodyComponent& a_Other ) = default;
+		RigidBodyComponent();
+		RigidBodyComponent( const RigidBodyComponent& a_Other );
+		RigidBodyComponent( RigidBodyComponent&& a_Other ) noexcept;
+		RigidBodyComponent& operator=( const RigidBodyComponent& a_Other );
 
 		bool IsSleeping() const { return m_BodyProxy.IsSleeping(); }
 
@@ -54,16 +54,5 @@ namespace Tridium {
 
 		friend class Scene;
 	};
-
-	BEGIN_REFLECT_COMPONENT( RigidBodyComponent )
-		PROPERTY( m_BodyProxy )
-		PROPERTY( m_PhysicsLayer, FLAGS( EditAnywhere, Serialize ) )
-		PROPERTY( m_MotionType, FLAGS(EditAnywhere, Serialize) )
-		PROPERTY( m_Mass, FLAGS( EditAnywhere, Serialize ) )
-		PROPERTY( m_GravityScale, FLAGS( EditAnywhere, Serialize ) )
-		PROPERTY( m_Restitution, FLAGS( EditAnywhere, Serialize ) )
-		PROPERTY( m_LinearMotionConstraint, FLAGS( EditAnywhere, Serialize ) )
-		PROPERTY( m_AngularMotionConstraint, FLAGS( EditAnywhere, Serialize ) )
-	END_REFLECT( RigidBodyComponent )
 
 }

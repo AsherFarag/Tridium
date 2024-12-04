@@ -14,6 +14,7 @@
 #include <Tridium/Asset/EditorAssetManager.h>
 #include <Tridium/Rendering/RenderCommand.h>
 #include "Tridium/IO/ProjectSerializer.h"
+#include <Tridium/Scripting/ScriptEngine.h>
 
 
 namespace Tridium {
@@ -41,6 +42,12 @@ namespace Tridium {
 		{
 			m_Window = Window::Create();
 			m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
+		}
+
+		// Initialise Script Engine
+		{
+			ScriptEngine::s_Instance = MakeUnique<ScriptEngine>();
+			ScriptEngine::s_Instance->Init();
 		}
 
 		// Initialise Physics Engine

@@ -1,38 +1,27 @@
 #pragma once
 #if IS_EDITOR
 #include "Panel.h"
+#include "ImTextEdit/TextEditor.h"
 
 namespace Tridium::Editor {
 
-    class ScriptTextFile
-    {
-    public:
-        ScriptTextFile() = default;
-        ScriptTextFile( const  IO::FilePath& a_FilePath );
-
-        std::string& GetContent() { return m_Content; }
-
-        inline std::string GetFileName() { return m_Path.GetFilename().ToString(); }
-        inline auto& GetPath() { return m_Path; }
-
-        bool LoadFile( const IO::FilePath& a_FilePath );
-        bool SaveFile( const IO::FilePath& a_FilePath );
-        bool SaveFile() { return SaveFile( GetPath().ToString() ); }
-
-        bool Modified = false;
-
-    private:
-        static std::string GetDirectoryPath( const std::string& a_FilePath );
-        static std::string GetFileName( const std::string& a_FilePath );
-
-        IO::FilePath m_Path;
-        std::string m_Content;
-    };
+	struct OpenedScript
+	{
+		IO::FilePath Path;
+		TextEditor Editor;
+	};
 
     class ScriptEditorPanel : public Panel
     {
+		enum class ETheme : uint8_t
+		{
+			Dark,
+			Light,
+			BlueRetro,
+		};
+
     public:
-        ScriptEditorPanel() : Panel("Script Editor") {}
+        ScriptEditorPanel();
 
         virtual void OnImGuiDraw() override;
 
@@ -40,16 +29,17 @@ namespace Tridium::Editor {
 
     private:
         virtual bool OnKeyPressed( KeyPressedEvent& e ) override;
+		OpenedScript* GetOpenedScript( const IO::FilePath& a_FilePath );
+		void SetTheme( ETheme a_Theme );
 
-        bool DisplayFileContents( ScriptTextFile& file );
+		void DrawMenuBar();
+		void DrawOpenedScripts();
 
-        void CloseFile( uint32_t index );
-        void SaveCurrentFile();
-        void SaveAllFiles();
-
-    private:
-        std::vector<ScriptTextFile> m_ScriptTextFiles;
-        ScriptTextFile* m_CurrentTextFile = nullptr;
+	private:
+		std::unordered_map<IO::FilePath, OpenedScript> m_OpenedScripts;
+		IO::FilePath m_CurrentOpenedFile;
+		ETheme m_Theme = ETheme::Dark;
+		TextEditor::LanguageDefinition m_LuaLanguageDefinition;
     };
 
 }

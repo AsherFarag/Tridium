@@ -35,14 +35,4 @@ namespace Tridium {
 		GameObject m_CameraGameObject;
 		Vector2 m_LastMousePosition = Vector2( 0.0f );
 	};
-
-	BEGIN_REFLECT_COMPONENT( CharacterControllerComponent )
-		BASE( ScriptableComponent )
-		PROPERTY( m_Friction, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( m_MovementSpeed, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( m_MovementAcceleration, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( m_AirMovementControl, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( m_JumpForce, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( m_LookSensitivity, FLAGS( Serialize, EditAnywhere ) )
-	END_REFLECT( CharacterControllerComponent );
 }

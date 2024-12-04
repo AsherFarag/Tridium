@@ -2,6 +2,7 @@
 #if IS_EDITOR
 
 #include "EditorReflection.h"
+#include "Reflection.h"
 #include <Tridium/ImGui/IconsFontAwesome6.h>
 
 namespace Tridium {
@@ -29,9 +30,7 @@ namespace Tridium {
     }
 
 	namespace Refl::Internal {
-        using enum ::Tridium::Refl::EPropertyFlag;
-        using ::Tridium::Editor::Internal::DrawPropFuncID;
-        using ::Tridium::Editor::Internal::DrawPropFunc;
+        using enum ::Tridium::Refl::EPropertyFlags;
 
 #pragma region Helpers
 
@@ -48,13 +47,13 @@ namespace Tridium {
             return ImGui::SmallButton( a_Name );
         }
 
-        ElementReturn BeginElementTreeNode( const char* a_Name, PropertyFlags a_Flags )
+        ElementReturn BeginElementTreeNode( const char* a_Name, EPropertyFlags a_Flags )
         {
             ElementReturn ret;
 
             ret.IsOpen = ImGui::TreeNodeEx( a_Name, ImGuiTreeNodeFlags_DefaultOpen );
 
-            if ( HasFlag( a_Flags, EPropertyFlag::EditAnywhere ) )
+            if ( HasFlag( a_Flags, EPropertyFlags::EditAnywhere ) )
             {
                 ImGui::SameLine();
                 ret.WasRemoved = DrawRemoveElementButton( TE_ICON_TRASH_CAN );
@@ -72,40 +71,41 @@ namespace Tridium {
 
 #pragma endregion
 
-        bool DrawKeyToValueAssociativeContainer( entt::meta_associative_container& a_AssociativeContainer, const MetaData& a_MetaData, PropertyFlags a_DrawFlag )
+        bool DrawKeyToValueAssociativeContainer( entt::meta_associative_container& a_AssociativeContainer, const MetaProp& a_MetaData, EPropertyFlags a_DrawFlag )
         {
-            if ( !ImGui::TreeNodeEx( ScrubPropertyName( a_MetaData.name() ).c_str() ) )
-            {
-                if ( ImGui::BeginItemTooltip() )
-                {
-                    ImGui::Text( "Class: Map Container of '%s' to '%s'",
-                        MetaRegistry::GetCleanTypeName( a_AssociativeContainer.key_type() ),
-                        MetaRegistry::GetCleanTypeName( a_AssociativeContainer.mapped_type() ) );
-                    ImGui::EndTooltip();
-                }
-                return false;
-            }
+			MetaType keyType = a_AssociativeContainer.key_type();
+			MetaType valueType = a_AssociativeContainer.mapped_type();
+
+            const bool isOpen = ImGui::TreeNodeEx( ScrubPropertyName( a_MetaData.name() ).c_str() );
 
             if ( ImGui::BeginItemTooltip() )
             {
                 ImGui::Text( "Class: Map Container of '%s' to '%s'",
-                    MetaRegistry::GetCleanTypeName( a_AssociativeContainer.key_type() ),
-                    MetaRegistry::GetCleanTypeName( a_AssociativeContainer.mapped_type() ) );
+					keyType.GetCleanTypeName(),
+					valueType.GetCleanTypeName() );
                 ImGui::EndTooltip();
             }
+
+			if ( !isOpen )
+				return false;
 
             ImGui::FunctionScope treePop( +[]() { ImGui::TreePop(); } );
 
             bool wasChanged = false;
 
-            auto keyDrawFuncProp = a_AssociativeContainer.key_type().prop( DrawPropFuncID );
-            auto valueDrawFuncProp = a_AssociativeContainer.mapped_type().prop( DrawPropFuncID );
+			// Get the draw functions for the key and value
+            Props::DrawPropertyProp::Type keyDrawFunc = nullptr;
+			Props::DrawPropertyProp::Type valueDrawFunc = nullptr;
 
-            if ( !keyDrawFuncProp || !valueDrawFuncProp )
+            if ( auto meta = keyType.GetMetaAttribute( Props::DrawPropertyProp::ID ) )
+                keyDrawFunc = meta.value().cast<Props::DrawPropertyProp::Type>();
+            else
                 return false;
 
-            auto keyDrawFunc = keyDrawFuncProp.value().cast<DrawPropFunc>();
-            auto valueDrawFunc = valueDrawFuncProp.value().cast<DrawPropFunc>();
+			if ( auto meta = valueType.GetMetaAttribute( Props::DrawPropertyProp::ID ) )
+                valueDrawFunc = meta.value().cast<Props::DrawPropertyProp::Type>();
+			else
+				return false;
 
 
             // Iterate through each element of the map
@@ -149,13 +149,13 @@ namespace Tridium {
                 }
             }
 
-            if ( !HasFlag(a_DrawFlag, EPropertyFlag::EditAnywhere) 
+            if ( !HasFlag(a_DrawFlag, EPropertyFlags::EditAnywhere) 
                 && a_AssociativeContainer.size() == 0 )
             {
                 ImGui::Text( "Empty" );
             }
 
-            if ( HasFlag( a_DrawFlag, EPropertyFlag::EditAnywhere )
+            if ( HasFlag( a_DrawFlag, EPropertyFlags::EditAnywhere )
                 && DrawAddElementButton( "Add Element" ) )
             {
                 auto newKey = a_AssociativeContainer.key_type().construct();
@@ -172,30 +172,30 @@ namespace Tridium {
             return wasChanged;
         }
 
-        bool DrawSequenceContainer( entt::meta_sequence_container& a_SequenceContainer, const MetaData& a_MetaData, PropertyFlags a_DrawFlag )
+        bool DrawSequenceContainer( entt::meta_sequence_container& a_SequenceContainer, const MetaProp& a_MetaData, EPropertyFlags a_DrawFlag )
         {
-            if ( !ImGui::TreeNodeEx( ScrubPropertyName( a_MetaData.name() ).c_str() ) )
-            {
-                if ( ImGui::BeginItemTooltip() )
-                {
-                    ImGui::Text( "Class: Sequence Container of '%s'", MetaRegistry::GetCleanTypeName( a_SequenceContainer.value_type() ) );
-                    ImGui::EndTooltip();
-                }
-                return false;
-            }
+			MetaType elemType = a_SequenceContainer.value_type();
+
+            const bool isOpen = ImGui::TreeNodeEx( ScrubPropertyName( a_MetaData.name() ).c_str() );
 
             if ( ImGui::BeginItemTooltip() )
             {
-                ImGui::Text( "Class: Sequence Container of '%s'", MetaRegistry::GetCleanTypeName( a_SequenceContainer.value_type() ) );
+                ImGui::Text( "Class: Sequence Container of '%s'", elemType.GetCleanTypeName() );
                 ImGui::EndTooltip();
             }
 
+			if ( !isOpen )
+				return false;
+
             bool wasChanged = false;
 
-            if ( auto drawFuncProp = a_SequenceContainer.value_type().prop( DrawPropFuncID ) )
-            {
-                auto drawFunc = drawFuncProp.value().cast<DrawPropFunc>();
+			Props::DrawPropertyProp::Type drawFunc = nullptr;
 
+			if ( auto meta = elemType.GetMetaAttribute( Props::DrawPropertyProp::ID ) )
+				drawFunc = meta.value().cast<Props::DrawPropertyProp::Type>();
+
+            if ( drawFunc )
+            {
                 size_t index = 0;
                 for ( auto it = a_SequenceContainer.begin(); it != a_SequenceContainer.end(); ++it )
                 {
@@ -209,7 +209,7 @@ namespace Tridium {
 					ImGui::PopItemWidth();
 					ImVec2 currentCursorPos = ImGui::GetCursorPos();
 
-					if ( HasFlag( a_DrawFlag, EPropertyFlag::EditAnywhere ) )
+					if ( HasFlag( a_DrawFlag, EPropertyFlags::EditAnywhere ) )
                     {
 						ImGui::ScopedID elementID( index );
 						ImGui::SetCursorPosY( oldCursorPosY + 2.5f );
@@ -227,17 +227,17 @@ namespace Tridium {
                 }
             }
 
-			if ( HasFlag( a_DrawFlag, EPropertyFlag::EditAnywhere ) )
+			if ( HasFlag( a_DrawFlag, EPropertyFlags::EditAnywhere ) )
             {
                 if ( DrawAddElementButton( "Add Element" ) )
                 {
-                    auto newElement = MetaRegistry::ResolveMetaType( a_SequenceContainer.value_type().info() ).Construct();
+					auto newElement = elemType.Construct();
                     a_SequenceContainer.insert( a_SequenceContainer.end(), std::move(newElement) );
                     wasChanged = true;
                 }
             }
 
-			if ( !HasFlag( a_DrawFlag, EPropertyFlag::EditAnywhere ) 
+			if ( !HasFlag( a_DrawFlag, EPropertyFlags::EditAnywhere ) 
                 && a_SequenceContainer.size() == 0 )
 			{
 				ImGui::Text( "Empty" );
@@ -248,26 +248,26 @@ namespace Tridium {
             return wasChanged;
         }
 
-		bool DrawAllMembersOfMetaClass( const MetaType& a_MetaType, MetaAny& a_Handle, EPropertyFlag a_OverrideFlag )
+		bool DrawAllMembersOfMetaClass( const MetaType& a_MetaType, MetaAny& a_Handle, EPropertyFlags a_OverrideFlag )
         {
             bool wasChanged = false;
 
-            for ( auto&& [id, metaData] : a_MetaType.Data() )
+            for ( auto&& [id, metaData] : a_MetaType.Properties() )
             {
                 bool memberWasChanged = false;
-                PropertyFlags drawFlag = static_cast<PropertyFlags>( EPropertyFlag::None );
+                EPropertyFlags drawFlag = EPropertyFlags::EPF_None;
 
                 // Get the appropiate draw flag
                 // If the draw flag is none, skip the property
                 if ( HasFlag( metaData.propFlags(), EditAnywhere )
                     && a_OverrideFlag != VisibleAnywhere )
                 {
-                    drawFlag = static_cast<PropertyFlags>( EditAnywhere );
+                    drawFlag = EditAnywhere;
                 }
                 else if ( HasFlag( metaData.propFlags(), VisibleAnywhere )
                     || a_OverrideFlag == VisibleAnywhere )
                 {
-                    drawFlag = static_cast<PropertyFlags>( VisibleAnywhere );
+                    drawFlag = VisibleAnywhere;
                 }
                 else
                 {
@@ -276,11 +276,12 @@ namespace Tridium {
 
                 // Get a copy of the member data from the handle
                 MetaAny memberData = a_Handle.type().is_pointer_like() ? metaData.get( *a_Handle ) : metaData.get( a_Handle );
+				MetaType memberType = memberData.type().is_pointer_like() ? memberData.type().remove_pointer() : memberData.type();
 
                 // If the property has a draw function, call it.
-                if ( auto drawFuncProp = metaData.type().prop( DrawPropFuncID ) )
+                if ( auto drawFuncProp = memberType.GetMetaAttribute( Props::DrawPropertyProp::ID ) )
                 {
-                    auto drawFunc = drawFuncProp.value().cast<DrawPropFunc>();
+                    auto drawFunc = drawFuncProp.value().cast<Props::DrawPropertyProp::Type>();
                     memberWasChanged |= drawFunc( ScrubPropertyName( metaData.name() ).c_str(), memberData, drawFlag );
                 }
 				// Handle the drawing of associative containers

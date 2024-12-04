@@ -43,15 +43,9 @@ namespace Tridium {
 
 					// Handle component copy
 					Refl::MetaType componentType = entt::resolve( srcStorage.type() );
-					Refl::Internal::AddToGameObjectFunc addToGameObjectFunc;
-					if ( !Refl::MetaRegistry::TryGetMetaPropertyFromClass(
-						componentType, addToGameObjectFunc, Refl::Internal::AddToGameObjectPropID ) ) 
-					{
-						TE_CORE_ASSERT( false, "Failed to resolve AddToGameObjectFunc!" );
-						continue;
-					}
+					Component* component = componentType.TryAddToGameObject( *this, static_cast<GameObjectID>( entity ) );
 
-					Refl::MetaAny dstComponent = componentType.FromVoid( addToGameObjectFunc( *this, static_cast<GameObjectID>( entity ) ) );
+					Refl::MetaAny dstComponent = componentType.FromVoid( component );
 					Refl::MetaAny srcComponent = componentType.FromVoid( srcStorage.value( entity ) );
 					dstComponent.assign( srcComponent );
 					reinterpret_cast<Component*>( dstComponent.data() )->m_GameObject = GameObject( entity );
@@ -208,13 +202,13 @@ namespace Tridium {
 			if ( !storage.contains( a_Source ) )
 				continue;
 
-			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<GUIDComponent>().Info() )
+			if ( storage.type() == Refl::ResolveMetaType<GUIDComponent>().Info() )
 				continue;
 
-			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<TagComponent>().Info() )
+			if ( storage.type() == Refl::ResolveMetaType<TagComponent>().Info() )
 				continue;
 
-			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<TransformComponent>().Info() )
+			if ( storage.type() == Refl::ResolveMetaType<TransformComponent>().Info() )
 				continue;
 
 			if ( storage.contains(dst) )
@@ -241,13 +235,13 @@ namespace Tridium {
 			if ( !storage.contains( a_Source ) )
 				continue;
 
-			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<GUIDComponent>().Info() )
+			if ( storage.type() == Refl::ResolveMetaType<GUIDComponent>().Info() )
 				continue;
 
-			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<TagComponent>().Info() )
+			if ( storage.type() == Refl::ResolveMetaType<TagComponent>().Info() )
 				continue;
 
-			if ( storage.type() == Refl::MetaRegistry::ResolveMetaType<TransformComponent>().Info() )
+			if ( storage.type() == Refl::ResolveMetaType<TransformComponent>().Info() )
 				continue;
 
 			if ( storage.contains( a_Destination ) )

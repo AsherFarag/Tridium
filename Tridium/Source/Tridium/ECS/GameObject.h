@@ -1,16 +1,19 @@
 #pragma once
-#include <Tridium/Utils/Reflection/ReflectionFwd.h>
+#include <Tridium/Reflection/ReflectionFwd.h>
+#include <Tridium/Reflection/MetaTypes.h>
 
 // TEMP ?
 #include <Tridium/Core/Application.h>
 
 namespace Tridium {
 
+	// Forward declarations
 	class Component;
 	class ScriptableComponent;
 	class TagComponent;
 	class GUIDComponent;
 	class TransformComponent;
+	// -------------------
 
 	// A GameObject is simply a wrapper around an EntityID.
 	class GameObject

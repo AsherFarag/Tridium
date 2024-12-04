@@ -1,6 +1,6 @@
 #include "tripch.h"
 #include "AssetMetaData.h"
-#include <Tridium/Utils/Reflection/Reflection.h>
+#include <Tridium/Reflection/Reflection.h>
 
 namespace Tridium {
 

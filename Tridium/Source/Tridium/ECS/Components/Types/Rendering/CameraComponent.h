@@ -19,10 +19,5 @@ namespace Tridium {
 		bool IsMainCamera = false;
 	};
 
-	BEGIN_REFLECT_COMPONENT( CameraComponent )
-		BASE( Component )
-		PROPERTY( SceneCamera, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( IsMainCamera, FLAGS( Serialize, EditAnywhere ) )
-	END_REFLECT( CameraComponent )
 
 }

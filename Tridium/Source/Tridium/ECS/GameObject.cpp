@@ -1,12 +1,11 @@
 #include "tripch.h"
 #include "GameObject.h"
 #include "Components/Types.h"
-
-#include <Tridium/Utils/Reflection/Reflection.h>
+#include <Tridium/Reflection/Reflection.h>
 
 namespace Tridium {
 
-    std::vector<std::pair<Refl::MetaType, Component*>> Tridium::GameObject::GetAllComponents() const
+    std::vector<std::pair<Refl::MetaType, Component*>> GameObject::GetAllComponents() const
     {
         std::vector<std::pair<Refl::MetaType, Component*>> components;
 		// Reserve a magic number of components

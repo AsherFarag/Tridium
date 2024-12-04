@@ -1,8 +1,19 @@
 #include "tripch.h"
 #include "CharacterControllerComponent.h"
 #include <Tridium/ECS/Components/Types.h>
+#include <Tridium/Reflection/Reflection.h>
 
 namespace Tridium {
+
+	BEGIN_REFLECT_COMPONENT( CharacterControllerComponent, Scriptable )
+		BASE( ScriptableComponent )
+		PROPERTY( m_Friction, Serialize | EditAnywhere )
+		PROPERTY( m_MovementSpeed, Serialize | EditAnywhere )
+		PROPERTY( m_MovementAcceleration, Serialize | EditAnywhere )
+		PROPERTY( m_AirMovementControl, Serialize | EditAnywhere )
+		PROPERTY( m_JumpForce, Serialize | EditAnywhere )
+		PROPERTY( m_LookSensitivity, Serialize | EditAnywhere )
+	END_REFLECT_COMPONENT( CharacterControllerComponent )
 
 	void CharacterControllerComponent::OnBeginPlay()
 	{
@@ -13,6 +24,7 @@ namespace Tridium {
 			return;
 		}
 	}
+	
 
 	void CharacterControllerComponent::OnUpdate()
 	{

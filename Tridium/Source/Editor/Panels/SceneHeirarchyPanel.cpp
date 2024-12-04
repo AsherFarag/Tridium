@@ -7,6 +7,7 @@
 
 #include <Editor/Editor.h>
 #include <Editor/EditorCamera.h>
+#include <Editor/EditorStyle.h>
 
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Core/Application.h>

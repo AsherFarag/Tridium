@@ -3,6 +3,7 @@
 #include <Tridium/Input/Input.h>
 #include "TransformComponent.h"
 #include <Tridium/ECS/Components/Types/Rendering/CameraComponent.h>
+#include <Tridium/Reflection/Reflection.h>
 
 namespace Tridium {
 
@@ -81,4 +82,10 @@ namespace Tridium {
 		m_LastMousePos = Input::GetMousePosition();
 		m_LastMouseScroll = Input::GetMouseScrollYOffset();
 	}
+
+	BEGIN_REFLECT_COMPONENT( CameraControllerComponent )
+		BASE( ScriptableComponent )
+		PROPERTY( Speed, Serialize | EditAnywhere )
+		PROPERTY( LookSensitivity, Serialize | EditAnywhere )
+	END_REFLECT_COMPONENT( CameraControllerComponent );
 }

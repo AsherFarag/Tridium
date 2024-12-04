@@ -1,10 +1,11 @@
 #include "tripch.h"
 #include "TagComponent.h"
+#include <Tridium/Reflection/Reflection.h>
 
 namespace Tridium {
-	BEGIN_REFLECT_COMPONENT( TagComponent )
+	BEGIN_REFLECT_COMPONENT( TagComponent, Scriptable )
 		BASE( Component )
-		PROPERTY( Tag, FLAGS( Serialize, EditAnywhere ) )
+		PROPERTY( Tag, Serialize | EditAnywhere )
 		FUNCTION( MaxSize )
 	END_REFLECT( TagComponent )
 

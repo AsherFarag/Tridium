@@ -3,17 +3,17 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <Tridium/Utils/Reflection/Reflection.h>
+#include <Tridium/Reflection/Reflection.h>
 
 namespace Tridium {
 
-	BEGIN_REFLECT_COMPONENT( TransformComponent )
+	BEGIN_REFLECT_COMPONENT( TransformComponent, Scriptable )
 		BASE( Component )
-		PROPERTY( Position, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( Rotation, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( Scale, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( m_Parent, FLAGS( Serialize ) )
-		PROPERTY( m_Children, FLAGS( Serialize ) )
+		PROPERTY( Position, Serialize | EditAnywhere )
+		PROPERTY( Rotation, Serialize | EditAnywhere )
+		PROPERTY( Scale, Serialize | EditAnywhere )
+		PROPERTY( m_Parent, Serialize )
+		PROPERTY( m_Children, Serialize )
 	END_REFLECT( TransformComponent )
 
 	TransformComponent::TransformComponent( const Vector3& a_Translation )

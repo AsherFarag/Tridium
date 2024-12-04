@@ -43,6 +43,7 @@ namespace YAML {
 
 namespace Tridium::IO {
 
+	using namespace entt::literals;
 	static const std::unordered_set<Refl::MetaIDType> s_BlacklistedComponents =
 	{
 		"Component"_hs.value(),
@@ -220,7 +221,7 @@ namespace Tridium::IO {
 				continue;
 
 			out << YAML::Key << type.GetCleanTypeName();
-			type.Serialize( out, component );
+			type.TrySerialize( out, component );
 		}
 
 
@@ -289,7 +290,7 @@ namespace Tridium::IO {
 			auto componentNode = *it;
 			auto componentName = componentNode.first.as<std::string>();
 
-			Refl::MetaType componentType = Refl::MetaRegistry::ResolveMetaType( entt::hashed_string( componentName.c_str() ) );
+			Refl::MetaType componentType = Refl::ResolveMetaType( componentName.c_str() );
 
 			Component* component = componentType.TryAddToGameObject( a_Scene, go );
 			if ( !component )
@@ -301,7 +302,7 @@ namespace Tridium::IO {
 			Refl::MetaAny componentAsAny = componentType.FromVoid( component );
 			if ( !componentType.TryDeserialize( componentNode.second, componentAsAny ) )
 			{
-				componentType.RemoveFromGameObject( a_Scene, go );
+				componentType.TryRemoveFromGameObject( a_Scene, go );
 				TE_CORE_ERROR( "Failed to deserialize component '{0}' from GameObject", componentName );
 				continue;
 			}

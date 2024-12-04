@@ -11,6 +11,7 @@
 #include <Editor/AssetImporter.h>
 #include <Editor/EditorUtil.h>
 #include <Editor/Util/AssetInfo.h>
+#include <Editor/EditorStyle.h>
 #include "ScriptEditorPanel.h"
 #include "Asset/MaterialEditorPanel.h"
 
@@ -387,8 +388,13 @@ namespace Tridium::Editor {
 							} );
 					}
 
-					if ( ImGui::MenuItem( "Lua Script" ) )
+					if ( ImGui::MenuItem( "Script" ) )
 					{
+						Util::OpenNewFileDialog( "Script", "m_NewScript.lua", [&]( const std::string& a_FilePath )
+							{
+								std::ofstream file( ( m_CurrentDirectory / a_FilePath ).ToString() );
+								file.close();
+							} );
 					}
 
 					ImGui::EndMenu();
@@ -518,6 +524,13 @@ namespace Tridium::Editor {
 				{
 					GetEditorLayer()->GetOrEmplacePanel<MaterialEditorPanel>()->SetMaterial( a_Item.Handle );
 				}
+				break;
+			}
+			case EFileType::Lua:
+			{
+				ScriptEditorPanel* panel = GetEditorLayer()->GetOrEmplacePanel<ScriptEditorPanel>();
+				panel->OpenFile( m_CurrentDirectory / a_Item.Name );
+				panel->Focus();
 				break;
 			}
 		}

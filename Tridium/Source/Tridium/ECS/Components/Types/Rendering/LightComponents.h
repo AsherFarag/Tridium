@@ -12,9 +12,7 @@ namespace Tridium {
 		REFLECT( PointLightComponent );
 	public:
 		PointLightComponent() = default;
-		PointLightComponent( const PointLightComponent& a_Other )
-			: LightColor( a_Other.LightColor ), Intensity( a_Other.Intensity ), FalloffExponent( a_Other.FalloffExponent ),
-			AttenuationRadius( a_Other.AttenuationRadius ), CastsShadows( a_Other.CastsShadows ), ShadowMapSize( a_Other.ShadowMapSize ), ShadowMap( nullptr ) {}
+		PointLightComponent( const PointLightComponent& a_Other );
 		PointLightComponent& operator=( const PointLightComponent& a_Other )
 		{
 			LightColor = a_Other.LightColor;
@@ -37,16 +35,6 @@ namespace Tridium {
 		uint32_t ShadowMapSize = 256;
 		SharedPtr<Framebuffer> ShadowMap;
 	};
-
-	BEGIN_REFLECT_COMPONENT( PointLightComponent )
-		PROPERTY( LightColor,        FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( Intensity,         FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( FalloffExponent,   FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( AttenuationRadius, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( CastsShadows,      FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( ShadowMapSize,	 FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( ShadowMap,		 FLAGS( VisibleAnywhere ) )
-	END_REFLECT( PointLightComponent );
 
 	class SpotLightComponent : public Component
 	{
@@ -84,18 +72,6 @@ namespace Tridium {
 		SharedPtr<Framebuffer> ShadowMap;
 	};
 
-	BEGIN_REFLECT_COMPONENT( SpotLightComponent )
-		PROPERTY( LightColor,        FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( Intensity,         FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( FalloffExponent,   FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( AttenuationRadius, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( InnerConeAngle,    FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( OuterConeAngle,    FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( CastsShadows,		 FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( ShadowMapSize,	 FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( ShadowMap,		 FLAGS( VisibleAnywhere ) )
-	END_REFLECT( SpotLightComponent );
-
 	class DirectionalLightComponent : public Component
 	{
 		REFLECT( DirectionalLightComponent );
@@ -122,13 +98,5 @@ namespace Tridium {
 		iVector2 ShadowMapSize{ 1024 * 8, 1024 * 8 };
 		SharedPtr<Framebuffer> ShadowMap;
 	};
-
-	BEGIN_REFLECT_COMPONENT( DirectionalLightComponent )
-		PROPERTY( LightColor,    FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( Intensity,     FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( CastsShadows,  FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( ShadowMapSize, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( ShadowMap,     FLAGS( VisibleAnywhere ) )
-	END_REFLECT( DirectionalLightComponent );
 
 }

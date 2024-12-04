@@ -12,15 +12,15 @@
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/IO/FilePath.h>
 #include <Tridium/Utils/Macro.h>
-#include <Tridium/Utils/Reflection/ReflectionFwd.h>
+#include <Tridium/Reflection/ReflectionFwd.h>
 
 namespace Tridium {
 
 	template<typename _Flags, typename _EnumFlag>
-	bool HasFlag( _Flags Flags, _EnumFlag Flag )
+	constexpr bool HasFlag( _Flags Flags, _EnumFlag Flag )
 	{
 		std::underlying_type_t<_EnumFlag> flag = static_cast<std::underlying_type_t<_EnumFlag>>( Flag );
-		return ( Flags & static_cast<std::underlying_type_t<_EnumFlag>>( Flag ) ) == flag;
+		return ( static_cast<std::underlying_type_t<_EnumFlag>>(Flags) & static_cast<std::underlying_type_t<_EnumFlag>>( Flag ) ) == flag;
 	}
 
 	template<typename _Array>
@@ -29,7 +29,7 @@ namespace Tridium {
 		return  a_Index >= 0 && a_Index < a_Array.size();
 	}
 
-	inline void HashCombine( size_t& a_Seed, size_t a_Hash )
+	inline constexpr void HashCombine( size_t& a_Seed, size_t a_Hash )
 	{
 		a_Seed ^= a_Hash + 0x9e3779b9 + ( a_Seed << 6 ) + ( a_Seed >> 2 );
 	}

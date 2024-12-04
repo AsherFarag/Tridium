@@ -3,6 +3,7 @@
 #include "ProjectSettingsPanel.h"
 #include <Tridium/IO/ProjectSerializer.h>
 #include <Tridium/Core/Application.h>
+#include <Editor/PropertyDrawers.h>
 
 namespace Tridium::Editor {
 	ProjectSettingsPanel::ProjectSettingsPanel()

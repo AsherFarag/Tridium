@@ -7,6 +7,7 @@
 #include "Editor.h"
 #include "EditorCamera.h"
 #include "EditorUtil.h"
+#include "EditorStyle.h"
 
 #include <Tridium/Scripting/ScriptEngine.h>
 #include <Tridium/ECS/Components/Types.h>
@@ -213,7 +214,6 @@ namespace Tridium::Editor {
 		{
 			if ( control )
 			{
-				ScriptEngine::Recompile();
 				return true;
 			}
 			break;
@@ -360,6 +360,7 @@ namespace Tridium::Editor {
 				if ( ImGui::MenuItem( "Stats" ) ) m_PanelStack.PushPanel<StatsPanel>();
 				if ( ImGui::MenuItem( "Asset Registry" ) ) m_PanelStack.PushPanel<AssetRegistryPanel>();
 				if ( ImGui::MenuItem( "Scene Renderer" ) ) m_PanelStack.PushPanel<SceneRendererPanel>();
+				if ( ImGui::MenuItem( "Script Editor" ) ) m_PanelStack.PushPanel<ScriptEditorPanel>();
 
 				ImGui::EndMenu();
 			}
@@ -373,7 +374,9 @@ namespace Tridium::Editor {
 				m_PanelStack.PushPanel<ScriptEditorPanel>();
 
 			if ( ImGui::MenuItem( "Recompile", "Ctrl+R" ) )
-				ScriptEngine::Recompile();
+			{
+
+			}
 
 			ImGui::EndMenu();
 		}

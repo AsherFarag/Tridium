@@ -12,7 +12,7 @@ namespace Tridium {
 
 	// Forward declarations
 	class Scene;
-	class SceneEnvironment;
+	struct SceneEnvironment;
 	class VertexArray;
 	class Texture;
 	class MeshSource;

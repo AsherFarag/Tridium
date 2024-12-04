@@ -1,12 +1,12 @@
 #include "tripch.h"
 #include "CameraComponent.h"
 #include <Tridium/ECS/Components/Types/Common/TransformComponent.h>
+#include <Tridium/Reflection/Reflection.h>
 
 namespace Tridium {
 
 	CameraComponent::~CameraComponent()
 	{
-		TE_CORE_INFO( "CameraComponent Destroyed" );
 	}
 
 	Matrix4 CameraComponent::GetView()
@@ -22,4 +22,10 @@ namespace Tridium {
 		// Step 3: Combine the translation and rotation (order matters)
 		return glm::inverse( translationMatrix * rotationMatrix );
 	}
+
+
+	BEGIN_REFLECT_COMPONENT( CameraComponent, Scriptable )
+		PROPERTY( SceneCamera, Serialize | EditAnywhere )
+		PROPERTY( IsMainCamera, Serialize | EditAnywhere )
+	END_REFLECT_COMPONENT( CameraComponent )
 }

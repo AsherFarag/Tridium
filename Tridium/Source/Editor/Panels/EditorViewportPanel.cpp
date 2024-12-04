@@ -7,6 +7,7 @@
 #include <Editor/Editor.h>
 #include <Editor/EditorUtil.h>
 #include <Editor/EditorCamera.h>
+#include <Editor/EditorStyle.h>
 
 #include <Tridium/ECS/Components/Types.h>
 #include <Tridium/Scene/Scene.h>
@@ -23,6 +24,8 @@ namespace Tridium::Editor {
 
 	void SetImGuizmoColors()
 	{
+		ImGuizmo::GetStyle() = ImGuizmo::Style();
+
 		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::DIRECTION_X] = Style::Colors::Red;
 		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::DIRECTION_Y] = Style::Colors::Green;
 		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::DIRECTION_Z] = Style::Colors::Blue;
@@ -30,6 +33,12 @@ namespace Tridium::Editor {
 		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::PLANE_Y] = Style::Colors::Green;
 		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::PLANE_Z] = Style::Colors::Blue;
 		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::SELECTION] = Style::Colors::Orange;
+		ImGuizmo::GetStyle().RotationOuterLineThickness *= 2.0f;
+		ImGuizmo::GetStyle().RotationLineThickness *= 2.0f;
+		ImGuizmo::GetStyle().TranslationLineThickness *= 2.0f;
+		//ImGuizmo::GetStyle().TranslationLineArrowSize *= 2.0f;
+		//ImGuizmo::GetStyle().ScaleLineCircleSize *= 2.0f;
+		ImGuizmo::GetStyle().ScaleLineThickness *= 2.0f;
 	}
 
 	EditorViewportPanel::EditorViewportPanel( const SharedPtr<EditorCamera>& editorCamera )

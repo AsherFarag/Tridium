@@ -3,6 +3,7 @@ project "Sandbox"
 	staticruntime "On"
 	language "C++"
 	cppdialect "C++20"
+	buildoptions { "/bigobj" }
 
 	dependson { "Tridium" }
 
@@ -23,6 +24,8 @@ project "Sandbox"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.entt}",
+		"%{IncludeDir.sol2}/include",
+		"%{IncludeDir.lua}/include",
         "%{IncludeDir.yaml}/include",
 	}
 

@@ -6,6 +6,7 @@
 #include "PhysicsLayer.h"
 #include "PhysicsFilter.h"
 #include "RayCast.h"
+#include <Tridium/Reflection/ReflectionFwd.h>
 
 #if TE_SHIPPING
 	#define USE_DEBUG_RENDERER 0
@@ -31,6 +32,8 @@ namespace Tridium {
 
 	struct LinearMotionConstraint
 	{
+		REFLECT( LinearMotionConstraint );
+
 		ESixDOFConstraintMotion XMotion = ESixDOFConstraintMotion::Free;
 		ESixDOFConstraintMotion YMotion = ESixDOFConstraintMotion::Free;
 		ESixDOFConstraintMotion ZMotion = ESixDOFConstraintMotion::Free;
@@ -42,6 +45,8 @@ namespace Tridium {
 
 	struct AngularMotionConstraint
 	{
+		REFLECT( AngularMotionConstraint );
+
 		ESixDOFConstraintMotion Swing1Motion = ESixDOFConstraintMotion::Free;
 		ESixDOFConstraintMotion Swing2Motion = ESixDOFConstraintMotion::Free;
 		ESixDOFConstraintMotion TwistMotion = ESixDOFConstraintMotion::Free;

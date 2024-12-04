@@ -24,7 +24,11 @@ project "Tridium"
 		"Dependencies/glm/glm/**.hpp",
 		"Dependencies/ImGuizmo/ImGuizmo.h",
 		"Dependencies/ImGuizmo/ImGuizmo.cpp",
-		"Dependencies/HdriToCubemap/HdriToCubemap.hpp"
+		"%{IncludeDir.ImTextEdit}/ImTextEdit/TextEditor.h",
+		"%{IncludeDir.ImTextEdit}/ImTextEdit/TextEditor.cpp",
+		"Dependencies/HdriToCubemap/HdriToCubemap.hpp",
+		"%{IncludeDir.sol2}/include/sol/**.hpp",
+		"%{IncludeDir.sol2}/include/sol/**.h",
 	}
 
 	includedirs
@@ -35,6 +39,7 @@ project "Tridium"
 		"%{IncludeDir.glad}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.ImTextEdit}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.lua}/include",
 		"%{IncludeDir.sol2}/include",
@@ -83,7 +88,6 @@ project "Tridium"
 
 	filter "system:windows"
 		systemversion "latest"
-
 		defines
 		{
 			"TE_PLATFORM_WINDOWS",

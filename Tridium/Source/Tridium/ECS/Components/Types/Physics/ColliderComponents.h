@@ -7,6 +7,8 @@ namespace Tridium {
 	{
 		REFLECT( SphereColliderComponent )
 	public:
+		SphereColliderComponent();
+
 		void SetRadius( float a_Radius ) { m_Radius = a_Radius; }
 		float GetRadius() const { return m_Radius; }
 
@@ -26,6 +28,8 @@ namespace Tridium {
 	{
 		REFLECT( BoxColliderComponent )
 	public:
+		BoxColliderComponent();
+
 		void SetHalfExtents( const Vector3& a_HalfExtents ) { m_HalfExtents = a_HalfExtents; }
 		const Vector3& GetHalfExtents() const { return m_HalfExtents; }
 
@@ -45,6 +49,8 @@ namespace Tridium {
 	{
 		REFLECT( CapsuleColliderComponent )
 	public:
+		CapsuleColliderComponent();
+
 		void SetRadius( float a_Radius ) { m_Radius = a_Radius; }
 		float GetRadius() const { return m_Radius; }
 
@@ -68,6 +74,8 @@ namespace Tridium {
 	{
 		REFLECT( CylinderColliderComponent )
 	public:
+		CylinderColliderComponent();
+
 		void SetRadius( float a_Radius ) { m_Radius = a_Radius; }
 		float GetRadius() const { return m_Radius; }
 
@@ -91,40 +99,12 @@ namespace Tridium {
 	{
 		REFLECT( MeshColliderComponent )
 	public:
+		MeshColliderComponent();
+
 		void SetMesh( StaticMeshHandle a_Mesh ) { m_Mesh = a_Mesh; }
 		StaticMeshHandle GetMesh() const { return m_Mesh; }
 
 	protected:
 		StaticMeshHandle m_Mesh;
 	};
-
-	BEGIN_REFLECT_COMPONENT( SphereColliderComponent )
-		PROPERTY( m_Center, FLAGS( EditAnywhere, Serialize ) )
-		PROPERTY( m_Rotation, FLAGS( EditAnywhere, Serialize ) )
-		PROPERTY( m_Radius, FLAGS( EditAnywhere, Serialize ) )
-	END_REFLECT( SphereColliderComponent )
-
-	BEGIN_REFLECT_COMPONENT( BoxColliderComponent )
-		PROPERTY( m_Center, FLAGS( EditAnywhere, Serialize ) )
-		PROPERTY( m_Rotation, FLAGS( EditAnywhere, Serialize ) )
-		PROPERTY( m_HalfExtents, FLAGS( EditAnywhere, Serialize ) )
-	END_REFLECT( BoxColliderComponent )
-
-	BEGIN_REFLECT_COMPONENT( CapsuleColliderComponent )
-		PROPERTY( m_Center, FLAGS( EditAnywhere, Serialize ) )
-		PROPERTY( m_Rotation, FLAGS( EditAnywhere, Serialize ) )
-		PROPERTY( m_Radius, FLAGS( EditAnywhere, Serialize ) )
-		PROPERTY( m_HalfHeight, FLAGS( EditAnywhere, Serialize ) )
-	END_REFLECT( CapsuleColliderComponent )
-
-	BEGIN_REFLECT_COMPONENT( CylinderColliderComponent )
-		PROPERTY( m_Center, FLAGS( EditAnywhere, Serialize ) )
-		PROPERTY( m_Rotation, FLAGS( EditAnywhere, Serialize ) )
-		PROPERTY( m_Radius, FLAGS( EditAnywhere, Serialize ) )
-		PROPERTY( m_HalfHeight, FLAGS( EditAnywhere, Serialize ) )
-	END_REFLECT( CylinderColliderComponent )
-
-	BEGIN_REFLECT_COMPONENT( MeshColliderComponent )
-		PROPERTY( m_Mesh, FLAGS( EditAnywhere, Serialize ) )
-	END_REFLECT( MeshColliderComponent )
 }
