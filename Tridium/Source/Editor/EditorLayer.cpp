@@ -375,7 +375,7 @@ namespace Tridium::Editor {
 
 			if ( ImGui::MenuItem( "Recompile", "Ctrl+R" ) )
 			{
-
+				Script::ScriptEngine::RecompileAllScripts();
 			}
 
 			ImGui::EndMenu();

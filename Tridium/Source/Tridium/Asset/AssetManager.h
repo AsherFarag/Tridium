@@ -1,6 +1,12 @@
 #pragma once
-#include  "Asset.h"
+#include "Asset.h"
 #include <Tridium/Core/Application.h>
+
+namespace Tridium {
+	using AssetStorageType = std::unordered_map<AssetHandle, SharedPtr<Asset>>;
+}
+
+#include "AssetStorageIterator.h"
 
 namespace Tridium {
 
@@ -16,6 +22,7 @@ namespace Tridium {
 		virtual SharedPtr<Asset> GetAsset( AssetHandle a_Handle ) = 0;
 		virtual SharedPtr<Asset> GetAsset( const IO::FilePath& a_Path ) = 0;
 		virtual SharedPtr<Asset> GetMemoryOnlyAsset( AssetHandle a_Handle ) = 0;
+		virtual AssetStorageIterator GetAssets() = 0;
 		virtual bool AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset ) = 0;
 		virtual bool HasAsset( AssetHandle a_Handle ) = 0;
 		virtual void RemoveAsset( AssetHandle a_Handle ) = 0;
@@ -71,6 +78,10 @@ namespace Tridium {
 			return Application::Get().m_AssetManager->AddMemoryOnlyAsset( a_Handle, SharedPtrCast<Asset>( a_Asset ) );
 		}
 
+		template<typename T>
+		static FilteredAssetStorageIterator<T> GetAssetsOfType() { return FilteredAssetStorageIterator<T>( Application::Get().m_AssetManager->GetAssets() ); }
+
+		static AssetStorageIterator GetAssets() { return Application::Get().m_AssetManager->GetAssets(); }
 		static bool HasAsset( AssetHandle a_Handle ) { return Application::Get().m_AssetManager->HasAsset( a_Handle ); }
 		static void RemoveAsset( AssetHandle a_Handle ) { Application::Get().m_AssetManager->RemoveAsset( a_Handle ); }
 		static EAssetType GetAssetType( AssetHandle a_Handle ) { return Application::Get().m_AssetManager->GetAssetType( a_Handle ); }

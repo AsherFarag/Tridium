@@ -26,6 +26,39 @@ namespace Tridium {
 	template<> void Scene::InitComponent( CapsuleColliderComponent& a_Component );
 	template<> void Scene::InitComponent( MeshColliderComponent& a_Component );
 
+	template<typename T, typename ...Args>
+	inline SharedPtr<T> Scene::AddSystem( Args && ...a_Args )
+	{
+		static_assert( std::is_base_of_v<ISceneSystem, T>, "T must be a derived class of ISceneSystem!" );
+		static const size_t s_TypeHash = typeid( T ).hash_code();
+		auto it = m_Systems.find( s_TypeHash );
+		if ( it != m_Systems.end() )
+		{
+			TE_CORE_ASSERT( false, "Attempted to add a System that already exists!" );
+			return SharedPtrCast<T>( it->second );
+		}
+
+		SharedPtr<T> system = MakeShared<T>( std::forward<Args>( a_Args )... );
+		system->m_Scene = this;
+		m_Systems[s_TypeHash] = system;
+		return system;
+	}
+
+	template<typename T>
+	inline SharedPtr<T> Scene::GetSystem()
+	{
+		static_assert( std::is_base_of_v<ISceneSystem, T>, "T must be a derived class of ISceneSystem!" );
+		static const size_t s_TypeHash = typeid( T ).hash_code();
+		auto it = m_Systems.find( s_TypeHash );
+		if ( it != m_Systems.end() )
+		{
+			return SharedPtrCast<T>( it->second );
+		}
+
+		TE_CORE_WARN( "[SCENE] Attempted to get a System that does not exist!" );
+		return nullptr;
+	}
+
 	template <typename T, typename... Args>
 	inline T& Scene::AddComponentToGameObject( GameObject a_GameObject, Args&&... args )
 	{
@@ -46,6 +79,20 @@ namespace Tridium {
 			return true;
 			}( );
 
+		// Send OnComponentCreated event
+		{
+				SceneEventPayload payload =
+				{
+					.EventType = ESceneEventType::OnComponentCreated,
+					.EventData = OnComponentCreatedEvent
+					{
+						.ComponentTypeID = entt::resolve<T>().id(),
+						.Component = &component
+					}
+				};
+
+				SendSceneEvent( payload );
+		}
 
 		if constexpr ( std::is_base_of_v<ScriptableComponent, T> )
 		{

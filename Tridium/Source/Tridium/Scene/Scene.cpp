@@ -4,6 +4,11 @@
 #include <Tridium/ECS/Components/Component.h>
 #include <Tridium/ECS/Components/Types.h>
 
+// Systems
+#include <Tridium/Scripting/ScriptSystem.h>
+
+
+
 namespace Tridium {
 
 	Scene::Scene(const std::string& name)
@@ -11,6 +16,9 @@ namespace Tridium {
 	{
 		m_PhysicsScene = PhysicsScene::Create();
 		m_PhysicsScene->m_Scene = this;
+
+		// Add default systems
+		InitSystems();
 	}
 
 	Scene::Scene( const Scene& a_Other )
@@ -52,13 +60,13 @@ namespace Tridium {
 				}
 			}
 		}
+
+		InitSystems();
 	}
 
 	Scene::~Scene()
 	{
 		m_Registry.clear();
-		m_PhysicsScene = nullptr;
-		TE_CORE_DEBUG( "Scene destroyed: {0}", m_Name );
 	}
 
 	void Scene::OnBegin()
@@ -67,6 +75,16 @@ namespace Tridium {
 		m_HasBegunPlay = true;
 
 		GetMainCamera();
+
+		// Send OnBeginPlay Event to all systems
+		{
+			SceneEventPayload payload =
+			{
+				.EventType = ESceneEventType::OnBeginPlay
+			};
+
+			SendSceneEvent( payload );
+		}
 
 		// Initialize Physics Scene
 		{
@@ -106,6 +124,16 @@ namespace Tridium {
 
 	void Scene::OnUpdate()
 	{
+		// Send OnUpdate Event to all systems
+		{
+			SceneEventPayload payload =
+			{
+				.EventType = ESceneEventType::OnUpdate
+			};
+
+			SendSceneEvent( payload );
+		}
+
 		// Update physics
 		{
 			TODO( "We should not be constantly updating transforms unless they are dirty." );
@@ -155,6 +183,16 @@ namespace Tridium {
 		m_IsRunning = false;
 		m_HasBegunPlay = false;
 
+		// Send OnEnd Event to all systems
+		{
+			SceneEventPayload payload =
+			{
+				.EventType = ESceneEventType::OnEnd
+			};
+
+			SendSceneEvent( payload );
+		}
+
 		// Shutdown Physics Scene
 		{
 			m_PhysicsScene->Shutdown();
@@ -171,11 +209,7 @@ namespace Tridium {
 
 	GameObject Scene::InstantiateGameObject( const std::string& a_Name )
 	{
-		auto go = GameObject( m_Registry.create() );
-		AddComponentToGameObject<GUIDComponent>( go );
-		AddComponentToGameObject<TagComponent>( go, a_Name );
-		AddComponentToGameObject<TransformComponent>( go );
-		return go;
+		return InstantiateGameObject( GUID::Create(), a_Name );
 	}
 
 	GameObject Scene::InstantiateGameObject( GUID a_GUID, const std::string& a_Name )
@@ -184,6 +218,21 @@ namespace Tridium {
 		AddComponentToGameObject<GUIDComponent>( go, a_GUID );
 		AddComponentToGameObject<TagComponent>( go, a_Name );
 		AddComponentToGameObject<TransformComponent>( go );
+
+		// Send OnGameObjectCreated Event to all systems
+		{
+			SceneEventPayload payload =
+			{
+				.EventType = ESceneEventType::OnGameObjectCreated,
+				.EventData = OnGameObjectCreatedEvent
+				{
+					.GameObjectID = go
+				}
+			};
+
+			SendSceneEvent( payload );
+		}
+
 		return go;
 	}
 
@@ -217,6 +266,21 @@ namespace Tridium {
 			storage.push( dst, storage.value( a_Source ) );
 		}
 
+		// Send OnGameObjectCreated Event to all systems
+		{
+			SceneEventPayload payload =
+			{
+				.EventType = ESceneEventType::OnGameObjectCopied,
+				.EventData = OnGameObjectCopiedEvent
+				{
+					.SourceID = a_Source,
+					.DestinationID = dst
+				}
+			};
+
+			SendSceneEvent( payload );
+		}
+
 		return dst;
 	}
 
@@ -248,6 +312,21 @@ namespace Tridium {
 				storage.erase( a_Destination );
 
 			storage.push( a_Destination, storage.value( a_Source ) );
+		}
+
+		// Send OnGameObjectCreated Event to all systems
+		{
+			SceneEventPayload payload =
+			{
+				.EventType = ESceneEventType::OnGameObjectCopied,
+				.EventData = OnGameObjectCopiedEvent
+				{
+					.SourceID = a_Source,
+					.DestinationID = a_Destination
+				}
+			};
+
+			SendSceneEvent( payload );
 		}
 	}
 
@@ -287,6 +366,38 @@ namespace Tridium {
 	{
 		m_Registry.clear();
 	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Systems
+	//////////////////////////////////////////////////////////////////////////
+
+	void Scene::InitSystems()
+	{
+		AddSystem<Script::ScriptSystem>();
+
+		for ( auto&& [type, system] : m_Systems )
+		{
+			system->Init();
+		}
+	}
+
+	void Scene::ShutdownSystems()
+	{
+		for ( auto&& [type, system] : m_Systems )
+		{
+			system->Shutdown();
+		}
+	}
+
+	void Scene::SendSceneEvent( const SceneEventPayload& a_EventPayload )
+	{
+		for ( auto&& [type, system] : m_Systems )
+		{
+			system->OnSceneEvent( a_EventPayload );
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////
 
 	CameraComponent* Scene::GetMainCamera()
 	{

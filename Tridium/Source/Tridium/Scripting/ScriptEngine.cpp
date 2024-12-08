@@ -4,46 +4,40 @@
 #include "Tridium/Asset/AssetManager.h"
 #include <Tridium/ECS/Components/Types.h>
 
-namespace Tridium {
+#include <any>
 
-	UniquePtr<ScriptEngine> ScriptEngine::s_Instance = nullptr;
+// TEMP!
+#include <Tridium/Asset/EditorAssetManager.h>
+#include <fstream>
+
+namespace Tridium::Script {
+
+	UniquePtr<Script::ScriptEngine> Script::ScriptEngine::s_Instance = nullptr;
 
 	void ScriptEngine::Init()
 	{
+		using RegisterScriptableFunc = Refl::Props::RegisterScriptableProp::Type;
+
 		// Open the standard libraries
 		m_LuaState.open_libraries( sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::table, sol::lib::math, sol::lib::os, sol::lib::io );
 
 		// Register reflected types into the Lua state
-		//for ( const auto&& [id, type] : Refl::MetaRegistry::ResolveMetaTypes() )
-		//{
-		//	Refl::MetaType metaType = type;
-		//	if ( !metaType.IsValid() )
-		//		continue;
-
-		//	if ( auto registerScriptable = metaType.Prop( Refl::Internal::RegisterScriptablePropID ) )
-		//	{
-		//		registerScriptable.value().cast<Refl::Internal::RegisterScriptableFunc>()( *this );
-		//	}
-		//}
-	}
-
-	void ScriptEngine::RegisterType( const char* a_TypeName, Refl::MetaType a_Type )
-	{
-		auto typeTable = m_LuaState[a_TypeName];
-		if ( !typeTable.valid() )
+		for ( const auto&& [id, type] : Refl::ResolveMetaTypes() )
 		{
-			TE_CORE_ASSERT( false, "Failed to register type in Lua" );
-			return;
-		}
+			Refl::MetaType metaType = type;
+			if ( !metaType.IsValid() || !HasFlag( metaType.GetClassFlags(), Refl::EClassFlags::Scriptable ) )
+				continue;
 
-		// Register the type's properties
-		for ( const auto& [id, prop] : a_Type.Properties() )
-		{
-			typeTable[prop.name()] = sol::property( &Vector3::x );
+			Refl::MetaAttribute regFuncAtt = metaType.GetMetaAttribute( Refl::Props::RegisterScriptableProp::ID );
+			if ( !regFuncAtt || !regFuncAtt.value().allow_cast<RegisterScriptableFunc>( ) )
+				continue;
+
+			RegisterScriptableFunc regFunc = regFuncAtt.value().cast<RegisterScriptableFunc>();
+			regFunc( *this );
 		}
 	}
 
-	bool ScriptEngine::RecompileScript( Script& a_Script )
+	bool ScriptEngine::RecompileScript( ScriptAsset& a_Script )
 	{
 		// Clear the current environment
 		a_Script.m_Environment = {};
@@ -59,7 +53,13 @@ namespace Tridium {
 			return false;
 		}
 
-		a_Script.m_LoadResult( a_Script.m_Environment );
+		a_Script.m_Environment = sol::environment( Get().m_LuaState, sol::create, Get().m_LuaState.globals() );
+		sol::protected_function scriptFunc = a_Script.m_LoadResult;
+		a_Script.m_Environment.set_on( scriptFunc );
+
+		// We need to execute the script in order to extract the variables and functions from the environment.
+		TODO( "Not sure if this is the best way to do this and why I have to do this. Asher research this later idiot" );
+		scriptFunc();
 
 		// Extract the variables and functions from the environment and store them in the script
 		for ( const auto& [key, value] : a_Script.m_Environment )
@@ -86,8 +86,7 @@ namespace Tridium {
 				case sol::type::userdata:
 				{
 					const std::string& typeName = GetUserDataTypeName( value );
-					Refl::MetaType type = Refl::ResolveMetaType( typeName.c_str() );
-					if ( type.IsValid() )
+					if ( Refl::MetaType type = Refl::ResolveMetaType( typeName.c_str() ) )
 					{
 						a_Script.m_Variables[name] = ScriptVariable( type.FromVoid( value.pointer() ) );
 					}
@@ -110,6 +109,28 @@ namespace Tridium {
 		return true;
 	}
 
+	void ScriptEngine::RecompileAllScripts()
+	{
+		TODO( "TEMP EDITOR ONLY HERE" );
+		SharedPtr<Editor::EditorAssetManager> assetManager = AssetManager::Get<Editor::EditorAssetManager>();
+		for ( SharedPtr<Script::ScriptAsset> script : AssetManager::GetAssetsOfType<Script::ScriptAsset>() )
+		{
+			const AssetMetaData& assetData = assetManager->GetAssetMetaData( script->GetHandle() );
+			if ( assetData.IsValid() )
+			{
+				std::string path = assetManager->GetAbsolutePath( assetData.Path ).ToString();
+				std::ifstream file( path );
+				if ( file.is_open() )
+				{
+					std::string source( ( std::istreambuf_iterator<char>( file ) ), std::istreambuf_iterator<char>() );
+					script->m_Source = std::move( source );
+					RecompileScript( *script );
+					TE_CORE_INFO( "Recompiled script: {0}", assetData.Name );
+				}
+			}
+		}
+	}
+
 	const std::string& ScriptEngine::GetUserDataTypeName( sol::userdata a_UserData )
 	{
 		if ( a_UserData.valid() && sol::type::userdata == a_UserData.get_type() )
@@ -124,7 +145,8 @@ namespace Tridium {
 			}
 		}
 
-		return "Unknown";
+		static const std::string s_Unknown = "Unknown";
+		return s_Unknown;
 	}
 
 }

@@ -15,7 +15,7 @@ namespace Tridium::Editor {
 	{
 		SetTheme( ETheme::Dark );
 
-		m_LuaLanguageDefinition = TextEditor::LanguageDefinition::Lua();
+		m_LuaLanguageDefinition = TextEditor::LanguageDefinition::LuaScript();
 
 		for ( const auto&& [id, type] : Refl::ResolveMetaTypes() )
 		{

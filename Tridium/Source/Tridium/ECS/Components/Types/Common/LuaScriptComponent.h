@@ -4,21 +4,32 @@
 
 namespace Tridium {
 
-	class LuaScriptComponent : public ScriptableComponent
+	// Forward declarations
+	namespace Script {
+		class ScriptEngine;
+		class ScriptSystem;
+	}
+	// -------------------
+
+	class LuaScriptComponent : public Component
 	{
 		REFLECT( LuaScriptComponent );
-		friend class ScriptEngine;
-		friend class GameObject;
-
 	public:
 		LuaScriptComponent();
 		virtual ~LuaScriptComponent();
 
 	protected:
-		// Reference to the script asset.
-		SharedPtr<Script> m_Script;
+		LuaScriptHandle m_Script;
 		// Contains an instance of the script that stores it's own local variables and functions.
-		sol::environment m_Environment;
+		Script::ScriptInstance m_Environment;
+
+		Script::ScriptFunction m_OnBeginPlay;
+		Script::ScriptFunction m_OnUpdate;
+		Script::ScriptFunction m_OnDestroy;
+
+		// ================================
+		friend Script::ScriptEngine;
+		friend Script::ScriptSystem;
 	};
 
 }

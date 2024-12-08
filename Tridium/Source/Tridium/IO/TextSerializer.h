@@ -97,7 +97,7 @@ namespace Tridium::IO {
 	_TRIDUM_SERIALIZE_TO_TEXT( ShaderHandle );
 	_TRIDUM_SERIALIZE_TO_TEXT( TextureHandle );
 	_TRIDUM_SERIALIZE_TO_TEXT( CubeMapHandle );
-	_TRIDUM_SERIALIZE_TO_TEXT( LuaHandle );
+	_TRIDUM_SERIALIZE_TO_TEXT( LuaScriptHandle );
 
 
 #undef _TRIDUM_SERIALIZE_TO_TEXT
@@ -221,7 +221,7 @@ namespace Tridium::IO {
 	_TRIDUM_DESERIALIZE_FROM_TEXT( ShaderHandle );
 	_TRIDUM_DESERIALIZE_FROM_TEXT( TextureHandle );
 	_TRIDUM_DESERIALIZE_FROM_TEXT( CubeMapHandle );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( LuaHandle );
+	_TRIDUM_DESERIALIZE_FROM_TEXT( LuaScriptHandle );
 
 #undef _TRIDUM_DESERIALIZE_FROM_TEXT
 

@@ -603,9 +603,9 @@ namespace Tridium::Editor {
 	}
 
 	template<>
-	bool DrawProperty( const char* a_Name, LuaHandle& a_Value, EDrawPropertyFlags a_Flags )
+	bool DrawProperty( const char* a_Name, LuaScriptHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
-		return _DrawAssetHandleProperty<EAssetType::Lua>( a_Name, a_Value, a_Flags );
+		return _DrawAssetHandleProperty<EAssetType::LuaScript>( a_Name, a_Value, a_Flags );
 	}
 
 	template<>

@@ -46,8 +46,8 @@ namespace Tridium {
 
 		// Initialise Script Engine
 		{
-			ScriptEngine::s_Instance = MakeUnique<ScriptEngine>();
-			ScriptEngine::s_Instance->Init();
+			Script::ScriptEngine::s_Instance = MakeUnique<Script::ScriptEngine>();
+			Script::ScriptEngine::s_Instance->Init();
 		}
 
 		// Initialise Physics Engine

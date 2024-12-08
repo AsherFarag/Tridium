@@ -3,19 +3,24 @@
 #include "ScriptProperty.h"
 #include "sol/sol.hpp"
 
-namespace Tridium {
+namespace Tridium::Script {
+
+	// Forward declaration
+	class ScriptEngine;
+	// -------------------
 
 	using ScriptFunction = sol::function;
 	using ScriptFunctionMap = std::unordered_map<std::string, ScriptFunction>;
+	using ScriptInstance = sol::environment;
 
 	// A script is a single Lua file that has been compiled and loaded into memory.
-	class Script : public Asset
+	class ScriptAsset : public Asset
 	{
 	public:
-		ASSET_CLASS_TYPE( Lua );
-		Script( const std::string& a_Source ) : m_Source( a_Source ) {}
-		Script( std::string&& a_Source ) : m_Source( std::move( a_Source ) ) {}
-		virtual ~Script() = default;
+		ASSET_CLASS_TYPE( LuaScript );
+		ScriptAsset( const std::string& a_Source ) : m_Source( a_Source ) {}
+		ScriptAsset( std::string&& a_Source ) : m_Source( std::move( a_Source ) ) {}
+		virtual ~ScriptAsset() = default;
 
 		bool IsCompiled() const { return m_LoadResult.valid(); }
 		const std::string& GetCompileErrorMsg() const { return m_CompileErrorMsg; }
@@ -53,6 +58,8 @@ namespace Tridium {
 		ScriptFunctionMap m_Functions;
 
 		friend class ScriptEngine;
+		friend class ScriptSystem;
+		friend class LuaScriptLoader;
 	};
 
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "MetaFlags.h"
 #include <entt.hpp>
+#include "ReflectionFwd.h"
 
 namespace Tridium {
 
@@ -8,37 +9,13 @@ namespace Tridium {
 	class Component;
 	class Scene;
 	class ScriptEngine;
+
+	namespace Script {
+		class ScriptEngine;
+	}
 	// ---------------------
 
 	namespace Refl {
-
-		using MetaIDType = entt::id_type;
-
-		// TypeInfo is a type that stores basic information about a type, such as it's name and identifier.
-		// The identifier can be used to retrieve it's MetaType from the registry.
-		using TypeInfo = entt::type_info;
-
-		// A Property is a piece of data that is stored in a class.
-		// Example: 
-		// int MyInt
-		// from
-		// class MyClass { int MyInt; };
-		using MetaProp = entt::meta_data; 
-
-		// Func can be any type of function, including member functions and functors.
-		using MetaFunc = entt::meta_func;
-
-		// MetaAttribute is a property that is stored in a class's metadata.
-		// It can be any type of data, and be retrieved at runtime to perform various operations.
-		// This can be used to store additional information about a class that is not directly related to the class itself.
-		using MetaAttribute = entt::meta_prop;
-
-		// MetaAny acts like an std::any, but also stores the MetaType of the data it holds.
-		using MetaAny = entt::meta_any;
-
-		// MetaHandle stores a non-owning pointer to an object with it's associated MetaType.
-		// It cannot perform copies and does not prolong the lifetime of the object it points to.
-		using MetaHandle = entt::meta_handle;
 
 		template<typename _Type, typename _Iterator>
 		using MetaRange = entt::meta_range<_Type, _Iterator>;
@@ -56,7 +33,7 @@ namespace Tridium {
 		// -- Function Signatures --
 		typedef void			( *TextSerializeFunc )			( IO::Archive& a_Archive, const MetaAny& a_Data );
 		typedef void			( *TextDeserializeFunc )		( const YAML::Node& a_Node, MetaAny& a_Data );
-		typedef void			( *RegisterScriptableFunc )		( ScriptEngine& a_ScriptEngine );
+		typedef void			( *RegisterScriptableFunc )		( Script::ScriptEngine& a_ScriptEngine );
 		typedef Component*		( *AddToGameObjectFunc )		( Scene& a_Scene, GameObjectID a_GameObject );
 		typedef void			( *RemoveFromGameObjectFunc )	( Scene& a_Scene, GameObjectID a_GameObject );
 
@@ -103,7 +80,7 @@ namespace Tridium {
 
 			// -- Scriptable Properties --
 
-			using RegisterScriptableProp = MetaDataProperty<Internal("RegisterScriptable"), RegisterScriptableFunc>;
+			using RegisterScriptableProp = MetaDataProperty<Internal("RegisterScriptable"), RegisterScriptableFunc, true>;
 
 			// -- Editor-Only Properties --
 			#ifdef IS_EDITOR

@@ -203,60 +203,47 @@ BEGIN_REFLECT_COMPONENT( EnemyAIComponent )
 	PROPERTY( m_MaxSpeed, Serialize | EditAnywhere )
 END_REFLECT( EnemyAIComponent )
 
-#include <Tridium/Core/Delegate.h>
 
-struct Base
+class Test : public Layer
 {
+public:
+	void OnImGuiDraw() override
+	{
+		if ( ImGui::Begin( "Debug Script Viewer" ) )
+		{
+			Editor::DrawProperty( "Script", m_Script, Editor::EDrawPropertyFlags::Editable );
 
-	virtual void Test() { TE_CORE_DEBUG( "Base" ); };
+			if ( auto script = AssetManager::GetAsset<Script::ScriptAsset>( m_Script ) )
+			{
+				if ( script->IsCompiled() )
+				{
+					for ( auto&& [key, val] : script->GetFunctions() )
+					{
+						ImGui::Text( key.c_str() );
+					}
+
+					for ( auto&& [key, val] : script->GetVariables() )
+					{
+						ImGui::Text( key.c_str() );
+					}
+				}
+				else
+				{
+					ImGui::Text( "Script is not compiled" );
+				}
+			}
+		}
+		ImGui::End();
+	}
+
+	LuaScriptHandle m_Script;
 };
-
-struct Derived : public Base
-{
-	virtual void Test() override { TE_CORE_DEBUG( "Derived" ); };
-	std::string var = "Hello";
-};
-
-void Test( int a )
-{
-	TE_CORE_DEBUG( "Test {0}", a );
-}
 
 class SandboxGameInstance : public Tridium::GameInstance
 {
 	virtual void Init() override
 	{
-		struct Invokable
-		{
-			void operator()( int x ) const { std::cout << "Invokable: " << x << std::endl; }
-		};
-
-		Delegate<void, int> del;
-		Invokable obj;
-		del.Bind( obj ); // Bind pointer to invokable object
-		del(5); // Output: "Invokable: 15"
-
-		Delegate<void, int> del2(Test);
-		del2( 10 );
-
-		Derived d;
-		Delegate<void> del3;
-		del3.Bind<&Derived::Test>( &d );
-		del3();
-
-		Delegate<void> del4;
-		del4.Bind( [&]() { TE_CORE_DEBUG( "Lamda Derived '{0}'", d.var ); } );
-		del4();
-
-		Delegate<void> del5;
-		del5.Bind( []() { TE_CORE_DEBUG( "Lamda" ); } );
-		del5();
-
-		Delegate<void> del6;
-		del6.Bind( +[]() { TE_CORE_DEBUG( "Lamda 2" ); } );
-		del6();
-
-		//
+		Application::Get().PushOverlay( new Test() );
 	}
 };
 

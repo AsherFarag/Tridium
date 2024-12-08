@@ -5,9 +5,16 @@
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/ECS/GameObject.h>
 #include <Tridium/ECS/Components/Component.h>
-#include "EditorReflection.h" 
+#include "EditorReflection.h"
 
-#define _HasFlag( Flags, Flag ) ( ( Flags & Flag ) == Flag )
+#include <any>
+#include <map>
+
+// - SCRIPTABLE -
+#include <Tridium/Scripting/ScriptEngine.h>
+#include <sol/sol.hpp>
+
+#define _HasFlag( Flags, Flag ) ( ( ( Flags ) & Flag ) == Flag )
 
 namespace Tridium::Refl::Internal {
 
@@ -49,6 +56,58 @@ namespace Tridium::Refl::Internal {
 #define _PROPERTY_FLAGS_ASSERT( Prop, Flags ) ::Tridium::Refl::Internal::AssertPropertyFlags<Flags>();
 
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OPT IN ATTRIBUTE MACROS
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// - SCRIPTABLE -
+
+#define _DECLARE_SCRIPTABLE_PROPERTY_MAP \
+	using RegisterScriptablePropertyFunc = void(*)( sol::usertype<ClassType>& a_Type ); \
+	inline static std::map<std::string, RegisterScriptablePropertyFunc> s_ScriptPropertyMap;
+
+#define _IS_SCRIPTABLE_PROPERTY(Prop, Flags) \
+if constexpr ( _HasFlag( Flags, ::Tridium::Refl::EPropertyFlags::ScriptReadWrite ) ) \
+{ \
+	s_ScriptPropertyMap[#Prop] = +[]( sol::usertype<ClassType>& a_Type ) { a_Type[#Prop] = sol::property( &ClassType::Prop, &ClassType::Prop ); }; \
+} \
+else if constexpr ( _HasFlag( Flags, ::Tridium::Refl::EPropertyFlags::ScriptReadOnly ) ) \
+{ \
+	s_ScriptPropertyMap[#Prop] = +[]( sol::usertype<ClassType>& a_Type ) { a_Type[#Prop] = sol::property( &ClassType::Prop ); }; \
+}
+
+#define _ATTRIBUTE_REGISTER_SCRIPTABLE \
+	factory.prop( ::Tridium::Refl::Props::RegisterScriptableProp::ID, +[]( ::Tridium::Script::ScriptEngine& a_ScriptEngine ) \
+		{ \
+			 sol::usertype<ClassType> type = a_ScriptEngine.RegisterNewType<ClassType>( ClassName() ); \
+			 for ( const auto& [key, value] : s_ScriptPropertyMap ) \
+			 { \
+				 ( *value )( type ); \
+			 } \
+		} );
+
+// ----------------
+
+// - SERIALIZE -
+
+#define _ATTRIBUTE_SERIALIZE \
+    factory.prop( ::Tridium::Refl::Props::TextDeserializeProp::ID, +[](const YAML::Node& a_Node, MetaAny& a_Data) { DeserializeClass<ClassType>(a_Node, a_Data); } ); \
+	factory.prop( ::Tridium::Refl::Props::TextSerializeProp::ID, +[](::Tridium::IO::Archive& a_Archive, const MetaAny& a_Data) { SerializeClass<ClassType>(a_Archive, a_Data); } );
+
+// ----------------
+
+// - DRAW PROPERTY -
+
+#define _ATTRIBUTE_DRAW_PROPERTY \
+	factory.prop( ::Tridium::Refl::Props::DrawPropertyProp::ID, \
+		+[](const char* a_Name, MetaAny& a_Handle, EPropertyFlags a_Flags) \
+			{ \
+				return ::Tridium::Refl::Internal::DrawClassAsProperty<ClassType>(a_Name, a_Handle, a_Flags); \
+			 } );
+
+// ----------------
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // BASE MACROS
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -63,7 +122,11 @@ namespace Tridium::Refl::Internal {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define _PROPERTY( Prop, Flags ) \
- { _PROPERTY_FLAGS_ASSERT(Prop, Flags) factory.data<&ClassType::Prop>( Hash( #Prop ), Flags, #Prop ); }
+ { \
+	_PROPERTY_FLAGS_ASSERT(Prop, Flags) \
+	_IS_SCRIPTABLE_PROPERTY(Prop, Flags) \
+	factory.data<&ClassType::Prop>( Hash( #Prop ), Flags, #Prop ); \
+ }
 
 #define _PROPERTY_NO_FLAGS( Prop ) _PROPERTY( Prop, ::Tridium::Refl::EPropertyFlags::EPF_None )
 
@@ -125,7 +188,7 @@ namespace Tridium::Refl::Internal {
 #define _OVERRIDE( MetaProp, Override ) \
  { \
     static_assert( MetaProp::IsOverrideable, "MetaProp is not overrideable." ); \
-	static_assert( std::is_same_v<decltype(Override), MetaProp::Type>, "Override type doesn't match the MetaProp type." ); \
+	/*static_assert( std::is_same_v<decltype(Override), MetaProp::Type>, "Override type doesn't match the MetaProp type." );*/ \
 	factory.prop( MetaProp::ID, Override ); \
  }
 
@@ -136,7 +199,6 @@ namespace Tridium::Refl::Internal {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define _END_REFLECT( Class ) \
-		/*_BIND_DEFAULT_ATTRIBUTES();*/ \
 	} \
  }; static volatile ::Tridium::Refl::Internal::Reflector<Class> ___StaticInitializer_##Class;
 
@@ -152,7 +214,9 @@ template<> \
 struct ::Tridium::Refl::Internal::Reflector<Class> \
 { \
 	static constexpr MetaIDType Hash( const char* a_String ) { return entt::hashed_string::value( a_String ); } \
+	static constexpr const char* ClassName() { return #Class; } \
 	using ClassType = Class; \
+	_DECLARE_SCRIPTABLE_PROPERTY_MAP \
 	Reflector() \
 	{ \
 		using enum ::Tridium::Refl::EClassFlags; \
@@ -161,9 +225,9 @@ struct ::Tridium::Refl::Internal::Reflector<Class> \
 		factory.type( Hash( #Class ) ); \
 		factory.prop( Props::ClassFlagsProp::ID, Flags ); \
 		factory.prop( Props::CleanClassNameProp::ID, #Class ); \
-        factory.prop( ::Tridium::Refl::Props::TextDeserializeProp::ID, +[](const YAML::Node& a_Node, MetaAny& a_Data) { DeserializeClass<ClassType>(a_Node, a_Data); } ); \
-		factory.prop( ::Tridium::Refl::Props::TextSerializeProp::ID, +[](::Tridium::IO::Archive& a_Archive, const MetaAny& a_Data) { SerializeClass<ClassType>(a_Archive, a_Data); } ); \
-        factory.prop( ::Tridium::Refl::Props::DrawPropertyProp::ID, +[](const char* a_Name, MetaAny& a_Handle, EPropertyFlags a_Flags) { return ::Tridium::Refl::Internal::DrawClassAsProperty<ClassType>(a_Name, a_Handle, a_Flags); } );
+		_ATTRIBUTE_SERIALIZE \
+        _ATTRIBUTE_DRAW_PROPERTY \
+		_ATTRIBUTE_REGISTER_SCRIPTABLE \
 
 #define _BEGIN_REFLECT_NO_FLAGS( Class ) _BEGIN_REFLECT( Class, ::Tridium::Refl::EClassFlags::ECF_None )
 
@@ -267,5 +331,3 @@ struct ::Tridium::Refl::Internal::Reflector<Enum> \
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#undef _HasFlag

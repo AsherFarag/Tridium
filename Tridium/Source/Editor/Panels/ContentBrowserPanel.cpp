@@ -36,7 +36,7 @@ namespace Tridium::Editor {
 		case EFileType::Shader:     return "Shader";
 		case EFileType::Texture:    return "Texture";
 		case EFileType::CubeMap:    return "Cube Map";
-		case EFileType::Lua:        return "Lua";
+		case EFileType::LuaScript:        return "Lua";
 		case EFileType::Folder:     return "Folder";
 		}
 
@@ -58,7 +58,7 @@ namespace Tridium::Editor {
 			{ EFileType::Shader,     defaultIcon },
 			{ EFileType::Texture,    TextureLoader::LoadTexture( iconFolder / "file-media.png" ) },
 			{ EFileType::CubeMap,    TextureLoader::LoadTexture( iconFolder / "file-media.png" ) },
-			{ EFileType::Lua,	     TextureLoader::LoadTexture( iconFolder / "file-code.png" ) },
+			{ EFileType::LuaScript,	     TextureLoader::LoadTexture( iconFolder / "file-code.png" ) },
 		};
 
 		ContentItemIcons::s_UnimportedAssetIcon = TextureLoader::LoadTexture( iconFolder / "file-unimported.png" );
@@ -526,7 +526,7 @@ namespace Tridium::Editor {
 				}
 				break;
 			}
-			case EFileType::Lua:
+			case EFileType::LuaScript:
 			{
 				ScriptEditorPanel* panel = GetEditorLayer()->GetOrEmplacePanel<ScriptEditorPanel>();
 				panel->OpenFile( m_CurrentDirectory / a_Item.Name );

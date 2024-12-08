@@ -1,5 +1,6 @@
 #pragma once
 #include <entt.hpp>
+#include "ReflectionFwd.h"
 #include <Tridium/Core/Types.h>
 #include <Tridium/IO/TextSerializer.h>
 #include "ReflProps.h"
@@ -165,6 +166,9 @@ namespace Tridium {
 			}
 
 			//////////////////////////////////////////////////////////////////////////
+
+			operator bool() const { return IsValid(); }
+			bool operator ==( const MetaType& a_Other ) const { return entt::meta_type::operator==( a_Other ); }
 
 			// To entt
 			operator entt::meta_type() const { return *this; }

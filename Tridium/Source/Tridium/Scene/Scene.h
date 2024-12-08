@@ -4,6 +4,7 @@
 #include <Tridium/Rendering/Lights.h>
 #include <Tridium/Rendering/SceneRenderer.h>
 #include <Tridium/Physics/PhysicsScene.h>
+#include "SceneSystem.h"
 
 namespace Tridium {
 	using EntityIDType = entt::id_type;
@@ -27,10 +28,9 @@ namespace Tridium {
 		} HDRI;
 	};
 
-	class Scene : public Asset
+	class Scene final : public Asset
 	{
-		friend class GameObject;
-
+		using SystemStorage = std::unordered_map<size_t, SharedPtr<ISceneSystem>>;
 	public:
 		Scene( const std::string& a_Name = "Untitled");
 		Scene( const Scene& a_Other );
@@ -60,6 +60,18 @@ namespace Tridium {
 		const SceneEnvironment& GetSceneEnvironment() const { return m_SceneEnvironment; }
 
 		SceneRenderer& GetSceneRenderer() { return m_SceneRenderer; }
+
+		// - Systems -
+
+		void InitSystems();
+		void ShutdownSystems();
+		void SendSceneEvent( const SceneEventPayload& a_EventPayload );
+
+		template <typename T, typename... Args>
+		SharedPtr<T> AddSystem( Args&&... a_Args );
+
+		template <typename T>
+		SharedPtr<T> GetSystem();
 
 		// - Physics -
 
@@ -100,6 +112,10 @@ namespace Tridium {
 		std::string m_Name;
 		entt::registry m_Registry;
 		SceneEnvironment m_SceneEnvironment;
+		SystemStorage m_Systems;
+
+		// ========================
+
 		bool m_Paused = false;
 		bool m_IsRunning = false;
 		bool m_HasBegunPlay = false;
@@ -109,6 +125,7 @@ namespace Tridium {
 		SharedPtr<PhysicsScene> m_PhysicsScene;
 
 		friend SceneRenderer;
+		friend class GameObject;
 	};
 }
 

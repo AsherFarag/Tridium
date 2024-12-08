@@ -7,8 +7,6 @@ namespace Tridium::Editor {
 
 	class EditorAssetManager final : public AssetManagerBase
 	{
-		using AssetStorageType = std::unordered_map<AssetHandle, SharedPtr<Asset>>;
-
 	public:
 		EditorAssetManager();
 		virtual ~EditorAssetManager() override = default;
@@ -19,6 +17,7 @@ namespace Tridium::Editor {
 		SharedPtr<Asset> GetAsset( AssetHandle a_Handle ) override;
 		SharedPtr<Asset> GetAsset( const IO::FilePath& a_Path ) override;
 		SharedPtr<Asset> GetMemoryOnlyAsset( AssetHandle a_Handle ) override;
+		AssetStorageIterator GetAssets() override;
 		bool AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset ) override;
 		bool HasAsset( AssetHandle a_Handle ) override;
 		void RemoveAsset( AssetHandle a_Handle ) override;

@@ -34,7 +34,7 @@ namespace Tridium::Editor {
         case EAssetType::CubeMap:
             EditorAssetManager::Get()->ImportAsset( absolutePath );
             break;
-        case EAssetType::Lua:
+        case EAssetType::LuaScript:
             EditorAssetManager::Get()->ImportAsset( absolutePath );
             break;
         }

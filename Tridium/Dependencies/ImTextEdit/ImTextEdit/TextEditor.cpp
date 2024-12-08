@@ -2681,7 +2681,7 @@ const TextEditor::LanguageDefinition& TextEditor::LanguageDefinition::AngelScrip
 	return langDef;
 }
 
-const TextEditor::LanguageDefinition& TextEditor::LanguageDefinition::Lua()
+const TextEditor::LanguageDefinition& TextEditor::LanguageDefinition::LuaScript()
 {
 	static bool inited = false;
 	static LanguageDefinition langDef;

@@ -141,7 +141,7 @@ namespace Tridium::Editor {
 	bool DrawProperty( const char* a_Name, CubeMapHandle& a_Value, EDrawPropertyFlags a_Flags );
 
 	template<>
-	bool DrawProperty( const char* a_Name, LuaHandle& a_Value, EDrawPropertyFlags a_Flags );
+	bool DrawProperty( const char* a_Name, LuaScriptHandle& a_Value, EDrawPropertyFlags a_Flags );
 
 	template<>
 	bool DrawProperty( const char* a_Name, GameObject& a_Value, EDrawPropertyFlags a_Flags );

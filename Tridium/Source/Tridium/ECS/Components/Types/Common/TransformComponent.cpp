@@ -8,13 +8,20 @@
 namespace Tridium {
 
 	BEGIN_REFLECT_COMPONENT( TransformComponent, Scriptable )
+		OVERRIDE( Props::RegisterScriptableProp, +[]( Script::ScriptEngine& a_ScriptEngine )
+			{
+				TE_CORE_FATAL( "HELAO ASHER" );
+				auto type = a_ScriptEngine.RegisterNewType<TransformComponent>( "TransformComponent" );
+				type["localPosition"] = sol::property( &TransformComponent::GetLocalPosition, &TransformComponent::SetLocalPosition );
+				type["worldPosition"] = sol::property( &TransformComponent::GetWorldPosition, &TransformComponent::SetWorldPosition );
+			} )
 		BASE( Component )
 		PROPERTY( Position, Serialize | EditAnywhere )
 		PROPERTY( Rotation, Serialize | EditAnywhere )
 		PROPERTY( Scale, Serialize | EditAnywhere )
 		PROPERTY( m_Parent, Serialize )
 		PROPERTY( m_Children, Serialize )
-	END_REFLECT( TransformComponent )
+	END_REFLECT_COMPONENT( TransformComponent )
 
 	TransformComponent::TransformComponent( const Vector3& a_Translation )
 		: Position( a_Translation ) {}
@@ -95,9 +102,14 @@ namespace Tridium {
 	void TransformComponent::SetWorldPosition( const Vector3& a_Position )
 	{
 		if ( m_Parent.IsValid() )
-			Position = a_Position - m_Parent.GetTransform().GetWorldPosition();
+		{
+			const Matrix4 parentTransform = glm::inverse( m_Parent.GetTransform().GetWorldTransform() );
+			Position = parentTransform * glm::vec4( a_Position, 1.0f );
+		}
 		else
+		{
 			Position = a_Position;
+		}
 	}
 
 	void TransformComponent::SetLocalPosition( const Vector3& a_Position )

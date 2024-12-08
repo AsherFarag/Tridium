@@ -33,7 +33,7 @@ namespace Tridium
 			m_AssetTypeInfoMap[EAssetType::Scene]         = { EAssetType::Scene,      "Scene",       Vector4( 1.0f, 0.8f, 0.2f, 1.0f ), TextureLoader::LoadTexture( iconFolder / "tridium-scene.png" ) }; // Warm yellow (unchanged)
 			m_AssetTypeInfoMap[EAssetType::Shader]        = { EAssetType::Shader,     "Shader",      Vector4( 0.9f, 0.3f, 0.9f, 1.0f ), defaultIcon }; // Bright pink (unchanged)
 			m_AssetTypeInfoMap[EAssetType::CubeMap]       = { EAssetType::CubeMap,    "Cube Map",    Vector4( 1.0f, 0.6f, 0.1f, 1.0f ), TextureLoader::LoadTexture( iconFolder / "file-media.png" ) }; // Vibrant orange (unchanged)
-			m_AssetTypeInfoMap[EAssetType::Lua]           = { EAssetType::Lua,        "Lua",         Vector4( 0.8f, 0.2f, 0.2f, 1.0f ), TextureLoader::LoadTexture( iconFolder / "file-code.png" ) }; // Deep red (unchanged)
+			m_AssetTypeInfoMap[EAssetType::LuaScript]     = { EAssetType::LuaScript,  "Lua Script",  Vector4( 0.8f, 0.2f, 0.2f, 1.0f ), TextureLoader::LoadTexture( iconFolder / "file-code.png" ) }; // Deep red (unchanged)
 
 		}
 	}

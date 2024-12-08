@@ -182,7 +182,7 @@ namespace Tridium::IO {
 		a_Archive << a_Value.ID();
 	}
 
-	_TRIDUM_SERIALIZE_TO_TEXT( LuaHandle )
+	_TRIDUM_SERIALIZE_TO_TEXT( LuaScriptHandle )
 	{
 		a_Archive << a_Value.ID();
 	}
@@ -431,11 +431,11 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( LuaHandle )
+	_TRIDUM_DESERIALIZE_FROM_TEXT( LuaScriptHandle )
 	{
 		if ( a_Node && a_Node.IsScalar() )
 		{
-			o_Value = LuaHandle( a_Node.as<uint64_t>() );
+			o_Value = LuaScriptHandle( a_Node.as<uint64_t>() );
 			return true;
 		}
 		return false;

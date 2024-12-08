@@ -120,6 +120,11 @@ namespace Tridium::Editor {
 		return nullptr;
 	}
 
+	AssetStorageIterator EditorAssetManager::GetAssets()
+	{
+		return AssetStorageIterator( m_LoadedAssets, m_MemoryAssets );
+	}
+
 	bool EditorAssetManager::AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset )
 	{
 		TE_CORE_ASSERT( a_Asset, "[AssetManager] Asset is nullptr" );

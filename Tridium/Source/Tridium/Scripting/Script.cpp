@@ -2,5 +2,5 @@
 #include "Script.h"
 #include "ScriptEngine.h"
 
-namespace Tridium {
+namespace Tridium::Script {
 }

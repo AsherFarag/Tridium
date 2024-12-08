@@ -17,7 +17,7 @@ namespace Tridium::Editor {
 		Shader,
 		Texture,
 		CubeMap,
-		Lua,
+		LuaScript,
 		Folder,
 	};
 
