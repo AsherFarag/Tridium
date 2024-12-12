@@ -4,7 +4,7 @@ end
 
 function OnUpdate()
     newPos = transform.worldPosition
-    newPos.z = newPos.z + 0.01
+    newPos.y = newPos.y + 1.1
     transform.worldPosition = newPos
 end
 
