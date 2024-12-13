@@ -2726,7 +2726,7 @@ const TextEditor::LanguageDefinition& TextEditor::LanguageDefinition::LuaScript(
 		langDef.mSingleLineComment = "--";
 
 		langDef.mCaseSensitive = true;
-		langDef.mAutoIndentation = false;
+		langDef.mAutoIndentation = true;
 
 		langDef.mName = "Lua";
 

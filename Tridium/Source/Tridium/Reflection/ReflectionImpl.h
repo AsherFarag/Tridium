@@ -78,13 +78,17 @@ else if constexpr ( _HasFlag( Flags, ::Tridium::Refl::EPropertyFlags::ScriptRead
 }
 
 #define _ATTRIBUTE_REGISTER_SCRIPTABLE \
+    static auto RegisterScriptableProperties = +[]( sol::usertype<ClassType>& a_UserType ) \
+	{ \
+		for ( const auto& [key, value] : s_ScriptPropertyMap ) \
+		{ \
+			( *value )( a_UserType ); \
+		} \
+	}; \
 	factory.prop( ::Tridium::Refl::Props::RegisterScriptableProp::ID, +[]( ::Tridium::Script::ScriptEngine& a_ScriptEngine ) \
 		{ \
-			 sol::usertype<ClassType> type = a_ScriptEngine.RegisterNewType<ClassType>( ClassName() ); \
-			 for ( const auto& [key, value] : s_ScriptPropertyMap ) \
-			 { \
-				 ( *value )( type ); \
-			 } \
+            sol::usertype<ClassType> type = a_ScriptEngine.RegisterNewType<ClassType>( ClassName() ); \
+			RegisterScriptableProperties( type ); \
 		} );
 
 // ----------------
@@ -245,6 +249,18 @@ struct ::Tridium::Refl::Internal::Reflector<Class> \
  factory.prop( ::Tridium::Refl::Props::AddToGameObjectProp::ID, +[](::Tridium::Scene& a_Scene, ::Tridium::GameObjectID a_GameObject) -> ::Tridium::Component* { return a_Scene.TryAddComponentToGameObject<ClassType>(::Tridium::GameObject{a_GameObject}); } ); \
  factory.prop( ::Tridium::Refl::Props::RemoveFromGameObjectProp::ID, +[](::Tridium::Scene& a_Scene, ::Tridium::GameObjectID a_GameObject) { a_Scene.RemoveComponentFromGameObject<ClassType>(::Tridium::GameObject{a_GameObject}); } ); \
  factory.prop( Props::IsComponentProp::ID, true ); \
+ static auto RegisterScriptableComponent = +[]( sol::usertype<Class>& a_UserType ) \
+ { \
+	 RegisterScriptableProperties( a_UserType ); \
+	 a_UserType["gameObject"] = sol::property( &Class::GetGameObject ); \
+	 a_UserType["AddToGameObject"] = +[]( GameObject a_GameObject ) -> Class* { return a_GameObject.TryAddComponent<Class>(); }; \
+	 a_UserType["RemoveFromGameObject"] = +[]( GameObject a_GameObject ) { a_GameObject.RemoveComponent<Class>(); }; \
+ }; \
+ factory.prop( Props::RegisterScriptableProp::ID, +[]( ::Tridium::Script::ScriptEngine& a_ScriptEngine ) \
+	{ \
+        sol::usertype<Class> type = a_ScriptEngine.RegisterNewType<Class>( ClassName() ); \
+		RegisterScriptableComponent( type ); \
+	} ); \
 
 #define _BEGIN_REFLECT_COMPONENT_NO_FLAGS( Class ) _BEGIN_REFLECT_COMPONENT( Class, ::Tridium::Refl::EClassFlags::ECF_None )
 

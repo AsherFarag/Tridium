@@ -10,10 +10,12 @@ namespace Tridium {
 	BEGIN_REFLECT_COMPONENT( TransformComponent, Scriptable )
 		OVERRIDE( Props::RegisterScriptableProp, +[]( Script::ScriptEngine& a_ScriptEngine )
 			{
-				TE_CORE_FATAL( "HELAO ASHER" );
 				auto type = a_ScriptEngine.RegisterNewType<TransformComponent>( "TransformComponent" );
-				type["localPosition"] = sol::property( &TransformComponent::GetLocalPosition, &TransformComponent::SetLocalPosition );
-				type["worldPosition"] = sol::property( &TransformComponent::GetWorldPosition, &TransformComponent::SetWorldPosition );
+				type["gameObject"] = sol::property( &TransformComponent::GetGameObject );
+				type["GetLocalPosition"] = &TransformComponent::GetLocalPosition;
+				type["GetWorldPosition"] = &TransformComponent::GetWorldPosition;
+				type["SetLocalPosition"] = &TransformComponent::SetLocalPosition;
+				type["SetWorldPosition"] = &TransformComponent::SetWorldPosition;
 			} )
 		BASE( Component )
 		PROPERTY( Position, Serialize | EditAnywhere )

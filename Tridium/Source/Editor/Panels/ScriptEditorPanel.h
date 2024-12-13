@@ -2,6 +2,7 @@
 #if IS_EDITOR
 #include "Panel.h"
 #include "ImTextEdit/TextEditor.h"
+#include <Tridium/Asset/AssetType.h>
 
 namespace Tridium::Editor {
 
@@ -9,6 +10,7 @@ namespace Tridium::Editor {
 	{
 		IO::FilePath Path;
 		TextEditor Editor;
+		bool IsModified = false;
 	};
 
     class ScriptEditorPanel : public Panel
@@ -25,19 +27,24 @@ namespace Tridium::Editor {
 
         virtual void OnImGuiDraw() override;
 
+		void OpenHandle( const LuaScriptHandle& a_Handle );
+		void SaveHandle( const LuaScriptHandle& a_Handle );
         void OpenFile( const IO::FilePath& a_FilePath );
 
     private:
         virtual bool OnKeyPressed( KeyPressedEvent& e ) override;
-		OpenedScript* GetOpenedScript( const IO::FilePath& a_FilePath );
+		OpenedScript* GetOpenedScript( const LuaScriptHandle& a_Handle );
 		void SetTheme( ETheme a_Theme );
 
 		void DrawMenuBar();
 		void DrawOpenedScripts();
 
+		void RecompileScript( const LuaScriptHandle& a_Handle );
+		void RecompileAllScripts();
+
 	private:
-		std::unordered_map<IO::FilePath, OpenedScript> m_OpenedScripts;
-		IO::FilePath m_CurrentOpenedFile;
+		std::unordered_map<LuaScriptHandle, OpenedScript> m_OpenedScripts;
+		LuaScriptHandle m_CurrentOpenedScript;
 		ETheme m_Theme = ETheme::Dark;
 		TextEditor::LanguageDefinition m_LuaLanguageDefinition;
     };

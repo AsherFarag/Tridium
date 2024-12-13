@@ -24,25 +24,15 @@ namespace Tridium::Script {
 
 		bool IsCompiled() const { return m_LoadResult.valid(); }
 		const std::string& GetCompileErrorMsg() const { return m_CompileErrorMsg; }
-
-		const ScriptVariable& GetVariable( const std::string& a_Name ) const
-		{
-			if ( auto it = m_Variables.find( a_Name ); it != m_Variables.end() )
-				return it->second;
-
-			return ScriptVariable();
-		}
-
-		const ScriptFunction& GetFunction( const std::string& a_Name ) const
-		{
-			if ( auto it = m_Functions.find( a_Name ); it != m_Functions.end() )
-				return it->second;
-
-			return ScriptFunction();
-		}
+		const std::string& GetSource() const { return m_Source; }
+		void SetSource( const std::string& a_Source ) { m_Source = a_Source; Invalidate(); }
 
 		const ScriptVariableMap& GetVariables() const { return m_Variables; }
 		const ScriptFunctionMap& GetFunctions() const { return m_Functions; }
+		const ScriptVariable& GetVariable( const std::string& a_Name ) const;
+		const ScriptFunction& GetFunction( const std::string& a_Name ) const;
+
+		void Invalidate();
 
 	protected:
 		// Contains the source code of the script.

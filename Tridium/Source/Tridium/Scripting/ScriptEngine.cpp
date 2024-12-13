@@ -112,7 +112,7 @@ namespace Tridium::Script {
 	void ScriptEngine::RecompileAllScripts()
 	{
 		TODO( "TEMP EDITOR ONLY HERE" );
-		SharedPtr<Editor::EditorAssetManager> assetManager = AssetManager::Get<Editor::EditorAssetManager>();
+		SharedPtr<Editor::EditorAssetManager> assetManager = Editor::EditorAssetManager::Get();
 		for ( SharedPtr<Script::ScriptAsset> script : AssetManager::GetAssetsOfType<Script::ScriptAsset>() )
 		{
 			const AssetMetaData& assetData = assetManager->GetAssetMetaData( script->GetHandle() );

@@ -34,6 +34,18 @@ namespace Tridium::Script {
 			return newType;
 		}
 
+		template<typename T>
+		static sol::usertype<T>& GetRegisteredType( const char* a_TypeName )
+		{
+			if ( s_Instance->m_RegisteredTypes.find( a_TypeName ) == s_Instance->m_RegisteredTypes.end() )
+			{
+				TE_CORE_ASSERT( false, "Type not registered!" );
+				return {};
+			}
+
+			return GetLuaState()[a_TypeName];
+		}
+
 	private:
 		void Init();
 

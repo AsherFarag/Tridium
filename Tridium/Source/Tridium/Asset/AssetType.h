@@ -122,3 +122,15 @@ namespace Tridium {
 
 	EAssetType GetAssetTypeFromFileExtension( const std::string& a_Extension );
 }
+
+namespace std {
+
+	template <Tridium::EAssetType _AssetType>
+	struct hash<Tridium::Internal::TypedAssetHandle<_AssetType>>
+	{
+		size_t operator()( const Tridium::Internal::TypedAssetHandle<_AssetType>& a_Handle ) const
+		{
+			return std::hash<Tridium::AssetHandle>()( a_Handle );
+		}
+	};
+}

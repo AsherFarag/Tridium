@@ -29,6 +29,8 @@ namespace Tridium::Script {
 	template <typename _Vector>
 	void RegisterVectorFunctions( sol::usertype<_Vector>& a_Type )
 	{
+		a_Type["Zero"] = +[]() -> _Vector { return _Vector( 0.0f ); };
+
 		a_Type["Normalized"] = glm::normalize<_Vector::length(), float, glm::packed_highp>;
 		a_Type["Length"] = glm::length<_Vector::length(), float, glm::packed_highp>;
 		a_Type["Dot"] = glm::dot<_Vector::length(), float, glm::packed_highp>;

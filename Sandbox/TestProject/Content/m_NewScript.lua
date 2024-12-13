@@ -1,11 +1,9 @@
 function OnBeginPlay()
     print( "Begun Play!" )
+    CharacterControllerComponent.AddToGameObject(gameObject)
 end
 
 function OnUpdate()
-    newPos = transform.worldPosition
-    newPos.y = newPos.y + 1.1
-    transform.worldPosition = newPos
 end
 
 function OnDestroy()

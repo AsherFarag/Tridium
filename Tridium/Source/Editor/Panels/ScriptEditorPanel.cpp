@@ -4,6 +4,7 @@
 #include <Tridium/Core/Application.h>
 #include <Editor/EditorUtil.h>
 #include <Tridium/Reflection/Reflection.h>
+#include <Tridium/Asset/EditorAssetManager.h>
 
 #include <fstream>
 #include <sstream>
@@ -11,11 +12,12 @@
 namespace Tridium::Editor {
 
 	ScriptEditorPanel::ScriptEditorPanel()
-		: Panel( "Script Editor" )
+		: Panel( TE_ICON_CODE " Script Editor" )
 	{
 		SetTheme( ETheme::Dark );
 
 		m_LuaLanguageDefinition = TextEditor::LanguageDefinition::LuaScript();
+		m_LuaLanguageDefinition.mAutoIndentation = true;
 
 		for ( const auto&& [id, type] : Refl::ResolveMetaTypes() )
 		{
@@ -31,11 +33,11 @@ namespace Tridium::Editor {
 
 	void ScriptEditorPanel::OnImGuiDraw()
 	{
-		OpenedScript* openedScript = GetOpenedScript( m_CurrentOpenedFile );
+		OpenedScript* openedScript = GetOpenedScript( m_CurrentOpenedScript );
 
 		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoScrollbar;
-		if ( openedScript )
-			windowFlags |= openedScript->Editor.IsTextChanged() ? ImGuiWindowFlags_UnsavedDocument : 0;
+		if ( openedScript && openedScript->IsModified )
+			windowFlags |= ImGuiWindowFlags_UnsavedDocument;
 
 		if ( !ImGuiBegin( windowFlags ) )
 		{
@@ -52,6 +54,8 @@ namespace Tridium::Editor {
 			ImVec2 size = ImGui::GetContentRegionAvail();
 			size.y -= openedScriptTabsSizeY;
 			openedScript->Editor.Render( m_Name.c_str(), size );
+
+			openedScript->IsModified |= openedScript->Editor.IsTextChanged();
 		}
 
 		// Draw opened scripts tabs
@@ -60,37 +64,102 @@ namespace Tridium::Editor {
 		ImGuiEnd();
 	}
 
-	void ScriptEditorPanel::OpenFile( const IO::FilePath& a_FilePath )
+	void ScriptEditorPanel::OpenHandle( const LuaScriptHandle& a_Handle )
 	{
-		std::ifstream file( a_FilePath.ToString() );
-		if ( !file.is_open() )
+		SharedPtr<Script::ScriptAsset> script = AssetManager::GetAsset<Script::ScriptAsset>( a_Handle );
+		if ( !script )
 		{
-			TE_CORE_ERROR( "Failed to open file: {0}", a_FilePath.ToString() );
+			TE_CORE_ASSERT( false, "Failed to open script handle" );
 			return;
 		}
 
-		std::stringstream buffer;
-		buffer << file.rdbuf();
+		const auto& metaData = EditorAssetManager::Get()->GetAssetMetaData( a_Handle );
+		if ( !metaData.IsValid() || metaData.AssetType != EAssetType::LuaScript )
+		{
+			TE_CORE_ASSERT( false, "Failed to retrieve Asset Meta Data" );
+			return;
+		}
 
-		m_CurrentOpenedFile = a_FilePath;
-		m_OpenedScripts[a_FilePath].Path = a_FilePath;
-		m_OpenedScripts[a_FilePath].Editor.SetText( buffer.str() );
-		m_OpenedScripts[a_FilePath].Editor.SetLanguageDefinition( m_LuaLanguageDefinition );
+		OpenedScript openedScript;
+		openedScript.Path = metaData.Path;
+		openedScript.Editor.SetLanguageDefinition( m_LuaLanguageDefinition );
+		openedScript.Editor.SetText( script->GetSource() );
 
-		file.close();
+		m_CurrentOpenedScript = a_Handle;
+		m_OpenedScripts[a_Handle] = std::move( openedScript );
+	}
+
+	void ScriptEditorPanel::SaveHandle( const LuaScriptHandle& a_Handle )
+	{
+		OpenedScript* openedScript = GetOpenedScript( a_Handle );
+		if ( !openedScript )
+		{
+			return;
+		}
+
+		SharedPtr<Script::ScriptAsset> script = AssetManager::GetAsset<Script::ScriptAsset>( a_Handle );
+		if ( !script )
+		{
+			TE_CORE_ASSERT( false, "Failed to save script handle" );
+			return;
+		}
+
+		script->SetSource( openedScript->Editor.GetText() );
+		EditorAssetManager::Get()->SaveAsset( a_Handle );
+
+		openedScript->IsModified = false;
+	}
+
+	void ScriptEditorPanel::OpenFile( const IO::FilePath& a_FilePath )
+	{
+		const auto& metaData = EditorAssetManager::Get()->GetAssetMetaData( a_FilePath );
+		LuaScriptHandle handle = metaData.Handle;
+		if ( !metaData.IsValid() )
+		{
+			handle = EditorAssetManager::Get()->ImportAsset( a_FilePath );
+		}
+
+		OpenHandle( handle );
 	}
 
 	bool ScriptEditorPanel::OnKeyPressed( KeyPressedEvent& e )
 	{
-		return false;
+		const bool control = Input::IsKeyPressed( Input::KEY_LEFT_CONTROL ) || Input::IsKeyPressed( Input::KEY_LEFT_CONTROL );
+		const bool shift = Input::IsKeyPressed( Input::KEY_LEFT_SHIFT ) || Input::IsKeyPressed( Input::KEY_RIGHT_SHIFT );
+
+		switch ( e.GetKeyCode() )
+		{
+		case Input::KEY_S:
+			if ( control )
+			{
+				SaveHandle( m_CurrentOpenedScript );
+				return true;
+			}
+			break;
+		case Input::KEY_R:
+			if ( control )
+			{
+				if ( shift )
+				{
+					RecompileAllScripts();
+				}
+				else
+				{
+					RecompileScript( m_CurrentOpenedScript );
+				}
+				return true;
+			}
+			break;
+		default:
+			break;
+		}
 	}
 
-	OpenedScript* ScriptEditorPanel::GetOpenedScript( const IO::FilePath& a_FilePath )
+	OpenedScript* ScriptEditorPanel::GetOpenedScript( const LuaScriptHandle& a_Handle )
 	{
-		auto it = m_OpenedScripts.find( a_FilePath );
+		auto it = m_OpenedScripts.find( a_Handle );
 		if ( it == m_OpenedScripts.end() )
 		{
-			TE_CORE_ERROR( "Failed to find opened script: {0}", a_FilePath.ToString() );
 			return nullptr;
 		}
 
@@ -99,6 +168,8 @@ namespace Tridium::Editor {
 
 	void ScriptEditorPanel::DrawMenuBar()
 	{
+		ImGui::ScopedStyleCol menuSepCol( ImGuiCol_Separator, ImVec4( 1, 1, 1, 0.75f ) );
+
 		if ( !ImGui::BeginMenuBar() )
 			return;
 
@@ -110,6 +181,33 @@ namespace Tridium::Editor {
 					{
 						OpenFile( a_FilePath );
 					} );
+			}
+
+			if ( ImGui::MenuItem( "Save", "Ctrl + S" ) )
+			{
+				SaveHandle( m_CurrentOpenedScript );
+			}
+
+			if ( ImGui::MenuItem( "Save As" ) )
+			{
+				Util::OpenSaveFileDialog( Application::GetActiveProject()->GetAssetDirectory() / "NewLuaScript.lua", [this]( const IO::FilePath& a_FilePath )
+					{
+						OpenedScript* openedScript = GetOpenedScript( m_CurrentOpenedScript );
+						if ( openedScript )
+						{
+							std::ofstream file( a_FilePath.ToString() );
+							file << openedScript->Editor.GetText();
+							file.close();
+						}
+					} );
+			}
+
+			if ( ImGui::MenuItem( "Save All" ) )
+			{
+				for ( auto& openedScript : m_OpenedScripts )
+				{
+					SaveHandle( openedScript.first );
+				}
 			}
 
 			ImGui::EndMenu();
@@ -140,13 +238,21 @@ namespace Tridium::Editor {
 			ImGui::EndMenu();
 		}
 
-		// Place button at the right side of the menu bar
-		const char* recompileText = TE_ICON_GEARS " Recompile";
-		const float buttonWidth = ImGui::CalcTextSize( recompileText ).x + ImGui::GetStyle().FramePadding.x * 2.0f;
-		ImGui::SetCursorPosX( ImGui::GetWindowWidth() - buttonWidth - ImGui::GetStyle().ItemSpacing.x );
-		if ( ImGui::SmallButton( recompileText ) )
-		{
+		ImGui::Separator();
 
+		if ( ImGui::BeginMenu( "Scripts" ) )
+		{
+			if ( ImGui::MenuItem( "Recompile", "Ctrl + R" ) )
+			{
+				RecompileScript( m_CurrentOpenedScript );
+			}
+
+			if ( ImGui::MenuItem( "Recompile All", "Ctrl + Shift + R" ) )
+			{
+				RecompileAllScripts();
+			}
+
+			ImGui::EndMenu();
 		}
 
 		ImGui::EndMenuBar();
@@ -156,29 +262,67 @@ namespace Tridium::Editor {
 	{
 		const float openedScriptTabsSizeY = ImGui::GetTextLineHeightWithSpacing();
 
-		if ( ImGui::BeginChild( "OpenedScripts", ImVec2( 0, openedScriptTabsSizeY ), false, ImGuiWindowFlags_HorizontalScrollbar ) )
+		if ( !ImGui::BeginChild( "OpenedScripts", ImVec2( 0, openedScriptTabsSizeY ), false, ImGuiWindowFlags_HorizontalScrollbar ) )
+			return;
+
+		const float totalWidth = ImGui::GetContentRegionAvail().x;
+		const size_t tabCount = m_OpenedScripts.size();
+		const float tabSpacing = 10.0f;
+		const float minTabWidth = 100.0f;
+
+		// Calculate base tab width
+		const float totalSpacing = ( tabCount - 1 ) * tabSpacing;
+		const float availableWidth = totalWidth - totalSpacing;
+		const float baseTabWidth = Math::Max( minTabWidth, availableWidth / tabCount );
+
+		for ( auto it = m_OpenedScripts.begin(); it != m_OpenedScripts.end(); ++it )
 		{
-			const float minTabWidth = 100.0f;
-			const float tabSpacing = 10.0f;
+			// Add spacing between tabs
+			if ( it != m_OpenedScripts.begin() )
+				ImGui::SameLine( 0, tabSpacing );
 
-			for ( auto& openedScript : m_OpenedScripts )
+			auto& openedScript = *it;
+			std::string tabName = openedScript.second.Path.GetFilename().ToString();
+			const bool selected = m_CurrentOpenedScript == openedScript.first;
+
+			// Calculate the tab width
+			float tabWidth = baseTabWidth;
+			if ( selected )
 			{
-				std::string tabName = openedScript.first.GetFilename().ToString();
-				const bool selected = m_CurrentOpenedFile == openedScript.first;
-				float tabWidth = minTabWidth;
-				if ( selected )
-					tabWidth = Math::Max(
-						tabWidth,
-						ImGui::CalcTextSize( tabName.c_str() ).x + ImGui::GetStyle().FramePadding.x * 2.0f );
-
-				if ( ImGui::Selectable( tabName.c_str(), selected, ImGuiSelectableFlags_AllowOverlap, ImVec2( tabWidth, openedScriptTabsSizeY ) ) )
-				{
-					m_CurrentOpenedFile = openedScript.first;
-				}
-
-				ImGui::SameLine();
+				// Expand the selected tab by an additional amount
+				const float expandedWidth = Math::Max( baseTabWidth, ImGui::CalcTextSize( tabName.c_str() ).x + ImGui::GetStyle().FramePadding.x * 2.0f );
+				tabWidth = expandedWidth;
 			}
-			ImGui::EndChild();
+
+			// Adjust alignment to account for the expanded tab
+			ImGui::PushID( &openedScript ); // Avoid ID collisions
+			if ( ImGui::Selectable( tabName.c_str(), selected, ImGuiSelectableFlags_AllowOverlap, ImVec2( tabWidth, openedScriptTabsSizeY ) ) )
+			{
+				m_CurrentOpenedScript = openedScript.first;
+			}
+			ImGui::PopID();
+		}
+
+		ImGui::EndChild();
+	}
+
+	void ScriptEditorPanel::RecompileScript( const LuaScriptHandle& a_Handle )
+	{
+		SharedPtr<Script::ScriptAsset> script = AssetManager::GetAsset<Script::ScriptAsset>( a_Handle );
+		if ( !script )
+		{
+			TE_CORE_ASSERT( false, "Failed to recompile script handle" );
+			return;
+		}
+
+		Script::ScriptEngine::RecompileScript( *script );
+	}
+
+	void ScriptEditorPanel::RecompileAllScripts()
+	{
+		for ( auto& openedScript : m_OpenedScripts )
+		{
+			RecompileScript( openedScript.first );
 		}
 	}
 
