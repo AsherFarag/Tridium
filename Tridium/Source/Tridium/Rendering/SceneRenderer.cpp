@@ -179,6 +179,9 @@ namespace Tridium {
 	{
 		ScopedTimer drawListGenerationTime( m_RenderStats.DrawListGenerationTime );
 
+		// Extract Camera Forward from the View Matrix
+		Vector3 cameraForward = Vector3( a_View[0][2], a_View[1][2], a_View[2][2] );
+
 		m_SceneInfo = SceneInfo
 		{
 			.ProjectionMatrix = a_Camera.GetProjection(),
@@ -186,6 +189,7 @@ namespace Tridium {
 			.ViewProjectionMatrix = a_Camera.GetProjection() * a_View,
 			.CameraPosition = a_CameraPosition,
 			.Camera = a_Camera,
+			.CameraFrustum = a_Camera.GetFrustum( a_CameraPosition, cameraForward ),
 		};
 
 		// - Submit Directional Lights -
@@ -348,6 +352,30 @@ namespace Tridium {
 				{
 					DrawPass passFlags = EDrawPass::Opaque;
 					if ( meshComponent.CastShadows ) passFlags |= EDrawPass::Shadows;
+
+					// Do a Fustrum Cull check:
+					//	- If the mesh is not in the camera's view frustum, skip it
+					//	- If the mesh is in the camera's view frustum, add it to the draw list
+					{
+						// Get the mesh bounds
+						SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( meshComponent.Mesh );
+						if ( !mesh )
+							return;
+
+						// Get the mesh bounds
+						AABB meshBounds = mesh->GetBoundingBox().Transform( transform.GetWorldTransform() );
+
+						Debug::DrawAABB( meshBounds, Debug::Colors::Red, Debug::EDrawDuration::OneFrame);
+
+						// Check if the mesh is in the camera's view frustum
+						if ( !m_SceneInfo.CameraFrustum.Intersects( meshBounds ) )
+						{
+							m_RenderStats.CulledDrawCalls++;
+							return;
+						}
+					}
+
+
 					m_DrawList.AddCommand( passFlags, meshComponent.Mesh, meshComponent.Materials, transform.GetWorldTransform() );
 				}
 			);

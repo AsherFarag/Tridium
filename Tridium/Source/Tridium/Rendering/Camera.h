@@ -1,5 +1,6 @@
 #pragma once
 #include <Tridium/Reflection/ReflectionFwd.h>
+#include "Frustum.h"
 
 namespace Tridium {
 
@@ -28,6 +29,9 @@ namespace Tridium {
 		~Camera() = default;
 
 		const Matrix4& GetProjection() const { return m_Projection; }
+		Frustum GetFrustum( const Vector3& a_Position, Vector3 a_Forward ) const;
+		Frustum GetPerspectiveFrustum( const Vector3& a_Position, Vector3 a_Forward ) const;
+		Frustum GetOrthographicFrustum( const Vector3& a_Position, Vector3 a_Forward ) const;
 
 		void SetPerspective();
 		void SetOrthographic();

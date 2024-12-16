@@ -6,6 +6,8 @@
 #include <Tridium/Physics/PhysicsScene.h>
 #include "SceneSystem.h"
 
+#include <Tridium/Debug/DebugDrawer.h>
+
 namespace Tridium {
 	using EntityIDType = entt::id_type;
 	using EntityID = entt::entity;
@@ -75,7 +77,11 @@ namespace Tridium {
 
 		// - Physics -
 
-		inline RayCastResult CastRay( const Vector3& a_Origin, const Vector3& a_Direction, ERayCastChannel a_RayCastChannel, const PhysicsBodyFilter& a_BodyFilter = {} ) const;
+		inline RayCastResult CastRay( const Vector3& a_Origin, const Vector3& a_Direction,
+			ERayCastChannel a_RayCastChannel, const PhysicsBodyFilter& a_BodyFilter = {},
+			bool a_DrawDebug = false, 
+			Debug::EDrawDuration a_DrawDurationType = Debug::EDrawDuration::OneFrame, float a_DebugDrawDuration = 0.0f,
+			Color a_DebugLineColor = Debug::Colors::Red, Color a_DebugHitColor = Debug::Colors::Green ) const;
 
 		// - GameObjects - 
 		GameObject InstantiateGameObject( const std::string& a_Name = "GameObject" );

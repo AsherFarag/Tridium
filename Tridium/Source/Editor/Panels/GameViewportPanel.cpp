@@ -39,6 +39,13 @@ namespace Tridium::Editor {
 
 			GetEditorLayer()->GetActiveScene()->GetSceneRenderer().Render( m_FBO, camera, view, position );
 
+			// Draw Debug Lines
+			{
+				m_FBO->Bind();
+				Debug::DebugDrawer::Get().Draw( camera.GetProjection() * view );
+				m_FBO->Unbind();
+			}
+
 			ImGui::Image( (ImTextureID)m_FBO->GetColorAttachmentID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
 		}
 

@@ -10,6 +10,33 @@ namespace Tridium {
 		Vector3 Min{0.0f};
 		Vector3 Max{0.0f};
 
+		AABB Transform( const Matrix4& a_Transform ) const
+		{
+			Vector3 corners[8] = {
+				Vector3( Min.x, Min.y, Min.z ),
+				Vector3( Min.x, Min.y, Max.z ),
+				Vector3( Min.x, Max.y, Min.z ),
+				Vector3( Min.x, Max.y, Max.z ),
+				Vector3( Max.x, Min.y, Min.z ),
+				Vector3( Max.x, Min.y, Max.z ),
+				Vector3( Max.x, Max.y, Min.z ),
+				Vector3( Max.x, Max.y, Max.z )
+			};
+
+			Vector3 transformedCorner = a_Transform * Vector4( corners[0], 1.0f );
+			Vector3 min = transformedCorner;
+			Vector3 max = transformedCorner;
+
+			for ( uint32_t i = 1; i < 8; ++i )
+			{
+				transformedCorner = a_Transform * Vector4( corners[i], 1.0f );
+				min = glm::min( min, transformedCorner );
+				max = glm::max( max, transformedCorner );
+			}
+
+			return { min, max };
+		}
+
 		bool Intersects( const AABB& a_Other ) const
 		{
 			return ( Min.x <= a_Other.Max.x && Max.x >= a_Other.Min.x ) &&

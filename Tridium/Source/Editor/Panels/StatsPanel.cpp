@@ -59,11 +59,12 @@ namespace Tridium::Editor {
 				ImGui::Text( "Render Stats" );
 
 				ImGui::Text( "Render Time: " STAT_UNIT, renderStats.RenderTime );
-				ImGui::Text( "Geometry Time: " STAT_UNIT, renderStats.GeometryTime );
-				ImGui::Text( "Shadow Map Time: " STAT_UNIT, renderStats.ShadowMapTime );
-				ImGui::Text( "Post Process Time: " STAT_UNIT, renderStats.PostProcessTime );
-				ImGui::Text( "Draw List Generation Time: " STAT_UNIT, renderStats.DrawListGenerationTime );
-				ImGui::Text( "Draw Call Count: %d", renderStats.NumDrawCalls );
+				ImGui::Text( "	- Geometry Time: " STAT_UNIT, renderStats.GeometryTime );
+				ImGui::Text( "	- Shadow Map Time: " STAT_UNIT, renderStats.ShadowMapTime );
+				ImGui::Text( "	- Post Process Time: " STAT_UNIT, renderStats.PostProcessTime );
+				ImGui::Text( "	- Draw List Generation Time: " STAT_UNIT, renderStats.DrawListGenerationTime );
+				ImGui::Text( "Draw Call Count : %d", renderStats.NumDrawCalls );
+				ImGui::Text( "Culled Draw Calls: %d", renderStats.CulledDrawCalls );
 
 				ImGui::Separator();
 			}

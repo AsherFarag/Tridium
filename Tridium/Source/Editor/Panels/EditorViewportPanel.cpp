@@ -14,6 +14,8 @@
 #include <Tridium/Rendering/SceneRenderer.h>
 #include <Tridium/Asset/EditorAssetManager.h>
 
+#include <Tridium/Debug/DebugDrawer.h>
+
 // TEMP ?
 #include "Tridium/Asset/AssetManager.h"
 #include <Tridium/Rendering/RenderCommand.h>
@@ -194,6 +196,14 @@ namespace Tridium::Editor {
 			m_FBO->Resize( regionAvail.x, regionAvail.y );
 
 			GetEditorLayer()->GetActiveScene()->GetSceneRenderer().Render(m_FBO, *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position);
+
+			// Draw Debug Lines
+			{
+				m_FBO->Bind();
+				Debug::DebugDrawer::Get().Draw( m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix() );
+				m_FBO->Unbind();
+			}
+
 			RenderSelectionOutline();
 
 			// Draw the Editor Camera ViewPort

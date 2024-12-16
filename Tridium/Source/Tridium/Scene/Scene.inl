@@ -15,9 +15,23 @@ namespace Tridium {
 	class MeshColliderComponent;
 	// -------------------
 
-	inline RayCastResult Scene::CastRay( const Vector3& a_Origin, const Vector3& a_Direction, ERayCastChannel a_RayCastChannel, const PhysicsBodyFilter& a_BodyFilter ) const
+	inline RayCastResult Tridium::Scene::CastRay( const Vector3& a_Origin, const Vector3& a_Direction, ERayCastChannel a_RayCastChannel, const PhysicsBodyFilter& a_BodyFilter, bool a_DrawDebug, Debug::EDrawDuration a_DrawDurationType, float a_DebugDrawDuration, Color a_DebugLineColor, Color a_DebugHitColor ) const
 	{
-		return m_PhysicsScene->CastRay( a_Origin, a_Direction, a_RayCastChannel, a_BodyFilter );
+		RayCastResult result = m_PhysicsScene->CastRay( a_Origin, a_Direction, a_RayCastChannel, a_BodyFilter );
+
+	#if TE_USE_DEBUG
+		if ( a_DrawDebug )
+		{
+			Debug::DrawLine( a_Origin, a_Origin + a_Direction * result.Distance, a_DebugLineColor, a_DrawDurationType, a_DebugDrawDuration );
+
+			if ( result.Hit )
+			{
+				Debug::DrawSphereFilled( result.Position, 0.1f, a_DebugHitColor, a_DrawDurationType, a_DebugDrawDuration );
+			}
+		}
+	#endif
+
+		return result;
 	}
 
 	template<> void Scene::InitComponent( RigidBodyComponent& a_Component );

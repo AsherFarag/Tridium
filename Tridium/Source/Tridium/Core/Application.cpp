@@ -8,10 +8,11 @@
 	#include <Tridium/Asset/RuntimeAssetManager.h>
 #endif // IS_EDITOR
 
+#include <Tridium/Debug/DebugDrawer.h>
+
 // TEMP ?
 #include <Tridium/Rendering/GameViewport.h>
 #include <Tridium/ECS/Components/Types.h>
-#include <Tridium/Asset/EditorAssetManager.h>
 #include <Tridium/Rendering/RenderCommand.h>
 #include "Tridium/IO/ProjectSerializer.h"
 #include <Tridium/Scripting/ScriptEngine.h>
@@ -87,6 +88,11 @@ namespace Tridium {
 #if IS_EDITOR
 		Editor::EditorApplication::Init();
 #endif // IS_EDITOR
+
+#if TE_USE_DEBUG
+		Debug::DebugDrawer::Init();
+#endif // TE_USE_DEBUG
+
 	}
 
 	Application::~Application()

@@ -64,6 +64,10 @@ namespace Tridium {
 	#define TE_SHIPPING 0
 #endif // TE_SHIPPING
 
+#if !TE_SHIPPING
+	#define TE_USE_DEBUG 1
+#endif
+
 // ------------------
 
 #ifdef TE_PLATFORM_WINDOWS

@@ -86,7 +86,7 @@ protected:
 		if ( auto* rigidBody = GetGameObject().TryGetComponent<RigidBodyComponent>() )
 			filter = *rigidBody;
 
-		RayCastResult hit = GetScene()->CastRay( rayBegin, rayEnd, ERayCastChannel::Camera, filter );
+		RayCastResult hit = GetScene()->CastRay( rayBegin, rayEnd, ERayCastChannel::Camera, filter, true, Debug::EDrawDuration::ForDuration, 10.0f );
 		if ( hit.Hit )
 		{
 			if ( RigidBodyComponent* hitRigidBody = hit.GetHitRigidBody() )

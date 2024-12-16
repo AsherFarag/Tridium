@@ -57,6 +57,7 @@ namespace Tridium {
 		double PostProcessTime = 0.0;
 
 		uint32_t NumDrawCalls = 0u;
+		uint32_t CulledDrawCalls = 0u;
 	};
 
 	class SceneRenderer
@@ -129,6 +130,7 @@ namespace Tridium {
 			Matrix4 ViewProjectionMatrix;
 			Vector3 CameraPosition;
 			Camera Camera;
+			Frustum CameraFrustum;
 		} m_SceneInfo;
 		DrawList m_DrawList;
 		LightEnvironment m_LightEnvironment;
