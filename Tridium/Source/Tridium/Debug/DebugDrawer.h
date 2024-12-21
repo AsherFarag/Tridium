@@ -48,7 +48,7 @@ namespace Tridium::Debug {
 		void DrawSphereFilled( const Vector3& a_Center, float a_Radius, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
 		void DrawBox( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
 		void DrawBoxFilled( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
-		void DrawFrustum( const Matrix4& a_Projection, const Matrix4& a_View, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
+		void DrawFrustum( const Matrix4& a_ViewProjection, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
 
 	private:
 		DebugDrawer();
@@ -136,9 +136,9 @@ namespace Tridium::Debug {
 		DebugDrawer::Get().DrawBoxFilled( a_Center, a_Rotation, a_HalfExtents, a_Color, a_DrawDuration, a_Duration );
 	}
 
-	static inline void DrawFrustum( const Matrix4& a_Projection, const Matrix4& a_View, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
+	static inline void DrawFrustum( const Matrix4& a_ViewProjection, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
 	{
-		DebugDrawer::Get().DrawFrustum( a_Projection, a_View, a_Color, a_DrawDuration, a_Duration );
+		DebugDrawer::Get().DrawFrustum( a_ViewProjection, a_Color, a_DrawDuration, a_Duration );
 	}
 
 } // namespace Tridium::Debug
@@ -155,7 +155,7 @@ namespace Tridium::Debug {
 	static inline void DrawSphereFilled( const Vector3& a_Center, float a_Radius, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
 	static inline void DrawBox( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
 	static inline void DrawBoxFilled( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
-	static inline void DrawFrustum( const Matrix4& a_Projection, const Matrix4& a_View, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
+	static inline void DrawFrustum( const Matrix4& a_ViewProjection, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
 
 } // namespace Tridium::Debug
 

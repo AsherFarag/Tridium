@@ -1,6 +1,6 @@
 #pragma once
 #include <Tridium/Reflection/ReflectionFwd.h>
-#include "Frustum.h"
+#include <Tridium/Math/Frustum.h>
 
 namespace Tridium {
 

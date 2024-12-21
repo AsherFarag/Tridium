@@ -15,24 +15,26 @@ namespace Tridium {
 	class MeshColliderComponent;
 	// -------------------
 
-	inline RayCastResult Tridium::Scene::CastRay( const Vector3& a_Origin, const Vector3& a_Direction, ERayCastChannel a_RayCastChannel, const PhysicsBodyFilter& a_BodyFilter, bool a_DrawDebug, Debug::EDrawDuration a_DrawDurationType, float a_DebugDrawDuration, Color a_DebugLineColor, Color a_DebugHitColor ) const
-	{
-		RayCastResult result = m_PhysicsScene->CastRay( a_Origin, a_Direction, a_RayCastChannel, a_BodyFilter );
+	//inline RayCastResult Tridium::Scene::CastRay( const Vector3& a_Start, const Vector3& a_End, ERayCastChannel a_RayCastChannel, const PhysicsBodyFilter& a_BodyFilter, bool a_DrawDebug, Debug::EDrawDuration a_DrawDurationType, float a_DebugDrawDuration, Color a_DebugLineColor, Color a_DebugHitColor ) const
+	//{
+	//	RayCastResult result = m_PhysicsScene->CastRay( a_Start, a_Start + a_End, a_RayCastChannel, a_BodyFilter );
 
-	#if TE_USE_DEBUG
-		if ( a_DrawDebug )
-		{
-			Debug::DrawLine( a_Origin, a_Origin + a_Direction * result.Distance, a_DebugLineColor, a_DrawDurationType, a_DebugDrawDuration );
+	//#if TE_DRAW_DEBUG
+	//	if ( a_DrawDebug )
+	//	{
+	//		Debug::DrawLine( result.RayStart, result.RayEnd, a_DebugLineColor, a_DrawDurationType, a_DebugDrawDuration );
 
-			if ( result.Hit )
-			{
-				Debug::DrawSphereFilled( result.Position, 0.1f, a_DebugHitColor, a_DrawDurationType, a_DebugDrawDuration );
-			}
-		}
-	#endif
+	//		if ( result.Hit )
+	//		{
+	//			TODO( "Draw a sphere at the hit position" );
+	//			AABB aabb = { result.Position - Vector3( 0.1f ), result.Position + Vector3( 0.1f ) };
+	//			Debug::DrawAABBFilled( aabb, a_DebugHitColor, a_DrawDurationType, a_DebugDrawDuration );
+	//		}
+	//	}
+	//#endif
 
-		return result;
-	}
+	//	return result;
+	//}
 
 	template<> void Scene::InitComponent( RigidBodyComponent& a_Component );
 	template<> void Scene::InitComponent( SphereColliderComponent& a_Component );

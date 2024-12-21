@@ -64,7 +64,7 @@ namespace Tridium {
 
 			// -- MetaData Properties --
 
-			using CleanClassNameProp = MetaDataProperty<"_Internal_" "CleanClassName"_hs, std::string>;
+			using CleanClassNameProp = MetaDataProperty<Internal( "CleanClassName" ), std::string>;
 			using ClassFlagsProp = MetaDataProperty<Internal( "ClassFlags" ), EClassFlags>;
 
 			// -- Serialization Properties --

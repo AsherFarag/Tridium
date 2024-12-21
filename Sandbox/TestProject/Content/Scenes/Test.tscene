@@ -58,6 +58,7 @@ GameObjects:
       m_GunMuzzleFlashDuration: 0.100000001
       m_GunMuzzleFlashIntensity: 100
       m_GunRecoilDistance: 0.100000001
+      m_GunLerp: 0
       m_GunLerpSpeed: 5
       m_FireRate: 0.300000012
       m_Force: 1000
@@ -165,7 +166,7 @@ GameObjects:
     GUID: 7464751459525842126
     Tag: Static Mesh
     Transform:
-      Position: [35.7697372, 6.23622036, 0]
+      Position: [35.7697372, 0.429004192, 0]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
       Children: []
@@ -174,8 +175,8 @@ GameObjects:
       Materials: []
       CastShadows: true
     RigidBodyComponent:
-      m_PhysicsLayer: Dynamic
-      m_MotionType: Dynamic
+      m_PhysicsLayer: Static
+      m_MotionType: Static
       m_Mass: 1
       m_GravityScale: 1
       m_Restitution: 0.5
@@ -420,6 +421,8 @@ GameObjects:
           Near: -1000
           Far: 1000
         m_ProjectionType: Perspective
+        m_Projection: "Refl Error: No serialize function for type <struct glm::mat<4,4,float,0>>(void) noexcept"
+        m_ViewportSize: [582, 318]
       IsMainCamera: true
   - GameObject: 14
     GUID: 16539571455283191931

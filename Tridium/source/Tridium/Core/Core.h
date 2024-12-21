@@ -66,6 +66,14 @@ namespace Tridium {
 
 #if !TE_SHIPPING
 	#define TE_USE_DEBUG 1
+#else
+	#define TE_USE_DEBUG 0
+#endif
+
+#if TE_USE_DEBUG
+	#define TE_DRAW_DEBUG 1
+#else
+	#define TE_DRAW_DEBUG 0
 #endif
 
 // ------------------

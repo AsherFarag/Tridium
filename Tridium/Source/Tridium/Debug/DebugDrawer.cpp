@@ -292,9 +292,39 @@ namespace Tridium::Debug {
 		DrawTriangle( corners[3], corners[4], corners[0], a_Color, a_DrawDuration, a_Duration );
 	}
 
-	void DebugDrawer::DrawFrustum( const Matrix4& a_Projection, const Matrix4& a_View, const Color& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
+	void DebugDrawer::DrawFrustum( const Matrix4& a_ViewProjection, const Color& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
 	{
+		Matrix4 invViewProjection = glm::inverse( a_ViewProjection );
 
+		// Near plane
+		Vector3 nearTopLeft = invViewProjection * Vector4{ -1.0f, 1.0f, -1.0f, 1.0f };
+		Vector3 nearTopRight = invViewProjection * Vector4{ 1.0f, 1.0f, -1.0f, 1.0f };
+		Vector3 nearBottomLeft = invViewProjection * Vector4{ -1.0f, -1.0f, -1.0f, 1.0f };
+		Vector3 nearBottomRight = invViewProjection * Vector4{ 1.0f, -1.0f, -1.0f, 1.0f };
+
+		// Far plane
+		Vector3 farTopLeft = invViewProjection * Vector4{ -1.0f, 1.0f, 1.0f, 1.0f };
+		Vector3 farTopRight = invViewProjection * Vector4{ 1.0f, 1.0f, 1.0f, 1.0f };
+		Vector3 farBottomLeft = invViewProjection * Vector4{ -1.0f, -1.0f, 1.0f, 1.0f };
+		Vector3 farBottomRight = invViewProjection * Vector4{ 1.0f, -1.0f, 1.0f, 1.0f };
+
+		// Near plane
+		DrawLine( nearTopLeft, nearTopRight, a_Color, a_DrawDuration, a_Duration );
+		DrawLine( nearTopRight, nearBottomRight, a_Color, a_DrawDuration, a_Duration );
+		DrawLine( nearBottomRight, nearBottomLeft, a_Color, a_DrawDuration, a_Duration );
+		DrawLine( nearBottomLeft, nearTopLeft, a_Color, a_DrawDuration, a_Duration );
+
+		// Far plane
+		DrawLine( farTopLeft, farTopRight, a_Color, a_DrawDuration, a_Duration );
+		DrawLine( farTopRight, farBottomRight, a_Color, a_DrawDuration, a_Duration );
+		DrawLine( farBottomRight, farBottomLeft, a_Color, a_DrawDuration, a_Duration );
+		DrawLine( farBottomLeft, farTopLeft, a_Color, a_DrawDuration, a_Duration );
+
+		// Connect near and far plane
+		DrawLine( nearTopLeft, farTopLeft, a_Color, a_DrawDuration, a_Duration );
+		DrawLine( nearTopRight, farTopRight, a_Color, a_DrawDuration, a_Duration );
+		DrawLine( nearBottomRight, farBottomRight, a_Color, a_DrawDuration, a_Duration );
+		DrawLine( nearBottomLeft, farBottomLeft, a_Color, a_DrawDuration, a_Duration );
 	}
 
 	DebugDrawer::DebugDrawer()
@@ -416,6 +446,8 @@ namespace Tridium::Debug {
 
 		m_Shader->Bind();
 		m_Shader->SetMatrix4( "u_ViewProjection", a_ViewProjection );
+
+		glLineWidth( 2.0f );
 
 		// Draw lines
 		{

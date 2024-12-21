@@ -300,7 +300,7 @@ struct ::Tridium::Refl::Internal::Reflector<Enum> \
 		factory.prop( Props::ClassFlagsProp::ID, EClassFlags::ECF_None ); \
 		factory.prop( Props::CleanClassNameProp::ID, #Enum ); \
 		factory.prop( Props::DrawPropertyProp::ID, _DRAW_ENUM_FUNC(Enum) ); \
-		factory.prop(Props::TextDeserializeProp::ID,                                   \
+		factory.prop(Props::TextSerializeProp::ID,                                     \
               +[](::Tridium::IO::Archive& a_Archive, const MetaAny& a_Data)            \
               {                                                                        \
                   a_Archive <<  s_EnumToString.at(a_Data.cast<ClassType>());           \

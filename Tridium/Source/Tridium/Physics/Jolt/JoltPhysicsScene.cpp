@@ -179,7 +179,7 @@ namespace Tridium {
 		if ( m_PhysicsSystem.GetNarrowPhaseQuery().CastRay( ray, rayResult, {}, JoltObjectLayerFilter(a_Channel), JoltBodyFilter(a_BodyFilter)) )
 		{
 			hit.Hit = true;
-			hit.Position = Util::ToTridiumVec3( ray.mOrigin + rayResult.mFraction * ray.mDirection );
+			hit.Position = Util::ToTridiumVec3( ray.GetPointOnRay( rayResult.mFraction ) );
 			hit.Normal = glm::normalize( Util::ToTridiumVec3( ray.mDirection ) );
 			hit.Distance = glm::distance( a_Start, hit.Position );
 			hit.HitBodyID = rayResult.mBodyID.GetIndexAndSequenceNumber();

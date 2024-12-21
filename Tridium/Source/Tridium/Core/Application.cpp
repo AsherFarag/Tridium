@@ -1,5 +1,6 @@
 #include "tripch.h"
 #include "Application.h"
+#include <Tridium/IO/FileManager.h>
 
 #if IS_EDITOR
 	#include <Editor/Editor.h>
@@ -7,8 +8,6 @@
 #else
 	#include <Tridium/Asset/RuntimeAssetManager.h>
 #endif // IS_EDITOR
-
-#include <Tridium/Debug/DebugDrawer.h>
 
 // TEMP ?
 #include <Tridium/Rendering/GameViewport.h>
@@ -22,79 +21,19 @@ namespace Tridium {
 
 	Application* Application::s_Instance = nullptr;
 
+	///////////////////////////////////////////////////////////////////////////////////////////
 	Application::Application( const std::string& a_ProjectPath )
 	{
-		// Set the singleton instance
-		TE_CORE_ASSERT( !s_Instance, "Application already exists!" );
-		s_Instance = this;
-
-		// Initialise Project
+		TODO( "Temp fix" );
+		if ( a_ProjectPath.empty() )
 		{
-			m_Project = MakeShared<Project>();
-			if ( !a_ProjectPath.empty() )
-			{
-				ProjectSerializer s( m_Project );
-				s.DeserializeText( a_ProjectPath );
-				m_Project->GetConfiguration().ProjectDirectory = IO::FilePath( a_ProjectPath ).GetParentPath();
-			}
+			m_EngineAssetsDirectory = "EngineAssets";
 		}
 
-		// Initialise Window
-		{
-			m_Window = Window::Create();
-			m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
-		}
-
-		// Initialise Script Engine
-		{
-			Script::ScriptEngine::s_Instance = MakeUnique<Script::ScriptEngine>();
-			Script::ScriptEngine::s_Instance->Init();
-		}
-
-		// Initialise Physics Engine
-		{
-			m_PhysicsEngine = PhysicsEngine::Create();
-			m_PhysicsEngine->Init();
-		}
-
-		// Initialise Asset Manager
-		{
-			InitializeAssetManager();
-		}
-
-		// Initialise Scene
-		{
-			if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( m_Project->GetConfiguration().StartScene ) )
-			{
-				m_ActiveScene = scene;
-			}
-			else
-			{
-				TE_CORE_WARN( "Failed to load start scene! - Creating new scene" );
-				m_ActiveScene = MakeShared<Scene>();
-			}
-		}
-
-		// Initialise ImGui
-		{
-			m_ImGuiLayer = new ImGuiLayer();
-			PushOverlay( m_ImGuiLayer );
-		}
-
-		// Initialise the render pipeline
-		RenderCommand::Init();
-
-		// Initialise the editor
-#if IS_EDITOR
-		Editor::EditorApplication::Init();
-#endif // IS_EDITOR
-
-#if TE_USE_DEBUG
-		Debug::DebugDrawer::Init();
-#endif // TE_USE_DEBUG
-
+		Initialize( a_ProjectPath );
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////
 	Application::~Application()
 	{
 	}
@@ -271,20 +210,127 @@ namespace Tridium {
 				break;
 		}
 	}
-	
+
 	void Application::SetScene( SharedPtr<Scene> a_Scene )
 	{
 		s_Instance->m_ActiveScene = a_Scene;
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////
+	void Application::Initialize( const std::string& a_ProjectPath )
+	{
+		// Set the singleton instance
+		TE_CORE_ASSERT( !s_Instance, "Application already exists!" );
+		s_Instance = this;
+
+		TE_CORE_INFO( "Initialising Application" );
+
+		InitializeProject( a_ProjectPath );
+
+		// Initialise Window
+		{
+			m_Window = Window::Create();
+			m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
+		}
+
+		// Initialise Script Engine
+		{
+			TE_CORE_INFO( " - Initialising Script Engine" );
+			Script::ScriptEngine::s_Instance = MakeUnique<Script::ScriptEngine>();
+			Script::ScriptEngine::s_Instance->Init();
+		}
+
+		// Initialise Physics Engine
+		{
+			TE_CORE_INFO( " - Initialising Physics Engine" );
+			m_PhysicsEngine = PhysicsEngine::Create();
+			m_PhysicsEngine->Init();
+		}
+
+		// Initialise Asset Manager
+		{
+			TE_CORE_INFO( " - Initialising Asset Manager" );
+			InitializeAssetManager();
+		}
+
+		// Initialise Start Scene
+		{
+			TE_CORE_INFO( "		- Loading start scene" );
+			if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( m_Project->GetConfiguration().StartScene ) )
+			{
+				m_ActiveScene = scene;
+			}
+			else
+			{
+				TE_CORE_WARN( "		- Failed to load start scene! - Creating new scene" );
+				m_ActiveScene = MakeShared<Scene>();
+			}
+		}
+
+		// Initialise ImGui
+		{
+			TE_CORE_INFO( " - Initialising ImGui" );
+			m_ImGuiLayer = new ImGuiLayer();
+			PushOverlay( m_ImGuiLayer );
+		}
+
+		// Initialise the render pipeline
+		TE_CORE_INFO( " - Initialising Render Pipeline" );
+		RenderCommand::Init();
+
+		// Initialise the editor
+#if IS_EDITOR
+		TE_CORE_INFO( " - Initialising Editor" );
+		Editor::EditorApplication::Init();
+#endif // IS_EDITOR
+
+#if TE_USE_DEBUG
+		// Initialise Debug Drawer
+		TE_CORE_INFO( " - Initialising Debug Drawer" );
+		Debug::DebugDrawer::Init();
+#endif // TE_USE_DEBUG
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////
+	void Application::InitializeProject( const IO::FilePath& a_Path )
+	{
+		m_Project = MakeShared<Project>();
+
+		// If a project path was provided, load the project
+		if ( a_Path.Exists() )
+		{
+			ProjectSerializer s( m_Project );
+			s.DeserializeText( a_Path );
+			m_Project->GetConfiguration().ProjectDirectory = IO::FilePath( a_Path ).GetParentPath();
+		}
+		// Otherwise, attempt to find a project file in the current directory
+		else
+		{
+			TE_CORE_TRACE( "No project path provided - searching for project file in '{0}'", IO::FileManager::GetWorkingDirectory().ToString() );
+			IO::FilePath projectPath = IO::FileManager::GetWorkingDirectory() / "Project.tproject"; //IO::FileManager::FindFileWithExtension( ".tproject" );
+			if ( projectPath.Exists() )
+			{
+				TE_CORE_TRACE( "Project file found at '{0}'", projectPath.ToString() );
+				ProjectSerializer s( m_Project );
+				s.DeserializeText( projectPath );
+				m_Project->GetConfiguration().ProjectDirectory = projectPath.GetParentPath();
+			}
+			else
+			{
+				TE_CORE_WARN( "No project file found!" );
+			}
+		}
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////
 	void Application::InitializeAssetManager()
 	{
 	#if IS_EDITOR
-		m_AssetManager = MakeShared<Editor::EditorAssetManager>();
+		//m_AssetManager = MakeShared<Editor::EditorAssetManager>();
 	#else
 		//m_AssetManager = MakeShared<RuntimeAssetManager>();
 	#endif // IS_EDITOR
+
 		m_AssetManager = MakeShared<Editor::EditorAssetManager>();
 		m_AssetManager->Init();
 	}

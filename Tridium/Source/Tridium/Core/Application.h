@@ -44,7 +44,7 @@ namespace Tridium {
 
 		static Application& Get() { return *s_Instance; }
 		static SharedPtr<Project> GetActiveProject() { return Get().m_Project; }
-		static IO::FilePath GetEngineAssetsDirectory() { return "../Tridium/EngineAssets"; }
+		static const IO::FilePath& GetEngineAssetsDirectory() { return Get().m_EngineAssetsDirectory; }
 
 		Window& GetWindow() { return *m_Window; }
 		uint32_t GetFPS() const { return m_PrevFrameInfo.FPS; }
@@ -56,6 +56,8 @@ namespace Tridium {
 		static void SetScene( SharedPtr<Scene> a_Scene );
 
 	private:
+		void Initialize( const std::string& a_ProjectPath );
+		void InitializeProject( const IO::FilePath& a_Path );
 		void InitializeAssetManager();
 		bool OnWindowClosed( WindowCloseEvent& e );
 		void Shutdown();
@@ -76,6 +78,8 @@ namespace Tridium {
 
 		FrameInfo m_PrevFrameInfo;
 		uint32_t m_MaxFPS = 144u;
+
+		IO::FilePath m_EngineAssetsDirectory = "../Tridium/EngineAssets";
 
 	private:
 		friend class AssetManager;

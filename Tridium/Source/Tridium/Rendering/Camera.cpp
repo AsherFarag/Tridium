@@ -26,46 +26,27 @@ namespace Tridium {
 	Frustum Camera::GetPerspectiveFrustum( const Vector3& a_Position, Vector3 a_Forward ) const
 	{
 		// Ensure forward is normalized
-		a_Forward = glm::normalize( a_Forward );
+		const Vector3 normal = glm::normalize( a_Forward );
 		Frustum frustum;
-
-		// Precompute necessary values
-		const float aspect = GetAspectRatio();
 		const float halfVSide = m_Perspective.Far * glm::tan( glm::radians( m_Perspective.FOV ) * 0.5f );
-		const float halfHSide = halfVSide * aspect;
-		const Vector3 frontMultFar = a_Forward * m_Perspective.Far;
+		const float halfHSide = halfVSide * GetAspectRatio();
+		const Vector3 frontMultFar = normal * m_Perspective.Far;
+		const Vector3 frontMultNear = normal * m_Perspective.Near;
 
-		// Right and up vectors for camera basis
-		const Vector3 up = glm::normalize( Vector3( 0.0f, 1.0f, 0.0f ) );
-		const Vector3 right = glm::normalize( glm::cross( a_Forward, up ) );
+		const Vector3 right = glm::normalize( glm::cross( normal, { 0.0f, 1.0f, 0.0f } ) );
+		const Vector3 up = glm::normalize( glm::cross( right, normal ) );
 
-		// Near plane
-		frustum.Near.Normal = -a_Forward;
-		frustum.Near.Distance = glm::dot( a_Position + a_Forward * m_Perspective.Near, frustum.Near.Normal );
+		static const auto CreatePlane = +[]( const Vector3& a_Normal, const Vector3& a_Position ) -> Plane
+			{
+				return { a_Normal, glm::dot( a_Normal, a_Position ) };
+			};
 
-		// Far plane
-		frustum.Far.Normal = a_Forward;
-		frustum.Far.Distance = glm::dot( a_Position + frontMultFar, frustum.Far.Normal );
-
-		// Top plane
-		const Vector3 topNormal = glm::normalize( glm::cross( glm::normalize( right + up * halfVSide ), a_Forward ) );
-		frustum.Top.Normal = topNormal;
-		frustum.Top.Distance = glm::dot( a_Position, topNormal );
-
-		// Bottom plane
-		const Vector3 bottomNormal = glm::normalize( glm::cross( glm::normalize( right - up * halfVSide ), a_Forward ) );
-		frustum.Bottom.Normal = bottomNormal;
-		frustum.Bottom.Distance = glm::dot( a_Position, bottomNormal );
-
-		// Right plane
-		const Vector3 rightNormal = glm::normalize( glm::cross( glm::normalize( up - right * halfHSide ), a_Forward ) );
-		frustum.Right.Normal = rightNormal;
-		frustum.Right.Distance = glm::dot( a_Position, rightNormal );
-
-		// Left plane
-		const Vector3 leftNormal = glm::normalize( glm::cross( glm::normalize( up + right * halfHSide ), a_Forward ) );
-		frustum.Left.Normal = leftNormal;
-		frustum.Left.Distance = glm::dot( a_Position, leftNormal );
+		frustum.Near = CreatePlane( normal, a_Position + frontMultNear );
+		frustum.Far = CreatePlane( -normal, a_Position + frontMultFar);
+		frustum.Right = CreatePlane( glm::cross( frontMultFar - right * halfHSide, up ), a_Position );
+		frustum.Left = CreatePlane( glm::cross( up, frontMultFar + right * halfHSide ), a_Position );
+		frustum.Top = CreatePlane( glm::cross( right, frontMultFar + up * halfVSide ), a_Position );
+		frustum.Bottom = CreatePlane( glm::cross( frontMultFar - up * halfVSide, right ), a_Position );
 
 		return frustum;
 	}

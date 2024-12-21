@@ -192,6 +192,8 @@ namespace Tridium {
 			.CameraFrustum = a_Camera.GetFrustum( a_CameraPosition, cameraForward ),
 		};
 
+		//Debug::DrawFrustum( m_SceneInfo.ProjectionMatrix * m_SceneInfo.ViewMatrix, Debug::Colors::Green, Debug::EDrawDuration::OneFrame );
+
 		// - Submit Directional Lights -
 		{
 			auto directionalLightComponents = m_Scene.m_Registry.view<DirectionalLightComponent, TransformComponent>();
@@ -365,14 +367,14 @@ namespace Tridium {
 						// Get the mesh bounds
 						AABB meshBounds = mesh->GetBoundingBox().Transform( transform.GetWorldTransform() );
 
-						Debug::DrawAABB( meshBounds, Debug::Colors::Red, Debug::EDrawDuration::OneFrame);
+						//Debug::DrawAABB( meshBounds, Debug::Colors::Red, Debug::EDrawDuration::OneFrame);
 
 						// Check if the mesh is in the camera's view frustum
-						if ( !m_SceneInfo.CameraFrustum.Intersects( meshBounds ) )
-						{
-							m_RenderStats.CulledDrawCalls++;
-							return;
-						}
+						//if ( !m_SceneInfo.CameraFrustum.Intersects( meshBounds ) )
+						//{
+						//	m_RenderStats.CulledDrawCalls++;
+						//	return;
+						//}
 					}
 
 

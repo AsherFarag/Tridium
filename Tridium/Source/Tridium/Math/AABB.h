@@ -89,6 +89,12 @@ namespace Tridium {
 			Max = center + size;
 		}
 
+		void Translate( const Vector3& a_Translation )
+		{
+			Min += a_Translation;
+			Max += a_Translation;
+		}
+
 		Vector3 GetCenter() const
 		{
 			return ( Min + Max ) * 0.5f;

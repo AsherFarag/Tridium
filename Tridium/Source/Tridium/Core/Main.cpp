@@ -18,6 +18,11 @@ int main( int argc, char** argv )
 
 	Tridium::Application app(ProjectPath);
 	app.Run();
+
+	// Wait for a key press before closing the console
+	std::cin.get();
+
+	return 0;
 }
 
 #endif // TE_PLATFORM_WINDOWS

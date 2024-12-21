@@ -7,9 +7,28 @@
 // Systems
 #include <Tridium/Scripting/ScriptSystem.h>
 
-
-
 namespace Tridium {
+
+	RayCastResult Scene::CastRay( const Vector3& a_Start, const Vector3& a_End, ERayCastChannel a_RayCastChannel, const PhysicsBodyFilter& a_BodyFilter, bool a_DrawDebug, Debug::EDrawDuration a_DrawDurationType, float a_DebugDrawDuration, Color a_DebugLineColor, Color a_DebugHitColor ) const
+	{
+		RayCastResult result = m_PhysicsScene->CastRay( a_Start, a_End, a_RayCastChannel, a_BodyFilter );
+
+#if TE_DRAW_DEBUG
+		if ( a_DrawDebug )
+		{
+			Debug::DrawLine( result.RayStart, result.RayStart + result.RayEnd, a_DebugLineColor, a_DrawDurationType, a_DebugDrawDuration );
+
+			if ( result.Hit )
+			{
+				TODO( "Draw a sphere at the hit position" );
+				AABB aabb = { result.Position - Vector3( 0.1f ), result.Position + Vector3( 0.1f ) };
+				Debug::DrawAABBFilled( aabb, a_DebugHitColor, a_DrawDurationType, a_DebugDrawDuration );
+			}
+		}
+#endif
+
+		return result;
+	}
 
 	Scene::Scene(const std::string& name)
 		: m_Name( name ), m_SceneRenderer(*this)
@@ -66,7 +85,6 @@ namespace Tridium {
 
 	Scene::~Scene()
 	{
-		m_Registry.clear();
 	}
 
 	void Scene::OnBegin()

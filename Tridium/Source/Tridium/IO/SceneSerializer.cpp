@@ -221,7 +221,7 @@ namespace Tridium::IO {
 				continue;
 
 			out << YAML::Key << type.GetCleanTypeName();
-			type.TrySerialize( out, component );
+			type.TrySerialize( out, type.FromVoid( component ) );
 		}
 
 

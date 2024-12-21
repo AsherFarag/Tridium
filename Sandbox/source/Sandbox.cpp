@@ -35,6 +35,26 @@ public:
 			}
 		}
 
+		// Zoom
+		{
+			m_IsZoomed = Input::IsMouseButtonPressed( Input::MOUSE_BUTTON_RIGHT );
+
+			if ( m_IsZoomed )
+				m_ZoomLerp += Time::DeltaTime() * m_ZoomLerpSpeed;
+			else
+				m_ZoomLerp -= Time::DeltaTime() * m_ZoomLerpSpeed;
+
+			m_ZoomLerp = Math::Clamp( m_ZoomLerp, 0.0f, 1.0f );
+
+			
+			if ( CharacterControllerComponent* controller = GetGameObject().TryGetComponent<CharacterControllerComponent>() )
+			{
+				CameraComponent* camera = controller->GetCameraGameObject().TryGetComponent<CameraComponent>();
+				float fov = Math::Lerp( m_DefaultFov, m_DefaultFov * m_ZoomFovPercentage, m_ZoomLerp );
+				camera->SceneCamera.SetPerspectiveFOV( fov );
+			}
+		}
+
 		m_GunLerp -= Time::DeltaTime() * m_GunLerpSpeed;
 		m_GunLerp = Math::Clamp( m_GunLerp, 0.0f, 1.0f );
 
@@ -96,7 +116,7 @@ protected:
 			}
 		}
 
-		m_FireTimer -= m_FireRate;
+		m_FireTimer = 0.0f;
 		return true;
 	}
 
@@ -128,6 +148,13 @@ protected:
 	float m_FireRate = 0.3f;
 	float m_FireTimer = 0.0f;
 	float m_Force = 1000.0f;
+
+
+	float m_DefaultFov = 90.0f;
+	float m_ZoomFovPercentage = 0.5f;
+	float m_ZoomLerp = 0.0f;
+	float m_ZoomLerpSpeed = 5.0f;
+	bool m_IsZoomed = false;
 };
 
 BEGIN_REFLECT_COMPONENT( ShooterPlayerComponent )
@@ -137,12 +164,16 @@ BEGIN_REFLECT_COMPONENT( ShooterPlayerComponent )
 	PROPERTY( m_GunMuzzleFlashDuration, Serialize | EditAnywhere )
 	PROPERTY( m_GunMuzzleFlashIntensity, Serialize | EditAnywhere )
 	PROPERTY( m_GunRecoilDistance, Serialize | EditAnywhere )
-	PROPERTY( m_GunLerp, Serialize | EditAnywhere )
+	PROPERTY( m_GunLerp, VisibleAnywhere )
 	PROPERTY( m_GunLerpSpeed, Serialize | EditAnywhere )
 	PROPERTY( m_FireRate, Serialize | EditAnywhere )
 	PROPERTY( m_Force, Serialize | EditAnywhere )
 	PROPERTY( m_GunMuzzleFlashTimer )
 	PROPERTY( m_DefaultGunPosition, EditAnywhere )
+	PROPERTY( m_DefaultFov, EditAnywhere )
+	PROPERTY( m_ZoomFovPercentage, EditAnywhere )
+	PROPERTY( m_ZoomLerpSpeed, VisibleAnywhere )
+	PROPERTY( m_IsZoomed, VisibleAnywhere )
 END_REFLECT( ShooterPlayerComponent )
 
 

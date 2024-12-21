@@ -70,7 +70,11 @@ namespace Tridium {
 
 		// Calculate bounding box for the mesh source
 		for ( const auto& submesh : meshSource->m_SubMeshes )
-			meshSource->m_BoundingBox.Expand( submesh.BoundingBox );
+		{
+			// Convert submesh bounding box to world space
+			AABB submeshAABB = submesh.BoundingBox.Transform( submesh.Transform );
+			meshSource->m_BoundingBox.Expand( submeshAABB );
+		}
 
 		return meshSource;
 	}

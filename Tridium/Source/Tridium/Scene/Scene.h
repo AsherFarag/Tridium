@@ -77,7 +77,7 @@ namespace Tridium {
 
 		// - Physics -
 
-		inline RayCastResult CastRay( const Vector3& a_Origin, const Vector3& a_Direction,
+		RayCastResult CastRay( const Vector3& a_Start, const Vector3& a_End,
 			ERayCastChannel a_RayCastChannel, const PhysicsBodyFilter& a_BodyFilter = {},
 			bool a_DrawDebug = false, 
 			Debug::EDrawDuration a_DrawDurationType = Debug::EDrawDuration::OneFrame, float a_DebugDrawDuration = 0.0f,

@@ -193,7 +193,7 @@ namespace Tridium::Editor {
 
 	void EditorAssetManager::RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency )
 	{
-		TE_CORE_INFO( "[AssetManager] Registering dependency: {0} -> {1}", a_Dependent.ID(), a_Dependency.ID() );
+		//TE_CORE_INFO( "[AssetManager] Registering dependency: {0} -> {1}", a_Dependent.ID(), a_Dependency.ID() );
 		m_AssetRegistry.AssetDependencies[a_Dependent].insert( a_Dependency );
 	}
 
@@ -413,6 +413,12 @@ namespace Tridium::Editor {
 			{
 				AssetMetaData metaData;
 				metaData.Path = asset["Path"].as<std::string>();
+
+				// Strip absolute path if it is inside the content directory
+				if ( metaData.Path.IsAbsolute() )
+				{
+					metaData.Path = IO::FilePath::Relative( metaData.Path, Application::GetActiveProject()->GetConfiguration().ProjectDirectory );
+				}
 
 				if ( !GetAbsolutePath( metaData.Path ).Exists() )
 				{
