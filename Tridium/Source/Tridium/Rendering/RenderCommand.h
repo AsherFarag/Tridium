@@ -21,6 +21,10 @@ namespace Tridium {
 
 		static inline void SetClearColor( const Vector4& a_Color ) { s_RendererAPI->SetClearColor( a_Color ); }
 
+		static inline void SetLineWidth( float a_Width ) { s_RendererAPI->SetLineWidth( a_Width ); }
+
+		static inline void SetPolygonMode( EFaces a_Faces, EPolygonMode a_PolygonMode ) { s_RendererAPI->SetPolygonMode( a_Faces, a_PolygonMode ); }
+
 		static inline void Clear() { s_RendererAPI->Clear(); }
 
 		static inline void DrawIndexed( const SharedPtr<VertexArray>& a_VertexArray ) { s_RendererAPI->DrawIndexed( a_VertexArray ); }

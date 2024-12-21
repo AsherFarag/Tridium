@@ -1,9 +1,12 @@
 Shader: 0
 AlbedoTexture: 18397644629807743083
-MetallicTexture: 0
+AlbedoIntensity: 1
+MetallicTexture: 14188683678562521315
+MetallicIntensity: 1
 RoughnessTexture: 6222639399811775340
-SpecularTexture: 0
+RoughnessIntensity: 1
 NormalTexture: 1945590970306288314
 OpacityTexture: 0
 EmissiveTexture: 13191145128629468662
+EmissiveIntensity: 1
 AOTexture: 6932676496202442266

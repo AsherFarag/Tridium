@@ -1,5 +1,5 @@
 #pragma once
-#ifdef IS_EDITOR
+#if IS_EDITOR
 #include <Tridium/ImGui/ImGui.h>
 #include <Tridium/Core/Application.h>
 

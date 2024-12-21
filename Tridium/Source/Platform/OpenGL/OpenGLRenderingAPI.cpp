@@ -110,6 +110,30 @@ namespace Tridium {
 		glClearColor( color.r, color.g, color.b, color.a );
 	}
 
+	void OpenGLRenderingAPI::SetLineWidth( float width )
+	{
+		glLineWidth( width );
+	}
+
+	void OpenGLRenderingAPI::SetPolygonMode( EFaces a_Faces, EPolygonMode a_PolygonMode )
+	{
+		switch ( a_PolygonMode )
+		{
+		case EPolygonMode::Fill:
+			glPolygonMode( a_Faces == EFaces::Front ? GL_FRONT : a_Faces == EFaces::Back ? GL_BACK : GL_FRONT_AND_BACK, GL_FILL );
+			break;
+		case EPolygonMode::Line:
+			glPolygonMode( a_Faces == EFaces::Front ? GL_FRONT : a_Faces == EFaces::Back ? GL_BACK : GL_FRONT_AND_BACK, GL_LINE );
+			break;
+		case EPolygonMode::Point:
+			glPolygonMode( a_Faces == EFaces::Front ? GL_FRONT : a_Faces == EFaces::Back ? GL_BACK : GL_FRONT_AND_BACK, GL_POINT );
+			break;
+		default:
+			TE_CORE_ASSERT( false, "Unknown polygon mode!" );
+			break;
+		}
+	}
+
 	void OpenGLRenderingAPI::Clear()
 	{
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -118,6 +142,11 @@ namespace Tridium {
 	void OpenGLRenderingAPI::DrawIndexed( const SharedPtr<VertexArray>& a_VertexArray )
 	{
 		glDrawElements( GL_TRIANGLES, a_VertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr );
+	}
+
+	void OpenGLRenderingAPI::DrawInstanced( const SharedPtr<VertexArray>& a_VertexArray, uint32_t a_InstanceCount )
+	{
+		glDrawElementsInstanced( GL_TRIANGLES, a_VertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr, a_InstanceCount );
 	}
 
 }

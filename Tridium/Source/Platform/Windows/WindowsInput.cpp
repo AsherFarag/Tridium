@@ -4,6 +4,9 @@
 #include <Tridium/Core/Application.h>
 #include <GLFW/glfw3.h>
 
+TODO( "TEMP?! " );
+#include <imgui.h>
+
 namespace Tridium {
 
 	Input* Input::s_Instance = new WindowsInput();
@@ -72,26 +75,44 @@ namespace Tridium {
 		switch ( a_Value )
 		{
 		case EInputModeValue::False:
+		{
 			value = GLFW_FALSE;
 			break;
+		}
 		case EInputModeValue::True:
+		{
 			value = GLFW_TRUE;
 			break;
+		}
 		case EInputModeValue::Cursor_Normal:
+		{
+			ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
 			value = GLFW_CURSOR_NORMAL;
 			break;
+		}
 		case EInputModeValue::Cursor_Hidden:
+		{
+			ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
 			value = GLFW_CURSOR_HIDDEN;
 			break;
+		}
 		case EInputModeValue::Cursor_Disabled:
+		{
+			ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
 			value = GLFW_CURSOR_DISABLED;
 			break;
+		}
 		case EInputModeValue::Cursor_Captured:
+		{
+			ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
 			value = GLFW_CURSOR_CAPTURED;
 			break;
+		}
 		default:
+		{
 			value = GLFW_INVALID_ENUM;
 			break;
+		}
 		}
 
 		auto window = static_cast<GLFWwindow*>( Application::Get().GetWindow().GetNativeWindow() );

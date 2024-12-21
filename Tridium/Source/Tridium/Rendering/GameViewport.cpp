@@ -3,12 +3,20 @@
 #include "Shader.h"
 #include "VertexArray.h"
 #include "RenderCommand.h"
+#include "Framebuffer.h"
 
 namespace Tridium {
 
 	GameViewport::GameViewport()
 		: m_Width( 1280 ), m_Height( 720 )
 	{
+	}
+
+	void GameViewport::Init( uint32_t a_Width, uint32_t a_Height )
+	{
+		m_Width = a_Width;
+		m_Height = a_Height;
+
 		FramebufferSpecification FBOspecification;
 		FBOspecification.Attachments = { EFramebufferTextureFormat::RGBA16F, EFramebufferTextureFormat::Depth };
 		FBOspecification.Width = m_Width;

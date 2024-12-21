@@ -11,8 +11,7 @@ namespace Tridium {
 		REFLECT( SpriteComponent );
 	public:
 		SpriteComponent() = default;
-		SpriteComponent( TextureHandle a_Texture )
-			: m_Texture( a_Texture ) {}
+		SpriteComponent( TextureHandle a_Texture );
 		~SpriteComponent() = default;
 
 		TextureHandle GetTexture() { return m_Texture; }
@@ -21,10 +20,5 @@ namespace Tridium {
 	private:
 		TextureHandle m_Texture;
 	};
-
-	BEGIN_REFLECT_COMPONENT( SpriteComponent )
-		BASE( Component )
-		PROPERTY( m_Texture, FLAGS( Serialize, EditAnywhere ) )
-	END_REFLECT( SpriteComponent )
 
 }

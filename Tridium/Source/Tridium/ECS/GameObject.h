@@ -1,18 +1,19 @@
 #pragma once
-#include <Tridium/Utils/Reflection/ReflectionFwd.h>
+#include <Tridium/Reflection/ReflectionFwd.h>
+#include <Tridium/Reflection/MetaTypes.h>
 
 // TEMP ?
 #include <Tridium/Core/Application.h>
 
 namespace Tridium {
 
+	// Forward declarations
 	class Component;
 	class ScriptableComponent;
 	class TagComponent;
 	class GUIDComponent;
 	class TransformComponent;
-
-	typedef entt::entity EntityID;
+	// -------------------
 
 	// A GameObject is simply a wrapper around an EntityID.
 	class GameObject
@@ -20,7 +21,8 @@ namespace Tridium {
 		REFLECT( GameObject );
 		friend class Scene;
 	public:
-		GameObject( EntityID id = entt::null );
+		GameObject( EntityIDType a_ID ) : m_ID( static_cast<EntityID>( a_ID ) ) {}
+		GameObject( EntityID a_ID = INVALID_ENTITY_ID ) : m_ID( a_ID ) {}
 		operator uint32_t () { return (uint32_t)m_ID; }
 		operator const uint32_t() const { return (uint32_t)m_ID; }
 		operator EntityID () { return m_ID; }
@@ -41,6 +43,9 @@ namespace Tridium {
 
 		template <typename T>
 		inline T* TryGetComponent() const;
+
+		template <typename T>
+		inline T* TryGetComponentInChildren() const;
 
 		template <typename T>
 		inline bool HasComponent() const;
@@ -73,8 +78,13 @@ namespace Tridium {
 		void DetachChild( GameObject a_Child );
 		GameObject GetChild( const std::string& a_Tag ) const; /* Slow operation, avoid if possible. */
 		std::vector<GameObject>& GetChildren();
+		const std::vector<GameObject>& GetChildren() const;
 
 		// --------------------
+
+	private:
+		template <typename T>
+		inline T* Internal_TryGetComponentInChildren() const;
 
 	private:
 		EntityID m_ID;

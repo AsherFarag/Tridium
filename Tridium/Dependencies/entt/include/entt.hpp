@@ -7,24 +7,12 @@
 
 /* Begin Tridium */
 
+#pragma once
+
 #ifndef ENTT_HPP
 #define ENTT_HPP
 
-namespace Tridium {
-    namespace Refl {
-
-        enum class EPropertyFlag : unsigned short 
-        {
-            None                = 0,
-			Serialize           = BIT( 0 ), /* Defines this property as serializable. */
-            EditAnywhere        = BIT( 1 ), /* Defines this property as Editable from the Editor Inspector. */
-            VisibleAnywhere     = BIT( 2 ), /* Defines this property as Visible from the Editor Inspector. */
-        };
-
-        typedef unsigned short PropertyFlags;
-
-    } // namespace Refl
-} // namespace Tridium
+#include <Tridium/Reflection/MetaFlags.h> 
 
 #endif // ENTT_HPP
 
@@ -60434,7 +60422,8 @@ struct meta_data_node {
     
     /* Begin Tridium */
 
-    Tridium::Refl::PropertyFlags propFlags{ 0u };
+    any scriptProp;
+    Tridium::Refl::EPropertyFlags propFlags{ 0u };
 	std::string name{};
 
     /* End Tridium */
@@ -61633,8 +61622,16 @@ struct meta_data {
      * @brief Returns the Property Flags of this meta data.
      * @return The EPropertyFlags of this meta data.
      */
-    [[nodiscard]] Tridium::Refl::PropertyFlags propFlags() const noexcept {
+    [[nodiscard]] Tridium::Refl::EPropertyFlags propFlags() const noexcept {
         return node->propFlags;
+    }
+
+    [[nodiscard]] const any& scriptProp() const noexcept {
+        return node->scriptProp;
+    }
+
+    void _setScriptProp( const any& scriptProp ) {
+        const_cast<internal::meta_data_node*>( node )->scriptProp = scriptProp;
     }
 
     /* </Tridium> */
@@ -64186,7 +64183,7 @@ public:
      */
     template<auto Data, typename Policy = as_is_t>
     auto data(const id_type id,
-        /* Begin Tridium */ const Tridium::Refl::PropertyFlags propFlags = 0u, const char* nameID = "NoNameSet" /* End Tridium */) noexcept {
+        /* Begin Tridium */ const Tridium::Refl::EPropertyFlags propFlags = 0u, const char* nameID = "NoNameSet", const entt::any& scriptProp = entt::any()  /* End Tridium */) noexcept {
 
         if constexpr(std::is_member_object_pointer_v<decltype(Data)>) {
             using data_type = std::invoke_result_t<decltype(Data), Type &>;
@@ -64199,6 +64196,7 @@ public:
 
                     /* Begin Tridium */
 
+                    scriptProp,
                     propFlags,
                     nameID,
 
@@ -64229,6 +64227,7 @@ public:
 
                     /* Begin Tridium */
 
+                    scriptProp,
                     propFlags,
                     nameID,
 

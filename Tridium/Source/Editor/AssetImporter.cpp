@@ -1,5 +1,5 @@
 #include "tripch.h"
-#ifdef IS_EDITOR
+#if IS_EDITOR
 #include "AssetImporter.h"
 #include <Tridium/Asset/EditorAssetManager.h>
 #include <Editor/Panels/Asset/MeshSourceImporterPanel.h>
@@ -34,12 +34,12 @@ namespace Tridium::Editor {
         case EAssetType::CubeMap:
             EditorAssetManager::Get()->ImportAsset( absolutePath );
             break;
-        case EAssetType::Lua:
+        case EAssetType::LuaScript:
             EditorAssetManager::Get()->ImportAsset( absolutePath );
             break;
         }
 
-		return AssetHandle::InvalidGUID;
+		return AssetHandle::InvalidID;
     }
 }
 

@@ -1,66 +1,35 @@
 #pragma once
 #include <Tridium/ECS/Components/Component.h>
-//#include <Tridium/Scripting/Script.h>
+#include <Tridium/Scripting/Script.h>
 
 namespace Tridium {
 
-	class LuaScriptComponent : public ScriptableComponent
+	// Forward declarations
+	namespace Script {
+		class ScriptEngine;
+		class ScriptSystem;
+	}
+	// -------------------
+
+	class LuaScriptComponent : public Component
 	{
 		REFLECT( LuaScriptComponent );
-		friend class ScriptEngine;
-		friend class GameObject;
+	public:
+		LuaScriptComponent();
+		virtual ~LuaScriptComponent();
 
-	//public:
-	//	LuaScriptComponent();
-	//	LuaScriptComponent( const SharedPtr<Script>& a_Script );
-	//	LuaScriptComponent( const std::string& a_Script );
-	//	~LuaScriptComponent();
+	protected:
+		LuaScriptHandle m_Script;
+		// Contains an instance of the script that stores it's own local variables and functions.
+		Script::ScriptInstance m_Environment;
 
-	//	virtual void OnUpdate() override;
+		Script::ScriptFunction m_OnBeginPlay;
+		Script::ScriptFunction m_OnUpdate;
+		Script::ScriptFunction m_OnDestroy;
 
-	//	SharedPtr<Script>& GetScript() { return m_Script; }
-	//	void SetScript( const SharedPtr<Script>&a_Script );
-
-	//	template <typename T>
-	//	auto operator[]( T&& key )& { return m_Environment[ key ]; }
-	//	template <typename T>
-	//	auto operator[]( T&& key ) const& { return m_Environment[ key ]; }
-	//	template <typename T>
-	//	auto operator[]( T&& key )&& { return m_Environment[ key ]; }
-
-	//private:
-	//	virtual void OnConstruct() override;
-	//	virtual void OnDestroy() override;
-
-	//	void Compile();
-
-	//	template <typename... Args>
-	//	bool CallLuaFunction( sol::protected_function & func, Args&&... args )
-	//	{
-	//		if ( !m_Script )
-	//			return false;
-
-	//		if ( func.valid() )
-	//		{
-	//			func( std::forward<Args>( args )... );
-	//			return true;
-	//		}
-	//		else
-	//		{
-	//			TE_CORE_ERROR( "LUA - Function call failed!" );
-	//			return false;
-	//		}
-	//	}
-
-	//private:
-	//	SharedPtr<Script> m_Script;
-	//	// Every instance of LuaScriptComponent has its own environment so,
-	//	// multiple instances can reference a script but still store their local members.
-	//	sol::environment m_Environment;
-
-	//	sol::protected_function Lua_OnConstruct;
-	//	sol::protected_function Lua_OnDestroy;
-	//	sol::protected_function Lua_OnUpdate;
+		// ================================
+		friend Script::ScriptEngine;
+		friend Script::ScriptSystem;
 	};
 
 }

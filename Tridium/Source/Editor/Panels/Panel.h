@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef IS_EDITOR
+#if IS_EDITOR
 #include <Tridium/ImGui/ImGui.h>
 #include <Tridium/Events/Eventsfwd.h>
 
@@ -117,6 +117,24 @@ namespace Tridium::Editor {
 			}
 
 			return nullptr;
+		}
+
+		template <typename T>
+		T* GetOrEmplacePanel()
+		{
+			static_assert( std::is_base_of_v<Panel, T>, "T must be derived from Panel!" );
+			auto typeHash = typeid( T ).hash_code();
+
+			// If panel exists
+			if ( auto it = m_Panels.find( typeHash ); it != m_Panels.end() )
+			{
+				return static_cast<T*>( it->second );
+			}
+
+			T* newPanel = new T();
+			newPanel->m_Owner = this;
+			m_Panels.insert( { typeHash, newPanel } );
+			return newPanel;
 		}
 
 		template <typename T>

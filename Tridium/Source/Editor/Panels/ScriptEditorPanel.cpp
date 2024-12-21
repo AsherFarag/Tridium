@@ -1,399 +1,358 @@
 #include "tripch.h"
-#ifdef IS_EDITOR
+#if IS_EDITOR
 #include "ScriptEditorPanel.h"
 #include <Tridium/Core/Application.h>
+#include <Editor/EditorUtil.h>
+#include <Tridium/Reflection/Reflection.h>
+#include <Tridium/Asset/EditorAssetManager.h>
 
 #include <fstream>
 #include <sstream>
 
 namespace Tridium::Editor {
 
-#pragma region Script Editor
+	ScriptEditorPanel::ScriptEditorPanel()
+		: Panel( TE_ICON_CODE " Script Editor" )
+	{
+		SetTheme( ETheme::Dark );
+
+		m_LuaLanguageDefinition = TextEditor::LanguageDefinition::LuaScript();
+		m_LuaLanguageDefinition.mAutoIndentation = true;
+
+		for ( const auto&& [id, type] : Refl::ResolveMetaTypes() )
+		{
+			Refl::MetaType metaType = type;
+			if ( HasFlag( metaType.GetClassFlags(), Refl::EClassFlags::Scriptable ) )
+			{
+				TextEditor::Identifier id;
+				id.mDeclaration = "Tridium Type";
+				m_LuaLanguageDefinition.mIdentifiers.emplace( std::string( metaType.GetCleanTypeName() ), id );
+			}
+		}
+	}
 
 	void ScriptEditorPanel::OnImGuiDraw()
 	{
-		ImGuiBegin( ImGuiWindowFlags_MenuBar );
+		OpenedScript* openedScript = GetOpenedScript( m_CurrentOpenedScript );
 
-		m_IsFocused = ImGui::IsWindowFocused();
+		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoScrollbar;
+		if ( openedScript && openedScript->IsModified )
+			windowFlags |= ImGuiWindowFlags_UnsavedDocument;
 
-		static bool newFilePopUp = false;
-		static bool openFilePopUp = false;
-
-		if ( ImGui::BeginMenuBar() )
+		if ( !ImGuiBegin( windowFlags ) )
 		{
-			if (ImGui::BeginMenu( "File" ))
-			{
-				if ( ImGui::MenuItem( "New" ) ) newFilePopUp = true;
-				if ( ImGui::MenuItem( "Open" ) ) openFilePopUp = true;
-
-				ImGui::Separator();
-
-				if ( ImGui::MenuItem( "Save", "Ctrl + S" ) ) SaveCurrentFile();
-				if ( ImGui::MenuItem( "Save All", "Ctrl + Alt + S" ) ) SaveAllFiles();
-
-				ImGui::EndMenu();
-			}
-
-			ImGui::EndMenuBar();
+			ImGuiEnd();
+			return;
 		}
 
-		#pragma region New File Pop Up
-		
-		if ( newFilePopUp )
-			ImGui::OpenPopup( "NewFile" );
+		DrawMenuBar();
 
-		if ( ImGui::BeginPopupModal( "NewFile" ) )
+		const float openedScriptTabsSizeY = ImGui::GetTextLineHeightWithSpacing();
+
+		if ( openedScript )
 		{
-			static char filePath[ 1024 ] = { "Content/Scripts/ComponentTemplate.lua" };
-			ImGui::InputText( "File Path", filePath, 1024 );
+			ImVec2 size = ImGui::GetContentRegionAvail();
+			size.y -= openedScriptTabsSizeY;
+			openedScript->Editor.Render( m_Name.c_str(), size );
 
-			ImGui::SameLine();
-			if ( ImGui::Button( "New" ) )
-			{
-				newFilePopUp = false;
-
-				std::ifstream existingFile( filePath );
-				// If there is no file at the filePath,
-				// make a new file.
-				if ( !existingFile )
-				{
-					std::ofstream newFile( filePath, std::ios::out | std::ios::app );
-					// Create a new file and write in a component template
-					newFile << "function OnConstruct()\nend\n\nfunction OnUpdate( deltaTime )\nend\n\nfunction OnDestroy()\nend\n"; 
-					newFile.close();
-				}
-				existingFile.close();
-
-				OpenFile( filePath );
-
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::SameLine();
-			if ( ImGui::Button( "Cancel" ) )
-			{
-				newFilePopUp = false;
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::EndPopup();
+			openedScript->IsModified |= openedScript->Editor.IsTextChanged();
 		}
 
-		#pragma endregion
+		// Draw opened scripts tabs
+		DrawOpenedScripts();
 
-		#pragma region Open File Pop Up
+		ImGuiEnd();
+	}
 
-		if ( openFilePopUp )
-			ImGui::OpenPopup( "OpenFile" );
-
-		if ( ImGui::BeginPopupModal( "OpenFile" ) )
+	void ScriptEditorPanel::OpenHandle( const LuaScriptHandle& a_Handle )
+	{
+		SharedPtr<Script::ScriptAsset> script = AssetManager::GetAsset<Script::ScriptAsset>( a_Handle );
+		if ( !script )
 		{
-			static char filePath[ 1024 ] = ".lua";
-			ImGui::InputText( "File Path", filePath, 1024 );
-
-			ImGui::SameLine();
-			if ( ImGui::Button( "Open" ) )
-			{
-				openFilePopUp = false;
-				OpenFile( filePath );
-
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::SameLine();
-			if ( ImGui::Button( "Cancel" ) )
-			{
-				openFilePopUp = false;
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::EndPopup();
+			TE_CORE_ASSERT( false, "Failed to open script handle" );
+			return;
 		}
 
-		#pragma endregion
-
-		#pragma region Draw Open Files
-
-		if ( ImGui::BeginTabBar("Script File Tabs", ImGuiTabBarFlags_AutoSelectNewTabs ) )
+		const auto& metaData = EditorAssetManager::Get()->GetAssetMetaData( a_Handle );
+		if ( !metaData.IsValid() || metaData.AssetType != EAssetType::LuaScript )
 		{
-			static int fileToClose = -1;
-			for ( int i = m_ScriptTextFiles.size() - 1; i >= 0; --i )
-			{
-				auto& file = m_ScriptTextFiles[ i ];
-				if ( DisplayFileContents( file ) )
-					continue;
-
-				// If the file has been modified and the user has requested to close this file,
-				// open an 'Are you sure?' prompt. 
-				if ( file.Modified )
-				{
-					ImGui::OpenPopup( "Are You Sure? ##CloseTab" );
-					fileToClose = i;
-				}
-
-				// Else, remove the file immediately
-				else
-				{
-					CloseFile( i );
-				}
-			}
-
-			if ( ImGui::BeginPopupModal( "Are You Sure? ##CloseTab", nullptr, ImGuiWindowFlags_NoResize ) )
-			{
-				ImGui::Text( "Are you sure you want to close this script without saving?" );
-
-				const ImVec2 buttonSize = ImVec2( 30, 20 );
-
-				ImGui::SetCursorPosX( ImGui::GetContentRegionAvail().x / 2 - buttonSize.x + 5 );
-
-				if ( ImGui::Button( "Yes", buttonSize ) )
-				{
-					CloseFile( fileToClose );
-					ImGui::CloseCurrentPopup();
-				}
-
-				ImGui::SameLine();
-
-				if ( ImGui::Button( "No", buttonSize ) )
-				{
-					ImGui::CloseCurrentPopup();
-				}
-
-				ImGui::EndPopup();
-			}
-
-			ImGui::EndTabBar();
+			TE_CORE_ASSERT( false, "Failed to retrieve Asset Meta Data" );
+			return;
 		}
 
-		#pragma endregion
+		OpenedScript openedScript;
+		openedScript.Path = metaData.Path;
+		openedScript.Editor.SetLanguageDefinition( m_LuaLanguageDefinition );
+		openedScript.Editor.SetText( script->GetSource() );
 
-		ImGui::End();
+		m_CurrentOpenedScript = a_Handle;
+		m_OpenedScripts[a_Handle] = std::move( openedScript );
+	}
 
-		if ( !m_Open )
+	void ScriptEditorPanel::SaveHandle( const LuaScriptHandle& a_Handle )
+	{
+		OpenedScript* openedScript = GetOpenedScript( a_Handle );
+		if ( !openedScript )
 		{
-			bool isAFileModified = false;
-			for ( auto& file : m_ScriptTextFiles )
-				if ( file.Modified ) isAFileModified = true;
-
-			if ( !isAFileModified )
-			{
-				Close();
-				return;
-			}
-
-			m_Open = true;
-			ImGui::OpenPopup( "Are You Sure? ##CloseWindow" );
+			return;
 		}
 
-		if ( ImGui::BeginPopupModal( "Are You Sure? ##CloseWindow", nullptr, ImGuiWindowFlags_NoResize ) )
+		SharedPtr<Script::ScriptAsset> script = AssetManager::GetAsset<Script::ScriptAsset>( a_Handle );
+		if ( !script )
 		{
-			ImGui::Text( "Are you sure you want to close without saving?" );
-
-			const ImVec2 buttonSize = ImVec2( 30, 20 );
-
-			ImGui::SetCursorPosX( ImGui::GetContentRegionAvail().x / 2 - buttonSize.x + 5 );
-
-			if ( ImGui::Button( "Yes", buttonSize ) )
-			{
-				Close();
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::SameLine();
-
-			if ( ImGui::Button( "No", buttonSize ) )
-			{
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::EndPopup();
+			TE_CORE_ASSERT( false, "Failed to save script handle" );
+			return;
 		}
+
+		script->SetSource( openedScript->Editor.GetText() );
+		EditorAssetManager::Get()->SaveAsset( a_Handle );
+
+		openedScript->IsModified = false;
+	}
+
+	void ScriptEditorPanel::OpenFile( const IO::FilePath& a_FilePath )
+	{
+		const auto& metaData = EditorAssetManager::Get()->GetAssetMetaData( a_FilePath );
+		LuaScriptHandle handle = metaData.Handle;
+		if ( !metaData.IsValid() )
+		{
+			handle = EditorAssetManager::Get()->ImportAsset( a_FilePath );
+		}
+
+		OpenHandle( handle );
 	}
 
 	bool ScriptEditorPanel::OnKeyPressed( KeyPressedEvent& e )
 	{
-		if ( e.IsRepeat() )
-			return false;
-
-		bool control = Input::IsKeyPressed( Input::KEY_LEFT_CONTROL );
-		bool alt = Input::IsKeyPressed( Input::KEY_LEFT_ALT );
+		const bool control = Input::IsKeyPressed( Input::KEY_LEFT_CONTROL ) || Input::IsKeyPressed( Input::KEY_LEFT_CONTROL );
+		const bool shift = Input::IsKeyPressed( Input::KEY_LEFT_SHIFT ) || Input::IsKeyPressed( Input::KEY_RIGHT_SHIFT );
 
 		switch ( e.GetKeyCode() )
 		{
-			case Input::KEY_S:
+		case Input::KEY_S:
+			if ( control )
 			{
-				if ( control && alt )
-				{
-					SaveAllFiles();
-					return true;
-				}
-				if ( control )
-				{
-					SaveCurrentFile();
-					return true;
-				}
-				break;
+				SaveHandle( m_CurrentOpenedScript );
+				return true;
 			}
+			break;
+		case Input::KEY_R:
+			if ( control )
+			{
+				if ( shift )
+				{
+					RecompileAllScripts();
+				}
+				else
+				{
+					RecompileScript( m_CurrentOpenedScript );
+				}
+				return true;
+			}
+			break;
+		default:
+			break;
 		}
-
-		return false;
 	}
 
-	bool ScriptEditorPanel::DisplayFileContents( ScriptTextFile& file )
+	OpenedScript* ScriptEditorPanel::GetOpenedScript( const LuaScriptHandle& a_Handle )
 	{
-		ImGuiTabItemFlags tabFlags = ImGuiTabItemFlags_None;
-		tabFlags |= file.Modified ? ImGuiTabItemFlags_UnsavedDocument : 0;
-
-		bool isOpen = true;
-		if ( !ImGui::BeginTabItem( ( file.GetFileName() + "##" + file.GetPath().ToString() ).c_str(), &isOpen, tabFlags) )
-			return isOpen;
-
-		m_CurrentTextFile = &file;
-
-		if ( ImGui::IsItemHovered() )
+		auto it = m_OpenedScripts.find( a_Handle );
+		if ( it == m_OpenedScripts.end() )
 		{
-			ImGui::BeginTooltip();
-			ImGui::Text( file.GetPath().ToString().c_str());
-			ImGui::EndTooltip();
+			return nullptr;
 		}
 
-		ImGuiInputTextFlags textInputFlags = ImGuiInputTextFlags_AllowTabInput;
-
-		ImVec2 textBoxSize = ImGui::GetContentRegionAvail();
-		textBoxSize.y -= ImGui::GetTextLineHeight() * 1.75;
-
-			// Display the text editor
-		file.Modified |= ImGui::InputTextMultiline("##source",
-			&file.GetContent()[0],
-			file.GetContent().capacity(),
-			textBoxSize,
-			textInputFlags);
-
-		ImGui::EndTabItem();
-
-		return isOpen;
+		return &it->second;
 	}
 
-	void ScriptEditorPanel::SaveAllFiles()
+	void ScriptEditorPanel::DrawMenuBar()
 	{
-		for ( auto& file : m_ScriptTextFiles )
-		{
-			file.SaveFile();
-		}
-	}
+		ImGui::ScopedStyleCol menuSepCol( ImGuiCol_Separator, ImVec4( 1, 1, 1, 0.75f ) );
 
-	void ScriptEditorPanel::OpenFile( const  IO::FilePath& a_FilePath )
-	{
-		// Ensure this file isn't already open
-		for ( auto& file : m_ScriptTextFiles )
-		{
-			if ( file.GetPath() == a_FilePath )
-				return;
-		}
-
-		bool success = m_ScriptTextFiles.emplace_back().LoadFile( a_FilePath );
-
-		if ( !success )
-			m_ScriptTextFiles.pop_back();
-	}
-
-	void ScriptEditorPanel::SaveCurrentFile()
-	{
-		if ( m_CurrentTextFile )
-			m_CurrentTextFile->SaveFile();
-	}
-
-	void ScriptEditorPanel::CloseFile( uint32_t index )
-	{
-		if ( index >= m_ScriptTextFiles.size() )
+		if ( !ImGui::BeginMenuBar() )
 			return;
 
-		if ( &m_ScriptTextFiles[ index ] == m_CurrentTextFile )
-			m_CurrentTextFile == nullptr;
-
-		m_ScriptTextFiles.erase( m_ScriptTextFiles.begin() + index );
-	}
-
-#pragma endregion
-
-#pragma region File
-
-	ScriptTextFile::ScriptTextFile( const IO::FilePath& a_FilePath )
-	{
-		LoadFile( a_FilePath );
-	}
-
-	bool ScriptTextFile::LoadFile( const  IO::FilePath& a_FilePath )
-	{
-		// Open a read file stream
-		std::fstream file( a_FilePath.ToString(), std::ios::in);
-		if ( !file.is_open() )
+		if ( ImGui::BeginMenu( "File" ) )
 		{
-			TE_CORE_ERROR( "Failed to load file at: {0}", a_FilePath.ToString() );
-			return false;
+			if ( ImGui::MenuItem( "Open" ) )
+			{
+				Util::OpenLoadFileDialog( Application::GetActiveProject()->GetAssetDirectory() / "NewLuaScript.lua", [this](const IO::FilePath& a_FilePath)
+					{
+						OpenFile( a_FilePath );
+					} );
+			}
+
+			if ( ImGui::MenuItem( "Save", "Ctrl + S" ) )
+			{
+				SaveHandle( m_CurrentOpenedScript );
+			}
+
+			if ( ImGui::MenuItem( "Save As" ) )
+			{
+				Util::OpenSaveFileDialog( Application::GetActiveProject()->GetAssetDirectory() / "NewLuaScript.lua", [this]( const IO::FilePath& a_FilePath )
+					{
+						OpenedScript* openedScript = GetOpenedScript( m_CurrentOpenedScript );
+						if ( openedScript )
+						{
+							std::ofstream file( a_FilePath.ToString() );
+							file << openedScript->Editor.GetText();
+							file.close();
+						}
+					} );
+			}
+
+			if ( ImGui::MenuItem( "Save All" ) )
+			{
+				for ( auto& openedScript : m_OpenedScripts )
+				{
+					SaveHandle( openedScript.first );
+				}
+			}
+
+			ImGui::EndMenu();
 		}
 
-		m_Path = a_FilePath;
-
-		std::stringstream buffer;
-		buffer << file.rdbuf();
-		m_Content = buffer.str();
-		file.close();
-
-		if ( !file )
-			TE_CORE_ERROR( "Fail occured when closing file [{0}]", a_FilePath.ToString() );
-
-		if ( m_Content.capacity() < 1024 * 16 )
-			m_Content.reserve( 1024 * 16 );
-
-		return true;
-	}
-
-	bool ScriptTextFile::SaveFile( const  IO::FilePath& a_FilePath )
-	{
-		// Check if this file needs to be saved
-		if ( GetPath() == a_FilePath && !Modified )
-			return false;
-
-		std::fstream file( a_FilePath.ToString(), std::ios::out);
-		if ( !file ) 
+		if ( ImGui::BeginMenu( "Edit" ) )
 		{
-			TE_CORE_WARN( "Could not open [{0}] for writing!", a_FilePath.ToString() );
-			return false;
+			ImGui::Separator();
+
+			if ( ImGui::BeginMenu( "Theme" ) )
+			{
+				if ( ImGui::MenuItem( "Light" ) )
+				{
+					SetTheme( ETheme::Light );
+				}
+				if ( ImGui::MenuItem( "Dark" ) )
+				{
+					SetTheme( ETheme::Dark );
+				}
+				if ( ImGui::MenuItem( "Retro Blue" ) )
+				{
+					SetTheme( ETheme::BlueRetro );
+				}
+
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMenu();
 		}
 
-		// Write the contents to the file
-		file << m_Content.c_str();
-		file.close();
-		Modified = false;
+		ImGui::Separator();
 
-		if ( !file )
-			TE_CORE_ERROR( "Fail occured when closing file [{0}]", a_FilePath.ToString() );
+		if ( ImGui::BeginMenu( "Scripts" ) )
+		{
+			if ( ImGui::MenuItem( "Recompile", "Ctrl + R" ) )
+			{
+				RecompileScript( m_CurrentOpenedScript );
+			}
 
-		return true;
+			if ( ImGui::MenuItem( "Recompile All", "Ctrl + Shift + R" ) )
+			{
+				RecompileAllScripts();
+			}
+
+			ImGui::EndMenu();
+		}
+
+		ImGui::EndMenuBar();
 	}
 
-	std::string ScriptTextFile::GetDirectoryPath( const std::string& a_FilePath )
+	void ScriptEditorPanel::DrawOpenedScripts()
 	{
-		size_t pos = a_FilePath.find_last_of( "/\\" );
-		if ( pos != std::string::npos ) {
-			return a_FilePath.substr( 0, pos );
+		const float openedScriptTabsSizeY = ImGui::GetTextLineHeightWithSpacing();
+
+		if ( !ImGui::BeginChild( "OpenedScripts", ImVec2( 0, openedScriptTabsSizeY ), false, ImGuiWindowFlags_HorizontalScrollbar ) )
+			return;
+
+		const float totalWidth = ImGui::GetContentRegionAvail().x;
+		const size_t tabCount = m_OpenedScripts.size();
+		const float tabSpacing = 10.0f;
+		const float minTabWidth = 100.0f;
+
+		// Calculate base tab width
+		const float totalSpacing = ( tabCount - 1 ) * tabSpacing;
+		const float availableWidth = totalWidth - totalSpacing;
+		const float baseTabWidth = Math::Max( minTabWidth, availableWidth / tabCount );
+
+		for ( auto it = m_OpenedScripts.begin(); it != m_OpenedScripts.end(); ++it )
+		{
+			// Add spacing between tabs
+			if ( it != m_OpenedScripts.begin() )
+				ImGui::SameLine( 0, tabSpacing );
+
+			auto& openedScript = *it;
+			std::string tabName = openedScript.second.Path.GetFilename().ToString();
+			const bool selected = m_CurrentOpenedScript == openedScript.first;
+
+			// Calculate the tab width
+			float tabWidth = baseTabWidth;
+			if ( selected )
+			{
+				// Expand the selected tab by an additional amount
+				const float expandedWidth = Math::Max( baseTabWidth, ImGui::CalcTextSize( tabName.c_str() ).x + ImGui::GetStyle().FramePadding.x * 2.0f );
+				tabWidth = expandedWidth;
+			}
+
+			// Adjust alignment to account for the expanded tab
+			ImGui::PushID( &openedScript ); // Avoid ID collisions
+			if ( ImGui::Selectable( tabName.c_str(), selected, ImGuiSelectableFlags_AllowOverlap, ImVec2( tabWidth, openedScriptTabsSizeY ) ) )
+			{
+				m_CurrentOpenedScript = openedScript.first;
+			}
+			ImGui::PopID();
 		}
-		TE_CORE_WARN( "[{0}] is not a file directory path!", a_FilePath );
-		return "";  // or return ".", or another default value if there's no directory part
+
+		ImGui::EndChild();
 	}
 
-	std::string ScriptTextFile::GetFileName( const std::string& a_FilePath )
+	void ScriptEditorPanel::RecompileScript( const LuaScriptHandle& a_Handle )
 	{
-		size_t pos = a_FilePath.find_last_of( "/\\" );
-		if ( pos != std::string::npos ) {
-			return a_FilePath.substr( pos + 1 );
+		SharedPtr<Script::ScriptAsset> script = AssetManager::GetAsset<Script::ScriptAsset>( a_Handle );
+		if ( !script )
+		{
+			TE_CORE_ASSERT( false, "Failed to recompile script handle" );
+			return;
 		}
-		TE_CORE_WARN( "[{0}] does not contain a file name!", a_FilePath );
-		return a_FilePath;  // or return "" if no file name found
+
+		Script::ScriptEngine::RecompileScript( *script );
 	}
 
-#pragma endregion
+	void ScriptEditorPanel::RecompileAllScripts()
+	{
+		for ( auto& openedScript : m_OpenedScripts )
+		{
+			RecompileScript( openedScript.first );
+		}
+	}
+
+	void ScriptEditorPanel::SetTheme( ETheme a_Theme )
+	{
+		const TextEditor::Palette* palette = nullptr;
+		switch ( a_Theme )
+		{
+		case ETheme::Dark:
+			palette = &TextEditor::GetDarkPalette();
+			break;
+		case ETheme::Light:
+			palette = &TextEditor::GetLightPalette();
+			break;
+		case ETheme::BlueRetro:
+			palette = &TextEditor::GetRetroBluePalette();
+			break;
+		default:
+			break;
+		}
+
+		if ( palette )
+		{
+			m_Theme = a_Theme;
+			for ( auto& openedScript : m_OpenedScripts )
+			{
+				openedScript.second.Editor.SetPalette( *palette );
+			}
+		}
+	}
 
 }
 #endif // IS_EDITOR

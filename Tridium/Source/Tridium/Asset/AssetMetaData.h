@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/Utils/Reflection/ReflectionFwd.h>
+#include <Tridium/Reflection/ReflectionFwd.h>
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/IO/FilePath.h>
 
@@ -17,6 +17,6 @@ namespace Tridium {
 
 		static const AssetMetaData s_InvalidMetaData;
 
-		bool IsValid() const { return Handle.Valid(); }
+		bool IsValid() const { return Handle.IsValid(); }
 	};
 }

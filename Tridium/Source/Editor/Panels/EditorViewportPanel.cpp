@@ -1,16 +1,20 @@
 #include "tripch.h"
-#ifdef IS_EDITOR
+#if IS_EDITOR
 #include "EditorViewportPanel.h"
+
+#include <Tridium/ECS/GameObject.h>
 
 #include <Editor/Editor.h>
 #include <Editor/EditorUtil.h>
 #include <Editor/EditorCamera.h>
-#include "SceneHeirarchyPanel.h"
+#include <Editor/EditorStyle.h>
 
 #include <Tridium/ECS/Components/Types.h>
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Rendering/SceneRenderer.h>
 #include <Tridium/Asset/EditorAssetManager.h>
+
+#include <Tridium/Debug/DebugDrawer.h>
 
 // TEMP ?
 #include "Tridium/Asset/AssetManager.h"
@@ -22,6 +26,8 @@ namespace Tridium::Editor {
 
 	void SetImGuizmoColors()
 	{
+		ImGuizmo::GetStyle() = ImGuizmo::Style();
+
 		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::DIRECTION_X] = Style::Colors::Red;
 		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::DIRECTION_Y] = Style::Colors::Green;
 		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::DIRECTION_Z] = Style::Colors::Blue;
@@ -29,22 +35,32 @@ namespace Tridium::Editor {
 		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::PLANE_Y] = Style::Colors::Green;
 		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::PLANE_Z] = Style::Colors::Blue;
 		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::SELECTION] = Style::Colors::Orange;
+		ImGuizmo::GetStyle().RotationOuterLineThickness *= 2.0f;
+		ImGuizmo::GetStyle().RotationLineThickness *= 2.0f;
+		ImGuizmo::GetStyle().TranslationLineThickness *= 2.0f;
+		//ImGuizmo::GetStyle().TranslationLineArrowSize *= 2.0f;
+		//ImGuizmo::GetStyle().ScaleLineCircleSize *= 2.0f;
+		ImGuizmo::GetStyle().ScaleLineThickness *= 2.0f;
 	}
 
 	EditorViewportPanel::EditorViewportPanel( const SharedPtr<EditorCamera>& editorCamera )
 		: ViewportPanel( "Scene##EditorViewportPanel" ), m_EditorCamera( editorCamera )
 	{
-		FramebufferSpecification FBOspecification;
-		FBOspecification.Attachments = { EFramebufferTextureFormat::RGBA16F, EFramebufferTextureFormat::Depth };
-		FBOspecification.Width = 1280;
-		FBOspecification.Height = 720;
-		m_FBO = Framebuffer::Create( FBOspecification );
+		m_OnGameObjectSelectedHandle = Events::OnGameObjectSelected.Add<&EditorViewportPanel::SetSelectedGameObject>( this );
 
-		FBOspecification.Attachments = { EFramebufferTextureFormat::RED_INT, EFramebufferTextureFormat::Depth };
-		m_IDFBO = Framebuffer::Create( FBOspecification );
+		// Set up ID Selection
+		{
+			FramebufferSpecification FBOspecification;
+			FBOspecification.Attachments = { EFramebufferTextureFormat::RGBA16F, EFramebufferTextureFormat::Depth };
+			FBOspecification.Width = 1280;
+			FBOspecification.Height = 720;
+			m_FBO = Framebuffer::Create( FBOspecification );
 
-		std::string idVert =
-			R"(
+			FBOspecification.Attachments = { EFramebufferTextureFormat::RED_INT, EFramebufferTextureFormat::Depth };
+			m_IDFBO = Framebuffer::Create( FBOspecification );
+
+			std::string idVert =
+				R"(
 			#version 420
 
 			layout( location = 0 ) in vec3 aPosition;
@@ -62,8 +78,8 @@ namespace Tridium::Editor {
 		)";
 
 
-		std::string idFrag =
-			R"(
+			std::string idFrag =
+				R"(
 			#version 420 core
 			
 			layout(location = 0) out int oID;
@@ -76,10 +92,15 @@ namespace Tridium::Editor {
 			}
 		)";
 
-		m_GameObjectIDShader.reset( Shader::Create( idVert, idFrag ) );
+			m_GameObjectIDShader.reset( Shader::Create( idVert, idFrag ) );
 
-		m_OutlineShader.reset( Shader::Create() );
-		m_OutlineShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Simple.glsl");
+			m_OutlineShader.reset( Shader::Create() );
+			m_OutlineShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Simple.glsl" );
+		}
+	}
+
+	EditorViewportPanel::~EditorViewportPanel()
+	{
 	}
 
 	bool EditorViewportPanel::OnKeyPressed( KeyPressedEvent& e )
@@ -114,9 +135,9 @@ namespace Tridium::Editor {
 			{
 				if ( Input::IsKeyPressed( Input::KEY_LEFT_CONTROL ) )
 				{
-					if ( GameObject selectedGO = GetSceneHeirarchy()->GetSelectedGameObject() )
+					if ( m_SelectedGameObject )
 					{
-						EditorApplication::GetPayloadManager().SetPayload( "GameObject", selectedGO );
+						EditorApplication::GetPayloadManager().SetPayload( "GameObject", m_SelectedGameObject );
 					}
 				}
 				return true;
@@ -125,12 +146,22 @@ namespace Tridium::Editor {
 			{
 				if ( Input::IsKeyPressed( Input::KEY_LEFT_CONTROL ) )
 				{
-					if ( auto payload = EditorApplication::GetPayloadManager().GetPayload( "GameObject" ); payload.has_value() )
+					Payload* payload = EditorApplication::GetPayloadManager().GetPayload( "GameObject" );
+					if ( payload && !payload->IsEmpty() )
 					{
-						GameObject go = std::any_cast<GameObject>( payload );
+						GameObject go = payload->As<GameObject>();
 						GameObject newGO = GetActiveScene()->InstantiateGameObjectFrom( go );
-						GetSceneHeirarchy()->SetSelectedGameObject( newGO );
+						Events::OnGameObjectSelected.Broadcast( newGO );
 					}
+				}
+				return true;
+			}
+			case Input::KEY_DELETE:
+			{
+				if ( m_SelectedGameObject )
+				{
+					m_SelectedGameObject.Destroy();
+					Events::OnGameObjectSelected.Broadcast( GameObject() );
 				}
 				return true;
 			}
@@ -144,9 +175,6 @@ namespace Tridium::Editor {
 	{
 		if ( !m_EditorCamera )
 			return;
-
-		if ( m_SceneHeirarchy == nullptr )
-			m_SceneHeirarchy = GetEditorLayer()->GetPanel<SceneHeirarchyPanel>();
 
 		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2( 2.f, 2.f ) );
 
@@ -168,12 +196,19 @@ namespace Tridium::Editor {
 			m_FBO->Resize( regionAvail.x, regionAvail.y );
 
 			GetEditorLayer()->GetActiveScene()->GetSceneRenderer().Render(m_FBO, *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position);
+
+			// Draw Debug Lines
+			{
+				m_FBO->Bind();
+				Debug::DebugDrawer::Get().Draw( m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix() );
+				m_FBO->Unbind();
+			}
+
 			RenderSelectionOutline();
 
 			// Draw the Editor Camera ViewPort
 			ImGui::Image( (ImTextureID)m_FBO->GetColorAttachmentID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
 
-			// Drag-Drop for scenes
 			DragDropTarget();
 
 			DrawManipulationGizmos( viewportBoundsMin, viewportBoundsMax );
@@ -194,7 +229,7 @@ namespace Tridium::Editor {
 				int goID = m_FBO->ReadPixel( 0, mouseX, mouseY );
 				m_IDFBO->Unbind();
 
-				GetSceneHeirarchy()->SetSelectedGameObject((EntityID)goID);
+				Events::OnGameObjectSelected.Broadcast( static_cast<GameObjectID>( goID ) );
 			}
 		}
 
@@ -230,6 +265,21 @@ namespace Tridium::Editor {
 			}
 			break;
 		}
+		case EAssetType::StaticMesh:
+		{
+			if ( SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( assetHandle ) )
+			{
+				GameObject go = GetActiveScene()->InstantiateGameObject();
+				go.AddComponent<StaticMeshComponent>().Mesh = mesh->GetHandle();
+
+				Vector3 position = m_EditorCamera->Position + m_EditorCamera->GetForwardDirection() * 5.0f;
+
+				go.GetTransform().SetWorldPosition( position );
+
+				Events::OnGameObjectSelected.Broadcast( go );
+			}
+			break;
+		}
 		default:
 			break;
 		}
@@ -248,10 +298,10 @@ namespace Tridium::Editor {
 		ImGuizmo::SetRect( viewportBoundsMin.x, viewportBoundsMin.y,
 			viewportBoundsMax.x - viewportBoundsMin.x, viewportBoundsMax.y - viewportBoundsMin.y );
 
-		if ( GameObject selectedGO = GetSceneHeirarchy()->GetSelectedGameObject() )
+		if ( m_SelectedGameObject.IsValid() )
 		{
 			// Selected Game Object
-			TransformComponent& goTransform = selectedGO.GetTransform();
+			TransformComponent& goTransform = m_SelectedGameObject.GetTransform();
 			Matrix4 goWorldTransform = goTransform.GetWorldTransform();
 
 			bool shouldSnap = Input::IsKeyPressed( Input::KEY_LEFT_CONTROL );
@@ -302,7 +352,7 @@ namespace Tridium::Editor {
 		meshComponents.each( 
 			[&]( auto go, StaticMeshComponent& meshComponent, TransformComponent& transform )
 			{
-				if ( !meshComponent.Mesh.Valid() )
+				if ( !meshComponent.Mesh.IsValid() )
 					return;
 
 				SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( meshComponent.Mesh );
@@ -337,18 +387,14 @@ namespace Tridium::Editor {
 
 	void EditorViewportPanel::RenderSelectionOutline()
 	{
-		if ( !m_FBO )
+		if ( !m_FBO || !m_SelectedGameObject.IsValid() )
 			return;
 
-		GameObject go = GetSceneHeirarchy()->GetSelectedGameObject();
-		if ( !go )
-			return;
-
-		StaticMeshComponent* meshComponent = go.TryGetComponent<StaticMeshComponent>();
+		StaticMeshComponent* meshComponent = m_SelectedGameObject.TryGetComponent<StaticMeshComponent>();
 		if ( !meshComponent )
 			return;
 
-		if ( !meshComponent->Mesh.Valid() )
+		if ( !meshComponent->Mesh.IsValid() )
 			return;
 
 		SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( meshComponent->Mesh );
@@ -364,10 +410,10 @@ namespace Tridium::Editor {
 
 		m_FBO->Bind();
 		m_OutlineShader->Bind();
+		m_OutlineShader->SetFloat4( "u_Color", { 1.0f, 0.85f, 0.0f, 1.0f } );
 
-		TODO( "Remove this opengl code!" );
-		glLineWidth( 5 );
-		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		RenderCommand::SetLineWidth( 5 );
+		RenderCommand::SetPolygonMode( EFaces::FrontAndBack, EPolygonMode::Line );
 
 		Matrix4 pvm = m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix();
 		for ( uint32_t subMeshIndex : mesh->GetSubMeshes() )
@@ -375,7 +421,7 @@ namespace Tridium::Editor {
 			const SubMesh& subMesh = meshSource->GetSubMeshes()[subMeshIndex];
 			if ( const SharedPtr<VertexArray>& vao = subMesh.VAO )
 			{
-				m_OutlineShader->SetMatrix4( "u_PVM", pvm * go.GetWorldTransform() * subMesh.Transform );
+				m_OutlineShader->SetMatrix4( "u_PVM", pvm * m_SelectedGameObject.GetWorldTransform() * subMesh.Transform );
 
 				vao->Bind();
 				RenderCommand::DrawIndexed( vao );
@@ -385,15 +431,8 @@ namespace Tridium::Editor {
 
 		m_OutlineShader->Unbind();
 		m_FBO->Unbind();
-		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-	}
 
-	SceneHeirarchyPanel* EditorViewportPanel::GetSceneHeirarchy()
-	{
-		if ( !m_SceneHeirarchy )
-			m_SceneHeirarchy = GetEditorLayer()->GetPanel<SceneHeirarchyPanel>();
-
-		return m_SceneHeirarchy;
+		RenderCommand::SetPolygonMode( EFaces::FrontAndBack, EPolygonMode::Fill );
 	}
 }
 

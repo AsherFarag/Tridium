@@ -1,9 +1,10 @@
 #include "tripch.h"
-#ifdef  IS_EDITOR
+#if IS_EDITOR
 #include "Editor.h"
 #include "EditorStyle.h"
 
 #include <Tridium/Asset/AssetManager.h>
+#include "Util/AssetInfo.h"
 
 // Assets
 #include <Tridium/Rendering/Mesh.h>
@@ -34,7 +35,10 @@ namespace Tridium::Editor {
         Application::Get().GetWindow().SetTitle("Tridium Editor");
         Application::Get().GetWindow().SetIcon(  Application::GetEngineAssetsDirectory() / "Editor/Icons/EngineIcon.png" );
 
-        s_Instance = SharedPtr<EditorApplication>( new EditorApplication() );
+		AssetTypeManager::s_Instance = MakeUnique<AssetTypeManager>();
+		AssetTypeManager::s_Instance->Initialize();
+
+		s_Instance = SharedPtr<EditorApplication>( new EditorApplication() );
         s_Instance->m_EditorLayer = new EditorLayer();
         Application::Get().PushLayer( s_Instance->m_EditorLayer );
 
@@ -46,55 +50,6 @@ namespace Tridium::Editor {
     bool EditorApplication::Shutdown()
     {
         return true;
-    }
-
-    namespace Util {
-        bool OpenFile( const IO::FilePath& filePath )
-        {
-            if ( !filePath.HasExtension() )
-                return false;
-
-            std::string ext = filePath.GetExtension().ToString();
-
-            if ( ext == ".lua" )
-            {
-                auto scriptEditor = GetEditorLayer()->PushPanel<ScriptEditorPanel>();
-                scriptEditor->OpenFile( filePath );
-                scriptEditor->Focus();
-
-                return true;
-            }
-
-            return false;
-        }
-
-        bool OpenMaterial( const IO::FilePath& filePath )
-        {
-            auto panel = GetEditorLayer()->PushPanel<MaterialEditorPanel>();
-            panel->Focus();
-            TODO( "panel->SetMaterial(MaterialLibrary::GetMaterialHandle(filePath.string())); " );
-            return true;
-        }
-
-        void SaveAll()
-        {
-            //auto& AssetLib = AssetManager::Get()->GetLibrary();
-            //for ( auto&& [guid, asset] : AssetLib )
-            //{
-            //    //asset->Save();
-            //}
-        }
-        void RecompileAllShaders()
-        {
-            //auto& AssetLib = AssetManager::Get()->GetLibrary();
-            //for ( auto&& [guid, asset] : AssetLib )
-            //{
-            //    if ( AssetRef<Shader> shader = asset.As<Shader>() )
-            //    {
-            //        shader->Recompile();
-            //    }
-            //}
-        }
     }
 
 }

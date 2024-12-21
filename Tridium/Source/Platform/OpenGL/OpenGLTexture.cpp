@@ -17,6 +17,7 @@ namespace Tridium {
 			case GL_RG: return ETextureFormat::RG8;
 			case GL_RGB: return ETextureFormat::RGB8;
 			case GL_RGBA: return ETextureFormat::RGBA8;
+			case GL_DEPTH_COMPONENT: return ETextureFormat::Depth;
 			}
 
 			TE_CORE_ASSERT( false );
@@ -38,6 +39,7 @@ namespace Tridium {
 			case ETextureFormat::RGBA32F: return GL_RGBA32F;
 			case ETextureFormat::SRGB: return GL_SRGB;
 			case ETextureFormat::SRGBA: return GL_SRGB_ALPHA;
+			case ETextureFormat::Depth: return GL_DEPTH_COMPONENT;
 			}
 
 			TE_CORE_ASSERT( false );
@@ -59,6 +61,7 @@ namespace Tridium {
 			case ETextureFormat::RGBA32F: return GL_RGBA;
 			case ETextureFormat::SRGB: return GL_RGB;
 			case ETextureFormat::SRGBA: return GL_RGBA;
+			case ETextureFormat::Depth: return GL_DEPTH_COMPONENT;
 			}
 
 			TE_CORE_ASSERT( false );
@@ -80,6 +83,7 @@ namespace Tridium {
 			case ETextureFormat::RGBA32F: return GL_FLOAT;
 			case ETextureFormat::SRGB: return GL_UNSIGNED_BYTE;
 			case ETextureFormat::SRGBA: return GL_UNSIGNED_BYTE;
+			case ETextureFormat::Depth: return GL_FLOAT;
 			}
 
 			TE_CORE_ASSERT( false );
@@ -282,7 +286,7 @@ namespace Tridium {
 	OpenGLTexture::~OpenGLTexture()
 	{
 		glDeleteTextures( 1, &m_RendererID );
-		delete m_LocalData;
+		TODO( "delete m_LocalData;" );
 	}
 
 	void OpenGLTexture::SetMinFilter( ETextureFilter a_Filter )

@@ -1,8 +1,9 @@
 #pragma once
-#ifdef IS_EDITOR
+#if IS_EDITOR
 
 #include "Panel.h"
-#include "InspectorPanel.h"
+#include <Tridium/ECS/GameObject.h>
+#include <Tridium/Core/Delegate.h>
 
 namespace Tridium { class Scene; }
 
@@ -12,7 +13,7 @@ namespace Tridium::Editor {
 	{
 	public:
 		SceneHeirarchyPanel();
-		virtual ~SceneHeirarchyPanel() = default;
+		virtual ~SceneHeirarchyPanel();
 
 		virtual void OnImGuiDraw() override;
 
@@ -28,11 +29,10 @@ namespace Tridium::Editor {
 		void DrawSceneNode( GameObject go );
 
 	private:
-		SharedPtr<Scene> m_Context = nullptr;
-		InspectorPanel* m_Inspector = nullptr;
 		GameObject m_SelectedGameObject;
-
 		std::string m_SearchBuffer;
+
+		DelegateHandle m_OnGameObjectSelectedHandle;
 	};
 }
 

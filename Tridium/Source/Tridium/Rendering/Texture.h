@@ -17,6 +17,7 @@ namespace Tridium {
 		RGBA32F,
 		SRGB,
 		SRGBA,
+		Depth,
 	};
 
 	enum class ETextureWrap : uint8_t

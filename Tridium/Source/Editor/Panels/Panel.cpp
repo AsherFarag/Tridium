@@ -1,6 +1,6 @@
 #include "tripch.h"
 #include "Panel.h"
-#ifdef IS_EDITOR
+#if IS_EDITOR
 
 namespace Tridium::Editor {
 

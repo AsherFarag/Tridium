@@ -12,24 +12,77 @@
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/IO/FilePath.h>
 #include <Tridium/Utils/Macro.h>
-#include <Tridium/Utils/Reflection/ReflectionFwd.h>
+#include <Tridium/Reflection/ReflectionFwd.h>
 
 namespace Tridium {
 
 	template<typename _Flags, typename _EnumFlag>
-	bool HasFlag( _Flags Flags, _EnumFlag Flag )
+	constexpr bool HasFlag( _Flags Flags, _EnumFlag Flag )
 	{
 		std::underlying_type_t<_EnumFlag> flag = static_cast<std::underlying_type_t<_EnumFlag>>( Flag );
-		return ( Flags & static_cast<std::underlying_type_t<_EnumFlag>>( Flag ) ) == flag;
+		return ( static_cast<std::underlying_type_t<_EnumFlag>>(Flags) & static_cast<std::underlying_type_t<_EnumFlag>>( Flag ) ) == flag;
+	}
+
+	template<typename _Array>
+	bool IsValidIndex( const _Array& a_Array, uint32_t a_Index )
+	{
+		return  a_Index >= 0 && a_Index < a_Array.size();
+	}
+
+	inline constexpr void HashCombine( size_t& a_Seed, size_t a_Hash )
+	{
+		a_Seed ^= a_Hash + 0x9e3779b9 + ( a_Seed << 6 ) + ( a_Seed >> 2 );
 	}
 
 }
 
 #define TE_BIND_EVENT_FN(fn, PlaceHolder) std::bind( &fn, this, std::placeholders::_##PlaceHolder )
 
+// - Configuration -
+
+#ifdef IS_EDITOR
+	#define IS_EDITOR 1
+#else
+	#define IS_EDITOR 0
+#endif // IS_EDITOR
+
+#ifdef TE_DEBUG
+	#define TE_DEBUG 1
+#else
+	#define TE_DEBUG 0
+#endif // TE_DEBUG
+
+#ifdef TE_RELEASE
+	#define TE_RELEASE 1
+#else
+	#define TE_RELEASE 0
+#endif // TE_RELEASE
+
+#ifdef TE_SHIPPING
+	#define TE_SHIPPING 1
+#else
+	#define TE_SHIPPING 0
+#endif // TE_SHIPPING
+
+#if !TE_SHIPPING
+	#define TE_USE_DEBUG 1
+#else
+	#define TE_USE_DEBUG 0
+#endif
+
+#if TE_USE_DEBUG
+	#define TE_DRAW_DEBUG 1
+#else
+	#define TE_DRAW_DEBUG 0
+#endif
+
+// ------------------
+
 #ifdef TE_PLATFORM_WINDOWS
 
-	#ifdef TE_DLL
+	#define TE_DLL 0
+
+	#if TE_DLL
 		#ifdef TE_BUILD_DLL
 			#define TRIDIUM_API __declspec(dllexport)
 		#else

@@ -1,5 +1,5 @@
 #pragma once
-#ifdef IS_EDITOR
+#if IS_EDITOR
 
 #include <Tridium/Core/Layer.h>
 #include <Tridium/Rendering/Texture.h>
@@ -7,17 +7,20 @@
 
 #include "Panels/Panel.h"
 
+// Forward Declarations
 namespace Tridium {
 	class Scene;
+
+	namespace Editor {
+		class EditorCamera;
+		class ContentBrowserPanel;
+		class SceneHeirarchyPanel;
+		class EditorViewportPanel;
+		class GameViewportPanel;
+	}
 }
 
 namespace Tridium::Editor {
-	class EditorCamera;
-	class ContentBrowserPanel;
-	class SceneHeirarchyPanel;
-	class EditorViewportPanel;
-	class GameViewportPanel;
-
 
 	enum class SceneState
 	{
@@ -57,6 +60,8 @@ namespace Tridium::Editor {
 		inline T* PushPanel( Args&&... args );
 		template <typename T>
 		inline T* GetPanel();
+		template <typename T>
+		inline T* GetOrEmplacePanel();
 
 		SharedPtr<EditorCamera> GetEditorCamera() { return m_EditorCamera; }
 
@@ -69,10 +74,13 @@ namespace Tridium::Editor {
 
 	private:
 		bool OnKeyPressed( KeyPressedEvent& e );
-
 		void DrawMenuBar();
 
 	private:
+		// Used as a temporary storage for the current scene when in a PIE session.
+		// Once a PIE session is ended, the scene is restored to the active scene.
+		UniquePtr<Scene> m_SceneSnapshot;
+
 		SharedPtr<EditorCamera> m_EditorCamera;
 
 		PanelStack m_PanelStack;
@@ -95,6 +103,12 @@ namespace Tridium::Editor {
 	inline T* Editor::EditorLayer::GetPanel()
 	{
 		return m_PanelStack.GetPanel<T>();
+	}
+
+	template<typename T>
+	inline T* EditorLayer::GetOrEmplacePanel()
+	{
+		return m_PanelStack.GetOrEmplacePanel<T>();
 	}
 
 }

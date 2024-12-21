@@ -1,11 +1,61 @@
 #include "tripch.h"
 #include "Camera.h"
+#include <Tridium/Reflection/Reflection.h>
 
 namespace Tridium {
 
 	Camera::Camera()
 	{
 		RecalculateProjection();
+	}
+
+	Frustum Camera::GetFrustum( const Vector3& a_Position, Vector3 a_Forward ) const
+	{
+		switch ( m_ProjectionType )
+		{
+		case EProjectionType::Perspective:
+			return GetPerspectiveFrustum( a_Position, a_Forward );
+		case EProjectionType::Orthographic:
+			return GetOrthographicFrustum( a_Position, a_Forward );
+		}
+
+		TE_CORE_ASSERT( false, "Invalid Projection Type!" );
+		return Frustum();
+	}
+
+	Frustum Camera::GetPerspectiveFrustum( const Vector3& a_Position, Vector3 a_Forward ) const
+	{
+		// Ensure forward is normalized
+		const Vector3 normal = glm::normalize( a_Forward );
+		Frustum frustum;
+		const float halfVSide = m_Perspective.Far * glm::tan( glm::radians( m_Perspective.FOV ) * 0.5f );
+		const float halfHSide = halfVSide * GetAspectRatio();
+		const Vector3 frontMultFar = normal * m_Perspective.Far;
+		const Vector3 frontMultNear = normal * m_Perspective.Near;
+
+		const Vector3 right = glm::normalize( glm::cross( normal, { 0.0f, 1.0f, 0.0f } ) );
+		const Vector3 up = glm::normalize( glm::cross( right, normal ) );
+
+		static const auto CreatePlane = +[]( const Vector3& a_Normal, const Vector3& a_Position ) -> Plane
+			{
+				return { a_Normal, glm::dot( a_Normal, a_Position ) };
+			};
+
+		frustum.Near = CreatePlane( normal, a_Position + frontMultNear );
+		frustum.Far = CreatePlane( -normal, a_Position + frontMultFar);
+		frustum.Right = CreatePlane( glm::cross( frontMultFar - right * halfHSide, up ), a_Position );
+		frustum.Left = CreatePlane( glm::cross( up, frontMultFar + right * halfHSide ), a_Position );
+		frustum.Top = CreatePlane( glm::cross( right, frontMultFar + up * halfVSide ), a_Position );
+		frustum.Bottom = CreatePlane( glm::cross( frontMultFar - up * halfVSide, right ), a_Position );
+
+		return frustum;
+	}
+
+
+	Frustum Camera::GetOrthographicFrustum( const Vector3& a_Position, Vector3 a_Forward ) const
+	{
+		TE_CORE_ASSERT( false, "Orthographic Frustum not implemented!" );
+		return Frustum();
 	}
 
 	void Camera::SetPerspective()
@@ -61,4 +111,30 @@ namespace Tridium {
 		}
 
 	}
-}
+
+	BEGIN_REFLECT_ENUM( EProjectionType, Scriptable )
+		ENUM_VALUE( Perspective )
+		ENUM_VALUE( Orthographic )
+	END_REFLECT_ENUM( EProjectionType )
+
+	BEGIN_REFLECT( PerspectiveData, Scriptable )
+		PROPERTY( FOV, Serialize | EditAnywhere )
+		PROPERTY( Near, Serialize | EditAnywhere )
+		PROPERTY( Far, Serialize | EditAnywhere )
+	END_REFLECT( PerspectiveData );
+
+	BEGIN_REFLECT( OrthographicData, Scriptable )
+		PROPERTY( Size, Serialize | EditAnywhere )
+		PROPERTY( Near, Serialize | EditAnywhere )
+		PROPERTY( Far, Serialize | EditAnywhere )
+	END_REFLECT( OrthographicData )
+
+	BEGIN_REFLECT( Camera, Scriptable )
+		PROPERTY( m_Perspective, Serialize | EditAnywhere )
+		PROPERTY( m_Orthographic, Serialize | EditAnywhere )
+		PROPERTY( m_ProjectionType, Serialize | EditAnywhere )
+		PROPERTY( m_Projection, Serialize | EditAnywhere )
+		PROPERTY( m_ViewportSize, Serialize | EditAnywhere )
+	END_REFLECT( Camera )
+
+} // namespace Tridium

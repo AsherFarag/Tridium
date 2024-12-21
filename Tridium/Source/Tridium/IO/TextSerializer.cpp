@@ -42,6 +42,36 @@ namespace Tridium::IO {
 		a_Archive << YAML::EndSeq;
 	}
 
+	_TRIDUM_SERIALIZE_TO_TEXT( iVector2 )
+	{
+		a_Archive << YAML::Flow;
+		a_Archive << YAML::BeginSeq;
+		a_Archive << a_Value.x;
+		a_Archive << a_Value.y;
+		a_Archive << YAML::EndSeq;
+	}
+
+	_TRIDUM_SERIALIZE_TO_TEXT( iVector3 )
+	{
+		a_Archive << YAML::Flow;
+		a_Archive << YAML::BeginSeq;
+		a_Archive << a_Value.x;
+		a_Archive << a_Value.y;
+		a_Archive << a_Value.z;
+		a_Archive << YAML::EndSeq;
+	}
+
+	_TRIDUM_SERIALIZE_TO_TEXT( iVector4 )
+	{
+		a_Archive << YAML::Flow;
+		a_Archive << YAML::BeginSeq;
+		a_Archive << a_Value.x;
+		a_Archive << a_Value.y;
+		a_Archive << a_Value.z;
+		a_Archive << a_Value.w;
+		a_Archive << YAML::EndSeq;
+	}
+
 	_TRIDUM_SERIALIZE_TO_TEXT( Color )
 	{
 		a_Archive << YAML::Flow;
@@ -111,6 +141,12 @@ namespace Tridium::IO {
 		a_Archive << a_Value.ID();
 	}
 
+	_TRIDUM_SERIALIZE_TO_TEXT( GameObject )
+	{
+		a_Archive << static_cast<EntityIDType>( a_Value.ID() );
+	}
+
+
 	_TRIDUM_SERIALIZE_TO_TEXT( SceneHandle )
 	{
 		a_Archive << a_Value.ID();
@@ -146,7 +182,7 @@ namespace Tridium::IO {
 		a_Archive << a_Value.ID();
 	}
 
-	_TRIDUM_SERIALIZE_TO_TEXT( LuaHandle )
+	_TRIDUM_SERIALIZE_TO_TEXT( LuaScriptHandle )
 	{
 		a_Archive << a_Value.ID();
 	}
@@ -192,6 +228,42 @@ namespace Tridium::IO {
 			o_Value.y = a_Node[1].as<float>();
 			o_Value.z = a_Node[2].as<float>();
 			o_Value.w = a_Node[3].as<float>();
+			return true;
+		}
+		return false;
+	}
+
+	_TRIDUM_DESERIALIZE_FROM_TEXT( iVector2 )
+	{
+		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 2 )
+		{
+			o_Value.x = a_Node[0].as<int>();
+			o_Value.y = a_Node[1].as<int>();
+			return true;
+		}
+		return false;
+	}
+
+	_TRIDUM_DESERIALIZE_FROM_TEXT( iVector3 )
+	{
+		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 3 )
+		{
+			o_Value.x = a_Node[0].as<int>();
+			o_Value.y = a_Node[1].as<int>();
+			o_Value.z = a_Node[2].as<int>();
+			return true;
+		}
+		return false;
+	}
+
+	_TRIDUM_DESERIALIZE_FROM_TEXT( iVector4 )
+	{
+		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 4 )
+		{
+			o_Value.x = a_Node[0].as<int>();
+			o_Value.y = a_Node[1].as<int>();
+			o_Value.z = a_Node[2].as<int>();
+			o_Value.w = a_Node[3].as<int>();
 			return true;
 		}
 		return false;
@@ -279,6 +351,16 @@ namespace Tridium::IO {
 		return false;
 	}
 
+	_TRIDUM_DESERIALIZE_FROM_TEXT( GameObject )
+	{
+		if ( a_Node && a_Node.IsScalar() )
+		{
+			o_Value = GameObject( a_Node.as<EntityIDType>() );
+			return true;
+		}
+		return false;
+	}
+
 	_TRIDUM_DESERIALIZE_FROM_TEXT( SceneHandle )
 	{
 		if ( a_Node && a_Node.IsScalar() )
@@ -349,11 +431,11 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( LuaHandle )
+	_TRIDUM_DESERIALIZE_FROM_TEXT( LuaScriptHandle )
 	{
 		if ( a_Node && a_Node.IsScalar() )
 		{
-			o_Value = LuaHandle( a_Node.as<uint64_t>() );
+			o_Value = LuaScriptHandle( a_Node.as<uint64_t>() );
 			return true;
 		}
 		return false;

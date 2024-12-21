@@ -1,5 +1,5 @@
 #pragma once
-#ifdef IS_EDITOR
+#if IS_EDITOR
 #include <Tridium/Rendering/Texture.h>
 #include <Tridium/Asset/AssetType.h>
 #include <Tridium/IO/FilePath.h>

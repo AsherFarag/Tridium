@@ -10,6 +10,7 @@
 #include <Tridium/Asset/Loaders/ShaderLoader.h>
 #include <Tridium/Asset/Loaders/MaterialLoader.h>
 #include <Tridium/Asset/Loaders/MeshLoader.h>
+#include <Tridium/Asset/Loaders/LuaScriptLoader.h>
 
 namespace Tridium {
 
@@ -24,6 +25,7 @@ namespace Tridium {
 		s_AssetFactories[EAssetType::Material] = MakeShared<MaterialLoader>();
 		s_AssetFactories[EAssetType::MeshSource] = MakeShared<MeshSourceLoader>();
 		s_AssetFactories[EAssetType::StaticMesh] = MakeShared<StaticMeshLoader>();
+		s_AssetFactories[EAssetType::LuaScript] = MakeShared<LuaScriptLoader>();
 	}
 
 	void AssetFactory::SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )

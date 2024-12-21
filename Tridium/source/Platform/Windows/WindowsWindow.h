@@ -17,6 +17,8 @@ namespace Tridium {
         uint32_t GetWidth() const override { return m_Data.Width; }
         uint32_t GetHeight() const override { return m_Data.Height; }
 
+		virtual bool IsMinimized() const override;
+
         // Window Attributes
         inline void SetEventCallback( const EventCallbackFn& callback ) override { m_Data.EventCallback = callback; }
         void SetVSync( bool enabled ) override;
@@ -45,7 +47,7 @@ namespace Tridium {
         };
 
         WindowData m_Data;
-        RenderingContext* m_RenderingContext;
+        UniquePtr<RenderingContext> m_RenderingContext;
     };
 
 }

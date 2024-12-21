@@ -1,12 +1,13 @@
 #include "tripch.h"
 
-#ifdef IS_EDITOR
+#if IS_EDITOR
 #include "EditorLayer.h"
 #include "imgui.h"
 
 #include "Editor.h"
 #include "EditorCamera.h"
 #include "EditorUtil.h"
+#include "EditorStyle.h"
 
 #include <Tridium/Scripting/ScriptEngine.h>
 #include <Tridium/ECS/Components/Types.h>
@@ -21,6 +22,8 @@
 #include "Panels/AssetRegistryPanel.h"
 #include "Panels/SceneSettingsPanel.h"
 #include "Panels/ProjectSettingsPanel.h"
+#include "Panels/InspectorPanel.h"
+#include "Panels/StatsPanel.h"
 
 #include <Tridium/IO/SceneSerializer.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
@@ -30,23 +33,6 @@
 #include <Tridium/IO/Serializer.h>
 
 namespace Tridium::Editor {
-
-	// TEMP
-	class Stats : public Panel
-	{
-	public:
-		Stats() : Panel( "Stats" ) {}
-
-		virtual void OnImGuiDraw()
-		{
-			if ( ImGuiBegin() )
-			{
-				ImGui::Text( "FPS: %i", Application::Get().GetFPS() );
-			}
-
-			ImGuiEnd();
-		}
-	};
 
 	EditorLayer::EditorLayer()
 		: Layer( "EditorLayer")
@@ -66,7 +52,7 @@ namespace Tridium::Editor {
 		m_ContentBrowser = m_PanelStack.PushPanel<ContentBrowserPanel>();
 		m_GameViewportPanel = m_PanelStack.PushPanel<GameViewportPanel>();
 		m_EditorViewportPanel = m_PanelStack.PushPanel<EditorViewportPanel>( m_EditorCamera );
-		m_PanelStack.PushPanel<Stats>();
+		m_PanelStack.PushPanel<StatsPanel>();
 	}
 
 	void EditorLayer::OnDetach()
@@ -168,12 +154,16 @@ namespace Tridium::Editor {
 
 	void EditorLayer::OnBeginScene()
 	{
+		// Store a copy of the current scene in storage
+		m_SceneSnapshot = MakeUnique<Scene>( *GetActiveScene() );
+
 		GetActiveScene()->OnBegin();
 		GetActiveScene()->SetPaused( false );
 
-
 		m_GameViewportPanel->Focus();
 		CurrentSceneState = SceneState::Play;
+
+		Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled );
 	}
 
 	void EditorLayer::OnEndScene()
@@ -182,8 +172,16 @@ namespace Tridium::Editor {
 
 		CurrentSceneState = SceneState::Edit;
 		m_EditorViewportPanel->Focus();
-		TODO("Make this not hard coded!")
-		//LoadScene( GetActiveScene() );
+
+		// Restore the scene from storage
+		if ( m_SceneSnapshot )
+		{
+			Scene* scene = m_SceneSnapshot.release();
+			SetActiveScene( SharedPtr<Scene>( scene ) );
+		}
+
+		TODO( "TEMP?" );
+		Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Normal );
 	}
 
 	bool EditorLayer::OnKeyPressed( KeyPressedEvent& e )
@@ -216,10 +214,39 @@ namespace Tridium::Editor {
 		{
 			if ( control )
 			{
-				ScriptEngine::Recompile();
 				return true;
 			}
 			break;
+		}
+		case Input::KEY_ESCAPE:
+		{
+			if ( CurrentSceneState == SceneState::Play )
+			{
+				OnEndScene();
+				return true;
+			}
+			break;
+		}
+		case Input::KEY_TAB:
+		{
+			if ( CurrentSceneState == SceneState::Play )
+			{
+				TODO( "Bruh" );
+				static bool s_MouseIsCaptured = false;
+				if ( s_MouseIsCaptured )
+				{
+					Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Normal );
+					ImGui::SetMouseCursor( ImGuiMouseCursor_Arrow );
+					s_MouseIsCaptured = false;
+				}
+				else
+				{
+					Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled );
+					ImGui::SetMouseCursor( ImGuiMouseCursor_None );
+					s_MouseIsCaptured = true;
+				}
+				return true;
+			}
 		}
 		}
 
@@ -330,9 +357,10 @@ namespace Tridium::Editor {
 			if ( ImGui::BeginMenu( "Panels" ) )
 			{
 				if ( ImGui::MenuItem( "Content Browser" ) ) m_PanelStack.PushPanel<ContentBrowserPanel>();
-				if ( ImGui::MenuItem( "Stats" ) ) m_PanelStack.PushPanel<Stats>();
+				if ( ImGui::MenuItem( "Stats" ) ) m_PanelStack.PushPanel<StatsPanel>();
 				if ( ImGui::MenuItem( "Asset Registry" ) ) m_PanelStack.PushPanel<AssetRegistryPanel>();
 				if ( ImGui::MenuItem( "Scene Renderer" ) ) m_PanelStack.PushPanel<SceneRendererPanel>();
+				if ( ImGui::MenuItem( "Script Editor" ) ) m_PanelStack.PushPanel<ScriptEditorPanel>();
 
 				ImGui::EndMenu();
 			}
@@ -346,7 +374,9 @@ namespace Tridium::Editor {
 				m_PanelStack.PushPanel<ScriptEditorPanel>();
 
 			if ( ImGui::MenuItem( "Recompile", "Ctrl+R" ) )
-				ScriptEngine::Recompile();
+			{
+				Script::ScriptEngine::RecompileAllScripts();
+			}
 
 			ImGui::EndMenu();
 		}
@@ -415,39 +445,21 @@ namespace Tridium::Editor {
 		ImGui::BeginGroup();
 		{
 			ImGui::ScopedStyleVar padding( ImGuiStyleVar_FramePadding, buttonPadding );
-			if ( hasPlayButton && ImGui::SmallButton( TE_ICON_PLAY ) )
-			{
-				editor->OnBeginScene();
-			}
-
-			if ( hasPauseButton && ImGui::SmallButton( TE_ICON_PAUSE ) )
-			{
-				editor->GetActiveScene()->SetPaused( true );
-			}
-
-			ImGui::SameLine();
-
-			if ( hasStopButton && ImGui::SmallButton( TE_ICON_STOP ) )
-			{
-				editor->OnEndScene();
-			}
-
-		#if 0
 			if ( hasPlayButton )
 			{
-				if ( ImGui::ImageButton( "PlayButton", (ImTextureID)PlayButtonIcon->GetRendererID(),
-					buttonSize, { 0,1 }, { 1,0 },
-					{ 0,0,0,0 }, { 0.5f, 1.0f, 0.5f, 1.0f } ) )
+				ImGui::ScopedStyleCol buttonCol( ImGuiCol_Text, ImVec4( Style::Colors::Green ) );
+				if ( ImGui::SmallButton( TE_ICON_PLAY ) )
 				{
-					editor->OnBeginScene();
+					if ( editor->GetActiveScene()->IsPaused() )
+						editor->GetActiveScene()->SetPaused( false );
+					else
+						editor->OnBeginScene();
 				}
 			}
 
 			if ( hasPauseButton )
 			{
-				if ( ImGui::ImageButton( "PauseButton", (ImTextureID)PauseButtonIcon->GetRendererID(),
-					buttonSize, { 0,1 }, { 1,0 },
-					{ 0,0,0,0 } ) )
+				if ( ImGui::SmallButton( TE_ICON_PAUSE ) )
 				{
 					editor->GetActiveScene()->SetPaused( true );
 				}
@@ -457,14 +469,12 @@ namespace Tridium::Editor {
 
 			if ( hasStopButton )
 			{
-				if ( ImGui::ImageButton( "StopButton", (ImTextureID)StopButtonIcon->GetRendererID(),
-					buttonSize, { 0,1 }, { 1,0 },
-					{ 0,0,0,0 }, { 1.0f, 0.5f, 0.5f, 1.0f } ) )
+				ImGui::ScopedStyleCol buttonCol( ImGuiCol_Text, ImVec4( Style::Colors::Red ) );
+				if ( ImGui::SmallButton( TE_ICON_STOP ) )
 				{
 					editor->OnEndScene();
 				}
 			}
-		#endif
 
 		}
 		ImGui::EndGroup();

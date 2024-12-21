@@ -11,6 +11,7 @@ namespace Tridium {
 		SharedPtr<Asset> GetAsset( AssetHandle a_Handle ) override;
 		SharedPtr<Asset> GetAsset( const IO::FilePath& a_Path ) override;
 		SharedPtr<Asset> GetMemoryOnlyAsset( AssetHandle a_Handle ) override;
+		AssetStorageIterator GetAssets() override;
 		bool AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset ) override;
 		bool HasAsset( AssetHandle a_Handle ) override;
 		void RemoveAsset( AssetHandle a_Handle ) override;
@@ -18,6 +19,10 @@ namespace Tridium {
 		bool IsMemoryAsset( AssetHandle a_Handle ) override;
 		void RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) override;
 		void UnregisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) override;
+
+	private:
+		AssetStorageType m_LoadedAssets;
+		AssetStorageType m_MemoryAssets;
 	};
 
 }

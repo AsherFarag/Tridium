@@ -1,5 +1,5 @@
 #include "tripch.h"
-#ifdef IS_EDITOR
+#if IS_EDITOR
 
 #include "EditorStyle.h"
 
@@ -65,7 +65,7 @@ namespace Tridium::Editor::Style {
 			colors[ImGuiCol_HeaderHovered] = hoveredHeaderColor;
 			colors[ImGuiCol_HeaderActive] = hoveredHeaderColor * 2;
 
-			colors[ImGuiCol_Separator] = ImVec4( 0.28f, 0.28f, 0.28f, 0.29f );
+			colors[ImGuiCol_Separator] = ImVec4( 0.0f, 0.0f, 0.0f, 1.0f );
 			colors[ImGuiCol_SeparatorHovered] = ImVec4( 0.44f, 0.44f, 0.44f, 0.29f );
 			colors[ImGuiCol_SeparatorActive] = ImVec4( 0.40f, 0.44f, 0.47f, 1.00f );
 

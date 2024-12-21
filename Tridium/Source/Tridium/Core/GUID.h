@@ -1,48 +1,75 @@
 #pragma once
+#include <Tridium/Core/Types.h>
 
 namespace Tridium {
 
-	// Globally-Unique Identifier
-	class GUID
+	template<typename T>
+	T GenerateRandomID() { static_assert( false, "GenerateRandomID not implemented for this type" ); }
+
+	template<>
+	int16_t GenerateRandomID();
+
+	template<>
+	int32_t GenerateRandomID();
+
+	template<>
+	int64_t GenerateRandomID();
+
+	template<>
+	uint16_t GenerateRandomID();
+
+	template<>
+	uint32_t GenerateRandomID();
+
+	template<>
+	uint64_t GenerateRandomID();
+
+	template<typename T>
+	class UID
 	{
 	public:
-		using Type = uint64_t;
+		using Type = T;
+		static constexpr T InvalidID = 0;
 
-		static constexpr Type InvalidGUID = 0;
+		UID() : m_ID( InvalidID ) {}
+		UID( T a_ID ) : m_ID( a_ID ) {}
 
-		GUID() : m_ID( InvalidGUID ) {}
-		GUID( Type a_ID ) : m_ID( a_ID ) {}
+		static UID Create()
+		{
+			T id = GenerateRandomID<T>();
+			return id == InvalidID ? Create() : UID( id );
+		}
 
-		static GUID Null() { return GUID(); }
-		static GUID Create();
-		const Type ID() const { return m_ID; }
-		const bool Valid() const { return m_ID != InvalidGUID; }
+		T ID() const { return m_ID; }
+		bool IsValid() const { return m_ID != InvalidID; }
 
-		operator Type() const { return m_ID; }
-		operator const Type() const { return m_ID; }
-		GUID& operator=( const Type& id ) { m_ID = id; return *this; }
-		GUID& operator=( const GUID& id ) { m_ID = id.m_ID; return *this; }
-		bool operator==( const Type& id ) const { return m_ID == id; }
-		bool operator==( const GUID& guid ) const { return m_ID == guid.m_ID; }
-		bool operator!=( const Type& id ) const { return m_ID != id; }
-		bool operator!=( const GUID& guid ) const { return m_ID != guid.m_ID; }
-		bool operator<( const GUID& guid ) const { return m_ID < guid.m_ID; }
-		bool operator>( const GUID& guid ) const { return m_ID > guid.m_ID; }
-		bool operator<=( const GUID& guid ) const { return m_ID <= guid.m_ID; }
-		bool operator>=( const GUID& guid ) const { return m_ID >= guid.m_ID; }
+		constexpr operator T() const { return m_ID; }
+		constexpr UID& operator=( const T& a_ID ) { m_ID = a_ID; return *this; }
+		constexpr UID& operator=( const UID& a_ID ) { m_ID = a_ID.m_ID; return *this; }
+		constexpr bool operator==( const T& a_ID ) const { return m_ID == a_ID; }
+		constexpr bool operator==( const UID& a_ID ) const { return m_ID == a_ID.m_ID; }
+		constexpr bool operator!=( const T& a_ID ) const { return m_ID != a_ID; }
+		constexpr bool operator!=( const UID& a_ID ) const { return m_ID != a_ID.m_ID; }
+		constexpr bool operator<( const UID& a_ID ) const { return m_ID < a_ID.m_ID; }
+		constexpr bool operator>( const UID& a_ID ) const { return m_ID > a_ID.m_ID; }
+		constexpr bool operator<=( const UID& a_ID ) const { return m_ID <= a_ID.m_ID; }
+		constexpr bool operator>=( const UID& a_ID ) const { return m_ID >= a_ID.m_ID; }
 
 	private:
-		Type m_ID;
+		T m_ID;
 	};
+
+	// Globally-Unique Identifier
+	using GUID = UID<uint64_t>;
 }
 
 namespace std {
-	template <>
-	struct hash<Tridium::GUID>
+	template<typename T>
+	struct hash<Tridium::UID<T>>
 	{
-		std::size_t operator()( const Tridium::GUID& s ) const noexcept 
+		std::size_t operator()( const Tridium::UID<T>& a_ID ) const
 		{
-			return std::hash<Tridium::GUID::Type>{}( s.ID() );
+			return std::hash<T>()( a_ID.ID() );
 		}
 	};
 }

@@ -1,28 +1,63 @@
 #pragma once
-#include "sol/sol.hpp"
+#include "Script.h"
+#include <unordered_set>
+#include <Tridium/Reflection/MetaTypes.h>
 
-namespace Tridium {
-
+namespace Tridium::Script {
 
 	// The script engine is a singleton that handles the lua state
 	class ScriptEngine
 	{
-		friend class Script;
-
 	public:
-		static ScriptEngine* Get();
-		static void Recompile();
+		ScriptEngine() = default;
+		~ScriptEngine() = default;
+		static ScriptEngine& Get() { return *s_Instance; }
+		static sol::state& GetLuaState() { return s_Instance->m_LuaState; }
 
-		static inline sol::state& GetLuaState() { return Get()->m_LuaState; }
+		static bool RecompileScript( ScriptAsset& a_Script );
+		static void RecompileAllScripts();
+
+		template<typename T>
+		static sol::usertype<T> RegisterNewType( const char* a_TypeName )
+		{
+			static bool s_Initialized = false;
+			if ( s_Initialized )
+			{
+				TE_CORE_ASSERT( false, "RegisterType can only be called once per type!" );
+				return {};
+			}
+
+			sol::usertype<T> newType = GetLuaState().new_usertype<T>( a_TypeName );
+			s_Instance->m_RegisteredTypes.insert( a_TypeName );
+			s_Initialized = true;
+
+			return newType;
+		}
+
+		template<typename T>
+		static sol::usertype<T>& GetRegisteredType( const char* a_TypeName )
+		{
+			if ( s_Instance->m_RegisteredTypes.find( a_TypeName ) == s_Instance->m_RegisteredTypes.end() )
+			{
+				TE_CORE_ASSERT( false, "Type not registered!" );
+				return {};
+			}
+
+			return GetLuaState()[a_TypeName];
+		}
 
 	private:
-		ScriptEngine();
-		~ScriptEngine();
-
 		void Init();
 
+		static const std::string& GetUserDataTypeName( sol::userdata a_UserData );
+
 	private:
+		static UniquePtr<ScriptEngine> s_Instance;
 		sol::state m_LuaState;
+		// A set of registered User-Types names that can be used to query the type in the reflection system.
+		std::unordered_set<std::string> m_RegisteredTypes;
+
+		friend class Application;
 	};
 
 }

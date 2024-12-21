@@ -15,7 +15,7 @@ namespace Tridium {
 		Shader,
 		Texture,
 		CubeMap,
-		Lua,
+		LuaScript,
 	};
 
     using AssetHandle = GUID;
@@ -87,7 +87,7 @@ namespace Tridium {
 	using ShaderHandle = Internal::TypedAssetHandle<EAssetType::Shader>;
 	using TextureHandle = Internal::TypedAssetHandle<EAssetType::Texture>;
 	using CubeMapHandle = Internal::TypedAssetHandle<EAssetType::CubeMap>;
-	using LuaHandle = Internal::TypedAssetHandle<EAssetType::Lua>;
+	using LuaScriptHandle = Internal::TypedAssetHandle<EAssetType::LuaScript>;
 
 	static const char* AssetTypeToString( EAssetType a_Type )
 	{
@@ -100,7 +100,7 @@ namespace Tridium {
 		case EAssetType::Shader: return "Shader";
 		case EAssetType::Texture: return "Texture";
 		case EAssetType::CubeMap: return "CubeMap";
-		case EAssetType::Lua: return "Lua";
+		case EAssetType::LuaScript: return "LuaScript";
 		}
 
 		return "None";
@@ -115,10 +115,22 @@ namespace Tridium {
 		if ( strcmp( a_Type, "Shader" ) == 0 ) return EAssetType::Shader;
 		if ( strcmp( a_Type, "Texture" ) == 0 ) return EAssetType::Texture;
 		if ( strcmp( a_Type, "CubeMap" ) == 0 ) return EAssetType::CubeMap;
-		if ( strcmp( a_Type, "Lua" ) == 0 ) return EAssetType::Lua;
+		if ( strcmp( a_Type, "LuaScript" ) == 0 ) return EAssetType::LuaScript;
 
 		return EAssetType::None;
 	}
 
 	EAssetType GetAssetTypeFromFileExtension( const std::string& a_Extension );
+}
+
+namespace std {
+
+	template <Tridium::EAssetType _AssetType>
+	struct hash<Tridium::Internal::TypedAssetHandle<_AssetType>>
+	{
+		size_t operator()( const Tridium::Internal::TypedAssetHandle<_AssetType>& a_Handle ) const
+		{
+			return std::hash<Tridium::AssetHandle>()( a_Handle );
+		}
+	};
 }

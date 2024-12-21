@@ -1,17 +1,17 @@
 #pragma once
-#include <Tridium/Core/Core.h>
-#include "FrameBuffer.h"
 
 namespace Tridium {
 
 	class Shader;
 	class VertexArray;
+	class Framebuffer;
 
 	class GameViewport
 	{
 	public:
 		GameViewport();
 
+		void Init( uint32_t a_Width, uint32_t a_Height );
 		void RenderToWindow();
 		void Resize( uint32_t a_Width, uint32_t a_Height );
 

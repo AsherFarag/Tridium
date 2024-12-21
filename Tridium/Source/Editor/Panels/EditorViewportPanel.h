@@ -1,6 +1,8 @@
 #pragma once
-#ifdef IS_EDITOR
+#if IS_EDITOR
 #include "ViewportPanel.h"
+#include <Tridium/ECS/GameObject.h>
+#include <Tridium/Core/Delegate.h>
 
 namespace Tridium {
 	class Shader;
@@ -9,7 +11,6 @@ namespace Tridium {
 namespace Tridium::Editor {
 	
 	class EditorCamera;
-	class SceneHeirarchyPanel;
 
 	enum class EGizmoState
 	{
@@ -23,7 +24,7 @@ namespace Tridium::Editor {
 	{
 	public:
 		EditorViewportPanel( const SharedPtr<EditorCamera>& editorCamera );
-		virtual ~EditorViewportPanel() = default;
+		virtual ~EditorViewportPanel();
 
 		virtual void OnImGuiDraw() override;
 
@@ -37,12 +38,14 @@ namespace Tridium::Editor {
 		void RenderGameObjectIDs();
 		void RenderSelectionOutline();
 
-		SceneHeirarchyPanel* GetSceneHeirarchy();
+		void SetSelectedGameObject( GameObject gameObject ) { m_SelectedGameObject = gameObject; }
 
 	private:
 		EGizmoState m_GizmoState = EGizmoState::Translate;
 		SharedPtr<EditorCamera> m_EditorCamera;
-		SceneHeirarchyPanel* m_SceneHeirarchy = nullptr;
+
+		GameObject m_SelectedGameObject;
+		DelegateHandle m_OnGameObjectSelectedHandle;
 
 		SharedPtr<Framebuffer> m_IDFBO;
 		SharedPtr<Shader> m_GameObjectIDShader;

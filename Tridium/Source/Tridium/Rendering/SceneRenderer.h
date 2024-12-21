@@ -1,4 +1,5 @@
 #pragma once
+#include "DrawList.h"
 #include "Camera.h"
 #include "Shader.h"
 #include "Material.h"
@@ -11,7 +12,7 @@ namespace Tridium {
 
 	// Forward declarations
 	class Scene;
-	class SceneEnvironment;
+	struct SceneEnvironment;
 	class VertexArray;
 	class Texture;
 	class MeshSource;
@@ -32,6 +33,31 @@ namespace Tridium {
 		PointLight PointLights[MAX_POINT_LIGHTS];
 		SpotLight SpotLights[MAX_SPOT_LIGHTS];
 		DirectionalLight DirectionalLights[MAX_DIRECTIONAL_LIGHTS];
+
+		uint32_t NumPointLights = 0u;
+		uint32_t NumSpotLights = 0u;
+		uint32_t NumDirectionalLights = 0u;
+	};
+
+	struct RenderSettings
+	{
+		ERenderMode RenderMode = ERenderMode::Deferred;
+		float RenderScale = 1.0f;
+
+		// Temp?
+		bool DebugDrawColliders = false;
+	};
+
+	struct RenderStats
+	{
+		double RenderTime = 0.0;
+		double DrawListGenerationTime = 0.0;
+		double GeometryTime = 0.0;
+		double ShadowMapTime = 0.0;
+		double PostProcessTime = 0.0;
+
+		uint32_t NumDrawCalls = 0u;
+		uint32_t CulledDrawCalls = 0u;
 	};
 
 	class SceneRenderer
@@ -41,8 +67,10 @@ namespace Tridium {
 
 		void Render( const SharedPtr<Framebuffer>& a_RenderTarget, const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition );
 
-		ERenderMode GetRenderMode() const { return m_RenderMode; }
-		void SetRenderMode( ERenderMode a_RenderMode ) { m_RenderMode = a_RenderMode; }
+		const RenderSettings& GetRenderSettings() const { return m_RenderSettings; }
+		void SetRenderSettings( const RenderSettings& a_RenderSettings ) { m_RenderSettings = a_RenderSettings; }
+
+		const RenderStats& GetRenderStats() const { return m_RenderStats; }
 
 	protected:
 		void BeginScene( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition );
@@ -50,7 +78,6 @@ namespace Tridium {
 
 		void Clear(); // Clears all the per frame data
 		void GenerateShadowMaps();
-		void SubmitDrawCall( DrawCall&& a_DrawCall );
 
 		// - Deferred Rendering -
 		void DeferredRenderPass();
@@ -64,11 +91,14 @@ namespace Tridium {
 		// ----------------------
 
 		void RenderSkybox();
-
 		void PostProcessPass();
 
+		void DebugRenderColliders();
+
+		void DrawCall( const SharedPtr<VertexArray>& a_VAO );
+
 	private:
-		ERenderMode m_RenderMode = ERenderMode::Deferred;
+		RenderSettings m_RenderSettings;
 
 		Scene& m_Scene;
 		SceneEnvironment& m_SceneEnvironment;
@@ -84,6 +114,14 @@ namespace Tridium {
 		SharedPtr<Texture> m_NormalTexture;
 		// ---------------
 
+		// Debug assets
+		SharedPtr<Shader> m_DebugSimpleShader;
+		SharedPtr<VertexArray> m_DebugSphereVAO;
+		SharedPtr<VertexArray> m_DebugCubeVAO;
+		SharedPtr<VertexArray> m_DebugCapsuleVAO;
+		SharedPtr<VertexArray> m_DebugCylinderVAO;
+		// ------------
+
 		// Per frame data
 		struct SceneInfo
 		{
@@ -92,10 +130,12 @@ namespace Tridium {
 			Matrix4 ViewProjectionMatrix;
 			Vector3 CameraPosition;
 			Camera Camera;
+			Frustum CameraFrustum;
 		} m_SceneInfo;
-		std::vector<DrawCall> m_DrawCalls;
+		DrawList m_DrawList;
 		LightEnvironment m_LightEnvironment;
 		SharedPtr<Framebuffer> m_RenderTarget;
+		RenderStats m_RenderStats;
 		// ---------------
 
 		struct DeferredData
@@ -111,13 +151,11 @@ namespace Tridium {
 		} m_ForwardData;
 
 		// Shadows
-		SharedPtr<Framebuffer> m_ShadowFBO;
-		Vector2 m_ShadowMapSize{1024, 1024};
 		SharedPtr<Shader> m_ShadowMapShader;
-		Matrix4 m_LightViewProjectionMatrix{ 1.0f };
 		SharedPtr<Shader> m_ShadowCubeMapShader;
 		// -------
-
+		
+		friend class Scene;
 		friend class Editor::SceneRendererPanel;
 	};
 

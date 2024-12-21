@@ -1,19 +1,23 @@
 #include "tripch.h"
-#ifdef IS_EDITOR
-
+#if IS_EDITOR
 #include "ContentBrowserPanel.h"
-#include "Editor/Editor.h"
-#include <fstream>
-#include <Tridium/Core/Application.h>
-#include "ScriptEditorPanel.h"
-#include <Tridium/Asset/EditorAssetManager.h>
 
 #include <Tridium/Rendering/Material.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
+#include <Tridium/Core/Application.h>
+#include <Tridium/Asset/EditorAssetManager.h>
+
+#include <Editor/Editor.h>
 #include <Editor/AssetImporter.h>
 #include <Editor/EditorUtil.h>
+#include <Editor/Util/AssetInfo.h>
+#include <Editor/EditorStyle.h>
+#include "ScriptEditorPanel.h"
+#include "Asset/MaterialEditorPanel.h"
 
 #include "imgui_internal.h"
+#include <thread>
+#include <fstream>
 
 namespace Tridium::Editor {
 
@@ -32,7 +36,7 @@ namespace Tridium::Editor {
 		case EFileType::Shader:     return "Shader";
 		case EFileType::Texture:    return "Texture";
 		case EFileType::CubeMap:    return "Cube Map";
-		case EFileType::Lua:        return "Lua";
+		case EFileType::LuaScript:        return "Lua";
 		case EFileType::Folder:     return "Folder";
 		}
 
@@ -54,7 +58,7 @@ namespace Tridium::Editor {
 			{ EFileType::Shader,     defaultIcon },
 			{ EFileType::Texture,    TextureLoader::LoadTexture( iconFolder / "file-media.png" ) },
 			{ EFileType::CubeMap,    TextureLoader::LoadTexture( iconFolder / "file-media.png" ) },
-			{ EFileType::Lua,	     TextureLoader::LoadTexture( iconFolder / "file-code.png" ) },
+			{ EFileType::LuaScript,	     TextureLoader::LoadTexture( iconFolder / "file-code.png" ) },
 		};
 
 		ContentItemIcons::s_UnimportedAssetIcon = TextureLoader::LoadTexture( iconFolder / "file-unimported.png" );
@@ -366,24 +370,31 @@ namespace Tridium::Editor {
 				{
 					if ( ImGui::MenuItem( "Material" ) )
 					{
-						Util::OpenNewFileDialog( "Material", m_CurrentDirectory.ToString(), []( const std::string& a_FilePath )
+						Util::OpenNewFileDialog( "Material", "m_NewMaterial.tmat", [&](const std::string& a_FilePath)
 							{
 								SharedPtr<Material> material = MakeShared<Material>();
 
-								AssetMetaData metaData;
-								metaData.Handle = AssetHandle::Create();
-								metaData.Path = a_FilePath;
-								metaData.AssetType = EAssetType::Material;
-								metaData.Name = metaData.Path.GetFilenameWithoutExtension();
-								metaData.IsAssetLoaded = true;
+								AssetMetaData metaData =
+								{
+									.Handle = AssetHandle::Create(),
+									.AssetType = EAssetType::Material,
+									.Path = m_CurrentDirectory / a_FilePath,
+									.Name = a_FilePath,
+									.IsAssetLoaded = true,
+								};
 
 								EditorAssetManager::Get()->CreateAsset( metaData, material );
 								AssetFactory::SaveAsset( metaData, material );
 							} );
 					}
 
-					if ( ImGui::MenuItem( "Lua Script" ) )
+					if ( ImGui::MenuItem( "Script" ) )
 					{
+						Util::OpenNewFileDialog( "Script", "m_NewScript.lua", [&]( const std::string& a_FilePath )
+							{
+								std::ofstream file( ( m_CurrentDirectory / a_FilePath ).ToString() );
+								file.close();
+							} );
 					}
 
 					ImGui::EndMenu();
@@ -501,13 +512,28 @@ namespace Tridium::Editor {
 	{
 		switch ( a_Item.Type )
 		{
-		case EFileType::Folder:
-		{
-			OpenFolder( m_CurrentDirectory / a_Item.Name );
-			return true;
+			case EFileType::Folder:
+			{
+				OpenFolder( m_CurrentDirectory / a_Item.Name );
+				return true;
+			}
+			case EFileType::Material:
+			{
+				SharedPtr<Material> material = AssetManager::GetAsset<Material>( a_Item.Handle );
+				if ( material )
+				{
+					GetEditorLayer()->GetOrEmplacePanel<MaterialEditorPanel>()->SetMaterial( a_Item.Handle );
+				}
+				break;
+			}
+			case EFileType::LuaScript:
+			{
+				ScriptEditorPanel* panel = GetEditorLayer()->GetOrEmplacePanel<ScriptEditorPanel>();
+				panel->OpenFile( m_CurrentDirectory / a_Item.Name );
+				panel->Focus();
+				break;
+			}
 		}
-		}
-
 		return false;
 	}
 
@@ -533,7 +559,7 @@ namespace Tridium::Editor {
 		return ImVec2( a.x * b, a.y * b );
 	}
 
-	bool RenderContentBrowserThumbnail( const char* a_FileName, ImTextureID a_ThumbnailIcon, const char* a_AssetType, float a_SizeMultiplier = 1.0f )
+	bool RenderContentBrowserThumbnail( const char* a_FileName, ImTextureID a_ThumbnailIcon, const char* a_AssetType, const ImVec4& a_Color, float a_SizeMultiplier = 1.0f )
 	{
 		ImGuiWindow* window = ImGui::GetCurrentWindow();
 		if ( window->SkipItems )
@@ -566,12 +592,19 @@ namespace Tridium::Editor {
 		// Draw thumbnail Icon
 		drawList->AddImageRounded( a_ThumbnailIcon, bbIcon.Min, bbIcon.Max, ImVec2( 0, 1 ), ImVec2( 1, 0 ), ImGui::GetColorU32( ImVec4( 1, 1, 1, 1 ) ), 2.5f );
 
+		// Draw color rect padding under the icon
+		constexpr float colorDummyThickness = 2.0f;
+		const ImRect bbColorDummyRect( 
+			ImVec2( bb.Min.x, bbIcon.Max.y ),
+			ImVec2( bb.Max.x, bbIcon.Max.y + colorDummyThickness ) );
+		drawList->AddRectFilled( bbColorDummyRect.Min, bbColorDummyRect.Max, ImGui::GetColorU32( a_Color ) );
+
 		// Draw file name
 		const float fontSize = 16.0f * a_SizeMultiplier;
 		const ImVec4 bbText( bbInner.Min.x, bbIcon.Max.y + 2.0f, bbInner.Max.x, bbIcon.Max.y + fontSize + 4.0f );
 		drawList->AddText(
 			ImGui::GetLightFont(), fontSize,
-			ImVec2( bbInner.Min.x, bbIcon.Max.y + 2.0f ),
+			ImVec2( bbInner.Min.x, bbIcon.Max.y + 2.0f + colorDummyThickness ),
 			ImGui::GetColorU32( ImVec4( 1, 1, 1, 0.9f ) ),
 			a_FileName,
 			nullptr, bbInner.Max.x, &bbText );
@@ -597,16 +630,25 @@ namespace Tridium::Editor {
 		else // Must be an Unimported Asset
 			icon = ContentItemIcons::s_UnimportedAssetIcon;
 
-		RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), a_Size );
+		const AssetTypeInfo& typeInfo = AssetTypeManager::GetAssetTypeInfo( static_cast<EAssetType>( Type ) );
+		ImVec4 color = ImVec4( typeInfo.Color.x, typeInfo.Color.y, typeInfo.Color.z, typeInfo.Color.w );
+
+		RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), color, a_Size );
 		// If the item is double clicked, open it
 		const bool wasOpened = ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left );
+
+		if ( ImGui::BeginItemTooltip() )
+		{
+			ImGui::Text( Name.c_str() );
+			ImGui::EndTooltip();
+		}
 
 		if ( ImGui::BeginDragDropSource() )
 		{
 			std::string filePath = ( Owner.GetDirectory() / Name ).ToString();
 			ImGui::SetDragDropPayload( TE_PAYLOAD_ASSET_HANDLE, &Handle, sizeof( AssetHandle ) );
 
-			RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), a_Size );
+			RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), color, a_Size );
 
 			ImGui::EndDragDropSource();
 		}

@@ -16,18 +16,17 @@ namespace Tridium {
 		// - Albedo
 		//   The color of the material
 		TextureHandle AlbedoTexture;
+		Vector3 AlbedoColor = Vector3( 1.0f );
 
 		// - Metallic
 		//   The metallic value of the material
 		TextureHandle MetallicTexture;
+		float MetallicIntensity = 1.0f;
 
 		// - Roughness
 		//   The roughness value of the material
 		TextureHandle RoughnessTexture;
-
-		// - Specular
-		//   The specular value of the material.
-		TextureHandle SpecularTexture;
+		float RoughnessIntensity = 1.0f;
 
 		// - Normal
 		//   The normal map of the material
@@ -40,6 +39,7 @@ namespace Tridium {
 		// - Emissive
 		//   The emissive map of the material
 		TextureHandle EmissiveTexture;
+		float EmissiveIntensity = 1.0f;
 
 		// - Ambient Occlusion
 		//   The ambient occlusion map of the material

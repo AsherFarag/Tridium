@@ -14,6 +14,10 @@ namespace Tridium {
 	{
 		return SharedPtr<Asset>();
 	}
+	AssetStorageIterator RuntimeAssetManager::GetAssets()
+	{
+		return AssetStorageIterator( m_LoadedAssets, m_MemoryAssets );
+	}
 	bool RuntimeAssetManager::AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset )
 	{
 		return false;

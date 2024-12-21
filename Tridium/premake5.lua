@@ -10,6 +10,12 @@ project "Tridium"
 	pchheader "tripch.h"
 	pchsource "Source/tripch.cpp"
 
+	dependson 
+	{ 
+		"assimp",
+		"JoltPhysics",
+	}
+
 	files
 	{
 		"Source/**.h",
@@ -18,7 +24,11 @@ project "Tridium"
 		"Dependencies/glm/glm/**.hpp",
 		"Dependencies/ImGuizmo/ImGuizmo.h",
 		"Dependencies/ImGuizmo/ImGuizmo.cpp",
-		"Dependencies/HdriToCubemap/HdriToCubemap.hpp"
+		"%{IncludeDir.ImTextEdit}/ImTextEdit/TextEditor.h",
+		"%{IncludeDir.ImTextEdit}/ImTextEdit/TextEditor.cpp",
+		"Dependencies/HdriToCubemap/HdriToCubemap.hpp",
+		"%{IncludeDir.sol2}/include/sol/**.hpp",
+		"%{IncludeDir.sol2}/include/sol/**.h",
 	}
 
 	includedirs
@@ -29,6 +39,7 @@ project "Tridium"
 		"%{IncludeDir.glad}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.ImTextEdit}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.lua}/include",
 		"%{IncludeDir.sol2}/include",
@@ -37,6 +48,7 @@ project "Tridium"
 		"%{IncludeDir.yaml}/include",
 		"%{IncludeDir.assimp}/include",
 		"%{IncludeDir.refl}",
+		"%{IncludeDir.JoltPhysics}",
 		"Dependencies/HdriToCubemap"
 	}
 
@@ -48,6 +60,7 @@ project "Tridium"
 		"Dependencies/ImGui/bin/" .. outputdir .. "/ImGui",
 		"Dependencies/yaml-cpp/bin/" .. outputdir .. "/yaml-cpp",
 		"Dependencies/assimp/bin/" .. outputdir .. "/assimp",
+		"Dependencies/JoltPhysics/bin/" .. outputdir .. "/JoltPhysics",
 	}
 
 	links
@@ -58,6 +71,7 @@ project "Tridium"
 		"lua54.lib",
 		"yaml-cpp.lib",
 		"assimp.lib",
+		"JoltPhysics.lib",
 		"opengl32.lib"
 	}
 
@@ -74,7 +88,6 @@ project "Tridium"
 
 	filter "system:windows"
 		systemversion "latest"
-
 		defines
 		{
 			"TE_PLATFORM_WINDOWS",
@@ -85,7 +98,8 @@ project "Tridium"
 		defines
 		{ 
 			"TE_DEBUG",
-			"IS_EDITOR"
+			"IS_EDITOR",
+			"JPH_DEBUG_RENDERER"
 		}
 		symbols "On"
 
@@ -93,16 +107,25 @@ project "Tridium"
 		defines
 		{ 
 			"TE_RELEASE",
-			"IS_EDITOR"
+			"IS_EDITOR",
+			"JPH_DEBUG_RENDERER"
 		}
 		optimize "On"
 
 	filter "configurations:Debug"
-		defines "TE_DEBUG"
+		defines 
+		{
+			"TE_DEBUG",
+			"JPH_DEBUG_RENDERER"
+		}
 		symbols "On"
 
 	filter "configurations:Release"
-		defines "TE_RELEASE"
+		defines 
+		{
+			"JPH_DEBUG_RENDERER",
+			"TE_RELEASE"
+		}
 		optimize "On"
 
 	filter "configurations:Shipping"

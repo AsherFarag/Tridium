@@ -1,5 +1,6 @@
 #pragma once
-#include <Tridium/Utils/Reflection/Reflection.h>
+#include <Tridium/Reflection/ReflectionFwd.h>
+#include <Tridium/Math/Frustum.h>
 
 namespace Tridium {
 
@@ -28,6 +29,9 @@ namespace Tridium {
 		~Camera() = default;
 
 		const Matrix4& GetProjection() const { return m_Projection; }
+		Frustum GetFrustum( const Vector3& a_Position, Vector3 a_Forward ) const;
+		Frustum GetPerspectiveFrustum( const Vector3& a_Position, Vector3 a_Forward ) const;
+		Frustum GetOrthographicFrustum( const Vector3& a_Position, Vector3 a_Forward ) const;
 
 		void SetPerspective();
 		void SetOrthographic();
@@ -68,28 +72,4 @@ namespace Tridium {
 
 		Vector2 m_ViewportSize = { 1280, 720 };
 	};
-
-	BEGIN_REFLECT_ENUM( EProjectionType )
-		ENUM_VAL( Perspective )
-		ENUM_VAL( Orthographic )
-	END_REFLECT_ENUM( EProjectionType )
-
-	BEGIN_REFLECT( PerspectiveData )
-		PROPERTY( FOV, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( Near, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( Far, FLAGS( Serialize, EditAnywhere ) )
-	END_REFLECT( PerspectiveData );
-
-	BEGIN_REFLECT( OrthographicData )
-		PROPERTY( Size, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( Near, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( Far, FLAGS( Serialize, EditAnywhere ) )
-	END_REFLECT( OrthographicData )
-
-	BEGIN_REFLECT( Camera )
-		PROPERTY( m_Perspective, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( m_Orthographic, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( m_ProjectionType, FLAGS( Serialize, EditAnywhere ) )
-	END_REFLECT( Camera )
-
 }

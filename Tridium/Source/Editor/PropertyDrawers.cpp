@@ -1,11 +1,14 @@
 #include "tripch.h"
-#ifdef IS_EDITOR
+#if IS_EDITOR
 
 #include "PropertyDrawers.h"
 
 #include <Tridium/Asset/EditorAssetManager.h>
 
 #include <Tridium/Rendering/Texture.h>
+
+#include <Tridium/ECS/GameObject.h>
+#include <Tridium/ECS/Components/Types.h>
 
 #include <Tridium/Rendering/Framebuffer.h>
 
@@ -21,10 +24,59 @@ namespace Tridium::Editor {
 	}
 
 	template<>
-	bool DrawProperty( const char* a_Name, int& a_Value, EDrawPropertyFlags a_Flags )
+	bool DrawProperty( const char* a_Name, int8_t& a_Value, EDrawPropertyFlags a_Flags )
 	{
 		IS_DISABLED( a_Flags );
-		return ImGui::DragInt( a_Name, &a_Value );
+		return ImGui::DragScalar( a_Name, ImGuiDataType_S8, &a_Value );
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, int16_t& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		IS_DISABLED( a_Flags );
+		return ImGui::DragScalar( a_Name, ImGuiDataType_S16, &a_Value );
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, int32_t& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		IS_DISABLED( a_Flags );
+		return ImGui::DragScalar( a_Name, ImGuiDataType_S32, &a_Value );
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, int64_t& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		IS_DISABLED( a_Flags );
+		return ImGui::DragScalar( a_Name, ImGuiDataType_S64, &a_Value );
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, uint8_t& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		IS_DISABLED( a_Flags );
+		return ImGui::DragScalar( a_Name, ImGuiDataType_U8, &a_Value );
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, uint16_t& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		IS_DISABLED( a_Flags );
+		return ImGui::DragScalar( a_Name, ImGuiDataType_U16, &a_Value );
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, uint32_t& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		IS_DISABLED( a_Flags );
+		return ImGui::DragScalar( a_Name, ImGuiDataType_U32, &a_Value );
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, uint64_t& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		IS_DISABLED( a_Flags );
+		return ImGui::DragScalar( a_Name, ImGuiDataType_U64, &a_Value );
 	}
 
 	template<>
@@ -32,6 +84,13 @@ namespace Tridium::Editor {
 	{
 		IS_DISABLED( a_Flags );
 		return ImGui::DragFloat( a_Name, &a_Value );
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, double& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		IS_DISABLED( a_Flags );
+		return ImGui::DragScalar( a_Name, ImGuiDataType_Double, &a_Value );
 	}
 
 	template<>
@@ -45,6 +104,13 @@ namespace Tridium::Editor {
 	ImGui::PushStyleColor(ImGuiCol_Border, _color.Value); \
 	ImGui::PushID(_id); \
 	modified |= ImGui::DragFloat("", &a_Value[_id]); \
+	ImGui::PopID(); \
+	ImGui::PopStyleColor();
+
+#define _DRAW_INT(_id, _color) \
+	ImGui::PushStyleColor(ImGuiCol_Border, _color.Value); \
+	ImGui::PushID(_id); \
+	modified |= ImGui::DragInt("", &a_Value[_id]); \
 	ImGui::PopID(); \
 	ImGui::PopStyleColor();
 
@@ -191,6 +257,147 @@ namespace Tridium::Editor {
 	}
 
 	template<>
+	bool DrawProperty( const char* a_Name, iVector2& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		IS_DISABLED( a_Flags );
+
+		bool modified = false;
+		{
+			constexpr float NumInts = 2;
+			float regionWidthAvail = ImGui::GetContentRegionAvail().x - ( ImGui::GetContentRegionMax().x - ImGui::GetContentRegionAvail().x );
+			regionWidthAvail -= ImGui::CalcTextSize( a_Name ).x;
+			regionWidthAvail -= ImGui::GetStyle().ItemSpacing.x * NumInts - 1;
+			float itemWidth = regionWidthAvail / NumInts;
+
+			ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 1 );
+
+			ImGui::BeginGroup();
+			ImGui::PushID( a_Name );
+			{
+				ImGui::PushItemWidth( itemWidth );
+
+				// x
+				_DRAW_INT( 0, Style::Colors::Red )
+
+					ImGui::SameLine();
+
+				// y
+				_DRAW_INT( 1, Style::Colors::Green )
+
+					ImGui::PopItemWidth();
+			}
+			ImGui::PopID();
+			ImGui::EndGroup();
+
+			ImGui::PopStyleVar();
+
+			ImGui::SameLine();
+			ImGui::Text( a_Name );
+		}
+
+		return modified;
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, iVector3& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		IS_DISABLED( a_Flags );
+
+		bool modified = false;
+		{
+			constexpr float NumInts = 3;
+			float regionWidthAvail = ImGui::GetContentRegionAvail().x - ( ImGui::GetContentRegionMax().x - ImGui::GetContentRegionAvail().x );
+			regionWidthAvail -= ImGui::CalcTextSize( a_Name ).x;
+			regionWidthAvail -= ImGui::GetStyle().ItemSpacing.x * NumInts - 1;
+			float itemWidth = regionWidthAvail / NumInts;
+
+			ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 1 );
+
+			ImGui::BeginGroup();
+			ImGui::PushID( a_Name );
+			{
+				ImGui::PushItemWidth( itemWidth );
+
+				// x
+				_DRAW_INT( 0, Style::Colors::Red )
+
+					ImGui::SameLine();
+
+				// y
+				_DRAW_INT( 1, Style::Colors::Green )
+
+					ImGui::SameLine();
+
+				// z
+				_DRAW_INT( 2, Style::Colors::Blue )
+
+					ImGui::PopItemWidth();
+			}
+			ImGui::PopID();
+			ImGui::EndGroup();
+
+			ImGui::PopStyleVar();
+
+			ImGui::SameLine();
+			ImGui::Text( a_Name );
+		}
+
+		return modified;
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, iVector4& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		IS_DISABLED( a_Flags );
+
+		bool modified = false;
+		{
+			constexpr float NumInts = 4;
+			float regionWidthAvail = ImGui::GetContentRegionAvail().x - ( ImGui::GetContentRegionMax().x - ImGui::GetContentRegionAvail().x );
+			regionWidthAvail -= ImGui::CalcTextSize( a_Name ).x;
+			regionWidthAvail -= ImGui::GetStyle().ItemSpacing.x * NumInts - 1;
+			float itemWidth = regionWidthAvail / NumInts;
+
+			ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 1 );
+
+			ImGui::BeginGroup();
+			ImGui::PushID( a_Name );
+			{
+				ImGui::PushItemWidth( itemWidth );
+
+				// x
+				_DRAW_INT( 0, Style::Colors::Red )
+
+					ImGui::SameLine();
+
+				// y
+				_DRAW_INT( 1, Style::Colors::Green )
+
+					ImGui::SameLine();
+
+				// z
+				_DRAW_INT( 2, Style::Colors::Blue )
+
+					ImGui::SameLine();
+
+				// w
+				_DRAW_INT( 3, Style::Colors::Orange )
+
+					ImGui::PopItemWidth();
+			}
+			ImGui::PopID();
+			ImGui::EndGroup();
+
+			ImGui::PopStyleVar();
+
+			ImGui::SameLine();
+			ImGui::Text( a_Name );
+		}
+
+		return modified;
+	}
+
+	template<>
 	bool DrawProperty( const char* a_Name, Rotator& a_Value, EDrawPropertyFlags a_Flags )
 	{
 		IS_DISABLED( a_Flags );
@@ -246,9 +453,9 @@ namespace Tridium::Editor {
 
 		if ( open )
 		{
-			if ( ImGui::Selectable( "None###Internal", a_Value == AssetHandle::InvalidGUID ) )
+			if ( ImGui::Selectable( "None###Internal", a_Value == AssetHandle::InvalidID ) )
 			{
-				a_Value = AssetHandle::InvalidGUID;
+				a_Value = AssetHandle::InvalidID;
 				ImGui::EndCombo();
 				return true;
 			}
@@ -318,9 +525,9 @@ namespace Tridium::Editor {
 
 		if ( open )
 		{
-			if ( ImGui::Selectable( "None###Internal", a_Value == AssetHandle::InvalidGUID ) )
+			if ( ImGui::Selectable( "None###Internal", a_Value == AssetHandle::InvalidID ) )
 			{
-				a_Value = AssetHandle::InvalidGUID;
+				a_Value = AssetHandle::InvalidID;
 				ImGui::EndCombo();
 				return true;
 			}
@@ -396,9 +603,70 @@ namespace Tridium::Editor {
 	}
 
 	template<>
-	bool DrawProperty( const char* a_Name, LuaHandle& a_Value, EDrawPropertyFlags a_Flags )
+	bool DrawProperty( const char* a_Name, LuaScriptHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
-		return _DrawAssetHandleProperty<EAssetType::Lua>( a_Name, a_Value, a_Flags );
+		return _DrawAssetHandleProperty<EAssetType::LuaScript>( a_Name, a_Value, a_Flags );
+	}
+
+	template<>
+	bool DrawProperty( const char* a_Name, GameObject& a_Value, EDrawPropertyFlags a_Flags )
+	{
+		IS_DISABLED( a_Flags );
+
+		bool modified = false;
+
+		// Get the name of the GameObject
+		const char* gameObjectName = "None";
+		if ( a_Value.IsValid() )
+		{
+			if ( TagComponent* tag = a_Value.TryGetComponent<TagComponent>() )
+			{
+				gameObjectName = tag->Tag.c_str();
+			}
+		}
+
+
+		const bool open = ImGui::BeginCombo( a_Name, gameObjectName );
+
+		ImGui::ScopedDragDropTarget scopedDragDropTarget;
+		if ( scopedDragDropTarget )
+		{
+			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_GAME_OBJECT, ImGuiDragDropFlags_::ImGuiDragDropFlags_SourceAllowNullID );
+			if ( payload )
+			{
+				GameObject gameObject( *(GameObject*)payload->Data );
+				modified |= gameObject != a_Value;
+				a_Value = gameObject;
+			}
+		}
+
+		if ( open )
+		{
+			if ( ImGui::Selectable( "None###Internal", !a_Value.IsValid() ) )
+			{
+				a_Value = {};
+				ImGui::EndCombo();
+				return true;
+			}
+
+			ImGui::Separator();
+
+			auto view = Application::GetScene()->GetRegistry().view<TagComponent>();
+			view.each( [&]( const entt::entity& entity, TagComponent& tag )
+				{
+					GameObject gameObject( entity );
+					ImGui::ScopedID id( gameObject );
+					if ( ImGui::Selectable( tag.Tag.c_str(), gameObject == a_Value ) )
+					{
+						a_Value = gameObject;
+						modified = true;
+					}
+				} );
+
+			ImGui::EndCombo();
+		}
+
+		return modified;
 	}
 
 	//////////////////////////////////////////////////////////////////////////

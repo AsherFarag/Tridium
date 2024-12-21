@@ -1,6 +1,6 @@
 #include "tripch.h"
 #include "AssetMetaData.h"
-#include <Tridium/Utils/Reflection/Reflection.h>
+#include <Tridium/Reflection/Reflection.h>
 
 namespace Tridium {
 
@@ -14,7 +14,7 @@ namespace Tridium {
 
 	const AssetMetaData AssetMetaData::s_InvalidMetaData = 
 	{ 
-		AssetHandle::InvalidGUID,
+		AssetHandle::InvalidID,
 		EAssetType::None,
 		{}, // Path
 		"", // Name

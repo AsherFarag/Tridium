@@ -29,7 +29,7 @@ namespace Tridium {
 			{ ".hdr", EAssetType::CubeMap },
 
 			// Lua
-			{ ".lua", EAssetType::Lua },
+			{ ".lua", EAssetType::LuaScript },
 		};
 
 		if ( auto it = s_Extensions.find( Util::ToLowerCase( a_Extension ) ); it != s_Extensions.end() )

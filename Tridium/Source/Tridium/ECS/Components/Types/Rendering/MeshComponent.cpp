@@ -1,17 +1,19 @@
 #include "tripch.h"
 #include "MeshComponent.h"
+#include <Tridium/Reflection/Reflection.h>
 #include <Tridium/Rendering/Mesh.h>
 
 namespace Tridium {
 
-	BEGIN_REFLECT_COMPONENT( StaticMeshComponent )
+	BEGIN_REFLECT_COMPONENT( StaticMeshComponent, Scriptable )
 		BASE( Component )
-		PROPERTY( Mesh, FLAGS( Serialize, EditAnywhere ) )
-		PROPERTY( Materials, FLAGS( Serialize, EditAnywhere ) )
-	END_REFLECT( StaticMeshComponent )
+		PROPERTY( Mesh, Serialize | EditAnywhere )
+		PROPERTY( Materials, Serialize | EditAnywhere )
+		PROPERTY( CastShadows, Serialize | EditAnywhere )
+	END_REFLECT_COMPONENT( StaticMeshComponent )
 
 	StaticMeshComponent::StaticMeshComponent()
-		: Mesh( AssetHandle::InvalidGUID )
+		: Mesh( AssetHandle::InvalidID )
 	{
 
 	}

@@ -1,5 +1,5 @@
 #include "tripch.h"
-#ifdef IS_EDITOR
+#if IS_EDITOR
 #include "MeshSourceImporterPanel.h"
 #include <Tridium/Rendering/Mesh.h>
 #include <Tridium/Asset/Loaders/AssimpImporter.h>

@@ -9,7 +9,7 @@ enum ImGuiKey;
 
 namespace Tridium {
 
-	class ImGuiLayer : public Layer
+	class ImGuiLayer final : public Layer
 	{
 	public:
 		ImGuiLayer();

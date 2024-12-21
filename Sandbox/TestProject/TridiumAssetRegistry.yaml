@@ -1,35 +1,43 @@
 AssetMetaData:
+  - Handle: 16380598107030547843
+    AssetType: Texture
+    Path: Content/revolver/textures/Revolver_Rou.tga.png
+    Name: Revolver_Rou.tga
+  - Handle: 13816705760617426555
+    AssetType: Material
+    Path: Content/tree-stump/textures/m_Stump.tmat
+    Name: m_Stump
+  - Handle: 16415605052835439519
+    AssetType: Texture
+    Path: Content/troll/1001_Roughness.png
+    Name: 1001_Roughness
+  - Handle: 1303307644901636996
+    AssetType: Scene
+    Path: Content/Scenes/Test.tscene
+    Name: Test
+  - Handle: 4086619935004974763
+    AssetType: Texture
+    Path: Content/Cerberus_by_Andrew_Maximov/Textures/Raw/Cerberus_AO.tga
+    Name: Cerberus_AO
+  - Handle: 11722823617488748144
+    AssetType: Texture
+    Path: Content/tree-stump/textures/occlusion.jpeg
+    Name: occlusion
+  - Handle: 6680786823534590809
+    AssetType: Mesh
+    Path: Content/troll/TrollApose_low.fbx.tmesh
+    Name: TrollApose_low.fbx
   - Handle: 7765604732595779487
     AssetType: MeshSource
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX
+    Path: Content/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX
     Name: Cerberus_LP.FBX
   - Handle: 6932676496202442266
     AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_AO.jpg
+    Path: Content/troll/Troll_AO.jpg
     Name: Troll_AO
-  - Handle: 6680786823534590809
-    AssetType: Mesh
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/TrollApose_low.fbx.tmesh
-    Name: TrollApose_low.fbx
-  - Handle: 4086619935004974763
-    AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Raw/Cerberus_AO.tga
-    Name: Cerberus_AO
-  - Handle: 16415605052835439519
-    AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Roughness.png
-    Name: 1001_Roughness
-  - Handle: 16380598107030547843
-    AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/textures/Revolver_Rou.tga.png
-    Name: Revolver_Rou.tga
-  - Handle: 1303307644901636996
-    AssetType: Scene
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Scenes/Test.tscene
-    Name: Test
   - Handle: 5806395090298646526
     AssetType: CubeMap
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/kloppenheim_02_puresky_4k.hdr
+    Path: Content/kloppenheim_02_puresky_4k.hdr
     Name: kloppenheim_02_puresky_4k
   - Handle: 0
     AssetType: Scene
@@ -37,196 +45,268 @@ AssetMetaData:
     Name: Untitled
   - Handle: 5035549482378428079
     AssetType: MeshSource
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/source/wpn_Revolver_Final_LP.fbx
+    Path: Content/revolver/source/wpn_Revolver_Final_LP.fbx
     Name: wpn_Revolver_Final_LP.fbx
-  - Handle: 18301043363865490591
-    AssetType: CubeMap
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/resting_place_2_4k.hdr
-    Name: resting_place_2_4k
+  - Handle: 17804182585726541857
+    AssetType: Mesh
+    Path: Content/tree-stump/source/poly.fbx.tmesh
+    Name: poly.fbx
   - Handle: 11662457145095035423
     AssetType: Mesh
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/source/RootNode.tmesh
+    Path: Content/revolver/source/RootNode.tmesh
     Name: RootNode
-  - Handle: 10968084403603889823
-    AssetType: Mesh
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/Water Gun/PaintedApocalypticWaterGun.fbx.tmesh
-    Name: PaintedApocalypticWaterGun.fbx
+  - Handle: 18301043363865490591
+    AssetType: CubeMap
+    Path: Content/resting_place_2_4k.hdr
+    Name: resting_place_2_4k
+  - Handle: 2012229030759119222
+    AssetType: Material
+    Path: Content/winter-forest/tex/m_WinterTree.tmat
+    Name: m_WinterTree
   - Handle: 12460669345156542809
     AssetType: MeshSource
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/TrollApose_low.fbx
+    Path: Content/troll/TrollApose_low.fbx
     Name: TrollApose_low.fbx
+  - Handle: 10968084403603889823
+    AssetType: Mesh
+    Path: Content/Charles/Water Gun/PaintedApocalypticWaterGun.fbx.tmesh
+    Name: PaintedApocalypticWaterGun.fbx
   - Handle: 5282163452782371408
     AssetType: Material
     Path: Content/revolver/textures/m_Revolver.tmat
     Name: m_Revolver
-  - Handle: 14893352513169714491
-    AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/textures/Revolver_AO.tga.png
-    Name: Revolver_AO.tga
   - Handle: 14188683678562521315
     AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_R.tga
+    Path: Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_R.tga
     Name: Cerberus_R
+  - Handle: 14893352513169714491
+    AssetType: Texture
+    Path: Content/revolver/textures/Revolver_AO.tga.png
+    Name: Revolver_AO.tga
   - Handle: 3075343844041195536
     AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/textures/Revolver_Dif.png
+    Path: Content/revolver/textures/Revolver_Dif.png
     Name: Revolver_Dif
   - Handle: 2201683880744401789
     AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/textures/Revolver_Nor.png
+    Path: Content/revolver/textures/Revolver_Nor.png
     Name: Revolver_Nor
-  - Handle: 16276606433639203390
+  - Handle: 6457080898704979318
     AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/revolver/textures/Revolver_Met.tga.png
-    Name: Revolver_Met.tga
+    Path: Content/winter-forest/tex/Pine_Tree_Bark_BaseColor.jpg
+    Name: Pine_Tree_Bark_BaseColor
   - Handle: 10414866762872322182
     AssetType: Material
     Path: Content/Cerberus_by_Andrew_Maximov/m_Cerberus.tmat
     Name: m_Cerberus
-  - Handle: 11722021730479237657
-    AssetType: MeshSource
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/Water Gun/PaintedApocalypticWaterGun.fbx
-    Name: PaintedApocalypticWaterGun.fbx
+  - Handle: 16276606433639203390
+    AssetType: Texture
+    Path: Content/revolver/textures/Revolver_Met.tga.png
+    Name: Revolver_Met.tga
   - Handle: 13329440684517550564
     AssetType: Material
     Path: Content/troll/m_Troll.tmat
     Name: m_Troll
+  - Handle: 11722021730479237657
+    AssetType: MeshSource
+    Path: Content/Charles/Water Gun/PaintedApocalypticWaterGun.fbx
+    Name: PaintedApocalypticWaterGun.fbx
   - Handle: 18397644629807743083
     AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_Albedo.jpg
+    Path: Content/troll/Troll_Albedo.jpg
     Name: Troll_Albedo
   - Handle: 13191145128629468662
     AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_Emissive.jpg
+    Path: Content/troll/Troll_Emissive.jpg
     Name: Troll_Emissive
-  - Handle: 1945590970306288314
-    AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_Normals.jpg
-    Name: Troll_Normals
   - Handle: 1488970255538859377
     AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Raw/Cerberus_N.tga
+    Path: Content/Cerberus_by_Andrew_Maximov/Textures/Raw/Cerberus_N.tga
     Name: Cerberus_N
-  - Handle: 3813953115817308555
+  - Handle: 1945590970306288314
     AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_SSS2.jpg
-    Name: Troll_SSS2
+    Path: Content/troll/Troll_Normals.jpg
+    Name: Troll_Normals
   - Handle: 6222639399811775340
     AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/Troll_Roughness2.jpg
+    Path: Content/troll/Troll_Roughness2.jpg
     Name: Troll_Roughness2
+  - Handle: 3813953115817308555
+    AssetType: Texture
+    Path: Content/troll/Troll_SSS2.jpg
+    Name: Troll_SSS2
+  - Handle: 1107292882143448533
+    AssetType: Texture
+    Path: Content/winter-forest/tex/Snow Ground_Snow_Ground_BaseColor.jpg
+    Name: Snow Ground_Snow_Ground_BaseColor
   - Handle: 12209339836386338127
     AssetType: Material
     Path: Content/troll/m_TrollPants.tmat
     Name: m_TrollPants
-  - Handle: 17890256965985546415
-    AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Base_Color.png
-    Name: 1001_Base_Color
+  - Handle: 2596991567486779743
+    AssetType: Mesh
+    Path: Content/minimal-house-in-the-woods-daytime/source/Tiny Forest 1.fbx.tmesh
+    Name: Tiny Forest 1.fbx
   - Handle: 4469917185899783065
     AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_N.tga
+    Path: Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_N.tga
     Name: Cerberus_N
+  - Handle: 17890256965985546415
+    AssetType: Texture
+    Path: Content/troll/1001_Base_Color.png
+    Name: 1001_Base_Color
   - Handle: 6887469768157097513
     AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Metallic.png
+    Path: Content/troll/1001_Metallic.png
     Name: 1001_Metallic
   - Handle: 16966243146113793245
     AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Normal_DirectX.png
+    Path: Content/troll/1001_Normal_DirectX.png
     Name: 1001_Normal_DirectX
-  - Handle: 10534474357456196390
-    AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/Water Gun/PaintedApocalypticWaterGun_Gun_Opacity.png
-    Name: PaintedApocalypticWaterGun_Gun_Opacity
   - Handle: 17898417794084169511
     AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/troll/1001_Opacity.png
+    Path: Content/troll/1001_Opacity.png
     Name: 1001_Opacity
+  - Handle: 10534474357456196390
+    AssetType: Texture
+    Path: Content/Charles/Water Gun/PaintedApocalypticWaterGun_Gun_Opacity.png
+    Name: PaintedApocalypticWaterGun_Gun_Opacity
+  - Handle: 9317180598865362346
+    AssetType: Texture
+    Path: Content/tree-stump/textures/color.jpeg
+    Name: color
+  - Handle: 16269481744891761788
+    AssetType: Texture
+    Path: Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_A.tga
+    Name: Cerberus_A
+  - Handle: 11646296566683283447
+    AssetType: MeshSource
+    Path: Content/Sponza/glTF/Sponza.gltf
+    Name: Sponza.gltf
   - Handle: 9231485947035289014
     AssetType: Material
     Path: Content/Charles/Water Gun/m_WaterGun.tmat
     Name: m_WaterGun
-  - Handle: 11646296566683283447
-    AssetType: MeshSource
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Sponza/glTF/Sponza.gltf
-    Name: Sponza.gltf
-  - Handle: 16269481744891761788
-    AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_A.tga
-    Name: Cerberus_A
   - Handle: 4642065102083697686
     AssetType: Mesh
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Sponza/glTF/Sponza.gltf.tmesh
+    Path: Content/Sponza/glTF/Sponza.gltf.tmesh
     Name: Sponza.gltf
   - Handle: 15869680136431924042
     AssetType: Mesh
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX.tmesh
+    Path: Content/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX.tmesh
     Name: Cerberus_LP.FBX
+  - Handle: 1182411423034396410
+    AssetType: MeshSource
+    Path: Content/winter-forest/Winter Forest.fbx
+    Name: Winter Forest.fbx
+  - Handle: 13814720877889834024
+    AssetType: MeshSource
+    Path: Content/tree-stump/source/poly.fbx
+    Name: poly.fbx
   - Handle: 7373746697082174760
     AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_M.tga
+    Path: Content/Cerberus_by_Andrew_Maximov/Textures/Cerberus_M.tga
     Name: Cerberus_M
-  - Handle: 7188536080500764428
+  - Handle: 11603015016403840794
     AssetType: Material
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/m_Barrel.tmat
-    Name: m_Barrel
+    Path: Content/winter-forest/tex/m_WinterForest.tmat
+    Name: m_WinterForest
   - Handle: 2212840204912943820
     AssetType: MeshSource
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/Barrel_EdgeNormals.fbx
+    Path: Content/Charles/Barrel_EdgeNormals.fbx
     Name: Barrel_EdgeNormals.fbx
+  - Handle: 7188536080500764428
+    AssetType: Material
+    Path: Content/Charles/m_Barrel.tmat
+    Name: m_Barrel
   - Handle: 9964583292748655515
     AssetType: Mesh
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/Barrel_EdgeNormals.fbx.tmesh
+    Path: Content/Charles/Barrel_EdgeNormals.fbx.tmesh
     Name: Barrel_EdgeNormals.fbx
-  - Handle: 16408492395898835681
-    AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/T_Barrel_Material_BaseColor.tga
-    Name: T_Barrel_Material_BaseColor
   - Handle: 766060415190171393
     AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/T_Barrel_ORM.tga
+    Path: Content/Charles/T_Barrel_ORM.tga
     Name: T_Barrel_ORM
+  - Handle: 16408492395898835681
+    AssetType: Texture
+    Path: Content/Charles/T_Barrel_Material_BaseColor.tga
+    Name: T_Barrel_Material_BaseColor
   - Handle: 5151884661488856455
     AssetType: Texture
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Charles/T_Barrel_Material_Normal.tga
+    Path: Content/Charles/T_Barrel_Material_Normal.tga
     Name: T_Barrel_Material_Normal
   - Handle: 3815141893059037979
     AssetType: Scene
-    Path: E:/Projects/Tridium/Sandbox/TestProject/Content/Scenes/Halo.tscene
+    Path: Content/Scenes/Halo.tscene
     Name: Halo
+  - Handle: 1863182125303376449
+    AssetType: MeshSource
+    Path: Content/minimal-house-in-the-woods-daytime/source/Tiny Forest 1.fbx
+    Name: Tiny Forest 1.fbx
+  - Handle: 5219398082506591880
+    AssetType: Mesh
+    Path: Content/minimal-house-in-the-woods-daytime/source/Tiny Forest 1.fbx.tmesh
+    Name: Tiny Forest 1.fbx
+  - Handle: 10369499003271122557
+    AssetType: Mesh
+    Path: Content/winter-forest/Winter Forest.fbx.tmesh
+    Name: Winter Forest.fbx
+  - Handle: 10539649949974465948
+    AssetType: Texture
+    Path: Content/winter-forest/tex/Pine_Tree_Needles_BaseColor.jpg
+    Name: Pine_Tree_Needles_BaseColor
+  - Handle: 10035025572494120481
+    AssetType: Texture
+    Path: Content/winter-forest/tex/Pine_Tree_Needles_Mask.jpg
+    Name: Pine_Tree_Needles_Mask
+  - Handle: 13798379159387052283
+    AssetType: Texture
+    Path: Content/winter-forest/tex/Pine_Tree_Needles_Mask.tga
+    Name: Pine_Tree_Needles_Mask
+  - Handle: 6034413941173104106
+    AssetType: Material
+    Path: Content/winter-forest/tex/m_WinterBark
+    Name: m_WinterBark
+  - Handle: 331585416164516092
+    AssetType: Material
+    Path: Content/m_Test.tmat
+    Name: m_Test
 AssetDependencies:
-  11662457145095035423:
-    - 5035549482378428079
   5282163452782371408:
     - 0
-    - 3075343844041195536
     - 2201683880744401789
+    - 3075343844041195536
     - 16276606433639203390
-    - 16380598107030547843
     - 14893352513169714491
-  6932676496202442266:
-    []
-  7765604732595779487:
-    []
+    - 16380598107030547843
+  2012229030759119222:
+    - 13798379159387052283
+    - 0
+    - 10539649949974465948
+    - 10035025572494120481
+  17804182585726541857:
+    - 13814720877889834024
+  11662457145095035423:
+    - 5035549482378428079
   6680786823534590809:
     - 12460669345156542809
+  13329440684517550564:
+    - 0
+    - 18397644629807743083
+    - 6222639399811775340
+    - 1945590970306288314
+    - 6932676496202442266
+    - 14188683678562521315
+    - 13191145128629468662
   16276606433639203390:
     []
   10414866762872322182:
     - 0
     - 16269481744891761788
     - 7373746697082174760
-    - 14188683678562521315
     - 4086619935004974763
+    - 14188683678562521315
     - 4469917185899783065
-  13329440684517550564:
-    - 0
-    - 18397644629807743083
-    - 6222639399811775340
-    - 6932676496202442266
-    - 1945590970306288314
-    - 13191145128629468662
   12209339836386338127:
     - 0
     - 17890256965985546415
@@ -237,62 +317,47 @@ AssetDependencies:
     - 11646296566683283447
   15869680136431924042:
     - 7765604732595779487
-  12460669345156542809:
-    []
   10968084403603889823:
     - 11722021730479237657
   11646296566683283447:
-    []
-  16269481744891761788:
     []
   9231485947035289014:
     - 0
     - 10534474357456196390
   9964583292748655515:
     - 2212840204912943820
-  2212840204912943820:
-    []
   7188536080500764428:
-    - 766060415190171393
     - 16408492395898835681
+    - 766060415190171393
     - 0
-  16415605052835439519:
-    []
-  4086619935004974763:
-    []
   16380598107030547843:
     []
   1303307644901636996:
     []
+  13816705760617426555:
+    - 0
+    - 9317180598865362346
+    - 11722823617488748144
+  5219398082506591880:
+    - 1863182125303376449
+  11603015016403840794:
+    - 0
+    - 1107292882143448533
+  10369499003271122557:
+    - 1182411423034396410
+  6034413941173104106:
+    - 0
+    - 6457080898704979318
+  331585416164516092:
+    - 0
+    - 6932676496202442266
   5035549482378428079:
     []
-  16408492395898835681:
-    []
-  766060415190171393:
-    []
-  2201683880744401789:
+  1863182125303376449:
     []
   3075343844041195536:
     []
-  14188683678562521315:
+  2201683880744401789:
     []
   14893352513169714491:
-    []
-  7373746697082174760:
-    []
-  17890256965985546415:
-    []
-  4469917185899783065:
-    []
-  18397644629807743083:
-    []
-  6222639399811775340:
-    []
-  1945590970306288314:
-    []
-  13191145128629468662:
-    []
-  6887469768157097513:
-    []
-  16966243146113793245:
     []

@@ -1,12 +1,13 @@
 #include "tripch.h"
 
-#ifdef IS_EDITOR
+#if IS_EDITOR
 
 #include "SceneHeirarchyPanel.h"
 #include "imgui.h"
 
 #include <Editor/Editor.h>
 #include <Editor/EditorCamera.h>
+#include <Editor/EditorStyle.h>
 
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Core/Application.h>
@@ -18,6 +19,11 @@ namespace Tridium::Editor {
 	SceneHeirarchyPanel::SceneHeirarchyPanel()
 		: Panel( "Scene Heirarchy" )
 	{
+		m_OnGameObjectSelectedHandle = Events::OnGameObjectSelected.Add<&SceneHeirarchyPanel::SetSelectedGameObject>( this );
+	}
+
+	SceneHeirarchyPanel::~SceneHeirarchyPanel()
+	{
 	}
 
 	void SceneHeirarchyPanel::OnImGuiDraw()
@@ -28,17 +34,6 @@ namespace Tridium::Editor {
 	void SceneHeirarchyPanel::SetSelectedGameObject( GameObject gameObject )
 	{
 		m_SelectedGameObject = gameObject;
-
-		if ( !m_Inspector )
-			m_Inspector = m_Owner->PushPanel<InspectorPanel>();
-
-		if ( m_Inspector->InspectedGameObject == gameObject )
-			return;
-
-		m_Inspector->InspectedGameObject = m_SelectedGameObject;
-
-		// Since a game object was selected, bring the Inspector into focus.
-		//m_Inspector->Focus();
 	}
 
 
@@ -60,6 +55,7 @@ namespace Tridium::Editor {
 			if ( m_SelectedGameObject.IsValid() )
 			{
 				m_SelectedGameObject.Destroy();
+				Events::OnGameObjectSelected.Broadcast( GameObject{} );
 				return true;
 			}
 			break;
@@ -105,14 +101,14 @@ namespace Tridium::Editor {
 			{
 				if ( EditorApplication::GetPayloadManager().HasPayload() )
 				{
-					std::any payload = EditorApplication::GetPayloadManager().GetPayload( "GameObject" );
-					if ( payload.has_value() )
+					Payload* payload = EditorApplication::GetPayloadManager().GetPayload( "GameObject" );
+					if ( payload && !payload->IsEmpty() )
 					{
-						GameObject copiedGO = std::any_cast<GameObject>( payload );
-						if ( copiedGO.IsValid() )
+						GameObject copiedGO = payload->As<GameObject>();
+						if ( copiedGO.IsValid() && Application::GetScene() )
 						{
-							GameObject newGO = m_Context->InstantiateGameObjectFrom( copiedGO );
-							SetSelectedGameObject( newGO );
+							GameObject newGO = Application::GetScene()->InstantiateGameObjectFrom(copiedGO);
+							Events::OnGameObjectSelected.Broadcast( newGO );
 							return true;
 						}
 					}
@@ -127,15 +123,15 @@ namespace Tridium::Editor {
 
 	void SceneHeirarchyPanel::DrawSceneHeirarchy()
 	{
-		m_Context = Application::GetScene();
-		if ( m_Context == nullptr )
+		SharedPtr<Scene> scene = Application::GetScene();
+		if ( !scene )
 			return;
 
 		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2( 1, 1 ) );
 		ImGui::ScopedStyleCol winBg( ImGuiCol_::ImGuiCol_WindowBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg) * 0.5f );
 		ImGui::FunctionScope endWindow( +[]() { ImGui::End(); } );
 
-		if ( !ImGui::Begin( ( TE_ICON_MOUNTAIN_SUN " " + m_Context->GetName() + "###Scene Heirarchy" ).c_str() ) )
+		if ( !ImGui::Begin( ( TE_ICON_MOUNTAIN_SUN " " + scene->GetName() + "###Scene Heirarchy" ).c_str() ) )
 		{
 			m_IsHovered = false;
 			m_IsFocused = false;
@@ -176,7 +172,7 @@ namespace Tridium::Editor {
 
 		ImGui::Separator();
 
-		auto gameObjects = m_Context->GetRegistry().view<TagComponent>();
+		auto gameObjects = scene->GetRegistry().view<TagComponent>();
 		ImGui::ScopedStyleVar itemSpacing( ImGuiStyleVar_::ImGuiStyleVar_ItemSpacing, ImVec2( 0, 1 ) );
 		ImGuiTextFilter filter( m_SearchBuffer.c_str() );
 		for ( int i = 0; i < gameObjects.size(); ++i )
@@ -206,6 +202,10 @@ namespace Tridium::Editor {
 	{
 		GameObject newGO = {};
 
+		SharedPtr<Scene> scene = Application::GetScene();
+		if ( !scene )
+			return;
+
 		if ( !ImGui::BeginPopup( "Add##SceneHierachy" ) )
 			return;
 
@@ -213,7 +213,7 @@ namespace Tridium::Editor {
 		{
 			if ( ImGui::MenuItem( TE_ICON_CUBE " Empty" ) )
 			{
-				newGO = m_Context->InstantiateGameObject();
+				newGO = scene->InstantiateGameObject();
 				SetSelectedGameObject( newGO );
 			}
 
@@ -221,7 +221,7 @@ namespace Tridium::Editor {
 
 			if ( ImGui::MenuItem( TE_ICON_CUBE " Static Mesh" ) )
 			{
-				newGO = m_Context->InstantiateGameObject( "Static Mesh" );
+				newGO = scene->InstantiateGameObject( "Static Mesh" );
 				newGO.AddComponent<StaticMeshComponent>();
 				SetSelectedGameObject( newGO );
 			}
@@ -230,42 +230,50 @@ namespace Tridium::Editor {
 			{
 				if ( ImGui::MenuItem( "Cube" ) )
 				{
-					newGO = m_Context->InstantiateGameObject( "Cube" );
+					newGO = scene->InstantiateGameObject( "Cube" );
 					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCube();
+					newGO.AddComponent<BoxColliderComponent>();
+					newGO.AddComponent<RigidBodyComponent>();
 					SetSelectedGameObject( newGO );
 				}
 
 				if ( ImGui::MenuItem( "Sphere" ) )
 				{
-					newGO = m_Context->InstantiateGameObject( "Sphere" );
+					newGO = scene->InstantiateGameObject( "Sphere" );
 					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultSphere();
+					newGO.AddComponent<SphereColliderComponent>();
+					newGO.AddComponent<RigidBodyComponent>();
 					SetSelectedGameObject( newGO );
 				}
 
 				if ( ImGui::MenuItem( "Cylinder" ) )
 				{
-					newGO = m_Context->InstantiateGameObject( "Cylinder" );
+					newGO = scene->InstantiateGameObject( "Cylinder" );
 					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCylinder();
+					newGO.AddComponent<CylinderColliderComponent>();
+					newGO.AddComponent<RigidBodyComponent>();
 					SetSelectedGameObject( newGO );
 				}
 
 				if ( ImGui::MenuItem( "Capsule" ) )
 				{
-					newGO = m_Context->InstantiateGameObject( "Capsule" );
+					newGO = scene->InstantiateGameObject( "Capsule" );
 					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCapsule();
+					newGO.AddComponent<CapsuleColliderComponent>();
+					newGO.AddComponent<RigidBodyComponent>();
 					SetSelectedGameObject( newGO );
 				}
 
 				if ( ImGui::MenuItem( "Cone" ) )
 				{
-					newGO = m_Context->InstantiateGameObject( "Cone" );
+					newGO = scene->InstantiateGameObject( "Cone" );
 					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCone();
 					SetSelectedGameObject( newGO );
 				}
 
 				if ( ImGui::MenuItem( "Torus" ) )
 				{
-					newGO = m_Context->InstantiateGameObject( "Torus" );
+					newGO = scene->InstantiateGameObject( "Torus" );
 					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultTorus();
 					SetSelectedGameObject( newGO );
 				}
@@ -277,21 +285,21 @@ namespace Tridium::Editor {
 
 			if ( ImGui::MenuItem( TE_ICON_LIGHTBULB " Point Light" ) )
 			{
-				newGO = m_Context->InstantiateGameObject( "Point Light" );
+				newGO = scene->InstantiateGameObject( "Point Light" );
 				newGO.AddComponent<PointLightComponent>();
 				SetSelectedGameObject( newGO );
 			}
 
 			if ( ImGui::MenuItem( TE_ICON_LIGHTBULB " Spot Light" ) )
 			{
-				newGO = m_Context->InstantiateGameObject( "Spot Light" );
+				newGO = scene->InstantiateGameObject( "Spot Light" );
 				newGO.AddComponent<SpotLightComponent>();
 				SetSelectedGameObject( newGO );
 			}
 
 			if ( ImGui::MenuItem( TE_ICON_LIGHTBULB " Directional Light" ) )
 			{
-				newGO = m_Context->InstantiateGameObject( "Directional Light" );
+				newGO = scene->InstantiateGameObject( "Directional Light" );
 				newGO.AddComponent<DirectionalLightComponent>();
 				SetSelectedGameObject( newGO );
 			}
@@ -300,7 +308,7 @@ namespace Tridium::Editor {
 
 			if ( ImGui::MenuItem( TE_ICON_IMAGE " Sprite" ) )
 			{
-				newGO = m_Context->InstantiateGameObject( "Sprite" );
+				newGO = scene->InstantiateGameObject( "Sprite" );
 				newGO.AddComponent<SpriteComponent>();
 				SetSelectedGameObject( newGO );
 			}
@@ -313,7 +321,7 @@ namespace Tridium::Editor {
 			ImGui::Separator();
 
 			ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Text, ImVec4( Editor::Style::Colors::Red ) );
-			if ( ImGui::MenuItem( " - Remove All - " ) ) m_Context->Clear();
+			if ( ImGui::MenuItem( " - Remove All - " ) ) scene->Clear();
 			ImGui::PopStyleColor();
 		}
 
@@ -327,7 +335,7 @@ namespace Tridium::Editor {
 
 	void SceneHeirarchyPanel::DrawSceneNode( GameObject go )
 	{
-		if ( !go.IsValid() )
+		if ( !go.IsValid() || !go.HasComponent<TagComponent>() )
 		{
 			TE_CORE_WARN( "Attempting to draw an invalid Game Object node!" );
 			return;
@@ -351,16 +359,18 @@ namespace Tridium::Editor {
 		DrawAddPopUp( go );
 
 		// Drag-Drop Payload handling
+		bool isDragging = false;
 		if ( ImGui::BeginDragDropSource() )
 		{
-			ImGui::SetDragDropPayload( "GameObject", (void*)&go, sizeof( go ), ImGuiCond_Once );
+			isDragging = true;
+			ImGui::SetDragDropPayload( TE_PAYLOAD_GAME_OBJECT, (void*)&go, sizeof( go ), ImGuiCond_Once );
 			ImGui::Text( label.c_str() );
 
 			ImGui::EndDragDropSource();
 		}
 		else if ( ImGui::BeginDragDropTarget() )
 		{
-			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( "GameObject" );
+			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_GAME_OBJECT );
 			if ( payload )
 			{
 				GameObject payloadGO = *(GameObject*)payload->Data;
@@ -376,9 +386,10 @@ namespace Tridium::Editor {
 			ImGui::EndDragDropTarget();
 		}
 
-		if ( ImGui::IsItemClicked() )
+		// Handle mouse release for selection, ensuring it's not part of a drag-and-drop
+		if ( !isDragging && ImGui::IsItemHovered() && ImGui::IsMouseReleased( ImGuiMouseButton_Left ) )
 		{
-			SetSelectedGameObject( go );
+			Events::OnGameObjectSelected.Broadcast( go );
 		}
 
 		if ( drawChildren )

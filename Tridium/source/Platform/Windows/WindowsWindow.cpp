@@ -42,6 +42,11 @@ namespace Tridium {
 		m_RenderingContext->SwapBuffers();
 	}
 
+	bool WindowsWindow::IsMinimized() const
+	{
+		return glfwGetWindowAttrib( m_Window, GLFW_ICONIFIED );
+	}
+
 	void WindowsWindow::SetVSync( bool enabled )
 	{
 		if ( enabled )
@@ -103,8 +108,7 @@ namespace Tridium {
 		MakeContextCurrent( this );
 
 		// - Rendering Context Initialisation -
-		TODO( "Make this API dependent!" );
-		m_RenderingContext = new OpenGLContext(m_Window);
+		m_RenderingContext = RenderingContext::Create( m_Window );
 		m_RenderingContext->Init();
 
 		glfwSetWindowUserPointer( m_Window, &m_Data );

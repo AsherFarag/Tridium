@@ -1,8 +1,12 @@
 #pragma once
-#ifdef IS_EDITOR
+#if IS_EDITOR
 
 #include <Tridium/ECS/GameObject.h>
 #include "ViewportPanel.h"
+
+namespace Tridium {
+	class Camera;
+}
 
 namespace Tridium::Editor {
 
@@ -14,7 +18,10 @@ namespace Tridium::Editor {
 
 		virtual void OnImGuiDraw() override;
 
-	public:
+	private:
+		std::optional< std::tuple<Camera&, Matrix4, Vector3> > GetSceneCamera() const;
+
+	private:
 		GameObject m_Camera;
 	};
 

@@ -2,49 +2,31 @@
 #include "Script.h"
 #include "ScriptEngine.h"
 
-namespace Tridium {
+namespace Tridium::Script {
 
-	Script::Script( const IO::FilePath& a_FilePath )
-		: m_FilePath( a_FilePath )
+	const ScriptVariable& ScriptAsset::GetVariable( const std::string& a_Name ) const
 	{
+		if ( auto it = m_Variables.find( a_Name ); it != m_Variables.end() )
+			return it->second;
+
+		return ScriptVariable();
 	}
 
-	SharedPtr<Script> Script::Create( const IO::FilePath& a_FilePath )
+	const ScriptFunction& ScriptAsset::GetFunction( const std::string& a_Name ) const
 	{
-		if ( a_FilePath.GetExtension() != ".lua" )
-			return nullptr;
+		if ( auto it = m_Functions.find( a_Name ); it != m_Functions.end() )
+			return it->second;
 
-		SharedPtr<Script> foundScript = ScriptLibrary::GetScript( a_FilePath.ToString() );
-		if ( foundScript )
-			return foundScript;
-
-		auto script = SharedPtr<Script>( new Script( a_FilePath ) );
-		ScriptLibrary::Add( script, a_FilePath.ToString() );
-		return script;
+		return ScriptFunction();
 	}
 
-	// LIBRARY
-
-	ScriptLibrary* ScriptLibrary::Get()
+	void ScriptAsset::Invalidate()
 	{
-		static ScriptLibrary* s_Instance = new ScriptLibrary();
-		return s_Instance;
-	}
-
-	SharedPtr<Script> ScriptLibrary::GetScript( const std::string& a_Path )
-	{
-		auto it = Get()->m_Library.find( a_Path );
-		return it != Get()->m_Library.end() ? it->second : nullptr;
-	}
-
-	bool ScriptLibrary::Has( const std::string& a_Path )
-	{
-		return Get()->m_Library.find( a_Path ) != Get()->m_Library.end();
-	}
-
-	void ScriptLibrary::Add( const SharedPtr<Script>& a_Script, const std::string& a_Path )
-	{
-		Get()->m_Library.emplace( a_Path, a_Script );
+		m_LoadResult = sol::load_result();
+		m_Environment = sol::environment();
+		m_Variables.clear();
+		m_Functions.clear();
+		m_CompileErrorMsg.clear();
 	}
 
 }

@@ -68,6 +68,14 @@ namespace Tridium {
 		ProcessNode( meshSource, (void*)scene, scene->mRootNode, Matrix4( 1.0f ) );
 		ExtractMaterials( (void*)scene, meshSource );
 
+		// Calculate bounding box for the mesh source
+		for ( const auto& submesh : meshSource->m_SubMeshes )
+		{
+			// Convert submesh bounding box to world space
+			AABB submeshAABB = submesh.BoundingBox.Transform( submesh.Transform );
+			meshSource->m_BoundingBox.Expand( submeshAABB );
+		}
+
 		return meshSource;
 	}
 
@@ -87,6 +95,7 @@ namespace Tridium {
 			submesh.Name = a_Node->mName.C_Str();
 			submesh.Transform = transform;
 			submesh.LocalTransform = localTransform;
+			submesh.GenerateMeshCollider();
 
 			a_MeshSource->m_SubMeshes.emplace_back( std::move( submesh ) );
 		}
@@ -126,6 +135,9 @@ namespace Tridium {
 			{
 				vertex.UV = { a_Mesh->mTextureCoords[0][i].x, a_Mesh->mTextureCoords[0][i].y };
 			}
+
+			// Update bounding box
+			submesh.BoundingBox.Expand( vertex.Position );
 		}
 
 		// Process Indices
@@ -180,9 +192,9 @@ namespace Tridium {
 			// Normal
 			material->NormalTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_NORMALS );
 			// Metallic
-			material->MetallicTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_SPECULAR );
+			//material->MetallicTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_SPECULAR );
 			// Roughness
-			material->RoughnessTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_SHININESS );
+			//material->RoughnessTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_SHININESS );
 			// Opacity
 			material->OpacityTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_OPACITY );
 			// Ambient Occlusion
@@ -206,7 +218,7 @@ namespace Tridium {
 		aiString aiTexturePath;
 
 		if ( aiMat->GetTexture( aiTexType, 0, &aiTexturePath ) == AI_FAILURE )
-			return AssetHandle::InvalidGUID;
+			return AssetHandle::InvalidID;
 
 		TextureHandle texHandle = AssetHandle::Create();
 
@@ -227,7 +239,7 @@ namespace Tridium {
 				texturePath = parentPath / texturePath.GetFilename();
 
 			if ( !texturePath.Exists() )
-				return TextureHandle::InvalidGUID;
+				return TextureHandle::InvalidID;
 
 			if ( SharedPtr<Texture> texture = textureLoader->LoadTexture( texturePath ) )
 			{
@@ -236,6 +248,6 @@ namespace Tridium {
 			}
 		}
 
-		return TextureHandle::InvalidGUID;
+		return TextureHandle::InvalidID;
 	}
 }

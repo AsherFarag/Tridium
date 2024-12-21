@@ -1,5 +1,5 @@
 #include "tripch.h"
-#ifdef IS_EDITOR
+#if IS_EDITOR
 
 #include "SceneSettingsPanel.h"
 #include <Editor/Editor.h>
@@ -34,49 +34,78 @@ namespace Tridium::Editor {
 			return;
 		}
 
-		const char* renderModes[] = { "None", "Forward", "Deferred" };
-		ERenderMode renderMode = scene->GetSceneRenderer().GetRenderMode();
-		if ( ImGui::BeginCombo( "Render Mode", renderModes[ (uint8_t)renderMode] ) )
+		// Render Settings
+		if ( ImGui::TreeNode( "Render Settings" ) )
 		{
-			bool isSelected = renderMode == ERenderMode::Forward;
-			if ( ImGui::Selectable( renderModes[(uint8_t)ERenderMode::Forward], isSelected ) )
-				scene->GetSceneRenderer().SetRenderMode( ERenderMode::Forward );
-			if ( isSelected )
-				ImGui::SetItemDefaultFocus();
+			bool changed = false;
+			RenderSettings renderSettings = scene->GetSceneRenderer().GetRenderSettings();
 
-			isSelected = renderMode == ERenderMode::Deferred;
-			if ( ImGui::Selectable( renderModes[(uint8_t)ERenderMode::Deferred], isSelected ) )
-				scene->GetSceneRenderer().SetRenderMode( ERenderMode::Deferred );
-			if ( isSelected )
-				ImGui::SetItemDefaultFocus();
-
-			ImGui::EndCombo();
-		}
-
-		if ( ImGui::TreeNode( "Scene Environment" ) )
-		{
-			if ( ImGui::TreeNode( "HDRI" ) )
+			// Render Mode
 			{
-
-				if ( DrawProperty( "Environment Map", scene->GetSceneEnvironment().HDRI.EnvironmentMapHandle, EDrawPropertyFlags::Editable ) )
+				const char* renderModes[] = { "None", "Forward", "Deferred" };
+				if ( ImGui::BeginCombo( "Render Mode", renderModes[(uint8_t)renderSettings.RenderMode] ) )
 				{
-					auto assetManager = AssetManager::Get<Editor::EditorAssetManager>();
-					auto textureMetaData = assetManager->GetAssetMetaData( scene->GetSceneEnvironment().HDRI.EnvironmentMapHandle );
-					if ( textureMetaData.IsValid() )
-						scene->GetSceneEnvironment().HDRI.EnvironmentMap = EnvironmentMap::Create( assetManager->GetAbsolutePath( textureMetaData.Path ) );
+					bool isSelected = renderSettings.RenderMode == ERenderMode::Forward;
+					if ( ImGui::Selectable( renderModes[(uint8_t)ERenderMode::Forward], isSelected ) )
+					{
+						renderSettings.RenderMode = ERenderMode::Forward;
+						changed = true;
+					}
+
+					if ( isSelected )
+						ImGui::SetItemDefaultFocus();
+
+					isSelected = renderSettings.RenderMode == ERenderMode::Deferred;
+					if ( ImGui::Selectable( renderModes[(uint8_t)ERenderMode::Deferred], isSelected ) )
+					{
+						renderSettings.RenderMode = ERenderMode::Deferred;
+						changed = true;
+					}
+
+					if ( isSelected )
+						ImGui::SetItemDefaultFocus();
+
+					ImGui::EndCombo();
 				}
-
-				ImGui::SliderFloat( "Exposure", &scene->GetSceneEnvironment().HDRI.Exposure, 0.0f, 10.0f );
-				ImGui::SliderFloat( "Gamma", &scene->GetSceneEnvironment().HDRI.Gamma, 0.0f, 10.0f );
-				ImGui::SliderFloat( "Blur", &scene->GetSceneEnvironment().HDRI.Blur, 0.0f, 1.0f );
-				ImGui::SliderFloat( "Intensity", &scene->GetSceneEnvironment().HDRI.Intensity, 0.0f, 10.0f );
-				DrawProperty( "Rotation", scene->GetSceneEnvironment().HDRI.RotationEular, EDrawPropertyFlags::Editable );
-
-				ImGui::TreePop();
 			}
+
+			// Render Scale
+			{
+				changed |= ImGui::SliderFloat( "Render Scale", &renderSettings.RenderScale, 0.1f, 2.0f );
+			}
+
+			// Debug Draw Colliders
+			{
+				changed |= ImGui::Checkbox( "Debug Draw Colliders", &renderSettings.DebugDrawColliders );
+			}
+
+			if ( changed )
+				scene->GetSceneRenderer().SetRenderSettings( renderSettings );
 
 			ImGui::TreePop();
 		}
+
+		if ( ImGui::TreeNode( "Environment" ) )
+		{
+
+			if ( DrawProperty( "Environment Map", scene->GetSceneEnvironment().HDRI.EnvironmentMapHandle, EDrawPropertyFlags::Editable ) )
+			{
+				auto assetManager = AssetManager::Get<Editor::EditorAssetManager>();
+				auto textureMetaData = assetManager->GetAssetMetaData( scene->GetSceneEnvironment().HDRI.EnvironmentMapHandle );
+				if ( textureMetaData.IsValid() )
+					scene->GetSceneEnvironment().HDRI.EnvironmentMap = EnvironmentMap::Create( assetManager->GetAbsolutePath( textureMetaData.Path ) );
+			}
+
+			ImGui::SliderFloat( "Exposure", &scene->GetSceneEnvironment().HDRI.Exposure, 0.0f, 10.0f );
+			ImGui::SliderFloat( "Gamma", &scene->GetSceneEnvironment().HDRI.Gamma, 0.0f, 10.0f );
+			ImGui::SliderFloat( "Blur", &scene->GetSceneEnvironment().HDRI.Blur, 0.0f, 1.0f );
+			ImGui::SliderFloat( "Intensity", &scene->GetSceneEnvironment().HDRI.Intensity, 0.0f, 10.0f );
+			DrawProperty( "Rotation", scene->GetSceneEnvironment().HDRI.RotationEular, EDrawPropertyFlags::Editable );
+
+			ImGui::TreePop();
+		}
+
+		ImGui::Separator();
 
 		if ( ImGui::Button( "Temp! Recompile Shader" ) )
 		{
