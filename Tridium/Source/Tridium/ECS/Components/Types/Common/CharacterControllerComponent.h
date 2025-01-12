@@ -3,15 +3,15 @@
 
 namespace Tridium {
 
-	class CharacterControllerComponent : public ScriptableComponent
+	class CharacterControllerComponent : public NativeScriptComponent
 	{
 		REFLECT( CharacterControllerComponent );
 	public:
 		CharacterControllerComponent() = default;
 
-		virtual void OnBeginPlay() override;
-		virtual void OnUpdate() override;
-		virtual void OnDestroy() override;
+		void OnBeginPlay();
+		void OnUpdate( float a_DeltaTime );
+		void OnEndPlay();
 
 		void AddMovementInput( const Vector2& a_Input );
 		void AddLookInput( const Vector2& a_Input );

@@ -2,6 +2,8 @@
 #include <Tridium/Core/Core.h>
 #include <Tridium/Physics/PhysicsScene.h>
 #include <Tridium/Physics/PhysicsLayer.h>
+#include <Tridium/Core/Containers/BidirectionalMap.h>
+#include <Tridium/ECS/GameObject.h>
 
 #include <Jolt/Jolt.h>
 #include <Jolt/RegisterTypes.h>
@@ -31,6 +33,9 @@ namespace Tridium {
 		virtual void Init() override;
 		virtual void Shutdown() override;
 		virtual void Tick( float a_TimeStep ) override;
+
+		virtual GameObject GetGameObjectFromPhysicsBody( PhysicsBodyID a_BodyID ) const override;
+		virtual PhysicsBodyID GetPhysicsBodyFromGameObject( GameObject a_GameObject ) const override;
 
 		virtual RayCastResult CastRay( const Vector3& a_Start, const Vector3& a_End, ERayCastChannel a_Channel, const PhysicsBodyFilter& a_BodyFilter ) override;
 
@@ -71,6 +76,8 @@ namespace Tridium {
 		UniquePtr<JPH::BroadPhaseLayerInterface> m_BroadPhaseLayerInterface;
 		UniquePtr<JPH::ObjectVsBroadPhaseLayerFilter> m_ObjectVsBroadPhaseLayerFilter;
 		UniquePtr<JPH::ObjectLayerPairFilter> m_ObjectLayerPairFilter;
+
+		BidirectionalMap<PhysicsBodyID, EntityID> m_BodyToGameObjectMap;
 
 		struct
 		{

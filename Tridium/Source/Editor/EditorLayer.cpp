@@ -157,7 +157,7 @@ namespace Tridium::Editor {
 		// Store a copy of the current scene in storage
 		m_SceneSnapshot = MakeUnique<Scene>( *GetActiveScene() );
 
-		GetActiveScene()->OnBegin();
+		GetActiveScene()->OnBeginPlay();
 		GetActiveScene()->SetPaused( false );
 
 		m_GameViewportPanel->Focus();
@@ -168,7 +168,7 @@ namespace Tridium::Editor {
 
 	void EditorLayer::OnEndScene()
 	{
-		GetActiveScene()->OnEnd();
+		GetActiveScene()->OnEndPlay();
 
 		CurrentSceneState = SceneState::Edit;
 		m_EditorViewportPanel->Focus();

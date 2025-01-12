@@ -3,6 +3,10 @@
 
 namespace Tridium {
 
+	// Forward declarations
+	class Scene;
+	// -------------------
+
 	class ISceneSystem
 	{
 	public:
@@ -14,10 +18,14 @@ namespace Tridium {
 		// Called after a scene is unloaded just before the scene and all GameObjects are destroyed.
 		virtual void Shutdown() {}
 
+		// Called when a scene event is triggered.
 		virtual void OnSceneEvent( const SceneEventPayload& a_Event ) {}
 
-	protected:
-		class Scene* m_Scene = nullptr;
+		// Get the scene that owns this system.
+		Scene* GetOwningScene() const { return m_Scene; }
+
+	private:
+		Scene* m_Scene = nullptr;
 		friend class Scene;
 	};
 

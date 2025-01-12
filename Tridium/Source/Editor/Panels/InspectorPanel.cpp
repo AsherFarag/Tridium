@@ -51,7 +51,7 @@ namespace Tridium::Editor {
 		entt::hashed_string( "TagComponent" ).value(),
 		entt::hashed_string( "TransformComponent" ).value(),
 		entt::hashed_string( "GUIDComponent" ).value(),
-		entt::hashed_string( "ScriptableComponent" ).value(),
+		entt::hashed_string( "NativeScriptComponent" ).value(),
 	};
 
 	static const std::unordered_map<entt::id_type, const char*> s_ComponentIcons =
@@ -183,7 +183,9 @@ namespace Tridium::Editor {
 			{
 				if ( ImGui::MenuItem( TE_ICON_X " Remove Component" ) )
 				{
-					metaType.TryRemoveFromGameObject( *Application::GetScene(), InspectedGameObject );
+					auto removeFromGameObjectFunc = metaType.GetMetaAttribute<Refl::Props::RemoveFromGameObjectProp::Type>( Refl::Props::RemoveFromGameObjectProp::ID );
+					if ( CORE_ASSERT( removeFromGameObjectFunc.has_value() ) )
+						removeFromGameObjectFunc.value()( *Application::GetScene(), InspectedGameObject );
 				}
 
 				ImGui::EndPopup();
@@ -247,7 +249,10 @@ namespace Tridium::Editor {
 				if ( !ImGui::MenuItem( className.c_str() ) )
 					continue;
 
-				metaType.TryAddToGameObject( *Application::GetScene(), InspectedGameObject );
+				auto addToGameObjectFunc = metaType.GetMetaAttribute<Refl::Props::AddToGameObjectProp::Type>( Refl::Props::AddToGameObjectProp::ID );
+				if ( CORE_ASSERT( addToGameObjectFunc.has_value() ) )
+					addToGameObjectFunc.value()( *Application::GetScene(), InspectedGameObject );
+
 				break;
 			}
 

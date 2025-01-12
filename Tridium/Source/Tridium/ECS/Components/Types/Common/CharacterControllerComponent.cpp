@@ -6,7 +6,7 @@
 namespace Tridium {
 
 	BEGIN_REFLECT_COMPONENT( CharacterControllerComponent, Scriptable )
-		BASE( ScriptableComponent )
+		BASE( NativeScriptComponent )
 		PROPERTY( m_Friction, Serialize | EditAnywhere )
 		PROPERTY( m_MovementSpeed, Serialize | EditAnywhere )
 		PROPERTY( m_MovementAcceleration, Serialize | EditAnywhere )
@@ -26,7 +26,7 @@ namespace Tridium {
 	}
 	
 
-	void CharacterControllerComponent::OnUpdate()
+	void CharacterControllerComponent::OnUpdate( float a_DeltaTime )
 	{
 		RigidBodyComponent* rigidBody = GetGameObject().TryGetComponent<RigidBodyComponent>();
 		if ( !rigidBody )
@@ -34,8 +34,6 @@ namespace Tridium {
 
 
 		rigidBody->SetFriction( m_Friction );
-
-		const float deltaTime = Time::DeltaTime();
 
 		SharedPtr<PhysicsScene> scene = rigidBody->GetBodyProxy().GetPhysicsScene().lock();
 		Vector3 rayBegin = GetGameObject().GetTransform().Position;
@@ -55,12 +53,12 @@ namespace Tridium {
 		movementInput.x -= Input::IsKeyPressed( Input::KEY_A );
 		movementInput = glm::length( movementInput ) > 0.0f ? glm::normalize( movementInput ) : movementInput;
 		movementInput *= isGrounded ? 1.0f : m_AirMovementControl;
-		AddMovementInput( movementInput * deltaTime );
+		AddMovementInput( movementInput * a_DeltaTime );
 
 		// Look input
 		Vector2 lookInput = Input::GetMousePosition() - m_LastMousePosition;
 		m_LastMousePosition = Input::GetMousePosition();
-		AddLookInput( lookInput * deltaTime );
+		AddLookInput( lookInput * a_DeltaTime );
 
 		// Jump
 		if ( Input::IsKeyPressed( Input::KEY_SPACE ) && isGrounded && m_CanJump )
@@ -73,7 +71,7 @@ namespace Tridium {
 			m_CanJump |= isGrounded;
 	}
 
-	void CharacterControllerComponent::OnDestroy()
+	void CharacterControllerComponent::OnEndPlay()
 	{
 	}
 

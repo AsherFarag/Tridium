@@ -23,7 +23,7 @@ namespace Tridium::Script {
 
 		static void RegisterType( ScriptEngine& a_ScriptEngine )
 		{
-			static_assert( false, "RegisterType must be specialized for this type" );
+			//static_assert( false, "RegisterType must be specialized for this type" );
 		}
 	};
 

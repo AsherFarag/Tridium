@@ -8,11 +8,10 @@ namespace Tridium::IO {
 	// SerializeToText
 	// =================================================================================================
 
-#define _TRIDUM_SERIALIZE_TO_TEXT( Type ) template<> void SerializeToText( Archive& a_Archive, const Type& a_Value )
-
 	// ----------- Math Types -----------
 
-	_TRIDUM_SERIALIZE_TO_TEXT( Vector2 )
+	template<> 
+	void SerializeToText( Archive& a_Archive, const Vector2& a_Value )
 	{
 		a_Archive << YAML::Flow;
 		a_Archive << YAML::BeginSeq;
@@ -21,37 +20,8 @@ namespace Tridium::IO {
 		a_Archive << YAML::EndSeq;
 	}
 
-	_TRIDUM_SERIALIZE_TO_TEXT( Vector3 )
-	{
-		a_Archive << YAML::Flow;
-		a_Archive << YAML::BeginSeq;
-		a_Archive << a_Value.x;
-		a_Archive << a_Value.y;
-		a_Archive << a_Value.z;
-		a_Archive << YAML::EndSeq;
-	}
-
-	_TRIDUM_SERIALIZE_TO_TEXT( Vector4 )
-	{
-		a_Archive << YAML::Flow;
-		a_Archive << YAML::BeginSeq;
-		a_Archive << a_Value.x;
-		a_Archive << a_Value.y;
-		a_Archive << a_Value.z;
-		a_Archive << a_Value.w;
-		a_Archive << YAML::EndSeq;
-	}
-
-	_TRIDUM_SERIALIZE_TO_TEXT( iVector2 )
-	{
-		a_Archive << YAML::Flow;
-		a_Archive << YAML::BeginSeq;
-		a_Archive << a_Value.x;
-		a_Archive << a_Value.y;
-		a_Archive << YAML::EndSeq;
-	}
-
-	_TRIDUM_SERIALIZE_TO_TEXT( iVector3 )
+	template<>
+	void SerializeToText( Archive& a_Archive, const Vector3& a_Value )
 	{
 		a_Archive << YAML::Flow;
 		a_Archive << YAML::BeginSeq;
@@ -61,7 +31,8 @@ namespace Tridium::IO {
 		a_Archive << YAML::EndSeq;
 	}
 
-	_TRIDUM_SERIALIZE_TO_TEXT( iVector4 )
+	template<> 
+	void SerializeToText( Archive& a_Archive, const Vector4& a_Value )
 	{
 		a_Archive << YAML::Flow;
 		a_Archive << YAML::BeginSeq;
@@ -72,7 +43,41 @@ namespace Tridium::IO {
 		a_Archive << YAML::EndSeq;
 	}
 
-	_TRIDUM_SERIALIZE_TO_TEXT( Color )
+	template<>
+	void SerializeToText( Archive& a_Archive, const iVector2& a_Value )
+	{
+		a_Archive << YAML::Flow;
+		a_Archive << YAML::BeginSeq;
+		a_Archive << a_Value.x;
+		a_Archive << a_Value.y;
+		a_Archive << YAML::EndSeq;
+	}
+
+	template<>
+	void SerializeToText( Archive& a_Archive, const iVector3& a_Value )
+	{
+		a_Archive << YAML::Flow;
+		a_Archive << YAML::BeginSeq;
+		a_Archive << a_Value.x;
+		a_Archive << a_Value.y;
+		a_Archive << a_Value.z;
+		a_Archive << YAML::EndSeq;
+	}
+
+	template<>
+	void SerializeToText( Archive& a_Archive, const iVector4& a_Value )
+	{
+		a_Archive << YAML::Flow;
+		a_Archive << YAML::BeginSeq;
+		a_Archive << a_Value.x;
+		a_Archive << a_Value.y;
+		a_Archive << a_Value.z;
+		a_Archive << a_Value.w;
+		a_Archive << YAML::EndSeq;
+	}
+
+	template<> 
+	void SerializeToText( Archive& a_Archive, const Color& a_Value )
 	{
 		a_Archive << YAML::Flow;
 		a_Archive << YAML::BeginSeq;
@@ -83,7 +88,8 @@ namespace Tridium::IO {
 		a_Archive << YAML::EndSeq;
 	}
 
-	_TRIDUM_SERIALIZE_TO_TEXT( Quaternion )
+	template<> 
+	void SerializeToText( Archive& a_Archive, const Quaternion& a_Value )
 	{
 		a_Archive << YAML::Flow;
 		a_Archive << YAML::BeginSeq;
@@ -94,7 +100,8 @@ namespace Tridium::IO {
 		a_Archive << YAML::EndSeq;
 	}
 
-	_TRIDUM_SERIALIZE_TO_TEXT( Matrix3 )
+	template<> 
+	void SerializeToText( Archive& a_Archive, const Matrix3& a_Value )
 	{
 		a_Archive << YAML::Flow;
 		a_Archive << YAML::BeginSeq;
@@ -108,7 +115,8 @@ namespace Tridium::IO {
 		a_Archive << YAML::EndSeq;
 	}
 
-	_TRIDUM_SERIALIZE_TO_TEXT( Matrix4 )
+	template<> 
+	void SerializeToText( Archive& a_Archive, const Matrix4& a_Value )
 	{
 		a_Archive << YAML::Flow;
 		a_Archive << YAML::BeginSeq;
@@ -122,7 +130,8 @@ namespace Tridium::IO {
 		a_Archive << YAML::EndSeq;
 	}
 
-	_TRIDUM_SERIALIZE_TO_TEXT( Rotator )
+	template<> 
+	void SerializeToText( Archive& a_Archive, const Rotator& a_Value )
 	{
 		a_Archive << YAML::Flow;
 		a_Archive << YAML::BeginSeq;
@@ -136,53 +145,63 @@ namespace Tridium::IO {
 
 	// ----------- Tridium Types -----------
 
-	_TRIDUM_SERIALIZE_TO_TEXT( GUID )
+	template<> 
+	void SerializeToText( Archive& a_Archive, const GUID& a_Value )
 	{
 		a_Archive << a_Value.ID();
 	}
 
-	_TRIDUM_SERIALIZE_TO_TEXT( GameObject )
+	template<> 
+	void SerializeToText( Archive& a_Archive, const GameObject& a_Value )
 	{
 		a_Archive << static_cast<EntityIDType>( a_Value.ID() );
 	}
 
 
-	_TRIDUM_SERIALIZE_TO_TEXT( SceneHandle )
+	template<> 
+	void SerializeToText( Archive& a_Archive, const SceneHandle& a_Value )
 	{
 		a_Archive << a_Value.ID();
 	}
 
-	_TRIDUM_SERIALIZE_TO_TEXT( MaterialHandle )
+	template<> 
+	void SerializeToText( Archive& a_Archive, const MaterialHandle& a_Value )
 	{
 		a_Archive << a_Value.ID();
 	}
 
-	_TRIDUM_SERIALIZE_TO_TEXT( MeshSourceHandle )
+	template<>
+	void SerializeToText( Archive& a_Archive, const MeshSourceHandle& a_Value )
 	{
 		a_Archive << a_Value.ID();
 	}
 
-	_TRIDUM_SERIALIZE_TO_TEXT( StaticMeshHandle )
+	template<>
+	void SerializeToText( Archive& a_Archive, const StaticMeshHandle& a_Value )
 	{
 		a_Archive << a_Value.ID();
 	}
 
-	_TRIDUM_SERIALIZE_TO_TEXT( ShaderHandle )
+	template<> 
+	void SerializeToText( Archive& a_Archive, const ShaderHandle& a_Value )
 	{
 		a_Archive << a_Value.ID();
 	}
 
-	_TRIDUM_SERIALIZE_TO_TEXT( TextureHandle )
+	template<> 
+	void SerializeToText( Archive& a_Archive, const TextureHandle& a_Value )
 	{
 		a_Archive << a_Value.ID();
 	}
 
-	_TRIDUM_SERIALIZE_TO_TEXT( CubeMapHandle )
+	template<> 
+	void SerializeToText( Archive& a_Archive, const CubeMapHandle& a_Value )
 	{
 		a_Archive << a_Value.ID();
 	}
 
-	_TRIDUM_SERIALIZE_TO_TEXT( LuaScriptHandle )
+	template<> 
+	void SerializeToText( Archive& a_Archive, const LuaScriptHandle& a_Value )
 	{
 		a_Archive << a_Value.ID();
 	}
@@ -193,11 +212,10 @@ namespace Tridium::IO {
 	// DeserializeFromText
 	// =================================================================================================
 
-#define _TRIDUM_DESERIALIZE_FROM_TEXT( Type ) template<> bool DeserializeFromText( const YAML::Node& a_Node, Type& o_Value )
-
 	// ----------- Math Types -----------
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( Vector2 )
+	template<>
+	bool DeserializeFromText( const YAML::Node& a_Node, Vector2& o_Value )
 	{
 		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 2 )
 		{
@@ -208,7 +226,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( Vector3 )
+	template<> 
+	bool DeserializeFromText( const YAML::Node& a_Node, Vector3& o_Value )
 	{
 		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 3 )
 		{
@@ -220,7 +239,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( Vector4 )
+	template<> 
+	bool DeserializeFromText( const YAML::Node& a_Node, Vector4& o_Value )
 	{
 		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 4 )
 		{
@@ -233,7 +253,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( iVector2 )
+	template<>
+	bool DeserializeFromText( const YAML::Node& a_Node, iVector2& o_Value )
 	{
 		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 2 )
 		{
@@ -244,7 +265,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( iVector3 )
+	template<>
+	bool DeserializeFromText( const YAML::Node& a_Node, iVector3& o_Value )
 	{
 		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 3 )
 		{
@@ -256,7 +278,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( iVector4 )
+	template<>
+	bool DeserializeFromText( const YAML::Node& a_Node, iVector4& o_Value )
 	{
 		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 4 )
 		{
@@ -269,7 +292,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( Color )
+	template<>
+	bool DeserializeFromText( const YAML::Node& a_Node, Color& o_Value )
 	{
 		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 4 )
 		{
@@ -282,7 +306,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( Quaternion )
+	template<> 
+	bool DeserializeFromText( const YAML::Node& a_Node, Quaternion& o_Value )
 	{
 		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 4 )
 		{
@@ -295,7 +320,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( Matrix3 )
+	template<> 
+	bool DeserializeFromText( const YAML::Node& a_Node, Matrix3& o_Value )
 	{
 		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 9 )
 		{
@@ -311,7 +337,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( Matrix4 )
+	template<>
+	bool DeserializeFromText( const YAML::Node& a_Node, Matrix4& o_Value )
 	{
 		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 16 )
 		{
@@ -327,7 +354,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( Rotator )
+	template<> 
+	bool DeserializeFromText( const YAML::Node& a_Node, Rotator& o_Value )
 	{
 		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 3 )
 		{
@@ -341,7 +369,8 @@ namespace Tridium::IO {
 
 	// ----------- Tridium Types -----------
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( GUID )
+	template<>
+	bool DeserializeFromText( const YAML::Node& a_Node, GUID& o_Value )
 	{
 		if ( a_Node && a_Node.IsScalar() )
 		{
@@ -351,7 +380,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( GameObject )
+	template<> 
+	bool DeserializeFromText( const YAML::Node& a_Node, GameObject& o_Value )
 	{
 		if ( a_Node && a_Node.IsScalar() )
 		{
@@ -361,7 +391,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( SceneHandle )
+	template<>
+	bool DeserializeFromText( const YAML::Node& a_Node, SceneHandle& o_Value )
 	{
 		if ( a_Node && a_Node.IsScalar() )
 		{
@@ -371,7 +402,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( MaterialHandle )
+	template<> 
+	bool DeserializeFromText( const YAML::Node& a_Node, MaterialHandle& o_Value )
 	{
 		if ( a_Node && a_Node.IsScalar() )
 		{
@@ -381,7 +413,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( MeshSourceHandle )
+	template<> 
+	bool DeserializeFromText( const YAML::Node& a_Node, MeshSourceHandle& o_Value )
 	{
 		if ( a_Node && a_Node.IsScalar() )
 		{
@@ -391,7 +424,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( StaticMeshHandle )
+	template<> 
+	bool DeserializeFromText( const YAML::Node& a_Node, StaticMeshHandle& o_Value )
 	{
 		if ( a_Node && a_Node.IsScalar() )
 		{
@@ -401,7 +435,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( ShaderHandle )
+	template<>
+	bool DeserializeFromText( const YAML::Node& a_Node, ShaderHandle& o_Value )
 	{
 		if ( a_Node && a_Node.IsScalar() )
 		{
@@ -411,7 +446,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( TextureHandle )
+	template<>
+	bool DeserializeFromText( const YAML::Node& a_Node, TextureHandle& o_Value )
 	{
 		if ( a_Node && a_Node.IsScalar() )
 		{
@@ -421,7 +457,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( CubeMapHandle )
+	template<>
+	bool DeserializeFromText( const YAML::Node& a_Node, CubeMapHandle& o_Value )
 	{
 		if ( a_Node && a_Node.IsScalar() )
 		{
@@ -431,7 +468,8 @@ namespace Tridium::IO {
 		return false;
 	}
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( LuaScriptHandle )
+	template<> 
+	bool DeserializeFromText( const YAML::Node& a_Node, LuaScriptHandle& o_Value )
 	{
 		if ( a_Node && a_Node.IsScalar() )
 		{

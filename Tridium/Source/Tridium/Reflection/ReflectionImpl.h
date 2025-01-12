@@ -246,8 +246,9 @@ struct ::Tridium::Refl::Internal::Reflector<Class> \
 #define _BEGIN_REFLECT_COMPONENT( Class, Flags ) \
  /*static_assert( std::is_base_of<::Tridium::Component, Class>::value, "Class doesn't derive from component! Use BEGIN_REFLECT instead. " );*/ \
  _BEGIN_REFLECT( Class, Flags ) \
- factory.prop( ::Tridium::Refl::Props::AddToGameObjectProp::ID, +[](::Tridium::Scene& a_Scene, ::Tridium::GameObjectID a_GameObject) -> ::Tridium::Component* { return a_Scene.TryAddComponentToGameObject<ClassType>(::Tridium::GameObject{a_GameObject}); } ); \
- factory.prop( ::Tridium::Refl::Props::RemoveFromGameObjectProp::ID, +[](::Tridium::Scene& a_Scene, ::Tridium::GameObjectID a_GameObject) { a_Scene.RemoveComponentFromGameObject<ClassType>(::Tridium::GameObject{a_GameObject}); } ); \
+ factory.prop( ::Tridium::Refl::Props::InitComponentProp::ID, +[]( ::Tridium::Scene& a_Scene ) { a_Scene.__InitComponentType<ClassType>(); } ); \
+ factory.prop( ::Tridium::Refl::Props::AddToGameObjectProp::ID, +[](::Tridium::Scene& a_Scene, ::Tridium::EntityID a_GameObject) -> ::Tridium::Component* { return a_Scene.TryAddComponentToGameObject<ClassType>(::Tridium::GameObject{a_GameObject}); } ); \
+ factory.prop( ::Tridium::Refl::Props::RemoveFromGameObjectProp::ID, +[](::Tridium::Scene& a_Scene, ::Tridium::EntityID a_GameObject) { a_Scene.RemoveComponentFromGameObject<ClassType>(::Tridium::GameObject{a_GameObject}); } ); \
  factory.prop( Props::IsComponentProp::ID, true ); \
  static auto RegisterScriptableComponent = +[]( sol::usertype<Class>& a_UserType ) \
  { \

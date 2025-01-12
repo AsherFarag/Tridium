@@ -1,15 +1,17 @@
 #pragma once
-#include <entt.hpp>
+#include <Tridium/ECS/ECS.h>
 #include "ReflectionFwd.h"
 #include <Tridium/Core/Types.h>
 #include <Tridium/IO/TextSerializer.h>
 #include "ReflProps.h"
+#include <Tridium/Core/Containers/Optional.h>
 
 namespace Tridium {
 
 	// Forward Declarations
 	class Scene;
 	class Component;
+	class GameObject;
 	// -------------------
 
 	namespace Refl {
@@ -40,6 +42,18 @@ namespace Tridium {
 			[[nodiscard]] MetaType TemplateArgument( size_t a_Index ) const { return template_arg( a_Index ); }
 			[[nodiscard]] bool CanCast( const MetaType& a_To ) const { return can_cast( a_To ); }
 			[[nodiscard]] bool CanConvert( const MetaType& a_To ) const { return can_convert( a_To ); }
+			[[nodiscard]] bool IsBaseOf( const MetaType& a_Base ) const { return can_cast( a_Base ); }
+
+			template<typename T>
+			[[nodiscard]] bool IsBaseOf() const { return IsBaseOf( ResolveMetaType<T>() ); }
+			template<typename T>
+			[[nodiscard]] Optional<T> GetMetaAttribute( MetaIDType a_ID ) const
+			{
+				if ( MetaAttribute attribute = GetMetaAttribute( a_ID ) )
+					if ( T* value = attribute.value().try_cast<T>() )
+						return *value;
+				return std::nullopt;
+			}
 
 			[[nodiscard]] MetaProp GetProperty( MetaIDType a_ID ) const { return data( a_ID ); }
 			[[nodiscard]] MetaAttribute GetMetaAttribute( MetaIDType a_ID ) const { return prop( a_ID ); }
@@ -55,7 +69,6 @@ namespace Tridium {
 			template<typename... _Args>
 			[[nodiscard]] MetaAny Construct( _Args&&... a_Args ) const { return construct( std::forward<_Args>( a_Args )... ); }
 
-
 			//////////////////////////////////////////////////////////////////////////
 			// Meta Attribute
 			//////////////////////////////////////////////////////////////////////////
@@ -66,6 +79,11 @@ namespace Tridium {
 					return p.value().cast<EClassFlags>();
 
 				return EClassFlags::ECF_None;
+			}
+
+			bool HasClassFlag( EClassFlags a_Flag ) const
+			{
+				return static_cast<bool>( GetClassFlags() & a_Flag );
 			}
 
 			const char* GetCleanTypeName() const
@@ -133,36 +151,6 @@ namespace Tridium {
 					return p.value().cast<bool>();
 
 				return false;
-			}
-
-			Props::AddToGameObjectProp::Type TryGetAddToGameObjectFunc() const
-			{
-				if ( MetaAttribute p = GetMetaAttribute( Props::AddToGameObjectProp::ID ) )
-					return p.value().cast<Props::AddToGameObjectProp::Type>();
-
-				return nullptr;
-			}
-
-			Component* TryAddToGameObject( Scene& a_Scene, GameObjectID a_GameObject ) const
-			{
-				if ( auto func = TryGetAddToGameObjectFunc() )
-					return func( a_Scene, a_GameObject );
-
-				return nullptr;
-			}
-
-			Props::RemoveFromGameObjectProp::Type TryGetRemoveFromGameObjectFunc() const
-			{
-				if ( MetaAttribute p = prop( Props::RemoveFromGameObjectProp::ID ) )
-					return p.value().cast<Props::RemoveFromGameObjectProp::Type>();
-
-				return nullptr;
-			}
-
-			void TryRemoveFromGameObject( Scene& a_Scene, GameObjectID a_GameObject ) const
-			{
-				if ( auto func = TryGetRemoveFromGameObjectFunc() )
-					func( a_Scene, a_GameObject );
 			}
 
 			//////////////////////////////////////////////////////////////////////////

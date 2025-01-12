@@ -5,12 +5,12 @@ namespace Tridium {
 	
 	class TransformComponent;
 
-	class CameraControllerComponent : public ScriptableComponent
+	class CameraControllerComponent : public NativeScriptComponent
 	{
 		REFLECT( CameraControllerComponent );
 	public:
 		CameraControllerComponent();
-		virtual void OnUpdate() override;
+		void OnUpdate( float a_DeltaTime );
 
 	public:
 		float Speed = 1.0f;

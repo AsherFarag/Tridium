@@ -15,7 +15,8 @@ namespace Tridium {
 	public:
 		TransformComponent() = default;
 		TransformComponent( const Vector3& a_Position );
-		virtual void OnDestroy() override;
+
+		void OnEndPlay();
 
 		operator Matrix4() { return GetWorldTransform(); }
 		operator const Matrix4() const { return GetWorldTransform(); }
@@ -66,5 +67,6 @@ namespace Tridium {
 
 		friend bool IO::DeserializeFromText<Scene>( const YAML::Node& a_Node, Scene& a_Data );
 		friend struct IO::Serializer<GameObject>;
+		friend class Scene;
 	};
 }

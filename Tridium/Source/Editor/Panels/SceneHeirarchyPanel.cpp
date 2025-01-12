@@ -172,7 +172,7 @@ namespace Tridium::Editor {
 
 		ImGui::Separator();
 
-		auto gameObjects = scene->GetRegistry().view<TagComponent>();
+		auto gameObjects = scene->GetECS().View<TagComponent>();
 		ImGui::ScopedStyleVar itemSpacing( ImGuiStyleVar_::ImGuiStyleVar_ItemSpacing, ImVec2( 0, 1 ) );
 		ImGuiTextFilter filter( m_SearchBuffer.c_str() );
 		for ( int i = 0; i < gameObjects.size(); ++i )

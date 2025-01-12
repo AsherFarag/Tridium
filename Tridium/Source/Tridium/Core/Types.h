@@ -4,6 +4,9 @@
 namespace Tridium {
 
 	using Byte = unsigned char;
-	using GameObjectID = uint32_t;
-	constexpr GameObjectID INVALID_GAMEOBJECT_ID = 0xFFFFFFFF;
+
+	//enum class GameObjectID : uint32_t
+	//{
+	//	Invalid = 0xFFFFFFFF
+	//};
 }

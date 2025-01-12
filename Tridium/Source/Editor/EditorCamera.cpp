@@ -35,7 +35,7 @@ namespace Tridium::Editor {
 
 	void EditorCamera::LerpTo( const Vector3& pos )
 	{
-		m_LerpData.CurrLerpTime - 0.0f;
+		m_LerpData.CurrLerpTime = 0.0f;
 		m_LerpData.IsLerping = true;
 		m_LerpData.LerpToPos = pos;
 	}

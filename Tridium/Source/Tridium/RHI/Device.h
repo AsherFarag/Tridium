@@ -1,14 +1,7 @@
 #pragma once
 
-namespace Tridium
-{
-	namespace RHI
+namespace Tridium {
+	class RHIDevice
 	{
-		class Device
-		{
-		public:
-			Device();
-			~Device();
-		};
-	}
+	};
 }

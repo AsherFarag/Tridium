@@ -8,8 +8,8 @@ namespace Tridium {
 		PROPERTY( m_GameObject )
 	END_REFLECT_COMPONENT( Component )
 
-	BEGIN_REFLECT_COMPONENT( ScriptableComponent )
-	END_REFLECT_COMPONENT( ScriptableComponent )
+	BEGIN_REFLECT_COMPONENT( NativeScriptComponent )
+	END_REFLECT_COMPONENT( NativeScriptComponent )
 
 	Component::Component()
 		: m_GameObject()

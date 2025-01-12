@@ -1,14 +1,15 @@
 #pragma once
 #include "MetaFlags.h"
-#include <entt.hpp>
+#include <Tridium/ECS/ECS.h>
 #include "ReflectionFwd.h"
 
 namespace Tridium {
 
 	// Forward Declarations
-	class Component;
 	class Scene;
 	class ScriptEngine;
+	class Component;
+	class GameObject;
 
 	namespace Script {
 		class ScriptEngine;
@@ -28,14 +29,14 @@ namespace Tridium {
 		template<typename T>
 		MetaFactory<T> CreateMetaFactory() { return entt::meta<T>(); }
 
-
-
 		// -- Function Signatures --
-		typedef void			( *TextSerializeFunc )			( IO::Archive& a_Archive, const MetaAny& a_Data );
-		typedef void			( *TextDeserializeFunc )		( const YAML::Node& a_Node, MetaAny& a_Data );
-		typedef void			( *RegisterScriptableFunc )		( Script::ScriptEngine& a_ScriptEngine );
-		typedef Component*		( *AddToGameObjectFunc )		( Scene& a_Scene, GameObjectID a_GameObject );
-		typedef void			( *RemoveFromGameObjectFunc )	( Scene& a_Scene, GameObjectID a_GameObject );
+		using TextSerializeFunc				= void (*)( IO::Archive& a_Archive, const MetaAny& a_Data );
+		using TextDeserializeFunc			= void (*)( const YAML::Node& a_Node, MetaAny& a_Data );
+		using RegisterScriptableFunc		= void (*)( Script::ScriptEngine& a_ScriptEngine );
+		using AddToGameObjectFunc			= Component* (*)( Scene& a_Scene, EntityID a_GameObject );
+		using RemoveFromGameObjectFunc		= void (*)( Scene& a_Scene, EntityID a_GameObject );
+		using InitComponentFunc				= void (*)( Scene& a_Scene );
+
 
 		#ifdef IS_EDITOR
 
@@ -74,6 +75,7 @@ namespace Tridium {
 
 			// -- GameObject Component Properties --
 
+			using InitComponentProp = MetaDataProperty<Internal( "InitComponent" ), InitComponentFunc>;
 			using IsComponentProp = MetaDataProperty<Internal( "IsComponent" ), bool>;
 			using AddToGameObjectProp = MetaDataProperty<Internal( "AddToGameObject" ), AddToGameObjectFunc>;
 			using RemoveFromGameObjectProp = MetaDataProperty<Internal( "RemoveFromGameObject" ), RemoveFromGameObjectFunc>;

@@ -5,7 +5,7 @@
 
 namespace Tridium::Editor {
 
-	MulticastDelegate<void, GameObjectID> Events::OnGameObjectSelected;
+	MulticastDelegate<void, GameObject> Events::OnGameObjectSelected;
 
 }
 

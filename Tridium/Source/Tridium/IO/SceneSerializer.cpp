@@ -22,20 +22,20 @@ namespace YAML {
 		static Node encode( const Tridium::EntityID& rhs )
 		{
 			Node node;
-			node.push_back( static_cast<uint32_t>( rhs ) );
+			node.push_back( static_cast<Tridium::EntityIDType>( rhs ) );
 			return node;
 		}
 
 		static bool decode( const Node& node, Tridium::EntityID& rhs )
 		{
-			rhs = Tridium::EntityID( node.as<uint32_t>() );
+			rhs = Tridium::EntityID( node.as<Tridium::EntityIDType>() );
 			return true;
 		}
 	};
 
 	YAML::Emitter& operator<<( YAML::Emitter& out, const Tridium::EntityID& v )
 	{
-		out << static_cast<uint32_t>( v );
+		out << static_cast<Tridium::EntityIDType>( v );
 		return out;
 	};
 
@@ -47,7 +47,7 @@ namespace Tridium::IO {
 	static const std::unordered_set<Refl::MetaIDType> s_BlacklistedComponents =
 	{
 		"Component"_hs.value(),
-		"ScriptableComponent"_hs.value(),
+		"NativeScriptComponent"_hs.value(),
 		"TransformComponent"_hs.value(),
 		"TagComponent"_hs.value(),
 		"GUIDComponent"_hs.value(),
@@ -113,7 +113,7 @@ namespace Tridium::IO {
 		a_Archive << YAML::Key << "GameObjects";
 		a_Archive << YAML::Value << YAML::BeginSeq;
 		{
-			auto gameObjects = a_Data.GetRegistry().view<GUIDComponent>();
+			auto gameObjects = a_Data.GetECS().View<GUIDComponent>();
 			for ( auto it = gameObjects.rbegin(); it < gameObjects.rend(); it++ )
 			{
 				SerializeGameObject( a_Archive, GameObject( *it ) );
@@ -252,7 +252,7 @@ namespace Tridium::IO {
 		else
 			return false;
 
-		TE_CORE_ASSERT( a_Scene.GetRegistry().create( go.ID() ) == go.ID(), "The created GameObject should be the same as the hint!" );
+		TE_CORE_ASSERT( a_Scene.GetECS().CreateEntity( go.ID() ) == go.ID(), "The created GameObject should be the same as the hint!" );
 		a_Scene.AddComponentToGameObject<GUIDComponent>( go, guid );
 		a_Scene.AddComponentToGameObject<TagComponent>( go, tag );
 		a_Scene.AddComponentToGameObject<TransformComponent>( go );
@@ -292,7 +292,10 @@ namespace Tridium::IO {
 
 			Refl::MetaType componentType = Refl::ResolveMetaType( componentName.c_str() );
 
-			Component* component = componentType.TryAddToGameObject( a_Scene, go );
+			Component* component = nullptr;
+			if ( auto func = componentType.GetMetaAttribute<Refl::Props::AddToGameObjectProp::Type>( Refl::Props::AddToGameObjectProp::ID ) )
+				component = func.value()( a_Scene, go );
+
 			if ( !component )
 			{
 				TE_CORE_ERROR( "Failed to deserialize component '{0}' from GameObject", componentName );
@@ -302,7 +305,9 @@ namespace Tridium::IO {
 			Refl::MetaAny componentAsAny = componentType.FromVoid( component );
 			if ( !componentType.TryDeserialize( componentNode.second, componentAsAny ) )
 			{
-				componentType.TryRemoveFromGameObject( a_Scene, go );
+				if ( auto func = componentType.GetMetaAttribute<Refl::Props::RemoveFromGameObjectProp::Type>( Refl::Props::RemoveFromGameObjectProp::ID ) )
+					func.value()( a_Scene, go );
+
 				TE_CORE_ERROR( "Failed to deserialize component '{0}' from GameObject", componentName );
 				continue;
 			}

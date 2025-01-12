@@ -11,12 +11,12 @@ namespace Tridium {
 		// Reserve a magic number of components
 		components.reserve( 16 );
 
-		for ( auto&& [id, componentStorage] : Application::GetScene()->m_Registry.storage() )
+		for ( auto&& [id, componentStorage] : Application::GetScene()->GetECS().Storage() )
 		{
-            if ( componentStorage.contains( m_ID ) )
+            if ( componentStorage.contains( static_cast<entt::entity>( m_ID ) ) )
                 components.emplace_back( 
                     entt::resolve( componentStorage.type() ),
-                    static_cast<Component*>( componentStorage.value( m_ID ) ) 
+                    static_cast<Component*>( componentStorage.value( static_cast<entt::entity>( m_ID ) ) )
                 );
 		}
 

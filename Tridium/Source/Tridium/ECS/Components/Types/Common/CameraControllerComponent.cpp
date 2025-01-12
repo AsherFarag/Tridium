@@ -13,15 +13,13 @@ namespace Tridium {
 
 	}
 
-	void CameraControllerComponent::OnUpdate()
+	void CameraControllerComponent::OnUpdate( float dt )
 	{
 		auto go = GetGameObject();
 		if ( !go.HasComponent<TransformComponent>() )
 			return;
 
 		auto& transform = GetGameObject().GetComponent<TransformComponent>();
-
-		float dt = Time::DeltaTime();
 
 		constexpr Vector3 up( 0, 1, 0 );
 		auto forward = transform.GetForward();
@@ -84,7 +82,7 @@ namespace Tridium {
 	}
 
 	BEGIN_REFLECT_COMPONENT( CameraControllerComponent )
-		BASE( ScriptableComponent )
+		BASE( NativeScriptComponent )
 		PROPERTY( Speed, Serialize | EditAnywhere )
 		PROPERTY( LookSensitivity, Serialize | EditAnywhere )
 	END_REFLECT_COMPONENT( CameraControllerComponent );

@@ -10,11 +10,11 @@
 
 using namespace Tridium;
 
-class ShooterPlayerComponent : public ScriptableComponent
+class ShooterPlayerComponent : public NativeScriptComponent
 {
 	REFLECT( ShooterPlayerComponent )
 public:
-	void OnBeginPlay() override
+	void OnBeginPlay()
 	{
 		if ( m_GunModel.IsValid() )
 		{
@@ -22,9 +22,9 @@ public:
 		}
 	}
 
-	void OnUpdate() override
+	void OnUpdate( float a_DeltaTime )
 	{
-		m_FireTimer += Time::DeltaTime();
+		m_FireTimer += a_DeltaTime;
 		if ( Input::IsMouseButtonPressed( Input::MOUSE_BUTTON_LEFT ) )
 		{
 			bool fired = Fire();
@@ -40,22 +40,24 @@ public:
 			m_IsZoomed = Input::IsMouseButtonPressed( Input::MOUSE_BUTTON_RIGHT );
 
 			if ( m_IsZoomed )
-				m_ZoomLerp += Time::DeltaTime() * m_ZoomLerpSpeed;
+				m_ZoomLerp += a_DeltaTime * m_ZoomLerpSpeed;
 			else
-				m_ZoomLerp -= Time::DeltaTime() * m_ZoomLerpSpeed;
+				m_ZoomLerp -= a_DeltaTime * m_ZoomLerpSpeed;
 
 			m_ZoomLerp = Math::Clamp( m_ZoomLerp, 0.0f, 1.0f );
 
 			
 			if ( CharacterControllerComponent* controller = GetGameObject().TryGetComponent<CharacterControllerComponent>() )
 			{
-				CameraComponent* camera = controller->GetCameraGameObject().TryGetComponent<CameraComponent>();
-				float fov = Math::Lerp( m_DefaultFov, m_DefaultFov * m_ZoomFovPercentage, m_ZoomLerp );
-				camera->SceneCamera.SetPerspectiveFOV( fov );
+				if ( CameraComponent* camera = controller->GetCameraGameObject().TryGetComponent<CameraComponent>() )
+				{
+					float fov = Math::Lerp( m_DefaultFov, m_DefaultFov * m_ZoomFovPercentage, m_ZoomLerp );
+					camera->SceneCamera.SetPerspectiveFOV( fov );
+				}
 			}
 		}
 
-		m_GunLerp -= Time::DeltaTime() * m_GunLerpSpeed;
+		m_GunLerp -= a_DeltaTime * m_GunLerpSpeed;
 		m_GunLerp = Math::Clamp( m_GunLerp, 0.0f, 1.0f );
 
 		if ( m_GunModel.IsValid() )
@@ -69,7 +71,7 @@ public:
 
 		if ( m_GunMuzzleFlashTimer > 0.0f )
 		{
-			m_GunMuzzleFlashTimer -= Time::DeltaTime();
+			m_GunMuzzleFlashTimer -= a_DeltaTime;
 			if ( m_GunMuzzleFlashTimer <= 0.0f )
 			{
 				PointLightComponent* light = m_GunMuzzleFlash.TryGetComponent<PointLightComponent>();
@@ -106,14 +108,13 @@ protected:
 		if ( auto* rigidBody = GetGameObject().TryGetComponent<RigidBodyComponent>() )
 			filter = *rigidBody;
 
-		RayCastResult hit = GetScene()->CastRay( rayBegin, rayEnd, ERayCastChannel::Camera, filter, true, Debug::EDrawDuration::ForDuration, 10.0f );
+		RayCastResult hit = GetScene()->CastRay( rayBegin, rayEnd, ERayCastChannel::Camera, filter, true, Debug::EDrawDuration::Permanent, 10.0f );
 		if ( hit.Hit )
 		{
-			if ( RigidBodyComponent* hitRigidBody = hit.GetHitRigidBody() )
-			{
-				TE_CORE_DEBUG( "Hit: {0}", hitRigidBody->GetGameObject().GetTag() );
-				hitRigidBody->AddImpulse( lookDirection * m_Force );
-			}
+			GameObject hitGameObject = hit.HitGameObject;
+			RigidBodyComponent& hitRigidBody = hitGameObject.GetComponent<RigidBodyComponent>();
+			TE_CORE_DEBUG( "Hit: {0}", hitRigidBody.GetGameObject().GetTag() );
+			hitRigidBody.AddImpulse( lookDirection * m_Force );
 		}
 
 		m_FireTimer = 0.0f;
@@ -158,7 +159,7 @@ protected:
 };
 
 BEGIN_REFLECT_COMPONENT( ShooterPlayerComponent )
-	BASE( ScriptableComponent )
+	BASE( NativeScriptComponent )
 	PROPERTY( m_GunModel, Serialize | EditAnywhere )
 	PROPERTY( m_GunMuzzleFlash, Serialize | EditAnywhere )
 	PROPERTY( m_GunMuzzleFlashDuration, Serialize | EditAnywhere )
@@ -177,16 +178,16 @@ BEGIN_REFLECT_COMPONENT( ShooterPlayerComponent )
 END_REFLECT( ShooterPlayerComponent )
 
 
-class EnemyAIComponent : public ScriptableComponent
+class EnemyAIComponent : public NativeScriptComponent
 {
 	REFLECT( EnemyAIComponent )
 public:
-	void OnBeginPlay() override
+	void OnBeginPlay()
 	{
 		GetTarget();
 	}
 
-	void OnUpdate() override
+	void OnUpdate( float a_DeltaTime )
 	{
 		if ( !m_Target.IsValid() )
 		{
@@ -228,7 +229,7 @@ protected:
 };
 
 BEGIN_REFLECT_COMPONENT( EnemyAIComponent )
-	BASE( ScriptableComponent )
+	BASE( NativeScriptComponent )
 	PROPERTY( m_Target, Serialize | EditAnywhere )
 	PROPERTY( m_Speed, Serialize | EditAnywhere )
 	PROPERTY( m_MaxSpeed, Serialize | EditAnywhere )

@@ -5,6 +5,7 @@
 
 // Forward Declarations
 namespace Tridium {
+	class GameObject;
 }
 // --------------------
 
@@ -13,7 +14,7 @@ namespace Tridium::Editor {
 	class Events 
 	{
 	public:
-		static MulticastDelegate<void, GameObjectID> OnGameObjectSelected;
+		static MulticastDelegate<void, GameObject> OnGameObjectSelected;
 	};
 
 }

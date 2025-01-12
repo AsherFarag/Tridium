@@ -53,7 +53,7 @@ namespace Tridium {
 		{
 			data = YAML::LoadFile( a_MetaData.Path.ToString() );
 		}
-		catch ( const YAML::BadFile& e )
+		catch ( const YAML::BadFile& )
 		{
 			return nullptr;
 		}

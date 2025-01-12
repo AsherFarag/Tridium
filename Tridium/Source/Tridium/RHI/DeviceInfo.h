@@ -1,9 +1,9 @@
 #pragma once
 #include <string>
 
-namespace Tridium::RHI {
+namespace Tridium {
 
-	struct DeviceInfo
+	struct RHIDeviceInfo
 	{
 		std::string DeviceName;
 		std::string DeviceManufacturer;

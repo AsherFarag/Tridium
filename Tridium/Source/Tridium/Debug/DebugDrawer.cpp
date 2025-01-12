@@ -1,7 +1,7 @@
 #include "tripch.h"
-#if TE_USE_DEBUG
-
 #include "DebugDrawer.h"
+
+#if TE_DRAW_DEBUG
 #include <Tridium/Rendering/VertexArray.h>
 #include <Tridium/Rendering/Shader.h>
 
@@ -9,8 +9,6 @@
 #include <glad/glad.h>
 
 namespace Tridium::Debug { 
-
-	UniquePtr<DebugDrawer> DebugDrawer::s_Instance = nullptr;
 
 	void DebugDrawer::DrawLine( const Vector3& a_Start, const Vector3& a_End, const Color& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
 	{
@@ -327,7 +325,7 @@ namespace Tridium::Debug {
 		DrawLine( nearBottomLeft, farBottomLeft, a_Color, a_DrawDuration, a_Duration );
 	}
 
-	DebugDrawer::DebugDrawer()
+	void DebugDrawer::OnPostSingletonConstructed()
 	{
 		// Reserve some space for the vectors
 		m_Lines.Permenant.reserve( 1024 );
@@ -406,11 +404,6 @@ namespace Tridium::Debug {
 
 			glBindVertexArray( 0 );
 		}
-	}
-
-	void DebugDrawer::Init()
-	{
-		s_Instance.reset( new DebugDrawer() );
 	}
 
 	void DebugDrawer::Draw( const Matrix4& a_ViewProjection )

@@ -1,15 +1,14 @@
 #pragma once
-
 #include <Tridium/Core/Core.h>
-
 #include <Tridium/Core/Window.h>
 #include <Tridium/Core/LayerStack.h>
+#include <Tridium/Core/Engine/EngineSubsystem.h>
+#include <Tridium/Core/GameInstance.h>
+
 #include <Tridium/Events/ApplicationEvent.h>
 #include <Tridium/ImGui/ImGuiLayer.h>
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Project/Project.h>
-#include <Tridium/Core/GameInstance.h>
-#include <Tridium/Physics/PhysicsEngine.h>
 #include <Tridium/Rendering/GameViewport.h>
 
 namespace Tridium {
@@ -52,7 +51,7 @@ namespace Tridium {
 		const FrameInfo& GetFrameInfo() const { return m_PrevFrameInfo; }
 
 		// - Scene -
-		static SharedPtr<Scene> GetScene() { return s_Instance->m_ActiveScene; }
+		static const SharedPtr<Scene>& GetScene() { return s_Instance->m_ActiveScene; }
 		static void SetScene( SharedPtr<Scene> a_Scene );
 
 	private:
@@ -68,9 +67,9 @@ namespace Tridium {
 		UniquePtr<Window> m_Window;
 		ImGuiLayer* m_ImGuiLayer;
 		LayerStack m_LayerStack;
+
 		GameViewport m_GameViewport;
 
-		UniquePtr<PhysicsEngine> m_PhysicsEngine;
 		SharedPtr<AssetManagerBase> m_AssetManager;
 		SharedPtr<Project> m_Project;
 		SharedPtr<Scene> m_ActiveScene;

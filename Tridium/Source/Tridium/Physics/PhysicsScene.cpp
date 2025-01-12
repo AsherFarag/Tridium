@@ -3,19 +3,10 @@
 #include "PhysicsAPI.h"
 #include "Jolt/JoltPhysicsScene.h"
 #include <Tridium/Reflection/Reflection.h>
+#include <Tridium/Core/Containers/Set.h>
+#include <Tridium/ECS/Components/Types.h>
 
 namespace Tridium {
-    UniquePtr<PhysicsScene> PhysicsScene::Create()
-    {
-        switch ( s_PhysicsAPI )
-        {
-		case EPhysicsAPI::Jolt:
-			return MakeUnique<JoltPhysicsScene>();
-        }
-
-		TE_CORE_ASSERT( false, "Unknown Physics API" );
-		return nullptr;
-    }
 
 	BEGIN_REFLECT_ENUM( ESixDOFConstraintMotion )
 		ENUM_VALUE( Locked )
@@ -41,4 +32,78 @@ namespace Tridium {
 		PROPERTY( TwistLimit,   EditAnywhere | Serialize )
 	END_REFLECT( AngularMotionConstraint );
 
+	UniquePtr<PhysicsScene> PhysicsScene::Create()
+	{
+		switch ( s_PhysicsAPI )
+		{
+		case EPhysicsAPI::Jolt:
+			return MakeUnique<JoltPhysicsScene>();
+		}
+
+		TE_CORE_ASSERT( false, "Unknown Physics API" );
+		return nullptr;
+	}
+
+	void PhysicsSceneSystem::Init()
+	{
+		m_PhysicsScene = GetOwningScene()->GetPhysicsScene().get();
+	}
+
+	void PhysicsSceneSystem::Shutdown()
+	{
+		m_PhysicsScene = nullptr;
+	}
+
+	void PhysicsSceneSystem::OnSceneEvent( const SceneEventPayload& a_EventPayload )
+	{
+		if ( !GetOwningScene()->IsRunning() )
+			return;
+
+		switch ( a_EventPayload.EventType )
+		{
+		case ESceneEventType::OnComponentCreated:
+		{
+			const OnComponentCreatedEvent& event = std::get<OnComponentCreatedEvent>( a_EventPayload.EventData );
+			OnComponentCreated( event );
+			break;
+		}
+
+		case ESceneEventType::OnComponentDestroyed:
+		{
+			break;
+		}
+		default:
+			break;
+		}
+	}
+
+	void PhysicsSceneSystem::OnComponentCreated( const OnComponentCreatedEvent& a_Event )
+	{
+		static const Refl::MetaType RigidBodyComponentType = Refl::ResolveMetaType<RigidBodyComponent>();
+		static const UnorderedSet<Refl::MetaIDType> ColliderComponentTypes =
+		{
+			Refl::ResolveMetaType<SphereColliderComponent>().ID(),
+			Refl::ResolveMetaType<BoxColliderComponent>().ID(),
+			Refl::ResolveMetaType<CapsuleColliderComponent>().ID(),
+			Refl::ResolveMetaType<CylinderColliderComponent>().ID(),
+			Refl::ResolveMetaType<MeshColliderComponent>().ID()
+		};
+
+		Refl::MetaType componentType = Refl::ResolveMetaType( a_Event.ComponentTypeID );
+		GameObject gameObject = a_Event.GameObjectID;
+
+		// Only handle RigidBody and Collider components
+		if ( componentType != RigidBodyComponentType && !ColliderComponentTypes.contains( componentType.ID() ) )
+		{
+			return;
+		}
+
+		if ( RigidBodyComponent* rigidBody = gameObject.TryGetComponent<RigidBodyComponent>() )
+		{
+			if ( TransformComponent* transform = gameObject.TryGetComponent<TransformComponent>() )
+			{
+				m_PhysicsScene->UpdatePhysicsBody( gameObject, *rigidBody, *transform );
+			}
+		}
+	}
 }

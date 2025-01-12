@@ -28,7 +28,7 @@ namespace Tridium {
 	TransformComponent::TransformComponent( const Vector3& a_Translation )
 		: Position( a_Translation ) {}
 
-	void TransformComponent::OnDestroy()
+	void TransformComponent::OnEndPlay()
 	{
 		DetachFromParent();
 

@@ -179,7 +179,7 @@ namespace Tridium {
 			}
 			else
 			{
-				static_assert( false, "Invalid functor type." );
+				//static_assert( false, "Invalid functor type." );
 			}
 		}
 

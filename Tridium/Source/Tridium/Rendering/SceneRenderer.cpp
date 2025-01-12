@@ -196,7 +196,7 @@ namespace Tridium {
 
 		// - Submit Directional Lights -
 		{
-			auto directionalLightComponents = m_Scene.m_Registry.view<DirectionalLightComponent, TransformComponent>();
+			auto directionalLightComponents = m_Scene.GetECS().View<DirectionalLightComponent, TransformComponent>();
 			m_LightEnvironment.NumDirectionalLights = 0;
 			directionalLightComponents.each(
 				[&]( auto go, DirectionalLightComponent& lightComponent, TransformComponent& transform )
@@ -248,7 +248,7 @@ namespace Tridium {
 
 		// - Submit Point Lights -
 		{
-			auto pointLightComponents = m_Scene.m_Registry.view<PointLightComponent, TransformComponent>();
+			auto pointLightComponents = m_Scene.GetECS().View<PointLightComponent, TransformComponent>();
 			m_LightEnvironment.NumPointLights = 0;
 			pointLightComponents.each(
 				[&]( auto go, PointLightComponent& lightComponent, TransformComponent& transform )
@@ -302,7 +302,7 @@ namespace Tridium {
 
 		// - Submit Spot Lights -
 		{
-			auto spotLightComponents = m_Scene.m_Registry.view<SpotLightComponent, TransformComponent>();
+			auto spotLightComponents = m_Scene.GetECS().View<SpotLightComponent, TransformComponent>();
 			m_LightEnvironment.NumSpotLights = 0;
 			spotLightComponents.each(
 				[&]( auto go, SpotLightComponent& lightComponent, TransformComponent& transform )
@@ -349,7 +349,7 @@ namespace Tridium {
 
 		// - Submit Static Mesh Components to the Draw List -
 		{
-			auto meshComponents = m_Scene.m_Registry.view<StaticMeshComponent, TransformComponent>();
+			auto meshComponents = m_Scene.GetECS().View<StaticMeshComponent, TransformComponent>();
 			meshComponents.each( [&]( auto go, StaticMeshComponent& meshComponent, TransformComponent& transform )
 				{
 					DrawPass passFlags = EDrawPass::Opaque;

@@ -651,7 +651,7 @@ namespace Tridium::Editor {
 
 			ImGui::Separator();
 
-			auto view = Application::GetScene()->GetRegistry().view<TagComponent>();
+			auto view = Application::GetScene()->GetECS().View<TagComponent>();
 			view.each( [&]( const entt::entity& entity, TagComponent& tag )
 				{
 					GameObject gameObject( entity );

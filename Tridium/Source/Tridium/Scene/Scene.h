@@ -1,33 +1,29 @@
 #pragma once
-#include "entt.hpp"
+#include <Tridium/ECS/ECS.h>
+#include <Tridium/ECS/EntityTicker.h>
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/Rendering/Lights.h>
 #include <Tridium/Rendering/SceneRenderer.h>
 #include <Tridium/Physics/PhysicsScene.h>
+#include "SceneEnvironment.h"
 #include "SceneSystem.h"
+
 
 #include <Tridium/Debug/DebugDrawer.h>
 
 namespace Tridium {
-	using EntityIDType = entt::id_type;
-	using EntityID = entt::entity;
-	static constexpr EntityID INVALID_ENTITY_ID = entt::null;
 
+	// Forward Declarations
 	class Camera;
 	class CameraComponent;
 	class EnvironmentMap;
+	// --------------------
 
-	struct SceneEnvironment
+	struct SceneState
 	{
-		struct {
-			CubeMapHandle EnvironmentMapHandle;
-			SharedPtr<EnvironmentMap> EnvironmentMap;
-			float Exposure = 1.0f;
-			float Gamma = 2.2f;
-			float Blur = 0.0f;
-			float Intensity = 1.0f;
-			Vector3 RotationEular = { 0.0f, 0.0f, 0.0f };
-		} HDRI;
+		bool IsPaused = false;
+		bool IsRunning = false;
+		bool HasBegunPlay = false;
 	};
 
 	class Scene final : public Asset
@@ -38,32 +34,33 @@ namespace Tridium {
 		Scene( const Scene& a_Other );
 		~Scene();
 
-		void OnBegin();
+		// Called before the first update
+		void OnBeginPlay();
+		// Called every frame
 		void OnUpdate();
-		void OnEnd();
+		// Called when the scene is destroyed
+		void OnEndPlay();
 
-		inline const std::string& GetName() const { return m_Name; }
-		inline void SetName( const std::string& a_Name ) { m_Name = a_Name; }
-		inline auto& GetRegistry() { return m_Registry; }
-		inline auto& GetRegistry() const { return m_Registry; }
-		inline const auto& GetPhysicsScene() { return m_PhysicsScene; }
+		const std::string& GetName() const { return m_Name; }
+		void SetName( const std::string& a_Name ) { m_Name = a_Name; }
 
-		void SetPaused( bool a_NewPaused ) { m_Paused = a_NewPaused; }
-		bool IsPaused() const { return m_Paused; }
-
-		bool IsRunning() const { return m_IsRunning; }
+		const SceneState& GetState() const { return m_State; }
+		void SetPaused( bool a_NewPaused ) { m_State.IsPaused = a_NewPaused; }
+		bool IsPaused() const { return m_State.IsPaused; }
+		bool IsRunning() const { return m_State.IsRunning; }
+		bool HasBegunPlay() const { return m_State.HasBegunPlay; }
 
 		CameraComponent* GetMainCamera();
-		EntityID GetMainCameraGameObject() const { return m_MainCamera; }
-		void SetMainCamera( const EntityID& a_Camera ) { m_MainCamera = a_Camera; }
-		void Clear();
+		GameObject GetMainCameraGameObject() const;
+		void SetMainCamera( GameObject a_CameraGameObject );
 
 		SceneEnvironment& GetSceneEnvironment() { return m_SceneEnvironment; }
 		const SceneEnvironment& GetSceneEnvironment() const { return m_SceneEnvironment; }
-
 		SceneRenderer& GetSceneRenderer() { return m_SceneRenderer; }
 
-		// - Systems -
+		//////////////////////////////////////////////////////////////////////////
+		// Scene Systems
+		//////////////////////////////////////////////////////////////////////////
 
 		void InitSystems();
 		void ShutdownSystems();
@@ -75,7 +72,11 @@ namespace Tridium {
 		template <typename T>
 		SharedPtr<T> GetSystem();
 
-		// - Physics -
+		//////////////////////////////////////////////////////////////////////////
+		// Physics
+		//////////////////////////////////////////////////////////////////////////
+
+		const auto& GetPhysicsScene() { return m_PhysicsScene; }
 
 		RayCastResult CastRay( const Vector3& a_Start, const Vector3& a_End,
 			ERayCastChannel a_RayCastChannel, const PhysicsBodyFilter& a_BodyFilter = {},
@@ -83,7 +84,18 @@ namespace Tridium {
 			Debug::EDrawDuration a_DrawDurationType = Debug::EDrawDuration::OneFrame, float a_DebugDrawDuration = 0.0f,
 			Color a_DebugLineColor = Debug::Colors::Red, Color a_DebugHitColor = Debug::Colors::Green ) const;
 
-		// - GameObjects - 
+		//////////////////////////////////////////////////////////////////////////
+		// ECS
+		//////////////////////////////////////////////////////////////////////////
+
+		auto& GetECS() { return m_ECS; }
+		auto& GetECS() const { return m_ECS; }
+		void Clear();
+
+		template<typename T, typename... _Args>
+		void AddEntityTicker( _Args&&... a_Args );
+
+		void DestroyGameObject( GameObject a_GameObject );
 		GameObject InstantiateGameObject( const std::string& a_Name = "GameObject" );
 		GameObject InstantiateGameObject( GUID a_GUID, const std::string& a_Name = "GameObject" );
 		GameObject InstantiateGameObjectFrom( GameObject a_Source );
@@ -110,21 +122,41 @@ namespace Tridium {
 		template <typename T>
 		inline void RemoveComponentFromGameObject( GameObject a_GameObject );
 
-	private:
+		// === For internal use only ===
+		// Registers a component ticker for the specified component type
+		// and connects OnComponentCreated and OnComponentDestroyed callbacks
 		template <typename T>
-		void InitComponent( T& a_Component ) {}
+		bool __InitComponentType();
+
+	private:
+		bool Initialize();
+
+		//////////////////////////////////////////////////////////////////////////
+		// ECS
+		//////////////////////////////////////////////////////////////////////////
+
+		void InitAllComponentTypes();
+
+		// EnTT Callbacks
+		template <typename T>
+		void OnComponentCreated( entt::registry& a_Registry, entt::entity a_Entity );
+		template <typename T>
+		void OnComponentDestroyed( entt::registry& a_Registry, entt::entity a_Entity );
+
+		//////////////////////////////////////////////////////////////////////////
 
 	private:
 		std::string m_Name;
-		entt::registry m_Registry;
 		SceneEnvironment m_SceneEnvironment;
 		SystemStorage m_Systems;
 
-		// ========================
+		// ======= ECS =======
+		EntityComponentSystem m_ECS;
+		std::vector<UniquePtr<IEntityTicker>> m_EntityTickers;
+		// ===================
 
-		bool m_Paused = false;
-		bool m_IsRunning = false;
-		bool m_HasBegunPlay = false;
+		SceneState m_State;
+
 		EntityID m_MainCamera;
 
 		SceneRenderer m_SceneRenderer;

@@ -42,7 +42,7 @@ namespace Tridium::Editor {
 			// Draw Debug Lines
 			{
 				m_FBO->Bind();
-				Debug::DebugDrawer::Get().Draw( camera.GetProjection() * view );
+				Debug::DebugDrawer::Get()->Draw( camera.GetProjection() * view );
 				m_FBO->Unbind();
 			}
 

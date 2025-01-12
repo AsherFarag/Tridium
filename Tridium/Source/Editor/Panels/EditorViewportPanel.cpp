@@ -200,7 +200,7 @@ namespace Tridium::Editor {
 			// Draw Debug Lines
 			{
 				m_FBO->Bind();
-				Debug::DebugDrawer::Get().Draw( m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix() );
+				Debug::DebugDrawer::Get()->Draw( m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix() );
 				m_FBO->Unbind();
 			}
 
@@ -229,7 +229,7 @@ namespace Tridium::Editor {
 				int goID = m_FBO->ReadPixel( 0, mouseX, mouseY );
 				m_IDFBO->Unbind();
 
-				Events::OnGameObjectSelected.Broadcast( static_cast<GameObjectID>( goID ) );
+				Events::OnGameObjectSelected.Broadcast( static_cast<EntityID>( goID ) );
 			}
 		}
 
@@ -348,7 +348,7 @@ namespace Tridium::Editor {
 
 		Matrix4 pvm = m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix();
 
-		auto meshComponents = GetActiveScene()->GetRegistry().view<StaticMeshComponent, TransformComponent>();
+		auto meshComponents = GetActiveScene()->GetECS().View<StaticMeshComponent, TransformComponent>();
 		meshComponents.each( 
 			[&]( auto go, StaticMeshComponent& meshComponent, TransformComponent& transform )
 			{

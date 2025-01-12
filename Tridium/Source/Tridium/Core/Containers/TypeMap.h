@@ -1,9 +1,9 @@
 #pragma once
-#include <unordered_map>
+#include "Map.h"
 
 namespace Tridium {
 
-	template<typename T, typename _Storage = std::unordered_map<size_t, T>>
+	template<typename T, typename _Storage = UnorderedMap<size_t, T>>
 	class TypeMap
 	{
 	public:

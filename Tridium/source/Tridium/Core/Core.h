@@ -1,6 +1,7 @@
 #pragma once
 
 // - Common Includes -
+#include <Tridium/Core/Config.h>
 #include <Tridium/Core/Types.h>
 #include <Tridium/Core/Hash.h>
 #include <Tridium/Core/Memory.h>
@@ -38,44 +39,6 @@ namespace Tridium {
 
 #define TE_BIND_EVENT_FN(fn, PlaceHolder) std::bind( &fn, this, std::placeholders::_##PlaceHolder )
 
-// - Configuration -
-
-#ifdef IS_EDITOR
-	#define IS_EDITOR 1
-#else
-	#define IS_EDITOR 0
-#endif // IS_EDITOR
-
-#ifdef TE_DEBUG
-	#define TE_DEBUG 1
-#else
-	#define TE_DEBUG 0
-#endif // TE_DEBUG
-
-#ifdef TE_RELEASE
-	#define TE_RELEASE 1
-#else
-	#define TE_RELEASE 0
-#endif // TE_RELEASE
-
-#ifdef TE_SHIPPING
-	#define TE_SHIPPING 1
-#else
-	#define TE_SHIPPING 0
-#endif // TE_SHIPPING
-
-#if !TE_SHIPPING
-	#define TE_USE_DEBUG 1
-#else
-	#define TE_USE_DEBUG 0
-#endif
-
-#if TE_USE_DEBUG
-	#define TE_DRAW_DEBUG 1
-#else
-	#define TE_DRAW_DEBUG 0
-#endif
-
 // ------------------
 
 #ifdef TE_PLATFORM_WINDOWS
@@ -108,14 +71,3 @@ namespace Tridium {
 	#define TE_ASSERT(x, ...)
 	#define TE_CORE_ASSERT(x, ...)
 #endif // TE_ENABLE_ASSERTS
-
-#ifdef TE_DEBUG
-	#define TE_ENABLE_CHECKS
-#endif // TE_DEBUG
-
-
-#ifdef TE_ENABLE_CHECKS
-	#define CHECK(x) { if (!(x)) { __debugbreak(); } }
-#else
-	#define CHECK(x)
-#endif // TE_ENABLE_CHECKS

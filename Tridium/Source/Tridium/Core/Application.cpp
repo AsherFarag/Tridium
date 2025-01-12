@@ -1,5 +1,6 @@
 #include "tripch.h"
 #include "Application.h"
+#include "Engine/Engine.h"
 #include <Tridium/IO/FileManager.h>
 
 #if IS_EDITOR
@@ -55,7 +56,7 @@ namespace Tridium {
 	#if !IS_EDITOR
 		if ( m_ActiveScene )
 		{
-			m_ActiveScene->OnBegin();
+			m_ActiveScene->OnBeginPlay();
 		}
 	#endif // IS_EDITOR
 
@@ -93,23 +94,14 @@ namespace Tridium {
 			m_Window->OnUpdate();
 		}
 
-#if !IS_EDITOR
+	#if !IS_EDITOR
 		if ( m_ActiveScene )
 		{
-			m_ActiveScene->OnEnd();
+			m_ActiveScene->OnEndPlay();
 		}
-#endif // IS_EDITOR
+	#endif // IS_EDITOR
 
-		// Shutdown Sequence
-		{
-			m_GameInstance->Shutdown();
-			m_PhysicsEngine->Shutdown();
-			m_AssetManager->Shutdown();
-
-			#if IS_EDITOR
-			Editor::EditorApplication::Shutdown();
-			#endif // IS_EDITOR
-		}
+		m_GameInstance->Shutdown();
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////
@@ -193,7 +185,7 @@ namespace Tridium {
 	#if IS_EDITOR
 		Editor::GetEditorLayer()->OnEndScene();
 	#else
-		Get().Shutdown();
+		m_Running = false;
 	#endif // IS_EDITOR
 	}
 	
@@ -223,72 +215,63 @@ namespace Tridium {
 		TE_CORE_ASSERT( !s_Instance, "Application already exists!" );
 		s_Instance = this;
 
-		TE_CORE_INFO( "Initialising Application" );
-
-		InitializeProject( a_ProjectPath );
-
 		// Initialise Window
 		{
 			m_Window = Window::Create();
 			m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
 		}
 
+		// Initialise the render pipeline
+		{
+			RenderCommand::Init();
+		}
+
+		// Initialise the project
+		{
+			InitializeProject( a_ProjectPath );
+		}
+
+		// Initialise the engine
+		{
+			Engine::Construct();
+			Engine::Get()->Initialize();
+		}
+
 		// Initialise Script Engine
 		{
-			TE_CORE_INFO( " - Initialising Script Engine" );
 			Script::ScriptEngine::s_Instance = MakeUnique<Script::ScriptEngine>();
 			Script::ScriptEngine::s_Instance->Init();
 		}
 
-		// Initialise Physics Engine
-		{
-			TE_CORE_INFO( " - Initialising Physics Engine" );
-			m_PhysicsEngine = PhysicsEngine::Create();
-			m_PhysicsEngine->Init();
-		}
-
 		// Initialise Asset Manager
 		{
-			TE_CORE_INFO( " - Initialising Asset Manager" );
 			InitializeAssetManager();
 		}
 
 		// Initialise Start Scene
 		{
-			TE_CORE_INFO( "		- Loading start scene" );
+			TE_CORE_INFO( "Loading start scene" );
 			if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( m_Project->GetConfiguration().StartScene ) )
 			{
 				m_ActiveScene = scene;
 			}
 			else
 			{
-				TE_CORE_WARN( "		- Failed to load start scene! - Creating new scene" );
+				TE_CORE_WARN( "Failed to load start scene! - Creating new scene" );
 				m_ActiveScene = MakeShared<Scene>();
 			}
 		}
 
 		// Initialise ImGui
 		{
-			TE_CORE_INFO( " - Initialising ImGui" );
 			m_ImGuiLayer = new ImGuiLayer();
 			PushOverlay( m_ImGuiLayer );
 		}
 
-		// Initialise the render pipeline
-		TE_CORE_INFO( " - Initialising Render Pipeline" );
-		RenderCommand::Init();
-
 		// Initialise the editor
 #if IS_EDITOR
-		TE_CORE_INFO( " - Initialising Editor" );
 		Editor::EditorApplication::Init();
 #endif // IS_EDITOR
-
-#if TE_USE_DEBUG
-		// Initialise Debug Drawer
-		TE_CORE_INFO( " - Initialising Debug Drawer" );
-		Debug::DebugDrawer::Init();
-#endif // TE_USE_DEBUG
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////
@@ -345,7 +328,14 @@ namespace Tridium {
 	///////////////////////////////////////////////////////////////////////////////////////////
 	void Application::Shutdown()
 	{
-		m_Running = false;
+		m_GameInstance->Shutdown();
+		m_AssetManager->Shutdown();
+
+	#if IS_EDITOR
+		Editor::EditorApplication::Shutdown();
+	#endif // IS_EDITOR
+
+		Engine::Get()->Shutdown();
 	}
 
 } // namespace Tridium

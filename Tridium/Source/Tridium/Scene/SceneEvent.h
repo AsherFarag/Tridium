@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/Core/Types.h>
+#include <Tridium/ECS/ECS.h>
 #include <Tridium/Reflection/ReflectionFwd.h>
 #include <variant>
 
@@ -14,7 +14,7 @@ namespace Tridium {
 		None = 0,
 		OnBeginPlay,
 		OnUpdate,
-		OnEnd,
+		OnEndPlay,
 
 		// ================================
 
@@ -30,22 +30,23 @@ namespace Tridium {
 
 	struct OnGameObjectCreatedEvent
 	{
-		GameObjectID GameObjectID = INVALID_GAMEOBJECT_ID;
+		EntityID GameObjectID = NullEntity;
 	};
 
 	struct OnGameObjectCopiedEvent
 	{
-		GameObjectID SourceID = INVALID_GAMEOBJECT_ID;
-		GameObjectID DestinationID = INVALID_GAMEOBJECT_ID;
+		EntityID SourceID = NullEntity;
+		EntityID DestinationID = NullEntity;
 	};
 
 	struct OnGameObjectDestroyedEvent
 	{
-		GameObjectID GameObjectID = INVALID_GAMEOBJECT_ID;
+		EntityID GameObjectID = NullEntity;
 	};
 
 	struct OnComponentCreatedEvent
 	{
+		EntityID GameObjectID = NullEntity;
 		Refl::MetaIDType ComponentTypeID = Refl::INVALID_META_ID;
 		Component* Component = nullptr;
 	};

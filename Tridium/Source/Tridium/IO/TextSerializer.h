@@ -28,21 +28,19 @@ namespace Tridium::IO {
 		a_Archive << YAML::Value << a_Data;
 	}
 
-#define _TRIDUM_SERIALIZE_TO_TEXT( Type ) template<> void SerializeToText( Archive& a_Archive, const Type& a_Data )
-
 	// ----------- Math Types -----------
 
-	_TRIDUM_SERIALIZE_TO_TEXT( Vector2 );
-	_TRIDUM_SERIALIZE_TO_TEXT( Vector3 );
-	_TRIDUM_SERIALIZE_TO_TEXT( Vector4 );
-	_TRIDUM_SERIALIZE_TO_TEXT( iVector2 );
-	_TRIDUM_SERIALIZE_TO_TEXT( iVector3 );
-	_TRIDUM_SERIALIZE_TO_TEXT( iVector4 );
-	_TRIDUM_SERIALIZE_TO_TEXT( Color );
-	_TRIDUM_SERIALIZE_TO_TEXT( Quaternion );
-	_TRIDUM_SERIALIZE_TO_TEXT( Matrix3 );
-	_TRIDUM_SERIALIZE_TO_TEXT( Matrix4 );
-	_TRIDUM_SERIALIZE_TO_TEXT( Rotator );
+	template<> void SerializeToText( Archive& a_Archive, const Vector2& a_Data );
+	template<> void SerializeToText( Archive& a_Archive, const Vector3& a_Data );
+	template<> void SerializeToText( Archive& a_Archive, const Vector4& a_Data );
+	template<> void SerializeToText( Archive& a_Archive, const iVector2& a_Data );
+	template<> void SerializeToText( Archive& a_Archive, const iVector3& a_Data );
+	template<> void SerializeToText( Archive& a_Archive, const iVector4& a_Data );
+	template<> void SerializeToText( Archive& a_Archive, const Color& a_Data );
+	template<> void SerializeToText( Archive& a_Archive, const Quaternion& a_Data );
+	template<> void SerializeToText( Archive& a_Archive, const Matrix3& a_Data );
+	template<> void SerializeToText( Archive& a_Archive, const Matrix4& a_Data );
+	template<> void SerializeToText( Archive& a_Archive, const Rotator& a_Data );
 
 	// ----------- STD Types -----------
 
@@ -88,20 +86,16 @@ namespace Tridium::IO {
 
 	// ---------- Tridium Types -----------
 
-	_TRIDUM_SERIALIZE_TO_TEXT( GUID );
-	_TRIDUM_SERIALIZE_TO_TEXT( GameObject );
-	_TRIDUM_SERIALIZE_TO_TEXT( SceneHandle );
-	_TRIDUM_SERIALIZE_TO_TEXT( MaterialHandle );
-	_TRIDUM_SERIALIZE_TO_TEXT( MeshSourceHandle );
-	_TRIDUM_SERIALIZE_TO_TEXT( StaticMeshHandle );
-	_TRIDUM_SERIALIZE_TO_TEXT( ShaderHandle );
-	_TRIDUM_SERIALIZE_TO_TEXT( TextureHandle );
-	_TRIDUM_SERIALIZE_TO_TEXT( CubeMapHandle );
-	_TRIDUM_SERIALIZE_TO_TEXT( LuaScriptHandle );
-
-
-#undef _TRIDUM_SERIALIZE_TO_TEXT
-
+	 template<> void SerializeToText( Archive& a_Archive, const GUID& a_Data );
+	 template<> void SerializeToText( Archive& a_Archive, const GameObject& );
+	 template<> void SerializeToText( Archive& a_Archive, const SceneHandle& );
+	 template<> void SerializeToText( Archive& a_Archive, const MaterialHandle& );
+	 template<> void SerializeToText( Archive& a_Archive, const MeshSourceHandle& );
+	 template<> void SerializeToText( Archive& a_Archive, const StaticMeshHandle& );
+	 template<> void SerializeToText( Archive& a_Archive, const ShaderHandle& );
+	 template<> void SerializeToText( Archive& a_Archive, const TextureHandle& );
+	 template<> void SerializeToText( Archive& a_Archive, const CubeMapHandle& );
+	 template<> void SerializeToText( Archive& a_Archive, const LuaScriptHandle& );
 
 
 	// =================================================================================================
@@ -121,21 +115,19 @@ namespace Tridium::IO {
 		return false;
 	}
 
-#define _TRIDUM_DESERIALIZE_FROM_TEXT( Type ) template<> bool DeserializeFromText( const YAML::Node& a_Node, Type& o_Data )
-
 	// ----------- Math Types -----------
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( Vector2 );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( Vector3 );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( Vector4 );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( iVector2 );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( iVector3 );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( iVector4 );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( Color );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( Quaternion );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( Matrix3 );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( Matrix4 );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( Rotator );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, Vector2& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, Vector3& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, Vector4& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, iVector2& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, iVector3& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, iVector4& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, Color& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, Quaternion& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, Matrix3& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, Matrix4& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, Rotator& o_Data );
 
 	// ----------- STD Types -----------
 
@@ -212,17 +204,15 @@ namespace Tridium::IO {
 
 	// ---------- Tridium Types -----------
 
-	_TRIDUM_DESERIALIZE_FROM_TEXT( GUID );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( GameObject );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( SceneHandle );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( MaterialHandle );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( MeshSourceHandle );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( StaticMeshHandle );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( ShaderHandle );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( TextureHandle );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( CubeMapHandle );
-	_TRIDUM_DESERIALIZE_FROM_TEXT( LuaScriptHandle );
-
-#undef _TRIDUM_DESERIALIZE_FROM_TEXT
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, GUID& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, GameObject& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, SceneHandle& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, MaterialHandle& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, MeshSourceHandle& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, StaticMeshHandle& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, ShaderHandle& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, TextureHandle& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, CubeMapHandle& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, LuaScriptHandle& o_Data );
 
 } // namespace Tridium::IO

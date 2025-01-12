@@ -58,7 +58,7 @@ namespace Tridium::Script {
 
 	void ScriptSystem::OnBeginPlay()
 	{
-		auto view = m_Scene->GetRegistry().view<LuaScriptComponent>();
+		auto view = GetOwningScene()->GetECS().View<LuaScriptComponent>();
 		view.each( [this]( auto go, LuaScriptComponent& a_Component )
 			{
 				InitLuaScriptComponent( a_Component );
@@ -75,7 +75,7 @@ namespace Tridium::Script {
 
 	void ScriptSystem::OnUpdate()
 	{
-		auto view = m_Scene->GetRegistry().view<LuaScriptComponent>();
+		auto view = GetOwningScene()->GetECS().View<LuaScriptComponent>();
 		view.each( []( LuaScriptComponent& a_Component )
 			{
 				if ( a_Component.m_OnUpdate.valid() )

@@ -15,7 +15,7 @@ namespace Tridium {
         SharedPtr<Shader> shader;
         shader.reset( Shader::Create() );
 
-        CHECK( shader );
+        CORE_CHECK( shader != nullptr );
 
         shader->Compile( a_MetaData.Path );
 

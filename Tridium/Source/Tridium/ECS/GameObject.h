@@ -1,6 +1,7 @@
 #pragma once
 #include <Tridium/Reflection/ReflectionFwd.h>
 #include <Tridium/Reflection/MetaTypes.h>
+#include <Tridium/Scene/Scene.h>
 
 // TEMP ?
 #include <Tridium/Core/Application.h>
@@ -9,7 +10,6 @@ namespace Tridium {
 
 	// Forward declarations
 	class Component;
-	class ScriptableComponent;
 	class TagComponent;
 	class GUIDComponent;
 	class TransformComponent;
@@ -19,12 +19,12 @@ namespace Tridium {
 	class GameObject
 	{
 		REFLECT( GameObject );
-		friend class Scene;
 	public:
+		GameObject() : m_ID( NullEntity ) {}
+		GameObject( EntityID a_ID ) : m_ID( a_ID ) {}
 		GameObject( EntityIDType a_ID ) : m_ID( static_cast<EntityID>( a_ID ) ) {}
-		GameObject( EntityID a_ID = INVALID_ENTITY_ID ) : m_ID( a_ID ) {}
-		operator uint32_t () { return (uint32_t)m_ID; }
-		operator const uint32_t() const { return (uint32_t)m_ID; }
+		~GameObject() = default;
+
 		operator EntityID () { return m_ID; }
 		operator const EntityID() const { return m_ID; }
 		operator bool () { return IsValid(); }
@@ -57,12 +57,12 @@ namespace Tridium {
 
 		static inline GameObject Create() { return Application::GetScene()->InstantiateGameObject(); }
 		static inline GameObject Create( GUID a_GUID, const std::string& a_Name ) { return Application::GetScene()->InstantiateGameObject( a_GUID, a_Name ); }
-		inline void Destroy() { Application::GetScene()->m_Registry.destroy( m_ID ); }
+		inline void Destroy() { Application::GetScene()->DestroyGameObject( *this ); }
 		inline bool IsValid() const;
 		inline void CopyFrom( GameObject a_Other ) { Application::GetScene()->CopyGameObject( *this, a_Other ); }
 
 		GUID GetGUID() const;
-		const inline EntityID ID() const { return m_ID; }
+		const EntityID ID() const { return m_ID; }
 		std::string& GetTag() const;
 
 		// - Transform Helpers -
@@ -88,6 +88,8 @@ namespace Tridium {
 
 	private:
 		EntityID m_ID;
+
+		friend class Scene;
 	};
 }
 
@@ -95,9 +97,9 @@ namespace std {
 	template<>
 	struct hash<Tridium::GameObject>
 	{
-		size_t operator()( const Tridium::GameObject& go ) const 
+		inline size_t operator()( const Tridium::GameObject& go ) const 
 		{
-			return (size_t)go.ID();
+			return hash<Tridium::EntityID>()( go.ID() );
 		}
 	};
 }

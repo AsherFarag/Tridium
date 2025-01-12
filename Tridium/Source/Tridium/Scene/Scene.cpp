@@ -1,8 +1,11 @@
 #include "tripch.h"
+
 #include "Scene.h"
+#include <Tridium/Core/Assert.h>
 #include <Tridium/ECS/GameObject.h>
 #include <Tridium/ECS/Components/Component.h>
 #include <Tridium/ECS/Components/Types.h>
+#include <Tridium/Physics/RayCast.h>
 
 // Systems
 #include <Tridium/Scripting/ScriptSystem.h>
@@ -33,64 +36,93 @@ namespace Tridium {
 	Scene::Scene(const std::string& name)
 		: m_Name( name ), m_SceneRenderer(*this)
 	{
-		m_PhysicsScene = PhysicsScene::Create();
-		m_PhysicsScene->m_Scene = this;
-
-		// Add default systems
-		InitSystems();
+		Initialize();
 	}
 
 	Scene::Scene( const Scene& a_Other )
 		: m_Name( a_Other.m_Name ), m_SceneEnvironment(a_Other.m_SceneEnvironment), m_SceneRenderer( *this )
 	{
 		m_Handle = a_Other.m_Handle;
-		m_Paused = a_Other.m_Paused;
+		m_State = a_Other.m_State;
 		m_SceneRenderer.m_LightEnvironment = a_Other.m_SceneRenderer.m_LightEnvironment;
 		m_SceneRenderer.m_RenderSettings = a_Other.m_SceneRenderer.m_RenderSettings;
 		m_SceneRenderer.m_SceneEnvironment = a_Other.m_SceneRenderer.m_SceneEnvironment;
 
-		m_PhysicsScene = PhysicsScene::Create();
-		m_PhysicsScene->m_Scene = this;
+		Initialize();
 
 		// Entity registry
 		{
-			const entt::registry& src = a_Other.m_Registry;
+			const entt::registry& src = a_Other.GetECS().GetRegistry();
 
 			// Step 1: Create entities
-			for ( auto entity : src.view<GUIDComponent>() ) {
-				entt::entity newEntity = m_Registry.create( entity );
+			for ( auto entity : src.view<GUIDComponent>() ) 
+			{
+				entt::entity newEntity = m_ECS.CreateEntity( entity );
 			}
 
 			// Step 2: Copy components
 			for ( auto [id, srcStorage] : src.storage() ) 
 			{
+				Refl::MetaType componentType = entt::resolve( srcStorage.type() );
+				Refl::AddToGameObjectFunc addToGameObjectFunc = nullptr;
+				auto addToGameObjectFuncProp = componentType.GetMetaAttribute<Refl::Props::AddToGameObjectProp::Type>( Refl::Props::AddToGameObjectProp::ID );
+				if ( CORE_ASSERT( addToGameObjectFuncProp.has_value() ) )
+					addToGameObjectFunc = addToGameObjectFuncProp.value();
+
+				//// Handle TransformComponent separately
+				//if ( componentType == Refl::ResolveMetaType<TransformComponent>() )
+				//{
+				//	auto view = src.view<TransformComponent>();
+				//	for ( auto entity : view )
+				//	{
+				//		const TransformComponent& tc = view.get<TransformComponent>( entity );
+				//		TransformComponent& newTc = m_ECS.AddComponentToEntity<TransformComponent>( entity, tc );
+				//		newTc.m_GameObject = GameObject( entity );
+				//	}
+				//	continue;
+				//}
+
 				for ( auto it = srcStorage.rbegin(); it != srcStorage.rend(); ++it ) 
 				{
 					entt::entity entity = *it;
 
 					// Handle component copy
-					Refl::MetaType componentType = entt::resolve( srcStorage.type() );
-					Component* component = componentType.TryAddToGameObject( *this, static_cast<GameObjectID>( entity ) );
+					Component* component = addToGameObjectFunc( *this, entity );
+					if ( !CORE_ASSERT(component) )
+						continue;
 
 					Refl::MetaAny dstComponent = componentType.FromVoid( component );
 					Refl::MetaAny srcComponent = componentType.FromVoid( srcStorage.value( entity ) );
 					dstComponent.assign( srcComponent );
-					reinterpret_cast<Component*>( dstComponent.data() )->m_GameObject = GameObject( entity );
+
+					if ( Component* dstAsComponent = dstComponent.try_cast<Component>() )
+						dstAsComponent->m_GameObject = GameObject( entity );
 				}
 			}
-		}
 
-		InitSystems();
+		}
 	}
 
 	Scene::~Scene()
 	{
 	}
 
-	void Scene::OnBegin()
+	bool Scene::Initialize()
 	{
-		m_IsRunning = true;
-		m_HasBegunPlay = true;
+		m_PhysicsScene = PhysicsScene::Create();
+		m_PhysicsScene->m_Scene = this;
+
+		InitSystems();
+
+		InitAllComponentTypes();
+
+		return true;
+	}
+
+	void Scene::OnBeginPlay()
+	{
+		m_State.IsRunning = true;
+		m_State.HasBegunPlay = true;
 
 		GetMainCamera();
 
@@ -109,7 +141,7 @@ namespace Tridium {
 			m_PhysicsScene->Init();
 
 			// Add all GameObjects with RigidBodyComponent to the physics scene
-			auto view = m_Registry.view<RigidBodyComponent, TransformComponent>();
+			auto view = m_ECS.View<RigidBodyComponent, TransformComponent>();
 			for ( auto entity : view )
 			{
 				auto& rb = view.get<RigidBodyComponent>( entity );
@@ -120,24 +152,9 @@ namespace Tridium {
 			}
 		}
 
-		// Initialize scriptable objects
-		for ( const auto& storage : m_Registry.storage() )
-		{
-			// Nothing to iterate through, Continue
-			if ( storage.second.size() == 0 )
-				continue;
-
-			// We know that the data will always be inherited from Component
-			void* data = storage.second.value( storage.second[0] );
-			Component* component = (Component*)data;
-
-			// If the type is not inherited from ScriptableComponent, continue 
-			if ( dynamic_cast<ScriptableComponent*>( component ) == nullptr )
-				continue;
-
-			for ( auto go : storage.second )
-				reinterpret_cast<ScriptableComponent*>( storage.second.value( go ) )->OnBeginPlay();
-		}
+		// Call OnBeginPlay on all entity tickers
+		for ( const auto& ticker : m_EntityTickers )
+			ticker->OnBeginPlay();
 	}
 
 	void Scene::OnUpdate()
@@ -156,7 +173,7 @@ namespace Tridium {
 		{
 			TODO( "We should not be constantly updating transforms unless they are dirty." );
 
-			auto view = m_Registry.view<RigidBodyComponent, TransformComponent>();
+			auto view = m_ECS.View<RigidBodyComponent, TransformComponent>();
 
 			// Update the transforms in the physics scene
 			{
@@ -176,36 +193,21 @@ namespace Tridium {
 				} );
 		}
 
-		// Update scriptable objects
-		for ( const auto& storage : m_Registry.storage() )
-		{
-			// Nothing to iterate through, Continue
-			if ( storage.second.size() == 0 )
-				continue;
-
-			// We know that the data will always be inherited from Component
-			void* data = storage.second.value( storage.second[ 0 ] );
-			Component* component = (Component*)data;
-
-			// If the type is not inherited from ScriptableComponent, continue 
-			if ( dynamic_cast<ScriptableComponent*>( component ) == nullptr )
-				continue;
-
-			for ( auto go : storage.second )
-				reinterpret_cast<ScriptableComponent*>( storage.second.value( go ) )->OnUpdate();
-		}
+		// Call OnUpdate for all scriptable objects
+		for ( const auto& ticker : m_EntityTickers )
+			ticker->OnUpdate( Time::DeltaTime() );
 	}
 
-	void Scene::OnEnd()
+	void Scene::OnEndPlay()
 	{
-		m_IsRunning = false;
-		m_HasBegunPlay = false;
+		m_State.IsRunning = false;
+		m_State.HasBegunPlay = false;
 
-		// Send OnEnd Event to all systems
+		// Send OnEndPlay Event to all systems
 		{
 			SceneEventPayload payload =
 			{
-				.EventType = ESceneEventType::OnEnd
+				.EventType = ESceneEventType::OnEndPlay
 			};
 
 			SendSceneEvent( payload );
@@ -225,6 +227,26 @@ namespace Tridium {
 	// GameObjects
 	//////////////////////////////////////////////////////////////////////////
 
+	void Scene::DestroyGameObject( GameObject a_GameObject )
+	{
+		if ( !IsGameObjectValid( a_GameObject ) )
+			return;
+		// Send OnGameObjectDestroyed Event to all systems
+		{
+			SceneEventPayload payload =
+			{
+				.EventType = ESceneEventType::OnGameObjectDestroyed,
+				.EventData = OnGameObjectDestroyedEvent
+				{
+					.GameObjectID = a_GameObject
+				}
+			};
+			SendSceneEvent( payload );
+		}
+
+		m_ECS.DestroyEntity( entt::entity( a_GameObject.m_ID ) );
+	}
+
 	GameObject Scene::InstantiateGameObject( const std::string& a_Name )
 	{
 		return InstantiateGameObject( GUID::Create(), a_Name );
@@ -232,7 +254,7 @@ namespace Tridium {
 
 	GameObject Scene::InstantiateGameObject( GUID a_GUID, const std::string& a_Name )
 	{
-		auto go = GameObject( m_Registry.create() );
+		auto go = GameObject( m_ECS.CreateEntity() );
 		AddComponentToGameObject<GUIDComponent>( go, a_GUID );
 		AddComponentToGameObject<TagComponent>( go, a_Name );
 		AddComponentToGameObject<TransformComponent>( go );
@@ -256,7 +278,7 @@ namespace Tridium {
 
 	GameObject Scene::InstantiateGameObjectFrom( GameObject a_Source )
 	{
-		GameObject dst( m_Registry.create() );
+		GameObject dst( m_ECS.CreateEntity() );
 		AddComponentToGameObject<GUIDComponent>( dst );
 		AddComponentToGameObject<TagComponent>( dst, a_Source.GetTag() );
 		TransformComponent& tc = AddComponentToGameObject<TransformComponent>( dst );
@@ -264,7 +286,7 @@ namespace Tridium {
 		tc.Rotation = a_Source.GetTransform().Rotation;
 		tc.Scale = a_Source.GetTransform().Scale;
 
-		for ( auto [id, storage] : m_Registry.storage() )
+		for ( auto [id, storage] : m_ECS.Storage() )
 		{
 			if ( !storage.contains( a_Source ) )
 				continue;
@@ -312,7 +334,7 @@ namespace Tridium {
 		tc.Rotation = a_Source.GetTransform().Rotation;
 		tc.Scale = a_Source.GetTransform().Scale;
 
-		for ( auto [id, storage] : m_Registry.storage() )
+		for ( auto [id, storage] : m_ECS.Storage() )
 		{
 			if ( !storage.contains( a_Source ) )
 				continue;
@@ -350,12 +372,12 @@ namespace Tridium {
 
 	bool Scene::IsGameObjectValid( GameObject a_GameObject ) const
 	{
-		return m_Registry.valid( a_GameObject.m_ID );
+		return m_ECS.IsValidEntity( a_GameObject.m_ID );
 	}
 
 	GameObject Scene::FindGameObjectByTag( const std::string& a_Tag ) const
 	{
-		auto view = m_Registry.view<TagComponent>();
+		auto view = GetECS().View<TagComponent>();
 		for ( auto&& [ entity, tagComponent ] : view.each() )
 		{
 			if ( tagComponent.Tag == a_Tag )
@@ -370,7 +392,7 @@ namespace Tridium {
 		std::vector<GameObject> gameObjects;
 		// Reserve an arbitrary amount of space for the vector
 		gameObjects.reserve( 8 );
-		auto view = m_Registry.view<TagComponent>();
+		auto view = m_ECS.View<TagComponent>();
 		for ( const auto&& [entity, Tag] : view.each() )
 		{
 			if ( Tag.Tag == a_Tag )
@@ -380,9 +402,23 @@ namespace Tridium {
 		return gameObjects;
 	}
 
+	void Scene::InitAllComponentTypes()
+	{
+		for ( auto [id, type] : Refl::ResolveMetaTypes() )
+		{
+			Refl::MetaType componentType = type;
+			if ( !componentType.IsComponent() )
+				continue;
+
+			Optional<Refl::InitComponentFunc> initComponentFuncProp = componentType.GetMetaAttribute<Refl::InitComponentFunc>( Refl::Props::InitComponentProp::ID );
+			if ( CORE_ASSERT_LOG( initComponentFuncProp.has_value(), "Component meta type does not have an InitComponent function!" ) )
+				initComponentFuncProp.value()( *this );
+		}
+	}
+
 	void Scene::Clear()
 	{
-		m_Registry.clear();
+		m_ECS.Clear();
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -425,8 +461,8 @@ namespace Tridium {
 				return camera;
 		}
 
-		m_MainCamera = INVALID_ENTITY_ID;
-		auto cameras = m_Registry.view<CameraComponent>();
+		m_MainCamera = NullEntity;
+		auto cameras = m_ECS.View<CameraComponent>();
 		CameraComponent* mainCamera = nullptr;
 		for ( GameObject camera : cameras )
 		{
@@ -446,46 +482,14 @@ namespace Tridium {
 		return mainCamera;
 	}
 
-	template<>
-	void Scene::InitComponent( RigidBodyComponent& a_Component )
+	GameObject Scene::GetMainCameraGameObject() const
 	{
-		if ( !m_IsRunning )
-			return;
-
-		GameObject go = a_Component.GetGameObject();
-
-		if ( auto* tc = TryGetComponentFromGameObject<TransformComponent>( go ) )
-		{
-			m_PhysicsScene->UpdatePhysicsBody( go, a_Component, *tc );
-		}
+		return GameObject( m_MainCamera );
 	}
 
-	template<>
-	void Scene::InitComponent( SphereColliderComponent& a_Component )
+	void Scene::SetMainCamera( GameObject a_CameraGameObject )
 	{
-		if ( auto* rb = TryGetComponentFromGameObject<RigidBodyComponent>( a_Component.GetGameObject() ) )
-			InitComponent( *rb );
-	}
-
-	template<>
-	void Scene::InitComponent( BoxColliderComponent& a_Component )
-	{
-		if ( auto* rb = TryGetComponentFromGameObject<RigidBodyComponent>( a_Component.GetGameObject() ) )
-			InitComponent( *rb );
-	}
-
-	template<>
-	void Scene::InitComponent( CapsuleColliderComponent& a_Component )
-	{
-		if ( auto* rb = TryGetComponentFromGameObject<RigidBodyComponent>( a_Component.GetGameObject() ) )
-			InitComponent( *rb );
-	}
-
-	template<>
-	void Scene::InitComponent( MeshColliderComponent& a_Component )
-	{
-		if ( auto* rb = TryGetComponentFromGameObject<RigidBodyComponent>( a_Component.GetGameObject() ) )
-			InitComponent( *rb );
+		m_MainCamera = a_CameraGameObject;
 	}
 
 }

@@ -1,14 +1,15 @@
 #pragma once
 #include <Tridium/Core/Memory.h>
 #include <Tridium/Math/Math.h>
+#include <Tridium/Scene/SceneSystem.h>
+#include <Tridium/Reflection/ReflectionFwd.h>
 
+#include "RayCast.h"
 #include "PhysicsBody.h"
 #include "PhysicsLayer.h"
 #include "PhysicsFilter.h"
-#include "RayCast.h"
-#include <Tridium/Reflection/ReflectionFwd.h>
 
-#if TE_SHIPPING
+#ifdef TE_SHIPPING
 	#define USE_DEBUG_RENDERER 0
 #else
 	#define USE_DEBUG_RENDERER 1
@@ -21,6 +22,7 @@ namespace Tridium {
 	class RigidBodyComponent;
 	class TransformComponent;
 	class GameObject;
+	struct RayCastResult;
 	// --------------------
 
 	enum class ESixDOFConstraintMotion : uint8_t
@@ -65,6 +67,9 @@ namespace Tridium {
 		virtual void Shutdown() = 0;
 		virtual void Tick( float a_TimeStep ) = 0;
 
+		virtual GameObject GetGameObjectFromPhysicsBody( PhysicsBodyID a_BodyID ) const = 0;
+		virtual PhysicsBodyID GetPhysicsBodyFromGameObject( GameObject a_GameObject ) const = 0;
+
 		virtual RayCastResult CastRay( const Vector3& a_Start, const Vector3& a_End, ERayCastChannel a_Channel = ERayCastChannel::Visibility, const PhysicsBodyFilter& a_BodyFilter = {} ) = 0;
 
 		virtual void RemovePhysicsBody( PhysicsBodyID a_PhysicsBodyID ) = 0;
@@ -95,6 +100,20 @@ namespace Tridium {
 	protected:
 		Scene* m_Scene;
 		friend Scene;
+	};
+
+	class PhysicsSceneSystem : public ISceneSystem
+	{
+	public:
+		virtual void Init() override;
+		virtual void Shutdown() override;
+		virtual void OnSceneEvent( const SceneEventPayload& a_Event ) override;
+
+	private:
+		void OnComponentCreated( const OnComponentCreatedEvent& a_Event );
+
+	private:
+		PhysicsScene* m_PhysicsScene;
 	};
 
 } // namespace Tridium

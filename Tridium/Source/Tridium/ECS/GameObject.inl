@@ -18,7 +18,7 @@ namespace Tridium {
 	template <typename T>
 	inline T& GameObject::GetComponent() const
 	{
-		TE_CORE_ASSERT( HasComponent<T>(), "GameObject does not have this component!" );
+		CORE_ASSERT_LOG( HasComponent<T>(), "GameObject does not have this component!" );
 		return Application::GetScene()->GetComponentFromGameObject<T>( *this );
 	}
 
@@ -70,7 +70,7 @@ namespace Tridium {
 
 	inline bool Tridium::GameObject::IsValid() const
 	{
-		if ( m_ID == entt::null )
+		if ( m_ID == NullEntity )
 			return false;
 
 		return Application::GetScene()->IsGameObjectValid( *this );

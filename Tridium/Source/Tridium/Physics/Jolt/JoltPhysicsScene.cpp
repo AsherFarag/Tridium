@@ -169,12 +169,28 @@ namespace Tridium {
 		++m_CurrentStep;
 	}
 
+	GameObject JoltPhysicsScene::GetGameObjectFromPhysicsBody( PhysicsBodyID a_BodyID ) const
+	{
+		if ( const EntityID* go = m_BodyToGameObjectMap.FindValue( a_BodyID ) )
+			return GameObject( *go );
+
+		return GameObject();
+	}
+
+	PhysicsBodyID JoltPhysicsScene::GetPhysicsBodyFromGameObject( GameObject a_GameObject ) const
+	{
+		if ( const PhysicsBodyID* bodyID = m_BodyToGameObjectMap.FindKey( a_GameObject ) )
+			return *bodyID;
+
+		return NullPhysicsBodyID;
+	}
+
 	RayCastResult JoltPhysicsScene::CastRay( const Vector3& a_Start, const Vector3& a_End, ERayCastChannel a_Channel, const PhysicsBodyFilter& a_BodyFilter )
 	{
 		JPH::RRayCast ray( Util::ToJoltVec3( a_Start ), Util::ToJoltVec3( a_End ) );
 		JPH::RayCastResult rayResult;
 
-		RayCastResult hit = { false, Vector3(0.0f), Vector3( 0.0f ), 0.0f, a_Start, a_End };
+		RayCastResult hit = { false, Vector3(0.0f), Vector3( 0.0f ), 0.0f, a_Start, a_End, GameObject() };
 
 		if ( m_PhysicsSystem.GetNarrowPhaseQuery().CastRay( ray, rayResult, {}, JoltObjectLayerFilter(a_Channel), JoltBodyFilter(a_BodyFilter)) )
 		{
@@ -183,23 +199,7 @@ namespace Tridium {
 			hit.Normal = glm::normalize( Util::ToTridiumVec3( ray.mDirection ) );
 			hit.Distance = glm::distance( a_Start, hit.Position );
 			hit.HitBodyID = rayResult.mBodyID.GetIndexAndSequenceNumber();
-
-			// Get hit game object
-			//{
-			//	uint32_t bodyID = rayResult.mBodyID.GetIndexAndSequenceNumber();
-
-			//	// Find the entity with the bodyID
-			//	auto view = m_Scene->GetRegistry().view<RigidBodyComponent>();
-			//	for ( auto entity : view )
-			//	{
-			//		auto& rb = view.get<RigidBodyComponent>( entity );
-			//		if ( rb.GetBodyProxy().GetBodyID() == bodyID )
-			//		{
-			//			hit.HitGameObject = GameObject( entity );
-			//			break;
-			//		}
-			//	}
-			//}
+			hit.HitGameObject = GetGameObjectFromPhysicsBody( hit.HitBodyID );
 		}
 
 		return hit;
@@ -222,6 +222,7 @@ namespace Tridium {
 	{
 		RemovePhysicsBody( a_RigidBody.GetBodyProxy().GetBodyID() );
 		a_RigidBody.GetBodyProxy().SetBodyID( JPH::BodyID::cInvalidBodyID );
+		m_BodyToGameObjectMap.Erase( a_RigidBody.GetBodyProxy().GetBodyID() );
 	}
 
 	bool JoltPhysicsScene::AddPhysicsBody( const GameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent )
@@ -384,6 +385,7 @@ namespace Tridium {
 
 		m_BodyInterface.AddBody( body->GetID(), JPH::EActivation::Activate );
 		a_RigidBody.GetBodyProxy().SetBodyID( body->GetID().GetIndexAndSequenceNumber() );
+		m_BodyToGameObjectMap.Insert( body->GetID().GetIndexAndSequenceNumber(), a_GameObject );
 		return true;
 	}
 

@@ -4,49 +4,19 @@ namespace Tridium {
 
 	// Forward declarations
 	class Component;
-	class ScriptableComponent;
-	class TagComponent;
-	class GUIDComponent;
-	class TransformComponent;
-	class RigidBodyComponent;
-	class SphereColliderComponent;
-	class BoxColliderComponent;
-	class CapsuleColliderComponent;
-	class MeshColliderComponent;
+	class NativeScriptComponent;
 	// -------------------
 
-	//inline RayCastResult Tridium::Scene::CastRay( const Vector3& a_Start, const Vector3& a_End, ERayCastChannel a_RayCastChannel, const PhysicsBodyFilter& a_BodyFilter, bool a_DrawDebug, Debug::EDrawDuration a_DrawDurationType, float a_DebugDrawDuration, Color a_DebugLineColor, Color a_DebugHitColor ) const
-	//{
-	//	RayCastResult result = m_PhysicsScene->CastRay( a_Start, a_Start + a_End, a_RayCastChannel, a_BodyFilter );
 
-	//#if TE_DRAW_DEBUG
-	//	if ( a_DrawDebug )
-	//	{
-	//		Debug::DrawLine( result.RayStart, result.RayEnd, a_DebugLineColor, a_DrawDurationType, a_DebugDrawDuration );
-
-	//		if ( result.Hit )
-	//		{
-	//			TODO( "Draw a sphere at the hit position" );
-	//			AABB aabb = { result.Position - Vector3( 0.1f ), result.Position + Vector3( 0.1f ) };
-	//			Debug::DrawAABBFilled( aabb, a_DebugHitColor, a_DrawDurationType, a_DebugDrawDuration );
-	//		}
-	//	}
-	//#endif
-
-	//	return result;
-	//}
-
-	template<> void Scene::InitComponent( RigidBodyComponent& a_Component );
-	template<> void Scene::InitComponent( SphereColliderComponent& a_Component );
-	template<> void Scene::InitComponent( BoxColliderComponent& a_Component );
-	template<> void Scene::InitComponent( CapsuleColliderComponent& a_Component );
-	template<> void Scene::InitComponent( MeshColliderComponent& a_Component );
+	//////////////////////////////////////////////////////////////////////////
+	// Scene Systems
+	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T, typename ...Args>
 	inline SharedPtr<T> Scene::AddSystem( Args && ...a_Args )
 	{
 		static_assert( std::is_base_of_v<ISceneSystem, T>, "T must be a derived class of ISceneSystem!" );
-		static const size_t s_TypeHash = typeid( T ).hash_code();
+		static constexpr size_t s_TypeHash = entt::type_hash<T>::value();
 		auto it = m_Systems.find( s_TypeHash );
 		if ( it != m_Systems.end() )
 		{
@@ -75,51 +45,104 @@ namespace Tridium {
 		return nullptr;
 	}
 
+	//////////////////////////////////////////////////////////////////////////
+	// GameObjects and Components
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	inline void Scene::OnComponentCreated( entt::registry& a_Registry, entt::entity a_Entity )
+	{
+		GameObject gameObject( a_Entity );
+		T& component = a_Registry.get<T>( a_Entity );
+
+		// Set the GameObject for the component
+		if constexpr ( std::is_base_of_v<Component, T> )
+		{
+			component.m_GameObject = gameObject;
+		}
+
+		// Send an OnComponentCreated event to all scene systems
+		{
+			static const Refl::MetaIDType componentTypeID = entt::resolve<T>().id();
+			SceneEventPayload payload =
+			{
+				.EventType = ESceneEventType::OnComponentCreated,
+				.EventData = OnComponentCreatedEvent
+				{
+					.GameObjectID = gameObject,
+					.ComponentTypeID = componentTypeID,
+					.Component = &component
+				}
+			};
+			SendSceneEvent( payload );
+		}
+
+		if constexpr ( HasOnBeginPlayFunction<T> )
+		{
+			if ( HasBegunPlay() )
+			{
+				component.OnBeginPlay();
+			}
+		}
+	}
+
+	template<typename T>
+	inline void Scene::OnComponentDestroyed( entt::registry& a_Registry, entt::entity a_Entity )
+	{
+		// Send an OnComponentDestroyed event to all scene systems
+		{
+			static const Refl::MetaIDType componentTypeID = entt::resolve<T>().id();
+			SceneEventPayload payload =
+			{
+				.EventType = ESceneEventType::OnComponentDestroyed,
+				.EventData = OnComponentDestroyedEvent
+				{
+					.ComponentTypeID = componentTypeID,
+					.Component = a_Registry.try_get<T>( a_Entity )
+				}
+			};
+			SendSceneEvent( payload );
+		}
+
+		if constexpr ( HasOnEndPlayFunction<T> )
+		{
+			if ( HasBegunPlay() )
+			{
+				T& component = a_Registry.get<T>( a_Entity );
+				component.OnEndPlay();
+			}
+		}
+	}
+
+	template<typename T>
+	inline bool Scene::__InitComponentType()
+	{
+		m_ECS.GetRegistry().on_construct<T>().connect<&Scene::OnComponentCreated<T>>( *this );
+		m_ECS.GetRegistry().on_destroy<T>().connect<&Scene::OnComponentDestroyed<T>>( *this );
+
+		// Add a component ticker if the component has an OnUpdate or OnBeginPlay function
+		if constexpr ( HasOnUpdateFunction<T> || HasOnBeginPlayFunction<T> )
+		{
+			AddEntityTicker<ComponentTicker<T>>();
+		}
+
+		return true;
+	}
+
+	template<typename T, typename ..._Args>
+	inline void Scene::AddEntityTicker( _Args && ...a_Args )
+	{
+		UniquePtr<IEntityTicker> ticker;
+		ticker.reset( new T( std::forward<_Args>( a_Args )... ) );
+		ticker->m_ECS = &m_ECS;
+		m_EntityTickers.push_back( std::move( ticker ) );
+	}
+
 	template <typename T, typename... Args>
 	inline T& Scene::AddComponentToGameObject( GameObject a_GameObject, Args&&... args )
 	{
-		TE_CORE_ASSERT( !GameObjectHasComponent<T>( a_GameObject ), "GameObject already has this component!" );
-
-		T& component = m_Registry.emplace<T>( a_GameObject, std::forward<Args>( args )... );
-		// T will always be a derived class of Component.
-		// Set the GameObject ID to this GameObject
-		static_cast<Component*>( &component )->m_GameObject = a_GameObject;
-
-		TODO( "Implement a proper Component Initializer" )
-			static bool SetupComponent = [&]{
-			const auto OnDestroyComponent = [&]( entt::registry& a_Registry, entt::entity a_ID )
-				{
-					a_Registry.get< T >( a_ID ).OnDestroy();
-				};
-			m_Registry.on_destroy<T>().connect<OnDestroyComponent>();
-			return true;
-			}( );
-
-		// Send OnComponentCreated event
-		{
-				SceneEventPayload payload =
-				{
-					.EventType = ESceneEventType::OnComponentCreated,
-					.EventData = OnComponentCreatedEvent
-					{
-						.ComponentTypeID = entt::resolve<T>().id(),
-						.Component = &component
-					}
-				};
-
-				SendSceneEvent( payload );
-		}
-
-		if constexpr ( std::is_base_of_v<ScriptableComponent, T> )
-		{
-			auto scriptable = static_cast<ScriptableComponent*>( &component );
-
-			if ( m_HasBegunPlay )
-				scriptable->OnBeginPlay();
-		}
-
-		InitComponent( component );
-
+		CORE_ASSERT_LOG( !GameObjectHasComponent<T>( a_GameObject ), "GameObject already has this component!" );
+		T& component = m_ECS.AddComponentToEntity<T>( a_GameObject, std::forward<Args>( args )... );
 		return component;
 	}
 
@@ -137,27 +160,27 @@ namespace Tridium {
 	template<typename T>
 	inline T& Scene::GetComponentFromGameObject( GameObject a_GameObject )
 	{
-		TE_CORE_ASSERT( GameObjectHasComponent<T>( a_GameObject ), "GameObject does not have this component!" );
-		return m_Registry.get<T>( a_GameObject );
+		CORE_ASSERT_LOG( GameObjectHasComponent<T>( a_GameObject ), "GameObject does not have this component!" );
+		return m_ECS.GetComponentFromEntity<T>( a_GameObject );
 	}
 
 	template<typename T>
 	inline T* Scene::TryGetComponentFromGameObject( GameObject a_GameObject )
 	{
-		return m_Registry.try_get<T>( a_GameObject );
+		return m_ECS.TryGetComponentFromEntity<T>( a_GameObject );
 	}
 
 	template<typename T>
 	inline bool Scene::GameObjectHasComponent( GameObject a_GameObject ) const
 	{
-		return m_Registry.any_of<T>( a_GameObject );
+		return m_ECS.EntityHasComponent<T>( a_GameObject );
 	}
 
 	template<typename T>
 	inline void Scene::RemoveComponentFromGameObject( GameObject a_GameObject )
 	{
-		TE_CORE_ASSERT( GameObjectHasComponent<T>( a_GameObject ), "GameObject does not have this component!" );
-		m_Registry.remove<T>( a_GameObject );
+		CORE_ASSERT_LOG( GameObjectHasComponent<T>( a_GameObject ), "GameObject does not have this component!" );
+		m_ECS.RemoveComponentFromEntity<T>( a_GameObject );
 	}
 
 } // namespace Tridium

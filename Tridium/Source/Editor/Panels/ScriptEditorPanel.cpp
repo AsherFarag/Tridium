@@ -153,6 +153,8 @@ namespace Tridium::Editor {
 		default:
 			break;
 		}
+
+		return false;
 	}
 
 	OpenedScript* ScriptEditorPanel::GetOpenedScript( const LuaScriptHandle& a_Handle )

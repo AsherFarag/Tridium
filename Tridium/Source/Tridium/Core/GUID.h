@@ -4,25 +4,25 @@
 namespace Tridium {
 
 	template<typename T>
-	T GenerateRandomID() { static_assert( false, "GenerateRandomID not implemented for this type" ); }
+	T GenerateRandomID() { static_assert( true, "GenerateRandomID not implemented for this type" ); }
 
 	template<>
-	int16_t GenerateRandomID();
+	int16_t GenerateRandomID<int16_t>();
 
 	template<>
-	int32_t GenerateRandomID();
+	int32_t GenerateRandomID<int32_t>();
 
 	template<>
-	int64_t GenerateRandomID();
+	int64_t GenerateRandomID<int64_t>();
 
 	template<>
-	uint16_t GenerateRandomID();
+	uint16_t GenerateRandomID<uint16_t>();
 
 	template<>
-	uint32_t GenerateRandomID();
+	uint32_t GenerateRandomID<uint32_t>();
 
 	template<>
-	uint64_t GenerateRandomID();
+	uint64_t GenerateRandomID<uint64_t>();
 
 	template<typename T>
 	class UID
