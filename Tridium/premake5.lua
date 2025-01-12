@@ -14,6 +14,10 @@ project "Tridium"
 	{ 
 		"assimp",
 		"JoltPhysics",
+		"GLFW",
+		"glad",
+		"ImGui",
+		"yaml-cpp",
 	}
 
 	files
