@@ -3,8 +3,8 @@
 
 namespace Tridium {
 
-	// Entity Ticker Interface
-	// This interface is used to update components in an ECS.
+	// Entity Ticker Interface:
+	//	This interface is used to update components in an ECS.
 	class IEntityTicker
 	{
 	public:
@@ -21,21 +21,24 @@ namespace Tridium {
 	};
 
 
-	// Component Ticker
-	// This class is used to update a component type in an ECS
-	// If the component has an OnUpdate function, it will be called
-	// Component tickers are automatically created for each component type if it has an OnUpdate and/or OnBeginPlay function.
-	// Users can create their own component tickers by declaring a template specialization of this class.
+	// Component Ticker:
+	//	This class is used to update a component type in an ECS.
+	//	If the component has an OnUpdate or OnBeginPlay function, a ComponentTicker will be created for it.
+	//	Users can create their own component tickers by declaring a template specialization of this class.
 	// Example:
-	// template<>
-	// class ComponentTicker<MyComponent> : public IEntityTicker
-	// {
-	// public:
-	//     void OnUpdate( float a_DeltaTime ) override
-	//     {
-	//         // Update all MyComponent instances
-	//     }
-	// };
+	//	template<>
+	//	class ComponentTicker<MyComponent> : public IEntityTicker
+	//	{
+	//	public:
+	//	    void OnUpdate( float a_DeltaTime ) override
+	//	    {
+	//			auto view = GetECS()->View<MyComponent>();
+	//	        for ( auto entity : view )
+	//			{
+	//				// Update component
+	//			}
+	//	    }
+	//	};
 	template<typename T>
 	class ComponentTicker : public IEntityTicker
 	{
