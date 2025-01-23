@@ -30,12 +30,12 @@ namespace Tridium::Editor {
 
 	void EditorAssetManager::Shutdown()
 	{
-		for ( auto& [handle, asset] : m_LoadedAssets )
-		{
-			AssetFactory::SaveAsset( GetAssetMetaData( handle ), asset );
-		}
+		//for ( auto& [handle, asset] : m_LoadedAssets )
+		//{
+		//	AssetFactory::SaveAsset( GetAssetMetaData( handle ), asset );
+		//}
 
-		SerializeAssetRegistry();
+		//SerializeAssetRegistry();
 	}
 
 	SharedPtr<Asset> EditorAssetManager::GetAsset( AssetHandle a_Handle )

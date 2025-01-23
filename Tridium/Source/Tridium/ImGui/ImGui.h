@@ -1,20 +1,21 @@
 #pragma once
-#include <imgui.h>
+#include "imgui.h"
+#include "imgui_internal.h"
 #include "ImGuiHelpers.h"	
 
 #define TE_PAYLOAD_CONTENT_BROWSER_ITEM "ContentBrowserItem"
 #define TE_PAYLOAD_ASSET_HANDLE "AssetHandle"
 #define TE_PAYLOAD_GAME_OBJECT "GameObject"
 
-static ImVec4 operator*( const ImVec4& a_Color, float a_Value )
-{
-	return ImVec4( a_Color.x * a_Value, a_Color.y * a_Value, a_Color.z * a_Value, a_Color.w );
-}
-
 namespace Tridium {
 
 	static float s_FontSize = 20.f;
 
+}
+
+static ImVec4 operator*( const ImVec4& a_Color, float a_Value )
+{
+	return ImVec4( a_Color.x * a_Value, a_Color.y * a_Value, a_Color.z * a_Value, a_Color.w );
 }
 
 namespace ImGui {

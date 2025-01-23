@@ -2,6 +2,7 @@
 #include "Application.h"
 #include "Engine/Engine.h"
 #include <Tridium/IO/FileManager.h>
+#include <Tridium/Debug/Profiler/ProfileSessionSerializer.h>
 
 #if IS_EDITOR
 	#include <Editor/Editor.h>
@@ -31,6 +32,8 @@ namespace Tridium {
 			m_EngineAssetsDirectory = "EngineAssets";
 		}
 
+		Instrumentor::Get()->BeginSession( "Engine" );
+		Instrumentor::Get()->StartRecording();
 		Initialize( a_ProjectPath );
 	}
 
@@ -60,9 +63,10 @@ namespace Tridium {
 		}
 	#endif // IS_EDITOR
 
-
 		while ( m_Running )
 		{
+			static constexpr ::Tridium::ProfileDescription __ProfileDescription_68 = { "Main Loop", "E:\\Projects\\Tridium\\Tridium\\Source\\Tridium\\Core\\Application.cpp", 68, ::Tridium::ProfilerCategory::None.Filter, ::Tridium::ProfilerCategory::None.Color }; ::Tridium::ProfileScopeGuard __ProfileScopeGuard_68( &__ProfileDescription_68 );
+
 			// Update Time
 			const double lastFrameTime = Time::Now();
 			Time::Update();
@@ -94,6 +98,12 @@ namespace Tridium {
 			m_Window->OnUpdate();
 		}
 
+		// End Profiling
+		{
+			UniquePtr<ProfilerSession> session = Instrumentor::Get()->EndSession();
+			ProfileSessionSerializer::SerializeJSON( *session, "profile.json" );
+		}
+
 	#if !IS_EDITOR
 		if ( m_ActiveScene )
 		{
@@ -107,6 +117,8 @@ namespace Tridium {
 	///////////////////////////////////////////////////////////////////////////////////////////
 	void Application::Update()
 	{
+		PROFILE_FUNCTION( ProfilerCategory::Application );
+
 		// Update Loop ========================================================================================
 
 	#if !IS_EDITOR
@@ -321,7 +333,7 @@ namespace Tridium {
 	///////////////////////////////////////////////////////////////////////////////////////////
 	bool Application::OnWindowClosed( WindowCloseEvent& e )
 	{
-		Shutdown();
+		m_Running = false;
 		return true;
 	}
 

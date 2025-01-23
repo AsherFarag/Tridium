@@ -121,6 +121,8 @@ namespace Tridium {
 
 	void Scene::OnBeginPlay()
 	{
+		PROFILE_FUNCTION( ProfilerCategory::Scene );
+
 		m_State.IsRunning = true;
 		m_State.HasBegunPlay = true;
 
@@ -138,6 +140,7 @@ namespace Tridium {
 
 		// Initialize Physics Scene
 		{
+			PROFILE_SCOPE( "Physics Scene Init", ProfilerCategory::Physics );
 			m_PhysicsScene->Init();
 
 			// Add all GameObjects with RigidBodyComponent to the physics scene
@@ -154,11 +157,15 @@ namespace Tridium {
 
 		// Call OnBeginPlay on all entity tickers
 		for ( const auto& ticker : m_EntityTickers )
+		{
+			PROFILE_SCOPE( "Entity Ticker OnBeginPlay", ProfilerCategory::GameLogic );
 			ticker->OnBeginPlay();
+		}
 	}
 
 	void Scene::OnUpdate()
 	{
+		PROFILE_FUNCTION( ProfilerCategory::Scene );
 		// Send OnUpdate Event to all systems
 		{
 			SceneEventPayload payload =
@@ -171,6 +178,7 @@ namespace Tridium {
 
 		// Update physics
 		{
+			PROFILE_SCOPE( "Physics Update", ProfilerCategory::Physics );
 			TODO( "We should not be constantly updating transforms unless they are dirty." );
 
 			auto view = m_ECS.View<RigidBodyComponent, TransformComponent>();
@@ -195,11 +203,16 @@ namespace Tridium {
 
 		// Call OnUpdate for all scriptable objects
 		for ( const auto& ticker : m_EntityTickers )
+		{
+			PROFILE_SCOPE( "Entity Ticker OnUpdate", ProfilerCategory::GameLogic );
 			ticker->OnUpdate( Time::DeltaTime() );
+		}
 	}
 
 	void Scene::OnEndPlay()
 	{
+		PROFILE_FUNCTION( ProfilerCategory::Scene );
+
 		m_State.IsRunning = false;
 		m_State.HasBegunPlay = false;
 
@@ -445,6 +458,7 @@ namespace Tridium {
 
 	void Scene::SendSceneEvent( const SceneEventPayload& a_EventPayload )
 	{
+		PROFILE_FUNCTION( ProfilerCategory::Scene );
 		for ( auto&& [type, system] : m_Systems )
 		{
 			system->OnSceneEvent( a_EventPayload );

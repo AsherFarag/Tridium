@@ -16,10 +16,15 @@ GameObjects:
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
       Children: [13]
-    StaticMeshComponent:
-      Mesh: 10
-      Materials: []
-      CastShadows: true
+    ShooterPlayerComponent:
+      m_GunModel: 15
+      m_GunMuzzleFlash: 16
+      m_GunMuzzleFlashDuration: 0.100000001
+      m_GunMuzzleFlashIntensity: 100
+      m_GunRecoilDistance: 0.100000001
+      m_GunLerpSpeed: 5
+      m_FireRate: 0.300000012
+      m_Force: 1000
     RigidBodyComponent:
       m_PhysicsLayer: Player
       m_MotionType: Dynamic
@@ -40,6 +45,10 @@ GameObjects:
         Swing2Limit: 0
         TwistMotion: Locked
         TwistLimit: 0
+    StaticMeshComponent:
+      Mesh: 10
+      Materials: []
+      CastShadows: true
     CapsuleColliderComponent:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
@@ -52,16 +61,6 @@ GameObjects:
       m_AirMovementControl: 0.100000001
       m_JumpForce: 5
       m_LookSensitivity: 15
-    ShooterPlayerComponent:
-      m_GunModel: 15
-      m_GunMuzzleFlash: 16
-      m_GunMuzzleFlashDuration: 0.100000001
-      m_GunMuzzleFlashIntensity: 100
-      m_GunRecoilDistance: 0.100000001
-      m_GunLerp: 0
-      m_GunLerpSpeed: 5
-      m_FireRate: 0.300000012
-      m_Force: 1000
   - GameObject: 1
     GUID: 5063293338346141733
     Tag: Directional Light
@@ -83,10 +82,6 @@ GameObjects:
       Rotation: [0, -0, 0]
       Scale: [100.18351, 1, 100.226601]
       Children: []
-    StaticMeshComponent:
-      Mesh: 2
-      Materials: []
-      CastShadows: true
     RigidBodyComponent:
       m_PhysicsLayer: Static
       m_MotionType: Static
@@ -107,6 +102,10 @@ GameObjects:
         Swing2Limit: 0
         TwistMotion: Free
         TwistLimit: 0
+    StaticMeshComponent:
+      Mesh: 2
+      Materials: []
+      CastShadows: true
     BoxColliderComponent:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
@@ -134,10 +133,6 @@ GameObjects:
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
       Children: []
-    StaticMeshComponent:
-      Mesh: 2
-      Materials: []
-      CastShadows: true
     RigidBodyComponent:
       m_PhysicsLayer: Dynamic
       m_MotionType: Dynamic
@@ -158,6 +153,10 @@ GameObjects:
         Swing2Limit: 0
         TwistMotion: Free
         TwistLimit: 0
+    StaticMeshComponent:
+      Mesh: 2
+      Materials: []
+      CastShadows: true
     BoxColliderComponent:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
@@ -170,10 +169,6 @@ GameObjects:
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
       Children: []
-    StaticMeshComponent:
-      Mesh: 5219398082506591880
-      Materials: []
-      CastShadows: true
     RigidBodyComponent:
       m_PhysicsLayer: Static
       m_MotionType: Static
@@ -194,6 +189,10 @@ GameObjects:
         Swing2Limit: 0
         TwistMotion: Free
         TwistLimit: 0
+    StaticMeshComponent:
+      Mesh: 5219398082506591880
+      Materials: []
+      CastShadows: true
     MeshColliderComponent:
       m_Mesh: 5219398082506591880
   - GameObject: 6
@@ -204,10 +203,6 @@ GameObjects:
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
       Children: []
-    StaticMeshComponent:
-      Mesh: 10
-      Materials: []
-      CastShadows: true
     RigidBodyComponent:
       m_PhysicsLayer: Dynamic
       m_MotionType: Dynamic
@@ -228,6 +223,10 @@ GameObjects:
         Swing2Limit: 0
         TwistMotion: Free
         TwistLimit: 0
+    StaticMeshComponent:
+      Mesh: 10
+      Materials: []
+      CastShadows: true
     CapsuleColliderComponent:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
@@ -241,10 +240,6 @@ GameObjects:
       Rotation: [0, -0, -1.57079625]
       Scale: [5, 0.999999821, 100]
       Children: []
-    StaticMeshComponent:
-      Mesh: 2
-      Materials: []
-      CastShadows: true
     RigidBodyComponent:
       m_PhysicsLayer: Static
       m_MotionType: Static
@@ -265,6 +260,10 @@ GameObjects:
         Swing2Limit: 0
         TwistMotion: Free
         TwistLimit: 0
+    StaticMeshComponent:
+      Mesh: 2
+      Materials: []
+      CastShadows: true
     BoxColliderComponent:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
@@ -277,10 +276,6 @@ GameObjects:
       Rotation: [1.57128525, -0, -1.57079637]
       Scale: [5.00000095, 1, 99.9999695]
       Children: []
-    StaticMeshComponent:
-      Mesh: 2
-      Materials: []
-      CastShadows: true
     RigidBodyComponent:
       m_PhysicsLayer: Static
       m_MotionType: Static
@@ -301,6 +296,10 @@ GameObjects:
         Swing2Limit: 0
         TwistMotion: Free
         TwistLimit: 0
+    StaticMeshComponent:
+      Mesh: 2
+      Materials: []
+      CastShadows: true
     BoxColliderComponent:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
@@ -313,10 +312,6 @@ GameObjects:
       Rotation: [1.57128525, -0, -1.57079637]
       Scale: [5.00000095, 1, 99.9999695]
       Children: []
-    StaticMeshComponent:
-      Mesh: 2
-      Materials: []
-      CastShadows: true
     RigidBodyComponent:
       m_PhysicsLayer: Static
       m_MotionType: Static
@@ -337,6 +332,10 @@ GameObjects:
         Swing2Limit: 0
         TwistMotion: Free
         TwistLimit: 0
+    StaticMeshComponent:
+      Mesh: 2
+      Materials: []
+      CastShadows: true
     BoxColliderComponent:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
@@ -349,10 +348,6 @@ GameObjects:
       Rotation: [0, -0, -1.57079625]
       Scale: [5, 0.999999821, 100]
       Children: []
-    StaticMeshComponent:
-      Mesh: 2
-      Materials: []
-      CastShadows: true
     RigidBodyComponent:
       m_PhysicsLayer: Static
       m_MotionType: Static
@@ -373,6 +368,10 @@ GameObjects:
         Swing2Limit: 0
         TwistMotion: Free
         TwistLimit: 0
+    StaticMeshComponent:
+      Mesh: 2
+      Materials: []
+      CastShadows: true
     BoxColliderComponent:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]
@@ -422,7 +421,7 @@ GameObjects:
           Far: 1000
         m_ProjectionType: Perspective
         m_Projection: "Refl Error: No serialize function for type <struct glm::mat<4,4,float,0>>(void) noexcept"
-        m_ViewportSize: [582, 318]
+        m_ViewportSize: [543, 205]
       IsMainCamera: true
   - GameObject: 14
     GUID: 16539571455283191931
@@ -432,10 +431,6 @@ GameObjects:
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
       Children: []
-    StaticMeshComponent:
-      Mesh: 3
-      Materials: []
-      CastShadows: true
     RigidBodyComponent:
       m_PhysicsLayer: Dynamic
       m_MotionType: Dynamic
@@ -456,6 +451,10 @@ GameObjects:
         Swing2Limit: 0
         TwistMotion: Free
         TwistLimit: 0
+    StaticMeshComponent:
+      Mesh: 3
+      Materials: []
+      CastShadows: true
     SphereColliderComponent:
       m_Center: [0, 0, 0]
       m_Rotation: [0, 0, 0]

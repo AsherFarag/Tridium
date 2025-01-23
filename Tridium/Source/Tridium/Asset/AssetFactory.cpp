@@ -43,6 +43,7 @@ namespace Tridium {
 
 	SharedPtr<Asset> AssetFactory::LoadAsset( const AssetMetaData& a_MetaData )
 	{
+		PROFILE_FUNCTION( ProfilerCategory::AssetStreaming );
 		auto it = s_AssetFactories.find( a_MetaData.AssetType );
 		if ( it != s_AssetFactories.end() )
 		{

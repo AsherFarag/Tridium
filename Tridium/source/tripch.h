@@ -19,6 +19,7 @@
 #include <Tridium/Utils/Log.h>
 #include <Tridium/Utils/Todo.h>
 #include <Tridium/Math/Math.h>
+#include <Tridium/Debug/Profiler/Profiler.h>
 
 #ifdef TE_PLATFORM_WINDOWS
 	#include <Windows.h>

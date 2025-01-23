@@ -11,7 +11,6 @@
 #include <Tridium/Rendering/Mesh.h>
 #include <Tridium/Rendering/EnvironmentMap.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
-#include <Tridium/Core/Profiler.h>
 
 namespace Tridium {
 
@@ -113,10 +112,11 @@ namespace Tridium {
 
 	void SceneRenderer::Render( const SharedPtr<Framebuffer>& a_FBO, const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition )
 	{
+		PROFILE_FUNCTION( ProfilerCategory::Rendering );
 		// Reset per frame data
 		Clear();
 
-		ScopedTimer renderTime( m_RenderStats.RenderTime );
+		//ScopedTimer renderTime( m_RenderStats.RenderTime );
 
 		m_RenderTarget = a_FBO;
 
@@ -124,13 +124,13 @@ namespace Tridium {
 
 		// - Generate Shadow Maps -
 		{
-			ScopedTimer shadowMapTime( m_RenderStats.ShadowMapTime );
+			//ScopedTimer shadowMapTime( m_RenderStats.ShadowMapTime );
 			GenerateShadowMaps();
 		}
 
 		// - Render Pass -
 		{
-			ScopedTimer geometryTime( m_RenderStats.GeometryTime );
+			//ScopedTimer geometryTime( m_RenderStats.GeometryTime );
 			switch ( m_RenderSettings.RenderMode )
 			{
 			case ERenderMode::Forward:
@@ -160,7 +160,7 @@ namespace Tridium {
 
 		// - Apply Post-Processing Pass -
 		{
-			ScopedTimer postProcessTime( m_RenderStats.PostProcessTime );
+			//ScopedTimer postProcessTime( m_RenderStats.PostProcessTime );
 			PostProcessPass();
 		}
 
@@ -177,7 +177,7 @@ namespace Tridium {
 
 	void SceneRenderer::BeginScene( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition )
 	{
-		ScopedTimer drawListGenerationTime( m_RenderStats.DrawListGenerationTime );
+		//ScopedTimer drawListGenerationTime( m_RenderStats.DrawListGenerationTime );
 
 		// Extract Camera Forward from the View Matrix
 		Vector3 cameraForward = Vector3( a_View[0][2], a_View[1][2], a_View[2][2] );
@@ -413,6 +413,8 @@ namespace Tridium {
 
 	void SceneRenderer::GenerateShadowMaps()
 	{
+		PROFILE_FUNCTION( ProfilerCategory::Rendering );
+
 		RenderCommand::SetDepthTest( true );
 
 		TODO( "Front face culling only works on opaque objects, need to handle transparent objects by using a bias." );

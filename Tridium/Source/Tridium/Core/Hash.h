@@ -21,4 +21,11 @@ namespace Tridium {
 		return HashAlgorithms::fnv1a( str );
 	}
 
+	namespace Hashing {
+
+		inline constexpr size_t HashString( const char* str )
+		{
+			return HashAlgorithms::fnv1a( str );
+		}
+	}
 }
