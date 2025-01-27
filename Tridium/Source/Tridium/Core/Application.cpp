@@ -31,9 +31,6 @@ namespace Tridium {
 		{
 			m_EngineAssetsDirectory = "EngineAssets";
 		}
-
-		Instrumentor::Get()->BeginSession( "Engine" );
-		Instrumentor::Get()->StartRecording();
 		Initialize( a_ProjectPath );
 	}
 
@@ -65,8 +62,7 @@ namespace Tridium {
 
 		while ( m_Running )
 		{
-			static constexpr ::Tridium::ProfileDescription __ProfileDescription_68 = { "Main Loop", "E:\\Projects\\Tridium\\Tridium\\Source\\Tridium\\Core\\Application.cpp", 68, ::Tridium::ProfilerCategory::None.Filter, ::Tridium::ProfilerCategory::None.Color }; ::Tridium::ProfileScopeGuard __ProfileScopeGuard_68( &__ProfileDescription_68 );
-
+			PROFILE_FRAME();
 			// Update Time
 			const double lastFrameTime = Time::Now();
 			Time::Update();
@@ -98,12 +94,6 @@ namespace Tridium {
 			m_Window->OnUpdate();
 		}
 
-		// End Profiling
-		{
-			UniquePtr<ProfilerSession> session = Instrumentor::Get()->EndSession();
-			ProfileSessionSerializer::SerializeJSON( *session, "profile.json" );
-		}
-
 	#if !IS_EDITOR
 		if ( m_ActiveScene )
 		{
@@ -111,7 +101,7 @@ namespace Tridium {
 		}
 	#endif // IS_EDITOR
 
-		m_GameInstance->Shutdown();
+		Shutdown();
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////
@@ -215,6 +205,7 @@ namespace Tridium {
 		}
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////
 	void Application::SetScene( SharedPtr<Scene> a_Scene )
 	{
 		s_Instance->m_ActiveScene = a_Scene;

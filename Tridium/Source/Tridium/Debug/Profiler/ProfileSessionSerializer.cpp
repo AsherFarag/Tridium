@@ -19,29 +19,32 @@ namespace Tridium {
 			};
 
         file << "[\n"; // Start of JSON array
-        for ( const auto& [threadID, threadData] : a_Session.ThreadDataMap )
+        for ( const auto& [threadID, thread] : a_Session.ProfiledThreads )
         {
-            for ( const auto& result : threadData.CollectedResults )
+			for ( const auto& frame : thread.Frames )
             {
-                // Begin Event
-                file << "  {\n"
-                    << "    \"name\": \"" << result.Description->Name << "\",\n"
-					<< "    \"cat\": \"" << result.Description->Filter.Name << "\",\n"
-                    << "    \"ph\": \"B\",\n"
-                    << "    \"ts\": " << ToMicro( result.TimeStamp.Start ) << ",\n"
-                    << "    \"pid\": 0,\n"
-                    << "    \"tid\": " << result.ThreadID << "\n"
-                    << "  },\n";
+                for ( const auto& result : frame.CollectedResults )
+                {
+                    // Begin Event
+                    file << "  {\n"
+                        << "    \"name\": \"" << result.Description->Name << "\",\n"
+                        << "    \"cat\": \"" << result.Description->Filter.Name << "\",\n"
+                        << "    \"ph\": \"B\",\n"
+                        << "    \"ts\": " << ToMicro( result.TimeStamp.Start ) << ",\n"
+                        << "    \"pid\": 0,\n"
+                        << "    \"tid\": " << result.ThreadID << "\n"
+                        << "  },\n";
 
-                // End Event
-                file << "  {\n"
-                    << "    \"name\": \"" << result.Description->Name << "\",\n"
-					<< "    \"cat\": \"" << result.Description->Filter.Name << "\",\n"
-                    << "    \"ph\": \"E\",\n"
-                    << "    \"ts\": " << ToMicro( result.TimeStamp.End ) << ",\n"
-                    << "    \"pid\": 0,\n"
-                    << "    \"tid\": " << result.ThreadID << "\n"
-                    << "  }";
+                    // End Event
+                    file << "  {\n"
+                        << "    \"name\": \"" << result.Description->Name << "\",\n"
+                        << "    \"cat\": \"" << result.Description->Filter.Name << "\",\n"
+                        << "    \"ph\": \"E\",\n"
+                        << "    \"ts\": " << ToMicro( result.TimeStamp.End ) << ",\n"
+                        << "    \"pid\": 0,\n"
+                        << "    \"tid\": " << result.ThreadID << "\n"
+                        << "  }";
+                }
             }
         }
 

@@ -11,14 +11,27 @@ namespace Tridium {
 	// ========================================================================
 	struct ProfileDescription
 	{
-		const char* Name;
+		const char* Name; // Name of the profile.
+		const char* Signature; // Optional signature of the profile. E.g. "void Function(int, float)"
 		const char* File;
 		uint32_t Line;
 		ProfilerFilter::Filter Filter;
 		ProfilerColor Color;
+		size_t ID;
 
 		constexpr ProfileDescription( const char* a_Name, const char* a_File, uint32_t a_Line, ProfilerFilter::Filter a_Filter, ProfilerColor a_Color )
-			: Name( a_Name ), File( a_File ), Line( a_Line ), Filter( a_Filter ), Color( a_Color )
+			: ProfileDescription( a_Name, nullptr, a_File, a_Line, a_Filter, a_Color )
+		{
+		}
+
+		constexpr ProfileDescription( const char* a_Name, const char* a_Signature, const char* a_File, uint32_t a_Line, ProfilerFilter::Filter a_Filter, ProfilerColor a_Color )
+			: Name( a_Name )
+			, Signature(a_Signature)
+			, File( a_File )
+			, Line( a_Line )
+			, Filter( a_Filter )
+			, Color( a_Color )
+			, ID( Hashing::HashCombine( Hashing::HashString( a_File ), static_cast<size_t>(a_Line) ) )
 		{
 		}
 	};
@@ -31,10 +44,21 @@ namespace Tridium {
 	{
 		using TimeType = int64_t;
 		static constexpr TimeType s_InvalidTimeStamp = -1;
-		TimeType Start; // In Nanoseconds.
-		TimeType End; // In Nanoseconds.
+		TimeType Start; // In Microseconds.
+		TimeType End; // In Microseconds.
 
 		TimeType GetDuration() const { return End - Start; }
+		double GetDurationMilli() const { return static_cast<double>( GetDuration() ) / 1000.0; }
+		double GetDurationSeconds() const { return static_cast<double>( GetDuration() ) / 1000000.0; }
+		double GetStartMilli() const { return static_cast<double>( Start ) / 1000.0; }
+		double GetStartSeconds() const { return static_cast<double>( Start ) / 1000000.0; }
+		double GetEndMilli() const { return static_cast<double>( End ) / 1000.0; }
+		double GetEndSeconds() const { return static_cast<double>( End ) / 1000000.0; }
+
+		bool operator==( const TimeStamp& other ) const
+		{
+			return Start == other.Start && End == other.End;
+		}
 	};
 
 	// ========================================================================
@@ -51,6 +75,19 @@ namespace Tridium {
 		bool operator<( const ProfileResult& other ) const
 		{
 			return TimeStamp.Start < other.TimeStamp.Start;
+		}
+
+		bool operator==( const ProfileResult& other ) const
+		{
+			return Description == other.Description 
+				&& TimeStamp == other.TimeStamp
+				&& ThreadID == other.ThreadID
+				&& Depth == other.Depth;
+		}
+
+		bool operator!=( const ProfileResult& other ) const
+		{
+			return !( *this == other );
 		}
 	};
 

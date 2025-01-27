@@ -24,6 +24,7 @@
 #include "Panels/ProjectSettingsPanel.h"
 #include "Panels/InspectorPanel.h"
 #include "Panels/StatsPanel.h"
+#include "Panels/ProfilerPanel.h"
 
 #include <Tridium/IO/SceneSerializer.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
@@ -361,6 +362,7 @@ namespace Tridium::Editor {
 				if ( ImGui::MenuItem( "Asset Registry" ) ) m_PanelStack.PushPanel<AssetRegistryPanel>();
 				if ( ImGui::MenuItem( "Scene Renderer" ) ) m_PanelStack.PushPanel<SceneRendererPanel>();
 				if ( ImGui::MenuItem( "Script Editor" ) ) m_PanelStack.PushPanel<ScriptEditorPanel>();
+				if ( ImGui::MenuItem( "Profiler" ) ) m_PanelStack.PushPanel<ProfilerPanel>();
 
 				ImGui::EndMenu();
 			}

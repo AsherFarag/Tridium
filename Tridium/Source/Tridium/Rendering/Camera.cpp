@@ -88,7 +88,7 @@ namespace Tridium {
 
 	void Camera::SetViewportSize( const iVector2& a_Size )
 	{
-		TE_CORE_ASSERT( a_Size.x > 0 && a_Size.y > 0, "Invalid Viewport width and height!" );
+		//TE_CORE_ASSERT( a_Size.x > 0 && a_Size.y > 0, "Invalid Viewport width and height!" );
 		m_ViewportSize = a_Size;
 		RecalculateProjection();
 	}

@@ -1,33 +1,93 @@
 #include "tripch.h"
 #include "Instrumentor.h"
 #include <chrono>
+#include <Tridium/Core/Application.h>
 
 namespace Tridium {
 
-	void Instrumentor::BeginSession( const String& a_Name )
+	Instrumentor::Instrumentor()
 	{
-		if ( !ASSERT_LOG( m_CurrentSession == nullptr, "Attempting to begin a new profiler session without ending the current one." ) )
-			return;
-
-		m_CurrentSession = MakeUnique<ProfilerSession>();
-		m_CurrentSession->Name = a_Name;
 	}
 
-	UniquePtr<ProfilerSession> Instrumentor::EndSession()
+	Instrumentor::~Instrumentor()
+	{
+	}
+
+	void Instrumentor::BeginSession( const String& a_Name, size_t a_NumOfFrames )
+	{
+		m_SessionFrameCap = a_NumOfFrames;
+		m_NextState = EState::Recording;
+
+		m_CurrentSession = MakeShared<ProfilerSession>();
+		m_CurrentSession->Name = a_Name;
+		m_CurrentSession->TimeStamp = { GetTime(), TimeStamp::s_InvalidTimeStamp };
+
+		TODO("Workaround for threads not being created automatically");
+		m_CurrentSession->ProfiledThreads[std::this_thread::get_id()];
+	}
+
+	void Instrumentor::EndSession()
 	{
 		StopRecording();
-		return std::move( m_CurrentSession );
+		m_CurrentSession->TimeStamp.End = GetTime();
+
+		// If the frame is not complete, remove it
+		if ( !m_IsFrameComplete )
+		{
+			for ( auto& [threadID, threadData] : m_CurrentSession->ProfiledThreads )
+			{
+				threadData.Frames.PopBack();
+			}
+
+			m_CurrentSession->NumOfFrames--;
+		}
+	}
+
+	void Instrumentor::BeginFrame()
+	{
+		m_CurrentState = m_NextState;
+		if ( !IsRecording() )
+			return;
+
+		if ( m_SessionFrameCap > 0 && m_CurrentSession->NumOfFrames >= m_SessionFrameCap )
+		{
+			EndSession();
+			return;
+		}
+
+		m_IsFrameComplete = false;
+		m_CurrentSession->NumOfFrames++;
+
+		TimeStamp::TimeType currentTime = GetTime();
+
+		for ( auto& [threadID, threadData] : m_CurrentSession->ProfiledThreads )
+		{
+			auto& frameData = threadData.Frames.EmplaceBack();
+			frameData.TimeStamp = { currentTime, TimeStamp::s_InvalidTimeStamp };
+		}
+	}
+
+	void Instrumentor::EndFrame()
+	{
+		if ( !IsRecording() )
+			return;
+
+		m_IsFrameComplete = true;
+
+		TimeStamp::TimeType currentTime = GetTime();
+		for ( auto& [threadID, threadData] : m_CurrentSession->ProfiledThreads )
+		{
+			auto& frameData = threadData.Frames.Back();
+			frameData.TimeStamp.End = currentTime;
+		}
 	}
 
 	void Instrumentor::BeginScope( const ProfileDescription* a_Description )
 	{
-		if ( !ASSERT_LOG( m_CurrentSession != nullptr, "Attempting to profile a scope without a session." ) )
-			return;
-
 		if ( !IsRecording() )
 			return;
 
-		ProfilerSession::ThreadData& threadData = GetCurrentThreadData();
+		auto& frameData = GetCurrentFramaData();
 
 		ProfileResult result =
 		{
@@ -36,34 +96,29 @@ namespace Tridium {
 			.TimeStamp = { GetTime(), TimeStamp::s_InvalidTimeStamp }
 		};
 
-		threadData.CallStack.emplace( std::move( result ) );
+		frameData.CallStack.emplace( std::move( result ) );
 	}
 
 	void Instrumentor::EndScope()
 	{
-		if ( !ASSERT_LOG( m_CurrentSession != nullptr, "Attempting to end a profile scope without a session." ) )
-			return;
-
 		if ( !IsRecording() )
 			return;
 
-		ProfilerSession::ThreadData& threadData = GetCurrentThreadData();
-		if ( !ASSERT_LOG( !threadData.CallStack.empty(), "Attempting to end a profiler scope without a matching begin scope." ) )
-		{
+		auto& frameData = GetCurrentFramaData();
+		if ( frameData.CallStack.empty() )
 			return;
-		}
 
-		ProfileResult result = threadData.CallStack.top();
-		threadData.CallStack.pop();
+		ProfileResult result = frameData.CallStack.top();
+		frameData.CallStack.pop();
 		result.TimeStamp.End = GetTime();
-		result.Depth = static_cast<uint32_t>( threadData.CallStack.size() );
-		threadData.CollectedResults.PushBack( result );
+		result.Depth = static_cast<uint32_t>( frameData.CallStack.size() );
+		frameData.CollectedResults.PushBack( result );
 	}
 
 	TimeStamp::TimeType Instrumentor::GetTime() const
 	{
-		long long nowNanoSeconds = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-		return static_cast<TimeStamp::TimeType>( nowNanoSeconds );
+		long long nowMicroSeconds = std::chrono::duration_cast<std::chrono::microseconds>( std::chrono::high_resolution_clock::now().time_since_epoch() ).count();
+		return static_cast<TimeStamp::TimeType>( nowMicroSeconds );
 	}
 
-}
+} // namespace Tridium

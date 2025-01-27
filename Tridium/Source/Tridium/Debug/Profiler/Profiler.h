@@ -15,14 +15,16 @@
 // ==========================================
 
 #if defined( _MSC_VER )
-	#define _FUNCTION_ EXPAND( __FUNCSIG__ )
+	#define _FUNCTION_ EXPAND( __FUNCTION__ )
+	#define _FUNCTION_SIG_ EXPAND( __FUNCSIG__ )
 #elif defined(__clang__)
 	#define _FUNCTION_ EXPAND( __PRETTY_FUNCTION__ )
+	#define _FUNCTION_SIG_ EXPAND( __PRETTY_FUNCTION__ )
 #endif
 
 // For some reason, in MSVC, __LINE__ is not a constant expression.
 // This is a workaround to make it a constant expression.
-#define _USABLE_LINE_ uint32_t(_CONCAT(__LINE__,U)) 
+#define _USABLE_LINE_ uint32_t(_CONCAT(__LINE__,U))
 
 // ==========================================
 
@@ -70,8 +72,13 @@
 #pragma region Internal Profile Function Macros
 
 #define _CLEAN_FUNCTION_ _FUNCTION_
+#define _CLEAN_FUNCTION_SIG_ _FUNCTION_SIG_
 
-#define _PROFILE_FUNCTION_3(filter, color) _PROFILE_SCOPE_3(_CLEAN_FUNCTION_, filter, color)
+#define _PROFILE_FUNCTION_3(filter, color) \
+		static constexpr ::Tridium::ProfileDescription EXPAND( _CONCAT(__ProfileDescription_, __LINE__ ) ) = { \
+			_CLEAN_FUNCTION_, _CLEAN_FUNCTION_SIG_, __FILE__, _USABLE_LINE_, filter, color \
+		}; \
+		::Tridium::ProfileScopeGuard _CONCAT(__ProfileScopeGuard_, __LINE__ )( &EXPAND( _CONCAT(__ProfileDescription_, __LINE__ ) ) )
 
 #define _PROFILE_FUNCTION_2(category) _PROFILE_FUNCTION_3(category.Filter, category.Color)
 
@@ -99,9 +106,16 @@
 	// ==========================================
 #define PROFILE_FUNCTION(...) EXPAND( SELECT_MACRO_3( __DUMMY__, __VA_ARGS__, _PROFILE_FUNCTION_3, _PROFILE_FUNCTION_2, _PROFILE_FUNCTION_1 )(__VA_ARGS__) )
 
+	// ==========================================
+	// Profile Frame
+	//  Used for declaring a frame for profiling.
+	// ==========================================
+#define PROFILE_FRAME() ::Tridium::ProfileFrameGuard __ProfileFrameGuard__
+
 #else
 	#define PROFILE_SCOPE(...)
 	#define PROFILE_FUNCTION(...)
+	#define PROFILE_FRAME()
 #endif // !ENABLE_PROFILING
 
 // ==========================================

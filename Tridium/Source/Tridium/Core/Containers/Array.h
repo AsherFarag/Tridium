@@ -179,6 +179,9 @@ namespace Tridium {
 		void PushBack( const T& a_Value ) { m_Data.push_back( a_Value ); }
 		void PopBack() { m_Data.pop_back(); }
 
+		template<typename... _Args>
+		auto& EmplaceBack( _Args&&... a_Args ) { return m_Data.emplace_back( std::forward<_Args>( a_Args )... ); }
+
 		Iterator Insert( Iterator a_Position, const T& a_Value ) { return m_Data.insert( a_Position, a_Value ); }
 		Iterator Erase( Iterator a_Position ) { return m_Data.erase( a_Position ); }
 		Iterator Erase( Iterator a_First, Iterator a_Last ) { return m_Data.erase( a_First, a_Last ); }
