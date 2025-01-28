@@ -3,6 +3,7 @@
 #include <Tridium/Rendering/Mesh.h>
 
 #include "glad/glad.h"
+#include "OpenGLRenderingAPI.h"
 
 namespace Tridium {
 

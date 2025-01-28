@@ -1,0 +1,144 @@
+#pragma once
+#include "DirectX12.h"
+#include <type_traits>
+
+namespace Tridium {
+
+	// A template class for Microsoft com pointer
+	template<typename T, typename = std::enable_if_t<std::is_base_of_v<IUnknown, T>>>
+	class ComPtr
+	{
+	public:
+		// Default empty constructor
+		ComPtr() = default;
+
+		// Construct by raw pointer (add ref)
+		ComPtr( T* a_Ptr )
+		{
+			SetPointerAndAddRef( a_Ptr );
+		}
+
+		ComPtr( const ComPtr<T>& a_Other )
+		{
+			SetPointerAndAddRef( a_Other.m_Ptr );
+		}
+
+		ComPtr( ComPtr<T>&& a_Other ) noexcept
+		{
+			m_Ptr = a_Other.m_Ptr;
+			a_Other.m_Ptr = nullptr;
+		}
+
+		~ComPtr()
+		{
+			ClearPointer();
+		}
+
+		ComPtr<T>& operator=( const ComPtr<T>& a_Other )
+		{
+			ClearPointer();
+			SetPointerAndAddRef( a_Other.m_Ptr );
+			return *this;
+		}
+		ComPtr<T>& operator=( ComPtr<T>&& a_Other )
+		{
+			ClearPointer();
+
+			m_Ptr = a_Other.m_Ptr;
+			a_Other.m_Ptr = nullptr;
+			return *this;
+		}
+		ComPtr<T>& operator=( T* a_Other )
+		{
+			ClearPointer();
+			SetPointerAndAddRef( a_Other );
+			return *this;
+		}
+
+		ULONG Release()
+		{
+			return ClearPointer();
+		}
+
+		T* GetRef()
+		{
+			if ( m_Ptr )
+			{
+				m_Ptr->AddRef();
+				return m_Ptr;
+			}
+			return nullptr;
+		}
+
+		T* Get()
+		{
+			return m_Ptr;
+		}
+
+		template<typename T>
+		bool QueryInterface( ComPtr<T>& a_Other, HRESULT* a_ErrorCode = nullptr )
+		{
+			if ( m_Ptr )
+			{
+				HRESULT result = m_Ptr->QueryInterface( IID_PPV_ARGS( &a_Other ) );
+				if ( a_ErrorCode ) *a_ErrorCode = result;
+				return result == S_OK;
+			}
+			return false;
+		}
+
+		bool operator==( const ComPtr<T>& other )
+		{
+			return m_Ptr == other.m_Ptr;
+		}
+		bool operator==( const T* other )
+		{
+			return m_Ptr == other;
+		}
+
+		T* operator->()
+		{
+			return m_Ptr;
+		}
+		T** operator&()
+		{
+			return &m_Ptr;
+		}
+
+		operator bool()
+		{
+			return m_Ptr != nullptr;
+		}
+		operator T* ( )
+		{
+			return m_Ptr;
+		}
+
+	private:
+		ULONG ClearPointer()
+		{
+			ULONG newRef = 0;
+			if ( m_Ptr )
+			{
+				newRef = m_Ptr->Release();
+				m_Ptr = nullptr;
+			}
+
+			return newRef;
+		}
+
+		void SetPointerAndAddRef( T* a_Ptr )
+		{
+			m_Ptr = a_Ptr;
+			if ( m_Ptr )
+			{
+				m_Ptr->AddRef();
+			}
+		}
+
+	private:
+		T* m_Ptr = nullptr;
+	};
+
+
+}
