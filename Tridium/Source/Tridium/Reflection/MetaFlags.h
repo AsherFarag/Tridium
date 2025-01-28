@@ -1,4 +1,5 @@
 #pragma once
+#include <type_traits>
 #include <Tridium/Core/Enum.h>
 #include <Tridium/Core/Types.h>
 #include <Tridium/Utils/Macro.h>

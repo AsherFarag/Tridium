@@ -1,4 +1,6 @@
 #pragma once
+#include <Tridium/Utils/Todo.h>
+#include <Tridium/Core/Memory.h>
 #include <Tridium/ECS/ECS.h>
 
 namespace Tridium {

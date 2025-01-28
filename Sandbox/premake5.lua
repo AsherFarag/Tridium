@@ -13,7 +13,8 @@ project "Sandbox"
 	files
 	{
 		"Source/**.h",
-		"Source/**.cpp"
+		"Source/**.cpp",
+		"Source/**.ixx",
 	}
 
 	includedirs
@@ -43,6 +44,10 @@ project "Sandbox"
 	{
 		"YAML_CPP_STATIC_DEFINE"
 	}
+
+	filter { "files:**.ixx" }
+		compileas "Module" -- Treat .ixx files as modules in supported compilers
+		flags {"NoPCH"}
 
 	filter "system:windows"
 		systemversion "latest"

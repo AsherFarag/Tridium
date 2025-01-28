@@ -24,6 +24,7 @@ project "Tridium"
 	{
 		"Source/**.h",
 		"Source/**.cpp",
+		"Source/**.ixx",
 		"Dependencies/glm/glm/**.inl",
 		"Dependencies/glm/glm/**.hpp",
 		"Dependencies/ImGuizmo/ImGuizmo.h",
@@ -83,6 +84,10 @@ project "Tridium"
 	{
 		"YAML_CPP_STATIC_DEFINE"
 	}
+
+	filter { "files:**.ixx" }
+		compileas "Module" -- Treat .ixx files as modules in supported compilers
+		flags {"NoPCH"}
 
 	filter "files:Dependencies/stbi/include/stb_image.h"
 		optimize "On"

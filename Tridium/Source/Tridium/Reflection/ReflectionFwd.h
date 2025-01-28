@@ -4,6 +4,7 @@
 // This is to minimize compile times.
 
 #pragma once
+#include <Tridium/Core/Types.h>
 
 // Forward declarations
 namespace entt {

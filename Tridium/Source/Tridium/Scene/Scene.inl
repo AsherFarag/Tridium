@@ -18,9 +18,8 @@ namespace Tridium {
 		static_assert( std::is_base_of_v<ISceneSystem, T>, "T must be a derived class of ISceneSystem!" );
 		static constexpr size_t s_TypeHash = entt::type_hash<T>::value();
 		auto it = m_Systems.find( s_TypeHash );
-		if ( it != m_Systems.end() )
+		if ( !ASSERT_LOG( it == m_Systems.end(), "Attempted to add a System that already exists!" ) )
 		{
-			TE_CORE_ASSERT( false, "Attempted to add a System that already exists!" );
 			return SharedPtrCast<T>( it->second );
 		}
 
