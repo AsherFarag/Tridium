@@ -1,7 +1,9 @@
 #pragma once
 #include <Tridium/RHI/RendererAPI.h>
+#include <Tridium/Core/Containers/Array.h>
+#include <Tridium/Core/Containers/String.h>
 
-namespace Tridium {
+namespace Tridium::GL {
 
 	class OpenGLRendererAPI final : public RendererAPI
 	{
@@ -9,6 +11,10 @@ namespace Tridium {
 		virtual bool Init( const RHIConfig& a_Config ) override;
 		virtual bool Shutdown() override;
 		virtual bool Present() override;
+
+	#if RHI_DEBUG_ENABLED
+		virtual void DumpDebug() override;
+	#endif // RHI_DEBUG_ENABLED
 	};
 
 }

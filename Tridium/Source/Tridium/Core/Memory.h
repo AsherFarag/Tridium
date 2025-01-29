@@ -58,6 +58,9 @@ namespace Tridium {
 		return std::static_pointer_cast<_To>( a_Other );
 	}
 
+	template<typename T>
+	using EnableSharedFromThis = std::enable_shared_from_this<T>;
+
 	// Type alias for std::weak_ptr
 	template<typename T>
 	using WeakPtr = std::weak_ptr<T>;

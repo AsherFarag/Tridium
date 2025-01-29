@@ -124,13 +124,11 @@ namespace Tridium {
 
 		// - Generate Shadow Maps -
 		{
-			//ScopedTimer shadowMapTime( m_RenderStats.ShadowMapTime );
 			GenerateShadowMaps();
 		}
 
 		// - Render Pass -
 		{
-			//ScopedTimer geometryTime( m_RenderStats.GeometryTime );
 			switch ( m_RenderSettings.RenderMode )
 			{
 			case ERenderMode::Forward:
@@ -177,7 +175,7 @@ namespace Tridium {
 
 	void SceneRenderer::BeginScene( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition )
 	{
-		//ScopedTimer drawListGenerationTime( m_RenderStats.DrawListGenerationTime );
+		PROFILE_FUNCTION( ProfilerCategory::Rendering );
 
 		// Extract Camera Forward from the View Matrix
 		Vector3 cameraForward = Vector3( a_View[0][2], a_View[1][2], a_View[2][2] );
@@ -196,6 +194,7 @@ namespace Tridium {
 
 		// - Submit Directional Lights -
 		{
+			PROFILE_SCOPE( "Submit Directional Lights", ProfilerCategory::Rendering );
 			auto directionalLightComponents = m_Scene.GetECS().View<DirectionalLightComponent, TransformComponent>();
 			m_LightEnvironment.NumDirectionalLights = 0;
 			directionalLightComponents.each(
@@ -248,6 +247,7 @@ namespace Tridium {
 
 		// - Submit Point Lights -
 		{
+			PROFILE_SCOPE( "Submit Point Lights", ProfilerCategory::Rendering );
 			auto pointLightComponents = m_Scene.GetECS().View<PointLightComponent, TransformComponent>();
 			m_LightEnvironment.NumPointLights = 0;
 			pointLightComponents.each(
@@ -302,6 +302,7 @@ namespace Tridium {
 
 		// - Submit Spot Lights -
 		{
+			PROFILE_SCOPE( "Submit Spot Lights", ProfilerCategory::Rendering );
 			auto spotLightComponents = m_Scene.GetECS().View<SpotLightComponent, TransformComponent>();
 			m_LightEnvironment.NumSpotLights = 0;
 			spotLightComponents.each(
@@ -349,6 +350,7 @@ namespace Tridium {
 
 		// - Submit Static Mesh Components to the Draw List -
 		{
+			PROFILE_SCOPE( "Submit Static Mesh Components", ProfilerCategory::Rendering );
 			auto meshComponents = m_Scene.GetECS().View<StaticMeshComponent, TransformComponent>();
 			meshComponents.each( [&]( auto go, StaticMeshComponent& meshComponent, TransformComponent& transform )
 				{
@@ -386,12 +388,16 @@ namespace Tridium {
 
 	void SceneRenderer::EndScene()
 	{
+		PROFILE_FUNCTION( ProfilerCategory::Rendering );
+
 		// Release ownership of the render target
 		m_RenderTarget.reset();
 	}
 
 	void SceneRenderer::Clear()
 	{
+		PROFILE_FUNCTION( ProfilerCategory::Rendering );
+
 		m_DrawList.Clear();
 
 		for ( auto& pointLight : m_LightEnvironment.PointLights )
@@ -537,6 +543,8 @@ namespace Tridium {
 
 	void SceneRenderer::DeferredRenderPass()
 	{
+		PROFILE_FUNCTION( ProfilerCategory::Rendering );
+
 		Vector2 viewportSize = m_SceneInfo.Camera.GetViewportSize();
 		viewportSize *= m_RenderSettings.RenderScale;
 
@@ -676,6 +684,8 @@ namespace Tridium {
 
 	void SceneRenderer::DeferredLightingPass()
 	{
+		PROFILE_FUNCTION( ProfilerCategory::Rendering );
+
 		m_DeferredData.LightingShader->Bind();
 
 		// Bind Shader Uniforms
@@ -1060,6 +1070,8 @@ namespace Tridium {
 
 	void SceneRenderer::RenderSkybox()
 	{
+		PROFILE_FUNCTION( ProfilerCategory::Rendering );
+
 		if ( m_SceneEnvironment.HDRI.EnvironmentMap && m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap() )
 		{
 			auto radianceMap = m_SceneEnvironment.HDRI.EnvironmentMap->GetRadianceMap();
@@ -1099,6 +1111,8 @@ namespace Tridium {
 
 	void SceneRenderer::PostProcessPass()
 	{
+		PROFILE_FUNCTION( ProfilerCategory::Rendering );
+
 		// - Apply Bloom -
 		{
 
@@ -1117,6 +1131,8 @@ namespace Tridium {
 
 	void SceneRenderer::DebugRenderColliders()
 	{
+		PROFILE_FUNCTION( ProfilerCategory::Rendering );
+
 		const Vector4 ColliderColor = { 0.72f, 0.85f, 0.65f, 1.0f };
 
 	#if USE_DEBUG_RENDERER

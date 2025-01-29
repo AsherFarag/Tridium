@@ -2,7 +2,7 @@
 #include <Tridium/RHI/RendererAPI.h>
 #include "ComPointer.h"
 
-namespace Tridium {
+namespace Tridium::DX12 {
 
 	class DX12RendererAPI final : public RendererAPI
 	{

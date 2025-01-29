@@ -28,12 +28,12 @@ namespace Tridium {
 		{
 			case EGraphicsAPI::OpenGL:
 			{
-				RenderContext::Get()->m_RendererAPI = MakeUnique<OpenGLRendererAPI>();
+				RenderContext::Get()->m_RendererAPI = MakeUnique<GL::OpenGLRendererAPI>();
 				break;
 			}
 			case EGraphicsAPI::DirectX12:
 			{
-				RenderContext::Get()->m_RendererAPI = MakeUnique<DX12RendererAPI>();
+				RenderContext::Get()->m_RendererAPI = MakeUnique<DX12::DX12RendererAPI>();
 				break;
 			}
 			default:
@@ -72,9 +72,20 @@ namespace Tridium {
 		return RenderContext::Get()->m_RendererAPI->Present();
 	}
 
+	EGraphicsAPI RHI::GetGraphicsAPI()
+	{
+		if ( RenderContext::Get() == nullptr )
+		{
+			CHECK( false );
+			return EGraphicsAPI::None;
+		}
+
+		return RenderContext::Get()->GetGraphicsAPI();
+	}
+
 	const char* RHI::GetGraphicsAPIName( EGraphicsAPI a_API )
 	{
-		if ( RenderContext::Get() == nullptr && a_API != EGraphicsAPI::None )
+		if ( RenderContext::Get() == nullptr && a_API == EGraphicsAPI::None )
 		{
 			return "None";
 		}
@@ -91,7 +102,7 @@ namespace Tridium {
 		return "None";
 	}
 
-	constexpr bool RHI::IsGraphicsAPISupported( EGraphicsAPI a_API )
+	constexpr bool RHIQuery::IsGraphicsAPISupported( EGraphicsAPI a_API )
 	{
 		switch ( a_API )
 		{
@@ -104,4 +115,53 @@ namespace Tridium {
 		return false;
 	}
 
+	constexpr bool RHIQuery::IsMultithreadingSupported( EGraphicsAPI a_API )
+	{
+		if ( RenderContext::Get() == nullptr && a_API == EGraphicsAPI::None )
+		{
+			return false;
+		}
+
+		switch ( a_API )
+		{
+			case EGraphicsAPI::OpenGL:    return false;
+			case EGraphicsAPI::DirectX11: return false;
+			case EGraphicsAPI::DirectX12: return true;
+			case EGraphicsAPI::Vulkan:    return true;
+		}
+
+		return false;
+	}
+
+	const RHIConfig& RHIQuery::GetConfig()
+	{
+		if ( RenderContext::Get() == nullptr )
+		{
+			static RHIConfig s_InvalidConfig;
+			return s_InvalidConfig;
+		}
+
+		return RenderContext::Get()->GetConfig();
+	}
+}
+
+constexpr uint8_t Tridium::RHI::GetDataTypeSize( ERHIDataType a_Type )
+{
+	switch ( a_Type )
+	{
+		case ERHIDataType::Float64: return 8;
+		case ERHIDataType::Float32: return 4;
+		case ERHIDataType::Float16: return 2;
+		case ERHIDataType::UNorm8: return 1;
+		case ERHIDataType::SNorm8: return 1;
+		case ERHIDataType::UNorm16: return 2;
+		case ERHIDataType::SNorm16: return 2;
+		case ERHIDataType::UInt8: return 1;
+		case ERHIDataType::SInt8: return 1;
+		case ERHIDataType::UInt16: return 2;
+		case ERHIDataType::SInt16: return 2;
+		case ERHIDataType::UInt32: return 4;
+		case ERHIDataType::SInt32: return 4;
+		default: return 0;
+	}
 }

@@ -1,7 +1,7 @@
 #include "tripch.h"
 #include "DX12RendererAPI.h"
 
-namespace Tridium {
+namespace Tridium::DX12 {
 
     bool DX12RendererAPI::Init( const RHIConfig& a_Config )
     {
@@ -111,7 +111,7 @@ namespace Tridium {
     {
         if ( m_DXGIDebug )
         {
-            OutputDebugStringW( L"DXGI Reports living device objects:\n" );
+            OutputDebugStringW( L"DirectX12 Debug Dump:\n" );
             m_DXGIDebug->ReportLiveObjects(
                 DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS( DXGI_DEBUG_RLO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL )
             );
