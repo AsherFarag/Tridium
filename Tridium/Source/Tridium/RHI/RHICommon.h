@@ -5,6 +5,12 @@
 #include <Tridium/Core/Memory.h>
 #include <Tridium/Core/Containers/Containers.h>
 
+#if CONFIG_DEBUG
+	#define RHI_DEBUG_ENABLED 1
+#else
+	#define RHI_DEBUG_ENABLED 0
+#endif // CONFIG_DEBUG
+
 namespace Tridium {
 
 	// Core RHI functions

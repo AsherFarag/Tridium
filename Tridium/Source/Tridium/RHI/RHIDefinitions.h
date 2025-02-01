@@ -1,12 +1,6 @@
 #pragma once
 #include <Tridium/Core/Types.h>
 
-#if CONFIG_DEBUG
-	#define RHI_DEBUG_ENABLED 1
-#else
-	#define RHI_DEBUG_ENABLED 0
-#endif // CONFIG_DEBUG
-
 namespace Tridium {
 
 	//====================================
