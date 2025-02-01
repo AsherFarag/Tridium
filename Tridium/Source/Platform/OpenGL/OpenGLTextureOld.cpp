@@ -1,5 +1,5 @@
 #include "tripch.h"
-#include "Platform/OpenGL/OpenGLTexture.h"
+#include "Platform/OpenGL/OpenGLTextureOld.h"
 #include <math.h>
 #include <algorithm>
 

@@ -19,5 +19,4 @@ namespace Tridium {
 	using Byte = uint8_t;
 	using float32_t = float;
 	using float64_t = double;
-	using hash_t = uint32_t;
 }

@@ -3,6 +3,7 @@
 #include "RHIResource.h"
 #include "RHITexture.h"
 #include "RHIMesh.h"
+#include "RHIPipelineState.h"
 
 namespace Tridium {
 
@@ -15,27 +16,6 @@ namespace Tridium {
 		Pending,  // The fence has not been signaled yet.
 		Complete, // The fence has been signaled.
 		Unknown   // The state of the fence is unknown.
-	};
-
-	enum class ERHICommandType : uint8_t
-	{
-        SetPipelineState,
-        SetRenderTargets,
-        SetClearValues,
-        ClearRenderTargets,
-        SetViewports,
-        SetScissors,
-        SetShaderInput,
-        SetIndexBuffer,
-        SetVertexBuffer,
-        SetPrimitiveTopology,
-        DrawIndexed,
-        DispatchCompute,
-        FenceSignal,
-        FenceWait,
-        Execute,
-		COUNT,
-		Unknown,
 	};
     
 	//======================================================================================================
@@ -59,76 +39,126 @@ namespace Tridium {
 	//=====================================================
     struct RHICommand
     {
-		ERHICommandType Type = ERHICommandType::Unknown;
-        union Payload
+        #pragma region Commands
+
+        struct SetPipelineState 
         {
-            struct SetPipelineState {
-                RHIPipelineState* PSO;
-            } SetPipelineState;
+            RHIPipelineState* PSO;
+        };
 
-            struct SetRenderTargets {
-                RHITexture* RTV[RHIQuery::MaxColourTargets];
-                RHITexture* DSV;
-            } SetRenderTargets;
+        struct SetRenderTargets 
+        {
+            RHITexture* RTV[RHIQuery::MaxColourTargets];
+            RHITexture* DSV;
+        };
 
-            struct SetClearValues {
-                float   Colour[4];
-                float   Depth;
-                uint8_t Stencil;
-            } SetClearValues;
+        struct SetClearValues 
+        {
+            float   Colour[4];
+            float   Depth;
+            uint8_t Stencil;
+        };
 
-            struct ClearRenderTargets {
-                uint32_t ColourTargets : RHIQuery::MaxColourTargets;
-                bool     DepthBit : 1;
-                bool     StencilBit : 1;
-            } ClearRenderTargets;
+        struct ClearRenderTargets 
+        {
+            uint32_t ColourTargets : RHIQuery::MaxColourTargets;
+            bool     DepthBit : 1;
+            bool     StencilBit : 1;
+        };
 
-            struct SetScissors {
-                uint16_t Rects[RHIQuery::MaxColourTargets * ( sizeof( uint16_t ) * 4 )];
-            } SetScissors;
+        struct SetScissors 
+        {
+			Array<uint16_t> Rects{ RHIQuery::MaxColourTargets * ( sizeof( uint16_t ) * 4 ) };
+        };
 
-            struct SetViewports {
-                float Viewports[RHIQuery::MaxColourTargets * 6 * sizeof( float )];
-            } SetViewports;
+        struct SetViewports 
+        {
+			Array<float> Viewports{ RHIQuery::MaxColourTargets * 6 * sizeof( float ) };
+        };
 
-            struct SetShaderInput {
-                uint8_t Index;
-                RHIShaderInputPayload Payload;
-            } SetShaderInput;
+        struct SetShaderInput 
+        {
+            uint8_t Index;
+            RHIShaderInputPayload Payload;
+        };
 
-            struct SetIndexBuffer {
-                RHIIndexBuffer* Ibo;
-            } SetIndexBuffer;
+        struct SetIndexBuffer 
+        {
+            RHIIndexBuffer* IBO;
+        };
 
-            struct SetVertexBuffer {
-                RHIVertexBuffer* Vbo;
-            } SetVertexBuffer;
+        struct SetVertexBuffer 
+        {
+            RHIVertexBuffer* VBO;
+        };
 
-            struct SetPrimitiveTopology {
-                ERHITopology Topology;
-            } SetPrimitiveTopology;
+        struct SetPrimitiveTopology 
+        {
+            ERHITopology Topology;
+        };
 
-            struct DrawIndexed {
-                uint32_t IndexStart;
-                uint32_t IndexCount;
-            } DrawIndexed;
+        struct DrawIndexed 
+        {
+            uint32_t IndexStart;
+            uint32_t IndexCount;
+        };
 
-            struct DispatchCompute {
-                uint16_t GroupSize[3];
-            } DispatchCompute;
+        struct DispatchCompute 
+        {
+            uint16_t GroupSize[3];
+        };
 
-            struct FenceSignal {
-                RHIFence Fence;
-            } FenceSignal;
+        struct FenceSignal 
+        {
+            RHIFence Fence;
+        };
 
-            struct FenceWait {
-                RHIFence Fence;
-            } FenceWait;
+        struct FenceWait 
+        {
+            RHIFence Fence;
+        };
 
-            struct Execute {
-				RHICommandList* CommandList;
-            } Execute;
-		} Payload;
+        struct Execute 
+        {
+            RHICommandList* CommandList;
+        };
+
+        #pragma endregion
+
+		Variant<
+            SetPipelineState,
+            SetRenderTargets,
+            SetClearValues,
+            ClearRenderTargets,
+            SetScissors,
+            SetViewports,
+            SetShaderInput,
+            SetIndexBuffer,
+            SetVertexBuffer,
+            SetPrimitiveTopology,
+            DrawIndexed,
+            DispatchCompute,
+            FenceSignal,
+            FenceWait,
+            Execute> Data;
+
+        template <typename T>
+		T& Get()
+		{
+			return std::get<T>( Data );
+		}
+
+		template <typename T>
+		const T& Get() const
+		{
+			return std::get<T>( Data );
+		}
+
+		template <typename T>
+		bool Is() const
+		{
+			return std::holds_alternative<T>( Data );
+		}
 
 #if RHI_DEBUG_ENABLED
 		struct DebugInfo
@@ -145,7 +175,6 @@ namespace Tridium {
 
 		Array<RHICommand> Commands;
 	private:
-		UnorderedSet<
 	};
 
 	RHI_RESOURCE_BASE_TYPE( CommandList,

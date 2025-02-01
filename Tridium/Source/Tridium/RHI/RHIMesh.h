@@ -8,38 +8,44 @@ namespace Tridium {
 		Point = 0,
 		Line,
 		Triangle,
-		Quad,
+		LineStrip,
+		TriangleStrip,
 		COUNT,
 		Unknown,
 	};
 
 	struct RHIBufferElement
 	{
-		const char* Name;
-		ERHIDataType Type;
-		uint16_t Components;
-		uint16_t Offset;
+		StringView Name;     // Name of the element
+		RHIDataType Type;    // Data type of the element
+		uint16_t Offset;     // Offset in bytes from the start of the buffer
 
-		uint32_t Size() const { return RHI::GetDataTypeSize( Type ) * Components; }
+		constexpr RHIBufferElement( StringView a_Name, RHIDataType::EComponentType a_Type, uint8_t a_Components = 1u )
+			: Name( a_Name ), Type( { a_Type, a_Components } ), Offset( 0 )
+		{
+		}
+
+		constexpr RHIBufferElement( StringView a_Name, RHIDataType a_Type )
+			: Name( a_Name ), Type( a_Type ), Offset( 0 )
+		{
+		}
 	};
 
 	struct RHIBufferLayout
 	{
 		uint32_t Stride;
-		FixedArray<RHIBufferElement, RHIQuery::MaxVertexAttributes> Elements;
+		InlineArray<RHIBufferElement, RHIQuery::MaxVertexAttributes> Elements;
 
 		RHIBufferLayout() = default;
 		RHIBufferLayout( const std::initializer_list<RHIBufferElement>& a_Elements )
 			: Elements( a_Elements )
 		{
 			// Calculate offsets and stride
-			uint32_t offset = 0;
 			Stride = 0;
 			for ( auto& element : Elements )
 			{
-				element.Offset = offset;
-				offset += RHI::GetDataTypeSize( element.Type ) * element.Components;
-				Stride += element.Size();
+				element.Offset = Stride;
+				Stride += element.Type.Size();
 			}
 		}
 	};
@@ -48,7 +54,7 @@ namespace Tridium {
 	{
 		Span<const Byte> InitialData = {};
 		ERHIUsageHint UsageHint = ERHIUsageHint::Default;
-		ERHIDataType DataType = ERHIDataType::UInt16;
+		RHIDataType DataType = RHIDataType::UInt16;
 	};
 
 	RHI_RESOURCE_BASE_TYPE( VertexBuffer )

@@ -1,9 +1,9 @@
 #include "tripch.h"
-#include "DX12RendererAPI.h"
+#include "DX12RHI.h"
 
 namespace Tridium::DX12 {
 
-    bool DX12RendererAPI::Init( const RHIConfig& a_Config )
+    bool DirectX12RHI::Init( const RHIConfig& a_Config )
     {
     #if RHI_DEBUG_ENABLED
 		if ( a_Config.UseDebug )
@@ -77,7 +77,7 @@ namespace Tridium::DX12 {
         return true;
     }
 
-	bool DX12RendererAPI::Shutdown()
+	bool DirectX12RHI::Shutdown()
 	{
 		m_CommandList.Release();
 		m_CommandAllocator.Release();
@@ -101,13 +101,13 @@ namespace Tridium::DX12 {
 		return true;
 	}
 
-    bool DX12RendererAPI::Present()
+    bool DirectX12RHI::Present()
     {
 		return false;
     }
 
 #if RHI_DEBUG_ENABLED
-    void DX12RendererAPI::DumpDebug()
+    void DirectX12RHI::DumpDebug()
     {
         if ( m_DXGIDebug )
         {

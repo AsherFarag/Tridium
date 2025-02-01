@@ -2,7 +2,7 @@
 #include "Texture.h"
 
 #include <Tridium/Rendering/Renderer.h>
-#include <Platform/OpenGL/OpenGLTexture.h>
+#include <Platform/OpenGL/OpenGLTextureOld.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
 #include <Tridium/Core/Application.h>
 #include <Tridium/Asset/AssetManager.h>

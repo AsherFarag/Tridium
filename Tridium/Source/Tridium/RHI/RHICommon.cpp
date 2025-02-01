@@ -3,8 +3,8 @@
 #include "RenderContext.h"
 
 // Backends
-#include "Backend/DirectX12/DX12RendererAPI.h"
-#include "Backend/OpenGL/OpenGLRendererAPI.h"
+#include "Backend/DirectX12/DX12RHI.h"
+#include "Backend/OpenGL/OpenGLRHI.h"
 
 namespace Tridium {
 
@@ -16,35 +16,42 @@ namespace Tridium {
 			return false;
 		}
 
-		if ( !ASSERT_LOG( RHI::IsGraphicsAPISupported( a_Config.GraphicsAPI ), "Graphics API is not supported!" ) )
-		{
-			return false;
-		}
-
 		RenderContext::s_Instance = new RenderContext();
 		RenderContext::Get()->m_Config = a_Config;
 
-		switch ( a_Config.GraphicsAPI )
+		switch ( a_Config.RHIType )
 		{
-			case EGraphicsAPI::OpenGL:
+			case ERHInterfaceType::OpenGL:
 			{
-				RenderContext::Get()->m_RendererAPI = MakeUnique<GL::OpenGLRendererAPI>();
+				RenderContext::Get()->m_RHInterface = MakeUnique<GL::OpenGLRHI>();
 				break;
 			}
-			case EGraphicsAPI::DirectX12:
+			case ERHInterfaceType::DirectX12:
 			{
-				RenderContext::Get()->m_RendererAPI = MakeUnique<DX12::DX12RendererAPI>();
+				RenderContext::Get()->m_RHInterface = MakeUnique<DX12::DirectX12RHI>();
 				break;
 			}
 			default:
 			{
 				ASSERT( false );
-				return false;
 			}
 		}
 
-		bool success = RenderContext::Get()->m_RendererAPI->Init( a_Config );
-		return success;
+		if ( RenderContext::Get()->m_RHInterface == nullptr )
+		{
+			delete RenderContext::s_Instance;
+			return false;
+		}
+
+		if ( RenderContext::Get()->m_RHInterface->Init( a_Config ) == false )
+		{
+			// Failed to initialise the rendering API
+			delete RenderContext::s_Instance;
+			return false;
+		}
+
+		s_RHIGlobals.IsRHIInitialised = true;
+		return true;
 	}
 
 	bool RHI::Shutdown()
@@ -55,7 +62,7 @@ namespace Tridium {
 		}
 
 		// Shutdown the rendering API
-		bool success = RenderContext::Get()->m_RendererAPI->Shutdown();
+		bool success = RenderContext::Get()->m_RHInterface->Shutdown();
 
 		delete RenderContext::s_Instance;
 		RenderContext::s_Instance = nullptr;
@@ -69,71 +76,40 @@ namespace Tridium {
 			return false;
 		}
 
-		return RenderContext::Get()->m_RendererAPI->Present();
+		return RenderContext::Get()->m_RHInterface->Present();
 	}
 
-	EGraphicsAPI RHI::GetGraphicsAPI()
+	ERHInterfaceType RHI::GetRHInterfaceType()
 	{
 		if ( RenderContext::Get() == nullptr )
 		{
 			CHECK( false );
-			return EGraphicsAPI::None;
+			return ERHInterfaceType::Null;
 		}
 
-		return RenderContext::Get()->GetGraphicsAPI();
+		return RenderContext::Get()->GetRHInterfaceType();
 	}
 
-	const char* RHI::GetGraphicsAPIName( EGraphicsAPI a_API )
+	const char* RHI::GetRHIName( ERHInterfaceType a_API )
 	{
-		if ( RenderContext::Get() == nullptr && a_API == EGraphicsAPI::None )
+		if ( RenderContext::Get() == nullptr && a_API == ERHInterfaceType::Null )
 		{
-			return "None";
+			return "Null";
 		}
 
-		EGraphicsAPI api = a_API == EGraphicsAPI::None ? RenderContext::Get()->GetGraphicsAPI() : a_API;
+		ERHInterfaceType api = a_API == ERHInterfaceType::Null ? RenderContext::Get()->GetRHInterfaceType() : a_API;
 		switch ( api )
 		{
-			case EGraphicsAPI::OpenGL: return "OpenGL";
-			case EGraphicsAPI::DirectX11: return "DirectX 11";
-			case EGraphicsAPI::DirectX12: return "DirectX 12";
-			case EGraphicsAPI::Vulkan: return "Vulkan";
+			case ERHInterfaceType::OpenGL: return "OpenGL";
+			case ERHInterfaceType::DirectX11: return "DirectX 11";
+			case ERHInterfaceType::DirectX12: return "DirectX 12";
+			case ERHInterfaceType::Vulkan: return "Vulkan";
 		}
 
-		return "None";
+		return "Null";
 	}
 
-	constexpr bool RHIQuery::IsGraphicsAPISupported( EGraphicsAPI a_API )
-	{
-		switch ( a_API )
-		{
-			case EGraphicsAPI::OpenGL: return true;
-			case EGraphicsAPI::DirectX11: return false;
-			case EGraphicsAPI::DirectX12: return true;
-			case EGraphicsAPI::Vulkan: return false;
-		}
-
-		return false;
-	}
-
-	constexpr bool RHIQuery::IsMultithreadingSupported( EGraphicsAPI a_API )
-	{
-		if ( RenderContext::Get() == nullptr && a_API == EGraphicsAPI::None )
-		{
-			return false;
-		}
-
-		switch ( a_API )
-		{
-			case EGraphicsAPI::OpenGL:    return false;
-			case EGraphicsAPI::DirectX11: return false;
-			case EGraphicsAPI::DirectX12: return true;
-			case EGraphicsAPI::Vulkan:    return true;
-		}
-
-		return false;
-	}
-
-	const RHIConfig& RHIQuery::GetConfig()
+	const RHIConfig& RHI::GetConfig()
 	{
 		if ( RenderContext::Get() == nullptr )
 		{
@@ -142,26 +118,5 @@ namespace Tridium {
 		}
 
 		return RenderContext::Get()->GetConfig();
-	}
-}
-
-constexpr uint8_t Tridium::RHI::GetDataTypeSize( ERHIDataType a_Type )
-{
-	switch ( a_Type )
-	{
-		case ERHIDataType::Float64: return 8;
-		case ERHIDataType::Float32: return 4;
-		case ERHIDataType::Float16: return 2;
-		case ERHIDataType::UNorm8: return 1;
-		case ERHIDataType::SNorm8: return 1;
-		case ERHIDataType::UNorm16: return 2;
-		case ERHIDataType::SNorm16: return 2;
-		case ERHIDataType::UInt8: return 1;
-		case ERHIDataType::SInt8: return 1;
-		case ERHIDataType::UInt16: return 2;
-		case ERHIDataType::SInt16: return 2;
-		case ERHIDataType::UInt32: return 4;
-		case ERHIDataType::SInt32: return 4;
-		default: return 0;
 	}
 }

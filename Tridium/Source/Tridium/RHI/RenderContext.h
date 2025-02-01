@@ -1,6 +1,6 @@
 #pragma once
 #include "RHICommon.h"
-#include "RendererAPI.h"
+#include "DynamicRHI.h"
 #include <Tridium/Utils/Singleton.h>
 
 namespace Tridium {
@@ -10,11 +10,11 @@ namespace Tridium {
 	public:
 		static RenderContext* Get() { return s_Instance; }
 		static const RHIConfig& GetConfig() { return s_Instance->m_Config; }
-		static EGraphicsAPI GetGraphicsAPI() { return s_Instance->m_Config.GraphicsAPI; }
+		static ERHInterfaceType GetRHInterfaceType() { return s_Instance->m_Config.RHIType; }
 
 	private:
 		RHIConfig m_Config;
-		UniquePtr<RendererAPI> m_RendererAPI;
+		UniquePtr<DynamicRHI> m_RHInterface;
 
 	private: // Singleton
 		static RenderContext* s_Instance;

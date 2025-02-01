@@ -1,6 +1,6 @@
 #include "tripch.h"
 #include "OpenGLEnvironmentMap.h"
-#include "Platform/OpenGL/OpenGLTexture.h"
+#include "Platform/OpenGL/OpenGLTextureOld.h"
 #include <Tridium/Rendering/Shader.h>
 #include <Tridium/Core/Application.h>
 #include <Tridium/Rendering/RenderCommand.h>
@@ -9,7 +9,7 @@
 namespace Tridium {
 
 	static Matrix4 s_CaptureProjection = glm::perspective( glm::radians( 90.0f ), 1.0f, 0.1f, 10.0f );
-	static Matrix4 s_CaptureVies[] =
+	static Matrix4 s_CaptureViews[] =
 	{
 		glm::lookAt( Vector3(0.0f), Vector3( 1.0f,  0.0f,  0.0f ),  Vector3( 0.0f, -1.0f,  0.0f ) ),
 		glm::lookAt( Vector3(0.0f), Vector3( -1.0f,  0.0f,  0.0f ), Vector3( 0.0f, -1.0f,  0.0f ) ),
@@ -221,7 +221,7 @@ namespace Tridium {
 			// Iterate through cube faces
 			for ( uint32_t i = 0; i < 6; i++ )
 			{
-				irradianceShader->SetMatrix4( "u_View", s_CaptureVies[i] );
+				irradianceShader->SetMatrix4( "u_View", s_CaptureViews[i] );
 
 				glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, m_IrradianceMap->GetRendererID(), 0 );
 
@@ -283,7 +283,7 @@ namespace Tridium {
 				// For each cube face
 				for ( uint32_t i = 0; i < 6; i++ )
 				{
-					prefilterShader->SetMatrix4( "u_View", s_CaptureVies[i] );
+					prefilterShader->SetMatrix4( "u_View", s_CaptureViews[i] );
 					glFramebufferTexture2D( GL_FRAMEBUFFER,
 						GL_COLOR_ATTACHMENT0,
 						GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,

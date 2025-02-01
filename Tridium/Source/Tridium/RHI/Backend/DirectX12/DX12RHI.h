@@ -1,10 +1,10 @@
 #pragma once
-#include <Tridium/RHI/RendererAPI.h>
+#include <Tridium/RHI/DynamicRHI.h>
 #include "ComPointer.h"
 
 namespace Tridium::DX12 {
 
-	class DX12RendererAPI final : public RendererAPI
+	class DirectX12RHI final : public DynamicRHI
 	{
 	public:
 		virtual bool Init( const RHIConfig& a_Config ) override;

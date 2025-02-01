@@ -87,11 +87,11 @@ namespace Tridium {
         virtual bool Release() = 0;
 
 		// Reads data from the resource.
-		virtual bool Read( Span<Byte>& o_Data, int a_SrcOffset = 0 ) = 0;
-		virtual bool IsReadable() const = 0;
+		virtual bool Read( Span<Byte>& o_Data, size_t a_SrcOffset = 0 ) { return false; }
+		virtual bool IsReadable() const { return false; }
 
 		// Writes data to the resource.
-		virtual bool Write( const Span<const Byte>& a_Data, int a_DstOffset = 0 ) { return false; }
+		virtual bool Write( const Span<const Byte>& a_Data, size_t a_DstOffset = 0 ) { return false; }
 		virtual bool IsWritable() const { return false; }
 
 		// Returns the size of the resource in bytes.
@@ -124,7 +124,7 @@ namespace Tridium {
 			if constexpr ( IsRHIResourceImplemntation<T> )
 			{
 				return GetType() == T::Type
-					&& RHI::GetGraphicsAPI() == T::API;
+					&& RHI::GetRHInterfaceType() == T::API;
 			}
 			else
 			{
@@ -201,4 +201,4 @@ namespace Tridium {
 
 
 #define RHI_RESOURCE_IMPLEMENTATION( GraphicsAPI )												    \
-		static constexpr ::Tridium::EGraphicsAPI API = ::Tridium::EGraphicsAPI::GraphicsAPI;
+		static constexpr ::Tridium::ERHInterfaceType API = ::Tridium::ERHInterfaceType::GraphicsAPI;

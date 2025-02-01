@@ -1,5 +1,5 @@
 #include "tripch.h"
-#include "OpenGLRendererAPI.h"
+#include "OpenGLRHI.h"
 #include "OpenGL.h"
 #include <iostream>
 
@@ -31,7 +31,7 @@ namespace Tridium::GL {
 		}
 	}
 
-	void OpenGLRendererAPI::DumpDebug()
+	void OpenGLRHI::DumpDebug()
 	{
 		std::cout << "OpenGL Debug Dump:\n";
 		for ( const String& message : s_OpenGLDebugMessages )
@@ -46,7 +46,7 @@ namespace Tridium::GL {
 
 #endif // RHI_DEBUG_ENABLED
 
-	bool OpenGLRendererAPI::Init( const RHIConfig& a_Config )
+	bool OpenGLRHI::Init( const RHIConfig& a_Config )
 	{
 	#if RHI_DEBUG_ENABLED
 		if ( a_Config.UseDebug )
@@ -63,12 +63,12 @@ namespace Tridium::GL {
 		return status;
 	}
 
-	bool OpenGLRendererAPI::Shutdown()
+	bool OpenGLRHI::Shutdown()
 	{
 		return true;
 	}
 
-	bool OpenGLRendererAPI::Present()
+	bool OpenGLRHI::Present()
 	{
 		PROFILE_FUNCTION( ProfilerCategory::Rendering );
 

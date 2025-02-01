@@ -36,24 +36,19 @@ namespace Tridium::DX12 {
 			resourceDesc.SampleDesc.Quality = 0;
 			resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 			resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+			// Create the texture
+			D3D12_HEAP_PROPERTIES heapProperties = {};
+			heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+			heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+			heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+			heapProperties.CreationNodeMask = 1;
+			heapProperties.VisibleNodeMask = 1;
+
+			return false;
 		}
 
 		bool Release() override
-		{
-			return false;
-		}
-
-		bool Read( Span<Byte>& o_Data, int a_SrcOffset = 0 ) override
-		{
-			return false;
-		}
-
-		bool IsReadable() const override
-		{
-			return false;
-		}
-
-		bool Write( const Span<const Byte>& a_Data, int a_DstOffset = 0 ) override
 		{
 			return false;
 		}

@@ -9,13 +9,13 @@ namespace Tridium {
 
 	SharedPtr<RHITexture> RHITexture::Create( const RHITextureDescriptor& a_Desc )
 	{
-		switch ( RHI::GetGraphicsAPI() )
+		switch ( RHI::GetRHInterfaceType() )
 		{
-			case EGraphicsAPI::OpenGL:
+			case ERHInterfaceType::OpenGL:
 			{
 				return MakeShared<GL::OpenGLTexture>();
 			}
-			case EGraphicsAPI::DirectX12:
+			case ERHInterfaceType::DirectX12:
 			{
 				return MakeShared<DX12::DX12Texture>();
 			}

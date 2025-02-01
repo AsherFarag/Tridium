@@ -3,11 +3,15 @@
 
 namespace Tridium {
 
-	class RendererAPI
+	//==============================================
+	// DynamicRHI
+	//  An interace for the dynamicly bound RHI.
+	//==============================================
+	class DynamicRHI
 	{
 	public:
-		RendererAPI() = default;
-		virtual ~RendererAPI() = default;
+		DynamicRHI() = default;
+		virtual ~DynamicRHI() = default;
 
 		virtual bool Init( const RHIConfig& a_Config ) = 0;
 		virtual bool Shutdown() = 0;

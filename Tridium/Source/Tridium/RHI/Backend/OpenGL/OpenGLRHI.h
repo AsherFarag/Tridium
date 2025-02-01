@@ -1,11 +1,11 @@
 #pragma once
-#include <Tridium/RHI/RendererAPI.h>
+#include <Tridium/RHI/DynamicRHI.h>
 #include <Tridium/Core/Containers/Array.h>
 #include <Tridium/Core/Containers/String.h>
 
 namespace Tridium::GL {
 
-	class OpenGLRendererAPI final : public RendererAPI
+	class OpenGLRHI final : public DynamicRHI
 	{
 	public:
 		virtual bool Init( const RHIConfig& a_Config ) override;

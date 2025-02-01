@@ -5,13 +5,20 @@
 
 namespace Tridium {
 
-#ifndef TE_ENABLE_ARRAY_BOUNDS_CHECK
-	#define TE_ENABLE_ARRAY_BOUNDS_CHECK 1
+#ifndef CONFIG_ENABLE_BOUNDS_CHECK
+	#if CONFIG_DEBUG
+		#define CONFIG_ENABLE_BOUNDS_CHECK 1
+	#else
+		#define CONFIG_ENABLE_BOUNDS_CHECK 0
+	#endif // CONFIG_DEBUG
 #endif
 
-	// Fixed size array
-	// An array of contiguous memory with a fixed size.
-	// STD equivalent: std::array
+	//=================================================================================================
+	// FixedArray
+	//  Fixed Size Array
+	//  An array of contiguous memory with a fixed size.
+	//  STD equivalent: std::array
+	//=================================================================================================
 	template<typename T, size_t _Size>
 	class FixedArray
 	{
@@ -21,92 +28,218 @@ namespace Tridium {
 		using ReverseIterator = typename std::array<T, _Size>::reverse_iterator;
 		using ConstReverseIterator = typename std::array<T, _Size>::const_reverse_iterator;
 
-		FixedArray() = default;
-		FixedArray( const FixedArray& a_Other ) = default;
-		FixedArray( FixedArray&& a_Other ) = default;
-		FixedArray( std::initializer_list<T> a_InitializerList ) : m_Data( a_InitializerList ) {}
-		FixedArray& operator=( const FixedArray& a_Other ) = default;
-		FixedArray& operator=( FixedArray&& a_Other ) = default;
+		constexpr FixedArray() = default;
+		constexpr FixedArray( const FixedArray& a_Other ) = default;
+		constexpr FixedArray( FixedArray&& a_Other ) = default;
+		constexpr FixedArray( std::initializer_list<T> a_InitializerList ) : m_Data( a_InitializerList ) {}
+		constexpr FixedArray& operator=( const FixedArray& a_Other ) = default;
+		constexpr FixedArray& operator=( FixedArray&& a_Other ) = default;
 
-		T& operator[]( size_t a_Index )
+		constexpr T& operator[]( size_t a_Index )
 		{
-		#if TE_ENABLE_ARRAY_BOUNDS_CHECK
+		#if CONFIG_ENABLE_BOUNDS_CHECK
 			CORE_ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
 		#endif
 			return m_Data[a_Index];
 		}
 
-		const T& operator[]( size_t a_Index ) const
+		constexpr const T& operator[]( size_t a_Index ) const
 		{
-		#if TE_ENABLE_ARRAY_BOUNDS_CHECK
+		#if CONFIG_ENABLE_BOUNDS_CHECK
 			CORE_ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
 		#endif
 			return m_Data[a_Index];
 		}
 
-		T& At( size_t a_Index )
+		constexpr T& At( size_t a_Index )
 		{
-		#if TE_ENABLE_ARRAY_BOUNDS_CHECK
+		#if CONFIG_ENABLE_BOUNDS_CHECK
 			CORE_ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
 		#endif
 			return m_Data[a_Index];
 		}
 
-		const T& At( size_t a_Index ) const
+		constexpr const T& At( size_t a_Index ) const
 		{
-		#if TE_ENABLE_ARRAY_BOUNDS_CHECK
+		#if CONFIG_ENABLE_BOUNDS_CHECK
 			CORE_ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
 		#endif
 			return m_Data[a_Index];
 		}
 
-		T& Front() { return m_Data.front(); }
-		const T& Front() const { return m_Data.front(); }
+		constexpr T& Front() { return m_Data.front(); }
+		constexpr const T& Front() const { return m_Data.front(); }
 
-		T& Back() { return m_Data.back(); }
-		const T& Back() const { return m_Data.back(); }
+		constexpr T& Back() { return m_Data.back(); }
+		constexpr const T& Back() const { return m_Data.back(); }
 
-		T* Data() { return m_Data.data(); }
-		const T* Data() const { return m_Data.data(); }
+		constexpr T* Data() { return m_Data.data(); }
+		constexpr const T* Data() const { return m_Data.data(); }
 
 		constexpr size_t Size() const { return _Size; }
 		constexpr size_t MaxSize() const { return _Size; }
 		constexpr bool IsEmpty() const { return false; }
 		constexpr bool IsValidIndex( size_t a_Index ) const { return ( ( a_Index >= 0 ) && ( a_Index < _Size ) ); }
 
-		void Fill( const T& a_Value ) { m_Data.fill( a_Value ); }
-		void Swap( FixedArray& a_Other ) { m_Data.swap( a_Other.m_Data ); }
+		constexpr void Fill( const T& a_Value ) { m_Data.fill( a_Value ); }
+		constexpr void Swap( FixedArray& a_Other ) { m_Data.swap( a_Other.m_Data ); }
 
-		Iterator Begin() { return m_Data.begin(); }
-		ConstIterator Begin() const { return m_Data.begin(); }
-		Iterator End() { return m_Data.end(); }
-		ConstIterator End() const { return m_Data.end(); }
+		constexpr Iterator Begin() { return m_Data.begin(); }
+		constexpr ConstIterator Begin() const { return m_Data.begin(); }
+		constexpr Iterator End() { return m_Data.end(); }
+		constexpr ConstIterator End() const { return m_Data.end(); }
 
-		ReverseIterator RBegin() { return m_Data.rbegin(); }
-		ConstReverseIterator RBegin() const { return m_Data.rbegin(); }
-		ReverseIterator REnd() { return m_Data.rend(); }
-		ConstReverseIterator REnd() const { return m_Data.rend(); }
+		constexpr ReverseIterator RBegin() { return m_Data.rbegin(); }
+		constexpr ConstReverseIterator RBegin() const { return m_Data.rbegin(); }
+		constexpr ReverseIterator REnd() { return m_Data.rend(); }
+		constexpr ConstReverseIterator REnd() const { return m_Data.rend(); }
 
-		auto begin() { return m_Data.begin(); }
-		auto begin() const { return m_Data.begin(); }
-		auto end() { return m_Data.end(); }
-		auto end() const { return m_Data.end(); }
+		constexpr auto begin() { return m_Data.begin(); }
+		constexpr auto begin() const { return m_Data.begin(); }
+		constexpr auto end() { return m_Data.end(); }
+		constexpr auto end() const { return m_Data.end(); }
 
-		auto rbegin() { return m_Data.rbegin(); }
-		auto rbegin() const { return m_Data.rbegin(); }
-		auto rend() { return m_Data.rend(); }
-		auto rend() const { return m_Data.rend(); }
+		constexpr auto rbegin() { return m_Data.rbegin(); }
+		constexpr auto rbegin() const { return m_Data.rbegin(); }
+		constexpr auto rend() { return m_Data.rend(); }
+		constexpr auto rend() const { return m_Data.rend(); }
 
 	private:
 		std::array<T, _Size> m_Data;
 	};
-	// =================================================================================================
+	// ================================================================================================
+
+	//=================================================================================================
+	// InlineArray
+	//  Fixed Size Array with an API similar to std::vector/Tridium::Array
+	//  An array of contiguous memory with a fixed MAX size.
+	//  STD equivalent: std::array
+	//=================================================================================================
+	template<typename T, size_t _Size>
+	class InlineArray
+	{
+	public:
+		using Storage = FixedArray<T, _Size>;
+		using Iterator = typename Storage::Iterator;
+		using ConstIterator = typename Storage::ConstIterator;
+		using ReverseIterator = typename Storage::ReverseIterator;
+		using ConstReverseIterator = typename Storage::ConstReverseIterator;
+
+		constexpr InlineArray() = default;
+		constexpr InlineArray( const InlineArray& a_Other ) = default;
+		constexpr InlineArray( InlineArray&& a_Other ) = default;
+		constexpr InlineArray( std::initializer_list<T> a_InitializerList ) : m_Storage( a_InitializerList ) {}
+		constexpr InlineArray& operator=( const InlineArray& a_Other ) = default;
+		constexpr InlineArray& operator=( InlineArray&& a_Other ) = default;
+
+		constexpr T& operator[]( size_t a_Index ) { return m_Storage[a_Index]; }
+		constexpr const T& operator[]( size_t a_Index ) const { return m_Storage[a_Index]; }
+
+		constexpr T& At( size_t a_Index ) { return m_Storage.At( a_Index ); }
+		constexpr const T& At( size_t a_Index ) const { return m_Storage.At( a_Index ); }
+		constexpr T& Front() { return m_Storage.Front(); }
+		constexpr const T& Front() const { return m_Storage.Front(); }
+		constexpr T& Back() { return m_Storage.Back(); }
+		constexpr const T& Back() const { return m_Storage.Back(); }
+		constexpr T* Data() { return m_Storage.Data(); }
+		constexpr const T* Data() const { return m_Storage.Data(); }
+		constexpr size_t Size() const { return m_Size; }
+		constexpr size_t MaxSize() const { return _Size; }
+		constexpr bool IsEmpty() const { return ( m_Size == 0 ); }
+		constexpr bool IsValidIndex( size_t a_Index ) const { return ( ( a_Index >= 0 ) && ( a_Index < m_Size ) ); }
+		constexpr void Fill( const T& a_Value ) { m_Storage.Fill( a_Value ); }
+		constexpr void Swap( InlineArray& a_Other ) { m_Storage.Swap( a_Other.m_Storage ); }
+		constexpr void Resize( size_t a_Size ) { m_Size = a_Size; }
+
+		constexpr void PushBack( const T& a_Value )
+		{
+		#if CONFIG_ENABLE_BOUNDS_CHECK
+			CORE_ENSURE_LOG( m_Size < _Size, "Inline Array is full" );
+		#endif
+			m_Storage[m_Size++] = a_Value;
+		}
+
+		constexpr void PopBack()
+		{
+			m_Size--;
+		}
+
+		template<typename... _Args>
+		constexpr auto& EmplaceBack( _Args&&... a_Args )
+		{
+		#if CONFIG_ENABLE_BOUNDS_CHECK
+			CORE_ENSURE_LOG( m_Size < _Size, "Inline Array is full" );
+		#endif
+			return m_Storage[m_Size++] = T( std::forward<_Args>( a_Args )... );
+		}
+
+		constexpr Iterator Insert( Iterator a_Position, const T& a_Value )
+		{
+		#if CONFIG_ENABLE_BOUNDS_CHECK
+			CORE_ENSURE_LOG( m_Size < _Size, "Inline Array is full" );
+		#endif
+			for ( Iterator it = m_Storage.End(); it != a_Position; --it )
+			{
+				*it = *( it - 1 );
+			}
+			*a_Position = a_Value;
+			++m_Size;
+			return a_Position;
+		}
+
+		constexpr Iterator Erase( Iterator a_Position )
+		{
+			for ( Iterator it = a_Position; it != m_Storage.End() - 1; ++it )
+			{
+				*it = *( it + 1 );
+			}
+			--m_Size;
+			return a_Position;
+		}
+
+		constexpr Iterator Erase( Iterator a_First, Iterator a_Last )
+		{
+			size_t count = a_Last - a_First;
+			for ( Iterator it = a_First; it != m_Storage.End() - count; ++it )
+			{
+				*it = *( it + count );
+			}
+			m_Size -= count;
+			return a_First;
+		}
+
+		constexpr Iterator Begin() { return m_Storage.Begin(); }
+		constexpr ConstIterator Begin() const { return m_Storage.Begin(); }
+		constexpr Iterator End() { return m_Storage.Begin() + m_Size; }
+		constexpr ConstIterator End() const { return m_Storage.Begin() + m_Size; }
+
+		constexpr ReverseIterator RBegin() { return m_Storage.RBegin(); }
+		constexpr ConstReverseIterator RBegin() const { return m_Storage.RBegin(); }
+		constexpr ReverseIterator REnd() { return m_Storage.RBegin() + m_Size; }
+		constexpr ConstReverseIterator REnd() const { return m_Storage.RBegin() + m_Size; }
+
+		constexpr auto begin() { return m_Storage.begin(); }
+		constexpr auto begin() const { return m_Storage.begin(); }
+		constexpr auto end() { return m_Storage.begin() + m_Size; }
+		constexpr auto end() const { return m_Storage.begin() + m_Size; }
+
+		constexpr auto rbegin() { return m_Storage.rbegin(); }
+		constexpr auto rbegin() const { return m_Storage.rbegin(); }
+		constexpr auto rend() { return m_Storage.rbegin() + m_Size; }
+		constexpr auto rend() const { return m_Storage.rbegin() + m_Size; }
+
+	private:
+		Storage m_Storage;
+		size_t m_Size = 0;
+	};
 
 
-
-	// Dynamic array
-	// An array of contiguous memory with dynamic size.
-	// STD equivalent: std::vector
+	//=================================================================================================
+	// Array
+	//  Dynamic Size Array
+	//  An array of contiguous memory with dynamic size.
+	//  STD equivalent: std::vector
+	//=================================================================================================
 	template<typename T>
 	class Array
 	{
@@ -126,7 +259,7 @@ namespace Tridium {
 
 		T& operator[]( size_t a_Index )
 		{
-		#if TE_ENABLE_ARRAY_BOUNDS_CHECK
+		#if CONFIG_ENABLE_BOUNDS_CHECK
 			CORE_ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
 		#endif
 			return m_Data[a_Index];
@@ -134,7 +267,7 @@ namespace Tridium {
 
 		const T& operator[]( size_t a_Index ) const
 		{
-		#if TE_ENABLE_ARRAY_BOUNDS_CHECK
+		#if CONFIG_ENABLE_BOUNDS_CHECK
 			CORE_ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
 		#endif
 			return m_Data[a_Index];
@@ -142,7 +275,7 @@ namespace Tridium {
 
 		T& At( size_t a_Index )
 		{
-		#if TE_ENABLE_ARRAY_BOUNDS_CHECK
+		#if CONFIG_ENABLE_BOUNDS_CHECK
 			CORE_ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
 		#endif
 			return m_Data[a_Index];
@@ -150,7 +283,7 @@ namespace Tridium {
 
 		const T& At( size_t a_Index ) const
 		{
-		#if TE_ENABLE_ARRAY_BOUNDS_CHECK
+		#if CONFIG_ENABLE_BOUNDS_CHECK
 			CORE_ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
 		#endif
 			return m_Data[a_Index];
