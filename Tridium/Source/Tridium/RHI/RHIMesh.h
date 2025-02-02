@@ -14,30 +14,22 @@ namespace Tridium {
 		Unknown,
 	};
 
-	struct RHIBufferElement
+	struct RHIVertexAttribute
 	{
-		StringView Name;     // Name of the element
-		RHIDataType Type;    // Data type of the element
-		uint16_t Offset;     // Offset in bytes from the start of the buffer
-
-		constexpr RHIBufferElement( StringView a_Name, RHIDataType::EComponentType a_Type, uint8_t a_Components = 1u )
-			: Name( a_Name ), Type( { a_Type, a_Components } ), Offset( 0 )
-		{
-		}
-
-		constexpr RHIBufferElement( StringView a_Name, RHIDataType a_Type )
-			: Name( a_Name ), Type( a_Type ), Offset( 0 )
-		{
-		}
+		StringView Name;            // Name of the attribute
+		RHIVertexElementType Type;  // Data type of the attribute
+		uint16_t Offset;            // Offset in bytes from the start of the vertex layout
 	};
 
-	struct RHIBufferLayout
+	struct RHIVertexLayout
 	{
+		// Stride of the vertex layout in bytes
 		uint32_t Stride;
-		InlineArray<RHIBufferElement, RHIQuery::MaxVertexAttributes> Elements;
+		// Array of vertex attributes
+		InlineArray<RHIVertexAttribute, RHIQuery::MaxVertexAttributes> Elements;
 
-		RHIBufferLayout() = default;
-		RHIBufferLayout( const std::initializer_list<RHIBufferElement>& a_Elements )
+		constexpr RHIVertexLayout() = default;
+		constexpr RHIVertexLayout( const std::initializer_list<RHIVertexAttribute>& a_Elements )
 			: Elements( a_Elements )
 		{
 			// Calculate offsets and stride
@@ -45,7 +37,7 @@ namespace Tridium {
 			for ( auto& element : Elements )
 			{
 				element.Offset = Stride;
-				Stride += element.Type.Size();
+				Stride += element.Type.GetSize();
 			}
 		}
 	};
@@ -54,14 +46,14 @@ namespace Tridium {
 	{
 		Span<const Byte> InitialData = {};
 		ERHIUsageHint UsageHint = ERHIUsageHint::Default;
-		RHIDataType DataType = RHIDataType::UInt16;
+		ERHIDataType DataType = ERHIDataType::UInt16;
 	};
 
 	RHI_RESOURCE_BASE_TYPE( VertexBuffer )
 	{
 		Span<const Byte> InitialData = {};
 		ERHIUsageHint UsageHint = ERHIUsageHint::Default;
-		RHIBufferLayout Layout;
+		RHIVertexLayout Layout;
 	};
 
 } // namespace Tridium

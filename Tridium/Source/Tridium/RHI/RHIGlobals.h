@@ -1,4 +1,5 @@
 #pragma once
+#include "RHIDefinitions.h"
 #include <Tridium/Core/Containers/String.h>
 
 namespace Tridium {
@@ -11,6 +12,10 @@ namespace Tridium {
 	{
 		// True if the rendering hardware interface has been initialised.
 		bool IsRHIInitialised = false;
+
+		// The RHI configuration.
+		RHIConfig Config;
+
 		// Whether the RHI supports being able to send commands from multiple threads.
 		bool SupportsMultithreading = false;
 

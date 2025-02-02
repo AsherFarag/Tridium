@@ -13,12 +13,7 @@
 
 namespace Tridium {
 
-	// Core RHI functions
 	namespace RHI {
-		bool Initialise( const RHIConfig& a_Config );
-		bool Shutdown();
-		bool Present();
-		const RHIConfig& GetConfig();
 		ERHInterfaceType GetRHInterfaceType();
 		const char* GetRHIName( ERHInterfaceType a_API = ERHInterfaceType::Null );
 	}

@@ -11,6 +11,8 @@ namespace Tridium::DX12 {
 		virtual bool Shutdown() override;
 		virtual bool Present() override;
 
+		virtual ERHInterfaceType GetRHInterfaceType() const override final { return ERHInterfaceType::DirectX12; }
+
 	private:
 		ComPtr<IDXGIFactory7> m_DXGIFactory = nullptr;
 		ComPtr<ID3D12Device8> m_Device = nullptr;

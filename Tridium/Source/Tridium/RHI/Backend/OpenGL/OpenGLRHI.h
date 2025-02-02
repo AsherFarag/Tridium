@@ -12,6 +12,8 @@ namespace Tridium::GL {
 		virtual bool Shutdown() override;
 		virtual bool Present() override;
 
+		virtual ERHInterfaceType GetRHInterfaceType() const override final { return ERHInterfaceType::OpenGL; }
+
 	#if RHI_DEBUG_ENABLED
 		virtual void DumpDebug() override;
 	#endif // RHI_DEBUG_ENABLED

@@ -5,6 +5,8 @@ namespace Tridium {
 
     enum class ERHITextureFormat : uint8_t
     {
+        Unknown,
+
         // 8-bit Unorm
         R8,        // DXGI_FORMAT_R8_UNORM / GL_R8 / VK_FORMAT_R8_UNORM
         RG8,       // DXGI_FORMAT_R8G8_UNORM / GL_RG8 / VK_FORMAT_R8G8_UNORM
@@ -48,7 +50,6 @@ namespace Tridium {
         BC7,       // DXGI_FORMAT_BC7_UNORM / GL_COMPRESSED_RGBA_BPTC_UNORM_ARB / VK_FORMAT_BC7_UNORM_BLOCK
 
         COUNT,
-        Unknown,
     };
 
 

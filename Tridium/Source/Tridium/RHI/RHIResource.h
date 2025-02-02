@@ -14,11 +14,10 @@ namespace Tridium {
 	//=====================================================================
 	enum class ERHIResourceType : uint8_t
 	{
-        Sampler = 0,
+        Sampler,
         Texture,
         Shader,
-        ConstantBuffer,
-        MutableBuffer,
+        Buffer,
         VertexBuffer,
         IndexBuffer,
         ShaderInputLayout,
@@ -60,11 +59,15 @@ namespace Tridium {
 		Default = OneWriteManyDraw,
 	};
 
-	template<typename T>
-	concept IsRHIResource = std::is_base_of_v<RHIResource, T>;
+	namespace Concepts {
 
-	template<typename T>
-	concept IsRHIResourceImplemntation = IsRHIResource<T> && T::API;
+		template<typename T>
+		concept IsRHIResource = std::is_base_of_v<RHIResource, T>;
+
+		template<typename T>
+		concept IsRHIResourceImplemntation = IsRHIResource<T> && T::API;
+
+	}
 
 	//======================================================================================================
 	// RHIResource
@@ -116,24 +119,22 @@ namespace Tridium {
 		}
 
 		// Returns whether the resource is the same resource type.
-		// If the resource is a specific implementation of a resource type, the API will also be checked.
-		// E.g. if the 'T' is a DX12 texture, the API will be checked to ensure it is DX12.
-		template<typename T> requires IsRHIResource<T>
+		// If 'T' is a specific implementation of a resource type, the API will also be checked.
+		// E.g. if 'T' is a DX12 texture, the API will be checked to ensure it is DX12.
+		template<typename T> requires Concepts::IsRHIResource<T>
 		bool Is() const
 		{
-			if constexpr ( IsRHIResourceImplemntation<T> )
+			if constexpr ( Concepts::IsRHIResourceImplemntation<T> )
 			{
 				return GetType() == T::Type
 					&& RHI::GetRHInterfaceType() == T::API;
 			}
-			else
-			{
-				return GetType() == T::Type;
-			}
+
+			return GetType() == T::Type;
 		}
 
 		// Will return a shared pointer to this resource if it is the same type.
-		template<typename T> requires IsRHIResource<T>
+		template<typename T> requires Concepts::IsRHIResource<T>
 		SharedPtr<T> As()
 		{
 			if ( Is<T>() )
@@ -145,7 +146,7 @@ namespace Tridium {
 		}
 
 		// Will return a shared pointer to this resource if it is the same type.
-		template<typename T> requires IsRHIResource<T>
+		template<typename T> requires Concepts::IsRHIResource<T>
 		SharedPtr<const T> As() const
 		{
 			if ( Is<T>() )
@@ -168,7 +169,7 @@ namespace Tridium {
 		}
 	};
 
-	template<typename T> requires IsRHIResource<T>
+	template<typename T> requires Concepts::IsRHIResource<T>
 	struct RHIResourceDescriptor
 	{
 		using ResourceType = T;
@@ -199,6 +200,7 @@ namespace Tridium {
 
 
 
-
+// Helper macro to define the implementation of a resource type.
+// For usage in an RHI implementation, such as OpenGLTexture.
 #define RHI_RESOURCE_IMPLEMENTATION( GraphicsAPI )												    \
 		static constexpr ::Tridium::ERHInterfaceType API = ::Tridium::ERHInterfaceType::GraphicsAPI;
