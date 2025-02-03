@@ -17,6 +17,7 @@
 #include <Tridium/Rendering/RenderCommand.h>
 #include "Tridium/IO/ProjectSerializer.h"
 #include <Tridium/Scripting/ScriptEngine.h>
+#include <Tridium/RHI/RHI.h>
 
 
 namespace Tridium {
@@ -31,6 +32,7 @@ namespace Tridium {
 		{
 			m_EngineAssetsDirectory = "EngineAssets";
 		}
+
 		Initialize( a_ProjectPath );
 	}
 
@@ -129,7 +131,7 @@ namespace Tridium {
 
 		if ( !m_ActiveScene->GetMainCamera() )
 		{
-			auto view = m_ActiveScene->GetRegistry().view<CameraComponent>();
+			auto view = m_ActiveScene->GetECS().View<CameraComponent>();
 			if ( !view.empty() )
 				m_ActiveScene->SetMainCamera( view.begin()[0] );
 		}
@@ -187,7 +189,7 @@ namespace Tridium {
 	#if IS_EDITOR
 		Editor::GetEditorLayer()->OnEndScene();
 	#else
-		m_Running = false;
+		Get().m_Running = false;
 	#endif // IS_EDITOR
 	}
 	
@@ -223,6 +225,12 @@ namespace Tridium {
 			m_Window = Window::Create();
 			m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
 		}
+
+		RHIConfig config;
+		config.RHIType = ERHInterfaceType::OpenGL;
+		bool success = RHI::Initialise( config );
+		TE_CORE_INFO( "RHI Initialised: {0}", success );
+		TE_CORE_INFO( "RHI Type: {0}", RHI::GetRHIName() );
 
 		// Initialise the render pipeline
 		{

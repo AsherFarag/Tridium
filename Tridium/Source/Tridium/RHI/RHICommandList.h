@@ -1,25 +1,19 @@
 #pragma once
 #include "RHICommon.h"
 #include "RHIResource.h"
+#include "RHICommandAllocator.h"
 #include "RHITexture.h"
 #include "RHIMesh.h"
 #include "RHIPipelineState.h"
 
 namespace Tridium {
 
-	// A fence that can be used to synchronize the CPU and GPU.
-    enum class RHIFence : int32_t {};
-
-	// The state of a fence.
-	enum class ERHIFenceState : uint8_t
-	{
-		Pending,  // The fence has not been signaled yet.
-		Complete, // The fence has been signaled.
-		Unknown   // The state of the fence is unknown.
-	};
+	// Forward declarations
+	class RHICommandList;
+	using RHICommandListRef = SharedPtr<RHICommandList>;
     
 	//======================================================================================================
-    // RHIShaderInputPayload
+    // RHI Shader Input Payload
     //  A structure that holds shader input data,
     //  including a count of inputs and either an array of references to textures or inline data.
 	//======================================================================================================
@@ -33,8 +27,31 @@ namespace Tridium {
 		} Payload;
 	};
 
+	//=====================================================
+	// RHI Command Type
+	//=====================================================
+	enum class ERHICommandType : uint8_t
+	{
+		SetPipelineState,
+		SetRenderTargets,
+		SetClearValues,
+		ClearRenderTargets,
+		SetScissors,
+		SetViewports,
+		SetShaderInput,
+		SetIndexBuffer,
+		SetVertexBuffer,
+		SetPrimitiveTopology,
+		DrawIndexed,
+		DispatchCompute,
+		FenceSignal,
+		FenceWait,
+		Execute,
+		COUNT,
+	};
+
     //=====================================================
-	// RHICommand
+	// RHI Command
 	//  A single command that can be executed on the GPU.
 	//=====================================================
     struct RHICommand
@@ -154,20 +171,37 @@ namespace Tridium {
 			return std::get<T>( Data );
 		}
 
+		template <ERHICommandType T>
+		auto& Get()
+		{
+			return std::get<std::underlying_type_t<ERHICommandType>(T)>(Data);
+		}
+
+		template <ERHICommandType T>
+		const auto& Get() const
+		{
+			return std::get<std::underlying_type_t<ERHICommandType>( T )>( Data );
+		}
+
 		template <typename T>
 		bool Is() const
 		{
 			return std::holds_alternative<T>( Data );
 		}
 
-#if RHI_DEBUG_ENABLED
+		ERHICommandType Type() const
+		{
+			return static_cast<ERHICommandType>( Data.index() );
+		}
+
+	#if RHI_DEBUG_ENABLED
 		struct DebugInfo
 		{
 			const char* Function = nullptr;
 			const char* File = nullptr;
 			uint32_t Line = 0;
 		} Debug;
-#endif // RHI_DEBUG_ENABLED
+	#endif // RHI_DEBUG_ENABLED
     };
 
 #if RHI_DEBUG_ENABLED
@@ -190,6 +224,8 @@ namespace Tridium {
 	struct RHICommandBuffer
 	{
 		Array<RHICommand> Commands;
+
+		//=====================================================
 
 		void SetPipelineState( RHIPipelineStateRef a_PSO )
 		{
@@ -247,6 +283,8 @@ namespace Tridium {
 			RHICommand::SetShaderInput& data = cmd.Get<RHICommand::SetShaderInput>();
 			data.Index = a_Index;
 			data.Payload.Count = 1;
+
+			TODO( "Implement SetShaderInput" );
 		}
 
 		void SetIndexBuffer( RHIIndexBufferRef a_IBO )
@@ -293,10 +331,11 @@ namespace Tridium {
 	};
 
 	RHI_RESOURCE_BASE_TYPE( CommandList,
-		virtual bool SetCommands();
+		virtual bool SetCommands( const RHICommandBuffer& a_CmdBuffer ) { return false; }
 	)
 	{
-
+		RHICommandBuffer Commands;
+		RHICommandAllocatorRef Allocator;
 	};
 
 }

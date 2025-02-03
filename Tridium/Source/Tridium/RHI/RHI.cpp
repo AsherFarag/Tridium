@@ -2,15 +2,32 @@
 #include "RHI.h"
 
 // Backends
-#include "Backend/DirectX12/DX12RHI.h"
-#include "Backend/OpenGL/OpenGLRHI.h"
+#if RHI_ENABLE_BACKEND_DIRECTX12
+	#include "Backend/DirectX12/DX12RHI.h"
+#endif
+#if RHI_ENABLE_BACKEND_OPENGL
+	#include "Backend/OpenGL/OpenGLRHI.h"
+#endif
 
 namespace Tridium {
 
 	DynamicRHI* s_DynamicRHI = nullptr;
 
+	struct Vertex
+	{
+
+	};
+
 	bool RHI::Initialise( const RHIConfig& a_Config )
 	{
+		constexpr RHIVertexLayout layout = {
+			{ "Position", RHIVertexElementTypes::Float3 },
+			{ "Normal", RHIVertexElementTypes::Float3 },
+			{ "Tangent", RHIVertexElementTypes::Float3 },
+			{ "TexCoord", RHIVertexElementTypes::Float2 },
+			{ "Colour", RHIVertexElementTypes::Float4 }
+		};
+
 		if ( !ASSERT_LOG( !s_RHIGlobals.IsRHIInitialised, "RHI has already been previously initialised!" ) )
 		{
 			return false;
@@ -18,16 +35,20 @@ namespace Tridium {
 
 		switch ( a_Config.RHIType )
 		{
+		#if RHI_ENABLE_BACKEND_OPENGL
 			case ERHInterfaceType::OpenGL:
 			{
-				s_DynamicRHI = new GL::OpenGLRHI();
+				s_DynamicRHI = new OpenGLRHI();
 				break;
 			}
+		#endif
+		#if RHI_ENABLE_BACKEND_DIRECTX12
 			case ERHInterfaceType::DirectX12:
 			{
-				s_DynamicRHI = new DX12::DirectX12RHI();
+				s_DynamicRHI = new DirectX12RHI();
 				break;
 			}
+		#endif
 			default:
 			{
 				ASSERT( false );

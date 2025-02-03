@@ -12,6 +12,10 @@
 
 namespace Tridium {
 
+
+	template<typename... _Types>
+	using ViewType = decltype( entt::registry::view<_Types...> );
+
 	RayCastResult Scene::CastRay( const Vector3& a_Start, const Vector3& a_End, ERayCastChannel a_RayCastChannel, const PhysicsBodyFilter& a_BodyFilter, bool a_DrawDebug, Debug::EDrawDuration a_DrawDurationType, float a_DebugDrawDuration, Color a_DebugLineColor, Color a_DebugHitColor ) const
 	{
 		RayCastResult result = m_PhysicsScene->CastRay( a_Start, a_End, a_RayCastChannel, a_BodyFilter );

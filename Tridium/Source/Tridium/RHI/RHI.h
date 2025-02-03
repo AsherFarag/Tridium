@@ -1,6 +1,8 @@
 #pragma once
 #include "RHICommon.h"
 #include "DynamicRHI.h"
+#include "RHITexture.h"
+#include "RHIMesh.h"
 
 namespace Tridium {
 
@@ -12,12 +14,6 @@ namespace Tridium {
 		bool Shutdown();
 		bool Present();
 		//===========================
-
-		template<typename T = DynamicRHI>
-		T* GetDynamicRHI() requires Concepts::IsDynamicRHI<T>
-		{
-			return static_cast<T*>( s_DynamicRHI );
-		}
 	}
 
 }

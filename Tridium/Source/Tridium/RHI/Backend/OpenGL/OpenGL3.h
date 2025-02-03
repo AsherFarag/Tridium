@@ -346,4 +346,6 @@ namespace Tridium {
 
     };
 
-}
+} // namespace Tridium
+
+#endif // RHI_ENABLE_BACKEND_OPENGL

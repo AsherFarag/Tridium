@@ -19,7 +19,7 @@ namespace Tridium {
 	//  An array of contiguous memory with a fixed size.
 	//  STD equivalent: std::array
 	//=================================================================================================
-	template<typename T, size_t _Size>
+	template<typename T, size_t _Size, bool _ForceConstexpr = false>
 	class FixedArray
 	{
 	public:
@@ -31,39 +31,51 @@ namespace Tridium {
 		constexpr FixedArray() = default;
 		constexpr FixedArray( const FixedArray& a_Other ) = default;
 		constexpr FixedArray( FixedArray&& a_Other ) = default;
-		constexpr FixedArray( std::initializer_list<T> a_InitializerList ) : m_Data( a_InitializerList ) {}
+		constexpr FixedArray( const std::initializer_list<T>& a_InitializerList ) { std::copy( a_InitializerList.begin(), a_InitializerList.end(), m_Data.begin() ); }
 		constexpr FixedArray& operator=( const FixedArray& a_Other ) = default;
 		constexpr FixedArray& operator=( FixedArray&& a_Other ) = default;
 
 		constexpr T& operator[]( size_t a_Index )
 		{
-		#if CONFIG_ENABLE_BOUNDS_CHECK
-			CORE_ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
-		#endif
+			if constexpr ( !_ForceConstexpr )
+			{
+			#if CONFIG_ENABLE_BOUNDS_CHECK
+				ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
+			#endif
+			}
 			return m_Data[a_Index];
 		}
 
 		constexpr const T& operator[]( size_t a_Index ) const
 		{
-		#if CONFIG_ENABLE_BOUNDS_CHECK
-			CORE_ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
-		#endif
+			if constexpr ( !_ForceConstexpr )
+			{
+			#if CONFIG_ENABLE_BOUNDS_CHECK
+				ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
+			#endif
+			}
 			return m_Data[a_Index];
 		}
 
 		constexpr T& At( size_t a_Index )
 		{
-		#if CONFIG_ENABLE_BOUNDS_CHECK
-			CORE_ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
-		#endif
+			if constexpr ( !_ForceConstexpr )
+			{
+			#if CONFIG_ENABLE_BOUNDS_CHECK
+				ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
+			#endif
+			}
 			return m_Data[a_Index];
 		}
 
 		constexpr const T& At( size_t a_Index ) const
 		{
-		#if CONFIG_ENABLE_BOUNDS_CHECK
-			CORE_ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
-		#endif
+			if constexpr ( !_ForceConstexpr )
+			{
+			#if CONFIG_ENABLE_BOUNDS_CHECK
+				ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
+			#endif
+			}
 			return m_Data[a_Index];
 		}
 
@@ -115,11 +127,11 @@ namespace Tridium {
 	//  An array of contiguous memory with a fixed MAX size.
 	//  STD equivalent: std::array
 	//=================================================================================================
-	template<typename T, size_t _Size>
+	template<typename T, size_t _Size, bool _ForceConstexpr = false>
 	class InlineArray
 	{
 	public:
-		using Storage = FixedArray<T, _Size>;
+		using Storage = FixedArray<T, _Size, _ForceConstexpr>;
 		using Iterator = typename Storage::Iterator;
 		using ConstIterator = typename Storage::ConstIterator;
 		using ReverseIterator = typename Storage::ReverseIterator;
@@ -128,9 +140,16 @@ namespace Tridium {
 		constexpr InlineArray() = default;
 		constexpr InlineArray( const InlineArray& a_Other ) = default;
 		constexpr InlineArray( InlineArray&& a_Other ) = default;
-		constexpr InlineArray( std::initializer_list<T> a_InitializerList ) : m_Storage( a_InitializerList ) {}
 		constexpr InlineArray& operator=( const InlineArray& a_Other ) = default;
 		constexpr InlineArray& operator=( InlineArray&& a_Other ) = default;
+
+		constexpr InlineArray( const std::initializer_list<T>& a_InitializerList )
+		{
+			for ( const T& value : a_InitializerList )
+			{
+				PushBack( value );
+			}
+		}
 
 		constexpr T& operator[]( size_t a_Index ) { return m_Storage[a_Index]; }
 		constexpr const T& operator[]( size_t a_Index ) const { return m_Storage[a_Index]; }
@@ -153,9 +172,12 @@ namespace Tridium {
 
 		constexpr void PushBack( const T& a_Value )
 		{
-		#if CONFIG_ENABLE_BOUNDS_CHECK
-			CORE_ENSURE_LOG( m_Size < _Size, "Inline Array is full" );
-		#endif
+			if constexpr ( !_ForceConstexpr )
+			{
+			#if CONFIG_ENABLE_BOUNDS_CHECK
+				ENSURE_LOG( m_Size < _Size, "Inline Array is full" );
+			#endif
+			}
 			m_Storage[m_Size++] = a_Value;
 		}
 
@@ -167,17 +189,23 @@ namespace Tridium {
 		template<typename... _Args>
 		constexpr auto& EmplaceBack( _Args&&... a_Args )
 		{
-		#if CONFIG_ENABLE_BOUNDS_CHECK
-			CORE_ENSURE_LOG( m_Size < _Size, "Inline Array is full" );
-		#endif
+			if constexpr ( !_ForceConstexpr )
+			{
+			#if CONFIG_ENABLE_BOUNDS_CHECK
+				ENSURE_LOG( m_Size < _Size, "Inline Array is full" );
+			#endif
+			}
 			return m_Storage[m_Size++] = T( std::forward<_Args>( a_Args )... );
 		}
 
 		constexpr Iterator Insert( Iterator a_Position, const T& a_Value )
 		{
-		#if CONFIG_ENABLE_BOUNDS_CHECK
-			CORE_ENSURE_LOG( m_Size < _Size, "Inline Array is full" );
-		#endif
+			if constexpr ( !_ForceConstexpr )
+			{
+			#if CONFIG_ENABLE_BOUNDS_CHECK
+				CENSURE_LOG( m_Size < _Size, "Inline Array is full" );
+			#endif
+			}
 			for ( Iterator it = m_Storage.End(); it != a_Position; --it )
 			{
 				*it = *( it - 1 );

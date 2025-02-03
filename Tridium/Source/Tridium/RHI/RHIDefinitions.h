@@ -4,8 +4,8 @@
 #include <type_traits>
 #include <Tridium/Math/Math.h>
 
-// Helper macro to assert that the enum size is within the bounds of the number of bits
-// This is undefined at the end of the file
+// Helper macro to assert that the enum size is within the bounds of the number of bits.
+// This is undefined at the end of the file.
 #define ENUM_SIZE_ASSERT( _Enum ) \
 	static_assert( std::underlying_type_t<_Enum>(_Enum::COUNT) <= ( 1 << std::underlying_type_t<_Enum>(_Enum::NUM_BITS) ), #_Enum "::COUNT exceeds NUM_BITS" )
 
@@ -29,10 +29,10 @@ namespace Tridium {
 	//===========================
 	enum class ERHIFeatureSupport : uint8_t
 	{
-		// The RHI feature is completely unavailable at runtime
+		// The RHI feature is completely unavailable at runtime.
 		Unsupported,
 
-		// The RHI feature can be available at runtime based on hardware or driver
+		// The RHI feature can be available at runtime based on hardware or driver.
 		RuntimeDependent,
 
 		// The RHI feature is guaranteed to be available at runtime.
@@ -67,7 +67,7 @@ namespace Tridium {
 	//===========================
 	// Sampler Filter
 	//===========================
-	enum class ESamplerFilter : uint8_t
+	enum class ERHISamplerFilter : uint8_t
 	{
 		Point,
 		Bilinear,
@@ -77,12 +77,12 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 3,
 	};
-	ENUM_SIZE_ASSERT( ESamplerFilter );
+	ENUM_SIZE_ASSERT( ERHISamplerFilter );
 
 	//===========================
 	// Sampler Address Mode
 	//===========================
-	enum class ESamplerAddressMode : uint8_t
+	enum class ERHISamplerAddressMode : uint8_t
 	{
 		Repeat,
 		Mirror,
@@ -94,24 +94,24 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 2,
 	};
-	ENUM_SIZE_ASSERT( ESamplerAddressMode );
+	ENUM_SIZE_ASSERT( ERHISamplerAddressMode );
 
-	//===========================
-	// Sampler Comparison Function
-	//===========================
-	enum class ESamplerCompareFunction : uint8_t
+	//=================================
+	// RHI Sampler Comparison Function
+	//=================================
+	enum class ERHISamplerComparison : uint8_t
 	{
 		Never,
 		Less,
 		COUNT,
 		NUM_BITS = 2,
 	};
-	ENUM_SIZE_ASSERT( ESamplerCompareFunction );
+	ENUM_SIZE_ASSERT( ERHISamplerComparison );
 
 	//===========================
-	// Comparison Functions
+	// RHI Comparison Functions
 	//===========================
-	enum class ECompareFunction : uint8_t
+	enum class ERHIComparison : uint8_t
 	{
 		Never,         // False
 		Less,          // <
@@ -124,12 +124,12 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 3,
 	};
-	ENUM_SIZE_ASSERT( ECompareFunction );
+	ENUM_SIZE_ASSERT( ERHIComparison );
 
 	//===========================
-	// Rasterizer Fill Mode
+	// RHI Rasterizer Fill Mode
 	//===========================
-	enum class ERasterizerFillMode : uint8_t
+	enum class ERHIRasterizerFillMode : uint8_t
 	{
 		Point,
 		Wireframe,
@@ -137,12 +137,12 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 2,
 	};
-	ENUM_SIZE_ASSERT( ERasterizerFillMode );
+	ENUM_SIZE_ASSERT( ERHIRasterizerFillMode );
 
 	//===========================
-	// Rasterizer Cull Mode
+	// RHI Rasterizer Cull Mode
 	//===========================
-	enum class ERasterizerCullMode : uint8_t
+	enum class ERHIRasterizerCullMode : uint8_t
 	{
 		None,
 		Front,
@@ -150,20 +150,83 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 2,
 	};
-	ENUM_SIZE_ASSERT( ERasterizerCullMode );
+	ENUM_SIZE_ASSERT( ERHIRasterizerCullMode );
 
 	//===========================
-	// Rasterizer Depth Clip Mode
+	// RHI Rasterizer Depth Clip Mode
 	//===========================
-	enum class ERasterizerDepthClipMode : uint8_t
+	enum class ERHIRasterizerDepthClipMode : uint8_t
 	{
 		Clip,
 		Clamp,
 		COUNT,
 		NUM_BITS = 1,
 	};
-	ENUM_SIZE_ASSERT( ERasterizerDepthClipMode );
+	ENUM_SIZE_ASSERT( ERHIRasterizerDepthClipMode );
 
+	//===========================
+	// RHI Stencil Operation
+	//===========================
+	enum class ERHIStencilOp : uint8_t
+	{
+		Keep,
+		Zero,
+		Replace,
+		Invert,
+		Increment,
+		Decrement,
+		COUNT,
+		NUM_BITS = 3,
+	};
+	ENUM_SIZE_ASSERT( ERHIStencilOp );
+
+	//===========================
+	// RHI Depth Operation
+	//===========================
+	enum class ERHIDepthOp : uint8_t
+	{
+		Keep,
+		Replace,
+		COUNT,
+		NUM_BITS = 2,
+	};
+	ENUM_SIZE_ASSERT( ERHIDepthOp );
+
+	//===========================
+	// RHI Blend Operation
+	//===========================
+	enum class ERHIBlendOp : uint8_t
+	{
+		Zero,
+		One,
+		SrcColour,
+		OneMinusSrcColour,
+		SrcAlpha,
+		OneMinusSrcAlpha,
+		DstColour,
+		OneMinusDstColour,
+		DstAlpha,
+		OneMinusDstAlpha,
+		SrcAlphaSaturate,
+		COUNT,
+		NUM_BITS = 4,
+	};
+	ENUM_SIZE_ASSERT( ERHIBlendOp );
+
+	//===========================
+	// RHI Blend Equation
+	//===========================
+	enum class ERHIBlendEq : uint8_t
+	{
+		Add,
+		Subtract,
+		ReverseSubtract,
+		Min,
+		Max,
+		COUNT,
+		NUM_BITS = 3,
+	};
+	ENUM_SIZE_ASSERT( ERHIBlendEq );
 
 	//===========================
 	// Colour Write Mask
@@ -180,6 +243,23 @@ namespace Tridium {
 		RGB = Red | Green | Blue,
 		RGBA = Red | Green | Blue | Alpha,
 		BA = Blue | Alpha,
+	};
+
+	//==========================================================
+	// RHI Fence
+	//  A fence that can be used to synchronize the CPU and GPU.
+	enum class RHIFence : int32_t {};
+	//==========================================================
+
+	//==========================================================
+	// RHI Fence State
+	//  The state of a fence.
+	//==========================================================
+	enum class ERHIFenceState : uint8_t
+	{
+		Pending,  // The fence has not been signaled yet.
+		Complete, // The fence has been signaled.
+		Unknown   // The state of the fence is unknown.
 	};
 
 	//====================================
@@ -224,7 +304,6 @@ namespace Tridium {
 			case Float32: return 4;
 			case Float64: return 8;
 		}
-		ASSERT( false );
 		return 0;
 	}
 
@@ -255,25 +334,34 @@ namespace Tridium {
 		{
 			return GetRHIDataTypeSize( Type ) * Components;
 		}
-
-		static const RHIVertexElementType Unknown;
-		static const RHIVertexElementType Half;
-		static const RHIVertexElementType Half2;
-		static const RHIVertexElementType Half3;
-		static const RHIVertexElementType Half4;
-		static const RHIVertexElementType Float;
-		static const RHIVertexElementType Float2;
-		static const RHIVertexElementType Float3;
-		static const RHIVertexElementType Float4;
-		static const RHIVertexElementType Int;
-		static const RHIVertexElementType Int2;
-		static const RHIVertexElementType Int3;
-		static const RHIVertexElementType Int4;
-		static const RHIVertexElementType UInt;
-		static const RHIVertexElementType UInt2;
-		static const RHIVertexElementType UInt3;
-		static const RHIVertexElementType UInt4;
 	};
+
+	//==========================================================
+	// Predefined Vertex Element Types
+	//==========================================================
+	namespace RHIVertexElementTypes {
+		static constexpr RHIVertexElementType Unknown{ ERHIDataType::Unknown, 0 };
+		static constexpr RHIVertexElementType Half{ ERHIDataType::Float16, 1 };
+		static constexpr RHIVertexElementType Half2{ ERHIDataType::Float16, 2 };
+		static constexpr RHIVertexElementType Half3{ ERHIDataType::Float16, 3 };
+		static constexpr RHIVertexElementType Half4{ ERHIDataType::Float16, 4 };
+		static constexpr RHIVertexElementType Float{ ERHIDataType::Float32, 1 };
+		static constexpr RHIVertexElementType Float2{ ERHIDataType::Float32, 2 };
+		static constexpr RHIVertexElementType Float3{ ERHIDataType::Float32, 3 };
+		static constexpr RHIVertexElementType Float4{ ERHIDataType::Float32, 4 };
+		static constexpr RHIVertexElementType Int{ ERHIDataType::Int32, 1 };
+		static constexpr RHIVertexElementType Int2{ ERHIDataType::Int32, 2 };
+		static constexpr RHIVertexElementType Int3{ ERHIDataType::Int32, 3 };
+		static constexpr RHIVertexElementType Int4{ ERHIDataType::Int32, 4 };
+		static constexpr RHIVertexElementType UInt{ ERHIDataType::UInt32, 1 };
+		static constexpr RHIVertexElementType UInt2{ ERHIDataType::UInt32, 2 };
+		static constexpr RHIVertexElementType UInt3{ ERHIDataType::UInt32, 3 };
+		static constexpr RHIVertexElementType UInt4{ ERHIDataType::UInt32, 4 };
+		static constexpr RHIVertexElementType Mat2x2{ ERHIDataType::Float32, 4 };
+		static constexpr RHIVertexElementType Mat3x3{ ERHIDataType::Float32, 9 };
+		static constexpr RHIVertexElementType Mat4x4{ ERHIDataType::Float32, 16 };
+	}
+
 	//==========================================================
 
 	template<> constexpr ERHIDataType GetRHIDataType<float32_t>() { return ERHIDataType::Float32; }
@@ -286,6 +374,8 @@ namespace Tridium {
 	template<> constexpr ERHIDataType GetRHIDataType<uint16_t>() { return ERHIDataType::UInt16; }
 	template<> constexpr ERHIDataType GetRHIDataType<uint32_t>() { return ERHIDataType::UInt32; }
 	template<> constexpr ERHIDataType GetRHIDataType<uint64_t>() { return ERHIDataType::UInt64; }
+
+	//==========================================================
 
 } // namespace Tridium
 

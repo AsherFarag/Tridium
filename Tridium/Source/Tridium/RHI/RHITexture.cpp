@@ -13,11 +13,11 @@ namespace Tridium {
 		{
 			case ERHInterfaceType::OpenGL:
 			{
-				return MakeShared<GL::OpenGLTexture>();
+				return MakeShared<OpenGLTexture>();
 			}
 			case ERHInterfaceType::DirectX12:
 			{
-				return MakeShared<DX12::DX12Texture>();
+				return MakeShared<DX12Texture>();
 			}
 			default:
 			{

@@ -1,7 +1,7 @@
 #include "tripch.h"
 #include "DX12RHI.h"
 
-namespace Tridium::DX12 {
+namespace Tridium {
 
     bool DirectX12RHI::Init( const RHIConfig& a_Config )
     {
@@ -93,10 +93,10 @@ namespace Tridium::DX12 {
 
 		m_DXGIFactory.Release();
 
-#if RHI_DEBUG_ENABLED
+    #if RHI_DEBUG_ENABLED
 		m_DXGIDebug.Release();
 		m_D3D12Debug.Release();
-#endif
+    #endif
 
 		return true;
 	}
@@ -104,6 +104,31 @@ namespace Tridium::DX12 {
     bool DirectX12RHI::Present()
     {
 		return false;
+    }
+
+    bool DirectX12RHI::ExecuteCommandList( RHICommandListRef a_CommandList )
+    {
+		if ( FAILED( m_CommandList->Close() ) )
+		{
+			return false;
+		}
+
+        ID3D12CommandList* cmdLists[] = { m_CommandList.Get() };
+        m_CommandQueue->ExecuteCommandLists( 1, cmdLists );
+    }
+
+    RHIFence DirectX12RHI::CreateFence() const
+    {
+        return RHIFence();
+    }
+
+    ERHIFenceState DirectX12RHI::GetFenceState( RHIFence a_Fence ) const
+    {
+        return ERHIFenceState();
+    }
+
+    void DirectX12RHI::FenceSignal( RHIFence a_Fence )
+    {
     }
 
 #if RHI_DEBUG_ENABLED

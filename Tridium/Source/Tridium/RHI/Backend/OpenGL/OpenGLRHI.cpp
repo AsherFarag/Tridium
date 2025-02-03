@@ -3,7 +3,7 @@
 #include "OpenGL.h"
 #include <iostream>
 
-namespace Tridium::GL {
+namespace Tridium {
 
 #if RHI_DEBUG_ENABLED
 
@@ -79,6 +79,25 @@ namespace Tridium::GL {
 		}
 
 		return false;
+	}
+
+	bool OpenGLRHI::ExecuteCommandList( RHICommandListRef a_CommandList )
+	{
+		return false;
+	}
+
+	RHIFence OpenGLRHI::CreateFence() const
+	{
+		return RHIFence();
+	}
+
+	ERHIFenceState OpenGLRHI::GetFenceState( RHIFence a_Fence ) const
+	{
+		return ERHIFenceState();
+	}
+
+	void OpenGLRHI::FenceSignal( RHIFence a_Fence )
+	{
 	}
 
 } // namespace Tridium

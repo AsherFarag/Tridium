@@ -3,9 +3,4 @@
 
 namespace Tridium {
 
-	RHIResource::~RHIResource()
-	{
-		Release();
-	}
-
 }

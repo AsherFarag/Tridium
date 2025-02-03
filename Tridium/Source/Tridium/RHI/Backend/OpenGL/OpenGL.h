@@ -1,5 +1,5 @@
 #pragma once
-
+#include <Tridium/RHI/RHICommon.h>
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
 
@@ -35,4 +35,4 @@ namespace Tridium {
 		};
 	};
 
-}
+} // namespace Tridium

@@ -16,17 +16,27 @@ namespace Tridium {
 
 	struct RHIVertexAttribute
 	{
-		StringView Name;            // Name of the attribute
-		RHIVertexElementType Type;  // Data type of the attribute
-		uint16_t Offset;            // Offset in bytes from the start of the vertex layout
+		// Name of the attribute
+		StringView Name;
+		// Data type of the attribute
+		RHIVertexElementType Type;
+		// Offset in bytes from the start of the vertex layout.
+		// Calculated by the RHIVertexLayout.
+		uint16_t Offset;
+
+		constexpr RHIVertexAttribute() : Name(), Type( RHIVertexElementTypes::Unknown ), Offset( 0 ) {}
+		constexpr RHIVertexAttribute( StringView a_Name, RHIVertexElementType a_Type )
+			: Name( a_Name ), Type( a_Type ), Offset( 0 ) {}
+		constexpr RHIVertexAttribute( const char* a_Name, RHIVertexElementType a_Type )
+			: Name( a_Name ), Type( a_Type ), Offset( 0 ) {}
 	};
 
 	struct RHIVertexLayout
 	{
 		// Stride of the vertex layout in bytes
-		uint32_t Stride;
+		uint32_t Stride = 0;
 		// Array of vertex attributes
-		InlineArray<RHIVertexAttribute, RHIQuery::MaxVertexAttributes> Elements;
+		InlineArray<RHIVertexAttribute, RHIQuery::MaxVertexAttributes, /*_ForceConstexpr*/ true> Elements;
 
 		constexpr RHIVertexLayout() = default;
 		constexpr RHIVertexLayout( const std::initializer_list<RHIVertexAttribute>& a_Elements )

@@ -81,7 +81,14 @@ namespace Tridium {
     public:
         NON_COPYABLE_OR_MOVABLE( RHIResource );
 		RHIResource() = default;
-        virtual ~RHIResource();
+		virtual ~RHIResource()
+		{
+			Release();
+			if ( Descriptor )
+			{
+				delete Descriptor;
+			}
+		}
 
 		// Commits the resource to the GPU.
 		virtual bool Commit( const void* a_Params ) = 0;
@@ -163,9 +170,8 @@ namespace Tridium {
 		template<typename T>
 		const T* ParamsToDescriptor( const void* a_Params )
 		{
-			T* newDescriptor = new T( *reinterpret_cast<const T*>( a_Params ) );
-			Descriptor = newDescriptor;
-			return newDescriptor;
+			Descriptor = new T( *reinterpret_cast<const T*>( a_Params ) );
+			return reinterpret_cast<const T*>( Descriptor );
 		}
 	};
 
@@ -180,22 +186,22 @@ namespace Tridium {
 } // namespace Tridium
 
 // Helper macro to define a base RHI resource type and its descriptor.
-#define RHI_RESOURCE_BASE_TYPE( Name, ... )                                                         \
-	class RHI##Name;                                                                                \
-	struct RHI##Name##Descriptor;                                                                   \
-	using RHI##Name##Ref = SharedPtr<RHI##Name>;                                                    \
-	using RHI##Name##WeakRef = SharedPtr<RHI##Name##Descriptor>;                                    \
-	class RHI##Name : public ::Tridium::RHIResource                                                 \
-	{                                                                                               \
-	public:                                                                                         \
-		using DescriptorType = RHI##Name##Descriptor;                                               \
-        virtual ~RHI##Name() = default;                                                             \
-		static constexpr ::Tridium::ERHIResourceType Type = ::Tridium::ERHIResourceType::Name;      \
-		::Tridium::ERHIResourceType GetType() const override { return Type; }                       \
-        static SharedPtr<RHI##Name> Create( const DescriptorType& a_Desc );                         \
-		const DescriptorType* GetDescriptor() const { return (const DescriptorType*)Descriptor; }   \
-		__VA_ARGS__                                                                                 \
-	};                                                                                              \
+#define RHI_RESOURCE_BASE_TYPE( Name, ... )                                                               \
+	class RHI##Name;                                                                                      \
+	struct RHI##Name##Descriptor;                                                                         \
+	using RHI##Name##Ref = SharedPtr<RHI##Name>;                                                          \
+	using RHI##Name##WeakRef = SharedPtr<RHI##Name##Descriptor>;                                          \
+	class RHI##Name : public ::Tridium::RHIResource                                                       \
+	{                                                                                                     \
+	public:                                                                                               \
+		using DescriptorType = RHI##Name##Descriptor;                                                     \
+        virtual ~RHI##Name() = default;                                                                   \
+		static constexpr ::Tridium::ERHIResourceType Type = ::Tridium::ERHIResourceType::Name;            \
+		::Tridium::ERHIResourceType GetType() const override { return Type; }                             \
+        static SharedPtr<RHI##Name> Create( const DescriptorType& a_Desc );                               \
+		const DescriptorType* GetDescriptor() const { return (const DescriptorType*)Descriptor; }         \
+		__VA_ARGS__                                                                                       \
+	};                                                                                                    \
 	struct RHI##Name##Descriptor : public ::Tridium::RHIResourceDescriptor<RHI##Name>
 
 
