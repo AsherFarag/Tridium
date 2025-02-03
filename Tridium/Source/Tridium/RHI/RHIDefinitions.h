@@ -64,6 +64,37 @@ namespace Tridium {
 	};
 	ENUM_SIZE_ASSERT( ERHIShadingPath );
 
+	//=====================================================================
+	// ERHIUsageHint
+	//  A hint to the RHI about how the resource will be used.
+	//  This can be used to optimize the resource for the intended usage.
+	//=====================================================================
+	enum class ERHIUsageHint : uint8_t
+	{
+		CPUWriteNever = 0b00 << 0,
+		CPUWriteFew = 0b01 << 0,
+		CPUWriteOnce = CPUWriteFew,
+		CPUWriteMany = 0b11 << 0,
+		CPUReadNever = 0b00 << 2,
+		CPUReadFew = 0b01 << 2,
+		CPUReadMany = 0b11 << 2,
+		GPUWriteNever = 0b00 << 4,
+		GPUWriteFew = 0b01 << 4,
+		GPUWriteMany = 0b11 << 4,
+		GPUReadNever = 0b00 << 6,
+		GPUReadFew = 0b01 << 6,
+		GPUReadMany = 0b11 << 6,
+
+		OneWriteManyDraw = CPUWriteOnce | GPUReadMany,                         // Use if the resource only uses initial data from the descriptor.
+		ManyWriteManyDraw = CPUWriteMany | GPUReadMany,                        // Use if the resource is expected to be Mapped/Written to many times.
+		OneWriteFewDraw = CPUWriteOnce | GPUReadFew,                           // Use for streaming resources.
+		RenderTarget = CPUWriteNever | GPUWriteMany | GPUReadNever,            // Use for render target (Only valid for 2D textures).
+		RWRenderTarget = CPUWriteNever | GPUWriteMany | GPUReadMany,           // Use for rw-enabled render target (Only valid for 2D textures).
+		MutableBuffer = CPUWriteFew | CPUReadFew | GPUWriteMany | GPUReadMany, // Use for a simple MutableBuffer.
+
+		Default = OneWriteManyDraw,
+	};
+
 	//===========================
 	// Sampler Filter
 	//===========================

@@ -62,6 +62,24 @@ namespace Tridium {
 		}
 	#endif // IS_EDITOR
 
+		// TEMP!
+		RHIConfig config;
+		config.RHIType = ERHInterfaceType::DirectX12;
+		bool success = RHI::Initialise( config );
+		TE_CORE_INFO( "RHI Initialised: {0}", success );
+		TE_CORE_INFO( "RHI Type: {0}", RHI::GetRHIName() );
+
+		RHITextureDescriptor desc;
+		desc.Dimensions[0] = 4;
+		desc.Dimensions[1] = 4;
+		Byte exampleImgData[4 * 4 * 4];
+		for ( int i = 0; i < 4 * 4 * 4; i++ )
+		{
+			exampleImgData[i] = 0xFF;
+		}
+		desc.InitialData = exampleImgData;
+		RHITextureRef tex = RHI::CreateTexture( desc );
+
 		while ( m_Running )
 		{
 			PROFILE_FRAME();
@@ -225,12 +243,6 @@ namespace Tridium {
 			m_Window = Window::Create();
 			m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
 		}
-
-		RHIConfig config;
-		config.RHIType = ERHInterfaceType::OpenGL;
-		bool success = RHI::Initialise( config );
-		TE_CORE_INFO( "RHI Initialised: {0}", success );
-		TE_CORE_INFO( "RHI Type: {0}", RHI::GetRHIName() );
 
 		// Initialise the render pipeline
 		{

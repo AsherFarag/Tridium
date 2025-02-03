@@ -258,7 +258,7 @@ namespace Tridium {
 	// Texture
 	//////////////////////////////////////////////////////////////////////////
 
-	OpenGLTexture::OpenGLTexture( const TextureSpecification& a_Specification, void* a_TextureData )
+	OpenGLTextureOld::OpenGLTextureOld( const TextureSpecification& a_Specification, void* a_TextureData )
 		: m_Specification( a_Specification ), m_Width( m_Specification.Width ), m_Height( m_Specification.Height )
 	{
 		m_DataFormat = Util::TridiumDataFormatToGLDataFormat( m_Specification.TextureFormat );
@@ -283,38 +283,38 @@ namespace Tridium {
 			SetData( a_TextureData, m_Width * m_Height * (uint32_t)Util::GLDataFormatToTridiumDataFormat( m_DataFormat ) );
 	}
 
-	OpenGLTexture::~OpenGLTexture()
+	OpenGLTextureOld::~OpenGLTextureOld()
 	{
 		glDeleteTextures( 1, &m_RendererID );
 		TODO( "delete m_LocalData;" );
 	}
 
-	void OpenGLTexture::SetMinFilter( ETextureFilter a_Filter )
+	void OpenGLTextureOld::SetMinFilter( ETextureFilter a_Filter )
 	{
 		glTextureParameteri( m_RendererID, GL_TEXTURE_MIN_FILTER, Util::TridiumTextureFilterToGLTextureFilter( a_Filter ) );
 	}
 
-	void OpenGLTexture::SetMagFilter( ETextureFilter a_Filter )
+	void OpenGLTextureOld::SetMagFilter( ETextureFilter a_Filter )
 	{
 		glTextureParameteri( m_RendererID, GL_TEXTURE_MAG_FILTER, Util::TridiumTextureFilterToGLTextureFilter( a_Filter ) );
 	}
 
-	void OpenGLTexture::SetWrapS( ETextureWrap a_Wrap )
+	void OpenGLTextureOld::SetWrapS( ETextureWrap a_Wrap )
 	{
 		glTextureParameteri( m_RendererID, GL_TEXTURE_WRAP_S, Util::TridiumTextureWrapToGLTextureWrap( a_Wrap ) );
 	}
 
-	void OpenGLTexture::SetWrapT( ETextureWrap a_Wrap )
+	void OpenGLTextureOld::SetWrapT( ETextureWrap a_Wrap )
 	{
 		glTextureParameteri( m_RendererID, GL_TEXTURE_WRAP_T, Util::TridiumTextureWrapToGLTextureWrap( a_Wrap ) );
 	}
 
-	void OpenGLTexture::SetWrapR( ETextureWrap a_Wrap )
+	void OpenGLTextureOld::SetWrapR( ETextureWrap a_Wrap )
 	{
 		glTextureParameteri( m_RendererID, GL_TEXTURE_WRAP_R, Util::TridiumTextureWrapToGLTextureWrap( a_Wrap ) );
 	}
 
-	void OpenGLTexture::SetData( void* a_Data, uint32_t a_Size )
+	void OpenGLTextureOld::SetData( void* a_Data, uint32_t a_Size )
 	{
 		uint32_t bpp = (uint32_t)Util::GLDataFormatToTridiumDataFormat( m_DataFormat );
 		TE_CORE_ASSERT( a_Size == m_Width * m_Height * bpp, "Data must be entire texture!" );
@@ -327,13 +327,13 @@ namespace Tridium {
 		glGenerateMipmap( GL_TEXTURE_2D );
 	}
 
-	void OpenGLTexture::Bind( uint32_t slot ) const
+	void OpenGLTextureOld::Bind( uint32_t slot ) const
 	{
 		glActiveTexture( GL_TEXTURE0 + slot );
 		glBindTexture( GL_TEXTURE_2D, m_RendererID );
 		//glBindTextureUnit( slot, m_RendererID );
 	}
-	void OpenGLTexture::Unbind( uint32_t slot ) const
+	void OpenGLTextureOld::Unbind( uint32_t slot ) const
 	{
 		glActiveTexture( GL_TEXTURE0 + slot );
 		glBindTexture( GL_TEXTURE_2D, 0 );

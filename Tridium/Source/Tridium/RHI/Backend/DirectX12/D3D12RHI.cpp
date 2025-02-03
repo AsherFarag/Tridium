@@ -1,7 +1,22 @@
 #include "tripch.h"
-#include "DX12RHI.h"
+#include "D3D12RHI.h"
+
+// Resources
+#include <Tridium/RHI/RHICommandList.h>
+#include <Tridium/RHI/RHITexture.h>
+#include <Tridium/RHI/RHIMesh.h>
+#include <Tridium/RHI/RHIPipelineState.h>
+
+#include "D3D12Texture.h"
+//#include "D3D12Mesh.h"
+//#include "D3D12PipelineState.h"
+
 
 namespace Tridium {
+
+	//////////////////////////////////////////////////////////////////////////
+	// CORE RHI FUNCTIONS
+	//////////////////////////////////////////////////////////////////////////
 
     bool DirectX12RHI::Init( const RHIConfig& a_Config )
     {
@@ -115,7 +130,13 @@ namespace Tridium {
 
         ID3D12CommandList* cmdLists[] = { m_CommandList.Get() };
         m_CommandQueue->ExecuteCommandLists( 1, cmdLists );
+
+		return false;
     }
+
+	//////////////////////////////////////////////////////////////////////////
+	// FENCE FUNCTIONS
+	//////////////////////////////////////////////////////////////////////////
 
     RHIFence DirectX12RHI::CreateFence() const
     {
@@ -130,6 +151,42 @@ namespace Tridium {
     void DirectX12RHI::FenceSignal( RHIFence a_Fence )
     {
     }
+
+    //////////////////////////////////////////////////////////////////////////
+	// RESOURCE CREATION
+	//////////////////////////////////////////////////////////////////////////
+
+	RHITextureRef DirectX12RHI::CreateTexture( const RHITextureDescriptor& a_Desc )
+	{
+        // Create raw pointer first so compiler can optimize out dynamic dispatch
+        D3D12Texture* tex = new D3D12Texture();
+        tex->Commit( &a_Desc );
+        return SharedPtr<RHITexture>( tex );
+	}
+
+	RHIIndexBufferRef DirectX12RHI::CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc )
+	{
+		return nullptr;
+	}
+
+	RHIVertexBufferRef DirectX12RHI::CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc )
+	{
+		return nullptr;
+	}
+
+	RHIPipelineStateRef DirectX12RHI::CreatePipelineState( const RHIPipelineStateDescriptor& a_Desc )
+	{
+		return nullptr;
+	}
+
+	RHICommandListRef DirectX12RHI::CreateCommandList( const RHICommandListDescriptor& a_Desc )
+	{
+		return nullptr;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+    // DEBUG
+	//////////////////////////////////////////////////////////////////////////
 
 #if RHI_DEBUG_ENABLED
     void DirectX12RHI::DumpDebug()

@@ -1,10 +1,10 @@
 #include "tripch.h"
-#include "DX12Texture.h"
-#include "DX12RHI.h"
+#include "D3D12Texture.h"
+#include "D3D12RHI.h"
 
 namespace Tridium {
 
-	bool DX12Texture::Commit( const void* a_Params )
+	bool D3D12Texture::Commit( const void* a_Params )
 	{
 		const auto* desc = ParamsToDescriptor<RHITextureDescriptor>( a_Params );
 
@@ -79,33 +79,34 @@ namespace Tridium {
 		return success;
 	}
 
-	bool DX12Texture::Release()
+	bool D3D12Texture::Release()
 	{
-		return false;
+		m_Texture.Release();
+		return true;
 	}
 
-	bool DX12Texture::Write( const Span<const Byte>& a_Data, size_t a_DstOffset )
+	bool D3D12Texture::Write( const Span<const Byte>& a_Data, size_t a_DstOffset )
 	{
 		const D3D12_RANGE uploadRange = { 0, a_Data.size() };
 		return false;
 	}
 
-	bool DX12Texture::IsWritable() const
+	bool D3D12Texture::IsWritable() const
 	{
 		return false;
 	}
 
-	size_t DX12Texture::GetSizeInBytes() const
+	size_t D3D12Texture::GetSizeInBytes() const
 	{
 		return 0;
 	}
 
-	bool DX12Texture::IsValid() const
+	bool D3D12Texture::IsValid() const
 	{
 		return false;
 	}
 
-	const void* DX12Texture::NativePtr() const
+	const void* D3D12Texture::NativePtr() const
 	{
 		return nullptr;
 	}

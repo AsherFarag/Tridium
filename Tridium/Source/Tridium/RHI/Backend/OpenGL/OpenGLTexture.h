@@ -1,5 +1,5 @@
 #pragma once
-#include "OpenGL.h"
+#include "OpenGL4.h"
 #include <Tridium/RHI/RHITexture.h>
 
 namespace Tridium {

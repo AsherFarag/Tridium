@@ -1,5 +1,5 @@
 #pragma once
-#include "OpenGL.h"
+#include "OpenGLCommon.h"
 #include <Tridium/Core/Assert.h>
 
 #define FORCEINLINE __forceinline
@@ -89,11 +89,6 @@ namespace Tridium {
         static FORCEINLINE void PolygonMode( GLenum a_Face, GLenum a_Mode )
         {
             glPolygonMode( a_Face, a_Mode );
-        }
-
-        static FORCEINLINE void VertexAttribDivisor( GLuint a_Index, GLuint a_Divisor )
-        {
-            glVertexAttribDivisor( a_Index, a_Divisor );
         }
 
         static FORCEINLINE void* MapBufferRange( GLenum a_Type, uint32_t a_Offset, uint32_t a_Size, EResourceLockMode a_LockMode )
@@ -347,5 +342,3 @@ namespace Tridium {
     };
 
 } // namespace Tridium
-
-#endif // RHI_ENABLE_BACKEND_OPENGL

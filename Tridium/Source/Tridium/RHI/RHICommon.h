@@ -1,4 +1,5 @@
 #pragma once
+#include <Tridium/Utils/Todo.h>
 #include "RHIConfig.h"
 #include "RHIDefinitions.h"
 #include "RHIGlobals.h"
@@ -6,7 +7,7 @@
 #include <Tridium/Core/Config.h>
 #include <Tridium/Core/Memory.h>
 #include <Tridium/Core/Containers/Containers.h>
-#include <type_traits>
+#include <Tridium/Utils/Concepts.h>
 
 namespace Tridium {
 

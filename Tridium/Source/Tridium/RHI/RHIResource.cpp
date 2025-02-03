@@ -2,5 +2,4 @@
 #include "RHIResource.h"
 
 namespace Tridium {
-
 }

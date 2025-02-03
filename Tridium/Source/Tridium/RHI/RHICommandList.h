@@ -5,6 +5,8 @@
 #include "RHITexture.h"
 #include "RHIMesh.h"
 #include "RHIPipelineState.h"
+#include "RHIShader.h"
+#include "RHIBuffer.h"
 
 namespace Tridium {
 
@@ -20,11 +22,12 @@ namespace Tridium {
 	struct RHIShaderInputPayload
 	{
 		uint8_t Count;
-		union Payload
+		bool IsReference;
+		union
 		{
-			void* Data;
-            uint32_t InlineData[sizeof( Data ) / sizeof( uint32_t )];
-		} Payload;
+			void* References[RHIQuery::MaxTextureBindings];
+			uint8_t InlineData[sizeof( References )];
+		};
 	};
 
 	//=====================================================
@@ -60,13 +63,13 @@ namespace Tridium {
 
         struct SetPipelineState 
         {
-            RHIPipelineStateRef PSO;
+            RHIPipelineState* PSO;
         };
 
         struct SetRenderTargets 
         {
-            FixedArray<RHITextureRef, RHIQuery::MaxColourTargets> RTV;
-            RHITextureRef DSV;
+            FixedArray<RHITexture*, RHIQuery::MaxColourTargets> RTV;
+            RHITexture* DSV;
         };
 
         struct SetClearValues 
@@ -96,17 +99,19 @@ namespace Tridium {
         struct SetShaderInput 
         {
             uint8_t Index;
-            RHIShaderInputPayload Payload;
+			// Stored as a pointer to cut down on RHICommand size.
+			TODO( "Determine if this is worth it or if it should be stored directly." );
+            UniquePtr<RHIShaderInputPayload> Payload;
         };
 
         struct SetIndexBuffer 
         {
-            RHIIndexBufferRef IBO;
+            RHIIndexBuffer* IBO;
         };
 
         struct SetVertexBuffer 
         {
-            RHIVertexBufferRef VBO;
+            RHIVertexBuffer* VBO;
         };
 
         struct SetPrimitiveTopology 
@@ -137,7 +142,7 @@ namespace Tridium {
 
         struct Execute 
         {
-            RHICommandListRef CommandList;
+            RHICommandList* CommandList;
         };
 
         #pragma endregion
@@ -209,7 +214,7 @@ namespace Tridium {
 	// Helper function that enqueues a command with debug information.
 #define RHICommandEnqueue( _CommandBuffer, _Command, ... ) \
         (_CommandBuffer)._Command( __VA_ARGS__ ); \
-	    (_CommandBuffer).Commands.Back().Debug = { __FUNCTION__, __FILE__, __LINE__ }
+	    (_CommandBuffer).Commands.Back().Debug = { _FUNCTION_, __FILE__, _USABLE_LINE_ }
 #else
 	// Helper function that enqueues a command.
     #define RHICommandEnqueue( _CommandBuffer, _Command, ... ) \
@@ -221,15 +226,13 @@ namespace Tridium {
 	// RHICommandBuffer
 	//  A buffer that holds an array of commands to be executed on the GPU.
 	//=====================================================
-	struct RHICommandBuffer
+	class RHICommandBuffer
 	{
-		Array<RHICommand> Commands;
-
-		//=====================================================
-
+	public:
 		void SetPipelineState( RHIPipelineStateRef a_PSO )
 		{
-            Commands.EmplaceBack( RHICommand::SetPipelineState{ std::move( a_PSO ) } );
+            Commands.EmplaceBack( RHICommand::SetPipelineState{ a_PSO.get()});
+			m_PipelineStates.insert( std::move( a_PSO ) );
 		}
 
 		void SetRenderTargets( const Span<RHITextureRef>& a_RTV, RHITextureRef a_DSV )
@@ -237,10 +240,13 @@ namespace Tridium {
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::SetRenderTargets() );
 			RHICommand::SetRenderTargets& data = cmd.Get<RHICommand::SetRenderTargets>();
 
-			data.DSV = std::move( a_DSV );
+			data.DSV = a_DSV.get();
+			m_Textures.insert( a_DSV );
+
 			for ( size_t i = 0; i < a_RTV.size() && i < data.RTV.MaxSize(); ++i )
 			{
-				data.RTV[i] = a_RTV[i];
+				data.RTV[i] = a_RTV[i].get();
+				m_Textures.insert( a_RTV[i] );
 			}
 		}
 
@@ -282,19 +288,20 @@ namespace Tridium {
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::SetShaderInput() );
 			RHICommand::SetShaderInput& data = cmd.Get<RHICommand::SetShaderInput>();
 			data.Index = a_Index;
-			data.Payload.Count = 1;
-
-			TODO( "Implement SetShaderInput" );
+			data.Payload = MakeUnique<RHIShaderInputPayload>();
+			BuildShaderInput( a_Value, *data.Payload, m_Textures, m_Buffers );
 		}
 
 		void SetIndexBuffer( RHIIndexBufferRef a_IBO )
 		{
-			Commands.EmplaceBack( RHICommand::SetIndexBuffer{ std::move( a_IBO ) } );
+			Commands.EmplaceBack( RHICommand::SetIndexBuffer{ a_IBO.get() } );
+			m_IndexBuffers.insert( std::move( a_IBO ) );
 		}
 
 		void SetVertexBuffer( RHIVertexBufferRef a_VBO )
 		{
-			Commands.EmplaceBack( RHICommand::SetVertexBuffer{ std::move( a_VBO ) } );
+			Commands.EmplaceBack( RHICommand::SetVertexBuffer{ a_VBO.get() } );
+			m_VertexBuffers.insert( std::move( a_VBO ) );
 		}
 
 		void SetPrimitiveTopology( ERHITopology a_Topology )
@@ -328,6 +335,24 @@ namespace Tridium {
 		{
 			Commands.EmplaceBack( RHICommand::FenceWait{ a_Fence } );
 		}
+
+	public:
+		Array<RHICommand> Commands;
+
+	private:
+		UnorderedSet<RHIPipelineStateRef> m_PipelineStates;
+		UnorderedSet<RHIIndexBufferRef>   m_IndexBuffers;
+		UnorderedSet<RHIVertexBufferRef>  m_VertexBuffers;
+		UnorderedSet<RHICommandListRef>   m_CommandLists;
+		UnorderedSet<RHITextureRef>       m_Textures;
+		UnorderedSet<RHIBufferRef>        m_Buffers;
+
+	private:
+			template<typename T>
+			static void BuildShaderInput(
+				T a_Value, RHIShaderInputPayload& o_Payload,
+				UnorderedSet<RHITextureRef>& o_TextureRefs,
+				UnorderedSet<RHIBufferRef>& o_Buffers );
 	};
 
 	RHI_RESOURCE_BASE_TYPE( CommandList,
@@ -337,5 +362,67 @@ namespace Tridium {
 		RHICommandBuffer Commands;
 		RHICommandAllocatorRef Allocator;
 	};
+
+	template<typename T>
+	inline void RHICommandBuffer::BuildShaderInput( T a_Value, RHIShaderInputPayload& o_Payload, UnorderedSet<RHITextureRef>& o_TextureRefs, UnorderedSet<RHIBufferRef>& o_Buffers )
+	{
+		using UnderlyingType = std::remove_const_t<std::remove_reference_t<T>>;
+
+		// Copy Texture Span
+		if constexpr ( Concepts::IsSame<UnderlyingType, Span<RHITextureRef>> )
+		{
+			o_Payload.Count = static_cast<uint8_t>( a_Value.size() );
+			o_Payload.IsReference = true;
+			auto it = o_Payload.References;
+
+			for ( auto& texRef : a_Value )
+			{
+				*( it++ ) = static_cast<void*>( texRef.get() );
+				o_TextureRefs.insert( texRef );
+			}
+		}
+		// Copy Texture
+		else if constexpr ( Concepts::IsConvertible<T, RHITextureRef> )
+		{
+			o_Payload.Count = 1;
+			o_Payload.IsReference = true;
+			o_Payload.References[0] = static_cast<void*>( a_Value.get() );
+			o_TextureRefs.insert( a_Value );
+		}
+		// Copy Buffer Span
+		else if constexpr ( Concepts::IsSame<UnderlyingType, Span<RHIBufferRef>> )
+		{
+			o_Payload.Count = static_cast<uint8_t>( a_Value.size() );
+			o_Payload.IsReference = true;
+			auto it = o_Payload.References;
+
+			for ( auto& bufRef : a_Value )
+			{
+				*( it++ ) = static_cast<void*>( bufRef.get() );
+				o_Buffers.insert( bufRef );
+			}
+		}
+		// Copy Buffer
+		else if constexpr ( Concepts::IsConvertible<T, RHIBufferRef> )
+		{
+			o_Payload.Count = 1;
+			o_Payload.IsReference = true;
+			o_Payload.References[0] = static_cast<void*>( a_Value.get() );
+			o_Buffers.insert( a_Value );
+		}
+		// Copy POD Type
+		else
+		{
+			constexpr size_t InlineDataSize = sizeof( o_Payload.InlineData );
+
+			static_assert( Concepts::IsTriviallyCopyable<T>, "Type must be trivially copyable!" );
+			static_assert( sizeof( T ) <= InlineDataSize, "Value is too large to be stored inline!" );
+
+			o_Payload.Count = sizeof( T );
+			o_Payload.IsReference = false;
+			void* data = &o_Payload.InlineData;
+			std::memcpy( data, &a_Value, sizeof( T ) );
+		}
+	}
 
 }

@@ -1,10 +1,10 @@
 #pragma once
-#include "DirectX12.h"
+#include "D3D12Common.h"
 #include <Tridium/RHI/RHICommandList.h>
 
 namespace Tridium {
 
-	class DX12CommandList final : public RHICommandList
+	class D3D12CommandList final : public RHICommandList
 	{
 	public:
 		RHI_RESOURCE_IMPLEMENTATION( DirectX12 );

@@ -1,10 +1,10 @@
 #include "tripch.h"
-#include "DX12CommandList.h"
-#include "DX12RHI.h"
+#include "D3D12CommandList.h"
+#include "D3D12RHI.h"
 
 namespace Tridium {
 
-	bool DX12CommandList::SetCommands( const RHICommandBuffer& a_CmdBuffer )
+	bool D3D12CommandList::SetCommands( const RHICommandBuffer& a_CmdBuffer )
 	{
 		DirectX12RHI* rhi = RHI::GetDynamicRHI<DirectX12RHI>();
 		CHECK( rhi );
@@ -53,22 +53,22 @@ namespace Tridium {
 
 	}
 
-	bool DX12CommandList::Commit( const void* a_Params )
+	bool D3D12CommandList::Commit( const void* a_Params )
 	{
 		return false;
 	}
 
-	bool DX12CommandList::Release()
+	bool D3D12CommandList::Release()
 	{
 		return false;
 	}
 
-	bool DX12CommandList::IsValid() const
+	bool D3D12CommandList::IsValid() const
 	{
 		return false;
 	}
 
-	const void* DX12CommandList::NativePtr() const
+	const void* D3D12CommandList::NativePtr() const
 	{
 		return nullptr;
 	}

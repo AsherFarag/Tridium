@@ -11,26 +11,6 @@
 #endif // !ENABLE_PROFILING
 
 // ==========================================
-// Internal Macros
-// ==========================================
-
-#if defined( _MSC_VER )
-	#define _FUNCTION_ EXPAND( __FUNCTION__ )
-	#define _FUNCTION_SIG_ EXPAND( __FUNCSIG__ )
-#elif defined(__clang__)
-	#define _FUNCTION_ EXPAND( __PRETTY_FUNCTION__ )
-	#define _FUNCTION_SIG_ EXPAND( __PRETTY_FUNCTION__ )
-#endif
-
-// For some reason, in MSVC, __LINE__ is not a constant expression.
-// This is a workaround to make it a constant expression.
-#define _USABLE_LINE_ uint32_t(_CONCAT(__LINE__,U))
-
-// ==========================================
-
-
-
-// ==========================================
 // User Profiling Macros
 // ==========================================
 #if ENABLE_PROFILING

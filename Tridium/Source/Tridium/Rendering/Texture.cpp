@@ -15,7 +15,7 @@ namespace Tridium {
 		{
 			using enum RendererAPI::API;
 		case OpenGL: 
-			return new OpenGLTexture( a_Specification );
+			return new OpenGLTextureOld( a_Specification );
 		}
 
 		TE_CORE_ASSERT( false, "Unknown RendererAPI!" );
@@ -28,7 +28,7 @@ namespace Tridium {
 		{
 			using enum RendererAPI::API;
 		case OpenGL:
-			return new OpenGLTexture( a_Specification, a_TextureData );
+			return new OpenGLTextureOld( a_Specification, a_TextureData );
 		}
 
 		TE_CORE_ASSERT( false, "Unknown RendererAPI!" );

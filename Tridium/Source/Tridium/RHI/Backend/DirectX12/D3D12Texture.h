@@ -1,10 +1,10 @@
 #pragma once
 #include <Tridium/RHI/RHITexture.h>
-#include "DirectX12.h"
+#include "D3D12Common.h"
 
 namespace Tridium {
 
-	class DX12Texture final : public RHITexture
+	class D3D12Texture final : public RHITexture
 	{
 	public:
 		RHI_RESOURCE_IMPLEMENTATION( DirectX12 );

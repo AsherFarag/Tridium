@@ -64,6 +64,7 @@ namespace Tridium {
 		bool IsRenderTarget = false;
 		bool IsCubeMap = false;
 		ERHITextureFormat Format = ERHITextureFormat::RGBA8;
+		ERHIUsageHint UsageHint = ERHIUsageHint::Default;
 	};
 
 }

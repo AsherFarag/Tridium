@@ -15,8 +15,29 @@
 
 namespace Tridium {
 
+	// Type definitions for DirectX12 to avoid versioning issues
+	namespace DX12 {
+		using Factory = IDXGIFactory7;
+		using Device = ID3D12Device8;
+		using CommandQueue = ID3D12CommandQueue;
+		using CommandAllocator = ID3D12CommandAllocator;
+		using GraphicsCommandList = ID3D12GraphicsCommandList;
+		using Fence = ID3D12Fence1;
+		using FenceValue = uint64_t;
+
+	#if RHI_DEBUG_ENABLED
+		using D3D12Debug = ID3D12Debug6;
+		using DXGIDebug = IDXGIDebug1;
+	#endif
+	}
+
+	namespace DX12::Concepts {
+		template<typename T>
+		concept IsIUnknown = std::is_base_of_v<IUnknown, T>;
+	}
+
 	// A template class for Microsoft com pointer
-	template<typename T, typename = std::enable_if_t<std::is_base_of_v<IUnknown, T>>>
+	template<typename T> requires DX12::Concepts::IsIUnknown<T>
 	class ComPtr
 	{
 	public:

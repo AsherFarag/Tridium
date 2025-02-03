@@ -28,41 +28,10 @@ namespace Tridium {
         COUNT
 	};
 
-	//=====================================================================
-	// ERHIUsageHint
-	//  A hint to the RHI about how the resource will be used.
-	//  This can be used to optimize the resource for the intended usage.
-	//=====================================================================
-	enum class ERHIUsageHint : uint8_t
-	{
-		CPUWriteNever = 0b00 << 0,
-		CPUWriteFew = 0b01 << 0,
-		CPUWriteOnce = CPUWriteFew,
-		CPUWriteMany = 0b11 << 0,
-		CPUReadNever = 0b00 << 2,
-		CPUReadFew = 0b01 << 2,
-		CPUReadMany = 0b11 << 2,
-		GPUWriteNever = 0b00 << 4,
-		GPUWriteFew = 0b01 << 4,
-		GPUWriteMany = 0b11 << 4,
-		GPUReadNever = 0b00 << 6,
-		GPUReadFew = 0b01 << 6,
-		GPUReadMany = 0b11 << 6,
-
-		OneWriteManyDraw = CPUWriteOnce | GPUReadMany,                         // Use if the resource only uses initial data from the descriptor.
-		ManyWriteManyDraw = CPUWriteMany | GPUReadMany,                        // Use if the resource is expected to be Mapped/Written to many times.
-		OneWriteFewDraw = CPUWriteOnce | GPUReadFew,                           // Use for streaming resources.
-		RenderTarget = CPUWriteNever | GPUWriteMany | GPUReadNever,            // Use for render target (Only valid for 2D textures).
-		RWRenderTarget = CPUWriteNever | GPUWriteMany | GPUReadMany,           // Use for rw-enabled render target (Only valid for 2D textures).
-		MutableBuffer = CPUWriteFew | CPUReadFew | GPUWriteMany | GPUReadMany, // Use for a simple MutableBuffer.
-
-		Default = OneWriteManyDraw,
-	};
-
 	namespace Concepts {
 
 		template<typename T>
-		concept IsRHIResource = std::is_base_of_v<RHIResource, T>;
+		concept IsRHIResource = IsBaseOf<RHIResource, T>;
 
 		template<typename T>
 		concept IsRHIResourceImplemntation = IsRHIResource<T> && T::API;
@@ -81,20 +50,13 @@ namespace Tridium {
     public:
         NON_COPYABLE_OR_MOVABLE( RHIResource );
 		RHIResource() = default;
-		virtual ~RHIResource()
-		{
-			Release();
-			if ( Descriptor )
-			{
-				delete Descriptor;
-			}
-		}
+		virtual ~RHIResource() = default;
 
 		// Commits the resource to the GPU.
 		virtual bool Commit( const void* a_Params ) = 0;
 
 		// Releases the GPU and CPU resources associated with this resource.
-        virtual bool Release() = 0;
+		virtual bool Release() = 0;
 
 		// Reads data from the resource.
 		virtual bool Read( Span<Byte>& o_Data, size_t a_SrcOffset = 0 ) { return false; }
@@ -175,6 +137,10 @@ namespace Tridium {
 		}
 	};
 
+	//=======================================================
+	// RHI Resource Descriptor
+	//  A struct that describes an RHI resource.
+	//=======================================================
 	template<typename T> requires Concepts::IsRHIResource<T>
 	struct RHIResourceDescriptor
 	{
@@ -182,6 +148,19 @@ namespace Tridium {
 		const char* Name = nullptr;
 		SharedPtr<RHIResourceAllocator> Allocator;
 	};
+
+	namespace RHI {
+
+		template<typename T> requires Concepts::IsRHIResource<T>
+		typename T::RefType CreateResource( const typename T::DescriptorType& a_Desc )
+		{
+			typename T::RefType resource = MakeShared<T>();
+			resource->Commit( &a_Desc );
+			CHECK( resource->IsValid() );
+			return resource;
+		}
+
+	}
 
 } // namespace Tridium
 
@@ -195,10 +174,11 @@ namespace Tridium {
 	{                                                                                                     \
 	public:                                                                                               \
 		using DescriptorType = RHI##Name##Descriptor;                                                     \
-        virtual ~RHI##Name() = default;                                                                   \
+		using RefType = RHI##Name##Ref;                                                                   \
+		using WeakRefType = RHI##Name##WeakRef;                                                           \
+        virtual ~RHI##Name() { CHECK( Release ); if ( Descriptor ) { delete Descriptor; } }               \
 		static constexpr ::Tridium::ERHIResourceType Type = ::Tridium::ERHIResourceType::Name;            \
 		::Tridium::ERHIResourceType GetType() const override { return Type; }                             \
-        static SharedPtr<RHI##Name> Create( const DescriptorType& a_Desc );                               \
 		const DescriptorType* GetDescriptor() const { return (const DescriptorType*)Descriptor; }         \
 		__VA_ARGS__                                                                                       \
 	};                                                                                                    \
