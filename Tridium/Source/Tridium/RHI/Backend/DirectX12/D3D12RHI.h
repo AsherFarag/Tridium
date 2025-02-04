@@ -1,6 +1,5 @@
 #pragma once
 #include "D3D12Common.h"
-#include <Tridium/RHI/RHICommon.h>
 #include <Tridium/RHI/DynamicRHI.h>
 
 namespace Tridium {
@@ -49,18 +48,38 @@ namespace Tridium {
 		const auto& GetCommandQueue() const { return m_CommandQueue; }
 		const auto& GetCommandAllocator() const { return m_CommandAllocator; }
 		const auto& GetCommandList() const { return m_CommandList; }
+		const auto& GetFence() const { return m_Fence; }
+		D3D12::FenceValue& GetFenceValue() { return m_FenceValue; }
+		HANDLE GetFenceEvent() const { return m_FenceEvent; }
 
 		//====================================================
 
 	private:
-		ComPtr<DX12::Factory> m_DXGIFactory = nullptr;
-		ComPtr<DX12::Device> m_Device = nullptr;
-		ComPtr<DX12::CommandQueue> m_CommandQueue = nullptr;
-		ComPtr<DX12::CommandAllocator> m_CommandAllocator = nullptr;
-		ComPtr<DX12::GraphicsCommandList> m_CommandList = nullptr;
-		ComPtr<DX12::Fence> m_Fence = nullptr;
-		DX12::FenceValue m_FenceValue = 0;
-		void* m_FenceEvent = nullptr;
+		ComPtr<D3D12::Factory> m_DXGIFactory = nullptr;
+		ComPtr<D3D12::Device> m_Device = nullptr;
+		ComPtr<D3D12::CommandQueue> m_CommandQueue = nullptr;
+		ComPtr<D3D12::CommandAllocator> m_CommandAllocator = nullptr;
+		ComPtr<D3D12::GraphicsCommandList> m_CommandList = nullptr;
+		ComPtr<D3D12::Fence> m_Fence = nullptr;
+		D3D12::FenceValue m_FenceValue = 0;
+		HANDLE m_FenceEvent = nullptr;
+
+		//=====================================================
+
+		TODO( "Possibly move this to a separate class" );
+		struct WindowData
+		{
+			static constexpr uint32_t s_FrameCount = 2;
+
+			ComPtr<D3D12::SwapChain> SwapChain = nullptr;
+			ComPtr<D3D12::Resource> Buffers[s_FrameCount] = { nullptr, nullptr };
+			uint32_t BufferIndex = 0;
+
+			ComPtr<D3D12::DescriptorHeap> RTVDescHeap = nullptr;
+			D3D12_CPU_DESCRIPTOR_HANDLE RTVHandles[s_FrameCount];
+
+			bool Initialize( DirectX12RHI& a_RHI );
+		} m_WindowData;
 
 		//=====================================================
 
@@ -69,8 +88,8 @@ namespace Tridium {
 		virtual void DumpDebug() override;
 
 	private:
-		ComPtr<DX12::D3D12Debug> m_D3D12Debug = nullptr;
-		ComPtr<DX12::DXGIDebug> m_DXGIDebug = nullptr;
+		ComPtr<D3D12::D3D12Debug> m_D3D12Debug = nullptr;
+		ComPtr<D3D12::DXGIDebug> m_DXGIDebug = nullptr;
 	#endif
 	};
 

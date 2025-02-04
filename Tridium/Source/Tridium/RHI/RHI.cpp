@@ -78,7 +78,7 @@ namespace Tridium {
 
 	bool RHI::Present()
 	{
-		if ( !ASSERT_LOG( s_RHIGlobals.IsRHIInitialised == false, "RHI has not been initialised!" ) )
+		if ( !ASSERT_LOG( s_RHIGlobals.IsRHIInitialised, "RHI has not been initialised!" ) )
 		{
 			return false;
 		}

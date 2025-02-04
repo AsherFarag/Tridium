@@ -11,6 +11,7 @@
 
 // TEMP?
 #include "stb_image.h"
+#include <Tridium/RHI/RHI.h>
 
 namespace Tridium {
 
@@ -39,7 +40,7 @@ namespace Tridium {
 	void WindowsWindow::OnUpdate()
 	{
 		glfwPollEvents();
-		m_RenderingContext->SwapBuffers();
+		CHECK( RHI::Present() );
 	}
 
 	bool WindowsWindow::IsMinimized() const
@@ -108,8 +109,8 @@ namespace Tridium {
 		MakeContextCurrent( this );
 
 		// - Rendering Context Initialisation -
-		m_RenderingContext = RenderingContext::Create( m_Window );
-		m_RenderingContext->Init();
+		//m_RenderingContext = RenderingContext::Create( m_Window );
+		//m_RenderingContext->Init();
 
 		glfwSetWindowUserPointer( m_Window, &m_Data );
 		SetVSync( true );

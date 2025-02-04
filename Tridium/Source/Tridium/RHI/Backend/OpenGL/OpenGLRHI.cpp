@@ -24,6 +24,8 @@ namespace Tridium {
 
 	bool OpenGLRHI::Init( const RHIConfig& a_Config )
 	{
+		int status = gladLoadGLLoader( (GLADloadproc)glfwGetProcAddress );
+
 	#if RHI_DEBUG_ENABLED
 		if ( a_Config.UseDebug )
 		{
@@ -34,8 +36,6 @@ namespace Tridium {
 			glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE );
 		}
 	#endif
-
-		int status = gladLoadGLLoader( (GLADloadproc)glfwGetProcAddress );
 		return status;
 	}
 

@@ -19,6 +19,7 @@ namespace Tridium {
 
 	private:
 		ComPtr<ID3D12Resource2> m_Texture;
+		ComPtr<ID3D12DescriptorHeap> m_DescriptorHeap;
 	};
 
 

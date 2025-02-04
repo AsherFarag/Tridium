@@ -53,7 +53,7 @@ namespace Tridium {
     };
 
 	// Returns the size in bytes of the given texture format.
-	constexpr uint32_t GetTextureFormatSize( ERHITextureFormat a_Format )
+	constexpr uint8_t GetTextureFormatSize( ERHITextureFormat a_Format )
 	{
 		switch ( a_Format )
 		{
@@ -92,15 +92,15 @@ namespace Tridium {
 
 	RHI_RESOURCE_BASE_TYPE( Texture )
 	{
-		Span<const uint8_t> InitialData = {};
-		uint8_t DimensionCount = 2;
-		uint32_t Dimensions[3] = { 0, 0, 0 };
-		uint32_t Layers = 1;
-		uint32_t Mips = 1;
-		bool IsRenderTarget = false;
-		bool IsCubeMap = false;
-		ERHITextureFormat Format = ERHITextureFormat::RGBA8;
-		ERHIUsageHint UsageHint = ERHIUsageHint::Default;
+		Span<const uint8_t> InitialData = {}; // Initial data for the texture
+		uint8_t DimensionCount = 2;           // 1D = 1, 2D = 2, 3D = 3
+		uint32_t Dimensions[3] = { 0, 0, 0 }; // Width, Height, Depth
+		uint32_t Layers = 1;                  // Number of layers in the texture (e.g. 6 for a cube map)
+		uint32_t Mips = 1;                    // Number of mip levels in the texture
+		bool IsRenderTarget = false;          // Whether the texture is a render target
+		bool IsCubeMap = false;               // Whether the texture is a cube map
+		ERHITextureFormat Format = ERHITextureFormat::RGBA8; // Data format of the texture
+		ERHIUsageHint UsageHint = ERHIUsageHint::Default;    // Usage hint for the texture
 	};
 
 }

@@ -21,10 +21,6 @@ namespace Tridium {
 		bool Shutdown();
 		// Present the current frame.
 		bool Present();
-		// Get the name of the dynamically bound RHI.
-		const char* GetRHIName();
-		// Get the type of the dynamically bound RHI.
-		ERHInterfaceType GetRHIType();
 		//===========================
 
 		//===========================

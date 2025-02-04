@@ -89,7 +89,7 @@ namespace Tridium {
 
 		// Returns whether the resource is the same resource type.
 		// If 'T' is a specific implementation of a resource type, the API will also be checked.
-		// E.g. if 'T' is a DX12 texture, the API will be checked to ensure it is DX12.
+		// E.g. if 'T' is a D3D12 texture, the API will be checked to ensure it is D3D12.
 		template<typename T> requires Concepts::IsRHIResource<T>
 		bool Is() const
 		{
@@ -148,19 +148,6 @@ namespace Tridium {
 		const char* Name = nullptr;
 		SharedPtr<RHIResourceAllocator> Allocator;
 	};
-
-	namespace RHI {
-
-		template<typename T> requires Concepts::IsRHIResource<T>
-		typename T::RefType CreateResource( const typename T::DescriptorType& a_Desc )
-		{
-			typename T::RefType resource = MakeShared<T>();
-			resource->Commit( &a_Desc );
-			CHECK( resource->IsValid() );
-			return resource;
-		}
-
-	}
 
 } // namespace Tridium
 

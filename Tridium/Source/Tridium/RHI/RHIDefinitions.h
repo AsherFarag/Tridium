@@ -293,6 +293,18 @@ namespace Tridium {
 		Unknown   // The state of the fence is unknown.
 	};
 
+	//==========================================================
+	// RHI Texture Alignment
+	//  Each Graphics API can have different defaults for texture alignment.
+	//  For example, DirectX and Metal align their textures from the top-left corner.
+	//  OpenGL and other API's align their textures from the bottom-left corner.
+	//==========================================================
+	enum class ERHITextureAlignment : uint8_t
+	{
+		TopLeft,
+		BottomLeft,
+	};
+
 	//====================================
 	// RHI Data Type
 	//====================================

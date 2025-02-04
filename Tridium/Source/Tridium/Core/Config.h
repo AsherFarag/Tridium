@@ -17,3 +17,9 @@
 #else
 	#define TE_DRAW_DEBUG 0
 #endif
+
+#ifdef IS_EDITOR
+	#define CONFIG_EDITOR 1
+#else
+	#define CONFIG_EDITOR 0
+#endif // IS_EDITOR

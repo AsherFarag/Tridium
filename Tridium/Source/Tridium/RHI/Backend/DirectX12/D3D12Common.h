@@ -16,7 +16,7 @@
 namespace Tridium {
 
 	// Type definitions for DirectX12 to avoid versioning issues
-	namespace DX12 {
+	namespace D3D12 {
 		using Factory = IDXGIFactory7;
 		using Device = ID3D12Device8;
 		using CommandQueue = ID3D12CommandQueue;
@@ -24,20 +24,22 @@ namespace Tridium {
 		using GraphicsCommandList = ID3D12GraphicsCommandList;
 		using Fence = ID3D12Fence1;
 		using FenceValue = uint64_t;
-
+		using SwapChain = IDXGISwapChain3;
+		using Resource = ID3D12Resource2;
+		using DescriptorHeap = ID3D12DescriptorHeap;
 	#if RHI_DEBUG_ENABLED
-		using D3D12Debug = ID3D12Debug6;
+		using D3D12Debug = ID3D12Debug;
 		using DXGIDebug = IDXGIDebug1;
 	#endif
 	}
 
-	namespace DX12::Concepts {
+	namespace D3D12::Concepts {
 		template<typename T>
 		concept IsIUnknown = std::is_base_of_v<IUnknown, T>;
 	}
 
 	// A template class for Microsoft com pointer
-	template<typename T> requires DX12::Concepts::IsIUnknown<T>
+	template<typename T> requires D3D12::Concepts::IsIUnknown<T>
 	class ComPtr
 	{
 	public:
@@ -119,11 +121,11 @@ namespace Tridium {
 			return false;
 		}
 
-		bool operator==( const ComPtr<T>& other )
+		bool operator==( const ComPtr<T>& other ) const
 		{
 			return m_Ptr == other.m_Ptr;
 		}
-		bool operator==( const T* other )
+		bool operator==( const T* other ) const
 		{
 			return m_Ptr == other;
 		}
@@ -147,10 +149,11 @@ namespace Tridium {
 			return &m_Ptr;
 		}
 
-		operator bool()
+		operator bool() const
 		{
 			return m_Ptr != nullptr;
 		}
+
 		operator T* ( )
 		{
 			return m_Ptr;

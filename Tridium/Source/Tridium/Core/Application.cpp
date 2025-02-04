@@ -62,30 +62,12 @@ namespace Tridium {
 		}
 	#endif // IS_EDITOR
 
-		// TEMP!
-		RHIConfig config;
-		config.RHIType = ERHInterfaceType::DirectX12;
-		bool success = RHI::Initialise( config );
-		TE_CORE_INFO( "RHI Initialised: {0}", success );
-		TE_CORE_INFO( "RHI Type: {0}", RHI::GetRHIName() );
-
-		RHITextureDescriptor desc;
-		desc.Dimensions[0] = 4;
-		desc.Dimensions[1] = 4;
-		Byte exampleImgData[4 * 4 * 4];
-		for ( int i = 0; i < 4 * 4 * 4; i++ )
-		{
-			exampleImgData[i] = 0xFF;
-		}
-		desc.InitialData = exampleImgData;
-		RHITextureRef tex = RHI::CreateTexture( "",);
-
 		while ( m_Running )
 		{
 			PROFILE_FRAME();
 			// Update Time
 			const double lastFrameTime = Time::Now();
-			Time::Update();
+			Time::Update(); // 	s_Time = glfwGetTime();
 			Time::s_DeltaTime = Time::Now() - lastFrameTime;
 
 			// Update FPS
@@ -100,7 +82,7 @@ namespace Tridium {
 				m_PrevFrameInfo.MinFPS = minFPS;
 				m_PrevFrameInfo.MaxFPS = maxFPS;
 				frameCounter = 0;
-				fpsInterval -= 1.0;
+				fpsInterval = 0.0;
 				minFPS = 0xFFFFFFFF;
 				maxFPS = 0;
 			}
@@ -243,6 +225,41 @@ namespace Tridium {
 			m_Window = Window::Create();
 			m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
 		}
+
+		// TEMP!
+
+		RHIConfig config;
+		config.RHIType = ERHInterfaceType::DirectX12;
+		config.UseDebug = true;
+		TE_CORE_INFO( "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), RHI::Initialise( config ) );
+
+		uint8_t testImgData[64 * 64 * 4];
+		for ( size_t y = 0; y < 64; y++ )
+		{
+			for ( size_t x = 0; x < 64; x++ )
+			{
+				testImgData[( y * 64 + x ) * 4 + 0] = x * 4;
+				testImgData[( y * 64 + x ) * 4 + 1] = y * 4;
+				testImgData[( y * 64 + x ) * 4 + 2] = 255 - ( x * 2 + y * 2 );
+				testImgData[( y * 64 + x ) * 4 + 3] = 255;
+			}
+		}
+
+		RHITextureDescriptor desc;
+		desc.InitialData = testImgData;
+		desc.Dimensions[0] = 64;
+		desc.Dimensions[1] = 64;
+		desc.Format = ERHITextureFormat::RGBA8;
+
+		RHITextureRef tex = RHI::CreateTexture( desc );
+		//TE_CORE_INFO( "Successfully wrote to texture = {0}", tex->Write(desc.InitialData) );
+
+		while ( true )
+		{
+			m_Window->OnUpdate();
+		}
+
+		// \TEMP!
 
 		RenderCommand::Init();
 		InitializeProject( a_ProjectPath );
