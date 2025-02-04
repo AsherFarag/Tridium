@@ -42,7 +42,7 @@ namespace Tridium {
 		// Present the current frame.
 		virtual bool Present() = 0;
 		// Returns the type of the Dynamically bound RHI.
-		virtual ERHInterfaceType GetRHInterfaceType() const = 0;
+		virtual ERHInterfaceType GetRHIType() const = 0;
 		// Execute the given command list.
 		virtual bool ExecuteCommandList( RHICommandListRef a_CommandList ) = 0;
 		//==============================================

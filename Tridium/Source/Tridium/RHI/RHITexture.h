@@ -52,11 +52,47 @@ namespace Tridium {
         COUNT,
     };
 
-
+	// Returns the size in bytes of the given texture format.
+	constexpr uint32_t GetTextureFormatSize( ERHITextureFormat a_Format )
+	{
+		switch ( a_Format )
+		{
+			using enum ERHITextureFormat;
+			case R8:      return 1;
+			case RG8:     return 2;
+			case RGBA8:   return 4;
+			case SRGB8:   return 3;
+			case SRGBA8:  return 4;
+			case R16:     return 2;
+			case RG16:    return 4;
+			case RGBA16:  return 8;
+			case R16F:    return 2;
+			case RG16F:   return 4;
+			case RGBA16F: return 8;
+			case R32F:    return 4;
+			case RG32F:   return 8;
+			case RGBA32F: return 16;
+			case R16I:    return 2;
+			case RG16I:   return 4;
+			case RGBA16I: return 8;
+			case R32I:    return 4;
+			case RG32I:   return 8;
+			case RGBA32I: return 16;
+			case D16:     return 2;
+			case D32:     return 4;
+			case D24S8:   return 4;
+			case BC1:     return 8;
+			case BC3:     return 16;
+			case BC4:     return 8;
+			case BC5:     return 16;
+			case BC7:     return 16;
+			default: return 0;
+		}
+	}
 
 	RHI_RESOURCE_BASE_TYPE( Texture )
 	{
-		Span<const Byte> InitialData = {};
+		Span<const uint8_t> InitialData = {};
 		uint8_t DimensionCount = 2;
 		uint32_t Dimensions[3] = { 0, 0, 0 };
 		uint32_t Layers = 1;

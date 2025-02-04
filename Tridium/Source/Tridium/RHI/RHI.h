@@ -21,11 +21,15 @@ namespace Tridium {
 		bool Shutdown();
 		// Present the current frame.
 		bool Present();
+		// Get the name of the dynamically bound RHI.
+		const char* GetRHIName();
+		// Get the type of the dynamically bound RHI.
+		ERHInterfaceType GetRHIType();
 		//===========================
 
 		//===========================
 		// Fence functions
-		
+	
 		// Creates a fence that can be used to synchronize the CPU and GPU.
 		RHIFence CreateFence();
 		// Queries the state of a fence.
@@ -41,6 +45,28 @@ namespace Tridium {
 		RHIVertexBufferRef CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc );
 		RHIPipelineStateRef CreatePipelineState( const RHIPipelineStateDescriptor& a_Desc );
 		RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc );
+
+		RHITextureRef CreateTexture( 
+			uint32_t a_Width, uint32_t a_Height,
+			Span<const uint8_t> a_Data,
+			ERHITextureFormat a_Format = ERHITextureFormat::RGBA8,
+			const char* a_Name = nullptr,
+			ERHIUsageHint a_Usage = ERHIUsageHint::Default,
+			SharedPtr<RHIResourceAllocator> a_Allocator = nullptr );
+
+		RHIIndexBufferRef CreateIndexBuffer(
+			Span<const Byte> a_InitialData,
+			ERHIDataType a_DataType = ERHIDataType::UInt16,
+			const char* a_Name = nullptr,
+			ERHIUsageHint a_UsageHint = ERHIUsageHint::Default,
+			SharedPtr<RHIResourceAllocator> a_Allocator = nullptr );
+
+		RHIVertexBufferRef CreateVertexBuffer(
+			Span<const Byte> a_InitialData,
+			RHIVertexLayout a_Layout,
+			const char* a_Name = nullptr,
+			ERHIUsageHint a_UsageHint = ERHIUsageHint::Default,
+			SharedPtr<RHIResourceAllocator> a_Allocator = nullptr );
 		//===========================
 	}
 

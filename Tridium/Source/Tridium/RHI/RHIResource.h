@@ -96,7 +96,7 @@ namespace Tridium {
 			if constexpr ( Concepts::IsRHIResourceImplemntation<T> )
 			{
 				return GetType() == T::Type
-					&& RHI::GetRHInterfaceType() == T::API;
+					&& RHI::GetRHIType() == T::API;
 			}
 
 			return GetType() == T::Type;

@@ -78,7 +78,7 @@ namespace Tridium {
 			exampleImgData[i] = 0xFF;
 		}
 		desc.InitialData = exampleImgData;
-		RHITextureRef tex = RHI::CreateTexture( desc );
+		RHITextureRef tex = RHI::CreateTexture( "",);
 
 		while ( m_Running )
 		{
@@ -244,32 +244,16 @@ namespace Tridium {
 			m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
 		}
 
-		// Initialise the render pipeline
-		{
-			RenderCommand::Init();
-		}
+		RenderCommand::Init();
+		InitializeProject( a_ProjectPath );
 
-		// Initialise the project
-		{
-			InitializeProject( a_ProjectPath );
-		}
+		Engine::Construct();
+		Engine::Get()->Initialize();
 
-		// Initialise the engine
-		{
-			Engine::Construct();
-			Engine::Get()->Initialize();
-		}
+		Script::ScriptEngine::s_Instance = MakeUnique<Script::ScriptEngine>();
+		Script::ScriptEngine::s_Instance->Init();
 
-		// Initialise Script Engine
-		{
-			Script::ScriptEngine::s_Instance = MakeUnique<Script::ScriptEngine>();
-			Script::ScriptEngine::s_Instance->Init();
-		}
-
-		// Initialise Asset Manager
-		{
-			InitializeAssetManager();
-		}
+		InitializeAssetManager();
 
 		// Initialise Start Scene
 		{
@@ -285,16 +269,14 @@ namespace Tridium {
 			}
 		}
 
-		// Initialise ImGui
-		{
-			m_ImGuiLayer = new ImGuiLayer();
-			PushOverlay( m_ImGuiLayer );
-		}
+		// Add the ImGui layer
+		m_ImGuiLayer = new ImGuiLayer();
+		PushOverlay( m_ImGuiLayer );
 
 		// Initialise the editor
-#if IS_EDITOR
+	#if IS_EDITOR
 		Editor::EditorApplication::Init();
-#endif // IS_EDITOR
+	#endif // IS_EDITOR
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////

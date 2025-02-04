@@ -86,7 +86,17 @@ namespace Tridium {
 		return s_DynamicRHI->Present();
 	}
 
-	ERHInterfaceType RHI::GetRHInterfaceType()
+	const char* RHI::GetRHIName()
+	{
+		if ( s_DynamicRHI == nullptr )
+		{
+			return "Null";
+		}
+
+		return RHI::GetRHIName( s_DynamicRHI->GetRHIType() );
+	}
+
+	ERHInterfaceType RHI::GetRHIType()
 	{
 		if ( s_DynamicRHI == nullptr )
 		{
@@ -94,26 +104,7 @@ namespace Tridium {
 			return ERHInterfaceType::Null;
 		}
 
-		return s_DynamicRHI->GetRHInterfaceType();
-	}
-
-	const char* RHI::GetRHIName( ERHInterfaceType a_API )
-	{
-		if ( s_DynamicRHI == nullptr && a_API == ERHInterfaceType::Null )
-		{
-			return "Null";
-		}
-
-		ERHInterfaceType api = a_API == ERHInterfaceType::Null ? s_DynamicRHI->GetRHInterfaceType() : a_API;
-		switch ( api )
-		{
-		case ERHInterfaceType::OpenGL: return "OpenGL";
-		case ERHInterfaceType::DirectX11: return "DirectX 11";
-		case ERHInterfaceType::DirectX12: return "DirectX 12";
-		case ERHInterfaceType::Vulkan: return "Vulkan";
-		}
-
-		return "Null";
+		return s_DynamicRHI->GetRHIType();
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -171,5 +162,49 @@ namespace Tridium {
 		CHECK( s_DynamicRHI );
 		return s_DynamicRHI->CreateCommandList( a_Desc );
 	}
+
+	RHITextureRef RHI::CreateTexture( uint32_t a_Width, uint32_t a_Height, Span<const uint8_t> a_Data, ERHITextureFormat a_Format, const char* a_Name, ERHIUsageHint a_Usage, SharedPtr<RHIResourceAllocator> a_Allocator )
+	{
+		const size_t ExpectedSize = a_Width * a_Height * GetTextureFormatSize( a_Format );
+		if ( !ASSERT_LOG( a_Data.size() == ExpectedSize, "Data size does not match the expected size for the given texture format!" ) )
+		{
+			return nullptr;
+		}
+
+		RHITextureDescriptor desc;
+		desc.Name = a_Name;
+		desc.Dimensions[0] = a_Width;
+		desc.Dimensions[1] = a_Height;
+		desc.InitialData = a_Data;
+		desc.Format = a_Format;
+		desc.UsageHint = a_Usage;
+		desc.Allocator = a_Allocator;
+
+		return CreateTexture( desc );
+	}
+
+	RHIIndexBufferRef RHI::CreateIndexBuffer( Span<const Byte> a_InitialData, ERHIDataType a_DataType, const char* a_Name, ERHIUsageHint a_UsageHint, SharedPtr<RHIResourceAllocator> a_Allocator )
+	{
+		RHIIndexBufferDescriptor desc;
+		desc.Name = a_Name;
+		desc.InitialData = a_InitialData;
+		desc.UsageHint = a_UsageHint;
+		desc.DataType = a_DataType;
+		desc.Allocator = a_Allocator;
+		return CreateIndexBuffer( desc );
+	}
+
+	RHIVertexBufferRef RHI::CreateVertexBuffer( Span<const Byte> a_InitialData, RHIVertexLayout a_Layout, const char* a_Name, ERHIUsageHint a_UsageHint, SharedPtr<RHIResourceAllocator> a_Allocator )
+	{
+		RHIVertexBufferDescriptor desc;
+		desc.Name = a_Name;
+		desc.InitialData = a_InitialData;
+		desc.Layout = a_Layout;
+		desc.UsageHint = a_UsageHint;
+		desc.Allocator = a_Allocator;
+		return CreateVertexBuffer( desc );
+	}
+
+	//////////////////////////////////////////////////////////////////////////
 
 } // namespace Tridium

@@ -17,7 +17,7 @@ namespace Tridium {
 		// Present the current frame.
 		virtual bool Present() override;
 		// Returns the type of the Dynamically bound RHI.
-		virtual ERHInterfaceType GetRHInterfaceType() const override { return ERHInterfaceType::DirectX12; }
+		virtual ERHInterfaceType GetRHIType() const override { return ERHInterfaceType::DirectX12; }
 		// Execute the given command list.
 		virtual bool ExecuteCommandList( RHICommandListRef a_CommandList ) override;
 		//==============================================

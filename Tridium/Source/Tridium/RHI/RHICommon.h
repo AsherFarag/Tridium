@@ -12,8 +12,21 @@
 namespace Tridium {
 
 	namespace RHI {
-		ERHInterfaceType GetRHInterfaceType();
-		const char* GetRHIName( ERHInterfaceType a_API = ERHInterfaceType::Null );
+
+		constexpr const char* GetRHIName( ERHInterfaceType a_API )
+		{
+			switch ( a_API )
+			{
+				using enum ERHInterfaceType;
+				case OpenGL:    return "OpenGL";
+				case DirectX11: return "DirectX 11";
+				case DirectX12: return "DirectX 12";
+				case Vulkan:    return "Vulkan";
+				case Metal:     return "Metal";
+				default:        return "Null";
+			}
+		}
+
 
 		template<typename T = DynamicRHI>
 		T* GetDynamicRHI() requires Concepts::IsDynamicRHI<T>
