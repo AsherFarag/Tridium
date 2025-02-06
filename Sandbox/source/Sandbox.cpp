@@ -271,6 +271,20 @@ public:
 	LuaScriptHandle m_Script;
 };
 
+class TestObject
+{
+public:
+	TestObject()
+	{
+		printf( "Test Constructor\n" );
+	}
+
+	~TestObject()
+	{
+		printf( "Test Destructor\n" );
+	};
+};
+
 class SandboxGameInstance : public Tridium::GameInstance
 {
 	virtual void Init() override

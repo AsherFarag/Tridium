@@ -6,6 +6,7 @@ namespace Tridium {
 	// Forward declarations
 	class RHIResource;
 	class RHIResourceAllocator;
+	using RHIResourceAllocatorRef = SharedPtr<RHIResourceAllocator>;
 	// ====================
 
 	//=====================================================================
@@ -16,7 +17,7 @@ namespace Tridium {
 	{
         Sampler,
         Texture,
-        Shader,
+        ShaderModule,
         Buffer,
         VertexBuffer,
         IndexBuffer,
@@ -125,15 +126,22 @@ namespace Tridium {
 			return nullptr;
 		}
 
+		template<typename T> requires Concepts::IsRHIResource<T>
+		static T::RefType Create()
+		{
+			static constexpr auto Deleter = []( T* a_Resource ) { a_Resource->Release(); delete a_Resource; };
+			return T::RefType( new T(), Deleter );
+		}
+
     public:
-        const void* Descriptor = nullptr;
+		OpaquePtr Descriptor = nullptr;
 
 	protected:
 		template<typename T>
 		const T* ParamsToDescriptor( const void* a_Params )
 		{
-			Descriptor = new T( *reinterpret_cast<const T*>( a_Params ) );
-			return reinterpret_cast<const T*>( Descriptor );
+			Descriptor = MakeUnique<T>( *reinterpret_cast<const T*>( a_Params ) );
+			return reinterpret_cast<const T*>( Descriptor.Get() );
 		}
 	};
 
@@ -145,8 +153,8 @@ namespace Tridium {
 	struct RHIResourceDescriptor
 	{
 		using ResourceType = T;
-		const char* Name = nullptr;
-		SharedPtr<RHIResourceAllocator> Allocator;
+		StringView Name;
+		RHIResourceAllocatorRef Allocator;
 	};
 
 } // namespace Tridium
@@ -163,10 +171,10 @@ namespace Tridium {
 		using DescriptorType = RHI##Name##Descriptor;                                                     \
 		using RefType = RHI##Name##Ref;                                                                   \
 		using WeakRefType = RHI##Name##WeakRef;                                                           \
-        virtual ~RHI##Name() { CHECK( Release ); if ( Descriptor ) { delete Descriptor; } }               \
+        virtual ~RHI##Name() {}                                                                           \
 		static constexpr ::Tridium::ERHIResourceType Type = ::Tridium::ERHIResourceType::Name;            \
 		::Tridium::ERHIResourceType GetType() const override { return Type; }                             \
-		const DescriptorType* GetDescriptor() const { return (const DescriptorType*)Descriptor; }         \
+		const DescriptorType* GetDescriptor() const { return (const DescriptorType*)(Descriptor.Get()); } \
 		__VA_ARGS__                                                                                       \
 	};                                                                                                    \
 	struct RHI##Name##Descriptor : public ::Tridium::RHIResourceDescriptor<RHI##Name>

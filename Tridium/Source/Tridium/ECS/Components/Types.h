@@ -1,5 +1,8 @@
 #pragma once
 
+// - Core -
+#include "CoreComponents.h"
+
 // - Common -
 #include "Types/Common/GUIDComponent.h"
 #include "Types/Common/TagComponent.h"

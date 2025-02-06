@@ -3,8 +3,15 @@
 
 namespace Tridium {
 
-	RHI_RESOURCE_BASE_TYPE( Shader )
+	//=======================================================
+	// RHI Shader Module
+	//  A shader module represents a compiled shader stage.
+	RHI_RESOURCE_BASE_TYPE( ShaderModule )
 	{
+		ERHIShaderType Type = ERHIShaderType::Unknown; // The Shader Stage
+		Span<const Byte> Binary; // The compiled shader binary
+		StringView Source;       // The source code of the shader
 	};
+	//=======================================================
 
 } // namespace Tridium

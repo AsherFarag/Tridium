@@ -74,10 +74,10 @@ namespace Tridium {
 	{
 		RHIVertexLayout VertexLayout;
 
-		RHIShaderRef VertexShader;
-		RHIShaderRef PixelShader;
-		RHIShaderRef GeometryShader;
-		RHIShaderRef ComputeShader;
+		RHIShaderModuleRef VertexShader;
+		RHIShaderModuleRef PixelShader;
+		RHIShaderModuleRef GeometryShader;
+		RHIShaderModuleRef ComputeShader;
 
 		RHIBlendState BlendState;
 		RHIDepthState DepthState;

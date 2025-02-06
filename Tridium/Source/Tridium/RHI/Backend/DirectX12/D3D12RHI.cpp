@@ -14,8 +14,9 @@
 #include <Tridium/RHI/RHIPipelineState.h>
 
 #include "D3D12Texture.h"
-//#include "D3D12Mesh.h"
-//#include "D3D12PipelineState.h"
+#include "D3D12Shader.h"
+#include "D3D12Mesh.h"
+#include "D3D12PipelineState.h"
 
 
 namespace Tridium {
@@ -165,6 +166,19 @@ namespace Tridium {
 
     void DirectX12RHI::FenceSignal( RHIFence a_Fence )
     {
+		m_CommandQueue->Signal( m_Fence, ++m_FenceValue );
+		if ( SUCCEEDED( m_Fence->SetEventOnCompletion( m_FenceValue, m_FenceEvent ) ) )
+		{
+			TODO( "Wtf is this?" );
+			if ( WaitForSingleObject( m_FenceEvent, 20000 ) != WAIT_OBJECT_0 )
+			{
+				std::exit( 1 );
+			}
+		}
+		else
+		{
+			std::exit( 1 );
+		}
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -173,30 +187,42 @@ namespace Tridium {
 
 	RHITextureRef DirectX12RHI::CreateTexture( const RHITextureDescriptor& a_Desc )
 	{
-        // Create raw pointer first so compiler can optimize out dynamic dispatch
-        D3D12Texture* tex = new D3D12Texture();
-        CHECK( tex->Commit( &a_Desc ) );
-        return SharedPtr<RHITexture>( tex );
+		RHITextureRef tex = RHIResource::Create<D3D12Texture>();
+		CHECK( tex->Commit( &a_Desc ) );
+		return tex;
 	}
 
 	RHIIndexBufferRef DirectX12RHI::CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc )
 	{
-		return nullptr;
+		RHIIndexBufferRef index = RHIResource::Create<D3D12IndexBuffer>();
+		CHECK( index->Commit( &a_Desc ) );
+		return index;
 	}
 
 	RHIVertexBufferRef DirectX12RHI::CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc )
 	{
-		return nullptr;
+		RHIVertexBufferRef vertex = RHIResource::Create<D3D12VertexBuffer>();
+		CHECK( vertex->Commit( &a_Desc ) );
+		return vertex;
 	}
 
 	RHIPipelineStateRef DirectX12RHI::CreatePipelineState( const RHIPipelineStateDescriptor& a_Desc )
 	{
-		return nullptr;
+		RHIPipelineStateRef pipeline = RHIResource::Create<D3D12PipelineState>();
+		CHECK( pipeline->Commit( &a_Desc ) );
+		return pipeline;
 	}
 
 	RHICommandListRef DirectX12RHI::CreateCommandList( const RHICommandListDescriptor& a_Desc )
 	{
 		return nullptr;
+	}
+
+	RHIShaderModuleRef DirectX12RHI::CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc )
+	{
+		RHIShaderModuleRef shader = RHIResource::Create<D3D12ShaderModule>();
+		CHECK( shader->Commit( &a_Desc ) );
+		return shader;
 	}
 
 	//////////////////////////////////////////////////////////////////////////
