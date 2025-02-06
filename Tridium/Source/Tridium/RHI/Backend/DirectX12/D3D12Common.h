@@ -1,12 +1,5 @@
 #pragma once
 #include <Tridium/RHI/RHICommon.h>
-#include <Tridium/RHI/DynamicRHI.h>
-#include <Tridium/RHI/RHIMesh.h>
-#include <Tridium/RHI/RHITexture.h>
-#include <Tridium/RHI/RHIPipelineState.h>
-#include <Tridium/RHI/RHICommandList.h>
-#include <Tridium/RHI/RHIShader.h>
-
 
 #ifndef NOMINMAX
 	#define NOMINMAX
@@ -22,7 +15,6 @@
 
 namespace Tridium {
 
-	//=====================================================================
 	// Type definitions for DirectX12 to avoid versioning issues
 	namespace D3D12 {
 		using Factory = IDXGIFactory7;
@@ -40,34 +32,13 @@ namespace Tridium {
 		using DXGIDebug = IDXGIDebug1;
 	#endif
 	}
-	//=====================================================================
 
-	//=====================================================================
-	// Helper functions
-	namespace Helpers {
-
-		inline WString ToWString( const String& a_String )
-		{
-			WString wstr;
-			wstr.resize( a_String.size() );
-			mbstowcs( wstr.data(), a_String.data(), a_String.size() );
-			return wstr;
-		}
-	}
-	//=====================================================================
-
-	//=====================================================================
-	// Concept definitions
 	namespace D3D12::Concepts {
 		template<typename T>
 		concept IsIUnknown = std::is_base_of_v<IUnknown, T>;
 	}
-	//=====================================================================
 
-	//=====================================================================
-	// Com Pointer
-	//  A template class for Microsoft com pointer
-	//=====================================================================
+	// A template class for Microsoft com pointer
 	template<typename T> requires D3D12::Concepts::IsIUnknown<T>
 	class ComPtr
 	{

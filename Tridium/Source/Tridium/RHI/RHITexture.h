@@ -94,7 +94,7 @@ namespace Tridium {
 	{
 		Span<const uint8_t> InitialData = {}; // Initial data for the texture
 		uint8_t DimensionCount = 2;           // 1D = 1, 2D = 2, 3D = 3
-		uint32_t Dimensions[3] = { 1, 1, 1 }; // Width, Height, Depth
+		uint32_t Dimensions[3] = { 0, 0, 0 }; // Width, Height, Depth
 		uint32_t Layers = 1;                  // Number of layers in the texture (e.g. 6 for a cube map)
 		uint32_t Mips = 1;                    // Number of mip levels in the texture
 		bool IsRenderTarget = false;          // Whether the texture is a render target

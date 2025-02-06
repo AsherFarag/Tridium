@@ -66,10 +66,10 @@ namespace Tridium {
 		void ShutdownSystems();
 		void SendSceneEvent( const SceneEventPayload& a_EventPayload );
 
-		template <typename T, typename... Args> requires Concepts::IsBaseOf<ISceneSystem, T>
+		template <typename T, typename... Args>
 		SharedPtr<T> AddSystem( Args&&... a_Args );
 
-		template <typename T> requires Concepts::IsBaseOf<ISceneSystem, T>
+		template <typename T>
 		SharedPtr<T> GetSystem();
 
 		//////////////////////////////////////////////////////////////////////////

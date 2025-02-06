@@ -13,72 +13,23 @@ namespace Tridium {
 
 		for ( auto&& [id, componentStorage] : Application::GetScene()->GetECS().Storage() )
 		{
-            if ( componentStorage.contains( m_ID ) )
+            if ( componentStorage.contains( static_cast<entt::entity>( m_ID ) ) )
                 components.emplace_back( 
-                    Refl::ResolveMetaType( componentStorage.type() ),
-                    static_cast<Component*>( componentStorage.value( m_ID ) )
+                    entt::resolve( componentStorage.type() ),
+                    static_cast<Component*>( componentStorage.value( static_cast<entt::entity>( m_ID ) ) )
                 );
 		}
 
-        return components;
+        return std::move(components);
     }
 
-    GUID GameObject::GetGUID() const 
-    {
+    GUID GameObject::GetGUID() const {
         return GetComponent<GUIDComponent>().GetID();
     }
 
-    std::string& GameObject::GetTag() const 
-    {
+    std::string& GameObject::GetTag() const {
         return GetComponent<TagComponent>().Tag;
     }
-
-	//////////////////////////////////////////////////////////////////////////
-	// GameObject Flags
-	//////////////////////////////////////////////////////////////////////////
-
-    GameObjectFlags GameObject::GetFlags()
-    {
-		if ( auto* flagsComponent = TryGetComponent<GameObjectFlagsComponent>() )
-			return flagsComponent->Flags;
-		return AddComponent<GameObjectFlagsComponent>( DefaultGameObjectFlags ).Flags;
-    }
-
-    void GameObject::SetActive( bool a_Active, bool a_PropagateToChildren )
-    {
-		static const Refl::MetaType NativeScriptComponentType = Refl::ResolveMetaType<NativeScriptComponent>();
-
-		GameObjectFlags& flags = GetComponent<GameObjectFlagsComponent>().Flags;
-		flags.SetFlag( EGameObjectFlag::Active, a_Active );
-
-        if ( a_PropagateToChildren )
-        {
-            for ( auto child : GetChildren() )
-            {
-                child.SetActive( a_Active, a_PropagateToChildren );
-            }
-        }
-    }
-
-    void GameObject::SetVisible( bool a_Visible, bool a_PropagateToChildren )
-    {
-        static const Refl::MetaType NativeScriptComponentType = Refl::ResolveMetaType<NativeScriptComponent>();
-
-		GameObjectFlags& flags = GetComponent<GameObjectFlagsComponent>().Flags;
-		flags.SetFlag( EGameObjectFlag::Visible, a_Visible );
-
-		if ( a_PropagateToChildren )
-		{
-			for ( auto child : GetChildren() )
-			{
-				child.SetVisible( a_Visible, a_PropagateToChildren );
-			}
-		}
-    }
-
-	//////////////////////////////////////////////////////////////////////////
-	// Transform Functions
-	//////////////////////////////////////////////////////////////////////////
 
     TransformComponent& GameObject::GetTransform() const {
         return GetComponent<TransformComponent>();

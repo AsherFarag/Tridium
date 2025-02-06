@@ -50,15 +50,6 @@ namespace Tridium {
 		constexpr uint32_t MaxVertexAttributes = 8u;
 		constexpr uint32_t MaxShaderInputs = 32u;
 
-		static bool IsDebug()
-		{
-		#if RHI_DEBUG_ENABLED
-			return s_RHIGlobals.Config.UseDebug;
-		#else
-			return false;
-		#endif
-		}
-
 		static ERHITextureAlignment GetTextureAlignment()
 		{
 			switch ( RHI::GetRHIType() )

@@ -1,7 +1,6 @@
 #pragma once
 #include "entt.hpp"
 #include <Tridium/Core/Assert.h>
-#include <Tridium/Utils/Concepts.h>
 
 namespace Tridium {
 
@@ -9,12 +8,17 @@ namespace Tridium {
 	using EntityID = entt::entity;
 	constexpr EntityID NullEntity = entt::null;
 
-	//================================================================
-	// Entity Component System (ECS)
-	//  The ECS is a system for managing entities and their components.
-	//  This class is a wrapper around the EnTT registry.
-	//  Use this class for creating custom entity systems.
-	//================================================================
+	using OnBeginPlayFunc = void( * )( );
+	using OnUpdateFunc = void( * )( float a_DeltaTime );
+	using OnEndPlayFunc = void( * )( );
+
+	template<typename T>
+	concept HasOnBeginPlayFunction = requires( T ) { { &T::OnBeginPlay }; };
+	template<typename T>
+	concept HasOnUpdateFunction = requires( T ) { { &T::OnUpdate }; };
+	template<typename T>
+	concept HasOnEndPlayFunction = requires( T ) { { &T::OnEndPlay }; };
+
 	class EntityComponentSystem
 	{
 	public:

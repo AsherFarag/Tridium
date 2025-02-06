@@ -46,15 +46,11 @@ namespace Tridium {
 		virtual RHIVertexBufferRef CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc ) override;
 		virtual RHIPipelineStateRef CreatePipelineState( const RHIPipelineStateDescriptor& a_Desc ) override;
 		virtual RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc ) override;
-		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc ) override;
 		//=====================================================
 
-		#if RHI_DEBUG_ENABLED
-
-		// Dump debug information about the RHI into the console.
+	#if RHI_DEBUG_ENABLED
 		virtual void DumpDebug() override;
-
-		#endif // RHI_DEBUG_ENABLED
+	#endif // RHI_DEBUG_ENABLED
 	};
 
 }

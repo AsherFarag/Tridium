@@ -1,25 +1,22 @@
 #pragma once
 #include <type_traits>
 #include <Tridium/Core/Assert.h>
-#include <Tridium/Core/Memory.h>
-#include <Tridium/Utils/Concepts.h>
 
 namespace Tridium {
-
     //==========================================================================
-    // Singleton class for single-instance objects. If ExplicitSetup is
-    // disabled, T must be default constructible, otherwise it will need to be
-    // constructed beforehand.
-    //==========================================================================
+// Singleton class for single-instance objects. If ExplicitSetup is
+// disabled, T must be default constructible, otherwise it will need to be
+// constructed beforehand.
+//==========================================================================
     template < typename T, bool _ExplicitSetup = true >
     class ISingleton
     {
     protected:
+
         virtual ~ISingleton() = default;
 
     public:
         static constexpr bool ExplicitSetup = _ExplicitSetup;
-		//static_assert( ExplicitSetup || Concepts::IsDefaultConstructable<T>, "Singleton must be default constructable if ExplicitSetup is disabled." );
 
         // Is this singleton valid, that is, is it enabled.
         virtual bool IsValidSingleton() const { return true; }
@@ -28,29 +25,55 @@ namespace Tridium {
         virtual void OnPostSingletonConstructed() {}
 
         // Creates the singleton's global instance, taking in constructor args.
-        template< typename... _Args >
-        static bool Construct( _Args&&... a_Args )
+        template< typename ...Args >
+        static bool Construct( Args&&... a_Args )
         {
-            if ( s_Instance )
+            if ( !CORE_ASSERT( !s_Instance ) )
             {
                 return false;
             }
 
-            s_Instance = MakeUnique<T>( std::forward< _Args >( a_Args )... );
+            s_Instance = new T( std::forward< Args >( a_Args )... );
             s_Instance->OnPostSingletonConstructed();
             return true;
         }
 
-        // Will remove the reference to existing singleton object without deleting.
-        static T* Release()
+        // Cause this singleton interface to reference an external instance constructed via other means.
+        // Useful for objects created by a global database, where only 1 instance of T is guaranteed.
+        static bool BindExisting( T* a_Instance )
         {
-			return s_Instance.release();
+            if ( !CORE_ASSERT( !s_Instance ) )
+            {
+                return false;
+            }
+
+            s_Instance = a_Instance;
+            s_Instance->OnPostSingletonConstructed();
+            return true;
+        }
+
+        // Will remove the reference to existing singleton object without deleting it first.
+        static bool UnbindExisting()
+        {
+            if ( !CORE_ASSERT( s_Instance ) )
+            {
+                return false;
+            }
+
+            s_Instance = nullptr;
+            return true;
         }
 
         // Destroy the global instance and reset to null. Construct/BindExisting must be called again if explicitly initialisable.
         static void Destroy()
         {
-			s_Instance.reset();
+            if ( !s_Instance )
+            {
+                return;
+            }
+
+            delete s_Instance;
+            s_Instance = nullptr;
         }
 
         // Does the global instance exist and is it valid?
@@ -68,16 +91,16 @@ namespace Tridium {
                 }
             }
 
-            CHECK( IsValid() );
-            return s_Instance.get();
+            CORE_CHECK( IsValid() );
+            return s_Instance;
         }
 
     private:
-        static UniquePtr<T> s_Instance;
+        static T* s_Instance;
     };
 
     //==========================================================================
     template< typename T, bool _ExplicitSetup >
-    UniquePtr<T> ISingleton< T, _ExplicitSetup >::s_Instance = nullptr;
+    T* ISingleton< T, _ExplicitSetup >::s_Instance = nullptr;
 
 } // namespace Tridium

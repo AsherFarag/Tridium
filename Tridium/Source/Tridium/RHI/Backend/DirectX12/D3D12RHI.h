@@ -1,6 +1,6 @@
 #pragma once
 #include "D3D12Common.h"
-#include "D3D12Context.h"
+#include <Tridium/RHI/DynamicRHI.h>
 
 namespace Tridium {
 
@@ -37,7 +37,6 @@ namespace Tridium {
 		virtual RHIVertexBufferRef CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc ) override;
 		virtual RHIPipelineStateRef CreatePipelineState( const RHIPipelineStateDescriptor& a_Desc ) override;
 		virtual RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc ) override;
-		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc ) override;
 		//=====================================================
 
 		//====================================================

@@ -250,7 +250,6 @@ namespace Tridium {
 		desc.Dimensions[0] = 64;
 		desc.Dimensions[1] = 64;
 		desc.Format = ERHITextureFormat::RGBA8;
-		desc.Name = "My beautiful texture";
 
 		RHITextureRef tex = RHI::CreateTexture( desc );
 		//TE_CORE_INFO( "Successfully wrote to texture = {0}", tex->Write(desc.InitialData) );

@@ -34,8 +34,8 @@ namespace Tridium {
 		bool m_Retired;
 	};
 
-	template <typename T, typename _Deleter = std::default_delete<T>>
-	using UniquePtr = std::unique_ptr<T, _Deleter>;
+	template <typename T>
+	using UniquePtr = std::unique_ptr<T>;
 
 	template<typename T, typename ... Args>
 	constexpr UniquePtr<T> MakeUnique( Args&& ... args )
@@ -71,96 +71,5 @@ namespace Tridium {
 	{
 		return WeakPtr<T>( a_SharedPtr );
 	}
-
-
-	//========================================================
-	// Opaque Pointer
-	//	Functions as a UniquePtr<void> with a custom deleter.
-	//========================================================
-	class OpaquePtr
-	{
-	public:
-		using Deleter = void( * )( void* );
-
-		OpaquePtr() : m_Ptr( nullptr, nullptr ) {}
-
-		template<typename T>
-		OpaquePtr( T* a_Ptr, Deleter a_Deleter = []( void* ptr ) { delete static_cast<T*>( ptr ); } )
-			: m_Ptr( a_Ptr, a_Deleter ) {
-		}
-
-		// Nullptr assignment
-		OpaquePtr( std::nullptr_t ) : m_Ptr( nullptr, nullptr ) {}
-
-		// Move OpaquePtr
-		OpaquePtr( OpaquePtr&& a_Other ) noexcept
-			: m_Ptr( std::move( a_Other.m_Ptr ) ) {
-		}
-
-		// Move assignment OpaquePtr
-		OpaquePtr& operator=( OpaquePtr&& a_Other ) noexcept
-		{
-			if ( this != &a_Other )
-				m_Ptr = std::move( a_Other.m_Ptr );
-			return *this;
-		}
-
-		// Move UniquePtr
-		template<typename T>
-		OpaquePtr( UniquePtr<T>&& a_Other ) noexcept
-			: m_Ptr( std::move( a_Other ) ) {
-		}
-
-		// Move assignment UniquePtr
-		template<typename T>
-		OpaquePtr& operator=( UniquePtr<T>&& a_Other ) noexcept
-		{
-			m_Ptr.reset( a_Other.release() );
-			m_Ptr.get_deleter() = []( void* ptr ) { delete static_cast<T*>( ptr ); };
-			return *this;
-		}
-
-		// Delete copy constructor and assignment
-		OpaquePtr( const OpaquePtr& ) = delete;
-		OpaquePtr& operator=( const OpaquePtr& ) = delete;
-
-		void* Get() const { return m_Ptr.get(); }
-
-		template<typename T>
-		T* Get() const { return static_cast<T*>( Get() ); }
-
-		template<typename T = void>
-		void Reset( T* a_Ptr = nullptr, Deleter a_Deleter = []( void* ptr ) { delete static_cast<T*>( ptr ); } )
-		{
-			m_Ptr.reset( a_Ptr );
-			m_Ptr.get_deleter() = a_Deleter;
-		}
-
-		void Reset()
-		{
-			m_Ptr.reset();
-		}
-
-		void* Release()
-		{
-			return m_Ptr.release();
-		}
-
-		void Swap( OpaquePtr& a_Other )
-		{
-			m_Ptr.swap( a_Other.m_Ptr );
-		}
-
-		explicit operator bool() const { return m_Ptr.get() != nullptr; }
-		bool operator==( std::nullptr_t ) const { return m_Ptr.get() == nullptr; }
-		bool operator!=( std::nullptr_t ) const { return m_Ptr.get() != nullptr; }
-		bool operator==( const OpaquePtr& a_Other ) const { return m_Ptr == a_Other.m_Ptr; }
-		bool operator!=( const OpaquePtr& a_Other ) const { return m_Ptr != a_Other.m_Ptr; }
-		bool operator==( const void* a_Ptr ) const { return m_Ptr.get() == a_Ptr; }
-		bool operator!=( const void* a_Ptr ) const { return m_Ptr.get() != a_Ptr; }
-
-	private:
-		UniquePtr<void, Deleter> m_Ptr;
-	};
 
 }

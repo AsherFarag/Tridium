@@ -52,7 +52,6 @@ namespace Tridium {
         file.close();
 
 		TE_CORE_INFO( "Profile session serialized to '{0}'", a_Path );
-		return true;
     }
 
 }
