@@ -25,7 +25,7 @@ namespace Tridium {
 	Application* Application::s_Instance = nullptr;
 
 	///////////////////////////////////////////////////////////////////////////////////////////
-	Application::Application( const std::string& a_ProjectPath )
+	Application::Application( const String& a_ProjectPath )
 	{
 		TODO( "Temp fix" );
 		if ( a_ProjectPath.empty() )
@@ -194,7 +194,7 @@ namespace Tridium {
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////
-	void Application::OnEvent( Event& e )
+	void Application::OnEvent( Event& a_Event )
 	{
 		EventDispatcher dispatcher( e );
 		dispatcher.Dispatch<WindowCloseEvent>( TE_BIND_EVENT_FN( Application::OnWindowClosed, 1 ) );

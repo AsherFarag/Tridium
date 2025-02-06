@@ -8,6 +8,9 @@
 namespace Tridium {
 
 
+	//================================================================
+	// Engine
+	//  
 	class Engine final : public ISingleton<Engine>
 	{
 	public:

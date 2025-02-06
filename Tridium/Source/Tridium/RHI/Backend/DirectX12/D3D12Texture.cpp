@@ -18,7 +18,6 @@ namespace Tridium {
 		const size_t stride = width * GetTextureFormatSize( desc->Format );
 		const size_t imgSize = height * stride;
 
-		// Create Dx12 Texture descriptor
 		D3D12_RESOURCE_DESC resourceDesc = {};
 		resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 		resourceDesc.Alignment = 0;
@@ -32,7 +31,6 @@ namespace Tridium {
 		resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 		resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-		// Create the heap properties
 		D3D12_HEAP_PROPERTIES heapProperties = {};
 		heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
 		heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
@@ -47,7 +45,7 @@ namespace Tridium {
 		// Create the texture
 		hr = device->CreateCommittedResource(
 				&heapProperties, D3D12_HEAP_FLAG_NONE,
-				&resourceDesc, D3D12_RESOURCE_STATE_COPY_DEST, // Initialize to COPY_DEST for safety
+				&resourceDesc, D3D12_RESOURCE_STATE_COPY_DEST,
 				nullptr, IID_PPV_ARGS( &m_Texture ) );
 
 #if RHI_DEBUG_ENABLED
@@ -114,11 +112,11 @@ namespace Tridium {
 		// To do this, we need to:
 		//    1. Create an intermediate upload heap
 		//    2. Copy data to upload buffer
-		//    3. Transition to COPY_DEST
-		//    4. Setup copy locations
-		//    5. Copy texture data
-		//    6. Transition to SHADER_RESOURCE
-		//    7. Execute commands
+		//    3. Setup copy locations
+		//    4. Copy texture data
+		//    5. Execute commands
+
+		TODO( "Writing to a GPU-only texture requires the cmd list. Figure out if theres some cleaner, faster or safer way to create resources." );
 
 		auto* rhi = RHI::GetDynamicRHI<DirectX12RHI>();
 		auto& device = rhi->GetDevice();
@@ -134,13 +132,11 @@ namespace Tridium {
 		const size_t height = desc.Dimensions[1];
 		const size_t bytesPerPixel = GetTextureFormatSize( desc.Format );
 
-		// Compute proper footprint
 		D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint = {};
 		uint64_t uploadSize = 0;
 		auto texDesc = m_Texture->GetDesc();
 		device->GetCopyableFootprints( &texDesc, 0, 1, 0, &footprint, nullptr, nullptr, &uploadSize );
 
-		// 1. Create an intermediate upload heap
 		D3D12_HEAP_PROPERTIES uploadHeapProps = {};
 		uploadHeapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
 		uploadHeapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
@@ -150,13 +146,13 @@ namespace Tridium {
 
 		D3D12_RESOURCE_DESC uploadBufferDesc = {};
 		uploadBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-		uploadBufferDesc.Width = a_Data.size();  // Make sure this isn't zero
+		uploadBufferDesc.Width = a_Data.size();
 		uploadBufferDesc.Height = 1;
 		uploadBufferDesc.DepthOrArraySize = 1;
 		uploadBufferDesc.MipLevels = 1;
 		uploadBufferDesc.Format = DXGI_FORMAT_UNKNOWN;
 		uploadBufferDesc.SampleDesc.Count = 1;
-		uploadBufferDesc.SampleDesc.Quality = 0; // Explicitly set to 0
+		uploadBufferDesc.SampleDesc.Quality = 0;
 		uploadBufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 		uploadBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
@@ -170,7 +166,6 @@ namespace Tridium {
 		if ( FAILED( hr ) )
 			return false;
 
-		// 2. Copy data to upload buffer
 		char* uploadBufferAddress;
 		D3D12_RANGE uploadRange;
 		uploadRange.Begin = 0;
@@ -179,22 +174,12 @@ namespace Tridium {
 		memcpy( &uploadBufferAddress[0], a_Data.data(), a_Data.size() );
 		uploadBuffer->Unmap( 0, &uploadRange );
 
-		// 3. Transition to COPY_DEST
-		//D3D12_RESOURCE_BARRIER barrier = {};
-		//barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		//barrier.Transition.pResource = m_Texture.Get();
-		//barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-		//barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST;
-		//commandList->ResourceBarrier( 1, &barrier );
-
-		// 4. Setup copy locations
 		D3D12_TEXTURE_COPY_LOCATION dstLocation = { m_Texture.Get(), D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX, 0 };
 		D3D12_TEXTURE_COPY_LOCATION srcLocation = {};
 		srcLocation.pResource = uploadBuffer.Get();
 		srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
 		srcLocation.PlacedFootprint = footprint;
 
-		// 5. Copy texture data
 		D3D12_BOX textureBox{};
 		textureBox.left = 0;
 		textureBox.top = 0;
@@ -204,12 +189,6 @@ namespace Tridium {
 		textureBox.back = 1;
 		commandList->CopyTextureRegion( &dstLocation, 0, 0, 0, &srcLocation, &textureBox );
 
-		// 6. Transition to SHADER_RESOURCE
-		//barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-		//barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-		//commandList->ResourceBarrier( 1, &barrier );
-
-		// 7. Execute commands
 		hr = commandList->Close();
 		if ( FAILED( hr ) )
 			return false;

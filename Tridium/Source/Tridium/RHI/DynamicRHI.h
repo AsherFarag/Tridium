@@ -4,8 +4,9 @@
 
 namespace Tridium {
 
-	// === Forward declarations ===
-	// Resource Types
+	//==============================================
+	// Forward declarations
+	// - Resource Types
 	class RHITexture;
 	using RHITextureRef = SharedPtr<RHITexture>;
 	struct RHITextureDescriptor;
@@ -25,7 +26,7 @@ namespace Tridium {
 
 	//==============================================
 	// DynamicRHI
-	//  An interace for the dynamicly bound RHI.
+	//  The core interace for the dynamicly bound RHI.
 	//==============================================
 	class DynamicRHI
 	{

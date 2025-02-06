@@ -23,25 +23,40 @@ namespace Tridium {
 		uint32_t MaxFPS = 0u;
 	};
 
+
+	TODO( "Make this description actually true" );
+	//==============================================
+	// Application
+	//  The core system that manages interactions between the engine and the OS.
+	//  It is responsible for initializing the engine, creating the window, 
+	//  and running the engine loop.
+	//==============================================
 	class Application final
 	{
 	public:
-		Application( const std::string& a_ProjectPath );
-		virtual ~Application();
+		Application( const String& a_ProjectPath );
+		~Application();
 
 		void Run();
 		static void Quit();
 
-		// - Event Handling -
-		void OnEvent( Event& e );
+		//================================================================
+		// Event Handling
+		TODO( "Set this up with a proper event system and input handler" );
+		void OnEvent( Event& a_Event );
+		//================================================================
 
-		// - Layer Stack -
+		//================================================================
+		// Layer Stack
 		void PushLayer( Layer* a_Layer ) { m_LayerStack.PushLayer( a_Layer ); }
 		void PushOverlay( Layer* a_Overlay ) { m_LayerStack.PushOverlay( a_Overlay ); }
 		void PopLayer( Layer* a_Layer, bool a_Destroy = false ) { m_LayerStack.PopLayer( a_Layer, a_Destroy ); }
 		void PopOverlay( Layer* a_Overlay, bool a_Destroy = false ) { m_LayerStack.PopOverlay( a_Overlay, a_Destroy ); }
+		//================================================================
 
 		static Application& Get() { return *s_Instance; }
+
+		TODO( "Move to the Engine" );
 		static SharedPtr<Project> GetActiveProject() { return Get().m_Project; }
 		static const IO::FilePath& GetEngineAssetsDirectory() { return Get().m_EngineAssetsDirectory; }
 
@@ -51,16 +66,9 @@ namespace Tridium {
 		const FrameInfo& GetFrameInfo() const { return m_PrevFrameInfo; }
 
 		// - Scene -
+		TODO( "Move to the Scene Manager" );
 		static const SharedPtr<Scene>& GetScene() { return s_Instance->m_ActiveScene; }
 		static void SetScene( SharedPtr<Scene> a_Scene );
-
-	private:
-		void Initialize( const std::string& a_ProjectPath );
-		void InitializeProject( const IO::FilePath& a_Path );
-		void InitializeAssetManager();
-		bool OnWindowClosed( WindowCloseEvent& e );
-		void Shutdown();
-		void Update();
 
 	private:
 		bool m_Running;
@@ -81,6 +89,14 @@ namespace Tridium {
 		IO::FilePath m_EngineAssetsDirectory = "../Tridium/EngineAssets";
 
 	private:
+		TODO( "Initialization and Shutdown are completely messy and need to be restructured" );
+		void Initialize( const std::string& a_ProjectPath );
+		void InitializeProject( const IO::FilePath& a_Path );
+		void InitializeAssetManager();
+		bool OnWindowClosed( WindowCloseEvent& e );
+		void Shutdown();
+		void Update();
+
 		friend class AssetManager;
 		static Application* s_Instance;
 	};
