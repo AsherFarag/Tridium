@@ -7,6 +7,7 @@
 
 #pragma once
 #include <Tridium/ECS/Components/Types/Common/CharacterControllerComponent.h>
+#include <Tridium/ECS/Components/CoreComponents.h>
 
 namespace Tridium::Refl::Internal {
 
@@ -20,6 +21,7 @@ namespace Tridium::Refl::Internal {
 			// MyClass::__Tridium_Reflect();
 
 			CharacterControllerComponent::__Tridium_Reflect();
+			GameObjectFlagsComponent::__Tridium_Reflect();
 		}
 	};
 

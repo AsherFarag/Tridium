@@ -86,10 +86,9 @@ namespace Tridium {
 
 	RHITextureRef OpenGLRHI::CreateTexture( const RHITextureDescriptor& a_Desc )
 	{
-		// Create raw pointer first so compiler can optimize out dynamic dispatch
-		OpenGLTexture* tex = new OpenGLTexture();
-		tex->Commit( &a_Desc );
-		return SharedPtr<RHITexture>( tex );
+		RHITextureRef tex = RHIResource::Create<OpenGLTexture>();
+		CHECK( tex->Commit( &a_Desc ) );
+		return tex;
 	}
 
 	RHIIndexBufferRef OpenGLRHI::CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc )
@@ -110,6 +109,11 @@ namespace Tridium {
 	RHICommandListRef OpenGLRHI::CreateCommandList( const RHICommandListDescriptor& a_Desc )
 	{
 		return RHICommandListRef();
+	}
+
+	RHIShaderModuleRef OpenGLRHI::CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc )
+	{
+		return RHIShaderModuleRef();
 	}
 
 	//////////////////////////////////////////////////////////////////////////

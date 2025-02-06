@@ -9,7 +9,7 @@ namespace Tridium {
 	// TEMP?
 	namespace IO { template <typename T> struct Serializer; }
 
-	class TransformComponent : public Component
+	class TransformComponent : public NativeScriptComponent
 	{
 		REFLECT(TransformComponent);
 	public:

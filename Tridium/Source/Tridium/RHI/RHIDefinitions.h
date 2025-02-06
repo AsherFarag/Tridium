@@ -96,6 +96,21 @@ namespace Tridium {
 	};
 
 	//===========================
+	// RHI Shader Type
+	//===========================
+	enum class ERHIShaderType : uint8_t
+	{
+		Unknown = 0,
+		Vertex,
+		Pixel,
+		Geometry,
+		Compute,
+		COUNT,
+		NUM_BITS = 3,
+	};
+	ENUM_SIZE_ASSERT( ERHIShaderType );
+
+	//===========================
 	// Sampler Filter
 	//===========================
 	enum class ERHISamplerFilter : uint8_t

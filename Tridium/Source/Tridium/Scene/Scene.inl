@@ -12,10 +12,9 @@ namespace Tridium {
 	// Scene Systems
 	//////////////////////////////////////////////////////////////////////////
 
-	template<typename T, typename ...Args>
+	template<typename T, typename ...Args> requires Concepts::IsBaseOf<ISceneSystem, T>
 	inline SharedPtr<T> Scene::AddSystem( Args && ...a_Args )
 	{
-		static_assert( std::is_base_of_v<ISceneSystem, T>, "T must be a derived class of ISceneSystem!" );
 		static constexpr size_t s_TypeHash = entt::type_hash<T>::value();
 		auto it = m_Systems.find( s_TypeHash );
 		if ( !ASSERT_LOG( it == m_Systems.end(), "Attempted to add a System that already exists!" ) )
@@ -29,7 +28,7 @@ namespace Tridium {
 		return system;
 	}
 
-	template<typename T>
+	template<typename T> requires Concepts::IsBaseOf<ISceneSystem, T>
 	inline SharedPtr<T> Scene::GetSystem()
 	{
 		static_assert( std::is_base_of_v<ISceneSystem, T>, "T must be a derived class of ISceneSystem!" );
@@ -55,7 +54,7 @@ namespace Tridium {
 		T& component = a_Registry.get<T>( a_Entity );
 
 		// Set the GameObject for the component
-		if constexpr ( std::is_base_of_v<Component, T> )
+		if constexpr ( Concepts::IsBaseOf<Component, T> )
 		{
 			component.m_GameObject = gameObject;
 		}
@@ -76,7 +75,7 @@ namespace Tridium {
 			SendSceneEvent( payload );
 		}
 
-		if constexpr ( HasOnBeginPlayFunction<T> )
+		if constexpr ( Concepts::HasOnBeginPlayFunction<T> )
 		{
 			if ( HasBegunPlay() )
 			{
@@ -103,7 +102,7 @@ namespace Tridium {
 			SendSceneEvent( payload );
 		}
 
-		if constexpr ( HasOnEndPlayFunction<T> )
+		if constexpr ( Concepts::HasOnEndPlayFunction<T> )
 		{
 			if ( HasBegunPlay() )
 			{
@@ -119,8 +118,8 @@ namespace Tridium {
 		m_ECS.GetRegistry().on_construct<T>().connect<&Scene::OnComponentCreated<T>>( *this );
 		m_ECS.GetRegistry().on_destroy<T>().connect<&Scene::OnComponentDestroyed<T>>( *this );
 
-		// Add a component ticker if the component has an OnUpdate or OnBeginPlay function
-		if constexpr ( HasOnUpdateFunction<T> || HasOnBeginPlayFunction<T> )
+		// Add a component ticker if the component is a NativeScriptComponent and has an OnUpdate or OnBeginPlay function
+		if constexpr ( Concepts::HasOnUpdateFunction<T> || Concepts::HasOnBeginPlayFunction<T> )
 		{
 			AddEntityTicker<ComponentTicker<T>>();
 		}
@@ -148,9 +147,9 @@ namespace Tridium {
 	template <typename T, typename... Args>
 	inline T* Scene::TryAddComponentToGameObject( GameObject a_GameObject, Args&&... args )
 	{
-		if ( GameObjectHasComponent<T>( a_GameObject ) )
+		if ( T* existingComponent = TryGetComponentFromGameObject<T>( a_GameObject ) )
 		{
-			return nullptr;
+			return existingComponent;
 		}
 
 		return &AddComponentToGameObject<T>( a_GameObject, std::forward<Args>( args )... );

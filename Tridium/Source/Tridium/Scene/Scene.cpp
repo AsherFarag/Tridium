@@ -274,6 +274,7 @@ namespace Tridium {
 		auto go = GameObject( m_ECS.CreateEntity() );
 		AddComponentToGameObject<GUIDComponent>( go, a_GUID );
 		AddComponentToGameObject<TagComponent>( go, a_Name );
+		AddComponentToGameObject<GameObjectFlagsComponent>( go, DefaultGameObjectFlags );
 		AddComponentToGameObject<TransformComponent>( go );
 
 		// Send OnGameObjectCreated Event to all systems
@@ -295,9 +296,15 @@ namespace Tridium {
 
 	GameObject Scene::InstantiateGameObjectFrom( GameObject a_Source )
 	{
+		static const Refl::MetaType GUIDComponentType = Refl::ResolveMetaType<GUIDComponent>();
+		static const Refl::MetaType TagComponentType = Refl::ResolveMetaType<TagComponent>();
+		static const Refl::MetaType GameObjectFlagsComponentType = Refl::ResolveMetaType<GameObjectFlagsComponent>();
+		static const Refl::MetaType TransformComponentType = Refl::ResolveMetaType<TransformComponent>();
+
 		GameObject dst( m_ECS.CreateEntity() );
 		AddComponentToGameObject<GUIDComponent>( dst );
 		AddComponentToGameObject<TagComponent>( dst, a_Source.GetTag() );
+		AddComponentToGameObject<GameObjectFlagsComponent>( dst, a_Source.GetFlags() );
 		TransformComponent& tc = AddComponentToGameObject<TransformComponent>( dst );
 		tc.Position = a_Source.GetTransform().Position;
 		tc.Rotation = a_Source.GetTransform().Rotation;
@@ -308,13 +315,16 @@ namespace Tridium {
 			if ( !storage.contains( a_Source ) )
 				continue;
 
-			if ( storage.type() == Refl::ResolveMetaType<GUIDComponent>().Info() )
+			if ( storage.type() == GUIDComponentType.Info() )
 				continue;
 
-			if ( storage.type() == Refl::ResolveMetaType<TagComponent>().Info() )
+			if ( storage.type() == TagComponentType.Info() )
 				continue;
 
-			if ( storage.type() == Refl::ResolveMetaType<TransformComponent>().Info() )
+			if ( storage.type() == TransformComponentType.Info() )
+				continue;
+
+			if ( storage.type() == GameObjectFlagsComponentType.Info() )
 				continue;
 
 			if ( storage.contains(dst) )
@@ -389,7 +399,11 @@ namespace Tridium {
 
 	bool Scene::IsGameObjectValid( GameObject a_GameObject ) const
 	{
-		return m_ECS.IsValidEntity( a_GameObject.m_ID );
+		bool exists = m_ECS.IsValidEntity( a_GameObject.m_ID );
+		if ( !exists )
+			return false;
+
+		return !a_GameObject.GetFlags().HasFlag( EGameObjectFlag::PendingKill );
 	}
 
 	GameObject Scene::FindGameObjectByTag( const std::string& a_Tag ) const
@@ -428,7 +442,7 @@ namespace Tridium {
 				continue;
 
 			Optional<Refl::InitComponentFunc> initComponentFuncProp = componentType.GetMetaAttribute<Refl::InitComponentFunc>( Refl::Props::InitComponentProp::ID );
-			if ( CORE_ASSERT_LOG( initComponentFuncProp.has_value(), "Component meta type does not have an InitComponent function!" ) )
+			if ( ASSERT_LOG( initComponentFuncProp.has_value(), "Component meta type does not have an InitComponent function!" ) )
 				initComponentFuncProp.value()( *this );
 		}
 	}

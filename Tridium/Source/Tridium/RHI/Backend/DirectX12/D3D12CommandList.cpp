@@ -51,6 +51,7 @@ namespace Tridium {
 			}
 		}
 
+		return false;
 	}
 
 	bool D3D12CommandList::Commit( const void* a_Params )
