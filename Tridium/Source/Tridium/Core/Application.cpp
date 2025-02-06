@@ -196,13 +196,13 @@ namespace Tridium {
 	///////////////////////////////////////////////////////////////////////////////////////////
 	void Application::OnEvent( Event& a_Event )
 	{
-		EventDispatcher dispatcher( e );
+		EventDispatcher dispatcher( a_Event );
 		dispatcher.Dispatch<WindowCloseEvent>( TE_BIND_EVENT_FN( Application::OnWindowClosed, 1 ) );
 	
 		for ( auto it = m_LayerStack.end(); it != m_LayerStack.begin(); )
 		{
-			( *--it )->OnEvent( e );
-			if ( e.Handled )
+			( *--it )->OnEvent( a_Event );
+			if ( a_Event.Handled )
 				break;
 		}
 	}
@@ -265,7 +265,7 @@ namespace Tridium {
 		RenderCommand::Init();
 		InitializeProject( a_ProjectPath );
 
-		Engine::Construct();
+		Engine::Singleton::Construct();
 		Engine::Get()->Initialize();
 
 		Script::ScriptEngine::s_Instance = MakeUnique<Script::ScriptEngine>();

@@ -22,6 +22,9 @@ namespace Tridium {
 	class RHICommandList;
 	using RHICommandListRef = SharedPtr<RHICommandList>;
 	struct RHICommandListDescriptor;
+	class RHIShaderModule;
+	using RHIShaderModuleRef = SharedPtr<RHIShaderModule>;
+	struct RHIShaderModuleDescriptor;
 	//==============================================
 
 	//==============================================

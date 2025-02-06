@@ -325,7 +325,7 @@ namespace Tridium::Debug {
 		DrawLine( nearBottomLeft, farBottomLeft, a_Color, a_DrawDuration, a_Duration );
 	}
 
-	void DebugDrawer::OnPostSingletonConstructed()
+	void DebugDrawer::OnSingletonConstructed()
 	{
 		// Reserve some space for the vectors
 		m_Lines.Permenant.reserve( 1024 );

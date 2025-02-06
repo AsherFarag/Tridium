@@ -10,14 +10,14 @@ namespace Tridium {
 
 	bool Engine::Initialize()
 	{
-		if ( !CORE_ASSERT( IsValid() ) )
+		if ( !CORE_ASSERT( Singleton::IsValid() ) )
 			return false;
 
 		InitSubsystems();
 
 		// Initialize Scene Manager
 		{
-			SceneManager::Construct();
+			SceneManager::Singleton::Construct();
 		}
 
 		return true;

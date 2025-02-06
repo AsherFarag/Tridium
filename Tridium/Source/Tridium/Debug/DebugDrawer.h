@@ -43,7 +43,7 @@ namespace Tridium::Debug {
 		void DrawBoxFilled( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
 		void DrawFrustum( const Matrix4& a_ViewProjection, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
 
-		virtual void OnPostSingletonConstructed() override;
+		virtual void OnSingletonConstructed() override;
 
 	private:
 		template<typename T>

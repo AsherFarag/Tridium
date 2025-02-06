@@ -9,7 +9,8 @@ namespace Tridium::Script {
 		if ( auto it = m_Variables.find( a_Name ); it != m_Variables.end() )
 			return it->second;
 
-		return ScriptVariable();
+		static const ScriptVariable s_EmptyVariable;
+		return s_EmptyVariable;
 	}
 
 	const ScriptFunction& ScriptAsset::GetFunction( const std::string& a_Name ) const
@@ -17,7 +18,8 @@ namespace Tridium::Script {
 		if ( auto it = m_Functions.find( a_Name ); it != m_Functions.end() )
 			return it->second;
 
-		return ScriptFunction();
+		static const ScriptFunction s_EmptyFunction;
+		return s_EmptyFunction;
 	}
 
 	void ScriptAsset::Invalidate()
