@@ -12,7 +12,7 @@
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Core/Application.h>
 #include <Tridium/ECS/Components/Types.h>
-#include <Tridium/Rendering/Texture.h>
+#include <Tridium/Graphics/Rendering/Texture.h>
 
 namespace Tridium::Editor {
 

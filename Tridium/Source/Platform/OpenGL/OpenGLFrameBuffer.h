@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/Rendering/Framebuffer.h>
+#include <Tridium/Graphics/Rendering/Framebuffer.h>
 
 namespace Tridium {
 

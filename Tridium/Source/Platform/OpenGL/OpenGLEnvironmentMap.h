@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/Rendering/EnvironmentMap.h>
+#include <Tridium/Graphics/Rendering/EnvironmentMap.h>
 
 namespace Tridium {
 

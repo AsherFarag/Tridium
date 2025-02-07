@@ -3,7 +3,7 @@
 #include "Editor/EditorUtil.h"
 #include "MaterialEditorPanel.h"
 #include <Tridium/Asset/AssetManager.h>
-#include <Tridium/Rendering/Texture.h>
+#include <Tridium/Graphics/Rendering/Texture.h>
 #include <Tridium/Asset/EditorAssetManager.h>
 #include <Editor/PropertyDrawers.h>
 

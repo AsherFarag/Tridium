@@ -5,7 +5,7 @@
 #include <Editor/EditorStyle.h>
 
 // Temp?
-#include <Tridium/Rendering/FrameBuffer.h>
+#include <Tridium/Graphics/Rendering/FrameBuffer.h>
 
 namespace Tridium {
 	// Forward declarations

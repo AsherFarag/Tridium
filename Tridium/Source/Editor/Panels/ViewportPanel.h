@@ -1,7 +1,7 @@
 #pragma once
 #if IS_EDITOR
 #include "Panel.h"
-#include <Tridium/Rendering/framebuffer.h>
+#include <Tridium/Graphics/Rendering/framebuffer.h>
 
 #include "ImGuizmo.h"
 

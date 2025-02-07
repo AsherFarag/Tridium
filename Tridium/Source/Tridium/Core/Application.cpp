@@ -1,6 +1,6 @@
 #include "tripch.h"
 #include "Application.h"
-#include "Engine/Engine.h"
+#include <Tridium/Engine/Engine.h>
 #include <Tridium/IO/FileManager.h>
 #include <Tridium/Debug/Profiler/ProfileSessionSerializer.h>
 
@@ -12,12 +12,12 @@
 #endif // IS_EDITOR
 
 // TEMP ?
-#include <Tridium/Rendering/GameViewport.h>
+#include <Tridium/Graphics/Rendering/GameViewport.h>
 #include <Tridium/ECS/Components/Types.h>
-#include <Tridium/Rendering/RenderCommand.h>
+#include <Tridium/Graphics/Rendering/RenderCommand.h>
 #include "Tridium/IO/ProjectSerializer.h"
 #include <Tridium/Scripting/ScriptEngine.h>
-#include <Tridium/RHI/RHI.h>
+#include <Tridium/Graphics/RHI/RHI.h>
 
 
 namespace Tridium {
@@ -44,9 +44,6 @@ namespace Tridium {
 	void Application::Run()
 	{
 		m_Running = true;
-
-		m_GameInstance.reset( CreateGameInstance() );
-		m_GameInstance->Init();
 
 		m_GameViewport.Init( m_Window->GetWidth(), m_Window->GetHeight() );
 
@@ -266,7 +263,6 @@ namespace Tridium {
 		InitializeProject( a_ProjectPath );
 
 		Engine::Singleton::Construct();
-		Engine::Get()->Initialize();
 
 		Script::ScriptEngine::s_Instance = MakeUnique<Script::ScriptEngine>();
 		Script::ScriptEngine::s_Instance->Init();
@@ -351,7 +347,6 @@ namespace Tridium {
 	///////////////////////////////////////////////////////////////////////////////////////////
 	void Application::Shutdown()
 	{
-		m_GameInstance->Shutdown();
 		m_AssetManager->Shutdown();
 
 	#if IS_EDITOR

@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/Rendering/Shader.h>
+#include <Tridium/Graphics/Rendering/Shader.h>
 
 #include <glad/glad.h>
 

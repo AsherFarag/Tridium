@@ -5,8 +5,8 @@
 #include <yaml-cpp/yaml.h>
 #include <fstream>
 
-#include <Tridium/Rendering/Mesh.h>
-#include <Tridium/Rendering/Texture.h>
+#include <Tridium/Graphics/Rendering/Mesh.h>
+#include <Tridium/Graphics/Rendering/Texture.h>
 
 namespace Tridium::Editor {
 

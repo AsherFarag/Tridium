@@ -2,7 +2,7 @@
 #if IS_EDITOR
 
 #include <Tridium/Core/Layer.h>
-#include <Tridium/Rendering/Texture.h>
+#include <Tridium/Graphics/Rendering/Texture.h>
 #include <Tridium/Events/Eventsfwd.h>
 
 #include "Panels/Panel.h"

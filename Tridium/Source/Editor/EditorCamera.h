@@ -1,7 +1,7 @@
 #pragma once
 #if IS_EDITOR
 
-#include <Tridium/Rendering/Camera.h>
+#include <Tridium/Graphics/Rendering/Camera.h>
 
 namespace Tridium::Editor {
 

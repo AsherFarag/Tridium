@@ -7,11 +7,11 @@
 
 #include <Platform/OpenGL/OpenGLContext.h>
 
-#include <Tridium/Rendering/RenderCommand.h>
+#include <Tridium/Graphics/Rendering/RenderCommand.h>
 
 // TEMP?
 #include "stb_image.h"
-#include <Tridium/RHI/RHI.h>
+#include <Tridium/Graphics/RHI/RHI.h>
 
 namespace Tridium {
 

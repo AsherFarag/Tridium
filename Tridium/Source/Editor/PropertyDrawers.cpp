@@ -5,12 +5,12 @@
 
 #include <Tridium/Asset/EditorAssetManager.h>
 
-#include <Tridium/Rendering/Texture.h>
+#include <Tridium/Graphics/Rendering/Texture.h>
 
 #include <Tridium/ECS/GameObject.h>
 #include <Tridium/ECS/Components/Types.h>
 
-#include <Tridium/Rendering/Framebuffer.h>
+#include <Tridium/Graphics/Rendering/Framebuffer.h>
 
 namespace Tridium::Editor {
 

@@ -10,9 +10,9 @@
 #include <Tridium/ECS/Components/Types.h>
 #include <Tridium/Reflection/Reflection.h>
 
-#include <Tridium/Rendering/Texture.h>
-#include <Tridium/Rendering/Material.h>
-#include <Tridium/Rendering/Mesh.h>
+#include <Tridium/Graphics/Rendering/Texture.h>
+#include <Tridium/Graphics/Rendering/Material.h>
+#include <Tridium/Graphics/Rendering/Mesh.h>
 #include <Editor/EditorUtil.h>
 #include <Editor/PropertyDrawers.h>
 #include <Tridium/Asset/AssetManager.h>

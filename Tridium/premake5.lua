@@ -77,7 +77,13 @@ project "Tridium"
 		"yaml-cpp.lib",
 		"assimp.lib",
 		"JoltPhysics.lib",
-		"opengl32.lib"
+		-- Graphics API's --
+		-- OpenGL
+		"opengl32.lib",
+		-- DirectX 12
+		"d3d12.lib",
+		"dxgi.lib",
+		"dxguid.lib"
 	}
 
 	defines

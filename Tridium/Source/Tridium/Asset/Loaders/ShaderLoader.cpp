@@ -1,6 +1,6 @@
 #include "tripch.h"
 #include "ShaderLoader.h"
-#include <Tridium/Rendering/Shader.h>
+#include <Tridium/Graphics/Rendering/Shader.h>
 #include <Tridium/Reflection/Reflection.h>
 
 namespace Tridium {

@@ -1,5 +1,5 @@
 #pragma once
-#include "Tridium/Rendering/RenderingContext.h"
+#include "Tridium/Graphics/Rendering/RenderingContext.h"
 
 struct GLFWwindow;
 

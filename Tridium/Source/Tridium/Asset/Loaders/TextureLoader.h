@@ -1,6 +1,6 @@
 #pragma once
 #include "AssetLoader.h"
-#include <Tridium/Rendering/Texture.h>
+#include <Tridium/Graphics/Rendering/Texture.h>
 
 namespace Tridium {
 

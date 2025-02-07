@@ -1,5 +1,5 @@
 #pragma once
-#include "Tridium/Rendering/RenderingAPI.h"
+#include "Tridium/Graphics/Rendering/RenderingAPI.h"
 
 namespace Tridium {
 

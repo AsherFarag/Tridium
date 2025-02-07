@@ -2,8 +2,8 @@
 #include <Tridium/ECS/ECS.h>
 #include <Tridium/ECS/EntityTicker.h>
 #include <Tridium/Asset/Asset.h>
-#include <Tridium/Rendering/Lights.h>
-#include <Tridium/Rendering/SceneRenderer.h>
+#include <Tridium/Graphics/Rendering/Lights.h>
+#include <Tridium/Graphics/Rendering/SceneRenderer.h>
 #include <Tridium/Physics/PhysicsScene.h>
 #include "SceneEnvironment.h"
 #include "SceneSystem.h"

@@ -2,14 +2,14 @@
 #include "JoltDebugRenderer.h"
 #ifdef JPH_DEBUG_RENDERER
 
-#include <Tridium/Rendering/Shader.h>
-#include <Tridium/Rendering/VertexArray.h>
+#include <Tridium/Graphics/Rendering/Shader.h>
+#include <Tridium/Graphics/Rendering/VertexArray.h>
 
 #include "JoltUtil.h"
 
 TODO( "Stop using OpenGL calls and use the RHI instead" );
 #include <glad/glad.h>
-#include <Tridium/Rendering/RenderCommand.h>
+#include <Tridium/Graphics/Rendering/RenderCommand.h>
 
 using namespace JPH;
 using Batch = JPH::DebugRenderer::Batch;

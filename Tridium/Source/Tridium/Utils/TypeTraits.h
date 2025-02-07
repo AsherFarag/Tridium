@@ -1,5 +1,24 @@
 #pragma once
 #include <type_traits>
+#include <Tridium/Utils/Macro.h>
+#include <Tridium/Core/Containers/String.h>
+
+namespace Tridium {
+
+	template<typename T>
+	constexpr auto StrippedTypeName() noexcept 
+	{
+	#if defined TRIDIUM_PRETTY_FUNCTION
+		StringView prettyFunction{ TRIDIUM_PRETTY_FUNCTION };
+		auto first = prettyFunction.find_first_not_of( ' ', prettyFunction.find_first_of( TRIDIUM_PRETTY_FUNCTION_PREFIX ) + 1 );
+		auto value = prettyFunction.substr( first, prettyFunction.find_last_of( TRIDIUM_PRETTY_FUNCTION_SUFFIX ) - first );
+		return value;
+	#else
+		return StringView{ "" };
+	#endif
+	}
+
+}
 
 namespace std { 
 

@@ -2,7 +2,7 @@
 #include <Tridium/Core/Window.h>
 
 #include <GLFW/glfw3.h>
-#include <Tridium/Rendering/RenderingContext.h>
+#include <Tridium/Graphics/Rendering/RenderingContext.h>
 
 namespace Tridium {
 

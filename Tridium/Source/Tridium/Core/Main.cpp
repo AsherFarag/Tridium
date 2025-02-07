@@ -4,7 +4,7 @@
 #include <Tridium/Reflection/PrimitiveReflector.h>
 #include <Tridium/Reflection/ReflectorInitializer.h>
 
-#include <Tridium/RHI/RHI.h>
+#include <Tridium/Graphics/RHI/RHI.h>
 
 int main( int argc, char** argv )
 {

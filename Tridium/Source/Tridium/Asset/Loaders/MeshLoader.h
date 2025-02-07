@@ -1,6 +1,6 @@
 #pragma once
 #include "AssetLoader.h"
-#include <Tridium/Rendering/Mesh.h>
+#include <Tridium/Graphics/Rendering/Mesh.h>
 
 namespace Tridium {
 

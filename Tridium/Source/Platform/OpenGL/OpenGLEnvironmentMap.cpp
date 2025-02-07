@@ -1,10 +1,10 @@
 #include "tripch.h"
 #include "OpenGLEnvironmentMap.h"
 #include "Platform/OpenGL/OpenGLTextureOld.h"
-#include <Tridium/Rendering/Shader.h>
+#include <Tridium/Graphics/Rendering/Shader.h>
 #include <Tridium/Core/Application.h>
-#include <Tridium/Rendering/RenderCommand.h>
-#include <Tridium/Rendering/Framebuffer.h>
+#include <Tridium/Graphics/Rendering/RenderCommand.h>
+#include <Tridium/Graphics/Rendering/Framebuffer.h>
 
 namespace Tridium {
 

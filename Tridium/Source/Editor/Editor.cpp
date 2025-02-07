@@ -7,10 +7,10 @@
 #include "Util/AssetInfo.h"
 
 // Assets
-#include <Tridium/Rendering/Mesh.h>
-#include <Tridium/Rendering/Texture.h>
-#include <Tridium/Rendering/Shader.h>
-#include <Tridium/Rendering/Material.h>
+#include <Tridium/Graphics/Rendering/Mesh.h>
+#include <Tridium/Graphics/Rendering/Texture.h>
+#include <Tridium/Graphics/Rendering/Shader.h>
+#include <Tridium/Graphics/Rendering/Material.h>
 
 // Panels
 #include "Panels/EditorPreferencesPanel.h"

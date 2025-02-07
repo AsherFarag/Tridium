@@ -2,7 +2,7 @@
 #if IS_EDITOR
 
 #include <Editor/Panels/Panel.h>
-#include <Tridium/Rendering/Material.h>
+#include <Tridium/Graphics/Rendering/Material.h>
 
 namespace Tridium::Editor {
 

@@ -1,11 +1,11 @@
 #include "tripch.h"
 #include "AssimpImporter.h"
 
-#include <Tridium/Rendering/Buffer.h>
-#include <Tridium/Rendering/VertexArray.h>
-#include <Tridium/Rendering/Texture.h>
-#include <Tridium/Rendering/Material.h>
-#include <Tridium/Rendering/Mesh.h>
+#include <Tridium/Graphics/Rendering/Buffer.h>
+#include <Tridium/Graphics/Rendering/VertexArray.h>
+#include <Tridium/Graphics/Rendering/Texture.h>
+#include <Tridium/Graphics/Rendering/Material.h>
+#include <Tridium/Graphics/Rendering/Mesh.h>
 
 #include <Tridium/Asset/AssetFactory.h>
 #include <Tridium/Asset/AssetManager.h>

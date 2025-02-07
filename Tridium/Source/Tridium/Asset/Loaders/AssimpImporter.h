@@ -1,6 +1,6 @@
 #pragma once
 #include <Tridium/IO/FilePath.h>
-#include <Tridium/Rendering/Mesh.h>
+#include <Tridium/Graphics/Rendering/Mesh.h>
 #include <Tridium/Core/Memory.h>
 #include <Tridium/Asset/ImportSettings.h>
 

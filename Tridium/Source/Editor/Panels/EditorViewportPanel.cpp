@@ -11,16 +11,16 @@
 
 #include <Tridium/ECS/Components/Types.h>
 #include <Tridium/Scene/Scene.h>
-#include <Tridium/Rendering/SceneRenderer.h>
+#include <Tridium/Graphics/Rendering/SceneRenderer.h>
 #include <Tridium/Asset/EditorAssetManager.h>
 
 #include <Tridium/Debug/DebugDrawer.h>
 
 // TEMP ?
 #include "Tridium/Asset/AssetManager.h"
-#include <Tridium/Rendering/RenderCommand.h>
-#include <Tridium/Rendering/VertexArray.h>
-#include <Tridium/Rendering/Shader.h>
+#include <Tridium/Graphics/Rendering/RenderCommand.h>
+#include <Tridium/Graphics/Rendering/VertexArray.h>
+#include <Tridium/Graphics/Rendering/Shader.h>
 
 namespace Tridium::Editor {
 

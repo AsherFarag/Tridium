@@ -1,5 +1,6 @@
 #pragma once
 #include "Types.h"
+#include <Tridium/Utils/TypeTraits.h>
 
 namespace Tridium {
 
@@ -33,6 +34,13 @@ namespace Tridium {
 		{
 			return lhs ^ ( rhs + 0x9e3779b9 + ( lhs << 6 ) + ( lhs >> 2 ) );
 		}
+
+		template <typename T>
+		constexpr hash_t TypeHash()
+		{
+			return Hash( StrippedTypeName<T>().data() );
+		}
+
 	}
 
 	inline constexpr hash_t operator"" _H( const char* str, size_t )

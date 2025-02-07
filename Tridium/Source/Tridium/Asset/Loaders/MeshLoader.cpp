@@ -1,8 +1,8 @@
 #include "tripch.h"
 #include "MeshLoader.h"
 
-#include <Tridium/Rendering/Buffer.h>
-#include <Tridium/Rendering/VertexArray.h>
+#include <Tridium/Graphics/Rendering/Buffer.h>
+#include <Tridium/Graphics/Rendering/VertexArray.h>
 
 #include "AssimpImporter.h"
 #include "yaml-cpp/yaml.h"

@@ -2,8 +2,8 @@
 #include "DebugDrawer.h"
 
 #if TE_DRAW_DEBUG
-#include <Tridium/Rendering/VertexArray.h>
-#include <Tridium/Rendering/Shader.h>
+#include <Tridium/Graphics/Rendering/VertexArray.h>
+#include <Tridium/Graphics/Rendering/Shader.h>
 
 // TEMP!
 #include <glad/glad.h>

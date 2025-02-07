@@ -2,14 +2,14 @@
 #include <Tridium/Core/Core.h>
 #include <Tridium/Core/Window.h>
 #include <Tridium/Core/LayerStack.h>
-#include <Tridium/Core/Engine/EngineSubsystem.h>
-#include <Tridium/Core/GameInstance.h>
 
 #include <Tridium/Events/ApplicationEvent.h>
 #include <Tridium/ImGui/ImGuiLayer.h>
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Project/Project.h>
-#include <Tridium/Rendering/GameViewport.h>
+#include <Tridium/Graphics/Rendering/GameViewport.h>
+
+#include <Tridium/Utils/Singleton.h>
 
 namespace Tridium {
 
@@ -31,14 +31,18 @@ namespace Tridium {
 	//  It is responsible for initializing the engine, creating the window, 
 	//  and running the engine loop.
 	//==============================================
-	class Application final
+	class Application final : public ISingleton<Application>
 	{
 	public:
 		Application( const String& a_ProjectPath );
 		~Application();
 
+		// The starting point of the application.
+		// This handles the initialization, game loop and shutdown stage of the engine.
 		void Run();
-		static void Quit();
+
+		// Stops the application loop and enters the shutdown stage.
+		void Quit();
 
 		//================================================================
 		// Event Handling
@@ -81,7 +85,6 @@ namespace Tridium {
 		SharedPtr<AssetManagerBase> m_AssetManager;
 		SharedPtr<Project> m_Project;
 		SharedPtr<Scene> m_ActiveScene;
-		SharedPtr<GameInstance> m_GameInstance;
 
 		FrameInfo m_PrevFrameInfo;
 		uint32_t m_MaxFPS = 144u;
@@ -100,8 +103,5 @@ namespace Tridium {
 		friend class AssetManager;
 		static Application* s_Instance;
 	};
-
-	// To be defined in CLIENT
-	GameInstance* CreateGameInstance();
 }
 

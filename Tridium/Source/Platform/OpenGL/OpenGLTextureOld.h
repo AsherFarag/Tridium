@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Tridium/Rendering/Texture.h"
+#include "Tridium/Graphics/Rendering/Texture.h"
 
 #include <glad/glad.h>
 
