@@ -8,7 +8,7 @@
 #include <Tridium/Math/Math.h>
 #include <Tridium/Math/Rotator.h>
 
-namespace Tridium::Script {
+namespace Tridium {
 
 	//////////////////////////////////////////////////////////////////////////
 	// GameObject

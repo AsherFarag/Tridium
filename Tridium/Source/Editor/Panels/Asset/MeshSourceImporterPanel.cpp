@@ -12,7 +12,7 @@ namespace Tridium::Editor {
 
 
 
-	MeshSourceImporterPanel::MeshSourceImporterPanel( const IO::FilePath& a_Path )
+	MeshSourceImporterPanel::MeshSourceImporterPanel( const FilePath& a_Path )
 		: Layer( "Mesh Source Importer" )
 	{
 		m_Path = AssetManager::Get<EditorAssetManager>()->GetAbsolutePath( a_Path );
@@ -28,7 +28,7 @@ namespace Tridium::Editor {
 	{
 		if ( m_ShouldClose )
 		{
-			Application::Get().PopOverlay( this, true );
+			Application::Get()->PopOverlay( this, true );
 			return;
 		}
 

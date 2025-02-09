@@ -2,7 +2,7 @@
 #include "OpenGLEnvironmentMap.h"
 #include "Platform/OpenGL/OpenGLTextureOld.h"
 #include <Tridium/Graphics/Rendering/Shader.h>
-#include <Tridium/Core/Application.h>
+#include <Tridium/Engine/Engine.h>
 #include <Tridium/Graphics/Rendering/RenderCommand.h>
 #include <Tridium/Graphics/Rendering/Framebuffer.h>
 
@@ -206,7 +206,7 @@ namespace Tridium {
 
 		RenderCommand::SetCullMode( ECullMode::None );
 		UniquePtr<Shader> irradianceShader( Shader::Create() );
-		irradianceShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/EnvironmentMap/IrradianceConvolution.glsl" );
+		irradianceShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/EnvironmentMap/IrradianceConvolution.glsl" );
 
 		irradianceShader->Bind();
 		{
@@ -257,7 +257,7 @@ namespace Tridium {
 		renderBuffer->Bind();
 
 		UniquePtr<Shader> prefilterShader( Shader::Create() );
-		prefilterShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/EnvironmentMap/PreFilter-EnvironmentMap.glsl" );
+		prefilterShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/EnvironmentMap/PreFilter-EnvironmentMap.glsl" );
 
 		RenderCommand::SetCullMode( ECullMode::None );
 		prefilterShader->Bind();

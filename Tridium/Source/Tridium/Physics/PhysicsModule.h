@@ -4,6 +4,10 @@
 
 namespace Tridium {
 
+	//================================================================
+	// Physics Module
+	//  Handles the initialization and shutdown of the physics engine.
+	//  Created as a core engine module and registered with the engine module factory.
 	class PhysicsModule : public IEngineModule
 	{
 	public:
@@ -30,5 +34,6 @@ namespace Tridium {
 	private:
 		UniquePtr<PhysicsEngine> m_PhysicsEngine;
 	};
+	//================================================================
 
 } // namespace Tridium

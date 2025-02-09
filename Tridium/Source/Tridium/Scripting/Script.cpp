@@ -2,7 +2,7 @@
 #include "Script.h"
 #include "ScriptEngine.h"
 
-namespace Tridium::Script {
+namespace Tridium {
 
 	const ScriptVariable& ScriptAsset::GetVariable( const std::string& a_Name ) const
 	{

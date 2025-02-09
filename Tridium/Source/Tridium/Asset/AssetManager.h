@@ -1,6 +1,8 @@
 #pragma once
 #include "Asset.h"
-#include <Tridium/Core/Application.h>
+#include <Tridium/IO/FilePath.h>
+#include <Tridium/Engine/Engine.h>
+#include <Tridium/Utils/Concepts.h>
 
 namespace Tridium {
 	using AssetStorageType = std::unordered_map<AssetHandle, SharedPtr<Asset>>;
@@ -20,7 +22,7 @@ namespace Tridium {
 		virtual void Shutdown() {};
 
 		virtual SharedPtr<Asset> GetAsset( AssetHandle a_Handle ) = 0;
-		virtual SharedPtr<Asset> GetAsset( const IO::FilePath& a_Path ) = 0;
+		virtual SharedPtr<Asset> GetAsset( const FilePath& a_Path ) = 0;
 		virtual SharedPtr<Asset> GetMemoryOnlyAsset( AssetHandle a_Handle ) = 0;
 		virtual AssetStorageIterator GetAssets() = 0;
 		virtual bool AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset ) = 0;
@@ -36,58 +38,53 @@ namespace Tridium {
 	class AssetManager
 	{
 	public:
-		static SharedPtr<AssetManagerBase> Get() { return Application::Get().m_AssetManager; }
+		static AssetManagerBase* Get() { return Engine::Get()->GetAssetManager(); }
 
 		// Can return nullptr if the AssetManager is not of the correct type.
-		// If macro IS_EDITOR is defined, this will return an instance of EditorAssetManager.
-		template<typename T>
-		static SharedPtr<T> Get()
+		// If with editor, this will return an instance of EditorAssetManager.
+		template<typename T> requires Concepts::IsBaseOf<AssetManagerBase, T>
+		static T* Get()
 		{
-			static_assert( std::is_base_of_v<AssetManagerBase, T>, "T must inherit from AssetManagerBase" );
-			return SharedPtrCast<T>( Application::Get().m_AssetManager );
+			return static_cast<T*>( Engine::Get()->GetAssetManager() );
 		}
 
-		template<typename T>
+		template<typename T> requires Concepts::IsBaseOf<Asset, T>
 		static SharedPtr<T> GetAsset( AssetHandle a_Handle )
 		{
-			static_assert( std::is_base_of_v<Asset, T>, "T must inherit from Asset" );
-			SharedPtr<Asset> asset = Application::Get().m_AssetManager->GetAsset( a_Handle );
+			SharedPtr<Asset> asset = Engine::Get()->GetAssetManager()->GetAsset( a_Handle );
 			return SharedPtrCast<T>( asset );
 		}
 
-		template<typename T>
-		static SharedPtr<T> GetAsset( const IO::FilePath& a_Path )
+		template<typename T> requires Concepts::IsBaseOf<Asset, T>
+		static SharedPtr<T> GetAsset( const FilePath& a_Path )
 		{
-			static_assert( std::is_base_of_v<Asset, T>, "T must inherit from Asset" );
-			SharedPtr<Asset> asset = Application::Get().m_AssetManager->GetAsset( a_Path );
+			SharedPtr<Asset> asset = Engine::Get()->GetAssetManager()->GetAsset( a_Path );
 			return SharedPtrCast<T>( asset );
 		}
 
-		template<typename T>
+		template<typename T> requires Concepts::IsBaseOf<Asset, T>
 		static SharedPtr<T> GetMemoryOnlyAsset( AssetHandle a_Handle )
 		{
-			static_assert( std::is_base_of_v<Asset, T>, "T must inherit from Asset" );
-			SharedPtr<Asset> asset = Application::Get().m_AssetManager->GetMemoryOnlyAsset( a_Handle );
+			SharedPtr<Asset> asset = Engine::Get()->GetAssetManager()->GetMemoryOnlyAsset( a_Handle );
 			return SharedPtrCast<T>( asset );
 		}
 
-		template<typename T>
+		template<typename T> requires Concepts::IsBaseOf<Asset, T>
 		static bool AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<T> a_Asset ) 
 		{
-			static_assert( std::is_base_of_v<Asset, T>, "T must inherit from Asset" );
-			return Application::Get().m_AssetManager->AddMemoryOnlyAsset( a_Handle, SharedPtrCast<Asset>( a_Asset ) );
+			return Engine::Get()->GetAssetManager()->AddMemoryOnlyAsset( a_Handle, SharedPtrCast<Asset>( a_Asset ) );
 		}
 
 		template<typename T>
-		static FilteredAssetStorageIterator<T> GetAssetsOfType() { return FilteredAssetStorageIterator<T>( Application::Get().m_AssetManager->GetAssets() ); }
+		static FilteredAssetStorageIterator<T> GetAssetsOfType() { return FilteredAssetStorageIterator<T>( Engine::Get()->GetAssetManager()->GetAssets() ); }
 
-		static AssetStorageIterator GetAssets() { return Application::Get().m_AssetManager->GetAssets(); }
-		static bool HasAsset( AssetHandle a_Handle ) { return Application::Get().m_AssetManager->HasAsset( a_Handle ); }
-		static void RemoveAsset( AssetHandle a_Handle ) { Application::Get().m_AssetManager->RemoveAsset( a_Handle ); }
-		static EAssetType GetAssetType( AssetHandle a_Handle ) { return Application::Get().m_AssetManager->GetAssetType( a_Handle ); }
-		static bool IsMemoryAsset( AssetHandle a_Handle ) { return Application::Get().m_AssetManager->IsMemoryAsset( a_Handle ); }
-		static void RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) { Application::Get().m_AssetManager->RegisterDependency( a_Dependent, a_Dependency ); }
-		static void UnregisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) { Application::Get().m_AssetManager->UnregisterDependency( a_Dependent, a_Dependency ); }
+		static AssetStorageIterator GetAssets() { return Engine::Get()->GetAssetManager()->GetAssets(); }
+		static bool HasAsset( AssetHandle a_Handle ) { return Engine::Get()->GetAssetManager()->HasAsset( a_Handle ); }
+		static void RemoveAsset( AssetHandle a_Handle ) { Engine::Get()->GetAssetManager()->RemoveAsset( a_Handle ); }
+		static EAssetType GetAssetType( AssetHandle a_Handle ) { return Engine::Get()->GetAssetManager()->GetAssetType( a_Handle ); }
+		static bool IsMemoryAsset( AssetHandle a_Handle ) { return Engine::Get()->GetAssetManager()->IsMemoryAsset( a_Handle ); }
+		static void RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) { Engine::Get()->GetAssetManager()->RegisterDependency( a_Dependent, a_Dependency ); }
+		static void UnregisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) { Engine::Get()->GetAssetManager()->UnregisterDependency( a_Dependent, a_Dependency ); }
 
 		static AssetHandle GetNextMemoryAssetHandle() { static AssetHandle::Type s_NextHandle = 0; return ++s_NextHandle; }
 	};

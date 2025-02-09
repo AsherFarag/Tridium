@@ -6,7 +6,7 @@ namespace Tridium {
 	{
 		return SharedPtr<Asset>();
 	}
-	SharedPtr<Asset> RuntimeAssetManager::GetAsset( const IO::FilePath& a_Path )
+	SharedPtr<Asset> RuntimeAssetManager::GetAsset( const FilePath& a_Path )
 	{
 		return SharedPtr<Asset>();
 	}

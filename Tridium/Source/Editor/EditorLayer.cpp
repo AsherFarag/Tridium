@@ -287,7 +287,7 @@ namespace Tridium::Editor {
 								AssetHandle::Create(),
 								EAssetType::Scene,
 								path,
-								IO::FilePath( path ).GetFilenameWithoutExtension(),
+								FilePath( path ).GetFilenameWithoutExtension(),
 								true
 						};
 						SharedPtr<Scene> scene = MakeShared<Scene>();
@@ -325,7 +325,7 @@ namespace Tridium::Editor {
 									GetActiveScene()->GetHandle(),
 									EAssetType::Scene,
 									path,
-									IO::FilePath( path ).GetFilenameWithoutExtension(),
+									FilePath( path ).GetFilenameWithoutExtension(),
 									true
 								};
 								if ( assetManager->CreateAsset( metaData, GetActiveScene() ) )
@@ -377,7 +377,7 @@ namespace Tridium::Editor {
 
 			if ( ImGui::MenuItem( "Recompile", "Ctrl+R" ) )
 			{
-				Script::ScriptEngine::RecompileAllScripts();
+				ScriptEngine::RecompileAllScripts();
 			}
 
 			ImGui::EndMenu();
@@ -412,7 +412,7 @@ namespace Tridium::Editor {
 
 	UIToolBar::UIToolBar()
 	{
-		IO::FilePath iconFolder( Application::GetEngineAssetsDirectory() / "Editor/Icons" );
+		FilePath iconFolder( Engine::Get()->GetEngineAssetsDirectory() / "Editor/Icons" );
 
 		PlayButtonIcon = TextureLoader::LoadTexture( iconFolder / "PlayButton.png" );
 		StopButtonIcon = TextureLoader::LoadTexture( iconFolder / "StopButton.png" );

@@ -9,7 +9,7 @@ namespace Tridium {
 
 		// Inherited via AssetManagerBase
 		SharedPtr<Asset> GetAsset( AssetHandle a_Handle ) override;
-		SharedPtr<Asset> GetAsset( const IO::FilePath& a_Path ) override;
+		SharedPtr<Asset> GetAsset( const FilePath& a_Path ) override;
 		SharedPtr<Asset> GetMemoryOnlyAsset( AssetHandle a_Handle ) override;
 		AssetStorageIterator GetAssets() override;
 		bool AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset ) override;

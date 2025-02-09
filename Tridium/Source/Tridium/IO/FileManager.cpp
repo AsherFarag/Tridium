@@ -33,7 +33,7 @@ namespace Tridium::IO {
 				continue;
 			}
 
-			IO::FilePath extension = entry.path().extension();
+			FilePath extension = entry.path().extension();
 			if ( extension == a_Extension )
 			{
 				return path;

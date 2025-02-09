@@ -56,7 +56,7 @@ namespace Tridium::Editor::Util {
 
 		if ( shouldClose )
 		{
-			Application::Get().PopOverlay( this, true );
+			Application::Get()->PopOverlay( this, true );
 		}
 	}
 
@@ -101,7 +101,7 @@ namespace Tridium::Editor::Util {
 
 		if ( shouldClose )
 		{
-			Application::Get().PopOverlay( this, true );
+			Application::Get()->PopOverlay( this, true );
 		}
 	}
 
@@ -153,7 +153,7 @@ namespace Tridium::Editor::Util {
 
 		if ( shouldClose )
 		{
-			Application::Get().PopOverlay( this, true );
+			Application::Get()->PopOverlay( this, true );
 		}
 	}
 

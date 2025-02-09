@@ -109,9 +109,9 @@ namespace Tridium::Editor {
 
 		if ( ImGui::Button( "Temp! Recompile Shader" ) )
 		{
-			scene->GetSceneRenderer().m_DefaultShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/PBR-Shadows.glsl" );
-			scene->GetSceneRenderer().m_DeferredData.GBufferShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Deferred/GBuffer.glsl" );
-			scene->GetSceneRenderer().m_DeferredData.LightingShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Deferred/DeferredPBR.glsl" );
+			scene->GetSceneRenderer().m_DefaultShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/PBR-Shadows.glsl" );
+			scene->GetSceneRenderer().m_DeferredData.GBufferShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/Deferred/GBuffer.glsl" );
+			scene->GetSceneRenderer().m_DeferredData.LightingShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/Deferred/DeferredPBR.glsl" );
 		}
 
 		ImGui::End();

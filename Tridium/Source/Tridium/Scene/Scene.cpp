@@ -458,7 +458,7 @@ namespace Tridium {
 
 	void Scene::InitSystems()
 	{
-		AddSystem<Script::ScriptSystem>();
+		AddSystem<ScriptSystem>();
 
 		for ( auto&& [type, system] : m_Systems )
 		{

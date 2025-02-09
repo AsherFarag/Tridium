@@ -23,9 +23,9 @@ namespace Tridium {
 		{
 			TODO( "Use the asset manager instead." );
 			m_DefaultShader.reset( Shader::Create() );
-			m_DefaultShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/PBR-Shadows.glsl" );
+			m_DefaultShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/PBR-Shadows.glsl" );
 			m_SkyboxShader.reset( Shader::Create() );
-			m_SkyboxShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/EnvironmentMap/SkyBox.glsl" );
+			m_SkyboxShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/EnvironmentMap/SkyBox.glsl" );
 			m_WhiteTexture = AssetManager::GetAsset<Texture>( TextureFactory::GetWhiteTexture() );
 			m_BlackTexture = AssetManager::GetAsset<Texture>( TextureFactory::GetBlackTexture() );
 			m_NormalTexture = AssetManager::GetAsset<Texture>( TextureFactory::GetNormalTexture() );
@@ -46,14 +46,14 @@ namespace Tridium {
 			spec.WrapR = ETextureWrap::ClampToEdge;
 			spec.MinFilter = ETextureFilter::Linear;
 			spec.MagFilter = ETextureFilter::Linear;
-			m_BrdfLUT = TextureLoader::LoadTexture( spec, Application::GetEngineAssetsDirectory() / "Renderer/BRDF-LUT.png" );
+			m_BrdfLUT = TextureLoader::LoadTexture( spec, Engine::Get()->GetEngineAssetsDirectory() / "Renderer/BRDF-LUT.png" );
 			TE_CORE_ASSERT( m_BrdfLUT, "Failed to load BRDF LUT" );
 		}
 
 		// Set Debug Assets
 		{
 			m_DebugSimpleShader.reset( Shader::Create() );
-			m_DebugSimpleShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Simple.glsl" );
+			m_DebugSimpleShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/Simple.glsl" );
 
 			m_DebugSphereVAO = MeshFactory::CreateSphere()->GetSubMeshes()[0].VAO;
 			m_DebugCubeVAO = MeshFactory::CreateCube()->GetSubMeshes()[0].VAO;
@@ -64,10 +64,10 @@ namespace Tridium {
 		// Initalize Deferred Data
 		{
 			m_DeferredData.GBufferShader.reset( Shader::Create() );
-			m_DeferredData.GBufferShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Deferred/GBuffer.glsl" );
+			m_DeferredData.GBufferShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/Deferred/GBuffer.glsl" );
 
 			m_DeferredData.LightingShader.reset( Shader::Create() );
-			m_DeferredData.LightingShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Deferred/DeferredPBR.glsl" );
+			m_DeferredData.LightingShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/Deferred/DeferredPBR.glsl" );
 
 			// Create Quad VAO
 			{
@@ -99,9 +99,9 @@ namespace Tridium {
 		// Initialize Shadow Info
 		{
 			m_ShadowMapShader.reset( Shader::Create() );
-			m_ShadowMapShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Shadows/ShadowMap.glsl" );
+			m_ShadowMapShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/Shadows/ShadowMap.glsl" );
 			m_ShadowCubeMapShader.reset( Shader::Create() );
-			m_ShadowCubeMapShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Shadows/CubeShadowMap.glsl" );
+			m_ShadowCubeMapShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/Shadows/CubeShadowMap.glsl" );
 		}
 
 		// Create Cube Mesh

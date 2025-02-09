@@ -6,7 +6,6 @@
 #include <Tridium/Events/ApplicationEvent.h>
 #include <Tridium/ImGui/ImGuiLayer.h>
 #include <Tridium/Scene/Scene.h>
-#include <Tridium/Project/Project.h>
 #include <Tridium/Graphics/Rendering/GameViewport.h>
 
 #include <Tridium/Utils/Singleton.h>
@@ -58,11 +57,7 @@ namespace Tridium {
 		void PopOverlay( Layer* a_Overlay, bool a_Destroy = false ) { m_LayerStack.PopOverlay( a_Overlay, a_Destroy ); }
 		//================================================================
 
-		static Application& Get() { return *s_Instance; }
-
-		TODO( "Move to the Engine" );
-		static SharedPtr<Project> GetActiveProject() { return Get().m_Project; }
-		static const IO::FilePath& GetEngineAssetsDirectory() { return Get().m_EngineAssetsDirectory; }
+		static Application* Get() { return s_Instance; }
 
 		Window& GetWindow() { return *m_Window; }
 		uint32_t GetFPS() const { return m_PrevFrameInfo.FPS; }
@@ -81,26 +76,22 @@ namespace Tridium {
 		LayerStack m_LayerStack;
 
 		GameViewport m_GameViewport;
-
-		SharedPtr<AssetManagerBase> m_AssetManager;
-		SharedPtr<Project> m_Project;
 		SharedPtr<Scene> m_ActiveScene;
 
 		FrameInfo m_PrevFrameInfo;
 		uint32_t m_MaxFPS = 144u;
 
-		IO::FilePath m_EngineAssetsDirectory = "../Tridium/EngineAssets";
+		FilePath m_EngineAssetsDirectory = "../Tridium/EngineAssets";
 
 	private:
 		TODO( "Initialization and Shutdown are completely messy and need to be restructured" );
 		void Initialize( const std::string& a_ProjectPath );
-		void InitializeProject( const IO::FilePath& a_Path );
-		void InitializeAssetManager();
 		bool OnWindowClosed( WindowCloseEvent& e );
-		void Shutdown();
-		void Update();
 
-		friend class AssetManager;
+		bool Init();
+		void Update();
+		void Shutdown();
+
 		static Application* s_Instance;
 	};
 }

@@ -9,7 +9,7 @@ namespace Tridium {
 }
 // --------------------
 
-namespace Tridium::Script {
+namespace Tridium {
 
 	// Forward declaration
 	class ScriptEngine;
@@ -109,4 +109,4 @@ namespace Tridium::Script {
 
 	//////////////////////////////////////////////////////////////////////////
 
-} // End of namespace Tridium::Script
+} // namespace Tridium

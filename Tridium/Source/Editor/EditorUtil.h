@@ -27,7 +27,7 @@ namespace Tridium::Editor::Util {
 
 	inline void OpenSaveFileDialog( const std::string& a_DefaultFilePath, FileDialogCallback a_Callback )
 	{
-		Application::Get().PushOverlay( new SaveFileDialogLayer( a_Callback, a_DefaultFilePath ) );
+		Application::Get()->PushOverlay( new SaveFileDialogLayer( a_Callback, a_DefaultFilePath ) );
 	}
 
 	class LoadFileDialogLayer : public FileDialogLayer
@@ -40,7 +40,7 @@ namespace Tridium::Editor::Util {
 
 	inline void OpenLoadFileDialog( const std::string& a_DefaultFilePath, FileDialogCallback a_Callback )
 	{
-		Application::Get().PushOverlay( new LoadFileDialogLayer( a_Callback, a_DefaultFilePath ) );
+		Application::Get()->PushOverlay( new LoadFileDialogLayer( a_Callback, a_DefaultFilePath ) );
 	}
 
 	class NewFileDialogLayer : public FileDialogLayer
@@ -55,7 +55,7 @@ namespace Tridium::Editor::Util {
 
 	inline void OpenNewFileDialog( const std::string& a_FileTypeName, const std::string& a_DefaultFilePath, FileDialogCallback a_Callback )
 	{
-		Application::Get().PushOverlay( new NewFileDialogLayer( a_FileTypeName, a_Callback, a_DefaultFilePath ) );
+		Application::Get()->PushOverlay( new NewFileDialogLayer( a_FileTypeName, a_Callback, a_DefaultFilePath ) );
 	}
 };
 

@@ -226,7 +226,7 @@ namespace Tridium::Editor {
 		{
 			if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM ) )
 			{
-				IO::FilePath filePath( static_cast<const char*>( payload->Data ) );
+				FilePath filePath( static_cast<const char*>( payload->Data ) );
 				auto ext = filePath.GetExtension();
 
 				TODO( "DragDrop Add Component" );

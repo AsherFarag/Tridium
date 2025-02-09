@@ -9,7 +9,7 @@ namespace Tridium {
 	class AssimpImporter final
 	{
 	public:
-		AssimpImporter(const IO::FilePath& a_FilePath);
+		AssimpImporter(const FilePath& a_FilePath);
 
 		SharedPtr<MeshSource> ImportMeshSource( const MeshSourceImportSettings& a_ImportSettings = {} );
 
@@ -20,7 +20,7 @@ namespace Tridium {
 		TextureHandle ExtractTexture( void* a_AssimpScene, void* a_AssimpMaterial, int a_AssimpTextureType );
 
 	private:
-		const IO::FilePath m_FilePath;
+		const FilePath m_FilePath;
 	};
 
 }

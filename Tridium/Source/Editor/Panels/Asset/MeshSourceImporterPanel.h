@@ -9,14 +9,14 @@ namespace Tridium::Editor {
     class MeshSourceImporterPanel : public Layer
     {
     public:
-        MeshSourceImporterPanel( const IO::FilePath& a_Path );
+        MeshSourceImporterPanel( const FilePath& a_Path );
         virtual void OnImGuiDraw() override;
 
     protected:
         void ImportMeshes();
 
     protected:
-		IO::FilePath m_Path;
+		FilePath m_Path;
 		SharedPtr<MeshSource> m_MeshSource;
 
 		std::vector<bool> m_SelectedSubmeshes;

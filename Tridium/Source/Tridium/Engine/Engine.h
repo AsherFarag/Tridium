@@ -1,43 +1,58 @@
 #pragma once
 #include <Tridium/Core/Core.h>
 #include <Tridium/Core/Hash.h>
-#include <Tridium/Core/GameInstance.h>
 #include <Tridium/Utils/Singleton.h>
+#include <Tridium/Project/Project.h>
 #include <Tridium/Scene/SceneManager.h>
+
+// Engine Modules
 #include "EngineModule.h"
+
+// Gameplay Frameworks
+#include <Tridium/GameFramework/GameInstance.h>
 
 namespace Tridium {
 
+	// Forward Declarations
+	class AssetManagerBase;
+
 	//================================================================
 	// Engine
-	//  
+	//  This class serves as the layer above the Application class and is the core of the engine.
+	//  It is responsible for initialization and shutdown of the engine and its modules.
 	class Engine final : public ISingleton<Engine>
 	{
 	public:
-		using ModuleStorage = UnorderedMap<hash_t, UniquePtr<IEngineModule>>;
+		const Project& GetActiveProject() const { return m_ActiveProject; }
+		const FilePath& GetEngineAssetsDirectory() const { return m_EngineAssetsDirectory; }
+		AssetManagerBase* GetAssetManager() { return m_AssetManager.get(); }
 
+		//================================================================
+		// Engine Modules
+		using ModuleStorage = UnorderedMap<hash_t, UniquePtr<IEngineModule>>;
 		// Get a module by its type hash. E.g. Hashing::TypeHash<MyModule>()
 		// Returns nullptr if the module does not exist.
 		IEngineModule* GetModule( hash_t a_TypeHash );
-
+		// Get a module by its type.
 		template<typename T> requires Concepts::IsValidEngineModule<T>
 		T* GetModule();
+		//================================================================
 
 	private:
-		UniquePtr<GameInstance> m_GameInstance;
-		ModuleStorage m_EngineModules;
+		ModuleStorage               m_EngineModules;
+		Project                     m_ActiveProject;
+		UniquePtr<AssetManagerBase> m_AssetManager;
+		UniquePtr<GameInstance>     m_GameInstance;
+		FilePath					m_EngineAssetsDirectory;
 
 	protected:
-		virtual void OnSingletonConstructed() override { Init(); }
-		virtual void OnSingletonDestroyed() override { Shutdown(); }
-
 		//////////////////////////////////////////////////////////////////////////
 		// Engine Functions to be called by the Application class
 		//////////////////////////////////////////////////////////////////////////
 
 		//============================
 		// Engine Initialization
-		bool Init();
+		bool Init( const ProjectConfig& a_ProjectConfig );
 		bool InitModules( EEngineInitStage a_InitStage );
 		//============================
 
@@ -52,6 +67,7 @@ namespace Tridium {
 
 		friend class Application;
 	};
+	//================================================================
 
 	// To be defined in CLIENT
 	GameInstance* CreateGameInstance();

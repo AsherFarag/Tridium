@@ -180,7 +180,7 @@ namespace Tridium {
 		glDeleteProgram( m_RendererID );
 	}
 
-	bool OpenGLShader::Compile( const IO::FilePath& a_Path )
+	bool OpenGLShader::Compile( const FilePath& a_Path )
 	{
 		glDeleteProgram( m_RendererID );
 

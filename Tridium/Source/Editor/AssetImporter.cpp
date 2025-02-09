@@ -3,11 +3,12 @@
 #include "AssetImporter.h"
 #include <Tridium/Asset/EditorAssetManager.h>
 #include <Editor/Panels/Asset/MeshSourceImporterPanel.h>
+#include <Tridium/Core/Application.h>
 
 namespace Tridium::Editor {
-    AssetHandle AssetImporter::ImportAsset( const IO::FilePath& a_FilePath )
+    AssetHandle AssetImporter::ImportAsset( const FilePath& a_FilePath )
     {
-        IO::FilePath absolutePath = EditorAssetManager::Get()->GetAbsolutePath( a_FilePath );
+        FilePath absolutePath = EditorAssetManager::Get()->GetAbsolutePath( a_FilePath );
 		EAssetType assetType = GetAssetTypeFromFileExtension( absolutePath.GetExtension() );
         switch ( assetType )
         {
@@ -19,7 +20,7 @@ namespace Tridium::Editor {
             break;
         case EAssetType::MeshSource:
         {
-            Application::Get().PushOverlay( new Editor::MeshSourceImporterPanel( absolutePath ) );
+            Application::Get()->PushOverlay( new Editor::MeshSourceImporterPanel( absolutePath ) );
             break;
         }
         case EAssetType::StaticMesh:

@@ -21,15 +21,15 @@ namespace Tridium {
 	protected:
 		LuaScriptHandle m_Script;
 		// Contains an instance of the script that stores it's own local variables and functions.
-		Script::ScriptInstance m_Environment;
+		ScriptInstance m_Environment;
 
-		Script::ScriptFunction m_OnBeginPlay;
-		Script::ScriptFunction m_OnUpdate;
-		Script::ScriptFunction m_OnDestroy;
+		ScriptFunction m_OnBeginPlay;
+		ScriptFunction m_OnUpdate;
+		ScriptFunction m_OnDestroy;
 
 		// ================================
-		friend Script::ScriptEngine;
-		friend Script::ScriptSystem;
+		friend ScriptEngine;
+		friend ScriptSystem;
 	};
 
 }

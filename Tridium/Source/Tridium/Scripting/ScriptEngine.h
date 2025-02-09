@@ -1,45 +1,46 @@
 #pragma once
 #include "Script.h"
-#include <unordered_set>
+#include <Tridium/Core/Containers/String.h>
 #include <Tridium/Reflection/MetaTypes.h>
+#include <Tridium/Utils/Singleton.h>
 
-namespace Tridium::Script {
+namespace Tridium {
 
-	// The script engine is a singleton that handles the lua state
-	class ScriptEngine
+	//================================================================
+	// Script Engine
+	//  The script engine is a singleton that handles the global lua state.
+	//  It is responsible for compiling scripts and registering user-defined types.
+	//================================================================
+	class ScriptEngine : public ISingleton<ScriptEngine, /* _ExplicitSetup */ true, /* _IsOwning */ false, /* _IsThreadSafe */ true>
 	{
 	public:
-		ScriptEngine() = default;
-		~ScriptEngine() = default;
-		static ScriptEngine& Get() { return *s_Instance; }
-		static sol::state& GetLuaState() { return s_Instance->m_LuaState; }
-
-		static bool RecompileScript( ScriptAsset& a_Script );
-		static void RecompileAllScripts();
+		sol::state& GetLuaState() { return m_LuaState; }
+		bool RecompileScript( ScriptAsset& a_Script );
+		void RecompileAllScripts();
 
 		template<typename T>
-		static sol::usertype<T> RegisterNewType( const char* a_TypeName )
+		sol::usertype<T> RegisterNewType( StringView a_TypeName )
 		{
-			static bool s_Initialized = false;
-			if ( s_Initialized )
+			static bool s_TypeInitialized = false;
+			if ( s_TypeInitialized )
 			{
-				TE_CORE_ASSERT( false, "RegisterType can only be called once per type!" );
+				ASSERT_LOG( false, "RegisterType can only be called once per type!" );
 				return {};
 			}
 
 			sol::usertype<T> newType = GetLuaState().new_usertype<T>( a_TypeName );
-			s_Instance->m_RegisteredTypes.insert( a_TypeName );
-			s_Initialized = true;
+			m_RegisteredTypes.insert( a_TypeName );
+			s_TypeInitialized = true;
 
 			return newType;
 		}
 
 		template<typename T>
-		static sol::usertype<T>& GetRegisteredType( const char* a_TypeName )
+		sol::usertype<T>& GetRegisteredType( StringView a_TypeName )
 		{
-			if ( s_Instance->m_RegisteredTypes.find( a_TypeName ) == s_Instance->m_RegisteredTypes.end() )
+			if ( m_RegisteredTypes.find( a_TypeName ) == m_RegisteredTypes.end() )
 			{
-				TE_CORE_ASSERT( false, "Type not registered!" );
+				ASSERT_LOG( false, "Type not registered!" );
 				return {};
 			}
 
@@ -47,17 +48,18 @@ namespace Tridium::Script {
 		}
 
 	private:
-		void Init();
+		bool Init();
+		void Shutdown();
 
-		static const std::string& GetUserDataTypeName( sol::userdata a_UserData );
+		const StringView GetUserDataTypeName( sol::userdata a_UserData );
 
 	private:
-		static UniquePtr<ScriptEngine> s_Instance;
 		sol::state m_LuaState;
 		// A set of registered User-Types names that can be used to query the type in the reflection system.
-		std::unordered_set<std::string> m_RegisteredTypes;
+		std::unordered_set<String> m_RegisteredTypes;
 
-		friend class Application;
+		friend class ScriptModule;
 	};
+	//================================================================
 
-}
+} // namespace Tridium

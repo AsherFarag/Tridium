@@ -46,7 +46,7 @@ namespace Tridium::Editor {
 
 	ContentBrowserPanel::ContentBrowserPanel() : Panel( TE_ICON_FOLDER " Content Browser" )
 	{
-		IO::FilePath iconFolder( Application::GetEngineAssetsDirectory() / "Editor/Icons" );
+		FilePath iconFolder( Engine::Get()->GetEngineAssetsDirectory() / "Editor/Icons" );
 		SharedPtr<Texture> defaultIcon = TextureLoader::LoadTexture( iconFolder / "file.png" );
 		ContentItemIcons::s_FileTypeIcons = {
 			{ EFileType::None,       defaultIcon },
@@ -108,7 +108,7 @@ namespace Tridium::Editor {
 			Close();
 	}
 
-	void ContentBrowserPanel::OpenFolder( const IO::FilePath& a_Path )
+	void ContentBrowserPanel::OpenFolder( const FilePath& a_Path )
 	{
 		m_CurrentDirectory = a_Path;
 		m_DirectoryInputBuffer = m_CurrentDirectory.ToString();
@@ -120,8 +120,8 @@ namespace Tridium::Editor {
 	{
 		m_DirectoryStack.clear();
 
-		IO::FilePath parentFolderPaths = m_CurrentDirectory;
-		const IO::FilePath assetDirectory = Application::GetActiveProject()->GetAssetDirectory();
+		FilePath parentFolderPaths = m_CurrentDirectory;
+		const FilePath assetDirectory = Application::GetActiveProject()->GetAssetDirectory();
 
 		int loopGuard = 0;
 		while ( parentFolderPaths.HasParentPath() )
@@ -146,11 +146,11 @@ namespace Tridium::Editor {
 		RecurseFolderHeirarchy( Application::GetActiveProject()->GetAssetDirectory() );
 	}
 
-	void ContentBrowserPanel::RecurseFolderHeirarchy( const IO::FilePath& a_Directory )
+	void ContentBrowserPanel::RecurseFolderHeirarchy( const FilePath& a_Directory )
 	{
 		for ( auto& directoryEntry : IO::DirectoryIterator( a_Directory ) )
 		{
-			IO::FilePath filePath = directoryEntry.path();
+			FilePath filePath = directoryEntry.path();
 			std::string fileName = filePath.GetFilename().ToString();
 
 			EFileType type = EFileType::Folder;
@@ -186,7 +186,7 @@ namespace Tridium::Editor {
 		ImGui::EndChild();
 	}
 
-	void ContentBrowserPanel::RecurseDrawFolderHierarchy( const IO::FilePath& a_Directory )
+	void ContentBrowserPanel::RecurseDrawFolderHierarchy( const FilePath& a_Directory )
 	{
 		if ( m_FolderHeirarchy.find( a_Directory ) == m_FolderHeirarchy.end() )
 			return;
@@ -248,7 +248,7 @@ namespace Tridium::Editor {
 		ImGui::SetNextItemAllowOverlap();
 		if ( ImGui::InputText( "##Directory Path", &m_DirectoryInputBuffer, ImGuiInputTextFlags_EnterReturnsTrue ) )
 		{
-			IO::FilePath newDirectory = m_DirectoryInputBuffer;
+			FilePath newDirectory = m_DirectoryInputBuffer;
 			if ( !newDirectory.IsDirectory() )
 			{
 				// The newDirectory is not a directory, attempt to open the parent directory
@@ -483,7 +483,7 @@ namespace Tridium::Editor {
 			ImGui::ScopedStyleCol textColor( ImGuiCol_Text, ImVec4(Editor::Style::Colors::Red) );
 			if ( ImGui::MenuItem( "Delete" ) )
 			{
-				IO::FilePath filePath = m_CurrentDirectory / a_Item.Name;
+				FilePath filePath = m_CurrentDirectory / a_Item.Name;
 				if ( filePath.Remove() )
 				{
 					TE_CORE_INFO( "Deleted file: {0}", filePath.ToString() );

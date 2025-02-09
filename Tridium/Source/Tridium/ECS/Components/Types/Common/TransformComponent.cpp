@@ -8,7 +8,7 @@
 namespace Tridium {
 
 	BEGIN_REFLECT_COMPONENT( TransformComponent, Scriptable )
-		OVERRIDE( Props::RegisterScriptableProp, +[]( Script::ScriptEngine& a_ScriptEngine )
+		OVERRIDE( Props::RegisterScriptableProp, +[]( ScriptEngine& a_ScriptEngine )
 			{
 				auto type = a_ScriptEngine.RegisterNewType<TransformComponent>( "TransformComponent" );
 				type["gameObject"] = sol::property( &TransformComponent::GetGameObject );

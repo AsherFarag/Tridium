@@ -103,7 +103,7 @@ namespace Tridium::Editor {
         return asset;
     }
 
-	SharedPtr<Asset> EditorAssetManager::GetAsset( const IO::FilePath& a_Path )
+	SharedPtr<Asset> EditorAssetManager::GetAsset( const FilePath& a_Path )
 	{
 		const AssetMetaData& metaData = GetAssetMetaData( a_Path );
 		if ( !metaData.IsValid() )
@@ -219,10 +219,10 @@ namespace Tridium::Editor {
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	const AssetMetaData& EditorAssetManager::GetAssetMetaData( const IO::FilePath& a_Path ) const
+	const AssetMetaData& EditorAssetManager::GetAssetMetaData( const FilePath& a_Path ) const
 	{
 		TODO( "Incredibly inefficient, fix this" );
-		const IO::FilePath& path = GetAbsolutePath( a_Path );
+		const FilePath& path = GetAbsolutePath( a_Path );
 		for ( const auto& [handle, metaData] : m_AssetRegistry.AssetMetaData )
 		{
 			if ( GetAbsolutePath( metaData.Path ) == path )
@@ -261,12 +261,12 @@ namespace Tridium::Editor {
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	AssetHandle EditorAssetManager::ImportAsset( const IO::FilePath& a_Path )
+	AssetHandle EditorAssetManager::ImportAsset( const FilePath& a_Path )
 	{
 		if ( auto metaData = GetAssetMetaData( a_Path ); metaData.IsValid() )
 			return metaData.Handle;
 
-		IO::FilePath absolutePath = GetAbsolutePath( a_Path );
+		FilePath absolutePath = GetAbsolutePath( a_Path );
 
 		if ( !absolutePath.Exists() )
 		{
@@ -326,7 +326,7 @@ namespace Tridium::Editor {
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	IO::FilePath EditorAssetManager::GetAbsolutePath( const IO::FilePath& a_Path ) const
+	FilePath EditorAssetManager::GetAbsolutePath( const FilePath& a_Path ) const
 	{
 		// If the path is already absolute, return it
 		if ( a_Path.IsAbsolute() )
@@ -378,7 +378,7 @@ namespace Tridium::Editor {
 
 
 		TODO( "Implement a proper path system for the asset registry" );
-		const IO::FilePath registryPath = Application::GetActiveProject()->GetConfiguration().ProjectDirectory / "TridiumAssetRegistry.yaml";
+		const FilePath registryPath = Application::GetActiveProject()->GetConfiguration().ProjectDirectory / "TridiumAssetRegistry.yaml";
 
 		std::ofstream file( registryPath.ToString() );
 		file << out.c_str();
@@ -397,7 +397,7 @@ namespace Tridium::Editor {
 		try
 		{
 			TODO( "Implement a proper path system for the asset registry" );
-			const IO::FilePath registryPath =  Application::GetActiveProject()->GetConfiguration().ProjectDirectory / "TridiumAssetRegistry.yaml";
+			const FilePath registryPath =  Application::GetActiveProject()->GetConfiguration().ProjectDirectory / "TridiumAssetRegistry.yaml";
 			data = YAML::LoadFile( registryPath.ToString() );
 		}
 		catch ( const YAML::BadFile& e )
@@ -417,7 +417,7 @@ namespace Tridium::Editor {
 				// Strip absolute path if it is inside the content directory
 				if ( metaData.Path.IsAbsolute() )
 				{
-					metaData.Path = IO::FilePath::Relative( metaData.Path, Application::GetActiveProject()->GetConfiguration().ProjectDirectory );
+					metaData.Path = FilePath::Relative( metaData.Path, Application::GetActiveProject()->GetConfiguration().ProjectDirectory );
 				}
 
 				if ( !GetAbsolutePath( metaData.Path ).Exists() )

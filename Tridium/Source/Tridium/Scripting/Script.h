@@ -3,7 +3,7 @@
 #include "ScriptProperty.h"
 #include "sol/sol.hpp"
 
-namespace Tridium::Script {
+namespace Tridium {
 
 	// Forward declaration
 	class ScriptEngine;

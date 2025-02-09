@@ -4,8 +4,6 @@
 #include <Tridium/Reflection/PrimitiveReflector.h>
 #include <Tridium/Reflection/ReflectorInitializer.h>
 
-#include <Tridium/Graphics/RHI/RHI.h>
-
 int main( int argc, char** argv )
 {
 	Tridium::Log::Init();
@@ -21,10 +19,10 @@ int main( int argc, char** argv )
 	Tridium::Application app(ProjectPath);
 	app.Run();
 
-#if CONFIG_EDITOR
+#if CONFIG_USE_EDITOR
 	// Wait for a key press before closing the console
 	std::cin.get();
-#endif // CONFIG_EDITOR
+#endif // CONFIG_USE_EDITOR
 
 	return 0;
 }

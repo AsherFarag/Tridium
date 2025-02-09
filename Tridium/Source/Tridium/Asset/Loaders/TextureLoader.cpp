@@ -6,7 +6,7 @@
 #include <assimp/Bitmap.h>
 
 namespace Tridium {
-	SharedPtr<Texture> TextureLoader::LoadTexture( TextureSpecification a_Specification, const IO::FilePath& a_FilePath )
+	SharedPtr<Texture> TextureLoader::LoadTexture( TextureSpecification a_Specification, const FilePath& a_FilePath )
 	{
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load( 1 );

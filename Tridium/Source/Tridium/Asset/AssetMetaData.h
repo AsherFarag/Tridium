@@ -11,7 +11,7 @@ namespace Tridium {
 
 		AssetHandle Handle;
 		EAssetType AssetType;
-		IO::FilePath Path;
+		FilePath Path;
 		std::string Name;
 		bool IsAssetLoaded = false;
 

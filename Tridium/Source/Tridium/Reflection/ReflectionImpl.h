@@ -85,7 +85,7 @@ else if constexpr ( _HasFlag( Flags, ::Tridium::Refl::EPropertyFlags::ScriptRead
 			( *value )( a_UserType ); \
 		} \
 	}; \
-	factory.prop( ::Tridium::Refl::Props::RegisterScriptableProp::ID, +[]( ::Tridium::Script::ScriptEngine& a_ScriptEngine ) \
+	factory.prop( ::Tridium::Refl::Props::RegisterScriptableProp::ID, +[]( ::Tridium::ScriptEngine& a_ScriptEngine ) \
 		{ \
             sol::usertype<ClassType> type = a_ScriptEngine.RegisterNewType<ClassType>( ClassName() ); \
 			RegisterScriptableProperties( type ); \
@@ -257,7 +257,7 @@ struct ::Tridium::Refl::Internal::Reflector<Class> \
 	 a_UserType["AddToGameObject"] = +[]( GameObject a_GameObject ) -> Class* { return a_GameObject.TryAddComponent<Class>(); }; \
 	 a_UserType["RemoveFromGameObject"] = +[]( GameObject a_GameObject ) { a_GameObject.RemoveComponent<Class>(); }; \
  }; \
- factory.prop( Props::RegisterScriptableProp::ID, +[]( ::Tridium::Script::ScriptEngine& a_ScriptEngine ) \
+ factory.prop( Props::RegisterScriptableProp::ID, +[]( ::Tridium::ScriptEngine& a_ScriptEngine ) \
 	{ \
         sol::usertype<Class> type = a_ScriptEngine.RegisterNewType<Class>( ClassName() ); \
 		RegisterScriptableComponent( type ); \

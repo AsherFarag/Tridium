@@ -8,7 +8,7 @@ namespace Tridium::Editor {
 
 	struct OpenedScript
 	{
-		IO::FilePath Path;
+		FilePath Path;
 		TextEditor Editor;
 		bool IsModified = false;
 	};
@@ -29,7 +29,7 @@ namespace Tridium::Editor {
 
 		void OpenHandle( const LuaScriptHandle& a_Handle );
 		void SaveHandle( const LuaScriptHandle& a_Handle );
-        void OpenFile( const IO::FilePath& a_FilePath );
+        void OpenFile( const FilePath& a_FilePath );
 
     private:
         virtual bool OnKeyPressed( KeyPressedEvent& e ) override;

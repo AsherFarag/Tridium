@@ -12,9 +12,7 @@
 
 namespace Tridium::Script {
 
-	UniquePtr<Script::ScriptEngine> Script::ScriptEngine::s_Instance = nullptr;
-
-	void ScriptEngine::Init()
+	bool ScriptEngine::Init()
 	{
 		using RegisterScriptableFunc = Refl::Props::RegisterScriptableProp::Type;
 
@@ -35,6 +33,12 @@ namespace Tridium::Script {
 			RegisterScriptableFunc regFunc = regFuncAtt.value().cast<RegisterScriptableFunc>();
 			regFunc( *this );
 		}
+
+		return true;
+	}
+
+	void ScriptEngine::Shutdown()
+	{
 	}
 
 	bool ScriptEngine::RecompileScript( ScriptAsset& a_Script )
@@ -44,7 +48,7 @@ namespace Tridium::Script {
 		a_Script.m_Variables.clear();
 		a_Script.m_Functions.clear();
 
-		a_Script.m_LoadResult = Get().m_LuaState.load( a_Script.m_Source );
+		a_Script.m_LoadResult = m_LuaState.load( a_Script.m_Source );
 		if ( !a_Script.m_LoadResult.valid() )
 		{
 			sol::error err = a_Script.m_LoadResult;
@@ -53,7 +57,7 @@ namespace Tridium::Script {
 			return false;
 		}
 
-		a_Script.m_Environment = sol::environment( Get().m_LuaState, sol::create, Get().m_LuaState.globals() );
+		a_Script.m_Environment = sol::environment( m_LuaState, sol::create, m_LuaState.globals() );
 		sol::protected_function scriptFunc = a_Script.m_LoadResult;
 		a_Script.m_Environment.set_on( scriptFunc );
 
@@ -85,8 +89,8 @@ namespace Tridium::Script {
 				}
 				case sol::type::userdata:
 				{
-					const std::string& typeName = GetUserDataTypeName( value );
-					if ( Refl::MetaType type = Refl::ResolveMetaType( typeName.c_str() ) )
+					const StringView typeName = GetUserDataTypeName( value );
+					if ( Refl::MetaType type = Refl::ResolveMetaType( typeName.data() ) )
 					{
 						a_Script.m_Variables[name] = ScriptVariable( type.FromVoid( value.pointer() ) );
 					}
@@ -113,7 +117,7 @@ namespace Tridium::Script {
 	{
 		TODO( "TEMP EDITOR ONLY HERE" );
 		SharedPtr<Editor::EditorAssetManager> assetManager = Editor::EditorAssetManager::Get();
-		for ( SharedPtr<Script::ScriptAsset> script : AssetManager::GetAssetsOfType<Script::ScriptAsset>() )
+		for ( SharedPtr<ScriptAsset> script : AssetManager::GetAssetsOfType<ScriptAsset>() )
 		{
 			const AssetMetaData& assetData = assetManager->GetAssetMetaData( script->GetHandle() );
 			if ( assetData.IsValid() )
@@ -131,12 +135,12 @@ namespace Tridium::Script {
 		}
 	}
 
-	const std::string& ScriptEngine::GetUserDataTypeName( sol::userdata a_UserData )
+	const StringView ScriptEngine::GetUserDataTypeName( sol::userdata a_UserData )
 	{
 		if ( a_UserData.valid() && sol::type::userdata == a_UserData.get_type() )
 		{
 			auto metaTable = a_UserData[sol::metatable_key];
-			for ( const std::string& typeName : Get().m_RegisteredTypes ) 
+			for ( const String& typeName : m_RegisteredTypes ) 
 			{
 				if ( metaTable[typeName] != sol::nil )
 				{
@@ -145,7 +149,7 @@ namespace Tridium::Script {
 			}
 		}
 
-		static const std::string s_Unknown = "Unknown";
+		static constexpr StringView s_Unknown = "Unknown";
 		return s_Unknown;
 	}
 

@@ -66,7 +66,7 @@ namespace Tridium::Editor {
 
 	void ScriptEditorPanel::OpenHandle( const LuaScriptHandle& a_Handle )
 	{
-		SharedPtr<Script::ScriptAsset> script = AssetManager::GetAsset<Script::ScriptAsset>( a_Handle );
+		SharedPtr<ScriptAsset> script = AssetManager::GetAsset<ScriptAsset>( a_Handle );
 		if ( !script )
 		{
 			TE_CORE_ASSERT( false, "Failed to open script handle" );
@@ -97,7 +97,7 @@ namespace Tridium::Editor {
 			return;
 		}
 
-		SharedPtr<Script::ScriptAsset> script = AssetManager::GetAsset<Script::ScriptAsset>( a_Handle );
+		SharedPtr<ScriptAsset> script = AssetManager::GetAsset<ScriptAsset>( a_Handle );
 		if ( !script )
 		{
 			TE_CORE_ASSERT( false, "Failed to save script handle" );
@@ -110,7 +110,7 @@ namespace Tridium::Editor {
 		openedScript->IsModified = false;
 	}
 
-	void ScriptEditorPanel::OpenFile( const IO::FilePath& a_FilePath )
+	void ScriptEditorPanel::OpenFile( const FilePath& a_FilePath )
 	{
 		const auto& metaData = EditorAssetManager::Get()->GetAssetMetaData( a_FilePath );
 		LuaScriptHandle handle = metaData.Handle;
@@ -179,7 +179,7 @@ namespace Tridium::Editor {
 		{
 			if ( ImGui::MenuItem( "Open" ) )
 			{
-				Util::OpenLoadFileDialog( Application::GetActiveProject()->GetAssetDirectory() / "NewLuaScript.lua", [this](const IO::FilePath& a_FilePath)
+				Util::OpenLoadFileDialog( Application::GetActiveProject()->GetAssetDirectory() / "NewLuaScript.lua", [this](const FilePath& a_FilePath)
 					{
 						OpenFile( a_FilePath );
 					} );
@@ -192,7 +192,7 @@ namespace Tridium::Editor {
 
 			if ( ImGui::MenuItem( "Save As" ) )
 			{
-				Util::OpenSaveFileDialog( Application::GetActiveProject()->GetAssetDirectory() / "NewLuaScript.lua", [this]( const IO::FilePath& a_FilePath )
+				Util::OpenSaveFileDialog( Application::GetActiveProject()->GetAssetDirectory() / "NewLuaScript.lua", [this]( const FilePath& a_FilePath )
 					{
 						OpenedScript* openedScript = GetOpenedScript( m_CurrentOpenedScript );
 						if ( openedScript )
@@ -310,14 +310,14 @@ namespace Tridium::Editor {
 
 	void ScriptEditorPanel::RecompileScript( const LuaScriptHandle& a_Handle )
 	{
-		SharedPtr<Script::ScriptAsset> script = AssetManager::GetAsset<Script::ScriptAsset>( a_Handle );
+		SharedPtr<ScriptAsset> script = AssetManager::GetAsset<ScriptAsset>( a_Handle );
 		if ( !script )
 		{
 			TE_CORE_ASSERT( false, "Failed to recompile script handle" );
 			return;
 		}
 
-		Script::ScriptEngine::RecompileScript( *script );
+		ScriptEngine::RecompileScript( *script );
 	}
 
 	void ScriptEditorPanel::RecompileAllScripts()

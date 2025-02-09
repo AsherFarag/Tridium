@@ -19,7 +19,7 @@ namespace Tridium {
 		}
 
 		// Save the script to the file.
-		const Script::ScriptAsset* script = static_cast<const Script::ScriptAsset*>( a_Asset.get() );
+		const ScriptAsset* script = static_cast<const ScriptAsset*>( a_Asset.get() );
 		out.write( script->GetSource().c_str(), script->GetSource().size() );
 		out.close();
     }
@@ -41,10 +41,10 @@ namespace Tridium {
 		in.read( &luaSource[0], luaSource.size() );
 		in.close();
 
-		SharedPtr<Script::ScriptAsset> script = MakeShared<Script::ScriptAsset>( std::move( luaSource ) );
+		SharedPtr<ScriptAsset> script = MakeShared<ScriptAsset>( std::move( luaSource ) );
 
 		// Compile the script.
-		Script::ScriptEngine::RecompileScript( *script );
+		ScriptEngine::RecompileScript( *script );
 
 		return script;
     }

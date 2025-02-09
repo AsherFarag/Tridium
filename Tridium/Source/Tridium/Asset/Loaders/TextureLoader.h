@@ -7,9 +7,9 @@ namespace Tridium {
 	class TextureLoader : public IAssetLoader
 	{
 	public:
-		static SharedPtr<Texture> LoadTexture( TextureSpecification a_Specification, const IO::FilePath& a_FilePath );
+		static SharedPtr<Texture> LoadTexture( TextureSpecification a_Specification, const FilePath& a_FilePath );
 
-		static SharedPtr<Texture> LoadTexture( const IO::FilePath& a_FilePath )
+		static SharedPtr<Texture> LoadTexture( const FilePath& a_FilePath )
 		{
 			AssetMetaData metaData;
 			metaData.AssetType = EAssetType::Texture;
@@ -27,7 +27,7 @@ namespace Tridium {
 	class CubeMapLoader : public IAssetLoader
 	{
 	public:
-		static SharedPtr<Texture> LoadCubeMap( const IO::FilePath& a_FilePath )
+		static SharedPtr<Texture> LoadCubeMap( const FilePath& a_FilePath )
 		{
 			AssetMetaData metaData;
 			metaData.AssetType = EAssetType::CubeMap;

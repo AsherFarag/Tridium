@@ -46,7 +46,7 @@ namespace Tridium {
 		| aiProcess_GlobalScale
 		;
 
-	AssimpImporter::AssimpImporter( const IO::FilePath& a_FilePath )
+	AssimpImporter::AssimpImporter( const FilePath& a_FilePath )
 		: m_FilePath( a_FilePath )
 	{
 	}

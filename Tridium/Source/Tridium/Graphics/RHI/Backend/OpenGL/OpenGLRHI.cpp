@@ -25,6 +25,11 @@ namespace Tridium {
 	bool OpenGLRHI::Init( const RHIConfig& a_Config )
 	{
 		int status = gladLoadGLLoader( (GLADloadproc)glfwGetProcAddress );
+		if ( status == 0 )
+		{
+			ASSERT_LOG( false, "Failed to initialize GLAD!" );
+			return false;
+		}
 
 	#if RHI_DEBUG_ENABLED
 		if ( a_Config.UseDebug )
@@ -36,7 +41,16 @@ namespace Tridium {
 			glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE );
 		}
 	#endif
-		return status;
+
+		glEnable( GL_DEPTH_TEST );
+		glDepthMask( GL_TRUE );
+		TODO( "Should we be doing this here?" );
+		glEnable( GL_MULTISAMPLE );
+		glEnable( GL_BLEND );
+		glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+		glEnable( GL_TEXTURE_CUBE_MAP_SEAMLESS );
+
+		return true;
 	}
 
 	bool OpenGLRHI::Shutdown()

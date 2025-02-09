@@ -19,7 +19,7 @@ namespace Tridium {
 		return nullptr;
     }
 
-	SharedPtr<EnvironmentMap> EnvironmentMap::Create( const IO::FilePath& a_Path )
+	SharedPtr<EnvironmentMap> EnvironmentMap::Create( const FilePath& a_Path )
 	{
 		std::string path = a_Path.ToString();
 		if ( !stbi_is_hdr( path.c_str() ) )
@@ -58,7 +58,7 @@ namespace Tridium {
 		const AssetMetaData& metaData = assetManager->GetAssetMetaData( a_Handle );
 		if ( metaData.IsValid() )
 		{
-			IO::FilePath path = assetManager->GetAbsolutePath( metaData.Path );
+			FilePath path = assetManager->GetAbsolutePath( metaData.Path );
 			return Create( path );
 		}
 

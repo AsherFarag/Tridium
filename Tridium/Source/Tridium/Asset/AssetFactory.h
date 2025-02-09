@@ -3,7 +3,7 @@
 #include <Tridium/Asset/AssetMetaData.h>
 
 namespace Tridium {
-	class IO::FilePath;
+	class FilePath;
 	class IAssetLoader;
 	struct AssetMetaData;
 

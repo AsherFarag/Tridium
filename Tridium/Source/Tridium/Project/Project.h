@@ -1,19 +1,8 @@
 #pragma once
 #include <Tridium/IO/FilePath.h>
+#include <Tridium/Project/ProjectConfig.h>
 
 namespace Tridium {
-
-	struct ProjectConfiguration
-	{
-		std::string Name = "Untitled";
-		IO::FilePath ProjectDirectory{};
-		IO::FilePath AssetDirectory{ "Content" }; // Relative to ProjectDirectory
-		SceneHandle StartScene;
-
-		ProjectConfiguration() = default;
-		ProjectConfiguration( const std::string& a_Name, const IO::FilePath& a_AssetDirectory, SceneHandle a_StartScene )
-			: Name( a_Name ), ProjectDirectory( a_AssetDirectory ), StartScene( a_StartScene ) {}
-	};
 
 	class Project
 	{
@@ -21,14 +10,15 @@ namespace Tridium {
 
 	public:
 		Project() = default;
-		Project( const std::string& a_Name, const IO::FilePath& a_AssetDirectory, SceneHandle a_StartScene );
+		Project( const String& a_Name, const FilePath& a_AssetDirectory, SceneHandle a_StartScene );
 		~Project();
 		
-		ProjectConfiguration& GetConfiguration() { return m_ProjectConfig; }
-		const ProjectConfiguration& GetConfiguration() const { return m_ProjectConfig; }
-		IO::FilePath GetAssetDirectory() const { return m_ProjectConfig.ProjectDirectory / m_ProjectConfig.AssetDirectory; }
+		ProjectConfig& GetConfiguration() { return m_ProjectConfig; }
+		const ProjectConfig& GetConfiguration() const { return m_ProjectConfig; }
+		FilePath GetAssetDirectory() const { return m_ProjectConfig.Editor.ProjectDirectory / m_ProjectConfig.Editor.AssetDirectory; }
 
 	protected:
-		ProjectConfiguration m_ProjectConfig;
+		ProjectConfig m_ProjectConfig;
 	};
-}
+
+} // namespace Tridium

@@ -8,7 +8,7 @@ namespace Tridium {
 	{
 	public:
 		static SharedPtr<EnvironmentMap> Create( const SharedPtr<Texture>& a_EquirectangularTexture );
-		static SharedPtr<EnvironmentMap> Create( const IO::FilePath& a_Path );
+		static SharedPtr<EnvironmentMap> Create( const FilePath& a_Path );
 		static SharedPtr<EnvironmentMap> Create( AssetHandle a_Handle );
 
 		SharedPtr<CubeMap> GetIrradianceMap() const { return m_IrradianceMap; }

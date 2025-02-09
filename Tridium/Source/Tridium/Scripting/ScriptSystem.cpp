@@ -95,7 +95,7 @@ namespace Tridium::Script {
 
 	void ScriptSystem::InitLuaScriptComponent( LuaScriptComponent& a_Component )
 	{
-		SharedPtr<Script::ScriptAsset> script = AssetManager::GetAsset<Script::ScriptAsset>( a_Component.m_Script );
+		SharedPtr<ScriptAsset> script = AssetManager::GetAsset<ScriptAsset>( a_Component.m_Script );
 		if ( !script )
 		{
 			return;

@@ -245,7 +245,7 @@ public:
 		{
 			Editor::DrawProperty( "Script", m_Script, Editor::EDrawPropertyFlags::Editable );
 
-			if ( auto script = AssetManager::GetAsset<Script::ScriptAsset>( m_Script ) )
+			if ( auto script = AssetManager::GetAsset<ScriptAsset>( m_Script ) )
 			{
 				if ( script->IsCompiled() )
 				{
@@ -289,7 +289,7 @@ class SandboxGameInstance : public Tridium::GameInstance
 {
 	virtual void Init() override
 	{
-		Application::Get().PushOverlay( new Test() );
+		Application::Get()->PushOverlay( new Test() );
 	}
 };
 

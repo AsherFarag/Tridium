@@ -15,7 +15,7 @@ namespace Tridium::Editor {
 		void Init() override;
 		void Shutdown() override;
 		SharedPtr<Asset> GetAsset( AssetHandle a_Handle ) override;
-		SharedPtr<Asset> GetAsset( const IO::FilePath& a_Path ) override;
+		SharedPtr<Asset> GetAsset( const FilePath& a_Path ) override;
 		SharedPtr<Asset> GetMemoryOnlyAsset( AssetHandle a_Handle ) override;
 		AssetStorageIterator GetAssets() override;
 		bool AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset ) override;
@@ -30,7 +30,7 @@ namespace Tridium::Editor {
 		static auto Get() { return AssetManager::Get<EditorAssetManager>(); }
 
 		const AssetMetaData& GetAssetMetaData( AssetHandle a_Handle ) const;
-		const AssetMetaData& GetAssetMetaData( const IO::FilePath& a_Path ) const;
+		const AssetMetaData& GetAssetMetaData( const FilePath& a_Path ) const;
 		void SetAssetMetaData( const AssetMetaData& a_MetaData );
 
 		const AssetStorageType& GetLoadedAssets() const { return m_LoadedAssets; }
@@ -38,11 +38,11 @@ namespace Tridium::Editor {
 		const AssetRegistry& GetAssetRegistry() const { return m_AssetRegistry; }
 
 		bool SaveAsset( AssetHandle a_Handle );
-		AssetHandle ImportAsset( const IO::FilePath& a_Path );
+		AssetHandle ImportAsset( const FilePath& a_Path );
 		bool CreateAsset( const AssetMetaData& a_MetaData, SharedPtr<Asset> a_Asset );
 
 		template<typename T>
-		SharedPtr<T> CreateAsset( const IO::FilePath& a_Path )
+		SharedPtr<T> CreateAsset( const FilePath& a_Path )
 		{
 			AssetMetaData metaData
 			{
@@ -63,7 +63,7 @@ namespace Tridium::Editor {
 
 		// If the path is already absolute, it will be returned as is.
 		// Otherwise, it will be appended to the project directory.
-		IO::FilePath GetAbsolutePath( const IO::FilePath& a_Path ) const;
+		FilePath GetAbsolutePath( const FilePath& a_Path ) const;
 
 	private:
 		bool SerializeAssetRegistry();

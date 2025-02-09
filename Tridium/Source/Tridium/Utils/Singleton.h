@@ -19,6 +19,9 @@ namespace Tridium {
 	//  _IsOwning:
 	//      If true, the singleton will be a UniquePtr.
 	//      If false, the singleton will be a raw pointer.
+    // 
+	//  _IsThreadSafe:
+	//      If true, the singleton will be thread-safe accessible via the Get() method.
     //==========================================================================
 	template < typename T, bool _ExplicitSetup = true, bool _IsOwning = true, bool _IsThreadSafe = true >
 	class ISingleton

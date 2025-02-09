@@ -95,7 +95,7 @@ namespace Tridium::Editor {
 			m_GameObjectIDShader.reset( Shader::Create( idVert, idFrag ) );
 
 			m_OutlineShader.reset( Shader::Create() );
-			m_OutlineShader->Compile( Application::GetEngineAssetsDirectory() / "Shaders/Simple.glsl" );
+			m_OutlineShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/Simple.glsl" );
 		}
 	}
 

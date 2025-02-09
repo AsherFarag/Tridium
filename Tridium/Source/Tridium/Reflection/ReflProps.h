@@ -32,7 +32,7 @@ namespace Tridium {
 		// -- Function Signatures --
 		using TextSerializeFunc				= void (*)( IO::Archive& a_Archive, const MetaAny& a_Data );
 		using TextDeserializeFunc			= void (*)( const YAML::Node& a_Node, MetaAny& a_Data );
-		using RegisterScriptableFunc		= void (*)( Script::ScriptEngine& a_ScriptEngine );
+		using RegisterScriptableFunc		= void (*)( ScriptEngine& a_ScriptEngine );
 		using AddToGameObjectFunc			= Component* (*)( Scene& a_Scene, EntityID a_GameObject );
 		using RemoveFromGameObjectFunc		= void (*)( Scene& a_Scene, EntityID a_GameObject );
 		using InitComponentFunc				= void (*)( Scene& a_Scene );

@@ -49,23 +49,23 @@ namespace Tridium::Editor {
 	class ContentBrowserPanel final : public Panel
 	{
 	public:
-		using Directory = IO::FilePath;
+		using Directory = FilePath;
 		using FolderHeirarchy = std::unordered_map<Directory, std::vector<ContentItem>>;
 
 		ContentBrowserPanel();
 		virtual ~ContentBrowserPanel() = default;
 		
 		virtual void OnImGuiDraw() override;
-		void OpenFolder( const IO::FilePath& a_Path );
-		const IO::FilePath& GetDirectory() const { return m_CurrentDirectory; }
+		void OpenFolder( const FilePath& a_Path );
+		const FilePath& GetDirectory() const { return m_CurrentDirectory; }
 
 	protected:
 		void ReconstructDirectoryStack();
 		void ReconstructFolderHierarchy();
-		void RecurseFolderHeirarchy( const IO::FilePath& a_Directory );
+		void RecurseFolderHeirarchy( const FilePath& a_Directory );
 
 		void DrawFolderHierarchy();
-		void RecurseDrawFolderHierarchy( const IO::FilePath& a_Directory );
+		void RecurseDrawFolderHierarchy( const FilePath& a_Directory );
 		void DrawContentBrowserHeader();
 		void DrawContentItems();
 		bool DrawContentItemContextMenu( const ContentItem& a_Item ); // Returns true if the ContentItems Draw Loop should break.
@@ -75,7 +75,7 @@ namespace Tridium::Editor {
 		bool OnContentItemOpened( const ContentItem& a_Item );
 
 	private:
-		IO::FilePath m_CurrentDirectory;
+		FilePath m_CurrentDirectory;
 		std::string m_DirectoryInputBuffer;
 		std::string m_ContentSearchFilter;
 		std::list<std::string> m_DirectoryStack;

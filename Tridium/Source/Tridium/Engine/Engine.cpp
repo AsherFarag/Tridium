@@ -3,7 +3,27 @@
 
 #include <Tridium/Debug/DebugDrawer.h>
 
+#include <Tridium/Asset/AssetManager.h>
+#include <Tridium/Asset/EditorAssetManager.h>
+#include <Tridium/Asset/RuntimeAssetManager.h>
+
 namespace Tridium {
+
+	//////////////////////////////////////////////////////////////////////////
+	// HELPER FUNCTIONS
+	//////////////////////////////////////////////////////////////////////////
+
+	AssetManagerBase* CreateAssetManager()
+	{
+		#if WITH_EDITOR
+			return new Editor::EditorAssetManager();
+		#else
+			return new RuntimeAssetManager();
+		#endif // IS_EDITOR
+
+		// TEMP
+		return new Editor::EditorAssetManager();
+	};
 
 	//////////////////////////////////////////////////////////////////////////
 	//
@@ -31,28 +51,35 @@ namespace Tridium {
 	// Engine Initialization
 	//////////////////////////////////////////////////////////////////////////
 
-	bool Engine::Init()
+	bool Engine::Init( const ProjectConfig& a_ProjectConfig )
 	{
-		// Initialize Engine Modules
+		// 1. Initialize Pre-Engine-Init Modules
 		if ( !InitModules( EEngineInitStage::PreEngineInit ) )
 		{
 			TE_CORE_ERROR( "Engine::Init: Failed to initialize engine modules" );
 			return false;
 		}
 
-		// Initialize Scene Manager
+		// 2. Initialize Asset Manager
+		m_AssetManager.reset( CreateAssetManager() );
+		if ( !m_AssetManager )
+		{
+			return ASSERT_LOG( false, "Engine::Init: Failed to create Asset Manager" );
+		}
+		m_AssetManager->Init();
+
+		// 3. Initialize Scene Manager
 		SceneManager::Singleton::Construct();
 
-		// Initialize Game Instance
-		m_GameInstance.reset( CreateGameInstance() );
-		m_GameInstance->Init();
-
-		// Initialize Engine Modules
+		// 4. Initialize Post-Engine-Init Modules
 		if ( !InitModules( EEngineInitStage::PostEngineInit ) )
 		{
-			TE_CORE_ERROR( "Engine::Init: Failed to initialize engine modules" );
-			return false;
+			return ASSERT_LOG( false, "Engine::Init: Failed to initialize engine modules" );
 		}
+
+		// 5. Initialize Game Instance
+		m_GameInstance.reset( CreateGameInstance() );
+		m_GameInstance->Init();
 
 		return true;
 	}
@@ -92,12 +119,19 @@ namespace Tridium {
 
 	void Engine::Shutdown()
 	{
-		ShutdownModules( EEngineInitStage::PostEngineInit );
-
-		// Shutdown Game Instance
+		// 5. Shutdown Game Instance
 		m_GameInstance->Shutdown();
 
-		// Shutdown Engine Modules
+		// 4. Shutdown Post-Engine-Init Modules
+		ShutdownModules( EEngineInitStage::PostEngineInit );
+
+		// 3. Shutdown Scene Manager
+		SceneManager::Singleton::Destroy();
+
+		// 2. Shutdown Asset Manager
+		m_AssetManager->Shutdown();
+
+		// 1. Shutdown Pre-Engine-Init Modules
 		ShutdownModules( EEngineInitStage::PreEngineInit );
 	}
 

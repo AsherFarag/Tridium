@@ -30,23 +30,23 @@ namespace Tridium::Editor {
 			// FPS
 			{
 				ImVec4 fpsNumberColor;
-				if ( Application::Get().GetFPS() < 30 )
+				if ( Application::Get()->GetFPS() < 30 )
 					fpsNumberColor = Style::Colors::Red;
-				else if ( Application::Get().GetFPS() < 60 )
+				else if ( Application::Get()->GetFPS() < 60 )
 					fpsNumberColor = Style::Colors::Yellow;
 				else
 					fpsNumberColor = Style::Colors::Green;
 
 				ImGui::Text( "FPS: " );
 				ImGui::SameLine();
-				ImGui::TextColored( fpsNumberColor, "%d", Application::Get().GetFPS() );
+				ImGui::TextColored( fpsNumberColor, "%d", Application::Get()->GetFPS() );
 
 				ImGui::Text( "Frame Time: " );
 				ImGui::SameLine();
-				ImGui::TextColored( fpsNumberColor, STAT_UNIT, Application::Get().GetFrameTime() );
+				ImGui::TextColored( fpsNumberColor, STAT_UNIT, Application::Get()->GetFrameTime() );
 
-				ImGui::Text( "Min FPS: %d", Application::Get().GetFrameInfo().MinFPS );
-				ImGui::Text( "Max FPS: %d", Application::Get().GetFrameInfo().MaxFPS );
+				ImGui::Text( "Min FPS: %d", Application::Get()->GetFrameInfo().MinFPS );
+				ImGui::Text( "Max FPS: %d", Application::Get()->GetFrameInfo().MaxFPS );
 
 				ImGui::Separator();
 			}

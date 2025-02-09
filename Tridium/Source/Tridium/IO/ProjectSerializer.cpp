@@ -12,7 +12,7 @@ namespace Tridium {
 	{
 	}
 
-	void ProjectSerializer::SerializeText( const IO::FilePath& a_Path )
+	void ProjectSerializer::SerializeText( const FilePath& a_Path )
 	{
 		YAML::Emitter out;
 
@@ -29,7 +29,7 @@ namespace Tridium {
 		}
 		out << YAML::EndMap; // Project
 
-		IO::FilePath path = a_Path;
+		FilePath path = a_Path;
 		path.ReplaceExtension( "tproject" );
 
 		std::ofstream outFile( path.ToString() );
@@ -37,7 +37,7 @@ namespace Tridium {
 		outFile.close();
 	}
 
-	bool ProjectSerializer::DeserializeText( const IO::FilePath& a_Path )
+	bool ProjectSerializer::DeserializeText( const FilePath& a_Path )
 	{
 		YAML::Node data;
 
@@ -53,7 +53,7 @@ namespace Tridium {
 		if ( auto configNode = data["Configuration"] )
 		{
 			m_Project->m_ProjectConfig.Name = configNode["Name"].as<std::string>();
-			m_Project->m_ProjectConfig.AssetDirectory = IO::FilePath( configNode["AssetDirectory"].as<std::string>() );
+			m_Project->m_ProjectConfig.AssetDirectory = FilePath( configNode["AssetDirectory"].as<std::string>() );
 			m_Project->m_ProjectConfig.StartScene = configNode["StartScene"].as<SceneHandle::Type>();
 		}
 		else

@@ -19,7 +19,13 @@
 #endif
 
 #ifdef IS_EDITOR
-	#define CONFIG_EDITOR 1
+	#define CONFIG_USE_EDITOR 1
 #else
-	#define CONFIG_EDITOR 0
+	#define CONFIG_USE_EDITOR 0
 #endif // IS_EDITOR
+
+#if CONFIG_USE_EDITOR
+	#define WITH_EDITOR 1
+#else
+	#define WITH_EDITOR 0
+#endif // CONFIG_USE_EDITOR

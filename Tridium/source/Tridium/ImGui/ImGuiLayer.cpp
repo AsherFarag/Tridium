@@ -3,6 +3,7 @@
 #include "Tridium/Input/Input.h"
 
 #include <Tridium/Core/Application.h>
+#include <Tridium/Engine/Engine.h>
 
 #include "imgui.h"
 #include "backends/imgui_impl_opengl3.cpp"
@@ -23,7 +24,7 @@ namespace Tridium {
 
 		ImGuiIO& io = ImGui::GetIO();
 		io.Fonts->AddFontFromFileTTF(
-			( Tridium::Application::GetEngineAssetsDirectory() / "Fonts" / FONT_ICON_FILE_NAME_FAS ).ToString().c_str(),
+			( Engine::Get()->GetEngineAssetsDirectory() / "Fonts" / FONT_ICON_FILE_NAME_FAS ).ToString().c_str(),
 			iconFontSize, &icons_config, icons_ranges );
 	}
 
@@ -66,9 +67,7 @@ namespace Tridium {
 		ImGui::GetExtraBoldFont();
 		AddIconsToFont();
 
-
-		Application& app = Application::Get();
-		GLFWwindow* window = static_cast<GLFWwindow*>( app.GetWindow().GetNativeWindow() );
+		GLFWwindow* window = static_cast<GLFWwindow*>( Application::Get()->GetWindow().GetNativeWindow() );
 
 		// Set up Platform/Render bindings
 		TODO( "Make this API specific!" );
@@ -96,8 +95,7 @@ namespace Tridium {
 	{
 		// Size Initialization
 		ImGuiIO& io = ImGui::GetIO();
-		auto& app = Application::Get();
-		io.DisplaySize = ImVec2( app.GetWindow().GetWidth(), app.GetWindow().GetHeight() );
+		io.DisplaySize = ImVec2( Application::Get()->GetWindow().GetWidth(), Application::Get()->GetWindow().GetHeight() );
 
 		// Rendering
 		ImGui::Render();

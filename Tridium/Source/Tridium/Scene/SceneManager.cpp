@@ -3,7 +3,7 @@
 
 namespace Tridium {
 
-    Scene* SceneManager::LoadScene( const IO::FilePath& a_FilePath )
+    Scene* SceneManager::LoadScene( const FilePath& a_FilePath )
     {
         return nullptr;
     }

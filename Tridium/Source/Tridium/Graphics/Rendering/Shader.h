@@ -42,7 +42,7 @@ namespace Tridium {
 		static Shader* Create( const std::string& a_Vertex, const std::string& a_Frag );
 		virtual ~Shader() = default;
 
-		virtual bool Compile( const IO::FilePath& a_Path ) = 0;
+		virtual bool Compile( const FilePath& a_Path ) = 0;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;

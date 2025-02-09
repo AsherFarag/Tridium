@@ -1,6 +1,6 @@
 #include "tripch.h"
 #include "ImGui.h"
-#include <Tridium/Core/Application.h>
+#include <Tridium/Engine/Engine.h>
 #include "imgui_internal.h"
 
 namespace ImGui {
@@ -93,25 +93,25 @@ namespace ImGui {
 
 	ImFont* GetLightFont()
 	{
-		static ImFont* s_Font = GetIO().Fonts->AddFontFromFileTTF( ( Tridium::Application::GetEngineAssetsDirectory() / "Fonts" / "JetBrainsMono-2.304" / "fonts" / "ttf" / "JetBrainsMonoNL-Light.ttf" ).ToString().c_str(), Tridium::s_FontSize );
+		static ImFont* s_Font = GetIO().Fonts->AddFontFromFileTTF( ( Tridium::Engine::Get()->GetEngineAssetsDirectory() / "Fonts" / "JetBrainsMono-2.304" / "fonts" / "ttf" / "JetBrainsMonoNL-Light.ttf" ).ToString().c_str(), Tridium::s_FontSize );
 
 		return s_Font;
 	}
 	ImFont* GetRegularFont()
 	{
-		static ImFont* s_Font = GetIO().Fonts->AddFontFromFileTTF( ( Tridium::Application::GetEngineAssetsDirectory() / "Fonts" / "JetBrainsMono-2.304" / "fonts" / "ttf" / "JetBrainsMonoNL-Regular.ttf" ).ToString().c_str(), Tridium::s_FontSize );
+		static ImFont* s_Font = GetIO().Fonts->AddFontFromFileTTF( ( Tridium::Engine::Get()->GetEngineAssetsDirectory() / "Fonts" / "JetBrainsMono-2.304" / "fonts" / "ttf" / "JetBrainsMonoNL-Regular.ttf" ).ToString().c_str(), Tridium::s_FontSize );
 
 		return s_Font;
 	}
 	ImFont* GetBoldFont()
 	{
-		static ImFont* s_Font = GetIO().Fonts->AddFontFromFileTTF( ( Tridium::Application::GetEngineAssetsDirectory() / "Fonts" / "JetBrainsMono-2.304" / "fonts" / "ttf" / "JetBrainsMonoNL-Bold.ttf" ).ToString().c_str(), Tridium::s_FontSize );
+		static ImFont* s_Font = GetIO().Fonts->AddFontFromFileTTF( ( Tridium::Engine::Get()->GetEngineAssetsDirectory() / "Fonts" / "JetBrainsMono-2.304" / "fonts" / "ttf" / "JetBrainsMonoNL-Bold.ttf" ).ToString().c_str(), Tridium::s_FontSize );
 
 		return s_Font;
 	}
 	ImFont* GetExtraBoldFont()
 	{
-		static ImFont* s_Font = GetIO().Fonts->AddFontFromFileTTF( ( Tridium::Application::GetEngineAssetsDirectory() / "Fonts" / "JetBrainsMono-2.304" / "fonts" / "ttf" / "JetBrainsMonoNL-ExtraBold.ttf" ).ToString().c_str(), Tridium::s_FontSize );
+		static ImFont* s_Font = GetIO().Fonts->AddFontFromFileTTF( ( Tridium::Engine::Get()->GetEngineAssetsDirectory() / "Fonts" / "JetBrainsMono-2.304" / "fonts" / "ttf" / "JetBrainsMonoNL-ExtraBold.ttf" ).ToString().c_str(), Tridium::s_FontSize );
 
 		return s_Font;
 	}

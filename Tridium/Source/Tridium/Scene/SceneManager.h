@@ -10,7 +10,7 @@ namespace Tridium {
 		// Returns a pointer to the active scene
 		Scene* GetActiveScene() { return m_ActiveScene.get(); }
 		// Will attempt to load the scene at the specified file path and set it as the active scene.
-		Scene* LoadScene( const IO::FilePath& a_FilePath );
+		Scene* LoadScene( const FilePath& a_FilePath );
 		// Will attempt to load the scene with the specified asset handle and set it as the active scene.
 		Scene* LoadScene( SceneHandle a_SceneAssetHandle );
 		// Will attempt to unload the specified scene.

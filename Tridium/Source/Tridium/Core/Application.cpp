@@ -32,6 +32,12 @@ namespace Tridium {
 		{
 			m_EngineAssetsDirectory = "EngineAssets";
 		}
+		else
+		{
+			m_EngineAssetsDirectory = a_ProjectPath + "/EngineAssets";
+		}
+
+		m_Projec
 
 		Initialize( a_ProjectPath );
 	}
@@ -101,6 +107,112 @@ namespace Tridium {
 	#endif // IS_EDITOR
 
 		Shutdown();
+	}
+
+	bool Application::Init()
+	{
+		// Initialise the Window
+		m_Window = Window::Create();
+		m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
+
+		// TEMP!
+		RHIConfig config;
+		config.RHIType = ERHInterfaceType::DirectX12;
+		config.UseDebug = true;
+		TE_CORE_INFO( "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), RHI::Initialise( config ) );
+
+		uint8_t testImgData[64 * 64 * 4];
+		for ( size_t y = 0; y < 64; y++ )
+		{
+			for ( size_t x = 0; x < 64; x++ )
+			{
+				testImgData[( y * 64 + x ) * 4 + 0] = x * 4;
+				testImgData[( y * 64 + x ) * 4 + 1] = y * 4;
+				testImgData[( y * 64 + x ) * 4 + 2] = 255 - ( x * 2 + y * 2 );
+				testImgData[( y * 64 + x ) * 4 + 3] = 255;
+			}
+		}
+
+		RHITextureDescriptor desc;
+		desc.InitialData = testImgData;
+		desc.Dimensions[0] = 64;
+		desc.Dimensions[1] = 64;
+		desc.Format = ERHITextureFormat::RGBA8;
+		desc.Name = "My beautiful texture";
+
+		RHITextureRef tex = RHI::CreateTexture( desc );
+		//TE_CORE_INFO( "Successfully wrote to texture = {0}", tex->Write(desc.InitialData) );
+
+		while ( true )
+		{
+			m_Window->OnUpdate();
+		}
+
+		// \TEMP!
+
+		InitializeProject( a_ProjectPath );
+
+		Engine::Singleton::Construct();
+		if ( !Engine::Get()->Init() );
+		{
+			return false;
+		}
+
+		InitializeAssetManager();
+
+		// Add the ImGui layer
+		m_ImGuiLayer = new ImGuiLayer();
+		PushOverlay( m_ImGuiLayer );
+
+		// Initialise Start Scene
+		{
+			TE_CORE_INFO( "Loading start scene" );
+			if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( m_Project->GetConfiguration().StartScene ) )
+			{
+				m_ActiveScene = scene;
+			}
+			else
+			{
+				TE_CORE_WARN( "Failed to load start scene! - Creating new scene" );
+				m_ActiveScene = MakeShared<Scene>();
+			}
+		}
+
+		// Initialise the editor
+	#if IS_EDITOR
+		Editor::EditorApplication::Init();
+	#endif // IS_EDITOR
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////
+	void Application::InitializeProject( const FilePath& a_Path )
+	{
+		m_Project = MakeShared<Project>();
+
+		// If a project path was provided, load the project
+		if ( a_Path.Exists() )
+		{
+			ProjectSerializer s( m_Project );
+			s.DeserializeText( a_Path );
+			m_Project->GetConfiguration().ProjectDirectory = FilePath( a_Path ).GetParentPath();
+		}
+		// Otherwise, attempt to find a project file in the current directory
+		else
+		{
+			TE_CORE_TRACE( "No project path provided - searching for project file in '{0}'", IO::FileManager::GetWorkingDirectory().ToString() );
+			FilePath projectPath = IO::FileManager::GetWorkingDirectory() / "Project.tproject"; //IO::FileManager::FindFileWithExtension( ".tproject" );
+			if ( projectPath.Exists() )
+			{
+				TE_CORE_TRACE( "Project file found at '{0}'", projectPath.ToString() );
+				ProjectSerializer s( m_Project );
+				s.DeserializeText( projectPath );
+				m_Project->GetConfiguration().ProjectDirectory = projectPath.GetParentPath();
+			}
+			else
+			{
+				TE_CORE_WARN( "No project file found!" );
+			}
+		}
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////
@@ -264,8 +376,8 @@ namespace Tridium {
 
 		Engine::Singleton::Construct();
 
-		Script::ScriptEngine::s_Instance = MakeUnique<Script::ScriptEngine>();
-		Script::ScriptEngine::s_Instance->Init();
+		ScriptEngine::s_Instance = MakeUnique<ScriptEngine>();
+		ScriptEngine::s_Instance->Init();
 
 		InitializeAssetManager();
 
@@ -294,7 +406,7 @@ namespace Tridium {
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////
-	void Application::InitializeProject( const IO::FilePath& a_Path )
+	void Application::InitializeProject( const FilePath& a_Path )
 	{
 		m_Project = MakeShared<Project>();
 
@@ -303,13 +415,13 @@ namespace Tridium {
 		{
 			ProjectSerializer s( m_Project );
 			s.DeserializeText( a_Path );
-			m_Project->GetConfiguration().ProjectDirectory = IO::FilePath( a_Path ).GetParentPath();
+			m_Project->GetConfiguration().ProjectDirectory = FilePath( a_Path ).GetParentPath();
 		}
 		// Otherwise, attempt to find a project file in the current directory
 		else
 		{
 			TE_CORE_TRACE( "No project path provided - searching for project file in '{0}'", IO::FileManager::GetWorkingDirectory().ToString() );
-			IO::FilePath projectPath = IO::FileManager::GetWorkingDirectory() / "Project.tproject"; //IO::FileManager::FindFileWithExtension( ".tproject" );
+			FilePath projectPath = IO::FileManager::GetWorkingDirectory() / "Project.tproject"; //IO::FileManager::FindFileWithExtension( ".tproject" );
 			if ( projectPath.Exists() )
 			{
 				TE_CORE_TRACE( "Project file found at '{0}'", projectPath.ToString() );
@@ -322,19 +434,6 @@ namespace Tridium {
 				TE_CORE_WARN( "No project file found!" );
 			}
 		}
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////
-	void Application::InitializeAssetManager()
-	{
-	#if IS_EDITOR
-		//m_AssetManager = MakeShared<Editor::EditorAssetManager>();
-	#else
-		//m_AssetManager = MakeShared<RuntimeAssetManager>();
-	#endif // IS_EDITOR
-
-		m_AssetManager = MakeShared<Editor::EditorAssetManager>();
-		m_AssetManager->Init();
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////

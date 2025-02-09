@@ -32,15 +32,15 @@ namespace Tridium::Editor {
 
     bool EditorApplication::Init()
     {
-        Application::Get().GetWindow().SetTitle("Tridium Editor");
-        Application::Get().GetWindow().SetIcon(  Application::GetEngineAssetsDirectory() / "Editor/Icons/EngineIcon.png" );
+        Application::Get()->GetWindow().SetTitle("Tridium Editor");
+        Application::Get()->GetWindow().SetIcon(  Engine::Get()->GetEngineAssetsDirectory() / "Editor/Icons/EngineIcon.png" );
 
 		AssetTypeManager::s_Instance = MakeUnique<AssetTypeManager>();
 		AssetTypeManager::s_Instance->Initialize();
 
 		s_Instance = SharedPtr<EditorApplication>( new EditorApplication() );
         s_Instance->m_EditorLayer = new EditorLayer();
-        Application::Get().PushLayer( s_Instance->m_EditorLayer );
+        Application::Get()->PushLayer( s_Instance->m_EditorLayer );
 
 		Style::SetTheme( Style::ETheme::Midnight );
 

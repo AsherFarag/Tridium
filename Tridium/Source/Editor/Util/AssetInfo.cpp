@@ -22,7 +22,7 @@ namespace Tridium
 
 		void AssetTypeManager::Initialize()
 		{
-			IO::FilePath iconFolder( Application::GetEngineAssetsDirectory() / "Editor/Icons" );
+			FilePath iconFolder( Engine::Get()->GetEngineAssetsDirectory() / "Editor/Icons" );
 			SharedPtr<Texture> defaultIcon = TextureLoader::LoadTexture( iconFolder / "file.png" );
 
 			m_AssetTypeInfoMap[EAssetType::None]          = { EAssetType::None,       "None",        Vector4( 0.6f, 0.6f, 0.6f, 1.0f ), defaultIcon }; // Neutral gray
