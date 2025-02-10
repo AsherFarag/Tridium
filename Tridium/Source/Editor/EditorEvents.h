@@ -9,7 +9,7 @@ namespace Tridium {
 }
 // --------------------
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	class Events 
 	{

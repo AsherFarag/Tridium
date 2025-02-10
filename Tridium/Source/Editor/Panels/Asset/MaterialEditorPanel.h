@@ -4,7 +4,7 @@
 #include <Editor/Panels/Panel.h>
 #include <Tridium/Graphics/Rendering/Material.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
     class MaterialEditorPanel : public Panel
     {

@@ -5,12 +5,13 @@
 
 #include <Editor/EditorStyle.h>
 #include <Tridium/Core/Application.h>
+#include <Tridium/Scene/SceneManager.h>
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Graphics/Rendering/SceneRenderer.h>
 
 #define STAT_UNIT "%.3f ms"
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	StatsPanel::StatsPanel()
 		: Panel( "Stats" )
@@ -52,7 +53,7 @@ namespace Tridium::Editor {
 			}
 
 			// Render Stats
-			if ( SharedPtr<Scene> scene = Application::GetScene() )
+			if ( Scene* scene = SceneManager::GetActiveScene() )
 			{
 				const RenderStats& renderStats = scene->GetSceneRenderer().GetRenderStats();
 

@@ -6,26 +6,26 @@ namespace Tridium {
 	template <typename T, typename... Args>
 	inline T& GameObject::AddComponent( Args&&... args )
 	{
-		return Application::GetScene()->AddComponentToGameObject<T>( *this, std::forward<Args>( args )... );
+		return SceneManager::GetActiveScene()->AddComponentToGameObject<T>( *this, std::forward<Args>( args )... );
 	}
 
 	template <typename T, typename... Args>
 	inline T* GameObject::TryAddComponent( Args&&... args )
 	{
-		return Application::GetScene()->TryAddComponentToGameObject<T>( *this, std::forward<Args>( args )... );
+		return SceneManager::GetActiveScene()->TryAddComponentToGameObject<T>( *this, std::forward<Args>( args )... );
 	}
 
 	template <typename T>
 	inline T& GameObject::GetComponent() const
 	{
 		CORE_ASSERT_LOG( HasComponent<T>(), "GameObject does not have this component!" );
-		return Application::GetScene()->GetComponentFromGameObject<T>( *this );
+		return SceneManager::GetActiveScene()->GetComponentFromGameObject<T>( *this );
 	}
 
 	template <typename T>
 	inline T* GameObject::TryGetComponent() const
 	{
-		return Application::GetScene()->TryGetComponentFromGameObject<T>( *this );
+		return SceneManager::GetActiveScene()->TryGetComponentFromGameObject<T>( *this );
 	}
 
 	template<typename T>
@@ -59,13 +59,13 @@ namespace Tridium {
 	template <typename T>
 	inline bool GameObject::HasComponent() const
 	{
-		return Application::GetScene()->GameObjectHasComponent<T>( *this );
+		return SceneManager::GetActiveScene()->GameObjectHasComponent<T>( *this );
 	}
 
 	template <typename T>
 	inline void GameObject::RemoveComponent()
 	{
-		Application::GetScene()->RemoveComponentFromGameObject<T>( *this );
+		SceneManager::GetActiveScene()->RemoveComponentFromGameObject<T>( *this );
 	}
 
 	inline bool Tridium::GameObject::IsValid() const
@@ -73,7 +73,7 @@ namespace Tridium {
 		if ( m_ID == NullEntity )
 			return false;
 
-		return Application::GetScene()->IsGameObjectValid( *this );
+		return SceneManager::GetActiveScene()->IsGameObjectValid( *this );
 	}
 
 }

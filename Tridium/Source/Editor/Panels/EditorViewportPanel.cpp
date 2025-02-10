@@ -22,7 +22,7 @@
 #include <Tridium/Graphics/Rendering/VertexArray.h>
 #include <Tridium/Graphics/Rendering/Shader.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	void SetImGuizmoColors()
 	{
@@ -137,7 +137,7 @@ namespace Tridium::Editor {
 				{
 					if ( m_SelectedGameObject )
 					{
-						EditorApplication::GetPayloadManager().SetPayload( "GameObject", m_SelectedGameObject );
+						EditorApplication::Get()->GetPayloadManager().SetPayload( "GameObject", m_SelectedGameObject );
 					}
 				}
 				return true;
@@ -146,11 +146,11 @@ namespace Tridium::Editor {
 			{
 				if ( Input::IsKeyPressed( Input::KEY_LEFT_CONTROL ) )
 				{
-					Payload* payload = EditorApplication::GetPayloadManager().GetPayload( "GameObject" );
+					Payload* payload = EditorApplication::Get()->GetPayloadManager().GetPayload( "GameObject" );
 					if ( payload && !payload->IsEmpty() )
 					{
 						GameObject go = payload->As<GameObject>();
-						GameObject newGO = GetActiveScene()->InstantiateGameObjectFrom( go );
+						GameObject newGO = SceneManager::GetActiveScene()->InstantiateGameObjectFrom(go);
 						Events::OnGameObjectSelected.Broadcast( newGO );
 					}
 				}
@@ -195,7 +195,7 @@ namespace Tridium::Editor {
 			m_EditorCamera->SetViewportSize( regionAvail.x, regionAvail.y );
 			m_FBO->Resize( regionAvail.x, regionAvail.y );
 
-			GetEditorLayer()->GetActiveScene()->GetSceneRenderer().Render(m_FBO, *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position);
+			SceneManager::GetActiveScene()->GetSceneRenderer().Render(m_FBO, *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position);
 
 			// Draw Debug Lines
 			{
@@ -259,9 +259,9 @@ namespace Tridium::Editor {
 		{
 			if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( assetHandle ) )
 			{
-				GetEditorLayer()->GetActiveScene()->Clear();
+				SceneManager::GetActiveScene()->Clear();
 				// Load the scene
-				GetEditorLayer()->SetActiveScene( scene );
+				SceneManager::SetActiveScene( scene.get() );
 			}
 			break;
 		}
@@ -269,7 +269,7 @@ namespace Tridium::Editor {
 		{
 			if ( SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( assetHandle ) )
 			{
-				GameObject go = GetActiveScene()->InstantiateGameObject();
+				GameObject go = SceneManager::GetActiveScene()->InstantiateGameObject();
 				go.AddComponent<StaticMeshComponent>().Mesh = mesh->GetHandle();
 
 				Vector3 position = m_EditorCamera->Position + m_EditorCamera->GetForwardDirection() * 5.0f;
@@ -348,7 +348,7 @@ namespace Tridium::Editor {
 
 		Matrix4 pvm = m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix();
 
-		auto meshComponents = GetActiveScene()->GetECS().View<StaticMeshComponent, TransformComponent>();
+		auto meshComponents = SceneManager::GetActiveScene()->GetECS().View<StaticMeshComponent, TransformComponent>();
 		meshComponents.each( 
 			[&]( auto go, StaticMeshComponent& meshComponent, TransformComponent& transform )
 			{

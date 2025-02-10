@@ -3,7 +3,7 @@
 #include "AssetManager.h"
 #include "AssetRegistry.h"
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	class EditorAssetManager final : public AssetManagerBase
 	{
@@ -77,6 +77,6 @@ namespace Tridium::Editor {
 		friend class AssetRegistryPanel;
 	};
 
-} // namespace Tridium::Editor
+} // namespace Tridium
 
 #endif // IS_EDITOR

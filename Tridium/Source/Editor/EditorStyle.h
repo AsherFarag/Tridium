@@ -2,7 +2,7 @@
 #if IS_EDITOR
 #include <Tridium/ImGui/ImGui.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	namespace Style {
 

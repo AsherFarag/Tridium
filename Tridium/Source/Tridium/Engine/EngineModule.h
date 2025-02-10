@@ -141,6 +141,8 @@ namespace Tridium {
 		}
 
 	private:
+		virtual void OnSingletonConstructed() override { RegisterCoreModules(); }
+
 		// These will be the first modules to be registered.
 		void RegisterCoreModules();
 

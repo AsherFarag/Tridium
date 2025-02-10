@@ -43,7 +43,7 @@ namespace Tridium {
         bool DrawRemoveElementButton( const char* a_Name )
         {
             ImGui::SetCursorPosX( ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - ( ImGui::CalcTextSize( a_Name ).x + 10 ) );
-			ImGui::ScopedStyleCol col( ImGuiCol_Button, Editor::Style::Colors::Red.Value );
+			ImGui::ScopedStyleCol col( ImGuiCol_Button, Style::Colors::Red.Value );
             return ImGui::SmallButton( a_Name );
         }
 

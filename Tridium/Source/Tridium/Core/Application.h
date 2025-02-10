@@ -2,9 +2,9 @@
 #include <Tridium/Core/Core.h>
 #include <Tridium/Core/Window.h>
 #include <Tridium/Core/LayerStack.h>
+#include <Tridium/Core/CommandLine.h>
 
 #include <Tridium/Events/ApplicationEvent.h>
-#include <Tridium/ImGui/ImGuiLayer.h>
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Graphics/Rendering/GameViewport.h>
 
@@ -30,11 +30,13 @@ namespace Tridium {
 	//  It is responsible for initializing the engine, creating the window, 
 	//  and running the engine loop.
 	//==============================================
-	class Application final : public ISingleton<Application>
+	class Application final
 	{
 	public:
-		Application( const String& a_ProjectPath );
+		Application( CmdLineArgs a_ProjectPath );
 		~Application();
+
+		static Application* Get() { return s_Instance; }
 
 		// The starting point of the application.
 		// This handles the initialization, game loop and shutdown stage of the engine.
@@ -57,35 +59,22 @@ namespace Tridium {
 		void PopOverlay( Layer* a_Overlay, bool a_Destroy = false ) { m_LayerStack.PopOverlay( a_Overlay, a_Destroy ); }
 		//================================================================
 
-		static Application* Get() { return s_Instance; }
-
+		const CmdLineArgs& GetCommandLineArgs() const { return m_CommandLineArgs; }
 		Window& GetWindow() { return *m_Window; }
 		uint32_t GetFPS() const { return m_PrevFrameInfo.FPS; }
 		double GetFrameTime() const { return 1000.0 / m_PrevFrameInfo.FPS; }
 		const FrameInfo& GetFrameInfo() const { return m_PrevFrameInfo; }
 
-		// - Scene -
-		TODO( "Move to the Scene Manager" );
-		static const SharedPtr<Scene>& GetScene() { return s_Instance->m_ActiveScene; }
-		static void SetScene( SharedPtr<Scene> a_Scene );
-
 	private:
-		bool m_Running;
+		bool              m_Running;
+		CmdLineArgs       m_CommandLineArgs;
 		UniquePtr<Window> m_Window;
-		ImGuiLayer* m_ImGuiLayer;
-		LayerStack m_LayerStack;
-
-		GameViewport m_GameViewport;
-		SharedPtr<Scene> m_ActiveScene;
-
-		FrameInfo m_PrevFrameInfo;
-		uint32_t m_MaxFPS = 144u;
-
-		FilePath m_EngineAssetsDirectory = "../Tridium/EngineAssets";
+		LayerStack        m_LayerStack;
+		GameViewport      m_GameViewport;
+		FrameInfo         m_PrevFrameInfo;
+		uint32_t          m_MaxFPS = 144u;
 
 	private:
-		TODO( "Initialization and Shutdown are completely messy and need to be restructured" );
-		void Initialize( const std::string& a_ProjectPath );
 		bool OnWindowClosed( WindowCloseEvent& e );
 
 		bool Init();

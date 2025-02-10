@@ -2,7 +2,7 @@
 #if IS_EDITOR
 #include "Panel.h"
 
-namespace Tridium::Editor {
+namespace Tridium {
 
     class EditorPreferencesPanel : public Panel
     {

@@ -2,7 +2,7 @@
 #include "Panel.h"
 #if IS_EDITOR
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	void Panel::OnEvent( Event& e )
 	{

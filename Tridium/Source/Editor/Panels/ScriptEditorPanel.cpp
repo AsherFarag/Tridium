@@ -9,7 +9,7 @@
 #include <fstream>
 #include <sstream>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	ScriptEditorPanel::ScriptEditorPanel()
 		: Panel( TE_ICON_CODE " Script Editor" )
@@ -179,7 +179,7 @@ namespace Tridium::Editor {
 		{
 			if ( ImGui::MenuItem( "Open" ) )
 			{
-				Util::OpenLoadFileDialog( Application::GetActiveProject()->GetAssetDirectory() / "NewLuaScript.lua", [this](const FilePath& a_FilePath)
+				Util::OpenLoadFileDialog( Engine::Get()->GetActiveProject().GetAssetDirectory() / "NewLuaScript.lua", [this](const FilePath& a_FilePath)
 					{
 						OpenFile( a_FilePath );
 					} );
@@ -192,7 +192,7 @@ namespace Tridium::Editor {
 
 			if ( ImGui::MenuItem( "Save As" ) )
 			{
-				Util::OpenSaveFileDialog( Application::GetActiveProject()->GetAssetDirectory() / "NewLuaScript.lua", [this]( const FilePath& a_FilePath )
+				Util::OpenSaveFileDialog( Engine::Get()->GetActiveProject().GetAssetDirectory() / "NewLuaScript.lua", [this]( const FilePath& a_FilePath )
 					{
 						OpenedScript* openedScript = GetOpenedScript( m_CurrentOpenedScript );
 						if ( openedScript )
@@ -317,7 +317,7 @@ namespace Tridium::Editor {
 			return;
 		}
 
-		ScriptEngine::RecompileScript( *script );
+		ScriptEngine::Get()->RecompileScript( *script );
 	}
 
 	void ScriptEditorPanel::RecompileAllScripts()

@@ -11,7 +11,7 @@ namespace Tridium {
 		// Reserve a magic number of components
 		components.reserve( 16 );
 
-		for ( auto&& [id, componentStorage] : Application::GetScene()->GetECS().Storage() )
+		for ( auto&& [id, componentStorage] : SceneManager::GetActiveScene()->GetECS().Storage() )
 		{
             if ( componentStorage.contains( m_ID ) )
                 components.emplace_back( 

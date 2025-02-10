@@ -6,8 +6,9 @@
 #include <Editor/Editor.h>
 #include <Tridium/Graphics/Rendering/SceneRenderer.h>
 #include <Tridium/ECS/Components/Types.h>
+#include <Tridium/Scene/SceneManager.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	GameViewportPanel::GameViewportPanel( GameObject camera )
 		: ViewportPanel("Game##GameViewportPanel"), m_Camera(camera)
@@ -37,7 +38,7 @@ namespace Tridium::Editor {
 			camera.SetViewportSize( regionAvail.x, regionAvail.y );
 			m_FBO->Resize( regionAvail.x, regionAvail.y );
 
-			GetEditorLayer()->GetActiveScene()->GetSceneRenderer().Render( m_FBO, camera, view, position );
+			SceneManager::GetActiveScene()->GetSceneRenderer().Render( m_FBO, camera, view, position );
 
 			// Draw Debug Lines
 			{
@@ -57,7 +58,7 @@ namespace Tridium::Editor {
 
 	std::optional< std::tuple<Camera&, Matrix4, Vector3> > GameViewportPanel::GetSceneCamera() const
 	{
-		CameraComponent* camera = Application::GetScene()->GetMainCamera();
+		CameraComponent* camera = SceneManager::GetActiveScene()->GetMainCamera();
 		if ( !camera )
 			return {};
 

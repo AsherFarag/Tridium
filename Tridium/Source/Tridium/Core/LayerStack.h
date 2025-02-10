@@ -22,11 +22,11 @@ namespace Tridium {
 		inline auto rend() { return m_Layers.rend(); }
 
 		inline size_t NumLayers() { return m_Layers.size(); }
-		Layer* operator[]( unsigned int a_Index ) { return m_Layers[a_Index]; }
+		Layer* operator[]( uint32_t a_Index ) { return m_Layers[a_Index]; }
 
 	private:
 		std::vector<Layer*> m_Layers;
-		unsigned int m_LayerInsertIndex = 0;
+		uint32_t m_LayerInsertIndex = 0;
 	};
 
 }

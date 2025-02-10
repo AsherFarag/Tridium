@@ -243,7 +243,7 @@ public:
 	{
 		if ( ImGui::Begin( "Debug Script Viewer" ) )
 		{
-			Editor::DrawProperty( "Script", m_Script, Editor::EDrawPropertyFlags::Editable );
+			Editor::DrawProperty( "Script", m_Script, EDrawPropertyFlags::Editable );
 
 			if ( auto script = AssetManager::GetAsset<ScriptAsset>( m_Script ) )
 			{

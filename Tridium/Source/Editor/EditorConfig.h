@@ -1,12 +1,11 @@
 #pragma once
 #if IS_EDITOR
-
 namespace Tridium {
 
-	enum class EIcon : uint8_t
+	struct EditorConfig
 	{
-		None = 0,
-	};
-}
 
+	};
+
+} // namespace Tridium
 #endif // IS_EDITOR

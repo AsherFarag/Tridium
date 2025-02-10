@@ -8,14 +8,12 @@
 #include <Tridium/Asset/EditorAssetManager.h>
 #include <Tridium/Graphics/Rendering/FrameBuffer.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	SceneRendererPanel::SceneRendererPanel()
 		: Panel( "Scene Renderer" )
 	{
 	}
-
-
 
 	void SceneRendererPanel::OnImGuiDraw()
 	{
@@ -25,7 +23,7 @@ namespace Tridium::Editor {
 			return;
 		}
 
-		SharedPtr<Scene> scene = Application::GetScene();
+		Scene* scene = SceneManager::GetActiveScene();
 
 		if ( !scene )
 		{
@@ -88,9 +86,9 @@ namespace Tridium::Editor {
 		if ( ImGui::TreeNode( "Environment" ) )
 		{
 
-			if ( DrawProperty( "Environment Map", scene->GetSceneEnvironment().HDRI.EnvironmentMapHandle, EDrawPropertyFlags::Editable ) )
+			if ( Editor::DrawProperty( "Environment Map", scene->GetSceneEnvironment().HDRI.EnvironmentMapHandle, EDrawPropertyFlags::Editable ) )
 			{
-				auto assetManager = AssetManager::Get<Editor::EditorAssetManager>();
+				auto assetManager = AssetManager::Get<EditorAssetManager>();
 				auto textureMetaData = assetManager->GetAssetMetaData( scene->GetSceneEnvironment().HDRI.EnvironmentMapHandle );
 				if ( textureMetaData.IsValid() )
 					scene->GetSceneEnvironment().HDRI.EnvironmentMap = EnvironmentMap::Create( assetManager->GetAbsolutePath( textureMetaData.Path ) );
@@ -100,7 +98,7 @@ namespace Tridium::Editor {
 			ImGui::SliderFloat( "Gamma", &scene->GetSceneEnvironment().HDRI.Gamma, 0.0f, 10.0f );
 			ImGui::SliderFloat( "Blur", &scene->GetSceneEnvironment().HDRI.Blur, 0.0f, 1.0f );
 			ImGui::SliderFloat( "Intensity", &scene->GetSceneEnvironment().HDRI.Intensity, 0.0f, 10.0f );
-			DrawProperty( "Rotation", scene->GetSceneEnvironment().HDRI.RotationEular, EDrawPropertyFlags::Editable );
+			Editor::DrawProperty( "Rotation", scene->GetSceneEnvironment().HDRI.RotationEular, EDrawPropertyFlags::Editable );
 
 			ImGui::TreePop();
 		}

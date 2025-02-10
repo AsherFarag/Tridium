@@ -5,7 +5,7 @@
 #include <Editor/Panels/Asset/MeshSourceImporterPanel.h>
 #include <Tridium/Core/Application.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
     AssetHandle AssetImporter::ImportAsset( const FilePath& a_FilePath )
     {
         FilePath absolutePath = EditorAssetManager::Get()->GetAbsolutePath( a_FilePath );
@@ -20,7 +20,7 @@ namespace Tridium::Editor {
             break;
         case EAssetType::MeshSource:
         {
-            Application::Get()->PushOverlay( new Editor::MeshSourceImporterPanel( absolutePath ) );
+            Application::Get()->PushOverlay( new MeshSourceImporterPanel( absolutePath ) );
             break;
         }
         case EAssetType::StaticMesh:

@@ -4,7 +4,7 @@
 #include "ImTextEdit/TextEditor.h"
 #include <Tridium/Asset/AssetType.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	struct OpenedScript
 	{

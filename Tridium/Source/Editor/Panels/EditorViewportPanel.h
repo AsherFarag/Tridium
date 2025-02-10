@@ -8,7 +8,7 @@ namespace Tridium {
 	class Shader;
 }
 
-namespace Tridium::Editor {
+namespace Tridium {
 	
 	class EditorCamera;
 

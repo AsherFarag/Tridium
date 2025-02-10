@@ -8,7 +8,7 @@ namespace Tridium {
 	class Camera;
 }
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	class GameViewportPanel : public ViewportPanel
 	{

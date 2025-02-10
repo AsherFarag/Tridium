@@ -1,9 +1,11 @@
 #pragma once
+#include "EngineConfig.h"
 #include <Tridium/Core/Core.h>
 #include <Tridium/Core/Hash.h>
 #include <Tridium/Utils/Singleton.h>
 #include <Tridium/Project/Project.h>
 #include <Tridium/Scene/SceneManager.h>
+#include <Tridium/Asset/AssetManagerBase.h>
 
 // Engine Modules
 #include "EngineModule.h"
@@ -15,6 +17,7 @@ namespace Tridium {
 
 	// Forward Declarations
 	class AssetManagerBase;
+	class ImGuiLayer;
 
 	//================================================================
 	// Engine
@@ -23,9 +26,12 @@ namespace Tridium {
 	class Engine final : public ISingleton<Engine>
 	{
 	public:
-		const Project& GetActiveProject() const { return m_ActiveProject; }
-		const FilePath& GetEngineAssetsDirectory() const { return m_EngineAssetsDirectory; }
+		Project& GetActiveProject() { return m_ActiveProject; }
+		const EngineConfig& GetConfig() const { return m_Config; }
+		const FilePath& GetEngineAssetsDirectory() const { return GetConfig().EngineAssetsDirectory; }
 		AssetManagerBase* GetAssetManager() { return m_AssetManager.get(); }
+
+		void SetConfig( const EngineConfig& a_Config ) { m_Config = a_Config; }
 
 		//================================================================
 		// Engine Modules
@@ -39,11 +45,12 @@ namespace Tridium {
 		//================================================================
 
 	private:
-		ModuleStorage               m_EngineModules;
+		EngineConfig				m_Config;
 		Project                     m_ActiveProject;
+		ModuleStorage               m_EngineModules;
 		UniquePtr<AssetManagerBase> m_AssetManager;
 		UniquePtr<GameInstance>     m_GameInstance;
-		FilePath					m_EngineAssetsDirectory;
+		ImGuiLayer*                 m_ImGuiLayer = nullptr;
 
 	protected:
 		//////////////////////////////////////////////////////////////////////////
@@ -52,8 +59,10 @@ namespace Tridium {
 
 		//============================
 		// Engine Initialization
-		bool Init( const ProjectConfig& a_ProjectConfig );
+		bool Init( const EngineConfig& a_Config );
+		bool InitProject();
 		bool InitModules( EEngineInitStage a_InitStage );
+		bool InitScene();
 		//============================
 
 		//============================

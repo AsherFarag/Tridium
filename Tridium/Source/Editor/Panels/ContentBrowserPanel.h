@@ -5,7 +5,7 @@
 #include <Tridium/Graphics/Rendering/Texture.h>
 #include <Tridium/Asset/AssetType.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	enum class EFileType : uint8_t
 	{
@@ -92,9 +92,9 @@ namespace Tridium::Editor {
 
 namespace std {
 	template<>
-	struct hash<Tridium::Editor::ContentItem>
+	struct hash<Tridium::ContentItem>
 	{
-		size_t operator()( const Tridium::Editor::ContentItem& a_ContentItem ) const noexcept
+		size_t operator()( const Tridium::ContentItem& a_ContentItem ) const noexcept
 		{
 			return std::hash<std::string>{}( a_ContentItem.Name );
 		}

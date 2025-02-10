@@ -3,7 +3,7 @@
 #include "EditorEvents.h"
 #include <Tridium/ECS/GameObject.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	MulticastDelegate<void, GameObject> Events::OnGameObjectSelected;
 

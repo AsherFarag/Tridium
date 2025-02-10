@@ -11,12 +11,14 @@ int main( int argc, char** argv )
 	Tridium::Refl::Internal::ReflectPrimitiveTypes();
 	Tridium::Refl::Internal::HiddenTypeReflector::ReflectHiddenTypes();
 
-	const char* ProjectPath = argc >= 2 ? argv[1] : "";
+	Tridium::CmdLineArgs cmdLineArgs;
+	cmdLineArgs.Args.Reserve( argc );
+	for ( int i = 0; i < argc; ++i )
+	{
+		cmdLineArgs.Args.EmplaceBack( argv[i] );
+	}
 
-	TE_CORE_INFO( "Starting Tridium Engine" );
-	TE_CORE_INFO( "Project Path: {0}", ProjectPath );
-
-	Tridium::Application app(ProjectPath);
+	Tridium::Application app( cmdLineArgs );
 	app.Run();
 
 #if CONFIG_USE_EDITOR

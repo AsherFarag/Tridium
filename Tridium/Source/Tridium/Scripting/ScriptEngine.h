@@ -1,6 +1,6 @@
 #pragma once
 #include "Script.h"
-#include <Tridium/Core/Containers/String.h>
+#include <Tridium/Core/Containers/Containers.h>
 #include <Tridium/Reflection/MetaTypes.h>
 #include <Tridium/Utils/Singleton.h>
 
@@ -19,7 +19,7 @@ namespace Tridium {
 		void RecompileAllScripts();
 
 		template<typename T>
-		sol::usertype<T> RegisterNewType( StringView a_TypeName )
+		sol::usertype<T> RegisterNewType( const String& a_TypeName )
 		{
 			static bool s_TypeInitialized = false;
 			if ( s_TypeInitialized )
@@ -36,7 +36,7 @@ namespace Tridium {
 		}
 
 		template<typename T>
-		sol::usertype<T>& GetRegisteredType( StringView a_TypeName )
+		Optional<sol::usertype<T>> GetRegisteredType( const String& a_TypeName )
 		{
 			if ( m_RegisteredTypes.find( a_TypeName ) == m_RegisteredTypes.end() )
 			{
@@ -56,7 +56,7 @@ namespace Tridium {
 	private:
 		sol::state m_LuaState;
 		// A set of registered User-Types names that can be used to query the type in the reflection system.
-		std::unordered_set<String> m_RegisteredTypes;
+		UnorderedSet<String> m_RegisteredTypes;
 
 		friend class ScriptModule;
 	};

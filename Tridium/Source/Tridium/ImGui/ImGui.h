@@ -7,6 +7,8 @@
 #define TE_PAYLOAD_ASSET_HANDLE "AssetHandle"
 #define TE_PAYLOAD_GAME_OBJECT "GameObject"
 
+#include "IconsFontAwesome6.h"
+
 namespace Tridium {
 
 	static float s_FontSize = 20.f;

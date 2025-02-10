@@ -58,17 +58,16 @@ namespace Tridium {
                     return false;
                 }
 
-				Destroy();
 				if constexpr ( IsOwning )
 				{
 					s_Instance.reset( new T( std::forward<_Args>( a_Args )... ) );
                     s_Instance.get_deleter() = Deleter{};
-					static_cast<ThisType*>( s_Instance.get() )->OnSingletonConstructed();
+					GetInstance()->OnSingletonConstructed();
 				}
 				else
 				{
 					s_Instance = new T( std::forward<_Args>( a_Args )... );
-                    static_cast<ThisType*>(s_Instance)->OnSingletonConstructed();
+					GetInstance()->OnSingletonConstructed();
 				}
 
                 return true;
@@ -87,12 +86,12 @@ namespace Tridium {
 				{
 					s_Instance.reset( a_Instance );
 					s_Instance.get_deleter() = Deleter{};
-					static_cast<ThisType*>( s_Instance.get() )->OnSingletonConstructed();
+					GetInstance()->OnSingletonConstructed();
 				}
 				else
 				{
 					s_Instance = a_Instance;
-					static_cast<ThisType*>( s_Instance )->OnSingletonConstructed();
+					GetInstance()->OnSingletonConstructed();
 				}
             }
 
@@ -113,12 +112,12 @@ namespace Tridium {
             // Destroy the global instance and reset to null. Construct/BindExisting must be called again if explicitly initialisable.
             static void Destroy()
             {
-				if ( !s_Instance )
+				if ( !Exists() )
 				{
 					return;
 				}
 
-				static_cast<ThisType&>( *s_Instance ).OnSingletonDestroyed();
+				GetInstance()->OnSingletonDestroyed();
 
 				if constexpr ( IsOwning )
 				{
@@ -135,10 +134,10 @@ namespace Tridium {
 			static bool Exists() { return s_Instance != nullptr; }
 
             // Does the global instance exist and is it valid?
-            static bool IsValid() 
+            static bool IsValid()
             {
                 return Exists() 
-                    && static_cast<ThisType&>(*s_Instance).IsValidSingleton();
+                    && GetInstance()->IsValidSingleton();
             }
 
 		private:
@@ -166,6 +165,8 @@ namespace Tridium {
                 }
             }
 
+			static ThisType* GetInstance();
+
             friend ThisType;
             
 		private:
@@ -179,8 +180,7 @@ namespace Tridium {
         {
 			if constexpr ( Singleton::IsThreadSafe )
 			{
-				static std::mutex s_Mutex;
-				std::lock_guard<std::mutex> lock( s_Mutex );
+				TODO( "Implement thread-safe access" );
 				return Singleton::InternalGet();
 			}
 			else
@@ -210,7 +210,7 @@ namespace Tridium {
     //==========================================================================
 	// Define the static instance of the singleton.
     template<typename T, bool _ExplicitSetup, bool _IsOwning, bool _IsThreadSafe>
-    ISingleton<T, _ExplicitSetup, _IsOwning>::PointerType ISingleton<T, _ExplicitSetup, _IsOwning, _IsThreadSafe>::Singleton::s_Instance = nullptr;
+    ISingleton<T, _ExplicitSetup, _IsOwning, _IsThreadSafe>::PointerType ISingleton<T, _ExplicitSetup, _IsOwning, _IsThreadSafe>::Singleton::s_Instance = nullptr;
 
 	template<typename T, bool _ExplicitSetup, bool _IsOwning, bool _IsThreadSafe>
     inline void ISingleton<T, _ExplicitSetup, _IsOwning, _IsThreadSafe>::Deleter::operator()( T* a_Ptr ) const
@@ -218,5 +218,18 @@ namespace Tridium {
         static_cast<ThisType&>(*a_Ptr).OnSingletonDestroyed();
         delete a_Ptr;
     }
+
+	template<typename T, bool _ExplicitSetup, bool _IsOwning, bool _IsThreadSafe>
+	inline ISingleton<T, _ExplicitSetup, _IsOwning, _IsThreadSafe>* ISingleton<T, _ExplicitSetup, _IsOwning, _IsThreadSafe>::Singleton::GetInstance()
+	{
+		if constexpr ( IsOwning )
+		{
+			return static_cast<ThisType*>( s_Instance.get() );
+		}
+		else
+		{
+			return static_cast<ThisType*>( s_Instance );
+		}
+	}
 
 } // namespace Tridium

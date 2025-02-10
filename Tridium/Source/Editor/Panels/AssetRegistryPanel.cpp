@@ -3,7 +3,7 @@
 #include "AssetRegistryPanel.h"
 #include <Tridium/Asset/EditorAssetManager.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	void AssetRegistryPanel::OnImGuiDraw()
 	{

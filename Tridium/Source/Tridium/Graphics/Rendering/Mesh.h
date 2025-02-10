@@ -65,7 +65,7 @@ namespace Tridium {
 		AABB m_BoundingBox;
 
 		friend class AssimpImporter;
-		friend class Editor::MeshSourceImporterPanel;
+		friend class MeshSourceImporterPanel;
 	};
 
 	// - Static Mesh -

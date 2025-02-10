@@ -4,7 +4,7 @@
 #include <Tridium/Asset/AssetType.h>
 #include <Tridium/IO/FilePath.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	class AssetImporter final
 	{

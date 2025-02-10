@@ -3,7 +3,7 @@
 #if IS_EDITOR
 #include "ViewportPanel.h"
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	ViewportPanel::ViewportPanel( const std::string& name )
 		: Panel( name )

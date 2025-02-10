@@ -7,22 +7,17 @@
 
 #include "Panels/Panel.h"
 
-// Forward Declarations
 namespace Tridium {
+
+	// Forward Declarations
 	class Scene;
+	class EditorCamera;
+	class ContentBrowserPanel;
+	class SceneHeirarchyPanel;
+	class EditorViewportPanel;
+	class GameViewportPanel;
 
-	namespace Editor {
-		class EditorCamera;
-		class ContentBrowserPanel;
-		class SceneHeirarchyPanel;
-		class EditorViewportPanel;
-		class GameViewportPanel;
-	}
-}
-
-namespace Tridium::Editor {
-
-	enum class SceneState
+	enum class ESceneState
 	{
 		None = 0,
 		Edit,		// The scene does not update but the Editor Camera can move and interact with the scene
@@ -65,12 +60,10 @@ namespace Tridium::Editor {
 
 		SharedPtr<EditorCamera> GetEditorCamera() { return m_EditorCamera; }
 
-		void SetActiveScene( const SharedPtr<Scene>& a_Scene );
-		SharedPtr<Scene> GetActiveScene() const;
 		void OnBeginScene();
 		void OnEndScene();
 
-		SceneState CurrentSceneState = SceneState::Edit;
+		ESceneState CurrentSceneState = ESceneState::Edit;
 
 	private:
 		bool OnKeyPressed( KeyPressedEvent& e );
@@ -90,17 +83,17 @@ namespace Tridium::Editor {
 		GameViewportPanel* m_GameViewportPanel;
 		UIToolBar m_UIToolBar;
 
-		friend ::Tridium::Application;
+		friend class Application;
 	};
 
 	template<typename T, typename ...Args>
-	inline T* Editor::EditorLayer::PushPanel( Args && ...args )
+	inline T* EditorLayer::PushPanel( Args && ...args )
 	{
 		return m_PanelStack.PushPanel<T>( std::forward<Args>( args )... );
 	}
 
 	template<typename T>
-	inline T* Editor::EditorLayer::GetPanel()
+	inline T* EditorLayer::GetPanel()
 	{
 		return m_PanelStack.GetPanel<T>();
 	}

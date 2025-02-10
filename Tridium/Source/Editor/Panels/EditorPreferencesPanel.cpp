@@ -4,7 +4,7 @@
 #include "EditorPreferencesPanel.h"
 #include <Editor/EditorStyle.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	void EditorPreferencesPanel::OnImGuiDraw()
 	{

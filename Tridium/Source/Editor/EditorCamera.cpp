@@ -5,7 +5,7 @@
 #include <Tridium/Input/Input.h>
 #include <Tridium/Core/Application.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	EditorCamera::EditorCamera() {}
 

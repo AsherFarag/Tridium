@@ -6,13 +6,7 @@
 
 namespace Tridium {
 
-
-	ProjectSerializer::ProjectSerializer( const SharedPtr<Project>& a_Project )
-		: m_Project( a_Project )
-	{
-	}
-
-	void ProjectSerializer::SerializeText( const FilePath& a_Path )
+	void ProjectSerializer::SerializeText( const ProjectConfig& a_Project, const FilePath& a_Path )
 	{
 		YAML::Emitter out;
 
@@ -21,9 +15,9 @@ namespace Tridium {
 			out << YAML::Key << "Configuration";
 			out << YAML::Value << YAML::BeginMap; // Configuration
 			{
-				out << YAML::Key << "Name" << YAML::Value << m_Project->m_ProjectConfig.Name;
-				out << YAML::Key << "AssetDirectory" << YAML::Value << m_Project->m_ProjectConfig.AssetDirectory.ToString();
-				out << YAML::Key << "StartScene" << YAML::Value << static_cast<SceneHandle::Type>( m_Project->m_ProjectConfig.StartScene.ID() );
+				out << YAML::Key << "Name" << YAML::Value << a_Project.Name;
+				out << YAML::Key << "AssetDirectory" << YAML::Value << a_Project.Editor.AssetDirectory.ToString();
+				out << YAML::Key << "StartScene" << YAML::Value << static_cast<SceneHandle::Type>( a_Project.StartScene.ID() );
 			}
 			out << YAML::EndMap; // Configuration
 		}
@@ -37,7 +31,7 @@ namespace Tridium {
 		outFile.close();
 	}
 
-	bool ProjectSerializer::DeserializeText( const FilePath& a_Path )
+	bool ProjectSerializer::DeserializeText( ProjectConfig& o_Project, const FilePath& a_Path )
 	{
 		YAML::Node data;
 
@@ -52,16 +46,14 @@ namespace Tridium {
 
 		if ( auto configNode = data["Configuration"] )
 		{
-			m_Project->m_ProjectConfig.Name = configNode["Name"].as<std::string>();
-			m_Project->m_ProjectConfig.AssetDirectory = FilePath( configNode["AssetDirectory"].as<std::string>() );
-			m_Project->m_ProjectConfig.StartScene = configNode["StartScene"].as<SceneHandle::Type>();
-		}
-		else
-		{
-			return false;
+			o_Project.Name = configNode["Name"].as<std::string>();
+			o_Project.Editor.AssetDirectory = FilePath( configNode["AssetDirectory"].as<std::string>() );
+			o_Project.StartScene = configNode["StartScene"].as<SceneHandle::Type>();
+
+			return true;
 		}
 
-		return true;
+		return false;
 	}
 
-}
+} // namespace Tridium

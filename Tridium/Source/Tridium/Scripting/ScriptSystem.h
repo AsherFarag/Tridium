@@ -2,7 +2,7 @@
 #include <Tridium/Scene/SceneSystem.h>
 #include <Tridium/ECS/Components/Types/Common/LuaScriptComponent.h>
 
-namespace Tridium::Script {
+namespace Tridium {
 
 	class ScriptSystem final : public ISceneSystem
 	{

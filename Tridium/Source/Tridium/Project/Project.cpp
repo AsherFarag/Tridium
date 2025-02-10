@@ -7,10 +7,10 @@ namespace Tridium {
 
     Project::Project( const String& a_Name, const FilePath& a_AssetDirectory, SceneHandle a_StartScene )
     {
-		m_ProjectConfig.Name = a_Name;
-		m_ProjectConfig.Editor.ProjectName = a_Name;
-		m_ProjectConfig.Editor.AssetDirectory = a_AssetDirectory;
-		m_ProjectConfig.StartScene = a_StartScene;
+		Config.Name = a_Name;
+		Config.Editor.ProjectName = a_Name;
+		Config.Editor.AssetDirectory = a_AssetDirectory;
+		Config.StartScene = a_StartScene;
     }
 
     Project::~Project()

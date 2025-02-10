@@ -3,7 +3,7 @@
 
 #include "EditorStyle.h"
 
-namespace Tridium::Editor::Style {
+namespace Tridium::Style {
 
 	namespace Themes {
 		static void Midnight()

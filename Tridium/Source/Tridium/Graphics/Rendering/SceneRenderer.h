@@ -156,7 +156,7 @@ namespace Tridium {
 		// -------
 		
 		friend class Scene;
-		friend class Editor::SceneRendererPanel;
+		friend class SceneRendererPanel;
 	};
 
 }

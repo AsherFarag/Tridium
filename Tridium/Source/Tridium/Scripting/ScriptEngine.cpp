@@ -10,7 +10,7 @@
 #include <Tridium/Asset/EditorAssetManager.h>
 #include <fstream>
 
-namespace Tridium::Script {
+namespace Tridium {
 
 	bool ScriptEngine::Init()
 	{
@@ -116,7 +116,7 @@ namespace Tridium::Script {
 	void ScriptEngine::RecompileAllScripts()
 	{
 		TODO( "TEMP EDITOR ONLY HERE" );
-		SharedPtr<Editor::EditorAssetManager> assetManager = Editor::EditorAssetManager::Get();
+		EditorAssetManager* assetManager = EditorAssetManager::Get();
 		for ( SharedPtr<ScriptAsset> script : AssetManager::GetAssetsOfType<ScriptAsset>() )
 		{
 			const AssetMetaData& assetData = assetManager->GetAssetMetaData( script->GetHandle() );

@@ -8,7 +8,7 @@
 #include <Tridium/Graphics/Rendering/Mesh.h>
 #include <Tridium/Graphics/Rendering/Texture.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	EditorAssetManager::EditorAssetManager()
 	{
@@ -333,7 +333,7 @@ namespace Tridium::Editor {
 			return a_Path;
 
 		// Else, the path is relative to the project directory
-		return Application::GetActiveProject()->GetConfiguration().ProjectDirectory / a_Path;
+		return Engine::Get()->GetActiveProject().Config.Editor.ProjectDirectory / a_Path;
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -378,7 +378,7 @@ namespace Tridium::Editor {
 
 
 		TODO( "Implement a proper path system for the asset registry" );
-		const FilePath registryPath = Application::GetActiveProject()->GetConfiguration().ProjectDirectory / "TridiumAssetRegistry.yaml";
+		const FilePath registryPath = Engine::Get()->GetActiveProject().Config.Editor.ProjectDirectory / "TridiumAssetRegistry.yaml";
 
 		std::ofstream file( registryPath.ToString() );
 		file << out.c_str();
@@ -397,7 +397,7 @@ namespace Tridium::Editor {
 		try
 		{
 			TODO( "Implement a proper path system for the asset registry" );
-			const FilePath registryPath =  Application::GetActiveProject()->GetConfiguration().ProjectDirectory / "TridiumAssetRegistry.yaml";
+			const FilePath registryPath =  Engine::Get()->GetActiveProject().Config.Editor.ProjectDirectory / "TridiumAssetRegistry.yaml";
 			data = YAML::LoadFile( registryPath.ToString() );
 		}
 		catch ( const YAML::BadFile& e )
@@ -417,7 +417,7 @@ namespace Tridium::Editor {
 				// Strip absolute path if it is inside the content directory
 				if ( metaData.Path.IsAbsolute() )
 				{
-					metaData.Path = FilePath::Relative( metaData.Path, Application::GetActiveProject()->GetConfiguration().ProjectDirectory );
+					metaData.Path = FilePath::Relative( metaData.Path, Engine::Get()->GetActiveProject().Config.Editor.ProjectDirectory );
 				}
 
 				if ( !GetAbsolutePath( metaData.Path ).Exists() )

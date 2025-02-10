@@ -98,7 +98,7 @@ namespace Tridium {
 		//================================================================
 		// Utility functions that wrap up the GameObject's functions.
 
-		const Scene* GetScene() const { return Application::GetScene().get(); }
+		const Scene* GetScene() const { return SceneManager::GetActiveScene(); }
 
 		template<typename T>
 		bool HasComponent() const { return m_GameObject.HasComponent<T>(); }

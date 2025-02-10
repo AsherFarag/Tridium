@@ -1,19 +1,13 @@
 #pragma once
+#include <Tridium/Project/ProjectConfig.h>
 
 namespace Tridium {
-
-	class Project;
 
 	class ProjectSerializer
 	{
 	public:
-		ProjectSerializer( const SharedPtr<Project>& a_Project );
-
-		void SerializeText( const FilePath& a_Path );
-		bool DeserializeText( const FilePath& a_Path );
-
-	private:
-		SharedPtr<Project> m_Project;
+		static void SerializeText( const ProjectConfig& a_Project, const FilePath& a_Path );
+		static bool DeserializeText( ProjectConfig& o_Project, const FilePath& a_Path );
 	};
 
 }

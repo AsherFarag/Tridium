@@ -3,7 +3,7 @@
 #include <Tridium/ImGui/ImGui.h>
 #include <Tridium/Core/Application.h>
 
-namespace Tridium::Editor::Util {
+namespace Tridium::Util {
 
 	typedef std::function<void( const std::string& )> FileDialogCallback;
 

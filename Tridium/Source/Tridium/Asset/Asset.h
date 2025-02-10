@@ -5,8 +5,6 @@
 
 namespace Tridium {
 
-	namespace Editor { class EditorAssetManager; }
-
 #define ASSET_CLASS_TYPE(type) static constexpr EAssetType StaticType() { return EAssetType::type; }\
 							   virtual EAssetType AssetType() const { return StaticType(); }\
 
@@ -23,6 +21,6 @@ namespace Tridium {
         AssetHandle m_Handle;
 
         friend class RuntimeAssetManager;
-        friend class Editor::EditorAssetManager;
+        friend class EditorAssetManager;
     };
 }

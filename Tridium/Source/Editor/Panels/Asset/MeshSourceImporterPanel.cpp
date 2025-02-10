@@ -8,7 +8,7 @@
 #include <Tridium/Asset/EditorAssetManager.h>
 #include <Tridium/ImGui/ImGui.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 
 

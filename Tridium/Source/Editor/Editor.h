@@ -1,11 +1,12 @@
 #pragma once
 #if IS_EDITOR
+#include "EditorConfig.h"
 #include "EditorLayer.h"
 #include "Tridium/Core/Core.h"
 #include "EditorEvents.h"
 #include <any>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	struct Payload
 	{
@@ -63,32 +64,32 @@ namespace Tridium::Editor {
 
 	//////////////////////////////////////////////////////////////////////////
 
-	class EditorApplication
+	class EditorApplication final : public ISingleton<EditorApplication, true, true, true>
 	{
 	public:
-		static SharedPtr<EditorApplication> Get() { return s_Instance; }
-		static bool Init();
-		static bool Shutdown();
+		bool Init();
+		bool Shutdown();
 
-		static PayloadManager& GetPayloadManager() { return s_Instance->m_PayloadManager; }
+		PayloadManager& GetPayloadManager() { return Get()->m_PayloadManager; }
 
 		EditorLayer* GetEditorLayer() { return m_EditorLayer; }
 
 	private:
 		EditorLayer* m_EditorLayer;
 		PayloadManager m_PayloadManager;
-
-	private: // Singleton
-		EditorApplication();
-		EditorApplication( const EditorApplication& ) = delete;
-		EditorApplication& operator=( const EditorApplication& ) = delete;
-
-		static SharedPtr<EditorApplication> s_Instance;
-		static std::once_flag s_InitFlag;
 	};
 
-	inline EditorLayer* GetEditorLayer() { return EditorApplication::Get()->GetEditorLayer(); }
-	inline SharedPtr<Scene> GetActiveScene() { return EditorApplication::Get()->GetEditorLayer()->GetActiveScene();}
+	//=================================================================================================
+	// Editor Namespace
+	//  A namespace for editor specific functions and utilities
+	namespace Editor {
+		bool Init( EditorConfig a_Config );
+		void Shutdown();
+
+		inline PayloadManager* GetPayloadManager() { return EditorApplication::Get() ? &EditorApplication::Get()->GetPayloadManager() : nullptr; }
+		inline EditorLayer* GetEditorLayer() { return EditorApplication::Get() ? EditorApplication::Get()->GetEditorLayer() : nullptr; }
+	}
+	//=================================================================================================
 };
 
 #endif // IS_EDITOR

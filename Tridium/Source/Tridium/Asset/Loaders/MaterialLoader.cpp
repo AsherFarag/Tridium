@@ -42,7 +42,7 @@ namespace Tridium {
 		out << YAML::EndMap;
 
 		TODO( "This is editor only!" );
-		std::ofstream file(  AssetManager::Get<Editor::EditorAssetManager>()->GetAbsolutePath( a_MetaData.Path ).ToString() );
+		std::ofstream file(  AssetManager::Get<EditorAssetManager>()->GetAbsolutePath( a_MetaData.Path ).ToString() );
 		file << out.c_str();
 	}
 

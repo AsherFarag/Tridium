@@ -19,7 +19,7 @@
 
 using namespace entt::literals;
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	// Add spaces between words in a class name
 	// Example: "EnemyAIComponent" -> "Enemy AI Component"
@@ -161,9 +161,9 @@ namespace Tridium::Editor {
 		{
 			if ( DrawComponentTreeNode( TE_ICON_CUBES " Transform", false ) )
 			{
-				DrawProperty( "Position", tc->Position, EDrawPropertyFlags::Editable );
-				DrawProperty( "Rotation", tc->Rotation, EDrawPropertyFlags::Editable );
-				DrawProperty( "Scale   ", tc->Scale, EDrawPropertyFlags::Editable );
+				Editor::DrawProperty( "Position", tc->Position, EDrawPropertyFlags::Editable );
+				Editor::DrawProperty( "Rotation", tc->Rotation, EDrawPropertyFlags::Editable );
+				Editor::DrawProperty( "Scale   ", tc->Scale, EDrawPropertyFlags::Editable );
 
 				ImGui::TreePop();
 			}
@@ -185,7 +185,7 @@ namespace Tridium::Editor {
 				{
 					auto removeFromGameObjectFunc = metaType.GetMetaAttribute<Refl::Props::RemoveFromGameObjectProp::Type>( Refl::Props::RemoveFromGameObjectProp::ID );
 					if ( CORE_ASSERT( removeFromGameObjectFunc.has_value() ) )
-						removeFromGameObjectFunc.value()( *Application::GetScene(), InspectedGameObject );
+						removeFromGameObjectFunc.value()( *SceneManager::GetActiveScene(), InspectedGameObject );
 				}
 
 				ImGui::EndPopup();
@@ -251,7 +251,7 @@ namespace Tridium::Editor {
 
 				auto addToGameObjectFunc = metaType.GetMetaAttribute<Refl::Props::AddToGameObjectProp::Type>( Refl::Props::AddToGameObjectProp::ID );
 				if ( CORE_ASSERT( addToGameObjectFunc.has_value() ) )
-					addToGameObjectFunc.value()( *Application::GetScene(), InspectedGameObject );
+					addToGameObjectFunc.value()( *SceneManager::GetActiveScene(), InspectedGameObject );
 
 				break;
 			}

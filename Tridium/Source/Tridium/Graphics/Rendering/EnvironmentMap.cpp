@@ -54,7 +54,7 @@ namespace Tridium {
 	SharedPtr<EnvironmentMap> EnvironmentMap::Create( AssetHandle a_Handle )
 	{
 		TODO( "Editor only!" );
-		auto assetManager = AssetManager::Get<Editor::EditorAssetManager>();
+		auto assetManager = AssetManager::Get<EditorAssetManager>();
 		const AssetMetaData& metaData = assetManager->GetAssetMetaData( a_Handle );
 		if ( metaData.IsValid() )
 		{

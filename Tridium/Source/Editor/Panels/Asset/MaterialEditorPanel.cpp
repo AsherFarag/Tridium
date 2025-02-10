@@ -7,7 +7,7 @@
 #include <Tridium/Asset/EditorAssetManager.h>
 #include <Editor/PropertyDrawers.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 	MaterialEditorPanel::MaterialEditorPanel()
 		: Panel( "Material Editor##" )
 	{
@@ -24,7 +24,7 @@ namespace Tridium::Editor {
 		ImGuiWindowFlags flags = ( material && m_Modified) ? ImGuiWindowFlags_UnsavedDocument : 0;
 		if ( ImGuiBegin( flags ) )
 		{
-			if ( DrawProperty( "Material", m_Material, EDrawPropertyFlags::Editable ) )
+			if ( Editor::DrawProperty( "Material", m_Material, EDrawPropertyFlags::Editable ) )
 			{
 				m_Modified = false;
 			}
@@ -40,13 +40,13 @@ namespace Tridium::Editor {
 
 				ImGui::Separator();
 
-				m_Modified |= DrawProperty( "Albedo Texture", material->AlbedoTexture, EDrawPropertyFlags::Editable );
-				m_Modified |= DrawProperty( "Metallic Texture", material->MetallicTexture, EDrawPropertyFlags::Editable );
-				m_Modified |= DrawProperty( "Roughness Texture", material->RoughnessTexture, EDrawPropertyFlags::Editable );
-				m_Modified |= DrawProperty( "Normal Texture", material->NormalTexture, EDrawPropertyFlags::Editable );
-				m_Modified |= DrawProperty( "Opacity Texture", material->OpacityTexture, EDrawPropertyFlags::Editable );
-				m_Modified |= DrawProperty( "Emissive Texture", material->EmissiveTexture, EDrawPropertyFlags::Editable );
-				m_Modified |= DrawProperty( "AO Texture", material->AOTexture, EDrawPropertyFlags::Editable );
+				m_Modified |= Editor::DrawProperty( "Albedo Texture", material->AlbedoTexture, EDrawPropertyFlags::Editable );
+				m_Modified |= Editor::DrawProperty( "Metallic Texture", material->MetallicTexture, EDrawPropertyFlags::Editable );
+				m_Modified |= Editor::DrawProperty( "Roughness Texture", material->RoughnessTexture, EDrawPropertyFlags::Editable );
+				m_Modified |= Editor::DrawProperty( "Normal Texture", material->NormalTexture, EDrawPropertyFlags::Editable );
+				m_Modified |= Editor::DrawProperty( "Opacity Texture", material->OpacityTexture, EDrawPropertyFlags::Editable );
+				m_Modified |= Editor::DrawProperty( "Emissive Texture", material->EmissiveTexture, EDrawPropertyFlags::Editable );
+				m_Modified |= Editor::DrawProperty( "AO Texture", material->AOTexture, EDrawPropertyFlags::Editable );
 			}
 		}
 

@@ -4,7 +4,7 @@
 #include <Tridium/Graphics/Rendering/Mesh.h>
 #include <Tridium/Asset/AssetMetaData.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
     class MeshSourceImporterPanel : public Layer
     {

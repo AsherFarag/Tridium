@@ -3,7 +3,7 @@
 
 #include "Panel.h"
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	class StatsPanel : public Panel
 	{

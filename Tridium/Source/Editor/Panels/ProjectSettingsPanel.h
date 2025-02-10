@@ -4,7 +4,7 @@
 #include "Panel.h"
 #include <Tridium/Project/Project.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
     class ProjectSettingsPanel : public Panel
     {
@@ -14,7 +14,7 @@ namespace Tridium::Editor {
         virtual void OnImGuiDraw() override;
 
     protected:
-		ProjectConfiguration m_ProjectConfig;
+		ProjectConfig m_ProjectConfig;
 		bool m_Modified = false;
     };
 

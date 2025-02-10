@@ -4,7 +4,7 @@
 #include <Tridium/ImGui/ImGui.h>
 #include <Tridium/Events/Eventsfwd.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	class Panel
 	{

@@ -4,7 +4,7 @@
 #include <Tridium/Core/Application.h>
 #include <Editor/EditorStyle.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	ProfilerPanel::ProfilerPanel()
 		: Panel( "Profiler" )
@@ -385,7 +385,7 @@ namespace Tridium::Editor {
 						// If this result is selected, draw a border around it
 						if ( m_SelectedResult && m_SelectedResult.value() == result )
 						{
-							ImGui::GetWindowDrawList()->AddRect( resultRect.Min, resultRect.Max, Editor::Style::Colors::Orange, 0.0f, 0, 3.0f );
+							ImGui::GetWindowDrawList()->AddRect( resultRect.Min, resultRect.Max, Style::Colors::Orange, 0.0f, 0, 3.0f );
 						}
 
 
@@ -434,4 +434,4 @@ namespace Tridium::Editor {
 		}
 	}
 
-} // namespace Tridium::Editor
+} // namespace Tridium

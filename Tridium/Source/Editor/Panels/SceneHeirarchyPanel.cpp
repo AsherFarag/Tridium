@@ -14,7 +14,7 @@
 #include <Tridium/ECS/Components/Types.h>
 #include <Tridium/Graphics/Rendering/Texture.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	SceneHeirarchyPanel::SceneHeirarchyPanel()
 		: Panel( "Scene Heirarchy" )
@@ -71,7 +71,7 @@ namespace Tridium::Editor {
 					if ( m_SelectedGameObject.HasComponent<TransformComponent>() )
 					{
 						auto& goTransform = m_SelectedGameObject.GetComponent<TransformComponent>();
-						auto editorCam = GetEditorLayer()->GetEditorCamera();
+						auto editorCam = Editor::GetEditorLayer()->GetEditorCamera();
 						editorCam->LerpTo( goTransform.Position - ( editorCam->GetForwardDirection() * 5.f ) );
 						return true;
 					}
@@ -87,7 +87,7 @@ namespace Tridium::Editor {
 			{
 				if ( m_SelectedGameObject.IsValid() )
 				{
-					EditorApplication::GetPayloadManager().SetPayload( "GameObject", m_SelectedGameObject );
+					Editor::GetPayloadManager()->SetPayload( "GameObject", m_SelectedGameObject );
 					return true;
 				}
 			}
@@ -99,15 +99,15 @@ namespace Tridium::Editor {
 			// Paste the copied game object
 			if ( control )
 			{
-				if ( EditorApplication::GetPayloadManager().HasPayload() )
+				if ( Editor::GetPayloadManager()->HasPayload() )
 				{
-					Payload* payload = EditorApplication::GetPayloadManager().GetPayload( "GameObject" );
+					Payload* payload = Editor::GetPayloadManager()->GetPayload( "GameObject" );
 					if ( payload && !payload->IsEmpty() )
 					{
 						GameObject copiedGO = payload->As<GameObject>();
-						if ( copiedGO.IsValid() && Application::GetScene() )
+						if ( copiedGO.IsValid() && SceneManager::GetActiveScene() )
 						{
-							GameObject newGO = Application::GetScene()->InstantiateGameObjectFrom(copiedGO);
+							GameObject newGO = SceneManager::GetActiveScene()->InstantiateGameObjectFrom(copiedGO);
 							Events::OnGameObjectSelected.Broadcast( newGO );
 							return true;
 						}
@@ -123,7 +123,7 @@ namespace Tridium::Editor {
 
 	void SceneHeirarchyPanel::DrawSceneHeirarchy()
 	{
-		SharedPtr<Scene> scene = Application::GetScene();
+		Scene* scene = SceneManager::GetActiveScene();
 		if ( !scene )
 			return;
 
@@ -202,7 +202,7 @@ namespace Tridium::Editor {
 	{
 		GameObject newGO = {};
 
-		SharedPtr<Scene> scene = Application::GetScene();
+		Scene* scene = SceneManager::GetActiveScene();
 		if ( !scene )
 			return;
 
@@ -320,7 +320,7 @@ namespace Tridium::Editor {
 		{
 			ImGui::Separator();
 
-			ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Text, ImVec4( Editor::Style::Colors::Red ) );
+			ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Text, ImVec4( Style::Colors::Red ) );
 			if ( ImGui::MenuItem( " - Remove All - " ) ) scene->Clear();
 			ImGui::PopStyleColor();
 		}

@@ -4,7 +4,7 @@
 #include "Panel.h"
 #include <Tridium/Scene/Scene.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
     class SceneRendererPanel : public Panel
     {

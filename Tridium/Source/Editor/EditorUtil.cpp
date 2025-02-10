@@ -5,7 +5,7 @@
 #include <Tridium/Core/Application.h>
 
 
-namespace Tridium::Editor::Util {
+namespace Tridium::Util {
 
 
 	FileDialogLayer::FileDialogLayer( FileDialogCallback a_Callback, const std::string& a_DefaultPath )

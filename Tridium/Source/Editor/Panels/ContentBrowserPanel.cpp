@@ -19,7 +19,7 @@
 #include <thread>
 #include <fstream>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	std::unordered_map<EFileType, SharedPtr<Texture>> ContentItemIcons::s_FileTypeIcons = std::unordered_map<EFileType, SharedPtr<Texture>>();
 	SharedPtr<Texture> ContentItemIcons::s_UnimportedAssetIcon = nullptr;
@@ -36,7 +36,7 @@ namespace Tridium::Editor {
 		case EFileType::Shader:     return "Shader";
 		case EFileType::Texture:    return "Texture";
 		case EFileType::CubeMap:    return "Cube Map";
-		case EFileType::LuaScript:        return "Lua";
+		case EFileType::LuaScript:  return "Lua";
 		case EFileType::Folder:     return "Folder";
 		}
 
@@ -79,7 +79,7 @@ namespace Tridium::Editor {
 		// If the directory was deleted while we are in it,
 		// Goto to the main content directory.
 		if ( !m_CurrentDirectory.Exists() )
-			OpenFolder(Application::GetActiveProject()->GetAssetDirectory());
+			OpenFolder( Engine::Get()->GetActiveProject().GetAssetDirectory() );
 
 		ImGui::Columns( 2, "Content Browser Columns", true );
 		{
@@ -121,7 +121,7 @@ namespace Tridium::Editor {
 		m_DirectoryStack.clear();
 
 		FilePath parentFolderPaths = m_CurrentDirectory;
-		const FilePath assetDirectory = Application::GetActiveProject()->GetAssetDirectory();
+		const FilePath assetDirectory = Engine::Get()->GetActiveProject().GetAssetDirectory();
 
 		int loopGuard = 0;
 		while ( parentFolderPaths.HasParentPath() )
@@ -137,13 +137,13 @@ namespace Tridium::Editor {
 			parentFolderPaths = parentFolderPaths.GetParentPath();
 		}
 
-		m_DirectoryStack.push_front( Application::GetActiveProject()->GetConfiguration().AssetDirectory.GetFilename() );
+		m_DirectoryStack.push_front( Engine::Get()->GetActiveProject().Config.Editor.AssetDirectory.GetFilename() );
 	}
 
 	void ContentBrowserPanel::ReconstructFolderHierarchy()
 	{
 		m_FolderHeirarchy.clear();
-		RecurseFolderHeirarchy( Application::GetActiveProject()->GetAssetDirectory() );
+		RecurseFolderHeirarchy( Engine::Get()->GetActiveProject().GetAssetDirectory() );
 	}
 
 	void ContentBrowserPanel::RecurseFolderHeirarchy( const FilePath& a_Directory )
@@ -179,7 +179,7 @@ namespace Tridium::Editor {
 			const std::string& rootFolderName = m_DirectoryStack.front();
 			if ( ImGui::TreeNodeEx( ( TE_ICON_FOLDER " " + rootFolderName ).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_Framed) )
 			{
-				RecurseDrawFolderHierarchy( Application::GetActiveProject()->GetAssetDirectory() );
+				RecurseDrawFolderHierarchy( Engine::Get()->GetActiveProject().GetAssetDirectory() );
 				ImGui::TreePop();
 			}
 		}
@@ -480,7 +480,7 @@ namespace Tridium::Editor {
 		// Delete Option
 		{
 			ImGui::Separator();
-			ImGui::ScopedStyleCol textColor( ImGuiCol_Text, ImVec4(Editor::Style::Colors::Red) );
+			ImGui::ScopedStyleCol textColor( ImGuiCol_Text, ImVec4(Style::Colors::Red) );
 			if ( ImGui::MenuItem( "Delete" ) )
 			{
 				FilePath filePath = m_CurrentDirectory / a_Item.Name;
@@ -522,13 +522,13 @@ namespace Tridium::Editor {
 				SharedPtr<Material> material = AssetManager::GetAsset<Material>( a_Item.Handle );
 				if ( material )
 				{
-					GetEditorLayer()->GetOrEmplacePanel<MaterialEditorPanel>()->SetMaterial( a_Item.Handle );
+					Editor::GetEditorLayer()->GetOrEmplacePanel<MaterialEditorPanel>()->SetMaterial( a_Item.Handle );
 				}
 				break;
 			}
 			case EFileType::LuaScript:
 			{
-				ScriptEditorPanel* panel = GetEditorLayer()->GetOrEmplacePanel<ScriptEditorPanel>();
+				ScriptEditorPanel* panel = Editor::GetEditorLayer()->GetOrEmplacePanel<ScriptEditorPanel>();
 				panel->OpenFile( m_CurrentDirectory / a_Item.Name );
 				panel->Focus();
 				break;

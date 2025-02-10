@@ -33,7 +33,7 @@
 #include <fstream>
 #include <Tridium/IO/Serializer.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	EditorLayer::EditorLayer()
 		: Layer( "EditorLayer")
@@ -62,22 +62,22 @@ namespace Tridium::Editor {
 
 	void EditorLayer::OnUpdate()
 	{
-		if ( GetActiveScene() )
+		if ( Scene* scene = SceneManager::GetActiveScene() )
 		{
 			switch ( CurrentSceneState )
 			{
-			case SceneState::Edit:
+			case ESceneState::Edit:
 			{
 				m_EditorCamera->OnUpdate();
 				break;
 			}
-			case SceneState::Play:
+			case ESceneState::Play:
 			{
 				m_EditorCamera->OnUpdate();
 
-				if ( !GetActiveScene()->IsPaused() )
+				if ( !scene->IsPaused() )
 				{
-					GetActiveScene()->OnUpdate();
+					scene->OnUpdate();
 				}
 				break;
 			}
@@ -106,7 +106,7 @@ namespace Tridium::Editor {
 		}
 
 		ImGui::PushStyleVar( ImGuiStyleVar_WindowPadding, ImVec2( 0.0f, 0.0f ) );
-		ImGui::Begin( Application::GetActiveProject()->GetConfiguration().Name.c_str(), nullptr, window_flags);
+		ImGui::Begin( Engine::Get()->GetActiveProject().Config.Name.c_str(), nullptr, window_flags);
 		ImGui::PopStyleVar();
 
 		if ( opt_Fullscreen )
@@ -143,42 +143,33 @@ namespace Tridium::Editor {
 		dispatcher.Dispatch<KeyPressedEvent>( TE_BIND_EVENT_FN( EditorLayer::OnKeyPressed, 1 ) );
 	}
 
-	void EditorLayer::SetActiveScene( const SharedPtr<Scene>& a_Scene )
-	{
-		Application::SetScene( a_Scene );
-	}
-
-	SharedPtr<Scene> EditorLayer::GetActiveScene() const
-	{
-		return Application::GetScene();
-	}
-
 	void EditorLayer::OnBeginScene()
 	{
+		Scene* scene = SceneManager::GetActiveScene();
 		// Store a copy of the current scene in storage
-		m_SceneSnapshot = MakeUnique<Scene>( *GetActiveScene() );
+		m_SceneSnapshot = MakeUnique<Scene>( *scene );
 
-		GetActiveScene()->OnBeginPlay();
-		GetActiveScene()->SetPaused( false );
+		scene->OnBeginPlay();
+		scene->SetPaused( false );
 
 		m_GameViewportPanel->Focus();
-		CurrentSceneState = SceneState::Play;
+		CurrentSceneState = ESceneState::Play;
 
 		Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled );
 	}
 
 	void EditorLayer::OnEndScene()
 	{
-		GetActiveScene()->OnEndPlay();
+		SceneManager::GetActiveScene()->OnEndPlay();
 
-		CurrentSceneState = SceneState::Edit;
+		CurrentSceneState = ESceneState::Edit;
 		m_EditorViewportPanel->Focus();
 
 		// Restore the scene from storage
 		if ( m_SceneSnapshot )
 		{
 			Scene* scene = m_SceneSnapshot.release();
-			SetActiveScene( SharedPtr<Scene>( scene ) );
+			SceneManager::SetActiveScene( scene );
 		}
 
 		TODO( "TEMP?" );
@@ -199,7 +190,7 @@ namespace Tridium::Editor {
 		{
 			if ( control )
 			{
-				if ( GetActiveScene() )
+				if ( SceneManager::GetActiveScene() )
 				{
 					//if ( m_ActiveScene->GetPath().length() == 0 )
 					//	Util::OpenSaveFileDialog( "Untitled.tscene", [this](const std::string& path) { SaveScene(path); });
@@ -221,7 +212,7 @@ namespace Tridium::Editor {
 		}
 		case Input::KEY_ESCAPE:
 		{
-			if ( CurrentSceneState == SceneState::Play )
+			if ( CurrentSceneState == ESceneState::Play )
 			{
 				OnEndScene();
 				return true;
@@ -230,7 +221,7 @@ namespace Tridium::Editor {
 		}
 		case Input::KEY_TAB:
 		{
-			if ( CurrentSceneState == SceneState::Play )
+			if ( CurrentSceneState == ESceneState::Play )
 			{
 				TODO( "Bruh" );
 				static bool s_MouseIsCaptured = false;
@@ -290,10 +281,12 @@ namespace Tridium::Editor {
 								FilePath( path ).GetFilenameWithoutExtension(),
 								true
 						};
+
+						TODO( "REplace this with a scene manager function" );
 						SharedPtr<Scene> scene = MakeShared<Scene>();
 						scene->SetName( metaData.Name );
 						if ( assetManager->CreateAsset( metaData, scene ) )
-							SetActiveScene( scene );
+							SceneManager::SetActiveScene( scene.get() );
 						else
 							TE_CORE_ERROR( "Failed to create scene '{0}'", path );
 					} );
@@ -305,30 +298,31 @@ namespace Tridium::Editor {
 					{
 						auto assetManager = AssetManager::Get<EditorAssetManager>();
 						const AssetMetaData& sceneMetaData = assetManager->GetAssetMetaData( path );
-						auto scene = AssetManager::GetAsset<Scene>( sceneMetaData.Handle );
-						SetActiveScene( scene );
+						if ( auto scene = AssetManager::GetAsset<Scene>( sceneMetaData.Handle ) )
+							SceneManager::SetActiveScene( scene.get() );
 					});
 			}
 			if ( ImGui::MenuItem( TE_ICON_FLOPPY_DISK "Save Scene", "Ctrl + S" ) )
 			{
-				if ( GetActiveScene() )
+				if ( Scene* scene = SceneManager::GetActiveScene() )
 				{
 					auto assetManager = AssetManager::Get<EditorAssetManager>();
-					if ( !assetManager->SaveAsset( GetActiveScene()->GetHandle() ) )
+					if ( !assetManager->SaveAsset( scene->GetHandle() ) )
 					{
-						Util::OpenSaveFileDialog( GetActiveScene()->GetName() + ".tscene",
+						Util::OpenSaveFileDialog( scene->GetName() + ".tscene",
 							[this]( const std::string& path )
 							{
 								auto assetManager = AssetManager::Get<EditorAssetManager>();
 								AssetMetaData metaData =
 								{
-									GetActiveScene()->GetHandle(),
+									SceneManager::GetActiveScene()->GetHandle(),
 									EAssetType::Scene,
 									path,
 									FilePath( path ).GetFilenameWithoutExtension(),
 									true
 								};
-								if ( assetManager->CreateAsset( metaData, GetActiveScene() ) )
+								TODO( "Gross, fix this!" );
+								if ( assetManager->CreateAsset( metaData, SceneManager::GetActiveScene()->shared_from_this() ) )
 									assetManager->SaveAsset( metaData.Handle );
 								else
 									TE_CORE_ERROR( "Failed to save scene '{0}'", path );
@@ -377,7 +371,7 @@ namespace Tridium::Editor {
 
 			if ( ImGui::MenuItem( "Recompile", "Ctrl+R" ) )
 			{
-				ScriptEngine::RecompileAllScripts();
+				ScriptEngine::Get()->RecompileAllScripts();
 			}
 
 			ImGui::EndMenu();
@@ -394,7 +388,7 @@ namespace Tridium::Editor {
 
 		// Project Name
 		{
-			const char* projectName = Application::GetActiveProject()->GetConfiguration().Name.c_str();
+			const char* projectName = Engine::Get()->GetActiveProject().Config.Name.c_str();
 			const float paddingFromRight = 10.0f;
 			ImGui::SameLine( ImGui::GetContentRegionMax().x - ImGui::CalcTextSize( projectName ).x - paddingFromRight );
 
@@ -421,6 +415,10 @@ namespace Tridium::Editor {
 
 	void UIToolBar::OnImGuiDraw()
 	{
+		Scene* scene = SceneManager::GetActiveScene();
+		if ( !scene )
+			return;
+
 		float winPaddingY = 5.0f;
 		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_WindowPadding, { 0, winPaddingY } );
 
@@ -434,11 +432,11 @@ namespace Tridium::Editor {
 		float regionAvailY = MAX( 0.0f, ImGui::GetContentRegionAvail().y - 5 - buttonPadding.y );
 		ImVec2 buttonSize( regionAvailY * 2, regionAvailY * 2 );
 
-		EditorLayer* editor = GetEditorLayer();
-		SceneState sceneState = editor->CurrentSceneState;
-		bool hasPlayButton = ( sceneState == SceneState::Edit ) || ( sceneState == SceneState::Play && editor->GetActiveScene()->IsPaused() );
-		bool hasPauseButton = ( sceneState == SceneState::Play ) && ( !editor->GetActiveScene()->IsPaused() );
-		bool hasStopButton = sceneState == SceneState::Play;
+		EditorLayer* editor = Editor::GetEditorLayer();
+		ESceneState sceneState = editor->CurrentSceneState;
+		bool hasPlayButton = ( sceneState == ESceneState::Edit ) || ( sceneState == ESceneState::Play && scene->IsPaused() );
+		bool hasPauseButton = ( sceneState == ESceneState::Play ) && ( !scene->IsPaused() );
+		bool hasStopButton = sceneState == ESceneState::Play;
 
 		float totalButtonSizeX = buttonSize.x + ( buttonPadding.x * 2.f ) + ImGui::GetStyle().ItemSpacing.x;
 		float groupSizeX = ( totalButtonSizeX * hasPlayButton ) + ( totalButtonSizeX * hasPauseButton ) + ( totalButtonSizeX * hasStopButton );
@@ -452,8 +450,8 @@ namespace Tridium::Editor {
 				ImGui::ScopedStyleCol buttonCol( ImGuiCol_Text, ImVec4( Style::Colors::Green ) );
 				if ( ImGui::SmallButton( TE_ICON_PLAY ) )
 				{
-					if ( editor->GetActiveScene()->IsPaused() )
-						editor->GetActiveScene()->SetPaused( false );
+					if ( scene->IsPaused() )
+						scene->SetPaused( false );
 					else
 						editor->OnBeginScene();
 				}
@@ -463,7 +461,7 @@ namespace Tridium::Editor {
 			{
 				if ( ImGui::SmallButton( TE_ICON_PAUSE ) )
 				{
-					editor->GetActiveScene()->SetPaused( true );
+					SceneManager::GetActiveScene()->SetPaused( true );
 				}
 			}
 

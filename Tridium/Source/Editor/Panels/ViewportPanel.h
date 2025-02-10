@@ -10,7 +10,7 @@ namespace Tridium {
 	class Camera;
 }
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	class SceneHeirarchyPanel;
 

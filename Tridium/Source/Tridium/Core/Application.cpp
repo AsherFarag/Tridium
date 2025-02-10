@@ -11,12 +11,11 @@
 	#include <Tridium/Asset/RuntimeAssetManager.h>
 #endif // IS_EDITOR
 
+#include <Tridium/ImGui/ImGuiLayer.h>
+
 // TEMP ?
 #include <Tridium/Graphics/Rendering/GameViewport.h>
-#include <Tridium/ECS/Components/Types.h>
 #include <Tridium/Graphics/Rendering/RenderCommand.h>
-#include "Tridium/IO/ProjectSerializer.h"
-#include <Tridium/Scripting/ScriptEngine.h>
 #include <Tridium/Graphics/RHI/RHI.h>
 
 
@@ -25,30 +24,23 @@ namespace Tridium {
 	Application* Application::s_Instance = nullptr;
 
 	///////////////////////////////////////////////////////////////////////////////////////////
-	Application::Application( const String& a_ProjectPath )
+
+	Application::Application( CmdLineArgs a_ProjectPath )
 	{
-		TODO( "Temp fix" );
-		if ( a_ProjectPath.empty() )
-		{
-			m_EngineAssetsDirectory = "EngineAssets";
-		}
-		else
-		{
-			m_EngineAssetsDirectory = a_ProjectPath + "/EngineAssets";
-		}
-
-		m_Projec
-
-		Initialize( a_ProjectPath );
+		s_Instance = this;
+		m_CommandLineArgs = std::move( a_ProjectPath );
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////
 	Application::~Application()
 	{
+		s_Instance = nullptr;
 	}
 	
 	void Application::Run()
 	{
+		Init();
+
 		m_Running = true;
 
 		m_GameViewport.Init( m_Window->GetWidth(), m_Window->GetHeight() );
@@ -113,106 +105,53 @@ namespace Tridium {
 	{
 		// Initialise the Window
 		m_Window = Window::Create();
-		m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
+		m_Window->SetEventCallback( std::bind( &Application::OnEvent, this, std::placeholders::_1 ) );
 
-		// TEMP!
 		RHIConfig config;
-		config.RHIType = ERHInterfaceType::DirectX12;
+		config.RHIType = ERHInterfaceType::OpenGL;
 		config.UseDebug = true;
 		TE_CORE_INFO( "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), RHI::Initialise( config ) );
 
-		uint8_t testImgData[64 * 64 * 4];
-		for ( size_t y = 0; y < 64; y++ )
-		{
-			for ( size_t x = 0; x < 64; x++ )
-			{
-				testImgData[( y * 64 + x ) * 4 + 0] = x * 4;
-				testImgData[( y * 64 + x ) * 4 + 1] = y * 4;
-				testImgData[( y * 64 + x ) * 4 + 2] = 255 - ( x * 2 + y * 2 );
-				testImgData[( y * 64 + x ) * 4 + 3] = 255;
-			}
-		}
+		// TEMP!
+		//{
 
-		RHITextureDescriptor desc;
-		desc.InitialData = testImgData;
-		desc.Dimensions[0] = 64;
-		desc.Dimensions[1] = 64;
-		desc.Format = ERHITextureFormat::RGBA8;
-		desc.Name = "My beautiful texture";
+		//	uint8_t testImgData[64 * 64 * 4];
+		//	for ( size_t y = 0; y < 64; y++ )
+		//	{
+		//		for ( size_t x = 0; x < 64; x++ )
+		//		{
+		//			testImgData[( y * 64 + x ) * 4 + 0] = x * 4;
+		//			testImgData[( y * 64 + x ) * 4 + 1] = y * 4;
+		//			testImgData[( y * 64 + x ) * 4 + 2] = 255 - ( x * 2 + y * 2 );
+		//			testImgData[( y * 64 + x ) * 4 + 3] = 255;
+		//		}
+		//	}
 
-		RHITextureRef tex = RHI::CreateTexture( desc );
-		//TE_CORE_INFO( "Successfully wrote to texture = {0}", tex->Write(desc.InitialData) );
+		//	RHITextureDescriptor desc;
+		//	desc.InitialData = testImgData;
+		//	desc.Dimensions[0] = 64;
+		//	desc.Dimensions[1] = 64;
+		//	desc.Format = ERHITextureFormat::RGBA8;
+		//	desc.Name = "My beautiful texture";
 
-		while ( true )
-		{
-			m_Window->OnUpdate();
-		}
+		//	RHITextureRef tex = RHI::CreateTexture( desc );
+		//	//TE_CORE_INFO( "Successfully wrote to texture = {0}", tex->Write(desc.InitialData) );
 
-		// \TEMP!
+		//	while ( true )
+		//	{
+		//		m_Window->OnUpdate();
+		//	}
+		//}
 
-		InitializeProject( a_ProjectPath );
-
+		// Initialise the Engine
+		EngineConfig engineConfig;
 		Engine::Singleton::Construct();
-		if ( !Engine::Get()->Init() );
+		if ( !Engine::Get()->Init( std::move( engineConfig ) ) )
 		{
 			return false;
 		}
 
-		InitializeAssetManager();
-
-		// Add the ImGui layer
-		m_ImGuiLayer = new ImGuiLayer();
-		PushOverlay( m_ImGuiLayer );
-
-		// Initialise Start Scene
-		{
-			TE_CORE_INFO( "Loading start scene" );
-			if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( m_Project->GetConfiguration().StartScene ) )
-			{
-				m_ActiveScene = scene;
-			}
-			else
-			{
-				TE_CORE_WARN( "Failed to load start scene! - Creating new scene" );
-				m_ActiveScene = MakeShared<Scene>();
-			}
-		}
-
-		// Initialise the editor
-	#if IS_EDITOR
-		Editor::EditorApplication::Init();
-	#endif // IS_EDITOR
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////
-	void Application::InitializeProject( const FilePath& a_Path )
-	{
-		m_Project = MakeShared<Project>();
-
-		// If a project path was provided, load the project
-		if ( a_Path.Exists() )
-		{
-			ProjectSerializer s( m_Project );
-			s.DeserializeText( a_Path );
-			m_Project->GetConfiguration().ProjectDirectory = FilePath( a_Path ).GetParentPath();
-		}
-		// Otherwise, attempt to find a project file in the current directory
-		else
-		{
-			TE_CORE_TRACE( "No project path provided - searching for project file in '{0}'", IO::FileManager::GetWorkingDirectory().ToString() );
-			FilePath projectPath = IO::FileManager::GetWorkingDirectory() / "Project.tproject"; //IO::FileManager::FindFileWithExtension( ".tproject" );
-			if ( projectPath.Exists() )
-			{
-				TE_CORE_TRACE( "Project file found at '{0}'", projectPath.ToString() );
-				ProjectSerializer s( m_Project );
-				s.DeserializeText( projectPath );
-				m_Project->GetConfiguration().ProjectDirectory = projectPath.GetParentPath();
-			}
-			else
-			{
-				TE_CORE_WARN( "No project file found!" );
-			}
-		}
+		return true;
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////
@@ -277,16 +216,17 @@ namespace Tridium {
 
 		// Layers =============================================================================================
 
-		for ( Layer* layer : m_LayerStack )
+		for ( const auto& layer : m_LayerStack )
 			layer->OnUpdate();
 
 		// - ImGui -
-		m_ImGuiLayer->Begin();
+		ImGuiLayer* imGuiLayer = Engine::Get()->m_ImGuiLayer;
+		imGuiLayer->Begin();
 
 		for ( int i = 0; i < m_LayerStack.NumLayers(); i++ )
 			m_LayerStack[i]->OnImGuiDraw();
 
-		m_ImGuiLayer->End();
+		imGuiLayer->End();
 		// ---------
 
 		// ====================================================================================================
@@ -317,126 +257,6 @@ namespace Tridium {
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////
-	void Application::SetScene( SharedPtr<Scene> a_Scene )
-	{
-		s_Instance->m_ActiveScene = a_Scene;
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////
-	void Application::Initialize( const std::string& a_ProjectPath )
-	{
-		// Set the singleton instance
-		TE_CORE_ASSERT( !s_Instance, "Application already exists!" );
-		s_Instance = this;
-
-		// Initialise Window
-		{
-			m_Window = Window::Create();
-			m_Window->SetEventCallback( TE_BIND_EVENT_FN( Application::OnEvent, 1 ) );
-		}
-
-		// TEMP!
-
-		RHIConfig config;
-		config.RHIType = ERHInterfaceType::DirectX12;
-		config.UseDebug = true;
-		TE_CORE_INFO( "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), RHI::Initialise( config ) );
-
-		uint8_t testImgData[64 * 64 * 4];
-		for ( size_t y = 0; y < 64; y++ )
-		{
-			for ( size_t x = 0; x < 64; x++ )
-			{
-				testImgData[( y * 64 + x ) * 4 + 0] = x * 4;
-				testImgData[( y * 64 + x ) * 4 + 1] = y * 4;
-				testImgData[( y * 64 + x ) * 4 + 2] = 255 - ( x * 2 + y * 2 );
-				testImgData[( y * 64 + x ) * 4 + 3] = 255;
-			}
-		}
-
-		RHITextureDescriptor desc;
-		desc.InitialData = testImgData;
-		desc.Dimensions[0] = 64;
-		desc.Dimensions[1] = 64;
-		desc.Format = ERHITextureFormat::RGBA8;
-		desc.Name = "My beautiful texture";
-
-		RHITextureRef tex = RHI::CreateTexture( desc );
-		//TE_CORE_INFO( "Successfully wrote to texture = {0}", tex->Write(desc.InitialData) );
-
-		while ( true )
-		{
-			m_Window->OnUpdate();
-		}
-
-		// \TEMP!
-
-		RenderCommand::Init();
-		InitializeProject( a_ProjectPath );
-
-		Engine::Singleton::Construct();
-
-		ScriptEngine::s_Instance = MakeUnique<ScriptEngine>();
-		ScriptEngine::s_Instance->Init();
-
-		InitializeAssetManager();
-
-		// Initialise Start Scene
-		{
-			TE_CORE_INFO( "Loading start scene" );
-			if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( m_Project->GetConfiguration().StartScene ) )
-			{
-				m_ActiveScene = scene;
-			}
-			else
-			{
-				TE_CORE_WARN( "Failed to load start scene! - Creating new scene" );
-				m_ActiveScene = MakeShared<Scene>();
-			}
-		}
-
-		// Add the ImGui layer
-		m_ImGuiLayer = new ImGuiLayer();
-		PushOverlay( m_ImGuiLayer );
-
-		// Initialise the editor
-	#if IS_EDITOR
-		Editor::EditorApplication::Init();
-	#endif // IS_EDITOR
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////
-	void Application::InitializeProject( const FilePath& a_Path )
-	{
-		m_Project = MakeShared<Project>();
-
-		// If a project path was provided, load the project
-		if ( a_Path.Exists() )
-		{
-			ProjectSerializer s( m_Project );
-			s.DeserializeText( a_Path );
-			m_Project->GetConfiguration().ProjectDirectory = FilePath( a_Path ).GetParentPath();
-		}
-		// Otherwise, attempt to find a project file in the current directory
-		else
-		{
-			TE_CORE_TRACE( "No project path provided - searching for project file in '{0}'", IO::FileManager::GetWorkingDirectory().ToString() );
-			FilePath projectPath = IO::FileManager::GetWorkingDirectory() / "Project.tproject"; //IO::FileManager::FindFileWithExtension( ".tproject" );
-			if ( projectPath.Exists() )
-			{
-				TE_CORE_TRACE( "Project file found at '{0}'", projectPath.ToString() );
-				ProjectSerializer s( m_Project );
-				s.DeserializeText( projectPath );
-				m_Project->GetConfiguration().ProjectDirectory = projectPath.GetParentPath();
-			}
-			else
-			{
-				TE_CORE_WARN( "No project file found!" );
-			}
-		}
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////
 	bool Application::OnWindowClosed( WindowCloseEvent& e )
 	{
 		m_Running = false;
@@ -446,11 +266,10 @@ namespace Tridium {
 	///////////////////////////////////////////////////////////////////////////////////////////
 	void Application::Shutdown()
 	{
-		m_AssetManager->Shutdown();
-
-	#if IS_EDITOR
-		Editor::EditorApplication::Shutdown();
-	#endif // IS_EDITOR
+		TODO( "Oi" );
+	//#if IS_EDITOR
+	//	EditorApplication::Shutdown();
+	//#endif // IS_EDITOR
 
 		Engine::Get()->Shutdown();
 	}

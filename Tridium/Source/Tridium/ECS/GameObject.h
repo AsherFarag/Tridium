@@ -2,10 +2,8 @@
 #include <Tridium/Reflection/ReflectionFwd.h>
 #include <Tridium/Reflection/MetaTypes.h>
 #include <Tridium/Scene/Scene.h>
+#include <Tridium/Scene/SceneManager.h>
 #include <Tridium/Core/EnumFlags.h>
-
-// TEMP ?
-#include <Tridium/Core/Application.h>
 
 namespace Tridium {
 
@@ -62,10 +60,10 @@ namespace Tridium {
 		bool operator ==( const GameObject& other ) const { return m_ID == other.m_ID; }
 		bool operator !=( const GameObject& other ) const { return m_ID != other.m_ID; }
 
-		static GameObject Create() { return Application::GetScene()->InstantiateGameObject(); }
-		static GameObject Create( GUID a_GUID, const std::string& a_Name ) { return Application::GetScene()->InstantiateGameObject( a_GUID, a_Name ); }
-		inline void Destroy() { Application::GetScene()->DestroyGameObject( *this ); }
-		inline void CopyFrom( GameObject a_Other ) { Application::GetScene()->CopyGameObject( *this, a_Other ); }
+		static GameObject Create() { return SceneManager::GetActiveScene()->InstantiateGameObject(); }
+		static GameObject Create( GUID a_GUID, const std::string& a_Name ) { return SceneManager::GetActiveScene()->InstantiateGameObject( a_GUID, a_Name ); }
+		inline void Destroy() { SceneManager::GetActiveScene()->DestroyGameObject( *this ); }
+		inline void CopyFrom( GameObject a_Other ) { SceneManager::GetActiveScene()->CopyGameObject( *this, a_Other ); }
 
 		GUID GetGUID() const;
 		const EntityID ID() const { return m_ID; }

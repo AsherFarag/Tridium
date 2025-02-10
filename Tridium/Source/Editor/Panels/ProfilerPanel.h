@@ -3,7 +3,7 @@
 #include <Tridium/Core/Containers/Optional.h>
 #include <Tridium/Core/Delegate.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	class ProfilerPanel : public Panel
 	{

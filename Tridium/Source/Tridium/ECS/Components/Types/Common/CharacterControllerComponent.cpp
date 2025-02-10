@@ -2,6 +2,7 @@
 #include "CharacterControllerComponent.h"
 #include <Tridium/ECS/Components/Types.h>
 #include <Tridium/Reflection/Reflection.h>
+#include <Tridium/Input/Input.h>
 
 namespace Tridium {
 

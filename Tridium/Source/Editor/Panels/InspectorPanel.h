@@ -4,7 +4,7 @@
 #include <Tridium/ECS/GameObject.h>
 #include <Tridium/Core/Delegate.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	class InspectorPanel : public Panel
 	{

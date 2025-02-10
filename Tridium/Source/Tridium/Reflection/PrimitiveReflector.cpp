@@ -9,9 +9,6 @@
 
 namespace Tridium::Refl::Internal {
 
-	using enum EClassFlags;
-	using enum EPropertyFlags;
-
 	using namespace entt::literals;
 
 	#pragma region Helpers
@@ -20,9 +17,9 @@ namespace Tridium::Refl::Internal {
 	template<typename T>
 	bool DrawBasicType( const char* a_Name, MetaAny& a_Handle, EPropertyFlags a_Flags )
 	{
-		::Tridium::Editor::EDrawPropertyFlags drawFlags
+		::Tridium::EDrawPropertyFlags drawFlags
 			= HasFlag( a_Flags, ::Tridium::Refl::EPropertyFlags::EditAnywhere )
-			? ::Tridium::Editor::EDrawPropertyFlags::Editable : ::Tridium::Editor::EDrawPropertyFlags::ReadOnly;
+			? ::Tridium::EDrawPropertyFlags::Editable : ::Tridium::EDrawPropertyFlags::ReadOnly;
 
 		MetaAny handle = a_Handle.type().is_pointer_like() ? *a_Handle : a_Handle;
 		if ( a_Handle.type().is_pointer_like() )
@@ -85,7 +82,7 @@ namespace Tridium::Refl::Internal {
 		MetaFactory<_Vector> factory = CreateMetaFactory<_Vector>();
 		factory.type( entt::type_hash<_Vector>::value() );
 		factory.prop( Props::CleanClassNameProp::ID, a_Name );
-		factory.prop( Props::ClassFlagsProp::ID, Scriptable );
+		factory.prop( Props::ClassFlagsProp::ID, EClassFlags::Scriptable );
 		factory.prop( Props::TextSerializeProp::ID, +[]( IO::Archive& a_Archive, const MetaAny& a_Data ) { SerializePrimitive<_Vector>( a_Archive, a_Data ); } );
 		factory.prop( Props::TextDeserializeProp::ID, +[]( const YAML::Node& a_Node, MetaAny& a_Data ) { DeserializePrimitive<_Vector>( a_Node, a_Data ); } );
 		factory.prop( Props::DrawPropertyProp::ID, +[]( const char* a_Name, MetaAny& a_Handle, EPropertyFlags a_Flags ) { return DrawBasicType<_Vector>( a_Name, a_Handle, a_Flags ); } );
@@ -177,7 +174,7 @@ namespace Tridium::Refl::Internal {
 				Refl::CreateMetaFactory<Rotator>()
 					.type( entt::type_hash<Rotator>::value() )
 					.prop( Props::CleanClassNameProp::ID, "Rotator" )
-					.prop( Props::ClassFlagsProp::ID, Scriptable )
+					.prop( Props::ClassFlagsProp::ID, EClassFlags::Scriptable )
 					.prop( Props::TextSerializeProp::ID, +[]( IO::Archive& a_Archive, const MetaAny& a_Data ) { SerializePrimitive<Rotator>( a_Archive, a_Data ); } )
 					.prop( Props::TextDeserializeProp::ID, +[]( const YAML::Node& a_Node, MetaAny& a_Data ) { DeserializePrimitive<Rotator>( a_Node, a_Data ); } )
 					.prop( Props::DrawPropertyProp::ID, +[]( const char* a_Name, MetaAny& a_Handle, EPropertyFlags a_Flags ) { return DrawBasicType<Rotator>( a_Name, a_Handle, a_Flags ); } )
@@ -193,14 +190,14 @@ namespace Tridium::Refl::Internal {
 				Refl::CreateMetaFactory<GameObject>()
 					.type( entt::type_hash<GameObject>::value() )
 					.prop( Props::CleanClassNameProp::ID, "GameObject" )
-					.prop( Props::ClassFlagsProp::ID, Scriptable )
+					.prop( Props::ClassFlagsProp::ID, EClassFlags::Scriptable )
 					.prop( Props::TextSerializeProp::ID, +[]( IO::Archive& a_Archive, const MetaAny& a_Data ) { SerializePrimitive<GameObject>( a_Archive, a_Data ); } )
 					.prop( Props::TextDeserializeProp::ID, +[]( const YAML::Node& a_Node, MetaAny& a_Data ) { DeserializePrimitive<GameObject>( a_Node, a_Data ); } )
 					.prop( Props::DrawPropertyProp::ID, +[]( const char* a_Name, MetaAny& a_Handle, EPropertyFlags a_Flags ) { return DrawBasicType<GameObject>( a_Name, a_Handle, a_Flags ); } )
 					.prop( Props::RegisterScriptableProp::ID, +[]( ScriptEngine& a_ScriptEngine ) { Scriptable<GameObject>::RegisterType( a_ScriptEngine ); } );
 			}
 
-			REFLECT_PRIM( GUID )FLAGS_PRIM( Scriptable )SERIALIZE( GUID )DRAW_PROP( GUID )END_PRIM;
+			REFLECT_PRIM( GUID )FLAGS_PRIM( EClassFlags::Scriptable )SERIALIZE( GUID )DRAW_PROP( GUID )END_PRIM;
 			REFLECT_PRIM( AssetHandle )SERIALIZE( AssetHandle )DRAW_PROP( AssetHandle )END_PRIM;
 			REFLECT_PRIM( SceneHandle )SERIALIZE( SceneHandle )DRAW_PROP( SceneHandle )END_PRIM;
 			REFLECT_PRIM( MaterialHandle )SERIALIZE( MaterialHandle )DRAW_PROP( MaterialHandle )END_PRIM;

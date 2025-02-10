@@ -7,7 +7,7 @@
 
 namespace Tridium { class Scene; }
 
-namespace Tridium::Editor {
+namespace Tridium {
 
 	class SceneHeirarchyPanel final : public Panel
 	{

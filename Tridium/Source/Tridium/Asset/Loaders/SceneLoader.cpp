@@ -12,7 +12,7 @@ namespace Tridium {
 		YAML::Emitter out;
 		IO::SerializeToText( out, *( SharedPtrCast<Scene>( a_Asset ) ) );
 
-        std::string path = AssetManager::Get<Editor::EditorAssetManager>()->GetAbsolutePath( a_MetaData.Path ).ToString();
+        std::string path = AssetManager::Get<EditorAssetManager>()->GetAbsolutePath( a_MetaData.Path ).ToString();
 		std::ofstream file( path.c_str() );
 		file << out.c_str();
 		file.close();
@@ -20,7 +20,7 @@ namespace Tridium {
 
     SharedPtr<Asset> SceneLoader::LoadAsset( const AssetMetaData& a_MetaData )
     {
-        std::string path = AssetManager::Get<Editor::EditorAssetManager>()->GetAbsolutePath( a_MetaData.Path ).ToString();
+        std::string path = AssetManager::Get<EditorAssetManager>()->GetAbsolutePath( a_MetaData.Path ).ToString();
 		YAML::Node data;
         try
         {

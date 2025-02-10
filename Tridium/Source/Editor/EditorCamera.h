@@ -3,7 +3,7 @@
 
 #include <Tridium/Graphics/Rendering/Camera.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 
     class EditorCamera final : public Camera
     {

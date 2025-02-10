@@ -3,6 +3,8 @@
 #include "Editor.h"
 #include "EditorStyle.h"
 
+#include <Tridium/Core/Application.h>
+
 #include <Tridium/Asset/AssetManager.h>
 #include "Util/AssetInfo.h"
 
@@ -21,26 +23,15 @@
 #include "Panels/GameViewportPanel.h"
 #include "Panels/Asset/MaterialEditorPanel.h"
 
-namespace Tridium::Editor {
-
-    std::shared_ptr<EditorApplication> EditorApplication::s_Instance = nullptr;
-    std::once_flag EditorApplication::s_InitFlag;
-
-    EditorApplication::EditorApplication()
-    {
-    }
+namespace Tridium {
 
     bool EditorApplication::Init()
     {
         Application::Get()->GetWindow().SetTitle("Tridium Editor");
         Application::Get()->GetWindow().SetIcon(  Engine::Get()->GetEngineAssetsDirectory() / "Editor/Icons/EngineIcon.png" );
 
-		AssetTypeManager::s_Instance = MakeUnique<AssetTypeManager>();
-		AssetTypeManager::s_Instance->Initialize();
-
-		s_Instance = SharedPtr<EditorApplication>( new EditorApplication() );
-        s_Instance->m_EditorLayer = new EditorLayer();
-        Application::Get()->PushLayer( s_Instance->m_EditorLayer );
+        m_EditorLayer = new EditorLayer();
+        Application::Get()->PushLayer( m_EditorLayer );
 
 		Style::SetTheme( Style::ETheme::Midnight );
 
@@ -51,6 +42,17 @@ namespace Tridium::Editor {
     {
         return true;
     }
+
+    bool Editor::Init( EditorConfig a_Config )
+    {
+		EditorApplication::Singleton::Construct();
+        return EditorApplication::Get()->Init();
+    }
+
+	void Editor::Shutdown()
+	{
+		EditorApplication::Get()->Shutdown();
+	}
 
 }
 

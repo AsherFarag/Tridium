@@ -10,7 +10,7 @@
 #include <Tridium/Asset/EditorAssetManager.h>
 #include <Tridium/Asset/Loaders/LuaScriptLoader.h>
 
-namespace Tridium::Script {
+namespace Tridium {
 
 
 	static const char* s_OnBeginPlayFunctionKey = "OnBeginPlay";
@@ -108,7 +108,7 @@ namespace Tridium::Script {
 		}
 
 		// Create a new environment for the script.
-		a_Component.m_Environment = ScriptInstance( ScriptEngine::GetLuaState(), sol::create, ScriptEngine::GetLuaState().globals() );
+		a_Component.m_Environment = ScriptInstance( ScriptEngine::Get()->GetLuaState(), sol::create, ScriptEngine::Get()->GetLuaState().globals() );
 		sol::protected_function scriptFunc = script->m_LoadResult;
 		a_Component.m_Environment.set_on( scriptFunc );
 

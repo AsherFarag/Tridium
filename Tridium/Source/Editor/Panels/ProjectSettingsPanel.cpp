@@ -2,14 +2,14 @@
 #if IS_EDITOR
 #include "ProjectSettingsPanel.h"
 #include <Tridium/IO/ProjectSerializer.h>
-#include <Tridium/Core/Application.h>
+#include <Tridium/Engine/Engine.h>
 #include <Editor/PropertyDrawers.h>
 
-namespace Tridium::Editor {
+namespace Tridium {
 	ProjectSettingsPanel::ProjectSettingsPanel()
 		: Panel( "Project Settings" )
 	{
-		m_ProjectConfig = Application::GetActiveProject()->GetConfiguration();
+		m_ProjectConfig = Engine::Get()->GetActiveProject().Config;
 	}
 
 	void ProjectSettingsPanel::OnImGuiDraw()
@@ -22,7 +22,7 @@ namespace Tridium::Editor {
 		}
 
 		m_Modified |= ImGui::InputText( "Project Name", &m_ProjectConfig.Name );
-		m_Modified |= DrawProperty( "Start Scene", m_ProjectConfig.StartScene, EDrawPropertyFlags::Editable );
+		m_Modified |= Editor::DrawProperty( "Start Scene", m_ProjectConfig.StartScene, EDrawPropertyFlags::Editable );
 
 		ImGui::Separator();
 
@@ -30,11 +30,9 @@ namespace Tridium::Editor {
 
 		if ( ImGui::Button( "Save" ) )
 		{
-			auto project = Application::GetActiveProject();
-			project->GetConfiguration() = m_ProjectConfig;
-
-			ProjectSerializer serializer( project );
-			serializer.SerializeText( m_ProjectConfig.ProjectDirectory / m_ProjectConfig.Name );
+			Project& project = Engine::Get()->GetActiveProject();
+			project.Config = m_ProjectConfig;
+			ProjectSerializer::SerializeText( project.Config, project.Config.Editor.ProjectDirectory / project.Config.Editor.ProjectName );
 			m_Modified = false;
 		}
 
