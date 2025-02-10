@@ -105,13 +105,13 @@ namespace Tridium {
 	//	auto it = m_Properties.find( a_Name );
 	//	if (  it == m_Properties.end() )
 	//	{
-	//		TE_CORE_WARN( "Attempting to set non-existent property '{0}' on a material!", a_Name );
+	//		LOG_WARN( "Attempting to set non-existent property '{0}' on a material!", a_Name );
 	//		return false;
 	//	}
 
 	//	if ( it->second.Type != a_Property.Type )
 	//	{
-	//		TE_CORE_WARN( "Attempting to set material property '{0}' with a different type!", a_Name );
+	//		LOG_WARN( "Attempting to set material property '{0}' with a different type!", a_Name );
 	//		return false;
 	//	}
 
@@ -193,12 +193,12 @@ namespace Tridium {
 	auto it = m_Properties.find( a_Name );\
 	if ( it == m_Properties.end() )\
 	{\
-		TE_CORE_WARN( "Attempting to set non-existent property '{0}' on a material!", a_Name );\
+		LOG_WARN( "Attempting to set non-existent property '{0}' on a material!", a_Name );\
 		return false;\
 	}\
 	if ( it->second.Type != EPropertyType::type )\
 	{\
-		TE_CORE_WARN( "Attempting to set material property '{0}' with a different type!", a_Name );\
+		LOG_WARN( "Attempting to set material property '{0}' with a different type!", a_Name );\
 		return false;\
 	}\
 	std::get<(int)EPropertyType::type>(it->second.Value) = a_Value;\

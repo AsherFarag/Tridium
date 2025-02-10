@@ -49,7 +49,7 @@ namespace Tridium {
 		// Failed to get meta data
 		if ( !metaData.IsValid() )
 		{
-			//TE_CORE_ERROR( "[AssetManager] Failed to get meta data for asset handle: {0}", a_Handle.ID() );
+			//LOG_ERROR( "[AssetManager] Failed to get meta data for asset handle: {0}", a_Handle.ID() );
 			return nullptr;
 		}
 
@@ -68,7 +68,7 @@ namespace Tridium {
 
 			if ( !GetAsset( dependency ) )
 			{
-				TE_CORE_ERROR( "[AssetManager] Failed to load dependency: {0} for asset: {1}", dependency.ID(), a_Handle.ID() );
+				LOG( LogCategory::Asset, Error, "Failed to load dependency: {0} for asset: {1}", dependency.ID(), a_Handle.ID() );
 				return nullptr;
 			}
 		}
@@ -83,12 +83,12 @@ namespace Tridium {
 			.IsAssetLoaded = false
 		};
 
-		TE_CORE_INFO( "[AssetManager] Loading asset from: {0}", newMetaData.Path.ToString() );
+		LOG( LogCategory::Asset, Info, "Loading asset from: {0}", newMetaData.Path.ToString() );
 		asset = AssetFactory::LoadAsset( newMetaData );
 
 		if ( !asset )
 		{
-			TE_CORE_ERROR( "[AssetManager] Failed to load asset from: {0}", metaData.Path.ToString() );
+			LOG( LogCategory::Asset, Error, "Failed to load asset from: {0}", metaData.Path.ToString() );
 			return nullptr;
 		}
 
@@ -127,11 +127,11 @@ namespace Tridium {
 
 	bool EditorAssetManager::AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset )
 	{
-		TE_CORE_ASSERT( a_Asset, "[AssetManager] Asset is nullptr" );
+		ASSERT_LOG( a_Asset, "[AssetManager] Asset is nullptr" );
 
 		if ( m_MemoryAssets.contains( a_Handle ) )
 		{
-			TE_CORE_WARN( "[AssetManager] Memory only asset already exists with handle: {0}", a_Handle.ID() );
+			LOG( LogCategory::Asset, Warn, "Memory only asset already exists with handle: {0}", a_Handle.ID() );
 			return false;
 		}
 
@@ -193,7 +193,7 @@ namespace Tridium {
 
 	void EditorAssetManager::RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency )
 	{
-		//TE_CORE_INFO( "[AssetManager] Registering dependency: {0} -> {1}", a_Dependent.ID(), a_Dependency.ID() );
+		//LOG_INFO( "[AssetManager] Registering dependency: {0} -> {1}", a_Dependent.ID(), a_Dependency.ID() );
 		m_AssetRegistry.AssetDependencies[a_Dependent].insert( a_Dependency );
 	}
 
@@ -201,7 +201,7 @@ namespace Tridium {
 	{
 		if ( auto it = m_AssetRegistry.AssetDependencies.find( a_Dependent ); it != m_AssetRegistry.AssetDependencies.end() )
 		{
-			TE_CORE_INFO( "[AssetManager] Unregistering dependency: {0} -> {1}", a_Dependent.ID(), a_Dependency.ID() );
+			LOG( LogCategory::Asset, Info, "Unregistering dependency: {0} -> {1}", a_Dependent.ID(), a_Dependency.ID() );
 			it->second.erase( a_Dependency );
 		}
 	}
@@ -244,7 +244,7 @@ namespace Tridium {
 		const AssetMetaData& metaData = GetAssetMetaData( a_Handle );
 		if ( !metaData.IsValid() )
 		{
-			TE_CORE_ERROR( "[AssetManager] Failed to save asset: {0}, meta data not found", a_Handle.ID() );
+			LOG( LogCategory::Asset, Error, "Failed to save asset: {0}, meta data not found", a_Handle.ID() );
 			return false;
 		}
 
@@ -270,20 +270,20 @@ namespace Tridium {
 
 		if ( !absolutePath.Exists() )
 		{
-			TE_CORE_ERROR( "[AssetManager] Failed to import asset: {0}, file does not exist", a_Path.ToString() );
+			LOG( LogCategory::Asset, Error, "Failed to import asset: {0}, file does not exist", a_Path.ToString() );
 			return AssetHandle::InvalidID;
 		}
 
 		if ( !absolutePath.HasExtension() )
 		{
-			TE_CORE_ERROR( "[AssetManager] Failed to import asset: {0}, missing file extension", a_Path.ToString() );
+			LOG( LogCategory::Asset, Error, "Failed to import asset: {0}, missing file extension", a_Path.ToString() );
 			return AssetHandle::InvalidID;
 		}
 
 		EAssetType assetType = GetAssetTypeFromFileExtension( a_Path.GetExtension() );
 		if ( assetType == EAssetType::None )
 		{
-			TE_CORE_ERROR( "[AssetManager] Failed to import asset: {0}, unsupported file extension", a_Path.ToString() );
+			LOG( LogCategory::Asset, Error, "Failed to import asset: {0}, unsupported file extension", a_Path.ToString() );
 			return AssetHandle::InvalidID;
 		}
 
@@ -295,7 +295,7 @@ namespace Tridium {
 		metaData.Name = a_Path.GetFilenameWithoutExtension();
 		metaData.IsAssetLoaded = false;
 
-		TE_CORE_INFO( "[AssetManager] Successfully imported asset from: {0}", a_Path.ToString() );
+		LOG( LogCategory::Asset, Info, "Successfully imported asset from : {0}", a_Path.ToString() );
 		SetAssetMetaData( metaData );
 		return metaData.Handle;
 	}
@@ -305,13 +305,13 @@ namespace Tridium {
 	{
 		if ( m_AssetRegistry.AssetMetaData.find( a_MetaData.Handle ) != m_AssetRegistry.AssetMetaData.end() )
 		{
-			TE_CORE_WARN( "[AssetManager] Asset already exists with handle: {0}", a_MetaData.Handle.ID() );
+			LOG( LogCategory::Asset, Warn, "Asset already exists with handle : {0}", a_MetaData.Handle.ID() );
 			return false;
 		}
 
 		if ( m_LoadedAssets.find( a_MetaData.Handle ) != m_LoadedAssets.end() )
 		{
-			TE_CORE_WARN( "[AssetManager] Asset already loaded with handle: {0}", a_MetaData.Handle.ID() );
+			LOG( LogCategory::Asset, Warn, "Asset already loaded with handle : {0}", a_MetaData.Handle.ID() );
 			return false;
 		}
 
@@ -339,7 +339,7 @@ namespace Tridium {
 	//////////////////////////////////////////////////////////////////////////
 	bool EditorAssetManager::SerializeAssetRegistry()
 	{
-		TE_CORE_INFO( "[AssetManager] Serializing asset registry" );
+		LOG( LogCategory::Asset, Info, "Serializing asset registry" );
 		// Create a timer
 		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
@@ -384,7 +384,7 @@ namespace Tridium {
 		file << out.c_str();
 		file.close();
 
-		TE_CORE_INFO( "[AssetManager] Asset registry serialized in: {0}ms", 
+		LOG( LogCategory::Asset, Info, "Asset registry serialized in : {0}ms", 
 			std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::steady_clock::now() - begin ).count() );
 
 		return true;
@@ -402,7 +402,7 @@ namespace Tridium {
 		}
 		catch ( const YAML::BadFile& e )
 		{
-			TE_CORE_ERROR( "[AssetManager] Failed to deserialize asset registry: {0}", e.what() );
+			LOG( LogCategory::Asset, Error, "Failed to deserialize asset registry : {0}", e.what() );
 			return false;
 		}
 
@@ -422,7 +422,7 @@ namespace Tridium {
 
 				if ( !GetAbsolutePath( metaData.Path ).Exists() )
 				{
-					TE_CORE_WARN( "[AssetManager] Failed to deserialize imported asset: {0} does not exist. - Removing from asset registry!", metaData.Path.ToString() );
+					LOG( LogCategory::Asset, Warn, "Failed to deserialize imported asset : {0} does not exist. - Removing from asset registry!", metaData.Path.ToString() );
 					continue;
 				}
 
@@ -438,7 +438,7 @@ namespace Tridium {
 		}
 		else
 		{
-			TE_CORE_ERROR( "[AssetManager] Failed to deserialize asset registry: missing AssetMetaData" );
+			LOG( LogCategory::Asset, Error, "Failed to deserialize asset registry : missing AssetMetaData" );
 			return false;
 		}
 
@@ -456,7 +456,7 @@ namespace Tridium {
 		}
 		else
 		{
-			TE_CORE_ERROR( "[AssetManager] Failed to deserialize asset registry: missing AssetDependencies" );
+			LOG( LogCategory::Asset, Error, "Failed to deserialize asset registry : missing AssetDependencies" );
 			return false;
 		}
 

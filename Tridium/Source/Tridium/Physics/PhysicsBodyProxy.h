@@ -1,5 +1,6 @@
 #pragma once
 #include "PhysicsScene.h"
+#include <Tridium/Utils/Log.h>
 
 namespace Tridium {
 
@@ -50,7 +51,7 @@ namespace Tridium {
 			{
 				return m_PhysicsScene.lock()->GetPhysicsBodyPosition( m_BodyID );
 			}
-			TE_CORE_WARN( "PhysicsBodyProxy::GetPosition - PhysicsScene is expired" );
+			LOG( LogCategory::Physics, Warn, "PhysicsBodyProxy::GetPosition - PhysicsScene is expired" );
 			return Vector3();
 		}
 
@@ -60,7 +61,7 @@ namespace Tridium {
 			{
 				return m_PhysicsScene.lock()->GetPhysicsBodyRotation( m_BodyID );
 			}
-			TE_CORE_WARN( "PhysicsBodyProxy::GetRotation - PhysicsScene is expired" );
+			LOG( LogCategory::Physics, Warn, "PhysicsBodyProxy::GetRotation - PhysicsScene is expired" );
 			return Quaternion();
 		}
 
@@ -70,7 +71,7 @@ namespace Tridium {
 			{
 				return m_PhysicsScene.lock()->GetPhysicsBodyLinearVelocity( m_BodyID );
 			}
-			TE_CORE_WARN( "PhysicsBodyProxy::GetLinearVelocity - PhysicsScene is expired" );
+			LOG( LogCategory::Physics, Warn, "PhysicsBodyProxy::GetLinearVelocity - PhysicsScene is expired" );
 			return Vector3();
 		}
 
@@ -80,7 +81,7 @@ namespace Tridium {
 			{
 				return m_PhysicsScene.lock()->GetPhysicsBodyAngularVelocity( m_BodyID );
 			}
-			TE_CORE_WARN( "PhysicsBodyProxy::GetAngularVelocity - PhysicsScene is expired" );
+			LOG( LogCategory::Physics, Warn, "PhysicsBodyProxy::GetAngularVelocity - PhysicsScene is expired" );
 			return Vector3();
 		}
 
@@ -90,7 +91,7 @@ namespace Tridium {
 			{
 				return m_PhysicsScene.lock()->IsPhysicsBodySleeping( m_BodyID );
 			}
-			TE_CORE_WARN( "PhysicsBodyProxy::IsSleeping - PhysicsScene is expired" );
+			LOG( LogCategory::Physics, Warn, "PhysicsBodyProxy::IsSleeping - PhysicsScene is expired" );
 			return false;
 		}
 
@@ -99,7 +100,9 @@ namespace Tridium {
 			if ( !m_PhysicsScene.expired() )
 				m_PhysicsScene.lock()->SetPhysicsBodyPosition( m_BodyID, a_Position );
 			else
-				TE_CORE_WARN( "PhysicsBodyProxy::SetPosition - PhysicsScene is expired" );
+			{
+				LOG( LogCategory::Physics, Warn, "PhysicsBodyProxy::SetPosition - PhysicsScene is expired" );
+			}
 		}
 
 		void SetRotation( const Quaternion& a_Rotation )
@@ -107,7 +110,9 @@ namespace Tridium {
 			if ( !m_PhysicsScene.expired() )
 				m_PhysicsScene.lock()->SetPhysicsBodyRotation( m_BodyID, a_Rotation );
 			else
-				TE_CORE_WARN( "PhysicsBodyProxy::SetRotation - PhysicsScene is expired" );
+			{
+				LOG( LogCategory::Physics, Warn, "PhysicsBodyProxy::SetRotation - PhysicsScene is expired" );
+			}
 		}
 
 		void SetFriction( float a_Friction )
@@ -115,7 +120,9 @@ namespace Tridium {
 			if ( !m_PhysicsScene.expired() )
 				m_PhysicsScene.lock()->SetPhysicsBodyFriction( m_BodyID, a_Friction );
 			else
-				TE_CORE_WARN( "PhysicsBodyProxy::SetFriction - PhysicsScene is expired" );
+			{
+				LOG( LogCategory::Physics, Warn, "PhysicsBodyProxy::SetFriction - PhysicsScene is expired" );
+			}
 		}
 
 		void SetLinearVelocity( const Vector3& a_LinearVelocity )
@@ -123,7 +130,9 @@ namespace Tridium {
 			if ( !m_PhysicsScene.expired() )
 				m_PhysicsScene.lock()->SetPhysicsBodyLinearVelocity( m_BodyID, a_LinearVelocity );
 			else
-				TE_CORE_WARN( "PhysicsBodyProxy::SetLinearVelocity - PhysicsScene is expired" );
+			{
+				LOG( LogCategory::Physics, Warn, "PhysicsBodyProxy::SetLinearVelocity - PhysicsScene is expired" );
+			}
 		}
 
 		void SetAngularVelocity( const Vector3& a_AngularVelocity )
@@ -131,7 +140,9 @@ namespace Tridium {
 			if ( !m_PhysicsScene.expired() )
 				m_PhysicsScene.lock()->SetPhysicsBodyAngularVelocity( m_BodyID, a_AngularVelocity );
 			else
-				TE_CORE_WARN( "PhysicsBodyProxy::SetAngularVelocity - PhysicsScene is expired" );
+			{
+				LOG( LogCategory::Physics, Warn, "PhysicsBodyProxy::SetAngularVelocity - PhysicsScene is expired" );
+			}
 		}
 
 		void AddImpulse( const Vector3& a_Impulse )
@@ -139,7 +150,9 @@ namespace Tridium {
 			if ( !m_PhysicsScene.expired() )
 				m_PhysicsScene.lock()->AddImpulseToPhysicsBody( m_BodyID, a_Impulse );
 			else
-				TE_CORE_WARN( "PhysicsBodyProxy::AddImpulse - PhysicsScene is expired" );
+			{
+				LOG( LogCategory::Physics, Warn, "PhysicsBodyProxy::AddImpulse - PhysicsScene is expired" );
+			}
 		}
 
 		void AddImpulse( const Vector3& a_Impulse, const Vector3& a_Position )
@@ -147,7 +160,9 @@ namespace Tridium {
 			if ( !m_PhysicsScene.expired() )
 				m_PhysicsScene.lock()->AddImpulseToPhysicsBody( m_BodyID, a_Impulse, a_Position );
 			else
-				TE_CORE_WARN( "PhysicsBodyProxy::AddImpulse - PhysicsScene is expired" );
+			{
+				LOG( LogCategory::Physics, Warn, "PhysicsBodyProxy::AddImpulse - PhysicsScene is expired" );
+			}
 		}
 
 	private:

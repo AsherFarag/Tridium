@@ -19,7 +19,7 @@ namespace Tridium {
 			return GetOrthographicFrustum( a_Position, a_Forward );
 		}
 
-		TE_CORE_ASSERT( false, "Invalid Projection Type!" );
+		ASSERT_LOG( false, "Invalid Projection Type!" );
 		return Frustum();
 	}
 
@@ -54,7 +54,7 @@ namespace Tridium {
 
 	Frustum Camera::GetOrthographicFrustum( const Vector3& a_Position, Vector3 a_Forward ) const
 	{
-		TE_CORE_ASSERT( false, "Orthographic Frustum not implemented!" );
+		ASSERT_LOG( false, "Orthographic Frustum not implemented!" );
 		return Frustum();
 	}
 

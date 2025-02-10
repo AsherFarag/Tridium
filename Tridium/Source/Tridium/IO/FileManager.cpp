@@ -8,7 +8,7 @@ namespace Tridium::IO {
 		// If the file is an absolute path, return it
 		if ( a_File.IsAbsolute() )
 		{
-			TE_CORE_WARN( "FileManager::FindFile: File is already an absolute path {0}", a_File.ToString() );
+			LOG( LogCategory::IO, Warn, "FileManager::FindFile: File is already an absolute path {0}", a_File.ToString() );
 			return a_File;
 		}
 

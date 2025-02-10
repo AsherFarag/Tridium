@@ -167,7 +167,7 @@ namespace Tridium {
 				channels = 4;
 				break;
 			default:
-				TE_CORE_ASSERT( false, "Unknown texture format!" );
+				ASSERT_LOG( false, "Unknown texture format!" );
 				break;
 			}
 
@@ -317,7 +317,7 @@ namespace Tridium {
 	void OpenGLTextureOld::SetData( void* a_Data, uint32_t a_Size )
 	{
 		uint32_t bpp = (uint32_t)Util::GLDataFormatToTridiumDataFormat( m_DataFormat );
-		TE_CORE_ASSERT( a_Size == m_Width * m_Height * bpp, "Data must be entire texture!" );
+		ASSERT_LOG( a_Size == m_Width * m_Height * bpp, "Data must be entire texture!" );
 		m_LocalData = a_Data;
 
 		GLenum type = Util::GetGLType( m_Specification.TextureFormat );

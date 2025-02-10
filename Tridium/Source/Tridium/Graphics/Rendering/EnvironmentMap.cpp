@@ -15,7 +15,7 @@ namespace Tridium {
 			return MakeShared<OpenGLEnvironmentMap>( a_EquirectangularTexture );
 		}
 
-		TE_CORE_ASSERT( false, "Unknown RendererAPI!" );
+		ASSERT_LOG( false, "Unknown RendererAPI!" );
 		return nullptr;
     }
 
@@ -24,7 +24,7 @@ namespace Tridium {
 		std::string path = a_Path.ToString();
 		if ( !stbi_is_hdr( path.c_str() ) )
 		{
-			TE_CORE_ERROR( "[EnvironmentMap::Create] {0} is not HDR!", path );
+			LOG( LogCategory::Asset, Error, "[EnvironmentMap::Create] {0} is not HDR!", path );
 			return nullptr;
 		}
 
@@ -34,7 +34,7 @@ namespace Tridium {
 
 		if ( !data )
 		{
-			TE_CORE_ERROR( "[EnvironmentMap::Create] Failed to load HDR image: {0}", path );
+			LOG( LogCategory::Asset, Error, "[EnvironmentMap::Create] Failed to load HDR image: {0}", path );
 			return nullptr;
 		}
 

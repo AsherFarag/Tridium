@@ -40,7 +40,7 @@ namespace Tridium {
 			return MakeUnique<JoltPhysicsScene>();
 		}
 
-		TE_CORE_ASSERT( false, "Unknown Physics API" );
+		ASSERT_LOG( false, "Unknown Physics API" );
 		return nullptr;
 	}
 

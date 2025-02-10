@@ -337,7 +337,7 @@ namespace Tridium {
 	{
 		if ( !go.IsValid() || !go.HasComponent<TagComponent>() )
 		{
-			TE_CORE_WARN( "Attempting to draw an invalid Game Object node!" );
+			LOG( LogCategory::Editor, Warn, "Attempting to draw an invalid Game Object node!" );
 			return;
 		}
 

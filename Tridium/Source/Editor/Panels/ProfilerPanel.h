@@ -1,5 +1,6 @@
 #pragma once
 #include "Panel.h"
+#include <Tridium/Debug/Profiler/Profiler.h>
 #include <Tridium/Core/Containers/Optional.h>
 #include <Tridium/Core/Delegate.h>
 

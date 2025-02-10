@@ -14,7 +14,7 @@ namespace Tridium {
 	{
 		// - Glad Initialization -
 		int status = gladLoadGLLoader( (GLADloadproc)glfwGetProcAddress );
-		TE_CORE_ASSERT( status, "Failed to initialize glad!" );
+		ASSERT_LOG( status, "Failed to initialize glad!" );
 
 		return status;
 	}

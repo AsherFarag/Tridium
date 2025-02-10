@@ -10,11 +10,11 @@ namespace Tridium::Internal {
 		{
 			thread_local char formattedLog[1024];
 			vsprintf_s( formattedLog, sizeof(formattedLog), a_FormatString, a_Inputs );
-			TE_CORE_ERROR( "{0}: {1} ({2}:{3}) - MSG: {4}", a_Type, a_Function, a_File, a_Line, formattedLog );
+			LOG( LogCategory::Assert, Error, "{0}: {1} ({2}:{3}) - MSG: {4}", a_Type, a_Function, a_File, a_Line, formattedLog );
 		}
 		else
 		{
-			TE_CORE_ERROR( "{0}: {1} ({2}:{3})", a_Type, a_Function, a_File, a_Line );
+			LOG( LogCategory::Assert, Error, "{0}: {1} ({2}:{3})", a_Type, a_Function, a_File, a_Line );
 		}
     }
 
@@ -24,11 +24,11 @@ namespace Tridium::Internal {
 		{
 			thread_local char formattedLog[1024];
 			vsprintf_s( formattedLog, sizeof( formattedLog ), a_FormatString, a_Inputs );
-			LOG_ERROR( "{0}: {1} ({2}:{3}) - MSG: {4}", a_Type, a_Function, a_File, a_Line, formattedLog );
+			LOG( LogCategory::Assert, Error, "{0}: {1} ({2}:{3}) - MSG: {4}", a_Type, a_Function, a_File, a_Line, formattedLog );
 		}
 		else
 		{
-			LOG_ERROR( "{0}: {1} ({2}:{3})", a_Type, a_Function, a_File, a_Line );
+			LOG( LogCategory::Assert, Error, "{0}: {1} ({2}:{3})", a_Type, a_Function, a_File, a_Line );
 		}
 	}
 

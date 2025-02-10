@@ -157,7 +157,7 @@ namespace Tridium::IO {
 
 		for ( auto goNode : gameObjectsNode )
 		{
-			TE_CORE_ASSERT( DeserializeGameObject( goNode, a_Data ), "Failed to deserialize GameObject from a scene file!" );
+			ASSERT_LOG( DeserializeGameObject( goNode, a_Data ), "Failed to deserialize GameObject from a scene file!" );
 		}
 
 		return true;
@@ -167,8 +167,8 @@ namespace Tridium::IO {
 	{
 		if ( !go.IsValid() || !go.TryGetComponent<GUIDComponent>() )
 		{
-			TE_CORE_ASSERT( false, "GameObject is invalid or does not have a GUIDComponent!" )
-				return;
+			ASSERT_LOG( false, "GameObject is invalid or does not have a GUIDComponent!" );
+			return;
 		}
 
 		out << YAML::BeginMap; // Begin GameObject
@@ -252,7 +252,7 @@ namespace Tridium::IO {
 		else
 			return false;
 
-		TE_CORE_ASSERT( a_Scene.GetECS().CreateEntity( go.ID() ) == go.ID(), "The created GameObject should be the same as the hint!" );
+		ASSERT_LOG( a_Scene.GetECS().CreateEntity( go.ID() ) == go.ID(), "The created GameObject should be the same as the hint!" );
 		a_Scene.AddComponentToGameObject<GUIDComponent>( go, guid );
 		a_Scene.AddComponentToGameObject<TagComponent>( go, tag );
 		a_Scene.AddComponentToGameObject<TransformComponent>( go );
@@ -298,7 +298,7 @@ namespace Tridium::IO {
 
 			if ( !component )
 			{
-				TE_CORE_ERROR( "Failed to deserialize component '{0}' from GameObject", componentName );
+				LOG( LogCategory::Serialization, Error, "Failed to deserialize component '{0}' from GameObject", componentName );
 				continue;
 			}
 
@@ -308,7 +308,7 @@ namespace Tridium::IO {
 				if ( auto func = componentType.GetMetaAttribute<Refl::Props::RemoveFromGameObjectProp::Type>( Refl::Props::RemoveFromGameObjectProp::ID ) )
 					func.value()( a_Scene, go );
 
-				TE_CORE_ERROR( "Failed to deserialize component '{0}' from GameObject", componentName );
+				LOG( LogCategory::Serialization, Error, "Failed to deserialize component '{0}' from GameObject", componentName );
 				continue;
 			}
 		}

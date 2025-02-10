@@ -213,7 +213,7 @@ else if constexpr ( _HasFlag( Flags, ::Tridium::Refl::EPropertyFlags::ScriptRead
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define _BEGIN_REFLECT( Class, Flags ) \
-void Class::__Tridium_Reflect()  { TE_CORE_TRACE( "[REFL] Manually reflecting type '{0}'", #Class ); } \
+void Class::__Tridium_Reflect()  { LOG( LogCategory::Reflection, Trace, "Manually reflecting type '{0}'", #Class ); } \
 template<> \
 struct ::Tridium::Refl::Internal::Reflector<Class> \
 { \

@@ -1,5 +1,6 @@
 #pragma once
 #include "OpenGLCommon.h"
+#include "OpenGLState.h"
 #include <Tridium/Core/Assert.h>
 
 #define FORCEINLINE __forceinline
@@ -296,6 +297,7 @@ namespace Tridium {
 
         static FORCEINLINE void BindVertexArray( GLuint a_Array )
         {
+			OpenGLState::s_BoundVAO = a_Array;
             glBindVertexArray( a_Array );
         }
 

@@ -205,7 +205,7 @@ namespace Tridium {
 	void AddComponentToGameObject( GameObject go, Args&&... args )
 	{
 		if ( go.TryAddComponent<T>( std::forward<Args>( args )... ) == nullptr )
-			TE_CORE_ERROR( "{0} already has a [{1}]!", go.GetTag(), typeid( T ).name() );
+			LOG_ERROR( "{0} already has a [{1}]!", go.GetTag(), typeid( T ).name() );
 	}
 
 	void InspectorPanel::DrawAddComponentButton()

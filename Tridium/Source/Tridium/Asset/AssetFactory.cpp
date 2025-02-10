@@ -37,7 +37,7 @@ namespace Tridium {
 		}
 		else
 		{
-			TE_CORE_WARN( "No asset loader found for asset type {0}", AssetTypeToString( a_MetaData.AssetType ) );
+			LOG( LogCategory::Asset, Warn, "No asset loader found for asset type {0}", AssetTypeToString( a_MetaData.AssetType ) );
 		}
 	}
 
@@ -54,7 +54,7 @@ namespace Tridium {
 			return asset;
 		}
 
-		TE_CORE_WARN( "No asset loader found for asset type {0}", AssetTypeToString( a_MetaData.AssetType ) );
+		LOG( LogCategory::Asset, Warn, "No asset loader found for asset type {0}", AssetTypeToString( a_MetaData.AssetType ) );
 		return nullptr;
 	}
 
@@ -66,7 +66,7 @@ namespace Tridium {
 			return it->second;
 		}
 
-		TE_CORE_WARN( "No asset loader found for asset type {0}", AssetTypeToString( a_Type ) );
+		LOG( LogCategory::Asset, Warn, "No asset loader found for asset type {0}", AssetTypeToString( a_Type ) );
 		return nullptr;
 	}
 }

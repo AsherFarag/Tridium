@@ -39,7 +39,7 @@ namespace Tridium {
 			return SharedPtrCast<T>( it->second );
 		}
 
-		TE_CORE_WARN( "[SCENE] Attempted to get a System that does not exist!" );
+		LOG( LogCategory::Scene, Warn, "[SCENE] Attempted to get a System that does not exist!" );
 		return nullptr;
 	}
 

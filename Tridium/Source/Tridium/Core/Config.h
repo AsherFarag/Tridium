@@ -1,20 +1,22 @@
 #pragma once
 
-#ifdef TE_DEBUG
-	#define CONFIG_DEBUG 1
-#else
-	#define CONFIG_DEBUG  0
-#endif // TE_DEBUG
-
 #ifdef TE_SHIPPING
 	#define CONFIG_SHIPPING 1
 #else
 	#define CONFIG_SHIPPING 0
 #endif // TE_SHIPPING
 
+#if !CONFIG_SHIPPING
+	#define CONFIG_DEBUG 1
+#else
+	#define CONFIG_DEBUG  0
+#endif // TE_DEBUG
+
 #if CONFIG_DEBUG
+	#define CONFIG_USE_LOGGING 1
 	#define TE_DRAW_DEBUG 1
 #else
+	#define CONFIG_USE_LOGGING 0
 	#define TE_DRAW_DEBUG 0
 #endif
 

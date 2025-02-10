@@ -34,7 +34,7 @@ namespace Tridium {
 
 		if ( result.HasError() )
 		{
-			TE_CORE_ERROR( "Failed to create mesh collider: {}", result.GetError().c_str() );
+			LOG( LogCategory::Physics, Error, "Failed to create mesh collider: {}", result.GetError().c_str() );
 			m_IsValid = false;
 			m_MeshShape = nullptr;
 			m_MeshShapeSettings = nullptr;

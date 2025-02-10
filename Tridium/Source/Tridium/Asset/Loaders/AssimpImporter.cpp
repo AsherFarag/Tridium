@@ -61,7 +61,7 @@ namespace Tridium {
 		const aiScene* scene = importer.ReadFile( m_FilePath.ToString().c_str(), s_AssimpImportFlags);
 		if ( !scene )
 		{
-			TE_CORE_ERROR( "[AssimpImporter] Failed to load mesh source from: {0}", m_FilePath.ToString() );
+			LOG( LogCategory::Asset, Error, "[AssimpImporter] Failed to load mesh source from: {0}", m_FilePath.ToString() );
 			return nullptr;
 		}
 
@@ -144,7 +144,7 @@ namespace Tridium {
 		for ( uint32_t i = 0; i < a_Mesh->mNumFaces; ++i )
 		{
 			const aiFace& face = a_Mesh->mFaces[i];
-			TE_CORE_ASSERT( face.mNumIndices == 3, "Face is not a triangle" );
+			ASSERT_LOG( face.mNumIndices == 3, "Face is not a triangle" );
 
 			submesh.Indices.push_back( face.mIndices[0] );
 			submesh.Indices.push_back( face.mIndices[1] );

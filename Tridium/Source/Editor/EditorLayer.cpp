@@ -254,13 +254,13 @@ namespace Tridium {
 		{
 			// Project
 			if ( ImGui::MenuItem( TE_ICON_FILE "New Project", nullptr, nullptr, false ) )
-				TE_CORE_INFO( "New Project" );
+				LOG( LogCategory::Editor, Info, "New Project" );
 
 			if ( ImGui::MenuItem( TE_ICON_FOLDER "Open Project", nullptr, nullptr, false ) )
-				TE_CORE_INFO( "Open Project" );
+				LOG( LogCategory::Editor, Info, "Open Project" );
 
 			if ( ImGui::MenuItem( TE_ICON_FLOPPY_DISK "Save Project", nullptr, nullptr, false ) )
-				TE_CORE_INFO( "Save Project" );
+				LOG( LogCategory::Editor, Info, "Save Project" );
 
 			ImGui::Separator();
 
@@ -288,7 +288,7 @@ namespace Tridium {
 						if ( assetManager->CreateAsset( metaData, scene ) )
 							SceneManager::SetActiveScene( scene.get() );
 						else
-							TE_CORE_ERROR( "Failed to create scene '{0}'", path );
+							LOG( LogCategory::Editor, Error, "Failed to create scene '{0}'", path );
 					} );
 			}
 			if ( ImGui::MenuItem( TE_ICON_FOLDER "Open Scene" ) )
@@ -325,7 +325,7 @@ namespace Tridium {
 								if ( assetManager->CreateAsset( metaData, SceneManager::GetActiveScene()->shared_from_this() ) )
 									assetManager->SaveAsset( metaData.Handle );
 								else
-									TE_CORE_ERROR( "Failed to save scene '{0}'", path );
+									LOG( LogCategory::Editor, Error, "Failed to save scene '{0}'", path );
 							} );
 					}
 				}

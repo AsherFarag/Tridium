@@ -20,7 +20,7 @@ namespace Tridium {
 
 } // namespace Tridium::Debug
 
-#if TE_DRAW_DEBUG
+#if !CONFIG_SHIPPING
 
 #include <array>
 #include <vector>
@@ -149,4 +149,4 @@ namespace Tridium::Debug {
 
 } // namespace Tridium::Debug
 
-#endif // TE_USE_DEBUG
+#endif // CONFIG_SHIPPING

@@ -30,7 +30,7 @@ namespace Tridium {
 		if ( type == "geometry" )
 			return GL_GEOMETRY_SHADER;
 
-		TE_CORE_ASSERT( false, "Invalid shader type!" );
+		ASSERT_LOG( false, "Invalid shader type!" );
 		return 0;
 	}
 
@@ -48,7 +48,7 @@ namespace Tridium {
 		std::ifstream in( filePath, std::ios::in | std::ios::binary );
 		if ( !in )
 		{
-			TE_CORE_ERROR( "Could not open file '{0}'", filePath );
+			LOG( LogCategory::Rendering, Error, "Could not open file '{0}'", filePath );
 			return "";
 		}
 
@@ -75,11 +75,11 @@ namespace Tridium {
 		while ( pos != std::string::npos )
 		{
 			size_t eol = source.find_first_of( "\r\n", pos );
-			TE_CORE_ASSERT( eol != std::string::npos );
+			ASSERT( eol != std::string::npos );
 
 			size_t begin = pos + typeTokenLength + 1;
 			std::string type = source.substr( begin, eol - begin );
-			TE_CORE_ASSERT( IsValidShaderType(type), "Invalid shader type specification!");
+			ASSERT_LOG( IsValidShaderType(type), "Invalid shader type specification!");
 
 			size_t nextLinePos = source.find_first_not_of( "\r\n", eol );
 			pos = source.find( typeToken, nextLinePos );
@@ -93,7 +93,7 @@ namespace Tridium {
 	void OpenGLShader::Compile( const ShaderSources& shaderSources )
 	{
 		GLuint program = glCreateProgram();
-		TE_CORE_ASSERT( shaderSources.size() <= 3, "Only 3 shaders are supported currently!" );
+		ASSERT_LOG( shaderSources.size() <= 3, "Only 3 shaders are supported currently!" );
 		std::array<GLenum, 3> glShaderIDs;
 
 		uint32_t glShaderIDIndex = 0;
@@ -122,9 +122,9 @@ namespace Tridium {
 
 				glDeleteShader( shader );
 
-				TE_CORE_ERROR( "Shader complilation failure! Type: '{0}'", key );
-				TE_CORE_ERROR( "{0}", infoLog.data() );
-				TE_CORE_ERROR( "- End of Shader Error -" );
+				LOG( LogCategory::Rendering, Error, "Shader complilation failure! Type: '{0}'", key );
+				LOG( LogCategory::Rendering, Error, "{0}", infoLog.data() );
+				LOG( LogCategory::Rendering, Error, "- End of Shader Error -" );
 
 				break;
 			}
@@ -144,7 +144,7 @@ namespace Tridium {
 
 			if ( maxLength == 0 )
 			{
-				TE_CORE_ASSERT( false );
+				ASSERT( false );
 				return;
 			}
 
@@ -159,9 +159,9 @@ namespace Tridium {
 				glDeleteShader( id );
 			}
 
-			TE_CORE_ERROR( "Shader Link Failure!" );
-			TE_CORE_ERROR( "{0}", infoLog.data() );
-			TE_CORE_ERROR( "- End of Shader Error -" );
+			LOG( LogCategory::Rendering, Error, "Shader Link Failure!" );
+			LOG( LogCategory::Rendering, Error, "{0}", infoLog.data() );
+			LOG( LogCategory::Rendering, Error, "- End of Shader Error -" );
 
 			return;
 		}
@@ -204,10 +204,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetInt( const char* name, const int val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -217,10 +217,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetInt2( const char* name, const iVector2& val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -230,10 +230,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetInt3( const char* name, const iVector3& val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 		glUniform3i( i, val.x, val.y, val.z );
@@ -242,10 +242,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetInt4( const char* name, const iVector4& val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -255,10 +255,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetFloat( const char* name, const float val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -268,10 +268,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetFloat2( const char* name, const Vector2& val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -281,10 +281,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetFloat3( const char* name, const Vector3& val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -294,10 +294,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetFloat4( const char* name, const Vector4& val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -307,10 +307,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetMatrix2( const char* name, const Matrix2& val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -320,10 +320,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetMatrix3( const char* name, const Matrix3& val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -333,10 +333,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetMatrix4( const char* name, const Matrix4& val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -346,10 +346,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetInt( const char* name, const uint32_t count, const int* val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -359,10 +359,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetInt2( const char* name, const uint32_t count, const iVector2* val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -372,10 +372,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetInt3( const char* name, const uint32_t count, const iVector3* val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -385,10 +385,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetInt4( const char* name, const uint32_t count, const iVector4* val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -398,10 +398,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetFloat( const char* name, const uint32_t count, const float* val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -411,10 +411,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetFloat2( const char* name, const uint32_t count, const Vector2* val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -424,10 +424,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetFloat3( const char* name, const uint32_t count, const Vector3* val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -437,10 +437,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetFloat4( const char* name, const uint32_t count, const Vector4* val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -450,10 +450,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetMatrix2( const char* name, const uint32_t count, const Matrix2* val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -463,10 +463,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetMatrix3( const char* name, const uint32_t count, const Matrix3* val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 
@@ -476,10 +476,10 @@ namespace Tridium {
 
 	bool OpenGLShader::SetMatrix4( const char* name, const uint32_t count, const Matrix4* val )
 	{
-		TE_CORE_ASSERT( m_RendererID > 0, "Invalid shader program" );
+		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
-			TE_CORE_ERROR( "Shader uniform {0} not found! Is it being used?", name );
+			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
 

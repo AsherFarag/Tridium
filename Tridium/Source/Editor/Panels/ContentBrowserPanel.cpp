@@ -486,13 +486,13 @@ namespace Tridium {
 				FilePath filePath = m_CurrentDirectory / a_Item.Name;
 				if ( filePath.Remove() )
 				{
-					TE_CORE_INFO( "Deleted file: {0}", filePath.ToString() );
+					LOG( LogCategory::Editor, Info, "Deleted file: {0}", filePath.ToString() );
 					ReconstructFolderHierarchy();
 					return true;
 				}
 				else
 				{
-					TE_CORE_ERROR( "Failed to delete file: {0}", filePath.ToString() );
+					LOG( LogCategory::Editor, Error, "Failed to delete file: {0}", filePath.ToString() );
 				}
 			}
 		}

@@ -98,7 +98,7 @@ namespace Tridium {
 				return ( (Function)m_Function )( std::forward<_Args>( a_Args )... );
 			}
 
-			TE_CORE_ASSERT( false, "Delegate is not bound to a function!" );
+			ASSERT_LOG( false, "Delegate is not bound to a function!" );
 			return _Return();
 		}
 

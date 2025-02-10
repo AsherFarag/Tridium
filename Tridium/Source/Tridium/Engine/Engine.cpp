@@ -73,13 +73,13 @@ namespace Tridium {
 		// 0. Initialize Project
 		if ( !InitProject() )
 		{
-			TE_CORE_ERROR( "Engine::Init: Failed to initialize project" );
+			LOG( LogCategory::Engine, Error, "Engine::Init: Failed to initialize project" );
 		}
 
 		// 1. Initialize Pre-Engine-Init Modules
 		if ( !InitModules( EEngineInitStage::PreEngineInit ) )
 		{
-			TE_CORE_ERROR( "Engine::Init: Failed to initialize engine modules" );
+			LOG( LogCategory::Engine, Error, "Engine::Init: Failed to initialize engine modules" );
 			return false;
 		}
 
@@ -145,17 +145,17 @@ namespace Tridium {
 		// Otherwise, attempt to find a project file in the current directory
 		else
 		{
-			TE_CORE_TRACE( "No project path provided - searching for project file in '{0}'", IO::FileManager::GetWorkingDirectory().ToString() );
+			LOG( LogCategory::Engine, Trace, "No project path provided - searching for project file in '{0}'", IO::FileManager::GetWorkingDirectory().ToString() );
 			FilePath projectPath = IO::FileManager::GetWorkingDirectory() / "Project.tproject"; //FileManager::FindFileWithExtension( ".tproject" );
 			if ( projectPath.Exists() )
 			{
-				TE_CORE_TRACE( "Project file found at '{0}'", projectPath.ToString() );
+				LOG( LogCategory::Engine, Trace, "Project file found at '{0}'", projectPath.ToString() );
 				ProjectSerializer::DeserializeText( m_ActiveProject.Config, projectPath );
 				m_ActiveProject.Config.Editor.ProjectDirectory = projectPath.GetParentPath();
 			}
 			else
 			{
-				TE_CORE_WARN( "No project file found!" );
+				LOG( LogCategory::Engine, Warn, "No project file found!" );
 			}
 		}
 
@@ -182,11 +182,11 @@ namespace Tridium {
 					switch ( error->Level )
 					{
 					case EngineModuleError::ELevel::FatalError:
-						TE_CORE_ERROR( "Engine::InitModules: Fatal error initializing module: {0} - Msg: '{1}'", module.Name, error->Message.c_str() );
+						LOG( LogCategory::Engine, Error, "Engine::InitModules: Fatal error initializing module: {0} - Msg: '{1}'", module.Name, error->Message.c_str() );
 						TODO( "Handle fatal error" );
 						return false;
 					case EngineModuleError::ELevel::Error:
-						TE_CORE_WARN( "Engine::InitModules: Error initializing module: {0} - Msg: '{1}'", module.Name, error->Message.c_str() );
+						LOG( LogCategory::Engine, Error, "Engine::InitModules: Error initializing module: {0} - Msg: '{1}'", module.Name, error->Message.c_str() );
 						continue;
 					default:
 						ASSERT( false, "Unknown error level" );
@@ -194,7 +194,7 @@ namespace Tridium {
 					}
 				}
 				
-				TE_CORE_INFO( "[Engine] Initialized module: {0}", module.Name );
+				LOG( LogCategory::Engine, Info, "Initialized module: {0}", module.Name );
 			}
 		}
 		return true;
@@ -203,14 +203,14 @@ namespace Tridium {
 	bool Engine::InitScene()
 	{
 		{
-			TE_CORE_INFO( "Loading start scene" );
+			LOG( LogCategory::Engine, Info, "Loading start scene" );
 			if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( m_ActiveProject.Config.StartScene ) )
 			{
 				SceneManager::SetActiveScene( scene.get() );
 			}
 			else
 			{
-				TE_CORE_WARN( "Failed to load start scene! - Creating new scene" );
+				LOG( LogCategory::Engine, Warn, "Failed to load start scene! - Creating new scene" );
 				SceneManager::SetActiveScene( MakeShared<Scene>().get() );
 			}
 		}
@@ -257,14 +257,14 @@ namespace Tridium {
 					switch ( error->Level )
 					{
 					case EngineModuleError::ELevel::FatalError:
-						TE_CORE_ERROR( "Engine::ShutdownModules: Fatal error shutting down module: {0} - Msg: '{1}'", module.Name, error->Message.c_str() );
+						LOG( LogCategory::Engine, Error, "Engine::ShutdownModules: Fatal error shutting down module: {0} - Msg: '{1}'", module.Name, error->Message.c_str() );
 						TODO( "Handle fatal error" );
 						return false;
 					case EngineModuleError::ELevel::Error:
-						TE_CORE_WARN( "Engine::ShutdownModules: Error shutting down module: {0} - Msg: '{1}'", module.Name, error->Message.c_str() );
+						LOG( LogCategory::Engine, Error, "Engine::ShutdownModules: Error shutting down module: {0} - Msg: '{1}'", module.Name, error->Message.c_str() );
 						break;
 					default:
-						ASSERT( false, "Unknown error level" );
+						ASSERT_LOG( false, "Unknown error level" );
 						break;
 					}
 				}

@@ -86,7 +86,7 @@ namespace Tridium {
 				return static_cast<T*>( it->second );
 			}
 
-			TE_CORE_WARN( "Attempted to pull non-existent panel!" );
+			LOG( LogCategory::Editor, Warn, "Attempted to pull non-existent panel!" );
 			return nullptr;
 		}
 

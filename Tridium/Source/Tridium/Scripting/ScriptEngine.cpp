@@ -53,7 +53,7 @@ namespace Tridium {
 		{
 			sol::error err = a_Script.m_LoadResult;
 			a_Script.m_CompileErrorMsg = err.what();
-			TE_CORE_ERROR( "SCRIPT COMPILATION ERROR: {0}", a_Script.m_CompileErrorMsg );
+			LOG( LogCategory::Script, Error, "Script Compilation Error: {0}", a_Script.m_CompileErrorMsg );
 			return false;
 		}
 
@@ -103,7 +103,7 @@ namespace Tridium {
 				}
 				default:
 				{
-					TE_CORE_WARN( "Unknown type in script environment" );
+					LOG( LogCategory::Script, Warn, "Unknown type in script environment" );
 					break;
 				}
 			}
@@ -129,7 +129,7 @@ namespace Tridium {
 					std::string source( ( std::istreambuf_iterator<char>( file ) ), std::istreambuf_iterator<char>() );
 					script->m_Source = std::move( source );
 					RecompileScript( *script );
-					TE_CORE_INFO( "Recompiled script: {0}", assetData.Name );
+					LOG( LogCategory::Script, Info, "Recompiled script: {0}", assetData.Name );
 				}
 			}
 		}

@@ -58,7 +58,7 @@ namespace Tridium::IO {
 	//	}
 	//	catch ( const YAML::BadFile& e )
 	//	{
-	//		TE_CORE_ERROR( "Failed to load file '{0}'! Error: {1}", a_Path.ToString(), e.what());
+	//		LOG_ERROR( "Failed to load file '{0}'! Error: {1}", a_Path.ToString(), e.what());
 	//		return false;
 	//	}
 

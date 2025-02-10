@@ -14,7 +14,7 @@ namespace Tridium {
 		std::ofstream out( a_MetaData.Path.ToString(), std::ios::out | std::ios::binary );
 		if ( !out )
 		{
-			TE_CORE_ERROR( "Failed to save lua script to '{0}'", absolutePath );
+			LOG( LogCategory::Script, Error, "Failed to save lua script to '{0}'", absolutePath );
 			return;
 		}
 
@@ -30,7 +30,7 @@ namespace Tridium {
 		std::ifstream in( a_MetaData.Path.ToString(), std::ios::in | std::ios::binary);
 		if ( !in )
 		{
-			TE_CORE_ERROR( "Could not open file '{0}'", a_MetaData.Path.ToString() );
+			LOG( LogCategory::Script, Error, "Could not open file '{0}'", a_MetaData.Path.ToString() );
 			return nullptr;
 		}
 

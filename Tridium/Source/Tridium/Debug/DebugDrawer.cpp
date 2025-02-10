@@ -1,7 +1,7 @@
 #include "tripch.h"
 #include "DebugDrawer.h"
 
-#if TE_DRAW_DEBUG
+#if !CONFIG_SHIPPING
 #include <Tridium/Graphics/Rendering/VertexArray.h>
 #include <Tridium/Graphics/Rendering/Shader.h>
 
@@ -33,7 +33,7 @@ namespace Tridium::Debug {
 		}
 		default:
 		{
-			TE_CORE_ASSERT( false, "Invalid EDrawDuration" );
+			ASSERT_LOG( false, "Invalid EDrawDuration" );
 			break;
 		}
 		}
@@ -62,7 +62,7 @@ namespace Tridium::Debug {
 		}
 		default:
 		{
-			TE_CORE_ASSERT( false, "Invalid EDrawDuration" );
+			ASSERT_LOG( false, "Invalid EDrawDuration" );
 			break;
 		}
 		}

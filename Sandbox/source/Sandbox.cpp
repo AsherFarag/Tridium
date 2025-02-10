@@ -113,7 +113,7 @@ protected:
 		{
 			GameObject hitGameObject = hit.HitGameObject;
 			RigidBodyComponent& hitRigidBody = hitGameObject.GetComponent<RigidBodyComponent>();
-			TE_CORE_DEBUG( "Hit: {0}", hitRigidBody.GetGameObject().GetTag() );
+			LOG( LogCategory::Default, Debug, "Hit: {0}", hitRigidBody.GetGameObject().GetTag() );
 			hitRigidBody.AddImpulse( lookDirection * m_Force );
 		}
 

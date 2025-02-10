@@ -103,7 +103,7 @@ namespace Tridium {
 
 		if ( !script->IsCompiled() )
 		{
-			TE_CORE_ERROR( "[ScriptSystem] Attempted to use uncompiled script '{0}'", script->GetHandle().ID() );
+			LOG( LogCategory::Script, Error, "Attempted to use uncompiled script '{0}'", script->GetHandle().ID() );
 			return;
 		}
 

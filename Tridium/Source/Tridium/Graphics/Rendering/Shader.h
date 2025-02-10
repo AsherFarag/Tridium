@@ -29,7 +29,7 @@ namespace Tridium {
 		case EShaderDataType::Bool:	   return 1;
 		}
 
-		TE_CORE_ASSERT( false, "Unkown ShaderDataType!" );
+		ASSERT_LOG( false, "Unkown ShaderDataType!" );
 		return 0;
 	}
 

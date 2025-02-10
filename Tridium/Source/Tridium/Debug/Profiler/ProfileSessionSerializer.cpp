@@ -51,7 +51,7 @@ namespace Tridium {
         file << "\n]\n"; // End of JSON array
         file.close();
 
-		TE_CORE_INFO( "Profile session serialized to '{0}'", a_Path );
+		LOG( LogCategory::Serialization, Info, "Profile session serialized to '{0}'", a_Path );
 		return true;
     }
 

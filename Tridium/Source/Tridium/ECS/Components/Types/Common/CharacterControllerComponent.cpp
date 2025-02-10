@@ -21,7 +21,7 @@ namespace Tridium {
 		RigidBodyComponent* rigidBody = GetGameObject().TryGetComponent<RigidBodyComponent>();
 		if ( !rigidBody )
 		{
-			TE_CORE_WARN( "'%s' does not have a RigidBodyComponent, which the CharacterControllerComponent requires!", GetGameObject().GetTag().c_str() );
+			LOG( LogCategory::GameLogic, Warn, "'%s' does not have a RigidBodyComponent, which the CharacterControllerComponent requires!", GetGameObject().GetTag().c_str() );
 			return;
 		}
 	}
@@ -107,7 +107,7 @@ namespace Tridium {
 			}
 			else 
 			{
-				TE_CORE_WARN( "'{0}' does not have a Child GameObject with a CameraComponent, which the CharacterControllerComponent requires!", GetGameObject().GetTag().c_str() );
+				LOG( LogCategory::GameLogic, Warn, "'{0}' does not have a Child GameObject with a CameraComponent, which the CharacterControllerComponent requires!", GetGameObject().GetTag().c_str() );
 				return;
 			}
 		}

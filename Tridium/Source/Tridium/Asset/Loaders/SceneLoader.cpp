@@ -28,14 +28,14 @@ namespace Tridium {
         }
 		catch ( const YAML::ParserException& e )
 		{
-			TE_CORE_ERROR( "Failed to parse scene file '{0}': {1}", path, e.what() );
+			LOG( LogCategory::Asset, Error, "Failed to parse scene file '{0}': {1}", path, e.what() );
 			return nullptr;
 		}
 
 		SharedPtr<Scene> scene = MakeShared<Scene>();
 		if ( !IO::DeserializeFromText( data, *scene ) )
 		{
-			TE_CORE_ERROR( "Failed to deserialize scene file '{0}'", path );
+			LOG( LogCategory::Asset, Error, "Failed to deserialize scene file '{0}'", path );
 			return nullptr;
 		}
 

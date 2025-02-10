@@ -22,7 +22,7 @@ namespace Tridium {
 		case EShaderDataType::Bool:	   return GL_BOOL;
 		}
 
-		TE_CORE_ASSERT( false, "Unkown ShaderDataType!" );
+		ASSERT_LOG( false, "Unkown ShaderDataType!" );
 		return 0;
 	}
 
@@ -48,7 +48,7 @@ namespace Tridium {
 
 	void OpenGLVertexArray::AddVertexBuffer( const SharedPtr<VertexBuffer>& a_VertexBuffer )
 	{
-		TE_CORE_ASSERT( a_VertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer has no Layout!" );
+		ASSERT_LOG( a_VertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer has no Layout!" );
 
 		glBindVertexArray( m_RendererID );
 		a_VertexBuffer->Bind();

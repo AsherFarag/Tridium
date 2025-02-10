@@ -19,7 +19,7 @@ namespace Tridium {
 
 	static void GLFWErrorCallback( int error, const char* description )
 	{
-		TE_CORE_ERROR( "GLFW Error ({0}): {1}", error, description );
+		LOG( LogCategory::Application, Error, "GLFW Error ({0}): {1}", error, description );
 	}
 
 	UniquePtr<Window> Window::Create( const WindowProps& props )
@@ -91,13 +91,13 @@ namespace Tridium {
 		m_Data.Width = props.Width;
 		m_Data.Height = props.Height;
 
-		TE_CORE_INFO( "Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height );
+		LOG( LogCategory::Application, Info, "Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height );
 
 		// Only initializes GLFW once
 		if ( !s_GLFWInitialized )
 		{
 			int success = glfwInit();
-			TE_CORE_ASSERT( success, "Could not initialize GLFW!" );
+			ASSERT_LOG( success, "Could not initialize GLFW!" );
 			glfwSetErrorCallback( GLFWErrorCallback );
 			s_GLFWInitialized = true;
 		}

@@ -5,7 +5,7 @@ namespace Tridium {
 
 	//======================================
 	// RHI Shader Compiler
-	//  Generates shader code for the RHI.
+	//  Generates shader byte code for the RHI.
 	//  This class is responsible for preprocessing, compiling and linking shaders.
 	//======================================
 	class RHIShaderCompiler final

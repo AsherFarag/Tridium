@@ -70,7 +70,7 @@ namespace Tridium {
 		}
 		else
 		{
-			TE_CORE_ERROR( "[StaticMeshLoader] Failed to load sub-meshes from file: {0}", a_MetaData.Path.ToString() );
+			LOG( LogCategory::Asset, Error, "Failed to load sub - meshes from file : {0}", a_MetaData.Path.ToString() );
 			return nullptr;
 		}
 
@@ -81,7 +81,7 @@ namespace Tridium {
 		}
 		else
 		{
-			TE_CORE_ERROR( "[StaticMeshLoader] Failed to load materials for static mesh from file: {0}", a_MetaData.Path.ToString() );
+			LOG( LogCategory::Asset, Error, "Failed to load materials for static mesh from file : {0}", a_MetaData.Path.ToString() );
 			return nullptr;
 		}
 
