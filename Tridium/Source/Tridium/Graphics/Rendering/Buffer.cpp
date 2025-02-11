@@ -14,7 +14,7 @@ namespace Tridium {
 		switch ( RendererAPI::GetAPI() )
 		{
 		case RendererAPI::API::OpenGL:
-			return MakeShared<OpenGLVertexBuffer>( a_Verticies, a_Size );
+			return MakeShared<OpenGLVertexBufferOld>( a_Verticies, a_Size );
 			break;
 		default:
 			return nullptr;
@@ -32,7 +32,7 @@ namespace Tridium {
 		switch ( RendererAPI::GetAPI() )
 		{
 		case RendererAPI::API::OpenGL:
-			return MakeShared<OpenGLIndexBuffer>( a_Indicies, a_Count );
+			return MakeShared<OpenGLIndexBufferOld>( a_Indicies, a_Count );
 			break;
 		default:
 			return nullptr;

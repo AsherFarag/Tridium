@@ -7,340 +7,581 @@
 
 namespace Tridium {
 
-    class OpenGL3 : public OpenGLAPI
+	class OpenGL3 : public OpenGLAPI
     {
     public:
-        static FORCEINLINE void QueryTimestampCounter( GLuint a_QueryID )
+        static FORCEINLINE void BlendFunc( GLenum a_Src, GLenum a_Dst )
         {
-            glQueryCounter( a_QueryID, GL_TIMESTAMP );
+            glBlendFunc( a_Src, a_Dst );
         }
 
-        static FORCEINLINE void BeginQuery( GLenum a_QueryType, GLuint a_a_QueryID )
+        static FORCEINLINE void ClearColor( GLfloat r, GLfloat g, GLfloat b, GLfloat a )
         {
-            glBeginQuery( a_QueryType, a_a_QueryID );
+            glClearColor( r, g, b, a );
         }
 
-        static FORCEINLINE void EndQuery( GLenum a_QueryType )
+        static FORCEINLINE void Clear( GLbitfield mask )
         {
-            glEndQuery( a_QueryType );
+            glClear( mask );
         }
 
-		static FORCEINLINE void GetQueryObject( GLuint a_QueryID, GLenum a_QueryName, GLuint* o_Result )
+        static FORCEINLINE void Enable( GLenum cap )
+        {
+            glEnable( cap );
+        }
+
+        static FORCEINLINE void Disable( GLenum cap )
+        {
+            glDisable( cap );
+        }
+
+        static FORCEINLINE void UseProgram( GLuint program )
+        {
+            glUseProgram( program );
+        }
+
+        static FORCEINLINE void GenBuffers( GLsizei n, GLuint* buffers )
+        {
+            glGenBuffers( n, buffers );
+        }
+
+        static FORCEINLINE void GenVertexArrays( GLsizei n, GLuint* arrays )
+        {
+            glGenVertexArrays( n, arrays );
+        }
+
+        static FORCEINLINE void BindBuffer( GLenum target, GLuint buffer )
+        {
+            glBindBuffer( target, buffer );
+        }
+
+        static FORCEINLINE void BindVertexArray( GLuint array )
+        {
+            glBindVertexArray( array );
+        }
+
+        static FORCEINLINE void BufferData( GLenum target, GLsizeiptr size, const void* data, GLenum usage )
+        {
+            glBufferData( target, size, data, usage );
+        }
+
+		static FORCEINLINE void BufferSubData( GLenum target, GLintptr offset, GLsizeiptr size, const void* data )
 		{
-			glGetQueryObjectuiv( a_QueryID, a_QueryName, o_Result );
+			glBufferSubData( target, offset, size, data );
 		}
 
-        static FORCEINLINE void ReadBuffer( GLenum a_Mode )
+        static FORCEINLINE void VertexAttribPointer( GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* pointer )
         {
-            glReadBuffer( a_Mode );
+            glVertexAttribPointer( index, size, type, normalized, stride, pointer );
         }
 
-        static FORCEINLINE void DrawBuffer( GLenum a_Mode )
+        static FORCEINLINE void EnableVertexAttribArray( GLuint index )
         {
-            glDrawBuffer( a_Mode );
+            glEnableVertexAttribArray( index );
         }
 
-        static FORCEINLINE void DeleteSync( GLsync a_Sync )
+        static FORCEINLINE void DisableVertexAttribArray( GLuint index )
         {
-            glDeleteSync( a_Sync );
+            glDisableVertexAttribArray( index );
         }
 
-        static FORCEINLINE GLsync FenceSync( GLenum a_Condition, GLbitfield a_Flags )
+        static FORCEINLINE void DrawArrays( GLenum mode, GLint first, GLsizei count )
         {
-            return glFenceSync( a_Condition, a_Flags );
+            glDrawArrays( mode, first, count );
         }
 
-        static FORCEINLINE bool IsSync( GLsync a_Sync )
+        static FORCEINLINE void DrawElements( GLenum mode, GLsizei count, GLenum type, const void* indices )
         {
-            return ( glIsSync( a_Sync ) == GL_TRUE ) ? true : false;
+            glDrawElements( mode, count, type, indices );
         }
 
-        static FORCEINLINE EFenceResult ClientWaitSync( GLsync a_Sync, GLbitfield a_Flags, GLuint64 a_Timeout )
+        static FORCEINLINE void GenTextures( GLsizei n, GLuint* textures )
         {
-            GLenum Result = glClientWaitSync( a_Sync, a_Flags, a_Timeout );
-            switch ( Result )
-            {
-            case GL_ALREADY_SIGNALED: return EFenceResult::AlreadySignaled;
-            case GL_TIMEOUT_EXPIRED: return EFenceResult::TimeoutExpired;
-            case GL_CONDITION_SATISFIED: return EFenceResult::ConditionSatisfied;
-            }
-            return EFenceResult::WaitFailed;
+            glGenTextures( n, textures );
         }
 
-        static FORCEINLINE void GenSamplers( GLsizei a_Count, GLuint* a_Samplers )
+        static FORCEINLINE void BindTexture( GLenum target, GLuint texture )
         {
-            glGenSamplers( a_Count, a_Samplers );
+            glBindTexture( target, texture );
         }
 
-        static FORCEINLINE void DeleteSamplers( GLsizei a_Count, GLuint* a_Samplers )
+        static FORCEINLINE void TexImage2D( GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void* pixels )
         {
-            glDeleteSamplers( a_Count, a_Samplers );
+            glTexImage2D( target, level, internalFormat, width, height, border, format, type, pixels );
         }
 
-        static FORCEINLINE void SetSamplerParameter( GLuint a_Sampler, GLenum a_Parameter, GLint a_Value )
+        static FORCEINLINE void TexParameteri( GLenum target, GLenum pname, GLint param )
         {
-            glSamplerParameteri( a_Sampler, a_Parameter, a_Value );
+            glTexParameteri( target, pname, param );
         }
 
-        static FORCEINLINE void BindSampler( GLuint a_Unit, GLuint a_Sampler )
+        static FORCEINLINE void ActiveTexture( GLenum texture )
         {
-            glBindSampler( a_Unit, a_Sampler );
+            glActiveTexture( texture );
         }
 
-        static FORCEINLINE void PolygonMode( GLenum a_Face, GLenum a_Mode )
+        static FORCEINLINE void ClearDepth( GLdouble depth )
         {
-            glPolygonMode( a_Face, a_Mode );
+            glClearDepth( depth );
         }
 
-        static FORCEINLINE void* MapBufferRange( GLenum a_Type, uint32_t a_Offset, uint32_t a_Size, EResourceLockMode a_LockMode )
+        static FORCEINLINE void ClearStencil( GLint s )
         {
-            GLenum Access;
-            switch ( a_LockMode )
-            {
-                using enum EResourceLockMode;
-            case ReadOnly: Access = GL_MAP_READ_BIT; break;
-            case ReadOnlyPersistent: Access = ( GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT ); break;
-            case WriteOnly: Access = ( GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_WRITE_BIT ); break;
-            case WriteOnlyUnsynchronized: Access = ( GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT ); break;
-            case WriteOnlyPersistent: Access = ( GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT ); break;
-            case ReadWrite:
-            default: Access = ( GL_MAP_READ_BIT | GL_MAP_WRITE_BIT );
-            }
-            return glMapBufferRange( a_Type, a_Offset, a_Size, Access );
+            glClearStencil( s );
         }
 
-        static FORCEINLINE void UnmapBuffer( GLenum a_Type )
+        static FORCEINLINE void StencilFunc( GLenum func, GLint ref, GLuint mask )
         {
-            glUnmapBuffer( a_Type );
+            glStencilFunc( func, ref, mask );
         }
 
-        static FORCEINLINE void UnmapBufferRange( GLenum a_Type, uint32_t a_Offset, uint32_t a_Size )
+        static FORCEINLINE void StencilOp( GLenum sfail, GLenum dpfail, GLenum dppass )
         {
-            UnmapBuffer( a_Type );
+            glStencilOp( sfail, dpfail, dppass );
         }
 
-        static FORCEINLINE void GenQueries( GLsizei a_NumQueries, GLuint* a_QueryIDs )
+        static FORCEINLINE void DepthFunc( GLenum func )
         {
-            glGenQueries( a_NumQueries, a_QueryIDs );
+            glDepthFunc( func );
         }
 
-        static FORCEINLINE void DeleteQueries( GLsizei a_NumQueries, const GLuint* a_QueryIDs )
+        static FORCEINLINE void DepthMask( GLboolean flag )
         {
-            glDeleteQueries( a_NumQueries, a_QueryIDs );
+            glDepthMask( flag );
         }
 
-        static FORCEINLINE void GetQueryObject( GLuint a_QueryID, EQueryMode a_QueryMode, GLuint* o_Result )
+        static FORCEINLINE void FrontFace( GLenum mode )
         {
-            GLenum queryName = ( a_QueryMode == EQueryMode::Result ) ? GL_QUERY_RESULT : GL_QUERY_RESULT_AVAILABLE;
-            glGetQueryObjectuiv( a_QueryID, queryName, o_Result );
+            glFrontFace( mode );
         }
 
-        static FORCEINLINE void BindBufferBase( GLenum a_Target, GLuint a_Index, GLuint a_Buffer )
+        static FORCEINLINE void CullFace( GLenum mode )
         {
-            glBindBufferBase( a_Target, a_Index, a_Buffer );
+            glCullFace( mode );
         }
 
-        static FORCEINLINE void BindBufferRange( GLenum a_Target, GLuint a_Index, GLuint a_Buffer, GLintptr a_Offset, GLsizeiptr a_Size )
+        static FORCEINLINE void LineWidth( GLfloat width )
         {
-            glBindBufferRange( a_Target, a_Index, a_Buffer, a_Offset, a_Size );
+            glLineWidth( width );
         }
 
-        static FORCEINLINE GLuint GetUniformBlockIndex( GLuint a_Program, const GLchar* a_UniformBlockName )
+        static FORCEINLINE void PointSize( GLfloat size )
         {
-            return glGetUniformBlockIndex( a_Program, a_UniformBlockName );
+            glPointSize( size );
         }
 
-        static FORCEINLINE void UniformBlockBinding( GLuint a_Program, GLuint a_UniformBlockIndex, GLuint a_UniformBlockBinding )
+        static FORCEINLINE void PolygonMode( GLenum face, GLenum mode )
         {
-            glUniformBlockBinding( a_Program, a_UniformBlockIndex, a_UniformBlockBinding );
+            glPolygonMode( face, mode );
         }
 
-        static FORCEINLINE void BindFragDataLocation( GLuint a_Program, GLuint a_Color, const GLchar* a_Name )
+        static FORCEINLINE void BindFramebuffer( GLenum target, GLuint framebuffer )
         {
-            glBindFragDataLocation( a_Program, a_Color, a_Name );
+            glBindFramebuffer( target, framebuffer );
         }
 
-        static FORCEINLINE void TexParameter( GLenum a_Target, GLenum a_Parameter, GLint a_Value )
+        static FORCEINLINE void GenFramebuffers( GLsizei n, GLuint* framebuffers )
         {
-            glTexParameteri( a_Target, a_Parameter, a_Value );
+            glGenFramebuffers( n, framebuffers );
         }
 
-        static FORCEINLINE void FramebufferTexture( GLenum a_Target, GLenum a_Attachment, GLuint a_Texture, GLint a_Level )
+        static FORCEINLINE void FramebufferTexture2D( GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level )
         {
-            glFramebufferTexture( a_Target, a_Attachment, a_Texture, a_Level );
+            glFramebufferTexture2D( target, attachment, textarget, texture, level );
         }
 
-        static FORCEINLINE void FramebufferTexture3D( GLenum a_Target, GLenum a_Attachment, GLenum a_TexTarget, GLuint a_Texture, GLint a_Level, GLint a_ZOffset )
+        static FORCEINLINE void FramebufferRenderbuffer( GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer )
         {
-            glFramebufferTexture3D( a_Target, a_Attachment, a_TexTarget, a_Texture, a_Level, a_ZOffset );
+            glFramebufferRenderbuffer( target, attachment, renderbuffertarget, renderbuffer );
         }
 
-        static FORCEINLINE void FramebufferTextureLayer( GLenum a_Target, GLenum a_Attachment, GLuint a_Texture, GLint a_Level, GLint a_Layer )
+        static FORCEINLINE void CheckFramebufferStatus( GLenum target )
         {
-            glFramebufferTextureLayer( a_Target, a_Attachment, a_Texture, a_Level, a_Layer );
+            glCheckFramebufferStatus( target );
         }
 
-        static FORCEINLINE void Uniform4uiv( GLint a_Location, GLsizei a_Count, const GLuint* a_Value )
+        static FORCEINLINE void DeleteBuffers( GLsizei n, const GLuint* buffers )
         {
-            glUniform4uiv( a_Location, a_Count, a_Value );
+            glDeleteBuffers( n, buffers );
         }
 
-        static FORCEINLINE void BlitFramebuffer( GLint a_SrcX0, GLint a_SrcY0, GLint a_SrcX1, GLint a_SrcY1, GLint a_DstX0, GLint a_DstY0, GLint a_DstX1, GLint a_DstY1, GLbitfield a_Mask, GLenum a_Filter )
+        static FORCEINLINE void DeleteVertexArrays( GLsizei n, const GLuint* arrays )
         {
-            glBlitFramebuffer( a_SrcX0, a_SrcY0, a_SrcX1, a_SrcY1, a_DstX0, a_DstY0, a_DstX1, a_DstY1, a_Mask, a_Filter );
+            glDeleteVertexArrays( n, arrays );
         }
 
-        static FORCEINLINE void DrawBuffers( GLsizei a_NumBuffers, const GLenum* a_Buffers )
+        static FORCEINLINE void DeleteTextures( GLsizei n, const GLuint* textures )
         {
-            glDrawBuffers( a_NumBuffers, a_Buffers );
+            glDeleteTextures( n, textures );
         }
 
-        static FORCEINLINE void DepthRange( GLdouble a_Near, GLdouble a_Far )
+        static FORCEINLINE void DeleteFramebuffers( GLsizei n, const GLuint* framebuffers )
         {
-            glDepthRange( a_Near, a_Far );
+            glDeleteFramebuffers( n, framebuffers );
         }
 
-        static FORCEINLINE void EnableIndexed( GLenum a_Parameter, GLuint a_Index )
+        static FORCEINLINE void DeleteRenderbuffers( GLsizei n, const GLuint* renderbuffers )
         {
-            glEnablei( a_Parameter, a_Index );
+            glDeleteRenderbuffers( n, renderbuffers );
         }
 
-        static FORCEINLINE void DisableIndexed( GLenum a_Parameter, GLuint a_Index )
+        static FORCEINLINE void Flush()
         {
-            glDisablei( a_Parameter, a_Index );
+            glFlush();
         }
 
-        static FORCEINLINE void ColorMaskIndexed( GLuint a_Index, GLboolean a_Red, GLboolean a_Green, GLboolean a_Blue, GLboolean a_Alpha )
+        static FORCEINLINE void Finish()
         {
-            glColorMaski( a_Index, a_Red, a_Green, a_Blue, a_Alpha );
+            glFinish();
         }
 
-        static FORCEINLINE void VertexAttribPointer( GLuint a_Index, GLint a_Size, GLenum a_Type, GLboolean a_Normalized, GLsizei a_Stride, const GLvoid* a_Pointer )
+        static FORCEINLINE void GetError()
         {
-            glVertexAttribPointer( a_Index, a_Size, a_Type, a_Normalized, a_Stride, a_Pointer );
+            glGetError();
         }
 
-        static FORCEINLINE void VertexAttribIPointer( GLuint a_Index, GLint a_Size, GLenum a_Type, GLsizei a_Stride, const GLvoid* a_Pointer )
+        static FORCEINLINE const GLubyte* GetString( GLenum name )
         {
-            glVertexAttribIPointer( a_Index, a_Size, a_Type, a_Stride, a_Pointer );
+            return glGetString( name );
         }
 
-        static FORCEINLINE void VertexAttribDivisor( GLuint a_Index, GLuint a_Divisor )
+        static FORCEINLINE void GetIntegerv( GLenum pname, GLint* params )
         {
-            glVertexAttribDivisor( a_Index, a_Divisor );
+            glGetIntegerv( pname, params );
         }
 
-        static FORCEINLINE void EnableVertexAttribArray( GLuint a_Index )
+        static FORCEINLINE void GetFloatv( GLenum pname, GLfloat* params )
         {
-            glEnableVertexAttribArray( a_Index );
+            glGetFloatv( pname, params );
         }
 
-        static FORCEINLINE void DisableVertexAttribArray( GLuint a_Index )
+        static FORCEINLINE void GetBooleanv( GLenum pname, GLboolean* params )
         {
-            glDisableVertexAttribArray( a_Index );
+            glGetBooleanv( pname, params );
         }
 
-        static FORCEINLINE void DrawElementsInstanced( GLenum a_Mode, GLsizei a_Count, GLenum a_Type, const GLvoid* a_Indices, GLsizei a_InstanceCount )
+        static FORCEINLINE void GetInteger64v( GLenum pname, GLint64* params )
         {
-            glDrawElementsInstanced( a_Mode, a_Count, a_Type, a_Indices, a_InstanceCount );
+            glGetInteger64v( pname, params );
         }
 
-        static FORCEINLINE void DrawArraysInstanced( GLenum a_Mode, GLint a_First, GLsizei a_Count, GLsizei a_InstanceCount )
+        static FORCEINLINE void GetDoublev( GLenum pname, GLdouble* params )
         {
-            glDrawArraysInstanced( a_Mode, a_First, a_Count, a_InstanceCount );
+            glGetDoublev( pname, params );
         }
 
-        static FORCEINLINE void DrawElementsBaseVertex( GLenum a_Mode, GLsizei a_Count, GLenum a_Type, const GLvoid* a_Indices, GLint a_BaseVertex )
+        static FORCEINLINE void GetProgramiv( GLuint program, GLenum pname, GLint* params )
         {
-            glDrawElementsBaseVertex( a_Mode, a_Count, a_Type, a_Indices, a_BaseVertex );
+            glGetProgramiv( program, pname, params );
         }
 
-        static FORCEINLINE void DrawRangeElements( GLenum a_Mode, GLuint a_Start, GLuint a_End, GLsizei a_Count, GLenum a_Type, const GLvoid* a_Indices )
+        static FORCEINLINE void GetProgramInfoLog( GLuint program, GLsizei bufSize, GLsizei* length, GLchar* infoLog )
         {
-            glDrawRangeElements( a_Mode, a_Start, a_End, a_Count, a_Type, a_Indices );
+            glGetProgramInfoLog( program, bufSize, length, infoLog );
         }
 
-        static FORCEINLINE void DrawRangeElementsBaseVertex( GLenum a_Mode, GLuint a_Start, GLuint a_End, GLsizei a_Count, GLenum a_Type, const GLvoid* a_Indices, GLint a_BaseVertex )
+        static FORCEINLINE void GetShaderiv( GLuint shader, GLenum pname, GLint* params )
         {
-            glDrawRangeElementsBaseVertex( a_Mode, a_Start, a_End, a_Count, a_Type, a_Indices, a_BaseVertex );
+            glGetShaderiv( shader, pname, params );
         }
 
-        static FORCEINLINE void DrawArraysIndirect( GLenum a_Mode, const GLvoid* a_Indirect )
+        static FORCEINLINE void GetShaderInfoLog( GLuint shader, GLsizei bufSize, GLsizei* length, GLchar* infoLog )
         {
-            glDrawArraysIndirect( a_Mode, a_Indirect );
+            glGetShaderInfoLog( shader, bufSize, length, infoLog );
         }
 
-        static FORCEINLINE void DrawElementsIndirect( GLenum a_Mode, GLenum a_Type, const GLvoid* a_Indirect )
+        static FORCEINLINE void GetVertexAttribiv( GLuint index, GLenum pname, GLint* params )
         {
-            glDrawElementsIndirect( a_Mode, a_Type, a_Indirect );
+            glGetVertexAttribiv( index, pname, params );
         }
 
-        static FORCEINLINE void MultiDrawArrays( GLenum a_Mode, const GLint* a_First, const GLsizei* a_Count, GLsizei a_DrawCount )
+        static FORCEINLINE void GetVertexAttribPointerv( GLuint index, GLenum pname, void** pointer )
         {
-            glMultiDrawArrays( a_Mode, a_First, a_Count, a_DrawCount );
+            glGetVertexAttribPointerv( index, pname, pointer );
         }
 
-        static FORCEINLINE void MultiDrawElements( GLenum a_Mode, const GLsizei* a_Count, GLenum a_Type, const GLvoid* const* a_Indices, GLsizei a_DrawCount )
+        static FORCEINLINE void VertexAttrib1f( GLuint index, GLfloat x )
         {
-            glMultiDrawElements( a_Mode, a_Count, a_Type, a_Indices, a_DrawCount );
+            glVertexAttrib1f( index, x );
         }
 
-        static FORCEINLINE void GenVertexArrays( GLsizei a_NumArrays, GLuint* a_Arrays )
+        static FORCEINLINE void VertexAttrib2f( GLuint index, GLfloat x, GLfloat y )
         {
-            glGenVertexArrays( a_NumArrays, a_Arrays );
+            glVertexAttrib2f( index, x, y );
         }
 
-        static FORCEINLINE void DeleteVertexArrays( GLsizei a_NumArrays, const GLuint* a_Arrays )
+        static FORCEINLINE void VertexAttrib3f( GLuint index, GLfloat x, GLfloat y, GLfloat z )
         {
-            glDeleteVertexArrays( a_NumArrays, a_Arrays );
+            glVertexAttrib3f( index, x, y, z );
         }
 
-        static FORCEINLINE void BindVertexArray( GLuint a_Array )
+        static FORCEINLINE void VertexAttrib4f( GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w )
         {
-			OpenGLState::s_BoundVAO = a_Array;
-            glBindVertexArray( a_Array );
+            glVertexAttrib4f( index, x, y, z, w );
         }
 
-		static FORCEINLINE void GenBuffers( GLsizei a_NumBuffers, GLuint* a_Buffers )
+        static FORCEINLINE void StencilOpSeparate( GLenum face, GLenum sfail, GLenum dpfail, GLenum dppass )
+        {
+            glStencilOpSeparate( face, sfail, dpfail, dppass );
+        }
+
+        static FORCEINLINE void StencilFuncSeparate( GLenum face, GLenum func, GLint ref, GLuint mask )
+        {
+            glStencilFuncSeparate( face, func, ref, mask );
+        }
+
+        static FORCEINLINE void StencilMaskSeparate( GLenum face, GLuint mask )
+        {
+            glStencilMaskSeparate( face, mask );
+        }
+
+        static FORCEINLINE void AttachShader( GLuint program, GLuint shader )
+        {
+            glAttachShader( program, shader );
+        }
+
+        static FORCEINLINE void DetachShader( GLuint program, GLuint shader )
+        {
+            glDetachShader( program, shader );
+        }
+
+        static FORCEINLINE void LinkProgram( GLuint program )
+        {
+            glLinkProgram( program );
+        }
+
+        static FORCEINLINE void ValidateProgram( GLuint program )
+        {
+            glValidateProgram( program );
+        }
+
+        static FORCEINLINE void UseProgramStages( GLuint pipeline, GLbitfield stages, GLuint program )
+        {
+            glUseProgramStages( pipeline, stages, program );
+        }
+
+        static FORCEINLINE void ActiveShaderProgram( GLuint pipeline, GLuint program )
+        {
+            glActiveShaderProgram( pipeline, program );
+        }
+
+        static FORCEINLINE GLuint CreateProgramPipelines( void )
+        {
+            GLuint pipeline;
+            glGenProgramPipelines( 1, &pipeline );
+            return pipeline;
+        }
+
+        static FORCEINLINE void DeleteProgramPipelines( GLsizei n, const GLuint* pipelines )
+        {
+            glDeleteProgramPipelines( n, pipelines );
+        }
+
+        static FORCEINLINE void BindProgramPipeline( GLuint pipeline )
+        {
+            glBindProgramPipeline( pipeline );
+        }
+
+        static FORCEINLINE void GetProgramPipelineiv( GLuint pipeline, GLenum pname, GLint* params )
+        {
+            glGetProgramPipelineiv( pipeline, pname, params );
+        }
+
+        static FORCEINLINE void ProgramUniform1f( GLuint program, GLint location, GLfloat v0 )
+        {
+            glProgramUniform1f( program, location, v0 );
+        }
+
+        static FORCEINLINE void ProgramUniform2f( GLuint program, GLint location, GLfloat v0, GLfloat v1 )
+        {
+            glProgramUniform2f( program, location, v0, v1 );
+        }
+
+        static FORCEINLINE void ProgramUniform3f( GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2 )
+        {
+            glProgramUniform3f( program, location, v0, v1, v2 );
+        }
+
+        static FORCEINLINE void ProgramUniform4f( GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3 )
+        {
+            glProgramUniform4f( program, location, v0, v1, v2, v3 );
+        }
+
+        static FORCEINLINE void ProgramUniform1i( GLuint program, GLint location, GLint v0 )
+        {
+            glProgramUniform1i( program, location, v0 );
+        }
+
+        static FORCEINLINE void ProgramUniform2i( GLuint program, GLint location, GLint v0, GLint v1 )
+        {
+            glProgramUniform2i( program, location, v0, v1 );
+        }
+
+        static FORCEINLINE void ProgramUniform3i( GLuint program, GLint location, GLint v0, GLint v1, GLint v2 )
+        {
+            glProgramUniform3i( program, location, v0, v1, v2 );
+        }
+
+        static FORCEINLINE void ProgramUniform4i( GLuint program, GLint location, GLint v0, GLint v1, GLint v2, GLint v3 )
+        {
+            glProgramUniform4i( program, location, v0, v1, v2, v3 );
+        }
+
+        static FORCEINLINE void ProgramUniform1fv( GLuint program, GLint location, GLsizei count, const GLfloat* value )
+        {
+            glProgramUniform1fv( program, location, count, value );
+        }
+
+        static FORCEINLINE void ProgramUniform2fv( GLuint program, GLint location, GLsizei count, const GLfloat* value )
+        {
+            glProgramUniform2fv( program, location, count, value );
+        }
+
+        static FORCEINLINE void ProgramUniform3fv( GLuint program, GLint location, GLsizei count, const GLfloat* value )
+        {
+            glProgramUniform3fv( program, location, count, value );
+        }
+
+        static FORCEINLINE void ProgramUniform4fv( GLuint program, GLint location, GLsizei count, const GLfloat* value )
+        {
+            glProgramUniform4fv( program, location, count, value );
+        }
+
+        static FORCEINLINE void ProgramUniform1iv( GLuint program, GLint location, GLsizei count, const GLint* value )
+        {
+            glProgramUniform1iv( program, location, count, value );
+        }
+
+        static FORCEINLINE void ProgramUniform2iv( GLuint program, GLint location, GLsizei count, const GLint* value )
+        {
+            glProgramUniform2iv( program, location, count, value );
+        }
+
+        static FORCEINLINE void ProgramUniform3iv( GLuint program, GLint location, GLsizei count, const GLint* value )
+        {
+            glProgramUniform3iv( program, location, count, value );
+        }
+
+        static FORCEINLINE void ProgramUniform4iv( GLuint program, GLint location, GLsizei count, const GLint* value )
+        {
+            glProgramUniform4iv( program, location, count, value );
+        }
+
+        static FORCEINLINE void ProgramUniform1uiv( GLuint program, GLint location, GLsizei count, const GLuint* value )
+        {
+            glProgramUniform1uiv( program, location, count, value );
+        }
+
+        static FORCEINLINE void ProgramUniform2uiv( GLuint program, GLint location, GLsizei count, const GLuint* value )
+        {
+            glProgramUniform2uiv( program, location, count, value );
+        }
+
+        static FORCEINLINE void ProgramUniform3uiv( GLuint program, GLint location, GLsizei count, const GLuint* value )
+        {
+            glProgramUniform3uiv( program, location, count, value );
+        }
+
+        static FORCEINLINE void ProgramUniform4uiv( GLuint program, GLint location, GLsizei count, const GLuint* value )
+        {
+            glProgramUniform4uiv( program, location, count, value );
+        }
+
+        static FORCEINLINE void ProgramUniformMatrix2fv( GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value )
+        {
+            glProgramUniformMatrix2fv( program, location, count, transpose, value );
+        }
+
+        static FORCEINLINE void ProgramUniformMatrix3fv( GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value )
+        {
+            glProgramUniformMatrix3fv( program, location, count, transpose, value );
+        }
+
+        static FORCEINLINE void ProgramUniformMatrix4fv( GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value )
+        {
+            glProgramUniformMatrix4fv( program, location, count, transpose, value );
+        }
+
+        static FORCEINLINE void ProgramUniformMatrix2x3fv( GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value )
+        {
+            glProgramUniformMatrix2x3fv( program, location, count, transpose, value );
+        }
+
+        static FORCEINLINE void ProgramUniformMatrix3x2fv( GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value )
+        {
+            glProgramUniformMatrix3x2fv( program, location, count, transpose, value );
+        }
+
+        static FORCEINLINE void ProgramUniformMatrix2x4fv( GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value )
+        {
+            glProgramUniformMatrix2x4fv( program, location, count, transpose, value );
+        }
+
+        static FORCEINLINE void ProgramUniformMatrix4x2fv( GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value )
+        {
+            glProgramUniformMatrix4x2fv( program, location, count, transpose, value );
+        }
+
+        static FORCEINLINE void ProgramUniformMatrix3x4fv( GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value )
+        {
+            glProgramUniformMatrix3x4fv( program, location, count, transpose, value );
+        }
+
+        static FORCEINLINE void ProgramUniformMatrix4x3fv( GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value )
+        {
+            glProgramUniformMatrix4x3fv( program, location, count, transpose, value );
+        }
+
+        static FORCEINLINE void GetProgramBinary( GLuint program, GLsizei bufSize, GLsizei* length, GLenum* binaryFormat, void* binary )
+        {
+            glGetProgramBinary( program, bufSize, length, binaryFormat, binary );
+        }
+
+        static FORCEINLINE void ProgramBinary( GLuint program, GLenum binaryFormat, const void* binary, GLsizei length )
+        {
+            glProgramBinary( program, binaryFormat, binary, length );
+        }
+
+        static FORCEINLINE void GetActiveAtomicCounterBufferiv( GLuint program, GLuint bufferIndex, GLenum pname, GLint* params )
+        {
+            glGetActiveAtomicCounterBufferiv( program, bufferIndex, pname, params );
+        }
+
+        static FORCEINLINE void BindBufferBase( GLenum target, GLuint index, GLuint buffer )
+        {
+            glBindBufferBase( target, index, buffer );
+        }
+
+        static FORCEINLINE void BindBufferRange( GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size )
+        {
+            glBindBufferRange( target, index, buffer, offset, size );
+        }
+
+        static FORCEINLINE void BindImageTexture( GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format )
+        {
+            glBindImageTexture( unit, texture, level, layered, layer, access, format );
+        }
+
+        static FORCEINLINE void BindSamplers( GLuint first, GLsizei count, const GLuint* samplers )
+        {
+            glBindSamplers( first, count, samplers );
+        }
+
+        static FORCEINLINE void BindTextures( GLuint first, GLsizei count, const GLuint* textures )
+        {
+            glBindTextures( first, count, textures );
+        }
+
+        static FORCEINLINE void BindVertexBuffers( GLuint first, GLsizei count, const GLuint* buffers, const GLintptr* offsets, const GLsizei* sizes )
+        {
+            glBindVertexBuffers( first, count, buffers, offsets, sizes );
+        }
+
+		static FORCEINLINE void GetBufferParameteriv( GLenum target, GLenum pname, GLint* params )
 		{
-			glGenBuffers( a_NumBuffers, a_Buffers );
+			glGetBufferParameteriv( target, pname, params );
 		}
-
-        static FORCEINLINE void DeleteBuffers( GLsizei a_NumBuffers, const GLuint* a_Buffers )
-        {
-            glDeleteBuffers( a_NumBuffers, a_Buffers );
-        }
-
-		static FORCEINLINE void BindBuffer( GLenum a_Target, GLuint a_Buffer )
-		{
-			glBindBuffer( a_Target, a_Buffer );
-		}
-
-        static FORCEINLINE void BufferData( GLenum a_Target, GLsizeiptr a_Size, const GLvoid* a_Data, GLenum a_Usage )
-        {
-			glBufferData( a_Target, a_Size, a_Data, a_Usage );
-        }
-
-		static FORCEINLINE void BufferSubData( GLenum a_Target, GLintptr a_Offset, GLsizeiptr a_Size, const GLvoid* a_Data )
-		{
-			glBufferSubData( a_Target, a_Offset, a_Size, a_Data );
-		}
-
-		static FORCEINLINE void ClearBuffer( GLenum a_Buffer, GLint a_DrawBuffer, const GLfloat* a_Value )
-		{
-			glClearBufferfv( a_Buffer, a_DrawBuffer, a_Value );
-		}
-
-		static FORCEINLINE void ClearBuffer( GLenum a_Buffer, GLint a_DrawBuffer, const GLint* a_Value )
-		{
-			glClearBufferiv( a_Buffer, a_DrawBuffer, a_Value );
-		}
-
-		static FORCEINLINE void ClearBuffer( GLenum a_Buffer, GLint a_DrawBuffer, const GLuint* a_Value )
-		{
-			glClearBufferuiv( a_Buffer, a_DrawBuffer, a_Value );
-		}
-
     };
+
 
 } // namespace Tridium

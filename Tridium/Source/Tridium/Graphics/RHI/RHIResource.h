@@ -67,6 +67,12 @@ namespace Tridium {
 		virtual bool Write( const Span<const Byte>& a_Data, size_t a_DstOffset = 0 ) { return false; }
 		virtual bool IsWritable() const { return false; }
 
+		// Maps the specified location on the GPU to a memory address on the CPU.
+		virtual bool Map( uint64_t a_Offset = 0, int64_t a_Length = -1, ERHIMappingMode a_MappingMode = ERHIMappingMode::Default ) { return false; }
+		// Unmaps the memory address on the CPU. Must be called after Map.
+		virtual bool Unmap() { return false; }
+		virtual bool IsMappable() const { return false; }
+
 		// Returns the size of the resource in bytes.
 		virtual size_t GetSizeInBytes() const { return 0; }
 

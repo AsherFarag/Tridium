@@ -5,9 +5,8 @@
 
 // Resources
 #include "OpenGLTexture.h"
-//#include "OpenGLIndexBuffer.h"
-//#include "OpenGLVertexBuffer.h"
-//#include "OpenGLPipelineState.h"
+#include "OpenGLMesh.h"
+#include "OpenGLPipelineState.h"
 
 namespace Tridium {
 
@@ -107,12 +106,16 @@ namespace Tridium {
 
 	RHIIndexBufferRef OpenGLRHI::CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc )
 	{
-		return RHIIndexBufferRef();
+		RHIIndexBufferRef ib = RHIResource::Create<OpenGLIndexBuffer>();
+		CHECK( ib->Commit( &a_Desc ) );
+		return ib;
 	}
 
 	RHIVertexBufferRef OpenGLRHI::CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc )
 	{
-		return RHIVertexBufferRef();
+		RHIVertexBufferRef vb = RHIResource::Create<OpenGLVertexBuffer>();
+		CHECK( vb->Commit( &a_Desc ) );
+		return vb;
 	}
 
 	RHIPipelineStateRef OpenGLRHI::CreatePipelineState( const RHIPipelineStateDescriptor& a_Desc )

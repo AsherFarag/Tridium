@@ -24,6 +24,8 @@ namespace Tridium {
 		Metal,
 	};
 
+
+
 	//===========================
 	// RHI Feature Support
 	//===========================
@@ -43,6 +45,8 @@ namespace Tridium {
 	};
 	ENUM_SIZE_ASSERT( ERHIFeatureSupport );
 
+
+
 	//===========================
 	// RHI Configuration
 	//===========================
@@ -51,6 +55,8 @@ namespace Tridium {
 		ERHInterfaceType RHIType = ERHInterfaceType::Null;
 		bool UseDebug = false;
 	};
+
+
 
 	//===========================
 	// Shading Path
@@ -63,6 +69,8 @@ namespace Tridium {
 		NUM_BITS = 1,
 	};
 	ENUM_SIZE_ASSERT( ERHIShadingPath );
+
+
 
 	//=====================================================================
 	// ERHIUsageHint
@@ -95,6 +103,25 @@ namespace Tridium {
 		Default = OneWriteManyDraw,
 	};
 
+
+
+	//=====================================================================
+	// ERHIMappingMode
+	//  The mode to use when mapping a resource.
+	//=====================================================================
+	enum class ERHIMappingMode : uint8_t
+	{
+		ReadOnly,
+		WriteOnly,
+		ReadWrite,
+		COUNT,
+		NUM_BITS = 2,
+		Default = ReadWrite,
+	};
+	ENUM_SIZE_ASSERT( ERHIMappingMode );
+
+
+
 	//===========================
 	// RHI Shader Type
 	//===========================
@@ -110,6 +137,8 @@ namespace Tridium {
 	};
 	ENUM_SIZE_ASSERT( ERHIShaderType );
 
+
+
 	//===========================
 	// Sampler Filter
 	//===========================
@@ -124,6 +153,8 @@ namespace Tridium {
 		NUM_BITS = 3,
 	};
 	ENUM_SIZE_ASSERT( ERHISamplerFilter );
+
+
 
 	//===========================
 	// Sampler Address Mode
@@ -142,6 +173,8 @@ namespace Tridium {
 	};
 	ENUM_SIZE_ASSERT( ERHISamplerAddressMode );
 
+
+
 	//=================================
 	// RHI Sampler Comparison Function
 	//=================================
@@ -153,6 +186,8 @@ namespace Tridium {
 		NUM_BITS = 2,
 	};
 	ENUM_SIZE_ASSERT( ERHISamplerComparison );
+
+
 
 	//===========================
 	// RHI Comparison Functions
@@ -172,6 +207,8 @@ namespace Tridium {
 	};
 	ENUM_SIZE_ASSERT( ERHIComparison );
 
+
+
 	//===========================
 	// RHI Rasterizer Fill Mode
 	//===========================
@@ -184,6 +221,8 @@ namespace Tridium {
 		NUM_BITS = 2,
 	};
 	ENUM_SIZE_ASSERT( ERHIRasterizerFillMode );
+
+
 
 	//===========================
 	// RHI Rasterizer Cull Mode
@@ -198,6 +237,8 @@ namespace Tridium {
 	};
 	ENUM_SIZE_ASSERT( ERHIRasterizerCullMode );
 
+
+
 	//===========================
 	// RHI Rasterizer Depth Clip Mode
 	//===========================
@@ -209,6 +250,8 @@ namespace Tridium {
 		NUM_BITS = 1,
 	};
 	ENUM_SIZE_ASSERT( ERHIRasterizerDepthClipMode );
+
+
 
 	//===========================
 	// RHI Stencil Operation
@@ -226,6 +269,8 @@ namespace Tridium {
 	};
 	ENUM_SIZE_ASSERT( ERHIStencilOp );
 
+
+
 	//===========================
 	// RHI Depth Operation
 	//===========================
@@ -237,6 +282,8 @@ namespace Tridium {
 		NUM_BITS = 2,
 	};
 	ENUM_SIZE_ASSERT( ERHIDepthOp );
+
+
 
 	//===========================
 	// RHI Blend Operation
@@ -259,6 +306,8 @@ namespace Tridium {
 	};
 	ENUM_SIZE_ASSERT( ERHIBlendOp );
 
+
+
 	//===========================
 	// RHI Blend Equation
 	//===========================
@@ -273,6 +322,8 @@ namespace Tridium {
 		NUM_BITS = 3,
 	};
 	ENUM_SIZE_ASSERT( ERHIBlendEq );
+
+
 
 	//===========================
 	// Colour Write Mask
@@ -291,11 +342,15 @@ namespace Tridium {
 		BA = Blue | Alpha,
 	};
 
+
+
 	//==========================================================
 	// RHI Fence
 	//  A fence that can be used to synchronize the CPU and GPU.
 	enum class RHIFence : int32_t {};
 	//==========================================================
+
+
 
 	//==========================================================
 	// RHI Fence State
@@ -308,6 +363,8 @@ namespace Tridium {
 		Unknown   // The state of the fence is unknown.
 	};
 
+
+
 	//==========================================================
 	// RHI Texture Alignment
 	//  Each Graphics API can have different defaults for texture alignment.
@@ -319,6 +376,8 @@ namespace Tridium {
 		TopLeft,
 		BottomLeft,
 	};
+
+
 
 	//====================================
 	// RHI Data Type
@@ -341,6 +400,8 @@ namespace Tridium {
 		NUM_BITS = 4,
 	};
 	ENUM_SIZE_ASSERT( ERHIDataType );
+
+
 
 	// Returns the number of bytes for a given RHI Data Type.
 	// Returns 0 if the type is unknown.
@@ -371,6 +432,8 @@ namespace Tridium {
 		return ERHIDataType::Unknown;
 	}
 
+
+
 	//==========================================================
 	// RHI Vertex Element Type
 	//  The first byte is the ERHIDataType.
@@ -393,6 +456,8 @@ namespace Tridium {
 			return GetRHIDataTypeSize( Type ) * Components;
 		}
 	};
+
+
 
 	//==========================================================
 	// Predefined Vertex Element Types

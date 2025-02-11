@@ -3,134 +3,184 @@
 
 namespace Tridium {
 
-	class OpenGL4 : public OpenGL3
-	{
-	public:
-		// Required
-		static FORCEINLINE void BlendFuncSeparatei( GLuint a_Buf, GLenum a_SrcRGB, GLenum a_DstRGB, GLenum a_SrcAlpha, GLenum a_DstAlpha )
-		{
-			glBlendFuncSeparatei( a_Buf, a_SrcRGB, a_DstRGB, a_SrcAlpha, a_DstAlpha );
-		}
+    class OpenGL4 : public OpenGL3
+    {
+    public:
+        static FORCEINLINE void BlendFuncSeparatei( GLuint a_Buf, GLenum a_SrcRGB, GLenum a_DstRGB, GLenum a_SrcAlpha, GLenum a_DstAlpha )
+        {
+            glBlendFuncSeparatei( a_Buf, a_SrcRGB, a_DstRGB, a_SrcAlpha, a_DstAlpha );
+        }
 
-		static FORCEINLINE void BlendEquationSeparatei( GLuint a_Buf, GLenum a_ModeRGB, GLenum a_ModeAlpha )
-		{
-			glBlendEquationSeparatei( a_Buf, a_ModeRGB, a_ModeAlpha );
-		}
+        static FORCEINLINE void BindFragDataLocationIndexed( GLuint program, GLuint colorNumber, GLuint index, const GLchar* name )
+        {
+            glBindFragDataLocationIndexed( program, colorNumber, index, name );
+        }
 
-		static FORCEINLINE void BlendFunci( GLuint a_Buf, GLenum a_Src, GLenum a_Dst )
-		{
-			glBlendFunci( a_Buf, a_Src, a_Dst );
-		}
+        static FORCEINLINE void TexStorage2D( GLenum target, GLsizei levels, GLenum internalFormat, GLsizei width, GLsizei height )
+        {
+            glTexStorage2D( target, levels, internalFormat, width, height );
+        }
 
-		static FORCEINLINE void BlendEquationi( GLuint a_Buf, GLenum a_Mode )
-		{
-			glBlendEquationi( a_Buf, a_Mode );
-		}
+        static FORCEINLINE void TexStorage3D( GLenum target, GLsizei levels, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth )
+        {
+            glTexStorage3D( target, levels, internalFormat, width, height, depth );
+        }
 
-		static FORCEINLINE void PatchParameteri( GLenum a_Pname, GLint a_Value )
-		{
-			glPatchParameteri( a_Pname, a_Value );
-		}
+        static FORCEINLINE void ClearBufferfv( GLenum buffer, GLint drawbuffer, const GLfloat* value )
+        {
+            glClearBufferfv( buffer, drawbuffer, value );
+        }
 
-		static FORCEINLINE void BindImageTexture( GLuint a_Unit, GLuint a_Texture, GLint a_Level, GLboolean a_Layered, GLint a_Layer, GLenum a_Access, GLenum a_Format )
-		{
-			glBindImageTexture( a_Unit, a_Texture, a_Level, a_Layered, a_Layer, a_Access, a_Format );
-		}
+        static FORCEINLINE void ClearBufferiv( GLenum buffer, GLint drawbuffer, const GLint* value )
+        {
+            glClearBufferiv( buffer, drawbuffer, value );
+        }
 
-		static FORCEINLINE void DispatchCompute( GLuint a_NumGroupsX, GLuint a_NumGroupsY, GLuint a_NumGroupsZ )
-		{
-			glDispatchCompute( a_NumGroupsX, a_NumGroupsY, a_NumGroupsZ );
-		}
+        static FORCEINLINE void ClearBufferuiv( GLenum buffer, GLint drawbuffer, const GLuint* value )
+        {
+            glClearBufferuiv( buffer, drawbuffer, value );
+        }
 
-		static FORCEINLINE void DispatchComputeIndirect( GLintptr a_Offset )
-		{
-			glDispatchComputeIndirect( a_Offset );
-		}
+        static FORCEINLINE void GetInternalformativ( GLenum target, GLenum internalformat, GLenum pname, GLsizei bufSize, GLint* params )
+        {
+            glGetInternalformativ( target, internalformat, pname, bufSize, params );
+        }
 
-		static FORCEINLINE void MemoryBarrier( GLbitfield a_Barriers )
-		{
-			glMemoryBarrier( a_Barriers );
-		}
+        static FORCEINLINE void DispatchCompute( GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z )
+        {
+            glDispatchCompute( num_groups_x, num_groups_y, num_groups_z );
+        }
 
-		static FORCEINLINE void DrawArraysIndirect( GLenum a_Mode, const GLvoid* a_Indirect )
-		{
-			glDrawArraysIndirect( a_Mode, a_Indirect );
-		}
+        static FORCEINLINE void DispatchComputeIndirect( GLintptr indirect )
+        {
+            glDispatchComputeIndirect( indirect );
+        }
 
-		static FORCEINLINE void BindVertexBuffer( GLuint a_BindingIndex, GLuint a_Buffer, GLintptr a_Offset, GLsizei a_Stride )
-		{
-			glBindVertexBuffer( a_BindingIndex, a_Buffer, a_Offset, a_Stride );
-		}
+        static FORCEINLINE void CopyImageSubData( 
+            GLuint srcName, GLenum srcTarget, GLint srcLevel, GLint srcX, GLint srcY, GLint srcZ,
+            GLuint dstName, GLenum dstTarget, GLint dstLevel, GLint dstX, GLint dstY, GLint dstZ,
+            GLsizei srcWidth, GLsizei srcHeight, GLsizei srcDepth )
+        {
+            glCopyImageSubData( srcName, srcTarget, srcLevel, srcX, srcY, srcZ, dstName, dstTarget, dstLevel, dstX, dstY, dstZ, srcWidth, srcHeight, srcDepth );
+        }
 
-		static FORCEINLINE void VertexAttribFormat( GLuint a_AttribIndex, GLint a_Size, GLenum a_Type, GLboolean a_Normalized, GLuint a_RelativeOffset )
-		{
-			glVertexAttribFormat( a_AttribIndex, a_Size, a_Type, a_Normalized, a_RelativeOffset );
-		}
+        static FORCEINLINE void FramebufferTextureLayer( GLenum target, GLenum attachment, GLuint texture, GLint level, GLint layer )
+        {
+            glFramebufferTextureLayer( target, attachment, texture, level, layer );
+        }
 
-		static FORCEINLINE void VertexAttribIFormat( GLuint a_AttribIndex, GLint a_Size, GLenum a_Type, GLuint a_RelativeOffset )
-		{
-			glVertexAttribIFormat( a_AttribIndex, a_Size, a_Type, a_RelativeOffset );
-		}
+        static FORCEINLINE void BindImageTexture( GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format )
+        {
+            glBindImageTexture( unit, texture, level, layered, layer, access, format );
+        }
 
-		static FORCEINLINE void VertexAttribBinding( GLuint a_AttribIndex, GLuint a_BindingIndex )
-		{
-			glVertexAttribBinding( a_AttribIndex, a_BindingIndex );
-		}
+        static FORCEINLINE void MemoryBarrier( GLbitfield barriers )
+        {
+            glMemoryBarrier( barriers );
+        }
 
-		static FORCEINLINE void VertexBindingDivisor( GLuint a_BindingIndex, GLuint a_Divisor )
-		{
-			glVertexBindingDivisor( a_BindingIndex, a_Divisor );
-		}
+        static FORCEINLINE void TexBuffer( GLenum target, GLenum internalformat, GLuint buffer )
+        {
+            glTexBuffer( target, internalformat, buffer );
+        }
 
-		static FORCEINLINE void TexBufferRange( GLenum a_Target, GLenum a_InternalFormat, GLuint a_Buffer, GLintptr a_Offset, GLsizeiptr a_Size )
-		{
-			glTexBufferRange( a_Target, a_InternalFormat, a_Buffer, a_Offset, a_Size );
-		}
+        static FORCEINLINE void GetSynciv( GLsync sync, GLenum pname, GLsizei bufSize, GLsizei* length, GLint* values )
+        {
+            glGetSynciv( sync, pname, bufSize, length, values );
+        }
 
-		static FORCEINLINE void TextureView( GLuint a_View, GLenum a_Target, GLuint a_Texture, GLenum a_InternalFormat, GLuint a_MinLevel, GLuint a_NumLevels, GLuint a_MinLayer, GLuint a_NumLayers )
-		{
-			glTextureView( a_View, a_Target, a_Texture, a_InternalFormat, a_MinLevel, a_NumLevels, a_MinLayer, a_NumLayers );
-		}
+        static FORCEINLINE void DrawTransformFeedback( GLenum mode, GLuint id )
+        {
+            glDrawTransformFeedback( mode, id );
+        }
 
-		static FORCEINLINE void ClearBufferData( GLenum a_Target, GLenum a_InternalFormat, GLenum a_Format, GLenum a_Type, const void* a_Data )
-		{
-			glClearBufferData( a_Target, a_InternalFormat, a_Format, a_Type, a_Data );
-		}
+        static FORCEINLINE void DrawTransformFeedbackStream( GLenum mode, GLuint id, GLuint stream )
+        {
+            glDrawTransformFeedbackStream( mode, id, stream );
+        }
 
-		static FORCEINLINE void GenTextures( GLsizei a_NumTextures, GLuint* a_Textures )
-		{
-			glGenTextures( a_NumTextures, a_Textures );
-		}
+        static FORCEINLINE void BeginQueryIndexed( GLenum target, GLuint index, GLuint id )
+        {
+            glBeginQueryIndexed( target, index, id );
+        }
 
-		static FORCEINLINE void BindTexture( GLenum a_Target, GLuint a_Texture )
-		{
-			glBindTexture( a_Target, a_Texture );
-		}
+        static FORCEINLINE void EndQueryIndexed( GLenum target, GLuint index )
+        {
+            glEndQueryIndexed( target, index );
+        }
 
-		static FORCEINLINE void TexImage2D( GLenum a_Target, GLint a_Level, GLint a_InternalFormat, GLsizei a_Width, GLsizei a_Height, GLint a_Border, GLenum a_Format, GLenum a_Type, const void* a_Data )
-		{
-			glTexImage2D( a_Target, a_Level, a_InternalFormat, a_Width, a_Height, a_Border, a_Format, a_Type, a_Data );
-		}
+        static FORCEINLINE void GetQueryIndexediv( GLenum target, GLuint index, GLenum pname, GLint* params )
+        {
+            glGetQueryIndexediv( target, index, pname, params );
+        }
 
-		static FORCEINLINE void TexParameteri( GLenum a_Target, GLenum a_Pname, GLint a_Param )
-		{
-			glTexParameteri( a_Target, a_Pname, a_Param );
-		}
+        static FORCEINLINE void MultiDrawArraysIndirect( GLenum mode, const void* indirect, GLsizei drawcount, GLsizei stride )
+        {
+            glMultiDrawArraysIndirect( mode, indirect, drawcount, stride );
+        }
 
-		static FORCEINLINE void DeleteTextures( GLsizei a_NumTextures, const GLuint* a_Textures )
-		{
-			glDeleteTextures( a_NumTextures, a_Textures );
-		}
+        static FORCEINLINE void MultiDrawElementsIndirect( GLenum mode, GLenum type, const void* indirect, GLsizei drawcount, GLsizei stride )
+        {
+            glMultiDrawElementsIndirect( mode, type, indirect, drawcount, stride );
+        }
 
-		static FORCEINLINE void GenerateMipmap( GLenum a_Target )
-		{
-			glGenerateMipmap( a_Target );
-		}
+		//////////////////////////////////////////////////////////////////////////
+        // DEBUG
+		//////////////////////////////////////////////////////////////////////////
 
-		static FORCEINLINE void FramebufferTextureLayer( GLenum a_Target, GLenum a_Attachment, GLuint a_Texture, GLint a_Level, GLint a_Layer )
+		static FORCEINLINE void DebugMessageCallback( GLDEBUGPROC callback, const void* userParam )
 		{
-			glFramebufferTextureLayer( a_Target, a_Attachment, a_Texture, a_Level, a_Layer );
+			glDebugMessageCallback( callback, userParam );
 		}
-	};
+		static FORCEINLINE void DebugMessageControl( GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint* ids, GLboolean enabled )
+		{
+			glDebugMessageControl( source, type, severity, count, ids, enabled );
+		}
+		static FORCEINLINE void DebugMessageInsert( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* buf )
+		{
+			glDebugMessageInsert( source, type, id, severity, length, buf );
+		}
+		static FORCEINLINE void PushDebugGroup( GLenum source, GLuint id, GLsizei length, const GLchar* message )
+		{
+			glPushDebugGroup( source, id, length, message );
+		}
+		static FORCEINLINE void PopDebugGroup()
+		{
+			glPopDebugGroup();
+		}
+		static FORCEINLINE void ObjectLabel( GLenum identifier, GLuint name, GLsizei length, const GLchar* label )
+		{
+			glObjectLabel( identifier, name, length, label );
+		}
+		static FORCEINLINE void GetObjectLabel( GLenum identifier, GLuint name, GLsizei bufSize, GLsizei* length, GLchar* label )
+		{
+			glGetObjectLabel( identifier, name, bufSize, length, label );
+		}
+		static FORCEINLINE void ObjectPtrLabel( const void* ptr, GLsizei length, const GLchar* label )
+		{
+			glObjectPtrLabel( ptr, length, label );
+		}
+		static FORCEINLINE void GetObjectPtrLabel( const void* ptr, GLsizei bufSize, GLsizei* length, GLchar* label )
+		{
+			glGetObjectPtrLabel( ptr, bufSize, length, label );
+		}
+		static FORCEINLINE void GetPointerv( GLenum pname, void** params )
+		{
+			glGetPointerv( pname, params );
+		}
+		static FORCEINLINE void GetProgramInterfaceiv( GLuint program, GLenum programInterface, GLenum pname, GLint* params )
+		{
+			glGetProgramInterfaceiv( program, programInterface, pname, params );
+		}
+		static FORCEINLINE GLuint GetProgramResourceIndex( GLuint program, GLenum programInterface, const GLchar* name )
+		{
+			return glGetProgramResourceIndex( program, programInterface, name );
+		}
+        static FORCEINLINE void GetProgramResourceName( GLuint program, GLenum programInterface, GLuint index, GLsizei bufSize, GLsizei* length, GLchar* name )
+        {
+			glGetProgramResourceName( program, programInterface, index, bufSize, length, name );
+        }
+    };
+
 
 } // namespace Tridium

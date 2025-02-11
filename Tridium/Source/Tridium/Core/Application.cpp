@@ -115,59 +115,59 @@ namespace Tridium {
 		// TEMP!
 		{
 
-			//uint8_t testImgData[64 * 64 * 4];
-			//for ( size_t y = 0; y < 64; y++ )
-			//{
-			//	for ( size_t x = 0; x < 64; x++ )
-			//	{
-			//		testImgData[( y * 64 + x ) * 4 + 0] = x * 4;
-			//		testImgData[( y * 64 + x ) * 4 + 1] = y * 4;
-			//		testImgData[( y * 64 + x ) * 4 + 2] = 255 - ( x * 2 + y * 2 );
-			//		testImgData[( y * 64 + x ) * 4 + 3] = 255;
-			//	}
-			//}
+			uint8_t testImgData[64 * 64 * 4];
+			for ( size_t y = 0; y < 64; y++ )
+			{
+				for ( size_t x = 0; x < 64; x++ )
+				{
+					testImgData[( y * 64 + x ) * 4 + 0] = x * 4;
+					testImgData[( y * 64 + x ) * 4 + 1] = y * 4;
+					testImgData[( y * 64 + x ) * 4 + 2] = 255 - ( x * 2 + y * 2 );
+					testImgData[( y * 64 + x ) * 4 + 3] = 255;
+				}
+			}
 
-			//RHITextureDescriptor desc;
-			//desc.InitialData = testImgData;
-			//desc.Dimensions[0] = 64;
-			//desc.Dimensions[1] = 64;
-			//desc.Format = ERHITextureFormat::RGBA8;
-			//desc.Name = "My beautiful texture";
+			RHITextureDescriptor desc;
+			desc.InitialData = testImgData;
+			desc.Dimensions[0] = 64;
+			desc.Dimensions[1] = 64;
+			desc.Format = ERHITextureFormat::RGBA8;
+			desc.Name = "My beautiful texture";
 
-			//RHITextureRef tex = RHI::CreateTexture( desc );
-			////LOG_INFO( "Successfully wrote to texture = {0}", tex->Write(desc.InitialData) );
+			RHITextureRef tex = RHI::CreateTexture( desc );
+			//LOG_INFO( "Successfully wrote to texture = {0}", tex->Write(desc.InitialData) );
 
-			//// Create vertex buffer
+			// Create vertex buffer
 
-			//RHIVertexLayout layout =
-			//{
-			//	{ "Position", RHIVertexElementTypes::Float3 },
-			//};
+			RHIVertexLayout layout =
+			{
+				{ "Position", RHIVertexElementTypes::Float3 },
+			};
 
-			//struct Vertex
-			//{
-			//	Vector3 Position;
-			//};
+			struct Vertex
+			{
+				Vector3 Position;
+			};
 
-			//Vertex vertices[] =
-			//{
-			//	{ { 0.0, 0.0, 0.0 } },
-			//	{ { 1.0, 0.0, 0.0 } },
-			//	{ { 1.0, 1.0, 0.0 } },
-			//	{ { 0.0, 1.0, 0.0 } },
-			//};
+			Vertex vertices[] =
+			{
+				{ { 0.0, 0.0, 0.0 } },
+				{ { 1.0, 0.0, 0.0 } },
+				{ { 1.0, 1.0, 0.0 } },
+				{ { 0.0, 1.0, 0.0 } },
+			};
 
-			//RHIVertexBufferDescriptor vbDesc;
-			//vbDesc.Layout = layout;
-			//vbDesc.InitialData = Span<const Byte>( (const Byte*)( &vertices[0] ), sizeof(vertices));
-			//vbDesc.Name = "My beautiful vertex buffer";
+			RHIVertexBufferDescriptor vbDesc;
+			vbDesc.Layout = layout;
+			vbDesc.InitialData = Span<const Byte>( (const Byte*)( &vertices[0] ), sizeof(vertices));
+			vbDesc.Name = "My beautiful vertex buffer";
 
-			//RHIVertexBufferRef vb = RHI::CreateVertexBuffer( vbDesc );
+			RHIVertexBufferRef vb = RHI::CreateVertexBuffer( vbDesc );
 
-			//while ( true )
-			//{
-			//	m_Window->OnUpdate();
-			//}
+			while ( true )
+			{
+				m_Window->OnUpdate();
+			}
 		}
 
 		// Initialise the Engine

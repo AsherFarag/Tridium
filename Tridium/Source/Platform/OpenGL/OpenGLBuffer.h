@@ -3,11 +3,11 @@
 
 namespace Tridium {
 
-	class OpenGLVertexBuffer : public VertexBuffer
+	class OpenGLVertexBufferOld : public VertexBuffer
 	{
 	public:
-		OpenGLVertexBuffer( float* a_Verticies, uint32_t size );
-		virtual ~OpenGLVertexBuffer();
+		OpenGLVertexBufferOld( float* a_Verticies, uint32_t size );
+		virtual ~OpenGLVertexBufferOld();
 
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
@@ -20,11 +20,11 @@ namespace Tridium {
 		BufferLayout m_Layout;
 	};
 
-	class OpenGLIndexBuffer : public IndexBuffer
+	class OpenGLIndexBufferOld : public IndexBuffer
 	{
 	public:
-		OpenGLIndexBuffer( uint32_t* a_Indicies, uint32_t a_Count );
-		virtual ~OpenGLIndexBuffer();
+		OpenGLIndexBufferOld( uint32_t* a_Indicies, uint32_t a_Count );
+		virtual ~OpenGLIndexBufferOld();
 
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
