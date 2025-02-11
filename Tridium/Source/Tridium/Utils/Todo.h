@@ -1,5 +1,4 @@
 #pragma once
-
 #include <Tridium/Core/Core.h>
 
 // Returns the year from the current build date
