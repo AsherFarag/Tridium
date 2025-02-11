@@ -4,27 +4,24 @@
 #include <Tridium/Reflection/PrimitiveReflector.h>
 #include <Tridium/Reflection/ReflectorInitializer.h>
 
+using namespace Tridium;
+
 int main( int argc, char** argv )
 {
-	Tridium::Log::Init();
+	Log::Init();
 
-	Tridium::Refl::Internal::ReflectPrimitiveTypes();
-	Tridium::Refl::Internal::HiddenTypeReflector::ReflectHiddenTypes();
+	Refl::Internal::ReflectPrimitiveTypes();
+	Refl::Internal::HiddenTypeReflector::ReflectHiddenTypes();
 
-	Tridium::CmdLineArgs cmdLineArgs;
+	CmdLineArgs cmdLineArgs;
 	cmdLineArgs.Args.Reserve( argc );
 	for ( int i = 0; i < argc; ++i )
 	{
 		cmdLineArgs.Args.EmplaceBack( argv[i] );
 	}
 
-	Tridium::Application app( cmdLineArgs );
+	Application app( cmdLineArgs );
 	app.Run();
-
-#if CONFIG_USE_EDITOR
-	// Wait for a key press before closing the console
-	std::cin.get();
-#endif // CONFIG_USE_EDITOR
 
 	return 0;
 }

@@ -174,29 +174,37 @@ namespace Tridium {
 		for ( auto&& [key, modulePair] : m_EngineModules )
 		{
 			auto& [moduleInfo, engineModule] = modulePair;
-			if ( moduleInfo.InitStage == a_InitStage )
+			if ( moduleInfo.InitStage != a_InitStage )
+				continue;
+			Optional<EngineModuleError> error = engineModule->Init();
+			if ( !error )
 			{
-				Optional<EngineModuleError> error = engineModule->Init();
-				if ( error )
-				{
-					switch ( error->Level )
-					{
-					case EngineModuleError::ELevel::FatalError:
-						LOG( LogCategory::Engine, Error, "Engine::InitModules: Fatal error initializing module: {0} - Msg: '{1}'", moduleInfo.Name, error->Message.c_str() );
-						TODO( "Handle fatal error" );
-						return false;
-					case EngineModuleError::ELevel::Error:
-						LOG( LogCategory::Engine, Error, "Engine::InitModules: Error initializing module: {0} - Msg: '{1}'", moduleInfo.Name, error->Message.c_str() );
-						continue;
-					default:
-						ASSERT( false, "Unknown error level" );
-						break;
-					}
-				}
-				
 				LOG( LogCategory::Engine, Info, "Initialized module: {0}", moduleInfo.Name );
+				continue;
+			}
+
+			switch ( error->Level )
+			{
+				case EngineModuleError::FatalError:
+				{
+					LOG( LogCategory::Engine, Error, "Engine::InitModules: Fatal error initializing module: {0} - Msg: '{1}'", moduleInfo.Name, error->Message.c_str() );
+					TODO( "Handle fatal error" );
+					return false;
+				}
+				case EngineModuleError::Error:
+				{
+					LOG( LogCategory::Engine, Error, "Engine::InitModules: Error initializing module: {0} - Msg: '{1}'", moduleInfo.Name, error->Message.c_str() );
+					continue;
+				}
+				default:
+				{
+					ASSERT( false, "Unknown error level" );
+					break;
+				}
 			}
 		}
+
+		// Modules initialized successfully
 		return true;
 	}
 
@@ -227,10 +235,6 @@ namespace Tridium {
 		// 5. Shutdown Game Instance
 		m_GameInstance->Shutdown();
 
-		#if WITH_EDITOR
-		Editor::Shutdown();
-		#endif // WITH_EDITOR
-
 		// 4. Shutdown Post-Engine-Init Modules
 		ShutdownModules( EEngineInitStage::PostEngineInit );
 
@@ -242,6 +246,10 @@ namespace Tridium {
 
 		// 1. Shutdown Pre-Engine-Init Modules
 		ShutdownModules( EEngineInitStage::PreEngineInit );
+
+		#if WITH_EDITOR
+		Editor::Shutdown();
+		#endif // WITH_EDITOR
 	}
 
 	bool Engine::ShutdownModules( EEngineInitStage a_Stage )
@@ -249,27 +257,38 @@ namespace Tridium {
 		for ( auto&& [key, modulePair] : m_EngineModules )
 		{
 			auto& [moduleInfo, module] = modulePair;
-			if ( moduleInfo.InitStage == a_Stage )
+			if ( moduleInfo.InitStage != a_Stage )
+				continue;
+
+			Optional<EngineModuleError> error = module->Shutdown();
+			if ( !error )
 			{
-				Optional<EngineModuleError> error = module->Shutdown();
-				if ( error )
+				LOG( LogCategory::Engine, Info, "Engine::ShutdownModules: Shutdown module: {0}", moduleInfo.Name );
+				continue;
+			}
+
+			switch ( error->Level )
+			{
+				case EngineModuleError::FatalError:
 				{
-					switch ( error->Level )
-					{
-					case EngineModuleError::ELevel::FatalError:
-						LOG( LogCategory::Engine, Error, "Engine::ShutdownModules: Fatal error shutting down module: {0} - Msg: '{1}'", moduleInfo.Name, error->Message.c_str() );
-						TODO( "Handle fatal error" );
-						return false;
-					case EngineModuleError::ELevel::Error:
-						LOG( LogCategory::Engine, Error, "Engine::ShutdownModules: Error shutting down module: {0} - Msg: '{1}'", moduleInfo.Name, error->Message.c_str() );
-						break;
-					default:
-						ASSERT_LOG( false, "Unknown error level" );
-						break;
-					}
+					LOG( LogCategory::Engine, Error, "Engine::ShutdownModules: Fatal error shutting down module: {0} - Msg: '{1}'", moduleInfo.Name, error->Message.c_str() );
+					TODO( "Handle fatal error" );
+					return false;
+				}
+				case EngineModuleError::Error:
+				{
+					LOG( LogCategory::Engine, Error, "Engine::ShutdownModules: Error shutting down module: {0} - Msg: '{1}'", moduleInfo.Name, error->Message.c_str() );
+					break;
+				}
+				default:
+				{
+					ASSERT_LOG( false, "Unknown error level" );
+					break;
 				}
 			}
 		}
+
+		// Modules shutdown successfully
 		return true;
 	}
 
