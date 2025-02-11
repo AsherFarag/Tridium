@@ -16,7 +16,7 @@ namespace Tridium {
 
 		// Create a color sink
 		s_ColorSink = MakeShared<spdlog::sinks::stdout_color_sink_mt>();
-		s_ColorSink->set_pattern( "%^[%T] %n: %v%$" );
+		s_ColorSink->set_pattern( "%^%T [%n] %v%$" );
 	}
 
 	Log::Logger& Log::GetLogger( const Category& a_Category )

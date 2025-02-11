@@ -42,7 +42,7 @@ namespace Tridium {
 	{
 		auto it = m_EngineModules.find( a_TypeHash );
 		if ( it != m_EngineModules.end() )
-			return it->second.get();
+			return it->second.second.get();
 		return nullptr;
 	}
 
@@ -64,9 +64,9 @@ namespace Tridium {
 
 		// Create Modules
 		{
-			for ( auto&& [key, module] : EngineModuleFactory::ModuleTypes() )
+			for ( auto&& [key, moduleInfo] : EngineModuleFactory::ModuleTypes() )
 			{
-				m_EngineModules[key] = module.Create();
+				m_EngineModules[key] = { moduleInfo, moduleInfo.Create() };
 			}
 		}
 
@@ -171,22 +171,22 @@ namespace Tridium {
 
 	bool Engine::InitModules( EEngineInitStage a_InitStage )
 	{
-		for ( auto&& [key, module] : EngineModuleFactory::ModuleTypes() )
+		for ( auto&& [key, modulePair] : m_EngineModules )
 		{
-			if ( module.InitStage == a_InitStage )
+			auto& [moduleInfo, engineModule] = modulePair;
+			if ( moduleInfo.InitStage == a_InitStage )
 			{
-				UniquePtr<IEngineModule> engineModule = module.Create();
 				Optional<EngineModuleError> error = engineModule->Init();
 				if ( error )
 				{
 					switch ( error->Level )
 					{
 					case EngineModuleError::ELevel::FatalError:
-						LOG( LogCategory::Engine, Error, "Engine::InitModules: Fatal error initializing module: {0} - Msg: '{1}'", module.Name, error->Message.c_str() );
+						LOG( LogCategory::Engine, Error, "Engine::InitModules: Fatal error initializing module: {0} - Msg: '{1}'", moduleInfo.Name, error->Message.c_str() );
 						TODO( "Handle fatal error" );
 						return false;
 					case EngineModuleError::ELevel::Error:
-						LOG( LogCategory::Engine, Error, "Engine::InitModules: Error initializing module: {0} - Msg: '{1}'", module.Name, error->Message.c_str() );
+						LOG( LogCategory::Engine, Error, "Engine::InitModules: Error initializing module: {0} - Msg: '{1}'", moduleInfo.Name, error->Message.c_str() );
 						continue;
 					default:
 						ASSERT( false, "Unknown error level" );
@@ -194,7 +194,7 @@ namespace Tridium {
 					}
 				}
 				
-				LOG( LogCategory::Engine, Info, "Initialized module: {0}", module.Name );
+				LOG( LogCategory::Engine, Info, "Initialized module: {0}", moduleInfo.Name );
 			}
 		}
 		return true;
@@ -246,22 +246,22 @@ namespace Tridium {
 
 	bool Engine::ShutdownModules( EEngineInitStage a_Stage )
 	{
-		for ( auto&& [key, module] : EngineModuleFactory::ModuleTypes() )
+		for ( auto&& [key, modulePair] : m_EngineModules )
 		{
-			if ( module.InitStage == a_Stage )
+			auto& [moduleInfo, module] = modulePair;
+			if ( moduleInfo.InitStage == a_Stage )
 			{
-				UniquePtr<IEngineModule> engineModule = module.Create();
-				Optional<EngineModuleError> error = engineModule->Shutdown();
+				Optional<EngineModuleError> error = module->Shutdown();
 				if ( error )
 				{
 					switch ( error->Level )
 					{
 					case EngineModuleError::ELevel::FatalError:
-						LOG( LogCategory::Engine, Error, "Engine::ShutdownModules: Fatal error shutting down module: {0} - Msg: '{1}'", module.Name, error->Message.c_str() );
+						LOG( LogCategory::Engine, Error, "Engine::ShutdownModules: Fatal error shutting down module: {0} - Msg: '{1}'", moduleInfo.Name, error->Message.c_str() );
 						TODO( "Handle fatal error" );
 						return false;
 					case EngineModuleError::ELevel::Error:
-						LOG( LogCategory::Engine, Error, "Engine::ShutdownModules: Error shutting down module: {0} - Msg: '{1}'", module.Name, error->Message.c_str() );
+						LOG( LogCategory::Engine, Error, "Engine::ShutdownModules: Error shutting down module: {0} - Msg: '{1}'", moduleInfo.Name, error->Message.c_str() );
 						break;
 					default:
 						ASSERT_LOG( false, "Unknown error level" );

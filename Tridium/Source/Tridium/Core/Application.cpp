@@ -293,12 +293,12 @@ namespace Tridium {
 	///////////////////////////////////////////////////////////////////////////////////////////
 	void Application::Shutdown()
 	{
-		TODO( "Oi" );
-	//#if IS_EDITOR
-	//	EditorApplication::Shutdown();
-	//#endif // IS_EDITOR
+		#if WITH_EDITOR
+		Editor::Shutdown();
+		#endif // IS_EDITOR
 
 		Engine::Get()->Shutdown();
+		Engine::Singleton::Destroy();
 	}
 
 } // namespace Tridium

@@ -35,7 +35,7 @@ namespace Tridium {
 
 		//================================================================
 		// Engine Modules
-		using ModuleStorage = UnorderedMap<hash_t, UniquePtr<IEngineModule>>;
+		using ModuleStorage = UnorderedMap< hash_t, Pair< EngineModuleInfo, UniquePtr<IEngineModule> > >;
 		// Get a module by its type hash. E.g. Hashing::TypeHash<MyModule>()
 		// Returns nullptr if the module does not exist.
 		IEngineModule* GetModule( hash_t a_TypeHash );

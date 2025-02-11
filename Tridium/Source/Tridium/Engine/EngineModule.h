@@ -80,23 +80,29 @@ namespace Tridium {
 
 
 	//================================================================
+	// Engine Module Info
+	//  Contains meta data about an engine module.
+	struct EngineModuleInfo
+	{
+		using CreateModuleFunc = UniquePtr<IEngineModule>( * )( );
+
+		CreateModuleFunc Create;
+		EEngineInitStage InitStage;
+		const char* Name;
+		EEngineModuleCategory::Type Category;
+		hash_t Hash;
+	};
+	//================================================================
+
+
+
+	//================================================================
 	// Engine Module Factory
 	//  Engine modules can be registered with the engine module factory to be created and managed by the engine.
 	//  Engine module info can be retrieved by hash or type.
 	class EngineModuleFactory : public ISingleton<EngineModuleFactory, /* _ExplicitSetup */ false>
 	{
 	public:
-		using CreateModuleFunc = UniquePtr<IEngineModule>( * )( );
-
-		struct ModuleInfo
-		{
-			CreateModuleFunc Create;
-			EEngineInitStage InitStage;
-			const char* Name;
-			EEngineModuleCategory::Type Category;
-			hash_t Hash;
-		};
-
 		// Registers a module type with the engine module factory.
 		// This can then be used by the engine to create and manage the module.
 		template<typename T> requires Concepts::IsValidEngineModule<T>
@@ -108,7 +114,7 @@ namespace Tridium {
 			if ( !ASSERT_LOG( Get()->m_ModuleTypes.find( hash ) == Get()->m_ModuleTypes.end(), "Module already registered" ) )
 				return;
 
-			ModuleInfo info;
+			EngineModuleInfo info;
 			info.InitStage = a_InitStage;
 			info.Name = a_Name;
 			info.Category = a_Category;
@@ -123,7 +129,7 @@ namespace Tridium {
 		static const auto& ModuleTypes() { return Get()->m_ModuleTypes; }
 
 		// Retrieves the module info for the specified hash.
-		static ModuleInfo GetModuleInfo( hash_t a_Hash )
+		static EngineModuleInfo GetModuleInfo( hash_t a_Hash )
 		{
 			auto it = Get()->m_ModuleTypes.find( a_Hash );
 			if ( it != Get()->m_ModuleTypes.end() )
@@ -134,7 +140,7 @@ namespace Tridium {
 
 		// Retrieves the module info for the specified type.
 		template<typename T> requires Concepts::IsValidEngineModule<T>
-		static ModuleInfo GetModuleInfo()
+		static EngineModuleInfo GetModuleInfo()
 		{
 			static constexpr hash_t hash = Hashing::TypeHash<T>();
 			return GetModuleInfo( hash );
@@ -147,7 +153,7 @@ namespace Tridium {
 		void RegisterCoreModules();
 
 		// Using an ordered map to ensure modules are initialized in the same order they were registered.
-		Map<hash_t, ModuleInfo> m_ModuleTypes;
+		Map<hash_t, EngineModuleInfo> m_ModuleTypes;
 	};
 	//===================================
 

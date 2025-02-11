@@ -72,7 +72,7 @@ namespace Tridium {
 	private:
 		// Used as a temporary storage for the current scene when in a PIE session.
 		// Once a PIE session is ended, the scene is restored to the active scene.
-		UniquePtr<Scene> m_SceneSnapshot;
+		SharedPtr<Scene> m_SceneSnapshot;
 
 		SharedPtr<EditorCamera> m_EditorCamera;
 

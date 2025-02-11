@@ -147,7 +147,7 @@ namespace Tridium {
 	{
 		Scene* scene = SceneManager::GetActiveScene();
 		// Store a copy of the current scene in storage
-		m_SceneSnapshot = MakeUnique<Scene>( *scene );
+		m_SceneSnapshot = MakeShared<Scene>( *scene );
 
 		scene->OnBeginPlay();
 		scene->SetPaused( false );
@@ -168,8 +168,8 @@ namespace Tridium {
 		// Restore the scene from storage
 		if ( m_SceneSnapshot )
 		{
-			Scene* scene = m_SceneSnapshot.release();
-			SceneManager::SetActiveScene( scene );
+			SceneManager::SetActiveScene( m_SceneSnapshot.get() );
+			m_SceneSnapshot.reset();
 		}
 
 		TODO( "TEMP?" );

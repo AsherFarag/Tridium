@@ -52,6 +52,7 @@ namespace Tridium {
 	void Editor::Shutdown()
 	{
 		EditorApplication::Get()->Shutdown();
+		EditorApplication::Singleton::Destroy();
 	}
 
 }
