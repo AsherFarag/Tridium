@@ -3,6 +3,8 @@
 #include "ImGuizmo.h"
 
 namespace Tridium::Math {
+#if 0
+
 	void DecomposeTransform( const Matrix4& mat, Vector3& outPos, Vector3& outRot, Vector3& outScale )
 	{
 		// From glm::decompose in matrix_decompose.inl
@@ -78,5 +80,5 @@ namespace Tridium::Math {
 		DecomposeTransform( mat, outPos, tempRot, outScale );
 		outRot = Quaternion( tempRot );
 	}
-
+#endif
 }
