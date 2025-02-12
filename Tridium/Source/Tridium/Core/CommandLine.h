@@ -1,6 +1,6 @@
 #pragma once
-#include "Containers/Array.h"
-#include "Containers/String.h"
+#include <Tridium/Containers/Array.h>
+#include <Tridium/Containers/String.h>
 
 namespace Tridium {
 

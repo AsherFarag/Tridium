@@ -2,7 +2,7 @@
 #include <Tridium/Core/Core.h>
 #include <Tridium/Physics/PhysicsScene.h>
 #include <Tridium/Physics/PhysicsLayer.h>
-#include <Tridium/Core/Containers/BidirectionalMap.h>
+#include <Tridium/Containers/BidirectionalMap.h>
 #include <Tridium/ECS/GameObject.h>
 
 #include <Jolt/Jolt.h>

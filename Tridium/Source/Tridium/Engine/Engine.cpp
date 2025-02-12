@@ -7,7 +7,7 @@
 #include <Tridium/Asset/EditorAssetManager.h>
 #include <Tridium/Asset/RuntimeAssetManager.h>
 
-#include <Editor/Editor.h>
+#include <Tridium/Editor/Editor.h>
 #include <Tridium/ImGui/ImGuiLayer.h>
 
 // Temp ?
@@ -106,7 +106,7 @@ namespace Tridium {
 		#if WITH_EDITOR
 		{
 			EditorConfig editorConfig;
-			Editor::Init( std::move( editorConfig ) );
+			Editor::Internal::Init( std::move( editorConfig ) );
 		}
 		#endif // WITH_EDITOR
 
@@ -248,7 +248,7 @@ namespace Tridium {
 		ShutdownModules( EEngineInitStage::PreEngineInit );
 
 		#if WITH_EDITOR
-		Editor::Shutdown();
+		Editor::Internal::Shutdown();
 		#endif // WITH_EDITOR
 	}
 

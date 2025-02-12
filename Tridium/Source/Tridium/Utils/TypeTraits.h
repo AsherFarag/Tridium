@@ -1,7 +1,7 @@
 #pragma once
 #include <type_traits>
 #include <Tridium/Utils/Macro.h>
-#include <Tridium/Core/Containers/String.h>
+#include <Tridium/Containers/String.h>
 
 namespace Tridium {
 

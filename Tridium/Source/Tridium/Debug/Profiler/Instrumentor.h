@@ -1,9 +1,9 @@
 #pragma once
 #include <thread>
-#include <Tridium/Core/Containers/Stack.h>
-#include <Tridium/Core/Containers/Array.h>
-#include <Tridium/Core/Containers/Map.h>
-#include <Tridium/Core/Containers/Tuple.h>
+#include <Tridium/Containers/Stack.h>
+#include <Tridium/Containers/Array.h>
+#include <Tridium/Containers/Map.h>
+#include <Tridium/Containers/Tuple.h>
 #include "ProfilerTask.h"
 #include <Tridium/Utils/Singleton.h>
 #include <Tridium/Core/Memory.h>

@@ -1,6 +1,6 @@
 #pragma once
 #include <Tridium/Core/Config.h>
-#include <Tridium/Core/Containers/String.h>
+#include <Tridium/Containers/String.h>
 #include <Tridium/IO/FilePath.h>
 
 namespace Tridium {

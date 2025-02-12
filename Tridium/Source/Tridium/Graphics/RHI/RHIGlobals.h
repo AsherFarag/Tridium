@@ -1,6 +1,6 @@
 #pragma once
 #include "RHIDefinitions.h"
-#include <Tridium/Core/Containers/String.h>
+#include <Tridium/Containers/String.h>
 
 namespace Tridium {
 

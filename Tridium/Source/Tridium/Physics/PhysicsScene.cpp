@@ -3,7 +3,7 @@
 #include "PhysicsAPI.h"
 #include "Jolt/JoltPhysicsScene.h"
 #include <Tridium/Reflection/Reflection.h>
-#include <Tridium/Core/Containers/Set.h>
+#include <Tridium/Containers/Set.h>
 #include <Tridium/ECS/Components/Types.h>
 
 namespace Tridium {

@@ -1,8 +1,8 @@
 #pragma once
 #include <Tridium/Graphics/RHI/RHICommon.h>
 #include <Tridium/Graphics/RHI/DynamicRHI.h>
-#include <Tridium/Core/Containers/Array.h>
-#include <Tridium/Core/Containers/String.h>
+#include <Tridium/Containers/Array.h>
+#include <Tridium/Containers/String.h>
 
 // Resources
 #include <Tridium/Graphics/RHI/RHICommandList.h>

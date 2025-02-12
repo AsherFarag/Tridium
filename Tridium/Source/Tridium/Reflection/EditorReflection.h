@@ -12,7 +12,7 @@
 #if IS_EDITOR
 
 #include <Tridium/Core/Core.h>
-#include <Editor/PropertyDrawers.h>
+#include <Tridium/Editor/PropertyDrawers.h>
 #include <Tridium/Reflection/MetaTypes.h>
 
 #pragma region Helpers

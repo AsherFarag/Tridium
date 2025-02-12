@@ -6,7 +6,7 @@
 #include "DynamicRHI.h"
 #include <Tridium/Core/Config.h>
 #include <Tridium/Core/Memory.h>
-#include <Tridium/Core/Containers/Containers.h>
+#include <Tridium/Containers/Containers.h>
 #include <Tridium/Utils/Concepts.h>
 
 namespace Tridium {

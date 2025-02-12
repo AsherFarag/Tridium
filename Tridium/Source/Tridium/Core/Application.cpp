@@ -4,11 +4,9 @@
 #include <Tridium/IO/FileManager.h>
 #include <Tridium/Debug/Profiler/ProfileSessionSerializer.h>
 
+// TEMP!
 #if IS_EDITOR
-	#include <Editor/Editor.h>
-	#include <Tridium/Asset/EditorAssetManager.h>
-#else
-	#include <Tridium/Asset/RuntimeAssetManager.h>
+	#include <Tridium/Editor/Editor.h>
 #endif // IS_EDITOR
 
 #include <Tridium/ImGui/ImGuiLayer.h>

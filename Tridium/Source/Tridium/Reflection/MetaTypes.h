@@ -4,7 +4,7 @@
 #include <Tridium/Core/Types.h>
 #include <Tridium/IO/TextSerializer.h>
 #include "ReflProps.h"
-#include <Tridium/Core/Containers/Optional.h>
+#include <Tridium/Containers/Optional.h>
 
 namespace Tridium {
 

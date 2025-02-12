@@ -2,8 +2,8 @@
 
 #include <Tridium/Core/Config.h>
 #include <Tridium/Core/Types.h>
-#include <Tridium/Core/Containers/Map.h>
-#include <Tridium/Core/Containers/String.h>
+#include <Tridium/Containers/Map.h>
+#include <Tridium/Containers/String.h>
 #include <Tridium/Core/Memory.h>
 #include "Macro.h"
 #include <Tridium/Core/Hash.h>

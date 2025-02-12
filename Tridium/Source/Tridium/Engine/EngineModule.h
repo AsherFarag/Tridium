@@ -1,6 +1,6 @@
 #pragma once
 #include "EngineInitialization.h"
-#include <Tridium/Core/Containers/Containers.h>
+#include <Tridium/Containers/Containers.h>
 #include <Tridium/Core/Hash.h>
 #include <Tridium/Core/Assert.h>
 #include <Tridium/Utils/Singleton.h>

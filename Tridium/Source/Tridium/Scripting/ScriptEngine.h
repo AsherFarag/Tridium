@@ -1,6 +1,6 @@
 #pragma once
 #include "Script.h"
-#include <Tridium/Core/Containers/Containers.h>
+#include <Tridium/Containers/Containers.h>
 #include <Tridium/Reflection/MetaTypes.h>
 #include <Tridium/Utils/Singleton.h>
 

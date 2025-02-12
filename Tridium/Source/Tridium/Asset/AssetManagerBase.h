@@ -2,7 +2,7 @@
 #include "Asset.h"
 #include <Tridium/IO/FilePath.h>
 #include <Tridium/Utils/Concepts.h>
-#include <Tridium/Core/Containers/Map.h>
+#include <Tridium/Containers/Map.h>
 
 namespace Tridium {
 	using AssetStorageType = UnorderedMap<AssetHandle, SharedPtr<Asset>>;
