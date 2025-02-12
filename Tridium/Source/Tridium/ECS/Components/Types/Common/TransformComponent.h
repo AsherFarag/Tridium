@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/ECS/Components/Component.h>
+#include <Tridium/ECS/Components/NativeScriptComponent.h>
 #include <Tridium/Math/Rotator.h>
 
 namespace Tridium {

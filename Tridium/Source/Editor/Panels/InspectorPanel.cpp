@@ -21,27 +21,138 @@ using namespace entt::literals;
 
 namespace Tridium {
 
-	// Add spaces between words in a class name
-	// Example: "EnemyAIComponent" -> "Enemy AI Component"
-	std::string ScrubClassName( const char* a_ClassName )
-	{
-		if ( !a_ClassName )
-			return "";
-		std::string scrubbedName;
-		const size_t size = strlen( a_ClassName );
-		for ( size_t i = 0; i < size; ++i )
+	namespace Helpers {
+
+		// Add spaces between words in a class name
+		// Example: "EnemyAIComponent" -> "Enemy AI Component"
+		String ScrubClassName( const char* a_ClassName )
 		{
-			if ( i > 0 && isupper( a_ClassName[i] ) )
+			if ( !a_ClassName )
+				return "";
+
+			String scrubbedName;
+			const size_t size = strlen( a_ClassName );
+			for ( size_t i = 0; i < size; ++i )
 			{
-				if ( ( i + 1 < size && islower( a_ClassName[i + 1] ) )
-					|| 
-					 ( i - 1 > 0 && islower( a_ClassName[i - 1] ) ) )
-					scrubbedName.push_back( ' ' );
+				if ( i > 0 && isupper( a_ClassName[i] ) )
+				{
+					if ( ( i + 1 < size && islower( a_ClassName[i + 1] ) )
+						||
+						( i - 1 > 0 && islower( a_ClassName[i - 1] ) ) )
+						scrubbedName.push_back( ' ' );
+				}
+				scrubbedName.push_back( a_ClassName[i] );
 			}
-			scrubbedName.push_back( a_ClassName[i] );
+
+			return scrubbedName;
 		}
 
-		return scrubbedName;
+		const char* GetCleanClassName( const char* a_ClassName )
+		{
+			static UnorderedMap<String, String> s_CleanClassNames;
+
+			if ( s_CleanClassNames.contains( a_ClassName ) )
+				return s_CleanClassNames.at( a_ClassName ).c_str();
+
+			String cleanName = ScrubClassName( a_ClassName );
+			s_CleanClassNames[a_ClassName] = std::move( cleanName );
+			return s_CleanClassNames.at( a_ClassName ).c_str();
+		}
+
+		bool DrawComponentTreeNode( const char* a_Icon, const char* a_Name, bool a_HasOptionsButton, bool* a_OptionsPressed, bool a_IsEnabledTogglable = false, bool* a_IsEnabled = nullptr )
+		{
+			const ImGuiStyle& style = ImGui::GetStyle();
+
+			bool isOpen = false;
+
+			ImGui::SetNextItemAllowOverlap();
+
+			// Draw TreeNode
+			{
+				ImVec4 arrowColor = ImGui::GetStyleColorVec4( ImGuiCol_Text );
+				arrowColor.w = 0.5f;
+				ImGui::PushStyleColor( ImGuiCol_Text, arrowColor );
+				ImGui::PushStyleVar( ImGuiStyleVar_FrameRounding, 0.0f );
+				ImGui::PushID( a_Name );
+				isOpen = ImGui::TreeNodeEx( "", ImGuiTreeNodeFlags_Framed);
+				ImGui::PopID();
+				ImGui::PopStyleVar();
+				ImGui::PopStyleColor();
+			}
+
+			ImGui::PushID( ImGui::GetID( static_cast<const void*>( a_Name ) ) );
+			ImGui::BeginGroup();
+			{
+				// Draw Icon
+				{
+					ImGui::SameLine();
+					ImGui::Text( a_Icon );
+				}
+
+				// Draw Enabled Checkbox or Dummy
+				{
+					ImGui::SameLine();
+					const ImGuiID id = ImGui::GetID( "##CheckBox" );
+
+					float checkboxSize = ImGui::GetTextLineHeight() * 0.8f;
+					ImVec2 pos = ImGui::GetCursorScreenPos() + ImVec2( 0.0f, ( 0.5f * ( ImGui::GetFrameHeight() ) ) - ( 0.5f * checkboxSize ) );
+					const ImRect bb( pos, ImVec2( pos.x + checkboxSize, pos.y + checkboxSize ) );
+
+					ImGui::ItemSize( ImVec2( checkboxSize, checkboxSize ), style.FramePadding.y );
+					if ( ImGui::ItemAdd( bb, id )
+						&& a_IsEnabledTogglable
+						&& a_IsEnabled )
+					{
+						bool isHovered, isHeld;
+						bool pressed = ImGui::ButtonBehavior( bb, id, &isHovered, &isHeld );
+
+						if ( pressed )
+						{
+							*a_IsEnabled = !*a_IsEnabled;
+							ImGui::MarkItemEdited( id );
+						}
+
+						ImGui::RenderNavHighlight( bb, id );
+
+						// Render
+						ImGui::RenderFrame( bb.Min, bb.Max,
+							ImGui::GetColorU32( ( isHeld && isHovered ) ? ImGuiCol_FrameBgActive : isHovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg ),
+							true, style.FrameRounding );
+
+						if ( *a_IsEnabled )
+						{
+							const float pad = 4.0f;
+							const float checkSz = checkboxSize - pad * 2.0f;
+							const ImVec2 checkPos = bb.Min + ImVec2( pad, pad );
+							ImGui::RenderCheckMark( ImGui::GetCurrentWindow()->DrawList, checkPos, ImGui::GetColorU32( ImGuiCol_Text ), checkSz );
+						}
+					}
+				}
+
+				// Draw Name
+				{
+					ImGui::SameLine();
+					ImGui::TextUnformatted( a_Name );
+				}
+
+				if ( a_HasOptionsButton )
+				{
+					ImGui::SameLine(
+						ImGui::GetContentRegionAvail().x
+						- ImGui::CalcTextSize( TE_ICON_ELLIPSIS_VERTICAL ).x
+						- ( 2.0f * ImGui::GetStyle().FramePadding.x )
+					);
+
+					if ( ImGui::SmallButton( TE_ICON_ELLIPSIS_VERTICAL ) && a_OptionsPressed )
+						*a_OptionsPressed = true;
+				}
+			}
+			ImGui::EndGroup();
+			ImGui::PopID();
+
+			return isOpen;
+		}
+
 	}
 
 	// Create a set of blacklisted components that should not be drawn in the inspector
@@ -52,6 +163,7 @@ namespace Tridium {
 		entt::hashed_string( "TransformComponent" ).value(),
 		entt::hashed_string( "GUIDComponent" ).value(),
 		entt::hashed_string( "NativeScriptComponent" ).value(),
+		entt::hashed_string( "GameObjectFlagsComponent" ).value(),
 	};
 
 	static const std::unordered_map<entt::id_type, const char*> s_ComponentIcons =
@@ -69,15 +181,21 @@ namespace Tridium {
 		{ entt::hashed_string( "MeshColliderComponent" ).value(), TE_ICON_SHAPES },
 	};
 
+
+
 	InspectorPanel::InspectorPanel()
 		: Panel( "Inspector" )
 	{
 		m_OnGameObjectSelectedHandle = Events::OnGameObjectSelected.Add<&InspectorPanel::SetInspectedGameObject>( this );
 	}
 
+
+
 	InspectorPanel::~InspectorPanel()
 	{
 	}
+
+
 
 	void InspectorPanel::OnImGuiDraw()
 	{
@@ -98,6 +216,8 @@ namespace Tridium {
 		ImGui::End();
 	}
 
+
+
 	void InspectorPanel::SetInspectedGameObject( GameObject gameObject )
 	{
 		const bool isSameGameObject = InspectedGameObject == gameObject;
@@ -110,89 +230,289 @@ namespace Tridium {
 		}
 	}
 
-	bool DrawComponentTreeNode(const char* a_Name, bool a_HasOptionsButton)
-	{
-		ImGui::SetNextItemAllowOverlap();
-		const bool isOpen = ImGui::TreeNodeEx( a_Name, ImGuiTreeNodeFlags_Framed );
 
-		if ( a_HasOptionsButton )
-		{
-			ImGui::SameLine( 
-				ImGui::GetContentRegionMax().x 
-				- ImGui::CalcTextSize( TE_ICON_GEAR ).x
-				- ( 2.0f * ImGui::GetStyle().FramePadding.x )
-			);
-			std::string optionsName = fmt::format( TE_ICON_GEAR "##{0}", a_Name );
-			if ( ImGui::SmallButton( optionsName.c_str() ) )
-				ImGui::OpenPopup( a_Name );
-		}
-
-		return isOpen;
-	}
 
 	void InspectorPanel::DrawInspectedGameObject()
 	{
+		const ImGuiStyle& style = ImGui::GetStyle();
+
+		// Draw enabled checkbox
+		{
+			bool enabled = InspectedGameObject.IsEnabled();
+			if ( ImGui::Checkbox( "##_Enabled", &enabled ) )
+			{
+				InspectedGameObject.SetEnabled( enabled );
+			}
+		}
+
+		ImGui::SameLine( 0.0f, style.ItemInnerSpacing.x );
+
+		// Draw gameobject name as editable text input field
 		if ( TagComponent* tagComponent = InspectedGameObject.TryGetComponent<TagComponent>() )
 		{
-			std::string tag = InspectedGameObject.GetComponent<TagComponent>().Tag;
+			String tag = InspectedGameObject.GetComponent<TagComponent>().Tag;
 			if ( ImGui::InputText( TE_ICON_PENCIL "##Tag", &tag, ImGuiInputTextFlags_EnterReturnsTrue ) )
 			{
 				tagComponent->Tag = std::move(tag);
 			}
 		}
 
-		ImGui::SameLine( ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize( TE_ICON_TRASH_CAN ).x );
+		ImGui::SameLine( ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize( TE_ICON_GEAR ).x );
 
-		ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Button, Style::Colors::Red.Value );
-
-		if ( ImGui::Button( TE_ICON_TRASH_CAN ) ) 
-		{ 
-			InspectedGameObject.Destroy();
+		if ( ImGui::Button( TE_ICON_ELLIPSIS_VERTICAL ) )
+		{
+			ImGui::OpenPopup( "GameObjectOptions" );
 		}
 
-		ImGui::PopStyleColor();
+		if ( ImGui::BeginPopup( "GameObjectOptions" ) )
+		{
+			{
+				bool active = InspectedGameObject.IsActive();
+				if ( ImGui::Checkbox( TE_ICON_LIGHTBULB " Active", &active ) )
+				{
+					InspectedGameObject.SetActive( active );
+				}
+			}
+
+			{
+				bool visible = InspectedGameObject.IsVisible();
+				if ( ImGui::Checkbox( TE_ICON_EYE " Visible", &visible ) )
+				{
+					InspectedGameObject.SetVisible( visible );
+				}
+			}
+
+			{
+				ImGui::ScopedStyleCol redText( ImGuiCol_Text, ImVec4( Style::Colors::Red ) );
+				if ( ImGui::MenuItem( TE_ICON_TRASH_CAN " Delete" ) )
+				{
+					InspectedGameObject.Destroy();
+					InspectedGameObject = GameObject();
+					Events::OnGameObjectSelected.Broadcast( GameObject() );
+				}
+			}
+
+			ImGui::EndPopup();
+		}
 
 		ImGui::Separator();
 
 		// Draw all components attached to the GameObject
+		DrawComponents( InspectedGameObject );
+	}
+
+
+
+	void InspectorPanel::DrawComponents( GameObject a_GO )
+	{
+		ImGuiStyle& style = ImGui::GetStyle();
 
 		// Draw TransformComponent first
-		if ( TransformComponent* tc = InspectedGameObject.TryGetComponent<TransformComponent>() )
+		if ( TransformComponent* tc = a_GO.TryGetComponent<TransformComponent>() )
 		{
-			if ( DrawComponentTreeNode( TE_ICON_CUBES " Transform", false ) )
+			if ( Helpers::DrawComponentTreeNode( TE_ICON_CUBES, "Transform", false, nullptr, false ) )
 			{
-				Editor::DrawProperty( "Position", tc->Position, EDrawPropertyFlags::Editable );
-				Editor::DrawProperty( "Rotation", tc->Rotation, EDrawPropertyFlags::Editable );
-				Editor::DrawProperty( "Scale   ", tc->Scale, EDrawPropertyFlags::Editable );
+				if ( ImGui::BeginTable( "", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_Resizable ) )
+				{
+					const float firstColumnWidth = ImGui::CalcTextSize( "Position   " ).x + ImGui::GetStyle().ItemSpacing.x * 2.0f;
+					ImGui::TableSetupColumn( "##Property", ImGuiTableColumnFlags_WidthStretch, firstColumnWidth );
+
+					// Draw Position
+					{
+						ImGui::TableNextRow();
+						ImGui::TableNextColumn();
+						ImGui::TextUnformatted( "Position" );
+						ImGui::TableNextColumn();
+
+						ImGui::PushID( "p" );
+						Editor::DrawProperty( "", tc->Position, EDrawPropertyFlags::Editable );
+						ImGui::PopID();
+					}
+
+					// Draw Rotation
+					{
+						ImGui::TableNextRow();
+						ImGui::TableNextColumn();
+						ImGui::TextUnformatted( "Rotation" );
+						ImGui::TableNextColumn();
+
+						ImGui::PushID( "r" );
+						Editor::DrawProperty( "", tc->Rotation, EDrawPropertyFlags::Editable );
+						ImGui::PopID();
+					}
+
+					// Draw Scale
+					{
+						ImGui::TableNextRow();
+						ImGui::TableNextColumn();
+						ImGui::TextUnformatted( "Scale" );
+
+						// Draw Scale lock button
+						// Store the lock state in ImGui State storage so it can be saved per GameObject
+						bool useScaleLock = false;
+						{
+							ImGuiStorage* storage = ImGui::GetStateStorage();
+							ImGuiID id = ImGui::GetID( reinterpret_cast<const void*>( a_GO.ID() ) );
+							useScaleLock = storage->GetBool( id, false );
+							ImGui::SameLine();
+							ImGui::PushID( "Lock" );
+							// Set the colors for the button to the same as a checkbox
+							ImGui::PushStyleColor( ImGuiCol_Button, style.Colors[ImGuiCol_FrameBg] );
+							ImGui::PushStyleColor( ImGuiCol_ButtonHovered, style.Colors[ImGuiCol_FrameBgHovered] );
+							ImGui::PushStyleColor( ImGuiCol_ButtonActive, style.Colors[ImGuiCol_FrameBgActive] );
+							if ( ImGui::Button( ( useScaleLock ? TE_ICON_LOCK : "" ), ImVec2( ImGui::GetFrameHeight(), ImGui::GetFrameHeight() ) ) )
+							{
+								useScaleLock = !useScaleLock;
+								storage->SetBool( id, useScaleLock );
+							}
+							ImGui::PopStyleColor( 3 );
+							ImGui::PopID();
+
+							if ( ImGui::BeginItemTooltip() )
+							{
+								ImGui::TextUnformatted( "Lock Proportions" );
+								ImGui::EndTooltip();
+							}
+						}
+
+						ImGui::TableNextColumn();
+						{
+							Vector3 scale = tc->Scale;
+							const Vector3 oldScale = scale;
+
+							ImGui::PushID( "s" );
+							if ( Editor::DrawProperty( "", scale, EDrawPropertyFlags::Editable ) )
+							{
+								if ( useScaleLock )
+								{
+									// Find the value that was changed
+									float changedValue = 0.0f;
+									if ( scale.x != oldScale.x )
+										changedValue = scale.x;
+									else if ( scale.y != oldScale.y )
+										changedValue = scale.y;
+									else if ( scale.z != oldScale.z )
+										changedValue = scale.z;
+
+									// Calculate the proportional change based on the changed axis
+									if ( scale.x != oldScale.x )
+									{
+										// Lock the proportions by scaling the other axes
+										float proportion = oldScale.x == 0.0f ? 1.0f : scale.x / oldScale.x;
+										scale.y = oldScale.y * proportion;
+										scale.z = oldScale.z * proportion;
+									}
+									else if ( scale.y != oldScale.y )
+									{
+										// Lock the proportions by scaling the other axes
+										float proportion = oldScale.y == 0.0f ? 1.0f : scale.y / oldScale.y;
+										scale.x = oldScale.x * proportion;
+										scale.z = oldScale.z * proportion;
+									}
+									else if ( scale.z != oldScale.z )
+									{
+										// Lock the proportions by scaling the other axes
+										float proportion = oldScale.z == 0.0f ? 1.0f : scale.z / oldScale.z;
+										scale.x = oldScale.x * proportion;
+										scale.y = oldScale.y * proportion;
+									}
+								}
+							}
+							ImGui::PopID();
+
+							tc->Scale = scale;
+						}
+					}
+
+
+					ImGui::EndTable();
+				}
 
 				ImGui::TreePop();
 			}
 		}
 
-		auto components = InspectedGameObject.GetAllComponents();
+		auto components = a_GO.GetAllComponents();
 		for ( auto& [metaType, component] : components )
 		{
 			if ( s_BlacklistedComponents.contains( metaType.ID() ) )
 				continue;
 
-			const char* icon = s_ComponentIcons.contains( metaType.ID() ) ? s_ComponentIcons.at( metaType.ID() ) : TE_ICON_GEARS;
-			std::string className = fmt::format( "{0} {1}", icon, ScrubClassName( metaType.GetCleanTypeName() ) );
+			NativeScriptComponent* asNative = metaType.IsBaseOf( Refl::ResolveMetaType<NativeScriptComponent>() ) ? static_cast<NativeScriptComponent*>( component ) : nullptr;
 
-			// Component options popup
-			if ( ImGui::BeginPopup( className.c_str() ) )
+			const char* icon = s_ComponentIcons.contains( metaType.ID() ) ? s_ComponentIcons.at( metaType.ID() ) : TE_ICON_GEARS;
+			const char* className = Helpers::GetCleanClassName( metaType.GetCleanTypeName() );
+
 			{
-				if ( ImGui::MenuItem( TE_ICON_X " Remove Component" ) )
+				constexpr EComponentFlags::Type enabledFlag = (EComponentFlags::Type)( EComponentFlags::Active | EComponentFlags::Visible );
+
+				bool hasOptionsButton = true;
+				bool isOptionsPressed = false;
+				bool isActiveToggleable = asNative != nullptr;
+				const bool isComponentActive = asNative ? asNative->Flags().HasFlag( enabledFlag ) : true;
+				bool componentActive = isComponentActive;
+
+				bool isOpen = Helpers::DrawComponentTreeNode( icon, className, hasOptionsButton, &isOptionsPressed, isActiveToggleable, &componentActive );
+				if ( asNative && componentActive != isComponentActive )
 				{
-					auto removeFromGameObjectFunc = metaType.GetMetaAttribute<Refl::Props::RemoveFromGameObjectProp::Type>( Refl::Props::RemoveFromGameObjectProp::ID );
-					if ( CORE_ASSERT( removeFromGameObjectFunc.has_value() ) )
-						removeFromGameObjectFunc.value()( *SceneManager::GetActiveScene(), InspectedGameObject );
+					asNative->SetVisible( componentActive );
+					asNative->SetActive( componentActive );
 				}
 
-				ImGui::EndPopup();
-			}
+				if ( isOptionsPressed )
+					ImGui::OpenPopup( className );
 
-			if ( !DrawComponentTreeNode( className.c_str(), true) )
-				continue;
+				// Component options popup
+				if ( ImGui::BeginPopup( className ) )
+				{
+					ImGui::PushStyleColor( ImGuiCol_Separator, ImVec4( 1.0f, 1.0f, 1.0f, 0.5f ) );
+
+					if ( asNative )
+					{
+						ImGui::PushFont( ImGui::GetBoldFont() );
+						ImGui::SeparatorText( "Native Script Component" );
+						ImGui::PopFont();
+
+						// Draw active checkbox
+						{
+							bool active = asNative->Flags().HasFlag( EComponentFlags::Active );
+							if ( ImGui::Checkbox( TE_ICON_LIGHTBULB " Active", &active ) )
+							{
+								asNative->SetActive( active );
+							}
+						}
+
+						// Draw visible checkbox
+						{
+							bool visible = asNative->HasFlag( EComponentFlags::Visible );
+							if ( ImGui::Checkbox( TE_ICON_EYE " Visible", &visible ) )
+							{
+								asNative->SetVisible( visible );
+							}
+						}
+
+						ImGui::Separator();
+					}
+
+					// Draw remove component button
+					{
+						ImGui::ScopedStyleCol redText( ImGuiCol_Text, ImVec4( Style::Colors::Red ) );
+						if ( ImGui::MenuItem( TE_ICON_TRASH_CAN " Remove Component" ) )
+						{
+							auto removeFromGameObjectFunc = metaType.GetMetaAttribute<Refl::Props::RemoveFromGameObjectProp::Type>( Refl::Props::RemoveFromGameObjectProp::ID );
+							if ( CORE_ASSERT( removeFromGameObjectFunc.has_value() ) )
+								removeFromGameObjectFunc.value()( *SceneManager::GetActiveScene(), a_GO );
+						}
+					}
+
+					ImGui::PopStyleColor();
+
+					ImGui::EndPopup();
+				}
+
+				if ( !isOpen )
+					continue;
+			}
 
 			Refl::MetaAny handle = metaType.FromVoid( component );
 			Tridium::Refl::Internal::DrawAllMembersOfMetaClass( metaType, handle );
@@ -201,12 +521,16 @@ namespace Tridium {
 		}
 	}
 
+
+
 	template <typename T, typename... Args>
 	void AddComponentToGameObject( GameObject go, Args&&... args )
 	{
 		if ( go.TryAddComponent<T>( std::forward<Args>( args )... ) == nullptr )
 			LOG_ERROR( "{0} already has a [{1}]!", go.GetTag(), typeid( T ).name() );
 	}
+
+
 
 	void InspectorPanel::DrawAddComponentButton()
 	{
@@ -245,8 +569,8 @@ namespace Tridium {
 				if ( !metaType.IsComponent() )
 					continue;
 
-				std::string className = ScrubClassName( metaType.GetCleanTypeName() );
-				if ( !ImGui::MenuItem( className.c_str() ) )
+				const char* className = Helpers::GetCleanClassName( metaType.GetCleanTypeName() );
+				if ( !ImGui::MenuItem( className ) )
 					continue;
 
 				auto addToGameObjectFunc = metaType.GetMetaAttribute<Refl::Props::AddToGameObjectProp::Type>( Refl::Props::AddToGameObjectProp::ID );

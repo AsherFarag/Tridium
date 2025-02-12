@@ -3,6 +3,8 @@
 #include <Tridium/Engine/Engine.h>
 #include "imgui_internal.h"
 
+float Tridium::s_FontSize = 17.85f;
+
 namespace ImGui {
 
     struct InputTextCallback_UserData

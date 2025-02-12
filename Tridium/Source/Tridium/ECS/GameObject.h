@@ -3,7 +3,7 @@
 #include <Tridium/Reflection/MetaTypes.h>
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Scene/SceneManager.h>
-#include <Tridium/Core/EnumFlags.h>
+#include <Tridium/ECS/Components/CoreComponents.h>
 
 namespace Tridium {
 
@@ -12,27 +12,6 @@ namespace Tridium {
 	class TagComponent;
 	class GUIDComponent;
 	class TransformComponent;
-
-	//================================================================
-	// GameObject Flags
-	//  Bit flags used to represent the state of a GameObject.
-	namespace EGameObjectFlag {
-		enum Type : uint32_t
-		{
-			None = 0,
-			// Is this GameObject pending destruction?
-			PendingKill = 1 << 0,
-			// If not active, this GameObject will not be updated.
-			Active = 1 << 1,
-			// If not visible, this GameObject will not be rendered.
-			Visible = 1 << 2,
-		};
-	}
-
-	using GameObjectFlags = EnumFlags<EGameObjectFlag::Type>;
-	static constexpr GameObjectFlags DefaultGameObjectFlags{ EGameObjectFlag::Active | EGameObjectFlag::Visible };
-
-	//================================================================
 
 	//================================================================
 	// GameObject
@@ -66,8 +45,9 @@ namespace Tridium {
 		inline void CopyFrom( GameObject a_Other ) { SceneManager::GetActiveScene()->CopyGameObject( *this, a_Other ); }
 
 		GUID GetGUID() const;
-		const EntityID ID() const { return m_ID; }
-		std::string& GetTag() const;
+		EntityID ID() const { return m_ID; }
+		TagComponent* GetTagComponent() const;
+		const String& GetTag() const;
 
 		//================================================================
 		// GameObject Flags
@@ -77,6 +57,8 @@ namespace Tridium {
 		void SetActive( bool a_Active, bool a_PropagateToChildren = false );
 		bool IsVisible() { return GetFlags().HasFlag( EGameObjectFlag::Visible ); }
 		void SetVisible( bool a_Visible, bool a_PropagateToChildren = false );
+		bool IsEnabled() { return GetFlags().HasFlag( EGameObjectFlag::Enabled ); }
+		void SetEnabled( bool a_Enabled, bool a_PropagateToChildren = false );
 		//================================================================
 
 		//================================================================

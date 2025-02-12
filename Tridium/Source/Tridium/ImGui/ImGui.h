@@ -11,7 +11,7 @@
 
 namespace Tridium {
 
-	static float s_FontSize = 20.f;
+	extern float s_FontSize;
 
 }
 

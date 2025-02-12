@@ -2,6 +2,7 @@
 #include <Tridium/Utils/Todo.h>
 #include <Tridium/Core/Memory.h>
 #include <Tridium/ECS/ECS.h>
+#include <Tridium/ECS/Components/CoreComponents.h>
 
 namespace Tridium {
 
@@ -26,6 +27,10 @@ namespace Tridium {
 
 		template<typename T>
 		concept IsDerivedFromNativeScriptComponent = 
+			IsBaseOf<NativeScriptComponent, T> && !IsSame<NativeScriptComponent, T>;
+
+		template<typename T>
+		concept IsNativeScriptComponent =
 			IsBaseOf<NativeScriptComponent, T> && !IsSame<NativeScriptComponent, T>;
 
 		template<typename T>
@@ -66,7 +71,6 @@ namespace Tridium {
 		friend class Scene;
 	};
 
-
 	//================================================================
 	// Component Ticker
 	//	This class is used to update a component type in an ECS.
@@ -97,12 +101,14 @@ namespace Tridium {
 			{
 				if ( GetECS() == nullptr )
 					return;
-				auto view = GetECS()->View<T>();
-				for ( auto entity : view )
-				{
-					T& component = view.get<T>( entity );
-					component.OnBeginPlay();
-				}
+
+				auto view = GetECS()->View<GameObjectFlagsComponent, T>();
+				view.each( +[]( const GameObjectFlagsComponent& a_GameObjectFlags, T& a_Component )
+					{
+						if ( a_GameObjectFlags.Flags.HasFlag( EGameObjectFlag::Active )
+							&& a_Component.Flags().HasFlag( EComponentFlags::Active ) )
+							a_Component.OnBeginPlay();
+					} );
 			}
 		}
 
@@ -113,12 +119,15 @@ namespace Tridium {
 				if ( GetECS() == nullptr )
 					return;
 
-				auto view = GetECS()->View<T>();
-				for ( auto entity : view )
-				{
-					T& component = view.get<T>( entity );
-					component.OnUpdate( a_DeltaTime );
-				}
+				auto view = GetECS()->View<GameObjectFlagsComponent, T>();
+				view.each( [=]( const GameObjectFlagsComponent& a_GameObjectFlags, T& a_Component )
+					{
+						if ( a_GameObjectFlags.Flags.HasFlag( EGameObjectFlag::Active )
+							&& a_Component.Flags().HasFlag( EComponentFlags::Active ) )
+						{
+							a_Component.OnUpdate( a_DeltaTime );
+						}
+					} );
 			}
 		}
 

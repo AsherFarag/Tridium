@@ -341,7 +341,7 @@ namespace Tridium {
 			return;
 		}
 
-		std::string label = go.GetTag();
+		const String& label = go.GetTag();
 		bool selected = go == m_SelectedGameObject;
 		bool hasChildren = go.GetChildren().size() > 0;
 

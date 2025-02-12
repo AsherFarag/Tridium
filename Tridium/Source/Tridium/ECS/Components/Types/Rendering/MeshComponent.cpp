@@ -6,7 +6,7 @@
 namespace Tridium {
 
 	BEGIN_REFLECT_COMPONENT( StaticMeshComponent, Scriptable )
-		BASE( Component )
+		BASE( NativeScriptComponent )
 		PROPERTY( Mesh, Serialize | EditAnywhere )
 		PROPERTY( Materials, Serialize | EditAnywhere )
 		PROPERTY( CastShadows, Serialize | EditAnywhere )

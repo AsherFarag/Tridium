@@ -122,9 +122,9 @@ namespace Tridium::Editor {
 		bool modified = false;
 		{
 			constexpr float NumFloats = 2;
-			float regionWidthAvail = ImGui::GetContentRegionAvail().x - ( ImGui::GetContentRegionMax().x - ImGui::GetContentRegionAvail().x );
+			float regionWidthAvail = ImGui::GetContentRegionAvail().x;
 			regionWidthAvail -= ImGui::CalcTextSize( a_Name ).x;
-			regionWidthAvail -= ImGui::GetStyle().ItemSpacing.x * NumFloats - 1;
+			regionWidthAvail -= ImGui::GetStyle().ItemSpacing.x * ( NumFloats - 1 );
 			float itemWidth = regionWidthAvail / NumFloats;
 
 			ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 1 );
@@ -165,9 +165,9 @@ namespace Tridium::Editor {
 		bool modified = false;
 		{
 			constexpr float NumFloats = 3;
-			float regionWidthAvail = ImGui::GetContentRegionAvail().x - ( ImGui::GetContentRegionMax().x - ImGui::GetContentRegionAvail().x );
+			float regionWidthAvail = ImGui::GetContentRegionAvail().x;
 			regionWidthAvail -= ImGui::CalcTextSize( a_Name ).x;
-			regionWidthAvail -= ImGui::GetStyle().ItemSpacing.x * NumFloats - 1;
+			regionWidthAvail -= ImGui::GetStyle().ItemSpacing.x * ( NumFloats - 1 );
 			float itemWidth = regionWidthAvail / NumFloats;
 
 			ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 1 );
@@ -178,19 +178,19 @@ namespace Tridium::Editor {
 				ImGui::PushItemWidth( itemWidth );
 
 				// x
-				_DRAW_FLOAT( 0, Style::Colors::Red )
+				_DRAW_FLOAT( 0, Style::Colors::Red );
 
-					ImGui::SameLine();
+				ImGui::SameLine();
 
 				// y
-				_DRAW_FLOAT( 1, Style::Colors::Green )
+				_DRAW_FLOAT( 1, Style::Colors::Green );
 
-					ImGui::SameLine();
+				ImGui::SameLine();
 
 				// z
-				_DRAW_FLOAT( 2, Style::Colors::Blue )
+				_DRAW_FLOAT( 2, Style::Colors::Blue );
 
-					ImGui::PopItemWidth();
+				ImGui::PopItemWidth();
 			}
 			ImGui::PopID();
 			ImGui::EndGroup();
@@ -212,9 +212,9 @@ namespace Tridium::Editor {
 		bool modified = false;
 		{
 			constexpr float NumFloats = 4;
-			float regionWidthAvail = ImGui::GetContentRegionAvail().x - ( ImGui::GetContentRegionMax().x - ImGui::GetContentRegionAvail().x );
+			float regionWidthAvail = ImGui::GetContentRegionAvail().x;
 			regionWidthAvail -= ImGui::CalcTextSize( a_Name ).x;
-			regionWidthAvail -= ImGui::GetStyle().ItemSpacing.x * NumFloats - 1;
+			regionWidthAvail -= ImGui::GetStyle().ItemSpacing.x * ( NumFloats - 1 );
 			float itemWidth = regionWidthAvail / NumFloats;
 
 			ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 1 );
@@ -264,9 +264,9 @@ namespace Tridium::Editor {
 		bool modified = false;
 		{
 			constexpr float NumInts = 2;
-			float regionWidthAvail = ImGui::GetContentRegionAvail().x - ( ImGui::GetContentRegionMax().x - ImGui::GetContentRegionAvail().x );
+			float regionWidthAvail = ImGui::GetContentRegionAvail().x;
 			regionWidthAvail -= ImGui::CalcTextSize( a_Name ).x;
-			regionWidthAvail -= ImGui::GetStyle().ItemSpacing.x * NumInts - 1;
+			regionWidthAvail -= ImGui::GetStyle().ItemSpacing.x * ( NumInts - 1 );
 			float itemWidth = regionWidthAvail / NumInts;
 
 			ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 1 );
@@ -306,9 +306,9 @@ namespace Tridium::Editor {
 		bool modified = false;
 		{
 			constexpr float NumInts = 3;
-			float regionWidthAvail = ImGui::GetContentRegionAvail().x - ( ImGui::GetContentRegionMax().x - ImGui::GetContentRegionAvail().x );
+			float regionWidthAvail = ImGui::GetContentRegionAvail().x;
 			regionWidthAvail -= ImGui::CalcTextSize( a_Name ).x;
-			regionWidthAvail -= ImGui::GetStyle().ItemSpacing.x * NumInts - 1;
+			regionWidthAvail -= ImGui::GetStyle().ItemSpacing.x * ( NumInts - 1 );
 			float itemWidth = regionWidthAvail / NumInts;
 
 			ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 1 );
@@ -353,9 +353,9 @@ namespace Tridium::Editor {
 		bool modified = false;
 		{
 			constexpr float NumInts = 4;
-			float regionWidthAvail = ImGui::GetContentRegionAvail().x - ( ImGui::GetContentRegionMax().x - ImGui::GetContentRegionAvail().x );
+			float regionWidthAvail = ImGui::GetContentRegionAvail().x;
 			regionWidthAvail -= ImGui::CalcTextSize( a_Name ).x;
-			regionWidthAvail -= ImGui::GetStyle().ItemSpacing.x * NumInts - 1;
+			regionWidthAvail -= ImGui::GetStyle().ItemSpacing.x * ( NumInts - 1 );
 			float itemWidth = regionWidthAvail / NumInts;
 
 			ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 1 );

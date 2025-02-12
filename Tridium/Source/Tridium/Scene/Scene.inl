@@ -56,7 +56,7 @@ namespace Tridium {
 		// Set the GameObject for the component
 		if constexpr ( Concepts::IsBaseOf<Component, T> )
 		{
-			component.m_GameObject = gameObject;
+			component.m_EntityID = gameObject;
 		}
 
 		// Send an OnComponentCreated event to all scene systems

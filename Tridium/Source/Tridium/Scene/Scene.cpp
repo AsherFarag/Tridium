@@ -37,7 +37,7 @@ namespace Tridium {
 		return result;
 	}
 
-	Scene::Scene(const std::string& name)
+	Scene::Scene(const String& name)
 		: m_Name( name ), m_SceneRenderer(*this)
 	{
 		Initialize();
@@ -81,7 +81,7 @@ namespace Tridium {
 				//	{
 				//		const TransformComponent& tc = view.get<TransformComponent>( entity );
 				//		TransformComponent& newTc = m_ECS.AddComponentToEntity<TransformComponent>( entity, tc );
-				//		newTc.m_GameObject = GameObject( entity );
+				//		newTc.m_EntityID = GameObject( entity );
 				//	}
 				//	continue;
 				//}
@@ -100,7 +100,7 @@ namespace Tridium {
 					dstComponent.assign( srcComponent );
 
 					if ( Component* dstAsComponent = dstComponent.try_cast<Component>() )
-						dstAsComponent->m_GameObject = GameObject( entity );
+						dstAsComponent->m_EntityID = GameObject( entity );
 				}
 			}
 

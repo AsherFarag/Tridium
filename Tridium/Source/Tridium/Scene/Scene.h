@@ -17,7 +17,6 @@ namespace Tridium {
 	class Camera;
 	class CameraComponent;
 	class EnvironmentMap;
-	// --------------------
 
 	struct SceneState
 	{
@@ -30,7 +29,7 @@ namespace Tridium {
 	{
 		using SystemStorage = std::unordered_map<size_t, SharedPtr<ISceneSystem>>;
 	public:
-		Scene( const std::string& a_Name = "Untitled");
+		Scene( const String& a_Name = "Untitled");
 		Scene( const Scene& a_Other );
 		~Scene();
 
@@ -146,7 +145,7 @@ namespace Tridium {
 		//////////////////////////////////////////////////////////////////////////
 
 	private:
-		std::string m_Name;
+		String m_Name;
 		SceneEnvironment m_SceneEnvironment;
 		SystemStorage m_Systems;
 

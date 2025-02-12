@@ -252,6 +252,10 @@ namespace Tridium {
         {
             bool wasChanged = false;
 
+			// Make the second column consume the remaining space
+			if ( !ImGui::BeginTable( "##Table", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_Resizable ) )
+				return false;
+
             for ( auto&& [id, metaData] : a_MetaType.Properties() )
             {
                 bool memberWasChanged = false;
@@ -278,32 +282,48 @@ namespace Tridium {
                 MetaAny memberData = a_Handle.type().is_pointer_like() ? metaData.get( *a_Handle ) : metaData.get( a_Handle );
 				MetaType memberType = memberData.type().is_pointer_like() ? memberData.type().remove_pointer() : memberData.type();
 
-                // If the property has a draw function, call it.
-                if ( auto drawFuncProp = memberType.GetMetaAttribute( Props::DrawPropertyProp::ID ) )
+				// Draw the property name on the left side of the table
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::TextUnformatted( ScrubPropertyName( metaData.name() ).c_str() );
+
+				// Draw the property on the right side of the table
+				ImGui::TableNextColumn();
+				ImGui::PushItemWidth( -1 );
                 {
-                    auto drawFunc = drawFuncProp.value().cast<Props::DrawPropertyProp::Type>();
-                    memberWasChanged |= drawFunc( ScrubPropertyName( metaData.name() ).c_str(), memberData, drawFlag );
+					ImGui::PushID( metaData.name().c_str() );
+                    // If the property has a draw function, call it.
+                    if ( auto drawFuncProp = memberType.GetMetaAttribute( Props::DrawPropertyProp::ID ) )
+                    {
+                        auto drawFunc = drawFuncProp.value().cast<Props::DrawPropertyProp::Type>();
+                        memberWasChanged |= drawFunc( "", memberData, drawFlag );
+                    }
+                    // Handle the drawing of associative containers
+                    else if ( metaData.type().is_associative_container() )
+                    {
+                        auto associativeContainer = ( *memberData ).as_associative_container();
+                        if ( associativeContainer.key_only() )
+                        {
+                            TODO( "Add property drawing for key only associative containers!" );
+                        }
+                        else
+                        {
+                            memberWasChanged |= DrawKeyToValueAssociativeContainer( associativeContainer, metaData, drawFlag );
+                        }
+                    }
+                    // Handle the drawing of sequence containers
+                    else if ( metaData.type().is_sequence_container() )
+                    {
+                        auto sequenceContainer = ( *memberData ).as_sequence_container();
+                        memberWasChanged |= DrawSequenceContainer( sequenceContainer, metaData, drawFlag );
+                    }
+					ImGui::PopID();
                 }
-				// Handle the drawing of associative containers
-                else if ( metaData.type().is_associative_container() )
-                {
-					auto associativeContainer = ( *memberData ).as_associative_container();
-					if ( associativeContainer.key_only() )
-					{
-                        TODO( "Add property drawing for key only associative containers!" );
-					}
-					else
-					{
-						memberWasChanged |= DrawKeyToValueAssociativeContainer( associativeContainer, metaData, drawFlag );
-					}
-                }
-				// Handle the drawing of sequence containers
-                else if ( metaData.type().is_sequence_container() )
-                {
-                    auto sequenceContainer = ( *memberData ).as_sequence_container();
-                    memberWasChanged |= DrawSequenceContainer( sequenceContainer, metaData, drawFlag );
-                }
+
+				ImGui::PopItemWidth();
             }
+
+			ImGui::EndTable();
 
             return wasChanged;
         }

@@ -28,9 +28,18 @@ namespace Tridium {
         return GetComponent<GUIDComponent>().GetID();
     }
 
-    std::string& GameObject::GetTag() const 
+    TagComponent* GameObject::GetTagComponent() const
     {
-        return GetComponent<TagComponent>().Tag;
+        return TryGetComponent<TagComponent>();
+    }
+
+    const String& GameObject::GetTag() const
+    {
+		if ( auto* tagComponent = GetTagComponent() )
+			return tagComponent->Tag;
+
+		static const String s_Unknown{ "Unknown" };
+		return s_Unknown;
     }
 
 	//////////////////////////////////////////////////////////////////////////
@@ -74,6 +83,22 @@ namespace Tridium {
 				child.SetVisible( a_Visible, a_PropagateToChildren );
 			}
 		}
+    }
+
+    void GameObject::SetEnabled( bool a_Enabled, bool a_PropagateToChildren )
+    {
+        static const Refl::MetaType NativeScriptComponentType = Refl::ResolveMetaType<NativeScriptComponent>();
+
+        GameObjectFlags& flags = GetComponent<GameObjectFlagsComponent>().Flags;
+        flags.SetFlag( EGameObjectFlag::Enabled, a_Enabled );
+
+        if ( a_PropagateToChildren )
+        {
+            for ( auto child : GetChildren() )
+            {
+                child.SetEnabled( a_Enabled, a_PropagateToChildren );
+            }
+        }
     }
 
 	//////////////////////////////////////////////////////////////////////////

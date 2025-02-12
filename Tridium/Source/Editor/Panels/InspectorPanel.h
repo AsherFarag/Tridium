@@ -18,6 +18,7 @@ namespace Tridium {
 
 	private:
 		void DrawInspectedGameObject();
+		void DrawComponents( GameObject a_GO );
 		void DrawAddComponentButton();
 
 		GameObject InspectedGameObject;

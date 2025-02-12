@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/ECS/Components/Component.h>
+#include <Tridium/ECS/Components/NativeScriptComponent.h>
 #include <Tridium/Graphics/Rendering/Lights.h>
 
 namespace Tridium {
@@ -7,7 +7,7 @@ namespace Tridium {
 	class Framebuffer;
 	class CubeMap;
 
-	class PointLightComponent : public Component
+	class PointLightComponent : public NativeScriptComponent
 	{
 		REFLECT( PointLightComponent );
 	public:
@@ -36,7 +36,7 @@ namespace Tridium {
 		SharedPtr<Framebuffer> ShadowMap;
 	};
 
-	class SpotLightComponent : public Component
+	class SpotLightComponent : public NativeScriptComponent
 	{
 		REFLECT( SpotLightComponent );
 	public:
@@ -72,7 +72,7 @@ namespace Tridium {
 		SharedPtr<Framebuffer> ShadowMap;
 	};
 
-	class DirectionalLightComponent : public Component
+	class DirectionalLightComponent : public NativeScriptComponent
 	{
 		REFLECT( DirectionalLightComponent );
 	public:

@@ -5,7 +5,7 @@
 namespace Tridium {
 
 	BEGIN_REFLECT_COMPONENT( PointLightComponent, Scriptable )
-		BASE( Component )
+		BASE( NativeScriptComponent )
 		PROPERTY( LightColor, Serialize | EditAnywhere )
 		PROPERTY( Intensity, Serialize | EditAnywhere )
 		PROPERTY( FalloffExponent, Serialize | EditAnywhere )
@@ -17,7 +17,7 @@ namespace Tridium {
 
 	
 	BEGIN_REFLECT_COMPONENT( SpotLightComponent, Scriptable )
-		BASE( Component )
+		BASE( NativeScriptComponent )
 		PROPERTY( LightColor,       Serialize | EditAnywhere )
 		PROPERTY( Intensity,        Serialize | EditAnywhere )
 		PROPERTY( FalloffExponent,  Serialize | EditAnywhere )
@@ -30,7 +30,7 @@ namespace Tridium {
 	END_REFLECT_COMPONENT( SpotLightComponent );
 
 	BEGIN_REFLECT_COMPONENT( DirectionalLightComponent, Scriptable )
-		BASE( Component )
+		BASE( NativeScriptComponent )
 		PROPERTY( LightColor,    Serialize | EditAnywhere )
 		PROPERTY( Intensity,     Serialize | EditAnywhere )
 		PROPERTY( CastsShadows,  Serialize | EditAnywhere )
