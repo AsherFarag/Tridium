@@ -252,9 +252,15 @@ namespace Tridium {
         {
             bool wasChanged = false;
 
-			// Make the second column consume the remaining space
-			if ( !ImGui::BeginTable( "##Table", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_Resizable ) )
-				return false;
+            ImGuiStyle& style = ImGui::GetStyle();
+            const ImVec2 rowSpacing = ImVec2( style.ItemSpacing.x, 1.0f );
+
+            {
+				ImGui::ScopedStyleVar spacing( ImGuiStyleVar_ItemSpacing, rowSpacing ); // Add spacing
+                // Make the second column consume the remaining space
+                if ( !ImGui::BeginTable( "##Table", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_Resizable ) )
+                    return false;
+            }
 
             for ( auto&& [id, metaData] : a_MetaType.Properties() )
             {
@@ -283,7 +289,9 @@ namespace Tridium {
 				MetaType memberType = memberData.type().is_pointer_like() ? memberData.type().remove_pointer() : memberData.type();
 
 				// Draw the property name on the left side of the table
+				ImGui::PushStyleVar( ImGuiStyleVar_ItemSpacing, rowSpacing ); // Add spacing between rows
 				ImGui::TableNextRow();
+				ImGui::PopStyleVar(); // Remove the spacing
 				ImGui::TableNextColumn();
 				ImGui::TextUnformatted( ScrubPropertyName( metaData.name() ).c_str() );
 

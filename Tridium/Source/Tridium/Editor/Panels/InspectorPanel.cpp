@@ -3,8 +3,10 @@
 #if IS_EDITOR
 
 #include "InspectorPanel.h"
-
 #include <Tridium/Editor/Editor.h>
+#include <Tridium/Editor/EditorUtil.h>
+#include <Tridium/Editor/EditorDocumentation.h>
+
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Core/Application.h>
 #include <Tridium/ECS/Components/Types.h>
@@ -13,7 +15,6 @@
 #include <Tridium/Graphics/Rendering/Texture.h>
 #include <Tridium/Graphics/Rendering/Material.h>
 #include <Tridium/Graphics/Rendering/Mesh.h>
-#include <Tridium/Editor/EditorUtil.h>
 #include <Tridium/Editor/PropertyDrawers.h>
 #include <Tridium/Asset/AssetManager.h>
 
@@ -21,7 +22,29 @@ using namespace entt::literals;
 
 namespace Tridium {
 
+	struct ComponentTreeNode
+	{
+		const char* Icon{ nullptr };
+		const char* Name{ nullptr };
+		bool HasOptionsButton{ false };
+		bool* OptionsPressed{ nullptr };
+		bool IsEnabledTogglable{ false };
+		bool* IsEnabled{ nullptr };
+		bool DocumentationButton{ true };
+		const char* DocumentationKey{ nullptr };
+	};
+
 	namespace Helpers {
+
+		void DrawComponentDocumentation( TypeDocumentation* a_Documentation )
+		{
+			if ( !a_Documentation )
+			{
+				return;
+			}
+
+			ImGui::TextUnformatted( a_Documentation->Description.c_str() );
+		}
 
 		// Add spaces between words in a class name
 		// Example: "EnemyAIComponent" -> "Enemy AI Component"
@@ -59,7 +82,7 @@ namespace Tridium {
 			return s_CleanClassNames.at( a_ClassName ).c_str();
 		}
 
-		bool DrawComponentTreeNode( const char* a_Icon, const char* a_Name, bool a_HasOptionsButton, bool* a_OptionsPressed, bool a_IsEnabledTogglable = false, bool* a_IsEnabled = nullptr )
+		bool DrawComponentTreeNode( ComponentTreeNode a_Node )
 		{
 			const ImGuiStyle& style = ImGui::GetStyle();
 
@@ -73,20 +96,20 @@ namespace Tridium {
 				arrowColor.w = 0.5f;
 				ImGui::PushStyleColor( ImGuiCol_Text, arrowColor );
 				ImGui::PushStyleVar( ImGuiStyleVar_FrameRounding, 0.0f );
-				ImGui::PushID( a_Name );
+				ImGui::PushID( a_Node.Name );
 				isOpen = ImGui::TreeNodeEx( "", ImGuiTreeNodeFlags_Framed);
 				ImGui::PopID();
 				ImGui::PopStyleVar();
 				ImGui::PopStyleColor();
 			}
 
-			ImGui::PushID( ImGui::GetID( static_cast<const void*>( a_Name ) ) );
+			ImGui::PushID( ImGui::GetID( static_cast<const void*>( a_Node.Name ) ) );
 			ImGui::BeginGroup();
 			{
 				// Draw Icon
 				{
 					ImGui::SameLine();
-					ImGui::Text( a_Icon );
+					ImGui::Text( a_Node.Icon );
 				}
 
 				// Draw Enabled Checkbox or Dummy
@@ -100,15 +123,15 @@ namespace Tridium {
 
 					ImGui::ItemSize( ImVec2( checkboxSize, checkboxSize ), style.FramePadding.y );
 					if ( ImGui::ItemAdd( bb, id )
-						&& a_IsEnabledTogglable
-						&& a_IsEnabled )
+						&& a_Node.IsEnabledTogglable
+						&& a_Node.IsEnabled )
 					{
 						bool isHovered, isHeld;
 						bool pressed = ImGui::ButtonBehavior( bb, id, &isHovered, &isHeld );
 
 						if ( pressed )
 						{
-							*a_IsEnabled = !*a_IsEnabled;
+							*a_Node.IsEnabled = !*a_Node.IsEnabled;
 							ImGui::MarkItemEdited( id );
 						}
 
@@ -119,7 +142,7 @@ namespace Tridium {
 							ImGui::GetColorU32( ( isHeld && isHovered ) ? ImGuiCol_FrameBgActive : isHovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg ),
 							true, style.FrameRounding );
 
-						if ( *a_IsEnabled )
+						if ( *a_Node.IsEnabled )
 						{
 							const float pad = 4.0f;
 							const float checkSz = checkboxSize - pad * 2.0f;
@@ -132,10 +155,12 @@ namespace Tridium {
 				// Draw Name
 				{
 					ImGui::SameLine();
-					ImGui::TextUnformatted( a_Name );
+					ImGui::TextUnformatted( a_Node.Name );
 				}
 
-				if ( a_HasOptionsButton )
+				// Draw Options button
+				float optionsButtonSize = optionsButtonSize = ImGui::GetTextLineHeight();
+				if ( a_Node.HasOptionsButton )
 				{
 					ImGui::SameLine(
 						ImGui::GetContentRegionAvail().x
@@ -143,8 +168,40 @@ namespace Tridium {
 						- ( 2.0f * ImGui::GetStyle().FramePadding.x )
 					);
 
-					if ( ImGui::SmallButton( TE_ICON_ELLIPSIS_VERTICAL ) && a_OptionsPressed )
-						*a_OptionsPressed = true;
+					if ( ImGui::Button( TE_ICON_ELLIPSIS_VERTICAL ) && a_Node.OptionsPressed )
+						*a_Node.OptionsPressed = true;
+				}
+
+				// Draw Documentation button
+				const float documentationButtonSize = ImGui::GetTextLineHeight();
+				if ( a_Node.DocumentationButton )
+				{
+					if ( TypeDocumentation* documentation = EditorDocumentation::Get()->GetType( a_Node.DocumentationKey ) )
+					{
+						ImGui::SameLine(
+							ImGui::GetContentRegionAvail().x
+							- optionsButtonSize - style.ItemInnerSpacing.x
+							- documentationButtonSize - style.ItemInnerSpacing.x );
+
+						if ( ImGui::Button( TE_ICON_CIRCLE_QUESTION ) )
+						{
+							ImGui::OpenPopup( "DocumentationPopup" );
+						}
+
+						if ( ImGui::BeginPopup( "DocumentationPopup" ) )
+						{
+							ImGui::PushFont( ImGui::GetBoldFont() );
+							ImGui::Text( a_Node.Name );
+							ImGui::PopFont();
+
+							ImGui::Separator();
+
+							DrawComponentDocumentation( documentation );
+
+							ImGui::EndPopup();
+						}
+					}
+
 				}
 			}
 			ImGui::EndGroup();
@@ -306,13 +363,20 @@ namespace Tridium {
 	void InspectorPanel::DrawComponents( GameObject a_GO )
 	{
 		ImGuiStyle& style = ImGui::GetStyle();
+		const ImVec2 rowSpacing = ImVec2( style.ItemSpacing.x, 1.0f );
 
 		// Draw TransformComponent first
 		if ( TransformComponent* tc = a_GO.TryGetComponent<TransformComponent>() )
 		{
-			if ( Helpers::DrawComponentTreeNode( TE_ICON_CUBES, "Transform", false, nullptr, false ) )
+			if ( Helpers::DrawComponentTreeNode( {
+				.Icon = TE_ICON_CUBES, .Name = "Transform",
+				.HasOptionsButton = false, .OptionsPressed = nullptr,
+				.IsEnabledTogglable = false, .IsEnabled = nullptr, 
+				.DocumentationButton = true, .DocumentationKey = "TransformComponent"
+				} ) )
 			{
-				if ( ImGui::BeginTable( "", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_Resizable ) )
+				ImGui::PushStyleVar( ImGuiStyleVar_ItemSpacing, rowSpacing );
+				if ( ImGui::BeginTable( "", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_Resizable ) )
 				{
 					const float firstColumnWidth = ImGui::CalcTextSize( "Position   " ).x + ImGui::GetStyle().ItemSpacing.x * 2.0f;
 					ImGui::TableSetupColumn( "##Property", ImGuiTableColumnFlags_WidthStretch, firstColumnWidth );
@@ -320,6 +384,8 @@ namespace Tridium {
 					// Draw Position
 					{
 						ImGui::TableNextRow();
+						ImGui::PopStyleVar();
+
 						ImGui::TableNextColumn();
 						ImGui::TextUnformatted( "Position" );
 						ImGui::TableNextColumn();
@@ -331,7 +397,10 @@ namespace Tridium {
 
 					// Draw Rotation
 					{
+						ImGui::PushStyleVar( ImGuiStyleVar_ItemSpacing, rowSpacing );
 						ImGui::TableNextRow();
+						ImGui::PopStyleVar();
+
 						ImGui::TableNextColumn();
 						ImGui::TextUnformatted( "Rotation" );
 						ImGui::TableNextColumn();
@@ -343,7 +412,10 @@ namespace Tridium {
 
 					// Draw Scale
 					{
+						ImGui::PushStyleVar( ImGuiStyleVar_ItemSpacing, rowSpacing );
 						ImGui::TableNextRow();
+						ImGui::PopStyleVar();
+
 						ImGui::TableNextColumn();
 						ImGui::TextUnformatted( "Scale" );
 
@@ -427,6 +499,10 @@ namespace Tridium {
 
 					ImGui::EndTable();
 				}
+				else
+				{
+					ImGui::PopStyleVar();
+				}
 
 				ImGui::TreePop();
 			}
@@ -452,7 +528,13 @@ namespace Tridium {
 				const bool isComponentActive = asNative ? asNative->Flags().HasFlag( enabledFlag ) : true;
 				bool componentActive = isComponentActive;
 
-				bool isOpen = Helpers::DrawComponentTreeNode( icon, className, hasOptionsButton, &isOptionsPressed, isActiveToggleable, &componentActive );
+				ComponentTreeNode node = {
+					.Icon = icon, .Name = className,
+						.HasOptionsButton = hasOptionsButton, .OptionsPressed = &isOptionsPressed,
+						.IsEnabledTogglable = isActiveToggleable, .IsEnabled = &componentActive,
+						.DocumentationButton = true, .DocumentationKey = metaType.GetCleanTypeName()
+				};
+				bool isOpen = Helpers::DrawComponentTreeNode( node );
 				if ( asNative && componentActive != isComponentActive )
 				{
 					asNative->SetVisible( componentActive );
