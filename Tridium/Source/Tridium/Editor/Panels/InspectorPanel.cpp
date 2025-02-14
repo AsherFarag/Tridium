@@ -36,14 +36,67 @@ namespace Tridium {
 
 	namespace Helpers {
 
-		void DrawComponentDocumentation( TypeDocumentation* a_Documentation )
+		void DrawDocumentation( TypeDocumentation* a_Documentation )
 		{
+
 			if ( !a_Documentation )
 			{
 				return;
 			}
 
+			ImGuiWindow* window = ImGui::GetCurrentWindow();
+
 			ImGui::TextUnformatted( a_Documentation->Description.c_str() );
+
+			if ( !a_Documentation->Members.IsEmpty() &&
+				ImGui::TreeNode( "Members" ) )
+			{
+				for ( const VariableDocumentation& member : a_Documentation->Members )
+				{
+					if ( ImGui::TreeNode( member.Name.c_str() ) )
+					{
+						ImGui::TextUnformatted( member.Type.c_str() );
+						ImGui::TextUnformatted( member.Description.c_str() );
+
+						ImGui::TreePop();
+					}
+				}
+
+				ImGui::TreePop();
+			}
+
+			if ( !a_Documentation->Functions.IsEmpty() &&
+				ImGui::TreeNode( "Functions" ) )
+			{
+				for ( const FunctionDocumentation& function : a_Documentation->Functions )
+				{
+					if ( ImGui::TreeNode( function.Name.c_str() ) )
+					{
+						ImGui::TextUnformatted( function.ReturnType.c_str() );
+						ImGui::TextUnformatted( function.Description.c_str() );
+						if ( !function.Parameters.IsEmpty() &&
+							ImGui::TreeNode( "Parameters" ) )
+						{
+							for ( const VariableDocumentation& param : function.Parameters )
+							{
+								if ( ImGui::TreeNode( param.Name.c_str() ) )
+								{
+									ImGui::TextUnformatted( param.Type.c_str() );
+									ImGui::TextUnformatted( param.Description.c_str() );
+
+									ImGui::TreePop();
+								}
+							}
+
+							ImGui::TreePop();
+						}
+
+						ImGui::TreePop();
+					}
+				}
+
+				ImGui::TreePop();
+			}
 		}
 
 		// Add spaces between words in a class name
@@ -196,7 +249,7 @@ namespace Tridium {
 
 							ImGui::Separator();
 
-							DrawComponentDocumentation( documentation );
+							DrawDocumentation( documentation );
 
 							ImGui::EndPopup();
 						}
@@ -314,11 +367,29 @@ namespace Tridium {
 			}
 		}
 
-		ImGui::SameLine( ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize( TE_ICON_GEAR ).x );
-
+		const float optionsButtonSize = ImGui::GetTextLineHeight();
+		ImGui::SameLine( ImGui::GetContentRegionAvail().x - optionsButtonSize );
 		if ( ImGui::Button( TE_ICON_ELLIPSIS_VERTICAL ) )
 		{
 			ImGui::OpenPopup( "GameObjectOptions" );
+		}
+
+		// Draw GameObject documentation button
+		ImGui::SameLine( ImGui::GetContentRegionAvail().x - optionsButtonSize - style.ItemInnerSpacing.x - optionsButtonSize - style.ItemInnerSpacing.x );
+		if ( ImGui::Button( TE_ICON_CIRCLE_QUESTION ) )
+		{
+			ImGui::OpenPopup( "GameObjectInfo" );
+		}
+
+		if ( ImGui::BeginPopup( "GameObjectInfo" ) )
+		{
+			ImGui::TextUnformatted( "Game Object" );
+			if ( TypeDocumentation* documentation = EditorDocumentation::Get()->GetType( "GameObject" ) )
+			{
+				Helpers::DrawDocumentation( documentation );
+			}
+
+			ImGui::EndPopup();
 		}
 
 		if ( ImGui::BeginPopup( "GameObjectOptions" ) )
@@ -338,6 +409,8 @@ namespace Tridium {
 					InspectedGameObject.SetVisible( visible );
 				}
 			}
+
+			ImGui::Separator();
 
 			{
 				ImGui::ScopedStyleCol redText( ImGuiCol_Text, ImVec4( Editor::GetPallete().Red ) );

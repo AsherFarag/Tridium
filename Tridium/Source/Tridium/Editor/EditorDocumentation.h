@@ -9,12 +9,27 @@ namespace Tridium {
 
 	using DocumentationKey = hash_t;
 
+	struct VariableDocumentation
+	{
+		String Name;
+		String Description;
+		String Type;
+	};
+
+	struct FunctionDocumentation
+	{
+		String Name;
+		String Description;
+		String ReturnType;
+		Array<VariableDocumentation> Parameters;
+	};
+
 	struct TypeDocumentation
 	{
 		String Name;
 		String Description;
-		Array<DocumentationKey> Members;
-		Array<DocumentationKey> Functions;
+		Array<VariableDocumentation> Members;
+		Array<FunctionDocumentation> Functions;
 	};
 
 	class EditorDocumentation : public ISingleton<EditorDocumentation, /* _ExplicitSetup */ false>
