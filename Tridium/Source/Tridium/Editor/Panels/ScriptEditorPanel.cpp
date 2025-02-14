@@ -124,19 +124,19 @@ namespace Tridium {
 
 	bool ScriptEditorPanel::OnKeyPressed( KeyPressedEvent& e )
 	{
-		const bool control = Input::IsKeyPressed( Input::KEY_LEFT_CONTROL ) || Input::IsKeyPressed( Input::KEY_LEFT_CONTROL );
-		const bool shift = Input::IsKeyPressed( Input::KEY_LEFT_SHIFT ) || Input::IsKeyPressed( Input::KEY_RIGHT_SHIFT );
+		const bool control = Input::IsKeyPressed( EInputKey::LeftControl ) || Input::IsKeyPressed( EInputKey::LeftControl );
+		const bool shift = Input::IsKeyPressed( EInputKey::LeftShift ) || Input::IsKeyPressed( EInputKey::RightShift );
 
 		switch ( e.GetKeyCode() )
 		{
-		case Input::KEY_S:
+		case EInputKey::S:
 			if ( control )
 			{
 				SaveHandle( m_CurrentOpenedScript );
 				return true;
 			}
 			break;
-		case Input::KEY_R:
+		case EInputKey::R:
 			if ( control )
 			{
 				if ( shift )

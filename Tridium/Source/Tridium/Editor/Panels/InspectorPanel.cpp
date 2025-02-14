@@ -36,6 +36,46 @@ namespace Tridium {
 
 	namespace Helpers {
 
+		bool DrawSmallButton( const char* a_Label )
+		{
+			ImGuiWindow* window = ImGui::GetCurrentWindow();
+			if ( window->SkipItems )
+				return false;
+
+			ImGuiContext& g = *GImGui;
+			const ImGuiStyle& style = g.Style;
+			const ImGuiID id = window->GetID( a_Label );
+			const ImVec2 label_size = ImGui::CalcTextSize( a_Label, NULL, true );
+			const ImGuiButtonFlags flags = 0;
+
+			ImVec2 pos = window->DC.CursorPos;
+			ImVec2 size = ImGui::CalcItemSize( {0,0}, label_size.x, label_size.y );
+
+			const ImRect bb( pos, pos + size );
+			ImGui::ItemSize( size, style.FramePadding.y );
+			if ( !ImGui::ItemAdd( bb, id ) )
+				return false;
+
+			bool hovered, held;
+			bool pressed = ImGui::ButtonBehavior( bb, id, &hovered, &held, flags );
+
+			// Render
+			const ImU32 col = ImGui::GetColorU32( ( held && hovered ) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button );
+			const ImRect frameBB = { 
+				{ bb.GetCenter().x - bb.GetHeight() * 0.5f, bb.Min.y },
+				{ bb.GetCenter().x + bb.GetHeight() * 0.5f, bb.Max.y }
+			};
+			ImGui::RenderNavHighlight( frameBB, id );
+			ImGui::RenderFrame( frameBB.Min, frameBB.Max, col, true, style.FrameRounding );
+
+			// Center label
+			const ImVec2 label_pos = ImVec2( bb.Min.x + ( bb.GetWidth() - label_size.x ) * 0.5f, bb.Min.y + ( bb.GetHeight() - label_size.y ) * 0.5f );
+			ImGui::RenderText( label_pos, a_Label );
+
+			IMGUI_TEST_ENGINE_ITEM_INFO( id, label, g.LastItemData.StatusFlags );
+			return pressed;
+		}
+
 		void DrawDocumentation( TypeDocumentation* a_Documentation )
 		{
 
@@ -212,31 +252,32 @@ namespace Tridium {
 				}
 
 				// Draw Options button
-				float optionsButtonSize = optionsButtonSize = ImGui::GetTextLineHeight();
+				const float smallButtonSize = ImGui::GetTextLineHeight() + 2 * 1.0f;
 				if ( a_Node.HasOptionsButton )
 				{
 					ImGui::SameLine(
 						ImGui::GetContentRegionAvail().x
-						- ImGui::CalcTextSize( TE_ICON_ELLIPSIS_VERTICAL ).x
-						- ( 2.0f * ImGui::GetStyle().FramePadding.x )
-					);
+						- smallButtonSize - style.ItemInnerSpacing.x );
 
-					if ( ImGui::Button( TE_ICON_ELLIPSIS_VERTICAL ) && a_Node.OptionsPressed )
+					ImVec2 pos = ImGui::GetCursorScreenPos() + ImVec2( 0.0f, ( 0.5f * ( ImGui::GetFrameHeight() ) ) - ( 0.5f * smallButtonSize ) );
+					ImGui::SetCursorScreenPos( pos );
+					if ( Helpers::DrawSmallButton( TE_ICON_ELLIPSIS_VERTICAL )
+						&& a_Node.OptionsPressed )
 						*a_Node.OptionsPressed = true;
 				}
 
 				// Draw Documentation button
-				const float documentationButtonSize = ImGui::GetTextLineHeight();
 				if ( a_Node.DocumentationButton )
 				{
 					if ( TypeDocumentation* documentation = EditorDocumentation::Get()->GetType( a_Node.DocumentationKey ) )
 					{
 						ImGui::SameLine(
 							ImGui::GetContentRegionAvail().x
-							- optionsButtonSize - style.ItemInnerSpacing.x
-							- documentationButtonSize - style.ItemInnerSpacing.x );
+							- ( 4 * (smallButtonSize - style.ItemInnerSpacing.x ) ) );
 
-						if ( ImGui::Button( TE_ICON_CIRCLE_QUESTION ) )
+						ImVec2 pos = ImGui::GetCursorScreenPos() + ImVec2( 0.0f, ( 0.5f * ( ImGui::GetFrameHeight() ) ) - ( 0.5f * smallButtonSize ) );
+						ImGui::SetCursorScreenPos( pos );
+						if ( Helpers::DrawSmallButton( TE_ICON_CIRCLE_QUESTION ) )
 						{
 							ImGui::OpenPopup( "DocumentationPopup" );
 						}

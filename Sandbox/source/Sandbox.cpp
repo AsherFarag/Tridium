@@ -25,7 +25,7 @@ public:
 	void OnUpdate( float a_DeltaTime )
 	{
 		m_FireTimer += a_DeltaTime;
-		if ( Input::IsMouseButtonPressed( Input::MOUSE_BUTTON_LEFT ) )
+		if ( Input::IsMouseButtonPressed( EInputMouseButton::Left ) )
 		{
 			bool fired = Fire();
 			if ( fired )
@@ -37,7 +37,7 @@ public:
 
 		// Zoom
 		{
-			m_IsZoomed = Input::IsMouseButtonPressed( Input::MOUSE_BUTTON_RIGHT );
+			m_IsZoomed = Input::IsMouseButtonPressed( EInputMouseButton::Right );
 
 			if ( m_IsZoomed )
 				m_ZoomLerp += a_DeltaTime * m_ZoomLerpSpeed;

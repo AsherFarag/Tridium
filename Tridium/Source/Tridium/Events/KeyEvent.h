@@ -7,19 +7,19 @@ namespace Tridium {
 	class KeyEvent : public Event
 	{
 	public:
-		inline Input::KeyCode GetKeyCode() const { return m_KeyCode; }
+		inline EInputKey GetKeyCode() const { return m_KeyCode; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 	protected:
-		KeyEvent( Input::KeyCode a_Keycode) : m_KeyCode(a_Keycode) {}
+		KeyEvent( EInputKey a_Keycode) : m_KeyCode(a_Keycode) {}
 
-		Input::KeyCode m_KeyCode;
+		EInputKey m_KeyCode;
 	};
 
 	class KeyPressedEvent : public KeyEvent
 	{
 	public:
-		KeyPressedEvent( Input::KeyCode a_Keycode, bool a_Repeat )
+		KeyPressedEvent( EInputKey a_Keycode, bool a_Repeat )
 			: KeyEvent( a_Keycode ), m_IsRepeat( a_Repeat ) {}
 
 		inline bool IsRepeat() const { return m_IsRepeat; }
@@ -27,7 +27,7 @@ namespace Tridium {
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "KeyPressedEvent: " << m_KeyCode << " (repeat = " << m_IsRepeat << ")";
+			ss << "KeyPressedEvent: " << static_cast<int32_t>( m_KeyCode ) << " (repeat = " << m_IsRepeat << ")";
 			return ss.str();
 		}
 
@@ -39,13 +39,13 @@ namespace Tridium {
 	class KeyReleasedEvent : public KeyEvent
 	{
 	public:
-		KeyReleasedEvent( Input::KeyCode a_Keycode )
+		KeyReleasedEvent( EInputKey a_Keycode )
 			: KeyEvent( a_Keycode ) {}
 
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "KeyReleasedEvent: " << m_KeyCode;
+			ss << "KeyReleasedEvent: " << static_cast<int32_t>( m_KeyCode );
 			return ss.str();
 		}
 
@@ -55,13 +55,13 @@ namespace Tridium {
 	class KeyTypedEvent : public KeyEvent
 	{
 	public:
-		KeyTypedEvent( Input::KeyCode a_Keycode )
+		KeyTypedEvent( EInputKey a_Keycode )
 			: KeyEvent( a_Keycode ) {}
 
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "KeyTypedEvent: " << m_KeyCode;
+			ss << "KeyTypedEvent: " << static_cast<int32_t>( m_KeyCode );
 			return ss.str();
 		}
 

@@ -21,7 +21,7 @@ namespace Tridium {
 
 	private:
 		// Helper function that converts Tridiums Key Codes to ImGui's Key Codes
-		ImGuiKey TridiumToImGuiKey( Input::KeyCode key );
+		ImGuiKey TridiumToImGuiKey( EInputKey key );
 
 	private:
 		float m_Time = 0.f;

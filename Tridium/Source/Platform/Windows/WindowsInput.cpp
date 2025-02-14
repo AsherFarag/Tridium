@@ -9,7 +9,7 @@ TODO( "TEMP?! " );
 
 namespace Tridium {
 
-	Input* Input::s_Instance = new WindowsInput();
+	UniquePtr<Input> Input::s_Instance = MakeUnique<WindowsInput>();
 
 	bool WindowsInput::IsKeyPressedImpl( int keycode )
 	{

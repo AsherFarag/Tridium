@@ -11,7 +11,8 @@ namespace Tridium {
 		{
 			Midnight,
 			Light,
-			Dark
+			Dark,
+			RetroTech
 		};
 
 		struct Pallete

@@ -26,25 +26,29 @@ namespace Tridium {
 		Cursor_Captured,
 	};
 
+	enum class EInputKey;
+	enum class EInputMouseButton;
+
 	class Input
 	{
 		friend class Application;
 	public:
+		static Input* Get() { return s_Instance.get(); }
 
 		// Returns true if this key is down this frame
-		inline static bool IsKeyPressed( int keycode ) { return s_Instance->IsKeyPressedImpl( keycode ); }
+		inline static bool IsKeyPressed( EInputKey a_Keycode ) { return Get()->IsKeyPressedImpl( static_cast<int>( a_Keycode ) ); }
 
-		inline static bool IsMouseButtonPressed( int button ) { return s_Instance->IsMouseButtonPressedImpl( button ); }
-		inline static Vector2 GetMousePosition() { return s_Instance->GetMousePositionImpl(); }
-		inline static float GetMouseX() { return s_Instance->GetMouseXImpl(); }
-		inline static float GetMouseY() { return s_Instance->GetMouseYImpl(); }
-		inline static void SetInputMode( EInputMode mode, EInputModeValue value ) { s_Instance->SetInputModeImpl( mode, value ); }
-		inline static int GetMouseScrollXOffset() { return s_Instance->m_MouseScrollXOffset; }
-		inline static int GetMouseScrollYOffset() { return s_Instance->m_MouseScrollYOffset; }
+        inline static bool IsMouseButtonPressed( EInputMouseButton a_Button ) { return Get()->IsMouseButtonPressedImpl( static_cast<int>( a_Button ) ); }
+		inline static Vector2 GetMousePosition() { return Get()->GetMousePositionImpl(); }
+		inline static float GetMouseX() { return Get()->GetMouseXImpl(); }
+		inline static float GetMouseY() { return Get()->GetMouseYImpl(); }
+		inline static void SetInputMode( EInputMode a_Mode, EInputModeValue a_Value ) { Get()->SetInputModeImpl( a_Mode, a_Value ); }
+		inline static int GetMouseScrollXOffset() { return Get()->m_MouseScrollXOffset; }
+		inline static int GetMouseScrollYOffset() { return Get()->m_MouseScrollYOffset; }
 
 		// DO NOT USE!
 		// For internal use only.
-		inline static void _SetMouseScrollOffset( int x, int y ) { s_Instance->m_MouseScrollXOffset += x; s_Instance->m_MouseScrollYOffset += y; }
+		inline static void _SetMouseScrollOffset( int x, int y ) { Get()->m_MouseScrollXOffset += x; Get()->m_MouseScrollYOffset += y; }
 
 	protected:
 		virtual bool IsKeyPressedImpl( int keycode ) = 0;
@@ -59,155 +63,151 @@ namespace Tridium {
 		int m_MouseScrollXOffset = 0;
 		int m_MouseScrollYOffset = 0;
 
-		static Input* s_Instance;
-
-	public:
-		// From glfw3.h
-		enum KeyCode : int
-		{
-			/* Printable keys */
-			INVALID_KEY			  = -1,
-			KEY_SPACE             = 32,
-			KEY_APOSTROPHE        = 39,  /* ' */
-			KEY_COMMA             = 44,  /* , */
-			KEY_MINUS             = 45,  /* - */
-			KEY_PERIOD            = 46,  /* . */
-			KEY_SLASH             = 47,  /* / */
-			KEY_0                 = 48,
-			KEY_1                 = 49,
-			KEY_2                 = 50,
-			KEY_3                 = 51,
-			KEY_4                 = 52,
-			KEY_5                 = 53,
-			KEY_6                 = 54,
-			KEY_7                 = 55,
-			KEY_8                 = 56,
-			KEY_9                 = 57,
-			KEY_SEMICOLON         = 59,  /* ; */
-			KEY_EQUAL             = 61,  /* = */
-			KEY_A                 = 65,
-			KEY_B                 = 66,
-			KEY_C                 = 67,
-			KEY_D                 = 68,
-			KEY_E                 = 69,
-			KEY_F                 = 70,
-			KEY_G                 = 71,
-			KEY_H                 = 72,
-			KEY_I                 = 73,
-			KEY_J                 = 74,
-			KEY_K                 = 75,
-			KEY_L                 = 76,
-			KEY_M                 = 77,
-			KEY_N                 = 78,
-			KEY_O                 = 79,
-			KEY_P                 = 80,
-			KEY_Q                 = 81,
-			KEY_R                 = 82,
-			KEY_S                 = 83,
-			KEY_T                 = 84,
-			KEY_U                 = 85,
-			KEY_V                 = 86,
-			KEY_W                 = 87,
-			KEY_X                 = 88,
-			KEY_Y                 = 89,
-			KEY_Z                 = 90,
-			KEY_LEFT_BRACKET      = 91,  /* [ */
-			KEY_BACKSLASH         = 92,  /* \ */
-			KEY_RIGHT_BRACKET     = 93,  /* ] */
-			KEY_GRAVE_ACCENT      = 96,  /* ` */
-			KEY_WORLD_1           = 161, /* non-US #1 */
-			KEY_WORLD_2           = 162, /* non-US #2 */
-								  
-			/* Function keys */
-			KEY_ESCAPE            = 256,
-			KEY_ENTER             = 257,
-			KEY_TAB               = 258,
-			KEY_BACKSPACE         = 259,
-			KEY_INSERT            = 260,
-			KEY_DELETE            = 261,
-			KEY_RIGHT             = 262,
-			KEY_LEFT              = 263,
-			KEY_DOWN              = 264,
-			KEY_UP                = 265,
-			KEY_PAGE_UP           = 266,
-			KEY_PAGE_DOWN         = 267,
-			KEY_HOME              = 268,
-			KEY_END               = 269,
-			KEY_CAPS_LOCK         = 280,
-			KEY_SCROLL_LOCK       = 281,
-			KEY_NUM_LOCK          = 282,
-			KEY_PRINT_SCREEN      = 283,
-			KEY_PAUSE             = 284,
-			KEY_F1                = 290,
-			KEY_F2                = 291,
-			KEY_F3                = 292,
-			KEY_F4                = 293,
-			KEY_F5                = 294,
-			KEY_F6                = 295,
-			KEY_F7                = 296,
-			KEY_F8                = 297,
-			KEY_F9                = 298,
-			KEY_F10               = 299,
-			KEY_F11               = 300,
-			KEY_F12               = 301,
-			KEY_F13               = 302,
-			KEY_F14               = 303,
-			KEY_F15               = 304,
-			KEY_F16               = 305,
-			KEY_F17               = 306,
-			KEY_F18               = 307,
-			KEY_F19               = 308,
-			KEY_F20               = 309,
-			KEY_F21               = 310,
-			KEY_F22               = 311,
-			KEY_F23               = 312,
-			KEY_F24               = 313,
-			KEY_F25               = 314,
-			KEY_KP_0              = 320,
-			KEY_KP_1              = 321,
-			KEY_KP_2              = 322,
-			KEY_KP_3              = 323,
-			KEY_KP_4              = 324,
-			KEY_KP_5              = 325,
-			KEY_KP_6              = 326,
-			KEY_KP_7              = 327,
-			KEY_KP_8              = 328,
-			KEY_KP_9              = 329,
-			KEY_KP_DECIMAL        = 330,
-			KEY_KP_DIVIDE         = 331,
-			KEY_KP_MULTIPLY       = 332,
-			KEY_KP_SUBTRACT       = 333,
-			KEY_KP_ADD            = 334,
-			KEY_KP_ENTER          = 335,
-			KEY_KP_EQUAL          = 336,
-			KEY_LEFT_SHIFT        = 340,
-			KEY_LEFT_CONTROL      = 341,
-			KEY_LEFT_ALT          = 342,
-			KEY_LEFT_SUPER        = 343, /* E.g. Windows Key */
-			KEY_RIGHT_SHIFT       = 344,
-			KEY_RIGHT_CONTROL     = 345,
-			KEY_RIGHT_ALT         = 346,
-			KEY_RIGHT_SUPER       = 347,
-			KEY_MENU              = 348
-		};
-
-		// From glfw3.h
-		enum MouseButtonCode : int
-		{
-			MOUSE_BUTTON_1        = 0,
-			MOUSE_BUTTON_2        = 1,
-			MOUSE_BUTTON_3        = 2,
-			MOUSE_BUTTON_4        = 3,
-			MOUSE_BUTTON_5        = 4,
-			MOUSE_BUTTON_6        = 5,
-			MOUSE_BUTTON_7        = 6,
-			MOUSE_BUTTON_8        = 7,
-			MOUSE_BUTTON_LAST     = MOUSE_BUTTON_8,
-			MOUSE_BUTTON_LEFT     = MOUSE_BUTTON_1,
-			MOUSE_BUTTON_RIGHT    = MOUSE_BUTTON_2,
-			MOUSE_BUTTON_MIDDLE   = MOUSE_BUTTON_3
-		};
-
+		static UniquePtr<Input> s_Instance;
 	};
+
+	enum class EInputMouseButton : int32_t
+	{
+		Button1 = 0,
+		Button2 = 1,
+		Button3 = 2,
+		Button4 = 3,
+		Button5 = 4,
+		Button6 = 5,
+		Button7 = 6,
+		Button8 = 7,
+		Left = Button1,
+		Right = Button2,
+		Middle = Button3
+	};
+
+    enum class EInputKey : int32_t
+    {
+        /* Printable keys */
+        InvalidKey = -1,
+        Space = 32,
+        Apostrophe = 39,  /* ' */
+        Comma = 44,  /* , */
+        Minus = 45,  /* - */
+        Period = 46,  /* . */
+        Slash = 47,  /* / */
+        Zero = 48,
+        One = 49,
+        Two = 50,
+        Three = 51,
+        Four = 52,
+        Five = 53,
+        Six = 54,
+        Seven = 55,
+        Eight = 56,
+        Nine = 57,
+        Semicolon = 59,  /* ; */
+        Equal = 61,  /* = */
+        A = 65,
+        B = 66,
+        C = 67,
+        D = 68,
+        E = 69,
+        F = 70,
+        G = 71,
+        H = 72,
+        I = 73,
+        J = 74,
+        K = 75,
+        L = 76,
+        M = 77,
+        N = 78,
+        O = 79,
+        P = 80,
+        Q = 81,
+        R = 82,
+        S = 83,
+        T = 84,
+        U = 85,
+        V = 86,
+        W = 87,
+        X = 88,
+        Y = 89,
+        Z = 90,
+        LeftBracket = 91,  /* [ */
+        Backslash = 92,  /* \ */
+        RightBracket = 93,  /* ] */
+        GraveAccent = 96,  /* ` */
+        World1 = 161, /* non-US #1 */
+        World2 = 162, /* non-US #2 */
+
+        /* Function keys */
+        Escape = 256,
+        Enter = 257,
+        Tab = 258,
+        Backspace = 259,
+        Insert = 260,
+        Delete = 261,
+        Right = 262,
+        Left = 263,
+        Down = 264,
+        Up = 265,
+        PageUp = 266,
+        PageDown = 267,
+        Home = 268,
+        End = 269,
+        CapsLock = 280,
+        ScrollLock = 281,
+        NumLock = 282,
+        PrintScreen = 283,
+        Pause = 284,
+        F1 = 290,
+        F2 = 291,
+        F3 = 292,
+        F4 = 293,
+        F5 = 294,
+        F6 = 295,
+        F7 = 296,
+        F8 = 297,
+        F9 = 298,
+        F10 = 299,
+        F11 = 300,
+        F12 = 301,
+        F13 = 302,
+        F14 = 303,
+        F15 = 304,
+        F16 = 305,
+        F17 = 306,
+        F18 = 307,
+        F19 = 308,
+        F20 = 309,
+        F21 = 310,
+        F22 = 311,
+        F23 = 312,
+        F24 = 313,
+        F25 = 314,
+        KeyPad0 = 320,
+        KeyPad1 = 321,
+        KeyPad2 = 322,
+        KeyPad3 = 323,
+        KeyPad4 = 324,
+        KeyPad5 = 325,
+        KeyPad6 = 326,
+        KeyPad7 = 327,
+        KeyPad8 = 328,
+        KeyPad9 = 329,
+        KeyPadDecimal = 330,
+        KeyPadDivide = 331,
+        KeyPadMultiply = 332,
+        KeyPadSubtract = 333,
+        KeyPadAdd = 334,
+        KeyPadEnter = 335,
+        KeyPadEqual = 336,
+        LeftShift = 340,
+        LeftControl = 341,
+        LeftAlt = 342,
+        LeftSuper = 343, /* E.g. Windows Key */
+        RightShift = 344,
+        RightControl = 345,
+        RightAlt = 346,
+        RightSuper = 347,
+        Menu = 348
+    };
+
 
 }

@@ -181,12 +181,12 @@ namespace Tridium {
 		if ( e.IsRepeat() )
 			return false;
 
-		bool control = Input::IsKeyPressed( Input::KEY_LEFT_CONTROL );
-		bool alt = Input::IsKeyPressed( Input::KEY_LEFT_ALT );
+		bool control = Input::IsKeyPressed( EInputKey::LeftControl );
+		bool alt = Input::IsKeyPressed( EInputKey::LeftAlt );
 
 		switch ( e.GetKeyCode() )
 		{
-		case Input::KEY_S:
+		case EInputKey::S:
 		{
 			if ( control )
 			{
@@ -202,7 +202,7 @@ namespace Tridium {
 			}
 			break;
 		}
-		case Input::KEY_R:
+		case EInputKey::R:
 		{
 			if ( control )
 			{
@@ -210,7 +210,7 @@ namespace Tridium {
 			}
 			break;
 		}
-		case Input::KEY_ESCAPE:
+		case EInputKey::Escape:
 		{
 			if ( CurrentSceneState == ESceneState::Play )
 			{
@@ -219,7 +219,7 @@ namespace Tridium {
 			}
 			break;
 		}
-		case Input::KEY_TAB:
+		case EInputKey::Tab:
 		{
 			if ( CurrentSceneState == ESceneState::Play )
 			{

@@ -113,28 +113,28 @@ namespace Tridium {
 		{
 			switch ( e.GetKeyCode() )
 			{
-			case Input::KEY_E:
+			case EInputKey::E:
 			{
 				m_GizmoState = EGizmoState::Translate;
 				return true;
 			}
-			case Input::KEY_R:
+			case EInputKey::R:
 			{
 				m_GizmoState = EGizmoState::Rotate;
 				return true;
 			}
-			case Input::KEY_T:
+			case EInputKey::T:
 			{
-				if ( Input::IsKeyPressed( Input::KEY_LEFT_CONTROL ) )
+				if ( Input::IsKeyPressed( EInputKey::LeftControl ) )
 					m_GizmoState = EGizmoState::Universal_Scale;
 				else
 					m_GizmoState = EGizmoState::Scale;
 
 				return true;
 			}
-			case Input::KEY_C:
+			case EInputKey::C:
 			{
-				if ( Input::IsKeyPressed( Input::KEY_LEFT_CONTROL ) )
+				if ( Input::IsKeyPressed( EInputKey::LeftControl ) )
 				{
 					if ( m_SelectedGameObject )
 					{
@@ -143,9 +143,9 @@ namespace Tridium {
 				}
 				return true;
 			}
-			case Input::KEY_V:
+			case EInputKey::V:
 			{
-				if ( Input::IsKeyPressed( Input::KEY_LEFT_CONTROL ) )
+				if ( Input::IsKeyPressed( EInputKey::LeftControl ) )
 				{
 					EditorPayload* payload = EditorApplication::Get()->GetPayloadManager().GetPayload( "GameObject" );
 					if ( payload && !payload->IsEmpty() )
@@ -157,7 +157,7 @@ namespace Tridium {
 				}
 				return true;
 			}
-			case Input::KEY_DELETE:
+			case EInputKey::Delete:
 			{
 				if ( m_SelectedGameObject )
 				{
@@ -290,7 +290,8 @@ namespace Tridium {
 	{
 		// Editor Camera
 		const Matrix4& camProjection = m_EditorCamera->GetProjection();
-		Matrix4 camView = m_EditorCamera->GetViewMatrix();
+		const Matrix4 oldCamView = m_EditorCamera->GetViewMatrix();
+		Matrix4 camView = oldCamView;
 
 		// Set up ImGuizmo
 		SetImGuizmoColors();
@@ -305,7 +306,7 @@ namespace Tridium {
 			TransformComponent& goTransform = m_SelectedGameObject.GetTransform();
 			Matrix4 goWorldTransform = goTransform.GetWorldTransform();
 
-			bool shouldSnap = Input::IsKeyPressed( Input::KEY_LEFT_CONTROL );
+			bool shouldSnap = Input::IsKeyPressed( EInputKey::LeftControl );
 
 			Vector3 snapVals( 0.25f );
 			if ( m_GizmoState == EGizmoState::Rotate )
@@ -335,6 +336,10 @@ namespace Tridium {
 				(ImGuizmo::OPERATION)m_GizmoState, ImGuizmo::LOCAL,
 				&identity[0][0], 8.0f, ImVec2( viewportBoundsMax.x - 75, viewportBoundsMin.y ), ImVec2( 75, 75 ), 0x10101010 );
 		}
+
+		// Update the Editor Camera's View Matrix
+		if ( oldCamView != camView )
+			m_EditorCamera->SetViewMatrix( camView );
 	}
 
 	void EditorViewportPanel::RenderGameObjectIDs()
@@ -381,10 +386,6 @@ namespace Tridium {
 
 		m_GameObjectIDShader->Unbind();
 	}
-
-	// TEMP!
-#include "glad/glad.h"
-
 
 	void EditorViewportPanel::RenderSelectionOutline()
 	{

@@ -48,10 +48,10 @@ namespace Tridium {
 
 		// Movement input
 		Vector2 movementInput = Vector2( 0.0f );
-		movementInput.y -= Input::IsKeyPressed( Input::KEY_W );
-		movementInput.y += Input::IsKeyPressed( Input::KEY_S );
-		movementInput.x += Input::IsKeyPressed( Input::KEY_D );
-		movementInput.x -= Input::IsKeyPressed( Input::KEY_A );
+		movementInput.y -= Input::IsKeyPressed( EInputKey::W );
+		movementInput.y += Input::IsKeyPressed( EInputKey::S );
+		movementInput.x += Input::IsKeyPressed( EInputKey::D );
+		movementInput.x -= Input::IsKeyPressed( EInputKey::A );
 		movementInput = glm::length( movementInput ) > 0.0f ? glm::normalize( movementInput ) : movementInput;
 		movementInput *= isGrounded ? 1.0f : m_AirMovementControl;
 		AddMovementInput( movementInput * a_DeltaTime );
@@ -62,13 +62,13 @@ namespace Tridium {
 		AddLookInput( lookInput * a_DeltaTime );
 
 		// Jump
-		if ( Input::IsKeyPressed( Input::KEY_SPACE ) && isGrounded && m_CanJump )
+		if ( Input::IsKeyPressed( EInputKey::Space ) && isGrounded && m_CanJump )
 		{
 			Jump();
 			m_CanJump = false;
 		}
 
-		if ( !Input::IsKeyPressed( Input::KEY_SPACE ) )
+		if ( !Input::IsKeyPressed( EInputKey::Space ) )
 			m_CanJump |= isGrounded;
 	}
 

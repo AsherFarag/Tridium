@@ -16,6 +16,7 @@
 #include <Tridium/Graphics/Rendering/RenderCommand.h>
 #include <Tridium/Graphics/RHI/RHI.h>
 
+import Tridium.ECS;
 
 namespace Tridium {
 

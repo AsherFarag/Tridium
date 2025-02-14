@@ -30,10 +30,10 @@ namespace Tridium {
 			{
 				TypeDocumentation doc;
 				doc.Name = "NativeScriptComponent";
-				doc.Description = "A component that allows you to write scripting functionality and attach it to a GameObject.\m"
+				doc.Description = "A component that allows you to write scripting functionality and attach it to a GameObject.\n"
 					"Inheriting from this class allows you to override script functions such as OnBeginPlay, OnUpdate, and OnEndPlay.\n"
-					"This component also stores a bitflags to determine a component's state such as whether it is enabled or disabled, visible or invisible, etc."
-					"No virtual functions are used, so you must call the base class's function manually if you override a scripting function."
+					"This component also stores a bitflags to determine a component's state such as whether it is enabled or disabled, visible or invisible, etc.\n"
+					"No virtual functions are used, so you must call the base class's function manually if you override a scripting function.\n"
 					"Example:\n"
 					"void OnBeginPlay()\n"
 					"{\n"

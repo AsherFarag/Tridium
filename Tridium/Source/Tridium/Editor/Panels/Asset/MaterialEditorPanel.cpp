@@ -66,11 +66,11 @@ namespace Tridium {
 		if ( e.IsRepeat() )
 			return false;
 
-		bool control = Input::IsKeyPressed( Input::KEY_LEFT_CONTROL );
+		bool control = Input::IsKeyPressed( EInputKey::LeftControl );
 
 		switch ( e.GetKeyCode() )
 		{
-			case Input::KEY_S:
+			case EInputKey::S:
 			{
 				if ( control && m_Material.IsValid() )
 				{

@@ -144,19 +144,19 @@ namespace Tridium {
 				{
 				case GLFW_PRESS:
 				{
-					KeyPressedEvent event( (Input::KeyCode)key, 0 );
+					KeyPressedEvent event( static_cast<EInputKey>( key ), 0 );
 					data.EventCallback( event );
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					KeyReleasedEvent event( (Input::KeyCode)key );
+					KeyReleasedEvent event( static_cast<EInputKey>( key ) );
 					data.EventCallback( event );
 					break;
 				}
 				case GLFW_REPEAT:
 				{
-					KeyPressedEvent event( (Input::KeyCode)key, 1 );
+					KeyPressedEvent event( static_cast<EInputKey>( key ), 1 );
 					data.EventCallback( event );
 					break;
 				}
@@ -166,7 +166,7 @@ namespace Tridium {
 		glfwSetCharCallback( m_Window, []( GLFWwindow* window, unsigned int character )
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer( window );
-				KeyTypedEvent event( (Input::KeyCode)character );
+				KeyTypedEvent event( static_cast<EInputKey>( character ) );
 				data.EventCallback( event );
 			} );
 

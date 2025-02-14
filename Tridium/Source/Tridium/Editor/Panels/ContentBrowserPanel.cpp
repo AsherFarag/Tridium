@@ -162,11 +162,33 @@ namespace Tridium {
 			bool isImported = metaData.IsValid();
 			AssetHandle handle = metaData.Handle;
 
+			bool isLeaf = true;
+			if ( directoryEntry.is_directory() )
+			{
+				// Check if the folder contains any folders
+				for ( auto& child : IO::DirectoryIterator( filePath ) )
+				{
+					if ( child.is_directory() )
+					{
+						isLeaf = false;
+						break;
+					}
+				}
+			}
+
 			// Add the file to the folder heirarchy
-			m_FolderHeirarchy[a_Directory].emplace_back( *this, type, fileName, handle, isImported );
+			ContentItem& item = m_FolderHeirarchy[a_Directory].emplace_back(
+				*this,
+				type,
+				fileName,
+				std::move( filePath ),
+				handle,
+				isImported,
+				isLeaf );
+
 
 			if ( type == EFileType::Folder )
-				RecurseFolderHeirarchy( filePath );
+				RecurseFolderHeirarchy( item.Path );
 		}
 	}
 
@@ -193,20 +215,22 @@ namespace Tridium {
 
 		for ( auto& item : m_FolderHeirarchy[a_Directory] )
 		{
-			const char* icon = item.Type == EFileType::Folder ? TE_ICON_FOLDER " " : TE_ICON_FILE " ";
-			std::string itemName = icon + item.Name;
+			if ( item.Type != EFileType::Folder )
+				continue;
+
+			const FilePath filePath = a_Directory / item.Name;
+
+			thread_local char itemName[256] = { TE_ICON_FOLDER " " };
+			constexpr size_t iconLength = sizeof( TE_ICON_FOLDER " " ) - 1; // -1 to remove the null terminator
+			strcpy( itemName + iconLength, item.Name.c_str() );
 
 			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
-			if ( item.Type != EFileType::Folder )
-			{
+			if ( item.IsLeaf )
 				flags |= ImGuiTreeNodeFlags_Leaf;
-			}
-			else if ( m_CurrentDirectory == ( a_Directory / item.Name ) )
-			{
+			if ( m_CurrentDirectory == filePath )
 				flags |= ImGuiTreeNodeFlags_Selected;
-			}
 
-			const bool open = ImGui::TreeNodeEx( itemName.c_str(), flags );
+			const bool open = ImGui::TreeNodeEx( itemName, flags );
 
 			// Open the file if it was double clicked
 			if ( ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left ) )
@@ -418,7 +442,8 @@ namespace Tridium {
 
 			for ( auto& item : m_FolderHeirarchy[m_CurrentDirectory] )
 			{
-				if ( !filter.PassFilter( item.Name.c_str() ) )
+				if ( !m_ContentSearchFilter.empty() 
+					&& !filter.PassFilter( item.Name.c_str() ) )
 					continue;
 
 				ImGui::TableNextColumn();
@@ -514,7 +539,7 @@ namespace Tridium {
 		{
 			case EFileType::Folder:
 			{
-				OpenFolder( m_CurrentDirectory / a_Item.Name );
+				OpenFolder( a_Item.Path );
 				return true;
 			}
 			case EFileType::Material:
@@ -538,26 +563,6 @@ namespace Tridium {
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-
-	//ImVec2 operator+( const ImVec2& a, const ImVec2& b )
-	//{
-	//	return ImVec2( a.x + b.x, a.y + b.y );
-	//}
-
-	//ImVec2 operator-( const ImVec2& a, const ImVec2& b )
-	//{
-	//	return ImVec2( a.x - b.x, a.y - b.y );
-	//}
-
-	//ImVec2 operator*( const ImVec2& a, const ImVec2& b )
-	//{
-	//	return ImVec2( a.x * b.x, a.y * b.y );
-	//}
-
-	//ImVec2 operator*( const ImVec2& a, float b )
-	//{
-	//	return ImVec2( a.x * b, a.y * b );
-	//}
 
 	bool RenderContentBrowserThumbnail( const char* a_FileName, ImTextureID a_ThumbnailIcon, const char* a_AssetType, const ImVec4& a_Color, float a_SizeMultiplier = 1.0f )
 	{
@@ -583,14 +588,16 @@ namespace Tridium {
 
 		bool hovered, held;
 		bool pressed = ImGui::ButtonBehavior( bb, id, &hovered, &held, ImGuiButtonFlags_None );
-		const ImU32 col = ImGui::GetColorU32( ( held && hovered ) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_WindowBg );
+		const ImVec4 col = ImGui::GetStyleColorVec4( ( held && hovered ) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_WindowBg );
 
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
 
 		// Draw thumbnail Background
-		drawList->AddRectFilled( bb.Min, bb.Max, col, 5.0f, ImDrawFlags_RoundCornersAll );
+		drawList->AddRectFilled( bb.Min, bb.Max, ImGui::GetColorU32( col ), 5.0f, ImDrawFlags_RoundCornersAll );
 		// Draw thumbnail Icon
-		drawList->AddImageRounded( a_ThumbnailIcon, bbIcon.Min, bbIcon.Max, ImVec2( 0, 1 ), ImVec2( 1, 0 ), ImGui::GetColorU32( ImVec4( 1, 1, 1, 1 ) ), 2.5f );
+		const bool shouldBeDark = col.x * 0.299f + col.y * 0.587f + col.z * 0.114f > 0.5f;
+		const ImU32 iconColor = ImGui::GetColorU32( style.Colors[ImGuiCol_Text] );  //ImGui::GetColorU32( shouldBeDark ? ImVec4( 0.0f, 0.0f, 0.0f, 1.0f ) : ImVec4( 1.0f, 1.0f, 1.0f, 1.0f ) );
+		drawList->AddImageRounded( a_ThumbnailIcon, bbIcon.Min, bbIcon.Max, ImVec2( 0, 1 ), ImVec2( 1, 0 ), iconColor, 2.5f );
 
 		// Draw color rect padding under the icon
 		constexpr float colorDummyThickness = 2.0f;
@@ -599,13 +606,15 @@ namespace Tridium {
 			ImVec2( bb.Max.x, bbIcon.Max.y + colorDummyThickness ) );
 		drawList->AddRectFilled( bbColorDummyRect.Min, bbColorDummyRect.Max, ImGui::GetColorU32( a_Color ) );
 
+		const ImVec4 textColor = style.Colors[ImGuiCol_Text];
+
 		// Draw file name
 		const float fontSize = 16.0f * a_SizeMultiplier;
 		const ImVec4 bbText( bbInner.Min.x, bbIcon.Max.y + 2.0f, bbInner.Max.x, bbIcon.Max.y + fontSize + 4.0f );
 		drawList->AddText(
 			ImGui::GetLightFont(), fontSize,
 			ImVec2( bbInner.Min.x, bbIcon.Max.y + 2.0f + colorDummyThickness ),
-			ImGui::GetColorU32( ImVec4( 1, 1, 1, 0.9f ) ),
+			ImGui::GetColorU32( textColor ),
 			a_FileName,
 			nullptr, bbInner.Max.x, &bbText );
 
@@ -615,7 +624,7 @@ namespace Tridium {
 		drawList->AddText(
 			ImGui::GetLightFont(), assetTypeFontSize,
 			ImVec2( bbInner.Min.x, bbInner.Max.y - assetTypeFontSize - 2.0f ),
-			ImGui::GetColorU32( ImVec4( 1, 1, 1, 0.5f ) ),
+			ImGui::GetColorU32( textColor * ImVec4( 1.0f, 1.0f, 1.0f, 0.75f ) ),
 			a_AssetType,
 			nullptr, bbInner.Max.x, &bbAssetType );
 

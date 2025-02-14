@@ -52,31 +52,31 @@ namespace Tridium {
 		float speed = Speed;
 		speed *= m_TimeMovingSpeedMultiplier;
 
-		if ( Input::IsKeyPressed( Input::KEY_LEFT_SHIFT ) )
+		if ( Input::IsKeyPressed( EInputKey::LeftShift ) )
 		{
 			speed *= 5.0f;
 		}
 
-		if ( Input::IsKeyPressed( Input::KEY_LEFT_CONTROL ) )
+		if ( Input::IsKeyPressed( EInputKey::LeftControl ) )
 		{
 			speed /= 5.f;
 		}
 
-		int forwardMag = Input::IsKeyPressed( Input::KEY_W ) - Input::IsKeyPressed( Input::KEY_S );
+		int forwardMag = Input::IsKeyPressed( EInputKey::W ) - Input::IsKeyPressed( EInputKey::S );
 		MoveForward( forwardMag, speed );
-		int sidewaysMag = Input::IsKeyPressed( Input::KEY_D ) - Input::IsKeyPressed( Input::KEY_A );
+		int sidewaysMag = Input::IsKeyPressed( EInputKey::D ) - Input::IsKeyPressed( EInputKey::A );
 		MoveSideways( sidewaysMag, speed );
 
 		if ( forwardMag != 0 || sidewaysMag != 0 )
 			m_IsMoving = true;
 
-		if ( Input::IsKeyPressed( Input::KEY_UP ) )
+		if ( Input::IsKeyPressed( EInputKey::Up ) )
 		{
 			m_IsMoving = true;
 			Position.y += speed * dt;
 		}
 
-		if ( Input::IsKeyPressed( Input::KEY_DOWN ) )
+		if ( Input::IsKeyPressed( EInputKey::Down ) )
 		{
 			m_IsMoving = true;
 			Position.y -= speed * dt;
@@ -84,16 +84,16 @@ namespace Tridium {
 
 		// Rotation
 
-		if ( Input::IsKeyPressed( Input::KEY_RIGHT ) )
+		if ( Input::IsKeyPressed( EInputKey::Right ) )
 		{
 			Yaw += 0.5f * speed * dt;
 		}
-		if ( Input::IsKeyPressed( Input::KEY_LEFT ) )
+		if ( Input::IsKeyPressed( EInputKey::Left ) )
 		{
 			Yaw -= 0.5f * speed * dt;
 		}
 
-		if ( Input::IsMouseButtonPressed( Input::MOUSE_BUTTON_RIGHT ) )
+		if ( Input::IsMouseButtonPressed( EInputMouseButton::Right ) )
 		{
 			MouseRotate( Input::GetMousePosition() - m_LastMousePos );
 		}
@@ -169,6 +169,20 @@ namespace Tridium {
 		return glm::translate( identity, Position )
 			* rotationMatrix
 			* glm::scale( identity, Scale );
+	}
+
+	void EditorCamera::SetViewMatrix( const Matrix4& view )
+	{
+		// Extract look dir from the view matrix
+		Vector3 lookDir = glm::normalize( glm::vec3( view[0][2], view[1][2], view[2][2] ) );
+		// Extract up dir from the view matrix
+		Vector3 upDir = glm::normalize( glm::vec3( view[0][1], view[1][1], view[2][1] ) );
+
+		// Calculate pitch and yaw from the look dir
+		Pitch = glm::asin( lookDir.y );
+		Yaw = glm::atan( lookDir.x, lookDir.z );
+
+		m_View = view;
 	}
 
 }

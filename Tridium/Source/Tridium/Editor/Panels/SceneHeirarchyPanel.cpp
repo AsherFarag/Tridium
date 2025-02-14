@@ -42,13 +42,13 @@ namespace Tridium {
 		if ( e.IsRepeat() )
 			return false;
 
-		bool shift = Input::IsKeyPressed( Input::KEY_LEFT_SHIFT );
-		bool control = Input::IsKeyPressed( Input::KEY_LEFT_CONTROL );
-		bool alt = Input::IsKeyPressed( Input::KEY_LEFT_ALT );
+		bool shift = Input::IsKeyPressed( EInputKey::LeftShift );
+		bool control = Input::IsKeyPressed( EInputKey::LeftControl );
+		bool alt = Input::IsKeyPressed( EInputKey::LeftAlt );
 
 		switch ( e.GetKeyCode() )
 		{
-		case Input::KEY_DELETE:
+		case EInputKey::Delete:
 		{
 			// Delete
 			// Destroys the selected game object
@@ -60,7 +60,7 @@ namespace Tridium {
 			}
 			break;
 		}
-		case Input::KEY_F:
+		case EInputKey::F:
 		{
 			// Shift + F
 			// Make Editor Camera find the selected game object
@@ -79,7 +79,7 @@ namespace Tridium {
 			}
 			break;
 		}
-		case Input::KEY_C:
+		case EInputKey::C:
 		{
 			// Control + C
 			// Copy the selected game object
@@ -93,7 +93,7 @@ namespace Tridium {
 			}
 			break;
 		}
-		case Input::KEY_V:
+		case EInputKey::V:
 		{
 			// Control + V
 			// Paste the copied game object
@@ -128,7 +128,7 @@ namespace Tridium {
 			return;
 
 		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2( 1, 1 ) );
-		ImGui::ScopedStyleCol winBg( ImGuiCol_::ImGuiCol_WindowBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg) * 0.5f );
+		//ImGui::ScopedStyleCol winBg( ImGuiCol_::ImGuiCol_WindowBg, ImGui::GetStyleColorVec4(ImGuiCol_FrameBg) );
 		ImGui::FunctionScope endWindow( +[]() { ImGui::End(); } );
 
 		if ( !ImGui::Begin( ( TE_ICON_MOUNTAIN_SUN " " + scene->GetName() + "###Scene Heirarchy" ).c_str() ) )
@@ -172,25 +172,29 @@ namespace Tridium {
 
 		ImGui::Separator();
 
-		auto gameObjects = scene->GetECS().View<TagComponent>();
-		ImGui::ScopedStyleVar itemSpacing( ImGuiStyleVar_::ImGuiStyleVar_ItemSpacing, ImVec2( 0, 1 ) );
-		ImGuiTextFilter filter( m_SearchBuffer.c_str() );
-		for ( int i = 0; i < gameObjects.size(); ++i )
+		if ( ImGui::BeginChild( "SceneHeirarchy", { 0, 0 }, ImGuiChildFlags_FrameStyle ) )
 		{
-			GameObject go = gameObjects.begin()[i];
-			// We are only drawing root objects in this loop
-			if ( go.GetParent().IsValid() )
-				continue;
-
-			if ( !m_SearchBuffer.empty() )
+			auto gameObjects = scene->GetECS().View<TagComponent>();
+			ImGui::ScopedStyleVar itemSpacing( ImGuiStyleVar_::ImGuiStyleVar_ItemSpacing, ImVec2( 0, 1 ) );
+			ImGuiTextFilter filter( m_SearchBuffer.c_str() );
+			for ( int i = 0; i < gameObjects.size(); ++i )
 			{
-				TODO( "Make this search filter include children objects!" );
-				if ( !filter.PassFilter( go.GetTag().c_str() ) )
+				GameObject go = gameObjects.begin()[i];
+				// We are only drawing root objects in this loop
+				if ( go.GetParent().IsValid() )
 					continue;
-			}
 
-			DrawSceneNode( go );
+				if ( !m_SearchBuffer.empty() )
+				{
+					TODO( "Make this search filter include children objects!" );
+					if ( !filter.PassFilter( go.GetTag().c_str() ) )
+						continue;
+				}
+
+				DrawSceneNode( go );
+			}
 		}
+		ImGui::EndChild();
 	}
 
 	void SceneHeirarchyPanel::OpenAddPopUp()

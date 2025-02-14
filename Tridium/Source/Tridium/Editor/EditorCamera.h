@@ -20,6 +20,7 @@ namespace Tridium {
         Quaternion GetOrientation() const;
         Matrix4 GetTransform() const;
         const Matrix4& GetViewMatrix() const { return m_View; }
+        void SetViewMatrix( const Matrix4& view );
 
         bool Focused = true;
 
@@ -29,17 +30,6 @@ namespace Tridium {
         Vector3 Position = Vector3( 0 );
         float Pitch = 0.f, Yaw = 0.f;
         Vector3 Scale = Vector3( 1 );
-
-    private:
-        void HandleInput();
-
-        void MoveForward( const float magnitude, const float speed );
-        void MoveSideways( const float magnitude, const float speed );
-        void MouseRotate( const Vector2& mouseDelta );
-
-        void RecalculateView();
-
-        void Lerp();
 
     private:
         Matrix4 m_View;
@@ -58,6 +48,18 @@ namespace Tridium {
             Vector3 LerpToPos = {};
             bool IsLerping = false;
         } m_LerpData;
+
+
+    private:
+        void HandleInput();
+
+        void MoveForward( const float magnitude, const float speed );
+        void MoveSideways( const float magnitude, const float speed );
+        void MouseRotate( const Vector2& mouseDelta );
+
+        void RecalculateView();
+
+        void Lerp();
     };
 
 }

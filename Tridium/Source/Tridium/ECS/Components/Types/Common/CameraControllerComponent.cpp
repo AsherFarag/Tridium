@@ -26,22 +26,22 @@ namespace Tridium {
 		auto right = glm::cross( forward, up );
 
 
-		if ( Input::IsKeyPressed( Input::KEY_W ) )
+		if ( Input::IsKeyPressed( EInputKey::W ) )
 			transform.Position -= Vector3(forward.x, 0, forward.z ) * Speed * dt;
 
-		if ( Input::IsKeyPressed( Input::KEY_S ) )
+		if ( Input::IsKeyPressed( EInputKey::S ) )
 			transform.Position += Vector3( forward.x, 0, forward.z ) * Speed * dt;
 
-		if ( Input::IsKeyPressed( Input::KEY_A ) )
+		if ( Input::IsKeyPressed( EInputKey::A ) )
 			transform.Position += right * Speed * dt;
 
-		if ( Input::IsKeyPressed( Input::KEY_D ) )
+		if ( Input::IsKeyPressed( EInputKey::D ) )
 			transform.Position -= right * Speed * dt;
 
-		if ( Input::IsKeyPressed( Input::KEY_SPACE ) )
+		if ( Input::IsKeyPressed( EInputKey::Space ) )
 			transform.Position += up * Speed * dt;
 
-		if ( Input::IsKeyPressed( Input::KEY_LEFT_SHIFT ) )
+		if ( Input::IsKeyPressed( EInputKey::LeftShift ) )
 			transform.Position -= up * Speed * dt;
 
 		// Mouse Scroll Zoom

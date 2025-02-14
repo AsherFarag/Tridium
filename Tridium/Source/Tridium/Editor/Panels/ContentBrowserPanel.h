@@ -36,9 +36,12 @@ namespace Tridium {
 	{
 		ContentBrowserPanel& Owner;
 		EFileType Type;
-		std::string Name;
+		String Name;
+		FilePath Path;
 		AssetHandle Handle{AssetHandle::InvalidID };
 		bool IsImported = false;
+		// True if this item is a folder and contains no other folders.
+		bool IsLeaf = false;
 
 		// Returns true if the item was opened.
 		bool OnImGuiDraw( float a_Size ) const;
