@@ -629,7 +629,7 @@ namespace Tridium {
 
 				textureSlot++;
 				auto metallicTexture = AssetManager::GetAsset<Texture>( material->MetallicTexture );
-				if ( !metallicTexture ) metallicTexture = m_BlackTexture;
+				if ( !metallicTexture ) metallicTexture = m_WhiteTexture;
 				metallicTexture->Bind( textureSlot );
 				shader->SetInt( "u_MetallicTexture", textureSlot );
 

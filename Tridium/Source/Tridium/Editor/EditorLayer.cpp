@@ -448,9 +448,9 @@ namespace Tridium {
 			| ImGuiWindowFlags_NoScrollWithMouse
 			| ImGuiWindowFlags_NoTitleBar );
 
-		ImVec2 buttonPadding( 4, 4 );
-		float regionAvailY = MAX( 0.0f, ImGui::GetContentRegionAvail().y - 5 - buttonPadding.y );
-		ImVec2 buttonSize( regionAvailY * 2, regionAvailY * 2 );
+		const ImVec2 buttonPadding( 0, 0 );
+		const float textSize = ImGui::GetTextLineHeight();
+		const ImVec2 buttonSize( textSize, textSize );
 
 		EditorLayer* editor = Editor::GetEditorLayer();
 		ESceneState sceneState = editor->CurrentSceneState;
@@ -461,6 +461,7 @@ namespace Tridium {
 		float totalButtonSizeX = buttonSize.x + ( buttonPadding.x * 2.f ) + ImGui::GetStyle().ItemSpacing.x;
 		float groupSizeX = ( totalButtonSizeX * hasPlayButton ) + ( totalButtonSizeX * hasPauseButton ) + ( totalButtonSizeX * hasStopButton );
 		ImGui::SetCursorPosX( ( ImGui::GetWindowWidth() * 0.5f ) - groupSizeX * 0.5f );
+		ImGui::SetCursorPosY( ImGui::GetWindowHeight() * 0.5f - buttonSize.y * 0.5f );
 
 		ImGui::BeginGroup();
 		{
@@ -468,7 +469,7 @@ namespace Tridium {
 			if ( hasPlayButton )
 			{
 				ImGui::ScopedStyleCol buttonCol( ImGuiCol_Text, ImVec4( Editor::GetPallete().Green ) );
-				if ( ImGui::SmallButton( TE_ICON_PLAY ) )
+				if ( ImGui::IconButton( TE_ICON_PLAY ) )
 				{
 					if ( scene->IsPaused() )
 						scene->SetPaused( false );
@@ -479,7 +480,7 @@ namespace Tridium {
 
 			if ( hasPauseButton )
 			{
-				if ( ImGui::SmallButton( TE_ICON_PAUSE ) )
+				if ( ImGui::IconButton( TE_ICON_PAUSE ) )
 				{
 					SceneManager::GetActiveScene()->SetPaused( true );
 				}
@@ -490,7 +491,7 @@ namespace Tridium {
 			if ( hasStopButton )
 			{
 				ImGui::ScopedStyleCol buttonCol( ImGuiCol_Text, ImVec4( Editor::GetPallete().Red ) );
-				if ( ImGui::SmallButton( TE_ICON_STOP ) )
+				if ( ImGui::IconButton( TE_ICON_STOP ) )
 				{
 					editor->OnEndScene();
 				}

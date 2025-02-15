@@ -12,6 +12,8 @@ namespace Tridium {
 		stbi_set_flip_vertically_on_load( 1 );
 		if ( stbi_is_hdr( a_FilePath.ToString().c_str() ) )
 		{
+			std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
 			float* data = stbi_loadf( a_FilePath.ToString().c_str(), &width, &height, &channels, 0 );
 
 			if ( !data )
@@ -35,10 +37,16 @@ namespace Tridium {
 			Texture* tex = Texture::Create( a_Specification );
 			tex->SetData( data, width * height * channels );
 
+			std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<double> time = end - start;
+			LOG( LogCategory::Debug, Info, "Loaded HDR texture in {0} seconds", time.count() );
+
 			return SharedPtr<Texture>( tex );
 		}
 		else
 		{
+			std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
 			stbi_uc* data = stbi_load( a_FilePath.ToString().c_str(), &width, &height, &channels, 0 );
 
 			if ( !data )
@@ -68,6 +76,10 @@ namespace Tridium {
 			Texture* tex = Texture::Create( a_Specification );
 			tex->SetData( data, width * height * channels );
 
+			std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<double> time = end - start;
+			LOG( LogCategory::Debug, Info, "Loaded texture in {0} seconds", time.count() );
+
 			//stbi_image_free( data );
 
 			return SharedPtr<Texture>( tex );
@@ -81,11 +93,13 @@ namespace Tridium {
 	SharedPtr<Asset> TextureLoader::LoadAsset( const AssetMetaData& a_MetaData )
 	{
         TextureSpecification specification;
+		LOG( LogCategory::Debug, Debug, "Loading texture: {0}", a_MetaData.Path.ToString() );
 
         int width, height, channels;
         stbi_set_flip_vertically_on_load( 1 );
 		if ( stbi_is_hdr( a_MetaData.Path.ToString().c_str() ) )
 		{
+			std::chrono::time_point<std::chrono::high_resolution_clock> start = std::chrono::high_resolution_clock::now();
 			float* data = stbi_loadf( a_MetaData.Path.ToString().c_str(), &width, &height, &channels, 0 );
 
 			if ( !data )
@@ -109,10 +123,16 @@ namespace Tridium {
 			Texture* tex = Texture::Create( specification );
 			tex->SetData( data, width * height * channels );
 
+			std::chrono::time_point<std::chrono::high_resolution_clock> end = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<double> time = end - start;
+			LOG( LogCategory::Debug, Info, "Loaded HDR texture in {0} seconds", time.count() );
+
 			return SharedPtr<Asset>( tex );
 		}
 		else
 		{
+			std::chrono::time_point<std::chrono::high_resolution_clock> start = std::chrono::high_resolution_clock::now();
+
 			stbi_uc* data = stbi_load( a_MetaData.Path.ToString().c_str(), &width, &height, &channels, 0 );
 
 			if ( !data )
@@ -141,6 +161,10 @@ namespace Tridium {
 
 			Texture* tex = Texture::Create( specification );
 			tex->SetData( data, width * height * channels );
+
+			std::chrono::time_point<std::chrono::high_resolution_clock> end = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<double> time = end - start;
+			LOG( LogCategory::Debug, Info, "Loaded texture in {0} seconds", time.count() );
 
 			//stbi_image_free( data );
 

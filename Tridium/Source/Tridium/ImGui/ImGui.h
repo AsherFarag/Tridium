@@ -35,6 +35,15 @@ namespace ImGui {
 	bool InputTextMultiline( const char* label, std::string* str, const ImVec2& size = ImVec2( 0, 0 ), ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr );
 	bool InputTextWithHint( const char* label, const char* hint, std::string* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr );
 
+	//=================================================================================================
+	// Buttons
+	//=================================================================================================
+
+	// Draws a button with an icon so that the icon is centered
+	bool IconButton( const char* icon, const ImVec2& size = { 0, 0 } );
+
+	//=================================================================================================
+
 	bool BorderedSelectable( const char* label, bool selected, ImGuiSelectableFlags flags = 0, const float borderThickness = 1.0f, ImU32 borderColor = IM_COL32( 255, 255, 255, 255 ), float rounding = 0.0f, const ImVec2& size = ImVec2( 0, 0 ) );
 	template <typename PayloadFunction >
 	bool DragDropSelectable( const char* label, bool isValid, const char* text, const char* payloadType, PayloadFunction payloadFunction )

@@ -71,7 +71,51 @@ namespace ImGui {
         return InputTextWithHint( label, hint, (char*)str->c_str(), str->capacity() + 1, flags, InputTextCallback, &cb_user_data );
     }
 
-	bool BorderedSelectable( const char* label, bool selected, ImGuiSelectableFlags flags, const float borderThickness, ImU32 borderColor, float rounding, const ImVec2& size )
+    bool IconButton( const char* icon, const ImVec2& size )
+    {
+        ImGuiWindow* window = ImGui::GetCurrentWindow();
+        if ( window->SkipItems )
+            return false;
+
+        ImGuiContext& g = *GImGui;
+        const ImGuiStyle& style = g.Style;
+        const ImGuiID id = window->GetID( icon );
+        const ImVec2 label_size = ImGui::CalcTextSize( icon, nullptr, true );
+        const ImGuiButtonFlags flags = 0;
+
+        // Determine button position and size
+        const ImVec2 pos = window->DC.CursorPos;
+		const float textSize = Tridium::Math::Max( label_size.x, label_size.y );
+		const ImVec2 itemSize = ImGui::CalcItemSize( size, textSize + style.FramePadding.x * 2.0f, textSize + style.FramePadding.y * 2.0f );
+        const ImRect bb( pos, pos + itemSize );
+
+        ImGui::ItemSize( itemSize, 0.0f );
+        if ( !ImGui::ItemAdd( bb, id ) )
+            return false;
+
+        bool hovered, held;
+        bool pressed = ImGui::ButtonBehavior( bb, id, &hovered, &held, flags );
+
+        // Render button background
+        const ImU32 col = ImGui::GetColorU32( ( held && hovered ) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button );
+        ImGui::RenderNavHighlight( bb, id );
+        ImGui::RenderFrame( bb.Min, bb.Max, col, true, style.FrameRounding );
+
+        // Correctly center the icon inside the button
+        const ImVec2 label_pos = ImVec2(
+			bb.Min.x + ( bb.GetWidth() - label_size.x ) * 0.5f + style.FramePadding.x,
+			bb.Min.y
+        );
+        ImGui::RenderText( label_pos, icon );
+
+        // Debug info for ImGui testing
+        IMGUI_TEST_ENGINE_ITEM_INFO( id, icon, g.LastItemData.StatusFlags );
+
+        return pressed;
+    }
+
+
+    bool BorderedSelectable( const char* label, bool selected, ImGuiSelectableFlags flags, const float borderThickness, ImU32 borderColor, float rounding, const ImVec2& size )
 	{
 		// Get the ImGui window draw list
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
