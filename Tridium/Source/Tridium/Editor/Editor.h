@@ -11,6 +11,7 @@ namespace Tridium {
 
 		inline EditorPayloadManager& GetPayloadManager() { return EditorApplication::Get()->GetPayloadManager(); }
 		inline EditorLayer* GetEditorLayer() { return EditorApplication::Get() ? EditorApplication::Get()->GetEditorLayer() : nullptr; }
+		inline CommandManager& GetCommandManager() { return EditorApplication::Get()->GetCommandManager(); }
 
 		// Get the editor style
 		inline EditorStyle& GetStyle() { return EditorApplication::Get()->GetStyle(); }

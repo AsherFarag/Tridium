@@ -240,6 +240,26 @@ namespace Tridium {
 				return true;
 			}
 		}
+		// Redo
+		case EInputKey::Y:
+		{
+			if ( control )
+			{
+				Editor::GetCommandManager().Redo();
+				return true;
+			}
+			break;
+		}
+		// Undo
+		case EInputKey::Z:
+		{
+			if ( control )
+			{
+				Editor::GetCommandManager().Undo();
+				return true;
+			}
+			break;
+		}
 		}
 
 		return false;

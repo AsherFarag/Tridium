@@ -457,6 +457,8 @@ namespace Tridium {
 				ImGui::ScopedStyleCol redText( ImGuiCol_Text, ImVec4( Editor::GetPallete().Red ) );
 				if ( ImGui::MenuItem( TE_ICON_TRASH_CAN " Delete" ) )
 				{
+					Editor::GetCommandManager().Execute( Commands::GameObjectDestroyed{ SceneManager::GetActiveSceneWeak(), InspectedGameObject } );
+
 					InspectedGameObject.Destroy();
 					InspectedGameObject = GameObject();
 					Editor::Events::OnGameObjectSelected.Broadcast( GameObject() );

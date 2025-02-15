@@ -89,7 +89,7 @@ namespace Tridium {
 		template <typename T>
 		inline void RemoveComponent();
 		// Retrieves all components attached to the GameObject with an associated MetaType.
-		[[nodiscard]] std::vector<std::pair<Refl::MetaType, Component*>> GetAllComponents() const;
+		[[nodiscard]] Array<Pair<Refl::MetaType, Component*>> GetAllComponents() const;
 		//================================================================
 
 		//================================================================

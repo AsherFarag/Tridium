@@ -231,7 +231,7 @@ namespace Tridium::IO {
 	bool Serializer<GameObject>::DeserializeGameObject( const YAML::Node& a_Node, Scene& a_Scene )
 	{
 		GameObject go;
-		if ( auto gameObjectIDNode = a_Node["GameObject"] )
+		if ( auto gameObjectIDNode = a_Node["GameObject"]; gameObjectIDNode.IsScalar() )
 		{
 			go = GameObject( gameObjectIDNode.as<EntityID>() );
 		}
@@ -241,20 +241,20 @@ namespace Tridium::IO {
 		}
 
 		GUID guid;
-		if ( auto guidNode = a_Node["GUID"] )
+		if ( auto guidNode = a_Node["GUID"]; guidNode.IsScalar() )
 			guid = guidNode.as<GUID>();
 		else
 			return false;
 
 		std::string tag;
-		if ( auto tagNode = a_Node["Tag"] )
+		if ( auto tagNode = a_Node["Tag"]; tagNode.IsScalar() )
 			tag = tagNode.as<std::string>();
 		else
 			return false;
 
 		ASSERT_LOG( a_Scene.GetECS().CreateEntity( go.ID() ) == go.ID(), "The created GameObject should be the same as the hint!" );
 		a_Scene.AddComponentToGameObject<GUIDComponent>( go, guid );
-		a_Scene.AddComponentToGameObject<TagComponent>( go, tag );
+		a_Scene.AddComponentToGameObject<TagComponent>( go, std::move( tag ) );
 		a_Scene.AddComponentToGameObject<TransformComponent>( go );
 
 		DeserializedGameObject deserializedGO;

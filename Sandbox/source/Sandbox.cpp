@@ -8,6 +8,8 @@
 #include <Tridium/Asset/Loaders/TextureLoader.h> 
 #include <Tridium/Reflection/Reflection.h>
 
+#include <Tridium/Editor/Commands/CommandManager.h>
+
 using namespace Tridium;
 
 class ShooterPlayerComponent : public NativeScriptComponent
@@ -285,11 +287,32 @@ public:
 	};
 };
 
+struct Command1
+{
+	void Undo()
+	{
+		printf( "Undo Command1\n" );
+	}
+	void Redo()
+	{
+		printf( "Redo Command1\n" );
+	}
+};
+
 class SandboxGameInstance : public Tridium::GameInstance
 {
 	virtual void Init() override
 	{
 		Application::Get()->PushOverlay( new Test() );
+
+		CommandManager commandManager;
+		commandManager.Execute<Commands::GameObjectCreated>();
+		commandManager.Execute<Commands::GameObjectDestroyed>();
+		commandManager.Undo();
+		commandManager.Redo();
+		commandManager.Undo();
+		commandManager.Undo();
+		commandManager.Redo();
 	}
 };
 

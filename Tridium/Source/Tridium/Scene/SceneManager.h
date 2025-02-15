@@ -9,6 +9,8 @@ namespace Tridium {
 	public:
 		// Gets the currently active Scene.
 		static Scene* GetActiveScene() { return Get()->m_ActiveScene.get(); }
+		// Gets a weak ptr to the currently active Scene.
+		static WeakPtr<Scene> GetActiveSceneWeak() { return Get()->m_ActiveScene; }
 		// Set the scene to be active.
 		static void SetActiveScene( Scene* a_Scene ) { Get()->m_ActiveScene = SharedPtrCast<Scene>( a_Scene->shared_from_this() ); }
 		// Will attempt to load the scene.

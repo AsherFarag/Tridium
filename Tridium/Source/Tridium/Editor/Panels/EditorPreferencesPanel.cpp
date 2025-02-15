@@ -8,7 +8,7 @@ namespace Tridium {
 
 	static float s_GlobalBrightness = 1.0f;
 
-	void SetGlobalBrightness( float a_Brightness );
+	void SetGlobalBrightness( float a_Brightness, float a_OldBrightness = 1.0f );
 
 	void EditorPreferencesPanel::OnImGuiDraw()
 	{
@@ -20,10 +20,10 @@ namespace Tridium {
 
 		if ( ImGui::BeginMenu( "Set Editor Style" ) )
 		{
-			if ( ImGui::MenuItem( "Light" ) )      Editor::GetStyle().SetTheme( EditorStyle::ETheme::Light );
-			if ( ImGui::MenuItem( "Dark" ) )       Editor::GetStyle().SetTheme( EditorStyle::ETheme::Dark );
-			if ( ImGui::MenuItem( "Midnight" ) )   Editor::GetStyle().SetTheme( EditorStyle::ETheme::Midnight );
-			if ( ImGui::MenuItem( "Retro Tech" ) ) Editor::GetStyle().SetTheme( EditorStyle::ETheme::RetroTech );
+			if ( ImGui::MenuItem( "Light" ) )      { Editor::GetStyle().SetTheme( EditorStyle::ETheme::Light ); SetGlobalBrightness( s_GlobalBrightness ); }
+			if ( ImGui::MenuItem( "Dark" ) )       { Editor::GetStyle().SetTheme( EditorStyle::ETheme::Dark ); SetGlobalBrightness( s_GlobalBrightness ); }
+			if ( ImGui::MenuItem( "Midnight" ) )   { Editor::GetStyle().SetTheme( EditorStyle::ETheme::Midnight ); SetGlobalBrightness( s_GlobalBrightness ); }
+			if ( ImGui::MenuItem( "Retro Tech" ) ) { Editor::GetStyle().SetTheme( EditorStyle::ETheme::RetroTech ); SetGlobalBrightness( s_GlobalBrightness ); }
 
 			ImGui::EndMenu();
 		}
@@ -31,7 +31,11 @@ namespace Tridium {
 		float brightness = s_GlobalBrightness;
 		if ( ImGui::SliderFloat( "Global Brightness", &brightness, 0.25f, 1.0f ) )
 		{
-			SetGlobalBrightness( brightness );
+			if ( brightness <= 0.0f )
+				brightness = 0.25f;
+
+			SetGlobalBrightness( brightness, s_GlobalBrightness );
+			s_GlobalBrightness = brightness;
 		}
 
 		ImGui::Separator();
@@ -39,24 +43,25 @@ namespace Tridium {
 		ImGuiEnd();
 	}
 
-	void SetGlobalBrightness( float a_Brightness )
+	void SetGlobalBrightness( float a_Brightness, float a_OldBrightness )
 	{
 		ImGuiStyle& style = ImGui::GetStyle();
 		for ( int i = 0; i < ImGuiCol_COUNT; i++ )
 		{
+			if ( i == ImGuiCol_Text )
+				continue;
+
 			ImVec4 prevColor = style.Colors[i];
 
-			if ( s_GlobalBrightness != 0.0f )
+			if ( a_OldBrightness != 0.0f )
 			{
-				prevColor.x /= s_GlobalBrightness;
-				prevColor.y /= s_GlobalBrightness;
-				prevColor.z /= s_GlobalBrightness;
+				prevColor.x /= a_OldBrightness;
+				prevColor.y /= a_OldBrightness;
+				prevColor.z /= a_OldBrightness;
 			}
 
 			style.Colors[i] = prevColor * a_Brightness;
 		}
-
-		s_GlobalBrightness = a_Brightness;
 	}
 }
 

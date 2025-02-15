@@ -4,6 +4,7 @@
 #include "EditorEvents.h"
 #include "EditorPayload.h"
 #include "EditorStyle.h"
+#include "Commands/CommandManager.h"
 #include <Tridium/Utils/Singleton.h>
 
 namespace Tridium {
@@ -23,11 +24,13 @@ namespace Tridium {
 		EditorPayloadManager& GetPayloadManager() { return Get()->m_PayloadManager; }
 		EditorLayer* GetEditorLayer() { return m_EditorLayer; }
 		EditorStyle& GetStyle() { return m_Style; }
+		CommandManager& GetCommandManager() { return m_CommandManager; }
 
 	private:
 		EditorLayer* m_EditorLayer;
 		EditorPayloadManager m_PayloadManager;
 		EditorStyle m_Style;
+		CommandManager m_CommandManager;
 
 	private:
 		bool Init( EditorConfig a_Config );
