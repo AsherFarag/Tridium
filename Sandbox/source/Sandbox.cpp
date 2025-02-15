@@ -237,82 +237,10 @@ BEGIN_REFLECT_COMPONENT( EnemyAIComponent )
 	PROPERTY( m_MaxSpeed, Serialize | EditAnywhere )
 END_REFLECT( EnemyAIComponent )
 
-
-class Test : public Layer
-{
-public:
-	void OnImGuiDraw() override
-	{
-		if ( ImGui::Begin( "Debug Script Viewer" ) )
-		{
-			Editor::DrawProperty( "Script", m_Script, EDrawPropertyFlags::Editable );
-
-			if ( auto script = AssetManager::GetAsset<ScriptAsset>( m_Script ) )
-			{
-				if ( script->IsCompiled() )
-				{
-					for ( auto&& [key, val] : script->GetFunctions() )
-					{
-						ImGui::Text( key.c_str() );
-					}
-
-					for ( auto&& [key, val] : script->GetVariables() )
-					{
-						ImGui::Text( key.c_str() );
-					}
-				}
-				else
-				{
-					ImGui::Text( "Script is not compiled" );
-				}
-			}
-		}
-		ImGui::End();
-	}
-
-	LuaScriptHandle m_Script;
-};
-
-class TestObject
-{
-public:
-	TestObject()
-	{
-		printf( "Test Constructor\n" );
-	}
-
-	~TestObject()
-	{
-		printf( "Test Destructor\n" );
-	};
-};
-
-struct Command1
-{
-	void Undo()
-	{
-		printf( "Undo Command1\n" );
-	}
-	void Redo()
-	{
-		printf( "Redo Command1\n" );
-	}
-};
-
 class SandboxGameInstance : public Tridium::GameInstance
 {
 	virtual void Init() override
 	{
-		Application::Get()->PushOverlay( new Test() );
-
-		CommandManager commandManager;
-		commandManager.Execute<Commands::GameObjectCreated>();
-		commandManager.Execute<Commands::GameObjectDestroyed>();
-		commandManager.Undo();
-		commandManager.Redo();
-		commandManager.Undo();
-		commandManager.Undo();
-		commandManager.Redo();
 	}
 };
 
