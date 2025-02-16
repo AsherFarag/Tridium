@@ -1,5 +1,11 @@
 #pragma once
 
+//====================================
+// Platform Configuration
+#define CONFIG_WINDOWS 1
+#define CONFIG_LINUX 0
+//====================================
+
 #ifdef TE_SHIPPING
 	#define CONFIG_SHIPPING 1
 #else

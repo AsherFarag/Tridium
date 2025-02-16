@@ -20,6 +20,11 @@
 	#include <dxgidebug.h>
 #endif
 
+namespace LogCategory {
+	static constexpr ::Tridium::Log::Category DirectX = { "RHI::DirectX" };
+};
+
+
 namespace Tridium {
 
 	//=====================================================================

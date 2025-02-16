@@ -4,7 +4,7 @@
 #include "RHITexture.h"
 #include "RHIMesh.h"
 #include "RHIPipelineState.h"
-#include "RHIShader.h"
+#include "ShaderLibrary.h"
 #include "RHIBuffer.h"
 #include "RHICommandList.h"
 
@@ -41,6 +41,7 @@ namespace Tridium {
 		RHIVertexBufferRef CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc );
 		RHIPipelineStateRef CreatePipelineState( const RHIPipelineStateDescriptor& a_Desc );
 		RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc );
+		RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc );
 
 		RHITextureRef CreateTexture( 
 			uint32_t a_Width, uint32_t a_Height,

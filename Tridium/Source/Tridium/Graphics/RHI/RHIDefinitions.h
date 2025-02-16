@@ -9,6 +9,9 @@
 #define ENUM_SIZE_ASSERT( _Enum ) \
 	static_assert( std::underlying_type_t<_Enum>(_Enum::COUNT) <= ( 1 << std::underlying_type_t<_Enum>(_Enum::NUM_BITS) ), #_Enum "::COUNT exceeds NUM_BITS" )
 
+// Define the log category for the RHI.
+DECLARE_LOG_CATEGORY( RHI );
+
 namespace Tridium {
 
 	//====================================
@@ -137,6 +140,60 @@ namespace Tridium {
 	};
 	ENUM_SIZE_ASSERT( ERHIShaderType );
 
+
+
+	//=======================================================
+	// RHI Shader Format
+	enum class ERHIShaderFormat : uint8_t
+	{
+		Unknown = 0,
+		HLSL6,
+		SPIRV,
+
+		// Console-Platform Specific
+		HLSL6_XBOX, // HLSL for Xbox
+		PSSL,      // PlayStation Shader Language
+
+		COUNT,
+		NUM_BITS = 3,
+	};
+	ENUM_SIZE_ASSERT( ERHIShaderFormat );
+
+	//=======================================================
+	// RHI Shader Model
+	//  The version of the shader model to use.
+	//  The higher the version, the more features are available.
+	enum class ERHIShaderModel
+	{
+		Unknown,
+		SM_5_0,
+		SM_6_0,
+		SM_6_1,
+		SM_6_2,
+		SM_6_3,
+		SM_6_4,
+		SM_6_5,
+		SM_6_6,
+		COUNT,
+		NUM_BITS = 4,
+	};
+	ENUM_SIZE_ASSERT( ERHIShaderModel );
+
+
+	//=======================================================
+	// RHI Shader Compiler Flags
+	//  Defines flags that can be used to modify the behavior of the shader compiler.
+	namespace ERHIShaderCompilerFlags
+	{
+		enum Type : uint32_t
+		{
+			None = 0,
+			DisableOptimization = 1 << 0,
+
+			Default = None
+		};
+	};
+	//=======================================================
 
 
 	//===========================

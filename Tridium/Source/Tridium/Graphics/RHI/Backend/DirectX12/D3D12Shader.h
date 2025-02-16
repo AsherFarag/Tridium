@@ -15,9 +15,6 @@ namespace Tridium {
 		bool Release() override;
 		bool IsValid() const override;
 		const void* NativePtr() const override;
-
-	private:
-		ComPtr<ID3DBlob> m_ShaderBlob;
 	};
 
 } // namespace Tridium

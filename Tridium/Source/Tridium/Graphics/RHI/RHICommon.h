@@ -79,6 +79,24 @@ namespace Tridium {
 			}
 
 		}
+
+		static ERHIShaderFormat GetShaderFormat()
+		{
+			switch ( RHI::GetRHIType() )
+			{
+				using enum ERHInterfaceType;
+			case DirectX11:
+			case DirectX12:
+				return ERHIShaderFormat::HLSL6;
+
+			case OpenGL:
+			case Vulkan:
+				return ERHIShaderFormat::SPIRV;
+
+			default:
+				return ERHIShaderFormat::Unknown;
+			}
+		}
 	}
 
 } // namespace Tridium
