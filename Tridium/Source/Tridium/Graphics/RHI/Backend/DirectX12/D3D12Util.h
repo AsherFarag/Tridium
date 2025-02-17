@@ -120,91 +120,25 @@ namespace Tridium {
             }
         }
 
-		static constexpr DXGI_FORMAT GetFormat( RHIVertexElementType a_Type )
+		static constexpr DXGI_FORMAT GetFormat( ERHIVertexElementType a_Type )
 		{
-			switch ( a_Type.DataType )
+			switch ( a_Type )
 			{
-				using enum ERHIDataType;
-			case UInt8:
-			{
-				switch ( a_Type.Components )
-				{
-				case 1: return DXGI_FORMAT_R8_UINT;
-				case 2: return DXGI_FORMAT_R8G8_UINT;
-				case 3: return DXGI_FORMAT_UNKNOWN;
-				case 4: return DXGI_FORMAT_R8G8B8A8_UINT;
-				}
-			}
-			case UInt16:
-			{
-				switch ( a_Type.Components )
-				{
-				case 1: return DXGI_FORMAT_R16_UINT;
-				case 2: return DXGI_FORMAT_R16G16_UINT;
-				case 3: return DXGI_FORMAT_UNKNOWN;
-				case 4: return DXGI_FORMAT_R16G16B16A16_UINT;
-				}
-			}
-			case UInt32:
-			{
-				switch ( a_Type.Components )
-				{
-				case 1: return DXGI_FORMAT_R32_UINT;
-				case 2: return DXGI_FORMAT_R32G32_UINT;
-				case 3: return DXGI_FORMAT_R32G32B32_UINT;
-				case 4: return DXGI_FORMAT_R32G32B32A32_UINT;
-				}
-			}
-			case Int8:
-			{
-				switch ( a_Type.Components )
-				{
-				case 1: return DXGI_FORMAT_R8_SINT;
-				case 2: return DXGI_FORMAT_R8G8_SINT;
-				case 3: return DXGI_FORMAT_UNKNOWN;
-				case 4: return DXGI_FORMAT_R8G8B8A8_SINT;
-				}
-			}
-			case Int16:
-			{
-				switch ( a_Type.Components )
-				{
-				case 1: return DXGI_FORMAT_R16_SINT;
-				case 2: return DXGI_FORMAT_R16G16_SINT;
-				case 3: return DXGI_FORMAT_UNKNOWN;
-				case 4: return DXGI_FORMAT_R16G16B16A16_SINT;
-				}
-			}
-			case Int32:
-			{
-				switch ( a_Type.Components )
-				{
-				case 1: return DXGI_FORMAT_R32_SINT;
-				case 2: return DXGI_FORMAT_R32G32_SINT;
-				case 3: return DXGI_FORMAT_R32G32B32_SINT;
-				case 4: return DXGI_FORMAT_R32G32B32A32_SINT;
-				}
-			}
-			case Float16:
-			{
-				switch ( a_Type.Components )
-				{
-				case 1: return DXGI_FORMAT_R16_FLOAT;
-				case 2: return DXGI_FORMAT_R16G16_FLOAT;
-				case 3: return DXGI_FORMAT_UNKNOWN;
-				case 4: return DXGI_FORMAT_R16G16B16A16_FLOAT;
-				}
-			}
-			case Float32:
-			{
-				switch ( a_Type.Components )
-				{
-				case 1: return DXGI_FORMAT_R32_FLOAT;
-				case 2: return DXGI_FORMAT_R32G32_FLOAT;
-				case 3: return DXGI_FORMAT_R32G32B32_FLOAT;
-				case 4: return DXGI_FORMAT_R32G32B32A32_FLOAT;
-				}
-			}
+				using enum ERHIVertexElementType;
+				case Float1: return DXGI_FORMAT_R32_FLOAT;
+				case Float2: return DXGI_FORMAT_R32G32_FLOAT;
+				case Float3: return DXGI_FORMAT_R32G32B32_FLOAT;
+				case Float4: return DXGI_FORMAT_R32G32B32A32_FLOAT;
+				case UByte4: return DXGI_FORMAT_R8G8B8A8_UINT;
+				case Color:  return DXGI_FORMAT_R32G32B32A32_FLOAT;
+				case Int1:   return DXGI_FORMAT_R32_SINT;
+				case Int2:   return DXGI_FORMAT_R32G32_SINT;
+				case Int3:   return DXGI_FORMAT_R32G32B32_SINT;
+				case Int4:   return DXGI_FORMAT_R32G32B32A32_SINT;
+				case UInt1:  return DXGI_FORMAT_R32_UINT;
+				case UInt2:  return DXGI_FORMAT_R32G32_UINT;
+				case UInt3:  return DXGI_FORMAT_R32G32B32_UINT;
+				case UInt4:  return DXGI_FORMAT_R32G32B32A32_UINT;
 			}
 
 			return DXGI_FORMAT_UNKNOWN;

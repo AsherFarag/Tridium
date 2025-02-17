@@ -196,6 +196,7 @@ namespace Tridium {
 	//=======================================================
 
 
+
 	//===========================
 	// Sampler Filter
 	//===========================
@@ -484,82 +485,115 @@ namespace Tridium {
 	}
 
 	template<typename T>
-	constexpr ERHIDataType GetRHIDataType()
-	{
-		return ERHIDataType::Unknown;
-	}
-
-
+	constexpr ERHIDataType GetRHIDataType();
 
 	//==========================================================
 	// RHI Vertex Element Type
-	//  The first byte is the ERHIDataType.
-	//  The second byte is the number of components.
-	//==========================================================
-	struct RHIVertexElementType
+	enum class ERHIVertexElementType : uint8_t
 	{
-		union
-		{
-			struct
-			{
-				ERHIDataType DataType;
-				uint8_t Components : 7;
-				uint8_t Normalized : 1;
-			};
-			uint16_t Value;
-		};
-
-		constexpr bool IsNormalized() const
-		{
-			return Normalized;
-		}
-
-		constexpr size_t GetSize() const
-		{
-			return GetRHIDataTypeSize( DataType ) * Components;
-		}
+		None,
+		Float1,
+		Float2,
+		Float3,
+		Float4,
+		UByte4,
+		Color,
+		Short2,
+		Short4,
+		Short2N,		// 16 bit word normalized to (value/32767.0,value/32767.0,0,0,1)
+		Short4N,		// 4 X 16 bit word, normalized 
+		Half2,			// 16 bit float using 1 bit sign, 5 bit exponent, 10 bit mantissa 
+		Half4,
+		UShort2,
+		UShort4,
+		UShort2N,		// 16 bit word normalized to (value/65535.0,value/65535.0,0,0,1)
+		UShort4N,		// 4 X 16 bit word unsigned, normalized 
+		URGB10A2N,		// 10 bit r, g, b and 2 bit a normalized to (value/1023.0f, value/1023.0f, value/1023.0f, value/3.0f)
+		Int1,
+		Int2,
+		Int3,
+		Int4,
+		UInt1,
+		UInt2,
+		UInt3,
+		UInt4,
+		COUNT,
+		NUM_BITS = 5,
 	};
+	ENUM_SIZE_ASSERT( ERHIVertexElementType );
 
+	template<typename T>
+	constexpr ERHIVertexElementType GetRHIVertexElementType();
 
-
-	//==========================================================
-	// Predefined Vertex Element Types
-	//==========================================================
-	namespace RHIVertexElementTypes {
-		static constexpr RHIVertexElementType Unknown{ ERHIDataType::Unknown, 0 };
-		static constexpr RHIVertexElementType Half{ ERHIDataType::Float16, 1 };
-		static constexpr RHIVertexElementType Half2{ ERHIDataType::Float16, 2 };
-		static constexpr RHIVertexElementType Half3{ ERHIDataType::Float16, 3 };
-		static constexpr RHIVertexElementType Half4{ ERHIDataType::Float16, 4 };
-		static constexpr RHIVertexElementType Float{ ERHIDataType::Float32, 1 };
-		static constexpr RHIVertexElementType Float2{ ERHIDataType::Float32, 2 };
-		static constexpr RHIVertexElementType Float3{ ERHIDataType::Float32, 3 };
-		static constexpr RHIVertexElementType Float4{ ERHIDataType::Float32, 4 };
-		static constexpr RHIVertexElementType Int{ ERHIDataType::Int32, 1 };
-		static constexpr RHIVertexElementType Int2{ ERHIDataType::Int32, 2 };
-		static constexpr RHIVertexElementType Int3{ ERHIDataType::Int32, 3 };
-		static constexpr RHIVertexElementType Int4{ ERHIDataType::Int32, 4 };
-		static constexpr RHIVertexElementType UInt{ ERHIDataType::UInt32, 1 };
-		static constexpr RHIVertexElementType UInt2{ ERHIDataType::UInt32, 2 };
-		static constexpr RHIVertexElementType UInt3{ ERHIDataType::UInt32, 3 };
-		static constexpr RHIVertexElementType UInt4{ ERHIDataType::UInt32, 4 };
-		static constexpr RHIVertexElementType Mat2x2{ ERHIDataType::Float32, 4 };
-		static constexpr RHIVertexElementType Mat3x3{ ERHIDataType::Float32, 9 };
-		static constexpr RHIVertexElementType Mat4x4{ ERHIDataType::Float32, 16 };
+	// Returns the number of bytes for a given RHI Vertex Element Type.
+	// Returns 0 if the type is unknown.
+	inline constexpr uint32_t GetRHIVertexElementTypeSize( ERHIVertexElementType a_Type )
+	{
+		switch ( a_Type )
+		{
+			using enum ERHIVertexElementType;
+			case Float1:    return 4;
+			case Float2:    return 4 * 2;
+			case Float3:    return 4 * 3;
+			case Float4:    return 4 * 4;
+			case UByte4:    return 1 * 4;
+			case Color:     return 4 * 4;
+			case Short2:    return 2 * 2;
+			case Short4:    return 2 * 4;
+			case Short2N:   return 2 * 2;
+			case Short4N:   return 2 * 4;
+			case Half2:     return 2 * 2;
+			case Half4:     return 2 * 4;
+			case UShort2:   return 2 * 2;
+			case UShort4:   return 2 * 4;
+			case UShort2N:  return 2 * 2;
+			case UShort4N:  return 2 * 4;
+			case URGB10A2N: return 10 + 10 + 10 + 2;
+			case Int1:      return 4;
+			case Int2:      return 4 * 2;
+			case Int3:      return 4 * 3;
+			case Int4:      return 4 * 4;
+			case UInt1:     return 4;
+			case UInt2:     return 4 * 2;
+			case UInt3:     return 4 * 3;
+			case UInt4:     return 4 * 4;
+			default: return 0;
+		}
 	}
 
 	//==========================================================
 
 	template<> constexpr ERHIDataType GetRHIDataType<float32_t>() { return ERHIDataType::Float32; }
 	template<> constexpr ERHIDataType GetRHIDataType<float64_t>() { return ERHIDataType::Float64; }
-	template<> constexpr ERHIDataType GetRHIDataType<int8_t>() { return ERHIDataType::Int8; }
-	template<> constexpr ERHIDataType GetRHIDataType<int16_t>() { return ERHIDataType::Int16; }
-	template<> constexpr ERHIDataType GetRHIDataType<int32_t>() { return ERHIDataType::Int32; }
-	template<> constexpr ERHIDataType GetRHIDataType<int64_t>() { return ERHIDataType::Int64; }
-	template<> constexpr ERHIDataType GetRHIDataType<uint8_t>() { return ERHIDataType::UInt8; }
-	template<> constexpr ERHIDataType GetRHIDataType<uint16_t>() { return ERHIDataType::UInt16; }
-	template<> constexpr ERHIDataType GetRHIDataType<uint32_t>() { return ERHIDataType::UInt32; }
-	template<> constexpr ERHIDataType GetRHIDataType<uint64_t>() { return ERHIDataType::UInt64; }
+	template<> constexpr ERHIDataType GetRHIDataType<int8_t>()    { return ERHIDataType::Int8;    }
+	template<> constexpr ERHIDataType GetRHIDataType<int16_t>()   { return ERHIDataType::Int16;   }
+	template<> constexpr ERHIDataType GetRHIDataType<int32_t>()   { return ERHIDataType::Int32;   }
+	template<> constexpr ERHIDataType GetRHIDataType<int64_t>()   { return ERHIDataType::Int64;   }
+	template<> constexpr ERHIDataType GetRHIDataType<uint8_t>()   { return ERHIDataType::UInt8;   }
+	template<> constexpr ERHIDataType GetRHIDataType<uint16_t>()  { return ERHIDataType::UInt16;  }
+	template<> constexpr ERHIDataType GetRHIDataType<uint32_t>()  { return ERHIDataType::UInt32;  }
+	template<> constexpr ERHIDataType GetRHIDataType<uint64_t>()  { return ERHIDataType::UInt64;  }
+
+	//==========================================================
+
+	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<int32_t>()            { return ERHIVertexElementType::Int1;    }
+	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<uint32_t>()           { return ERHIVertexElementType::Int2;    }
+	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<float32_t>()          { return ERHIVertexElementType::Float1;  }
+	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<Vector2>()            { return ERHIVertexElementType::Float2;  }
+	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<Vector3>()            { return ERHIVertexElementType::Float3;  }
+	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<Vector4>()            { return ERHIVertexElementType::Float4;  }
+	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<Color>()              { return ERHIVertexElementType::Color;   }
+	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<TVector4<Byte>>()     { return ERHIVertexElementType::UByte4;  }
+	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<TVector2<int16_t>>()  { return ERHIVertexElementType::Short2;  }
+	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<TVector4<int16_t>>()  { return ERHIVertexElementType::Short4;  }
+	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<TVector2<uint16_t>>() { return ERHIVertexElementType::UShort2; }
+	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<TVector4<uint16_t>>() { return ERHIVertexElementType::UShort4; }
+	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<iVector2>()           { return ERHIVertexElementType::Int2;    }
+	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<iVector3>()           { return ERHIVertexElementType::Int3;    }
+	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<iVector4>()           { return ERHIVertexElementType::Int4;    }
+	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<uVector2>()           { return ERHIVertexElementType::UInt2;   }
+	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<uVector3>()           { return ERHIVertexElementType::UInt3;   }
+	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<uVector4>()           { return ERHIVertexElementType::UInt4;   }
 
 	//==========================================================
 

@@ -142,7 +142,7 @@ namespace Tridium {
 
 			RHIVertexLayout layout =
 			{
-				{ "Position", RHIVertexElementTypes::Float3 },
+				{ "Position", ERHIVertexElementType::Float3 },
 			};
 
 			struct Vertex

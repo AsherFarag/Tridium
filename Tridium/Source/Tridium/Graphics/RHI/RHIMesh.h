@@ -19,15 +19,15 @@ namespace Tridium {
 		// Name of the attribute
 		StringView Name;
 		// Data type of the attribute
-		RHIVertexElementType Type;
+		ERHIVertexElementType Type;
 		// Offset in bytes from the start of the vertex layout.
 		// Calculated by the RHIVertexLayout.
 		uint16_t Offset;
 
-		constexpr RHIVertexAttribute() : Name(), Type( RHIVertexElementTypes::Unknown ), Offset( 0 ) {}
-		constexpr RHIVertexAttribute( StringView a_Name, RHIVertexElementType a_Type )
+		constexpr RHIVertexAttribute() : Name(), Type( ERHIVertexElementType::None ), Offset( 0 ) {}
+		constexpr RHIVertexAttribute( StringView a_Name, ERHIVertexElementType a_Type )
 			: Name( a_Name ), Type( a_Type ), Offset( 0 ) {}
-		constexpr RHIVertexAttribute( const char* a_Name, RHIVertexElementType a_Type )
+		constexpr RHIVertexAttribute( const char* a_Name, ERHIVertexElementType a_Type )
 			: Name( a_Name ), Type( a_Type ), Offset( 0 ) {}
 	};
 
@@ -47,7 +47,7 @@ namespace Tridium {
 			for ( auto& element : Elements )
 			{
 				element.Offset = Stride;
-				Stride += element.Type.GetSize();
+				Stride += GetRHIVertexElementTypeSize( element.Type );
 			}
 		}
 	};
