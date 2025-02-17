@@ -25,7 +25,7 @@ namespace Tridium {
 	//  This class is not responsible for compiling the shader nor handling includes, etc.
 	struct ShaderPreprocessor
 	{
-		static PreprocessedShader Process( StringView a_Source );
+		PreprocessedShader Process( StringView a_Source );
 	};
 	//=======================================================
 

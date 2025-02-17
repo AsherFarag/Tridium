@@ -45,10 +45,12 @@ namespace Tridium {
 		virtual bool Shutdown() = 0;
 		// Present the current frame.
 		virtual bool Present() = 0;
-		// Returns the type of the Dynamically bound RHI.
-		virtual ERHInterfaceType GetRHIType() const = 0;
 		// Execute the given command list.
 		virtual bool ExecuteCommandList( RHICommandListRef a_CommandList ) = 0;
+		// Returns the type of the Dynamically bound RHI.
+		virtual ERHInterfaceType GetRHIType() const = 0;
+		// Returns the static RHI type.
+		static constexpr ERHInterfaceType GetStaticRHIType() { return ERHInterfaceType::Null; }
 		//==============================================
 
 		//====================================================

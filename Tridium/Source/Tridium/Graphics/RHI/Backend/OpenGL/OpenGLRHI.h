@@ -24,10 +24,12 @@ namespace Tridium {
 		virtual bool Shutdown() override;
 		// Present the current frame.
 		virtual bool Present() override;
-		// Returns the type of the Dynamically bound RHI.
-		virtual ERHInterfaceType GetRHIType() const override { return ERHInterfaceType::OpenGL; }
 		// Execute the given command list.
 		virtual bool ExecuteCommandList( RHICommandListRef a_CommandList ) override;
+		// Returns the type of the Dynamically bound RHI.
+		virtual ERHInterfaceType GetRHIType() const override { return ERHInterfaceType::OpenGL; }
+		// Returns the static RHI type.
+		static constexpr ERHInterfaceType GetStaticRHIType() { return ERHInterfaceType::OpenGL; }
 		//==============================================
 
 		//====================================================
@@ -56,5 +58,19 @@ namespace Tridium {
 
 		#endif // RHI_DEBUG_ENABLED
 	};
+
+	namespace RHI {
+		static OpenGLRHI* GetOpenGLRHI()
+		{
+		#if RHI_DEBUG_ENABLED
+			if ( s_DynamicRHI->GetRHIType() != ERHInterfaceType::OpenGL )
+			{
+				ASSERT_LOG( false, "The current RHI is not OpenGL!" );
+				return nullptr;
+			}
+		#endif
+			return static_cast<OpenGLRHI*>( s_DynamicRHI );
+		}
+	}
 
 }

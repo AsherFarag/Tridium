@@ -113,6 +113,7 @@ namespace Tridium {
 		LOG( LogCategory::Rendering, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), RHI::Initialise( config ) );
 
 		// TEMP!
+#if 1
 		{
 
 			uint8_t testImgData[64 * 64 * 4];
@@ -197,11 +198,21 @@ void main(
 
 			LOG( LogCategory::Debug, Info, "Shader: {0}", shader->GetDescriptor()->Name.data() );
 
+			RHIPipelineStateDescriptor psd;
+			psd.VertexShader = shader;
+			psd.ColourTargetFormats[0] = ERHITextureFormat::RGBA8;
+			psd.VertexLayout = layout;
+
+			RHIPipelineStateRef pso = RHI::CreatePipelineState( psd );
+
+
 			while ( true )
 			{
 				m_Window->OnUpdate();
 			}
 		}
+
+#endif
 
 		// Initialise the Engine
 		EngineConfig engineConfig;

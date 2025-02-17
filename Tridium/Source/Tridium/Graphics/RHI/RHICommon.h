@@ -21,10 +21,9 @@ namespace Tridium {
 		ERHInterfaceType GetRHIType();
 
 		// Get the global dynamically bound RHI.
-		template<typename T = DynamicRHI>
-		T* GetDynamicRHI() requires Concepts::IsDynamicRHI<T>
+		static DynamicRHI* GetDynamicRHI()
 		{
-			return static_cast<T*>( s_DynamicRHI );
+			return s_DynamicRHI;
 		}
 
 		// Get the name of the given RHI type.

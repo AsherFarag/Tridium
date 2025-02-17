@@ -15,10 +15,12 @@ namespace Tridium {
 		virtual bool Shutdown() override;
 		// Present the current frame.
 		virtual bool Present() override;
-		// Returns the type of the Dynamically bound RHI.
-		virtual ERHInterfaceType GetRHIType() const override { return ERHInterfaceType::DirectX12; }
 		// Execute the given command list.
 		virtual bool ExecuteCommandList( RHICommandListRef a_CommandList ) override;
+		// Returns the type of the Dynamically bound RHI.
+		virtual ERHInterfaceType GetRHIType() const override { return ERHInterfaceType::DirectX12; }
+		// Returns the static RHI type.
+		static constexpr ERHInterfaceType GetStaticRHIType() { return ERHInterfaceType::DirectX12; }
 		//==============================================
 
 		//====================================================
@@ -93,5 +95,19 @@ namespace Tridium {
 		ComPtr<D3D12::DXGIDebug> m_DXGIDebug = nullptr;
 	#endif
 	};
+
+	namespace RHI {
+		static DirectX12RHI* GetDirectX12RHI()
+		{
+		#if RHI_DEBUG_ENABLED
+			if ( s_DynamicRHI->GetRHIType() != ERHInterfaceType::DirectX12 )
+			{
+				ASSERT_LOG( false, "The current RHI is not DirectX 12!" );
+				return nullptr;
+			}
+		#endif
+			return static_cast<DirectX12RHI*>( s_DynamicRHI );
+		}
+	}
 
 }

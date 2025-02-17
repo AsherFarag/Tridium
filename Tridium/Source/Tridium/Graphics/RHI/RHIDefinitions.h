@@ -502,15 +502,21 @@ namespace Tridium {
 		{
 			struct
 			{
-				ERHIDataType Type;
-				uint8_t Components;
+				ERHIDataType DataType;
+				uint8_t Components : 7;
+				uint8_t Normalized : 1;
 			};
 			uint16_t Value;
 		};
 
+		constexpr bool IsNormalized() const
+		{
+			return Normalized;
+		}
+
 		constexpr size_t GetSize() const
 		{
-			return GetRHIDataTypeSize( Type ) * Components;
+			return GetRHIDataTypeSize( DataType ) * Components;
 		}
 	};
 

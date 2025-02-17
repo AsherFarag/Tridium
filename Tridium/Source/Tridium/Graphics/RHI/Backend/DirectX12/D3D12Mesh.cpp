@@ -59,7 +59,7 @@ namespace Tridium {
         heapProps.CreationNodeMask = 0;
         heapProps.VisibleNodeMask = 0;
 
-        DirectX12RHI* rhi = RHI::GetDynamicRHI<DirectX12RHI>();
+		DirectX12RHI* rhi = RHI::GetDirectX12RHI();
         auto device = rhi->GetDevice();
 
         HRESULT hr = device->CreateCommittedResource(
@@ -117,7 +117,7 @@ namespace Tridium {
         }
 
         // Acquire RHI objects
-        auto* rhi = RHI::GetDynamicRHI<DirectX12RHI>();
+		auto* rhi = RHI::GetDirectX12RHI();
         auto& device = rhi->GetDevice();
         auto& commandList = rhi->GetCommandList();
         auto& commandAllocator = rhi->GetCommandAllocator();

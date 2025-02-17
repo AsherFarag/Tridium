@@ -38,7 +38,7 @@ namespace Tridium {
 		heapProperties.CreationNodeMask = 1;
 		heapProperties.VisibleNodeMask = 1;
 
-		const auto& device = RHI::GetDynamicRHI<DirectX12RHI>()->GetDevice();
+		const auto& device = RHI::GetDirectX12RHI()->GetDevice();
 
 		HRESULT hr;
 
@@ -118,7 +118,7 @@ namespace Tridium {
 
 		TODO( "Writing to a GPU-only texture requires the cmd list. Figure out if theres some cleaner, faster or safer way to create resources." );
 
-		auto* rhi = RHI::GetDynamicRHI<DirectX12RHI>();
+		auto* rhi = RHI::GetDirectX12RHI();
 		auto& device = rhi->GetDevice();
 		auto& commandList = rhi->GetCommandList();
 		auto& commandAllocator = rhi->GetCommandAllocator();
@@ -193,7 +193,7 @@ namespace Tridium {
 		if ( FAILED( hr ) )
 			return false;
 
-		auto& commandQueue = RHI::GetDynamicRHI<DirectX12RHI>()->GetCommandQueue();
+		auto& commandQueue = RHI::GetDirectX12RHI()->GetCommandQueue();
 		ID3D12CommandList* commandLists[] = { commandList.Get() };
 		commandQueue->ExecuteCommandLists( 1, commandLists );
 

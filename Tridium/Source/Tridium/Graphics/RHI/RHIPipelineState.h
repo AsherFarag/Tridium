@@ -16,6 +16,8 @@ namespace Tridium {
 		ERHIComparison Comparison = ERHIComparison::Less;
 	};
 
+
+
 	//========================
 	// RHI Stencil State
 	//========================
@@ -30,6 +32,8 @@ namespace Tridium {
 		uint8_t StencilWriteMask = 0x00;
 	};
 
+
+
 	//========================
 	// RHI Blend State
 	//========================
@@ -43,6 +47,8 @@ namespace Tridium {
 		ERHIBlendEq BlendEquation = ERHIBlendEq::Add;
 	};
 
+
+
 	//========================
 	// RHI Rasterizer State
 	//========================
@@ -53,6 +59,8 @@ namespace Tridium {
 		ERHIRasterizerCullMode CullMode = ERHIRasterizerCullMode::Back;
 		ERHIRasterizerFillMode FillMode = ERHIRasterizerFillMode::Solid;
 	};
+
+
 
 	//=======================================================================
 	// RHI Pipeline Type
@@ -66,12 +74,26 @@ namespace Tridium {
 		Compute,
 	};
 
+
+
+	//=======================================================================
+	// Common Blend States
+	namespace RHIBlendStates
+	{
+		constexpr RHIBlendState Opaque =      { false, ERHIBlendOp::One,      ERHIBlendOp::One,              ERHIBlendOp::One,      ERHIBlendOp::One,      ERHIBlendEq::Add };
+		constexpr RHIBlendState Transparent = { true,  ERHIBlendOp::SrcAlpha, ERHIBlendOp::OneMinusSrcAlpha, ERHIBlendOp::SrcAlpha, ERHIBlendOp::DstAlpha, ERHIBlendEq::Add };
+		constexpr RHIBlendState Additive =    { true,  ERHIBlendOp::SrcAlpha, ERHIBlendOp::One,              ERHIBlendOp::SrcAlpha, ERHIBlendOp::DstAlpha, ERHIBlendEq::Add };
+	} // namespace RHIBlendStates
+
+
+
 	//=======================================================================
 	// RHIPipelineState
 	//  A pipeline state object that contains the state of the GPU pipeline.
 	//=======================================================================
 	RHI_RESOURCE_BASE_TYPE( PipelineState )
 	{
+		ERHITopology Topology = ERHITopology::Triangle;
 		RHIVertexLayout VertexLayout;
 
 		RHIShaderModuleRef VertexShader;
@@ -79,7 +101,7 @@ namespace Tridium {
 		RHIShaderModuleRef GeometryShader;
 		RHIShaderModuleRef ComputeShader;
 
-		RHIBlendState BlendState;
+		RHIBlendState BlendState = RHIBlendStates::Opaque;
 		RHIDepthState DepthState;
 		RHIStencilState StencilState;
 		RHIRasterizerState RasterizerState;
@@ -89,26 +111,19 @@ namespace Tridium {
 
 		ERHIPipelineType GetPipelineType() const
 		{
-			if ( ComputeShader && !VertexShader && !PixelShader && !GeometryShader )
+			if ( ComputeShader && ( VertexShader || PixelShader || GeometryShader ) )
+			{
+				return ERHIPipelineType::Invalid;
+			}
+
+			if ( ComputeShader )
 			{
 				return ERHIPipelineType::Compute;
 			}
-			else if ( VertexShader && PixelShader )
-			{
-				return ERHIPipelineType::Graphics;
-			}
 
-			return ERHIPipelineType::Invalid;
+			return ERHIPipelineType::Graphics;
 		}
 	};
-
 	//=======================================================================
-
-	namespace RHIBlendStates
-	{
-		constexpr RHIBlendState Opaque = { false, ERHIBlendOp::One, ERHIBlendOp::One, ERHIBlendOp::One, ERHIBlendOp::One, ERHIBlendEq::Add };
-		constexpr RHIBlendState Transparent = { true, ERHIBlendOp::SrcAlpha, ERHIBlendOp::OneMinusSrcAlpha, ERHIBlendOp::SrcAlpha, ERHIBlendOp::DstAlpha, ERHIBlendEq::Add };
-		constexpr RHIBlendState Additive = { true, ERHIBlendOp::SrcAlpha, ERHIBlendOp::One, ERHIBlendOp::SrcAlpha, ERHIBlendOp::DstAlpha, ERHIBlendEq::Add };
-	}
 
 } // namespace Tridium

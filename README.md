@@ -1,3 +1,2 @@
 # Tridium
-A game engine featuring 3D rendering with OpenGL.
-Created using @TheCherno's Youtube series on Game Engine's.
+A 3D game engine featuring an Editor, Physics, ECS, C++ Runtime-Reflection, Serialization, PBR Graphics, and a dynamically-bound RHI system with support for OpenGL and DirectX12.

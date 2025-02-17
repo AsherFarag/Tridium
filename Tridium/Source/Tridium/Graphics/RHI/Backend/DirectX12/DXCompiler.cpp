@@ -1,4 +1,5 @@
 #include "tripch.h"
+#include <Tridium/Core/Platform.h>
 #include "DXCompiler.h"
 #include "D3D12Common.h"
 #include <dxcapi.h>  // DXC Compiler API
@@ -23,7 +24,7 @@ namespace Tridium {
 		#endif
 
 			// Load the DXC DLL.
-			HMODULE dxcModule = LoadLibraryA( fileName.c_str() );
+			Platform::Module dxcModule = Platform::LoadDynamicLibrary( fileName.c_str() );
 			if ( dxcModule == nullptr )
 			{
 				LOG( LogCategory::DirectX, Error, "Failed to load {0}", fileName );
@@ -31,7 +32,7 @@ namespace Tridium {
 			}
 
 			// Get the entry point.
-			CreateInstance = reinterpret_cast<DxcCreateInstanceProc>( GetProcAddress( dxcModule, "DxcCreateInstance" ) );
+			CreateInstance = reinterpret_cast<DxcCreateInstanceProc>( Platform::GetProcAddress( dxcModule, "DxcCreateInstance" ) );
 			if ( CreateInstance == nullptr )
 			{
 				LOG( LogCategory::DirectX, Error, "Failed to get DxcCreateInstance entry point" );

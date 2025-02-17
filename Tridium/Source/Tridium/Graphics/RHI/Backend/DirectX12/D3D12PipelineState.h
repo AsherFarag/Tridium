@@ -11,6 +11,11 @@ namespace Tridium {
 		bool Release() override;
 		bool IsValid() const override;
 		const void* NativePtr() const override;
+
+	private:
+		// Native pipeline state object
+		ComPtr<ID3D12PipelineState> m_PipelineState;
+		D3D12_INPUT_ELEMENT_DESC m_VertexLayout[RHIQuery::MaxVertexAttributes];
 	};
 
 } // namespace Tridium

@@ -209,17 +209,19 @@ namespace Tridium {
 	#endif // RHI_DEBUG_ENABLED
     };
 
-#if RHI_DEBUG_ENABLED
 
+
+#if RHI_DEBUG_ENABLED
 	// Helper function that enqueues a command with debug information.
-#define RHICommandEnqueue( _CommandBuffer, _Command, ... ) \
+	#define RHICommandEnqueue( _CommandBuffer, _Command, ... ) \
         (_CommandBuffer)._Command( __VA_ARGS__ ); \
 	    (_CommandBuffer).Commands.Back().Debug = { _FUNCTION_, __FILE__, _USABLE_LINE_ }
 #else
 	// Helper function that enqueues a command.
     #define RHICommandEnqueue( _CommandBuffer, _Command, ... ) \
         (_CommandBuffer)._Command( __VA_ARGS__ )
-#endif // RHI_DEBUG_ENABLED
+#endif // !RHI_DEBUG_ENABLED
+
 
 
 	//=====================================================
@@ -231,7 +233,7 @@ namespace Tridium {
 	public:
 		void SetPipelineState( RHIPipelineStateRef a_PSO )
 		{
-            Commands.EmplaceBack( RHICommand::SetPipelineState{ a_PSO.get()});
+			Commands.EmplaceBack( RHICommand::SetPipelineState{ a_PSO.get() } );
 			m_PipelineStates.insert( std::move( a_PSO ) );
 		}
 

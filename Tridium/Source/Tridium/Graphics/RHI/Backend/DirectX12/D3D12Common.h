@@ -1,5 +1,6 @@
 #pragma once
-#include <Tridium/Graphics/RHI/RHICommon.h>
+#include "DirectX12.h"
+#include "D3D12Util.h"
 #include <Tridium/Graphics/RHI/DynamicRHI.h>
 #include <Tridium/Graphics/RHI/RHIMesh.h>
 #include <Tridium/Graphics/RHI/RHITexture.h>
@@ -7,23 +8,9 @@
 #include <Tridium/Graphics/RHI/RHICommandList.h>
 #include <Tridium/Graphics/RHI/RHIShader.h>
 
-
-#ifndef NOMINMAX
-	#define NOMINMAX
-#endif
-
-#include <d3d12.h>
-#include <dxgi1_6.h>
-	
-#if RHI_DEBUG_ENABLED
-	#include <d3d12sdklayers.h>
-	#include <dxgidebug.h>
-#endif
-
 namespace LogCategory {
 	static constexpr ::Tridium::Log::Category DirectX = { "RHI::DirectX" };
 };
-
 
 namespace Tridium {
 

@@ -11,16 +11,19 @@ namespace Tridium {
 	class ShaderLibrary
 	{
 	public:
+		// Find a shader module by its name hash.
 		static RHIShaderModuleRef FindShader( hash_t a_NameHash )
 		{
 			return RHIShaderLibrary::Get()->FindShader( a_NameHash );
 		}
 
+		// Check if a shader module with the given name exists in the library.
 		static bool HasShader( hash_t a_NameHash )
 		{
 			return RHIShaderLibrary::Get()->HasShader( a_NameHash );
 		}
 
+		// Load a shader module from a file and add it to the library with the given name.
 		static RHIShaderModuleRef LoadShader( const FilePath& a_Path, StringView a_Name = nullptr )
 		{
 			hash_t nameHash = a_Name.empty()
@@ -36,6 +39,7 @@ namespace Tridium {
 			return RHIShaderLibrary::Get()->LoadShader( a_Path, a_Name );
 		}
 
+		// Load a shader module from a string and add it to the library with the given name.
 		static RHIShaderModuleRef LoadShader( StringView a_Source, StringView a_Name )
 		{
 			hash_t nameHash = Hashing::Hash( a_Name.data() );
@@ -46,6 +50,18 @@ namespace Tridium {
 			}
 
 			return RHIShaderLibrary::Get()->LoadShader( a_Source, a_Name );
+		}
+
+		// Add a shader module to the library.
+		static bool AddShader( CachedShader&& a_Shader )
+		{
+			return RHIShaderLibrary::Get()->AddShader( std::move( a_Shader ) );
+		}
+
+		// Add a shader module to the library.
+		static bool AddShader( RHIShaderModuleRef a_Shader, StringView a_Name, String&& a_Source = {}, Array<Byte>&& a_Binary = {} )
+		{
+			return AddShader( CachedShader{ a_Name.data(), a_Shader, std::move( a_Source ), std::move( a_Binary ) } );
 		}
 	};
 	//=======================================================
