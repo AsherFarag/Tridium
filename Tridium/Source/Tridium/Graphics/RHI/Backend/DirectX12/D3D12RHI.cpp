@@ -17,6 +17,7 @@
 #include "D3D12Shader.h"
 #include "D3D12Mesh.h"
 #include "D3D12PipelineState.h"
+#include "D3D12ShaderBindingLayout.h"
 
 
 namespace Tridium {
@@ -223,6 +224,13 @@ namespace Tridium {
 		RHIShaderModuleRef shader = RHIResource::Create<D3D12ShaderModule>();
 		CHECK( shader->Commit( &a_Desc ) );
 		return shader;
+	}
+
+	RHIShaderBindingLayoutRef D3D12RHI::CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc )
+	{
+		RHIShaderBindingLayoutRef sbl = RHIResource::Create<D3D12ShaderBindingLayout>();
+		CHECK( sbl->Commit( &a_Desc ) );
+		return sbl;
 	}
 
 	//////////////////////////////////////////////////////////////////////////

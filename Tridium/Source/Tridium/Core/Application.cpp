@@ -142,7 +142,8 @@ namespace Tridium {
 
 			RHIVertexLayout layout =
 			{
-				{ "Position", ERHIVertexElementType::Float3 },
+				{ "Position", ERHIVertexElementType::Float2 },
+				{ "TexCoord", ERHIVertexElementType::Float2 }
 			};
 
 			struct Vertex
@@ -168,7 +169,6 @@ namespace Tridium {
 			// HLSL Source code
 			StringView vertCode = R"(
 #pragma type vertex
-[RootSignature( "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT) " )]
 void main(
 	// Input
 	in float2 pos : Position,
@@ -185,6 +185,9 @@ void main(
 )";
 			StringView pixelCode = R"(
 #pragma type pixel
+
+float3 Color : register( c0 );
+
 void main(
 	// Input
 	in float2 uv : TexCoord,
@@ -205,12 +208,21 @@ void main(
 			LOG( LogCategory::Debug, Info, "Vert Shader: {0}", shader->GetDescriptor()->Name.data() );
 			LOG( LogCategory::Debug, Info, "Pixel Shader: {0}", pixelShader->GetDescriptor()->Name.data() );
 
+			// Create Shader Binding Layout
+			RHIShaderBindingLayoutDescriptor sblDesc;
+			sblDesc.AddBinding( "Color"_H ).SetInlinedConstants<Vector3>( 0 ).SetVisibility( ERHIShaderVisibility::Pixel );
+			sblDesc.Name = "My beautiful shader binding layout";
+
+			RHIShaderBindingLayoutRef sbl = RHI::CreateShaderBindingLayout( sblDesc );
+
+			// Create pipeline state
 			RHIPipelineStateDescriptor psd;
 			psd.VertexShader = shader;
 			psd.PixelShader = pixelShader;
 			psd.ColourTargetFormats[0] = ERHITextureFormat::RGBA8;
 			psd.VertexLayout = layout;
-
+			psd.ShaderBindingLayout = sbl;
+			psd.Name = "My beautiful pipeline state";
 			RHIPipelineStateRef pso = RHI::CreatePipelineState( psd );
 
 

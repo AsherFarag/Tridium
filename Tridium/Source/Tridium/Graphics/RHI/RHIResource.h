@@ -165,6 +165,7 @@ namespace Tridium {
 
 } // namespace Tridium
 
+
 // Helper macro to define a base RHI resource type and its descriptor.
 #define RHI_RESOURCE_BASE_TYPE( Name, ... )                                                               \
 	class RHI##Name;                                                                                      \

@@ -6,25 +6,13 @@ namespace Tridium {
 
 	//==============================================
 	// Forward declarations
-	// - Resource Types
-	class RHITexture;
-	using RHITextureRef = SharedPtr<RHITexture>;
-	struct RHITextureDescriptor;
-	class RHIIndexBuffer;
-	using RHIIndexBufferRef = SharedPtr<RHIIndexBuffer>;
-	struct RHIIndexBufferDescriptor;
-	class RHIVertexBuffer;
-	using RHIVertexBufferRef = SharedPtr<RHIVertexBuffer>;
-	struct RHIVertexBufferDescriptor;
-	class RHIPipelineState;
-	using RHIPipelineStateRef = SharedPtr<RHIPipelineState>;
-	struct RHIPipelineStateDescriptor;
-	class RHICommandList;
-	using RHICommandListRef = SharedPtr<RHICommandList>;
-	struct RHICommandListDescriptor;
-	class RHIShaderModule;
-	using RHIShaderModuleRef = SharedPtr<RHIShaderModule>;
-	struct RHIShaderModuleDescriptor;
+	FORWARD_DECLARE_RHI_RESOURCE( Texture );
+	FORWARD_DECLARE_RHI_RESOURCE( IndexBuffer );
+	FORWARD_DECLARE_RHI_RESOURCE( VertexBuffer );
+	FORWARD_DECLARE_RHI_RESOURCE( PipelineState );
+	FORWARD_DECLARE_RHI_RESOURCE( CommandList );
+	FORWARD_DECLARE_RHI_RESOURCE( ShaderModule );
+	FORWARD_DECLARE_RHI_RESOURCE( ShaderBindingLayout );
 	//==============================================
 
 	//==============================================
@@ -70,6 +58,7 @@ namespace Tridium {
 		virtual RHIPipelineStateRef CreatePipelineState( const RHIPipelineStateDescriptor& a_Desc ) = 0;
 		virtual RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc ) = 0;
 		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc ) = 0;
+		virtual RHIShaderBindingLayoutRef CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc ) = 0;
 		//=====================================================
 
 		#if RHI_DEBUG_ENABLED

@@ -15,6 +15,12 @@
 
 namespace Tridium {
 
+	//================================================================
+	// This function MUST be defined in CLIENT
+	// Use this function so the engine can create your custom GameInstance class.
+	GameInstance* CreateGameInstance();
+	//================================================================
+
 	// Forward Declarations
 	class AssetManagerBase;
 	class ImGuiLayer;
@@ -76,10 +82,6 @@ namespace Tridium {
 
 		friend class Application;
 	};
-	//================================================================
-
-	// To be defined in CLIENT
-	GameInstance* CreateGameInstance();
 
 
 

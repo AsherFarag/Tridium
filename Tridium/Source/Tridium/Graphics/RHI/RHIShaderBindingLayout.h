@@ -23,15 +23,23 @@ namespace Tridium {
 	//  Describes where a shader resource is bound to the shader.
 	struct RHIShaderBinding
 	{
+		ERHIShaderVisibility Visibility = ERHIShaderVisibility::All;
 		ERHIShaderBindingType BindingType = ERHIShaderBindingType::Unknown;
 		RHITensorType InlinedConstantType = RHITensorType::From<int32_t>();
 		bool IsInlined = false; // If the data is inlined in the shader.
 		uint8_t WordSize = 1; // Number of 32-bit words for the binding. For example, a Vector4 would be 4 words ( 4 * 32 bit floats ).
 		uint8_t Register = 0; // Register index in the shader.
 
-		uint32_t GetSizeInBytes() const
+		constexpr uint32_t GetSizeInBytes() const
 		{
 			return WordSize * 4;
+		}
+
+
+		constexpr RHIShaderBinding& SetVisibility( ERHIShaderVisibility a_Visibility )
+		{
+			Visibility = a_Visibility;
+			return *this;
 		}
 
 		template<typename T>
@@ -89,6 +97,7 @@ namespace Tridium {
 	// RHI Shader Binding Layout
 	//  Represents the layout for bindable resources in a shader.
 	//  An API equivalent is a Root Signature in DirectX 12.
+	//  For Vulkan, this would be a Descriptor Set Layout.
 	RHI_RESOURCE_BASE_TYPE( ShaderBindingLayout )
 	{
 		Array<RHIShaderBinding> Bindings;

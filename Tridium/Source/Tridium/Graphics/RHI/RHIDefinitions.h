@@ -9,6 +9,13 @@
 #define ENUM_SIZE_ASSERT( _Enum ) \
 	static_assert( std::underlying_type_t<_Enum>(_Enum::COUNT) <= ( 1 << std::underlying_type_t<_Enum>(_Enum::NUM_BITS) ), #_Enum "::COUNT exceeds NUM_BITS" )
 
+
+#define FORWARD_DECLARE_RHI_RESOURCE( Name ) \
+	class RHI##Name; \
+	struct RHI##Name##Descriptor; \
+	using RHI##Name##Ref = SharedPtr<RHI##Name>; \
+	using RHI##Name##WeakRef = SharedPtr<RHI##Name##Descriptor>
+
 // Define the log category for the RHI.
 DECLARE_LOG_CATEGORY( RHI );
 
@@ -209,7 +216,6 @@ namespace Tridium {
 		Domain,
 		Geometry,
 		Pixel,
-		Compute,
 		All
 	};
 	//=======================================================
@@ -530,7 +536,7 @@ namespace Tridium {
 		static constexpr RHITensorType From()
 		{
 			RHITensorType type;
-			type.ElementType = GetRHIDataType<T>();
+			type.ElementType = RHITensorTypeTraits<T>::ElementType;
 			type.ElementCountX = RHITensorTypeTraits<T>::ElementCountX;
 			type.ElementCountY = RHITensorTypeTraits<T>::ElementCountY;
 			return type;

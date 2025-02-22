@@ -133,6 +133,11 @@ namespace Tridium {
 		return RHIShaderModuleRef();
 	}
 
+	RHIShaderBindingLayoutRef OpenGLRHI::CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc )
+	{
+		return RHIShaderBindingLayoutRef();
+	}
+
 	//////////////////////////////////////////////////////////////////////////
     // DEBUG
 	//////////////////////////////////////////////////////////////////////////

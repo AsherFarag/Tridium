@@ -212,6 +212,15 @@ namespace Tridium {
 		args.PushBack( L"-T" );
 		args.PushBack( GetShaderModelFlag( a_Input.ShaderType, a_Input.MinimumModel ) );
 
+		#if RHI_DEBUG_ENABLED
+		args.PushBack( L"-Zi" );
+		#endif
+
+		// Add the entry point.
+		TODO( "Support multiple entry points" );
+		args.PushBack( L"-E" );
+		args.PushBack( L"main" );
+
 		// Include handler
 		ComPtr<IDxcIncludeHandler> includeHandler;
 		if ( FAILED( dxcUtils->CreateDefaultIncludeHandler( &includeHandler ) ) )
@@ -303,10 +312,12 @@ namespace Tridium {
 			L"-rootsig-define",
 			L"TRIDIUM_DEFAULT_ROOT_SIGNATURE"
 		};
+
 		// Convert the shader type and model to a string for the compiler.
 		// E.g. "vs_5_0" for a vertex shader with shader model 5.0.
 		args.PushBack( L"-T" );
 		args.PushBack( L"rootsig_1_0" );
+
 		// Include handler
 		ComPtr<IDxcIncludeHandler> includeHandler;
 		if ( FAILED( dxcUtils->CreateDefaultIncludeHandler( &includeHandler ) ) )

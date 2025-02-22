@@ -144,6 +144,20 @@ namespace Tridium {
 			return DXGI_FORMAT_UNKNOWN;
 		}
 
+		inline constexpr D3D12_SHADER_VISIBILITY GetShaderVisibility( ERHIShaderVisibility a_Visibility )
+		{
+			switch ( a_Visibility )
+			{
+				using enum ERHIShaderVisibility;
+				case All:      return D3D12_SHADER_VISIBILITY_ALL;
+				case Vertex:   return D3D12_SHADER_VISIBILITY_VERTEX;
+				case Pixel:    return D3D12_SHADER_VISIBILITY_PIXEL;
+				case Hull:     return D3D12_SHADER_VISIBILITY_HULL;
+				case Domain:   return D3D12_SHADER_VISIBILITY_DOMAIN;
+				case Geometry: return D3D12_SHADER_VISIBILITY_GEOMETRY;
+				default:       return D3D12_SHADER_VISIBILITY_ALL;
+			}
+		}
 	}
 
 }

@@ -1,6 +1,7 @@
 #include "tripch.h"
 #include "D3D12PipelineState.h"
 #include "D3D12RHI.h"
+#include "D3D12ShaderBindingLayout.h"
 
 namespace Tridium {
 
@@ -98,10 +99,13 @@ namespace Tridium {
 		{
 			const RHIVertexAttribute& element = desc->VertexLayout.Elements[i];
 			m_VertexLayout[i] = {
-				element.Name.data(), 0,
-				ToD3D12::GetFormat( element.Type ), 0,
-				static_cast<UINT>( element.Offset ),
-				D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
+				.SemanticName = element.Name.data(), 
+				.SemanticIndex = 0,
+				.Format = ToD3D12::GetFormat( element.Type ),
+				.InputSlot = 0,
+				.AlignedByteOffset = static_cast<UINT>( element.Offset ),
+				.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+				.InstanceDataStepRate = 0
 			};
 		}
 
@@ -141,10 +145,8 @@ namespace Tridium {
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psd = {};
 		psd.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
-		// TEMP
-		ID3D12RootSignature* rootsig;
-		D3D12_ROOT_PARAMETER rootParam;
-		rootParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+		// Set the root signature
+		psd.pRootSignature = desc->ShaderBindingLayout->As<D3D12ShaderBindingLayout>()->m_RootSignature.Get();
 
 		// Set the input layout
 		psd.InputLayout.NumElements = desc->VertexLayout.Elements.Size();
@@ -188,6 +190,16 @@ namespace Tridium {
 			LOG( LogCategory::RHI, Error, "Failed to create graphics pipeline state" );
 			return false;
 		}
+
+
+		#if RHI_DEBUG_ENABLED
+		if ( RHIQuery::IsDebug() && !desc->Name.empty() )
+		{
+			WString wName = Helpers::ToWString( desc->Name.data() );
+			m_PipelineState->SetName( wName.c_str() );
+			D3D12Context::Get()->StringStorage.EmplaceBack( std::move( wName ) );
+		}
+		#endif
 
 		return true;
 	}

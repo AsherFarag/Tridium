@@ -3,6 +3,7 @@
 #include "RHIMesh.h"
 #include "RHITexture.h"
 #include "RHIShader.h"
+#include "RHIShaderBindingLayout.h"
 
 namespace Tridium {
 
@@ -90,11 +91,11 @@ namespace Tridium {
 	//=======================================================================
 	// RHIPipelineState
 	//  A pipeline state object that contains the state of the GPU pipeline.
-	//=======================================================================
 	RHI_RESOURCE_BASE_TYPE( PipelineState )
 	{
 		ERHITopology Topology = ERHITopology::Triangle;
 		RHIVertexLayout VertexLayout;
+		RHIShaderBindingLayoutRef ShaderBindingLayout;
 
 		RHIShaderModuleRef VertexShader;
 		RHIShaderModuleRef HullShader;
@@ -130,16 +131,16 @@ namespace Tridium {
 		{
 			switch ( a_Type )
 			{
-			case ERHIShaderType::Vertex:     return VertexShader;
-			case ERHIShaderType::Hull:       return HullShader;
-			case ERHIShaderType::Domain:     return DomainShader;
-			case ERHIShaderType::Geometry:   return GeometryShader;
-			case ERHIShaderType::Pixel:      return PixelShader;
-			case ERHIShaderType::Compute:    return ComputeShader;
-			default: return VertexShader;
+				case ERHIShaderType::Vertex:     return VertexShader;
+				case ERHIShaderType::Hull:       return HullShader;
+				case ERHIShaderType::Domain:     return DomainShader;
+				case ERHIShaderType::Geometry:   return GeometryShader;
+				case ERHIShaderType::Pixel:      return PixelShader;
+				case ERHIShaderType::Compute:    return ComputeShader;
 			}
+
+			return nullptr;
 		}
 	};
-	//=======================================================================
 
 } // namespace Tridium
