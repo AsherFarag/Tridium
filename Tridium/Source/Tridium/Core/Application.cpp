@@ -165,12 +165,8 @@ namespace Tridium {
 
 			RHIVertexBufferRef vb = RHI::CreateVertexBuffer( vbDesc );
 
-
-			ShaderCompilerInput input;
-			input.Format = ERHIShaderFormat::HLSL6;
-			input.ShaderType = ERHIShaderType::Vertex;
 			// HLSL Source code
-			input.Source = R"(
+			StringView vertCode = R"(
 #pragma type vertex
 [RootSignature( "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT) " )]
 void main(
@@ -187,19 +183,31 @@ void main(
     o_uv = uv;
 }
 )";
-			ShaderLibrary::LoadShader( input.Source, "My beautiful shader" );
-			RHIShaderModuleRef shader = ShaderLibrary::FindShader( "My beautiful shader"_H );
+			StringView pixelCode = R"(
+#pragma type pixel
+void main(
+	// Input
+	in float2 uv : TexCoord,
+	// Output
+	out float4 o_Colour : SV_TARGET
+)
+{
+	o_Colour = float4(uv.x, uv.y, 0.0f, 1.0f);
+}
+)";
 
-			//LOG( LogCategory::Debug, Info, "ShaderCompilerOutput: {0}", output.IsValid() );
-			//if ( !output.IsValid() )
-			//{
-			//	LOG( LogCategory::Debug, Info, "Error: {0}", output.Error );
-			//}
+			ShaderLibrary::LoadShader( vertCode, "My beautiful vert shader" );
+			RHIShaderModuleRef shader = ShaderLibrary::FindShader( "My beautiful vert shader"_H );
 
-			LOG( LogCategory::Debug, Info, "Shader: {0}", shader->GetDescriptor()->Name.data() );
+			ShaderLibrary::LoadShader( pixelCode, "My beautiful pixel shader" );
+			RHIShaderModuleRef pixelShader = ShaderLibrary::FindShader( "My beautiful pixel shader"_H );
+
+			LOG( LogCategory::Debug, Info, "Vert Shader: {0}", shader->GetDescriptor()->Name.data() );
+			LOG( LogCategory::Debug, Info, "Pixel Shader: {0}", pixelShader->GetDescriptor()->Name.data() );
 
 			RHIPipelineStateDescriptor psd;
 			psd.VertexShader = shader;
+			psd.PixelShader = pixelShader;
 			psd.ColourTargetFormats[0] = ERHITextureFormat::RGBA8;
 			psd.VertexLayout = layout;
 

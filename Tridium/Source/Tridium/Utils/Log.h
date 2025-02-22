@@ -36,7 +36,7 @@ namespace Tridium {
 
 			constexpr Category( const char* a_Name )
 				: Name( a_Name )
-				, Hash( Hashing::Hash( a_Name ) ) {}
+				, Hash( Hashing::HashString( a_Name ) ) {}
 		};
 
 		struct Logger

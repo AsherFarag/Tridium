@@ -13,7 +13,7 @@
 
 namespace Tridium {
 
-	class OpenGLRHI final : public DynamicRHI
+	class OpenGLRHI final : public IDynamicRHI
 	{
 	public:
 		//==============================================

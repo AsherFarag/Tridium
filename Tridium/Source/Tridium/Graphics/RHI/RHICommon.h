@@ -4,6 +4,7 @@
 #include "RHIDefinitions.h"
 #include "RHIGlobals.h"
 #include "DynamicRHI.h"
+#include "RHIConstants.h"
 #include <Tridium/Core/Config.h>
 #include <Tridium/Core/Memory.h>
 #include <Tridium/Containers/Containers.h>
@@ -21,7 +22,7 @@ namespace Tridium {
 		ERHInterfaceType GetRHIType();
 
 		// Get the global dynamically bound RHI.
-		static DynamicRHI* GetDynamicRHI()
+		static IDynamicRHI* GetDynamicRHI()
 		{
 			return s_DynamicRHI;
 		}

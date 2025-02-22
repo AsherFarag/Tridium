@@ -6,10 +6,12 @@ namespace Tridium {
     static constexpr StringView ShaderTypeToken = "#pragma type";
 	static const UnorderedMap<hash_t, ERHIShaderType> ShaderTypes = 
     { 
-		{ "vertex"_H, ERHIShaderType::Vertex },
-		{ "fragment"_H, ERHIShaderType::Pixel },
-		{ "geometry"_H, ERHIShaderType::Geometry },
-		{ "compute"_H , ERHIShaderType::Compute }
+		{ "vertex"_H,        ERHIShaderType::Vertex },
+		{ "hull"_H,          ERHIShaderType::Hull },
+		{ "domain"_H,        ERHIShaderType::Domain },
+		{ "geometry"_H,      ERHIShaderType::Geometry },
+        { "pixel"_H,         ERHIShaderType::Pixel },
+		{ "compute"_H ,      ERHIShaderType::Compute }
     };
 
     PreprocessedShader ShaderPreprocessor::Process( StringView a_Source )
@@ -36,7 +38,7 @@ namespace Tridium {
 		// Remove leading and trailing whitespace
 		type = type.substr( type.find_first_not_of( " \t" ) );
 
-		hash_t typeHash = Hashing::Hash( type.c_str() );
+		hash_t typeHash = Hashing::Hash( type.c_str(), type.size() );
 
 		auto it = ShaderTypes.find( typeHash );
         if ( it == ShaderTypes.end() )

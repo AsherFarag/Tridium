@@ -1,5 +1,5 @@
 #pragma once
-#include "DirectX12.h"
+#include "D3D12.h"
 #include "D3D12Util.h"
 #include <Tridium/Graphics/RHI/DynamicRHI.h>
 #include <Tridium/Graphics/RHI/RHIMesh.h>
@@ -7,10 +7,9 @@
 #include <Tridium/Graphics/RHI/RHIPipelineState.h>
 #include <Tridium/Graphics/RHI/RHICommandList.h>
 #include <Tridium/Graphics/RHI/RHIShader.h>
+#include <Tridium/Graphics/RHI/RHIShaderBindingLayout.h>
 
-namespace LogCategory {
-	static constexpr ::Tridium::Log::Category DirectX = { "RHI::DirectX" };
-};
+DECLARE_LOG_CATEGORY( DirectX );
 
 namespace Tridium {
 

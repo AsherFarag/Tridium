@@ -27,8 +27,8 @@ namespace Tridium {
 		static RHIShaderModuleRef LoadShader( const FilePath& a_Path, StringView a_Name = nullptr )
 		{
 			hash_t nameHash = a_Name.empty()
-				? Hashing::Hash( a_Path.GetFilenameWithoutExtension().c_str() )
-				: Hashing::Hash( a_Name.data() );
+				? Hashing::HashString( a_Path.GetFilenameWithoutExtension().c_str() )
+				: Hashing::Hash( a_Name.data(), a_Name.size() );
 
 			if ( RHIShaderModuleRef ref = FindShader( nameHash ) )
 			{
@@ -42,7 +42,7 @@ namespace Tridium {
 		// Load a shader module from a string and add it to the library with the given name.
 		static RHIShaderModuleRef LoadShader( StringView a_Source, StringView a_Name )
 		{
-			hash_t nameHash = Hashing::Hash( a_Name.data() );
+			hash_t nameHash = Hashing::Hash( a_Name.data(), a_Name.size() );
 			if ( RHIShaderModuleRef ref = FindShader( nameHash ) )
 			{
 				LOG( LogCategory::RHI, Warn, "Shader '{0}' already loaded", a_Name.data() );

@@ -48,7 +48,7 @@ namespace Tridium {
 		// Add a shader module to the library.
 		bool AddShader( CachedShader&& a_Shader )
 		{
-			hash_t hash = Hashing::Hash( a_Shader.Name.c_str() );
+			hash_t hash = Hashing::Hash( a_Shader.Name.c_str(), a_Shader.Name.size() );
 			if ( HasShader( hash ) )
 			{
 				LOG( LogCategory::RHI, Warn, "Shader '{0}' already exists in the library", a_Shader.Name );
@@ -86,7 +86,7 @@ namespace Tridium {
 		String GenerateUniqueName()
 		{
 			String name = "Unnamed_" + std::to_string( m_NextShaderID++ );
-			if ( HasShader( Hashing::Hash( name.c_str() ) ) )
+			if ( HasShader( Hashing::Hash( name.c_str(), name.size() ) ) )
 			{
 				return GenerateUniqueName();
 			}

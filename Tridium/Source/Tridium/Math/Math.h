@@ -11,6 +11,8 @@
 
 namespace Tridium {
 
+	// Vector types.
+
 	template<typename T> using TVector2 = glm::vec<2, T>;
 	template<typename T> using TVector3 = glm::vec<3, T>;
 	template<typename T> using TVector4 = glm::vec<4, T>;
@@ -39,9 +41,37 @@ namespace Tridium {
 	using uVector3 = u32Vector3;
 	using uVector4 = u32Vector4;
 
-	using Matrix2 = glm::mat2;
-	using Matrix3 = glm::mat3;
-	using Matrix4 = glm::mat4;
+	// Matrix types.
+
+	template<typename T> using TMatrix2 = glm::mat<2, 2, T>;
+	template<typename T> using TMatrix3 = glm::mat<3, 3, T>;
+	template<typename T> using TMatrix4 = glm::mat<4, 4, T>;
+
+	using f32Matrix2 = TMatrix2<float>;
+	using f32Matrix3 = TMatrix3<float>;
+	using f32Matrix4 = TMatrix4<float>;
+
+	using i32Matrix2 = TMatrix2<int32_t>;
+	using i32Matrix3 = TMatrix3<int32_t>;
+	using i32Matrix4 = TMatrix4<int32_t>;
+
+	using u32Matrix2 = TMatrix2<uint32_t>;
+	using u32Matrix3 = TMatrix3<uint32_t>;
+	using u32Matrix4 = TMatrix4<uint32_t>;
+
+	using Matrix2 = f32Matrix2;
+	using Matrix3 = f32Matrix3;
+	using Matrix4 = f32Matrix4;
+
+	using iMatrix2 = i32Matrix2;
+	using iMatrix3 = i32Matrix3;
+	using iMatrix4 = i32Matrix4;
+
+	using uMatrix2 = u32Matrix2;
+	using uMatrix3 = u32Matrix3;
+	using uMatrix4 = u32Matrix4;
+
+	// Quaternion types.
 
 	template<typename T> using TQuaternion = glm::qua<T>;
 	using f32Quaternion = TQuaternion<float>;

@@ -21,7 +21,7 @@ namespace Tridium {
         Buffer,
         VertexBuffer,
         IndexBuffer,
-        ShaderInputLayout,
+        ShaderBindingLayout,
         PipelineState,
         CommandList,
         ResourceAllocator,

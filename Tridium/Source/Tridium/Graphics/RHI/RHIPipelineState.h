@@ -97,8 +97,10 @@ namespace Tridium {
 		RHIVertexLayout VertexLayout;
 
 		RHIShaderModuleRef VertexShader;
-		RHIShaderModuleRef PixelShader;
+		RHIShaderModuleRef HullShader;
+		RHIShaderModuleRef DomainShader;
 		RHIShaderModuleRef GeometryShader;
+		RHIShaderModuleRef PixelShader;
 		RHIShaderModuleRef ComputeShader;
 
 		RHIBlendState BlendState = RHIBlendStates::Opaque;
@@ -111,7 +113,7 @@ namespace Tridium {
 
 		ERHIPipelineType GetPipelineType() const
 		{
-			if ( ComputeShader && ( VertexShader || PixelShader || GeometryShader ) )
+			if ( ComputeShader && ( VertexShader || HullShader || DomainShader || GeometryShader || PixelShader ) )
 			{
 				return ERHIPipelineType::Invalid;
 			}
@@ -122,6 +124,20 @@ namespace Tridium {
 			}
 
 			return ERHIPipelineType::Graphics;
+		}
+
+		const RHIShaderModuleRef& GetShader( ERHIShaderType a_Type ) const
+		{
+			switch ( a_Type )
+			{
+			case ERHIShaderType::Vertex:     return VertexShader;
+			case ERHIShaderType::Hull:       return HullShader;
+			case ERHIShaderType::Domain:     return DomainShader;
+			case ERHIShaderType::Geometry:   return GeometryShader;
+			case ERHIShaderType::Pixel:      return PixelShader;
+			case ERHIShaderType::Compute:    return ComputeShader;
+			default: return VertexShader;
+			}
 		}
 	};
 	//=======================================================================

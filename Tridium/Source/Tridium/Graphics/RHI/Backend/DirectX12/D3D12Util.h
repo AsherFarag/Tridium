@@ -1,5 +1,5 @@
 #pragma once
-#include "DirectX12.h"
+#include "D3D12.h"
 #include <Tridium/Graphics/RHI/RHICommon.h>
 #include <Tridium/Graphics/RHI/RHIPipelineState.h>
 

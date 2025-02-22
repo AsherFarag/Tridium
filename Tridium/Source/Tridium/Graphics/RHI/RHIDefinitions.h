@@ -132,8 +132,10 @@ namespace Tridium {
 	{
 		Unknown = 0,
 		Vertex,
-		Pixel,
+		Hull,
+		Domain,
 		Geometry,
+		Pixel,
 		Compute,
 		COUNT,
 		NUM_BITS = 3,
@@ -192,6 +194,23 @@ namespace Tridium {
 
 			Default = None
 		};
+	};
+	//=======================================================
+
+
+
+	//=======================================================
+	// RHI Shader Visibility
+	//  Defines the shader stages that a shader binding is visible to.
+	enum class ERHIShaderVisibility : uint8_t
+	{
+		Vertex,
+		Hull,
+		Domain,
+		Geometry,
+		Pixel,
+		Compute,
+		All
 	};
 	//=======================================================
 
@@ -487,6 +506,39 @@ namespace Tridium {
 	template<typename T>
 	constexpr ERHIDataType GetRHIDataType();
 
+
+
+	template<typename T>
+	struct RHITensorTypeTraits
+	{
+		static constexpr ERHIDataType ElementType = GetRHIDataType<T>();
+		static constexpr uint8_t ElementCountX = 1;
+		static constexpr uint8_t ElementCountY = 1;
+	};
+
+	//==========================================================
+	// RHI Tensor Data Type
+	//  Specifies the type of data stored which can be a scalar, vector, or matrix.
+	struct RHITensorType
+	{
+		ERHIDataType ElementType = ERHIDataType::Unknown;
+		uint8_t ElementCountX = 1;
+		uint8_t ElementCountY = 1;
+		uint8_t ArrayLength = 1;
+
+		template<typename T>
+		static constexpr RHITensorType From()
+		{
+			RHITensorType type;
+			type.ElementType = GetRHIDataType<T>();
+			type.ElementCountX = RHITensorTypeTraits<T>::ElementCountX;
+			type.ElementCountY = RHITensorTypeTraits<T>::ElementCountY;
+			return type;
+		}
+	};
+
+
+
 	//==========================================================
 	// RHI Vertex Element Type
 	enum class ERHIVertexElementType : uint8_t
@@ -596,6 +648,55 @@ namespace Tridium {
 	template<> constexpr ERHIVertexElementType GetRHIVertexElementType<uVector4>()           { return ERHIVertexElementType::UInt4;   }
 
 	//==========================================================
+
+	template<typename U>
+	struct RHITensorTypeTraits<TVector2<U>>
+	{
+		static constexpr ERHIDataType ElementType = GetRHIDataType<U>();
+		static constexpr uint8_t ElementCountX = 2;
+		static constexpr uint8_t ElementCountY = 1;
+	};
+
+	template<typename U>
+	struct RHITensorTypeTraits<TVector3<U>>
+	{
+		static constexpr ERHIDataType ElementType = GetRHIDataType<U>();
+		static constexpr uint8_t ElementCountX = 3;
+		static constexpr uint8_t ElementCountY = 1;
+	};
+
+	template<typename U>
+	struct RHITensorTypeTraits<TVector4<U>>
+	{
+		static constexpr ERHIDataType ElementType = GetRHIDataType<U>();
+		static constexpr uint8_t ElementCountX = 4;
+		static constexpr uint8_t ElementCountY = 1;
+	};
+
+	template<typename U>
+	struct RHITensorTypeTraits<TMatrix2<U>>
+	{
+		static constexpr ERHIDataType ElementType = GetRHIDataType<U>();
+		static constexpr uint8_t ElementCountX = 2;
+		static constexpr uint8_t ElementCountY = 2;
+	};
+
+	template<typename U>
+	struct RHITensorTypeTraits<TMatrix3<U>>
+	{
+		static constexpr ERHIDataType ElementType = GetRHIDataType<U>();
+		static constexpr uint8_t ElementCountX = 3;
+		static constexpr uint8_t ElementCountY = 3;
+	};
+
+	template<typename U>
+	struct RHITensorTypeTraits<TMatrix4<U>>
+	{
+		static constexpr ERHIDataType ElementType = GetRHIDataType<U>();
+		static constexpr uint8_t ElementCountX = 4;
+		static constexpr uint8_t ElementCountY = 4;
+	};
+
 
 } // namespace Tridium
 

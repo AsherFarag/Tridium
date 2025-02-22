@@ -11,7 +11,7 @@
 
 namespace Tridium {
 
-	DynamicRHI* s_DynamicRHI = nullptr;
+	IDynamicRHI* s_DynamicRHI = nullptr;
 
 	//////////////////////////////////////////////////////////////////////////
 	// RHI CORE FUNCTIONS
@@ -36,7 +36,7 @@ namespace Tridium {
 		#if RHI_ENABLE_BACKEND_DIRECTX12
 			case ERHInterfaceType::DirectX12:
 			{
-				s_DynamicRHI = new DirectX12RHI();
+				s_DynamicRHI = new D3D12RHI();
 				break;
 			}
 		#endif

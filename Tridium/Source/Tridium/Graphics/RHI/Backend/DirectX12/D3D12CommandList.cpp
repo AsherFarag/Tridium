@@ -6,7 +6,7 @@ namespace Tridium {
 
 	bool D3D12CommandList::SetCommands( const RHICommandBuffer& a_CmdBuffer )
 	{
-		DirectX12RHI* rhi = RHI::GetDirectX12RHI();
+		D3D12RHI* rhi = RHI::GetD3D12RHI();
 		CHECK( rhi );
 
 		const auto& cmdAllocator = rhi->GetCommandAllocator();

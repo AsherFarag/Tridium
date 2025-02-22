@@ -99,9 +99,7 @@ namespace Tridium {
         struct SetShaderInput 
         {
             uint8_t Index;
-			// Stored as a pointer to cut down on RHICommand size.
-			TODO( "Determine if this is worth it or if it should be stored directly." );
-            UniquePtr<RHIShaderInputPayload> Payload;
+            RHIShaderInputPayload Payload;
         };
 
         struct SetIndexBuffer 
@@ -290,8 +288,8 @@ namespace Tridium {
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::SetShaderInput() );
 			RHICommand::SetShaderInput& data = cmd.Get<RHICommand::SetShaderInput>();
 			data.Index = a_Index;
-			data.Payload = MakeUnique<RHIShaderInputPayload>();
-			BuildShaderInput( a_Value, *data.Payload, m_Textures, m_Buffers );
+			data.Payload = RHIShaderInputPayload();
+			BuildShaderInput( a_Value, data.Payload, m_Textures, m_Buffers );
 		}
 
 		void SetIndexBuffer( RHIIndexBufferRef a_IBO )

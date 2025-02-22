@@ -28,14 +28,14 @@ namespace Tridium {
 	//==============================================
 
 	//==============================================
-	// DynamicRHI
+	// DynamicRHI Interface
 	//  The core interace for the dynamicly bound RHI.
 	//==============================================
-	class DynamicRHI
+	class IDynamicRHI
 	{
 	public:
-		DynamicRHI() = default;
-		virtual ~DynamicRHI() = default;
+		IDynamicRHI() = default;
+		virtual ~IDynamicRHI() = default;
 
 		//==============================================
 		// Core RHI functions
@@ -83,12 +83,12 @@ namespace Tridium {
 	//==============================================
 	// The global dynamic RHI instance.
 	// Defined in RHI.cpp
-	extern DynamicRHI* s_DynamicRHI;
+	extern IDynamicRHI* s_DynamicRHI;
 	//==============================================
 
 	namespace Concepts {
 		template<typename T>
-		concept IsDynamicRHI = std::is_base_of_v<DynamicRHI, T>;
+		concept IsDynamicRHI = std::is_base_of_v<IDynamicRHI, T>;
 	}
 
 

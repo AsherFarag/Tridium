@@ -86,18 +86,30 @@ namespace Tridium {
 			case ERHIShaderModel::SM_6_6: return L"vs_6_6";
 			}
 		}
-		case ERHIShaderType::Pixel:
+		case ERHIShaderType::Hull:
 		{
 			switch ( a_Model )
 			{
-			default:                      return L"ps_6_0";
-			case ERHIShaderModel::SM_6_0: return L"ps_6_0";
-			case ERHIShaderModel::SM_6_1: return L"ps_6_1";
-			case ERHIShaderModel::SM_6_2: return L"ps_6_2";
-			case ERHIShaderModel::SM_6_3: return L"ps_6_3";
-			case ERHIShaderModel::SM_6_4: return L"ps_6_4";
-			case ERHIShaderModel::SM_6_5: return L"ps_6_5";
-			case ERHIShaderModel::SM_6_6: return L"ps_6_6";
+			default:                      return L"hs_6_0";
+			case ERHIShaderModel::SM_6_1: return L"hs_6_1";
+			case ERHIShaderModel::SM_6_2: return L"hs_6_2";
+			case ERHIShaderModel::SM_6_3: return L"hs_6_3";
+			case ERHIShaderModel::SM_6_4: return L"hs_6_4";
+			case ERHIShaderModel::SM_6_5: return L"hs_6_5";
+			case ERHIShaderModel::SM_6_6: return L"hs_6_6";
+			}
+		}
+		case ERHIShaderType::Domain:
+		{
+			switch ( a_Model )
+			{
+			default:                      return L"ds_6_0";
+			case ERHIShaderModel::SM_6_1: return L"ds_6_1";
+			case ERHIShaderModel::SM_6_2: return L"ds_6_2";
+			case ERHIShaderModel::SM_6_3: return L"ds_6_3";
+			case ERHIShaderModel::SM_6_4: return L"ds_6_4";
+			case ERHIShaderModel::SM_6_5: return L"ds_6_5";
+			case ERHIShaderModel::SM_6_6: return L"ds_6_6";
 			}
 		}
 		case ERHIShaderType::Geometry:
@@ -111,6 +123,20 @@ namespace Tridium {
 			case ERHIShaderModel::SM_6_4: return L"gs_6_4";
 			case ERHIShaderModel::SM_6_5: return L"gs_6_5";
 			case ERHIShaderModel::SM_6_6: return L"gs_6_6";
+			}
+		}
+		case ERHIShaderType::Pixel:
+		{
+			switch ( a_Model )
+			{
+			default:                      return L"ps_6_0";
+			case ERHIShaderModel::SM_6_0: return L"ps_6_0";
+			case ERHIShaderModel::SM_6_1: return L"ps_6_1";
+			case ERHIShaderModel::SM_6_2: return L"ps_6_2";
+			case ERHIShaderModel::SM_6_3: return L"ps_6_3";
+			case ERHIShaderModel::SM_6_4: return L"ps_6_4";
+			case ERHIShaderModel::SM_6_5: return L"ps_6_5";
+			case ERHIShaderModel::SM_6_6: return L"ps_6_6";
 			}
 		}
 		}
@@ -248,5 +274,98 @@ namespace Tridium {
 
 		return output;
     }
+
+	ShaderCompilerOutput DXCompiler::CompileRootSignature( StringView s_Source, ERHIShaderFormat a_Format )
+	{
+		ShaderCompilerOutput output;
+		DXCInternalState& dxcState = ( a_Format == ERHIShaderFormat::HLSL6_XBOX ) ? GetDXCInternalState_XBOX() : GetDXCInternalState();
+		// Check if the DXC compiler is available.
+		if ( !dxcState.IsValid() )
+		{
+			LOG( LogCategory::DirectX, Error, "DXC compiler is not available" );
+			return {};
+		}
+		// Create the DXC compiler.
+		ComPtr<IDxcUtils> dxcUtils;
+		ComPtr<IDxcCompiler3> dxcCompiler;
+		if ( FAILED( dxcState.CreateInstance( CLSID_DxcUtils, IID_PPV_ARGS( &dxcUtils ) ) ) )
+		{
+			LOG( LogCategory::DirectX, Error, "Failed to create DXC Utils" );
+			return {};
+		}
+		if ( FAILED( dxcState.CreateInstance( CLSID_DxcCompiler, IID_PPV_ARGS( &dxcCompiler ) ) ) )
+		{
+			LOG( LogCategory::DirectX, Error, "Failed to create DXC Compiler" );
+			return {};
+		}
+		// Arguments that will be passed to the compiler.
+		Array<WString> args = {
+			L"-rootsig-define",
+			L"TRIDIUM_DEFAULT_ROOT_SIGNATURE"
+		};
+		// Convert the shader type and model to a string for the compiler.
+		// E.g. "vs_5_0" for a vertex shader with shader model 5.0.
+		args.PushBack( L"-T" );
+		args.PushBack( L"rootsig_1_0" );
+		// Include handler
+		ComPtr<IDxcIncludeHandler> includeHandler;
+		if ( FAILED( dxcUtils->CreateDefaultIncludeHandler( &includeHandler ) ) )
+		{
+			LOG( LogCategory::DirectX, Error, "Failed to create DXC Include Handler" );
+			return {};
+		}
+		DxcBuffer sourceBuffer;
+		sourceBuffer.Ptr = s_Source.data();
+		sourceBuffer.Size = s_Source.size();
+		sourceBuffer.Encoding = DXC_CP_UTF8;
+		Array<const wchar_t*> argsRaw;
+		argsRaw.Reserve( args.Size() );
+		for ( const WString& arg : args )
+		{
+			argsRaw.PushBack( arg.c_str() );
+		}
+
+		ComPtr<IDxcResult> dxcResult;
+		HRESULT hr = dxcCompiler->Compile(
+			&sourceBuffer,
+			argsRaw.Data(),
+			static_cast<uint32_t>( argsRaw.Size() ),
+			includeHandler.Get(),
+			IID_PPV_ARGS( &dxcResult )
+		);
+
+		if ( FAILED( hr ) )
+		{
+			LOG( LogCategory::DirectX, Error, "Failed to compile shader" );
+			return {};
+		}
+
+		ComPtr<IDxcBlobUtf8> errorBlob;
+		if ( FAILED( dxcResult->GetOutput( DXC_OUT_ERRORS, IID_PPV_ARGS( &errorBlob ), nullptr ) ) )
+		{
+			LOG( LogCategory::DirectX, Error, "Failed to get error blob" );
+			return {};
+		}
+
+		if ( errorBlob )
+		{
+			output.Error = String( errorBlob->GetStringPointer() );
+		}
+
+		ComPtr<IDxcBlob> shaderBlob;
+		if ( FAILED( dxcResult->GetOutput( DXC_OUT_OBJECT, IID_PPV_ARGS( &shaderBlob ), nullptr ) ) )
+		{
+			LOG( LogCategory::DirectX, Error, "Failed to get shader blob" );
+			return output;
+		}
+
+		if ( shaderBlob && shaderBlob->GetBufferSize() > 0 )
+		{
+			output.ByteCode.Resize( shaderBlob->GetBufferSize() );
+			std::memcpy( output.ByteCode.Data(), shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize() );
+		}
+
+		return output;
+	}
 
 }

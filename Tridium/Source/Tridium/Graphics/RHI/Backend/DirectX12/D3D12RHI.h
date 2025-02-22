@@ -4,7 +4,7 @@
 
 namespace Tridium {
 
-	class DirectX12RHI final : public DynamicRHI
+	class D3D12RHI final : public IDynamicRHI
 	{
 	public:
 		//==============================================
@@ -81,7 +81,7 @@ namespace Tridium {
 			ComPtr<D3D12::DescriptorHeap> RTVDescHeap = nullptr;
 			D3D12_CPU_DESCRIPTOR_HANDLE RTVHandles[s_FrameCount];
 
-			bool Initialize( DirectX12RHI& a_RHI );
+			bool Initialize( D3D12RHI& a_RHI );
 		} m_WindowData;
 
 		//=====================================================
@@ -97,7 +97,7 @@ namespace Tridium {
 	};
 
 	namespace RHI {
-		static DirectX12RHI* GetDirectX12RHI()
+		static D3D12RHI* GetD3D12RHI()
 		{
 		#if RHI_DEBUG_ENABLED
 			if ( s_DynamicRHI->GetRHIType() != ERHInterfaceType::DirectX12 )
@@ -106,7 +106,7 @@ namespace Tridium {
 				return nullptr;
 			}
 		#endif
-			return static_cast<DirectX12RHI*>( s_DynamicRHI );
+			return static_cast<D3D12RHI*>( s_DynamicRHI );
 		}
 	}
 

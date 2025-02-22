@@ -84,18 +84,16 @@ namespace Tridium {
 
 	} // namespace Helpers
 
-
-
     bool D3D12PipelineState::Commit( const void* a_Params )
     {
-		const RHIPipelineStateDescriptor* desc = static_cast<const RHIPipelineStateDescriptor*>( a_Params );
+		const RHIPipelineStateDescriptor* desc = ParamsToDescriptor<RHIPipelineStateDescriptor>( a_Params );
 		if ( !desc || desc->GetPipelineType() == ERHIPipelineType::Invalid )
 		{
 			LOG( LogCategory::RHI, Error, "Invalid pipeline type" );
 			return false;
 		}
 
-		// Create the input layout
+		// Create the vertex input layout
 		for ( size_t i = 0; i < desc->VertexLayout.Elements.Size(); ++i )
 		{
 			const RHIVertexAttribute& element = desc->VertexLayout.Elements[i];
@@ -107,74 +105,97 @@ namespace Tridium {
 			};
 		}
 
-		// Create the pipeline state object
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC psd = {};
-		psd.pRootSignature = nullptr; // TODO: Root signature
 		if ( desc->GetPipelineType() == ERHIPipelineType::Graphics )
 		{
-			psd.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
-
-			// Set the input layout
-			psd.InputLayout.NumElements = desc->VertexLayout.Elements.Size();
-			psd.InputLayout.pInputElementDescs = m_VertexLayout;
-			psd.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
-
-			// Set the shaders
-			psd.VS = Helpers::GetShaderBytecode( desc->VertexShader );
-			psd.PS = Helpers::GetShaderBytecode( desc->PixelShader );
-			psd.GS = Helpers::GetShaderBytecode( desc->GeometryShader );
-
-			// Set the blend state
-			psd.BlendState = Helpers::GetBlendDesc( desc->BlendState );
-
-			psd.SampleMask = UINT_MAX; // Enable all samples
-
-			// Set the rasterizer state
-			psd.RasterizerState = Helpers::GetRasterizerDesc( *desc );
-
-			psd.DepthStencilState = Helpers::GetDepthStencilDesc( *desc );
-			psd.PrimitiveTopologyType = ToD3D12::GetTopologyType( desc->Topology );
-			psd.NumRenderTargets = desc->ColourTargetFormats.Size();
-			for ( size_t i = 0; i < desc->ColourTargetFormats.Size(); ++i )
-			{
-				psd.RTVFormats[i] = ToD3D12::GetFormat( desc->ColourTargetFormats[i] );
-			}
-			psd.DSVFormat = ToD3D12::GetFormat( desc->DepthStencilFormat );
-			psd.SampleDesc.Count = 1;
-			psd.SampleDesc.Quality = 0;
-			psd.NodeMask = 0;
-			psd.CachedPSO = { nullptr, 0 };
-
-			// Create the pipeline state object
-			ComPtr<D3D12::Device> device = RHI::GetDirectX12RHI()->GetDevice();
-			if ( FAILED( device->CreateGraphicsPipelineState( &psd, IID_PPV_ARGS( &m_PipelineState ) ) ) )
-			{
-				LOG( LogCategory::RHI, Error, "Failed to create graphics pipeline state" );
-				return false;
-			}
+			return CommitGraphics();
 		}
 		else if ( desc->GetPipelineType() == ERHIPipelineType::Compute )
 		{
-			LOG( LogCategory::RHI, Error, "Compute pipeline state not implemented" );
-			return false;
+			return CommitCompute();
 		}
 
-		return true;
+		return false;
     }
 
 	bool D3D12PipelineState::Release()
 	{
-		return false;
+		m_PipelineState.Release();
+		return true;
 	}
 
 	bool D3D12PipelineState::IsValid() const
 	{
-		return false;
+		return m_PipelineState.Get() != nullptr;
 	}
 
 	const void* D3D12PipelineState::NativePtr() const
 	{
-		return nullptr;
+		return m_PipelineState.Get();
+	}
+
+	bool D3D12PipelineState::CommitGraphics()
+	{
+		const RHIPipelineStateDescriptor* desc = GetDescriptor();
+
+		// Create the pipeline state object
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC psd = {};
+		psd.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+
+		// TEMP
+		ID3D12RootSignature* rootsig;
+		D3D12_ROOT_PARAMETER rootParam;
+		rootParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+		// Set the input layout
+		psd.InputLayout.NumElements = desc->VertexLayout.Elements.Size();
+		psd.InputLayout.pInputElementDescs = m_VertexLayout;
+		psd.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
+
+		// Set the shaders
+		psd.VS = Helpers::GetShaderBytecode( desc->VertexShader );
+		psd.HS = Helpers::GetShaderBytecode( desc->HullShader );
+		psd.DS = Helpers::GetShaderBytecode( desc->DomainShader );
+		psd.GS = Helpers::GetShaderBytecode( desc->GeometryShader );
+		psd.PS = Helpers::GetShaderBytecode( desc->PixelShader );
+
+		// Set the blend state
+		psd.BlendState = Helpers::GetBlendDesc( desc->BlendState );
+
+		// Set the sample mask
+		psd.SampleMask = UINT_MAX; // Enable all samples
+
+		// Set the rasterizer state
+		psd.RasterizerState = Helpers::GetRasterizerDesc( *desc );
+
+		psd.DepthStencilState = Helpers::GetDepthStencilDesc( *desc );
+		psd.PrimitiveTopologyType = ToD3D12::GetTopologyType( desc->Topology );
+
+		psd.NumRenderTargets = desc->ColourTargetFormats.Size();
+		for ( size_t i = 0; i < desc->ColourTargetFormats.Size(); ++i )
+		{
+			psd.RTVFormats[i] = ToD3D12::GetFormat( desc->ColourTargetFormats[i] );
+		}
+		psd.DSVFormat = ToD3D12::GetFormat( desc->DepthStencilFormat );
+		psd.SampleDesc.Count = 1;
+		psd.SampleDesc.Quality = 0;
+		psd.NodeMask = 0;
+		psd.CachedPSO = { nullptr, 0 };
+
+		// Create the pipeline state object
+		ComPtr<D3D12::Device> device = RHI::GetD3D12RHI()->GetDevice();
+		if ( FAILED( device->CreateGraphicsPipelineState( &psd, IID_PPV_ARGS( &m_PipelineState ) ) ) )
+		{
+			LOG( LogCategory::RHI, Error, "Failed to create graphics pipeline state" );
+			return false;
+		}
+
+		return true;
+	}
+
+	bool D3D12PipelineState::CommitCompute()
+	{
+		LOG( LogCategory::RHI, Error, "Compute pipeline state not implemented" );
+		return false;
 	}
 
 } // namespace Tridium

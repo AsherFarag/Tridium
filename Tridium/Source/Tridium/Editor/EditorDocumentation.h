@@ -37,7 +37,7 @@ namespace Tridium {
 	public:
 		DocumentationKey RegisterType( const TypeDocumentation& doc )
 		{
-			DocumentationKey key = Hashing::Hash( doc.Name.c_str() );
+			DocumentationKey key = Hashing::Hash( doc.Name.c_str(), doc.Name.size() );
 			m_Types[key] = doc;
 			return key;
 		}
@@ -52,7 +52,7 @@ namespace Tridium {
 
 		TypeDocumentation* GetType( const char* a_Name )
 		{
-			return GetType( Hashing::Hash( a_Name ) );
+			return GetType( Hashing::HashString( a_Name ) );
 		}
 
 	private:

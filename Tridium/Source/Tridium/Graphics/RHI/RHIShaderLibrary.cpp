@@ -83,7 +83,7 @@ namespace Tridium {
 		cachedShader.Shader = shader;
 
 		// Add the shader to the library
-		m_CachedShaders[Hashing::Hash( cachedShader.Name.c_str() )] = std::move( cachedShader );
+		m_CachedShaders[Hashing::Hash( cachedShader.Name.c_str(), cachedShader.Name.size() )] = std::move( cachedShader );
 		return shader;
 	}
 

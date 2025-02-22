@@ -25,7 +25,7 @@ namespace Tridium {
 	// CORE RHI FUNCTIONS
 	//////////////////////////////////////////////////////////////////////////
 
-    bool DirectX12RHI::Init( const RHIConfig& a_Config )
+    bool D3D12RHI::Init( const RHIConfig& a_Config )
     {
 	#if RHI_DEBUG_ENABLED
 		if ( a_Config.UseDebug )
@@ -104,7 +104,7 @@ namespace Tridium {
         return true;
     }
 
-	bool DirectX12RHI::Shutdown()
+	bool D3D12RHI::Shutdown()
 	{
 		m_CommandList.Release();
 		m_CommandAllocator.Release();
@@ -128,7 +128,7 @@ namespace Tridium {
 		return true;
 	}
 
-    bool DirectX12RHI::Present()
+    bool D3D12RHI::Present()
     {
 		if ( !m_WindowData.SwapChain )
 			return false;
@@ -137,7 +137,7 @@ namespace Tridium {
 		return true;
     }
 
-    bool DirectX12RHI::ExecuteCommandList( RHICommandListRef a_CommandList )
+    bool D3D12RHI::ExecuteCommandList( RHICommandListRef a_CommandList )
     {
 		if ( FAILED( m_CommandList->Close() ) )
 		{
@@ -154,17 +154,17 @@ namespace Tridium {
 	// FENCE FUNCTIONS
 	//////////////////////////////////////////////////////////////////////////
 
-    RHIFence DirectX12RHI::CreateFence() const
+    RHIFence D3D12RHI::CreateFence() const
     {
         return RHIFence();
     }
 
-    ERHIFenceState DirectX12RHI::GetFenceState( RHIFence a_Fence ) const
+    ERHIFenceState D3D12RHI::GetFenceState( RHIFence a_Fence ) const
     {
         return ERHIFenceState();
     }
 
-    void DirectX12RHI::FenceSignal( RHIFence a_Fence )
+    void D3D12RHI::FenceSignal( RHIFence a_Fence )
     {
 		m_CommandQueue->Signal( m_Fence, ++m_FenceValue );
 		if ( SUCCEEDED( m_Fence->SetEventOnCompletion( m_FenceValue, m_FenceEvent ) ) )
@@ -185,40 +185,40 @@ namespace Tridium {
 	// RESOURCE CREATION
 	//////////////////////////////////////////////////////////////////////////
 
-	RHITextureRef DirectX12RHI::CreateTexture( const RHITextureDescriptor& a_Desc )
+	RHITextureRef D3D12RHI::CreateTexture( const RHITextureDescriptor& a_Desc )
 	{
 		RHITextureRef tex = RHIResource::Create<D3D12Texture>();
 		CHECK( tex->Commit( &a_Desc ) );
 		return tex;
 	}
 
-	RHIIndexBufferRef DirectX12RHI::CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc )
+	RHIIndexBufferRef D3D12RHI::CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc )
 	{
 		RHIIndexBufferRef index = RHIResource::Create<D3D12IndexBuffer>();
 		CHECK( index->Commit( &a_Desc ) );
 		return index;
 	}
 
-	RHIVertexBufferRef DirectX12RHI::CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc )
+	RHIVertexBufferRef D3D12RHI::CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc )
 	{
 		RHIVertexBufferRef vertex = RHIResource::Create<D3D12VertexBuffer>();
 		CHECK( vertex->Commit( &a_Desc ) );
 		return vertex;
 	}
 
-	RHIPipelineStateRef DirectX12RHI::CreatePipelineState( const RHIPipelineStateDescriptor& a_Desc )
+	RHIPipelineStateRef D3D12RHI::CreatePipelineState( const RHIPipelineStateDescriptor& a_Desc )
 	{
 		RHIPipelineStateRef pipeline = RHIResource::Create<D3D12PipelineState>();
 		CHECK( pipeline->Commit( &a_Desc ) );
 		return pipeline;
 	}
 
-	RHICommandListRef DirectX12RHI::CreateCommandList( const RHICommandListDescriptor& a_Desc )
+	RHICommandListRef D3D12RHI::CreateCommandList( const RHICommandListDescriptor& a_Desc )
 	{
 		return nullptr;
 	}
 
-	RHIShaderModuleRef DirectX12RHI::CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc )
+	RHIShaderModuleRef D3D12RHI::CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc )
 	{
 		RHIShaderModuleRef shader = RHIResource::Create<D3D12ShaderModule>();
 		CHECK( shader->Commit( &a_Desc ) );
@@ -230,7 +230,7 @@ namespace Tridium {
 	//////////////////////////////////////////////////////////////////////////
 
 #if RHI_DEBUG_ENABLED
-    void DirectX12RHI::DumpDebug()
+    void D3D12RHI::DumpDebug()
     {
         if ( m_DXGIDebug )
         {
@@ -242,7 +242,7 @@ namespace Tridium {
     }
 #endif // RHI_DEBUG_ENABLED
 
-    bool DirectX12RHI::WindowData::Initialize( DirectX12RHI& a_RHI )
+    bool D3D12RHI::WindowData::Initialize( D3D12RHI& a_RHI )
     {
 		// Get the native window handle
 		HWND hWnd = glfwGetWin32Window( glfwGetCurrentContext() );
