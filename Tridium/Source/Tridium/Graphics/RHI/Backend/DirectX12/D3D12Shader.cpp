@@ -1,6 +1,6 @@
 #include "tripch.h"
 #include "D3D12Shader.h"
-#include "D3D12RHI.h"
+#include "D3D12DynamicRHI.h"
 
 namespace Tridium {
 
@@ -11,6 +11,13 @@ namespace Tridium {
 		{
 			return false;
 		}
+
+		// Copy the byte code from the descriptor span
+        Bytecode.Resize( desc->Bytecode.size() );
+		std::memcpy( Bytecode.Data(), desc->Bytecode.data(), desc->Bytecode.size_bytes() );
+
+		TODO( "Pretty dirty, figure out a better relationship for a shader and its bytecode" );
+		Descriptor.Get<RHIShaderModuleDescriptor>()->Bytecode = Bytecode;
 
         return true;
     }

@@ -15,6 +15,9 @@ namespace Tridium {
 		const void* NativePtr() const override;
 
 		bool SetCommands( const RHICommandBuffer& a_CmdBuffer ) override;
+
+		TODO( "Seperate cmd lists into graphics and compute" );
+		ComPtr<D3D12::GraphicsCommandList> CommandList;
 	};
 
 }

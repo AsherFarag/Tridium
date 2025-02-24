@@ -59,9 +59,9 @@ namespace Tridium {
 		}
 
 		// Add a shader module to the library.
-		static bool AddShader( RHIShaderModuleRef a_Shader, StringView a_Name, String&& a_Source = {}, Array<Byte>&& a_Binary = {} )
+		static bool AddShader( RHIShaderModuleRef a_Shader, StringView a_Name, String&& a_Source = {} )
 		{
-			return AddShader( CachedShader{ a_Name.data(), a_Shader, std::move( a_Source ), std::move( a_Binary ) } );
+			return AddShader( CachedShader{ a_Name.data(), a_Shader, std::move( a_Source ) } );
 		}
 	};
 	//=======================================================

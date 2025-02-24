@@ -64,13 +64,12 @@ namespace Tridium {
 			LOG( LogCategory::Rendering, Error, "Failed to compile shader '{0}' - Error: {1}", cachedShader.Name, output.Error );
 			return nullptr;
 		}
-		cachedShader.Binary = std::move( output.ByteCode );
 
 		// Construct the shader module descriptor
 		RHIShaderModuleDescriptor desc;
 		desc.Name = cachedShader.Name;
 		desc.Type = input.ShaderType;
-		desc.Binary = cachedShader.Binary;
+		desc.Bytecode = output.ByteCode;
 		desc.Source = cachedShader.Source;
 
 		// Create the shader module

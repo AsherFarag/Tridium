@@ -33,19 +33,7 @@ namespace Tridium {
 	}
 	//=====================================================================
 
-	//=====================================================================
-	// Helper functions
-	namespace Helpers {
 
-		inline WString ToWString( const String& a_String )
-		{
-			WString wstr;
-			wstr.resize( a_String.size() );
-			mbstowcs( wstr.data(), a_String.data(), a_String.size() );
-			return wstr;
-		}
-	}
-	//=====================================================================
 
 	//=====================================================================
 	// Concept definitions
@@ -55,10 +43,13 @@ namespace Tridium {
 	}
 	//=====================================================================
 
+
+
 	//=====================================================================
 	// Com Pointer
-	//  A template class for Microsoft com pointer
-	//=====================================================================
+	//  A templated smart pointer for COM objects.
+	//  This pointer will automatically add and release references.
+	//  Similar to Microsoft::WRL::ComPtr.
 	template<typename T> requires D3D12::Concepts::IsIUnknown<T>
 	class ComPtr
 	{

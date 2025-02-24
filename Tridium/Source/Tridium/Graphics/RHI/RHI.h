@@ -21,6 +21,8 @@ namespace Tridium {
 		bool Shutdown();
 		// Present the current frame.
 		bool Present();
+		// Execute the given command list on the GPU.
+		bool ExecuteCommandList( const RHICommandListRef& a_CommandList );
 		//===========================
 
 		//===========================

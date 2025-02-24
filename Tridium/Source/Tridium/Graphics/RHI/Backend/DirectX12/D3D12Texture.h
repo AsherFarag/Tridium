@@ -16,9 +16,9 @@ namespace Tridium {
 		bool IsValid() const override;
 		const void* NativePtr() const override;
 
-	private:
-		ComPtr<D3D12::Resource> m_Texture;
-		ComPtr<D3D12::DescriptorHeap> m_DescriptorHeap;
+		ComPtr<D3D12::Resource> Texture{};
+		ComPtr<D3D12::DescriptorHeap> DescriptorHeap{};
+		D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHandle{};
 	};
 
 

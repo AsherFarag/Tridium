@@ -40,7 +40,6 @@ namespace Tridium {
 	void WindowsWindow::OnUpdate()
 	{
 		glfwPollEvents();
-		CHECK( RHI::Present() );
 	}
 
 	bool WindowsWindow::IsMinimized() const

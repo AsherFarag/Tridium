@@ -69,6 +69,33 @@ namespace Tridium {
 
 
 	//===========================
+	// Scissor Rect
+	//===========================
+	struct ScissorRect
+	{
+		uint16_t Left;
+		uint16_t Top;
+		uint16_t Right;
+		uint16_t Bottom;
+	};
+
+
+
+	//===========================
+	// Viewport
+	//===========================
+	struct Viewport
+	{
+		float X;
+		float Y;
+		float Width;
+		float Height;
+		float MinDepth;
+		float MaxDepth;
+	};
+
+
+	//===========================
 	// Shading Path
 	//===========================
 	enum class ERHIShadingPath : uint8_t
@@ -113,6 +140,39 @@ namespace Tridium {
 		Default = OneWriteManyDraw,
 	};
 
+
+
+	//=====================================================================
+	// ERHIResourceState
+	//  The state of a resource.
+	//=====================================================================
+	enum class ERHIResourceState : uint32_t
+	{
+		// Common states
+		Undefined = 0,                  // Initial state (uninitialized resource)
+		General,                        // General use
+		CopySource,                     // Used for copying data as source
+		CopyDest,                       // Used for copying data as destination
+
+		// Render target states
+		RenderTarget,                   // Used as a render target
+		DepthStencilWrite,              // Used for writing to depth/stencil buffer
+		DepthStencilReadOnly,           // Read-only depth/stencil buffer
+
+		// Shader access states
+		ShaderResource,                 // Readable in shaders (textures, buffers)
+		UnorderedAccess,                // Read/write access in compute shaders
+		IndirectArgument,               // Used for indirect draw/dispatch
+
+		// Vertex and Index buffers
+		VertexBuffer,                   // Bound as a vertex buffer
+		IndexBuffer,                    // Bound as an index buffer
+		ConstantBuffer,                 // Bound as a constant buffer
+
+		// GPU-Only memory access
+		Present,                        // Used for presenting to screen
+		GPUWrite,                       // Used for GPU write operations
+	};
 
 
 	//=====================================================================
@@ -187,22 +247,6 @@ namespace Tridium {
 		NUM_BITS = 4,
 	};
 	ENUM_SIZE_ASSERT( ERHIShaderModel );
-
-
-	//=======================================================
-	// RHI Shader Compiler Flags
-	//  Defines flags that can be used to modify the behavior of the shader compiler.
-	namespace ERHIShaderCompilerFlags
-	{
-		enum Type : uint32_t
-		{
-			None = 0,
-			DisableOptimization = 1 << 0,
-
-			Default = None
-		};
-	};
-	//=======================================================
 
 
 

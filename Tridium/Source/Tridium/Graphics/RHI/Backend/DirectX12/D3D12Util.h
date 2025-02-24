@@ -158,6 +158,47 @@ namespace Tridium {
 				default:       return D3D12_SHADER_VISIBILITY_ALL;
 			}
 		}
+
+		inline constexpr D3D12_HEAP_TYPE GetHeapType( ERHIUsageHint a_UsageHint )
+		{
+			EnumFlags<ERHIUsageHint> usageHint = a_UsageHint;
+			if ( usageHint.HasFlag( ERHIUsageHint::CPUWriteMany ) ) return D3D12_HEAP_TYPE_UPLOAD;
+			if ( usageHint.HasFlag( ERHIUsageHint::GPUWriteMany ) ) return D3D12_HEAP_TYPE_DEFAULT;
+			if ( usageHint.HasFlag( ERHIUsageHint::CPUReadMany ) )  return D3D12_HEAP_TYPE_READBACK;
+			return D3D12_HEAP_TYPE_DEFAULT; // Default to GPU memory
+		}
+
+		inline constexpr D3D12_RESOURCE_STATES GetResourceState( ERHIResourceState a_State )
+		{
+			switch ( a_State )
+			{
+				using enum ERHIResourceState;
+				case Undefined:               return D3D12_RESOURCE_STATE_COMMON;
+				case General:                 return D3D12_RESOURCE_STATE_COMMON;
+				case CopySource:              return D3D12_RESOURCE_STATE_COPY_SOURCE;
+				case CopyDest:                return D3D12_RESOURCE_STATE_COPY_DEST;
+				case RenderTarget:            return D3D12_RESOURCE_STATE_RENDER_TARGET;
+				case DepthStencilWrite:       return D3D12_RESOURCE_STATE_DEPTH_WRITE;
+				case DepthStencilReadOnly:    return D3D12_RESOURCE_STATE_DEPTH_READ;
+				case ShaderResource:          return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+				case UnorderedAccess:         return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+				case IndirectArgument:        return D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+				case VertexBuffer:            return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+				case IndexBuffer:             return D3D12_RESOURCE_STATE_INDEX_BUFFER;
+				case ConstantBuffer:          return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+				case Present:                 return D3D12_RESOURCE_STATE_PRESENT;
+				case GPUWrite:                return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+				default:                      return D3D12_RESOURCE_STATE_COMMON;
+			}
+		}
+
+		inline WString ToWString( const String& a_String )
+		{
+			WString wstr;
+			wstr.resize( a_String.size() );
+			mbstowcs( wstr.data(), a_String.data(), a_String.size() );
+			return wstr;
+		}
 	}
 
 }

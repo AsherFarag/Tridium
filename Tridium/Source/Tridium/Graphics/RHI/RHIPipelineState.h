@@ -109,7 +109,7 @@ namespace Tridium {
 		RHIStencilState StencilState;
 		RHIRasterizerState RasterizerState;
 
-		FixedArray<ERHITextureFormat, RHIQuery::MaxColourTargets> ColourTargetFormats = {};
+		FixedArray<ERHITextureFormat, RHIQuery::MaxColorTargets> ColourTargetFormats = {};
 		ERHITextureFormat DepthStencilFormat = ERHITextureFormat::D32;
 
 		ERHIPipelineType GetPipelineType() const

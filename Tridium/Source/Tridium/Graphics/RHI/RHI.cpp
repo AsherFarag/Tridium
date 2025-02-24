@@ -3,7 +3,7 @@
 
 // Backends
 #if RHI_ENABLE_BACKEND_DIRECTX12
-	#include "Backend/DirectX12/D3D12RHI.h"
+	#include "Backend/DirectX12/D3D12DynamicRHI.h"
 #endif
 #if RHI_ENABLE_BACKEND_OPENGL
 	#include "Backend/OpenGL/OpenGLRHI.h"
@@ -84,6 +84,16 @@ namespace Tridium {
 		}
 
 		return s_DynamicRHI->Present();
+	}
+
+	bool RHI::ExecuteCommandList( const RHICommandListRef& a_CommandList )
+	{
+		if ( !ASSERT_LOG( s_RHIGlobals.IsRHIInitialised, "RHI has not been initialised!" ) )
+		{
+			return false;
+		}
+
+		return s_DynamicRHI->ExecuteCommandList( a_CommandList );
 	}
 
 	const char* RHI::GetRHIName()

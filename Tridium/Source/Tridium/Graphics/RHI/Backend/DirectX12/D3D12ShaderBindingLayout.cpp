@@ -1,6 +1,6 @@
 #include "tripch.h"
 #include "D3D12ShaderBindingLayout.h"
-#include "D3D12RHI.h"
+#include "D3D12DynamicRHI.h"
 
 namespace Tridium {
 
@@ -152,7 +152,7 @@ namespace Tridium {
         #if RHI_DEBUG_ENABLED
         if ( RHIQuery::IsDebug() && !desc->Name.empty() )
         {
-            WString wName = Helpers::ToWString( desc->Name.data() );
+            WString wName = ToD3D12::ToWString( desc->Name.data() );
             m_RootSignature->SetName( wName.c_str() );
             D3D12Context::Get()->StringStorage.EmplaceBack( std::move( wName ) );
         }

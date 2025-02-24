@@ -36,6 +36,7 @@ namespace Tridium {
 	enum class ERHICommandType : uint8_t
 	{
 		SetPipelineState,
+		SetShaderBindingLayout,
 		SetRenderTargets,
 		SetClearValues,
 		ClearRenderTargets,
@@ -45,13 +46,17 @@ namespace Tridium {
 		SetIndexBuffer,
 		SetVertexBuffer,
 		SetPrimitiveTopology,
+		Draw,
 		DrawIndexed,
+		ResourceBarrier,
 		DispatchCompute,
 		FenceSignal,
 		FenceWait,
 		Execute,
 		COUNT,
 	};
+
+
 
     //=====================================================
 	// RHI Command
@@ -66,34 +71,39 @@ namespace Tridium {
             RHIPipelineState* PSO;
         };
 
+		struct SetShaderBindingLayout
+		{
+			RHIShaderBindingLayout* SBL;
+		};
+
         struct SetRenderTargets 
         {
-            FixedArray<RHITexture*, RHIQuery::MaxColourTargets> RTV;
+            InlineArray<RHITexture*, RHIQuery::MaxColorTargets> RTV;
             RHITexture* DSV;
         };
 
         struct SetClearValues 
         {
-            float   Colour[4];
+            float   Color[4];
             float   Depth;
             uint8_t Stencil;
         };
 
         struct ClearRenderTargets 
         {
-            uint32_t ColourTargets : RHIQuery::MaxColourTargets;
-            bool     DepthBit : 1;
-            bool     StencilBit : 1;
+			InlineArray<RHITexture*, RHIQuery::MaxColorTargets> RTV;
+			bool DepthBit;
+            bool StencilBit;
         };
 
         struct SetScissors 
         {
-			Array<uint16_t> Rects{ RHIQuery::MaxColourTargets * ( sizeof( uint16_t ) * 4 ) };
+			InlineArray<ScissorRect, RHIQuery::MaxColorTargets> Rects;
         };
 
         struct SetViewports 
         {
-			Array<float> Viewports{ RHIQuery::MaxColourTargets * 6 * sizeof( float ) };
+			InlineArray<Viewport, RHIQuery::MaxColorTargets> Viewports;
         };
 
         struct SetShaderInput 
@@ -117,11 +127,24 @@ namespace Tridium {
             ERHITopology Topology;
         };
 
+		struct Draw
+		{
+			uint32_t VertexStart;
+			uint32_t VertexCount;
+		};
+
         struct DrawIndexed 
         {
             uint32_t IndexStart;
             uint32_t IndexCount;
         };
+
+		struct ResourceBarrier
+		{
+			RHIResource* Resource;
+			ERHIResourceState Before;
+			ERHIResourceState After;
+		};
 
         struct DispatchCompute 
         {
@@ -147,6 +170,7 @@ namespace Tridium {
 
 		Variant<
             SetPipelineState,
+			SetShaderBindingLayout,
             SetRenderTargets,
             SetClearValues,
             ClearRenderTargets,
@@ -156,7 +180,9 @@ namespace Tridium {
             SetIndexBuffer,
             SetVertexBuffer,
             SetPrimitiveTopology,
+			Draw,
             DrawIndexed,
+			ResourceBarrier,
             DispatchCompute,
             FenceSignal,
             FenceWait,
@@ -235,7 +261,13 @@ namespace Tridium {
 			m_PipelineStates.insert( std::move( a_PSO ) );
 		}
 
-		void SetRenderTargets( const Span<RHITextureRef>& a_RTV, RHITextureRef a_DSV )
+		void SetShaderBindingLayout( RHIShaderBindingLayoutRef a_SBL )
+		{
+			Commands.EmplaceBack( RHICommand::SetShaderBindingLayout{ a_SBL.get() } );
+			m_ShaderBindingLayouts.insert( std::move( a_SBL ) );
+		}
+
+		void SetRenderTargets( Span<RHITextureRef> a_RTV, RHITextureRef a_DSV )
 		{
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::SetRenderTargets() );
 			RHICommand::SetRenderTargets& data = cmd.Get<RHICommand::SetRenderTargets>();
@@ -250,32 +282,40 @@ namespace Tridium {
 			}
 		}
 
-		void SetClearValues( const float a_Colour[4], float a_Depth, uint8_t a_Stencil )
+		void SetClearValues( Color a_Color, float a_Depth, uint8_t a_Stencil )
 		{
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::SetClearValues() );
 			RHICommand::SetClearValues& data = cmd.Get<RHICommand::SetClearValues>();
-			memcpy( data.Colour, a_Colour, sizeof( data.Colour ) );
+			memcpy( data.Color, &a_Color[0], sizeof(data.Color));
 			data.Depth = a_Depth;
 			data.Stencil = a_Stencil;
 		}
 
-		void ClearRenderTargets( uint32_t a_ColourTargets, bool a_DepthBit, bool a_StencilBit )
+		void ClearRenderTargets( Span<RHITextureRef> a_RenderTarget, bool a_DepthBit, bool a_StencilBit )
 		{
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::ClearRenderTargets() );
 			RHICommand::ClearRenderTargets& data = cmd.Get<RHICommand::ClearRenderTargets>();
-			data.ColourTargets = a_ColourTargets;
+			for ( size_t i = 0; i < a_RenderTarget.size() && i < data.RTV.MaxSize(); ++i )
+			{
+				data.RTV.PushBack( a_RenderTarget[i].get() );
+				m_Textures.insert( a_RenderTarget[i] );
+			}
 			data.DepthBit = a_DepthBit;
 			data.StencilBit = a_StencilBit;
 		}
 
-		void SetScissors( const Span<uint16_t>& a_Rects )
+		void SetScissors( Span<ScissorRect> a_Rects )
 		{
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::SetScissors() );
 			RHICommand::SetScissors& data = cmd.Get<RHICommand::SetScissors>();
-			memcpy( data.Rects.Data(), a_Rects.data(), a_Rects.size() );
+			data.Rects.Resize( a_Rects.size() );
+			for ( size_t i = 0; i < a_Rects.size() && i < data.Rects.MaxSize(); ++i )
+			{
+				data.Rects[i] = a_Rects[i];
+			}
 		}
 
-		void SetViewports( const Span<float>& a_Viewports )
+		void SetViewports( Span<Viewport> a_Viewports )
 		{
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::SetViewports() );
 			RHICommand::SetViewports& data = cmd.Get<RHICommand::SetViewports>();
@@ -309,12 +349,42 @@ namespace Tridium {
 			Commands.EmplaceBack( RHICommand::SetPrimitiveTopology{ a_Topology } );
 		}
 
+		void Draw( uint32_t a_VertexStart, uint32_t a_VertexCount )
+		{
+			RHICommand& cmd = Commands.EmplaceBack( RHICommand::Draw() );
+			RHICommand::Draw& data = cmd.Get<RHICommand::Draw>();
+			data.VertexStart = a_VertexStart;
+			data.VertexCount = a_VertexCount;
+		}
+
 		void DrawIndexed( uint32_t a_IndexStart, uint32_t a_IndexCount )
 		{
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::DrawIndexed() );
 			RHICommand::DrawIndexed& data = cmd.Get<RHICommand::DrawIndexed>();
 			data.IndexStart = a_IndexStart;
 			data.IndexCount = a_IndexCount;
+		}
+
+		void ResourceBarrier( RHIResourceRef a_Resource, ERHIResourceState a_Before, ERHIResourceState a_After )
+		{
+			switch ( a_Resource->GetType() )
+			{
+			case ERHIResourceType::Texture:
+				m_Textures.insert( a_Resource->As<RHITexture>() );
+				break;
+			case ERHIResourceType::Buffer:
+				m_Buffers.insert( a_Resource->As<RHIBuffer>() );
+				break;
+			default:
+				ASSERT_LOG( false, "Can only set resource barriers for textures and buffers!" );
+				return;
+			}
+
+			RHICommand& cmd = Commands.EmplaceBack( RHICommand::ResourceBarrier() );
+			RHICommand::ResourceBarrier& data = cmd.Get<RHICommand::ResourceBarrier>();
+			data.Resource = a_Resource.get();
+			data.Before = a_Before;
+			data.After = a_After;
 		}
 
 		void DispatchCompute( uint16_t a_GroupSizeX, uint16_t a_GroupSizeY, uint16_t a_GroupSizeZ )
@@ -340,12 +410,13 @@ namespace Tridium {
 		Array<RHICommand> Commands;
 
 	private:
-		UnorderedSet<RHIPipelineStateRef> m_PipelineStates;
-		UnorderedSet<RHIIndexBufferRef>   m_IndexBuffers;
-		UnorderedSet<RHIVertexBufferRef>  m_VertexBuffers;
-		UnorderedSet<RHICommandListRef>   m_CommandLists;
-		UnorderedSet<RHITextureRef>       m_Textures;
-		UnorderedSet<RHIBufferRef>        m_Buffers;
+		UnorderedSet<RHIPipelineStateRef>       m_PipelineStates;
+		UnorderedSet<RHIShaderBindingLayoutRef> m_ShaderBindingLayouts;
+		UnorderedSet<RHIIndexBufferRef>         m_IndexBuffers;
+		UnorderedSet<RHIVertexBufferRef>        m_VertexBuffers;
+		UnorderedSet<RHICommandListRef>         m_CommandLists;
+		UnorderedSet<RHITextureRef>             m_Textures;
+		UnorderedSet<RHIBufferRef>              m_Buffers;
 
 	private:
 			template<typename T>

@@ -7,6 +7,8 @@ namespace Tridium {
 	class D3D12RHI final : public IDynamicRHI
 	{
 	public:
+		struct WindowData;
+
 		//==============================================
 		// Core RHI functions
 		// Initialise the RHI with the given configuration.
@@ -55,6 +57,7 @@ namespace Tridium {
 		const auto& GetFence() const { return m_Fence; }
 		D3D12::FenceValue& GetFenceValue() { return m_FenceValue; }
 		HANDLE GetFenceEvent() const { return m_FenceEvent; }
+		WindowData& GetWindowData() { return m_WindowData; }
 
 		//====================================================
 
@@ -76,7 +79,7 @@ namespace Tridium {
 			static constexpr uint32_t s_FrameCount = 2;
 
 			ComPtr<D3D12::SwapChain> SwapChain = nullptr;
-			ComPtr<D3D12::Resource> Buffers[s_FrameCount] = { nullptr, nullptr };
+			RHITextureRef Buffers[s_FrameCount] = { nullptr, nullptr };
 			uint32_t BufferIndex = 0;
 
 			ComPtr<D3D12::DescriptorHeap> RTVDescHeap = nullptr;

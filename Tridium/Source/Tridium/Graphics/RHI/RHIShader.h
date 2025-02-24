@@ -10,7 +10,7 @@ namespace Tridium {
 	{
 		StringView Name; // The name of the shader module
 		ERHIShaderType Type = ERHIShaderType::Unknown; // The Shader Stage
-		Span<const Byte> Binary; // The compiled shader binary
+		Span<const Byte> Bytecode; // The compiled shader binary
 		StringView Source;       // The source code of the shader
 	};
 	//=======================================================

@@ -35,7 +35,12 @@ namespace Tridium {
 		concept IsRHIResource = IsBaseOf<RHIResource, T>;
 
 		template<typename T>
-		concept IsRHIResourceImplemntation = IsRHIResource<T> && T::API;
+		concept IsRHIResourceImplemntation =
+			IsRHIResource<T>
+			&& requires ( T )
+			{
+				T::API;
+			};
 
 	}
 
@@ -150,6 +155,9 @@ namespace Tridium {
 			return reinterpret_cast<const T*>( Descriptor.Get() );
 		}
 	};
+
+	using RHIResourceRef = SharedPtr<RHIResource>;
+	using RHIResourceWeakRef = SharedPtr<RHIResource>;
 
 	//=======================================================
 	// RHI Resource Descriptor

@@ -1,16 +1,16 @@
 #include "tripch.h"
 #include "D3D12PipelineState.h"
-#include "D3D12RHI.h"
+#include "D3D12DynamicRHI.h"
 #include "D3D12ShaderBindingLayout.h"
 
 namespace Tridium {
 
-	namespace Helpers {
+	namespace ToD3D12 {
 
 		D3D12_SHADER_BYTECODE GetShaderBytecode( const RHIShaderModuleRef& a_Shader )
 		{
 			return a_Shader
-				? D3D12_SHADER_BYTECODE( a_Shader->GetDescriptor()->Binary.data(), a_Shader->GetDescriptor()->Binary.size_bytes() )
+				? D3D12_SHADER_BYTECODE( a_Shader->GetDescriptor()->Bytecode.data(), a_Shader->GetDescriptor()->Bytecode.size_bytes() )
 				: D3D12_SHADER_BYTECODE();
 		}
 
@@ -83,7 +83,7 @@ namespace Tridium {
 			return desc;
 		}
 
-	} // namespace Helpers
+	} // namespace ToD3D12
 
     bool D3D12PipelineState::Commit( const void* a_Params )
     {
@@ -98,7 +98,7 @@ namespace Tridium {
 		for ( size_t i = 0; i < desc->VertexLayout.Elements.Size(); ++i )
 		{
 			const RHIVertexAttribute& element = desc->VertexLayout.Elements[i];
-			m_VertexLayout[i] = {
+			VertexLayout[i] = {
 				.SemanticName = element.Name.data(), 
 				.SemanticIndex = 0,
 				.Format = ToD3D12::GetFormat( element.Type ),
@@ -123,18 +123,18 @@ namespace Tridium {
 
 	bool D3D12PipelineState::Release()
 	{
-		m_PipelineState.Release();
+		PSO.Release();
 		return true;
 	}
 
 	bool D3D12PipelineState::IsValid() const
 	{
-		return m_PipelineState.Get() != nullptr;
+		return PSO.Get() != nullptr;
 	}
 
 	const void* D3D12PipelineState::NativePtr() const
 	{
-		return m_PipelineState.Get();
+		return PSO.Get();
 	}
 
 	bool D3D12PipelineState::CommitGraphics()
@@ -150,26 +150,26 @@ namespace Tridium {
 
 		// Set the input layout
 		psd.InputLayout.NumElements = desc->VertexLayout.Elements.Size();
-		psd.InputLayout.pInputElementDescs = m_VertexLayout;
+		psd.InputLayout.pInputElementDescs = VertexLayout;
 		psd.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
 
 		// Set the shaders
-		psd.VS = Helpers::GetShaderBytecode( desc->VertexShader );
-		psd.HS = Helpers::GetShaderBytecode( desc->HullShader );
-		psd.DS = Helpers::GetShaderBytecode( desc->DomainShader );
-		psd.GS = Helpers::GetShaderBytecode( desc->GeometryShader );
-		psd.PS = Helpers::GetShaderBytecode( desc->PixelShader );
+		psd.VS = ToD3D12::GetShaderBytecode( desc->VertexShader );
+		psd.HS = ToD3D12::GetShaderBytecode( desc->HullShader );
+		psd.DS = ToD3D12::GetShaderBytecode( desc->DomainShader );
+		psd.GS = ToD3D12::GetShaderBytecode( desc->GeometryShader );
+		psd.PS = ToD3D12::GetShaderBytecode( desc->PixelShader );
 
 		// Set the blend state
-		psd.BlendState = Helpers::GetBlendDesc( desc->BlendState );
+		psd.BlendState = ToD3D12::GetBlendDesc( desc->BlendState );
 
 		// Set the sample mask
 		psd.SampleMask = UINT_MAX; // Enable all samples
 
 		// Set the rasterizer state
-		psd.RasterizerState = Helpers::GetRasterizerDesc( *desc );
+		psd.RasterizerState = ToD3D12::GetRasterizerDesc( *desc );
 
-		psd.DepthStencilState = Helpers::GetDepthStencilDesc( *desc );
+		psd.DepthStencilState = ToD3D12::GetDepthStencilDesc( *desc );
 		psd.PrimitiveTopologyType = ToD3D12::GetTopologyType( desc->Topology );
 
 		psd.NumRenderTargets = desc->ColourTargetFormats.Size();
@@ -185,7 +185,7 @@ namespace Tridium {
 
 		// Create the pipeline state object
 		ComPtr<D3D12::Device> device = RHI::GetD3D12RHI()->GetDevice();
-		if ( FAILED( device->CreateGraphicsPipelineState( &psd, IID_PPV_ARGS( &m_PipelineState ) ) ) )
+		if ( FAILED( device->CreateGraphicsPipelineState( &psd, IID_PPV_ARGS( &PSO ) ) ) )
 		{
 			LOG( LogCategory::RHI, Error, "Failed to create graphics pipeline state" );
 			return false;
@@ -195,8 +195,8 @@ namespace Tridium {
 		#if RHI_DEBUG_ENABLED
 		if ( RHIQuery::IsDebug() && !desc->Name.empty() )
 		{
-			WString wName = Helpers::ToWString( desc->Name.data() );
-			m_PipelineState->SetName( wName.c_str() );
+			WString wName = ToD3D12::ToWString( desc->Name.data() );
+			PSO->SetName( wName.c_str() );
 			D3D12Context::Get()->StringStorage.EmplaceBack( std::move( wName ) );
 		}
 		#endif

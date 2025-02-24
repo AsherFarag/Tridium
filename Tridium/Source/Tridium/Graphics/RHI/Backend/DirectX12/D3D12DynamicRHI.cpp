@@ -1,5 +1,5 @@
 #include "tripch.h"
-#include "D3D12RHI.h"
+#include "D3D12DynamicRHI.h"
 
 // For getting the native window handle
 #include <GLFW/glfw3.h>
@@ -18,6 +18,7 @@
 #include "D3D12Mesh.h"
 #include "D3D12PipelineState.h"
 #include "D3D12ShaderBindingLayout.h"
+#include "D3D12CommandList.h"
 
 
 namespace Tridium {
@@ -140,15 +141,15 @@ namespace Tridium {
 
     bool D3D12RHI::ExecuteCommandList( RHICommandListRef a_CommandList )
     {
-		if ( FAILED( m_CommandList->Close() ) )
+		D3D12::GraphicsCommandList* cmdList = a_CommandList->As<D3D12CommandList>()->CommandList.Get();
+		if ( FAILED( cmdList->Close() ) )
 		{
 			return false;
 		}
 
-        ID3D12CommandList* cmdLists[] = { m_CommandList.Get() };
+        ID3D12CommandList* cmdLists[] = { cmdList };
         m_CommandQueue->ExecuteCommandLists( 1, cmdLists );
-
-		return false;
+		return true;
     }
 
 	//////////////////////////////////////////////////////////////////////////
@@ -216,7 +217,9 @@ namespace Tridium {
 
 	RHICommandListRef D3D12RHI::CreateCommandList( const RHICommandListDescriptor& a_Desc )
 	{
-		return nullptr;
+		RHICommandListRef cmdList = RHIResource::Create<D3D12CommandList>();
+		CHECK( cmdList->Commit( &a_Desc ) );
+		return cmdList;
 	}
 
 	RHIShaderModuleRef D3D12RHI::CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc )
@@ -261,23 +264,29 @@ namespace Tridium {
        
 		// Create the swap chain
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
-		swapChainDesc.Width = 0;
-		swapChainDesc.Height = 0;
+		swapChainDesc.Width = 1920;
+		swapChainDesc.Height = 1080;
 		swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		swapChainDesc.Stereo = false;
 		swapChainDesc.SampleDesc.Count = 1;
 		swapChainDesc.SampleDesc.Quality = 0;
-		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferCount = 2;
+		swapChainDesc.BufferUsage = DXGI_USAGE_BACK_BUFFER | DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		swapChainDesc.BufferCount = s_FrameCount;
 		swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
 		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-		swapChainDesc.Flags = 0;
+		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+
+		DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsDesc{};
+		fsDesc.Windowed = true;
+
+		// Create the swap chain
 		ComPtr<IDXGISwapChain1> swapChain;
-		if ( FAILED( a_RHI.m_DXGIFactory->CreateSwapChainForHwnd( a_RHI.m_CommandQueue.Get(), hWnd, &swapChainDesc, nullptr, nullptr, &swapChain ) ) )
+		if ( FAILED( a_RHI.m_DXGIFactory->CreateSwapChainForHwnd( a_RHI.m_CommandQueue.Get(), hWnd, &swapChainDesc, &fsDesc, nullptr, &swapChain ) ) )
 		{
 			return false;
 		}
+
 		if ( !swapChain.QueryInterface( SwapChain ) )
 		{
 			return false;
@@ -306,7 +315,9 @@ namespace Tridium {
 		// Get the back buffers
 		for ( uint32_t i = 0; i < 2; i++ )
 		{
-			if ( FAILED( SwapChain->GetBuffer( i, IID_PPV_ARGS( &Buffers[i] ) ) ) )
+			Buffers[i] = MakeShared<D3D12Texture>();
+			ComPtr<D3D12::Resource>& buffer = Buffers[i]->As<D3D12Texture>()->Texture;
+			if ( FAILED( SwapChain->GetBuffer( i, IID_PPV_ARGS( &buffer ) ) ) )
 			{
 				return false;
 			}
@@ -316,7 +327,11 @@ namespace Tridium {
 			rtv.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 			rtv.Texture2D.MipSlice = 0;
 			rtv.Texture2D.PlaneSlice = 0;
-			a_RHI.m_Device->CreateRenderTargetView( Buffers[i], &rtv, RTVHandles[i] );
+			a_RHI.m_Device->CreateRenderTargetView( buffer, &rtv, RTVHandles[i] );
+
+			TODO( "Temporary solution, fix this!" );
+			// Set the handle
+			Buffers[i]->As<D3D12Texture>()->DescriptorHandle = RTVHandles[i];
 		}
 
 		return true;

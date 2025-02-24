@@ -1,6 +1,6 @@
 #include "tripch.h"
 #include "D3D12Texture.h"
-#include "D3D12RHI.h"
+#include "D3D12DynamicRHI.h"
 
 namespace Tridium {
 
@@ -46,21 +46,22 @@ namespace Tridium {
 		hr = device->CreateCommittedResource(
 				&heapProperties, D3D12_HEAP_FLAG_NONE,
 				&resourceDesc, D3D12_RESOURCE_STATE_COPY_DEST,
-				nullptr, IID_PPV_ARGS( &m_Texture ) );
-
-#if RHI_DEBUG_ENABLED
-		if ( RHIQuery::IsDebug() && !desc->Name.empty() )
-		{
-			WString wName = Helpers::ToWString( desc->Name.data() );
-			m_Texture->SetName( wName.c_str() );
-			D3D12Context::Get()->StringStorage.EmplaceBack( std::move( wName ) );
-		}
-#endif
+				nullptr, IID_PPV_ARGS( &Texture ) );
 
 		if ( FAILED( hr ) )
 		{
 			return false;
 		}
+
+		// Set the name
+#if RHI_DEBUG_ENABLED
+		if ( RHIQuery::IsDebug() && !desc->Name.empty() )
+		{
+			WString wName = ToD3D12::ToWString( desc->Name.data() );
+			Texture->SetName( wName.c_str() );
+			D3D12Context::Get()->StringStorage.EmplaceBack( std::move( wName ) );
+		}
+#endif
 
 		// Create the descriptor heap
 		D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
@@ -68,11 +69,15 @@ namespace Tridium {
 		heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 		heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 		heapDesc.NodeMask = 0;
-		hr = device->CreateDescriptorHeap( &heapDesc, IID_PPV_ARGS( &m_DescriptorHeap ) );
+		hr = device->CreateDescriptorHeap( &heapDesc, IID_PPV_ARGS( &DescriptorHeap ) );
 		if ( FAILED( hr ) )
 		{
 			return false;
 		}
+
+		TODO( "Temporary solution, fix this!" );
+		// Set the handle
+		DescriptorHandle = DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
 		// Create the SRV
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -83,8 +88,8 @@ namespace Tridium {
 		srvDesc.Texture2D.MipLevels = desc->Mips;
 		srvDesc.Texture2D.PlaneSlice = 0;
 		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-		auto handle( m_DescriptorHeap->GetCPUDescriptorHandleForHeapStart() );
-		device->CreateShaderResourceView( m_Texture.Get(), &srvDesc, handle );
+		auto handle( DescriptorHeap->GetCPUDescriptorHandleForHeapStart() );
+		device->CreateShaderResourceView( Texture.Get(), &srvDesc, handle );
 
 		// If we have initial data, write it to the texture
 		if ( desc->InitialData.size() > 0 )
@@ -97,7 +102,8 @@ namespace Tridium {
 
 	bool D3D12Texture::Release()
 	{
-		m_Texture.Release();
+		Texture.Release();
+		DescriptorHeap.Release();
 		return true;
 	}
 
@@ -134,7 +140,7 @@ namespace Tridium {
 
 		D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint = {};
 		uint64_t uploadSize = 0;
-		auto texDesc = m_Texture->GetDesc();
+		auto texDesc = Texture->GetDesc();
 		device->GetCopyableFootprints( &texDesc, 0, 1, 0, &footprint, nullptr, nullptr, &uploadSize );
 
 		D3D12_HEAP_PROPERTIES uploadHeapProps = {};
@@ -174,7 +180,7 @@ namespace Tridium {
 		memcpy( &uploadBufferAddress[0], a_Data.data(), a_Data.size() );
 		uploadBuffer->Unmap( 0, &uploadRange );
 
-		D3D12_TEXTURE_COPY_LOCATION dstLocation = { m_Texture.Get(), D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX, 0 };
+		D3D12_TEXTURE_COPY_LOCATION dstLocation = { Texture.Get(), D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX, 0 };
 		D3D12_TEXTURE_COPY_LOCATION srcLocation = {};
 		srcLocation.pResource = uploadBuffer.Get();
 		srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
@@ -219,20 +225,20 @@ namespace Tridium {
 		if ( !IsValid() )
 			return 0;
 
-		D3D12_RESOURCE_DESC desc = m_Texture->GetDesc();
+		D3D12_RESOURCE_DESC desc = Texture->GetDesc();
 		const uint32_t bytesPerPixel = GetTextureFormatSize( GetDescriptor()->Format );
 		return GetDescriptor()->Dimensions[0] * GetDescriptor()->Dimensions[1] * bytesPerPixel;
 	}
 
 	bool D3D12Texture::IsValid() const
 	{
-		return m_Texture != nullptr
+		return Texture != nullptr
 			&& Descriptor != nullptr;
 	}
 
 	const void* D3D12Texture::NativePtr() const
 	{
-		return m_Texture.Get();
+		return Texture.Get();
 	}
 
 } // namespace Tridium::D3D12

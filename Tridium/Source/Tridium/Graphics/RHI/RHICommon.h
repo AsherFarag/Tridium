@@ -9,6 +9,7 @@
 #include <Tridium/Core/Memory.h>
 #include <Tridium/Containers/Containers.h>
 #include <Tridium/Utils/Concepts.h>
+#include <Tridium/Core/EnumFlags.h>
 
 namespace Tridium {
 
@@ -46,7 +47,7 @@ namespace Tridium {
 	// RHI Query Constants and Functions
 	namespace RHIQuery {
 		constexpr uint32_t MaxTextureBindings = 32u;
-		constexpr uint32_t MaxColourTargets = 4u;
+		constexpr uint32_t MaxColorTargets = 4u;
 		constexpr uint32_t MaxVertexAttributes = 8u;
 		constexpr uint32_t MaxShaderInputs = 32u;
 

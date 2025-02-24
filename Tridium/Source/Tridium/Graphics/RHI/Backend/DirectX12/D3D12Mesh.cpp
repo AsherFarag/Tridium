@@ -1,6 +1,6 @@
 #include "tripch.h"
 #include "D3D12Mesh.h"
-#include "D3D12RHI.h"
+#include "D3D12DynamicRHI.h"
 
 namespace Tridium {
 
@@ -65,7 +65,7 @@ namespace Tridium {
         HRESULT hr = device->CreateCommittedResource(
             &heapProps, D3D12_HEAP_FLAG_NONE,
             &resourceDesc, D3D12_RESOURCE_STATE_COPY_DEST,
-            nullptr, IID_PPV_ARGS( &m_Resource ) );
+            nullptr, IID_PPV_ARGS( &VBO ) );
 
         if ( FAILED( hr ) )
         {
@@ -76,8 +76,8 @@ namespace Tridium {
 #if RHI_DEBUG_ENABLED
         if ( RHIQuery::IsDebug() && !desc->Name.empty() )
         {
-            WString wName = Helpers::ToWString( desc->Name.data() );
-            m_Resource->SetName( wName.c_str() );
+            WString wName = ToD3D12::ToWString( desc->Name.data() );
+            VBO->SetName( wName.c_str() );
             D3D12Context::Get()->StringStorage.EmplaceBack( std::move( wName ) );
         }
 #endif
@@ -88,7 +88,7 @@ namespace Tridium {
         heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
         heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         heapDesc.NodeMask = 0;
-        hr = device->CreateDescriptorHeap( &heapDesc, IID_PPV_ARGS( &m_DescriptorHeap ) );
+        hr = device->CreateDescriptorHeap( &heapDesc, IID_PPV_ARGS( &DescriptorHeap ) );
         if ( FAILED( hr ) )
         {
             return false;
@@ -174,13 +174,13 @@ namespace Tridium {
         // Transition the vertex buffer resource to COPY_DEST before copying,
         // if it is not already in that state (depends on your engine). Example:
         // commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
-        //     m_Resource.Get(),
+        //     VBO.Get(),
         //     currentState,
         //     D3D12_RESOURCE_STATE_COPY_DEST));
 
         // Issue the actual copy from the upload heap to the GPU vertex buffer
         commandList->CopyBufferRegion(
-            m_Resource.Get(),           // pDstResource
+            VBO.Get(),           // pDstResource
             a_DstOffset,               // DstOffset
             uploadBuffer.Get(),        // pSrcResource
             0,                         // SrcOffset
@@ -189,7 +189,7 @@ namespace Tridium {
         // Transition the vertex buffer resource back to its usable state.
         // For example, to be used as a vertex buffer:
         // commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
-        //     m_Resource.Get(),
+        //     VBO.Get(),
         //     D3D12_RESOURCE_STATE_COPY_DEST,
         //     D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
 
@@ -212,13 +212,13 @@ namespace Tridium {
 
 	bool D3D12VertexBuffer::IsValid() const
 	{
-        return m_Resource != nullptr
+        return VBO != nullptr
             && Descriptor != nullptr;
 	}
 
 	const void* D3D12VertexBuffer::NativePtr() const
 	{
-		return m_Resource.Get();
+		return VBO.Get();
 	}
 
 }

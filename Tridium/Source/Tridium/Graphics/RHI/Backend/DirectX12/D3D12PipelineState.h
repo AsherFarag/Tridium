@@ -12,9 +12,8 @@ namespace Tridium {
 		bool IsValid() const override;
 		const void* NativePtr() const override;
 
-	private:
-		ComPtr<ID3D12PipelineState> m_PipelineState;
-		D3D12_INPUT_ELEMENT_DESC m_VertexLayout[RHIQuery::MaxVertexAttributes];
+		ComPtr<ID3D12PipelineState> PSO;
+		D3D12_INPUT_ELEMENT_DESC VertexLayout[RHIQuery::MaxVertexAttributes];
 
 	private:
 		bool CommitGraphics();

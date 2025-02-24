@@ -15,6 +15,8 @@ namespace Tridium {
 		bool Release() override;
 		bool IsValid() const override;
 		const void* NativePtr() const override;
+
+		Array<Byte> Bytecode;
 	};
 
 } // namespace Tridium
