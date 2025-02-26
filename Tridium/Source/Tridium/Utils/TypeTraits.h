@@ -6,7 +6,7 @@
 namespace Tridium {
 
 	template<typename T>
-	constexpr auto StrippedTypeName() noexcept 
+	constexpr StringView StrippedTypeName() noexcept
 	{
 	#if defined TRIDIUM_PRETTY_FUNCTION
 		StringView prettyFunction{ TRIDIUM_PRETTY_FUNCTION };

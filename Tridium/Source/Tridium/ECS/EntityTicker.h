@@ -105,7 +105,7 @@ namespace Tridium {
 				auto view = GetECS()->View<GameObjectFlagsComponent, T>();
 				view.each( +[]( const GameObjectFlagsComponent& a_GameObjectFlags, T& a_Component )
 					{
-						if ( a_GameObjectFlags.Flags.HasFlag( EGameObjectFlag::Active )
+						if ( a_GameObjectFlags.Flags.HasFlag( EGameObjectFlags::Active )
 							&& a_Component.Flags().HasFlag( EComponentFlags::Active ) )
 							a_Component.OnBeginPlay();
 					} );
@@ -122,7 +122,7 @@ namespace Tridium {
 				auto view = GetECS()->View<GameObjectFlagsComponent, T>();
 				view.each( [=]( const GameObjectFlagsComponent& a_GameObjectFlags, T& a_Component )
 					{
-						if ( a_GameObjectFlags.Flags.HasFlag( EGameObjectFlag::Active )
+						if ( a_GameObjectFlags.Flags.HasFlag( EGameObjectFlags::Active )
 							&& a_Component.Flags().HasFlag( EComponentFlags::Active ) )
 						{
 							a_Component.OnUpdate( a_DeltaTime );

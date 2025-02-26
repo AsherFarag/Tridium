@@ -10,7 +10,7 @@ namespace Tridium {
 	//  To create a constant buffer, set the UsageHint to ERHIUsageHint::Default.
 	//  For a mutable buffer, set the UsageHint to ERHIUsageHint::MutableBuffer.
 	//==========================================================
-	RHI_RESOURCE_BASE_TYPE( Buffer )
+	DEFINE_RHI_RESOURCE( Buffer )
 	{
 		Span<const Byte> InitialData = {};
 		ERHIUsageHint UsageHint = ERHIUsageHint::Default;

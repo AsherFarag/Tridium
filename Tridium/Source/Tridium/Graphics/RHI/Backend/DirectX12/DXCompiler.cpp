@@ -15,9 +15,9 @@ namespace Tridium {
 
 		DXCInternalState( const String& a_Modifier = "" )
 		{
-		#if CONFIG_WINDOWS
+		#if CONFIG_PLATFORM_WINDOWS
 			const String fileName = "dxcompiler" + a_Modifier + ".dll";
-		#elif CONFIG_LINUX
+		#elif CONFIG_PLATFORM_LINUX
 			const String fileName = "libdxcompiler" + a_Modifier + ".so";
 		#else
 			#error "Unsupported platform"

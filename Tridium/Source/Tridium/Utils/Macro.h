@@ -26,6 +26,8 @@
 #define CLAMP(min, max, val) (val < min ? min : (val > max ? max : val))
 
 
+#define TRIDIUM_NODISCARD [[nodiscard]]
+
 #if defined( _MSC_VER )
 	#define _FUNCTION_ EXPAND( __FUNCTION__ )
 	#define _FUNCTION_SIG_ EXPAND( __FUNCSIG__ )

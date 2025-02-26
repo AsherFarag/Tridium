@@ -64,8 +64,8 @@ namespace Tridium {
 
 		//================================================================
 		// Component Flags
-		const ComponentFlags Flags() const { return m_Flags; }
-		bool HasFlag( EComponentFlags::Type a_Flag ) { return m_Flags.HasFlag( a_Flag ); }
+		EnumFlags<EComponentFlags> Flags() const { return m_Flags; }
+		bool HasFlag( EComponentFlags a_Flag ) { return m_Flags.HasFlag( a_Flag ); }
 		bool IsActive() { return HasFlag( EComponentFlags::Active ) && GetGameObject().IsActive(); }
 		void SetActive( bool a_Active ) { m_Flags.SetFlag( EComponentFlags::Active, a_Active ); }
 		bool IsVisible() { return HasFlag( EComponentFlags::Visible ) && GetGameObject().IsVisible(); }
@@ -73,7 +73,7 @@ namespace Tridium {
 		//================================================================
 
 	private:
-		ComponentFlags m_Flags{ EComponentFlags::Active | EComponentFlags::Visible };
+		EnumFlags<EComponentFlags> m_Flags = EComponentFlags::Active | EComponentFlags::Visible;
 	};
 
 } // namespace Tridium

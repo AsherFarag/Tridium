@@ -13,6 +13,7 @@ namespace Tridium {
 	FORWARD_DECLARE_RHI_RESOURCE( CommandList );
 	FORWARD_DECLARE_RHI_RESOURCE( ShaderModule );
 	FORWARD_DECLARE_RHI_RESOURCE( ShaderBindingLayout );
+	FORWARD_DECLARE_RHI_RESOURCE( SwapChain );
 	//==============================================
 
 	//==============================================
@@ -59,6 +60,7 @@ namespace Tridium {
 		virtual RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc ) = 0;
 		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc ) = 0;
 		virtual RHIShaderBindingLayoutRef CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc ) = 0;
+		virtual RHISwapChainRef CreateSwapChain( const RHISwapChainDescriptor& a_Desc ) = 0;
 		//=====================================================
 
 		#if RHI_DEBUG_ENABLED

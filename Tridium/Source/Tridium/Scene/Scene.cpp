@@ -274,7 +274,7 @@ namespace Tridium {
 		auto go = GameObject( m_ECS.CreateEntity() );
 		AddComponentToGameObject<GUIDComponent>( go, a_GUID );
 		AddComponentToGameObject<TagComponent>( go, a_Name );
-		AddComponentToGameObject<GameObjectFlagsComponent>( go, DefaultGameObjectFlags );
+		AddComponentToGameObject<GameObjectFlagsComponent>( go, EGameObjectFlags::Enabled );
 		AddComponentToGameObject<TransformComponent>( go );
 
 		// Send OnGameObjectCreated Event to all systems
@@ -403,7 +403,7 @@ namespace Tridium {
 		if ( !exists )
 			return false;
 
-		return !a_GameObject.GetFlags().HasFlag( EGameObjectFlag::PendingKill );
+		return !a_GameObject.GetFlags().HasFlag( EGameObjectFlags::PendingKill );
 	}
 
 	GameObject Scene::FindGameObjectByTag( const std::string& a_Tag ) const

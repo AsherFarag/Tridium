@@ -102,10 +102,10 @@ namespace YAML {
 		static Node encode( const Tridium::Color& rhs )
 		{
 			Node node;
-			node.push_back( rhs.x );
-			node.push_back( rhs.y );
-			node.push_back( rhs.z );
-			node.push_back( rhs.w );
+			node.push_back( rhs.r );
+			node.push_back( rhs.g );
+			node.push_back( rhs.b );
+			node.push_back( rhs.a );
 			return node;
 		}
 
@@ -114,10 +114,10 @@ namespace YAML {
 			if ( !node.IsSequence() || node.size() != 4 )
 				return false;
 
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			rhs.z = node[2].as<float>();
-			rhs.w = node[3].as<float>();
+			rhs.r = node[0].as<float>();
+			rhs.g = node[1].as<float>();
+			rhs.b = node[2].as<float>();
+			rhs.a = node[3].as<float>();
 			return true;
 		}
 	};

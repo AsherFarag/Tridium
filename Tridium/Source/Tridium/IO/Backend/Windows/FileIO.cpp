@@ -1,5 +1,5 @@
 #include "tripch.h"
-#if CONFIG_WINDOWS
+#if CONFIG_PLATFORM_WINDOWS
 #include <Tridium/IO/FileIO.h>
 #include <fstream>
 

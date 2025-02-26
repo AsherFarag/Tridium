@@ -7,7 +7,19 @@ namespace Tridium {
 	class D3D12RHI final : public IDynamicRHI
 	{
 	public:
-		struct WindowData;
+		struct WindowData
+		{
+			static constexpr uint32_t s_FrameCount = 2;
+
+			ComPtr<D3D12::SwapChain> SwapChain = nullptr;
+			RHITextureRef Buffers[s_FrameCount] = { nullptr, nullptr };
+			uint32_t BufferIndex = 0;
+
+			ComPtr<D3D12::DescriptorHeap> RTVDescHeap = nullptr;
+			D3D12_CPU_DESCRIPTOR_HANDLE RTVHandles[s_FrameCount];
+
+			bool Initialize( D3D12RHI& a_RHI );
+		};
 
 		//==============================================
 		// Core RHI functions
@@ -43,6 +55,7 @@ namespace Tridium {
 		virtual RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc ) override;
 		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc ) override;
 		virtual RHIShaderBindingLayoutRef CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc ) override;
+		virtual RHISwapChainRef CreateSwapChain( const RHISwapChainDescriptor& a_Desc ) override;
 		//=====================================================
 
 		//====================================================
@@ -74,19 +87,7 @@ namespace Tridium {
 		//=====================================================
 
 		TODO( "Possibly move this to a separate class" );
-		struct WindowData
-		{
-			static constexpr uint32_t s_FrameCount = 2;
-
-			ComPtr<D3D12::SwapChain> SwapChain = nullptr;
-			RHITextureRef Buffers[s_FrameCount] = { nullptr, nullptr };
-			uint32_t BufferIndex = 0;
-
-			ComPtr<D3D12::DescriptorHeap> RTVDescHeap = nullptr;
-			D3D12_CPU_DESCRIPTOR_HANDLE RTVHandles[s_FrameCount];
-
-			bool Initialize( D3D12RHI& a_RHI );
-		} m_WindowData;
+		WindowData m_WindowData;
 
 		//=====================================================
 

@@ -7,6 +7,8 @@
 #include "ShaderLibrary.h"
 #include "RHIBuffer.h"
 #include "RHICommandList.h"
+#include "RHIShaderBindingLayout.h"
+#include "RHISwapChain.h"
 
 namespace Tridium {
 
@@ -45,6 +47,7 @@ namespace Tridium {
 		RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc );
 		RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc );
 		RHIShaderBindingLayoutRef CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc );
+		RHISwapChainRef CreateSwapChain( const RHISwapChainDescriptor& a_Desc );
 
 		RHITextureRef CreateTexture2D( 
 			uint32_t a_Width, uint32_t a_Height,

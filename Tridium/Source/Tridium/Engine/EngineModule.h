@@ -5,28 +5,27 @@
 #include <Tridium/Core/Assert.h>
 #include <Tridium/Utils/Singleton.h>
 #include <Tridium/Utils/Concepts.h>
+#include <Tridium/Core/Enum.h>
 
 namespace Tridium {
 
 	//================================================================
 	// Engine Module Category
-	struct EEngineModuleCategory 
+	enum class  EEngineModuleCategory : uint32_t
 	{
-		enum Type
-		{
-			Generic = 0,
-			Core = 1 << 0,
-			Physics = 1 << 0,
-			Audio = 1 << 1,
-			Graphics = 1 << 2,
-			Scripting = 1 << 3,
-			Networking = 1 << 4,
-			Platform = 1 << 5,
-			Tools = 1 << 6,
-			Editor = 1 << 7,
-			Gameplay = 1 << 8,
-		};
+		Generic = 0,
+		Core = 1 << 0,
+		Physics = 1 << 0,
+		Audio = 1 << 1,
+		Graphics = 1 << 2,
+		Scripting = 1 << 3,
+		Networking = 1 << 4,
+		Platform = 1 << 5,
+		Tools = 1 << 6,
+		Editor = 1 << 7,
+		Gameplay = 1 << 8,
 	};
+	ENUM_ENABLE_BITMASK_OPERATORS( EEngineModuleCategory );
 	//================================================================
 
 
@@ -89,7 +88,7 @@ namespace Tridium {
 		CreateModuleFunc Create;
 		EEngineInitStage InitStage;
 		const char* Name;
-		EEngineModuleCategory::Type Category;
+		EEngineModuleCategory Category;
 		hash_t Hash;
 	};
 	//================================================================
@@ -106,7 +105,7 @@ namespace Tridium {
 		// Registers a module type with the engine module factory.
 		// This can then be used by the engine to create and manage the module.
 		template<typename T> requires Concepts::IsValidEngineModule<T>
-		static void RegisterModule( const char* a_Name, EEngineInitStage a_InitStage, EEngineModuleCategory::Type a_Category )
+		static void RegisterModule( const char* a_Name, EEngineInitStage a_InitStage, EEngineModuleCategory a_Category )
 		{
 			static constexpr hash_t hash = Hashing::TypeHash<T>();
 

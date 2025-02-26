@@ -1,7 +1,7 @@
 #pragma once
 #include "Config.h"
 
-#if CONFIG_WINDOWS
+#if CONFIG_PLATFORM_WINDOWS
 
 	#ifndef NOMINMAX
 		#define NOMINMAX
@@ -17,7 +17,7 @@
 	#define Tridium_GetProcAddress( a_Library, a_FunctionName ) ::GetProcAddress( static_cast<HMODULE>( a_Library ), a_FunctionName )
 	#define Tridium_FreeLibrary( a_Library ) ::FreeLibrary( static_cast<HMODULE>( a_Library ) )
 
-#elif CONFIG_LINUX
+#elif CONFIG_PLATFORM_LINUX
 	#include <dlfcn.h>
 
 	#define Tridium_LoadLibrary( a_Path ) ::dlopen( a_Path, RTLD_NOW )
@@ -26,7 +26,7 @@
 
 #else
 	#error "Unsupported platform"
-#endif // CONFIG_LINUX
+#endif // CONFIG_PLATFORM_LINUX
 
 namespace Tridium {
 

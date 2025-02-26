@@ -2,8 +2,10 @@
 
 //====================================
 // Platform Configuration
-#define CONFIG_WINDOWS 1
-#define CONFIG_LINUX 0
+#define CONFIG_PLATFORM_WINDOWS      1
+#define CONFIG_PLATFORM_LINUX        0
+#define CONFIG_PLATFORM_MACOS        0
+#define CONFIG_PLATFORM_XBOX         0
 //====================================
 
 #ifdef TE_SHIPPING

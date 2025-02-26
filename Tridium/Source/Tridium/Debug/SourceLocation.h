@@ -10,10 +10,10 @@ namespace Tridium {
 	struct SourceLocation
 	{
 	private:
-		const char* m_FileName;
-		const char* m_Function;
-		uint32_t m_Line;
-		uint32_t m_Column;
+		const char* m_FileName = nullptr;
+		const char* m_Function = nullptr;
+		uint32_t m_Line = 0u;
+		uint32_t m_Column = 0u;
 
 	public:
 		constexpr SourceLocation() noexcept = default;

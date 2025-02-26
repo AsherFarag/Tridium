@@ -6,7 +6,7 @@ namespace Tridium {
 	//=======================================================
 	// RHI Shader Module
 	//  A shader module represents a compiled shader stage.
-	RHI_RESOURCE_BASE_TYPE( ShaderModule )
+	DEFINE_RHI_RESOURCE( ShaderModule )
 	{
 		StringView Name; // The name of the shader module
 		ERHIShaderType Type = ERHIShaderType::Unknown; // The Shader Stage

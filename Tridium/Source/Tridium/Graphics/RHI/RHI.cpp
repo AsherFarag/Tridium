@@ -185,6 +185,12 @@ namespace Tridium {
 		return s_DynamicRHI->CreateShaderBindingLayout( a_Desc );
 	}
 
+	RHISwapChainRef RHI::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )
+	{
+		CHECK( s_DynamicRHI );
+		return s_DynamicRHI->CreateSwapChain( a_Desc );
+	}
+
 	RHITextureRef RHI::CreateTexture2D( uint32_t a_Width, uint32_t a_Height, Span<const uint8_t> a_Data, ERHITextureFormat a_Format, const char* a_Name, ERHIUsageHint a_Usage, SharedPtr<RHIResourceAllocator> a_Allocator )
 	{
 		const size_t ExpectedSize = a_Width * a_Height * GetTextureFormatSize( a_Format );

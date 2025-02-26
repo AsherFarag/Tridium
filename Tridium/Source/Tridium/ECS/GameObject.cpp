@@ -46,19 +46,19 @@ namespace Tridium {
 	// GameObject Flags
 	//////////////////////////////////////////////////////////////////////////
 
-    GameObjectFlags GameObject::GetFlags()
+    EnumFlags<EGameObjectFlags> GameObject::GetFlags()
     {
 		if ( auto* flagsComponent = TryGetComponent<GameObjectFlagsComponent>() )
 			return flagsComponent->Flags;
-		return AddComponent<GameObjectFlagsComponent>( DefaultGameObjectFlags ).Flags;
+		return AddComponent<GameObjectFlagsComponent>( EGameObjectFlags::Enabled ).Flags;
     }
 
     void GameObject::SetActive( bool a_Active, bool a_PropagateToChildren )
     {
 		static const Refl::MetaType NativeScriptComponentType = Refl::ResolveMetaType<NativeScriptComponent>();
 
-		GameObjectFlags& flags = GetComponent<GameObjectFlagsComponent>().Flags;
-		flags.SetFlag( EGameObjectFlag::Active, a_Active );
+        EnumFlags<EGameObjectFlags>& flags = GetComponent<GameObjectFlagsComponent>().Flags;
+		flags.SetFlag( EGameObjectFlags::Active, a_Active );
 
         if ( a_PropagateToChildren )
         {
@@ -73,8 +73,8 @@ namespace Tridium {
     {
         static const Refl::MetaType NativeScriptComponentType = Refl::ResolveMetaType<NativeScriptComponent>();
 
-		GameObjectFlags& flags = GetComponent<GameObjectFlagsComponent>().Flags;
-		flags.SetFlag( EGameObjectFlag::Visible, a_Visible );
+        EnumFlags<EGameObjectFlags>& flags = GetComponent<GameObjectFlagsComponent>().Flags;
+		flags.SetFlag( EGameObjectFlags::Visible, a_Visible );
 
 		if ( a_PropagateToChildren )
 		{
@@ -89,8 +89,8 @@ namespace Tridium {
     {
         static const Refl::MetaType NativeScriptComponentType = Refl::ResolveMetaType<NativeScriptComponent>();
 
-        GameObjectFlags& flags = GetComponent<GameObjectFlagsComponent>().Flags;
-        flags.SetFlag( EGameObjectFlag::Enabled, a_Enabled );
+        EnumFlags<EGameObjectFlags>& flags = GetComponent<GameObjectFlagsComponent>().Flags;
+        flags.SetFlag( EGameObjectFlags::Enabled, a_Enabled );
 
         if ( a_PropagateToChildren )
         {

@@ -51,13 +51,13 @@ namespace Tridium {
 
 		//================================================================
 		// GameObject Flags
-		GameObjectFlags GetFlags();
+		EnumFlags<EGameObjectFlags> GetFlags();
 		bool IsValid() const;
-		bool IsActive() { return GetFlags().HasFlag( EGameObjectFlag::Active ); }
+		bool IsActive() { return GetFlags().HasFlag( EGameObjectFlags::Active ); }
 		void SetActive( bool a_Active, bool a_PropagateToChildren = false );
-		bool IsVisible() { return GetFlags().HasFlag( EGameObjectFlag::Visible ); }
+		bool IsVisible() { return GetFlags().HasFlag( EGameObjectFlags::Visible ); }
 		void SetVisible( bool a_Visible, bool a_PropagateToChildren = false );
-		bool IsEnabled() { return GetFlags().HasFlag( EGameObjectFlag::Enabled ); }
+		bool IsEnabled() { return GetFlags().HasFlag( EGameObjectFlags::Enabled ); }
 		void SetEnabled( bool a_Enabled, bool a_PropagateToChildren = false );
 		//================================================================
 

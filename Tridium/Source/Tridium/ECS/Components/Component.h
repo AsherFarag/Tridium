@@ -1,7 +1,7 @@
 #pragma once
 #include <Tridium/Core/Core.h>
 #include <Tridium/ECS/ECS.h>
-#include <Tridium/Core/EnumFlags.h>
+#include <Tridium/Core/Enum.h>
 #include <Tridium/Reflection/ReflectionFwd.h>
 
 //================================================================
@@ -51,17 +51,15 @@ namespace Tridium {
 	//================================================================
 	// Component Flags
 	//  Bit flags used to represent the state of a component.
-	namespace EComponentFlags {
-		enum Type : uint32_t
-		{
-			None = 0,
-			// If not active, this component will not be updated.
-			Active = 1 << 1,
-			// If not visible, this component will not be rendered.
-			Visible = 1 << 2,
-		};
-	}
-	using ComponentFlags = EnumFlags<EComponentFlags::Type>;
+	enum class EComponentFlags : uint32_t
+	{
+		None = 0,
+		// If not active, this component will not be updated.
+		Active = 1 << 1,
+		// If not visible, this component will not be rendered.
+		Visible = 1 << 2,
+	};
+	ENUM_ENABLE_BITMASK_OPERATORS( EComponentFlags );
 	//================================================================
 
 } // namespace Tridium

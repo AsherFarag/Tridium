@@ -6,7 +6,7 @@
 #include "RHIConstants.h"
 #include <Tridium/Core/Config.h>
 #include <Tridium/Core/Memory.h>
-#include <Tridium/Core/EnumFlags.h>
+#include <Tridium/Core/Enum.h>
 #include <Tridium/Containers/Containers.h>
 #include <Tridium/Utils/Concepts.h>
 #include <Tridium/Utils/Todo.h>

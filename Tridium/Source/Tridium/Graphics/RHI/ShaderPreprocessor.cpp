@@ -38,7 +38,7 @@ namespace Tridium {
 		// Remove leading and trailing whitespace
 		type = type.substr( type.find_first_not_of( " \t" ) );
 
-		hash_t typeHash = Hashing::Hash( type.c_str(), type.size() );
+		hash_t typeHash = Hashing::HashString( type.c_str() );
 
 		auto it = ShaderTypes.find( typeHash );
         if ( it == ShaderTypes.end() )

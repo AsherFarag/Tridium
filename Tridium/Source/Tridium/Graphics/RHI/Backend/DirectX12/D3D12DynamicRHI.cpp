@@ -19,7 +19,7 @@
 #include "D3D12PipelineState.h"
 #include "D3D12ShaderBindingLayout.h"
 #include "D3D12CommandList.h"
-
+#include "D3D12SwapChain.h"
 
 namespace Tridium {
 
@@ -236,6 +236,13 @@ namespace Tridium {
 		return sbl;
 	}
 
+	RHISwapChainRef D3D12RHI::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )
+	{
+		RHISwapChainRef swapChain = RHIResource::Create<D3D12SwapChain>();
+		CHECK( swapChain->Commit( &a_Desc ) );
+		return swapChain;
+	}
+
 	//////////////////////////////////////////////////////////////////////////
     // DEBUG
 	//////////////////////////////////////////////////////////////////////////
@@ -264,8 +271,8 @@ namespace Tridium {
        
 		// Create the swap chain
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
-		swapChainDesc.Width = 1920;
-		swapChainDesc.Height = 1080;
+		swapChainDesc.Width = 1280;
+		swapChainDesc.Height = 720;
 		swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		swapChainDesc.Stereo = false;
 		swapChainDesc.SampleDesc.Count = 1;

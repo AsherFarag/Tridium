@@ -8,6 +8,7 @@
 #include <Tridium/Graphics/RHI/RHICommandList.h>
 #include <Tridium/Graphics/RHI/RHIShader.h>
 #include <Tridium/Graphics/RHI/RHIShaderBindingLayout.h>
+#include <Tridium/Graphics/RHI/RHISwapChain.h>
 
 DECLARE_LOG_CATEGORY( DirectX );
 

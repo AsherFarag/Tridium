@@ -36,6 +36,22 @@ namespace Tridium {
 
 
 
+	//====================================
+	// RHI Vendor
+	//====================================
+	enum class ERHIVendor : uint8_t
+	{
+		Unknown,
+		NVIDIA,
+		AMD,
+		Intel,
+		ARM,
+		Apple,
+		Microsoft,
+	};
+
+
+
 	//===========================
 	// RHI Feature Support
 	//===========================
@@ -70,6 +86,8 @@ namespace Tridium {
 
 	//===========================
 	// Scissor Rect
+	//  A rectangle used to clip rendering to a specific area.
+	//  For example, clearing a specific area of the screen.
 	//===========================
 	struct ScissorRect
 	{
@@ -86,13 +104,14 @@ namespace Tridium {
 	//===========================
 	struct Viewport
 	{
-		float X;
-		float Y;
-		float Width;
-		float Height;
-		float MinDepth;
-		float MaxDepth;
+		float X;        // Top-left corner of the viewport.
+		float Y;        // Top-left corner of the viewport.
+		float Width;    // Width of the viewport.
+		float Height;   // Height of the viewport.
+		float MinDepth; // Minimum depth of the viewport.
+		float MaxDepth; // Maximum depth of the viewport.
 	};
+
 
 
 	//===========================
@@ -144,7 +163,7 @@ namespace Tridium {
 
 	//=====================================================================
 	// ERHIResourceState
-	//  The state of a resource.
+	//  The state of a resource indicating how it is used.
 	//=====================================================================
 	enum class ERHIResourceState : uint32_t
 	{
@@ -173,6 +192,7 @@ namespace Tridium {
 		Present,                        // Used for presenting to screen
 		GPUWrite,                       // Used for GPU write operations
 	};
+
 
 
 	//=====================================================================
@@ -861,6 +881,16 @@ namespace Tridium {
 		static constexpr uint8_t ElementCountX = 4;
 		static constexpr uint8_t ElementCountY = 4;
 	};
+
+	template<>
+	struct RHITensorTypeTraits<Color>
+	{
+		static constexpr ERHIDataType ElementType = ERHIDataType::Float32;
+		static constexpr uint8_t ElementCountX = 4;
+		static constexpr uint8_t ElementCountY = 1;
+	};
+
+	//==========================================================
 
 
 } // namespace Tridium

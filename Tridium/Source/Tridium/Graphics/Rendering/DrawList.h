@@ -1,6 +1,6 @@
 #pragma once
 #include <Tridium/Core/Core.h>
-#include <Tridium/Core/EnumFlags.h>
+#include <Tridium/Core/Enum.h>
 #include <Tridium/Asset/AssetType.h>
 
 namespace Tridium { 

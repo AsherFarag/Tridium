@@ -31,12 +31,12 @@ namespace Tridium {
 			const char* Name;
 			hash_t Hash;
 
-			constexpr Category()
-				: Category( "Unknown" ) {}
-
 			constexpr Category( const char* a_Name )
 				: Name( a_Name )
-				, Hash( Hashing::HashString( a_Name ) ) {}
+				, Hash( Hashing::HashString( a_Name ).Hash() ) {}
+
+			constexpr Category()
+				: Category( "Unknown" ) {}
 		};
 
 		struct Logger

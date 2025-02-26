@@ -636,7 +636,7 @@ namespace Tridium {
 			const char* className = Helpers::GetCleanClassName( metaType.GetCleanTypeName() );
 
 			{
-				constexpr EComponentFlags::Type enabledFlag = (EComponentFlags::Type)( EComponentFlags::Active | EComponentFlags::Visible );
+				constexpr EComponentFlags enabledFlag = EComponentFlags::Active | EComponentFlags::Visible;
 
 				bool hasOptionsButton = true;
 				bool isOptionsPressed = false;

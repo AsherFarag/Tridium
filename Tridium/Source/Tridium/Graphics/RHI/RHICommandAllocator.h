@@ -7,7 +7,7 @@ namespace Tridium {
 	// RHI Command Allocator
 	//  A resource that allocates command buffers.
 	//=============================================
-	RHI_RESOURCE_BASE_TYPE( CommandAllocator )
+	DEFINE_RHI_RESOURCE( CommandAllocator )
 	{
 		size_t Capacity = 32u;
 	};

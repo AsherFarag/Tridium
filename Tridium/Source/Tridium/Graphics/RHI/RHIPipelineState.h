@@ -91,7 +91,7 @@ namespace Tridium {
 	//=======================================================================
 	// RHIPipelineState
 	//  A pipeline state object that contains the state of the GPU pipeline.
-	RHI_RESOURCE_BASE_TYPE( PipelineState )
+	DEFINE_RHI_RESOURCE( PipelineState )
 	{
 		ERHITopology Topology = ERHITopology::Triangle;
 		RHIVertexLayout VertexLayout;

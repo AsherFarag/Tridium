@@ -52,14 +52,14 @@ namespace Tridium {
 		}
 	};
 
-	RHI_RESOURCE_BASE_TYPE( IndexBuffer )
+	DEFINE_RHI_RESOURCE( IndexBuffer )
 	{
 		Span<const Byte> InitialData = {};
 		ERHIUsageHint UsageHint = ERHIUsageHint::Default;
 		ERHIDataType DataType = ERHIDataType::UInt16;
 	};
 
-	RHI_RESOURCE_BASE_TYPE( VertexBuffer )
+	DEFINE_RHI_RESOURCE( VertexBuffer )
 	{
 		Span<const Byte> InitialData = {};
 		ERHIUsageHint UsageHint = ERHIUsageHint::Default;

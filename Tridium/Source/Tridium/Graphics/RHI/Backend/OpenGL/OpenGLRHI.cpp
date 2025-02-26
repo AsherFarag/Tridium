@@ -138,6 +138,11 @@ namespace Tridium {
 		return RHIShaderBindingLayoutRef();
 	}
 
+	RHISwapChainRef OpenGLRHI::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )
+	{
+		return RHISwapChainRef();
+	}
+
 	//////////////////////////////////////////////////////////////////////////
     // DEBUG
 	//////////////////////////////////////////////////////////////////////////

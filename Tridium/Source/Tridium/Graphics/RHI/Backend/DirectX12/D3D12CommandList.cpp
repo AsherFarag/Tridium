@@ -132,7 +132,13 @@ namespace Tridium {
 					}
 
 					const RHIShaderBindingLayoutDescriptor* desc = s_CurrentSBL->GetDescriptor();
-					const RHIShaderBinding& binding = desc->Bindings.At( data.Index );
+					const int32_t index = desc->GetBindingIndex( data.NameHash );
+					if ( index == -1 )
+					{
+						ASSERT_LOG( false, "Shader Binding not found!" );
+						break;
+					}
+					const RHIShaderBinding& binding = desc->Bindings.At( index );
 
 					switch ( binding.BindingType )
 					{
@@ -140,7 +146,7 @@ namespace Tridium {
 						{
 							if ( binding.IsInlined )
 							{
-								CommandList->SetGraphicsRoot32BitConstants( data.Index, binding.WordSize, static_cast<const void*>( &data.Payload.InlineData[0] ), 0 );
+								CommandList->SetGraphicsRoot32BitConstants( binding.Register, binding.WordSize, static_cast<const void*>( &data.Payload.InlineData[0] ), 0 );
 							}
 							else
 							{

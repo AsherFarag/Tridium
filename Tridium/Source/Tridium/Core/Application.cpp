@@ -147,22 +147,21 @@ namespace Tridium {
 
 			RHIVertexLayout layout =
 			{
-				{ "Position", ERHIVertexElementType::Float3 },
+				{ "POSITION", ERHIVertexElementType::Float3 },
+				{ "COLOR", ERHIVertexElementType::Float4 }
 			};
 
 			struct Vertex
 			{
 				Vector3 Position;
+				Color Colour;
 			};
 
 			Vertex vertices[] =
 			{
-				{ { -0.5f, -0.5f, 0.0f } },
-				{ { 0.5f, -0.5f, 0.0f } },
-				{ { -0.5f, 0.5f, 0.0f } },
-				{ { 0.5f, -0.5f, 0.0f } },
-				{ { 0.5f, 0.5f, 0.0f } },
-				{ { -0.5f, 0.5f, 0.0f } },
+				{ { -0.5f, -0.5f, 0.0f } , {1.0f, 0.0f, 0.0f, 1.0f} },
+				{ { 0.5f, -0.5f, 0.0f }  , {0.0f, 1.0f, 0.0f, 1.0f} },
+				{ { 0.0f, 0.5f, 0.0f }   , {0.0f, 0.0f, 1.0f, 1.0f} },
 			};
 
 			RHIVertexBufferDescriptor vbDesc;
@@ -175,30 +174,35 @@ namespace Tridium {
 			// HLSL Source code
 			StringView vertCode = R"(
 #pragma type vertex
-void main(
-	// Input
-	in float3 pos : Position,
+struct VSOutput {
+    float4 pos : SV_Position;   // Position (mandatory)
+    float4 color : COLOR0;      // Ensure same semantic and type
+};
 
-    // Output
-    out float4 o_Pos : SV_POSITION
-)
+VSOutput main(float3 position : POSITION, float4 color : COLOR) 
 {
-    o_Pos = float4(pos.xy, 0.0f, 1.0f);
+    VSOutput output;
+    output.pos = float4(position, 1.0);
+    output.color = color;
+    return output;
 }
 )";
 			StringView pixelCode = R"(
 #pragma type pixel
 
-cbuffer Constants : register(b0)
-{
-	float4 Colour;
+struct VSOutput {
+    float4 pos : SV_Position;   // Position (mandatory)
+    float4 color : COLOR0;      // Ensure same semantic and type
 };
 
-void main(
-	out float4 o_Colour : SV_TARGET
-)
+cbuffer Constants : register(b0)
 {
-	o_Colour = Colour;
+	float4 ColourMultiplier;
+};
+
+float4 main(VSOutput input) : SV_Target 
+{
+	return input.color * ColourMultiplier;
 }
 )";
 
@@ -213,7 +217,7 @@ void main(
 
 			// Create Shader Binding Layout
 			RHIShaderBindingLayoutDescriptor sblDesc;
-			sblDesc.AddBinding( "Colour"_H, 0 ).AsReferencedConstants( 0, 1 );
+			sblDesc.AddBinding( "ColourMultiplier"_H, 0 ).AsInlinedConstants<Color>( 0 );
 			sblDesc.Name = "My beautiful shader binding layout";
 
 			RHIShaderBindingLayoutRef sbl = RHI::CreateShaderBindingLayout( sblDesc );
@@ -231,7 +235,7 @@ void main(
 			RHICommandListRef cmdList = RHI::CreateCommandList( { "My beautiful command list" } );
 
 			// Temp
-			Color clearColour = { 0.0f, 1.0f, 0.0f, 1.0f };
+			Color clearColour = Color{ 0.5f, 0.4f, 1.0f, 1.0f } * 0.15f;
 			while ( true )
 			{
 				size_t currentBuffer = RHI::GetD3D12RHI()->GetWindowData().SwapChain->GetCurrentBackBufferIndex();
@@ -246,12 +250,12 @@ void main(
 				         .SetShaderBindingLayout( sbl );
 
 				// Input Assembler
-				cmdBuffer.SetVertexBuffer( vb );
-				cmdBuffer.SetPrimitiveTopology( ERHITopology::Triangle );
+				cmdBuffer.SetVertexBuffer( vb )
+				         .SetPrimitiveTopology( ERHITopology::Triangle );
 
 				Viewport vp;
-				vp.Width = 1280;
-				vp.Height = 720;
+				vp.Width = props.Width;
+				vp.Height = props.Height;
 				vp.X = 0;
 				vp.Y = 0;
 				vp.MinDepth = 0.0f;
@@ -262,12 +266,12 @@ void main(
 				ScissorRect scissor;
 				scissor.Left = 0;
 				scissor.Top = 0;
-				scissor.Right = 1280;
-				scissor.Bottom = 720;
+				scissor.Right = props.Width;
+				scissor.Bottom = props.Height;
 				cmdBuffer.SetScissors( {&scissor, 1} );
 
 				// Draw
-				cmdBuffer.SetShaderInput( 0, Color( 1.0f, 0.0f, 0.0f, 1.0f ) );
+				cmdBuffer.SetShaderInput( "ColourMultiplier", Color(1.0f, 1.0f, 1.0f, 1.0f));
 				cmdBuffer.Draw( 0, sizeof( vertices ) / sizeof( Vertex ) );
 
 				cmdBuffer.ResourceBarrier( rt, ERHIResourceState::RenderTarget, ERHIResourceState::Present );

@@ -203,7 +203,7 @@ namespace Tridium {
 					if ( m_LightEnvironment.NumDirectionalLights >= MAX_DIRECTIONAL_LIGHTS )
 						return;
 
-					if ( !a_Flags.Flags.HasFlag( EGameObjectFlag::Visible )
+					if ( !a_Flags.Flags.HasFlag( EGameObjectFlags::Visible )
 						|| !lightComponent.Flags().HasFlag( EComponentFlags::Visible ) )
 						return;
 
@@ -260,7 +260,7 @@ namespace Tridium {
 					if ( m_LightEnvironment.NumPointLights >= MAX_POINT_LIGHTS )
 						return;
 
-					if ( !a_Flags.Flags.HasFlag( EGameObjectFlag::Visible )
+					if ( !a_Flags.Flags.HasFlag( EGameObjectFlags::Visible )
 						|| !lightComponent.Flags().HasFlag( EComponentFlags::Visible ) )
 						return;
 
@@ -319,7 +319,7 @@ namespace Tridium {
 					if ( m_LightEnvironment.NumSpotLights >= MAX_SPOT_LIGHTS )
 						return;
 
-					if ( !a_Flags.Flags.HasFlag( EGameObjectFlag::Visible )
+					if ( !a_Flags.Flags.HasFlag( EGameObjectFlags::Visible )
 						|| !lightComponent.Flags().HasFlag( EComponentFlags::Visible ) )
 						return;
 
@@ -366,7 +366,7 @@ namespace Tridium {
 			auto meshComponents = m_Scene.GetECS().View<GameObjectFlagsComponent, StaticMeshComponent, TransformComponent>();
 			meshComponents.each( [&]( auto go, GameObjectFlagsComponent& a_Flags, StaticMeshComponent& meshComponent, TransformComponent& transform )
 				{
-					if ( !a_Flags.Flags.HasFlag( EGameObjectFlag::Visible )
+					if ( !a_Flags.Flags.HasFlag( EGameObjectFlags::Visible )
 						|| !meshComponent.Flags().HasFlag( EComponentFlags::Visible ) )
 						return;
 

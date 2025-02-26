@@ -26,6 +26,7 @@ namespace Tridium {
         CommandList,
         ResourceAllocator,
         CommandAllocator,
+		SwapChain,
         COUNT
 	};
 
@@ -175,7 +176,7 @@ namespace Tridium {
 
 
 // Helper macro to define a base RHI resource type and its descriptor.
-#define RHI_RESOURCE_BASE_TYPE( Name, ... )                                                               \
+#define DEFINE_RHI_RESOURCE( Name, ... )                                                                  \
 	class RHI##Name;                                                                                      \
 	struct RHI##Name##Descriptor;                                                                         \
 	using RHI##Name##Ref = SharedPtr<RHI##Name>;                                                          \

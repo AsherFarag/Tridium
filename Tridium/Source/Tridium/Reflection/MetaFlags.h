@@ -12,6 +12,7 @@ namespace Tridium {
             ECF_None = 0,
             Scriptable = BIT( 0 ),
         };
+        ENUM_ENABLE_BITMASK_OPERATORS( EClassFlags );
 
         enum class EPropertyFlags : uint8_t
         {
@@ -22,9 +23,7 @@ namespace Tridium {
             ScriptReadOnly  = BIT( 3 ), /* Defines this property as Read-Only from a Script. */
             ScriptReadWrite = BIT( 4 ), /* Defines this property as Read-Write from a Script. */
         };
+        ENUM_ENABLE_BITMASK_OPERATORS( EPropertyFlags );
 
     } // namespace Refl
 } // namespace Tridium
-
-DEFINE_BITMASK_OPS( Tridium::Refl::EClassFlags );
-DEFINE_BITMASK_OPS( Tridium::Refl::EPropertyFlags );
