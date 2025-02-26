@@ -168,7 +168,7 @@ namespace Tridium {
 		constexpr bool IsValidIndex( size_t a_Index ) const { return ( ( a_Index >= 0 ) && ( a_Index < m_Size ) ); }
 		constexpr void Fill( const T& a_Value ) { m_Storage.Fill( a_Value ); }
 		constexpr void Swap( InlineArray& a_Other ) { m_Storage.Swap( a_Other.m_Storage ); }
-		constexpr void Resize( size_t a_Size ) { m_Size = a_Size; }
+		constexpr void Resize( size_t a_Size ) { m_Size = Math::Min( a_Size, MaxSize() ); }
 
 		constexpr void PushBack( const T& a_Value )
 		{

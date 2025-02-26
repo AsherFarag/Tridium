@@ -35,10 +35,14 @@
 #endif
 
 #if defined __clang__ || defined __GNUC__
+	#define TRIDIUM_FILE __FILE__
+	#define TRIDIUM_LINE uint32_t(_CONCAT(__LINE__,U))
 	#define TRIDIUM_PRETTY_FUNCTION __PRETTY_FUNCTION__
 	#define TRIDIUM_PRETTY_FUNCTION_PREFIX '='
 	#define TRIDIUM_PRETTY_FUNCTION_SUFFIX ']'
 #elif defined _MSC_VER
+	#define TRIDIUM_FILE __FILE__
+	#define TRIDIUM_LINE uint32_t(_CONCAT(__LINE__,U))
 	#define TRIDIUM_PRETTY_FUNCTION __FUNCSIG__
 	#define TRIDIUM_PRETTY_FUNCTION_PREFIX '<'
 	#define TRIDIUM_PRETTY_FUNCTION_SUFFIX '>'
@@ -46,4 +50,4 @@
 
 // For some reason, in MSVC, __LINE__ is not a constant expression.
 // This is a workaround to make it a constant expression.
-#define _USABLE_LINE_ uint32_t(_CONCAT(__LINE__,U))
+#define _USABLE_LINE_ TRIDIUM_LINE

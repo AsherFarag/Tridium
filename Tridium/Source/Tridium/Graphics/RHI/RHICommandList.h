@@ -38,7 +38,6 @@ namespace Tridium {
 		SetPipelineState,
 		SetShaderBindingLayout,
 		SetRenderTargets,
-		SetClearValues,
 		ClearRenderTargets,
 		SetScissors,
 		SetViewports,
@@ -82,16 +81,10 @@ namespace Tridium {
             RHITexture* DSV;
         };
 
-        struct SetClearValues 
-        {
-            float   Color[4];
-            float   Depth;
-            uint8_t Stencil;
-        };
-
         struct ClearRenderTargets 
         {
 			InlineArray<RHITexture*, RHIQuery::MaxColorTargets> RTV;
+			Color ClearColor;
 			bool DepthBit;
             bool StencilBit;
         };
@@ -172,7 +165,6 @@ namespace Tridium {
             SetPipelineState,
 			SetShaderBindingLayout,
             SetRenderTargets,
-            SetClearValues,
             ClearRenderTargets,
             SetScissors,
             SetViewports,
@@ -224,50 +216,44 @@ namespace Tridium {
 		}
 
 	#if RHI_DEBUG_ENABLED
-		struct DebugInfo
+		struct Debug
 		{
-			const char* Function = nullptr;
-			const char* File = nullptr;
-			uint32_t Line = 0;
-		} Debug;
+			SourceLocation Source;
+		} Debug{};
 	#endif // RHI_DEBUG_ENABLED
     };
 
-
-
-#if RHI_DEBUG_ENABLED
-	// Helper function that enqueues a command with debug information.
-	#define RHICommandEnqueue( _CommandBuffer, _Command, ... ) \
-        (_CommandBuffer)._Command( __VA_ARGS__ ); \
-	    (_CommandBuffer).Commands.Back().Debug = { _FUNCTION_, __FILE__, _USABLE_LINE_ }
-#else
-	// Helper function that enqueues a command.
-    #define RHICommandEnqueue( _CommandBuffer, _Command, ... ) \
-        (_CommandBuffer)._Command( __VA_ARGS__ )
-#endif // !RHI_DEBUG_ENABLED
-
-
-
 	//=====================================================
 	// RHICommandBuffer
-	//  A buffer that holds an array of commands to be executed on the GPU.
-	//=====================================================
+	//  A buffer that holds a list of commands to be executed on the GPU.
+	//  Adding a command does not execute it immediately.
+	//  The command buffer must be submitted to a command list via RHICommandList::SetCommands.
+	//  To execute the commands, the command list must be submitted to the RHI via RHI::ExecuteCommandList.
 	class RHICommandBuffer
 	{
+		#if RHI_DEBUG_ENABLED
+			#define ADD_DEBUG_INFO() do { Commands.Back().Debug.Source = a_SourceLocation; } while ( false )
+		#else 
+			#define ADD_DEBUG_INFO() do {} while ( false )
+		#endif // RHI_DEBUG_ENABLED
 	public:
-		void SetPipelineState( RHIPipelineStateRef a_PSO )
+		RHICommandBuffer& SetPipelineState( RHIPipelineStateRef a_PSO, const SourceLocation& a_SourceLocation = SourceLocation::Current() )
 		{
 			Commands.EmplaceBack( RHICommand::SetPipelineState{ a_PSO.get() } );
 			m_PipelineStates.insert( std::move( a_PSO ) );
+			ADD_DEBUG_INFO();
+			return *this;
 		}
 
-		void SetShaderBindingLayout( RHIShaderBindingLayoutRef a_SBL )
+		RHICommandBuffer& SetShaderBindingLayout( RHIShaderBindingLayoutRef a_SBL, const SourceLocation& a_SourceLocation = SourceLocation::Current() )
 		{
 			Commands.EmplaceBack( RHICommand::SetShaderBindingLayout{ a_SBL.get() } );
 			m_ShaderBindingLayouts.insert( std::move( a_SBL ) );
+			ADD_DEBUG_INFO();
+			return *this;
 		}
 
-		void SetRenderTargets( Span<RHITextureRef> a_RTV, RHITextureRef a_DSV )
+		RHICommandBuffer& SetRenderTargets( Span<RHITextureRef> a_RTV, RHITextureRef a_DSV, const SourceLocation& a_SourceLocation = SourceLocation::Current() )
 		{
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::SetRenderTargets() );
 			RHICommand::SetRenderTargets& data = cmd.Get<RHICommand::SetRenderTargets>();
@@ -277,21 +263,15 @@ namespace Tridium {
 
 			for ( size_t i = 0; i < a_RTV.size() && i < data.RTV.MaxSize(); ++i )
 			{
-				data.RTV[i] = a_RTV[i].get();
+				data.RTV.PushBack( a_RTV[i].get() );
 				m_Textures.insert( a_RTV[i] );
 			}
+
+			ADD_DEBUG_INFO();
+			return *this;
 		}
 
-		void SetClearValues( Color a_Color, float a_Depth, uint8_t a_Stencil )
-		{
-			RHICommand& cmd = Commands.EmplaceBack( RHICommand::SetClearValues() );
-			RHICommand::SetClearValues& data = cmd.Get<RHICommand::SetClearValues>();
-			memcpy( data.Color, &a_Color[0], sizeof(data.Color));
-			data.Depth = a_Depth;
-			data.Stencil = a_Stencil;
-		}
-
-		void ClearRenderTargets( Span<RHITextureRef> a_RenderTarget, bool a_DepthBit, bool a_StencilBit )
+		RHICommandBuffer& ClearRenderTargets( Span<RHITextureRef> a_RenderTarget, Color a_ClearColor, bool a_DepthBit, bool a_StencilBit, const SourceLocation& a_SourceLocation = SourceLocation::Current() )
 		{
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::ClearRenderTargets() );
 			RHICommand::ClearRenderTargets& data = cmd.Get<RHICommand::ClearRenderTargets>();
@@ -300,72 +280,90 @@ namespace Tridium {
 				data.RTV.PushBack( a_RenderTarget[i].get() );
 				m_Textures.insert( a_RenderTarget[i] );
 			}
+			data.ClearColor = a_ClearColor;
 			data.DepthBit = a_DepthBit;
 			data.StencilBit = a_StencilBit;
+
+			ADD_DEBUG_INFO();
+			return *this;
 		}
 
-		void SetScissors( Span<ScissorRect> a_Rects )
+		RHICommandBuffer& SetScissors( Span<ScissorRect> a_Rects, const SourceLocation& a_SourceLocation = SourceLocation::Current() )
 		{
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::SetScissors() );
 			RHICommand::SetScissors& data = cmd.Get<RHICommand::SetScissors>();
 			data.Rects.Resize( a_Rects.size() );
-			for ( size_t i = 0; i < a_Rects.size() && i < data.Rects.MaxSize(); ++i )
-			{
-				data.Rects[i] = a_Rects[i];
-			}
+			std::memcpy( data.Rects.Data(), a_Rects.data(), a_Rects.size() * sizeof( ScissorRect ) );
+			ADD_DEBUG_INFO();
+			return *this;
 		}
 
-		void SetViewports( Span<Viewport> a_Viewports )
+		RHICommandBuffer& SetViewports( Span<Viewport> a_Viewports, const SourceLocation& a_SourceLocation = SourceLocation::Current() )
 		{
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::SetViewports() );
 			RHICommand::SetViewports& data = cmd.Get<RHICommand::SetViewports>();
-			memcpy( data.Viewports.Data(), a_Viewports.data(), a_Viewports.size() );
+			data.Viewports.Resize( a_Viewports.size() );
+			std::memcpy( data.Viewports.Data(), a_Viewports.data(), a_Viewports.size() * sizeof( Viewport ) );
+			ADD_DEBUG_INFO();
+			return *this;
 		}
 
 		template<typename T>
-		void SetShaderInput( uint32_t a_Index, T a_Value )
+		RHICommandBuffer& SetShaderInput( uint32_t a_Index, T a_Value, const SourceLocation& a_SourceLocation = SourceLocation::Current() )
 		{
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::SetShaderInput() );
 			RHICommand::SetShaderInput& data = cmd.Get<RHICommand::SetShaderInput>();
 			data.Index = a_Index;
 			data.Payload = RHIShaderInputPayload();
 			BuildShaderInput( a_Value, data.Payload, m_Textures, m_Buffers );
+			ADD_DEBUG_INFO();
+			return *this;
 		}
 
-		void SetIndexBuffer( RHIIndexBufferRef a_IBO )
+		RHICommandBuffer& SetIndexBuffer( RHIIndexBufferRef a_IBO, const SourceLocation& a_SourceLocation = SourceLocation::Current() )
 		{
 			Commands.EmplaceBack( RHICommand::SetIndexBuffer{ a_IBO.get() } );
 			m_IndexBuffers.insert( std::move( a_IBO ) );
+			ADD_DEBUG_INFO();
+			return *this;
 		}
 
-		void SetVertexBuffer( RHIVertexBufferRef a_VBO )
+		RHICommandBuffer& SetVertexBuffer( RHIVertexBufferRef a_VBO, const SourceLocation& a_SourceLocation = SourceLocation::Current() )
 		{
 			Commands.EmplaceBack( RHICommand::SetVertexBuffer{ a_VBO.get() } );
 			m_VertexBuffers.insert( std::move( a_VBO ) );
+			ADD_DEBUG_INFO();
+			return *this;
 		}
 
-		void SetPrimitiveTopology( ERHITopology a_Topology )
+		RHICommandBuffer& SetPrimitiveTopology( ERHITopology a_Topology, const SourceLocation& a_SourceLocation = SourceLocation::Current() )
 		{
 			Commands.EmplaceBack( RHICommand::SetPrimitiveTopology{ a_Topology } );
+			ADD_DEBUG_INFO();
+			return *this;
 		}
 
-		void Draw( uint32_t a_VertexStart, uint32_t a_VertexCount )
+		RHICommandBuffer& Draw( uint32_t a_VertexStart, uint32_t a_VertexCount, const SourceLocation& a_SourceLocation = SourceLocation::Current() )
 		{
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::Draw() );
 			RHICommand::Draw& data = cmd.Get<RHICommand::Draw>();
 			data.VertexStart = a_VertexStart;
 			data.VertexCount = a_VertexCount;
+			ADD_DEBUG_INFO();
+			return *this;
 		}
 
-		void DrawIndexed( uint32_t a_IndexStart, uint32_t a_IndexCount )
+		RHICommandBuffer& DrawIndexed( uint32_t a_IndexStart, uint32_t a_IndexCount, const SourceLocation& a_SourceLocation = SourceLocation::Current() )
 		{
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::DrawIndexed() );
 			RHICommand::DrawIndexed& data = cmd.Get<RHICommand::DrawIndexed>();
 			data.IndexStart = a_IndexStart;
 			data.IndexCount = a_IndexCount;
+			ADD_DEBUG_INFO();
+			return *this;
 		}
 
-		void ResourceBarrier( RHIResourceRef a_Resource, ERHIResourceState a_Before, ERHIResourceState a_After )
+		RHICommandBuffer& ResourceBarrier( RHIResourceRef a_Resource, ERHIResourceState a_Before, ERHIResourceState a_After, const SourceLocation& a_SourceLocation = SourceLocation::Current() )
 		{
 			switch ( a_Resource->GetType() )
 			{
@@ -377,7 +375,7 @@ namespace Tridium {
 				break;
 			default:
 				ASSERT_LOG( false, "Can only set resource barriers for textures and buffers!" );
-				return;
+				return *this;
 			}
 
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::ResourceBarrier() );
@@ -385,25 +383,33 @@ namespace Tridium {
 			data.Resource = a_Resource.get();
 			data.Before = a_Before;
 			data.After = a_After;
+			ADD_DEBUG_INFO();
+			return *this;
 		}
 
-		void DispatchCompute( uint16_t a_GroupSizeX, uint16_t a_GroupSizeY, uint16_t a_GroupSizeZ )
+		RHICommandBuffer& DispatchCompute( uint16_t a_GroupSizeX, uint16_t a_GroupSizeY, uint16_t a_GroupSizeZ, const SourceLocation& a_SourceLocation = SourceLocation::Current() )
 		{
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::DispatchCompute() );
 			RHICommand::DispatchCompute& data = cmd.Get<RHICommand::DispatchCompute>();
 			data.GroupSize[0] = a_GroupSizeX;
 			data.GroupSize[1] = a_GroupSizeY;
 			data.GroupSize[2] = a_GroupSizeZ;
+			ADD_DEBUG_INFO();
+			return *this;
 		}
 
-		void FenceSignal( RHIFence a_Fence )
+		RHICommandBuffer& FenceSignal( RHIFence a_Fence, const SourceLocation& a_SourceLocation = SourceLocation::Current() )
 		{
 			Commands.EmplaceBack( RHICommand::FenceSignal{ a_Fence } );
+			ADD_DEBUG_INFO();
+			return *this;
 		}
 	
-		void FenceWait( RHIFence a_Fence )
+		RHICommandBuffer& FenceWait( RHIFence a_Fence, const SourceLocation& a_SourceLocation = SourceLocation::Current() )
 		{
 			Commands.EmplaceBack( RHICommand::FenceWait{ a_Fence } );
+			ADD_DEBUG_INFO();
+			return *this;
 		}
 
 	public:
@@ -424,6 +430,8 @@ namespace Tridium {
 				T a_Value, RHIShaderInputPayload& o_Payload,
 				UnorderedSet<RHITextureRef>& o_TextureRefs,
 				UnorderedSet<RHIBufferRef>& o_Buffers );
+
+		#undef ADD_DEBUG_INFO
 	};
 
 	RHI_RESOURCE_BASE_TYPE( CommandList,

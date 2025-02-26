@@ -46,7 +46,7 @@ namespace Tridium {
 		RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc );
 		RHIShaderBindingLayoutRef CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc );
 
-		RHITextureRef CreateTexture( 
+		RHITextureRef CreateTexture2D( 
 			uint32_t a_Width, uint32_t a_Height,
 			Span<const uint8_t> a_Data,
 			ERHITextureFormat a_Format = ERHITextureFormat::RGBA8,

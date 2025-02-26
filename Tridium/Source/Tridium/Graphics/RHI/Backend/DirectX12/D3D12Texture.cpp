@@ -8,13 +8,13 @@ namespace Tridium {
 	{
 		const auto* desc = ParamsToDescriptor<RHITextureDescriptor>( a_Params );
 
-		if ( desc->DimensionCount != 2 )
+		if ( desc->Dimension != ERHITextureDimension::Texture2D )
 		{
 			return false;
 		}
 
-		const size_t width = desc->Dimensions[0];
-		const size_t height = desc->Dimensions[1];
+		const size_t width = desc->Width;
+		const size_t height = desc->Height;
 		const size_t stride = width * GetTextureFormatSize( desc->Format );
 		const size_t imgSize = height * stride;
 
@@ -134,8 +134,8 @@ namespace Tridium {
 		commandList->Reset( commandAllocator.Get(), nullptr );
 
 		const RHITextureDescriptor& desc = *GetDescriptor();
-		const size_t width = desc.Dimensions[0];
-		const size_t height = desc.Dimensions[1];
+		const size_t width = desc.Width;
+		const size_t height = desc.Height;
 		const size_t bytesPerPixel = GetTextureFormatSize( desc.Format );
 
 		D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint = {};
@@ -190,8 +190,8 @@ namespace Tridium {
 		textureBox.left = 0;
 		textureBox.top = 0;
 		textureBox.front = 0;
-		textureBox.right = desc.Dimensions[0];
-		textureBox.bottom = desc.Dimensions[1];
+		textureBox.right = desc.Width;
+		textureBox.bottom = desc.Height;
 		textureBox.back = 1;
 		commandList->CopyTextureRegion( &dstLocation, 0, 0, 0, &srcLocation, &textureBox );
 
@@ -227,7 +227,7 @@ namespace Tridium {
 
 		D3D12_RESOURCE_DESC desc = Texture->GetDesc();
 		const uint32_t bytesPerPixel = GetTextureFormatSize( GetDescriptor()->Format );
-		return GetDescriptor()->Dimensions[0] * GetDescriptor()->Dimensions[1] * bytesPerPixel;
+		return GetDescriptor()->Width * GetDescriptor()->Height * bytesPerPixel;
 	}
 
 	bool D3D12Texture::IsValid() const

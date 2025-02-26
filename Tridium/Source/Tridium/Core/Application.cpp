@@ -106,7 +106,10 @@ namespace Tridium {
 	bool Application::Init()
 	{
 		// Initialise the Window
-		m_Window = Window::Create();
+		WindowProps props;
+		props.Width = 1280;
+		props.Height = 720;
+		m_Window = Window::Create( props );
 		m_Window->SetEventCallback( std::bind( &Application::OnEvent, this, std::placeholders::_1 ) );
 
 		RHIConfig config;
@@ -132,8 +135,8 @@ namespace Tridium {
 
 			RHITextureDescriptor desc;
 			desc.InitialData = testImgData;
-			desc.Dimensions[0] = 64;
-			desc.Dimensions[1] = 64;
+			desc.Width = 64;
+			desc.Height = 64;
 			desc.Format = ERHITextureFormat::RGBA8;
 			desc.Name = "My beautiful texture";
 
@@ -145,21 +148,21 @@ namespace Tridium {
 			RHIVertexLayout layout =
 			{
 				{ "Position", ERHIVertexElementType::Float3 },
-				{ "TexCoord", ERHIVertexElementType::Float2 }
 			};
 
 			struct Vertex
 			{
 				Vector3 Position;
-				Vector2 TexCoord;
 			};
 
 			Vertex vertices[] =
 			{
-				{ { 0.0, 0.0, 0.0 } },
-				{ { 1.0, 0.0, 0.0 } },
-				{ { 1.0, 1.0, 0.0 } },
-				{ { 0.0, 1.0, 0.0 } },
+				{ { -0.5f, -0.5f, 0.0f } },
+				{ { 0.5f, -0.5f, 0.0f } },
+				{ { -0.5f, 0.5f, 0.0f } },
+				{ { 0.5f, -0.5f, 0.0f } },
+				{ { 0.5f, 0.5f, 0.0f } },
+				{ { -0.5f, 0.5f, 0.0f } },
 			};
 
 			RHIVertexBufferDescriptor vbDesc;
@@ -175,30 +178,27 @@ namespace Tridium {
 void main(
 	// Input
 	in float3 pos : Position,
-	in float2 uv : TexCoord,
 
     // Output
-    out float2 o_uv : TexCoord,
     out float4 o_Pos : SV_POSITION
 )
 {
     o_Pos = float4(pos.xy, 0.0f, 1.0f);
-    o_uv = uv;
 }
 )";
 			StringView pixelCode = R"(
 #pragma type pixel
 
-float3 Color : register( c0 );
+cbuffer Constants : register(b0)
+{
+	float4 Colour;
+};
 
 void main(
-	// Input
-	in float2 uv : TexCoord,
-	// Output
 	out float4 o_Colour : SV_TARGET
 )
 {
-	o_Colour = float4(1.0f, 0.0f, 0.0f, 1.0f);
+	o_Colour = Colour;
 }
 )";
 
@@ -213,7 +213,7 @@ void main(
 
 			// Create Shader Binding Layout
 			RHIShaderBindingLayoutDescriptor sblDesc;
-			sblDesc.AddBinding( "Color"_H ).SetInlinedConstants<Vector3>( 0 ).SetVisibility( ERHIShaderVisibility::Pixel );
+			sblDesc.AddBinding( "Colour"_H, 0 ).AsReferencedConstants( 0, 1 );
 			sblDesc.Name = "My beautiful shader binding layout";
 
 			RHIShaderBindingLayoutRef sbl = RHI::CreateShaderBindingLayout( sblDesc );
@@ -230,14 +230,6 @@ void main(
 
 			RHICommandListRef cmdList = RHI::CreateCommandList( { "My beautiful command list" } );
 
-			// Create render target
-			RHITextureDescriptor rtDesc;
-			rtDesc.Dimensions[0] = 1280;
-			rtDesc.Dimensions[1] = 720;
-			rtDesc.Format = ERHITextureFormat::RGBA8;
-			rtDesc.Name = "My beautiful render target";
-			//RHITextureRef rt = RHI::CreateTexture( rtDesc );
-
 			// Temp
 			Color clearColour = { 0.0f, 1.0f, 0.0f, 1.0f };
 			while ( true )
@@ -247,26 +239,24 @@ void main(
 				m_Window->OnUpdate();
 
 				RHICommandBuffer cmdBuffer;
-				RHICommandEnqueue( cmdBuffer, SetClearValues, clearColour, 1.0f, 0 );
-
-				RHICommandEnqueue( cmdBuffer, ResourceBarrier, rt, ERHIResourceState::Present, ERHIResourceState::RenderTarget );
-				RHICommandEnqueue( cmdBuffer, SetRenderTargets, { &rt, 1 }, nullptr );
-				RHICommandEnqueue( cmdBuffer, ClearRenderTargets, { &rt, 1 }, true, false );
-				//RHICommandEnqueue( cmdBuffer, SetPipelineState, pso );
-				//RHICommandEnqueue( cmdBuffer, SetShaderBindingLayout, sbl );
+				cmdBuffer.ResourceBarrier( rt, ERHIResourceState::Present, ERHIResourceState::RenderTarget )
+				         .SetRenderTargets( { &rt, 1 }, nullptr )
+				         .ClearRenderTargets( { &rt, 1 }, clearColour, true, false )
+				         .SetPipelineState( pso )
+				         .SetShaderBindingLayout( sbl );
 
 				// Input Assembler
-				//RHICommandEnqueue( cmdBuffer, SetVertexBuffer, vb );
-				//RHICommandEnqueue( cmdBuffer, SetPrimitiveTopology, ERHITopology::Triangle );
+				cmdBuffer.SetVertexBuffer( vb );
+				cmdBuffer.SetPrimitiveTopology( ERHITopology::Triangle );
 
 				Viewport vp;
 				vp.Width = 1280;
 				vp.Height = 720;
 				vp.X = 0;
 				vp.Y = 0;
-				vp.MinDepth = 1.0f;
-				vp.MaxDepth = 0.0f;
-				RHICommandEnqueue( cmdBuffer, SetViewports, { &vp, 1 } );
+				vp.MinDepth = 0.0f;
+				vp.MaxDepth = 1.0f;
+				cmdBuffer.SetViewports( { &vp, 1 } );
 
 				// Set Scissors
 				ScissorRect scissor;
@@ -274,13 +264,13 @@ void main(
 				scissor.Top = 0;
 				scissor.Right = 1280;
 				scissor.Bottom = 720;
-				RHICommandEnqueue( cmdBuffer, SetScissors, { &scissor, 1 } );
+				cmdBuffer.SetScissors( {&scissor, 1} );
 
 				// Draw
-				//RHICommandEnqueue( cmdBuffer, Draw, 0, sizeof( vertices ) / sizeof( Vertex ) );
+				cmdBuffer.SetShaderInput( 0, Color( 1.0f, 0.0f, 0.0f, 1.0f ) );
+				cmdBuffer.Draw( 0, sizeof( vertices ) / sizeof( Vertex ) );
 
-				RHICommandEnqueue( cmdBuffer, ResourceBarrier, rt, ERHIResourceState::RenderTarget, ERHIResourceState::Present );
-
+				cmdBuffer.ResourceBarrier( rt, ERHIResourceState::RenderTarget, ERHIResourceState::Present );
 
 				cmdList->SetCommands( cmdBuffer );
 

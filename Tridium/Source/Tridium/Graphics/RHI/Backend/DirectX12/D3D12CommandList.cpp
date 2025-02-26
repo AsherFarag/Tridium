@@ -4,6 +4,7 @@
 #include "D3D12Texture.h"
 #include "D3D12Mesh.h"
 #include "D3D12DynamicRHI.h"
+#include "D3D12ShaderBindingLayout.h"
 
 namespace Tridium {
 
@@ -25,7 +26,16 @@ namespace Tridium {
 			return false;
 		}
 
-		thread_local RHICommand::SetClearValues s_ClearValues{};
+		thread_local RHIShaderBindingLayout* s_CurrentSBL = nullptr;
+
+		struct ScopeGuard
+		{
+			~ScopeGuard()
+			{
+				s_CurrentSBL = nullptr;
+			}
+		} guard;
+
 		// Execute the commands
 		for ( const RHICommand& cmd : a_CmdBuffer.Commands )
 		{
@@ -41,6 +51,8 @@ namespace Tridium {
 				case SetShaderBindingLayout:
 				{
 					const auto& data = cmd.Get<SetShaderBindingLayout>();
+					s_CurrentSBL = data.SBL;
+					CommandList->SetGraphicsRootSignature( data.SBL->As<D3D12ShaderBindingLayout>()->m_RootSignature.Get() );
 					break;
 				}
 				case SetRenderTargets:
@@ -52,17 +64,15 @@ namespace Tridium {
 						break;
 					}
 
-					auto firstHandle = data.RTV[0]->As<D3D12Texture>()->DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 					D3D12_CPU_DESCRIPTOR_HANDLE rtvs[RHIQuery::MaxColorTargets];
 					for ( size_t i = 0; i < data.RTV.Size(); ++i )
 					{
-						rtvs[i] = firstHandle;
-						rtvs[i].ptr += rhi->GetDevice()->GetDescriptorHandleIncrementSize( D3D12_DESCRIPTOR_HEAP_TYPE_RTV ) * i;
+						rtvs[i] = data.RTV[i]->As<D3D12Texture>()->DescriptorHandle;
 					}
 
 					if ( data.DSV )
 					{
-						D3D12_CPU_DESCRIPTOR_HANDLE dsv = data.DSV->As<D3D12Texture>()->DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+						D3D12_CPU_DESCRIPTOR_HANDLE dsv = data.DSV->As<D3D12Texture>()->DescriptorHandle;
 						CommandList->OMSetRenderTargets( data.RTV.Size(), rtvs, FALSE, &dsv );
 					}
 					else
@@ -71,18 +81,12 @@ namespace Tridium {
 					}
 					break;
 				}
-				case SetClearValues:
-				{
-					const auto& data = cmd.Get<SetClearValues>();
-					s_ClearValues = data;
-					break;
-				}
 				case ClearRenderTargets:
 				{
 					const auto& data = cmd.Get<ClearRenderTargets>();
 					for ( size_t i = 0; i < data.RTV.Size(); ++i )
 					{
-						CommandList->ClearRenderTargetView( data.RTV[i]->As<D3D12Texture>()->DescriptorHandle, s_ClearValues.Color, 0, nullptr );
+						CommandList->ClearRenderTargetView( data.RTV[i]->As<D3D12Texture>()->DescriptorHandle, &data.ClearColor[0], 0, nullptr);
 					}
 					break;
 				}
@@ -121,6 +125,39 @@ namespace Tridium {
 				case SetShaderInput:
 				{
 					const auto& data = cmd.Get<SetShaderInput>();
+					if ( !s_CurrentSBL )
+					{
+						ASSERT_LOG( false, "No Shader Binding Layout set!" );
+						break;
+					}
+
+					const RHIShaderBindingLayoutDescriptor* desc = s_CurrentSBL->GetDescriptor();
+					const RHIShaderBinding& binding = desc->Bindings.At( data.Index );
+
+					switch ( binding.BindingType )
+					{
+						case ERHIShaderBindingType::Constant:
+						{
+							if ( binding.IsInlined )
+							{
+								CommandList->SetGraphicsRoot32BitConstants( data.Index, binding.WordSize, static_cast<const void*>( &data.Payload.InlineData[0] ), 0 );
+							}
+							else
+							{
+
+							}
+							break;
+						}
+						case ERHIShaderBindingType::Texture:
+						{
+							break;
+						}
+						default:
+						{
+							ASSERT_LOG( false, "Unknown Shader Binding Type!" );
+							break;
+						}
+					}
 					break;
 				}
 				case SetIndexBuffer:

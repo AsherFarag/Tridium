@@ -6,7 +6,7 @@
 
 // Helper macro to assert that the enum size is within the bounds of the number of bits.
 // This is undefined at the end of the file.
-#define ENUM_SIZE_ASSERT( _Enum ) \
+#define RHI_ENUM_SIZE_ASSERT( _Enum ) \
 	static_assert( std::underlying_type_t<_Enum>(_Enum::COUNT) <= ( 1 << std::underlying_type_t<_Enum>(_Enum::NUM_BITS) ), #_Enum "::COUNT exceeds NUM_BITS" )
 
 
@@ -53,7 +53,7 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 2,
 	};
-	ENUM_SIZE_ASSERT( ERHIFeatureSupport );
+	RHI_ENUM_SIZE_ASSERT( ERHIFeatureSupport );
 
 
 
@@ -105,7 +105,7 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 1,
 	};
-	ENUM_SIZE_ASSERT( ERHIShadingPath );
+	RHI_ENUM_SIZE_ASSERT( ERHIShadingPath );
 
 
 
@@ -188,7 +188,7 @@ namespace Tridium {
 		NUM_BITS = 2,
 		Default = ReadWrite,
 	};
-	ENUM_SIZE_ASSERT( ERHIMappingMode );
+	RHI_ENUM_SIZE_ASSERT( ERHIMappingMode );
 
 
 
@@ -207,7 +207,7 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 3,
 	};
-	ENUM_SIZE_ASSERT( ERHIShaderType );
+	RHI_ENUM_SIZE_ASSERT( ERHIShaderType );
 
 
 
@@ -226,7 +226,7 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 3,
 	};
-	ENUM_SIZE_ASSERT( ERHIShaderFormat );
+	RHI_ENUM_SIZE_ASSERT( ERHIShaderFormat );
 
 	//=======================================================
 	// RHI Shader Model
@@ -246,7 +246,7 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 4,
 	};
-	ENUM_SIZE_ASSERT( ERHIShaderModel );
+	RHI_ENUM_SIZE_ASSERT( ERHIShaderModel );
 
 
 
@@ -279,7 +279,7 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 3,
 	};
-	ENUM_SIZE_ASSERT( ERHISamplerFilter );
+	RHI_ENUM_SIZE_ASSERT( ERHISamplerFilter );
 
 
 
@@ -298,7 +298,7 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 2,
 	};
-	ENUM_SIZE_ASSERT( ERHISamplerAddressMode );
+	RHI_ENUM_SIZE_ASSERT( ERHISamplerAddressMode );
 
 
 
@@ -312,7 +312,7 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 2,
 	};
-	ENUM_SIZE_ASSERT( ERHISamplerComparison );
+	RHI_ENUM_SIZE_ASSERT( ERHISamplerComparison );
 
 
 
@@ -332,7 +332,7 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 3,
 	};
-	ENUM_SIZE_ASSERT( ERHIComparison );
+	RHI_ENUM_SIZE_ASSERT( ERHIComparison );
 
 
 
@@ -347,7 +347,7 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 2,
 	};
-	ENUM_SIZE_ASSERT( ERHIRasterizerFillMode );
+	RHI_ENUM_SIZE_ASSERT( ERHIRasterizerFillMode );
 
 
 
@@ -362,7 +362,7 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 2,
 	};
-	ENUM_SIZE_ASSERT( ERHIRasterizerCullMode );
+	RHI_ENUM_SIZE_ASSERT( ERHIRasterizerCullMode );
 
 
 
@@ -376,7 +376,7 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 1,
 	};
-	ENUM_SIZE_ASSERT( ERHIRasterizerDepthClipMode );
+	RHI_ENUM_SIZE_ASSERT( ERHIRasterizerDepthClipMode );
 
 
 
@@ -394,7 +394,7 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 3,
 	};
-	ENUM_SIZE_ASSERT( ERHIStencilOp );
+	RHI_ENUM_SIZE_ASSERT( ERHIStencilOp );
 
 
 
@@ -408,7 +408,7 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 2,
 	};
-	ENUM_SIZE_ASSERT( ERHIDepthOp );
+	RHI_ENUM_SIZE_ASSERT( ERHIDepthOp );
 
 
 
@@ -431,7 +431,7 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 4,
 	};
-	ENUM_SIZE_ASSERT( ERHIBlendOp );
+	RHI_ENUM_SIZE_ASSERT( ERHIBlendOp );
 
 
 
@@ -448,7 +448,7 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 3,
 	};
-	ENUM_SIZE_ASSERT( ERHIBlendEq );
+	RHI_ENUM_SIZE_ASSERT( ERHIBlendEq );
 
 
 
@@ -506,6 +506,82 @@ namespace Tridium {
 
 
 
+	//==========================================================
+	// RHI Texture Dimension
+	enum class ERHITextureDimension : uint8_t
+	{
+		Unknown,
+		Texture1D,
+		Texture2D,
+		Texture3D,
+		TextureCube,
+		TextureArray,
+		COUNT,
+		NUM_BITS = 3,
+	};
+	RHI_ENUM_SIZE_ASSERT( ERHITextureDimension );
+
+
+
+	//==========================================================
+	// RHI Texture Format
+	//  Describes how each pixel in a texture is stored.
+	enum class ERHITextureFormat : uint8_t
+	{
+		Unknown,
+
+		// 8-bit Unorm
+		R8,        // DXGI_FORMAT_R8_UNORM / GL_R8 / VK_FORMAT_R8_UNORM
+		RG8,       // DXGI_FORMAT_R8G8_UNORM / GL_RG8 / VK_FORMAT_R8G8_UNORM
+		RGBA8,     // DXGI_FORMAT_R8G8B8A8_UNORM / GL_RGBA8 / VK_FORMAT_R8G8B8A8_UNORM
+
+		// 8-bit sRGB
+		SRGB8,     // DXGI_FORMAT_UNKNOWN (Use SRGBA8) / GL_SRGB8 / VK_FORMAT_R8G8B8_SRGB
+		SRGBA8,    // DXGI_FORMAT_R8G8B8A8_UNORM_SRGB / GL_SRGB8_ALPHA8 / VK_FORMAT_R8G8B8A8_SRGB
+
+		// 16-bit Unorm & Float
+		R16,       // DXGI_FORMAT_R16_UNORM / GL_R16 / VK_FORMAT_R16_UNORM
+		RG16,      // DXGI_FORMAT_R16G16_UNORM / GL_RG16 / VK_FORMAT_R16G16_UNORM
+		RGBA16,    // DXGI_FORMAT_R16G16B16A16_UNORM / GL_RGBA16 / VK_FORMAT_R16G16B16A16_UNORM
+		R16F,      // DXGI_FORMAT_R16_FLOAT / GL_R16F / VK_FORMAT_R16_SFLOAT
+		RG16F,     // DXGI_FORMAT_R16G16_FLOAT / GL_RG16F / VK_FORMAT_R16G16_SFLOAT
+		RGBA16F,   // DXGI_FORMAT_R16G16B16A16_FLOAT / GL_RGBA16F / VK_FORMAT_R16G16B16A16_SFLOAT
+
+		// 32-bit Float
+		R32F,      // DXGI_FORMAT_R32_FLOAT / GL_R32F / VK_FORMAT_R32_SFLOAT
+		RG32F,     // DXGI_FORMAT_R32G32_FLOAT / GL_RG32F / VK_FORMAT_R32G32_SFLOAT
+		RGBA32F,   // DXGI_FORMAT_R32G32B32A32_FLOAT / GL_RGBA32F / VK_FORMAT_R32G32B32A32_SFLOAT
+
+		// Integer Formats
+		R16I,      // DXGI_FORMAT_R16_SINT / GL_R16I / VK_FORMAT_R16_SINT
+		RG16I,     // DXGI_FORMAT_R16G16_SINT / GL_RG16I / VK_FORMAT_R16G16_SINT
+		RGBA16I,   // DXGI_FORMAT_R16G16B16A16_SINT / GL_RGBA16I / VK_FORMAT_R16G16B16A16_SINT
+		R32I,      // DXGI_FORMAT_R32_SINT / GL_R32I / VK_FORMAT_R32_SINT
+		RG32I,     // DXGI_FORMAT_R32G32_SINT / GL_RG32I / VK_FORMAT_R32G32_SINT
+		RGBA32I,   // DXGI_FORMAT_R32G32B32A32_SINT / GL_RGBA32I / VK_FORMAT_R32G32B32A32_SINT
+
+		// Depth-Stencil Formats
+		D16,       // DXGI_FORMAT_D16_UNORM / GL_DEPTH_COMPONENT16 / VK_FORMAT_D16_UNORM
+		D32,       // DXGI_FORMAT_D32_FLOAT / GL_DEPTH_COMPONENT32F / VK_FORMAT_D32_SFLOAT
+		D24S8,     // DXGI_FORMAT_D24_UNORM_S8_UINT / GL_DEPTH24_STENCIL8 / VK_FORMAT_D24_UNORM_S8_UINT
+
+		// Compressed Formats (BC / DXT)
+		BC1,       // DXGI_FORMAT_BC1_UNORM / GL_COMPRESSED_RGBA_S3TC_DXT1_EXT / VK_FORMAT_BC1_RGB_UNORM_BLOCK
+		BC3,       // DXGI_FORMAT_BC3_UNORM / GL_COMPRESSED_RGBA_S3TC_DXT5_EXT / VK_FORMAT_BC3_UNORM_BLOCK
+		BC4,       // DXGI_FORMAT_BC4_UNORM / GL_COMPRESSED_RED_RGTC1 / VK_FORMAT_BC4_UNORM_BLOCK
+		BC5,       // DXGI_FORMAT_BC5_UNORM / GL_COMPRESSED_RG_RGTC2 / VK_FORMAT_BC5_UNORM_BLOCK
+		BC7,       // DXGI_FORMAT_BC7_UNORM / GL_COMPRESSED_RGBA_BPTC_UNORM_ARB / VK_FORMAT_BC7_UNORM_BLOCK
+
+		COUNT,
+		NUM_BITS = 6,
+	};
+	RHI_ENUM_SIZE_ASSERT( ERHITextureFormat );
+
+	// Returns the size in bytes of the given texture format.
+	constexpr uint8_t GetTextureFormatSize( ERHITextureFormat a_Format );
+
+
+
 	//====================================
 	// RHI Data Type
 	//====================================
@@ -526,7 +602,7 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 4,
 	};
-	ENUM_SIZE_ASSERT( ERHIDataType );
+	RHI_ENUM_SIZE_ASSERT( ERHIDataType );
 
 
 
@@ -622,7 +698,7 @@ namespace Tridium {
 		COUNT,
 		NUM_BITS = 5,
 	};
-	ENUM_SIZE_ASSERT( ERHIVertexElementType );
+	RHI_ENUM_SIZE_ASSERT( ERHIVertexElementType );
 
 	template<typename T>
 	constexpr ERHIVertexElementType GetRHIVertexElementType();
@@ -660,6 +736,45 @@ namespace Tridium {
 			case UInt3:     return 4 * 3;
 			case UInt4:     return 4 * 4;
 			default: return 0;
+		}
+	}
+
+	//==========================================================
+
+	inline constexpr uint8_t GetTextureFormatSize( ERHITextureFormat a_Format )
+	{
+		switch ( a_Format )
+		{
+			using enum ERHITextureFormat;
+			case R8:      return 1;
+			case RG8:     return 2;
+			case RGBA8:   return 4;
+			case SRGB8:   return 3;
+			case SRGBA8:  return 4;
+			case R16:     return 2;
+			case RG16:    return 4;
+			case RGBA16:  return 8;
+			case R16F:    return 2;
+			case RG16F:   return 4;
+			case RGBA16F: return 8;
+			case R32F:    return 4;
+			case RG32F:   return 8;
+			case RGBA32F: return 16;
+			case R16I:    return 2;
+			case RG16I:   return 4;
+			case RGBA16I: return 8;
+			case R32I:    return 4;
+			case RG32I:   return 8;
+			case RGBA32I: return 16;
+			case D16:     return 2;
+			case D32:     return 4;
+			case D24S8:   return 4;
+			case BC1:     return 8;
+			case BC3:     return 16;
+			case BC4:     return 8;
+			case BC5:     return 16;
+			case BC7:     return 16;
+			default:      return 0;
 		}
 	}
 
@@ -750,4 +865,4 @@ namespace Tridium {
 
 } // namespace Tridium
 
-#undef ENUM_SIZE_ASSERT
+#undef RHI_ENUM_SIZE_ASSERT

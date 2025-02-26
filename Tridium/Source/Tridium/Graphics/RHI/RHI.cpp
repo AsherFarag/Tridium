@@ -185,7 +185,7 @@ namespace Tridium {
 		return s_DynamicRHI->CreateShaderBindingLayout( a_Desc );
 	}
 
-	RHITextureRef RHI::CreateTexture( uint32_t a_Width, uint32_t a_Height, Span<const uint8_t> a_Data, ERHITextureFormat a_Format, const char* a_Name, ERHIUsageHint a_Usage, SharedPtr<RHIResourceAllocator> a_Allocator )
+	RHITextureRef RHI::CreateTexture2D( uint32_t a_Width, uint32_t a_Height, Span<const uint8_t> a_Data, ERHITextureFormat a_Format, const char* a_Name, ERHIUsageHint a_Usage, SharedPtr<RHIResourceAllocator> a_Allocator )
 	{
 		const size_t ExpectedSize = a_Width * a_Height * GetTextureFormatSize( a_Format );
 		if ( !ASSERT_LOG( a_Data.size() == ExpectedSize, "Data size does not match the expected size for the given texture format!" ) )
@@ -195,8 +195,8 @@ namespace Tridium {
 
 		RHITextureDescriptor desc;
 		desc.Name = a_Name;
-		desc.Dimensions[0] = a_Width;
-		desc.Dimensions[1] = a_Height;
+		desc.Width = a_Width;
+		desc.Height = a_Height;
 		desc.InitialData = a_Data;
 		desc.Format = a_Format;
 		desc.UsageHint = a_Usage;
