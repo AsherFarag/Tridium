@@ -1,6 +1,7 @@
 #include "tripch.h"
 #include "D3D12SwapChain.h"
 #include "D3D12DynamicRHI.h"
+#include "D3D12Texture.h"
 
 // For getting the native window handle
 #include <GLFW/glfw3.h>
@@ -13,7 +14,23 @@
 
 namespace Tridium {
 
-    bool D3D12SwapChain::Commit( const void* a_Params )
+	bool D3D12SwapChain::Present()
+	{
+		if ( !SwapChain )
+			return false;
+
+		SwapChain->Present( 1, 0 );
+		return true;
+	}
+
+	RHITextureRef D3D12SwapChain::GetBackBuffer()
+	{
+		if ( !SwapChain )
+			return nullptr;
+		return RTVs[SwapChain->GetCurrentBackBufferIndex()].second;
+	}
+
+	bool D3D12SwapChain::Commit( const void* a_Params )
     {
 		const auto* desc = ParamsToDescriptor<RHISwapChainDescriptor>( a_Params );
 		if ( !desc )
@@ -52,9 +69,8 @@ namespace Tridium {
 				: DXGI_SCALING_NONE;
 		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
-		EnumFlags<ERHISwapChainFlags> flags = desc->Flags;
 		swapChainDesc.Flags = 0;
-		swapChainDesc.Flags |= flags.HasFlag( ERHISwapChainFlags::UseVSync ) ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+		swapChainDesc.Flags |= desc->Flags.HasFlag( ERHISwapChainFlags::UseVSync ) ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 		swapChainDesc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 		TODO( "this?" );
@@ -87,19 +103,29 @@ namespace Tridium {
 		// Resize the RTVs array to the buffer count
 		RTVs.Resize( desc->BufferCount );
 
-		// Create handles to view
+		// Create textures and handles to view
+		RHITextureDescriptor rtvDesc;
+		rtvDesc.Format = desc->Format;
+		rtvDesc.Width = desc->Width;
+		rtvDesc.Height = desc->Height;
 		auto firstHandle = RTVDescHeap->GetCPUDescriptorHandleForHeapStart();
 		auto handleIncrement = rhi->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		for ( size_t i = 0; i < desc->BufferCount; ++i )
 		{
 			RTVs[i].first = firstHandle;
 			RTVs[i].first.ptr += handleIncrement * i;
+
+			SharedPtr<D3D12Texture> rtv = MakeShared<D3D12Texture>();
+			rtv->DescriptorHandle = RTVs[i].first;
+			rtv->Descriptor = MakeUnique<RHITextureDescriptor>( rtvDesc );
+			RTVs[i].second = rtv;
 		}
 
 		// Get the back buffers
 		for ( uint32_t i = 0; i < 2; i++ )
 		{
-			if ( FAILED( SwapChain->GetBuffer( i, IID_PPV_ARGS( &RTVs[i].second ) ) ) )
+			SharedPtr<D3D12Texture> tex = RTVs[i].second->As<D3D12Texture>();
+			if ( tex == nullptr || FAILED( SwapChain->GetBuffer( i, IID_PPV_ARGS( &tex->Texture ) ) ) )
 			{
 				return false;
 			}
@@ -109,7 +135,17 @@ namespace Tridium {
 			rtv.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 			rtv.Texture2D.MipSlice = 0;
 			rtv.Texture2D.PlaneSlice = 0;
-			rhi->GetDevice()->CreateRenderTargetView( RTVs[i].second, &rtv, RTVs[i].first );
+			rhi->GetDevice()->CreateRenderTargetView( tex->Texture, &rtv, RTVs[i].first );
+
+		#if RHI_DEBUG_ENABLED
+			if ( RHIQuery::IsDebug() )
+			{
+				WString name = desc->Name.empty() ? L"SwapChain" : ToD3D12::ToWString( desc->Name.data() );
+				name += L" RTV[" + std::to_wstring( i ) + L"]";
+				tex->Texture->SetName( name.c_str() );
+				D3D12Context::Get()->StringStorage.EmplaceBack( std::move( name ) );
+			}
+		#endif
 		}
 
 		return true;

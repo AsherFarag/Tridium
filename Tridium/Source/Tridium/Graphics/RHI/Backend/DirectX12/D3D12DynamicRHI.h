@@ -7,28 +7,12 @@ namespace Tridium {
 	class D3D12RHI final : public IDynamicRHI
 	{
 	public:
-		struct WindowData
-		{
-			static constexpr uint32_t s_FrameCount = 2;
-
-			ComPtr<D3D12::SwapChain> SwapChain = nullptr;
-			RHITextureRef Buffers[s_FrameCount] = { nullptr, nullptr };
-			uint32_t BufferIndex = 0;
-
-			ComPtr<D3D12::DescriptorHeap> RTVDescHeap = nullptr;
-			D3D12_CPU_DESCRIPTOR_HANDLE RTVHandles[s_FrameCount];
-
-			bool Initialize( D3D12RHI& a_RHI );
-		};
-
 		//==============================================
 		// Core RHI functions
 		// Initialise the RHI with the given configuration.
 		virtual bool Init( const RHIConfig& a_Config ) override;
 		// Shutdown the RHI.
 		virtual bool Shutdown() override;
-		// Present the current frame.
-		virtual bool Present() override;
 		// Execute the given command list.
 		virtual bool ExecuteCommandList( RHICommandListRef a_CommandList ) override;
 		// Returns the type of the Dynamically bound RHI.
@@ -70,7 +54,6 @@ namespace Tridium {
 		const auto& GetFence() const { return m_Fence; }
 		D3D12::FenceValue& GetFenceValue() { return m_FenceValue; }
 		HANDLE GetFenceEvent() const { return m_FenceEvent; }
-		WindowData& GetWindowData() { return m_WindowData; }
 
 		//====================================================
 
@@ -83,11 +66,6 @@ namespace Tridium {
 		ComPtr<D3D12::Fence> m_Fence = nullptr;
 		D3D12::FenceValue m_FenceValue = 0;
 		HANDLE m_FenceEvent = nullptr;
-
-		//=====================================================
-
-		TODO( "Possibly move this to a separate class" );
-		WindowData m_WindowData;
 
 		//=====================================================
 

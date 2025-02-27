@@ -1,5 +1,6 @@
 #pragma once
 #include "RHIResource.h"
+#include "RHITexture.h"
 
 namespace Tridium {
 
@@ -25,7 +26,10 @@ namespace Tridium {
 		uint32_t Quality = 0;
 	};
 
-	DEFINE_RHI_RESOURCE( SwapChain )
+	DEFINE_RHI_RESOURCE( SwapChain,
+		virtual bool Present() = 0;
+		virtual RHITextureRef GetBackBuffer() = 0;
+		)
 	{
 		uint32_t Width = 0;
 		uint32_t Height = 0;
@@ -33,8 +37,8 @@ namespace Tridium {
 		ERHIUsageHint BufferUsage = ERHIUsageHint::RenderTarget;
 		ERHIScaleMode ScaleMode = ERHIScaleMode::None;
 		ERHITextureFormat Format = ERHITextureFormat::RGBA8;
-		ERHISwapChainFlags Flags = ERHISwapChainFlags::Default;
 		RHISampleSettings SampleSettings{};
+		EnumFlags<ERHISwapChainFlags> Flags = ERHISwapChainFlags::Default;
 	};
 
 }

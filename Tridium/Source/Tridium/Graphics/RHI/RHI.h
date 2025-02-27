@@ -21,7 +21,7 @@ namespace Tridium {
 		bool Initialise( const RHIConfig& a_Config );
 		// Shutdown the RHI.
 		bool Shutdown();
-		// Present the current frame.
+		// Present the current frame to the screen using the swap chain.
 		bool Present();
 		// Execute the given command list on the GPU.
 		bool ExecuteCommandList( const RHICommandListRef& a_CommandList );

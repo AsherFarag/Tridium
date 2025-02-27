@@ -80,6 +80,7 @@ namespace Tridium {
 	{
 		ERHInterfaceType RHIType = ERHInterfaceType::Null;
 		bool UseDebug = false;
+		bool CreateSwapChain = true;
 	};
 
 

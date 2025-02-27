@@ -98,11 +98,6 @@ namespace Tridium {
             return false;
         }
 
-		if ( !m_WindowData.Initialize( *this ) )
-		{
-			return false;
-		}
-
         return true;
     }
 
@@ -129,15 +124,6 @@ namespace Tridium {
 
 		return true;
 	}
-
-    bool D3D12RHI::Present()
-    {
-		if ( !m_WindowData.SwapChain )
-			return false;
-
-		m_WindowData.SwapChain->Present( 1, 0 );
-		return true;
-    }
 
     bool D3D12RHI::ExecuteCommandList( RHICommandListRef a_CommandList )
     {
@@ -259,89 +245,5 @@ namespace Tridium {
         }
     }
 #endif // RHI_DEBUG_ENABLED
-
-    bool D3D12RHI::WindowData::Initialize( D3D12RHI& a_RHI )
-    {
-		// Get the native window handle
-		HWND hWnd = glfwGetWin32Window( glfwGetCurrentContext() );
-		if ( hWnd == NULL )
-		{
-			return false;
-		}
-       
-		// Create the swap chain
-		DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
-		swapChainDesc.Width = 1280;
-		swapChainDesc.Height = 720;
-		swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		swapChainDesc.Stereo = false;
-		swapChainDesc.SampleDesc.Count = 1;
-		swapChainDesc.SampleDesc.Quality = 0;
-		swapChainDesc.BufferUsage = DXGI_USAGE_BACK_BUFFER | DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferCount = s_FrameCount;
-		swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
-		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
-		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-
-		DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsDesc{};
-		fsDesc.Windowed = true;
-
-		// Create the swap chain
-		ComPtr<IDXGISwapChain1> swapChain;
-		if ( FAILED( a_RHI.m_DXGIFactory->CreateSwapChainForHwnd( a_RHI.m_CommandQueue.Get(), hWnd, &swapChainDesc, &fsDesc, nullptr, &swapChain ) ) )
-		{
-			return false;
-		}
-
-		if ( !swapChain.QueryInterface( SwapChain ) )
-		{
-			return false;
-		}
-
-		// Create Render Target View Descriptor Heap
-		D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
-		rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		rtvHeapDesc.NumDescriptors = s_FrameCount;
-		rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-		rtvHeapDesc.NodeMask = 0;
-		if ( FAILED( a_RHI.m_Device->CreateDescriptorHeap( &rtvHeapDesc, IID_PPV_ARGS( &RTVDescHeap ) ) ) )
-		{
-			return false;
-		}
-
-		// Create handles to view
-		auto firstHandle = RTVDescHeap->GetCPUDescriptorHandleForHeapStart();
-		auto handleIncrement = a_RHI.m_Device->GetDescriptorHandleIncrementSize( D3D12_DESCRIPTOR_HEAP_TYPE_RTV );
-		for ( size_t i = 0; i < s_FrameCount; ++i )
-		{
-			RTVHandles[i] = firstHandle;
-			RTVHandles[i].ptr += handleIncrement * i;
-		}
-
-		// Get the back buffers
-		for ( uint32_t i = 0; i < 2; i++ )
-		{
-			Buffers[i] = MakeShared<D3D12Texture>();
-			ComPtr<D3D12::Resource>& buffer = Buffers[i]->As<D3D12Texture>()->Texture;
-			if ( FAILED( SwapChain->GetBuffer( i, IID_PPV_ARGS( &buffer ) ) ) )
-			{
-				return false;
-			}
-
-			D3D12_RENDER_TARGET_VIEW_DESC rtv{};
-			rtv.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-			rtv.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-			rtv.Texture2D.MipSlice = 0;
-			rtv.Texture2D.PlaneSlice = 0;
-			a_RHI.m_Device->CreateRenderTargetView( buffer, &rtv, RTVHandles[i] );
-
-			TODO( "Temporary solution, fix this!" );
-			// Set the handle
-			Buffers[i]->As<D3D12Texture>()->DescriptorHandle = RTVHandles[i];
-		}
-
-		return true;
-    }
 
 } // namespace Tridium

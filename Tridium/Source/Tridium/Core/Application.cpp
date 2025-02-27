@@ -120,7 +120,6 @@ namespace Tridium {
 		// TEMP!
 #if 1
 		{
-
 			uint8_t testImgData[64 * 64 * 4];
 			for ( size_t y = 0; y < 64; y++ )
 			{
@@ -238,12 +237,11 @@ float4 main(VSOutput input) : SV_Target
 			Color clearColour = Color{ 0.5f, 0.4f, 1.0f, 1.0f } * 0.15f;
 			while ( true )
 			{
-				size_t currentBuffer = RHI::GetD3D12RHI()->GetWindowData().SwapChain->GetCurrentBackBufferIndex();
-				RHITextureRef rt = RHI::GetD3D12RHI()->GetWindowData().Buffers[currentBuffer];
 				m_Window->OnUpdate();
+				RHITextureRef rt = RHI::GetSwapChain()->GetBackBuffer();
 
 				RHICommandBuffer cmdBuffer;
-				cmdBuffer.ResourceBarrier( rt, ERHIResourceState::Present, ERHIResourceState::RenderTarget )
+				cmdBuffer.ResourceBarrier( rt, ERHIResourceState::Present, ERHIResourceState::RenderTarget)
 				         .SetRenderTargets( { &rt, 1 }, nullptr )
 				         .ClearRenderTargets( { &rt, 1 }, clearColour, true, false )
 				         .SetPipelineState( pso )

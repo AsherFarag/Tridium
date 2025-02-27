@@ -7,6 +7,7 @@
 #include "OpenGLTexture.h"
 #include "OpenGLMesh.h"
 #include "OpenGLPipelineState.h"
+#include "OpenGLSwapChain.h"
 
 namespace Tridium {
 
@@ -55,19 +56,6 @@ namespace Tridium {
 	bool OpenGLRHI::Shutdown()
 	{
 		return true;
-	}
-
-	bool OpenGLRHI::Present()
-	{
-		PROFILE_FUNCTION( ProfilerCategory::Rendering );
-
-		if ( GLFWwindow* window = glfwGetCurrentContext() )
-		{
-			glfwSwapBuffers( window );
-			return true;
-		}
-
-		return false;
 	}
 
 	bool OpenGLRHI::ExecuteCommandList( RHICommandListRef a_CommandList )
@@ -140,7 +128,9 @@ namespace Tridium {
 
 	RHISwapChainRef OpenGLRHI::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )
 	{
-		return RHISwapChainRef();
+		RHISwapChainRef sc = RHIResource::Create<OpenGLSwapChain>();
+		CHECK( sc->Commit( &a_Desc ) );
+		return sc;
 	}
 
 	//////////////////////////////////////////////////////////////////////////

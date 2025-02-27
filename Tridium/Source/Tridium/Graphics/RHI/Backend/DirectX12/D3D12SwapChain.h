@@ -12,10 +12,12 @@ namespace Tridium {
 		bool Release() override;
 		bool IsValid() const override;
 		const void* NativePtr() const override { return SwapChain.Get(); }
+		bool Present() override;
+		RHITextureRef GetBackBuffer() override;
 
 		ComPtr<D3D12::SwapChain> SwapChain;
 		ComPtr<D3D12::DescriptorHeap> RTVDescHeap;
-		InlineArray<Pair<D3D12_CPU_DESCRIPTOR_HANDLE, ComPtr<D3D12::Resource>>, RHIQuery::MaxColorTargets> RTVs;
+		InlineArray<Pair<D3D12_CPU_DESCRIPTOR_HANDLE, RHITextureRef>, RHIQuery::MaxColorTargets> RTVs;
 	};
 
 }

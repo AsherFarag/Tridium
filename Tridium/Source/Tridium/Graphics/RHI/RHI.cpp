@@ -57,6 +57,24 @@ namespace Tridium {
 
 		s_RHIGlobals.IsRHIInitialised = true;
 		s_RHIGlobals.Config = a_Config;
+		
+		if ( a_Config.CreateSwapChain )
+		{
+			RHISwapChainDescriptor desc;
+			desc.Width = 1280;
+			desc.Height = 720;
+			desc.BufferCount = 2;
+			desc.Format = ERHITextureFormat::RGBA8;
+			desc.Flags = ERHISwapChainFlags::UseVSync;
+			s_RHIGlobals.SwapChain = RHI::CreateSwapChain( desc );
+			if ( s_RHIGlobals.SwapChain == nullptr )
+			{
+				// Failed to create the swap chain
+				delete s_DynamicRHI;
+				s_DynamicRHI = nullptr;
+				return false;
+			}
+		}
 
 		return true;
 	}
@@ -78,12 +96,13 @@ namespace Tridium {
 
 	bool RHI::Present()
 	{
-		if ( !ASSERT_LOG( s_RHIGlobals.IsRHIInitialised, "RHI has not been initialised!" ) )
+		RHISwapChainRef swapChain = RHI::GetSwapChain();
+		if ( swapChain == nullptr )
 		{
 			return false;
 		}
 
-		return s_DynamicRHI->Present();
+		return swapChain->Present();
 	}
 
 	bool RHI::ExecuteCommandList( const RHICommandListRef& a_CommandList )

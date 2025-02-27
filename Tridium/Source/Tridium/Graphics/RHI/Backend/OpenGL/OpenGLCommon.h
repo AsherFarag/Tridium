@@ -3,6 +3,14 @@
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
 
+#include <Tridium/Graphics/RHI/RHITexture.h>
+#include <Tridium/Graphics/RHI/RHIMesh.h>
+#include <Tridium/Graphics/RHI/RHIPipelineState.h>
+#include <Tridium/Graphics/RHI/RHIShader.h>
+#include <Tridium/Graphics/RHI/RHIShaderBindingLayout.h>
+#include <Tridium/Graphics/RHI/RHICommandList.h>
+#include <Tridium/Graphics/RHI/RHISwapChain.h>
+
 namespace Tridium {
 
 	// Static API wrapper for OpenGL functions

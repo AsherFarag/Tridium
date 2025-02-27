@@ -22,8 +22,6 @@ namespace Tridium {
 		virtual bool Init( const RHIConfig& a_Config ) override;
 		// Shutdown the RHI.
 		virtual bool Shutdown() override;
-		// Present the current frame.
-		virtual bool Present() override;
 		// Execute the given command list.
 		virtual bool ExecuteCommandList( RHICommandListRef a_CommandList ) override;
 		// Returns the type of the Dynamically bound RHI.
