@@ -22,27 +22,27 @@ namespace Tridium {
 		const Byte* data = desc->InitialData.data();
 
 		// Generate a texture handle
-		OpenGL4::GenTextures( 1, &m_Handle );
+		OpenGL1::GenTextures( 1, &m_Handle );
 
 		switch ( desc->Dimension )
 		{
 			case ERHITextureDimension::TextureCube:
 			{
-				OpenGL4::BindTexture( GL_TEXTURE_CUBE_MAP, m_Handle );
+				OpenGL1::BindTexture( GL_TEXTURE_CUBE_MAP, m_Handle );
 				for ( int i = 0; i < 6; ++i )
 				{
-					OpenGL4::TexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, m_Format.InternalFormat, width, height, 0, m_Format.Format, m_Format.Type, data );
+					OpenGL1::TexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, m_Format.InternalFormat, width, height, 0, m_Format.Format, m_Format.Type, data );
 				}
-				OpenGL4::BindTexture( GL_TEXTURE_CUBE_MAP, 0 );
+				OpenGL1::BindTexture( GL_TEXTURE_CUBE_MAP, 0 );
 				break;
 			}
 			case ERHITextureDimension::Texture2D:
 			{
-				OpenGL4::BindTexture( GL_TEXTURE_2D, m_Handle );
-				OpenGL4::TexImage2D( GL_TEXTURE_2D, 0, m_Format.InternalFormat, width, height, 0, m_Format.Format, m_Format.Type, data );
-				OpenGL4::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-				OpenGL4::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-				OpenGL4::BindTexture( GL_TEXTURE_2D, 0 );
+				OpenGL1::BindTexture( GL_TEXTURE_2D, m_Handle );
+				OpenGL1::TexImage2D( GL_TEXTURE_2D, 0, m_Format.InternalFormat, width, height, 0, m_Format.Format, m_Format.Type, data );
+				OpenGL1::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+				OpenGL1::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+				OpenGL1::BindTexture( GL_TEXTURE_2D, 0 );
 				break;
 			}
 			default:
@@ -60,7 +60,7 @@ namespace Tridium {
 	{
 		if ( m_Handle != 0 )
 		{
-			OpenGL4::DeleteTextures( 1, &m_Handle );
+			OpenGL1::DeleteTextures( 1, &m_Handle );
 			m_Handle = 0;
 		}
 

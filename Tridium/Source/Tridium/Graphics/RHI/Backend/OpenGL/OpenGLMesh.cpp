@@ -37,9 +37,9 @@ namespace Tridium {
     {
 		const auto* desc = ParamsToDescriptor<RHIVertexBufferDescriptor>( a_Params );
 
-		OpenGL3::GenBuffers( 1, &m_Buffer );
-		OpenGL3::BindBuffer( GL_ARRAY_BUFFER, m_Buffer );
-		OpenGL3::BufferData( GL_ARRAY_BUFFER, desc->InitialData.size(), desc->InitialData.data(), GL_STATIC_DRAW );
+		OpenGL1::GenBuffers( 1, &m_Buffer );
+		OpenGL1::BindBuffer( GL_ARRAY_BUFFER, m_Buffer );
+		OpenGL1::BufferData( GL_ARRAY_BUFFER, desc->InitialData.size(), desc->InitialData.data(), GL_STATIC_DRAW );
 
         #if RHI_DEBUG_ENABLED
 		OpenGL4::ObjectLabel( GL_BUFFER, m_Buffer, desc->Name.size(), desc->Name.data() );
@@ -52,7 +52,7 @@ namespace Tridium {
     {
 		if ( m_Buffer != 0 )
         {
-            OpenGL3::DeleteBuffers( 1, &m_Buffer );
+            OpenGL1::DeleteBuffers( 1, &m_Buffer );
 			m_Buffer = 0;
         }
 
@@ -62,22 +62,22 @@ namespace Tridium {
     bool OpenGLVertexBuffer::Write( const Span<const Byte>& a_Data, size_t a_DstOffset )
     {
 		GLint prevBinding = 0;
-		OpenGL3::GetIntegerv( GL_ARRAY_BUFFER_BINDING, &prevBinding );
-		OpenGL3::BindBuffer( GL_ARRAY_BUFFER, m_Buffer );
+		OpenGL1::GetIntegerv( GL_ARRAY_BUFFER_BINDING, &prevBinding );
+		OpenGL1::BindBuffer( GL_ARRAY_BUFFER, m_Buffer );
 
         GLint bufferSize = 0;
-        OpenGL3::GetBufferParameteriv( GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &bufferSize );
+        OpenGL1::GetBufferParameteriv( GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &bufferSize );
         if ( a_DstOffset + a_Data.size_bytes() > bufferSize )
         {
             CHECK( a_DstOffset == 0 ); // THis is just some really crappy code to see tiles updating in the world basically.
-            OpenGL3::BufferData( GL_ARRAY_BUFFER, a_Data.size_bytes(), a_Data.data(), GL_STATIC_DRAW );
+            OpenGL1::BufferData( GL_ARRAY_BUFFER, a_Data.size_bytes(), a_Data.data(), GL_STATIC_DRAW );
         }
         else
         {
-            OpenGL3::BufferSubData( GL_ARRAY_BUFFER, a_DstOffset, a_Data.size_bytes(), a_Data.data() );
+            OpenGL1::BufferSubData( GL_ARRAY_BUFFER, a_DstOffset, a_Data.size_bytes(), a_Data.data() );
         }
 
-        OpenGL3::BindBuffer( GL_ARRAY_BUFFER, prevBinding );
+        OpenGL1::BindBuffer( GL_ARRAY_BUFFER, prevBinding );
 		return true;
     }
 
@@ -118,12 +118,12 @@ namespace Tridium {
         if ( valid )
         {
             GLint prevBinding = 0;
-            OpenGL3::GetIntegerv( GL_ARRAY_BUFFER_BINDING, &prevBinding );
-            OpenGL3::BindBuffer( GL_ARRAY_BUFFER, m_Buffer );
+            OpenGL1::GetIntegerv( GL_ARRAY_BUFFER_BINDING, &prevBinding );
+            OpenGL1::BindBuffer( GL_ARRAY_BUFFER, m_Buffer );
             GLint size = 0;
-            OpenGL3::GetBufferParameteriv( GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size );
+            OpenGL1::GetBufferParameteriv( GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size );
             valid = size > 0;
-            OpenGL3::BindBuffer( GL_ARRAY_BUFFER, prevBinding );
+            OpenGL1::BindBuffer( GL_ARRAY_BUFFER, prevBinding );
         }
 
 		return valid;
@@ -132,11 +132,11 @@ namespace Tridium {
     size_t OpenGLVertexBuffer::GetSizeInBytes() const
     {
         GLint prevBinding = 0;
-		OpenGL3::GetIntegerv( GL_ARRAY_BUFFER_BINDING, &prevBinding );
-		OpenGL3::BindBuffer( GL_ARRAY_BUFFER, m_Buffer );
+		OpenGL1::GetIntegerv( GL_ARRAY_BUFFER_BINDING, &prevBinding );
+		OpenGL1::BindBuffer( GL_ARRAY_BUFFER, m_Buffer );
 		GLint size = 0;
-		OpenGL3::GetBufferParameteriv( GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size );
-		OpenGL3::BindBuffer( GL_ARRAY_BUFFER, prevBinding );
+		OpenGL1::GetBufferParameteriv( GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size );
+		OpenGL1::BindBuffer( GL_ARRAY_BUFFER, prevBinding );
 		return size;
     }
 

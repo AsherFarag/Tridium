@@ -35,20 +35,20 @@ namespace Tridium {
 		if ( a_Config.UseDebug )
 		{
 			// Enable OpenGL debug output
-			glEnable( GL_DEBUG_OUTPUT );
-			glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
-			glDebugMessageCallback( DebugCallback, nullptr );
-			glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE );
+			OpenGL4::Enable( GL_DEBUG_OUTPUT );
+			OpenGL4::Enable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
+			OpenGL4::DebugMessageCallback( DebugCallback, nullptr );
+			OpenGL4::DebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE );
 		}
 	#endif
 
-		glEnable( GL_DEPTH_TEST );
-		glDepthMask( GL_TRUE );
+		OpenGL1::Enable( GL_DEPTH_TEST );
+		OpenGL1::DepthMask( GL_TRUE );
 		TODO( "Should we be doing this here?" );
-		glEnable( GL_MULTISAMPLE );
-		glEnable( GL_BLEND );
-		glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-		glEnable( GL_TEXTURE_CUBE_MAP_SEAMLESS );
+		OpenGL1::Enable( GL_MULTISAMPLE );
+		OpenGL1::Enable( GL_BLEND );
+		OpenGL1::BlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+		OpenGL1::Enable( GL_TEXTURE_CUBE_MAP_SEAMLESS );
 
 		return true;
 	}

@@ -16,8 +16,9 @@
 #include <Tridium/Graphics/Rendering/RenderCommand.h>
 #include <Tridium/Graphics/RHI/RHI.h>
 #include <Tridium/Graphics/RHI/RHIShaderCompiler.h>
-
+#include <Tridium/Math/MathConstants.h>
 #include <Tridium/Graphics/RHI/Backend/DirectX12/D3D12DynamicRHI.h>
+#include <GLFW/glfw3.h>
 
 import Tridium.ECS;
 
@@ -174,8 +175,8 @@ namespace Tridium {
 			StringView vertCode = R"(
 #pragma type vertex
 struct VSOutput {
-    float4 pos : SV_Position;   // Position (mandatory)
-    float4 color : COLOR0;      // Ensure same semantic and type
+    float4 pos : SV_Position;  
+    float4 color : COLOR;   
 };
 
 VSOutput main(float3 position : POSITION, float4 color : COLOR) 
@@ -190,8 +191,8 @@ VSOutput main(float3 position : POSITION, float4 color : COLOR)
 #pragma type pixel
 
 struct VSOutput {
-    float4 pos : SV_Position;   // Position (mandatory)
-    float4 color : COLOR0;      // Ensure same semantic and type
+    float4 pos : SV_Position;
+    float4 color : COLOR;
 };
 
 cbuffer Constants : register(b0)
@@ -201,7 +202,13 @@ cbuffer Constants : register(b0)
 
 float4 main(VSOutput input) : SV_Target 
 {
-	return input.color * ColourMultiplier;
+	float3 col = ColourMultiplier.rgb;
+	const float MinValue = 0.5;
+	col.r = max(col.r, MinValue);
+	col.g = max(col.g, MinValue);
+	col.b = max(col.b, MinValue);
+	col *= input.color.rgb;
+	return float4(col, 1.0);
 }
 )";
 
@@ -234,10 +241,12 @@ float4 main(VSOutput input) : SV_Target
 			RHICommandListRef cmdList = RHI::CreateCommandList( { "My beautiful command list" } );
 
 			// Temp
+			float time = 0.0f;
 			Color clearColour = Color{ 0.5f, 0.4f, 1.0f, 1.0f } * 0.15f;
 			while ( true )
 			{
 				m_Window->OnUpdate();
+				time = glfwGetTime();
 				RHITextureRef rt = RHI::GetSwapChain()->GetBackBuffer();
 
 				RHICommandBuffer cmdBuffer;
@@ -268,9 +277,17 @@ float4 main(VSOutput input) : SV_Target
 				scissor.Bottom = props.Height;
 				cmdBuffer.SetScissors( {&scissor, 1} );
 
+				static const auto CycleRGB = []( float a_Time, float a_Speed = 1.0f ) -> Color
+					{
+						float r = ( Math::Sin( a_Speed * a_Time ) + 1.0f ) / 2.0f;
+						float g = ( Math::Sin( a_Speed * a_Time + 2.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
+						float b = ( Math::Sin( a_Speed * a_Time + 4.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
+						return Color( r, g, b, 1.0f );
+					};
+
 				// Draw
-				cmdBuffer.SetShaderInput( "ColourMultiplier", Color(1.0f, 1.0f, 1.0f, 1.0f));
-				cmdBuffer.Draw( 0, sizeof( vertices ) / sizeof( Vertex ) );
+				cmdBuffer.SetShaderInput( "ColourMultiplier", CycleRGB( time, 0.50f ) )
+				         .Draw( 0, sizeof( vertices ) / sizeof( Vertex ) );
 
 				cmdBuffer.ResourceBarrier( rt, ERHIResourceState::RenderTarget, ERHIResourceState::Present );
 
