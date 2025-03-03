@@ -6,6 +6,7 @@ namespace Tridium {
 
 	//==============================================
 	// Forward declarations
+	FORWARD_DECLARE_RHI_RESOURCE( ResourceAllocator );
 	FORWARD_DECLARE_RHI_RESOURCE( Sampler );
 	FORWARD_DECLARE_RHI_RESOURCE( Texture );
 	FORWARD_DECLARE_RHI_RESOURCE( IndexBuffer );
@@ -60,6 +61,7 @@ namespace Tridium {
 		virtual RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc ) = 0;
 		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc ) = 0;
 		virtual RHIShaderBindingLayoutRef CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc ) = 0;
+		virtual RHIResourceAllocatorRef CreateResourceAllocator( const RHIResourceAllocatorDescriptor& a_Desc ) = 0;
 		virtual RHISwapChainRef CreateSwapChain( const RHISwapChainDescriptor& a_Desc ) = 0;
 		//=====================================================
 

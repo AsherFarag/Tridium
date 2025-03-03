@@ -9,6 +9,7 @@
 #include "OpenGLMesh.h"
 #include "OpenGLPipelineState.h"
 #include "OpenGLSwapChain.h"
+#include "OpenGLResourceAllocator.h"
 
 namespace Tridium {
 
@@ -132,6 +133,13 @@ namespace Tridium {
 	RHIShaderBindingLayoutRef OpenGLRHI::CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc )
 	{
 		return RHIShaderBindingLayoutRef();
+	}
+
+	RHIResourceAllocatorRef OpenGLRHI::CreateResourceAllocator( const RHIResourceAllocatorDescriptor& a_Desc )
+	{
+		RHIResourceAllocatorRef ra = RHIResource::Create<OpenGLResourceAllocator>();
+		CHECK( ra->Commit( &a_Desc ) );
+		return ra;
 	}
 
 	RHISwapChainRef OpenGLRHI::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )

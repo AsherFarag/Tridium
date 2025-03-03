@@ -111,7 +111,7 @@ namespace Tridium {
 		props.Width = 1280;
 		props.Height = 720;
 		m_Window = Window::Create( props );
-		m_Window->SetEventCallback( std::bind( &Application::OnEvent, this, std::placeholders::_1 ) );
+		m_Window->SetEventCallback( [this]( Event& e ) { this->OnEvent( e ); } );
 
 		RHIConfig config;
 		config.RHIType = ERHInterfaceType::DirectX12;
@@ -249,11 +249,16 @@ float4 main(VSOutput input) : SV_Target
 			LOG( LogCategory::Debug, Info, "Vert Shader: {0}", shader->GetDescriptor()->Name.data() );
 			LOG( LogCategory::Debug, Info, "Pixel Shader: {0}", pixelShader->GetDescriptor()->Name.data() );
 
+			RHIStaticSampler samplerDesc;
+			samplerDesc.AddressU = ERHISamplerAddressMode::Clamp;
+			samplerDesc.AddressV = ERHISamplerAddressMode::Clamp;
+			samplerDesc.AddressW = ERHISamplerAddressMode::Clamp;
+
 			// Create Shader Binding Layout
 			RHIShaderBindingLayoutDescriptor sblDesc;
 			sblDesc.AddBinding( "ColourMultiplier"_H ).AsInlinedConstants<Color>( 0 );
 			sblDesc.AddBinding( "Texture"_H ).AsReferencedTextures( 0 );
-			sblDesc.AddBinding( "TextureSampler"_H ).AsStaticSampler( 0, {} );
+			sblDesc.AddBinding( "TextureSampler"_H ).AsStaticSampler( 0, samplerDesc );
 
 			sblDesc.Name = "My beautiful shader binding layout";
 

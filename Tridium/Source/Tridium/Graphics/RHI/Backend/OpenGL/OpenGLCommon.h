@@ -8,6 +8,7 @@
 #include <Tridium/Graphics/RHI/RHIShaderBindingLayout.h>
 #include <Tridium/Graphics/RHI/RHICommandList.h>
 #include <Tridium/Graphics/RHI/RHISwapChain.h>
+#include <Tridium/Graphics/RHI/RHIResourceAllocator.h>
 
 #include "OpenGL4.h"
 #include "OpenGLUtil.h"

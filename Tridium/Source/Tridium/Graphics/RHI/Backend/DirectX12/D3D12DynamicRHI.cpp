@@ -22,6 +22,7 @@
 #include "D3D12ShaderBindingLayout.h"
 #include "D3D12CommandList.h"
 #include "D3D12SwapChain.h"
+#include "D3D12ResourceAllocator.h"
 
 namespace Tridium {
 
@@ -229,6 +230,13 @@ namespace Tridium {
 		RHIShaderBindingLayoutRef sbl = RHIResource::Create<D3D12ShaderBindingLayout>();
 		CHECK( sbl->Commit( &a_Desc ) );
 		return sbl;
+	}
+
+	RHIResourceAllocatorRef D3D12RHI::CreateResourceAllocator( const RHIResourceAllocatorDescriptor& a_Desc )
+	{
+		RHIResourceAllocatorRef ra = RHIResource::Create<D3D12ResourceAllocator>();
+		CHECK( ra->Commit( &a_Desc ) );
+		return ra;
 	}
 
 	RHISwapChainRef D3D12RHI::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )
