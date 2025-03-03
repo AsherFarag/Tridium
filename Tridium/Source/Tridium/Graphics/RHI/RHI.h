@@ -40,6 +40,7 @@ namespace Tridium {
 
 		//===========================
 		// Resource creation
+		RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc );
 		RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc );
 		RHIIndexBufferRef CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc );
 		RHIVertexBufferRef CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc );

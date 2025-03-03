@@ -13,95 +13,113 @@ namespace Tridium {
 		const auto& device = RHI::GetD3D12RHI()->GetDevice();
 
 		Array<D3D12_ROOT_PARAMETER> rootParams;
-		Array<D3D12_DESCRIPTOR_RANGE> descriptorRanges;
 		Array<D3D12_STATIC_SAMPLER_DESC> staticSamplers;
 
 		// Reserve space for the root parameters
 		rootParams.Reserve( desc->Bindings.Size() );
 
-		// Create the root parameters
+        Array<Array<D3D12_DESCRIPTOR_RANGE>> descriptorRangesList; // Stores ranges for each root param
+        descriptorRangesList.Reserve( desc->Bindings.Size() ); // Reserve memory
+
         for ( const auto& binding : desc->Bindings )
         {
             D3D12_ROOT_PARAMETER rootParam = {};
             rootParam.ShaderVisibility = ToD3D12::GetShaderVisibility( binding.Visibility );
 
-			switch ( binding.BindingType )
-			{
-				case ERHIShaderBindingType::Constant:
-				{
-					if ( binding.IsInlined )
-					{
-						// Inlined constants -> Root Constants
-						rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-						rootParam.Constants.Num32BitValues = binding.WordSize;
-						rootParam.Constants.ShaderRegister = binding.Register;
-                        rootParams.PushBack( rootParam );
-					}
-					else
-					{
-                        // Referenced Constants -> CBV Descriptor Table
-                        D3D12_DESCRIPTOR_RANGE range = {};
-                        range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-                        range.NumDescriptors = binding.WordSize;
-                        range.BaseShaderRegister = binding.Register;
-                        range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-                        descriptorRanges.PushBack( range );
-
-                        rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-                        rootParam.DescriptorTable.NumDescriptorRanges = 1;
-                        rootParam.DescriptorTable.pDescriptorRanges = &descriptorRanges.Back();
-                        rootParams.PushBack( rootParam );
-					}
-					break;
-				}
-                case ERHIShaderBindingType::Mutable:
+            switch ( binding.BindingType )
+            {
+            case ERHIShaderBindingType::Constant:
+            {
+                if ( binding.IsInlined )
                 {
-					// Mutable Buffers -> SRV/UAV Descriptor Table
-                    D3D12_DESCRIPTOR_RANGE range = {};
-                    range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // Could also be UAV
-                    range.NumDescriptors = binding.WordSize;
-                    range.BaseShaderRegister = binding.Register;
-                    range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-                    descriptorRanges.PushBack( range );
+                    rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+                    rootParam.Constants.Num32BitValues = binding.WordSize;
+                    rootParam.Constants.ShaderRegister = binding.Register;
+                    rootParams.PushBack( rootParam );
+                }
+                else
+                {
+                    descriptorRangesList.EmplaceBack(); // New range for this param
+                    auto& range = descriptorRangesList.Back();
+                    range.Resize( 1 ); // Single descriptor range
+                    range[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+					range[0].NumDescriptors = binding.WordSize;
+                    range[0].BaseShaderRegister = binding.Register;
+                    range[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
                     rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
                     rootParam.DescriptorTable.NumDescriptorRanges = 1;
-                    rootParam.DescriptorTable.pDescriptorRanges = &descriptorRanges.Back();
+                    rootParam.DescriptorTable.pDescriptorRanges = range.Data();
                     rootParams.PushBack( rootParam );
-                    break;
                 }
-                case ERHIShaderBindingType::Texture:
-                {
-                    // Textures -> SRV Descriptor Table
-                    D3D12_DESCRIPTOR_RANGE range = {};
-                    range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-                    range.NumDescriptors = binding.WordSize;
-                    range.BaseShaderRegister = binding.Register;
-                    range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-                    descriptorRanges.PushBack( range );
+                break;
+            }
+            case ERHIShaderBindingType::Texture:
+            case ERHIShaderBindingType::Mutable:
+            {
+                descriptorRangesList.EmplaceBack();
+                auto& range = descriptorRangesList.Back();
+                range.Resize( 1 );
+                range[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+                range[0].NumDescriptors = 1;
+                range[0].BaseShaderRegister = binding.Register;
+                range[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-                    rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-                    rootParam.DescriptorTable.NumDescriptorRanges = 1;
-                    rootParam.DescriptorTable.pDescriptorRanges = &descriptorRanges.Back();
-                    rootParams.PushBack( rootParam );
+                rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+                rootParam.DescriptorTable.NumDescriptorRanges = 1;
+                rootParam.DescriptorTable.pDescriptorRanges = range.Data();
+                rootParams.PushBack( rootParam );
+                break;
+            }
+            case ERHIShaderBindingType::Sampler:
+            {
+                // Dynamic sampler - Descriptor Heap Binding
+                descriptorRangesList.EmplaceBack();
+                auto& range = descriptorRangesList.Back();
+                range.Resize( 1 );
+                range[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+                range[0].NumDescriptors = 1;
+                range[0].BaseShaderRegister = binding.Register;
+                range[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+                rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+                rootParam.DescriptorTable.NumDescriptorRanges = 1;
+                rootParam.DescriptorTable.pDescriptorRanges = range.Data();
+                rootParams.PushBack( rootParam );
+                break;
+            }
+            case ERHIShaderBindingType::StaticSampler:
+            {
+                D3D12_STATIC_SAMPLER_DESC staticSampler = {};
+                staticSampler.Filter = ToD3D12::GetFilter( binding.SamplerDesc.Filter );
+                staticSampler.AddressU = ToD3D12::GetAddressMode( binding.SamplerDesc.AddressU );
+                staticSampler.AddressV = ToD3D12::GetAddressMode( binding.SamplerDesc.AddressV );
+                staticSampler.AddressW = ToD3D12::GetAddressMode( binding.SamplerDesc.AddressW );
+                staticSampler.MipLODBias = binding.SamplerDesc.MipLODBias;
+                staticSampler.MaxAnisotropy = binding.SamplerDesc.MaxAnisotropy;
+                staticSampler.ComparisonFunc = ToD3D12::GetComparisonFunc( binding.SamplerDesc.ComparisonFunc );
+                staticSampler.MinLOD = binding.SamplerDesc.MinLOD;
+                staticSampler.MaxLOD = binding.SamplerDesc.MaxLOD;
+                staticSampler.ShaderRegister = binding.Register;
+                staticSampler.ShaderVisibility = rootParam.ShaderVisibility;
+
+                switch ( binding.SamplerDesc.BorderColor )
+                {
+                case RHIStaticSampler::EBorderColor::TransparentBlack:
+                    staticSampler.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+                    break;
+                case RHIStaticSampler::EBorderColor::OpaqueBlack:
+                    staticSampler.BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK;
+                    break;
+                case RHIStaticSampler::EBorderColor::OpaqueWhite:
+                    staticSampler.BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
                     break;
                 }
-				case ERHIShaderBindingType::Sampler:
-				{
-					TODO( "Implement Sampler" );
-					// Static Sampler
-                    D3D12_STATIC_SAMPLER_DESC samplerDesc = {};
-                    samplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
-                    samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-                    samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-                    samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-                    samplerDesc.ShaderRegister = binding.Register;
-                    staticSamplers.PushBack( samplerDesc );
-					break;
-				}
-				default:
-					break;
-			}
+
+
+                staticSamplers.PushBack( staticSampler );
+            }
+            }
         }
 
 		// Create the root signature

@@ -1,6 +1,5 @@
 #pragma once
 #include <Tridium/Math/Math.h>
-#include <glm/gtx/string_cast.hpp>
 
 namespace Tridium {
 
@@ -95,13 +94,4 @@ namespace Tridium {
 
 	using Color = BasicColor<float>;
 
-}
-
-// Hot fix for glm::to_string not being defined in the glm namespace
-namespace glm {
-	template<>
-	GLM_FUNC_QUALIFIER std::string to_string( Tridium::Color const& x )
-	{
-		return glm::to_string( static_cast<glm::vec4>( x ) );
-	}
 }

@@ -81,7 +81,7 @@ namespace Tridium {
 			ERayCastChannel a_RayCastChannel, const PhysicsBodyFilter& a_BodyFilter = {},
 			bool a_DrawDebug = false, 
 			Debug::EDrawDuration a_DrawDurationType = Debug::EDrawDuration::OneFrame, float a_DebugDrawDuration = 0.0f,
-			Color a_DebugLineColor = Debug::Colors::Red, Color a_DebugHitColor = Debug::Colors::Green ) const;
+			Color a_DebugLineColor = Color::Red(), Color a_DebugHitColor = Color::Green() ) const;
 
 		//////////////////////////////////////////////////////////////////////////
 		// ECS

@@ -70,7 +70,7 @@ namespace Tridium {
 				Refl::MetaType componentType = entt::resolve( srcStorage.type() );
 				Refl::AddToGameObjectFunc addToGameObjectFunc = nullptr;
 				auto addToGameObjectFuncProp = componentType.GetMetaAttribute<Refl::Props::AddToGameObjectProp::Type>( Refl::Props::AddToGameObjectProp::ID );
-				if ( CORE_ASSERT( addToGameObjectFuncProp.has_value() ) )
+				if ( ASSERT( addToGameObjectFuncProp.has_value() ) )
 					addToGameObjectFunc = addToGameObjectFuncProp.value();
 
 				//// Handle TransformComponent separately
@@ -92,7 +92,7 @@ namespace Tridium {
 
 					// Handle component copy
 					Component* component = addToGameObjectFunc( *this, entity );
-					if ( !CORE_ASSERT(component) )
+					if ( !ASSERT(component) )
 						continue;
 
 					Refl::MetaAny dstComponent = componentType.FromVoid( component );

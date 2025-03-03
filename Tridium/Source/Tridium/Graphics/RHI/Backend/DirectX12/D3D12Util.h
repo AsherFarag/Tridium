@@ -199,6 +199,34 @@ namespace Tridium {
 			mbstowcs( wstr.data(), a_String.data(), a_String.size() );
 			return wstr;
 		}
+
+		inline constexpr D3D12_FILTER GetFilter( ERHISamplerFilter a_Filter )
+		{
+			switch ( a_Filter )
+			{
+				using enum ERHISamplerFilter;
+				case Point:             return D3D12_FILTER_MIN_MAG_MIP_POINT;
+				case Bilinear:          return D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+				case Trilinear:         return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+				case AnisotropicPoint:  return D3D12_FILTER_ANISOTROPIC;
+				case AnisotropicLinear: return D3D12_FILTER_ANISOTROPIC;
+				default:                return D3D12_FILTER_MIN_MAG_MIP_POINT;
+			}
+		}
+
+		inline constexpr D3D12_TEXTURE_ADDRESS_MODE GetAddressMode( ERHISamplerAddressMode a_Mode )
+		{
+			switch ( a_Mode )
+			{
+				using enum ERHISamplerAddressMode;
+				case Repeat:  return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+				case Mirror:  return D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
+				case Clamp:   return D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+				case Border:  return D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+				default:      return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			}
+		}
+
 	}
 
 }

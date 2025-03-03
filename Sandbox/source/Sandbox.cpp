@@ -10,8 +10,6 @@
 
 #include <Tridium/Editor/Commands/CommandManager.h>
 
-#include <source_location>
-
 using namespace Tridium;
 
 class ShooterPlayerComponent : public NativeScriptComponent
@@ -95,8 +93,6 @@ protected:
 		{
 			return false;
 		}
-
-		std::source_location::current();
 
 		CharacterControllerComponent* controller = GetGameObject().TryGetComponent<CharacterControllerComponent>();
 		if ( !controller || !controller->GetCameraGameObject().IsValid() )

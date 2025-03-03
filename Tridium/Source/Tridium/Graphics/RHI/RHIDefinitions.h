@@ -292,11 +292,11 @@ namespace Tridium {
 	//===========================
 	enum class ERHISamplerFilter : uint8_t
 	{
-		Point,
-		Bilinear,
-		Trilinear,
-		AnisotropicPoint,
-		AnisotropicLinear,
+		Point,               // Nearest, no interpolation
+		Bilinear,			 // Linear interpolation
+		Trilinear, 		     // Linear interpolation with mipmapping
+		AnisotropicPoint,    // Anisotropic filtering, no interpolation
+		AnisotropicLinear,   // Anisotropic filtering with linear interpolation
 		COUNT,
 		NUM_BITS = 3,
 	};
@@ -323,20 +323,6 @@ namespace Tridium {
 
 
 
-	//=================================
-	// RHI Sampler Comparison Function
-	//=================================
-	enum class ERHISamplerComparison : uint8_t
-	{
-		Never,
-		Less,
-		COUNT,
-		NUM_BITS = 2,
-	};
-	RHI_ENUM_SIZE_ASSERT( ERHISamplerComparison );
-
-
-
 	//===========================
 	// RHI Comparison Functions
 	//===========================
@@ -354,6 +340,13 @@ namespace Tridium {
 		NUM_BITS = 3,
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHIComparison );
+
+
+
+	//=================================
+	// RHI Sampler Comparison Function
+	//=================================
+	using ERHISamplerComparison = ERHIComparison;
 
 
 

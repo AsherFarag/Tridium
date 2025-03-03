@@ -1,6 +1,7 @@
 #pragma once
 #include <Tridium/IO/FilePath.h>
 #include <Tridium/Project/ProjectConfig.h>
+#include <Tridium/Asset/AssetType.h>
 
 namespace Tridium {
 

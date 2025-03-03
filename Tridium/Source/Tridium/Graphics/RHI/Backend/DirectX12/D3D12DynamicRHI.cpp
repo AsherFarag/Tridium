@@ -13,6 +13,8 @@
 #include <Tridium/Graphics/RHI/RHIMesh.h>
 #include <Tridium/Graphics/RHI/RHIPipelineState.h>
 
+// Backend resources
+#include "D3D12Sampler.h"
 #include "D3D12Texture.h"
 #include "D3D12Shader.h"
 #include "D3D12Mesh.h"
@@ -172,6 +174,13 @@ namespace Tridium {
     //////////////////////////////////////////////////////////////////////////
 	// RESOURCE CREATION
 	//////////////////////////////////////////////////////////////////////////
+
+	RHISamplerRef D3D12RHI::CreateSampler( const RHISamplerDescriptor& a_Desc )
+	{
+		RHISamplerRef sampler = RHIResource::Create<D3D12Sampler>();
+		CHECK( sampler->Commit( &a_Desc ) );
+		return sampler;
+	}
 
 	RHITextureRef D3D12RHI::CreateTexture( const RHITextureDescriptor& a_Desc )
 	{

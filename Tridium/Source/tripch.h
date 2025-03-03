@@ -14,6 +14,8 @@
 #include <unordered_set>
 #include <optional>
 
+#include <Tridium/Core/Core.h>
+#include <Tridium/Containers/Containers.h>
 #include <Tridium/Core/GUID.h>
 #include <Tridium/Core/Assert.h>
 #include <Tridium/Utils/Log.h>

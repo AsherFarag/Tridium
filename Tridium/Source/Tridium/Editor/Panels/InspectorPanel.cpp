@@ -698,7 +698,7 @@ namespace Tridium {
 						if ( ImGui::MenuItem( TE_ICON_TRASH_CAN " Remove Component" ) )
 						{
 							auto removeFromGameObjectFunc = metaType.GetMetaAttribute<Refl::Props::RemoveFromGameObjectProp::Type>( Refl::Props::RemoveFromGameObjectProp::ID );
-							if ( CORE_ASSERT( removeFromGameObjectFunc.has_value() ) )
+							if ( ASSERT( removeFromGameObjectFunc.has_value() ) )
 								removeFromGameObjectFunc.value()( *SceneManager::GetActiveScene(), a_GO );
 						}
 					}
@@ -772,7 +772,7 @@ namespace Tridium {
 					continue;
 
 				auto addToGameObjectFunc = metaType.GetMetaAttribute<Refl::Props::AddToGameObjectProp::Type>( Refl::Props::AddToGameObjectProp::ID );
-				if ( CORE_ASSERT( addToGameObjectFunc.has_value() ) )
+				if ( ASSERT( addToGameObjectFunc.has_value() ) )
 					addToGameObjectFunc.value()( *SceneManager::GetActiveScene(), InspectedGameObject );
 
 				break;

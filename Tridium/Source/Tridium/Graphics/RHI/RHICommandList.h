@@ -2,6 +2,7 @@
 #include "RHICommon.h"
 #include "RHIResource.h"
 #include "RHICommandAllocator.h"
+#include "RHISampler.h"
 #include "RHITexture.h"
 #include "RHIMesh.h"
 #include "RHIPipelineState.h"
@@ -320,7 +321,7 @@ namespace Tridium {
 			RHICommand::SetShaderInput& data = cmd.Get<RHICommand::SetShaderInput>();
 			data.NameHash = a_Name;
 			data.Payload = RHIShaderInputPayload();
-			BuildShaderInput( a_Value, data.Payload, m_Textures, m_Buffers );
+			BuildShaderInput( a_Value, data.Payload, m_Samplers, m_Textures, m_Buffers );
 			ADD_DEBUG_INFO();
 			return *this;
 		}
@@ -426,6 +427,7 @@ namespace Tridium {
 		UnorderedSet<RHIIndexBufferRef>         m_IndexBuffers;
 		UnorderedSet<RHIVertexBufferRef>        m_VertexBuffers;
 		UnorderedSet<RHICommandListRef>         m_CommandLists;
+		UnorderedSet<RHISamplerRef>             m_Samplers;
 		UnorderedSet<RHITextureRef>             m_Textures;
 		UnorderedSet<RHIBufferRef>              m_Buffers;
 
@@ -433,6 +435,7 @@ namespace Tridium {
 			template<typename T>
 			static void BuildShaderInput(
 				T a_Value, RHIShaderInputPayload& o_Payload,
+				UnorderedSet<RHISamplerRef>& o_Samplers,
 				UnorderedSet<RHITextureRef>& o_TextureRefs,
 				UnorderedSet<RHIBufferRef>& o_Buffers );
 
@@ -448,7 +451,7 @@ namespace Tridium {
 	};
 
 	template<typename T>
-	inline void RHICommandBuffer::BuildShaderInput( T a_Value, RHIShaderInputPayload& o_Payload, UnorderedSet<RHITextureRef>& o_TextureRefs, UnorderedSet<RHIBufferRef>& o_Buffers )
+	inline void RHICommandBuffer::BuildShaderInput( T a_Value, RHIShaderInputPayload& o_Payload, UnorderedSet<RHISamplerRef>& o_SamplerRefs, UnorderedSet<RHITextureRef>& o_TextureRefs, UnorderedSet<RHIBufferRef>& o_Buffers )
 	{
 		using UnderlyingType = std::remove_const_t<std::remove_reference_t<T>>;
 
@@ -472,6 +475,26 @@ namespace Tridium {
 			o_Payload.IsReference = true;
 			o_Payload.References[0] = static_cast<void*>( a_Value.get() );
 			o_TextureRefs.insert( a_Value );
+		}
+		// Copy Sampler Span
+		else if constexpr ( Concepts::IsSame<UnderlyingType, Span<RHISamplerRef>> )
+		{
+			o_Payload.Count = static_cast<uint8_t>( a_Value.size() );
+			o_Payload.IsReference = true;
+			auto it = o_Payload.References;
+			for ( auto& samplerRef : a_Value )
+			{
+				*( it++ ) = static_cast<void*>( samplerRef.get() );
+				o_SamplerRefs.insert( samplerRef );
+			}
+		}
+		// Copy Sampler
+		else if constexpr ( Concepts::IsConvertible<T, RHISamplerRef> )
+		{
+			o_Payload.Count = 1;
+			o_Payload.IsReference = true;
+			o_Payload.References[0] = static_cast<void*>( a_Value.get() );
+			o_SamplerRefs.insert( a_Value );
 		}
 		// Copy Buffer Span
 		else if constexpr ( Concepts::IsSame<UnderlyingType, Span<RHIBufferRef>> )

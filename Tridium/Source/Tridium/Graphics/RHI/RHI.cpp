@@ -81,10 +81,15 @@ namespace Tridium {
 
 	bool RHI::Shutdown()
 	{
+
+		RHI::FenceSignal( RHI::CreateFence() );
+
 		if ( s_DynamicRHI == nullptr )
 		{
 			return false;
 		}
+
+		s_RHIGlobals = RHIGlobals();
 
 		// Shutdown the rendering API
 		bool success = s_DynamicRHI->Shutdown();
@@ -161,6 +166,12 @@ namespace Tridium {
 	//////////////////////////////////////////////////////////////////////////
 	// RESOURCE CREATION
 	//////////////////////////////////////////////////////////////////////////
+
+	RHISamplerRef RHI::CreateSampler( const RHISamplerDescriptor& a_Desc )
+	{
+		CHECK( s_DynamicRHI );
+		return s_DynamicRHI->CreateSampler( a_Desc );
+	}
 
 	RHITextureRef RHI::CreateTexture( const RHITextureDescriptor& a_Desc )
 	{

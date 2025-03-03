@@ -41,6 +41,7 @@ namespace Tridium {
 
 		//=====================================================
 		// Resource creation
+		virtual RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc ) override;
 		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc ) override;
 		virtual RHIIndexBufferRef CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc ) override;
 		virtual RHIVertexBufferRef CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc ) override;
@@ -71,6 +72,6 @@ namespace Tridium {
 		#endif
 			return static_cast<OpenGLRHI*>( s_DynamicRHI );
 		}
-	}
+	} // namespace RHI
 
-}
+} // namespace Tridium

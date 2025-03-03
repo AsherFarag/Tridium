@@ -1,6 +1,7 @@
 #include "tripch.h"
 #include "D3D12CommandList.h"
 #include "D3D12PipelineState.h"
+#include "D3D12Sampler.h"
 #include "D3D12Texture.h"
 #include "D3D12Mesh.h"
 #include "D3D12DynamicRHI.h"
@@ -35,6 +36,11 @@ namespace Tridium {
 				s_CurrentSBL = nullptr;
 			}
 		} guard;
+
+		//TEMP!
+		thread_local Array<ComPtr<D3D12::DescriptorHeap>> descriptorHeaps;
+		descriptorHeaps.Clear();
+		uint32_t shaderInputOffset = 0;
 
 		// Execute the commands
 		for ( const RHICommand& cmd : a_CmdBuffer.Commands )
@@ -146,15 +152,91 @@ namespace Tridium {
 						{
 							if ( binding.IsInlined )
 							{
-								CommandList->SetGraphicsRoot32BitConstants( binding.Register, binding.WordSize, static_cast<const void*>( &data.Payload.InlineData[0] ), 0 );
+								CommandList->SetGraphicsRoot32BitConstants( shaderInputOffset++, binding.WordSize, static_cast<const void*>( &data.Payload.InlineData[0] ), 0 );
 							}
 							else
 							{
-
+								NOT_IMPLEMENTED;
 							}
 							break;
 						}
+						case ERHIShaderBindingType::Mutable:
+						{
+
+							break;
+						}
+						case ERHIShaderBindingType::Storage:
+						{
+							break;
+						}
 						case ERHIShaderBindingType::Texture:
+						{
+							D3D12_DESCRIPTOR_HEAP_DESC dhd{};
+							dhd.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+							dhd.NumDescriptors = 8;
+							dhd.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+							dhd.NodeMask = 0;
+
+							TODO( "Temp hack as srvheap needs to stay around" );
+							ComPtr<ID3D12DescriptorHeap> srvheap;
+							rhi->GetDevice()->CreateDescriptorHeap( &dhd, IID_PPV_ARGS( &srvheap ) );
+							descriptorHeaps.PushBack( srvheap );
+
+							D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+							srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+							if ( data.Payload.Count > 1 )
+							{
+								// Texture Array
+								srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+								srvDesc.Texture2DArray.MostDetailedMip = 0;
+								srvDesc.Texture2DArray.MipLevels = 1;
+								srvDesc.Texture2DArray.FirstArraySlice = 0;
+								srvDesc.Texture2DArray.ArraySize = data.Payload.Count;
+								srvDesc.Texture2DArray.PlaneSlice = 0;
+								srvDesc.Texture2DArray.ResourceMinLODClamp = 0.0f;
+
+								NOT_IMPLEMENTED;
+							}
+							else
+							{
+								// Single Texture
+								srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+								srvDesc.Texture2D.MostDetailedMip = 0;
+								srvDesc.Texture2D.MipLevels = 1;
+								srvDesc.Texture2D.PlaneSlice = 0;
+								srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+
+								rhi->GetDevice()->CreateShaderResourceView(
+									static_cast<const D3D12Texture*>( data.Payload.References[0] )->Texture.Get(),
+									&srvDesc,
+									srvheap->GetCPUDescriptorHandleForHeapStart()
+								);
+							}
+
+							CommandList->SetDescriptorHeaps( 1, &srvheap );
+							CommandList->SetGraphicsRootDescriptorTable( shaderInputOffset++, srvheap->GetGPUDescriptorHandleForHeapStart() );
+
+							break;
+						}
+						case ERHIShaderBindingType::RWTexture:
+						{
+							break;
+						}
+						case ERHIShaderBindingType::Sampler:
+						{
+							if ( data.Payload.Count > 1 )
+							{
+								NOT_IMPLEMENTED;
+							}
+							else
+							{
+								D3D12Sampler* sampler = static_cast<D3D12Sampler*>( data.Payload.References[0] );
+								CommandList->SetDescriptorHeaps( 1, &sampler->SamplerHeap );
+								CommandList->SetGraphicsRootDescriptorTable( shaderInputOffset++, sampler->SamplerHeap->GetGPUDescriptorHandleForHeapStart() );
+							}
+							break;
+						}
+						case ERHIShaderBindingType::StaticSampler:
 						{
 							break;
 						}

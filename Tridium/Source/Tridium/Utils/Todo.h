@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/Core/Core.h>
+#include "Macro.h"
 
 // Returns the year from the current build date
 constexpr int current_build_year()
@@ -60,8 +60,5 @@ constexpr int current_build_month()
                           (current_build_year() == year && current_build_month() < month)),        \
         "FIXME: " msg)
 
-#define $LINE WRAP( Stringize, __LINE__ )
-
 #define FIXME(Message)	PRAGMA(message(__FILE__ "(" $LINE ") : FIXME: " Message))
 #define TODO(Message)	PRAGMA(message(__FILE__ "(" $LINE ") : TODO: " Message))
-#define NOT_IMPLEMENTED	PRAGMA(message(__FILE__ "(" $LINE ") : Not Implemented"))

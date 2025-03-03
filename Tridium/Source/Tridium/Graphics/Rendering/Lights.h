@@ -1,6 +1,6 @@
 #pragma once
 #include <Tridium/Math/Math.h>
-#include <Tridium/Core/Color.h>
+#include <Tridium/Graphics/Color.h>
 #include <Tridium/Core/Memory.h>
 
 namespace Tridium {

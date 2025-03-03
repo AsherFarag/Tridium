@@ -3,6 +3,7 @@
 #include "D3D12Util.h"
 #include <Tridium/Graphics/RHI/DynamicRHI.h>
 #include <Tridium/Graphics/RHI/RHIMesh.h>
+#include <Tridium/Graphics/RHI/RHISampler.h>
 #include <Tridium/Graphics/RHI/RHITexture.h>
 #include <Tridium/Graphics/RHI/RHIPipelineState.h>
 #include <Tridium/Graphics/RHI/RHICommandList.h>

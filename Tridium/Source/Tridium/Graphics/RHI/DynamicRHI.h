@@ -6,6 +6,7 @@ namespace Tridium {
 
 	//==============================================
 	// Forward declarations
+	FORWARD_DECLARE_RHI_RESOURCE( Sampler );
 	FORWARD_DECLARE_RHI_RESOURCE( Texture );
 	FORWARD_DECLARE_RHI_RESOURCE( IndexBuffer );
 	FORWARD_DECLARE_RHI_RESOURCE( VertexBuffer );
@@ -51,6 +52,7 @@ namespace Tridium {
 
 		//=====================================================
 		// Resource creation
+		virtual RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc ) = 0;
 		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc ) = 0;
 		virtual RHIIndexBufferRef CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc ) = 0;
 		virtual RHIVertexBufferRef CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc ) = 0;

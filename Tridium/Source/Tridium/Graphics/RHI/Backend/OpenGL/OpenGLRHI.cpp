@@ -4,6 +4,7 @@
 #include <iostream>
 
 // Resources
+#include "OpenGLSampler.h"
 #include "OpenGLTexture.h"
 #include "OpenGLMesh.h"
 #include "OpenGLPipelineState.h"
@@ -84,6 +85,13 @@ namespace Tridium {
 	//////////////////////////////////////////////////////////////////////////
 	// RESOURCE CREATION
 	//////////////////////////////////////////////////////////////////////////
+
+	RHISamplerRef OpenGLRHI::CreateSampler( const RHISamplerDescriptor& a_Desc )
+	{
+		RHISamplerRef sampler = RHIResource::Create<OpenGLSampler>();
+		CHECK( sampler->Commit( &a_Desc ) );
+		return sampler;
+	}
 
 	RHITextureRef OpenGLRHI::CreateTexture( const RHITextureDescriptor& a_Desc )
 	{

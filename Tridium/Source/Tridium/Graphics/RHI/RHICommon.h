@@ -4,6 +4,7 @@
 #include "RHIGlobals.h"
 #include "DynamicRHI.h"
 #include "RHIConstants.h"
+#include <Tridium/Graphics/Color.h>
 #include <Tridium/Core/Config.h>
 #include <Tridium/Core/Memory.h>
 #include <Tridium/Core/Enum.h>

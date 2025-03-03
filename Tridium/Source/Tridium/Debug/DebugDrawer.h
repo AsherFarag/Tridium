@@ -2,7 +2,6 @@
 #include <Tridium/Core/Core.h>
 #include <Tridium/Utils/Singleton.h>
 #include <Tridium/Math/AABB.h>
-#include <Tridium/Debug/DebugColors.h>
 
 namespace Tridium {
 

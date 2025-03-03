@@ -18,7 +18,7 @@ namespace Tridium {
 	template <typename T>
 	inline T& GameObject::GetComponent() const
 	{
-		CORE_ASSERT_LOG( HasComponent<T>(), "GameObject does not have this component!" );
+		ASSERT_LOG( HasComponent<T>(), "GameObject does not have this component!" );
 		return SceneManager::GetActiveScene()->GetComponentFromGameObject<T>( *this );
 	}
 

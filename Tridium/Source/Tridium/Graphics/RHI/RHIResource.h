@@ -56,8 +56,6 @@ namespace Tridium {
 	{
     public:
         NON_COPYABLE_OR_MOVABLE( RHIResource );
-		RHIResource() = default;
-		virtual ~RHIResource() = default;
 
 		// Commits the resource to the GPU.
 		virtual bool Commit( const void* a_Params ) = 0;
@@ -141,14 +139,17 @@ namespace Tridium {
 		template<typename T> requires Concepts::IsRHIResource<T>
 		static T::RefType Create()
 		{
-			static constexpr auto Deleter = []( T* a_Resource ) { a_Resource->Release(); delete a_Resource; };
-			return T::RefType( new T(), Deleter );
+			static constexpr auto deleter = []( T* a_Resource ) { a_Resource->Release(); delete a_Resource; };
+			return T::RefType( new T(), deleter );
 		}
 
     public:
 		OpaquePtr Descriptor = nullptr;
 
 	protected:
+		RHIResource() = default;
+		virtual ~RHIResource() = default;
+
 		template<typename T>
 		const T* ParamsToDescriptor( const void* a_Params )
 		{
@@ -187,7 +188,6 @@ namespace Tridium {
 		using DescriptorType = RHI##Name##Descriptor;                                                     \
 		using RefType = RHI##Name##Ref;                                                                   \
 		using WeakRefType = RHI##Name##WeakRef;                                                           \
-        virtual ~RHI##Name() {}                                                                           \
 		static constexpr ::Tridium::ERHIResourceType Type = ::Tridium::ERHIResourceType::Name;            \
 		::Tridium::ERHIResourceType GetType() const override { return Type; }                             \
 		const DescriptorType* GetDescriptor() const { return (const DescriptorType*)(Descriptor.Get()); } \

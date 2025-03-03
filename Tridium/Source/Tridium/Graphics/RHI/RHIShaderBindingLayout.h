@@ -1,5 +1,6 @@
 #pragma once
 #include "RHIResource.h"
+#include "RHISampler.h"
 
 namespace Tridium {
 
@@ -10,12 +11,36 @@ namespace Tridium {
 	enum class ERHIShaderBindingType : uint8_t
 	{
 		Unknown = 0,
-		Constant,	// Constant buffer, uniform buffer, etc.    (DX12 CBV) / (Vulkan Uniform Buffer)
-		Mutable,	// Mutable buffer, structured buffer, etc.  (DX12 SRV) / (Vulkan Storage Buffer)
-		Storage,    // Storage buffer, RWStructuredBuffer, etc. (DX12 UAV) / (Vulkan Storage Buffer)
-		Texture,	// Read only Texture resource.              (DX12 SRV) / (Vulkan Sampled Image)
-		RWTexture,  // Read/Write Texture resource.             (DX12 UAV) / (Vulkan Storage Image)
-		Sampler,	// Sampler state.                           (DX12 SAM) / (Vulkan Sampler)
+		Constant,	  // Constant buffer, uniform buffer, etc.    (DX12 CBV) / (Vulkan Uniform Buffer)
+		Mutable,	  // Mutable buffer, structured buffer, etc.  (DX12 SRV) / (Vulkan Storage Buffer)
+		Storage,	  // Storage buffer, RWStructuredBuffer, etc. (DX12 UAV) / (Vulkan Storage Buffer)
+		Texture,	  // Read only Texture resource.              (DX12 SRV) / (Vulkan Sampled Image)
+		RWTexture,	  // Read/Write Texture resource.             (DX12 UAV) / (Vulkan Storage Image)
+		Sampler,	  // Sampler state.                           (DX12 SAM) / (Vulkan Sampler)
+		StaticSampler // Static sampler state.                  (DX12 SAM) / (Vulkan Sampler)
+	};
+
+
+
+	struct RHIStaticSampler
+	{
+		enum class EBorderColor : uint8_t
+		{
+			TransparentBlack = 0,
+			OpaqueBlack,
+			OpaqueWhite
+		};
+
+		ERHISamplerFilter Filter = ERHISamplerFilter::Bilinear;
+		ERHISamplerAddressMode AddressU = ERHISamplerAddressMode::Repeat;
+		ERHISamplerAddressMode AddressV = ERHISamplerAddressMode::Repeat;
+		ERHISamplerAddressMode AddressW = ERHISamplerAddressMode::Repeat;
+		float MipLODBias = 0.0f;
+		uint32_t MaxAnisotropy = 16;
+		ERHISamplerComparison ComparisonFunc = ERHISamplerComparison::Never;
+		EBorderColor BorderColor = EBorderColor::TransparentBlack;
+		float MinLOD = 0.0f;
+		float MaxLOD = FLT_MAX;
 	};
 
 
@@ -31,6 +56,7 @@ namespace Tridium {
 		bool IsInlined = false; // If the data is inlined in the shader.
 		uint8_t WordSize = 1;   // Number of 32-bit words for the binding. For example, a Vector4 would be 4 words ( 4 * 32 bit floats ).
 		uint8_t Register = 0;   // Register index in the shader.
+		RHIStaticSampler SamplerDesc{}; // Sampler descriptor for static samplers.
 
 		constexpr uint32_t GetSizeInBytes() const
 		{
@@ -107,6 +133,24 @@ namespace Tridium {
 			Register = a_Register;
 			return *this;
 		}
+
+		constexpr RHIShaderBinding& AsStaticSampler( uint8_t a_Register, const RHIStaticSampler& a_SamplerDesc )
+		{
+			BindingType = ERHIShaderBindingType::StaticSampler;
+			SamplerDesc = a_SamplerDesc;
+			Register = a_Register;
+			return *this;
+		}
+
+		constexpr bool IsInlinedConstants() const { return IsInlined && BindingType == ERHIShaderBindingType::Constant; }
+		constexpr bool IsReferencedConstants() const { return !IsInlined && BindingType == ERHIShaderBindingType::Constant; }
+		constexpr bool IsReferencedMutables() const { return !IsInlined && BindingType == ERHIShaderBindingType::Mutable; }
+		constexpr bool IsReferencedStorages() const { return !IsInlined && BindingType == ERHIShaderBindingType::Storage; }
+		constexpr bool IsReferencedTextures() const { return !IsInlined && BindingType == ERHIShaderBindingType::Texture; }
+		constexpr bool IsReferencedRWTextures() const { return !IsInlined && BindingType == ERHIShaderBindingType::RWTexture; }
+		constexpr bool IsReferencedSamplers() const { return !IsInlined && BindingType == ERHIShaderBindingType::Sampler; }
+		constexpr bool IsStaticSampler() const { return BindingType == ERHIShaderBindingType::StaticSampler; }
+
 	};
 
 
@@ -124,6 +168,11 @@ namespace Tridium {
 		// Add a binding to the layout.
 		RHIShaderBinding& AddBinding( hash_t a_Name, uint32_t a_InputIndex = 0 )
 		{
+			if ( a_InputIndex == 0 && Bindings.Size() > 0 )
+			{
+				a_InputIndex = Bindings.Size();
+			}
+
 			if ( Bindings.Size() <= a_InputIndex )
 			{
 				Bindings.Resize( a_InputIndex + 1 );

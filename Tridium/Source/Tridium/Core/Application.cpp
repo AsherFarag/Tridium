@@ -122,14 +122,42 @@ namespace Tridium {
 #if 1
 		{
 			uint8_t testImgData[64 * 64 * 4];
-			for ( size_t y = 0; y < 64; y++ )
+			//for ( size_t y = 0; y < 64; y++ )
+			//{
+			//	for ( size_t x = 0; x < 64; x++ )
+			//	{
+			//		testImgData[( y * 64 + x ) * 4 + 0] = x * 4;
+			//		testImgData[( y * 64 + x ) * 4 + 1] = y * 4;
+			//		testImgData[( y * 64 + x ) * 4 + 2] = 255 - ( x * 2 + y * 2 );
+			//		testImgData[( y * 64 + x ) * 4 + 3] = 255;
+			//	}
+			//}
+
+			for ( int y = 0; y < 64; y++ )
 			{
-				for ( size_t x = 0; x < 64; x++ )
+				for ( int x = 0; x < 64; x++ )
 				{
-					testImgData[( y * 64 + x ) * 4 + 0] = x * 4;
-					testImgData[( y * 64 + x ) * 4 + 1] = y * 4;
-					testImgData[( y * 64 + x ) * 4 + 2] = 255 - ( x * 2 + y * 2 );
-					testImgData[( y * 64 + x ) * 4 + 3] = 255;
+					if ( y < 64 / 3 )
+					{
+						testImgData[( y * 64 + x ) * 4 + 0] = 255;
+						testImgData[( y * 64 + x ) * 4 + 1] = 0;
+						testImgData[( y * 64 + x ) * 4 + 2] = 0;
+						testImgData[( y * 64 + x ) * 4 + 3] = 255;
+					}
+					else if ( y < 64 / 3 * 2 )
+					{
+						testImgData[( y * 64 + x ) * 4 + 0] = 0;
+						testImgData[( y * 64 + x ) * 4 + 1] = 255;
+						testImgData[( y * 64 + x ) * 4 + 2] = 0;
+						testImgData[( y * 64 + x ) * 4 + 3] = 255;
+					}
+					else
+					{
+						testImgData[( y * 64 + x ) * 4 + 0] = 0;
+						testImgData[( y * 64 + x ) * 4 + 1] = 0;
+						testImgData[( y * 64 + x ) * 4 + 2] = 255;
+						testImgData[( y * 64 + x ) * 4 + 3] = 255;
+					}
 				}
 			}
 
@@ -141,27 +169,30 @@ namespace Tridium {
 			desc.Name = "My beautiful texture";
 
 			RHITextureRef tex = RHI::CreateTexture( desc );
-			//LOG_INFO( "Successfully wrote to texture = {0}", tex->Write(desc.InitialData) );
 
 			// Create vertex buffer
 
 			RHIVertexLayout layout =
 			{
 				{ "POSITION", ERHIVertexElementType::Float3 },
-				{ "COLOR", ERHIVertexElementType::Float4 }
+				{ "TEXCOORD", ERHIVertexElementType::Float2 }
 			};
 
 			struct Vertex
 			{
 				Vector3 Position;
-				Color Colour;
+				Vector2 UV;
 			};
 
+			// Quad
 			Vertex vertices[] =
 			{
-				{ { -0.5f, -0.5f, 0.0f } , {1.0f, 0.0f, 0.0f, 1.0f} },
-				{ { 0.5f, -0.5f, 0.0f }  , {0.0f, 1.0f, 0.0f, 1.0f} },
-				{ { 0.0f, 0.5f, 0.0f }   , {0.0f, 0.0f, 1.0f, 1.0f} },
+				{ { -0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f } },
+				{ { 0.5f, -0.5f,  0.0f }, { 1.0f, 1.0f } },
+				{ { -0.5f, 0.5f,  0.0f }, { 0.0f, 0.0f } },
+				{ { 0.5f, -0.5f,  0.0f }, { 1.0f, 1.0f } },
+				{ { 0.5f, 0.5f,   0.0f }, { 1.0f, 0.0f } },
+				{ { -0.5f, 0.5f,  0.0f }, { 0.0f, 0.0f } }
 			};
 
 			RHIVertexBufferDescriptor vbDesc;
@@ -176,14 +207,14 @@ namespace Tridium {
 #pragma type vertex
 struct VSOutput {
     float4 pos : SV_Position;  
-    float4 color : COLOR;   
+	float2 uv : TEXCOORD;
 };
 
-VSOutput main(float3 position : POSITION, float4 color : COLOR) 
+VSOutput main(float3 position : POSITION, float2 uv : TEXCOORD) 
 {
     VSOutput output;
     output.pos = float4(position, 1.0);
-    output.color = color;
+	output.uv = uv;
     return output;
 }
 )";
@@ -192,7 +223,7 @@ VSOutput main(float3 position : POSITION, float4 color : COLOR)
 
 struct VSOutput {
     float4 pos : SV_Position;
-    float4 color : COLOR;
+	float2 uv : TEXCOORD;
 };
 
 cbuffer Constants : register(b0)
@@ -200,15 +231,12 @@ cbuffer Constants : register(b0)
 	float4 ColourMultiplier;
 };
 
+Texture2D<float4> Texture : register(t0);
+sampler TextureSampler : register(s0);
+
 float4 main(VSOutput input) : SV_Target 
 {
-	float3 col = ColourMultiplier.rgb;
-	const float MinValue = 0.5;
-	col.r = max(col.r, MinValue);
-	col.g = max(col.g, MinValue);
-	col.b = max(col.b, MinValue);
-	col *= input.color.rgb;
-	return float4(col, 1.0);
+	return Texture.Sample(TextureSampler, input.uv) * ColourMultiplier;
 }
 )";
 
@@ -223,7 +251,10 @@ float4 main(VSOutput input) : SV_Target
 
 			// Create Shader Binding Layout
 			RHIShaderBindingLayoutDescriptor sblDesc;
-			sblDesc.AddBinding( "ColourMultiplier"_H, 0 ).AsInlinedConstants<Color>( 0 );
+			sblDesc.AddBinding( "ColourMultiplier"_H ).AsInlinedConstants<Color>( 0 );
+			sblDesc.AddBinding( "Texture"_H ).AsReferencedTextures( 0 );
+			sblDesc.AddBinding( "TextureSampler"_H ).AsStaticSampler( 0, {} );
+
 			sblDesc.Name = "My beautiful shader binding layout";
 
 			RHIShaderBindingLayoutRef sbl = RHI::CreateShaderBindingLayout( sblDesc );
@@ -235,6 +266,7 @@ float4 main(VSOutput input) : SV_Target
 			psd.ColourTargetFormats[0] = ERHITextureFormat::RGBA8;
 			psd.VertexLayout = layout;
 			psd.ShaderBindingLayout = sbl;
+			psd.RasterizerState.CullMode = ERHIRasterizerCullMode::None;
 			psd.Name = "My beautiful pipeline state";
 			RHIPipelineStateRef pso = RHI::CreatePipelineState( psd );
 
@@ -277,7 +309,7 @@ float4 main(VSOutput input) : SV_Target
 				scissor.Bottom = props.Height;
 				cmdBuffer.SetScissors( {&scissor, 1} );
 
-				static const auto CycleRGB = []( float a_Time, float a_Speed = 1.0f ) -> Color
+				constexpr auto CycleRGB = +[]( float a_Time, float a_Speed = 1.0f ) -> Color
 					{
 						float r = ( Math::Sin( a_Speed * a_Time ) + 1.0f ) / 2.0f;
 						float g = ( Math::Sin( a_Speed * a_Time + 2.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
@@ -287,6 +319,7 @@ float4 main(VSOutput input) : SV_Target
 
 				// Draw
 				cmdBuffer.SetShaderInput( "ColourMultiplier", CycleRGB( time, 0.50f ) )
+						 .SetShaderInput( "Texture", tex )
 				         .Draw( 0, sizeof( vertices ) / sizeof( Vertex ) );
 
 				cmdBuffer.ResourceBarrier( rt, ERHIResourceState::RenderTarget, ERHIResourceState::Present );
@@ -298,6 +331,10 @@ float4 main(VSOutput input) : SV_Target
 
 				RHI::Present();
 			}
+
+			RHI::Shutdown();
+
+			return true;
 		}
 
 #endif

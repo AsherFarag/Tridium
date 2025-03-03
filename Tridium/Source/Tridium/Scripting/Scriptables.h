@@ -1,7 +1,7 @@
 #pragma once
 #include <Tridium/Math/Math.h>
 #include <Tridium/Math/Rotator.h>
-#include <Tridium/Core/Color.h>
+#include <Tridium/Graphics/Color.h>
 
 // Forward declarations
 namespace Tridium {

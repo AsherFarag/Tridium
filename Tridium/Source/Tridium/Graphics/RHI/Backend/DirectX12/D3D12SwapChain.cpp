@@ -115,10 +115,10 @@ namespace Tridium {
 			RTVs[i].first = firstHandle;
 			RTVs[i].first.ptr += handleIncrement * i;
 
-			SharedPtr<D3D12Texture> rtv = MakeShared<D3D12Texture>();
+			SharedPtr<D3D12Texture> rtv = RHIResource::Create<D3D12Texture>()->As<D3D12Texture>();
 			rtv->DescriptorHandle = RTVs[i].first;
 			rtv->Descriptor = MakeUnique<RHITextureDescriptor>( rtvDesc );
-			RTVs[i].second = rtv;
+			RTVs[i].second = std::move( rtv );
 		}
 
 		// Get the back buffers

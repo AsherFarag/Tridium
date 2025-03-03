@@ -1,4 +1,5 @@
 #include "tripch.h"
+#include "AssetType.h"
 
 namespace Tridium {
 

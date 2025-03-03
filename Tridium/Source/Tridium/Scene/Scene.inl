@@ -139,7 +139,7 @@ namespace Tridium {
 	template <typename T, typename... Args>
 	inline T& Scene::AddComponentToGameObject( GameObject a_GameObject, Args&&... args )
 	{
-		CORE_ASSERT_LOG( !GameObjectHasComponent<T>( a_GameObject ), "GameObject already has this component!" );
+		ASSERT_LOG( !GameObjectHasComponent<T>( a_GameObject ), "GameObject already has this component!" );
 		T& component = m_ECS.AddComponentToEntity<T>( a_GameObject, std::forward<Args>( args )... );
 		return component;
 	}
@@ -158,7 +158,7 @@ namespace Tridium {
 	template<typename T>
 	inline T& Scene::GetComponentFromGameObject( GameObject a_GameObject )
 	{
-		CORE_ASSERT_LOG( GameObjectHasComponent<T>( a_GameObject ), "GameObject does not have this component!" );
+		ASSERT_LOG( GameObjectHasComponent<T>( a_GameObject ), "GameObject does not have this component!" );
 		return m_ECS.GetComponentFromEntity<T>( a_GameObject );
 	}
 
@@ -177,7 +177,7 @@ namespace Tridium {
 	template<typename T>
 	inline void Scene::RemoveComponentFromGameObject( GameObject a_GameObject )
 	{
-		CORE_ASSERT_LOG( GameObjectHasComponent<T>( a_GameObject ), "GameObject does not have this component!" );
+		ASSERT_LOG( GameObjectHasComponent<T>( a_GameObject ), "GameObject does not have this component!" );
 		m_ECS.RemoveComponentFromEntity<T>( a_GameObject );
 	}
 

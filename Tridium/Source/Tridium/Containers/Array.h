@@ -288,7 +288,7 @@ namespace Tridium {
 		T& operator[]( size_t a_Index )
 		{
 		#if CONFIG_ENABLE_BOUNDS_CHECK
-			CORE_ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
+			ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
 		#endif
 			return m_Data[a_Index];
 		}
@@ -296,7 +296,7 @@ namespace Tridium {
 		const T& operator[]( size_t a_Index ) const
 		{
 		#if CONFIG_ENABLE_BOUNDS_CHECK
-			CORE_ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
+			ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
 		#endif
 			return m_Data[a_Index];
 		}
@@ -304,7 +304,7 @@ namespace Tridium {
 		T& At( size_t a_Index )
 		{
 		#if CONFIG_ENABLE_BOUNDS_CHECK
-			CORE_ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
+			ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
 		#endif
 			return m_Data[a_Index];
 		}
@@ -312,7 +312,7 @@ namespace Tridium {
 		const T& At( size_t a_Index ) const
 		{
 		#if CONFIG_ENABLE_BOUNDS_CHECK
-			CORE_ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
+			ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
 		#endif
 			return m_Data[a_Index];
 		}

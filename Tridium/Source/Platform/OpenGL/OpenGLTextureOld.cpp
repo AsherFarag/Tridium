@@ -20,7 +20,7 @@ namespace Tridium {
 			case GL_DEPTH_COMPONENT: return ETextureFormat::Depth;
 			}
 
-			TE_CORE_ASSERT( false );
+			ASSERT( false );
 			return ETextureFormat::None;
 		}
 
@@ -42,7 +42,7 @@ namespace Tridium {
 			case ETextureFormat::Depth: return GL_DEPTH_COMPONENT;
 			}
 
-			TE_CORE_ASSERT( false );
+			ASSERT( false );
 			return 0;
 		}
 
@@ -64,7 +64,7 @@ namespace Tridium {
 			case ETextureFormat::Depth: return GL_DEPTH_COMPONENT;
 			}
 
-			TE_CORE_ASSERT( false );
+			ASSERT( false );
 			return 0;
 		}
 
@@ -86,7 +86,7 @@ namespace Tridium {
 			case ETextureFormat::Depth: return GL_FLOAT;
 			}
 
-			TE_CORE_ASSERT( false );
+			ASSERT( false );
 			return 0;
 		}
 
@@ -102,7 +102,7 @@ namespace Tridium {
 			case ETextureFilter::LinearMipmapLinear: return GL_LINEAR_MIPMAP_LINEAR;
 			}
 
-			TE_CORE_ASSERT( false );
+			ASSERT( false );
 			return 0;
 		}
 
@@ -116,7 +116,7 @@ namespace Tridium {
 			case ETextureWrap::ClampToBorder: return GL_CLAMP_TO_BORDER;
 			}
 
-			TE_CORE_ASSERT( false );
+			ASSERT( false );
 			return 0;
 		}
 
