@@ -1,5 +1,5 @@
 #include "tripch.h"
-#include "OpenGLRHI.h"
+#include "OpenGLDynamicRHI.h"
 #include "OpenGLCommon.h"
 #include <iostream>
 
@@ -10,6 +10,8 @@
 #include "OpenGLPipelineState.h"
 #include "OpenGLSwapChain.h"
 #include "OpenGLResourceAllocator.h"
+#include "OpenGLCommandList.h"
+#include "OpenGLShader.h"
 
 namespace Tridium {
 
@@ -24,7 +26,7 @@ namespace Tridium {
 	// CORE RHI FUNCTIONS
 	//////////////////////////////////////////////////////////////////////////
 
-	bool OpenGLRHI::Init( const RHIConfig& a_Config )
+	bool OpenGLDynamicRHI::Init( const RHIConfig& a_Config )
 	{
 		int status = gladLoadGLLoader( (GLADloadproc)glfwGetProcAddress );
 		if ( status == 0 )
@@ -55,12 +57,12 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLRHI::Shutdown()
+	bool OpenGLDynamicRHI::Shutdown()
 	{
 		return true;
 	}
 
-	bool OpenGLRHI::ExecuteCommandList( RHICommandListRef a_CommandList )
+	bool OpenGLDynamicRHI::ExecuteCommandList( RHICommandListRef a_CommandList )
 	{
 		return false;
 	}
@@ -69,17 +71,17 @@ namespace Tridium {
 	// FENCE FUNCTIONS
 	//////////////////////////////////////////////////////////////////////////
 
-	RHIFence OpenGLRHI::CreateFence() const
+	RHIFence OpenGLDynamicRHI::CreateFence() const
 	{
 		return RHIFence();
 	}
 
-	ERHIFenceState OpenGLRHI::GetFenceState( RHIFence a_Fence ) const
+	ERHIFenceState OpenGLDynamicRHI::GetFenceState( RHIFence a_Fence ) const
 	{
 		return ERHIFenceState();
 	}
 
-	void OpenGLRHI::FenceSignal( RHIFence a_Fence )
+	void OpenGLDynamicRHI::FenceSignal( RHIFence a_Fence )
 	{
 	}
 
@@ -87,62 +89,68 @@ namespace Tridium {
 	// RESOURCE CREATION
 	//////////////////////////////////////////////////////////////////////////
 
-	RHISamplerRef OpenGLRHI::CreateSampler( const RHISamplerDescriptor& a_Desc )
+	RHISamplerRef OpenGLDynamicRHI::CreateSampler( const RHISamplerDescriptor& a_Desc, const RHIResourceAllocatorRef& a_Allocator )
 	{
 		RHISamplerRef sampler = RHIResource::Create<OpenGLSampler>();
 		CHECK( sampler->Commit( &a_Desc ) );
 		return sampler;
 	}
 
-	RHITextureRef OpenGLRHI::CreateTexture( const RHITextureDescriptor& a_Desc )
+	RHITextureRef OpenGLDynamicRHI::CreateTexture( const RHITextureDescriptor& a_Desc, const RHIResourceAllocatorRef& a_Allocator )
 	{
 		RHITextureRef tex = RHIResource::Create<OpenGLTexture>();
 		CHECK( tex->Commit( &a_Desc ) );
 		return tex;
 	}
 
-	RHIIndexBufferRef OpenGLRHI::CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc )
+	RHIIndexBufferRef OpenGLDynamicRHI::CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc )
 	{
 		RHIIndexBufferRef ib = RHIResource::Create<OpenGLIndexBuffer>();
 		CHECK( ib->Commit( &a_Desc ) );
 		return ib;
 	}
 
-	RHIVertexBufferRef OpenGLRHI::CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc )
+	RHIVertexBufferRef OpenGLDynamicRHI::CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc )
 	{
 		RHIVertexBufferRef vb = RHIResource::Create<OpenGLVertexBuffer>();
 		CHECK( vb->Commit( &a_Desc ) );
 		return vb;
 	}
 
-	RHIPipelineStateRef OpenGLRHI::CreatePipelineState( const RHIPipelineStateDescriptor& a_Desc )
+	RHIGraphicsPipelineStateRef OpenGLDynamicRHI::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc )
 	{
-		return RHIPipelineStateRef();
+		RHIGraphicsPipelineStateRef pso = RHIResource::Create<OpenGLGraphicsPipelineState>();
+		CHECK( pso->Commit( &a_Desc ) );
+		return pso;
 	}
 
-	RHICommandListRef OpenGLRHI::CreateCommandList( const RHICommandListDescriptor& a_Desc )
+	RHICommandListRef OpenGLDynamicRHI::CreateCommandList( const RHICommandListDescriptor& a_Desc )
 	{
-		return RHICommandListRef();
+		RHICommandListRef cl = RHIResource::Create<OpenGLCommandList>();
+		CHECK( cl->Commit( &a_Desc ) );
+		return cl;
 	}
 
-	RHIShaderModuleRef OpenGLRHI::CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc )
+	RHIShaderModuleRef OpenGLDynamicRHI::CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc )
 	{
-		return RHIShaderModuleRef();
+		RHIShaderModuleRef shader = RHIResource::Create<OpenGLShaderModule>();
+		CHECK( shader->Commit( &a_Desc ) );
+		return shader;
 	}
 
-	RHIShaderBindingLayoutRef OpenGLRHI::CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc )
+	RHIShaderBindingLayoutRef OpenGLDynamicRHI::CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc )
 	{
 		return RHIShaderBindingLayoutRef();
 	}
 
-	RHIResourceAllocatorRef OpenGLRHI::CreateResourceAllocator( const RHIResourceAllocatorDescriptor& a_Desc )
+	RHIResourceAllocatorRef OpenGLDynamicRHI::CreateResourceAllocator( const RHIResourceAllocatorDescriptor& a_Desc )
 	{
 		RHIResourceAllocatorRef ra = RHIResource::Create<OpenGLResourceAllocator>();
 		CHECK( ra->Commit( &a_Desc ) );
 		return ra;
 	}
 
-	RHISwapChainRef OpenGLRHI::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )
+	RHISwapChainRef OpenGLDynamicRHI::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )
 	{
 		RHISwapChainRef sc = RHIResource::Create<OpenGLSwapChain>();
 		CHECK( sc->Commit( &a_Desc ) );
@@ -179,7 +187,7 @@ namespace Tridium {
 		}
 	}
 
-	void OpenGLRHI::DumpDebug()
+	void OpenGLDynamicRHI::DumpDebug()
 	{
 		std::cout << "OpenGL Debug Dump:\n";
 		for ( const String& message : s_OpenGLDebugMessages )

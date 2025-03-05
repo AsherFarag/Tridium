@@ -30,7 +30,7 @@ namespace Tridium {
 			return desc;
 		}
 
-		D3D12_RASTERIZER_DESC GetRasterizerDesc( const RHIPipelineStateDescriptor& a_PSD )
+		D3D12_RASTERIZER_DESC GetRasterizerDesc( const RHIGraphicsPipelineStateDescriptor& a_PSD )
 		{
 			D3D12_RASTERIZER_DESC desc{};
 
@@ -64,7 +64,7 @@ namespace Tridium {
 			return desc;
 		}
 
-		D3D12_DEPTH_STENCIL_DESC GetDepthStencilDesc( const RHIPipelineStateDescriptor& a_PSD )
+		D3D12_DEPTH_STENCIL_DESC GetDepthStencilDesc( const RHIGraphicsPipelineStateDescriptor& a_PSD )
 		{
 			D3D12_DEPTH_STENCIL_DESC desc = {};
 			desc.DepthEnable = a_PSD.DepthState.IsEnabled;
@@ -85,14 +85,9 @@ namespace Tridium {
 
 	} // namespace ToD3D12
 
-    bool D3D12PipelineState::Commit( const void* a_Params )
+    bool D3D12GraphicsPipelineState::Commit( const void* a_Params )
     {
-		const RHIPipelineStateDescriptor* desc = ParamsToDescriptor<RHIPipelineStateDescriptor>( a_Params );
-		if ( !desc || desc->GetPipelineType() == ERHIPipelineType::Invalid )
-		{
-			LOG( LogCategory::RHI, Error, "Invalid pipeline type" );
-			return false;
-		}
+		const RHIGraphicsPipelineStateDescriptor* desc = ParamsToDescriptor<RHIGraphicsPipelineStateDescriptor>( a_Params );
 
 		// Create the vertex input layout
 		for ( size_t i = 0; i < desc->VertexLayout.Elements.Size(); ++i )
@@ -108,38 +103,6 @@ namespace Tridium {
 				.InstanceDataStepRate = 0
 			};
 		}
-
-		if ( desc->GetPipelineType() == ERHIPipelineType::Graphics )
-		{
-			return CommitGraphics();
-		}
-		else if ( desc->GetPipelineType() == ERHIPipelineType::Compute )
-		{
-			return CommitCompute();
-		}
-
-		return false;
-    }
-
-	bool D3D12PipelineState::Release()
-	{
-		PSO.Release();
-		return true;
-	}
-
-	bool D3D12PipelineState::IsValid() const
-	{
-		return PSO.Get() != nullptr;
-	}
-
-	const void* D3D12PipelineState::NativePtr() const
-	{
-		return PSO.Get();
-	}
-
-	bool D3D12PipelineState::CommitGraphics()
-	{
-		const RHIPipelineStateDescriptor* desc = GetDescriptor();
 
 		// Create the pipeline state object
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psd = {};
@@ -192,22 +155,24 @@ namespace Tridium {
 		}
 
 
-		#if RHI_DEBUG_ENABLED
+	#if RHI_DEBUG_ENABLED
 		if ( RHIQuery::IsDebug() && !desc->Name.empty() )
 		{
 			WString wName = ToD3D12::ToWString( desc->Name.data() );
 			PSO->SetName( wName.c_str() );
 			D3D12Context::Get()->StringStorage.EmplaceBack( std::move( wName ) );
 		}
-		#endif
+	#endif
 
 		return true;
-	}
 
-	bool D3D12PipelineState::CommitCompute()
-	{
-		LOG( LogCategory::RHI, Error, "Compute pipeline state not implemented" );
 		return false;
+    }
+
+	bool D3D12GraphicsPipelineState::Release()
+	{
+		PSO.Release();
+		return true;
 	}
 
 } // namespace Tridium

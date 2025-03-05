@@ -1,6 +1,7 @@
 #include "tripch.h"
 #include "D3D12Texture.h"
 #include "D3D12DynamicRHI.h"
+#include "D3D12ResourceAllocator.h"
 
 namespace Tridium {
 
@@ -13,23 +14,87 @@ namespace Tridium {
 			return false;
 		}
 
+		if ( m_Allocator )
+		{
+			// We were given a render resource allocator, so use that
+			const ERHIResourceAllocatorType allocatorType = m_Allocator->GetDescriptor()->AllocatorType;
+			switch ( allocatorType )
+			{
+				using enum ERHIResourceAllocatorType;
+				case RenderResource:
+				case RenderTarget:
+				{
+					auto* allocator = m_Allocator->As<D3D12ResourceAllocator>();
+					uint32_t offset = 0;
+					if ( !allocator->Allocate( 1, &offset ) )
+					{
+						LOG( LogCategory::RHI, Error, "Failed to allocate texture - '{0}' in resource allocator - '{1}'", desc->Name, m_Allocator->GetDescriptor()->Name );
+						return false;
+					}
+
+					DescriptorHandle = allocator->DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+					DescriptorHandle.ptr += offset * allocator->DescriptorSize;
+
+					if ( desc->IsRenderTarget )
+					{
+						if ( allocatorType == RenderTarget ) [[likely]]
+						{
+							return true;
+						}
+						else
+						{
+							ASSERT_LOG( false, "Texture is a render target but the allocator is not a render target allocator!" );
+							return false;
+						}
+					}
+
+					break;
+				}
+				default:
+				{
+					ASSERT_LOG( false, "Invalid allocator type!" );
+					return false;
+				}
+			}
+		}
+		else
+		{
+			// We were not given an allocator, so create a default one
+			RHIResourceAllocatorDescriptor heapDesc = {};
+			heapDesc.AllocatorType = ERHIResourceAllocatorType::RenderResource;
+			heapDesc.Capacity = 1;
+			heapDesc.Flags = ERHIResourceAllocatorFlags::ShaderVisible;
+			m_Allocator = RHI::GetD3D12RHI()->CreateResourceAllocator( heapDesc );
+			if ( !m_Allocator )
+			{
+				return ASSERT_LOG( false, "Failed to create resource allocator!" );
+			}
+
+			// We are the only texture in the heap, so we can use the first descriptor
+			m_Allocator->Allocate( 1 );
+			DescriptorHandle = m_Allocator->As<D3D12ResourceAllocator>()->DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+		}
+
 		const size_t width = desc->Width;
 		const size_t height = desc->Height;
+		const size_t depth = desc->Depth;
 		const size_t stride = width * GetTextureFormatSize( desc->Format );
 		const size_t imgSize = height * stride;
 
 		D3D12_RESOURCE_DESC resourceDesc = {};
-		resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+		resourceDesc.Dimension = ToD3D12::GetResourceDimension( desc->Dimension );
 		resourceDesc.Alignment = 0;
 		resourceDesc.Width = width;
 		resourceDesc.Height = height;
-		resourceDesc.DepthOrArraySize = 1;
+		resourceDesc.DepthOrArraySize = depth;
 		resourceDesc.MipLevels = desc->Mips;
 		resourceDesc.Format = RHITextureFormatToDXGI( desc->Format );
 		resourceDesc.SampleDesc.Count = 1;
 		resourceDesc.SampleDesc.Quality = 0;
 		resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 		resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+		const auto& device = RHI::GetD3D12RHI()->GetDevice();
 
 		D3D12_HEAP_PROPERTIES heapProperties = {};
 		heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
@@ -38,12 +103,8 @@ namespace Tridium {
 		heapProperties.CreationNodeMask = 1;
 		heapProperties.VisibleNodeMask = 1;
 
-		const auto& device = RHI::GetD3D12RHI()->GetDevice();
-
-		HRESULT hr;
-
 		// Create the texture
-		hr = device->CreateCommittedResource(
+		HRESULT hr = device->CreateCommittedResource(
 				&heapProperties, D3D12_HEAP_FLAG_NONE,
 				&resourceDesc, D3D12_RESOURCE_STATE_COPY_DEST,
 				nullptr, IID_PPV_ARGS( &Texture ) );
@@ -53,8 +114,8 @@ namespace Tridium {
 			return false;
 		}
 
-		// Set the name
 #if RHI_DEBUG_ENABLED
+		// Set the name
 		if ( RHIQuery::IsDebug() && !desc->Name.empty() )
 		{
 			WString wName = ToD3D12::ToWString( desc->Name.data() );
@@ -63,33 +124,17 @@ namespace Tridium {
 		}
 #endif
 
-		// Create the descriptor heap
-		D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-		heapDesc.NumDescriptors = 1;
-		heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-		heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-		heapDesc.NodeMask = 0;
-		hr = device->CreateDescriptorHeap( &heapDesc, IID_PPV_ARGS( &DescriptorHeap ) );
-		if ( FAILED( hr ) )
-		{
-			return false;
-		}
-
-		TODO( "Temporary solution, fix this!" );
-		// Set the handle
-		DescriptorHandle = DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-
 		// Create the SRV
+		const bool isArray = ( desc->Depth > 1 ) && ( desc->Dimension != ERHITextureDimension::Texture3D );
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format = resourceDesc.Format;
-		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.ViewDimension = ToD3D12::GetSRVDimension( desc->Dimension, isArray );
 		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		srvDesc.Texture2D.MostDetailedMip = 0;
 		srvDesc.Texture2D.MipLevels = desc->Mips;
 		srvDesc.Texture2D.PlaneSlice = 0;
 		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-		auto handle( DescriptorHeap->GetCPUDescriptorHandleForHeapStart() );
-		device->CreateShaderResourceView( Texture.Get(), &srvDesc, handle );
+		device->CreateShaderResourceView( Texture.Get(), &srvDesc, DescriptorHandle );
 
 		// If we have initial data, write it to the texture
 		if ( desc->InitialData.size() > 0 )
@@ -103,7 +148,7 @@ namespace Tridium {
 	bool D3D12Texture::Release()
 	{
 		Texture.Release();
-		DescriptorHeap.Release();
+		DescriptorHandle = {};
 		return true;
 	}
 

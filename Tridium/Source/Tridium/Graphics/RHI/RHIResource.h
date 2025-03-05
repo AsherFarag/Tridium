@@ -22,7 +22,8 @@ namespace Tridium {
         VertexBuffer,
         IndexBuffer,
         ShaderBindingLayout,
-        PipelineState,
+        GraphicsPipelineState,
+		ComputePipelineState,
         CommandList,
         ResourceAllocator,
         CommandAllocator,
@@ -38,12 +39,9 @@ namespace Tridium {
 		template<typename T>
 		concept IsRHIResourceImplemntation =
 			IsRHIResource<T>
-			&& requires ( T )
-			{
-				T::API;
-			};
+			&& requires ( T ) { T::API; };
 
-	}
+	} // namespace Concepts
 
 	//======================================================================================================
 	// RHIResource
@@ -52,7 +50,7 @@ namespace Tridium {
 	//  For graphics APIs, a specific implementation of this class will be created.
 	//  E.g. OpenGLTexture -> RHITexture -> RHIResource
 	//======================================================================================================
-	class RHIResource : public EnableSharedFromThis<RHIResource>
+	class RHIResource
 	{
     public:
         NON_COPYABLE_OR_MOVABLE( RHIResource );
@@ -113,25 +111,25 @@ namespace Tridium {
 			return GetType() == T::Type;
 		}
 
-		// Will return a shared pointer to this resource if it is the same type.
+		// Will return a pointer to this resource if it is the same type.
 		template<typename T> requires Concepts::IsRHIResource<T>
-		SharedPtr<T> As()
+		T* As()
 		{
 			if ( Is<T>() )
 			{
-				return SharedPtrCast<T>( shared_from_this() );
+				return static_cast<T*>( this );
 			}
 
 			return nullptr;
 		}
 
-		// Will return a shared pointer to this resource if it is the same type.
+		// Will return a pointer to this resource if it is the same type.
 		template<typename T> requires Concepts::IsRHIResource<T>
-		SharedPtr<const T> As() const
+		const T* As() const
 		{
 			if ( Is<T>() )
 			{
-				return SharedPtrCast<const T>( shared_from_this() );
+				return static_cast<const T*>( this );
 			}
 			return nullptr;
 		}
@@ -170,32 +168,65 @@ namespace Tridium {
 	{
 		using ResourceType = T;
 		StringView Name;
-		RHIResourceAllocatorRef Allocator;
+	};
+
+	class RHIAllocatableResource : public RHIResource
+	{
+	public:
+		const auto& GetAllocator() const { return m_Allocator; }
+
+		template<typename T>
+		static T::RefType Create( RHIResourceAllocatorRef a_Allocator )
+		{
+			static constexpr auto deleter = []( T* a_Resource ) { a_Resource->Release(); delete a_Resource; };
+			auto resource = new T();
+			resource->m_Allocator = std::move( a_Allocator );
+			return T::RefType( resource, deleter );
+		}
+
+	protected:
+		RHIResourceAllocatorRef m_Allocator = nullptr;
 	};
 
 } // namespace Tridium
 
+#define RHI_RESOURCE_BODY( _Type ) \
+	public:                                                                                                \
+		using DescriptorType = RHI##_Type##Descriptor;                                                     \
+		using RefType = RHI##_Type##Ref;                                                                   \
+		using WeakRefType = RHI##_Type##WeakRef;                                                           \
+		static constexpr ::Tridium::ERHIResourceType Type = ::Tridium::ERHIResourceType::_Type;            \
+		::Tridium::ERHIResourceType GetType() const override { return Type; }                              \
+		const DescriptorType* GetDescriptor() const { return (const DescriptorType*)(Descriptor.Get()); }
+ 
 
 // Helper macro to define a base RHI resource type and its descriptor.
-#define DEFINE_RHI_RESOURCE( Name, ... )                                                                  \
-	class RHI##Name;                                                                                      \
-	struct RHI##Name##Descriptor;                                                                         \
-	using RHI##Name##Ref = SharedPtr<RHI##Name>;                                                          \
-	using RHI##Name##WeakRef = SharedPtr<RHI##Name##Descriptor>;                                          \
-	class RHI##Name : public ::Tridium::RHIResource                                                       \
-	{                                                                                                     \
-	public:                                                                                               \
-		using DescriptorType = RHI##Name##Descriptor;                                                     \
-		using RefType = RHI##Name##Ref;                                                                   \
-		using WeakRefType = RHI##Name##WeakRef;                                                           \
-		static constexpr ::Tridium::ERHIResourceType Type = ::Tridium::ERHIResourceType::Name;            \
-		::Tridium::ERHIResourceType GetType() const override { return Type; }                             \
-		const DescriptorType* GetDescriptor() const { return (const DescriptorType*)(Descriptor.Get()); } \
-		__VA_ARGS__                                                                                       \
-	};                                                                                                    \
-	struct RHI##Name##Descriptor : public ::Tridium::RHIResourceDescriptor<RHI##Name>
+#define DEFINE_RHI_RESOURCE(_Name, ...)                                                                 \
+    class RHI##_Name;                                                                                   \
+    struct RHI##_Name##Descriptor;                                                                      \
+    using RHI##_Name##Ref = SharedPtr<RHI##_Name>;                                                      \
+    using RHI##_Name##WeakRef = WeakPtr<RHI##_Name>;                                                    \
+    class RHI##_Name : public ::Tridium::RHIResource, public ::Tridium::EnableSharedFromThis<RHI##_Name>\
+    {                                                                                                   \
+    public:                                                                                             \
+        RHI_RESOURCE_BODY(_Name)                                                                        \
+        __VA_ARGS__                                                                                     \
+    };                                                                                                  \
+    struct RHI##_Name##Descriptor : public ::Tridium::RHIResourceDescriptor<RHI##_Name>
 
-
+// Helper macro to define an RHI resource type that can be allocated via an RHI resource allocator.
+#define DEFINE_ALLOCATABLE_RHI_RESOURCE(_Name, ...)                                                                 \
+	class RHI##_Name;                                                                                               \
+	struct RHI##_Name##Descriptor;                                                                                  \
+	using RHI##_Name##Ref = SharedPtr<RHI##_Name>;                                                                  \
+	using RHI##_Name##WeakRef = WeakPtr<RHI##_Name>;                                                                \
+	class RHI##_Name : public ::Tridium::RHIAllocatableResource, public ::Tridium::EnableSharedFromThis<RHI##_Name> \
+	{                                                                                                               \
+	public:                                                                                                         \
+		RHI_RESOURCE_BODY(_Name)                                                                                    \
+		__VA_ARGS__                                                                                                 \
+	};                                                                                                              \
+	struct RHI##_Name##Descriptor : public ::Tridium::RHIResourceDescriptor<RHI##_Name>
 
 // Helper macro to define the implementation of a resource type.
 // For usage in an RHI implementation, such as OpenGLTexture.

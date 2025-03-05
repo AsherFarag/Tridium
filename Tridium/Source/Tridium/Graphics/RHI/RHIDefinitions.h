@@ -11,10 +11,9 @@
 
 
 #define FORWARD_DECLARE_RHI_RESOURCE( Name ) \
-	class RHI##Name; \
 	struct RHI##Name##Descriptor; \
-	using RHI##Name##Ref = SharedPtr<RHI##Name>; \
-	using RHI##Name##WeakRef = SharedPtr<RHI##Name##Descriptor>
+	using RHI##Name##Ref = SharedPtr<class RHI##Name>; \
+	using RHI##Name##WeakRef = WeakPtr<class RHI##Name>
 
 // Define the log category for the RHI.
 DECLARE_LOG_CATEGORY( RHI );
@@ -192,6 +191,20 @@ namespace Tridium {
 		// GPU-Only memory access
 		Present,                        // Used for presenting to screen
 		GPUWrite,                       // Used for GPU write operations
+	};
+
+
+
+	//=====================================================================
+	// ERHIResourceAllocatorType
+	//  The type of resource that the allocator is managing.
+	enum class ERHIResourceAllocatorType : uint8_t
+	{
+		Unknown = 0,
+		RenderResource, // Resources such as textures, buffers, etc.
+		Sampler,
+		RenderTarget,
+		DepthStencil,
 	};
 
 
@@ -665,6 +678,11 @@ namespace Tridium {
 		uint8_t ElementCountX = 1;
 		uint8_t ElementCountY = 1;
 		uint8_t ArrayLength = 1;
+
+		constexpr uint32_t GetSizeInBytes() const
+		{
+			return GetRHIDataTypeSize( ElementType ) * ElementCountX * ElementCountY * ArrayLength;
+		}
 
 		template<typename T>
 		static constexpr RHITensorType From()

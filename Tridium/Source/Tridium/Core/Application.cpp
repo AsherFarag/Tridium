@@ -114,7 +114,7 @@ namespace Tridium {
 		m_Window->SetEventCallback( [this]( Event& e ) { this->OnEvent( e ); } );
 
 		RHIConfig config;
-		config.RHIType = ERHInterfaceType::DirectX12;
+		config.RHIType = ERHInterfaceType::OpenGL;
 		config.UseDebug = true;
 		LOG( LogCategory::Rendering, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), RHI::Initialise( config ) );
 
@@ -249,7 +249,8 @@ float4 main(VSOutput input) : SV_Target
 			LOG( LogCategory::Debug, Info, "Vert Shader: {0}", shader->GetDescriptor()->Name.data() );
 			LOG( LogCategory::Debug, Info, "Pixel Shader: {0}", pixelShader->GetDescriptor()->Name.data() );
 
-			RHIStaticSampler samplerDesc;
+			RHISamplerDescriptor samplerDesc;
+			samplerDesc.Filter = ERHISamplerFilter::Bilinear;
 			samplerDesc.AddressU = ERHISamplerAddressMode::Clamp;
 			samplerDesc.AddressV = ERHISamplerAddressMode::Clamp;
 			samplerDesc.AddressW = ERHISamplerAddressMode::Clamp;
@@ -265,7 +266,7 @@ float4 main(VSOutput input) : SV_Target
 			RHIShaderBindingLayoutRef sbl = RHI::CreateShaderBindingLayout( sblDesc );
 
 			// Create pipeline state
-			RHIPipelineStateDescriptor psd;
+			RHIGraphicsPipelineStateDescriptor psd;
 			psd.VertexShader = shader;
 			psd.PixelShader = pixelShader;
 			psd.ColourTargetFormats[0] = ERHITextureFormat::RGBA8;
@@ -273,7 +274,7 @@ float4 main(VSOutput input) : SV_Target
 			psd.ShaderBindingLayout = sbl;
 			psd.RasterizerState.CullMode = ERHIRasterizerCullMode::None;
 			psd.Name = "My beautiful pipeline state";
-			RHIPipelineStateRef pso = RHI::CreatePipelineState( psd );
+			RHIGraphicsPipelineStateRef pso = RHI::CreateGraphicsPipelineState( psd );
 
 			RHICommandListRef cmdList = RHI::CreateCommandList( { "My beautiful command list" } );
 
@@ -286,11 +287,11 @@ float4 main(VSOutput input) : SV_Target
 				time = glfwGetTime();
 				RHITextureRef rt = RHI::GetSwapChain()->GetBackBuffer();
 
-				RHICommandBuffer cmdBuffer;
+				RHIGraphicsCommandBuffer cmdBuffer;
 				cmdBuffer.ResourceBarrier( rt, ERHIResourceState::Present, ERHIResourceState::RenderTarget)
 				         .SetRenderTargets( { &rt, 1 }, nullptr )
 				         .ClearRenderTargets( { &rt, 1 }, clearColour, true, false )
-				         .SetPipelineState( pso )
+				         .SetGraphicsPipelineState( pso )
 				         .SetShaderBindingLayout( sbl );
 
 				// Input Assembler
@@ -329,7 +330,7 @@ float4 main(VSOutput input) : SV_Target
 
 				cmdBuffer.ResourceBarrier( rt, ERHIResourceState::RenderTarget, ERHIResourceState::Present );
 
-				cmdList->SetCommands( cmdBuffer );
+				cmdList->SetGraphicsCommands( cmdBuffer );
 
 				RHI::ExecuteCommandList( cmdList );
 				RHI::FenceSignal( RHI::CreateFence() );

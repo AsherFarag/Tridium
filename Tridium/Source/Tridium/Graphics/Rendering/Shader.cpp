@@ -3,7 +3,7 @@
 
 #include <Tridium/Core/Application.h>
 #include <Tridium/Graphics/Rendering/RenderingAPI.h>
-#include <Platform/OpenGL/OpenGLShader.h>
+#include <Platform/OpenGL/OpenGLShaderOld.h>
 
 namespace Tridium {
 
@@ -14,7 +14,7 @@ namespace Tridium {
 		switch ( RendererAPI::GetAPI() )
 		{
 		case RendererAPI::API::OpenGL:
-			shader = new OpenGLShader( a_Vertex, a_Frag );
+			shader = new OpenGLShaderOld( a_Vertex, a_Frag );
 			break;
 		default:
 			return nullptr;
@@ -31,7 +31,7 @@ namespace Tridium {
 		{
 			using enum RendererAPI::API;
 		case OpenGL:
-			return new OpenGLShader();
+			return new OpenGLShaderOld();
 		default:
 			return nullptr;
 		}

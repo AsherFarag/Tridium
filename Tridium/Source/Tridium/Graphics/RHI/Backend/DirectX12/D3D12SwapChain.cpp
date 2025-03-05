@@ -2,6 +2,7 @@
 #include "D3D12SwapChain.h"
 #include "D3D12DynamicRHI.h"
 #include "D3D12Texture.h"
+#include "D3D12ResourceAllocator.h"
 
 // For getting the native window handle
 #include <GLFW/glfw3.h>
@@ -27,7 +28,7 @@ namespace Tridium {
 	{
 		if ( !SwapChain )
 			return nullptr;
-		return RTVs[SwapChain->GetCurrentBackBufferIndex()].second;
+		return RTVs[SwapChain->GetCurrentBackBufferIndex()];
 	}
 
 	bool D3D12SwapChain::Commit( const void* a_Params )
@@ -90,12 +91,12 @@ namespace Tridium {
 		}
 
 		// Create Render Target View Descriptor Heap
-		D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
-		rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		rtvHeapDesc.NumDescriptors = desc->BufferCount;
-		rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-		rtvHeapDesc.NodeMask = 0;
-		if ( FAILED( rhi->GetDevice()->CreateDescriptorHeap( &rtvHeapDesc, IID_PPV_ARGS( &RTVDescHeap ) ) ) )
+		RHIResourceAllocatorDescriptor rtvHeapDesc;
+		rtvHeapDesc.AllocatorType = ERHIResourceAllocatorType::RenderTarget;
+		rtvHeapDesc.Capacity = desc->BufferCount;
+		rtvHeapDesc.Flags = ERHIResourceAllocatorFlags::None;
+		RenderTargetAllocator = rhi->CreateResourceAllocator( rtvHeapDesc );
+		if ( !RenderTargetAllocator )
 		{
 			return false;
 		}
@@ -108,23 +109,26 @@ namespace Tridium {
 		rtvDesc.Format = desc->Format;
 		rtvDesc.Width = desc->Width;
 		rtvDesc.Height = desc->Height;
-		auto firstHandle = RTVDescHeap->GetCPUDescriptorHandleForHeapStart();
-		auto handleIncrement = rhi->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-		for ( size_t i = 0; i < desc->BufferCount; ++i )
-		{
-			RTVs[i].first = firstHandle;
-			RTVs[i].first.ptr += handleIncrement * i;
+		rtvDesc.Depth = 1;
+		rtvDesc.Layers = 1;
+		rtvDesc.Mips = 1;
+		rtvDesc.UsageHint = ERHIUsageHint::RenderTarget;
+		rtvDesc.Dimension = ERHITextureDimension::Texture2D;
+		rtvDesc.IsRenderTarget = true;
 
-			SharedPtr<D3D12Texture> rtv = RHIResource::Create<D3D12Texture>()->As<D3D12Texture>();
-			rtv->DescriptorHandle = RTVs[i].first;
-			rtv->Descriptor = MakeUnique<RHITextureDescriptor>( rtvDesc );
-			RTVs[i].second = std::move( rtv );
+		for ( uint32_t i = 0; i < desc->BufferCount; i++ )
+		{
+			RTVs[i] = rhi->CreateTexture( rtvDesc, RenderTargetAllocator );
+			if ( !RTVs[i] )
+			{
+				return false;
+			}
 		}
 
 		// Get the back buffers
 		for ( uint32_t i = 0; i < 2; i++ )
 		{
-			SharedPtr<D3D12Texture> tex = RTVs[i].second->As<D3D12Texture>();
+			D3D12Texture* tex = RTVs[i]->As<D3D12Texture>();
 			if ( tex == nullptr || FAILED( SwapChain->GetBuffer( i, IID_PPV_ARGS( &tex->Texture ) ) ) )
 			{
 				return false;
@@ -135,7 +139,9 @@ namespace Tridium {
 			rtv.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 			rtv.Texture2D.MipSlice = 0;
 			rtv.Texture2D.PlaneSlice = 0;
-			rhi->GetDevice()->CreateRenderTargetView( tex->Texture, &rtv, RTVs[i].first );
+			D3D12_CPU_DESCRIPTOR_HANDLE handle = RenderTargetAllocator->As<D3D12ResourceAllocator>()->DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+			handle.ptr += RenderTargetAllocator->As<D3D12ResourceAllocator>()->DescriptorSize * i;
+			rhi->GetDevice()->CreateRenderTargetView( tex->Texture, &rtv, handle );
 
 		#if RHI_DEBUG_ENABLED
 			if ( RHIQuery::IsDebug() )
@@ -154,10 +160,10 @@ namespace Tridium {
 	bool D3D12SwapChain::Release()
 	{
 		SwapChain.Release();
-		RTVDescHeap.Release();
+		RenderTargetAllocator = nullptr;
 		for ( auto& rtv : RTVs )
 		{
-			rtv = { D3D12_CPU_DESCRIPTOR_HANDLE{}, nullptr };
+			rtv = nullptr;
 		}
 		RTVs.Resize( 0 );
 		return true;

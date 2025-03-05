@@ -103,19 +103,18 @@ namespace Tridium {
                 staticSampler.ShaderRegister = binding.Register;
                 staticSampler.ShaderVisibility = rootParam.ShaderVisibility;
 
-                switch ( binding.SamplerDesc.BorderColor )
-                {
-                case RHIStaticSampler::EBorderColor::TransparentBlack:
-                    staticSampler.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
-                    break;
-                case RHIStaticSampler::EBorderColor::OpaqueBlack:
-                    staticSampler.BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK;
-                    break;
-                case RHIStaticSampler::EBorderColor::OpaqueWhite:
-                    staticSampler.BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
-                    break;
-                }
-
+                if ( binding.SamplerDesc.BorderColor == Color::White() )
+				{
+					staticSampler.BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
+				}
+				else if ( binding.SamplerDesc.BorderColor.a < 1.0f )
+				{
+					staticSampler.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+				}
+				else
+				{
+					staticSampler.BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK;
+				}
 
                 staticSamplers.PushBack( staticSampler );
             }
@@ -144,11 +143,11 @@ namespace Tridium {
         {
             if ( errorBlob )
             {
-				LOG( LogCategory::DirectX, Error, "Failed to serialize root signature: %s", (char*)errorBlob->GetBufferPointer() );
+				LOG( LogCategory::DirectX, Error, "Failed to serialize root signature in Shader Binding Layout '{0}' - Error: {1}", desc->Name.data(), (char*)errorBlob->GetBufferPointer() );
             }
             else
             {
-				LOG( LogCategory::DirectX, Error, "Failed to serialize root signature" );
+				LOG( LogCategory::DirectX, Error, "Failed to serialize root signature in Shader Binding Layout '{0}'", desc->Name.data() );
             }
 			return false;
         }

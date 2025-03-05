@@ -11,7 +11,7 @@ namespace Tridium {
 	FORWARD_DECLARE_RHI_RESOURCE( Texture );
 	FORWARD_DECLARE_RHI_RESOURCE( IndexBuffer );
 	FORWARD_DECLARE_RHI_RESOURCE( VertexBuffer );
-	FORWARD_DECLARE_RHI_RESOURCE( PipelineState );
+	FORWARD_DECLARE_RHI_RESOURCE( GraphicsPipelineState );
 	FORWARD_DECLARE_RHI_RESOURCE( CommandList );
 	FORWARD_DECLARE_RHI_RESOURCE( ShaderModule );
 	FORWARD_DECLARE_RHI_RESOURCE( ShaderBindingLayout );
@@ -53,11 +53,11 @@ namespace Tridium {
 
 		//=====================================================
 		// Resource creation
-		virtual RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc ) = 0;
-		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc ) = 0;
+		virtual RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc, const RHIResourceAllocatorRef& a_Allocator = nullptr ) = 0;
+		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc, const RHIResourceAllocatorRef& a_Allocator = nullptr ) = 0;
 		virtual RHIIndexBufferRef CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc ) = 0;
 		virtual RHIVertexBufferRef CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc ) = 0;
-		virtual RHIPipelineStateRef CreatePipelineState( const RHIPipelineStateDescriptor& a_Desc ) = 0;
+		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc ) = 0;
 		virtual RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc ) = 0;
 		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc ) = 0;
 		virtual RHIShaderBindingLayoutRef CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc ) = 0;

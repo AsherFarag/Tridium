@@ -22,29 +22,6 @@ namespace Tridium {
 
 
 
-	struct RHIStaticSampler
-	{
-		enum class EBorderColor : uint8_t
-		{
-			TransparentBlack = 0,
-			OpaqueBlack,
-			OpaqueWhite
-		};
-
-		ERHISamplerFilter Filter = ERHISamplerFilter::Bilinear;
-		ERHISamplerAddressMode AddressU = ERHISamplerAddressMode::Repeat;
-		ERHISamplerAddressMode AddressV = ERHISamplerAddressMode::Repeat;
-		ERHISamplerAddressMode AddressW = ERHISamplerAddressMode::Repeat;
-		float MipLODBias = 0.0f;
-		uint32_t MaxAnisotropy = 16;
-		ERHISamplerComparison ComparisonFunc = ERHISamplerComparison::Never;
-		EBorderColor BorderColor = EBorderColor::TransparentBlack;
-		float MinLOD = 0.0f;
-		float MaxLOD = FLT_MAX;
-	};
-
-
-
 	//==============================================
 	// RHI Shader Binding
 	//  Describes where a shader resource is bound to the shader.
@@ -56,7 +33,9 @@ namespace Tridium {
 		bool IsInlined = false; // If the data is inlined in the shader.
 		uint8_t WordSize = 1;   // Number of 32-bit words for the binding. For example, a Vector4 would be 4 words ( 4 * 32 bit floats ).
 		uint8_t Register = 0;   // Register index in the shader.
-		RHIStaticSampler SamplerDesc{}; // Sampler descriptor for static samplers.
+		// Sampler descriptor for static samplers.
+		// Note: Border Color can only be set to White, Black, or Transparent Black.
+		RHISamplerDescriptor SamplerDesc{};
 
 		constexpr uint32_t GetSizeInBytes() const
 		{
@@ -134,11 +113,13 @@ namespace Tridium {
 			return *this;
 		}
 
-		constexpr RHIShaderBinding& AsStaticSampler( uint8_t a_Register, const RHIStaticSampler& a_SamplerDesc )
+		constexpr RHIShaderBinding& AsStaticSampler( uint8_t a_Register, const RHISamplerDescriptor& a_SamplerDesc )
 		{
 			BindingType = ERHIShaderBindingType::StaticSampler;
-			SamplerDesc = a_SamplerDesc;
+			IsInlined = false;
+			WordSize = 1;
 			Register = a_Register;
+			SamplerDesc = a_SamplerDesc;
 			return *this;
 		}
 
@@ -193,6 +174,14 @@ namespace Tridium {
 				return static_cast<int32_t>( it->second );
 			}
 			return -1;
+		}
+
+		// Get the binding at the specified index.
+		const RHIShaderBinding& GetBindingFromName( hash_t a_Name ) const
+		{
+			int32_t index = GetBindingIndex( a_Name );
+			ASSERT_LOG( index != -1, "Binding with name hash does not exist" );
+			return Bindings[index];
 		}
 	};
 

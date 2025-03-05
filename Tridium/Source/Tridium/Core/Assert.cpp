@@ -10,11 +10,11 @@ namespace Tridium::Internal {
 		{
 			thread_local char formattedLog[1024];
 			vsprintf_s( formattedLog, sizeof( formattedLog ), a_FormatString, a_Inputs );
-			LOG( LogCategory::Assert, Error, "{0}: {1} ({2}:{3}) - MSG: {4}", a_Type, a_Function, a_File, a_Line, formattedLog );
+			LOG( LogCategory::Assert, Error, "{0}: {4} - Where: {1} ({2}:{3})", a_Type, a_Function, a_File, a_Line, formattedLog );
 		}
 		else
 		{
-			LOG( LogCategory::Assert, Error, "{0}: {1} ({2}:{3})", a_Type, a_Function, a_File, a_Line );
+			LOG( LogCategory::Assert, Error, "{0}: Where: {1} ({2}:{3})", a_Type, a_Function, a_File, a_Line );
 		}
 	}
 

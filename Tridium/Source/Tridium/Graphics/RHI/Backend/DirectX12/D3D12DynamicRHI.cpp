@@ -176,16 +176,16 @@ namespace Tridium {
 	// RESOURCE CREATION
 	//////////////////////////////////////////////////////////////////////////
 
-	RHISamplerRef D3D12RHI::CreateSampler( const RHISamplerDescriptor& a_Desc )
+	RHISamplerRef D3D12RHI::CreateSampler( const RHISamplerDescriptor& a_Desc, const RHIResourceAllocatorRef& a_Allocator )
 	{
-		RHISamplerRef sampler = RHIResource::Create<D3D12Sampler>();
+		RHISamplerRef sampler = RHISampler::Create<D3D12Sampler>( a_Allocator );
 		CHECK( sampler->Commit( &a_Desc ) );
 		return sampler;
 	}
 
-	RHITextureRef D3D12RHI::CreateTexture( const RHITextureDescriptor& a_Desc )
+	RHITextureRef D3D12RHI::CreateTexture( const RHITextureDescriptor& a_Desc, const RHIResourceAllocatorRef& a_Allocator )
 	{
-		RHITextureRef tex = RHIResource::Create<D3D12Texture>();
+		RHITextureRef tex = RHITexture::Create<D3D12Texture>( a_Allocator );
 		CHECK( tex->Commit( &a_Desc ) );
 		return tex;
 	}
@@ -204,9 +204,9 @@ namespace Tridium {
 		return vertex;
 	}
 
-	RHIPipelineStateRef D3D12RHI::CreatePipelineState( const RHIPipelineStateDescriptor& a_Desc )
+	RHIGraphicsPipelineStateRef D3D12RHI::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc )
 	{
-		RHIPipelineStateRef pipeline = RHIResource::Create<D3D12PipelineState>();
+		RHIGraphicsPipelineStateRef pipeline = RHIResource::Create<D3D12GraphicsPipelineState>();
 		CHECK( pipeline->Commit( &a_Desc ) );
 		return pipeline;
 	}

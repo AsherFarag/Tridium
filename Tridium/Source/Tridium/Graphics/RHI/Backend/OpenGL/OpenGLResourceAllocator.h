@@ -18,6 +18,20 @@ namespace Tridium {
 		bool Release() override { return true; }
 		bool IsValid() const override { return true; }
 		const void* NativePtr() const override { return nullptr; }
+
+		virtual bool Allocate( uint32_t a_Count, uint32_t* o_Offset ) override
+		{
+			if ( o_Offset )
+			{
+				*o_Offset = 0;
+			}
+			return true;
+		}
+
+		virtual uint32_t GetSize() const override
+		{
+			return 0;
+		}
 	};
 
 } // namespace Tridium

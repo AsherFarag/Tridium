@@ -6,7 +6,7 @@
 	#include "Backend/DirectX12/D3D12DynamicRHI.h"
 #endif
 #if RHI_ENABLE_BACKEND_OPENGL
-	#include "Backend/OpenGL/OpenGLRHI.h"
+	#include "Backend/OpenGL/OpenGLDynamicRHI.h"
 #endif
 
 namespace Tridium {
@@ -29,7 +29,7 @@ namespace Tridium {
 		#if RHI_ENABLE_BACKEND_OPENGL
 			case ERHInterfaceType::OpenGL:
 			{
-				s_DynamicRHI = new OpenGLRHI();
+				s_DynamicRHI = new OpenGLDynamicRHI();
 				break;
 			}
 		#endif
@@ -191,10 +191,10 @@ namespace Tridium {
 		return s_DynamicRHI->CreateVertexBuffer( a_Desc );
 	}
 
-	RHIPipelineStateRef RHI::CreatePipelineState( const RHIPipelineStateDescriptor& a_Desc )
+	RHIGraphicsPipelineStateRef RHI::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc )
 	{
 		CHECK( s_DynamicRHI );
-		return s_DynamicRHI->CreatePipelineState( a_Desc );
+		return s_DynamicRHI->CreateGraphicsPipelineState( a_Desc );
 	}
 
 	RHICommandListRef RHI::CreateCommandList( const RHICommandListDescriptor& a_Desc )
@@ -236,7 +236,7 @@ namespace Tridium {
 		desc.InitialData = a_Data;
 		desc.Format = a_Format;
 		desc.UsageHint = a_Usage;
-		desc.Allocator = a_Allocator;
+		//desc.Allocator = a_Allocator;
 
 		return CreateTexture( desc );
 	}
@@ -248,7 +248,7 @@ namespace Tridium {
 		desc.InitialData = a_InitialData;
 		desc.UsageHint = a_UsageHint;
 		desc.DataType = a_DataType;
-		desc.Allocator = a_Allocator;
+		//desc.Allocator = a_Allocator;
 		return CreateIndexBuffer( desc );
 	}
 
@@ -259,7 +259,7 @@ namespace Tridium {
 		desc.InitialData = a_InitialData;
 		desc.Layout = a_Layout;
 		desc.UsageHint = a_UsageHint;
-		desc.Allocator = a_Allocator;
+		//desc.Allocator = a_Allocator;
 		return CreateVertexBuffer( desc );
 	}
 

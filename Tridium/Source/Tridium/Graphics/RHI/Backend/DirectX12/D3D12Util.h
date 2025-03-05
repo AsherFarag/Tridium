@@ -227,6 +227,45 @@ namespace Tridium {
 			}
 		}
 
+		inline constexpr D3D12_DESCRIPTOR_HEAP_TYPE GetDescriptorHeapType( ERHIResourceAllocatorType a_Type )
+		{
+			switch ( a_Type )
+			{
+				using enum ERHIResourceAllocatorType;
+				case Sampler:         return D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+				case RenderResource:  return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+				case RenderTarget:    return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+				case DepthStencil:    return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+				default:              return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+			}
+		}
+
+		inline constexpr D3D12_RESOURCE_DIMENSION GetResourceDimension( ERHITextureDimension a_Type )
+		{
+			switch ( a_Type )
+			{
+				using enum ERHITextureDimension;
+				case Texture1D:   return D3D12_RESOURCE_DIMENSION_TEXTURE1D;
+				case Texture2D:   return D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+				case Texture3D:   return D3D12_RESOURCE_DIMENSION_TEXTURE3D;
+				case TextureCube: return D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+				default:          return D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+			}
+		}
+
+		inline constexpr D3D12_SRV_DIMENSION GetSRVDimension( ERHITextureDimension a_Type, bool a_IsArray )
+		{
+			switch ( a_Type )
+			{
+				using enum ERHITextureDimension;
+				case Texture1D:      return a_IsArray ? D3D12_SRV_DIMENSION_TEXTURE1DARRAY : D3D12_SRV_DIMENSION_TEXTURE1D;
+				case Texture2D:      return a_IsArray ? D3D12_SRV_DIMENSION_TEXTURE2DARRAY : D3D12_SRV_DIMENSION_TEXTURE2D;
+				case Texture3D:      return D3D12_SRV_DIMENSION_TEXTURE3D;
+				case TextureCube:    return a_IsArray ? D3D12_SRV_DIMENSION_TEXTURECUBEARRAY : D3D12_SRV_DIMENSION_TEXTURECUBE;
+				default:             return D3D12_SRV_DIMENSION_TEXTURE2D;
+			}
+		}
+
 	}
 
 }

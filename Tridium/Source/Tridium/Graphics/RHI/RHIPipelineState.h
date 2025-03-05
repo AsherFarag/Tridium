@@ -64,20 +64,6 @@ namespace Tridium {
 
 
 	//=======================================================================
-	// RHI Pipeline Type
-	//  An RHI pipeline state can only be used for Graphics or Compute.
-	//  If the pipeline is used for both, then it is invalid.
-	//=======================================================================
-	enum class ERHIPipelineType : uint8_t
-	{
-		Invalid = 0,
-		Graphics,
-		Compute,
-	};
-
-
-
-	//=======================================================================
 	// Common Blend States
 	namespace RHIBlendStates
 	{
@@ -89,9 +75,9 @@ namespace Tridium {
 
 
 	//=======================================================================
-	// RHIPipelineState
+	// RHIGraphicsPipelineState
 	//  A pipeline state object that contains the state of the GPU pipeline.
-	DEFINE_RHI_RESOURCE( PipelineState )
+	DEFINE_RHI_RESOURCE( GraphicsPipelineState )
 	{
 		ERHITopology Topology = ERHITopology::Triangle;
 		RHIVertexLayout VertexLayout;
@@ -102,7 +88,6 @@ namespace Tridium {
 		RHIShaderModuleRef DomainShader;
 		RHIShaderModuleRef GeometryShader;
 		RHIShaderModuleRef PixelShader;
-		RHIShaderModuleRef ComputeShader;
 
 		RHIBlendState BlendState = RHIBlendStates::Opaque;
 		RHIDepthState DepthState;
@@ -111,21 +96,6 @@ namespace Tridium {
 
 		FixedArray<ERHITextureFormat, RHIQuery::MaxColorTargets> ColourTargetFormats = {};
 		ERHITextureFormat DepthStencilFormat = ERHITextureFormat::D32;
-
-		ERHIPipelineType GetPipelineType() const
-		{
-			if ( ComputeShader && ( VertexShader || HullShader || DomainShader || GeometryShader || PixelShader ) )
-			{
-				return ERHIPipelineType::Invalid;
-			}
-
-			if ( ComputeShader )
-			{
-				return ERHIPipelineType::Compute;
-			}
-
-			return ERHIPipelineType::Graphics;
-		}
 
 		const RHIShaderModuleRef& GetShader( ERHIShaderType a_Type ) const
 		{
@@ -136,7 +106,6 @@ namespace Tridium {
 				case ERHIShaderType::Domain:     return DomainShader;
 				case ERHIShaderType::Geometry:   return GeometryShader;
 				case ERHIShaderType::Pixel:      return PixelShader;
-				case ERHIShaderType::Compute:    return ComputeShader;
 			}
 
 			return nullptr;

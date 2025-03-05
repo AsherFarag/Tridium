@@ -9,58 +9,6 @@
 
 namespace Tridium {
 
-	bool D3D12CommandList::SetCommands( const RHICommandBuffer& a_CmdBuffer )
-	{
-		D3D12RHI* rhi = RHI::GetD3D12RHI();
-		CHECK( rhi );
-
-		const auto& cmdAllocator = rhi->GetCommandAllocator();
-		// Reset the command allocator
-		if ( FAILED( cmdAllocator->Reset() ) )
-		{
-			return false;
-		}
-
-		// Reset the command list
-		if ( FAILED( CommandList->Reset( cmdAllocator.Get(), nullptr ) ) )
-		{
-			return false;
-		}
-
-		//TEMP?
-		DescriptorHeaps.Clear();
-		ShaderInputOffset = 0;
-
-		// Execute the commands
-		for ( const RHICommand& cmd : a_CmdBuffer.Commands )
-		{
-			switch ( cmd.Type() )
-			{
-			#define PerformCmd( _CmdType ) case ERHICommandType::_CmdType: _CmdType( cmd.Get<ERHICommandType::_CmdType>() ); break
-				PerformCmd( SetPipelineState );
-				PerformCmd( SetShaderBindingLayout );
-				PerformCmd( SetRenderTargets );
-				PerformCmd( ClearRenderTargets );
-				PerformCmd( SetScissors );
-				PerformCmd( SetViewports );
-				PerformCmd( SetShaderInput );
-				PerformCmd( SetIndexBuffer );
-				PerformCmd( SetVertexBuffer );
-				PerformCmd( SetPrimitiveTopology );
-				PerformCmd( Draw );
-				PerformCmd( DrawIndexed );
-				PerformCmd( ResourceBarrier );
-				PerformCmd( DispatchCompute );
-				PerformCmd( FenceSignal );
-				PerformCmd( FenceWait );
-				PerformCmd( Execute );
-				default: ASSERT_LOG( false, "Unknown command type!" ); break;
-			}
-		}
-
-		return true;
-	}
-
 	bool D3D12CommandList::Commit( const void* a_Params )
 	{
 		const auto* desc = ParamsToDescriptor<RHICommandListDescriptor>( a_Params );
@@ -93,11 +41,70 @@ namespace Tridium {
 		return nullptr;
 	}
 
+	bool D3D12CommandList::SetGraphicsCommands( const RHIGraphicsCommandBuffer& a_CmdBuffer )
+	{
+		D3D12RHI* rhi = RHI::GetD3D12RHI();
+		CHECK( rhi );
+
+		const auto& cmdAllocator = rhi->GetCommandAllocator();
+		// Reset the command allocator
+		if ( FAILED( cmdAllocator->Reset() ) )
+		{
+			return false;
+		}
+
+		// Reset the command list
+		if ( FAILED( CommandList->Reset( cmdAllocator.Get(), nullptr ) ) )
+		{
+			return false;
+		}
+
+		//TEMP?
+		DescriptorHeaps.Clear();
+		ShaderInputOffset = 0;
+
+		// Execute the commands
+		for ( const RHICommand& cmd : a_CmdBuffer.Commands )
+		{
+			switch ( cmd.Type() )
+			{
+			#define PerformCmd( _CmdType ) case ERHICommandType::_CmdType: _CmdType( cmd.Get<ERHICommandType::_CmdType>() ); break
+				PerformCmd( SetShaderBindingLayout );
+				PerformCmd( SetShaderInput );
+				PerformCmd( ResourceBarrier );
+				PerformCmd( SetGraphicsPipelineState );
+				PerformCmd( SetRenderTargets );
+				PerformCmd( ClearRenderTargets );
+				PerformCmd( SetScissors );
+				PerformCmd( SetViewports );
+				PerformCmd( SetIndexBuffer );
+				PerformCmd( SetVertexBuffer );
+				PerformCmd( SetPrimitiveTopology );
+				PerformCmd( Draw );
+				PerformCmd( DrawIndexed );
+				PerformCmd( SetComputePipelineState );
+				PerformCmd( DispatchCompute );
+				PerformCmd( DispatchComputeIndirect );
+				PerformCmd( FenceSignal );
+				PerformCmd( FenceWait );
+				PerformCmd( Execute );
+				default: ASSERT_LOG( false, "Unknown command type!" ); break;
+			}
+		}
+
+		return true;
+	}
+
+	bool D3D12CommandList::SetComputeCommands( const RHIComputeCommandBuffer& a_CmdBuffer )
+	{
+		return false;
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 
-	void D3D12CommandList::SetPipelineState( const RHICommand::SetPipelineState& a_Data )
+	void D3D12CommandList::SetGraphicsPipelineState( const RHICommand::SetGraphicsPipelineState& a_Data )
 	{
-		CommandList->SetPipelineState( a_Data.PSO->As<D3D12PipelineState>()->PSO.Get() );
+		CommandList->SetPipelineState( a_Data.PSO->As<D3D12GraphicsPipelineState>()->PSO.Get() );
 	}
 
 	void D3D12CommandList::SetShaderBindingLayout( const RHICommand::SetShaderBindingLayout& a_Data )
@@ -351,7 +358,15 @@ namespace Tridium {
 		CommandList->ResourceBarrier( 1, &barrier );
 	}
 
+	void D3D12CommandList::SetComputePipelineState( const RHICommand::SetComputePipelineState& a_Data )
+	{
+	}
+
 	void D3D12CommandList::DispatchCompute( const RHICommand::DispatchCompute& a_Data )
+	{
+	}
+
+	void D3D12CommandList::DispatchComputeIndirect( const RHICommand::DispatchComputeIndirect& a_Data )
 	{
 	}
 

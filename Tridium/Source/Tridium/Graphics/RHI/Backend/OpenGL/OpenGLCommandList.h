@@ -1,27 +1,20 @@
 #pragma once
-#include "D3D12Common.h"
-#include <Tridium/Graphics/RHI/RHICommandList.h>
+#include "OpenGLCommon.h"
 
 namespace Tridium {
 
-	class D3D12CommandList final : public RHICommandList
+	class OpenGLCommandList : public RHICommandList
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION( DirectX12 );
+		RHI_RESOURCE_IMPLEMENTATION( OpenGL );
 
-		bool Commit( const void* a_Params ) override;
-		bool Release() override;
-		bool IsValid() const override;
-		const void* NativePtr() const override;
+		bool Commit( const void* a_Params ) override { ParamsToDescriptor<RHICommandListDescriptor>( a_Params ); return true; }
+		bool Release() override { return true; }
+		bool IsValid() const override { return true; }
+		const void* NativePtr() const override { return nullptr; }
 
 		bool SetGraphicsCommands( const RHIGraphicsCommandBuffer& a_CmdBuffer ) override;
 		bool SetComputeCommands( const RHIComputeCommandBuffer& a_CmdBuffer ) override;
-
-		TODO( "Seperate cmd lists into graphics and compute" );
-		ComPtr<D3D12::GraphicsCommandList> CommandList{};
-		RHIShaderBindingLayout* CurrentSBL = nullptr;
-		Array<ComPtr<D3D12::DescriptorHeap>> DescriptorHeaps{};
-		uint32_t ShaderInputOffset = 0;
 
 	private:
 		void SetShaderBindingLayout( const RHICommand::SetShaderBindingLayout& a_Data );
@@ -50,4 +43,4 @@ namespace Tridium {
 		void Execute( const RHICommand::Execute& a_Data );
 	};
 
-}
+} // namespace Tridium

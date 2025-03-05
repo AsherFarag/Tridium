@@ -103,13 +103,15 @@ namespace Tridium::Internal {
 // NOT IMPLEMENTED
 ///////////////////////////////////////////////////////////////////////////////////////////
 
+#define NOT_IMPLEMENTED_STATIC PRAGMA( message( TRIDIUM_FILE "(" $LINE ") : Not Implemented" ) )
+
 #ifndef NOT_IMPLEMENTED_ENABLED
 	#define NOT_IMPLEMENTED_ENABLED 1
 #endif // NOT_IMPLEMENTED_ENABLED
 
 #if NOT_IMPLEMENTED_ENABLED
 	#define NOT_IMPLEMENTED \
-		PRAGMA( message( TRIDIUM_FILE "(" $LINE ") : Not Implemented" ) ); \
+		NOT_IMPLEMENTED_STATIC; \
 		( ::Tridium::Internal::NotImplemented( TRIDIUM_FUNCTION, TRIDIUM_FILE, TRIDIUM_LINE ) )
 
 	void NotImplemented( const char* a_Function, const char* a_File, int a_Line );

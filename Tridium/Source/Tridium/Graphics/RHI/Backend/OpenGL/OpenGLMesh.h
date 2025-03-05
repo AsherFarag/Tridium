@@ -32,7 +32,7 @@ namespace Tridium {
 		const void* NativePtr() const override { return (const void*)m_Buffer; }
 
 		//=====================================================================
-		GLuint GetBuffer() const { return m_Buffer; }
+		GLuint GetGLHandle() const { return m_Buffer; }
 
 	private:
 		GLuint m_Buffer = 0;

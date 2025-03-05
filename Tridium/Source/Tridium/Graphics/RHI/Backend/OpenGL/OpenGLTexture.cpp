@@ -52,6 +52,13 @@ namespace Tridium {
 			}
 		}
 
+	#if RHI_DEBUG_ENABLED
+		if ( RHIQuery::IsDebug() && !desc->Name.empty() )
+		{
+			OpenGL4::ObjectLabel( GL_TEXTURE, m_Handle, desc->Name.size(), static_cast<const GLchar*>( desc->Name.data() ) );
+		}
+	#endif
+
 		// Check if the handle is valid
 		return m_Handle != 0;
 	}

@@ -44,7 +44,7 @@ namespace Tridium {
 		RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc );
 		RHIIndexBufferRef CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc );
 		RHIVertexBufferRef CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc );
-		RHIPipelineStateRef CreatePipelineState( const RHIPipelineStateDescriptor& a_Desc );
+		RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc );
 		RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc );
 		RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc );
 		RHIShaderBindingLayoutRef CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc );

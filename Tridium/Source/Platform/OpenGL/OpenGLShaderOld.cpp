@@ -1,5 +1,5 @@
 #include "tripch.h"
-#include "OpenGLShader.h"
+#include "OpenGLShaderOld.h"
 #include <fstream>
 #include <Tridium/Utils/StringHelpers.h>
 
@@ -34,7 +34,7 @@ namespace Tridium {
 		return 0;
 	}
 
-	OpenGLShader::OpenGLShader( const std::string& a_VertexSource, const std::string& a_FragmentSource )
+	OpenGLShaderOld::OpenGLShaderOld( const std::string& a_VertexSource, const std::string& a_FragmentSource )
 	{
 		ShaderSources sources;
 		sources[ GL_VERTEX_SHADER ] = a_VertexSource;
@@ -42,7 +42,7 @@ namespace Tridium {
 		Compile( sources );
 	}
 
-	std::string OpenGLShader::ReadFile( const std::string& filePath )
+	std::string OpenGLShaderOld::ReadFile( const std::string& filePath )
 	{
 		std::string result;
 		std::ifstream in( filePath, std::ios::in | std::ios::binary );
@@ -62,7 +62,7 @@ namespace Tridium {
 		return result;
 	}
 
-	ShaderSources OpenGLShader::PreProcess( const std::string& source )
+	ShaderSources OpenGLShaderOld::PreProcess( const std::string& source )
 	{
 		TODO( "Unsafe preprocess if the source isn't perfect!" );
 
@@ -90,7 +90,7 @@ namespace Tridium {
 		return shaderSources;
 	}
 
-	void OpenGLShader::Compile( const ShaderSources& shaderSources )
+	void OpenGLShaderOld::Compile( const ShaderSources& shaderSources )
 	{
 		GLuint program = glCreateProgram();
 		ASSERT_LOG( shaderSources.size() <= 3, "Only 3 shaders are supported currently!" );
@@ -175,12 +175,12 @@ namespace Tridium {
 		m_RendererID = program;
 	}
 
-	OpenGLShader::~OpenGLShader()
+	OpenGLShaderOld::~OpenGLShaderOld()
 	{
 		glDeleteProgram( m_RendererID );
 	}
 
-	bool OpenGLShader::Compile( const FilePath& a_Path )
+	bool OpenGLShaderOld::Compile( const FilePath& a_Path )
 	{
 		glDeleteProgram( m_RendererID );
 
@@ -190,19 +190,19 @@ namespace Tridium {
 		return true;
 	}
 
-	void OpenGLShader::Bind() const
+	void OpenGLShaderOld::Bind() const
 	{
 		glUseProgram( m_RendererID );
 	}
 
-	void OpenGLShader::Unbind() const
+	void OpenGLShaderOld::Unbind() const
 	{
 		glUseProgram( 0 );
 	}
 
 #pragma region Uniform Setters
 
-	bool OpenGLShader::SetInt( const char* name, const int val )
+	bool OpenGLShaderOld::SetInt( const char* name, const int val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -215,7 +215,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetInt2( const char* name, const iVector2& val )
+	bool OpenGLShaderOld::SetInt2( const char* name, const iVector2& val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -228,7 +228,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetInt3( const char* name, const iVector3& val )
+	bool OpenGLShaderOld::SetInt3( const char* name, const iVector3& val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -240,7 +240,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetInt4( const char* name, const iVector4& val )
+	bool OpenGLShaderOld::SetInt4( const char* name, const iVector4& val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -253,7 +253,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetFloat( const char* name, const float val )
+	bool OpenGLShaderOld::SetFloat( const char* name, const float val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -266,7 +266,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetFloat2( const char* name, const Vector2& val )
+	bool OpenGLShaderOld::SetFloat2( const char* name, const Vector2& val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -279,7 +279,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetFloat3( const char* name, const Vector3& val )
+	bool OpenGLShaderOld::SetFloat3( const char* name, const Vector3& val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -292,7 +292,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetFloat4( const char* name, const Vector4& val )
+	bool OpenGLShaderOld::SetFloat4( const char* name, const Vector4& val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -305,7 +305,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetMatrix2( const char* name, const Matrix2& val )
+	bool OpenGLShaderOld::SetMatrix2( const char* name, const Matrix2& val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -318,7 +318,7 @@ namespace Tridium {
 		return true; 
 	}
 
-	bool OpenGLShader::SetMatrix3( const char* name, const Matrix3& val )
+	bool OpenGLShaderOld::SetMatrix3( const char* name, const Matrix3& val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -331,7 +331,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetMatrix4( const char* name, const Matrix4& val )
+	bool OpenGLShaderOld::SetMatrix4( const char* name, const Matrix4& val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -344,7 +344,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetInt( const char* name, const uint32_t count, const int* val )
+	bool OpenGLShaderOld::SetInt( const char* name, const uint32_t count, const int* val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -357,7 +357,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetInt2( const char* name, const uint32_t count, const iVector2* val )
+	bool OpenGLShaderOld::SetInt2( const char* name, const uint32_t count, const iVector2* val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -370,7 +370,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetInt3( const char* name, const uint32_t count, const iVector3* val )
+	bool OpenGLShaderOld::SetInt3( const char* name, const uint32_t count, const iVector3* val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -383,7 +383,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetInt4( const char* name, const uint32_t count, const iVector4* val )
+	bool OpenGLShaderOld::SetInt4( const char* name, const uint32_t count, const iVector4* val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -396,7 +396,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetFloat( const char* name, const uint32_t count, const float* val )
+	bool OpenGLShaderOld::SetFloat( const char* name, const uint32_t count, const float* val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -409,7 +409,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetFloat2( const char* name, const uint32_t count, const Vector2* val )
+	bool OpenGLShaderOld::SetFloat2( const char* name, const uint32_t count, const Vector2* val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -422,7 +422,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetFloat3( const char* name, const uint32_t count, const Vector3* val )
+	bool OpenGLShaderOld::SetFloat3( const char* name, const uint32_t count, const Vector3* val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -435,7 +435,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetFloat4( const char* name, const uint32_t count, const Vector4* val )
+	bool OpenGLShaderOld::SetFloat4( const char* name, const uint32_t count, const Vector4* val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -448,7 +448,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetMatrix2( const char* name, const uint32_t count, const Matrix2* val )
+	bool OpenGLShaderOld::SetMatrix2( const char* name, const uint32_t count, const Matrix2* val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -461,7 +461,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetMatrix3( const char* name, const uint32_t count, const Matrix3* val )
+	bool OpenGLShaderOld::SetMatrix3( const char* name, const uint32_t count, const Matrix3* val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
@@ -474,7 +474,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLShader::SetMatrix4( const char* name, const uint32_t count, const Matrix4* val )
+	bool OpenGLShaderOld::SetMatrix4( const char* name, const uint32_t count, const Matrix4* val )
 	{
 		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );

@@ -4,15 +4,14 @@
 
 namespace Tridium {
 
-	class OpenGLPipelineState final : public RHIPipelineState
+	class OpenGLGraphicsPipelineState final : public RHIGraphicsPipelineState
 	{
+	public:
 		RHI_RESOURCE_IMPLEMENTATION( OpenGL );
-		bool Commit( const void* a_Params ) override;
-		bool Release() override;
-		bool IsValid() const override;
-		const void* NativePtr() const override;
-	private:
-		GLuint m_Handle = 0;
+		bool Commit( const void* a_Params ) override { ParamsToDescriptor<RHIGraphicsPipelineStateDescriptor>( a_Params ); return true; }
+		bool Release() override { return true; }
+		bool IsValid() const override { return true; }
+		const void* NativePtr() const override { return nullptr; }
 	};
 
 } // namespace Tridium

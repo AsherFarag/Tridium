@@ -3,7 +3,7 @@
 
 namespace Tridium {
 
-	DEFINE_RHI_RESOURCE( Texture )
+	DEFINE_ALLOCATABLE_RHI_RESOURCE( Texture )
 	{
 		Span<const uint8_t> InitialData = {}; // Initial data for the texture
 		uint32_t Width  = 1;                  // Width of the texture

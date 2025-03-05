@@ -14,8 +14,14 @@ namespace Tridium {
 		bool IsValid() const override;
 		const void* NativePtr() const override;
 
+		bool Allocate( uint32_t a_Count, uint32_t* o_Offset ) override;
+		uint32_t GetSize() const override { return m_Size; }
+
 		ComPtr<D3D12::DescriptorHeap> DescriptorHeap{};
 		uint32_t DescriptorSize = 0; // Size of each descriptor in the heap
+
+	private:
+		uint32_t m_Size = 0;
 	};
 
 } // namespace Tridium

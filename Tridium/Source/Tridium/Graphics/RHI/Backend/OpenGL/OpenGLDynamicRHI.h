@@ -13,7 +13,7 @@
 
 namespace Tridium {
 
-	class OpenGLRHI final : public IDynamicRHI
+	class OpenGLDynamicRHI final : public IDynamicRHI
 	{
 	public:
 		//==============================================
@@ -41,11 +41,11 @@ namespace Tridium {
 
 		//=====================================================
 		// Resource creation
-		virtual RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc ) override;
-		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc ) override;
+		virtual RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc, const RHIResourceAllocatorRef& a_Allocator = nullptr ) override;
+		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc, const RHIResourceAllocatorRef& a_Allocator = nullptr ) override;
 		virtual RHIIndexBufferRef CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc ) override;
 		virtual RHIVertexBufferRef CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc ) override;
-		virtual RHIPipelineStateRef CreatePipelineState( const RHIPipelineStateDescriptor& a_Desc ) override;
+		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc ) override;
 		virtual RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc ) override;
 		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc ) override;
 		virtual RHIShaderBindingLayoutRef CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc ) override;
@@ -62,7 +62,7 @@ namespace Tridium {
 	};
 
 	namespace RHI {
-		static OpenGLRHI* GetOpenGLRHI()
+		static OpenGLDynamicRHI* GetOpenGLRHI()
 		{
 		#if RHI_DEBUG_ENABLED
 			if ( s_DynamicRHI->GetRHIType() != ERHInterfaceType::OpenGL )
@@ -71,7 +71,7 @@ namespace Tridium {
 				return nullptr;
 			}
 		#endif
-			return static_cast<OpenGLRHI*>( s_DynamicRHI );
+			return static_cast<OpenGLDynamicRHI*>( s_DynamicRHI );
 		}
 	} // namespace RHI
 

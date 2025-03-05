@@ -7,12 +7,12 @@ namespace Tridium {
 
     using ShaderSources = std::unordered_map<GLenum, std::string>;
 
-    class OpenGLShader : public Shader
+    class OpenGLShaderOld : public Shader
     {
     public:
-        OpenGLShader() = default;
-        OpenGLShader( const std::string& a_Vertex, const std::string& a_Frag );
-        virtual ~OpenGLShader();
+        OpenGLShaderOld() = default;
+        OpenGLShaderOld( const std::string& a_Vertex, const std::string& a_Frag );
+        virtual ~OpenGLShaderOld();
 
 		virtual bool Compile( const FilePath& a_Path ) override;
 
