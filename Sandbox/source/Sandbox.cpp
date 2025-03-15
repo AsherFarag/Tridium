@@ -244,6 +244,64 @@ class SandboxGameInstance : public Tridium::GameInstance
 	}
 };
 
+struct Aggregate
+{
+	float a;
+	int b;
+	float c;
+	bool d;
+};
+
+template<typename T>
+void PrintTypeName()
+{
+	std::cout << "Unknown, " << std::endl;
+}
+
+template<>
+void PrintTypeName<int>()
+{
+	std::cout << "int, " << std::endl;
+}
+
+template<>
+void PrintTypeName<float>()
+{
+	std::cout << "float, " << std::endl;
+}
+
+template<>
+void PrintTypeName<bool>()
+{
+	std::cout << "bool, " << std::endl;
+}
+
+#include <Tridium/Reflection/FieldReflection.h>
+
+void test()
+{
+	Aggregate a{ 1.0f, 2, true, 3.0f };
+	ForEachField( a, []( auto& field )
+		{
+			PrintTypeName<std::decay_t<decltype( field ) >>();
+		} );
+
+	ForEachField( a, []( StringView name, auto& field )
+		{
+			std::cout << name << ", ";
+		} );
+}
+
+struct Test
+{
+	Test()
+	{
+		test();
+	}
+};
+
+Test testInstance;
+
 GameInstance* Tridium::CreateGameInstance()
 {
 	return new SandboxGameInstance();

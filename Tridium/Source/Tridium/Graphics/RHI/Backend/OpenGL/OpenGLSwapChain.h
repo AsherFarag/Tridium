@@ -1,7 +1,59 @@
 #pragma once
 #include "OpenGLCommon.h"
+#include "OpenGLTexture.h"
 
 namespace Tridium {
+
+	struct OpenGLFramebuffer
+	{
+		RHITextureRef BackBufferTexture = nullptr;
+		GLuint FramebufferID = 0;
+		GLuint ShaderID = 0;
+		struct Quad
+		{
+			static constexpr float Vertices[] = {
+				// Positions   // TexCoords
+				-1.0f,  1.0f,  0.0f, 1.0f,
+				-1.0f, -1.0f,  0.0f, 0.0f,
+				 1.0f, -1.0f,  1.0f, 0.0f,
+
+				-1.0f,  1.0f,  0.0f, 1.0f,
+				 1.0f, -1.0f,  1.0f, 0.0f,
+				 1.0f,  1.0f,  1.0f, 1.0f
+			};
+
+			GLuint VAO = 0;
+			GLuint VBO = 0;
+
+			~Quad()
+			{
+				if ( VAO )
+				{
+					OpenGL3::DeleteVertexArrays( 1, &VAO );
+				}
+				if ( VBO )
+				{
+					OpenGL3::DeleteBuffers( 1, &VBO );
+				}
+			}
+
+		} ScreenQuad;
+
+		bool Init( const RHISwapChainDescriptor& a_Desc );
+
+		~OpenGLFramebuffer()
+		{
+			if ( FramebufferID )
+			{
+				OpenGL3::DeleteFramebuffers( 1, &FramebufferID );
+			}
+
+			if ( ShaderID )
+			{
+				OpenGL3::DeleteProgram( ShaderID );
+			}
+		}
+	};
 
 	class OpenGLSwapChain : public RHISwapChain
 	{
@@ -14,7 +66,12 @@ namespace Tridium {
 		bool Present() override;
 		RHITextureRef GetBackBuffer() override;
 
+		const auto& GetFramebuffer() const { return m_Framebuffer; }
+
 		GLFWwindow* Window = nullptr;
+
+	private:
+		OpenGLFramebuffer m_Framebuffer;
 	};
 
 } // namespace Tridium

@@ -1,6 +1,6 @@
 #pragma once
 #include <filesystem>
-#include <string>
+#include <Tridium/Containers/String.h>
 
 namespace Tridium {
     namespace IO {
@@ -15,7 +15,6 @@ namespace Tridium {
 
             operator const fs::path& ( ) const { return *this; }
             operator fs::path& ( ) { return *this; }
-            operator std::string() const { return ToString(); }
 
             FilePath operator+( const std::string& suffix ) const {
                 return ToString() + suffix;
@@ -56,17 +55,21 @@ namespace Tridium {
 
             // Conversion to string with forward slashes
             //      E.g. "MyFolder/MyFile.txt"
-            std::string ToString() const { return generic_string(); }
+			String ToString() const { return generic_string(); }
 
-            void Append( const std::string& a_String ) { append( a_String ); }
+             // Conversion to WString with forward slashes
+            //      E.g. "MyFolder/MyFile.txt"
+			WString ToWString() const { return generic_wstring(); }
 
-            void ReplaceExtension( const std::string& a_Extension ) { replace_extension( a_Extension ); }
+            void Append( const String& a_String ) { append( a_String ); }
+
+            void ReplaceExtension( const String& a_Extension ) { replace_extension( a_Extension ); }
 
             FilePath GetParentPath() const { return parent_path(); }
 
             FilePath GetFilename() const { return filename(); }
 
-            std::string GetFilenameWithoutExtension() const { return filename().replace_extension().string(); }
+            String GetFilenameWithoutExtension() const { return filename().replace_extension().string(); }
 
             FilePath GetExtension() const { return extension(); }
 

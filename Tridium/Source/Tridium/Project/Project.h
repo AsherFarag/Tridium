@@ -10,6 +10,7 @@ namespace Tridium {
 		ProjectConfig Config;
 
 		FilePath GetAssetDirectory() const { return Config.Editor.ProjectDirectory / Config.Editor.AssetDirectory; }
+		const FilePath& GetWorkingDirectory() const { return Config.WorkingDirectory; }
 
 		Project() = default;
 		Project( const String& a_Name, const FilePath& a_AssetDirectory, SceneHandle a_StartScene );

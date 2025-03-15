@@ -280,7 +280,7 @@ namespace Tridium {
 			return AssetHandle::InvalidID;
 		}
 
-		EAssetType assetType = GetAssetTypeFromFileExtension( a_Path.GetExtension() );
+		EAssetType assetType = GetAssetTypeFromFileExtension( a_Path.GetExtension().ToString() );
 		if ( assetType == EAssetType::None )
 		{
 			LOG( LogCategory::Asset, Error, "Failed to import asset: {0}, unsupported file extension", a_Path.ToString() );

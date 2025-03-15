@@ -179,7 +179,7 @@ namespace Tridium {
 		{
 			if ( ImGui::MenuItem( "Open" ) )
 			{
-				Util::OpenLoadFileDialog( Engine::Get()->GetActiveProject().GetAssetDirectory() / "NewLuaScript.lua", [this](const FilePath& a_FilePath)
+				Util::OpenLoadFileDialog( ( Engine::Get()->GetActiveProject().GetAssetDirectory() / "NewLuaScript.lua" ).ToString(), [this]( const FilePath& a_FilePath )
 					{
 						OpenFile( a_FilePath );
 					} );
@@ -192,7 +192,7 @@ namespace Tridium {
 
 			if ( ImGui::MenuItem( "Save As" ) )
 			{
-				Util::OpenSaveFileDialog( Engine::Get()->GetActiveProject().GetAssetDirectory() / "NewLuaScript.lua", [this]( const FilePath& a_FilePath )
+				Util::OpenSaveFileDialog( ( Engine::Get()->GetActiveProject().GetAssetDirectory() / "NewLuaScript.lua" ).ToString(), [this]( const FilePath& a_FilePath )
 					{
 						OpenedScript* openedScript = GetOpenedScript( m_CurrentOpenedScript );
 						if ( openedScript )

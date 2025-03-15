@@ -9,7 +9,7 @@ namespace Tridium {
 
     void LuaScriptLoader::SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
     {
-		std::string absolutePath = EditorAssetManager::Get()->GetAbsolutePath( a_MetaData.Path );
+		std::string absolutePath = EditorAssetManager::Get()->GetAbsolutePath( a_MetaData.Path ).ToString();
 		// Save the script to an existing text file or create a new one.
 		std::ofstream out( a_MetaData.Path.ToString(), std::ios::out | std::ios::binary );
 		if ( !out )

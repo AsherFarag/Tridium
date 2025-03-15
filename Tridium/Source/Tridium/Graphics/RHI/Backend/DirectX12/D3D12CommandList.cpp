@@ -197,7 +197,7 @@ namespace Tridium {
 		{
 		case ERHIShaderBindingType::Constant:
 		{
-			if ( binding.IsInlined )
+			if ( binding.IsInlined() )
 			{
 				CommandList->SetGraphicsRoot32BitConstants( ShaderInputOffset++, binding.WordSize, static_cast<const void*>( &a_Data.Payload.InlineData[0] ), 0 );
 			}
@@ -283,10 +283,6 @@ namespace Tridium {
 			}
 			break;
 		}
-		case ERHIShaderBindingType::StaticSampler:
-		{
-			break;
-		}
 		default:
 		{
 			ASSERT_LOG( false, "Unknown Shader Binding Type!" );
@@ -351,7 +347,7 @@ namespace Tridium {
 		D3D12_RESOURCE_BARRIER barrier = {};
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrier.Transition.pResource = a_Data.Resource->NativePtrAs<ID3D12Resource*>();
+		barrier.Transition.pResource = a_Data.Resource->NativePtrAs<ID3D12Resource>();
 		barrier.Transition.StateBefore = ToD3D12::GetResourceState( a_Data.Before );
 		barrier.Transition.StateAfter = ToD3D12::GetResourceState( a_Data.After );
 		barrier.Transition.Subresource = 0;

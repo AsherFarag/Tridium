@@ -37,7 +37,7 @@ namespace Tridium {
 
 		try
 		{
-			data = YAML::LoadFile( a_Path );
+			data = YAML::LoadFile( a_Path.ToString() );
 		}
 		catch ( const YAML::BadFile& e )
 		{

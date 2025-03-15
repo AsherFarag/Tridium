@@ -39,6 +39,7 @@ project "Tridium"
 	includedirs
 	{
 		"Source",
+		"Shaders",
         "%{IncludeDir.spdlog}",
 		"%{IncludeDir.glfw}",
 		"%{IncludeDir.glad}",

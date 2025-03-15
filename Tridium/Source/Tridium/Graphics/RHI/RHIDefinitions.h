@@ -255,7 +255,7 @@ namespace Tridium {
 
 		// Console-Platform Specific
 		HLSL6_XBOX, // HLSL for Xbox
-		PSSL,      // PlayStation Shader Language
+		PSSL,       // PlayStation Shader Language
 
 		COUNT,
 		NUM_BITS = 3,
@@ -611,6 +611,7 @@ namespace Tridium {
 
 	//====================================
 	// RHI Data Type
+	//  An enumeration of primitive data types that can be used in the RHI. 
 	//====================================
 	enum class ERHIDataType : uint8_t
 	{
@@ -631,7 +632,16 @@ namespace Tridium {
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHIDataType );
 
+	//==========================================================
+	// RHI Data Type Traits
+	//  Provides information about a data type, if a specialization of this template exists.
+	template<typename T>
+	struct RHIDataTypeTraits {};
+	//==========================================================
 
+	// Tests if a valid specialization of RHIDataTypeTraits exists for the given type.
+	template<typename T>
+	concept IsRHIDataType = requires { RHIDataTypeTraits<T>::Type; };
 
 	// Returns the number of bytes for a given RHI Data Type.
 	// Returns 0 if the type is unknown.
@@ -656,18 +666,33 @@ namespace Tridium {
 		return 0;
 	}
 
+	// Get the ERHIDataType for a given type.
+	// E.g. GetRHIDataType<float>() returns ERHIDataType::Float32.
+	template<typename T> requires IsRHIDataType<T>
+	constexpr ERHIDataType GetRHIDataType() { return RHIDataTypeTraits<T>::Type; }
+
+	//==========================================================
+	// RHI Tensor Type Traits
+	//  Provides information about a tensor type, if a specialization of this template exists.
+	//  A Tensor type can be a scalar, vector, or matrix.
+	//  E.g. Valid tensor types are float, Vector3, Matrix3, etc.
 	template<typename T>
-	constexpr ERHIDataType GetRHIDataType();
+	struct RHITensorTypeTraits;
+	//==========================================================
 
-
-
-	template<typename T>
-	struct RHITensorTypeTraits
+	// A specialization of RHITensorTypeTraits for scalar types.
+	// Scalars are single values such as float, int, etc.
+	template<IsRHIDataType T>
+	struct RHITensorTypeTraits<T>
 	{
 		static constexpr ERHIDataType ElementType = GetRHIDataType<T>();
 		static constexpr uint8_t ElementCountX = 1;
 		static constexpr uint8_t ElementCountY = 1;
 	};
+
+	// Tests if a valid specialization of RHITensorTypeTraits exists for the given type.
+	template<typename T>
+	concept IsRHITensorType = requires { RHITensorTypeTraits<T>::ElementType; };
 
 	//==========================================================
 	// RHI Tensor Data Type
@@ -699,6 +724,7 @@ namespace Tridium {
 
 	//==========================================================
 	// RHI Vertex Element Type
+	//  Describes the type of data a vertex element can be.
 	enum class ERHIVertexElementType : uint8_t
 	{
 		None,
@@ -732,6 +758,9 @@ namespace Tridium {
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHIVertexElementType );
 
+	// Get the ERHIVertexElementType for a given type.
+	// E.g. GetRHIVertexElementType<float>() returns ERHIVertexElementType::Float1.
+	// Note: An existing specialization of this template must exist for the given type.
 	template<typename T>
 	constexpr ERHIVertexElementType GetRHIVertexElementType();
 
@@ -770,6 +799,8 @@ namespace Tridium {
 			default: return 0;
 		}
 	}
+
+
 
 	//==========================================================
 
@@ -812,16 +843,16 @@ namespace Tridium {
 
 	//==========================================================
 
-	template<> constexpr ERHIDataType GetRHIDataType<float32_t>() { return ERHIDataType::Float32; }
-	template<> constexpr ERHIDataType GetRHIDataType<float64_t>() { return ERHIDataType::Float64; }
-	template<> constexpr ERHIDataType GetRHIDataType<int8_t>()    { return ERHIDataType::Int8;    }
-	template<> constexpr ERHIDataType GetRHIDataType<int16_t>()   { return ERHIDataType::Int16;   }
-	template<> constexpr ERHIDataType GetRHIDataType<int32_t>()   { return ERHIDataType::Int32;   }
-	template<> constexpr ERHIDataType GetRHIDataType<int64_t>()   { return ERHIDataType::Int64;   }
-	template<> constexpr ERHIDataType GetRHIDataType<uint8_t>()   { return ERHIDataType::UInt8;   }
-	template<> constexpr ERHIDataType GetRHIDataType<uint16_t>()  { return ERHIDataType::UInt16;  }
-	template<> constexpr ERHIDataType GetRHIDataType<uint32_t>()  { return ERHIDataType::UInt32;  }
-	template<> constexpr ERHIDataType GetRHIDataType<uint64_t>()  { return ERHIDataType::UInt64;  }
+	template<> struct RHIDataTypeTraits<uint8_t>   { static constexpr ERHIDataType Type = ERHIDataType::UInt8; };
+	template<> struct RHIDataTypeTraits<uint16_t>  { static constexpr ERHIDataType Type = ERHIDataType::UInt16; };
+	template<> struct RHIDataTypeTraits<uint32_t>  { static constexpr ERHIDataType Type = ERHIDataType::UInt32; };
+	template<> struct RHIDataTypeTraits<uint64_t>  { static constexpr ERHIDataType Type = ERHIDataType::UInt64; };
+	template<> struct RHIDataTypeTraits<int8_t>    { static constexpr ERHIDataType Type = ERHIDataType::Int8; };
+	template<> struct RHIDataTypeTraits<int16_t>   { static constexpr ERHIDataType Type = ERHIDataType::Int16; };
+	template<> struct RHIDataTypeTraits<int32_t>   { static constexpr ERHIDataType Type = ERHIDataType::Int32; };
+	template<> struct RHIDataTypeTraits<int64_t>   { static constexpr ERHIDataType Type = ERHIDataType::Int64; };
+	template<> struct RHIDataTypeTraits<float32_t> { static constexpr ERHIDataType Type = ERHIDataType::Float32; };
+	template<> struct RHIDataTypeTraits<float64_t> { static constexpr ERHIDataType Type = ERHIDataType::Float64; };
 
 	//==========================================================
 

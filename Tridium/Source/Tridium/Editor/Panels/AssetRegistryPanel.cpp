@@ -13,7 +13,7 @@ namespace Tridium {
 
 			for ( auto& [handle, metaData] : assetRegistry.AssetMetaData )
 			{
-				const std::string& assetName = metaData.Name.size() ? metaData.Name.c_str() : metaData.Path.GetFilename();
+				const String& assetName = metaData.Name.size() ? metaData.Name.c_str() : metaData.Path.GetFilename().ToString();
 				if ( ImGui::TreeNode( 
 							std::to_string( handle.ID() ).c_str(),
 							"Asset: %s", assetName.c_str() ) )

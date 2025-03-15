@@ -1,0 +1,3 @@
+#pragma once
+
+#define PLATFORM_SUPPORTS_STATIC_SAMPLERS 1

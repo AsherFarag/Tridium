@@ -9,6 +9,7 @@ namespace Tridium {
 	{
 		String Name = "Untitled";
 		SceneHandle StartScene;
+		FilePath WorkingDirectory = FilePath::CurrentPath();
 
 	#if WITH_EDITOR || 1 // TEMP
 		struct Editor

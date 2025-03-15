@@ -9,7 +9,7 @@ namespace Tridium {
     AssetHandle AssetImporter::ImportAsset( const FilePath& a_FilePath )
     {
         FilePath absolutePath = EditorAssetManager::Get()->GetAbsolutePath( a_FilePath );
-		EAssetType assetType = GetAssetTypeFromFileExtension( absolutePath.GetExtension() );
+		EAssetType assetType = GetAssetTypeFromFileExtension( absolutePath.GetExtension().ToString() );
         switch ( assetType )
         {
         case EAssetType::Scene:

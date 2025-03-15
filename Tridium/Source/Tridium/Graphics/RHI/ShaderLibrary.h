@@ -24,7 +24,7 @@ namespace Tridium {
 		}
 
 		// Load a shader module from a file and add it to the library with the given name.
-		static RHIShaderModuleRef LoadShader( const FilePath& a_Path, StringView a_Name = nullptr )
+		static RHIShaderModuleRef LoadShaderFromFile( const FilePath& a_Path, StringView a_Name = nullptr )
 		{
 			hash_t nameHash = a_Name.empty()
 				? Hashing::HashString( a_Path.GetFilenameWithoutExtension().c_str() )
@@ -36,11 +36,11 @@ namespace Tridium {
 				return ref;
 			}
 
-			return RHIShaderLibrary::Get()->LoadShader( a_Path, a_Name );
+			return RHIShaderLibrary::Get()->LoadShaderFromFile( a_Path, a_Name );
 		}
 
 		// Load a shader module from a string and add it to the library with the given name.
-		static RHIShaderModuleRef LoadShader( StringView a_Source, StringView a_Name )
+		static RHIShaderModuleRef LoadShader( StringView a_Source, StringView a_Name, ERHIShaderType a_Type )
 		{
 			hash_t nameHash = Hashing::HashString( a_Name.data() );
 			if ( RHIShaderModuleRef ref = FindShader( nameHash ) )
@@ -49,7 +49,7 @@ namespace Tridium {
 				return ref;
 			}
 
-			return RHIShaderLibrary::Get()->LoadShader( a_Source, a_Name );
+			return RHIShaderLibrary::Get()->LoadShader( a_Source, a_Name, a_Type );
 		}
 
 		// Add a shader module to the library.

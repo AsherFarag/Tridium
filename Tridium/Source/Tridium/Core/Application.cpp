@@ -204,7 +204,7 @@ namespace Tridium {
 
 			// HLSL Source code
 			StringView vertCode = R"(
-#pragma type vertex
+#include "Globals.hlsli"
 struct VSOutput {
     float4 pos : SV_Position;  
 	float2 uv : TEXCOORD;
@@ -219,49 +219,44 @@ VSOutput main(float3 position : POSITION, float2 uv : TEXCOORD)
 }
 )";
 			StringView pixelCode = R"(
-#pragma type pixel
-
+#include "Globals.hlsli"
 struct VSOutput {
     float4 pos : SV_Position;
 	float2 uv : TEXCOORD;
 };
 
-cbuffer Constants : register(b0)
-{
-	float4 ColourMultiplier;
+struct PushConstants {
+	float4 ColorMultiplier;
 };
 
+PUSH_CONSTANT( colorMultiplier, PushConstants );
 Texture2D<float4> Texture : register(t0);
-sampler TextureSampler : register(s0);
 
 float4 main(VSOutput input) : SV_Target 
 {
-	return Texture.Sample(TextureSampler, input.uv) * ColourMultiplier;
+	return Texture.Sample( GetStaticSampler( Bilinear, Clamped ), input.uv) * colorMultiplier.ColorMultiplier;
 }
 )";
 
-			ShaderLibrary::LoadShader( vertCode, "My beautiful vert shader" );
+			struct PushConstants
+			{
+				float4 ColorMultiplier;
+			};
+
+			ShaderLibrary::LoadShader( vertCode, "My beautiful vert shader", ERHIShaderType::Vertex );
 			RHIShaderModuleRef shader = ShaderLibrary::FindShader( "My beautiful vert shader"_H );
 
-			ShaderLibrary::LoadShader( pixelCode, "My beautiful pixel shader" );
+			ShaderLibrary::LoadShader( pixelCode, "My beautiful pixel shader", ERHIShaderType::Pixel );	
 			RHIShaderModuleRef pixelShader = ShaderLibrary::FindShader( "My beautiful pixel shader"_H );
 
 			LOG( LogCategory::Debug, Info, "Vert Shader: {0}", shader->GetDescriptor()->Name.data() );
 			LOG( LogCategory::Debug, Info, "Pixel Shader: {0}", pixelShader->GetDescriptor()->Name.data() );
 
-			RHISamplerDescriptor samplerDesc;
-			samplerDesc.Filter = ERHISamplerFilter::Bilinear;
-			samplerDesc.AddressU = ERHISamplerAddressMode::Clamp;
-			samplerDesc.AddressV = ERHISamplerAddressMode::Clamp;
-			samplerDesc.AddressW = ERHISamplerAddressMode::Clamp;
-
 			// Create Shader Binding Layout
 			RHIShaderBindingLayoutDescriptor sblDesc;
-			sblDesc.AddBinding( "ColourMultiplier"_H ).AsInlinedConstants<Color>( 0 );
-			sblDesc.AddBinding( "Texture"_H ).AsReferencedTextures( 0 );
-			sblDesc.AddBinding( "TextureSampler"_H ).AsStaticSampler( 0, samplerDesc );
-
 			sblDesc.Name = "My beautiful shader binding layout";
+			sblDesc.AddBinding( "colorMultiplier"_H ).AsInlinedConstants<PushConstants>( 0 );
+			sblDesc.AddBinding( "Texture"_H ).AsReferencedTextures( 0 );
 
 			RHIShaderBindingLayoutRef sbl = RHI::CreateShaderBindingLayout( sblDesc );
 
@@ -281,8 +276,10 @@ float4 main(VSOutput input) : SV_Target
 			// Temp
 			float time = 0.0f;
 			Color clearColour = Color{ 0.5f, 0.4f, 1.0f, 1.0f } * 0.15f;
+			int f{};
 			while ( true )
 			{
+				++f;
 				m_Window->OnUpdate();
 				time = glfwGetTime();
 				RHITextureRef rt = RHI::GetSwapChain()->GetBackBuffer();
@@ -324,9 +321,9 @@ float4 main(VSOutput input) : SV_Target
 					};
 
 				// Draw
-				cmdBuffer.SetShaderInput( "ColourMultiplier", CycleRGB( time, 0.50f ) )
-						 .SetShaderInput( "Texture", tex )
-				         .Draw( 0, sizeof( vertices ) / sizeof( Vertex ) );
+				//cmdBuffer.SetShaderInput( "colorMultiplier.ColorMultiplier", CycleRGB( time, 0.50f ) )
+				cmdBuffer.SetShaderInput( "Texture", tex );
+				//cmdBuffer.Draw( 0, sizeof( vertices ) / sizeof( Vertex ) );
 
 				cmdBuffer.ResourceBarrier( rt, ERHIResourceState::RenderTarget, ERHIResourceState::Present );
 
@@ -337,11 +334,11 @@ float4 main(VSOutput input) : SV_Target
 
 				RHI::Present();
 			}
-
-			RHI::Shutdown();
-
-			return true;
 		}
+
+		RHI::Shutdown();
+
+		return true;
 
 #endif
 

@@ -32,6 +32,29 @@ namespace Tridium::Concepts {
 	template<typename T>
 	concept IsDefaultConstructable = std::is_default_constructible_v<T>;
 
+	template<typename T>
+	concept Aggregate = std::is_aggregate_v<T>;
+
+	// Checks if the type can be initialized with the given arguments via aggregate initialization.
+	template<typename T, typename... _Args>
+	concept IsAggregateInitializable = requires { T{ std::declval<_Args>()... }; };
+
+	template<typename T>
+	concept IsStruct = std::is_class_v<T> && Aggregate<T>;
+
+	namespace Detail {
+		template<typename T, template<typename...> typename _Template>
+		constexpr bool IsSpecialisation = false;
+
+		template<template<typename...> typename _Template, typename... Args>
+		constexpr bool IsSpecialisation<_Template<Args...>, _Template> = true;
+	}
+
+	// Checks if the first type is a specialisation of the second type.
+	// Example: IsSpecialisation<std::vector<int>, std::vector> == true
+	template<typename T, template<typename...> typename _Template>
+	concept IsSpecialisation = Detail::IsSpecialisation<T, _Template>;
+
 	//================================================================
 	// Inheritance
 	//================================================================

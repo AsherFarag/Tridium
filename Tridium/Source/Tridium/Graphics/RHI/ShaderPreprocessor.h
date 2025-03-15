@@ -11,7 +11,6 @@ namespace Tridium {
 
 		struct MetaData
 		{
-			ERHIShaderType ShaderType{ ERHIShaderType::Unknown };
 		} Meta;
 
 		bool IsValid() const { return Error.empty(); }

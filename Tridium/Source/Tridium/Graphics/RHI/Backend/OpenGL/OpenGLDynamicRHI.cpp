@@ -12,6 +12,7 @@
 #include "OpenGLResourceAllocator.h"
 #include "OpenGLCommandList.h"
 #include "OpenGLShader.h"
+#include "OpenGLShaderBindingLayout.h"
 
 namespace Tridium {
 
@@ -140,7 +141,9 @@ namespace Tridium {
 
 	RHIShaderBindingLayoutRef OpenGLDynamicRHI::CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc )
 	{
-		return RHIShaderBindingLayoutRef();
+		RHIShaderBindingLayoutRef sbl = RHIResource::Create<OpenGLShaderBindingLayout>();
+		CHECK( sbl->Commit( &a_Desc ) );
+		return sbl;
 	}
 
 	RHIResourceAllocatorRef OpenGLDynamicRHI::CreateResourceAllocator( const RHIResourceAllocatorDescriptor& a_Desc )
@@ -173,15 +176,19 @@ namespace Tridium {
 		switch ( a_Severity )
 		{
 		case GL_DEBUG_SEVERITY_HIGH:
+			LOG( LogCategory::OpenGL, Error, a_Message );
 			s_OpenGLDebugMessages.EmplaceBack( "Error: " + String( a_Message ) );
 			break;
 		case GL_DEBUG_SEVERITY_MEDIUM:
+			LOG( LogCategory::OpenGL, Warn, a_Message );
 			s_OpenGLDebugMessages.EmplaceBack( "Warning: " + String( a_Message ) );
 			break;
 		case GL_DEBUG_SEVERITY_LOW:
+			LOG( LogCategory::OpenGL, Info, a_Message );
 			s_OpenGLDebugMessages.EmplaceBack( "Info: " + String( a_Message ) );
 			break;
 		case GL_DEBUG_SEVERITY_NOTIFICATION:
+			LOG( LogCategory::OpenGL, Debug, a_Message );
 			s_OpenGLDebugMessages.EmplaceBack( "Debug: " + String( a_Message ) );
 			break;
 		}

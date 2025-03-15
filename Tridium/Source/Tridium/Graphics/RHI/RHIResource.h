@@ -89,11 +89,11 @@ namespace Tridium {
 		virtual const void* NativePtr() const = 0;
 
 		// Gets a pointer to the native resource.
-		// E.g. OpenGLTexture -> GLuint
+		// E.g. OpenGLTexture -> GLuint*
 		template<typename T>
-		T NativePtrAs() const
+		T* NativePtrAs() const
 		{
-			return (T)( NativePtr() );
+			return (T*)( NativePtr() );
 		}
 
 		// Returns whether the resource is the same resource type.

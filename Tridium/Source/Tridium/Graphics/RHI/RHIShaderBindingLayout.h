@@ -17,10 +17,21 @@ namespace Tridium {
 		Texture,	  // Read only Texture resource.              (DX12 SRV) / (Vulkan Sampled Image)
 		RWTexture,	  // Read/Write Texture resource.             (DX12 UAV) / (Vulkan Storage Image)
 		Sampler,	  // Sampler state.                           (DX12 SAM) / (Vulkan Sampler)
-		StaticSampler // Static sampler state.                  (DX12 SAM) / (Vulkan Sampler)
 	};
 
+	struct RHIShaderConstantType
+	{
+		enum EType : uint8_t
+		{
+			Undefined = 0,
+			InlinedTensor,
+			InlinedCustom,
+			Referenced,
+		};
 
+		EType Type = EType::Undefined;
+		RHITensorType TensorType = RHITensorType::From<int32_t>();
+	};
 
 	//==============================================
 	// RHI Shader Binding
@@ -29,13 +40,10 @@ namespace Tridium {
 	{
 		ERHIShaderVisibility Visibility = ERHIShaderVisibility::All;
 		ERHIShaderBindingType BindingType = ERHIShaderBindingType::Unknown;
-		RHITensorType InlinedConstantType = RHITensorType::From<int32_t>();
-		bool IsInlined = false; // If the data is inlined in the shader.
+		RHIShaderConstantType ConstantType{};
 		uint8_t WordSize = 1;   // Number of 32-bit words for the binding. For example, a Vector4 would be 4 words ( 4 * 32 bit floats ).
-		uint8_t Register = 0;   // Register index in the shader.
-		// Sampler descriptor for static samplers.
-		// Note: Border Color can only be set to White, Black, or Transparent Black.
-		RHISamplerDescriptor SamplerDesc{};
+		uint8_t BindSlot = 0;   // Register index in the shader.
+		const char* Name = nullptr; // Name of the binding.
 
 		constexpr uint32_t GetSizeInBytes() const
 		{
@@ -48,90 +56,113 @@ namespace Tridium {
 			return *this;
 		}
 
+		constexpr bool IsInlined() const
+		{
+			return ConstantType.Type == RHIShaderConstantType::InlinedTensor || ConstantType.Type == RHIShaderConstantType::InlinedCustom;
+		}
+
+		// Set the binding as inlined constants, such as a Vector4.
+		// The data is inlined in the shader and is not referenced from a buffer, making it faster to access.
+		// This can be used for small data types such as colors, matrices, etc.
+		// In DirectX 12, this would be a Root Constant, and in Vulkan, this would be a Push Constant.
 		template<typename T>
-		constexpr RHIShaderBinding& AsInlinedConstants( uint8_t a_Register )
+		constexpr RHIShaderBinding& AsInlinedConstants( uint8_t a_BindSlotStart )
 		{
 			BindingType = ERHIShaderBindingType::Constant;
-			InlinedConstantType = RHITensorType::From<T>();
-			IsInlined = true;
 			WordSize = sizeof( T ) >> 2;
-			Register = a_Register;
+			BindSlot = a_BindSlotStart;
+			if constexpr ( IsRHITensorType<T> )
+			{
+				ConstantType.Type = RHIShaderConstantType::InlinedTensor;
+				ConstantType.TensorType = RHITensorType::From<T>();
+			}
+			else
+			{
+				ConstantType.Type = RHIShaderConstantType::InlinedCustom;
+			}
 			return *this;
 		}
 
-		constexpr RHIShaderBinding& AsReferencedConstants( uint8_t a_Register, uint8_t a_CountInAllocRange = 1 )
+		// Set the binding as referenced constants, such as a constant buffer.
+		// The data is referenced from a buffer and is not inlined in the shader.
+		// This can be used for larger data types such as transformation matrices, etc.
+		// In DirectX 12, this would be a Constant Buffer, and in Vulkan/OpenGL, this would be a Uniform Buffer.
+		constexpr RHIShaderBinding& AsReferencedConstants( uint8_t a_BindSlotStart, uint8_t a_CountInAllocRange = 1 )
 		{
 			BindingType = ERHIShaderBindingType::Constant;
-			IsInlined = false;
 			WordSize = a_CountInAllocRange;
-			Register = a_Register;
+			BindSlot = a_BindSlotStart;
+			ConstantType.Type = RHIShaderConstantType::Referenced;
 			return *this;
 		}
 
-		constexpr RHIShaderBinding& AsReferencedMutables( uint8_t a_Register, uint8_t a_CountInAllocRange = 1 )
+		// Set the binding as referenced mutables, such as a structured buffer.
+		// The data is referenced from a buffer and is not inlined in the shader.
+		// This can be used for mutable data types such as instance data, etc.
+		// In DirectX 12, this would be a Shader Resource View, and in Vulkan, this would be a Storage Buffer.
+		constexpr RHIShaderBinding& AsReferencedMutables( uint8_t a_BindSlotStart, uint8_t a_CountInAllocRange = 1 )
 		{
 			BindingType = ERHIShaderBindingType::Mutable;
-			IsInlined = false;
 			WordSize = a_CountInAllocRange;
-			Register = a_Register;
+			BindSlot = a_BindSlotStart;
 			return *this;
 		}
 
-		constexpr RHIShaderBinding& AsReferencedStorages( uint8_t a_Register, uint8_t a_CountInAllocRange = 1 )
+		// Set the binding as referenced storages, such as a RWStructuredBuffer.
+		// The data is referenced from a buffer and is not inlined in the shader.
+		// This can be used for read/write data types such as compute shaders, etc.
+		// In DirectX 12, this would be an Unordered Access View, and in Vulkan, this would be a Storage Buffer.
+		constexpr RHIShaderBinding& AsReferencedStorages( uint8_t a_BindSlotStart, uint8_t a_CountInAllocRange = 1 )
 		{
 			BindingType = ERHIShaderBindingType::Storage;
-			IsInlined = false;
 			WordSize = a_CountInAllocRange;
-			Register = a_Register;
+			BindSlot = a_BindSlotStart;
 			return *this;
 		}
 
-		constexpr RHIShaderBinding& AsReferencedTextures( uint8_t a_Register, uint8_t a_CountInAllocRange = 1 )
+		// Set the binding as referenced textures, such as a Texture2D.
+		// The data is referenced from a buffer and is not inlined in the shader.
+		// This can be used for texture data types such as textures, etc.
+		// In DirectX 12, this would be a Shader Resource View, and in Vulkan, this would be a Sampled Image.
+		constexpr RHIShaderBinding& AsReferencedTextures( uint8_t a_BindSlotStart, uint8_t a_CountInAllocRange = 1 )
 		{
 			BindingType = ERHIShaderBindingType::Texture;
-			IsInlined = false;
 			WordSize = a_CountInAllocRange;
-			Register = a_Register;
+			BindSlot = a_BindSlotStart;
 			return *this;
 		}
 
-		constexpr RHIShaderBinding& AsReferencedRWTextures( uint8_t a_Register, uint8_t a_CountInAllocRange = 1 )
+		// Set the binding as referenced RWTextures, such as a RWTexture2D.
+		// The data is referenced from a buffer and is not inlined in the shader.
+		// This can be used for texture data types such as textures, etc.
+		// In DirectX 12, this would be an Unordered Access View, and in Vulkan, this would be a Storage Image.
+		constexpr RHIShaderBinding& AsReferencedRWTextures( uint8_t a_BindSlotStart, uint8_t a_CountInAllocRange = 1 )
 		{
 			BindingType = ERHIShaderBindingType::RWTexture;
-			IsInlined = false;
 			WordSize = a_CountInAllocRange;
-			Register = a_Register;
+			BindSlot = a_BindSlotStart;
 			return *this;
 		}
 
-		constexpr RHIShaderBinding& AsReferencedSamplers( uint8_t a_Register, uint8_t a_CountInAllocRange = 1 )
+		// Set the binding as referenced samplers, such as a SamplerState.
+		// The data is referenced from a buffer and is not inlined in the shader.
+		// This can be used for texture data types such as textures, etc.
+		// In DirectX 12, this would be a Sampler, and in Vulkan, this would be a Sampler.
+		constexpr RHIShaderBinding& AsReferencedSamplers( uint8_t a_BindSlotStart, uint8_t a_CountInAllocRange = 1 )
 		{
 			BindingType = ERHIShaderBindingType::Sampler;
-			IsInlined = false;
 			WordSize = a_CountInAllocRange;
-			Register = a_Register;
+			BindSlot = a_BindSlotStart;
 			return *this;
 		}
 
-		constexpr RHIShaderBinding& AsStaticSampler( uint8_t a_Register, const RHISamplerDescriptor& a_SamplerDesc )
-		{
-			BindingType = ERHIShaderBindingType::StaticSampler;
-			IsInlined = false;
-			WordSize = 1;
-			Register = a_Register;
-			SamplerDesc = a_SamplerDesc;
-			return *this;
-		}
-
-		constexpr bool IsInlinedConstants() const { return IsInlined && BindingType == ERHIShaderBindingType::Constant; }
-		constexpr bool IsReferencedConstants() const { return !IsInlined && BindingType == ERHIShaderBindingType::Constant; }
-		constexpr bool IsReferencedMutables() const { return !IsInlined && BindingType == ERHIShaderBindingType::Mutable; }
-		constexpr bool IsReferencedStorages() const { return !IsInlined && BindingType == ERHIShaderBindingType::Storage; }
-		constexpr bool IsReferencedTextures() const { return !IsInlined && BindingType == ERHIShaderBindingType::Texture; }
-		constexpr bool IsReferencedRWTextures() const { return !IsInlined && BindingType == ERHIShaderBindingType::RWTexture; }
-		constexpr bool IsReferencedSamplers() const { return !IsInlined && BindingType == ERHIShaderBindingType::Sampler; }
-		constexpr bool IsStaticSampler() const { return BindingType == ERHIShaderBindingType::StaticSampler; }
-
+		constexpr bool IsInlinedConstants() const { return BindingType == ERHIShaderBindingType::Constant && ( ConstantType.Type == RHIShaderConstantType::InlinedTensor || ConstantType.Type == RHIShaderConstantType::InlinedCustom ); }
+		constexpr bool IsReferencedConstants() const { return BindingType == ERHIShaderBindingType::Constant && ConstantType.Type == RHIShaderConstantType::Referenced; }
+		constexpr bool IsReferencedMutables() const { return BindingType == ERHIShaderBindingType::Mutable; }
+		constexpr bool IsReferencedStorages() const { return BindingType == ERHIShaderBindingType::Storage; }
+		constexpr bool IsReferencedTextures() const { return BindingType == ERHIShaderBindingType::Texture; }
+		constexpr bool IsReferencedRWTextures() const { return BindingType == ERHIShaderBindingType::RWTexture; }
+		constexpr bool IsReferencedSamplers() const { return BindingType == ERHIShaderBindingType::Sampler; }
 	};
 
 
@@ -147,7 +178,7 @@ namespace Tridium {
 		UnorderedMap<hash_t, uint32_t> BindingMap; // Maps a hash of the binding name to the index in the Bindings array.
 
 		// Add a binding to the layout.
-		RHIShaderBinding& AddBinding( hash_t a_Name, uint32_t a_InputIndex = 0 )
+		RHIShaderBinding& AddBinding( HashedString a_Name, uint32_t a_InputIndex = 0 )
 		{
 			if ( a_InputIndex == 0 && Bindings.Size() > 0 )
 			{
@@ -161,7 +192,9 @@ namespace Tridium {
 
 			ASSERT_LOG( BindingMap.find( a_Name ) == BindingMap.end(), "Binding with name hash already exists" );
 			BindingMap[a_Name] = a_InputIndex;
-			return Bindings[a_InputIndex];
+			RHIShaderBinding& binding = Bindings[a_InputIndex];
+			binding.Name = a_Name.String().data();
+			return binding;
 		}
 
 		// Get the index of a binding in the layout. 

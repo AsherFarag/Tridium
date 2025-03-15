@@ -26,10 +26,13 @@ namespace Tridium {
 	public:
 		// Load a shader module from a file and add it to the library with the given name.
 		// If a name is not provided, the file name will be used.
-		RHIShaderModuleRef LoadShader( const FilePath& a_Path, StringView a_Name = nullptr );
+		// The shaders type, if not provided, will be determined by the file names suffix.
+		// For example, "myShaderPS.hlsl" will be loaded as a pixel shader because of the "PS" suffix.
+		// "PS" = Pixel Shader, "VS" = Vertex Shader, "GS" = Geometry Shader, "HS" = Hull Shader, "DS" = Domain Shader.
+		RHIShaderModuleRef LoadShaderFromFile( const FilePath& a_Path, StringView a_Name = nullptr, ERHIShaderType a_Type = ERHIShaderType::Unknown );
 
 		// Load a shader module from a string and add it to the library with the given name.
-		RHIShaderModuleRef LoadShader( StringView a_Source, StringView a_Name );
+		RHIShaderModuleRef LoadShader( StringView a_Source, StringView a_Name, ERHIShaderType a_Type );
 
 		// Find a shader module by its name hash.
 		RHIShaderModuleRef FindShader( hash_t a_NameHash )

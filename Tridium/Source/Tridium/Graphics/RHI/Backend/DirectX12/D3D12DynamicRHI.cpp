@@ -121,6 +121,7 @@ namespace Tridium {
 		m_DXGIFactory.Release();
 
     #if RHI_DEBUG_ENABLED
+		DumpDebug();
 		m_DXGIDebug.Release();
 		m_D3D12Debug.Release();
     #endif
@@ -259,6 +260,7 @@ namespace Tridium {
             m_DXGIDebug->ReportLiveObjects(
                 DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS( DXGI_DEBUG_RLO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL )
             );
+			OutputDebugStringW( L"End of DirectX12 Debug Dump\n" );
         }
     }
 #endif // RHI_DEBUG_ENABLED

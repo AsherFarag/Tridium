@@ -21,6 +21,7 @@ project "Sandbox"
 	{
 		"Source",
         "%{wks.location}/Tridium/Source",
+		"%{wks.location}/Tridium/Shaders",
         "%{IncludeDir.spdlog}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",

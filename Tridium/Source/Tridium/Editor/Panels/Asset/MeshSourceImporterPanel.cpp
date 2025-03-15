@@ -91,7 +91,7 @@ namespace Tridium {
 			AssetHandle::Create(),
 			EAssetType::MeshSource,
 			m_Path,
-			m_Path.GetFilename(),
+			m_Path.GetFilename().ToString(),
 			true
 		};
 

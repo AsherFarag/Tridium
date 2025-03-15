@@ -344,7 +344,7 @@ namespace Tridium {
 		{
 			if ( !a_Resource || !a_Resource->IsValid() ) [[unlikely]]
 			{
-				ASSERT_LOG( false, "Resource is invalid!" );
+				ASSERT_LOG( false, "Failed to create a resource barrier as the resource is invalid!" );
 				return Self();
 			}
 
@@ -533,6 +533,18 @@ namespace Tridium {
 
 			for ( size_t i = 0; i < a_RTV.size() && i < data.RTV.MaxSize(); ++i )
 			{
+				if ( !a_RTV[i] || !a_RTV[i]->IsValid() )
+				{
+					ASSERT_LOG( false, "Render target is null!" );
+					continue;
+				}
+
+				if ( !a_RTV[i]->GetDescriptor()->IsRenderTarget )
+				{
+					ASSERT_LOG( false, "Texture is not a render target!" );
+					continue;
+				}
+
 				data.RTV.PushBack( a_RTV[i].get() );
 				m_Textures.insert( a_RTV[i] );
 			}

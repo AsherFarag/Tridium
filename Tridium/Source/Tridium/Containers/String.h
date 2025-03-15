@@ -24,4 +24,14 @@ namespace Tridium {
 	using WStringView = std::wstring_view;
 	using WStringStream = std::wstringstream;
 
-}
+	inline WString ToWString( const String& a_String )
+	{
+		return WString( a_String.begin(), a_String.end() );
+	}
+
+	inline String ToString( const WString& a_String )
+	{
+		return String( a_String.begin(), a_String.end() );
+	}
+
+} // namespace Tridium

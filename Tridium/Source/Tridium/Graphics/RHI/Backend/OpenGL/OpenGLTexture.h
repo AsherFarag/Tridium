@@ -38,6 +38,7 @@ namespace Tridium {
 		}
 
 		GLuint GetGLHandle() const { return m_Handle; }
+		bool IsRenderBuffer() const { return false; }
 
 	private:
 		GLuint m_Handle = 0;

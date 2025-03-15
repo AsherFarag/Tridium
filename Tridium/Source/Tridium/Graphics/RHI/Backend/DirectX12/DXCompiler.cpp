@@ -3,6 +3,10 @@
 #include "DXCompiler.h"
 #include "D3D12Common.h"
 #include <dxcapi.h>  // DXC Compiler API
+#include <d3d12shader.h>  // D3D12 Shader Reflection
+#include <Tridium/Engine/Engine.h>
+
+#pragma comment(lib, "dxcompiler.lib")
 
 namespace Tridium {
 
@@ -68,6 +72,123 @@ namespace Tridium {
 		static DXCInternalState s_DXCInternalState_XBOX( "_xs" );
 		return s_DXCInternalState_XBOX;
 	}
+
+	const wchar_t* GetShaderModelFlag( ERHIShaderType a_Type, ERHIShaderModel a_Model );
+	Optional<Array<WString>> CreateCompilerArguments( const ShaderCompilerInput& a_Input );
+	void GetReflectionData( const ComPtr<IDxcBlob>& a_ReflectionBlob, ShaderCompilerOutput& a_Output );
+
+    ShaderCompilerOutput DXCompiler::Compile( const ShaderCompilerInput& a_Input )
+    {
+        ShaderCompilerOutput output;
+
+		DXCInternalState& dxcState = ( a_Input.Format == ERHIShaderFormat::HLSL6_XBOX ) ? GetDXCInternalState_XBOX() : GetDXCInternalState();
+
+		// Check if the DXC compiler is available.
+		if ( !dxcState.IsValid() )
+		{
+			LOG( LogCategory::DirectX, Error, "DXC compiler is not available" );
+			return {};
+		}
+
+		// Create the DXC compiler.
+		ComPtr<IDxcUtils> dxcUtils;
+		ComPtr<IDxcCompiler3> dxcCompiler;
+
+		if ( FAILED( dxcState.CreateInstance( CLSID_DxcUtils, IID_PPV_ARGS( &dxcUtils ) ) ) )
+		{
+			LOG( LogCategory::DirectX, Error, "Failed to create DXC Utils" );
+			return {};
+		}
+
+		if ( FAILED( dxcState.CreateInstance( CLSID_DxcCompiler, IID_PPV_ARGS( &dxcCompiler ) ) ) )
+		{
+			LOG( LogCategory::DirectX, Error, "Failed to create DXC Compiler" );
+			return {};
+		}
+
+		// Include handler
+		ComPtr<IDxcIncludeHandler> includeHandler;
+		if ( FAILED( dxcUtils->CreateDefaultIncludeHandler( &includeHandler ) ) )
+		{
+			LOG( LogCategory::DirectX, Error, "Failed to create DXC Include Handler" );
+			return {};
+		}
+
+		DxcBuffer sourceBuffer;
+		sourceBuffer.Ptr = a_Input.Source.data();
+		sourceBuffer.Size = a_Input.Source.size();
+		sourceBuffer.Encoding = DXC_CP_UTF8;
+
+
+		// Create the arguments to pass to the compiler.
+		Optional<Array<WString>> args = CreateCompilerArguments( a_Input );
+		if ( !args.has_value() )
+		{
+			LOG( LogCategory::DirectX, Error, "Failed to create compiler arguments" );
+			return {};
+		}
+
+		Array<const wchar_t*> argsRaw;
+		argsRaw.Reserve( args->Size() );
+		for ( const WString& arg : args.value() )
+		{
+			argsRaw.PushBack( arg.c_str() );
+		}
+
+		// COMPILE
+		ComPtr<IDxcResult> dxcResult;
+		HRESULT hr = dxcCompiler->Compile(
+			&sourceBuffer,
+			argsRaw.Data(),
+			static_cast<uint32_t>( argsRaw.Size() ),
+			includeHandler.Get(),
+			IID_PPV_ARGS( &dxcResult )
+		);
+
+		// Check if compilation failed.
+		if ( FAILED( hr ) )
+		{
+			output.Error = "Failed to compile shader";
+			return output;
+		}
+
+		// Get the error( if it exists ) and shader blobs.
+		ComPtr<IDxcBlobUtf8> errorBlob;
+		if ( FAILED( dxcResult->GetOutput( DXC_OUT_ERRORS, IID_PPV_ARGS( &errorBlob ), nullptr ) ) )
+		{
+			output.Error = "Failed to get error blob";
+			return output;
+		}
+
+		if ( errorBlob )
+		{
+			output.Error = String( errorBlob->GetStringPointer() );
+		}
+
+		ComPtr<IDxcBlob> shaderBlob;
+		if ( FAILED( dxcResult->GetOutput( DXC_OUT_OBJECT, IID_PPV_ARGS( &shaderBlob ), nullptr ) ) )
+		{
+			return output;
+		}
+
+		// Get the reflection data.
+		//ComPtr<IDxcBlob> reflectionBlob;
+		//if ( FAILED( dxcResult->GetOutput( DXC_OUT_REFLECTION, IID_PPV_ARGS( &reflectionBlob ), nullptr ) ) )
+		//{
+		//	output.Error = "Failed to get reflection blob";
+		//	return output;
+		//}
+		//GetReflectionData( reflectionBlob, output );
+
+		// Copy the shader blob to the output.
+		if ( shaderBlob && shaderBlob->GetBufferSize() > 0 )
+		{
+			output.ByteCode.Resize( shaderBlob->GetBufferSize() );
+			std::memcpy( output.ByteCode.Data(), shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize() );
+		}
+
+		return output;
+    }
 
 	const wchar_t* GetShaderModelFlag( ERHIShaderType a_Type, ERHIShaderModel a_Model )
 	{
@@ -145,52 +266,27 @@ namespace Tridium {
 		return L"";
 	};
 
-    ShaderCompilerOutput DXCompiler::Compile( const ShaderCompilerInput& a_Input )
-    {
-        ShaderCompilerOutput output;
-
-		DXCInternalState& dxcState = ( a_Input.Format == ERHIShaderFormat::HLSL6_XBOX ) ? GetDXCInternalState_XBOX() : GetDXCInternalState();
-
-		// Check if the DXC compiler is available.
-		if ( !dxcState.IsValid() )
-		{
-			LOG( LogCategory::DirectX, Error, "DXC compiler is not available" );
-			return {};
-		}
-
-		// Create the DXC compiler.
-		ComPtr<IDxcUtils> dxcUtils;
-		ComPtr<IDxcCompiler3> dxcCompiler;
-
-		if ( FAILED( dxcState.CreateInstance( CLSID_DxcUtils, IID_PPV_ARGS( &dxcUtils ) ) ) )
-		{
-			LOG( LogCategory::DirectX, Error, "Failed to create DXC Utils" );
-			return {};
-		}
-
-		if ( FAILED( dxcState.CreateInstance( CLSID_DxcCompiler, IID_PPV_ARGS( &dxcCompiler ) ) ) )
-		{
-			LOG( LogCategory::DirectX, Error, "Failed to create DXC Compiler" );
-			return {};
-		}
-
+	Optional< Array<WString> > CreateCompilerArguments( const ShaderCompilerInput& a_Input )
+	{
 		// Arguments that will be passed to the compiler.
-		Array<WString> args = {};
+		Array<WString> args = {
+			L"-res_may_alias",
+		};
 
 		// Set the optimization level.
 		if ( a_Input.Flags.HasFlag( ERHIShaderCompilerFlags::DisableOptimization ) )
 		{
 			// Disable optimization flag
-			args.PushBack( L"-Od" );
+			args.EmplaceBack( L"-Od" );
 		}
 		else
 		{
 			// Optimization level flag
 			switch ( a_Input.OptimizationLevel )
 			{
-				case ERHIShaderOptimizationLevel::Level1: args.PushBack( L"-O1" ); break;
-				case ERHIShaderOptimizationLevel::Level2: args.PushBack( L"-O2" ); break;
-				case ERHIShaderOptimizationLevel::Level3: args.PushBack( L"-O3" ); break;
+				case ERHIShaderOptimizationLevel::Level1: args.EmplaceBack( L"-O1" ); break;
+				case ERHIShaderOptimizationLevel::Level2: args.EmplaceBack( L"-O2" ); break;
+				case ERHIShaderOptimizationLevel::Level3: args.EmplaceBack( L"-O3" ); break;
 			}
 		}
 
@@ -201,13 +297,26 @@ namespace Tridium {
 			case ERHIShaderFormat::HLSL6_XBOX:
 			{
 				// Declare that 
-				args.PushBack( L"-rootsig-define" );
-				args.PushBack( L"TRIDIUM_DEFAULT_ROOT_SIGNATURE" );
+				args.EmplaceBack( L"-rootsig-define" );
+				args.EmplaceBack( L"TRIDIUM_ENGINE_DEFAULT_ROOTSIG" ); // Default root signature ( defined in RootSig.hlsli )
 				break;
 			}
 			case ERHIShaderFormat::SPIRV:
 			{
-				args.PushBack( L"-spirv" );
+				args.EmplaceBack( L"-spirv" );        // Target SPIR-V
+				args.EmplaceBack( L"-fspv-target-env=vulkan1.2" ); // Target Vulkan 1.2
+				args.EmplaceBack( L"-fvk-use-dx-layout" );         // Use DX layout
+				args.EmplaceBack( L"-fvk-use-dx-position-w" );     // Use DX position.w for SV_Position
+
+				// Pixel and Compute don't support invert-y
+				if ( a_Input.ShaderType != ERHIShaderType::Pixel && a_Input.ShaderType != ERHIShaderType::Compute )
+				{
+					args.EmplaceBack( L"-fvk-invert-y" ); // Make vulkan and opengl have the same coordinate system as D3D (Y-up)
+				}
+
+				//args.EmplaceBack( L"-fvk-t-shift" ); args.EmplaceBack( L"1000" ); args.EmplaceBack( L"0" ); // Shift texture coordinates
+				//args.EmplaceBack( L"-fvk-u-shift" ); args.EmplaceBack( L"2000" ); args.EmplaceBack( L"0" ); // Shift texture coordinates
+				//args.EmplaceBack( L"-fvk-s-shift" ); args.EmplaceBack( L"3000" ); args.EmplaceBack( L"0" ); // Shift texture coordinates
 				break;
 			}
 			default:
@@ -220,117 +329,129 @@ namespace Tridium {
 		// Set the shader model profile.
 		// Convert the shader type and model to a string for the compiler.
 		// E.g. "vs_5_0" for a vertex shader with shader model 5.0.
-		args.PushBack( L"-T" );
-		args.PushBack( GetShaderModelFlag( a_Input.ShaderType, a_Input.MinimumModel ) );
+		args.EmplaceBack( L"-T" );
+		args.EmplaceBack( GetShaderModelFlag( a_Input.ShaderType, a_Input.MinimumModel ) );
 
 		#if RHI_DEBUG_ENABLED
 		if ( a_Input.Flags.HasFlag( ERHIShaderCompilerFlags::EnableDebugInfo ) )
 		{
-			args.PushBack( L"-Zi" );
+			args.EmplaceBack( L"-Zi" );
 		}
 		#endif
 
 		// Disable validation
 		if ( a_Input.Flags.HasFlag( ERHIShaderCompilerFlags::DisableValidation ) )
 		{
-			args.PushBack( L"-Vd" );
+			args.EmplaceBack( L"-Vd" );
 		}
 
 		// Pack matrices in column-major or row-major order.
 		if ( a_Input.Flags.HasFlag( ERHIShaderCompilerFlags::RowMajor ) )
 		{
-			args.PushBack( L"-Zpr" );
+			args.EmplaceBack( L"-Zpr" );
 		}
 		// Default is column-major
 		else
 		{
-			args.PushBack( L"-Zpc" );
+			args.EmplaceBack( L"-Zpc" );
 		}
 
 		// Add the entry point.
 		if ( !a_Input.EntryPoint.empty() )
 		{
-			args.PushBack( L"-E" );
-			args.PushBack( ToD3D12::ToWString( a_Input.EntryPoint ) );
+			args.EmplaceBack( L"-E" );
+			args.EmplaceBack( ToD3D12::ToWString( a_Input.EntryPoint ) );
 		}
 		else
 		{
 			// Default entry point
-			args.PushBack( L"-E" );
-			args.PushBack( L"main" );
+			args.EmplaceBack( L"-E" );
+			args.EmplaceBack( L"main" );
 		}
 
 		// Set up the defines.
 		for ( const auto& define : a_Input.Defines )
 		{
-			args.PushBack( L"-D" );
-			args.PushBack( ToD3D12::ToWString( define.first ) );
-			args.PushBack( ToD3D12::ToWString( define.second ) );
+			args.EmplaceBack( L"-D" );
+			args.EmplaceBack( ToD3D12::ToWString( define.first ) );
+			args.EmplaceBack( ToD3D12::ToWString( define.second ) );
 		}
 
 
-
-		// Include handler
-		ComPtr<IDxcIncludeHandler> includeHandler;
-		if ( FAILED( dxcUtils->CreateDefaultIncludeHandler( &includeHandler ) ) )
+		// Set up the include directories.
+		args.EmplaceBack( L"-I" );
+		TODO( "Temp" );
+		FilePath shaderPath = FilePath::CurrentPath();
+		shaderPath = shaderPath / "../Tridium/Shaders/Shaders";
+		args.EmplaceBack( shaderPath.ToWString() );
+		for ( const auto& includeDir : a_Input.IncludeDirectories )
 		{
-			LOG( LogCategory::DirectX, Error, "Failed to create DXC Include Handler" );
-			return {};
+			args.EmplaceBack( L"-I" );
+			args.EmplaceBack( ToD3D12::ToWString( includeDir ) );
 		}
 
-		DxcBuffer sourceBuffer;
-		sourceBuffer.Ptr = a_Input.Source.data();
-		sourceBuffer.Size = a_Input.Source.size();
-		sourceBuffer.Encoding = DXC_CP_UTF8;
-
-		Array<const wchar_t*> argsRaw;
-		argsRaw.Reserve( args.Size() );
-		for ( const WString& arg : args )
+		// Add custom arguments.
+		for ( const auto& customArg : a_Input.CustomArguments )
 		{
-			argsRaw.PushBack( arg.c_str() );
+			args.EmplaceBack( ToD3D12::ToWString( customArg ) );
 		}
 
-		ComPtr<IDxcResult> dxcResult;
-		HRESULT hr = dxcCompiler->Compile(
-			&sourceBuffer,
-			argsRaw.Data(),
-			static_cast<uint32_t>( argsRaw.Size() ),
-			includeHandler.Get(),
-			IID_PPV_ARGS( &dxcResult )
-		);
+		return args;
+	}
 
-		if ( FAILED( hr ) )
+	void GetReflectionData( const ComPtr<IDxcBlob>& a_ReflectionBlob, ShaderCompilerOutput& a_Output )
+	{
+		ComPtr<IDxcContainerReflection> reflection;
+		ComPtr<ID3D12ShaderReflection> shaderReflection;
+		uint32_t shaderIndex = 0;
+
+		// Get the reflection interface.
+		if ( FAILED( DxcCreateInstance( CLSID_DxcContainerReflection, IID_PPV_ARGS( &reflection ) ) ) )
 		{
-			LOG( LogCategory::DirectX, Error, "Failed to compile shader" );
-			return {};
+			LOG( LogCategory::DirectX, Error, "Failed to create DXC Container Reflection" );
+			return;
 		}
 
-		ComPtr<IDxcBlobUtf8> errorBlob;
-		if ( FAILED( dxcResult->GetOutput( DXC_OUT_ERRORS, IID_PPV_ARGS( &errorBlob ), nullptr ) ) )
+		// Load the compiled shader.
+		if ( FAILED( reflection->Load( a_ReflectionBlob.Get() ) ) )
 		{
-			LOG( LogCategory::DirectX, Error, "Failed to get error blob" );
-			return {};
+			LOG( LogCategory::DirectX, Error, "Failed to load reflection data" );
+			return;
 		}
 
-		if ( errorBlob )
+		// Find the shader reflection in the container.
+		if ( FAILED( reflection->FindFirstPartKind( DXC_PART_DXIL, &shaderIndex ) ) )
 		{
-			output.Error = String( errorBlob->GetStringPointer() );
+			LOG( LogCategory::DirectX, Error, "Failed to find shader reflection" );
+			return;
 		}
 
-		ComPtr<IDxcBlob> shaderBlob;
-		if ( FAILED( dxcResult->GetOutput( DXC_OUT_OBJECT, IID_PPV_ARGS( &shaderBlob ), nullptr ) ) )
+		// Get the reflection interface.
+		if ( FAILED( reflection->GetPartReflection( shaderIndex, IID_PPV_ARGS( &shaderReflection ) ) ) )
 		{
-			LOG( LogCategory::DirectX, Error, "Failed to get shader blob" );
-			return output;
+			LOG( LogCategory::DirectX, Error, "Failed to get shader reflection" );
+			return;
 		}
 
-		if ( shaderBlob && shaderBlob->GetBufferSize() > 0 )
+		// Get the shader description.
+		D3D12_SHADER_DESC shaderDesc;
+		if ( FAILED( shaderReflection->GetDesc( &shaderDesc ) ) )
 		{
-			output.ByteCode.Resize( shaderBlob->GetBufferSize() );
-			std::memcpy( output.ByteCode.Data(), shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize() );
+			LOG( LogCategory::DirectX, Error, "Failed to get shader description" );
+			return;
 		}
 
-		return output;
-    }
+		// Get the input parameters.
+		for ( uint32_t i = 0; i < shaderDesc.InputParameters; ++i )
+		{
+			D3D12_SIGNATURE_PARAMETER_DESC paramDesc;
+			if ( FAILED( shaderReflection->GetInputParameterDesc( i, &paramDesc ) ) )
+			{
+				LOG( LogCategory::DirectX, Error, "Failed to get input parameter description" );
+				return;
+			}
+			LOG( LogCategory::DirectX, Debug, "Input parameter: {0}", paramDesc.SemanticName );
+		}
+	}
 
 }

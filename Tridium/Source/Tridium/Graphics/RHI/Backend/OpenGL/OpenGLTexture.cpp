@@ -21,11 +21,21 @@ namespace Tridium {
 		const GLsizei height = (GLsizei)desc->Height;
 		const Byte* data = desc->InitialData.data();
 
-		// Generate a texture handle
-		OpenGL1::GenTextures( 1, &m_Handle );
-
-		switch ( desc->Dimension )
+		if ( IsRenderBuffer() )
 		{
+			// Create a render buffer object
+			OpenGL3::GenRenderbuffers( 1, &m_Handle );
+			OpenGL3::BindRenderbuffer( GL_RENDERBUFFER, m_Handle );
+			OpenGL3::RenderbufferStorage( GL_RENDERBUFFER, m_Format.InternalFormat, width, height );
+			OpenGL3::BindRenderbuffer( GL_RENDERBUFFER, 0 );
+		}
+		else
+		{
+			// Generate a texture handle
+			OpenGL1::GenTextures( 1, &m_Handle );
+
+			switch ( desc->Dimension )
+			{
 			case ERHITextureDimension::TextureCube:
 			{
 				OpenGL1::BindTexture( GL_TEXTURE_CUBE_MAP, m_Handle );
@@ -50,12 +60,14 @@ namespace Tridium {
 				ASSERT_LOG( false, "Unsupported texture dimension!" );
 				return false;
 			}
+			}
 		}
 
 	#if RHI_DEBUG_ENABLED
 		if ( RHIQuery::IsDebug() && !desc->Name.empty() )
 		{
-			OpenGL4::ObjectLabel( GL_TEXTURE, m_Handle, desc->Name.size(), static_cast<const GLchar*>( desc->Name.data() ) );
+			GLenum target = IsRenderBuffer() ? GL_RENDERBUFFER : GL_TEXTURE;
+			OpenGL4::ObjectLabel( target, m_Handle, desc->Name.size(), static_cast<const GLchar*>( desc->Name.data() ) );
 		}
 	#endif
 
@@ -67,7 +79,7 @@ namespace Tridium {
 	{
 		if ( m_Handle != 0 )
 		{
-			OpenGL1::DeleteTextures( 1, &m_Handle );
+			IsRenderBuffer() ? OpenGL3::DeleteRenderbuffers( 1, &m_Handle ) : OpenGL1::DeleteTextures( 1, &m_Handle );
 			m_Handle = 0;
 		}
 

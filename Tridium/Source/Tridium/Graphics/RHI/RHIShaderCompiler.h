@@ -10,12 +10,12 @@ namespace Tridium {
 	enum class ERHIShaderCompilerFlags : uint32_t
 	{
 		None = 0,
-		RowMajor = 1 << 1, // Pack matrices in row-major order ( Note: Default is column-major )
-		DisableOptimization = 1 << 2, // Disable optimization
-		NoWarnings = 1 << 3, // Disable warnings
+		RowMajor = 1 << 1,              // Pack matrices in row-major order ( Note: Default is column-major )
+		DisableOptimization = 1 << 2,   // Disable optimization
+		NoWarnings = 1 << 3,            // Disable warnings
 		TreatWarningsAsErrors = 1 << 4, // Treat warnings as errors
-		EnableDebugInfo = 1 << 5, // Enable debug information ( Note: This is always disabled in release builds )
-		DisableValidation = 1 << 6, // Disable validation ( Note: This is always disabled in release builds )
+		EnableDebugInfo = 1 << 5,       // Enable debug information ( Note: This is always disabled in release builds )
+		DisableValidation = 1 << 6,     // Disable validation ( Note: This is always disabled in release builds )
 
 		Default = None
 	};
@@ -44,6 +44,8 @@ namespace Tridium {
 
 		String EntryPoint{}; // Default is "main"
 		UnorderedMap<String, String> Defines{};
+		Array<String> IncludeDirectories{};
+		Array<String> CustomArguments{}; // Custom arguments to pass to the compiler. Note: These are directly passed to the compiler and may not be supported by all compilers.
 	};
 
 	//=======================================================

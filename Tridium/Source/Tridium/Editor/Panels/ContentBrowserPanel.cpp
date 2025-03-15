@@ -137,7 +137,7 @@ namespace Tridium {
 			parentFolderPaths = parentFolderPaths.GetParentPath();
 		}
 
-		m_DirectoryStack.push_front( Engine::Get()->GetActiveProject().Config.Editor.AssetDirectory.GetFilename() );
+		m_DirectoryStack.push_front( Engine::Get()->GetActiveProject().Config.Editor.AssetDirectory.GetFilename().ToString() );
 	}
 
 	void ContentBrowserPanel::ReconstructFolderHierarchy()
