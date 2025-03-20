@@ -39,8 +39,7 @@ namespace Tridium {
 		using CharTraits = std::char_traits<_Char>;
 
 	private:
-		const _Char* m_String;
-		size_t m_Length;
+		TStringView<_Char> m_String;
 		hash_t m_Hash;
 
 		
@@ -56,24 +55,21 @@ namespace Tridium {
 		}
 
 	public:
-
-		constexpr BasicHashedString( const _Char* a_String, size_t a_Length )
-			: m_String( a_String ), m_Length( a_Length ), m_Hash( Helper( a_String, a_Length ) ) {}
-		constexpr BasicHashedString( const _Char* a_String )
-			: BasicHashedString( a_String, CharTraits::length( a_String ) ) {}
+		constexpr BasicHashedString() noexcept : m_String(), m_Hash( 0 ) {}
+		constexpr BasicHashedString( TStringView<_Char> a_String )
+			: m_String( a_String ), m_Hash( Helper( a_String.data(), a_String.size() ) ) {}
 		constexpr BasicHashedString( const BasicHashedString& a_Other )
-			: m_String( a_Other.m_String ), m_Length( a_Other.m_Length ), m_Hash( a_Other.m_Hash ) {}
+			: m_String( a_Other.m_String ), m_Hash( a_Other.m_Hash ) {}
 
 		constexpr BasicHashedString& operator=( const BasicHashedString& a_Other )
 		{
 			m_String = a_Other.m_String;
-			m_Length = a_Other.m_Length;
 			m_Hash = a_Other.m_Hash;
 			return *this;
 		}
 
 		constexpr hash_t Hash() const noexcept { return m_Hash; }
-		constexpr TStringView<_Char> String() const noexcept { return TStringView<_Char>( m_String, m_Length ); }
+		constexpr TStringView<_Char> String() const noexcept { return m_String; }
 
 		constexpr bool operator==( const BasicHashedString& a_Other ) const noexcept { return m_Hash == a_Other.m_Hash; }
 		constexpr bool operator!=( const BasicHashedString& a_Other ) const noexcept { return m_Hash != a_Other.m_Hash; }
@@ -87,12 +83,12 @@ namespace Tridium {
 
 	inline constexpr HashedString operator"" _H( const char* a_String, size_t a_Length )
 	{
-		return HashedString( a_String, a_Length );
+		return HashedString( StringView( a_String, a_Length ) );
 	}
 
 	inline constexpr HashedWString operator"" _H( const wchar_t* a_String, size_t a_Length )
 	{
-		return HashedWString( a_String, a_Length );
+		return HashedWString( WStringView( a_String, a_Length ) );
 	}
 
 	//========================================
@@ -114,7 +110,7 @@ namespace Tridium {
 		// Uses the FNV-1a algorithm.
 		// Example:
 		//   HashString( "Hello, World!" );
-		TRIDIUM_NODISCARD inline constexpr HashedString HashString( const char* a_String )
+		TRIDIUM_NODISCARD inline constexpr HashedString HashString( StringView a_String )
 		{
 			return HashedString( a_String );
 		}
@@ -123,7 +119,7 @@ namespace Tridium {
 		// Uses the FNV-1a algorithm.
 		// Example:
 		//   HashString( L"Hello, World!" );
-		TRIDIUM_NODISCARD inline constexpr HashedWString HashString( const wchar_t* a_String )
+		TRIDIUM_NODISCARD inline constexpr HashedWString HashString( WStringView a_String )
 		{
 			return HashedWString( a_String );
 		}
@@ -135,9 +131,9 @@ namespace Tridium {
 		}
 
 		template <typename T>
-		TRIDIUM_NODISCARD constexpr hash_t TypeHash()
+		TRIDIUM_NODISCARD constexpr HashedString TypeHash()
 		{
-			return HashString( StrippedTypeName<T>().data() );
+			return HashString( GetTypeName<T>() );
 		}
 
 	} // namespace Hashing

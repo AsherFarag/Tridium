@@ -29,6 +29,7 @@ namespace Tridium {
 	DEFINE_RHI_RESOURCE( SwapChain,
 		virtual bool Present() = 0;
 		virtual RHITextureRef GetBackBuffer() = 0;
+		virtual bool Resize( uint32_t a_Width, uint32_t a_Height ) = 0;
 		)
 	{
 		uint32_t Width = 0;

@@ -1,5 +1,6 @@
 #pragma once
 #include "OpenGL4.h"
+#include "OpenGLState.h"
 #include <Tridium/Graphics/RHI/RHICommon.h>
 #include <Tridium/Graphics/RHI/RHISampler.h>
 #include <Tridium/Graphics/RHI/RHITexture.h>

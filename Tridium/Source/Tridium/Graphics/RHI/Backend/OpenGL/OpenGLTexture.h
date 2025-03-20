@@ -34,7 +34,7 @@ namespace Tridium {
 
 		const void* NativePtr() const override
 		{
-			return IsValid() ? &m_Handle : nullptr;
+			return &m_Handle;
 		}
 
 		GLuint GetGLHandle() const { return m_Handle; }

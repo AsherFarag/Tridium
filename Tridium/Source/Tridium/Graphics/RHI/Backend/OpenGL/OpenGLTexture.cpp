@@ -52,6 +52,8 @@ namespace Tridium {
 				OpenGL1::TexImage2D( GL_TEXTURE_2D, 0, m_Format.InternalFormat, width, height, 0, m_Format.Format, m_Format.Type, data );
 				OpenGL1::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 				OpenGL1::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+				OpenGL1::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0 );
+				OpenGL1::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, desc->Mips - 1 );
 				OpenGL1::BindTexture( GL_TEXTURE_2D, 0 );
 				break;
 			}

@@ -31,6 +31,11 @@ namespace Tridium {
 		return RTVs[SwapChain->GetCurrentBackBufferIndex()];
 	}
 
+	bool D3D12SwapChain::Resize( uint32_t a_Width, uint32_t a_Height )
+	{
+		return true;
+	}
+
 	bool D3D12SwapChain::Commit( const void* a_Params )
     {
 		const auto* desc = ParamsToDescriptor<RHISwapChainDescriptor>( a_Params );

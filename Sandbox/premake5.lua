@@ -3,7 +3,7 @@ project "Sandbox"
 	staticruntime "On"
 	language "C++"
 	cppdialect "C++20"
-	buildoptions { "/bigobj" }
+	buildoptions { "/bigobj", "/Zc:preprocessor" }
 
 	dependson { "Tridium" }
 

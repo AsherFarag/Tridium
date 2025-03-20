@@ -112,7 +112,7 @@ namespace Tridium {
 
 	}
 
-	BEGIN_REFLECT_ENUM( EProjectionType, Scriptable )
+	BEGIN_REFLECT_ENUM( EProjectionType )
 		ENUM_VALUE( Perspective )
 		ENUM_VALUE( Orthographic )
 	END_REFLECT_ENUM( EProjectionType )

@@ -1,5 +1,6 @@
 #include "tripch.h"
 #include "OpenGLShader.h"
+#include "spirv_glsl.hpp"
 
 namespace Tridium {
 
@@ -11,11 +12,54 @@ namespace Tridium {
 			return false;
 		}
 
+		// Create GLSL from the SPIR-V bytecode using SPIRV-Cross
+		spirv_cross::CompilerGLSL glslCompiler( reinterpret_cast<const uint32_t*>( desc->Bytecode.data() ), desc->Bytecode.size_bytes() / sizeof( uint32_t ) );
+		spirv_cross::CompilerGLSL::Options options;
+		options.version = 450;
+		options.es = false;
+		glslCompiler.set_common_options( options );
+		glslCompiler.build_combined_image_samplers();
+
+		// Textures and samplers are combined in GLSL, so we need to keep track of the combined names
+		auto combinedSamplers = glslCompiler.get_combined_image_samplers();
+		for ( auto& sampler : combinedSamplers )
+		{
+			const String& texName = glslCompiler.get_name( sampler.image_id );
+			const String& samplerName = glslCompiler.get_name( sampler.sampler_id );
+
+			// Set the name of the combined sampler to the texture name + '_' + sampler name
+			// E.g. "MyTexture_MySampler"
+			String newName;
+			newName.reserve( texName.size() + samplerName.size() + 1 );
+			newName.append( texName );
+			newName.push_back( '_' );
+			newName.append( samplerName );
+			glslCompiler.set_name( sampler.combined_id, std::move( newName ) );
+		}
+
+		String glsl = glslCompiler.compile();
+
+		// Create the shader and compile the GLSL source
 		m_ShaderID = OpenGL2::CreateShader( ToOpenGL::GetShaderType( desc->Type ) );
-		OpenGL4::ShaderBinary( 1, &m_ShaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, desc->Bytecode.data(), desc->Bytecode.size_bytes() );
-		OpenGL4::SpecializeShader( m_ShaderID, desc->EntryPoint.data(), 0, nullptr, nullptr );
+		std::cout << "OpenGLShaderModule::Commit: Compiling shader '\n" << glsl << "'" << std::endl;
+		const char* source = glsl.c_str();
+		OpenGL2::ShaderSource( m_ShaderID, 1, &source, nullptr );
+		OpenGL2::CompileShader( m_ShaderID );
 
 	#if RHI_DEBUG_ENABLED
+		// Check for compilation errors
+		GLint success = 0;
+		OpenGL2::GetShaderiv( m_ShaderID, GL_COMPILE_STATUS, &success );
+		if ( success == GL_FALSE )
+		{
+			GLint length = 0;
+			OpenGL2::GetShaderiv( m_ShaderID, GL_INFO_LOG_LENGTH, &length );
+			Array<GLchar> infoLog( length );
+			OpenGL2::GetShaderInfoLog( m_ShaderID, length, &length, infoLog.Data() );
+			LOG( LogCategory::OpenGL, Error, "OpenGLShaderModule::Commit: Failed to compile shader '{0}' - Error: {1}", desc->Name, infoLog.Data() );
+			return false;
+		}
+
 		if ( RHIQuery::IsDebug() && !desc->Name.empty() )
 		{
 			OpenGL4::ObjectLabel( GL_SHADER, m_ShaderID, desc->Name.size(), static_cast<const GLchar*>( desc->Name.data() ) );

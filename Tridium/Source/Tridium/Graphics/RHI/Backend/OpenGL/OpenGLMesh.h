@@ -29,7 +29,7 @@ namespace Tridium {
 		bool IsMappable() const override;
 		bool IsValid() const override;
 		size_t GetSizeInBytes() const override;
-		const void* NativePtr() const override { return (const void*)m_Buffer; }
+		const void* NativePtr() const override { return &m_Buffer; }
 
 		//=====================================================================
 		GLuint GetGLHandle() const { return m_Buffer; }

@@ -55,6 +55,9 @@ namespace Tridium {
 		OpenGL1::BlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 		OpenGL1::Enable( GL_TEXTURE_CUBE_MAP_SEAMLESS );
 
+		const GLubyte* stringVer = OpenGL1::GetString( GL_VERSION );
+		LOG( LogCategory::OpenGL, Info, "OpenGL Version: {0}", reinterpret_cast<const char*>( stringVer ) );
+
 		return true;
 	}
 

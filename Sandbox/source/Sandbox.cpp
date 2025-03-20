@@ -281,15 +281,15 @@ void PrintTypeName<bool>()
 void test()
 {
 	Aggregate a{ 1.0f, 2, true, 3.0f };
-	ForEachField( a, []( auto& field )
-		{
-			PrintTypeName<std::decay_t<decltype( field ) >>();
-		} );
+	//ForEachField( a, []( auto& field )
+	//	{
+	//		PrintTypeName<std::decay_t<decltype( field ) >>();
+	//	} );
 
-	ForEachField( a, []( StringView name, auto& field )
-		{
-			std::cout << name << ", ";
-		} );
+	//ForEachField( a, []( StringView name, auto& field )
+	//	{
+	//		std::cout << name << ", ";
+	//	} );
 }
 
 struct Test

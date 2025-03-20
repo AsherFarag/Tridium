@@ -145,7 +145,7 @@ else if constexpr ( _HasFlag( Flags, ::Tridium::Refl::EPropertyFlags::ScriptRead
 #define _FUNCTION( Func, Flags ) \
  { factory.func<&ClassType::Func>( Hash( #Func ) ); }
 
-#define _FUNCTION_NO_FLAGS( Func ) _FUNCTION( Func )
+#define _FUNCTION_NO_FLAGS( Func ) _FUNCTION( Func, ::Tridium::Refl::EPropertyFlags::EPF_None )
 
 #define _FUNCTION_SELECTOR(...) EXPAND( SELECT_MACRO_2( __VA_ARGS__, _FUNCTION, _FUNCTION_NO_FLAGS )(__VA_ARGS__) )
 

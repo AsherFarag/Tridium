@@ -116,15 +116,15 @@ namespace Tridium {
     {
         #pragma region Commands
 
+		struct SetShaderBindingLayout
+		{
+			RHIShaderBindingLayout* SBL;
+		};
+
 		struct SetShaderInput
 		{
 			hash_t NameHash;
 			RHIShaderInputPayload Payload;
-		};
-
-		struct SetShaderBindingLayout
-		{
-			RHIShaderBindingLayout* SBL;
 		};
 
 		struct ResourceBarrier

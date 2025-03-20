@@ -19,6 +19,7 @@
 #include <Tridium/Math/MathConstants.h>
 #include <Tridium/Graphics/RHI/Backend/DirectX12/D3D12DynamicRHI.h>
 #include <GLFW/glfw3.h>
+#include <Tridium/Reflection/FieldReflection.h>
 
 import Tridium.ECS;
 
@@ -205,21 +206,29 @@ namespace Tridium {
 			// HLSL Source code
 			StringView vertCode = R"(
 #include "Globals.hlsli"
+
+struct VSInput
+{
+    float3 pos : SV_Position;
+	float2 uv : TEXCOORD;
+};
+
 struct VSOutput {
     float4 pos : SV_Position;  
 	float2 uv : TEXCOORD;
 };
 
-VSOutput main(float3 position : POSITION, float2 uv : TEXCOORD) 
+VSOutput main( VSInput input )
 {
-    VSOutput output;
-    output.pos = float4(position, 1.0);
-	output.uv = uv;
-    return output;
+	VSOutput output;
+	output.pos = float4(input.pos.xy, 0.0, 1.0);
+	output.uv = input.uv;
+	return output;
 }
 )";
 			StringView pixelCode = R"(
 #include "Globals.hlsli"
+
 struct VSOutput {
     float4 pos : SV_Position;
 	float2 uv : TEXCOORD;
@@ -231,10 +240,14 @@ struct PushConstants {
 
 PUSH_CONSTANT( colorMultiplier, PushConstants );
 Texture2D<float4> Texture : register(t0);
+SamplerState Sampler2 : register(s0);
+SamplerState Sampler3 : register(s1);
 
 float4 main(VSOutput input) : SV_Target 
 {
-	return Texture.Sample( GetStaticSampler( Bilinear, Clamped ), input.uv) * colorMultiplier.ColorMultiplier;
+	float4 texColor = Texture.Sample(Sampler2, input.uv);
+	texColor += Texture.Sample(Sampler3, input.uv);
+	return Texture.Sample( GetStaticSampler( Bilinear, Clamped ), input.uv) * colorMultiplier.ColorMultiplier + texColor;
 }
 )";
 
@@ -257,6 +270,8 @@ float4 main(VSOutput input) : SV_Target
 			sblDesc.Name = "My beautiful shader binding layout";
 			sblDesc.AddBinding( "colorMultiplier"_H ).AsInlinedConstants<PushConstants>( 0 );
 			sblDesc.AddBinding( "Texture"_H ).AsReferencedTextures( 0 );
+			sblDesc.AddBinding( "Sampler2"_H ).AsReferencedSamplers( 0 );
+			sblDesc.AddBinding( "Sampler3"_H ).AsReferencedSamplers( 1 );
 
 			RHIShaderBindingLayoutRef sbl = RHI::CreateShaderBindingLayout( sblDesc );
 
@@ -279,6 +294,7 @@ float4 main(VSOutput input) : SV_Target
 			int f{};
 			while ( true )
 			{
+#if 1
 				++f;
 				m_Window->OnUpdate();
 				time = glfwGetTime();
@@ -291,39 +307,39 @@ float4 main(VSOutput input) : SV_Target
 				         .SetGraphicsPipelineState( pso )
 				         .SetShaderBindingLayout( sbl );
 
-				// Input Assembler
-				cmdBuffer.SetVertexBuffer( vb )
-				         .SetPrimitiveTopology( ERHITopology::Triangle );
+				//// Input Assembler
+				//cmdBuffer.SetPrimitiveTopology( ERHITopology::Triangle );
 
-				Viewport vp;
-				vp.Width = props.Width;
-				vp.Height = props.Height;
-				vp.X = 0;
-				vp.Y = 0;
-				vp.MinDepth = 0.0f;
-				vp.MaxDepth = 1.0f;
-				cmdBuffer.SetViewports( { &vp, 1 } );
+				//Viewport vp;
+				//vp.Width = props.Width;
+				//vp.Height = props.Height;
+				//vp.X = 0;
+				//vp.Y = 0;
+				//vp.MinDepth = 0.0f;
+				//vp.MaxDepth = 1.0f;
+				//cmdBuffer.SetViewports( { &vp, 1 } );
 
-				// Set Scissors
-				ScissorRect scissor;
-				scissor.Left = 0;
-				scissor.Top = 0;
-				scissor.Right = props.Width;
-				scissor.Bottom = props.Height;
-				cmdBuffer.SetScissors( {&scissor, 1} );
+				//// Set Scissors
+				//ScissorRect scissor;
+				//scissor.Left = 0;
+				//scissor.Top = 0;
+				//scissor.Right = props.Width;
+				//scissor.Bottom = props.Height;
+				//cmdBuffer.SetScissors( {&scissor, 1} );
 
-				constexpr auto CycleRGB = +[]( float a_Time, float a_Speed = 1.0f ) -> Color
-					{
-						float r = ( Math::Sin( a_Speed * a_Time ) + 1.0f ) / 2.0f;
-						float g = ( Math::Sin( a_Speed * a_Time + 2.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
-						float b = ( Math::Sin( a_Speed * a_Time + 4.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
-						return Color( r, g, b, 1.0f );
-					};
+				//constexpr auto CycleRGB = +[]( float a_Time, float a_Speed = 1.0f ) -> Color
+				//	{
+				//		float r = ( Math::Sin( a_Speed * a_Time ) + 1.0f ) / 2.0f;
+				//		float g = ( Math::Sin( a_Speed * a_Time + 2.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
+				//		float b = ( Math::Sin( a_Speed * a_Time + 4.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
+				//		return Color( r, g, b, 1.0f );
+				//	};
 
-				// Draw
-				//cmdBuffer.SetShaderInput( "colorMultiplier.ColorMultiplier", CycleRGB( time, 0.50f ) )
-				cmdBuffer.SetShaderInput( "Texture", tex );
-				//cmdBuffer.Draw( 0, sizeof( vertices ) / sizeof( Vertex ) );
+				//// Draw
+				//cmdBuffer.SetShaderInput( "colorMultiplier"_H, CycleRGB( time, 1.0f ) );
+				//cmdBuffer.SetShaderInput( "Texture"_H, tex );
+				//cmdBuffer.SetVertexBuffer( vb );
+				cmdBuffer.Draw( 0, sizeof( vertices ) / sizeof( Vertex ) );
 
 				cmdBuffer.ResourceBarrier( rt, ERHIResourceState::RenderTarget, ERHIResourceState::Present );
 
@@ -331,7 +347,7 @@ float4 main(VSOutput input) : SV_Target
 
 				RHI::ExecuteCommandList( cmdList );
 				RHI::FenceSignal( RHI::CreateFence() );
-
+#endif
 				RHI::Present();
 			}
 		}
@@ -446,6 +462,7 @@ float4 main(VSOutput input) : SV_Target
 	{
 		EventDispatcher dispatcher( a_Event );
 		dispatcher.Dispatch<WindowCloseEvent>( TE_BIND_EVENT_FN( Application::OnWindowClosed, 1 ) );
+		dispatcher.Dispatch<WindowResizeEvent>( TE_BIND_EVENT_FN( Application::OnWindowResized, 1 ) );
 	
 		for ( auto it = m_LayerStack.end(); it != m_LayerStack.begin(); )
 		{
@@ -454,6 +471,15 @@ float4 main(VSOutput input) : SV_Target
 
 			( *--it )->OnEvent( a_Event );
 		}
+	}
+
+	bool Application::OnWindowResized( WindowResizeEvent& e )
+	{
+		if ( !RHI::GetSwapChain() )
+			return false;
+
+		RHI::GetSwapChain()->Resize( e.GetWidth(), e.GetHeight() );
+		return true;
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////

@@ -198,7 +198,7 @@ namespace Tridium {
 				}
 				default:
 				{
-					ASSERT( false, "Unknown error level" );
+					ASSERT_LOG( false, "Unknown error level" );
 					break;
 				}
 			}

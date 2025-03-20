@@ -36,14 +36,14 @@ namespace Tridium {
 			return m_ValueToKey.find( value ) != m_ValueToKey.end();
 		}
 
-		void Erase( const _Key& key )
+		void EraseKey( const _Key& key )
 		{
 			const auto value = m_KeyToValue.at( key );
 			m_KeyToValue.erase( key );
 			m_ValueToKey.erase( value );
 		}
 
-		void Erase( const _Value& value )
+		void EraseValue( const _Value& value )
 		{
 			const auto key = m_ValueToKey.at( value );
 			m_ValueToKey.erase( value );

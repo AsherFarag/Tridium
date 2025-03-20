@@ -1,6 +1,7 @@
 #pragma once
 #include "RHIResource.h"
 #include "RHISampler.h"
+#include <Tridium/Reflection/FieldReflection.h>
 
 namespace Tridium {
 
@@ -19,31 +20,26 @@ namespace Tridium {
 		Sampler,	  // Sampler state.                           (DX12 SAM) / (Vulkan Sampler)
 	};
 
-	struct RHIShaderConstantType
-	{
-		enum EType : uint8_t
-		{
-			Undefined = 0,
-			InlinedTensor,
-			InlinedCustom,
-			Referenced,
-		};
-
-		EType Type = EType::Undefined;
-		RHITensorType TensorType = RHITensorType::From<int32_t>();
-	};
-
 	//==============================================
 	// RHI Shader Binding
 	//  Describes where a shader resource is bound to the shader.
 	struct RHIShaderBinding
 	{
+		// Represents a list of tensors and their name, that can be inlined in the shader.
+		struct InlinedConstant
+		{
+			TODO( "Make a proper Max value" );
+			static constexpr size_t s_MaxInlinedTensors = 32;
+			HashedString TypeNameHash{};
+			InlineArray<Pair<String, RHITensorType>, s_MaxInlinedTensors> Tensors{};
+		};
+
 		ERHIShaderVisibility Visibility = ERHIShaderVisibility::All;
 		ERHIShaderBindingType BindingType = ERHIShaderBindingType::Unknown;
-		RHIShaderConstantType ConstantType{};
-		uint8_t WordSize = 1;   // Number of 32-bit words for the binding. For example, a Vector4 would be 4 words ( 4 * 32 bit floats ).
-		uint8_t BindSlot = 0;   // Register index in the shader.
-		const char* Name = nullptr; // Name of the binding.
+		Optional<InlinedConstant> InlinedConstant{};
+		uint8_t WordSize = 1; // Number of 32-bit words for the binding. For example, a Vector4 would be 4 words ( 4 * 32 bit floats ).
+		uint8_t BindSlot = 0; // Register index in the shader.
+		HashedString Name{};  // Name of the binding.
 
 		constexpr uint32_t GetSizeInBytes() const
 		{
@@ -58,7 +54,7 @@ namespace Tridium {
 
 		constexpr bool IsInlined() const
 		{
-			return ConstantType.Type == RHIShaderConstantType::InlinedTensor || ConstantType.Type == RHIShaderConstantType::InlinedCustom;
+			return InlinedConstant.has_value();
 		}
 
 		// Set the binding as inlined constants, such as a Vector4.
@@ -71,15 +67,46 @@ namespace Tridium {
 			BindingType = ERHIShaderBindingType::Constant;
 			WordSize = sizeof( T ) >> 2;
 			BindSlot = a_BindSlotStart;
+			InlinedConstant.emplace().TypeNameHash = GetStrippedTypeName<T>();
 			if constexpr ( IsRHITensorType<T> )
 			{
-				ConstantType.Type = RHIShaderConstantType::InlinedTensor;
-				ConstantType.TensorType = RHITensorType::From<T>();
+				InlinedConstant->Tensors.EmplaceBack( Name, RHITensorType::From<T>() );
+			}
+			else if constexpr ( Concepts::Aggregate<T> )
+			{
+				ForEachField( T{}, [this]( StringView a_Name, auto& a_Field )
+					{
+						if constexpr ( IsRHITensorType<std::decay_t<decltype( a_Field )>> )
+						{
+							String name;
+							name.reserve( name.size() + a_Name.size() + 1 );
+							name.append( Name.String() );
+							name.append( "." );
+							name.append( a_Name );
+							InlinedConstant->Tensors.EmplaceBack( std::move( name ), RHITensorType::From<std::decay_t<decltype( a_Field )>>());
+						}
+						else if constexpr ( Concepts::Aggregate<std::decay_t<decltype( a_Field )>> )
+						{
+							ForEachField( a_Field, [this, a_Name]( StringView a_SubName, auto& a_SubField )
+								{
+									if constexpr ( IsRHITensorType<std::decay_t<decltype( a_SubField )>> )
+									{
+										String name;
+										name.reserve( a_Name.size() + a_SubName.size() + 1 );
+										name.append( a_Name );
+										name.append( "." );
+										name.append( a_SubName );
+										InlinedConstant.emplace().Tensors.EmplaceBack( std::move( name ), RHITensorType::From<std::decay_t<decltype( a_SubField )>>());
+									}
+								} );
+						}
+					} );
 			}
 			else
 			{
-				ConstantType.Type = RHIShaderConstantType::InlinedCustom;
+				static_assert( false, "Unsupported type for InlinedConstant" );
 			}
+
 			return *this;
 		}
 
@@ -92,7 +119,6 @@ namespace Tridium {
 			BindingType = ERHIShaderBindingType::Constant;
 			WordSize = a_CountInAllocRange;
 			BindSlot = a_BindSlotStart;
-			ConstantType.Type = RHIShaderConstantType::Referenced;
 			return *this;
 		}
 
@@ -156,8 +182,8 @@ namespace Tridium {
 			return *this;
 		}
 
-		constexpr bool IsInlinedConstants() const { return BindingType == ERHIShaderBindingType::Constant && ( ConstantType.Type == RHIShaderConstantType::InlinedTensor || ConstantType.Type == RHIShaderConstantType::InlinedCustom ); }
-		constexpr bool IsReferencedConstants() const { return BindingType == ERHIShaderBindingType::Constant && ConstantType.Type == RHIShaderConstantType::Referenced; }
+		constexpr bool IsInlinedConstants() const { return BindingType == ERHIShaderBindingType::Constant && IsInlined(); }
+		constexpr bool IsReferencedConstants() const { return BindingType == ERHIShaderBindingType::Constant && !IsInlined(); }
 		constexpr bool IsReferencedMutables() const { return BindingType == ERHIShaderBindingType::Mutable; }
 		constexpr bool IsReferencedStorages() const { return BindingType == ERHIShaderBindingType::Storage; }
 		constexpr bool IsReferencedTextures() const { return BindingType == ERHIShaderBindingType::Texture; }
@@ -193,7 +219,7 @@ namespace Tridium {
 			ASSERT_LOG( BindingMap.find( a_Name ) == BindingMap.end(), "Binding with name hash already exists" );
 			BindingMap[a_Name] = a_InputIndex;
 			RHIShaderBinding& binding = Bindings[a_InputIndex];
-			binding.Name = a_Name.String().data();
+			binding.Name = a_Name;
 			return binding;
 		}
 

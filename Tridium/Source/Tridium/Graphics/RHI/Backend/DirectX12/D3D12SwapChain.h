@@ -14,6 +14,7 @@ namespace Tridium {
 		const void* NativePtr() const override { return SwapChain.Get(); }
 		bool Present() override;
 		RHITextureRef GetBackBuffer() override;
+		bool Resize( uint32_t a_Width, uint32_t a_Height ) override;
 
 		ComPtr<D3D12::SwapChain> SwapChain;
 		RHIResourceAllocatorRef RenderTargetAllocator;

@@ -65,6 +65,7 @@ namespace Tridium {
 		const void* NativePtr() const override { return Window; }
 		bool Present() override;
 		RHITextureRef GetBackBuffer() override;
+		bool Resize( uint32_t a_Width, uint32_t a_Height ) override;
 
 		const auto& GetFramebuffer() const { return m_Framebuffer; }
 
@@ -72,6 +73,8 @@ namespace Tridium {
 
 	private:
 		OpenGLFramebuffer m_Framebuffer;
+		uint32_t m_Width = 0;
+		uint32_t m_Height = 0;
 	};
 
 } // namespace Tridium

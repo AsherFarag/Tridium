@@ -251,7 +251,8 @@ namespace Tridium {
 	{
 		Unknown = 0,
 		HLSL6,
-		SPIRV,
+		SPIRV,	      // SPIR-V for Vulkan
+		SPIRV_OpenGL, // SPIR-V for OpenGL
 
 		// Console-Platform Specific
 		HLSL6_XBOX, // HLSL for Xbox

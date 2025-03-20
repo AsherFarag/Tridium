@@ -223,7 +223,7 @@ namespace Tridium {
 	{
 		RemovePhysicsBody( a_RigidBody.GetBodyProxy().GetBodyID() );
 		a_RigidBody.GetBodyProxy().SetBodyID( JPH::BodyID::cInvalidBodyID );
-		m_BodyToGameObjectMap.Erase( a_RigidBody.GetBodyProxy().GetBodyID() );
+		m_BodyToGameObjectMap.EraseKey( a_RigidBody.GetBodyProxy().GetBodyID() );
 	}
 
 	bool JoltPhysicsScene::AddPhysicsBody( const GameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent )

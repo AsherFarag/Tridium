@@ -1,7 +1,9 @@
 #pragma once
 #include "OpenGLCommon.h"
+#include <Tridium/Containers/Map.h>
 
 namespace Tridium {
+
 
 	class OpenGLShaderModule : public RHIShaderModule
 	{
@@ -16,6 +18,8 @@ namespace Tridium {
 
 	private:
 		GLuint m_ShaderID = 0;
+
+		UnorderedSet<String> m_StringStorage; // Stores the strings referenced by the combined samplers
 	};
 
 } // namespace Tridium

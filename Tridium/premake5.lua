@@ -1,3 +1,4 @@
+
 project "Tridium"
 	kind "StaticLib"
 	staticruntime "On"
@@ -10,6 +11,8 @@ project "Tridium"
 	pchheader "tripch.h"
 	pchsource "Source/tripch.cpp"
 
+	buildoptions { "/bigobj", "/Zc:preprocessor" }
+
 	dependson 
 	{ 
 		"assimp",
@@ -18,6 +21,7 @@ project "Tridium"
 		"glad",
 		"ImGui",
 		"yaml-cpp",
+		"SPIRV-Cross"
 	}
 
 	files
@@ -55,6 +59,7 @@ project "Tridium"
 		"%{IncludeDir.assimp}/include",
 		"%{IncludeDir.refl}",
 		"%{IncludeDir.JoltPhysics}",
+		"Dependencies/SPIRV-Cross",
 		"Dependencies/HdriToCubemap"
 	}
 
@@ -67,6 +72,7 @@ project "Tridium"
 		"Dependencies/yaml-cpp/bin/" .. outputdir .. "/yaml-cpp",
 		"Dependencies/assimp/bin/" .. outputdir .. "/assimp",
 		"Dependencies/JoltPhysics/bin/" .. outputdir .. "/JoltPhysics",
+		"Dependencies/SPIRV-Cross/bin/SPIRV-Cross/" .. outputdir,
 	}
 
 	links
@@ -78,6 +84,7 @@ project "Tridium"
 		"yaml-cpp.lib",
 		"assimp.lib",
 		"JoltPhysics.lib",
+		"SPIRV-Cross.lib",
 		-- Graphics API's --
 		-- OpenGL
 		"opengl32.lib",

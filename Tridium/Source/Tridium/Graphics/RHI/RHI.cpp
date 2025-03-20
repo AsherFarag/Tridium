@@ -193,6 +193,7 @@ namespace Tridium {
 
 	RHIGraphicsPipelineStateRef RHI::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc )
 	{
+		constexpr StringView tyneName = GetTypeName<RHIGraphicsPipelineStateDescriptor>();
 		CHECK( s_DynamicRHI );
 		return s_DynamicRHI->CreateGraphicsPipelineState( a_Desc );
 	}

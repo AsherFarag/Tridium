@@ -36,14 +36,18 @@ namespace Tridium {
     bool OpenGLVertexBuffer::Commit( const void* a_Params )
     {
 		const auto* desc = ParamsToDescriptor<RHIVertexBufferDescriptor>( a_Params );
+		if ( !desc )
+			return false;
 
-		OpenGL1::GenBuffers( 1, &m_Buffer );
-		OpenGL1::BindBuffer( GL_ARRAY_BUFFER, m_Buffer );
+		OpenGL4::CreateBuffers( 1, &m_Buffer );
+		OpenGLState::BindVertexBuffer( m_Buffer );
 		OpenGL1::BufferData( GL_ARRAY_BUFFER, desc->InitialData.size(), desc->InitialData.data(), GL_STATIC_DRAW );
 
         #if RHI_DEBUG_ENABLED
 		OpenGL4::ObjectLabel( GL_BUFFER, m_Buffer, desc->Name.size(), desc->Name.data() );
         #endif
+
+		OpenGLState::BindVertexBuffer( 0 );
 
 		return m_Buffer != 0;
     }

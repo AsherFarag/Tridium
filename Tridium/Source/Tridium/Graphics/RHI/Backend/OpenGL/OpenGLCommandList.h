@@ -17,6 +17,8 @@ namespace Tridium {
 		bool SetComputeCommands( const RHIComputeCommandBuffer& a_CmdBuffer ) override;
 
 	private:
+		Array<GLuint> m_UBOs;
+
 		void SetShaderBindingLayout( const RHICommand::SetShaderBindingLayout& a_Data );
 		void SetShaderInput( const RHICommand::SetShaderInput& a_Data );
 		void ResourceBarrier( const RHICommand::ResourceBarrier& a_Data );

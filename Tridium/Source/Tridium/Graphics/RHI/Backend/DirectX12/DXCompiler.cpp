@@ -302,9 +302,10 @@ namespace Tridium {
 				break;
 			}
 			case ERHIShaderFormat::SPIRV:
+			case ERHIShaderFormat::SPIRV_OpenGL:
 			{
 				args.EmplaceBack( L"-spirv" );        // Target SPIR-V
-				args.EmplaceBack( L"-fspv-target-env=vulkan1.2" ); // Target Vulkan 1.2
+				args.EmplaceBack( L"-fspv-target-env=vulkan1.1" ); // Target Vulkan 1.1
 				args.EmplaceBack( L"-fvk-use-dx-layout" );         // Use DX layout
 				args.EmplaceBack( L"-fvk-use-dx-position-w" );     // Use DX position.w for SV_Position
 
@@ -314,9 +315,9 @@ namespace Tridium {
 					args.EmplaceBack( L"-fvk-invert-y" ); // Make vulkan and opengl have the same coordinate system as D3D (Y-up)
 				}
 
-				//args.EmplaceBack( L"-fvk-t-shift" ); args.EmplaceBack( L"1000" ); args.EmplaceBack( L"0" ); // Shift texture coordinates
-				//args.EmplaceBack( L"-fvk-u-shift" ); args.EmplaceBack( L"2000" ); args.EmplaceBack( L"0" ); // Shift texture coordinates
-				//args.EmplaceBack( L"-fvk-s-shift" ); args.EmplaceBack( L"3000" ); args.EmplaceBack( L"0" ); // Shift texture coordinates
+				args.EmplaceBack( L"-fvk-t-shift" ); args.EmplaceBack( L"1000" ); args.EmplaceBack( L"0" );
+				args.EmplaceBack( L"-fvk-u-shift" ); args.EmplaceBack( L"2000" ); args.EmplaceBack( L"0" );
+				args.EmplaceBack( L"-fvk-s-shift" ); args.EmplaceBack( L"3000" ); args.EmplaceBack( L"0" );
 				break;
 			}
 			default:

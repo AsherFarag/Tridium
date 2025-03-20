@@ -73,6 +73,64 @@ namespace Tridium {
 			OpenGL3::GenVertexArrays( 1, &m_VAO );
 		}
 
+		// Collect the uniform locations
+		{
+			m_UnifromLocations.clear();
+			for ( const RHIShaderBinding& binding : desc->ShaderBindingLayout->GetDescriptor()->Bindings )
+			{
+				const auto InitUniform = [&]( StringView a_Name )
+					{
+						GLint location = OpenGL4::GetUniformLocation( m_ShaderProgramID, a_Name.data() );
+						if ( location < 0 )
+						{
+							LOG( LogCategory::RHI, Error, "Uniform '{0}' not found in shader while committing PSO '{1}'", a_Name, desc->Name );
+						}
+						else
+						{
+							m_UnifromLocations[binding.Name] = location;
+						}
+					};
+
+				if ( binding.IsInlined() )
+				{
+					for ( const auto& [name, tensorType] : binding.InlinedConstant->Tensors )
+					{
+						InitUniform( name );
+					}
+				}
+				if ( binding.IsReferencedSamplers() || binding.IsReferencedTextures() )
+				{
+					// OpenGL combines samplers and textures into a single binding
+					m_UnifromLocations[binding.Name] = -1;
+				}
+				else
+				{
+					InitUniform( binding.Name.String() );
+				}
+			}
+		}
+
+		// Collect combined samplers
+		{
+			m_CombinedSamplers.clear();
+			static constexpr auto CollectCombinedSamplers = +[]( const RHIShaderModuleRef& a_Shader, UnorderedMap<StringView, Array<StringView>>& a_CombinedSamplers )
+				{
+					if ( a_Shader )
+					{
+						OpenGLShaderModule* shader = a_Shader->As<OpenGLShaderModule>();
+						//for ( const auto& [texName, samplerNames] : shader->GetCombinedSamplers() )
+						//{
+						//	Array<StringView>& samplers = a_CombinedSamplers[texName];
+						//	samplers.Reserve( samplers.Size() + samplerNames.size() );
+						//	//for ( const StringView& sampler : samplerNames )
+						//	//{
+						//	//	samplers.PushBack( sampler );
+						//	//}
+						//}
+					}
+				};
+		}
+
 		return true;
     }
 
@@ -100,6 +158,8 @@ namespace Tridium {
 
 	bool OpenGLGraphicsPipelineState::ApplyVertexLayoutToVAO( GLuint a_VAO )
 	{
+		OpenGLState::BindVertexArray( a_VAO ); // Ensure the VAO is bound
+
 		// Bind the vertex layout
 		for ( uint32_t i = 0; i < GetDescriptor()->VertexLayout.Elements.Size(); ++i )
 		{

@@ -75,6 +75,7 @@ namespace Tridium {
 		uint32_t          m_MaxFPS = 144u;
 
 	private:
+		bool OnWindowResized( WindowResizeEvent& e );
 		bool OnWindowClosed( WindowCloseEvent& e );
 
 		bool Init();
