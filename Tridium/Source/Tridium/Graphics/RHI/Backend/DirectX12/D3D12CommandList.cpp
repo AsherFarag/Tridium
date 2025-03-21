@@ -9,6 +9,16 @@
 
 namespace Tridium {
 
+	namespace RootParameters
+	{
+		enum
+		{
+			CBV = 0,
+			Textures = 1,
+			Samplers = 2,
+		};
+	}
+
 	bool D3D12CommandList::Commit( const void* a_Params )
 	{
 		const auto* desc = ParamsToDescriptor<RHICommandListDescriptor>( a_Params );
@@ -253,15 +263,17 @@ namespace Tridium {
 				srvDesc.Texture2D.PlaneSlice = 0;
 				srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 
+				const auto* tex = static_cast<const D3D12Texture*>( a_Data.Payload.References[0] );
+
 				RHI::GetD3D12RHI()->GetDevice()->CreateShaderResourceView(
-					static_cast<const D3D12Texture*>( a_Data.Payload.References[0] )->Texture.Get(),
+					tex->Texture.Get(),
 					&srvDesc,
 					srvheap->GetCPUDescriptorHandleForHeapStart()
 				);
 			}
 
 			CommandList->SetDescriptorHeaps( 1, &srvheap );
-			CommandList->SetGraphicsRootDescriptorTable( ShaderInputOffset++, srvheap->GetGPUDescriptorHandleForHeapStart() );
+			CommandList->SetGraphicsRootDescriptorTable( RootParameters::Textures, srvheap->GetGPUDescriptorHandleForHeapStart() );
 
 			break;
 		}
@@ -281,6 +293,98 @@ namespace Tridium {
 				CommandList->SetDescriptorHeaps( 1, &sampler->SamplerHeap );
 				CommandList->SetGraphicsRootDescriptorTable( ShaderInputOffset++, sampler->SamplerHeap->GetGPUDescriptorHandleForHeapStart() );
 			}
+			break;
+		}
+		case ERHIShaderBindingType::CombinedSampler:
+		{
+			// === Create SRV Heap ===
+			D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc{};
+			srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+			srvHeapDesc.NumDescriptors = 8;
+			srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+			srvHeapDesc.NodeMask = 0;
+
+			TODO( "Temp hack as srvheap needs to stay around" );
+			ComPtr<ID3D12DescriptorHeap> srvHeap;
+			RHI::GetD3D12RHI()->GetDevice()->CreateDescriptorHeap( &srvHeapDesc, IID_PPV_ARGS( &srvHeap ) );
+			DescriptorHeaps.PushBack( srvHeap );
+
+			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+			if ( a_Data.Payload.Count > 1 )
+			{
+				// Texture Array
+				srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+				srvDesc.Texture2DArray.MostDetailedMip = 0;
+				srvDesc.Texture2DArray.MipLevels = 1;
+				srvDesc.Texture2DArray.FirstArraySlice = 0;
+				srvDesc.Texture2DArray.ArraySize = a_Data.Payload.Count;
+				srvDesc.Texture2DArray.PlaneSlice = 0;
+				srvDesc.Texture2DArray.ResourceMinLODClamp = 0.0f;
+
+				NOT_IMPLEMENTED;
+			}
+			else
+			{
+				// Single Texture
+				srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+				srvDesc.Texture2D.MostDetailedMip = 0;
+				srvDesc.Texture2D.MipLevels = 1;
+				srvDesc.Texture2D.PlaneSlice = 0;
+				srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+
+				const auto* tex = static_cast<const D3D12Texture*>( a_Data.Payload.References[0] );
+
+				RHI::GetD3D12RHI()->GetDevice()->CreateShaderResourceView(
+					tex->Texture.Get(),
+					&srvDesc,
+					srvHeap->GetCPUDescriptorHandleForHeapStart()
+				);
+
+				// === Create Sampler Heap ===
+				D3D12_DESCRIPTOR_HEAP_DESC samplerHeapDesc{};
+				samplerHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+				samplerHeapDesc.NumDescriptors = 1;  // Only one sampler per texture
+				samplerHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+				samplerHeapDesc.NodeMask = 0;
+
+				ComPtr<ID3D12DescriptorHeap> samplerHeap;
+				RHI::GetD3D12RHI()->GetDevice()->CreateDescriptorHeap( &samplerHeapDesc, IID_PPV_ARGS( &samplerHeap ) );
+				DescriptorHeaps.PushBack( samplerHeap );
+
+				// Retrieve the sampler from the texture
+				const auto* sampler = tex->Sampler->GetDescriptor();
+
+				// Create the Sampler Descriptor
+				D3D12_SAMPLER_DESC samplerDesc{};
+				samplerDesc.Filter = ToD3D12::GetFilter( sampler->Filter );
+				samplerDesc.AddressU = ToD3D12::GetAddressMode( sampler->AddressU );
+				samplerDesc.AddressV = ToD3D12::GetAddressMode( sampler->AddressV );
+				samplerDesc.AddressW = ToD3D12::GetAddressMode( sampler->AddressW );
+				samplerDesc.MipLODBias = sampler->MipLODBias;
+				samplerDesc.MaxAnisotropy = sampler->MaxAnisotropy;
+				samplerDesc.ComparisonFunc = ToD3D12::GetComparisonFunc( sampler->ComparisonFunc );
+				samplerDesc.BorderColor[0] = sampler->BorderColor.r;
+				samplerDesc.BorderColor[1] = sampler->BorderColor.g;
+				samplerDesc.BorderColor[2] = sampler->BorderColor.b;
+				samplerDesc.BorderColor[3] = sampler->BorderColor.a;
+				samplerDesc.MinLOD = sampler->MinLOD;
+				samplerDesc.MaxLOD = sampler->MaxLOD;
+
+				RHI::GetD3D12RHI()->GetDevice()->CreateSampler(
+					&samplerDesc,
+					samplerHeap->GetCPUDescriptorHandleForHeapStart()
+				);
+
+				// Bind both SRV and Sampler heaps
+				ID3D12DescriptorHeap* heaps[] = { srvHeap.Get(), samplerHeap.Get() };
+				CommandList->SetDescriptorHeaps( ARRAYSIZE( heaps ), heaps );
+
+				CommandList->SetGraphicsRootDescriptorTable( RootParameters::Textures, srvHeap->GetGPUDescriptorHandleForHeapStart() );
+				CommandList->SetGraphicsRootDescriptorTable( RootParameters::Samplers, samplerHeap->GetGPUDescriptorHandleForHeapStart() );
+			}
+
 			break;
 		}
 		default:

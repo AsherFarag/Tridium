@@ -7,23 +7,23 @@ namespace Tridium {
 	struct OpenGLFramebuffer
 	{
 		RHITextureRef BackBufferTexture = nullptr;
-		GLuint FramebufferID = 0;
 		GLuint ShaderID = 0;
 		struct Quad
 		{
-			static constexpr float Vertices[] = {
-				// Positions   // TexCoords
-				-1.0f,  1.0f,  0.0f, 1.0f,
-				-1.0f, -1.0f,  0.0f, 0.0f,
-				 1.0f, -1.0f,  1.0f, 0.0f,
 
-				-1.0f,  1.0f,  0.0f, 1.0f,
-				 1.0f, -1.0f,  1.0f, 0.0f,
-				 1.0f,  1.0f,  1.0f, 1.0f
+			static constexpr float Vertices[] =
+			{
+				-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+				1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+				1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+				-1.0f, 1.0f, 0.0f, 0.0f, 1.0f
 			};
+
+			static constexpr uint32_t Indices[] = { 0, 1, 2, 2, 3, 0 };
 
 			GLuint VAO = 0;
 			GLuint VBO = 0;
+			GLuint IBO = 0;
 
 			~Quad()
 			{
@@ -35,19 +35,19 @@ namespace Tridium {
 				{
 					OpenGL3::DeleteBuffers( 1, &VBO );
 				}
+				if ( IBO )
+				{
+					OpenGL3::DeleteBuffers( 1, &IBO );
+				}
 			}
 
 		} ScreenQuad;
 
 		bool Init( const RHISwapChainDescriptor& a_Desc );
+		void Resize( uint32_t a_Width, uint32_t a_Height );
 
 		~OpenGLFramebuffer()
 		{
-			if ( FramebufferID )
-			{
-				OpenGL3::DeleteFramebuffers( 1, &FramebufferID );
-			}
-
 			if ( ShaderID )
 			{
 				OpenGL3::DeleteProgram( ShaderID );
@@ -66,6 +66,8 @@ namespace Tridium {
 		bool Present() override;
 		RHITextureRef GetBackBuffer() override;
 		bool Resize( uint32_t a_Width, uint32_t a_Height ) override;
+		uint32_t GetWidth() const override { return m_Width; }
+		uint32_t GetHeight() const override { return m_Height; }
 
 		const auto& GetFramebuffer() const { return m_Framebuffer; }
 

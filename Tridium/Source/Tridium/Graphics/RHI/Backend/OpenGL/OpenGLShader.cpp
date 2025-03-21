@@ -20,33 +20,36 @@ namespace Tridium {
 		glslCompiler.set_common_options( options );
 		glslCompiler.build_combined_image_samplers();
 
-		// Textures and samplers are combined in GLSL, so we need to keep track of the combined names
+		// Textures and samplers are combined in GLSL, so we need to keep track of them and set the correct names
 		auto combinedSamplers = glslCompiler.get_combined_image_samplers();
+		UnorderedSet<spirv_cross::VariableID> seenImageIDs;
+		seenImageIDs.reserve( combinedSamplers.size() );
 		for ( auto& sampler : combinedSamplers )
 		{
-			const String& texName = glslCompiler.get_name( sampler.image_id );
-			const String& samplerName = glslCompiler.get_name( sampler.sampler_id );
+			if ( seenImageIDs.contains( sampler.image_id ) )
+			{
+				ASSERT_LOG( false, "Textures used with multiple samplers are not supported!" );
+				continue;
+			}
 
-			// Set the name of the combined sampler to the texture name + '_' + sampler name
-			// E.g. "MyTexture_MySampler"
-			String newName;
-			newName.reserve( texName.size() + samplerName.size() + 1 );
-			newName.append( texName );
-			newName.push_back( '_' );
-			newName.append( samplerName );
-			glslCompiler.set_name( sampler.combined_id, std::move( newName ) );
+			seenImageIDs.insert( sampler.image_id );
+			const String& texName = glslCompiler.get_name( sampler.image_id );
+			// Set the name of the combined sampler to the texture name.
+			// This is helpful for setting Texture Shader Inputs via the OpenGLCommandList.
+			glslCompiler.set_name( sampler.combined_id, texName );
 		}
 
 		String glsl = glslCompiler.compile();
 
 		// Create the shader and compile the GLSL source
 		m_ShaderID = OpenGL2::CreateShader( ToOpenGL::GetShaderType( desc->Type ) );
-		std::cout << "OpenGLShaderModule::Commit: Compiling shader '\n" << glsl << "'" << std::endl;
 		const char* source = glsl.c_str();
 		OpenGL2::ShaderSource( m_ShaderID, 1, &source, nullptr );
 		OpenGL2::CompileShader( m_ShaderID );
 
 	#if RHI_DEBUG_ENABLED
+		std::cout << "OpenGLShaderModule::Commit: Compiling shader '\n" << glsl << "'" << std::endl;
+
 		// Check for compilation errors
 		GLint success = 0;
 		OpenGL2::GetShaderiv( m_ShaderID, GL_COMPILE_STATUS, &success );

@@ -16,6 +16,7 @@ namespace Tridium {
 	//  Known as a descriptor heap in DirectX 12 or a descriptor pool in Vulkan.
 	DEFINE_RHI_RESOURCE( ResourceAllocator,
 		virtual bool Allocate( uint32_t a_Count, uint32_t* o_Offset = nullptr ) = 0;
+		virtual bool Deallocate( RHIAllocatableResource& a_Resource ) = 0;
 		virtual uint32_t GetSize() const = 0; // The total number of descriptors in the allocator
 	)
 	{

@@ -149,6 +149,11 @@ namespace Tridium {
 	{
 		Texture.Release();
 		DescriptorHandle = {};
+		if ( m_Allocator )
+		{
+			m_Allocator->Deallocate( *this );
+			m_Allocator = nullptr;
+		}
 		return true;
 	}
 

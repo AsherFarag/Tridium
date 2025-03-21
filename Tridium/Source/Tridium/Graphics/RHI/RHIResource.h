@@ -5,6 +5,7 @@ namespace Tridium {
 
 	// Forward declarations
 	class RHIResource;
+	class RHIAllocatableResource;
 	class RHIResourceAllocator;
 	using RHIResourceAllocatorRef = SharedPtr<RHIResourceAllocator>;
 	// ====================
@@ -137,7 +138,7 @@ namespace Tridium {
 		template<typename T> requires Concepts::IsRHIResource<T>
 		static T::RefType Create()
 		{
-			static constexpr auto deleter = []( T* a_Resource ) { a_Resource->Release(); delete a_Resource; };
+			static constexpr auto deleter = +[]( T* a_Resource ) { a_Resource->Release(); delete a_Resource; };
 			return T::RefType( new T(), deleter );
 		}
 

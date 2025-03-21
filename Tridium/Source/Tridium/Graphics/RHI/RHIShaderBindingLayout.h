@@ -12,12 +12,13 @@ namespace Tridium {
 	enum class ERHIShaderBindingType : uint8_t
 	{
 		Unknown = 0,
-		Constant,	  // Constant buffer, uniform buffer, etc.    (DX12 CBV) / (Vulkan Uniform Buffer)
-		Mutable,	  // Mutable buffer, structured buffer, etc.  (DX12 SRV) / (Vulkan Storage Buffer)
-		Storage,	  // Storage buffer, RWStructuredBuffer, etc. (DX12 UAV) / (Vulkan Storage Buffer)
-		Texture,	  // Read only Texture resource.              (DX12 SRV) / (Vulkan Sampled Image)
-		RWTexture,	  // Read/Write Texture resource.             (DX12 UAV) / (Vulkan Storage Image)
-		Sampler,	  // Sampler state.                           (DX12 SAM) / (Vulkan Sampler)
+		Constant,	     // Constant buffer, uniform buffer, etc.    (DX12 CBV) / (Vulkan Uniform Buffer)
+		Mutable,	     // Mutable buffer, structured buffer, etc.  (DX12 SRV) / (Vulkan Storage Buffer)
+		Storage,	     // Storage buffer, RWStructuredBuffer, etc. (DX12 UAV) / (Vulkan Storage Buffer)
+		Texture,	     // Read only Texture resource.              (DX12 SRV) / (Vulkan Sampled Image)
+		RWTexture,	     // Read/Write Texture resource.             (DX12 UAV) / (Vulkan Storage Image)
+		Sampler,	     // Sampler state.                           (DX12 SAM) / (Vulkan Sampler)
+		CombinedSampler, // Combined Texture Sampler.                (DX12 SRV + SAM) / (Vulkan Combined Image Sampler)
 	};
 
 	//==============================================
@@ -173,10 +174,18 @@ namespace Tridium {
 		// Set the binding as referenced samplers, such as a SamplerState.
 		// The data is referenced from a buffer and is not inlined in the shader.
 		// This can be used for texture data types such as textures, etc.
-		// In DirectX 12, this would be a Sampler, and in Vulkan, this would be a Sampler.
+		// Note: In OpenGL, samplers and textures are combined into a single binding.
 		constexpr RHIShaderBinding& AsReferencedSamplers( uint8_t a_BindSlotStart, uint8_t a_CountInAllocRange = 1 )
 		{
 			BindingType = ERHIShaderBindingType::Sampler;
+			WordSize = a_CountInAllocRange;
+			BindSlot = a_BindSlotStart;
+			return *this;
+		}
+
+		constexpr RHIShaderBinding& AsCombinedSamplers( uint8_t a_BindSlotStart, uint8_t a_CountInAllocRange = 1 )
+		{
+			BindingType = ERHIShaderBindingType::CombinedSampler;
 			WordSize = a_CountInAllocRange;
 			BindSlot = a_BindSlotStart;
 			return *this;
@@ -189,6 +198,7 @@ namespace Tridium {
 		constexpr bool IsReferencedTextures() const { return BindingType == ERHIShaderBindingType::Texture; }
 		constexpr bool IsReferencedRWTextures() const { return BindingType == ERHIShaderBindingType::RWTexture; }
 		constexpr bool IsReferencedSamplers() const { return BindingType == ERHIShaderBindingType::Sampler; }
+		constexpr bool IsCombinedSamplers() const { return BindingType == ERHIShaderBindingType::CombinedSampler; }
 	};
 
 

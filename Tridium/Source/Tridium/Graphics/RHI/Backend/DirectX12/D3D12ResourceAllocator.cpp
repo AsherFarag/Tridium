@@ -58,4 +58,11 @@ namespace Tridium {
 		return true;
     }
 
+    bool D3D12ResourceAllocator::Deallocate( RHIAllocatableResource& a_Resource )
+    {
+        TODO( "Temp!" );
+		m_Size--;
+		return true;
+    }
+
 } // namespace Tridium

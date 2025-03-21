@@ -28,6 +28,11 @@ namespace Tridium {
 			return true;
 		}
 
+		virtual bool Deallocate( RHIAllocatableResource& a_Resource ) override
+		{
+			return true;
+		}
+
 		virtual uint32_t GetSize() const override
 		{
 			return 0;

@@ -115,7 +115,7 @@ namespace Tridium {
 		m_Window->SetEventCallback( [this]( Event& e ) { this->OnEvent( e ); } );
 
 		RHIConfig config;
-		config.RHIType = ERHInterfaceType::OpenGL;
+		config.RHIType = ERHInterfaceType::DirectX12;
 		config.UseDebug = true;
 		LOG( LogCategory::Rendering, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), RHI::Initialise( config ) );
 
@@ -171,6 +171,12 @@ namespace Tridium {
 
 			RHITextureRef tex = RHI::CreateTexture( desc );
 
+			RHISamplerDescriptor samplerDesc;
+			samplerDesc.Name = "My beautiful sampler";
+			RHISamplerRef sampler = RHI::CreateSampler( samplerDesc );
+
+			tex->Sampler = sampler;
+
 			// Create vertex buffer
 
 			RHIVertexLayout layout =
@@ -196,6 +202,14 @@ namespace Tridium {
 				{ { -0.5f, 0.5f,  0.0f }, { 0.0f, 0.0f } }
 			};
 
+			// Tri
+			Vertex triVerts[] =
+			{
+				{ { 0.0f, 1.0f, 0.0f }, { 0.5f, 1.0f } },
+				{ { 1.0f, -1.0f, 0.0f }, { 1.0f, 0.0f } },
+				{ { -1.0f, -1.0f, 0.0f }, { 0.0f, 0.0f } }
+			};
+
 			RHIVertexBufferDescriptor vbDesc;
 			vbDesc.Layout = layout;
 			vbDesc.InitialData = Span<const Byte>( (const Byte*)( &vertices[0] ), sizeof(vertices));
@@ -203,29 +217,32 @@ namespace Tridium {
 
 			RHIVertexBufferRef vb = RHI::CreateVertexBuffer( vbDesc );
 
+			RHIVertexBufferDescriptor trivbDesc;
+			trivbDesc.Layout = layout;
+			trivbDesc.InitialData = Span<const Byte>( (const Byte*)( &triVerts[0] ), sizeof( triVerts ) );
+			trivbDesc.Name = "Tri VBO";
+
+			RHIVertexBufferRef triVB = RHI::CreateVertexBuffer( trivbDesc );
+
 			// HLSL Source code
 			StringView vertCode = R"(
 #include "Globals.hlsli"
-
-struct VSInput
-{
-    float3 pos : SV_Position;
-	float2 uv : TEXCOORD;
-};
 
 struct VSOutput {
     float4 pos : SV_Position;  
 	float2 uv : TEXCOORD;
 };
 
-VSOutput main( VSInput input )
+ROOTSIG
+VSOutput main( float3 pos : POSITION, float2 uv : TEXCOORD ) 
 {
 	VSOutput output;
-	output.pos = float4(input.pos.xy, 0.0, 1.0);
-	output.uv = input.uv;
+	output.pos = float4( pos, 1.0f );
+	output.uv = uv;
 	return output;
 }
 )";
+
 			StringView pixelCode = R"(
 #include "Globals.hlsli"
 
@@ -239,15 +256,13 @@ struct PushConstants {
 };
 
 PUSH_CONSTANT( colorMultiplier, PushConstants );
-Texture2D<float4> Texture : register(t0);
-SamplerState Sampler2 : register(s0);
-SamplerState Sampler3 : register(s1);
+Texture2D Texture : register( t0 );
+SamplerState Texture_Sampler : register( s0 );
 
+ROOTSIG
 float4 main(VSOutput input) : SV_Target 
 {
-	float4 texColor = Texture.Sample(Sampler2, input.uv);
-	texColor += Texture.Sample(Sampler3, input.uv);
-	return Texture.Sample( GetStaticSampler( Bilinear, Clamped ), input.uv) * colorMultiplier.ColorMultiplier + texColor;
+	return Texture.Sample(Texture_Sampler, input.uv );// * colorMultiplier.ColorMultiplier;
 }
 )";
 
@@ -269,9 +284,8 @@ float4 main(VSOutput input) : SV_Target
 			RHIShaderBindingLayoutDescriptor sblDesc;
 			sblDesc.Name = "My beautiful shader binding layout";
 			sblDesc.AddBinding( "colorMultiplier"_H ).AsInlinedConstants<PushConstants>( 0 );
-			sblDesc.AddBinding( "Texture"_H ).AsReferencedTextures( 0 );
-			sblDesc.AddBinding( "Sampler2"_H ).AsReferencedSamplers( 0 );
-			sblDesc.AddBinding( "Sampler3"_H ).AsReferencedSamplers( 1 );
+			sblDesc.AddBinding( "Texture"_H ).AsCombinedSamplers( 0 );
+
 
 			RHIShaderBindingLayoutRef sbl = RHI::CreateShaderBindingLayout( sblDesc );
 
@@ -290,7 +304,7 @@ float4 main(VSOutput input) : SV_Target
 
 			// Temp
 			float time = 0.0f;
-			Color clearColour = Color{ 0.5f, 0.4f, 1.0f, 1.0f } * 0.15f;
+			const Color clearColour = Color{ 0.0f, 0.5f, 0.5f, 1.0f };
 			int f{};
 			while ( true )
 			{
@@ -298,55 +312,61 @@ float4 main(VSOutput input) : SV_Target
 				++f;
 				m_Window->OnUpdate();
 				time = glfwGetTime();
-				RHITextureRef rt = RHI::GetSwapChain()->GetBackBuffer();
+				{
+					RHITextureRef rt = RHI::GetSwapChain()->GetBackBuffer();
 
-				RHIGraphicsCommandBuffer cmdBuffer;
-				cmdBuffer.ResourceBarrier( rt, ERHIResourceState::Present, ERHIResourceState::RenderTarget)
-				         .SetRenderTargets( { &rt, 1 }, nullptr )
-				         .ClearRenderTargets( { &rt, 1 }, clearColour, true, false )
-				         .SetGraphicsPipelineState( pso )
-				         .SetShaderBindingLayout( sbl );
+					const uint32_t width = RHI::GetSwapChain()->GetWidth();
+					const uint32_t height = RHI::GetSwapChain()->GetHeight();
 
-				//// Input Assembler
-				//cmdBuffer.SetPrimitiveTopology( ERHITopology::Triangle );
+					RHIGraphicsCommandBuffer cmdBuffer;
+					cmdBuffer.ResourceBarrier( rt, ERHIResourceState::Present, ERHIResourceState::RenderTarget )
+						.SetRenderTargets( { &rt, 1 }, nullptr )
+						.ClearRenderTargets( { &rt, 1 }, clearColour, true, false )
+						.SetGraphicsPipelineState( pso )
+						.SetShaderBindingLayout( sbl );
 
-				//Viewport vp;
-				//vp.Width = props.Width;
-				//vp.Height = props.Height;
-				//vp.X = 0;
-				//vp.Y = 0;
-				//vp.MinDepth = 0.0f;
-				//vp.MaxDepth = 1.0f;
-				//cmdBuffer.SetViewports( { &vp, 1 } );
+					// Input Assembler
+					cmdBuffer.SetPrimitiveTopology( ERHITopology::Triangle );
+					Viewport vp;
+					vp.Width = width;
+					vp.Height = height;
+					vp.X = 0;
+					vp.Y = 0;
+					vp.MinDepth = 0.0f;
+					vp.MaxDepth = 1.0f;
+					cmdBuffer.SetViewports( { &vp, 1 } );
 
-				//// Set Scissors
-				//ScissorRect scissor;
-				//scissor.Left = 0;
-				//scissor.Top = 0;
-				//scissor.Right = props.Width;
-				//scissor.Bottom = props.Height;
-				//cmdBuffer.SetScissors( {&scissor, 1} );
+					// Set Scissors
+					ScissorRect scissor;
+					scissor.Left = 0;
+					scissor.Top = 0;
+					scissor.Right = width;
+					scissor.Bottom = height;
+					cmdBuffer.SetScissors( { &scissor, 1 } );
 
-				//constexpr auto CycleRGB = +[]( float a_Time, float a_Speed = 1.0f ) -> Color
-				//	{
-				//		float r = ( Math::Sin( a_Speed * a_Time ) + 1.0f ) / 2.0f;
-				//		float g = ( Math::Sin( a_Speed * a_Time + 2.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
-				//		float b = ( Math::Sin( a_Speed * a_Time + 4.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
-				//		return Color( r, g, b, 1.0f );
-				//	};
+					//constexpr auto CycleRGB = +[]( float a_Time, float a_Speed = 1.0f ) -> Color
+					//	{
+					//		float r = ( Math::Sin( a_Speed * a_Time ) + 1.0f ) / 2.0f;
+					//		float g = ( Math::Sin( a_Speed * a_Time + 2.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
+					//		float b = ( Math::Sin( a_Speed * a_Time + 4.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
+					//		return Color( r, g, b, 1.0f );
+					//	};
 
-				//// Draw
-				//cmdBuffer.SetShaderInput( "colorMultiplier"_H, CycleRGB( time, 1.0f ) );
-				//cmdBuffer.SetShaderInput( "Texture"_H, tex );
-				//cmdBuffer.SetVertexBuffer( vb );
-				cmdBuffer.Draw( 0, sizeof( vertices ) / sizeof( Vertex ) );
+					//// Draw
+					//cmdBuffer.SetShaderInput( "colorMultiplier"_H, CycleRGB( time, 1.0f ) );
+					cmdBuffer.SetShaderInput( "Texture"_H, tex );
+					cmdBuffer.SetVertexBuffer( vb );
+					cmdBuffer.Draw( 0, sizeof( vertices ) / sizeof( Vertex ) );
+					cmdBuffer.SetVertexBuffer( triVB );
+					cmdBuffer.Draw( 0, sizeof( triVerts ) / sizeof( Vertex ) );
 
-				cmdBuffer.ResourceBarrier( rt, ERHIResourceState::RenderTarget, ERHIResourceState::Present );
+					cmdBuffer.ResourceBarrier( rt, ERHIResourceState::RenderTarget, ERHIResourceState::Present );
 
-				cmdList->SetGraphicsCommands( cmdBuffer );
+					cmdList->SetGraphicsCommands( cmdBuffer );
 
-				RHI::ExecuteCommandList( cmdList );
-				RHI::FenceSignal( RHI::CreateFence() );
+					RHI::ExecuteCommandList( cmdList );
+					RHI::FenceSignal( RHI::CreateFence() );
+				}
 #endif
 				RHI::Present();
 			}

@@ -15,6 +15,7 @@ namespace Tridium {
 		const void* NativePtr() const override;
 
 		bool Allocate( uint32_t a_Count, uint32_t* o_Offset ) override;
+		bool Deallocate( RHIAllocatableResource& a_Resource ) override;
 		uint32_t GetSize() const override { return m_Size; }
 
 		ComPtr<D3D12::DescriptorHeap> DescriptorHeap{};

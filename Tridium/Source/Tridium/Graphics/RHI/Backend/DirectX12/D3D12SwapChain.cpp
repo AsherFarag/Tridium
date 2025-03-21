@@ -21,6 +21,13 @@ namespace Tridium {
 			return false;
 
 		SwapChain->Present( 1, 0 );
+
+		if ( m_ShouldResize && !ResizeBuffers() )
+		{
+			ASSERT_LOG( false, "Failed to resize buffers" );
+			return false;
+		}
+
 		return true;
 	}
 
@@ -33,6 +40,102 @@ namespace Tridium {
 
 	bool D3D12SwapChain::Resize( uint32_t a_Width, uint32_t a_Height )
 	{
+		if ( !SwapChain )
+		{
+			return false;
+		}
+
+		if ( a_Width == m_Width && a_Height == m_Height )
+		{
+			return true;
+		}
+
+		m_Width = a_Width;
+		m_Height = a_Height;
+
+		m_ShouldResize = true;
+
+		return true;
+	}
+
+	bool D3D12SwapChain::ResizeBuffers()
+	{
+		RHI::GetD3D12RHI()->FenceSignal( RHI::GetD3D12RHI()->CreateFence() );
+
+		ReleaseBuffers();
+
+		// Resize the swap chain
+		if ( FAILED( SwapChain->ResizeBuffers( RTVs.Size(), m_Width, m_Height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING ) ) )
+		{
+			return false;
+		}
+
+		if ( !GetBackBuffers() )
+		{
+			return false;
+		}
+
+		m_ShouldResize = false;
+		return true;
+	}
+
+	void D3D12SwapChain::ReleaseBuffers()
+	{
+		for ( uint32_t i = 0; i < RTVs.Size(); i++ )
+		{
+			ASSERT_LOG( RTVs[i].use_count() == 1, "RTV owned by the swap chain is still in use - You should not be keeping a reference to the back buffer!" );
+			RTVs[i]->Release();
+			RTVs[i] = nullptr;
+		}
+	}
+
+	bool D3D12SwapChain::GetBackBuffers()
+	{
+		// Create textures and handles to view
+		RHITextureDescriptor rtvDesc;
+		rtvDesc.Format = GetDescriptor()->Format;
+		rtvDesc.Width = GetDescriptor()->Width;
+		rtvDesc.Height = GetDescriptor()->Height;
+		rtvDesc.Depth = 1;
+		rtvDesc.Layers = 1;
+		rtvDesc.Mips = 1;
+		rtvDesc.UsageHint = ERHIUsageHint::RenderTarget;
+		rtvDesc.Dimension = ERHITextureDimension::Texture2D;
+		rtvDesc.IsRenderTarget = true;
+
+		for ( uint32_t i = 0; i < RTVs.Size(); i++ )
+		{
+			if ( !RTVs[i] )
+			{
+				RTVs[i] = RHI::GetD3D12RHI()->CreateTexture( rtvDesc, RenderTargetAllocator );
+			}
+
+			D3D12Texture* tex = RTVs[i]->As<D3D12Texture>();
+			if ( FAILED( SwapChain->GetBuffer( i, IID_PPV_ARGS( &tex->Texture ) ) ) )
+			{
+				return false;
+			}
+
+			D3D12_RENDER_TARGET_VIEW_DESC rtv{};
+			rtv.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+			rtv.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+			rtv.Texture2D.MipSlice = 0;
+			rtv.Texture2D.PlaneSlice = 0;
+			D3D12_CPU_DESCRIPTOR_HANDLE handle = RenderTargetAllocator->As<D3D12ResourceAllocator>()->DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+			handle.ptr += RenderTargetAllocator->As<D3D12ResourceAllocator>()->DescriptorSize * i;
+			RHI::GetD3D12RHI()->GetDevice()->CreateRenderTargetView(tex->Texture, &rtv, handle);
+
+		#if RHI_DEBUG_ENABLED
+			if ( RHIQuery::IsDebug() )
+			{
+				WString name = GetDescriptor()->Name.empty() ? L"SwapChain" : ToD3D12::ToWString( GetDescriptor()->Name.data());
+				name += L" RTV[" + std::to_wstring( i ) + L"]";
+				tex->Texture->SetName( name.c_str() );
+				D3D12Context::Get()->StringStorage.EmplaceBack( std::move( name ) );
+			}
+		#endif
+		}
+
 		return true;
 	}
 
@@ -57,8 +160,8 @@ namespace Tridium {
 
 		// Create the swap chain descriptor
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
-		swapChainDesc.Width = desc->Width;
-		swapChainDesc.Height = desc->Height;
+		swapChainDesc.Width = m_Width = desc->Width;
+		swapChainDesc.Height = m_Height = desc->Height;
 		swapChainDesc.Format = ToD3D12::GetFormat( desc->Format );
 		TODO( "Stereo?" );
 		swapChainDesc.Stereo = false;
@@ -109,54 +212,10 @@ namespace Tridium {
 		// Resize the RTVs array to the buffer count
 		RTVs.Resize( desc->BufferCount );
 
-		// Create textures and handles to view
-		RHITextureDescriptor rtvDesc;
-		rtvDesc.Format = desc->Format;
-		rtvDesc.Width = desc->Width;
-		rtvDesc.Height = desc->Height;
-		rtvDesc.Depth = 1;
-		rtvDesc.Layers = 1;
-		rtvDesc.Mips = 1;
-		rtvDesc.UsageHint = ERHIUsageHint::RenderTarget;
-		rtvDesc.Dimension = ERHITextureDimension::Texture2D;
-		rtvDesc.IsRenderTarget = true;
-
-		for ( uint32_t i = 0; i < desc->BufferCount; i++ )
-		{
-			RTVs[i] = rhi->CreateTexture( rtvDesc, RenderTargetAllocator );
-			if ( !RTVs[i] )
-			{
-				return false;
-			}
-		}
-
 		// Get the back buffers
-		for ( uint32_t i = 0; i < 2; i++ )
+		if ( !GetBackBuffers() )
 		{
-			D3D12Texture* tex = RTVs[i]->As<D3D12Texture>();
-			if ( tex == nullptr || FAILED( SwapChain->GetBuffer( i, IID_PPV_ARGS( &tex->Texture ) ) ) )
-			{
-				return false;
-			}
-
-			D3D12_RENDER_TARGET_VIEW_DESC rtv{};
-			rtv.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-			rtv.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-			rtv.Texture2D.MipSlice = 0;
-			rtv.Texture2D.PlaneSlice = 0;
-			D3D12_CPU_DESCRIPTOR_HANDLE handle = RenderTargetAllocator->As<D3D12ResourceAllocator>()->DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-			handle.ptr += RenderTargetAllocator->As<D3D12ResourceAllocator>()->DescriptorSize * i;
-			rhi->GetDevice()->CreateRenderTargetView( tex->Texture, &rtv, handle );
-
-		#if RHI_DEBUG_ENABLED
-			if ( RHIQuery::IsDebug() )
-			{
-				WString name = desc->Name.empty() ? L"SwapChain" : ToD3D12::ToWString( desc->Name.data() );
-				name += L" RTV[" + std::to_wstring( i ) + L"]";
-				tex->Texture->SetName( name.c_str() );
-				D3D12Context::Get()->StringStorage.EmplaceBack( std::move( name ) );
-			}
-		#endif
+			return false;
 		}
 
 		return true;

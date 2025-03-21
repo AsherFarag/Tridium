@@ -296,9 +296,6 @@ namespace Tridium {
 			case ERHIShaderFormat::HLSL6:
 			case ERHIShaderFormat::HLSL6_XBOX:
 			{
-				// Declare that 
-				args.EmplaceBack( L"-rootsig-define" );
-				args.EmplaceBack( L"TRIDIUM_ENGINE_DEFAULT_ROOTSIG" ); // Default root signature ( defined in RootSig.hlsli )
 				break;
 			}
 			case ERHIShaderFormat::SPIRV:
@@ -357,6 +354,10 @@ namespace Tridium {
 			args.EmplaceBack( L"-Zpc" );
 		}
 
+		////////////////////////////////////////
+		// ENTRY POINT
+		////////////////////////////////////////
+
 		// Add the entry point.
 		if ( !a_Input.EntryPoint.empty() )
 		{
@@ -370,7 +371,20 @@ namespace Tridium {
 			args.EmplaceBack( L"main" );
 		}
 
-		// Set up the defines.
+		////////////////////////////////////////
+		// DEFINITIONS
+		////////////////////////////////////////
+
+		// Do we support combined samplers?
+		args.EmplaceBack( L"-D" );
+		args.EmplaceBack( L"SUPPORT_COMBINED_SAMPLERS" );
+		#if RHI_SUPPORT_COMBINED_SAMPLERS
+		args.EmplaceBack( L"1" );
+		#else
+		args.EmplaceBack( L"0" );
+		#endif
+
+		// Set up the defines specified in the input.
 		for ( const auto& define : a_Input.Defines )
 		{
 			args.EmplaceBack( L"-D" );
@@ -378,6 +392,9 @@ namespace Tridium {
 			args.EmplaceBack( ToD3D12::ToWString( define.second ) );
 		}
 
+		////////////////////////////////////////
+		// INCLUDE DIRECTORIES
+		////////////////////////////////////////
 
 		// Set up the include directories.
 		args.EmplaceBack( L"-I" );
@@ -390,6 +407,10 @@ namespace Tridium {
 			args.EmplaceBack( L"-I" );
 			args.EmplaceBack( ToD3D12::ToWString( includeDir ) );
 		}
+
+		////////////////////////////////////////
+		// CUSTOM ARGUMENTS
+		////////////////////////////////////////
 
 		// Add custom arguments.
 		for ( const auto& customArg : a_Input.CustomArguments )

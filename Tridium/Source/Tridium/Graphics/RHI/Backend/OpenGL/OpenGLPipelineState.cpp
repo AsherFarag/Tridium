@@ -71,6 +71,18 @@ namespace Tridium {
 		// Create the VAO
 		{
 			OpenGL3::GenVertexArrays( 1, &m_VAO );
+
+		#if RHI_DEBUG_ENABLED
+			if ( RHIQuery::IsDebug() && desc->Name.size() > 0 )
+			{
+				String vaoLabel;
+				constexpr StringView vaoSuffix = "_VAO";
+				vaoLabel.reserve( desc->Name.size() + vaoSuffix.size() );
+				vaoLabel.append( desc->Name.data(), desc->Name.size() );
+				vaoLabel.append( vaoSuffix.data(), vaoSuffix.size() );
+				OpenGL4::ObjectLabel( GL_VERTEX_ARRAY, m_VAO, vaoLabel.size(), vaoLabel.data() );
+			}
+		#endif
 		}
 
 		// Collect the uniform locations
@@ -98,7 +110,7 @@ namespace Tridium {
 						InitUniform( name );
 					}
 				}
-				if ( binding.IsReferencedSamplers() || binding.IsReferencedTextures() )
+				if ( binding.IsReferencedSamplers() )
 				{
 					// OpenGL combines samplers and textures into a single binding
 					m_UnifromLocations[binding.Name] = -1;
@@ -158,7 +170,7 @@ namespace Tridium {
 
 	bool OpenGLGraphicsPipelineState::ApplyVertexLayoutToVAO( GLuint a_VAO )
 	{
-		OpenGLState::BindVertexArray( a_VAO ); // Ensure the VAO is bound
+		GLState::BindVertexArray( a_VAO ); // Ensure the VAO is bound
 
 		// Bind the vertex layout
 		for ( uint32_t i = 0; i < GetDescriptor()->VertexLayout.Elements.Size(); ++i )

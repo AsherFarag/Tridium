@@ -40,14 +40,14 @@ namespace Tridium {
 			return false;
 
 		OpenGL4::CreateBuffers( 1, &m_Buffer );
-		OpenGLState::BindVertexBuffer( m_Buffer );
+		GLState::BindVertexBuffer( m_Buffer );
 		OpenGL1::BufferData( GL_ARRAY_BUFFER, desc->InitialData.size(), desc->InitialData.data(), GL_STATIC_DRAW );
 
         #if RHI_DEBUG_ENABLED
 		OpenGL4::ObjectLabel( GL_BUFFER, m_Buffer, desc->Name.size(), desc->Name.data() );
         #endif
 
-		OpenGLState::BindVertexBuffer( 0 );
+		GLState::BindVertexBuffer( 0 );
 
 		return m_Buffer != 0;
     }

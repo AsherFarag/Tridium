@@ -53,13 +53,13 @@ namespace Tridium {
 
         for ( const auto& binding : desc->Bindings )
         {
-            D3D12_ROOT_PARAMETER rootParam = {};
-            rootParam.ShaderVisibility = ToD3D12::GetShaderVisibility( binding.Visibility );
-
             switch ( binding.BindingType )
             {
             case ERHIShaderBindingType::Constant:
             {
+                D3D12_ROOT_PARAMETER rootParam = {};
+                rootParam.ShaderVisibility = ToD3D12::GetShaderVisibility( binding.Visibility );
+
                 if ( binding.IsInlined() )
                 {
                     rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
@@ -87,6 +87,9 @@ namespace Tridium {
             case ERHIShaderBindingType::Texture:
             case ERHIShaderBindingType::Mutable:
             {
+                D3D12_ROOT_PARAMETER rootParam = {};
+                rootParam.ShaderVisibility = ToD3D12::GetShaderVisibility( binding.Visibility );
+
                 descriptorRangesList.EmplaceBack();
                 auto& range = descriptorRangesList.Back();
                 range.Resize( 1 );
@@ -103,6 +106,9 @@ namespace Tridium {
             }
             case ERHIShaderBindingType::Sampler:
             {
+                D3D12_ROOT_PARAMETER rootParam = {};
+                rootParam.ShaderVisibility = ToD3D12::GetShaderVisibility( binding.Visibility );
+
                 // Dynamic sampler - Descriptor Heap Binding
                 descriptorRangesList.EmplaceBack();
                 auto& range = descriptorRangesList.Back();
@@ -117,6 +123,44 @@ namespace Tridium {
                 rootParam.DescriptorTable.pDescriptorRanges = range.Data();
                 rootParams.PushBack( rootParam );
                 break;
+            }
+            case ERHIShaderBindingType::CombinedSampler:
+            {
+                {
+                    D3D12_ROOT_PARAMETER rootParam = {};
+                    rootParam.ShaderVisibility = ToD3D12::GetShaderVisibility( binding.Visibility );
+
+                    descriptorRangesList.EmplaceBack();
+                    auto& range = descriptorRangesList.Back();
+                    range.Resize( 1 );
+                    range[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+                    range[0].NumDescriptors = 1;
+                    range[0].BaseShaderRegister = binding.BindSlot;
+                    range[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+                    rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+                    rootParam.DescriptorTable.NumDescriptorRanges = 1;
+                    rootParam.DescriptorTable.pDescriptorRanges = range.Data();
+                    rootParams.PushBack( rootParam );
+                }
+                {
+                    D3D12_ROOT_PARAMETER rootParam = {};
+                    rootParam.ShaderVisibility = ToD3D12::GetShaderVisibility( binding.Visibility );
+                    // Dynamic sampler - Descriptor Heap Binding
+                    descriptorRangesList.EmplaceBack();
+                    auto& range = descriptorRangesList.Back();
+                    range.Resize( 1 );
+                    range[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+                    range[0].NumDescriptors = 1;
+                    range[0].BaseShaderRegister = binding.BindSlot;
+                    range[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+                    rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+                    rootParam.DescriptorTable.NumDescriptorRanges = 1;
+                    rootParam.DescriptorTable.pDescriptorRanges = range.Data();
+                    rootParams.PushBack( rootParam );
+                }
+				break;
             }
             }
         }

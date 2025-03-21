@@ -9,21 +9,21 @@ namespace Tridium {
 		if ( Window )
         {
 			const RHITextureDescriptor* desc = m_Framebuffer.BackBufferTexture->GetDescriptor();
-			OpenGL3::BindFramebuffer( GL_FRAMEBUFFER, 0 );
+			GLState::BindFBO( 0 );
 
 			// Render the framebuffer to the screen
 			{
-
 				OpenGL1::Viewport( 0, 0, m_Width, m_Height );
-				//OpenGL1::ClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
+				OpenGL1::ClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
+				OpenGL1::Clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
 
-
-				OpenGLState::BindProgram( m_Framebuffer.ShaderID );
+				GLState::BindProgram( m_Framebuffer.ShaderID );
 
 				OpenGL4::BindTextureUnit( 0, *m_Framebuffer.BackBufferTexture->NativePtrAs<GLuint>() );
 
-				OpenGLState::BindVertexArray( m_Framebuffer.ScreenQuad.VAO );
-				OpenGL3::DrawArrays( GL_TRIANGLES, 0, 6 );
+				GLState::BindVertexArray( m_Framebuffer.ScreenQuad.VAO );
+				OpenGL3::DrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr );
+				GLState::BindVertexArray( 0 );
 			}
 
             glfwSwapBuffers( Window );
@@ -40,13 +40,21 @@ namespace Tridium {
 
 	bool OpenGLSwapChain::Resize( uint32_t a_Width, uint32_t a_Height )
 	{
-		if ( Window )
+		if ( !Window )
 		{
-			m_Width = a_Width;
-			m_Height = a_Height;
+			return false;
+		}
+
+		if ( a_Width == m_Width && a_Height == m_Height )
+		{
 			return true;
 		}
-		return false;
+
+		m_Width = a_Width;
+		m_Height = a_Height;
+		m_Framebuffer.Resize( a_Width, a_Height );
+
+		return true;
 	}
 
     bool OpenGLSwapChain::Commit( const void* a_Params )
@@ -106,40 +114,43 @@ namespace Tridium {
 			return false;
 		}
 
-		// Create the framebuffer and attach the back buffer texture
-		OpenGL4::CreateFramebuffers( 1, &FramebufferID );
-		OpenGL3::BindFramebuffer( GL_FRAMEBUFFER, FramebufferID );
-		OpenGL3::BindTexture( GL_TEXTURE_2D, *BackBufferTexture->NativePtrAs<GLuint>() );
-		OpenGL3::FramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, *BackBufferTexture->NativePtrAs<GLuint>(), 0 );
-		OpenGL3::DrawBuffer( GL_COLOR_ATTACHMENT0 );
+		// Create VAO, IBO and VBO for the screen quad
+		OpenGL4::CreateVertexArrays( 1, &ScreenQuad.VAO );
 
-		ASSERT_LOG( OpenGL3::CheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is not complete!" );
-
-		// Create VAO and VBO for the screen quad
-		OpenGL3::GenVertexArrays( 1, &ScreenQuad.VAO );
-		OpenGL3::GenBuffers( 1, &ScreenQuad.VBO );
-		OpenGLState::BindVertexArray( ScreenQuad.VAO );
-
+		OpenGL4::CreateBuffers( 1, &ScreenQuad.VBO );
 		OpenGL3::BindBuffer( GL_ARRAY_BUFFER, ScreenQuad.VBO );
 		OpenGL3::BufferData( GL_ARRAY_BUFFER, sizeof( ScreenQuad.Vertices ), ScreenQuad.Vertices, GL_STATIC_DRAW );
 
-		OpenGL3::EnableVertexAttribArray( 0 );
-		OpenGL3::VertexAttribPointer( 0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof( float ), (void*)0 );
-		OpenGL3::EnableVertexAttribArray( 1 );
-		OpenGL3::VertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof( float ), (void*)( 2 * sizeof( float ) ) );
+		OpenGL4::CreateBuffers( 1, &ScreenQuad.IBO );
+		OpenGL3::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, ScreenQuad.IBO );
+		OpenGL3::BufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( ScreenQuad.Indices ), ScreenQuad.Indices, GL_STATIC_DRAW );
 
-		OpenGL3::BindBuffer( GL_ARRAY_BUFFER, 0 );
+		// Bind the VAO
+		OpenGL3::BindVertexArray( ScreenQuad.VAO );
+
+		// Bind the VBO
+		OpenGL3::BindBuffer( GL_ARRAY_BUFFER, ScreenQuad.VBO );
+		// Set the vertex attributes
+		OpenGL3::VertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( float ) * 5, nullptr );
+		OpenGL3::EnableVertexAttribArray( 0 );
+		OpenGL3::VertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, sizeof( float ) * 5, reinterpret_cast<void*>( sizeof( float ) * 3 ) );
+		OpenGL3::EnableVertexAttribArray( 1 );
+
+		// Bind the IBO
+		OpenGL3::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, ScreenQuad.IBO );
+
+		OpenGL3::BindVertexArray( 0 );
 
 		// Create Shaders
 		static const GLchar* vertexShaderSource = R"(
 			#version 330 core
-			layout(location = 0) in vec2 a_Position;
+			layout(location = 0) in vec3 a_Position;
 			layout(location = 1) in vec2 a_TexCoord;
 			out vec2 v_TexCoord;
 			void main()
 			{
 				v_TexCoord = a_TexCoord;
-				gl_Position = vec4(a_Position, 0.0, 1.0);
+				gl_Position = vec4(a_Position, 1.0);
 			}
 		)";
 
@@ -150,7 +161,7 @@ namespace Tridium {
 			uniform sampler2D u_Texture;
 			void main()
 			{
-				color = texture(u_Texture, v_TexCoord);
+				color = vec4( texture(u_Texture, v_TexCoord).rgb, 1.0 );
 			}
 		)";
 
@@ -172,6 +183,14 @@ namespace Tridium {
 		OpenGL3::DeleteShader( fragmentShader );
 
 		return true;
+	}
+
+	void OpenGLFramebuffer::Resize( uint32_t a_Width, uint32_t a_Height )
+	{
+		// We just need to resize the back buffer texture
+		OpenGL1::BindTexture( GL_TEXTURE_2D, *BackBufferTexture->NativePtrAs<GLuint>() );
+		OpenGL1::TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, a_Width, a_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr );
+		OpenGL1::BindTexture( GL_TEXTURE_2D, 0 );
 	}
 
 } // namespace Tridium

@@ -118,7 +118,7 @@ namespace Tridium {
 
 		glfwSetWindowSizeCallback( m_Window, []( GLFWwindow* window, int width, int height )
 			{
-				RenderCommand::SetViewport( 0, 0, width, height );
+				//RenderCommand::SetViewport( 0, 0, width, height );
 
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer( window );
 				data.Width = width;

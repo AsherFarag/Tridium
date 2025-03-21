@@ -6,15 +6,39 @@ namespace Tridium {
 	class OpenGLGraphicsPipelineState;
 	class OpenGLShaderBindingLayout;
 
-	namespace OpenGLState {
+	namespace GLState {
 
 		extern WeakPtr<OpenGLGraphicsPipelineState> s_BoundGraphicsPSO;
 		extern WeakPtr<OpenGLShaderBindingLayout> s_BoundSBL;
 		extern GLuint s_BoundProgram;
+		extern GLuint s_BoundFBO;
 		extern GLuint s_BoundIBO;
 		extern GLuint s_BoundVBO;
 		extern GLuint s_BoundVAO;
 		extern GLenum s_BoundPrimitiveTopology;
+
+		// Used for constructing Framebuffers on the fly
+		extern GLuint s_FBO;
+		
+		// Cache of VAOs that are registered via the hash of their VBO and IBO
+		extern UnorderedMap<hash_t, GLuint> s_CachedVAOs;
+
+		inline GLuint GetOrEmplaceCachedVAO( GLuint a_VBO, GLuint a_IBO = 0 )
+		{
+			hash_t vaoHash = 0;
+			vaoHash = Hashing::HashCombine( vaoHash, a_VBO );
+			vaoHash = Hashing::HashCombine( vaoHash, a_IBO );
+			auto it = s_CachedVAOs.find( vaoHash );
+			if ( it != s_CachedVAOs.end() )
+			{
+				return it->second;
+			}
+
+			GLuint vao = 0;
+			OpenGL3::GenVertexArrays( 1, &vao );
+			s_CachedVAOs.insert( { vaoHash, vao } );
+			return vao;
+		}
 
 		inline void BindProgram( GLuint a_Program )
 		{
@@ -22,6 +46,15 @@ namespace Tridium {
 			{
 				s_BoundProgram = a_Program;
 				OpenGL2::UseProgram( a_Program );
+			}
+		}
+
+		inline void BindFBO( GLuint a_FBO )
+		{
+			if ( s_BoundFBO != a_FBO )
+			{
+				s_BoundFBO = a_FBO;
+				OpenGL3::BindFramebuffer( GL_FRAMEBUFFER, a_FBO );
 			}
 		}
 
@@ -52,5 +85,7 @@ namespace Tridium {
 			}
 		}
 
+		// Resets all values and deletes any OpenGL objects stored in the state
+		void ClearState();
 	}
 }

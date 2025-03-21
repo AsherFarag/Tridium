@@ -42,4 +42,8 @@ namespace Tridium {
 	#define PUSH_CONSTANT( _Name, _Type ) ConstantBuffer< _Type > _Name : register( b0 )
 #endif
 
+#define COMBINED_SAMPLER( _Type, _Name, _Slot ) \
+	_Type _Name : register( t##_Slot ); \
+	SamplerState _Name##_Sampler : register( s##_Slot )
+
 #endif // __cplusplus

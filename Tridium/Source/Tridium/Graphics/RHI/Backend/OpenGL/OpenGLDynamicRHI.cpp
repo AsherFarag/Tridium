@@ -63,6 +63,7 @@ namespace Tridium {
 
 	bool OpenGLDynamicRHI::Shutdown()
 	{
+		GLState::ClearState();
 		return true;
 	}
 
