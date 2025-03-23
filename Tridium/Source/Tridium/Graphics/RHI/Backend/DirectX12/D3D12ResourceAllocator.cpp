@@ -8,7 +8,7 @@ namespace Tridium {
 		const auto* desc = ParamsToDescriptor<RHIResourceAllocatorDescriptor>( a_Params );
         D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 		heapDesc.NumDescriptors = desc->Capacity;
-		heapDesc.Type = ToD3D12::GetDescriptorHeapType( desc->AllocatorType );
+		heapDesc.Type = D3D12::To<D3D12_DESCRIPTOR_HEAP_TYPE>::From( desc->AllocatorType );
         heapDesc.NodeMask = 0;
 
 		// Set the flags

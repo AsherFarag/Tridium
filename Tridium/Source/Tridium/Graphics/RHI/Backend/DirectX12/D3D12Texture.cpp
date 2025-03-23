@@ -82,7 +82,7 @@ namespace Tridium {
 		const size_t imgSize = height * stride;
 
 		D3D12_RESOURCE_DESC resourceDesc = {};
-		resourceDesc.Dimension = ToD3D12::GetResourceDimension( desc->Dimension );
+		resourceDesc.Dimension = D3D12::To<D3D12_RESOURCE_DIMENSION>::From( desc->Dimension );
 		resourceDesc.Alignment = 0;
 		resourceDesc.Width = width;
 		resourceDesc.Height = height;
@@ -96,10 +96,7 @@ namespace Tridium {
 
 		const auto& device = RHI::GetD3D12RHI()->GetDevice();
 
-		D3D12_HEAP_PROPERTIES heapProperties = {};
-		heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
-		heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-		heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+		D3D12_HEAP_PROPERTIES heapProperties = D3D12::HeapProperties.Default;
 		heapProperties.CreationNodeMask = 1;
 		heapProperties.VisibleNodeMask = 1;
 
@@ -118,7 +115,7 @@ namespace Tridium {
 		// Set the name
 		if ( RHIQuery::IsDebug() && !desc->Name.empty() )
 		{
-			WString wName = ToD3D12::ToWString( desc->Name.data() );
+			WString wName( desc->Name.begin(), desc->Name.end() );
 			Texture->SetName( wName.c_str() );
 			D3D12Context::Get()->StringStorage.EmplaceBack( std::move( wName ) );
 		}
@@ -128,7 +125,7 @@ namespace Tridium {
 		const bool isArray = ( desc->Depth > 1 ) && ( desc->Dimension != ERHITextureDimension::Texture3D );
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format = resourceDesc.Format;
-		srvDesc.ViewDimension = ToD3D12::GetSRVDimension( desc->Dimension, isArray );
+		srvDesc.ViewDimension = D3D12::To<D3D12_SRV_DIMENSION>::From( desc->Dimension, isArray );
 		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		srvDesc.Texture2D.MostDetailedMip = 0;
 		srvDesc.Texture2D.MipLevels = desc->Mips;

@@ -228,17 +228,41 @@ namespace Tridium {
 			StringView vertCode = R"(
 #include "Globals.hlsli"
 
+struct InlinedConstants
+{
+	// Vertex
+	float3 Position;
+	float  Rotation;
+	// Pixel
+	float4 ColorMultiplier;
+};
+
+INLINED_CONSTANT( inlinedConstants, InlinedConstants );
+
 struct VSOutput {
     float4 pos : SV_Position;  
 	float2 uv : TEXCOORD;
 };
 
-ROOTSIG
 VSOutput main( float3 pos : POSITION, float2 uv : TEXCOORD ) 
 {
 	VSOutput output;
-	output.pos = float4( pos, 1.0f );
+
+	// Apply translation
+	float2 translatedPos = pos.xy + inlinedConstants.Position.xy;
+
+	// Compute rotation (2D rotation matrix)
+	float cosTheta = cos(inlinedConstants.Rotation);
+	float sinTheta = sin(inlinedConstants.Rotation);
+
+	float2 rotatedPos;
+	rotatedPos.x = translatedPos.x * cosTheta - translatedPos.y * sinTheta;
+	rotatedPos.y = translatedPos.x * sinTheta + translatedPos.y * cosTheta;
+
+	// Assign rotated position
+	output.pos = float4(rotatedPos, pos.z + inlinedConstants.Position.z, 1.0f);
 	output.uv = uv;
+
 	return output;
 }
 )";
@@ -251,23 +275,28 @@ struct VSOutput {
 	float2 uv : TEXCOORD;
 };
 
-struct PushConstants {
+struct InlinedConstants
+{
+	// Vertex
+	float3 Position;
+	float  Rotation;
+	// Pixel
 	float4 ColorMultiplier;
 };
 
-PUSH_CONSTANT( colorMultiplier, PushConstants );
-Texture2D Texture : register( t0 );
-SamplerState Texture_Sampler : register( s0 );
+INLINED_CONSTANT( inlinedConstants, InlinedConstants );
+COMBINED_SAMPLER( Texture, Texture2D, 0 );
 
-ROOTSIG
 float4 main(VSOutput input) : SV_Target 
 {
-	return Texture.Sample(Texture_Sampler, input.uv );// * colorMultiplier.ColorMultiplier;
+	return Texture.Sample(Texture_Sampler, input.uv ) * inlinedConstants.ColorMultiplier;
 }
 )";
 
-			struct PushConstants
+			struct InlinedConstants
 			{
+				float3 Position;
+				float  Rotation;
 				float4 ColorMultiplier;
 			};
 
@@ -283,8 +312,8 @@ float4 main(VSOutput input) : SV_Target
 			// Create Shader Binding Layout
 			RHIShaderBindingLayoutDescriptor sblDesc;
 			sblDesc.Name = "My beautiful shader binding layout";
-			sblDesc.AddBinding( "colorMultiplier"_H ).AsInlinedConstants<PushConstants>( 0 );
-			sblDesc.AddBinding( "Texture"_H ).AsCombinedSamplers( 0 );
+			sblDesc.AddBinding( "Texture"_H ).AsCombinedSamplers( 0 ).SetVisibility( ERHIShaderVisibility::All );
+			sblDesc.AddBinding( "inlinedConstants"_H ).AsInlinedConstants<InlinedConstants>().SetVisibility( ERHIShaderVisibility::All );
 
 
 			RHIShaderBindingLayoutRef sbl = RHI::CreateShaderBindingLayout( sblDesc );
@@ -344,19 +373,35 @@ float4 main(VSOutput input) : SV_Target
 					scissor.Bottom = height;
 					cmdBuffer.SetScissors( { &scissor, 1 } );
 
-					//constexpr auto CycleRGB = +[]( float a_Time, float a_Speed = 1.0f ) -> Color
-					//	{
-					//		float r = ( Math::Sin( a_Speed * a_Time ) + 1.0f ) / 2.0f;
-					//		float g = ( Math::Sin( a_Speed * a_Time + 2.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
-					//		float b = ( Math::Sin( a_Speed * a_Time + 4.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
-					//		return Color( r, g, b, 1.0f );
-					//	};
+					constexpr auto CycleRGB = +[]( float a_Time, float a_Speed = 1.0f ) -> Color
+						{
+							float r = ( Math::Sin( a_Speed * a_Time ) + 1.0f ) / 2.0f;
+							float g = ( Math::Sin( a_Speed * a_Time + 2.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
+							float b = ( Math::Sin( a_Speed * a_Time + 4.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
+							return Color( r, g, b, 1.0f );
+						};
 
-					//// Draw
-					//cmdBuffer.SetShaderInput( "colorMultiplier"_H, CycleRGB( time, 1.0f ) );
+					Vector3 pos = Vector3( 0.0f, 0.0f, 0.0f );
+					pos.y = Math::Sin( time ) * 0.5f;
+					InlinedConstants inlinedConstants;
+					inlinedConstants.Position = float4( pos, 0.0f );
+					inlinedConstants.ColorMultiplier = CycleRGB( time, 1.0f );
+					inlinedConstants.Rotation = 0.0f;
+
+					// Draw
+					cmdBuffer.SetShaderInput( "inlinedConstants"_H, inlinedConstants );
 					cmdBuffer.SetShaderInput( "Texture"_H, tex );
 					cmdBuffer.SetVertexBuffer( vb );
 					cmdBuffer.Draw( 0, sizeof( vertices ) / sizeof( Vertex ) );
+
+					inlinedConstants.Position = float4( pos.y, 0.0f, 0.0f, 0.0f );
+					inlinedConstants.Rotation = time * 0.15f;
+					cmdBuffer.SetShaderInput( "inlinedConstants"_H, inlinedConstants );
+					cmdBuffer.Draw( 0, sizeof( vertices ) / sizeof( Vertex ) );
+
+					inlinedConstants.Position = float4( -pos.y, 0.0f, 0.0f, 0.0f );
+					inlinedConstants.Rotation = 0.0f;
+					cmdBuffer.SetShaderInput( "inlinedConstants"_H, inlinedConstants );
 					cmdBuffer.SetVertexBuffer( triVB );
 					cmdBuffer.Draw( 0, sizeof( triVerts ) / sizeof( Vertex ) );
 

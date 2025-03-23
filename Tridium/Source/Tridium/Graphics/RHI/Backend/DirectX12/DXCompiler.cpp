@@ -309,7 +309,7 @@ namespace Tridium {
 				// Pixel and Compute don't support invert-y
 				if ( a_Input.ShaderType != ERHIShaderType::Pixel && a_Input.ShaderType != ERHIShaderType::Compute )
 				{
-					args.EmplaceBack( L"-fvk-invert-y" ); // Make vulkan and opengl have the same coordinate system as D3D (Y-up)
+					//args.EmplaceBack( L"-fvk-invert-y" ); // Make vulkan and opengl have the same coordinate system as D3D (Y-up)
 				}
 
 				args.EmplaceBack( L"-fvk-t-shift" ); args.EmplaceBack( L"1000" ); args.EmplaceBack( L"0" );
@@ -362,7 +362,7 @@ namespace Tridium {
 		if ( !a_Input.EntryPoint.empty() )
 		{
 			args.EmplaceBack( L"-E" );
-			args.EmplaceBack( ToD3D12::ToWString( a_Input.EntryPoint ) );
+			args.EmplaceBack( a_Input.EntryPoint.begin(), a_Input.EntryPoint.end() );
 		}
 		else
 		{
@@ -388,8 +388,8 @@ namespace Tridium {
 		for ( const auto& define : a_Input.Defines )
 		{
 			args.EmplaceBack( L"-D" );
-			args.EmplaceBack( ToD3D12::ToWString( define.first ) );
-			args.EmplaceBack( ToD3D12::ToWString( define.second ) );
+			args.EmplaceBack( define.first.begin(), define.first.end() );
+			args.EmplaceBack( define.second.begin(), define.second.end() );
 		}
 
 		////////////////////////////////////////
@@ -405,7 +405,7 @@ namespace Tridium {
 		for ( const auto& includeDir : a_Input.IncludeDirectories )
 		{
 			args.EmplaceBack( L"-I" );
-			args.EmplaceBack( ToD3D12::ToWString( includeDir ) );
+			args.EmplaceBack( includeDir.begin(), includeDir.end() );
 		}
 
 		////////////////////////////////////////
@@ -415,7 +415,7 @@ namespace Tridium {
 		// Add custom arguments.
 		for ( const auto& customArg : a_Input.CustomArguments )
 		{
-			args.EmplaceBack( ToD3D12::ToWString( customArg ) );
+			args.EmplaceBack( customArg.begin(), customArg.end() );
 		}
 
 		return args;

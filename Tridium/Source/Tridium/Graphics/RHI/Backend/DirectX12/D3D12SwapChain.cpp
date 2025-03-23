@@ -128,7 +128,7 @@ namespace Tridium {
 		#if RHI_DEBUG_ENABLED
 			if ( RHIQuery::IsDebug() )
 			{
-				WString name = GetDescriptor()->Name.empty() ? L"SwapChain" : ToD3D12::ToWString( GetDescriptor()->Name.data());
+				WString name = GetDescriptor()->Name.empty() ? L"SwapChain" : WString( GetDescriptor()->Name.begin(), GetDescriptor()->Name.end() );
 				name += L" RTV[" + std::to_wstring( i ) + L"]";
 				tex->Texture->SetName( name.c_str() );
 				D3D12Context::Get()->StringStorage.EmplaceBack( std::move( name ) );
@@ -162,7 +162,7 @@ namespace Tridium {
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
 		swapChainDesc.Width = m_Width = desc->Width;
 		swapChainDesc.Height = m_Height = desc->Height;
-		swapChainDesc.Format = ToD3D12::GetFormat( desc->Format );
+		swapChainDesc.Format = D3D12::To<DXGI_FORMAT>::From( desc->Format );
 		TODO( "Stereo?" );
 		swapChainDesc.Stereo = false;
 		swapChainDesc.SampleDesc.Count = desc->SampleSettings.Count;

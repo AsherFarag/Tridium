@@ -26,7 +26,7 @@ namespace Tridium {
 		bool IsReference;
 		union
 		{
-			void* References[RHIQuery::MaxTextureBindings];
+			void* References[RHIConstants::MaxTextureBindings];
 			uint8_t InlineData[sizeof( References )];
 		};
 	};
@@ -143,13 +143,13 @@ namespace Tridium {
 
         struct SetRenderTargets 
         {
-            InlineArray<RHITexture*, RHIQuery::MaxColorTargets> RTV;
+            InlineArray<RHITexture*, RHIConstants::MaxColorTargets> RTV;
             RHITexture* DSV;
         };
 
         struct ClearRenderTargets 
         {
-			InlineArray<RHITexture*, RHIQuery::MaxColorTargets> RTV;
+			InlineArray<RHITexture*, RHIConstants::MaxColorTargets> RTV;
 			Color ClearColor;
 			bool DepthBit;
             bool StencilBit;
@@ -157,12 +157,12 @@ namespace Tridium {
 
         struct SetScissors 
         {
-			InlineArray<ScissorRect, RHIQuery::MaxColorTargets> Rects;
+			InlineArray<ScissorRect, RHIConstants::MaxColorTargets> Rects;
         };
 
         struct SetViewports 
         {
-			InlineArray<Viewport, RHIQuery::MaxColorTargets> Viewports;
+			InlineArray<Viewport, RHIConstants::MaxColorTargets> Viewports;
         };
 
         struct SetIndexBuffer 

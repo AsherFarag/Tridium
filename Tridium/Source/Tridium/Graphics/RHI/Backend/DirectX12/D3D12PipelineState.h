@@ -13,7 +13,7 @@ namespace Tridium {
 		const void* NativePtr() const override { return PSO.Get(); }
 
 		ComPtr<ID3D12PipelineState> PSO;
-		D3D12_INPUT_ELEMENT_DESC VertexLayout[RHIQuery::MaxVertexAttributes];
+		D3D12_INPUT_ELEMENT_DESC VertexLayout[RHIConstants::MaxVertexAttributes];
 	};
 
 } // namespace Tridium

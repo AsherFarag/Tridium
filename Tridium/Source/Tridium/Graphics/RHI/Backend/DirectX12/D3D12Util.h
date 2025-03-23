@@ -1,271 +1,132 @@
 #pragma once
 #include "D3D12.h"
-#include <Tridium/Graphics/RHI/RHICommon.h>
-#include <Tridium/Graphics/RHI/RHIPipelineState.h>
+#include "D3D12ToRHI.h"
 
 namespace Tridium {
 
-	namespace ToD3D12 {
+	namespace D3D12 {
 
-		static constexpr D3D12_BLEND GetBlend( ERHIBlendOp a_Factor )
+		constexpr struct {
+
+			const D3D12_HEAP_PROPERTIES Default = {
+				.Type                 = D3D12_HEAP_TYPE_DEFAULT,
+				.CPUPageProperty      = D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
+				.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN,
+				.CreationNodeMask     = 0u, // 0 means all nodes
+				.VisibleNodeMask      = 0u  // 0 means all nodes
+			};
+
+			const D3D12_HEAP_PROPERTIES Upload = {
+				.Type                 = D3D12_HEAP_TYPE_UPLOAD,
+				.CPUPageProperty      = D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
+				.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN,
+				.CreationNodeMask     = 0u, // 0 means all nodes
+				.VisibleNodeMask      = 0u  // 0 means all nodes
+			};
+
+			const D3D12_HEAP_PROPERTIES Readback = {
+				.Type                 = D3D12_HEAP_TYPE_READBACK,
+				.CPUPageProperty      = D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
+				.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN,
+				.CreationNodeMask     = 0u, // 0 means all nodes
+				.VisibleNodeMask      = 0u  // 0 means all nodes
+			};
+
+		} HeapProperties;
+
+
+
+		ComPtr<ID3D12RootSignature> CreateRootSignature( const D3D12_ROOT_SIGNATURE_DESC1& a_Desc );
+
+
+
+		struct DescriptorRange : public D3D12_DESCRIPTOR_RANGE1
 		{
-			switch ( a_Factor )
-			{
-				using enum ERHIBlendOp;
-				case Zero:              return D3D12_BLEND_ZERO;
-				case One:               return D3D12_BLEND_ONE;
-				case SrcColour:         return D3D12_BLEND_SRC_COLOR;
-				case OneMinusSrcColour: return D3D12_BLEND_INV_SRC_COLOR;
-				case SrcAlpha:          return D3D12_BLEND_SRC_ALPHA;
-				case OneMinusSrcAlpha:  return D3D12_BLEND_INV_SRC_ALPHA;
-				case DstColour:         return D3D12_BLEND_DEST_COLOR;
-				case OneMinusDstColour: return D3D12_BLEND_INV_DEST_COLOR;
-				case DstAlpha:          return D3D12_BLEND_DEST_ALPHA;
-				case OneMinusDstAlpha:  return D3D12_BLEND_INV_DEST_ALPHA;
-				case SrcAlphaSaturate:  return D3D12_BLEND_SRC_ALPHA_SAT;
-				default: return D3D12_BLEND_ZERO;
-			}
-		}
+			constexpr explicit DescriptorRange() : D3D12_DESCRIPTOR_RANGE1() {}
 
-		static constexpr D3D12_BLEND_OP GetBlendOp( ERHIBlendEq a_Eq )
+			constexpr explicit DescriptorRange( 
+				D3D12_DESCRIPTOR_RANGE_TYPE a_RangeType,
+				uint32_t a_NumDescriptors,
+				uint32_t a_BaseShaderRegister, uint32_t a_RegisterSpace = 0,
+				D3D12_DESCRIPTOR_RANGE_FLAGS a_Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE )
+				: D3D12_DESCRIPTOR_RANGE1{ a_RangeType, a_NumDescriptors, a_BaseShaderRegister, a_RegisterSpace, a_Flags, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND }
+			{}
+		};
+
+		struct RootParameter : public D3D12_ROOT_PARAMETER1
 		{
-			switch ( a_Eq )
+			constexpr void AsConstants( uint32_t a_NumConstants, D3D12_SHADER_VISIBILITY a_ShaderVisibility, uint32_t a_ShaderRegister, uint32_t a_RegisterSpace = 0 )
 			{
-				using enum ERHIBlendEq;
-				case Add:             return D3D12_BLEND_OP_ADD;
-				case Subtract:        return D3D12_BLEND_OP_SUBTRACT;
-				case ReverseSubtract: return D3D12_BLEND_OP_REV_SUBTRACT;
-				case Min:             return D3D12_BLEND_OP_MIN;
-				case Max:             return D3D12_BLEND_OP_MAX;
-				default:              return D3D12_BLEND_OP_ADD;
-			}
-		}
-
-		static constexpr D3D12_COMPARISON_FUNC GetComparisonFunc( ERHIComparison a_Comparison )
-		{
-			switch ( a_Comparison )
-			{
-				using enum ERHIComparison;
-				case Never:        return D3D12_COMPARISON_FUNC_NEVER;
-				case Less:         return D3D12_COMPARISON_FUNC_LESS;
-				case Equal:        return D3D12_COMPARISON_FUNC_EQUAL;
-				case LessEqual:    return D3D12_COMPARISON_FUNC_LESS_EQUAL;
-				case Greater:      return D3D12_COMPARISON_FUNC_GREATER;
-				case NotEqual:     return D3D12_COMPARISON_FUNC_NOT_EQUAL;
-				case GreaterEqual: return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
-				case Always:       return D3D12_COMPARISON_FUNC_ALWAYS;
-				default:           return D3D12_COMPARISON_FUNC_NEVER;
-			}
-		}
-
-		static constexpr D3D12_STENCIL_OP GetStencilOp( ERHIStencilOp a_Op )
-		{
-			switch ( a_Op )
-			{
-				using enum ERHIStencilOp;
-				case Keep:    return D3D12_STENCIL_OP_KEEP;
-				case Zero:    return D3D12_STENCIL_OP_ZERO;
-				case Replace: return D3D12_STENCIL_OP_REPLACE;
-				case Invert:  return D3D12_STENCIL_OP_INVERT;
-				default:      return D3D12_STENCIL_OP_KEEP;
-			}
-		}
-
-		static constexpr D3D12_PRIMITIVE_TOPOLOGY_TYPE GetTopologyType( ERHITopology a_Topology )
-		{
-			switch ( a_Topology )
-			{
-				using enum ERHITopology;
-				case Line:          return D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
-				case Triangle:      return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-				case LineStrip:     return D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
-				case TriangleStrip: return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-				default:            return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-			}
-		}
-
-        static constexpr DXGI_FORMAT GetFormat( ERHITextureFormat a_Format )
-        {
-            switch ( a_Format )
-            {
-				using enum ERHITextureFormat;
-                case R8:      return DXGI_FORMAT_R8_UNORM;
-                case RG8:     return DXGI_FORMAT_R8G8_UNORM;
-                case RGBA8:   return DXGI_FORMAT_R8G8B8A8_UNORM;
-                case SRGBA8:  return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-                case R16:     return DXGI_FORMAT_R16_UNORM;
-                case RG16:    return DXGI_FORMAT_R16G16_UNORM;
-                case RGBA16:  return DXGI_FORMAT_R16G16B16A16_UNORM;
-                case R16F:    return DXGI_FORMAT_R16_FLOAT;
-                case RG16F:   return DXGI_FORMAT_R16G16_FLOAT;
-                case RGBA16F: return DXGI_FORMAT_R16G16B16A16_FLOAT;
-                case R32F:    return DXGI_FORMAT_R32_FLOAT;
-                case RG32F:   return DXGI_FORMAT_R32G32_FLOAT;
-                case RGBA32F: return DXGI_FORMAT_R32G32B32A32_FLOAT;
-                case R16I:    return DXGI_FORMAT_R16_SINT;
-                case RG16I:   return DXGI_FORMAT_R16G16_SINT;
-                case RGBA16I: return DXGI_FORMAT_R16G16B16A16_SINT;
-                case R32I:    return DXGI_FORMAT_R32_SINT;
-                case RG32I:   return DXGI_FORMAT_R32G32_SINT;
-                case RGBA32I: return DXGI_FORMAT_R32G32B32A32_SINT;
-                case D16:     return DXGI_FORMAT_D16_UNORM;
-                case D32:     return DXGI_FORMAT_D32_FLOAT;
-                case D24S8:   return DXGI_FORMAT_D24_UNORM_S8_UINT;
-                case BC1:     return DXGI_FORMAT_BC1_UNORM;
-                case BC3:     return DXGI_FORMAT_BC3_UNORM;
-                case BC4:     return DXGI_FORMAT_BC4_UNORM;
-                case BC5:     return DXGI_FORMAT_BC5_UNORM;
-                case BC7:     return DXGI_FORMAT_BC7_UNORM;
-                default:      return DXGI_FORMAT_UNKNOWN;
-            }
-        }
-
-		static constexpr DXGI_FORMAT GetFormat( ERHIVertexElementType a_Type )
-		{
-			switch ( a_Type )
-			{
-				using enum ERHIVertexElementType;
-				case Float1: return DXGI_FORMAT_R32_FLOAT;
-				case Float2: return DXGI_FORMAT_R32G32_FLOAT;
-				case Float3: return DXGI_FORMAT_R32G32B32_FLOAT;
-				case Float4: return DXGI_FORMAT_R32G32B32A32_FLOAT;
-				case UByte4: return DXGI_FORMAT_R8G8B8A8_UINT;
-				case Color:  return DXGI_FORMAT_R32G32B32A32_FLOAT;
-				case Int1:   return DXGI_FORMAT_R32_SINT;
-				case Int2:   return DXGI_FORMAT_R32G32_SINT;
-				case Int3:   return DXGI_FORMAT_R32G32B32_SINT;
-				case Int4:   return DXGI_FORMAT_R32G32B32A32_SINT;
-				case UInt1:  return DXGI_FORMAT_R32_UINT;
-				case UInt2:  return DXGI_FORMAT_R32G32_UINT;
-				case UInt3:  return DXGI_FORMAT_R32G32B32_UINT;
-				case UInt4:  return DXGI_FORMAT_R32G32B32A32_UINT;
+				ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+				ShaderVisibility = a_ShaderVisibility;
+				Constants.Num32BitValues = a_NumConstants;
+				Constants.ShaderRegister = a_ShaderRegister;
+				Constants.RegisterSpace = a_RegisterSpace;
 			}
 
-			return DXGI_FORMAT_UNKNOWN;
-		}
-
-		inline constexpr D3D12_SHADER_VISIBILITY GetShaderVisibility( ERHIShaderVisibility a_Visibility )
-		{
-			switch ( a_Visibility )
+			constexpr void AsCBV( D3D12_SHADER_VISIBILITY a_ShaderVisibility, uint32_t a_ShaderRegister, uint32_t a_RegisterSpace = 0, D3D12_ROOT_DESCRIPTOR_FLAGS a_Flags = D3D12_ROOT_DESCRIPTOR_FLAG_NONE )
 			{
-				using enum ERHIShaderVisibility;
-				case All:      return D3D12_SHADER_VISIBILITY_ALL;
-				case Vertex:   return D3D12_SHADER_VISIBILITY_VERTEX;
-				case Pixel:    return D3D12_SHADER_VISIBILITY_PIXEL;
-				case Hull:     return D3D12_SHADER_VISIBILITY_HULL;
-				case Domain:   return D3D12_SHADER_VISIBILITY_DOMAIN;
-				case Geometry: return D3D12_SHADER_VISIBILITY_GEOMETRY;
-				default:       return D3D12_SHADER_VISIBILITY_ALL;
+				ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+				ShaderVisibility = a_ShaderVisibility;
+				Descriptor.ShaderRegister = a_ShaderRegister;
+				Descriptor.RegisterSpace = a_RegisterSpace;
+				Descriptor.Flags = a_Flags;
 			}
-		}
 
-		inline constexpr D3D12_HEAP_TYPE GetHeapType( ERHIUsageHint a_UsageHint )
-		{
-			EnumFlags<ERHIUsageHint> usageHint = a_UsageHint;
-			if ( usageHint.HasFlag( ERHIUsageHint::CPUWriteMany ) ) return D3D12_HEAP_TYPE_UPLOAD;
-			if ( usageHint.HasFlag( ERHIUsageHint::GPUWriteMany ) ) return D3D12_HEAP_TYPE_DEFAULT;
-			if ( usageHint.HasFlag( ERHIUsageHint::CPUReadMany ) )  return D3D12_HEAP_TYPE_READBACK;
-			return D3D12_HEAP_TYPE_DEFAULT; // Default to GPU memory
-		}
-
-		inline constexpr D3D12_RESOURCE_STATES GetResourceState( ERHIResourceState a_State )
-		{
-			switch ( a_State )
+			constexpr void AsSRV( D3D12_SHADER_VISIBILITY a_ShaderVisibility, uint32_t a_ShaderRegister, uint32_t a_RegisterSpace = 0, D3D12_ROOT_DESCRIPTOR_FLAGS a_Flags = D3D12_ROOT_DESCRIPTOR_FLAG_NONE )
 			{
-				using enum ERHIResourceState;
-				case Undefined:               return D3D12_RESOURCE_STATE_COMMON;
-				case General:                 return D3D12_RESOURCE_STATE_COMMON;
-				case CopySource:              return D3D12_RESOURCE_STATE_COPY_SOURCE;
-				case CopyDest:                return D3D12_RESOURCE_STATE_COPY_DEST;
-				case RenderTarget:            return D3D12_RESOURCE_STATE_RENDER_TARGET;
-				case DepthStencilWrite:       return D3D12_RESOURCE_STATE_DEPTH_WRITE;
-				case DepthStencilReadOnly:    return D3D12_RESOURCE_STATE_DEPTH_READ;
-				case ShaderResource:          return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-				case UnorderedAccess:         return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-				case IndirectArgument:        return D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
-				case VertexBuffer:            return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-				case IndexBuffer:             return D3D12_RESOURCE_STATE_INDEX_BUFFER;
-				case ConstantBuffer:          return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-				case Present:                 return D3D12_RESOURCE_STATE_PRESENT;
-				case GPUWrite:                return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-				default:                      return D3D12_RESOURCE_STATE_COMMON;
+				ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+				ShaderVisibility = a_ShaderVisibility;
+				Descriptor.ShaderRegister = a_ShaderRegister;
+				Descriptor.RegisterSpace = a_RegisterSpace;
+				Descriptor.Flags = a_Flags;
 			}
-		}
 
-		inline WString ToWString( const String& a_String )
-		{
-			WString wstr;
-			wstr.resize( a_String.size() );
-			mbstowcs( wstr.data(), a_String.data(), a_String.size() );
-			return wstr;
-		}
-
-		inline constexpr D3D12_FILTER GetFilter( ERHISamplerFilter a_Filter )
-		{
-			switch ( a_Filter )
+			constexpr void AsUAV( D3D12_SHADER_VISIBILITY a_ShaderVisibility, uint32_t a_ShaderRegister, uint32_t a_RegisterSpace = 0, D3D12_ROOT_DESCRIPTOR_FLAGS a_Flags = D3D12_ROOT_DESCRIPTOR_FLAG_NONE )
 			{
-				using enum ERHISamplerFilter;
-				case Point:             return D3D12_FILTER_MIN_MAG_MIP_POINT;
-				case Bilinear:          return D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-				case Trilinear:         return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-				case AnisotropicPoint:  return D3D12_FILTER_ANISOTROPIC;
-				case AnisotropicLinear: return D3D12_FILTER_ANISOTROPIC;
-				default:                return D3D12_FILTER_MIN_MAG_MIP_POINT;
+				ParameterType = D3D12_ROOT_PARAMETER_TYPE_UAV;
+				ShaderVisibility = a_ShaderVisibility;
+				Descriptor.ShaderRegister = a_ShaderRegister;
+				Descriptor.RegisterSpace = a_RegisterSpace;
+				Descriptor.Flags = a_Flags;
 			}
-		}
 
-		inline constexpr D3D12_TEXTURE_ADDRESS_MODE GetAddressMode( ERHISamplerAddressMode a_Mode )
-		{
-			switch ( a_Mode )
+			constexpr void AsDescriptorTable( D3D12_SHADER_VISIBILITY a_ShaderVisibility, Span<const DescriptorRange> a_Ranges )
 			{
-				using enum ERHISamplerAddressMode;
-				case Repeat:  return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-				case Mirror:  return D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
-				case Clamp:   return D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-				case Border:  return D3D12_TEXTURE_ADDRESS_MODE_BORDER;
-				default:      return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+				ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+				ShaderVisibility = a_ShaderVisibility;
+				DescriptorTable.NumDescriptorRanges = a_Ranges.size();
+				DescriptorTable.pDescriptorRanges = a_Ranges.data();
 			}
-		}
+		};
 
-		inline constexpr D3D12_DESCRIPTOR_HEAP_TYPE GetDescriptorHeapType( ERHIResourceAllocatorType a_Type )
+		// Root Signature Description
+		// A root signature is an array of root parameters, which are either root constants or root descriptors.
+		// It can hold a maximum of 64 DWORDs (256 bytes) which is divided up between the root parameters.
+		// Root constants are 32-bit values that are stored in the root signature and can be accessed by the shader.
+		// Root descriptors (CBV, SRV, UAV) are descriptors that are stored in the root signature and can be accessed by the shader.
+		// Root descriptors are 64-bit values that point to a descriptor in a descriptor heap.
+		// Root descriptor tables are arrays of descriptors that are stored in the root signature and can be accessed by the shader.
+		// Root descriptor tables are 64-bit values that point to a descriptor table in a descriptor heap.
+		// Static samplers are compiled into the shader and do not need to be set by the application nor take up space in the root signature.
+		struct RootSignatureDesc : public D3D12_ROOT_SIGNATURE_DESC1
 		{
-			switch ( a_Type )
+			constexpr RootSignatureDesc(
+				Span<const RootParameter> a_Parameters,
+				Span<const D3D12_STATIC_SAMPLER_DESC> a_StaticSamplers = {},
+				D3D12_ROOT_SIGNATURE_FLAGS a_Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE )
+				: D3D12_ROOT_SIGNATURE_DESC1{ 
+					static_cast<UINT>( a_Parameters.size() ), a_Parameters.data(),
+					static_cast<UINT>( a_StaticSamplers.size() ), a_StaticSamplers.data(),
+					a_Flags }
+			{}
+
+			ComPtr<ID3D12RootSignature> Create() const
 			{
-				using enum ERHIResourceAllocatorType;
-				case Sampler:         return D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
-				case RenderResource:  return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-				case RenderTarget:    return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-				case DepthStencil:    return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-				default:              return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+				return CreateRootSignature( *this );
 			}
-		}
+		};
 
-		inline constexpr D3D12_RESOURCE_DIMENSION GetResourceDimension( ERHITextureDimension a_Type )
-		{
-			switch ( a_Type )
-			{
-				using enum ERHITextureDimension;
-				case Texture1D:   return D3D12_RESOURCE_DIMENSION_TEXTURE1D;
-				case Texture2D:   return D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-				case Texture3D:   return D3D12_RESOURCE_DIMENSION_TEXTURE3D;
-				case TextureCube: return D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-				default:          return D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-			}
-		}
+	} // namespace D3D12
 
-		inline constexpr D3D12_SRV_DIMENSION GetSRVDimension( ERHITextureDimension a_Type, bool a_IsArray )
-		{
-			switch ( a_Type )
-			{
-				using enum ERHITextureDimension;
-				case Texture1D:      return a_IsArray ? D3D12_SRV_DIMENSION_TEXTURE1DARRAY : D3D12_SRV_DIMENSION_TEXTURE1D;
-				case Texture2D:      return a_IsArray ? D3D12_SRV_DIMENSION_TEXTURE2DARRAY : D3D12_SRV_DIMENSION_TEXTURE2D;
-				case Texture3D:      return D3D12_SRV_DIMENSION_TEXTURE3D;
-				case TextureCube:    return a_IsArray ? D3D12_SRV_DIMENSION_TEXTURECUBEARRAY : D3D12_SRV_DIMENSION_TEXTURECUBE;
-				default:             return D3D12_SRV_DIMENSION_TEXTURE2D;
-			}
-		}
-
-	}
-
-}
+} // namespace Tridium

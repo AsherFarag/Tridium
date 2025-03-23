@@ -32,17 +32,17 @@ namespace Tridium {
 #define CONCAT_DETAIL(x, y) x##y
 #define CONCAT(x, y) CONCATENATE_DETAIL(x, y)
 
-#define CONSTANT_BUFFER( _Name, _Type, _Slot ) ConstantBuffer< _Type > _Name : register( CONCAT( b, _Slot ) )
+#define CONSTANT_BUFFER( _Name, _Type, _Slot ) ConstantBuffer< _Type > _Name : register( b##_Slot )
 
 #if defined( __PSSL__ )
 	// Defined elsewhere
 #elif defined( __spirv__ )
-	#define PUSH_CONSTANT( _Name, _Type ) [[vk::push_constant]] _Type _Name
+	#define INLINED_CONSTANT( _Name, _Type ) [[vk::push_constant]] _Type _Name
 #else
-	#define PUSH_CONSTANT( _Name, _Type ) ConstantBuffer< _Type > _Name : register( b0 )
+	#define INLINED_CONSTANT( _Name, _Type ) ConstantBuffer< _Type > _Name : register( b0 )
 #endif
 
-#define COMBINED_SAMPLER( _Type, _Name, _Slot ) \
+#define COMBINED_SAMPLER( _Name, _Type, _Slot ) \
 	_Type _Name : register( t##_Slot ); \
 	SamplerState _Name##_Sampler : register( s##_Slot )
 

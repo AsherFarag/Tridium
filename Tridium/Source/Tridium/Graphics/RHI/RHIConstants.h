@@ -1,5 +1,5 @@
 #pragma once
-#include "RHIDefinitions.h"
+#include <Tridium/Core/Types.h>
 
 namespace RHIConstants {
 

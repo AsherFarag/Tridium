@@ -1,8 +1,9 @@
 #pragma once
 #include <Tridium/Core/Types.h>
 #include <Tridium/Core/Assert.h>
-#include <type_traits>
 #include <Tridium/Math/Math.h>
+#include <type_traits>
+#include "RHIConstants.h"
 
 // Helper macro to assert that the enum size is within the bounds of the number of bits.
 // This is undefined at the end of the file.

@@ -18,8 +18,6 @@ namespace Tridium {
 
 	private:
 		GLuint m_ShaderID = 0;
-
-		UnorderedSet<String> m_StringStorage; // Stores the strings referenced by the combined samplers
 	};
 
 } // namespace Tridium

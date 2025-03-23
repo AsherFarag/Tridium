@@ -20,7 +20,7 @@ namespace Tridium {
 
 		ComPtr<D3D12::SwapChain> SwapChain;
 		RHIResourceAllocatorRef RenderTargetAllocator;
-		InlineArray<RHITextureRef, RHIQuery::MaxColorTargets> RTVs;
+		InlineArray<RHITextureRef, RHIConstants::MaxColorTargets> RTVs;
 
 	private:
 		uint32_t m_Width = 0;

@@ -52,18 +52,11 @@ namespace Tridium {
         resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
         resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-        D3D12_HEAP_PROPERTIES heapProps;
-        heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
-        heapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-        heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-        heapProps.CreationNodeMask = 0;
-        heapProps.VisibleNodeMask = 0;
-
 		D3D12RHI* rhi = RHI::GetD3D12RHI();
         auto device = rhi->GetDevice();
 
         HRESULT hr = device->CreateCommittedResource(
-            &heapProps, D3D12_HEAP_FLAG_NONE,
+            &D3D12::HeapProperties.Default, D3D12_HEAP_FLAG_NONE,
             &resourceDesc, D3D12_RESOURCE_STATE_COPY_DEST,
             nullptr, IID_PPV_ARGS( &VBO ) );
 
@@ -76,7 +69,7 @@ namespace Tridium {
 #if RHI_DEBUG_ENABLED
         if ( RHIQuery::IsDebug() && !desc->Name.empty() )
         {
-            WString wName = ToD3D12::ToWString( desc->Name.data() );
+			WString wName( desc->Name.begin(), desc->Name.end() );
             VBO->SetName( wName.c_str() );
             D3D12Context::Get()->StringStorage.EmplaceBack( std::move( wName ) );
         }

@@ -63,11 +63,11 @@ namespace Tridium {
 		// This can be used for small data types such as colors, matrices, etc.
 		// In DirectX 12, this would be a Root Constant, and in Vulkan, this would be a Push Constant.
 		template<typename T>
-		constexpr RHIShaderBinding& AsInlinedConstants( uint8_t a_BindSlotStart )
+		constexpr RHIShaderBinding& AsInlinedConstants()
 		{
 			BindingType = ERHIShaderBindingType::Constant;
 			WordSize = sizeof( T ) >> 2;
-			BindSlot = a_BindSlotStart;
+			BindSlot = 0;
 			InlinedConstant.emplace().TypeNameHash = GetStrippedTypeName<T>();
 			if constexpr ( IsRHITensorType<T> )
 			{
@@ -75,33 +75,7 @@ namespace Tridium {
 			}
 			else if constexpr ( Concepts::Aggregate<T> )
 			{
-				ForEachField( T{}, [this]( StringView a_Name, auto& a_Field )
-					{
-						if constexpr ( IsRHITensorType<std::decay_t<decltype( a_Field )>> )
-						{
-							String name;
-							name.reserve( name.size() + a_Name.size() + 1 );
-							name.append( Name.String() );
-							name.append( "." );
-							name.append( a_Name );
-							InlinedConstant->Tensors.EmplaceBack( std::move( name ), RHITensorType::From<std::decay_t<decltype( a_Field )>>());
-						}
-						else if constexpr ( Concepts::Aggregate<std::decay_t<decltype( a_Field )>> )
-						{
-							ForEachField( a_Field, [this, a_Name]( StringView a_SubName, auto& a_SubField )
-								{
-									if constexpr ( IsRHITensorType<std::decay_t<decltype( a_SubField )>> )
-									{
-										String name;
-										name.reserve( a_Name.size() + a_SubName.size() + 1 );
-										name.append( a_Name );
-										name.append( "." );
-										name.append( a_SubName );
-										InlinedConstant.emplace().Tensors.EmplaceBack( std::move( name ), RHITensorType::From<std::decay_t<decltype( a_SubField )>>());
-									}
-								} );
-						}
-					} );
+				ReflectInlinedConstant<T>( Name.String() );
 			}
 			else
 			{
@@ -199,6 +173,33 @@ namespace Tridium {
 		constexpr bool IsReferencedRWTextures() const { return BindingType == ERHIShaderBindingType::RWTexture; }
 		constexpr bool IsReferencedSamplers() const { return BindingType == ERHIShaderBindingType::Sampler; }
 		constexpr bool IsCombinedSamplers() const { return BindingType == ERHIShaderBindingType::CombinedSampler; }
+
+	private:
+		template<typename T>
+		void ReflectInlinedConstant( StringView a_Parent )
+		{
+			ForEachField( T{}, [this, &a_Parent]( StringView a_Name, auto& a_Field )
+				{
+					String name;
+					name.reserve( a_Parent.size() + a_Name.size() + 1 );
+					name.append( a_Parent );
+					name.push_back( '.' );
+					name.append( a_Name );
+
+					if constexpr ( IsRHITensorType<std::decay_t<decltype( a_Field )>> )
+					{
+						InlinedConstant->Tensors.EmplaceBack( std::move( name ), RHITensorType::From<std::decay_t<decltype( a_Field )>>() );
+					}
+					else if constexpr ( Concepts::Aggregate<std::decay_t<decltype( a_Field )>> )
+					{
+						ReflectInlinedConstants<std::decay_t<decltype( a_Field )>>( name );
+					}
+					else
+					{
+						static_assert( false, "Unsupported type for InlinedConstant" );
+					}
+				} );
+		}
 	};
 
 

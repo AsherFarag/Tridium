@@ -43,12 +43,12 @@ namespace Tridium {
 
 		const auto& device = RHI::GetD3D12RHI()->GetDevice();
 
-		Array<D3D12_ROOT_PARAMETER> rootParams;
+		Array<D3D12::RootParameter> rootParams;
 
 		// Reserve space for the root parameters
 		rootParams.Reserve( desc->Bindings.Size() );
 
-        Array<Array<D3D12_DESCRIPTOR_RANGE>> descriptorRangesList; // Stores ranges for each root param
+        Array<Array<D3D12::DescriptorRange>> descriptorRangesList; // Stores ranges for each root param
         descriptorRangesList.Reserve( desc->Bindings.Size() ); // Reserve memory
 
         for ( const auto& binding : desc->Bindings )
@@ -57,163 +57,82 @@ namespace Tridium {
             {
             case ERHIShaderBindingType::Constant:
             {
-                D3D12_ROOT_PARAMETER rootParam = {};
-                rootParam.ShaderVisibility = ToD3D12::GetShaderVisibility( binding.Visibility );
-
                 if ( binding.IsInlined() )
                 {
-                    rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-                    rootParam.Constants.Num32BitValues = binding.WordSize;
-                    rootParam.Constants.ShaderRegister = binding.BindSlot;
-                    rootParams.PushBack( rootParam );
+					rootParams.EmplaceBack().AsConstants( binding.WordSize, D3D12::To<D3D12_SHADER_VISIBILITY>::From( binding.Visibility ), binding.BindSlot );
                 }
                 else
                 {
                     descriptorRangesList.EmplaceBack(); // New range for this param
                     auto& range = descriptorRangesList.Back();
                     range.Resize( 1 ); // Single descriptor range
-                    range[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-					range[0].NumDescriptors = binding.WordSize;
-                    range[0].BaseShaderRegister = binding.BindSlot;
-                    range[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+					range[0] = D3D12::DescriptorRange( D3D12_DESCRIPTOR_RANGE_TYPE_CBV, binding.WordSize, binding.BindSlot );
 
-                    rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-                    rootParam.DescriptorTable.NumDescriptorRanges = 1;
-                    rootParam.DescriptorTable.pDescriptorRanges = range.Data();
-                    rootParams.PushBack( rootParam );
+					rootParams.EmplaceBack().AsDescriptorTable( D3D12::To<D3D12_SHADER_VISIBILITY>::From( binding.Visibility ), range );
                 }
                 break;
             }
             case ERHIShaderBindingType::Texture:
             case ERHIShaderBindingType::Mutable:
             {
-                D3D12_ROOT_PARAMETER rootParam = {};
-                rootParam.ShaderVisibility = ToD3D12::GetShaderVisibility( binding.Visibility );
-
                 descriptorRangesList.EmplaceBack();
                 auto& range = descriptorRangesList.Back();
                 range.Resize( 1 );
-                range[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-                range[0].NumDescriptors = 1;
-                range[0].BaseShaderRegister = binding.BindSlot;
-                range[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+				range[0] = D3D12::DescriptorRange( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, binding.BindSlot );
 
-                rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-                rootParam.DescriptorTable.NumDescriptorRanges = 1;
-                rootParam.DescriptorTable.pDescriptorRanges = range.Data();
-                rootParams.PushBack( rootParam );
+				rootParams.EmplaceBack().AsCBV( D3D12::To<D3D12_SHADER_VISIBILITY>::From( binding.Visibility ), binding.BindSlot );
                 break;
             }
             case ERHIShaderBindingType::Sampler:
             {
-                D3D12_ROOT_PARAMETER rootParam = {};
-                rootParam.ShaderVisibility = ToD3D12::GetShaderVisibility( binding.Visibility );
-
                 // Dynamic sampler - Descriptor Heap Binding
                 descriptorRangesList.EmplaceBack();
                 auto& range = descriptorRangesList.Back();
                 range.Resize( 1 );
-                range[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-                range[0].NumDescriptors = 1;
-                range[0].BaseShaderRegister = binding.BindSlot;
-                range[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+				range[0] = D3D12::DescriptorRange( D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, binding.BindSlot );
 
-                rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-                rootParam.DescriptorTable.NumDescriptorRanges = 1;
-                rootParam.DescriptorTable.pDescriptorRanges = range.Data();
-                rootParams.PushBack( rootParam );
+				rootParams.EmplaceBack().AsDescriptorTable( D3D12::To<D3D12_SHADER_VISIBILITY>::From( binding.Visibility ), range );
                 break;
             }
             case ERHIShaderBindingType::CombinedSampler:
             {
                 {
-                    D3D12_ROOT_PARAMETER rootParam = {};
-                    rootParam.ShaderVisibility = ToD3D12::GetShaderVisibility( binding.Visibility );
-
+					// Dynamic sampler - Descriptor Heap Binding
                     descriptorRangesList.EmplaceBack();
                     auto& range = descriptorRangesList.Back();
                     range.Resize( 1 );
-                    range[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-                    range[0].NumDescriptors = 1;
-                    range[0].BaseShaderRegister = binding.BindSlot;
-                    range[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+					range[0] = D3D12::DescriptorRange( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, binding.BindSlot );
 
-                    rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-                    rootParam.DescriptorTable.NumDescriptorRanges = 1;
-                    rootParam.DescriptorTable.pDescriptorRanges = range.Data();
-                    rootParams.PushBack( rootParam );
+					rootParams.EmplaceBack().AsDescriptorTable( D3D12::To<D3D12_SHADER_VISIBILITY>::From( binding.Visibility ), range );
                 }
                 {
-                    D3D12_ROOT_PARAMETER rootParam = {};
-                    rootParam.ShaderVisibility = ToD3D12::GetShaderVisibility( binding.Visibility );
                     // Dynamic sampler - Descriptor Heap Binding
                     descriptorRangesList.EmplaceBack();
                     auto& range = descriptorRangesList.Back();
                     range.Resize( 1 );
-                    range[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-                    range[0].NumDescriptors = 1;
-                    range[0].BaseShaderRegister = binding.BindSlot;
-                    range[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+					range[0] = D3D12::DescriptorRange( D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, binding.BindSlot );
 
-                    rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-                    rootParam.DescriptorTable.NumDescriptorRanges = 1;
-                    rootParam.DescriptorTable.pDescriptorRanges = range.Data();
-                    rootParams.PushBack( rootParam );
+					rootParams.EmplaceBack().AsDescriptorTable( D3D12::To<D3D12_SHADER_VISIBILITY>::From( binding.Visibility ), range );
                 }
 				break;
             }
             }
         }
 
+        D3D12_ROOT_SIGNATURE_FLAGS flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
 		// Create the root signature
-		D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
-		rootSignatureDesc.NumParameters = rootParams.Size();
-		rootSignatureDesc.pParameters = rootParams.Data();
-		rootSignatureDesc.NumStaticSamplers = s_NumStaticSamplers;
-		rootSignatureDesc.pStaticSamplers = s_StaticSamplerDescs;
-		rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+        D3D12::RootSignatureDesc rootSignatureDesc(
+            { rootParams.Data(), rootParams.Size() },
+            { s_StaticSamplerDescs, s_NumStaticSamplers },
+            flags );
 
-        // Serialize and Create Root Signature
-        ComPtr<ID3DBlob> serializedRootSig;
-        ComPtr<ID3DBlob> errorBlob;
-        HRESULT hr = D3D12SerializeRootSignature(
-            &rootSignatureDesc,
-            D3D_ROOT_SIGNATURE_VERSION_1,
-            &serializedRootSig,
-            &errorBlob
-        );
-
-        if ( FAILED( hr ) )
-        {
-            if ( errorBlob )
-            {
-				LOG( LogCategory::DirectX, Error, "Failed to serialize root signature in Shader Binding Layout '{0}' - Error: {1}", desc->Name.data(), (char*)errorBlob->GetBufferPointer() );
-            }
-            else
-            {
-				LOG( LogCategory::DirectX, Error, "Failed to serialize root signature in Shader Binding Layout '{0}'", desc->Name.data() );
-            }
-			return false;
-        }
-
-		hr = device->CreateRootSignature(
-			0,
-			serializedRootSig->GetBufferPointer(),
-			serializedRootSig->GetBufferSize(),
-			IID_PPV_ARGS( &m_RootSignature )
-		);
-
-        if ( FAILED( hr ) )
-        {
-            LOG( LogCategory::DirectX, Error, "Failed to create root signature" );
-            return false;
-        }
-
+        m_RootSignature = rootSignatureDesc.Create();
 
         #if RHI_DEBUG_ENABLED
         if ( RHIQuery::IsDebug() && !desc->Name.empty() )
         {
-            WString wName = ToD3D12::ToWString( desc->Name.data() );
+			WString wName( desc->Name.begin(), desc->Name.end() );
             m_RootSignature->SetName( wName.c_str() );
             D3D12Context::Get()->StringStorage.EmplaceBack( std::move( wName ) );
         }

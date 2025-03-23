@@ -13,9 +13,10 @@ namespace Tridium {
 	{
 		enum
 		{
-			CBV = 0,
-			Textures = 1,
-			Samplers = 2,
+			Constants = 2,
+			CBV = 1,
+			Textures = 0,
+			Samplers = 1,
 		};
 	}
 
@@ -131,7 +132,7 @@ namespace Tridium {
 			return;
 		}
 
-		D3D12_CPU_DESCRIPTOR_HANDLE rtvs[RHIQuery::MaxColorTargets];
+		D3D12_CPU_DESCRIPTOR_HANDLE rtvs[RHIConstants::MaxColorTargets];
 		for ( size_t i = 0; i < a_Data.RTV.Size(); ++i )
 		{
 			rtvs[i] = a_Data.RTV[i]->As<D3D12Texture>()->DescriptorHandle;
@@ -159,7 +160,7 @@ namespace Tridium {
 	void D3D12CommandList::SetScissors( const RHICommand::SetScissors& a_Data )
 	{
 		TODO( "I just slapped a thread_local on this as I'm not sure if D3D12 needs me to keep the data around" );
-		thread_local RECT rects[RHIQuery::MaxColorTargets];
+		thread_local RECT rects[RHIConstants::MaxColorTargets];
 		for ( size_t i = 0; i < a_Data.Rects.Size(); ++i )
 		{
 			const auto& rect = a_Data.Rects[i];
@@ -209,11 +210,11 @@ namespace Tridium {
 		{
 			if ( binding.IsInlined() )
 			{
-				CommandList->SetGraphicsRoot32BitConstants( ShaderInputOffset++, binding.WordSize, static_cast<const void*>( &a_Data.Payload.InlineData[0] ), 0 );
+				CommandList->SetGraphicsRoot32BitConstants( RootParameters::Constants, binding.WordSize, static_cast<const void*>( &a_Data.Payload.InlineData[0] ), 0 );
 			}
 			else
 			{
-				NOT_IMPLEMENTED;
+				//CommandList->SetGraphicsRootDescriptorTable( RootParameters::CBV, a_Data.Payload.References[0]->As<D3D12Buffer>()->GetGPUVirtualAddress() );
 			}
 			break;
 		}
@@ -291,7 +292,7 @@ namespace Tridium {
 			{
 				D3D12Sampler* sampler = static_cast<D3D12Sampler*>( a_Data.Payload.References[0] );
 				CommandList->SetDescriptorHeaps( 1, &sampler->SamplerHeap );
-				CommandList->SetGraphicsRootDescriptorTable( ShaderInputOffset++, sampler->SamplerHeap->GetGPUDescriptorHandleForHeapStart() );
+				CommandList->SetGraphicsRootDescriptorTable( RootParameters::Samplers, sampler->SamplerHeap->GetGPUDescriptorHandleForHeapStart() );
 			}
 			break;
 		}
@@ -358,13 +359,13 @@ namespace Tridium {
 
 				// Create the Sampler Descriptor
 				D3D12_SAMPLER_DESC samplerDesc{};
-				samplerDesc.Filter = ToD3D12::GetFilter( sampler->Filter );
-				samplerDesc.AddressU = ToD3D12::GetAddressMode( sampler->AddressU );
-				samplerDesc.AddressV = ToD3D12::GetAddressMode( sampler->AddressV );
-				samplerDesc.AddressW = ToD3D12::GetAddressMode( sampler->AddressW );
+				samplerDesc.Filter = D3D12::To<D3D12_FILTER>::From( sampler->Filter );
+				samplerDesc.AddressU = D3D12::To<D3D12_TEXTURE_ADDRESS_MODE>::From( sampler->AddressU );
+				samplerDesc.AddressV = D3D12::To<D3D12_TEXTURE_ADDRESS_MODE>::From( sampler->AddressV );
+				samplerDesc.AddressW = D3D12::To<D3D12_TEXTURE_ADDRESS_MODE>::From( sampler->AddressW );
 				samplerDesc.MipLODBias = sampler->MipLODBias;
 				samplerDesc.MaxAnisotropy = sampler->MaxAnisotropy;
-				samplerDesc.ComparisonFunc = ToD3D12::GetComparisonFunc( sampler->ComparisonFunc );
+				samplerDesc.ComparisonFunc = D3D12::To<D3D12_COMPARISON_FUNC>::From( sampler->ComparisonFunc );
 				samplerDesc.BorderColor[0] = sampler->BorderColor.r;
 				samplerDesc.BorderColor[1] = sampler->BorderColor.g;
 				samplerDesc.BorderColor[2] = sampler->BorderColor.b;
@@ -379,7 +380,7 @@ namespace Tridium {
 
 				// Bind both SRV and Sampler heaps
 				ID3D12DescriptorHeap* heaps[] = { srvHeap.Get(), samplerHeap.Get() };
-				CommandList->SetDescriptorHeaps( ARRAYSIZE( heaps ), heaps );
+				CommandList->SetDescriptorHeaps( 2, heaps );
 
 				CommandList->SetGraphicsRootDescriptorTable( RootParameters::Textures, srvHeap->GetGPUDescriptorHandleForHeapStart() );
 				CommandList->SetGraphicsRootDescriptorTable( RootParameters::Samplers, samplerHeap->GetGPUDescriptorHandleForHeapStart() );
@@ -452,8 +453,8 @@ namespace Tridium {
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 		barrier.Transition.pResource = a_Data.Resource->NativePtrAs<ID3D12Resource>();
-		barrier.Transition.StateBefore = ToD3D12::GetResourceState( a_Data.Before );
-		barrier.Transition.StateAfter = ToD3D12::GetResourceState( a_Data.After );
+		barrier.Transition.StateBefore = D3D12::To<D3D12_RESOURCE_STATES>::From( a_Data.Before );
+		barrier.Transition.StateAfter = D3D12::To<D3D12_RESOURCE_STATES>::From( a_Data.After );
 		barrier.Transition.Subresource = 0;
 		CommandList->ResourceBarrier( 1, &barrier );
 	}

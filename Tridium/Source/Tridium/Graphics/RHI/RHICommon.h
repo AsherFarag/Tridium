@@ -47,13 +47,10 @@ namespace Tridium {
 		}
 	}
 
-	// RHI Query Constants and Functions
+	// RHI Query and Functions
 	namespace RHIQuery {
-		constexpr uint32_t MaxTextureBindings = 32u;
-		constexpr uint32_t MaxColorTargets = 4u;
-		constexpr uint32_t MaxVertexAttributes = 8u;
-		constexpr uint32_t MaxShaderInputs = 32u;
 
+		// Are we in debug mode?
 		static bool IsDebug()
 		{
 		#if RHI_DEBUG_ENABLED
@@ -61,6 +58,17 @@ namespace Tridium {
 		#else
 			return false;
 		#endif
+		}
+
+		// Can samplers be used as separate objects?
+		static bool SupportsSeparateSamplers()
+		{
+			if ( RHI::GetRHIType() == ERHInterfaceType::OpenGL )
+			{
+				return false;
+			}
+
+			return true;
 		}
 
 		static ERHITextureAlignment GetTextureAlignment()

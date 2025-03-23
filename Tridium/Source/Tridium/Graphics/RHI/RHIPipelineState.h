@@ -94,7 +94,7 @@ namespace Tridium {
 		RHIStencilState StencilState;
 		RHIRasterizerState RasterizerState;
 
-		FixedArray<ERHITextureFormat, RHIQuery::MaxColorTargets> ColourTargetFormats = {};
+		FixedArray<ERHITextureFormat, RHIConstants::MaxColorTargets> ColourTargetFormats = {};
 		ERHITextureFormat DepthStencilFormat = ERHITextureFormat::D32;
 
 		const RHIShaderModuleRef& GetShader( ERHIShaderType a_Type ) const
