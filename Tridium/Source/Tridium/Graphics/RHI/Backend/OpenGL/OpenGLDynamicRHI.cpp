@@ -9,7 +9,6 @@
 #include "OpenGLMesh.h"
 #include "OpenGLPipelineState.h"
 #include "OpenGLSwapChain.h"
-#include "OpenGLResourceAllocator.h"
 #include "OpenGLCommandList.h"
 #include "OpenGLShader.h"
 #include "OpenGLShaderBindingLayout.h"
@@ -94,14 +93,14 @@ namespace Tridium {
 	// RESOURCE CREATION
 	//////////////////////////////////////////////////////////////////////////
 
-	RHISamplerRef OpenGLDynamicRHI::CreateSampler( const RHISamplerDescriptor& a_Desc, const RHIResourceAllocatorRef& a_Allocator )
+	RHISamplerRef OpenGLDynamicRHI::CreateSampler( const RHISamplerDescriptor& a_Desc )
 	{
 		RHISamplerRef sampler = RHIResource::Create<OpenGLSampler>();
 		CHECK( sampler->Commit( &a_Desc ) );
 		return sampler;
 	}
 
-	RHITextureRef OpenGLDynamicRHI::CreateTexture( const RHITextureDescriptor& a_Desc, const RHIResourceAllocatorRef& a_Allocator )
+	RHITextureRef OpenGLDynamicRHI::CreateTexture( const RHITextureDescriptor& a_Desc )
 	{
 		RHITextureRef tex = RHIResource::Create<OpenGLTexture>();
 		CHECK( tex->Commit( &a_Desc ) );
@@ -148,13 +147,6 @@ namespace Tridium {
 		RHIShaderBindingLayoutRef sbl = RHIResource::Create<OpenGLShaderBindingLayout>();
 		CHECK( sbl->Commit( &a_Desc ) );
 		return sbl;
-	}
-
-	RHIResourceAllocatorRef OpenGLDynamicRHI::CreateResourceAllocator( const RHIResourceAllocatorDescriptor& a_Desc )
-	{
-		RHIResourceAllocatorRef ra = RHIResource::Create<OpenGLResourceAllocator>();
-		CHECK( ra->Commit( &a_Desc ) );
-		return ra;
 	}
 
 	RHISwapChainRef OpenGLDynamicRHI::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )

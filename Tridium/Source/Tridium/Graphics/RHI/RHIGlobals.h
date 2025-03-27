@@ -23,6 +23,9 @@ namespace Tridium {
 		// An example for overriding the swap chain is to use a custom swap chain for VR.
 		RHISwapChainRef SwapChain;
 
+		// The current frame index.
+		uint32_t FrameIndex = 0u;
+
 		//====================================================
 		// RHI Query Information
 		//====================================================

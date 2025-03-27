@@ -112,12 +112,13 @@ namespace Tridium {
 		props.Width = 1280;
 		props.Height = 720;
 		m_Window = Window::Create( props );
-		m_Window->SetEventCallback( [this]( Event& e ) { this->OnEvent( e ); } );
+		m_Window->SetEventCallback( [this]( Event& a_Event ) { this->OnEvent( a_Event ); } );
 
 		RHIConfig config;
 		config.RHIType = ERHInterfaceType::DirectX12;
 		config.UseDebug = true;
-		LOG( LogCategory::Rendering, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), RHI::Initialise( config ) );
+		bool initSuccess = RHI::Initialise( config );
+		LOG( LogCategory::RHI, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), initSuccess );
 
 		// TEMP!
 #if 1
@@ -162,33 +163,38 @@ namespace Tridium {
 				}
 			}
 
+			// - Create a texture -
 			RHITextureDescriptor desc;
-			desc.InitialData = testImgData;
+			desc.InitialData = testImgData; // std::span<const uint8_t> 
 			desc.Width = 64;
 			desc.Height = 64;
 			desc.Format = ERHITextureFormat::RGBA8;
-			desc.Name = "My beautiful texture";
-
+			desc.Name = "My texture";
 			RHITextureRef tex = RHI::CreateTexture( desc );
 
+			// - Create a sampler -
 			RHISamplerDescriptor samplerDesc;
-			samplerDesc.Name = "My beautiful sampler";
+			samplerDesc.Filter = ERHISamplerFilter::Bilinear;
+			samplerDesc.AddressU = ERHISamplerAddressMode::Clamp;
+			samplerDesc.AddressV = ERHISamplerAddressMode::Clamp;
+			samplerDesc.AddressW = ERHISamplerAddressMode::Clamp;
+			samplerDesc.Name = "My sampler";
 			RHISamplerRef sampler = RHI::CreateSampler( samplerDesc );
 
+			// Set the sampler of the texture ( Optional if not supporting OpenGL )
 			tex->Sampler = sampler;
-
-			// Create vertex buffer
-
-			RHIVertexLayout layout =
-			{
-				{ "POSITION", ERHIVertexElementType::Float3 },
-				{ "TEXCOORD", ERHIVertexElementType::Float2 }
-			};
 
 			struct Vertex
 			{
 				Vector3 Position;
 				Vector2 UV;
+			};
+
+			// - Create a vertex layout -
+			RHIVertexLayout layout =
+			{
+				{ "POSITION", ERHIVertexElementType::Float3 },
+				{ "TEXCOORD", ERHIVertexElementType::Float2 }
 			};
 
 			// Quad
@@ -202,12 +208,51 @@ namespace Tridium {
 				{ { -0.5f, 0.5f,  0.0f }, { 0.0f, 0.0f } }
 			};
 
-			// Tri
-			Vertex triVerts[] =
+			// Cube
+			Vertex cubeVerts[] =
 			{
-				{ { 0.0f, 1.0f, 0.0f }, { 0.5f, 1.0f } },
-				{ { 1.0f, -1.0f, 0.0f }, { 1.0f, 0.0f } },
-				{ { -1.0f, -1.0f, 0.0f }, { 0.0f, 0.0f } }
+				// Front
+				{ { -0.5f, -0.5f, 0.5f }, { 0.0f, 1.0f } },
+				{ { 0.5f, -0.5f,  0.5f }, { 1.0f, 1.0f } },
+				{ { -0.5f, 0.5f,  0.5f }, { 0.0f, 0.0f } },
+				{ { 0.5f, -0.5f,  0.5f }, { 1.0f, 1.0f } },
+				{ { 0.5f, 0.5f,   0.5f }, { 1.0f, 0.0f } },
+				{ { -0.5f, 0.5f,  0.5f }, { 0.0f, 0.0f } },
+				// Back
+				{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } },
+				{ { -0.5f, 0.5f,  -0.5f }, { 0.0f, 0.0f } },
+				{ { 0.5f, -0.5f,  -0.5f }, { 1.0f, 1.0f } },
+				{ { 0.5f, -0.5f,  -0.5f }, { 1.0f, 1.0f } },
+				{ { -0.5f, 0.5f,  -0.5f }, { 0.0f, 0.0f } },
+				{ { 0.5f, 0.5f,   -0.5f }, { 1.0f, 0.0f } },
+				// Left
+				{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } },
+				{ { -0.5f, 0.5f,  -0.5f }, { 0.0f, 0.0f } },
+				{ { -0.5f, -0.5f, 0.5f }, { 1.0f, 1.0f } },
+				{ { -0.5f, -0.5f, 0.5f }, { 1.0f, 1.0f } },
+				{ { -0.5f, 0.5f,  -0.5f }, { 0.0f, 0.0f } },
+				{ { -0.5f, 0.5f,  0.5f }, { 1.0f, 0.0f } },
+				// Right
+				{ { 0.5f, -0.5f, 0.5f }, { 0.0f, 1.0f } },
+				{ { 0.5f, 0.5f,  0.5f }, { 0.0f, 0.0f } },
+				{ { 0.5f, -0.5f, -0.5f }, { 1.0f, 1.0f } },
+				{ { 0.5f, -0.5f, -0.5f }, { 1.0f, 1.0f } },
+				{ { 0.5f, 0.5f,  0.5f }, { 0.0f, 0.0f } },
+				{ { 0.5f, 0.5f,  -0.5f }, { 1.0f, 0.0f } },
+				// Top
+				{ { -0.5f, 0.5f, 0.5f }, { 0.0f, 1.0f } },
+				{ { 0.5f, 0.5f,  0.5f }, { 1.0f, 1.0f } },
+				{ { -0.5f, 0.5f, -0.5f }, { 0.0f, 0.0f } },
+				{ { 0.5f, 0.5f,  0.5f }, { 1.0f, 1.0f } },
+				{ { 0.5f, 0.5f,  -0.5f }, { 1.0f, 0.0f } },
+				{ { -0.5f, 0.5f, -0.5f }, { 0.0f, 0.0f } },
+				// Bottom
+				{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } },
+				{ { 0.5f, -0.5f,  -0.5f }, { 1.0f, 1.0f } },
+				{ { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f } },
+				{ { 0.5f, -0.5f,  -0.5f }, { 1.0f, 1.0f } },
+				{ { 0.5f, -0.5f,  0.5f }, { 1.0f, 0.0f } },
+				{ { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f } }
 			};
 
 			RHIVertexBufferDescriptor vbDesc;
@@ -217,12 +262,13 @@ namespace Tridium {
 
 			RHIVertexBufferRef vb = RHI::CreateVertexBuffer( vbDesc );
 
-			RHIVertexBufferDescriptor trivbDesc;
-			trivbDesc.Layout = layout;
-			trivbDesc.InitialData = Span<const Byte>( (const Byte*)( &triVerts[0] ), sizeof( triVerts ) );
-			trivbDesc.Name = "Tri VBO";
 
-			RHIVertexBufferRef triVB = RHI::CreateVertexBuffer( trivbDesc );
+			// - Create a Vertex Buffer -
+			RHIVertexBufferDescriptor cubeVBODesc;
+			cubeVBODesc.Layout = layout;
+			cubeVBODesc.InitialData = Span<const uint8_t>( (const uint8_t*)( &cubeVerts[0] ), sizeof( cubeVerts ) );
+			cubeVBODesc.Name = "Cube VBO";
+			RHIVertexBufferRef cubeVBO = RHI::CreateVertexBuffer( cubeVBODesc );
 
 			// HLSL Source code
 			StringView vertCode = R"(
@@ -230,16 +276,17 @@ namespace Tridium {
 
 struct InlinedConstants
 {
-	// Vertex
-	float3 Position;
-	float  Rotation;
-	// Pixel
-	float4 ColorMultiplier;
+	// Vertex Shader
+	float4x4 PVM;
+
+	// Pixel Shader
+	float4 Colour;
 };
 
 INLINED_CONSTANT( inlinedConstants, InlinedConstants );
 
-struct VSOutput {
+struct VSOutput
+{
     float4 pos : SV_Position;  
 	float2 uv : TEXCOORD;
 };
@@ -247,22 +294,8 @@ struct VSOutput {
 VSOutput main( float3 pos : POSITION, float2 uv : TEXCOORD ) 
 {
 	VSOutput output;
-
-	// Apply translation
-	float2 translatedPos = pos.xy + inlinedConstants.Position.xy;
-
-	// Compute rotation (2D rotation matrix)
-	float cosTheta = cos(inlinedConstants.Rotation);
-	float sinTheta = sin(inlinedConstants.Rotation);
-
-	float2 rotatedPos;
-	rotatedPos.x = translatedPos.x * cosTheta - translatedPos.y * sinTheta;
-	rotatedPos.y = translatedPos.x * sinTheta + translatedPos.y * cosTheta;
-
-	// Assign rotated position
-	output.pos = float4(rotatedPos, pos.z + inlinedConstants.Position.z, 1.0f);
+	output.pos = mul( float4( pos, 1.0f ), inlinedConstants.PVM );
 	output.uv = uv;
-
 	return output;
 }
 )";
@@ -270,70 +303,76 @@ VSOutput main( float3 pos : POSITION, float2 uv : TEXCOORD )
 			StringView pixelCode = R"(
 #include "Globals.hlsli"
 
-struct VSOutput {
-    float4 pos : SV_Position;
-	float2 uv : TEXCOORD;
-};
-
 struct InlinedConstants
 {
-	// Vertex
-	float3 Position;
-	float  Rotation;
-	// Pixel
-	float4 ColorMultiplier;
+	// Vertex Shader
+	float4x4 PVM;
+
+	// Pixel Shader
+	float4 Colour;
 };
 
 INLINED_CONSTANT( inlinedConstants, InlinedConstants );
-COMBINED_SAMPLER( Texture, Texture2D, 0 );
 
-float4 main(VSOutput input) : SV_Target 
+struct VSOutput
 {
-	return Texture.Sample(Texture_Sampler, input.uv ) * inlinedConstants.ColorMultiplier;
+    float4 pos : SV_Position;  
+	float2 uv : TEXCOORD;
+};
+
+Texture2D Texture : register( t0 );
+SamplerState Sampler : register( s0 );
+
+float4 main( VSOutput input ) : SV_Target
+{
+	return Texture.Sample( Sampler, input.uv ) * inlinedConstants.Colour;
 }
 )";
 
 			struct InlinedConstants
 			{
-				float3 Position;
-				float  Rotation;
-				float4 ColorMultiplier;
+				float4x4 PVM;
+				float4 Colour;
 			};
 
-			ShaderLibrary::LoadShader( vertCode, "My beautiful vert shader", ERHIShaderType::Vertex );
-			RHIShaderModuleRef shader = ShaderLibrary::FindShader( "My beautiful vert shader"_H );
-
-			ShaderLibrary::LoadShader( pixelCode, "My beautiful pixel shader", ERHIShaderType::Pixel );	
-			RHIShaderModuleRef pixelShader = ShaderLibrary::FindShader( "My beautiful pixel shader"_H );
-
-			LOG( LogCategory::Debug, Info, "Vert Shader: {0}", shader->GetDescriptor()->Name.data() );
-			LOG( LogCategory::Debug, Info, "Pixel Shader: {0}", pixelShader->GetDescriptor()->Name.data() );
+			RHIShaderModuleRef vertShader = ShaderLibrary::LoadShader( vertCode, "My vert shader", ERHIShaderType::Vertex );
+			RHIShaderModuleRef pixelShader = ShaderLibrary::LoadShader( pixelCode, "My pixel shader", ERHIShaderType::Pixel );
 
 			// Create Shader Binding Layout
 			RHIShaderBindingLayoutDescriptor sblDesc;
-			sblDesc.Name = "My beautiful shader binding layout";
+			sblDesc.Name = "My shader binding layout";
 			sblDesc.AddBinding( "Texture"_H ).AsCombinedSamplers( 0 ).SetVisibility( ERHIShaderVisibility::All );
 			sblDesc.AddBinding( "inlinedConstants"_H ).AsInlinedConstants<InlinedConstants>().SetVisibility( ERHIShaderVisibility::All );
 
 
 			RHIShaderBindingLayoutRef sbl = RHI::CreateShaderBindingLayout( sblDesc );
 
-			// Create pipeline state
+			// - Create pipeline state -
 			RHIGraphicsPipelineStateDescriptor psd;
-			psd.VertexShader = shader;
+			psd.VertexShader = vertShader;
 			psd.PixelShader = pixelShader;
 			psd.ColourTargetFormats[0] = ERHITextureFormat::RGBA8;
 			psd.VertexLayout = layout;
 			psd.ShaderBindingLayout = sbl;
 			psd.RasterizerState.CullMode = ERHIRasterizerCullMode::None;
-			psd.Name = "My beautiful pipeline state";
+			psd.Name = "My pipeline state";
 			RHIGraphicsPipelineStateRef pso = RHI::CreateGraphicsPipelineState( psd );
 
 			RHICommandListRef cmdList = RHI::CreateCommandList( { "My beautiful command list" } );
 
+			// - Create depth buffer -
+			RHITextureDescriptor depthDesc;
+			depthDesc.Width = 1280;
+			depthDesc.Height = 720;
+			depthDesc.Format = ERHITextureFormat::D32;
+			depthDesc.Name = "My depth buffer";
+			depthDesc.IsRenderTarget = true;
+			depthDesc.UsageHint = ERHIUsageHint::RenderTarget;
+			RHITextureRef depthTex = RHI::CreateTexture( depthDesc );
+
 			// Temp
 			float time = 0.0f;
-			const Color clearColour = Color{ 0.0f, 0.5f, 0.5f, 1.0f };
+			const Color clearColour = Color{ 0.2f, 0.35f, 0.5f, 1.0f };
 			int f{};
 			while ( true )
 			{
@@ -344,18 +383,23 @@ float4 main(VSOutput input) : SV_Target
 				{
 					RHITextureRef rt = RHI::GetSwapChain()->GetBackBuffer();
 
+					// Resize the depth buffer to match the swap chain
 					const uint32_t width = RHI::GetSwapChain()->GetWidth();
 					const uint32_t height = RHI::GetSwapChain()->GetHeight();
+					depthTex->Resize( width, height );
 
 					RHIGraphicsCommandBuffer cmdBuffer;
 					cmdBuffer.ResourceBarrier( rt, ERHIResourceState::Present, ERHIResourceState::RenderTarget )
-						.SetRenderTargets( { &rt, 1 }, nullptr )
-						.ClearRenderTargets( { &rt, 1 }, clearColour, true, false )
-						.SetGraphicsPipelineState( pso )
-						.SetShaderBindingLayout( sbl );
+						.SetRenderTargets( { &rt, 1 }, depthTex )
+						.ClearRenderTargets( { &rt, 1 }, clearColour, true );
 
-					// Input Assembler
+					cmdBuffer.SetGraphicsPipelineState( pso );
+					cmdBuffer.SetShaderBindingLayout( sbl );
+
+					// Set the primitive topology
 					cmdBuffer.SetPrimitiveTopology( ERHITopology::Triangle );
+
+					// Set the viewport
 					Viewport vp;
 					vp.Width = width;
 					vp.Height = height;
@@ -373,7 +417,7 @@ float4 main(VSOutput input) : SV_Target
 					scissor.Bottom = height;
 					cmdBuffer.SetScissors( { &scissor, 1 } );
 
-					constexpr auto CycleRGB = +[]( float a_Time, float a_Speed = 1.0f ) -> Color
+					constexpr auto CycleRGB = +[]( float a_Time, float a_Speed = 1.0f )
 						{
 							float r = ( Math::Sin( a_Speed * a_Time ) + 1.0f ) / 2.0f;
 							float g = ( Math::Sin( a_Speed * a_Time + 2.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
@@ -381,29 +425,25 @@ float4 main(VSOutput input) : SV_Target
 							return Color( r, g, b, 1.0f );
 						};
 
-					Vector3 pos = Vector3( 0.0f, 0.0f, 0.0f );
-					pos.y = Math::Sin( time ) * 0.5f;
+					// Get the PVM matrix
+					Vector3 pos = Vector3( 0.0f, 0.0f, 3.0f );
+					pos.y = Math::Sin( time ) * 2.0f;
+					pos.x = Math::Cos( time ) * 2.0f;
+					float4x4 model = glm::translate( Matrix4( 1.0f ), pos );
+					float4x4 view = glm::lookAt( Vector3( 0.0f, 0.0f, -2.0f ), Vector3( 0.0f, 0.0f, 0.0f ), Vector3( 0.0f, 1.0f, 0.0f ) );
+					float4x4 projection = glm::perspective( Math::Radians( 90.0f ), (float)width / (float)height, 0.1f, 100.0f );
+
+					// Construct the inlined constants
 					InlinedConstants inlinedConstants;
-					inlinedConstants.Position = float4( pos, 0.0f );
-					inlinedConstants.ColorMultiplier = CycleRGB( time, 1.0f );
-					inlinedConstants.Rotation = 0.0f;
+					inlinedConstants.Colour = CycleRGB( time, 1.0f );
+					inlinedConstants.PVM = projection * view * model;
 
 					// Draw
+					
 					cmdBuffer.SetShaderInput( "inlinedConstants"_H, inlinedConstants );
 					cmdBuffer.SetShaderInput( "Texture"_H, tex );
-					cmdBuffer.SetVertexBuffer( vb );
-					cmdBuffer.Draw( 0, sizeof( vertices ) / sizeof( Vertex ) );
-
-					inlinedConstants.Position = float4( pos.y, 0.0f, 0.0f, 0.0f );
-					inlinedConstants.Rotation = time * 0.15f;
-					cmdBuffer.SetShaderInput( "inlinedConstants"_H, inlinedConstants );
-					cmdBuffer.Draw( 0, sizeof( vertices ) / sizeof( Vertex ) );
-
-					inlinedConstants.Position = float4( -pos.y, 0.0f, 0.0f, 0.0f );
-					inlinedConstants.Rotation = 0.0f;
-					cmdBuffer.SetShaderInput( "inlinedConstants"_H, inlinedConstants );
-					cmdBuffer.SetVertexBuffer( triVB );
-					cmdBuffer.Draw( 0, sizeof( triVerts ) / sizeof( Vertex ) );
+					cmdBuffer.SetVertexBuffer( cubeVBO );
+					cmdBuffer.Draw( 0, sizeof( cubeVerts ) / sizeof( Vertex ) );
 
 					cmdBuffer.ResourceBarrier( rt, ERHIResourceState::RenderTarget, ERHIResourceState::Present );
 

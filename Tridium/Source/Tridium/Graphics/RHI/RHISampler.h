@@ -6,7 +6,7 @@ namespace Tridium {
 	//=======================================================
 	// RHI Sampler
 	//  A sampler represents a texture sampling state and is used to sample textures in shaders.
-	DEFINE_ALLOCATABLE_RHI_RESOURCE( Sampler )
+	DEFINE_RHI_RESOURCE( Sampler )
 	{
 		ERHISamplerFilter Filter = ERHISamplerFilter::Bilinear;
 		ERHISamplerAddressMode AddressU = ERHISamplerAddressMode::Repeat;

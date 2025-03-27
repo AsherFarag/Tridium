@@ -277,7 +277,7 @@ namespace Tridium {
 		using ReverseIterator = typename std::vector<T>::reverse_iterator;
 		using ConstReverseIterator = typename std::vector<T>::const_reverse_iterator;
 
-		Array() = default;
+		Array() : m_Data() {}
 		Array( const Array& a_Other ) = default;
 		Array( Array&& a_Other ) = default;
 		Array( size_t a_Size ) : m_Data( a_Size ) {}

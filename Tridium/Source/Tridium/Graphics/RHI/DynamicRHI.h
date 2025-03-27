@@ -6,7 +6,6 @@ namespace Tridium {
 
 	//==============================================
 	// Forward declarations
-	FORWARD_DECLARE_RHI_RESOURCE( ResourceAllocator );
 	FORWARD_DECLARE_RHI_RESOURCE( Sampler );
 	FORWARD_DECLARE_RHI_RESOURCE( Texture );
 	FORWARD_DECLARE_RHI_RESOURCE( IndexBuffer );
@@ -53,15 +52,14 @@ namespace Tridium {
 
 		//=====================================================
 		// Resource creation
-		virtual RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc, const RHIResourceAllocatorRef& a_Allocator = nullptr ) = 0;
-		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc, const RHIResourceAllocatorRef& a_Allocator = nullptr ) = 0;
+		virtual RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc ) = 0;
+		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc ) = 0;
 		virtual RHIIndexBufferRef CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc ) = 0;
 		virtual RHIVertexBufferRef CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc ) = 0;
 		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc ) = 0;
 		virtual RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc ) = 0;
 		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc ) = 0;
 		virtual RHIShaderBindingLayoutRef CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc ) = 0;
-		virtual RHIResourceAllocatorRef CreateResourceAllocator( const RHIResourceAllocatorDescriptor& a_Desc ) = 0;
 		virtual RHISwapChainRef CreateSwapChain( const RHISwapChainDescriptor& a_Desc ) = 0;
 		//=====================================================
 

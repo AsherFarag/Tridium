@@ -10,15 +10,29 @@
 #include <Tridium/Graphics/RHI/RHIShader.h>
 #include <Tridium/Graphics/RHI/RHIShaderBindingLayout.h>
 #include <Tridium/Graphics/RHI/RHISwapChain.h>
-#include <Tridium/Graphics/RHI/RHIResourceAllocator.h>
+#include <Tridium/Graphics/RHI/RHIDescriptorAllocator.h>
 
 DECLARE_LOG_CATEGORY( DirectX );
+
+#if RHI_DEBUG_ENABLED
+#define D3D12_SET_DEBUG_NAME( _Object, _Name ) \
+	do { \
+		if ( RHIQuery::IsDebug() && !_Name.empty() ) \
+		{ \
+			::Tridium::WString wName( _Name.begin(), _Name.end() ); \
+			_Object->SetName( wName.c_str() ); \
+			::Tridium::D3D12Context::Get()->StringStorage.EmplaceBack( std::move( wName ) ); \
+		} \
+	} while ( false )
+#else
+#define D3D12_SET_DEBUG_NAME( _Object, _Name )
+#endif
 
 namespace Tridium {
 
 	//=====================================================================
 	// Type definitions for DirectX12 to avoid versioning issues
-	namespace D3D12 {
+	namespace ID3D12 {
 		using Factory = IDXGIFactory7;
 		using Device = ID3D12Device8;
 		using CommandQueue = ID3D12CommandQueue;

@@ -70,10 +70,6 @@ namespace Tridium {
 			return false;
 		}
 
-		//TEMP?
-		DescriptorHeaps.Clear();
-		ShaderInputOffset = 0;
-
 		// Execute the commands
 		for ( const RHICommand& cmd : a_CmdBuffer.Commands )
 		{
@@ -103,6 +99,8 @@ namespace Tridium {
 			}
 		}
 
+		m_PerExecuteData = {};
+
 		return true;
 	}
 
@@ -128,24 +126,44 @@ namespace Tridium {
 	{
 		if ( a_Data.RTV.Size() == 0 )
 		{
+			TODO( "Dodgy, bad logic" );
 			CommandList->OMSetRenderTargets( 0, nullptr, FALSE, nullptr );
+			m_PerExecuteData.LastRTVHeap = nullptr;
+			m_PerExecuteData.LastDSVHeap = nullptr;
 			return;
 		}
 
+		const auto& device = RHI::GetD3D12RHI()->GetDevice();
+		m_PerExecuteData.LastRTVHeap = m_PerExecuteData.Heaps.EmplaceBack( RHI::GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap(
+			ERHIDescriptorHeapType::RenderTarget,
+			a_Data.RTV.Size(),
+			ED3D12DescriptorHeapFlags::Poolable,
+			"RTV Heap" ) );
+
+		// Add the RTVs to the rtv heap
 		D3D12_CPU_DESCRIPTOR_HANDLE rtvs[RHIConstants::MaxColorTargets];
 		for ( size_t i = 0; i < a_Data.RTV.Size(); ++i )
 		{
-			rtvs[i] = a_Data.RTV[i]->As<D3D12Texture>()->DescriptorHandle;
+			device->CreateRenderTargetView( a_Data.RTV[i]->As<D3D12Texture>()->Texture.Resource.Get(), nullptr, m_PerExecuteData.LastRTVHeap->GetCPUHandle( i ) );
+			rtvs[i] = m_PerExecuteData.LastRTVHeap->GetCPUHandle( i );
 		}
 
 		if ( a_Data.DSV )
 		{
-			D3D12_CPU_DESCRIPTOR_HANDLE dsv = a_Data.DSV->As<D3D12Texture>()->DescriptorHandle;
+			m_PerExecuteData.LastDSVHeap = m_PerExecuteData.Heaps.EmplaceBack( RHI::GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap(
+				ERHIDescriptorHeapType::DepthStencil,
+				1,
+				ED3D12DescriptorHeapFlags::Poolable,
+				"DSV Heap" ) );
+
+			device->CreateDepthStencilView( a_Data.DSV->As<D3D12Texture>()->Texture.Resource.Get(), nullptr, m_PerExecuteData.LastDSVHeap->GetCPUHandle( 0 ) );
+			D3D12_CPU_DESCRIPTOR_HANDLE dsv = m_PerExecuteData.LastDSVHeap->GetCPUHandle( 0 );
 			CommandList->OMSetRenderTargets( a_Data.RTV.Size(), rtvs, FALSE, &dsv );
 		}
 		else
 		{
 			CommandList->OMSetRenderTargets( a_Data.RTV.Size(), rtvs, FALSE, nullptr );
+			m_PerExecuteData.LastDSVHeap = nullptr;
 		}
 	}
 
@@ -153,7 +171,20 @@ namespace Tridium {
 	{
 		for ( size_t i = 0; i < a_Data.RTV.Size(); ++i )
 		{
-			CommandList->ClearRenderTargetView( a_Data.RTV[i]->As<D3D12Texture>()->DescriptorHandle, &a_Data.ClearColor[0], 0, nullptr );
+			CommandList->ClearRenderTargetView( m_PerExecuteData.LastRTVHeap->GetCPUHandle( i ), &a_Data.ClearColor[0], 0, nullptr );
+		}
+
+		// Clear the depth buffer
+		D3D12_CLEAR_FLAGS clearFlags = D3D12_CLEAR_FLAGS( 0u );
+		clearFlags |= a_Data.DepthBit ? D3D12_CLEAR_FLAG_DEPTH : D3D12_CLEAR_FLAGS( 0 );
+		clearFlags |= a_Data.StencilBit ? D3D12_CLEAR_FLAG_STENCIL : D3D12_CLEAR_FLAGS( 0 );
+		if ( clearFlags != 0 )
+		{
+			CommandList->ClearDepthStencilView(
+				m_PerExecuteData.LastDSVHeap->GetCPUHandle( 0 ),
+				clearFlags,
+				a_Data.DepthValue, a_Data.StencilValue,
+				0, nullptr );
 		}
 	}
 
@@ -229,16 +260,11 @@ namespace Tridium {
 		}
 		case ERHIShaderBindingType::Texture:
 		{
-			D3D12_DESCRIPTOR_HEAP_DESC dhd{};
-			dhd.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-			dhd.NumDescriptors = 8;
-			dhd.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-			dhd.NodeMask = 0;
-
-			TODO( "Temp hack as srvheap needs to stay around" );
-			ComPtr<ID3D12DescriptorHeap> srvheap;
-			RHI::GetD3D12RHI()->GetDevice()->CreateDescriptorHeap(&dhd, IID_PPV_ARGS(&srvheap));
-			DescriptorHeaps.PushBack( srvheap );
+			const D3D12::DescriptorHeapRef& srvHeap = m_PerExecuteData.Heaps.EmplaceBack( RHI::GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap(
+				ERHIDescriptorHeapType::RenderResource,
+				8,
+				ED3D12DescriptorHeapFlags::Poolable,
+				"SRV Heap" ) );
 
 			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -267,14 +293,15 @@ namespace Tridium {
 				const auto* tex = static_cast<const D3D12Texture*>( a_Data.Payload.References[0] );
 
 				RHI::GetD3D12RHI()->GetDevice()->CreateShaderResourceView(
-					tex->Texture.Get(),
+					tex->Texture.Resource.Get(),
 					&srvDesc,
-					srvheap->GetCPUDescriptorHandleForHeapStart()
+					srvHeap->GetCPUHandle(0)
 				);
 			}
 
-			CommandList->SetDescriptorHeaps( 1, &srvheap );
-			CommandList->SetGraphicsRootDescriptorTable( RootParameters::Textures, srvheap->GetGPUDescriptorHandleForHeapStart() );
+			ID3D12DescriptorHeap* d3d12Heap = srvHeap->Heap();
+			CommandList->SetDescriptorHeaps( 1, &d3d12Heap );
+			CommandList->SetGraphicsRootDescriptorTable( RootParameters::Textures, srvHeap->GetGPUHandle( 0 ) );
 
 			break;
 		}
@@ -298,20 +325,17 @@ namespace Tridium {
 		}
 		case ERHIShaderBindingType::CombinedSampler:
 		{
-			// === Create SRV Heap ===
-			D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc{};
-			srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-			srvHeapDesc.NumDescriptors = 8;
-			srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-			srvHeapDesc.NodeMask = 0;
-
-			TODO( "Temp hack as srvheap needs to stay around" );
-			ComPtr<ID3D12DescriptorHeap> srvHeap;
-			RHI::GetD3D12RHI()->GetDevice()->CreateDescriptorHeap( &srvHeapDesc, IID_PPV_ARGS( &srvHeap ) );
-			DescriptorHeaps.PushBack( srvHeap );
+			// Create the SRV Heap
+			D3D12::DescriptorHeapRef srvHeap = m_PerExecuteData.Heaps.EmplaceBack( RHI::GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap(
+				ERHIDescriptorHeapType::RenderResource,
+				8,
+				ED3D12DescriptorHeapFlags::Poolable | ED3D12DescriptorHeapFlags::GPUVisible,
+				"SRV Heap" ) );
 
 			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+			const auto* tex = static_cast<const D3D12Texture*>( a_Data.Payload.References[0] );
 
 			if ( a_Data.Payload.Count > 1 )
 			{
@@ -335,37 +359,24 @@ namespace Tridium {
 				srvDesc.Texture2D.PlaneSlice = 0;
 				srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 
-				const auto* tex = static_cast<const D3D12Texture*>( a_Data.Payload.References[0] );
-
 				RHI::GetD3D12RHI()->GetDevice()->CreateShaderResourceView(
-					tex->Texture.Get(),
+					tex->Texture.Resource.Get(),
 					&srvDesc,
-					srvHeap->GetCPUDescriptorHandleForHeapStart()
+					srvHeap->GetCPUHandle( 0 )
 				);
-
-				// === Create Sampler Heap ===
-				D3D12_DESCRIPTOR_HEAP_DESC samplerHeapDesc{};
-				samplerHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
-				samplerHeapDesc.NumDescriptors = 1;  // Only one sampler per texture
-				samplerHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-				samplerHeapDesc.NodeMask = 0;
-
-				ComPtr<ID3D12DescriptorHeap> samplerHeap;
-				RHI::GetD3D12RHI()->GetDevice()->CreateDescriptorHeap( &samplerHeapDesc, IID_PPV_ARGS( &samplerHeap ) );
-				DescriptorHeaps.PushBack( samplerHeap );
 
 				// Retrieve the sampler from the texture
 				const auto* sampler = tex->Sampler->GetDescriptor();
 
 				// Create the Sampler Descriptor
 				D3D12_SAMPLER_DESC samplerDesc{};
-				samplerDesc.Filter = D3D12::To<D3D12_FILTER>::From( sampler->Filter );
-				samplerDesc.AddressU = D3D12::To<D3D12_TEXTURE_ADDRESS_MODE>::From( sampler->AddressU );
-				samplerDesc.AddressV = D3D12::To<D3D12_TEXTURE_ADDRESS_MODE>::From( sampler->AddressV );
-				samplerDesc.AddressW = D3D12::To<D3D12_TEXTURE_ADDRESS_MODE>::From( sampler->AddressW );
+				samplerDesc.Filter = D3D12::Translate( sampler->Filter );
+				samplerDesc.AddressU = D3D12::Translate( sampler->AddressU );
+				samplerDesc.AddressV = D3D12::Translate( sampler->AddressV );
+				samplerDesc.AddressW = D3D12::Translate( sampler->AddressW );
 				samplerDesc.MipLODBias = sampler->MipLODBias;
 				samplerDesc.MaxAnisotropy = sampler->MaxAnisotropy;
-				samplerDesc.ComparisonFunc = D3D12::To<D3D12_COMPARISON_FUNC>::From( sampler->ComparisonFunc );
+				samplerDesc.ComparisonFunc = D3D12::Translate( sampler->ComparisonFunc );
 				samplerDesc.BorderColor[0] = sampler->BorderColor.r;
 				samplerDesc.BorderColor[1] = sampler->BorderColor.g;
 				samplerDesc.BorderColor[2] = sampler->BorderColor.b;
@@ -373,17 +384,26 @@ namespace Tridium {
 				samplerDesc.MinLOD = sampler->MinLOD;
 				samplerDesc.MaxLOD = sampler->MaxLOD;
 
+				// Create the Sampler Heap
+				D3D12::DescriptorHeapRef samplerHeap = m_PerExecuteData.Heaps.EmplaceBack( RHI::GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap(
+					ERHIDescriptorHeapType::Sampler,
+					1,
+					ED3D12DescriptorHeapFlags::Poolable | ED3D12DescriptorHeapFlags::GPUVisible,
+					"Sampler Heap" ) );
+
 				RHI::GetD3D12RHI()->GetDevice()->CreateSampler(
 					&samplerDesc,
-					samplerHeap->GetCPUDescriptorHandleForHeapStart()
+					samplerHeap->GetCPUHandle( 0 )
 				);
 
+
+
 				// Bind both SRV and Sampler heaps
-				ID3D12DescriptorHeap* heaps[] = { srvHeap.Get(), samplerHeap.Get() };
+				ID3D12DescriptorHeap* heaps[] = { srvHeap->Heap(), samplerHeap->Heap() };
 				CommandList->SetDescriptorHeaps( 2, heaps );
 
-				CommandList->SetGraphicsRootDescriptorTable( RootParameters::Textures, srvHeap->GetGPUDescriptorHandleForHeapStart() );
-				CommandList->SetGraphicsRootDescriptorTable( RootParameters::Samplers, samplerHeap->GetGPUDescriptorHandleForHeapStart() );
+				CommandList->SetGraphicsRootDescriptorTable( RootParameters::Textures, srvHeap->GetGPUHandle( 0 ) );
+				CommandList->SetGraphicsRootDescriptorTable( RootParameters::Samplers, samplerHeap->GetGPUHandle( 0 ) );
 			}
 
 			break;

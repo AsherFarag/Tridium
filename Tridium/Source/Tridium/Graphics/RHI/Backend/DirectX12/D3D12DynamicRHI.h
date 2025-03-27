@@ -1,8 +1,40 @@
 #pragma once
 #include "D3D12Common.h"
 #include "D3D12Context.h"
+#include "D3D12DescriptorHeap.h"
+#include "Utils/ThirdParty/D3D12MemAlloc.h"
 
 namespace Tridium {
+
+	struct D3D12TierInfo
+	{
+		size_t MaxShaderVisibleDescriptorHeapSize = 0;
+		size_t MaxShaderVisibleSamplerHeapSize = 0;
+	};
+
+	constexpr struct
+	{
+		const D3D12TierInfo Tier1 = {
+			.MaxShaderVisibleDescriptorHeapSize = D3D12_MAX_SHADER_VISIBLE_DESCRIPTOR_HEAP_SIZE_TIER_1,
+			.MaxShaderVisibleSamplerHeapSize = D3D12_MAX_SHADER_VISIBLE_SAMPLER_HEAP_SIZE
+		};
+		const D3D12TierInfo Tier2 = {
+			.MaxShaderVisibleDescriptorHeapSize = D3D12_MAX_SHADER_VISIBLE_DESCRIPTOR_HEAP_SIZE_TIER_2,
+			.MaxShaderVisibleSamplerHeapSize = D3D12_MAX_SHADER_VISIBLE_SAMPLER_HEAP_SIZE
+		};
+		const D3D12TierInfo Tier3 = {
+			.MaxShaderVisibleDescriptorHeapSize = D3D12_MAX_SHADER_VISIBLE_DESCRIPTOR_HEAP_SIZE_TIER_2,
+			.MaxShaderVisibleSamplerHeapSize = D3D12_MAX_SHADER_VISIBLE_SAMPLER_HEAP_SIZE
+		};
+	} D3D12Tiers;
+
+	namespace D3D12 {
+		struct DeferredDeleteObject
+		{
+		};
+
+		inline const D3D12TierInfo& TierInfo() { return D3D12Tiers.Tier2; }
+	}
 
 	class D3D12RHI final : public IDynamicRHI
 	{
@@ -32,15 +64,14 @@ namespace Tridium {
 
 		//=====================================================
 		// Resource creation
-		virtual RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc, const RHIResourceAllocatorRef& a_Allocator = nullptr ) override;
-		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc, const RHIResourceAllocatorRef& a_Allocator = nullptr ) override;
+		virtual RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc ) override;
+		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc ) override;
 		virtual RHIIndexBufferRef CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc ) override;
 		virtual RHIVertexBufferRef CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc ) override;
 		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc ) override;
 		virtual RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc ) override;
 		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc ) override;
 		virtual RHIShaderBindingLayoutRef CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc ) override;
-		virtual RHIResourceAllocatorRef CreateResourceAllocator( const RHIResourceAllocatorDescriptor& a_Desc ) override;
 		virtual RHISwapChainRef CreateSwapChain( const RHISwapChainDescriptor& a_Desc ) override;
 		//=====================================================
 
@@ -53,21 +84,38 @@ namespace Tridium {
 		const auto& GetCommandQueue() const { return m_CommandQueue; }
 		const auto& GetCommandAllocator() const { return m_CommandAllocator; }
 		const auto& GetCommandList() const { return m_CommandList; }
+		const auto& GetAllocator() const { return m_Allocator; }
 		const auto& GetFence() const { return m_Fence; }
-		D3D12::FenceValue& GetFenceValue() { return m_FenceValue; }
+		ID3D12::FenceValue& GetFenceValue() { return m_FenceValue; }
 		HANDLE GetFenceEvent() const { return m_FenceEvent; }
+		size_t GetNextCommandListIndex() { return m_NextCommandListIndex; }
+
+		D3D12::DescriptorHeapManager& GetDescriptorHeapManager() { return m_DescriptorHeapManager; }
+		const D3D12::DescriptorHeapManager& GetDescriptorHeapManager() const { return m_DescriptorHeapManager; }
+
+		template<typename T>
+		void DeferredDelete( const T& a_Object )
+		{
+			LOG( LogCategory::DirectX, Debug, "Deferred delete object." );
+			m_ObjectsToDelete.EmplaceBack();
+		}
 
 		//====================================================
 
 	private:
-		ComPtr<D3D12::Factory> m_DXGIFactory = nullptr;
-		ComPtr<D3D12::Device> m_Device = nullptr;
-		ComPtr<D3D12::CommandQueue> m_CommandQueue = nullptr;
-		ComPtr<D3D12::CommandAllocator> m_CommandAllocator = nullptr;
-		ComPtr<D3D12::GraphicsCommandList> m_CommandList = nullptr;
-		ComPtr<D3D12::Fence> m_Fence = nullptr;
-		D3D12::FenceValue m_FenceValue = 0;
+		ComPtr<ID3D12::Factory> m_DXGIFactory = nullptr;
+		ComPtr<ID3D12::Device> m_Device = nullptr;
+		ComPtr<IDXGIAdapter> m_Adapter = nullptr;
+		ComPtr<ID3D12::CommandQueue> m_CommandQueue = nullptr;
+		ComPtr<ID3D12::CommandAllocator> m_CommandAllocator = nullptr;
+		ComPtr<ID3D12::GraphicsCommandList> m_CommandList = nullptr;
+		ComPtr<D3D12MA::Allocator> m_Allocator = nullptr;
+		ComPtr<ID3D12::Fence> m_Fence = nullptr;
+		ID3D12::FenceValue m_FenceValue = 0;
 		HANDLE m_FenceEvent = nullptr;
+		D3D12::DescriptorHeapManager m_DescriptorHeapManager{};
+		size_t m_NextCommandListIndex = 0;
+		Array<D3D12::DeferredDeleteObject> m_ObjectsToDelete{};
 
 		//=====================================================
 
@@ -76,8 +124,8 @@ namespace Tridium {
 		virtual void DumpDebug() override;
 
 	private:
-		ComPtr<D3D12::D3D12Debug> m_D3D12Debug = nullptr;
-		ComPtr<D3D12::DXGIDebug> m_DXGIDebug = nullptr;
+		ComPtr<ID3D12::D3D12Debug> m_D3D12Debug = nullptr;
+		ComPtr<ID3D12::DXGIDebug> m_DXGIDebug = nullptr;
 	#endif
 	};
 

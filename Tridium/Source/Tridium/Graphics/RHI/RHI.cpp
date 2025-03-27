@@ -57,6 +57,8 @@ namespace Tridium {
 
 		s_RHIGlobals.IsRHIInitialised = true;
 		s_RHIGlobals.Config = a_Config;
+		TODO( "Set up proper Multithreading query" );
+		s_RHIGlobals.SupportsMultithreading = a_Config.SingleThreaded == false;
 		
 		if ( a_Config.CreateSwapChain )
 		{
@@ -107,7 +109,14 @@ namespace Tridium {
 			return false;
 		}
 
-		return swapChain->Present();
+		bool success = swapChain->Present();
+		if ( success )
+		{
+			s_RHIGlobals.FrameIndex++;
+			s_RHIGlobals.FrameIndex %= RHIConstants::MaxFrameBuffers;
+		}
+
+		return success;
 	}
 
 	bool RHI::ExecuteCommandList( const RHICommandListRef& a_CommandList )
@@ -118,6 +127,11 @@ namespace Tridium {
 		}
 
 		return s_DynamicRHI->ExecuteCommandList( a_CommandList );
+	}
+
+	uint32_t RHI::FrameIndex()
+	{
+		return s_RHIGlobals.FrameIndex;
 	}
 
 	const char* RHI::GetRHIName()
@@ -221,7 +235,7 @@ namespace Tridium {
 		return s_DynamicRHI->CreateSwapChain( a_Desc );
 	}
 
-	RHITextureRef RHI::CreateTexture2D( uint32_t a_Width, uint32_t a_Height, Span<const uint8_t> a_Data, ERHITextureFormat a_Format, const char* a_Name, ERHIUsageHint a_Usage, SharedPtr<RHIResourceAllocator> a_Allocator )
+	RHITextureRef RHI::CreateTexture2D( uint32_t a_Width, uint32_t a_Height, Span<const uint8_t> a_Data, ERHITextureFormat a_Format, const char* a_Name, ERHIUsageHint a_Usage )
 	{
 		const size_t ExpectedSize = a_Width * a_Height * GetTextureFormatSize( a_Format );
 		if ( !ASSERT_LOG( a_Data.size() == ExpectedSize, "Data size does not match the expected size for the given texture format!" ) )
@@ -236,30 +250,26 @@ namespace Tridium {
 		desc.InitialData = a_Data;
 		desc.Format = a_Format;
 		desc.UsageHint = a_Usage;
-		//desc.Allocator = a_Allocator;
-
 		return CreateTexture( desc );
 	}
 
-	RHIIndexBufferRef RHI::CreateIndexBuffer( Span<const Byte> a_InitialData, ERHIDataType a_DataType, const char* a_Name, ERHIUsageHint a_UsageHint, SharedPtr<RHIResourceAllocator> a_Allocator )
+	RHIIndexBufferRef RHI::CreateIndexBuffer( Span<const Byte> a_InitialData, ERHIDataType a_DataType, const char* a_Name, ERHIUsageHint a_UsageHint )
 	{
 		RHIIndexBufferDescriptor desc;
 		desc.Name = a_Name;
 		desc.InitialData = a_InitialData;
 		desc.UsageHint = a_UsageHint;
 		desc.DataType = a_DataType;
-		//desc.Allocator = a_Allocator;
 		return CreateIndexBuffer( desc );
 	}
 
-	RHIVertexBufferRef RHI::CreateVertexBuffer( Span<const Byte> a_InitialData, RHIVertexLayout a_Layout, const char* a_Name, ERHIUsageHint a_UsageHint, SharedPtr<RHIResourceAllocator> a_Allocator )
+	RHIVertexBufferRef RHI::CreateVertexBuffer( Span<const Byte> a_InitialData, RHIVertexLayout a_Layout, const char* a_Name, ERHIUsageHint a_UsageHint )
 	{
 		RHIVertexBufferDescriptor desc;
 		desc.Name = a_Name;
 		desc.InitialData = a_InitialData;
 		desc.Layout = a_Layout;
 		desc.UsageHint = a_UsageHint;
-		//desc.Allocator = a_Allocator;
 		return CreateVertexBuffer( desc );
 	}
 

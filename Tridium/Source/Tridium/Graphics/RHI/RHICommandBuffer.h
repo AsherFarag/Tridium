@@ -151,6 +151,8 @@ namespace Tridium {
         {
 			InlineArray<RHITexture*, RHIConstants::MaxColorTargets> RTV;
 			Color ClearColor;
+			uint8_t StencilValue;
+			float DepthValue;
 			bool DepthBit;
             bool StencilBit;
         };
@@ -553,7 +555,7 @@ namespace Tridium {
 			return *this;
 		}
 
-		RHIGraphicsCommandBuffer& ClearRenderTargets( Span<RHITextureRef> a_RenderTarget, Color a_ClearColor, bool a_DepthBit, bool a_StencilBit DEBUG_INFO )
+		RHIGraphicsCommandBuffer& ClearRenderTargets( Span<RHITextureRef> a_RenderTarget, Color a_ClearColor, bool a_ClearDepth, float a_DepthValue = 1.0f, bool a_ClearStencil = false, uint8_t a_StencilValue = 0 DEBUG_INFO )
 		{
 			RHICommand& cmd = Commands.EmplaceBack( RHICommand::ClearRenderTargets() );
 			RHICommand::ClearRenderTargets& data = cmd.Get<RHICommand::ClearRenderTargets>();
@@ -563,8 +565,10 @@ namespace Tridium {
 				m_Textures.insert( a_RenderTarget[i] );
 			}
 			data.ClearColor = a_ClearColor;
-			data.DepthBit = a_DepthBit;
-			data.StencilBit = a_StencilBit;
+			data.DepthValue = a_DepthValue;
+			data.StencilValue = a_StencilValue;
+			data.DepthBit = a_ClearDepth;
+			data.StencilBit = a_ClearStencil;
 
 			ADD_DEBUG_INFO();
 			return *this;

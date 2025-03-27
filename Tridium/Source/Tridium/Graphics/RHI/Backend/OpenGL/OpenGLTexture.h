@@ -37,6 +37,7 @@ namespace Tridium {
 			return &m_Handle;
 		}
 
+		bool Resize( uint32_t a_Width, uint32_t a_Height, uint32_t a_Depth = 1 ) override;
 
 
 		GLuint GetGLHandle() const { return m_Handle; }

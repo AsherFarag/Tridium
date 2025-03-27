@@ -41,15 +41,14 @@ namespace Tridium {
 
 		//=====================================================
 		// Resource creation
-		virtual RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc, const RHIResourceAllocatorRef& a_Allocator = nullptr ) override;
-		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc, const RHIResourceAllocatorRef& a_Allocator = nullptr ) override;
+		virtual RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc ) override;
+		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc ) override;
 		virtual RHIIndexBufferRef CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc ) override;
 		virtual RHIVertexBufferRef CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc ) override;
 		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc ) override;
 		virtual RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc ) override;
 		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc ) override;
 		virtual RHIShaderBindingLayoutRef CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc ) override;
-		virtual RHIResourceAllocatorRef CreateResourceAllocator( const RHIResourceAllocatorDescriptor& a_Desc ) override;
 		virtual RHISwapChainRef CreateSwapChain( const RHISwapChainDescriptor& a_Desc ) override;
 		//=====================================================
 

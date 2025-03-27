@@ -1,5 +1,6 @@
 #pragma once
 #include "D3D12Common.h"
+#include "D3D12DescriptorHeap.h"
 #include <Tridium/Graphics/RHI/RHICommandList.h>
 
 namespace Tridium {
@@ -18,10 +19,19 @@ namespace Tridium {
 		bool SetComputeCommands( const RHIComputeCommandBuffer& a_CmdBuffer ) override;
 
 		TODO( "Seperate cmd lists into graphics and compute" );
-		ComPtr<D3D12::GraphicsCommandList> CommandList{};
+		ComPtr<ID3D12::GraphicsCommandList> CommandList{};
 		RHIShaderBindingLayout* CurrentSBL = nullptr;
-		Array<ComPtr<D3D12::DescriptorHeap>> DescriptorHeaps{};
-		uint32_t ShaderInputOffset = 0;
+
+	private:
+		// Reset after each execution
+		struct PerExecuteData
+		{
+			Array<D3D12::DescriptorHeapRef> Heaps{};
+			D3D12::DescriptorHeapRef LastRTVHeap{};
+			D3D12::DescriptorHeapRef LastDSVHeap{};
+			uint32_t ShaderInputOffset = 0;
+		} m_PerExecuteData{};
+
 
 	private:
 		void SetShaderBindingLayout( const RHICommand::SetShaderBindingLayout& a_Data );

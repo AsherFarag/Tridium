@@ -19,13 +19,13 @@ namespace Tridium {
 			D3D12_BLEND_DESC desc = {};
 			desc.AlphaToCoverageEnable = false;
 			desc.IndependentBlendEnable = false;
-			desc.RenderTarget[0].BlendEnable = a_BlendState.IsEnabled;
-			desc.RenderTarget[0].SrcBlend = D3D12::To<D3D12_BLEND>::From( a_BlendState.SrcFactorColour );
-			desc.RenderTarget[0].DestBlend = D3D12::To<D3D12_BLEND>::From( a_BlendState.DstFactorColour );
-			desc.RenderTarget[0].BlendOp = D3D12::To<D3D12_BLEND_OP>::From( a_BlendState.BlendEquation );
-			desc.RenderTarget[0].SrcBlendAlpha = D3D12::To<D3D12_BLEND>::From( a_BlendState.SrcFactorAlpha );
-			desc.RenderTarget[0].DestBlendAlpha = D3D12::To<D3D12_BLEND>::From( a_BlendState.DstFactorAlpha );
-			desc.RenderTarget[0].BlendOpAlpha = D3D12::To<D3D12_BLEND_OP>::From( a_BlendState.BlendEquation );
+			desc.RenderTarget[0].BlendEnable    = a_BlendState.IsEnabled;
+			desc.RenderTarget[0].SrcBlend       = D3D12::Translate( a_BlendState.SrcFactorColour );
+			desc.RenderTarget[0].DestBlend      = D3D12::Translate( a_BlendState.DstFactorColour );
+			desc.RenderTarget[0].BlendOp        = D3D12::Translate( a_BlendState.BlendEquation );
+			desc.RenderTarget[0].SrcBlendAlpha  = D3D12::Translate( a_BlendState.SrcFactorAlpha );
+			desc.RenderTarget[0].DestBlendAlpha = D3D12::Translate( a_BlendState.DstFactorAlpha );
+			desc.RenderTarget[0].BlendOpAlpha   = D3D12::Translate( a_BlendState.BlendEquation );
 			desc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 			return desc;
 		}
@@ -71,14 +71,14 @@ namespace Tridium {
 			TODO( "Depth write mask" );
 			desc.DepthWriteMask = a_PSD.DepthState.IsEnabled ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
 
-			desc.DepthFunc = D3D12::To<D3D12_COMPARISON_FUNC>::From( a_PSD.DepthState.Comparison );
+			desc.DepthFunc = D3D12::Translate( a_PSD.DepthState.Comparison );
 			desc.StencilEnable = a_PSD.StencilState.IsEnabled;
 			desc.StencilReadMask = a_PSD.StencilState.StencilReadMask;
 			desc.StencilWriteMask = a_PSD.StencilState.StencilWriteMask;
-			desc.FrontFace.StencilFailOp = D3D12::To<D3D12_STENCIL_OP>::From( a_PSD.StencilState.Fail );
-			desc.FrontFace.StencilDepthFailOp = D3D12::To<D3D12_STENCIL_OP>::From( a_PSD.StencilState.DepthFail );
-			desc.FrontFace.StencilPassOp = D3D12::To<D3D12_STENCIL_OP>::From( a_PSD.StencilState.Pass );
-			desc.FrontFace.StencilFunc = D3D12::To<D3D12_COMPARISON_FUNC>::From( a_PSD.StencilState.Comparison );
+			desc.FrontFace.StencilFailOp = D3D12::Translate( a_PSD.StencilState.Fail );
+			desc.FrontFace.StencilDepthFailOp = D3D12::Translate( a_PSD.StencilState.DepthFail );
+			desc.FrontFace.StencilPassOp = D3D12::Translate( a_PSD.StencilState.Pass );
+			desc.FrontFace.StencilFunc = D3D12::Translate( a_PSD.StencilState.Comparison );
 			desc.BackFace = desc.FrontFace;
 			return desc;
 		}
@@ -96,7 +96,7 @@ namespace Tridium {
 			VertexLayout[i] = {
 				.SemanticName = element.Name.data(), 
 				.SemanticIndex = 0,
-				.Format = D3D12::To<DXGI_FORMAT>::From( element.Type ),
+				.Format = D3D12::Translate( element.Type ),
 				.InputSlot = 0,
 				.AlignedByteOffset = static_cast<UINT>( element.Offset ),
 				.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
@@ -132,22 +132,25 @@ namespace Tridium {
 		// Set the rasterizer state
 		psd.RasterizerState = ToD3D12::GetRasterizerDesc( *desc );
 
+		// Set the depth stencil state
 		psd.DepthStencilState = ToD3D12::GetDepthStencilDesc( *desc );
-		psd.PrimitiveTopologyType = D3D12::To<D3D12_PRIMITIVE_TOPOLOGY_TYPE>::From( desc->Topology );
+		psd.DSVFormat = D3D12::Translate( desc->DepthStencilFormat );
+
+		psd.PrimitiveTopologyType = D3D12::Translate( desc->Topology );
 
 		psd.NumRenderTargets = desc->ColourTargetFormats.Size();
 		for ( size_t i = 0; i < desc->ColourTargetFormats.Size(); ++i )
 		{
-			psd.RTVFormats[i] = D3D12::To<DXGI_FORMAT>::From( desc->ColourTargetFormats[i] );
+			psd.RTVFormats[i] = D3D12::Translate( desc->ColourTargetFormats[i] );
 		}
-		psd.DSVFormat = D3D12::To<DXGI_FORMAT>::From( desc->DepthStencilFormat );
+		psd.DSVFormat = D3D12::Translate( desc->DepthStencilFormat );
 		psd.SampleDesc.Count = 1;
 		psd.SampleDesc.Quality = 0;
 		psd.NodeMask = 0;
 		psd.CachedPSO = { nullptr, 0 };
 
 		// Create the pipeline state object
-		ComPtr<D3D12::Device> device = RHI::GetD3D12RHI()->GetDevice();
+		ComPtr<ID3D12::Device> device = RHI::GetD3D12RHI()->GetDevice();
 		if ( FAILED( device->CreateGraphicsPipelineState( &psd, IID_PPV_ARGS( &PSO ) ) ) )
 		{
 			LOG( LogCategory::RHI, Error, "Failed to create graphics pipeline state" );

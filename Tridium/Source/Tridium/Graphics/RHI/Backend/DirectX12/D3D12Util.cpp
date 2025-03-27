@@ -1,41 +1,23 @@
 #include "tripch.h"
 #include "D3D12Util.h"
 #include "D3D12DynamicRHI.h"
+#include <Tridium/Graphics/RHI/RHI.h>
 
 namespace Tridium::D3D12 {
 
-	ComPtr<ID3D12RootSignature> CreateRootSignature( const D3D12_ROOT_SIGNATURE_DESC1& a_Desc )
+	bool ManagedResource::Commit( const D3D12_RESOURCE_DESC& a_ResourceDesc, const D3D12MA::ALLOCATION_DESC& a_AllocDesc, D3D12_RESOURCE_STATES a_InitialState, const D3D12_CLEAR_VALUE* a_ClearValue, D3D12MA::Allocator* a_Allocator )
 	{
-		D3D12_VERSIONED_ROOT_SIGNATURE_DESC rsDesc = {};
-		rsDesc.Version = D3D_ROOT_SIGNATURE_VERSION_1_1;
-		rsDesc.Desc_1_1 = a_Desc;
-
-		HRESULT hr{ S_OK };
-		ComPtr<ID3DBlob> serializedRootSig;
-		ComPtr<ID3DBlob> errorBlob;
-		hr = D3D12SerializeVersionedRootSignature( &rsDesc, &serializedRootSig, &errorBlob );
-		if ( FAILED( hr ) )
+		if ( a_Allocator == nullptr )
 		{
-			if ( errorBlob )
-			{
-				LOG( LogCategory::DirectX, Error, "Failed to serialize root signature - Error: {0}", (char*)errorBlob->GetBufferPointer() );
-			}
-			else
-			{
-				LOG( LogCategory::DirectX, Error, "Failed to serialize root signature" );
-			}
-			return nullptr;
+			a_Allocator = RHI::GetD3D12RHI()->GetAllocator().Get();
 		}
 
-		ComPtr<ID3D12RootSignature> rootSignature;
-		hr = RHI::GetD3D12RHI()->GetDevice()->CreateRootSignature( 0, serializedRootSig->GetBufferPointer(), serializedRootSig->GetBufferSize(), IID_PPV_ARGS( &rootSignature ) );
-		if ( FAILED( hr ) )
-		{
-			LOG( LogCategory::DirectX, Error, "Failed to create root signature" );
-			return nullptr;
-		}
+		HRESULT hr = a_Allocator->CreateResource(
+			&a_AllocDesc, &a_ResourceDesc,
+			a_InitialState, a_ClearValue,
+			&Allocation, IID_PPV_ARGS( &Resource ) );
 
-		return rootSignature;
+		return SUCCEEDED( hr );
 	}
 
-}
+} // namespace Tridium::D3D12

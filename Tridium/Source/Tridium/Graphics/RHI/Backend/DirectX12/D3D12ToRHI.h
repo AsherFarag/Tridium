@@ -12,6 +12,13 @@ namespace Tridium {
 		template<typename _To>
 		struct To;
 
+		template<typename _From>
+		constexpr auto Translate( _From a_From )
+		{
+			using ToType = To<_From>::FromType;
+			return To<ToType>::From(a_From);
+		}
+
 		//////////////////////////////////////////////////////////////////////////
 		// RHI BLEND OP - D3D12 BLEND 
 		//////////////////////////////////////////////////////////////////////////
@@ -19,6 +26,7 @@ namespace Tridium {
 		template<>
 		struct To<ERHIBlendOp>
 		{
+			using FromType = D3D12_BLEND;
 			static constexpr ERHIBlendOp From( D3D12_BLEND a_Factor )
 			{
 				switch ( a_Factor )
@@ -42,6 +50,7 @@ namespace Tridium {
 		template<>
 		struct To<D3D12_BLEND>
 		{
+			using FromType = ERHIBlendOp;
 			static constexpr D3D12_BLEND From( ERHIBlendOp a_Factor )
 			{
 				switch ( a_Factor )
@@ -69,6 +78,7 @@ namespace Tridium {
 		template<>
 		struct To<ERHIBlendEq>
 		{
+			using FromType = D3D12_BLEND_OP;
 			static constexpr ERHIBlendEq From( D3D12_BLEND_OP a_Eq )
 			{
 				switch ( a_Eq )
@@ -86,6 +96,7 @@ namespace Tridium {
 		template<>
 		struct To<D3D12_BLEND_OP>
 		{
+			using FromType = ERHIBlendEq;
 			static constexpr D3D12_BLEND_OP From( ERHIBlendEq a_Eq )
 			{
 				switch ( a_Eq )
@@ -107,6 +118,7 @@ namespace Tridium {
 		template<>
 		struct To<ERHIComparison>
 		{
+			using FromType = D3D12_COMPARISON_FUNC;
 			static constexpr ERHIComparison From( D3D12_COMPARISON_FUNC a_Comparison )
 			{
 				switch ( a_Comparison )
@@ -127,6 +139,7 @@ namespace Tridium {
 		template<>
 		struct To<D3D12_COMPARISON_FUNC>
 		{
+			using FromType = ERHIComparison;
 			static constexpr D3D12_COMPARISON_FUNC From( ERHIComparison a_Comparison )
 			{
 				switch ( a_Comparison )
@@ -151,6 +164,7 @@ namespace Tridium {
 		template<>
 		struct To<ERHIStencilOp>
 		{
+			using FromType = D3D12_STENCIL_OP;
 			static constexpr ERHIStencilOp From( D3D12_STENCIL_OP a_Op )
 			{
 				switch ( a_Op )
@@ -169,6 +183,7 @@ namespace Tridium {
 		template<>
 		struct To<D3D12_STENCIL_OP>
 		{
+			using FromType = ERHIStencilOp;
 			static constexpr D3D12_STENCIL_OP From( ERHIStencilOp a_Op )
 			{
 				switch ( a_Op )
@@ -191,6 +206,7 @@ namespace Tridium {
 		template<>
 		struct To<ERHITopology>
 		{
+			using FromType = D3D12_PRIMITIVE_TOPOLOGY_TYPE;
 			static constexpr ERHITopology From( D3D12_PRIMITIVE_TOPOLOGY_TYPE a_Topology )
 			{
 				switch ( a_Topology )
@@ -206,6 +222,7 @@ namespace Tridium {
 		template<>
 		struct To<D3D12_PRIMITIVE_TOPOLOGY_TYPE>
 		{
+			using FromType = ERHITopology;
 			static constexpr D3D12_PRIMITIVE_TOPOLOGY_TYPE From( ERHITopology a_Topology )
 			{
 				switch ( a_Topology )
@@ -227,6 +244,7 @@ namespace Tridium {
 		template<>
 		struct To<ERHITextureFormat>
 		{
+			using FromType = DXGI_FORMAT;
 			static constexpr ERHITextureFormat From( DXGI_FORMAT a_Format )
 			{
 				switch ( a_Format )
@@ -266,6 +284,7 @@ namespace Tridium {
 		template<>
 		struct To<ERHIVertexElementType>
 		{
+			using FromType = DXGI_FORMAT;
 			static constexpr ERHIVertexElementType From( DXGI_FORMAT a_Format )
 			{
 				switch ( a_Format )
@@ -356,6 +375,7 @@ namespace Tridium {
 		template<>
 		struct To<ERHIShaderVisibility>
 		{
+			using FromType = D3D12_SHADER_VISIBILITY;
 			static constexpr ERHIShaderVisibility From( D3D12_SHADER_VISIBILITY a_Visibility )
 			{
 				switch ( a_Visibility )
@@ -374,6 +394,7 @@ namespace Tridium {
 		template<>
 		struct To<D3D12_SHADER_VISIBILITY>
 		{
+			using FromType = ERHIShaderVisibility;
 			static constexpr D3D12_SHADER_VISIBILITY From( ERHIShaderVisibility a_Visibility )
 			{
 				switch ( a_Visibility )
@@ -396,11 +417,12 @@ namespace Tridium {
 		template<>
 		struct To<D3D12_HEAP_TYPE>
 		{
-			static constexpr D3D12_HEAP_TYPE From( EnumFlags<ERHIUsageHint> a_Type )
+			using FromType = ERHIUsageHint;
+			static constexpr D3D12_HEAP_TYPE From( ERHIUsageHint a_Type )
 			{
-				if ( a_Type.HasFlag( ERHIUsageHint::CPUWriteMany ) ) return D3D12_HEAP_TYPE_UPLOAD;
-				if ( a_Type.HasFlag( ERHIUsageHint::GPUWriteMany ) ) return D3D12_HEAP_TYPE_DEFAULT;
-				if ( a_Type.HasFlag( ERHIUsageHint::CPUReadMany ) )  return D3D12_HEAP_TYPE_READBACK;
+				if ( EnumFlags( a_Type ).HasFlag( ERHIUsageHint::CPUWriteMany ) ) return D3D12_HEAP_TYPE_UPLOAD;
+				if ( EnumFlags( a_Type ).HasFlag( ERHIUsageHint::GPUWriteMany ) ) return D3D12_HEAP_TYPE_DEFAULT;
+				if ( EnumFlags( a_Type ).HasFlag( ERHIUsageHint::CPUReadMany ) )  return D3D12_HEAP_TYPE_READBACK;
 				return D3D12_HEAP_TYPE_DEFAULT; // Default to GPU memory
 			}
 		};
@@ -412,6 +434,7 @@ namespace Tridium {
 		template<>
 		struct To<D3D12_RESOURCE_STATES>
 		{
+			using FromType = ERHIResourceState;
 			static constexpr D3D12_RESOURCE_STATES From( ERHIResourceState a_State )
 			{
 				switch ( a_State )
@@ -438,6 +461,7 @@ namespace Tridium {
 		template<>
 		struct To<ERHIResourceState>
 		{
+			using FromType = D3D12_RESOURCE_STATES;
 			static constexpr ERHIResourceState From( D3D12_RESOURCE_STATES a_State )
 			{
 				switch ( a_State )
@@ -467,6 +491,7 @@ namespace Tridium {
 		template<>
 		struct To<ERHISamplerFilter>
 		{
+			using FromType = D3D12_FILTER;
 			static constexpr ERHISamplerFilter From( D3D12_FILTER a_Filter )
 			{
 				switch ( a_Filter )
@@ -483,6 +508,7 @@ namespace Tridium {
 		template<>
 		struct To<D3D12_FILTER>
 		{
+			using FromType = ERHISamplerFilter;
 			static constexpr D3D12_FILTER From( ERHISamplerFilter a_Filter )
 			{
 				switch ( a_Filter )
@@ -504,6 +530,7 @@ namespace Tridium {
 		template<>
 		struct To<ERHISamplerAddressMode>
 		{
+			using FromType = D3D12_TEXTURE_ADDRESS_MODE;
 			static constexpr ERHISamplerAddressMode From( D3D12_TEXTURE_ADDRESS_MODE a_Mode )
 			{
 				switch ( a_Mode )
@@ -520,6 +547,7 @@ namespace Tridium {
 		template<>
 		struct To<D3D12_TEXTURE_ADDRESS_MODE>
 		{
+			using FromType = ERHISamplerAddressMode;
 			static constexpr D3D12_TEXTURE_ADDRESS_MODE From( ERHISamplerAddressMode a_Mode )
 			{
 				switch ( a_Mode )
@@ -534,21 +562,22 @@ namespace Tridium {
 		};
 
 		//////////////////////////////////////////////////////////////////////////
-		// RHI RESOURCE ALLOCATOR TYPE - D3D12 DESCRIPTOR HEAP TYPE
+		// RHI DESCRIPTOR HEAP TYPE - D3D12 DESCRIPTOR HEAP TYPE
 		//////////////////////////////////////////////////////////////////////////
 
 		template<>
-		struct To<ERHIResourceAllocatorType>
+		struct To<ERHIDescriptorHeapType>
 		{
-			static constexpr ERHIResourceAllocatorType From( D3D12_DESCRIPTOR_HEAP_TYPE a_Type )
+			using FromType = D3D12_DESCRIPTOR_HEAP_TYPE;
+			static constexpr ERHIDescriptorHeapType From( D3D12_DESCRIPTOR_HEAP_TYPE a_Type )
 			{
 				switch ( a_Type )
 				{
-				case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER:         return ERHIResourceAllocatorType::Sampler;
-				case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV:     return ERHIResourceAllocatorType::RenderResource;
-				case D3D12_DESCRIPTOR_HEAP_TYPE_RTV:             return ERHIResourceAllocatorType::RenderTarget;
-				case D3D12_DESCRIPTOR_HEAP_TYPE_DSV:             return ERHIResourceAllocatorType::DepthStencil;
-				default:                                         return ERHIResourceAllocatorType::RenderResource;
+				case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER:         return ERHIDescriptorHeapType::Sampler;
+				case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV:     return ERHIDescriptorHeapType::RenderResource;
+				case D3D12_DESCRIPTOR_HEAP_TYPE_RTV:             return ERHIDescriptorHeapType::RenderTarget;
+				case D3D12_DESCRIPTOR_HEAP_TYPE_DSV:             return ERHIDescriptorHeapType::DepthStencil;
+				default:                                         return ERHIDescriptorHeapType::RenderResource;
 				}
 			}
 		};
@@ -556,15 +585,16 @@ namespace Tridium {
 		template<>
 		struct To<D3D12_DESCRIPTOR_HEAP_TYPE>
 		{
-			static constexpr D3D12_DESCRIPTOR_HEAP_TYPE From( ERHIResourceAllocatorType a_Type )
+			using FromType = ERHIDescriptorHeapType;
+			static constexpr D3D12_DESCRIPTOR_HEAP_TYPE From( ERHIDescriptorHeapType a_Type )
 			{
 				switch ( a_Type )
 				{
-				case ERHIResourceAllocatorType::Sampler:         return D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
-				case ERHIResourceAllocatorType::RenderResource:  return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-				case ERHIResourceAllocatorType::RenderTarget:    return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-				case ERHIResourceAllocatorType::DepthStencil:    return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-				default:                                         return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+				case ERHIDescriptorHeapType::Sampler:         return D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+				case ERHIDescriptorHeapType::RenderResource:  return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+				case ERHIDescriptorHeapType::RenderTarget:    return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+				case ERHIDescriptorHeapType::DepthStencil:    return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+				default:                                      return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 				}
 			}
 		};
@@ -606,6 +636,7 @@ namespace Tridium {
 		template<>
 		struct To<D3D12_RESOURCE_DIMENSION>
 		{
+			using FromType = ERHITextureDimension;
 			static constexpr D3D12_RESOURCE_DIMENSION From( ERHITextureDimension a_Type )
 			{
 				switch ( a_Type )
@@ -621,6 +652,7 @@ namespace Tridium {
 		template<>
 		struct To<D3D12_SRV_DIMENSION>
 		{
+			using FromType = ERHITextureDimension;
 			static constexpr D3D12_SRV_DIMENSION From( ERHITextureDimension a_Type, bool a_IsArray )
 			{
 				switch ( a_Type )
@@ -633,7 +665,6 @@ namespace Tridium {
 				}
 			}
 		};
-
 
 	} // namespace D3D12
 

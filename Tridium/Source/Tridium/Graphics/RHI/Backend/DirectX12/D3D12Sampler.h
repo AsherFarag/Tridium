@@ -30,13 +30,13 @@ namespace Tridium {
 			SamplerHandle = SamplerHeap->GetGPUDescriptorHandleForHeapStart();
 
 			// Create the sampler
-			SamplerDesc.Filter = D3D12::To<D3D12_FILTER>::From( desc->Filter );
-			SamplerDesc.AddressU = D3D12::To<D3D12_TEXTURE_ADDRESS_MODE>::From( desc->AddressU );
-			SamplerDesc.AddressV = D3D12::To<D3D12_TEXTURE_ADDRESS_MODE>::From( desc->AddressV );
-			SamplerDesc.AddressW = D3D12::To<D3D12_TEXTURE_ADDRESS_MODE>::From( desc->AddressW );
+			SamplerDesc.Filter = D3D12::Translate( desc->Filter );
+			SamplerDesc.AddressU = D3D12::Translate( desc->AddressU );
+			SamplerDesc.AddressV = D3D12::Translate( desc->AddressV );
+			SamplerDesc.AddressW = D3D12::Translate( desc->AddressW );
 			SamplerDesc.MipLODBias = desc->MipLODBias;
 			SamplerDesc.MaxAnisotropy = desc->MaxAnisotropy;
-			SamplerDesc.ComparisonFunc = D3D12::To<D3D12_COMPARISON_FUNC>::From( desc->ComparisonFunc );
+			SamplerDesc.ComparisonFunc = D3D12::Translate( desc->ComparisonFunc );
 			SamplerDesc.BorderColor[0] = desc->BorderColor.r;
 			SamplerDesc.BorderColor[1] = desc->BorderColor.g;
 			SamplerDesc.BorderColor[2] = desc->BorderColor.b;
@@ -80,12 +80,12 @@ namespace Tridium {
 			StaticSamplerDesc.MaxLOD = SamplerDesc.MaxLOD;
 			StaticSamplerDesc.ShaderRegister = a_ShaderRegister;
 			StaticSamplerDesc.RegisterSpace = 0;
-			StaticSamplerDesc.ShaderVisibility = D3D12::To<D3D12_SHADER_VISIBILITY>::From( a_ShaderVisibility );
+			StaticSamplerDesc.ShaderVisibility = D3D12::Translate( a_ShaderVisibility );
 			return StaticSamplerDesc;
 		}
 
 		D3D12_SAMPLER_DESC SamplerDesc{};
-		ComPtr<D3D12::DescriptorHeap> SamplerHeap;
+		ComPtr<ID3D12::DescriptorHeap> SamplerHeap;
 		D3D12_GPU_DESCRIPTOR_HANDLE SamplerHandle = {};
 	};
 

@@ -13,7 +13,7 @@ namespace Tridium {
 		bool IsValid() const override;
 		const void* NativePtr() const override;
 
-		ComPtr<D3D12::Resource> IBO;
+		ComPtr<ID3D12::Resource> IBO;
 	};
 
 	class D3D12VertexBuffer final : public RHIVertexBuffer
@@ -28,8 +28,8 @@ namespace Tridium {
 		bool IsValid() const override;
 		const void* NativePtr() const override;
 
-		ComPtr<D3D12::Resource> VBO;
-		ComPtr<D3D12::DescriptorHeap> DescriptorHeap;
+		ComPtr<ID3D12::Resource> VBO;
+		ComPtr<ID3D12::DescriptorHeap> DescriptorHeap;
 	};
 
 } // namespace Tridium

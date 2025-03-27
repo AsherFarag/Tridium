@@ -76,4 +76,31 @@ namespace Tridium {
 		return true;
 	}
 
+	bool OpenGLTexture::Resize( uint32_t a_Width, uint32_t a_Height, uint32_t a_Depth )
+	{
+		if ( m_Handle == 0 )
+		{
+			return false;
+		}
+
+		auto* desc = reinterpret_cast<RHITextureDescriptor*>( Descriptor.Get() );
+		CHECK_LOG( desc, "Failed to get descriptor" );
+
+		if ( a_Width == desc->Width && a_Height == desc->Height && a_Depth == desc->Depth )
+		{
+			return true;
+		}
+
+		desc->Width = a_Width;
+		desc->Height = a_Height;
+		desc->Depth = a_Depth;
+
+		// Resize the texture
+		OpenGL1::BindTexture( GL_TEXTURE_2D, m_Handle );
+		OpenGL1::TexImage2D( GL_TEXTURE_2D, 0, m_Format.InternalFormat, a_Width, a_Height, 0, m_Format.Format, m_Format.Type, nullptr );
+		OpenGL1::BindTexture( GL_TEXTURE_2D, 0 );
+
+		return true;
+	}
+
 } // namespace Tridium::GL

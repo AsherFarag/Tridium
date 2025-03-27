@@ -28,6 +28,11 @@ namespace Tridium {
 		//===========================
 
 		//===========================
+		// RHI Query and Functions
+		uint32_t FrameIndex();
+		//===========================
+
+		//===========================
 		// Fence functions
 	
 		// Creates a fence that can be used to synchronize the CPU and GPU.
@@ -55,22 +60,19 @@ namespace Tridium {
 			Span<const uint8_t> a_Data,
 			ERHITextureFormat a_Format = ERHITextureFormat::RGBA8,
 			const char* a_Name = nullptr,
-			ERHIUsageHint a_Usage = ERHIUsageHint::Default,
-			SharedPtr<RHIResourceAllocator> a_Allocator = nullptr );
+			ERHIUsageHint a_Usage = ERHIUsageHint::Default );
 
 		RHIIndexBufferRef CreateIndexBuffer(
 			Span<const Byte> a_InitialData,
 			ERHIDataType a_DataType = ERHIDataType::UInt16,
 			const char* a_Name = nullptr,
-			ERHIUsageHint a_UsageHint = ERHIUsageHint::Default,
-			SharedPtr<RHIResourceAllocator> a_Allocator = nullptr );
+			ERHIUsageHint a_UsageHint = ERHIUsageHint::Default );
 
 		RHIVertexBufferRef CreateVertexBuffer(
 			Span<const Byte> a_InitialData,
 			RHIVertexLayout a_Layout,
 			const char* a_Name = nullptr,
-			ERHIUsageHint a_UsageHint = ERHIUsageHint::Default,
-			SharedPtr<RHIResourceAllocator> a_Allocator = nullptr );
+			ERHIUsageHint a_UsageHint = ERHIUsageHint::Default );
 		//===========================
 	}
 

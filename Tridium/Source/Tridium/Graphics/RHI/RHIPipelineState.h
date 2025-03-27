@@ -12,7 +12,7 @@ namespace Tridium {
 	//========================
 	struct RHIDepthState
 	{
-		bool IsEnabled = false;
+		bool IsEnabled = true;
 		ERHIDepthOp DepthOp = ERHIDepthOp::Replace;
 		ERHIComparison Comparison = ERHIComparison::Less;
 	};
@@ -80,19 +80,19 @@ namespace Tridium {
 	DEFINE_RHI_RESOURCE( GraphicsPipelineState )
 	{
 		ERHITopology Topology = ERHITopology::Triangle;
-		RHIVertexLayout VertexLayout;
-		RHIShaderBindingLayoutRef ShaderBindingLayout;
+		RHIVertexLayout VertexLayout{};
+		RHIShaderBindingLayoutRef ShaderBindingLayout{};
 
-		RHIShaderModuleRef VertexShader;
-		RHIShaderModuleRef HullShader;
-		RHIShaderModuleRef DomainShader;
-		RHIShaderModuleRef GeometryShader;
-		RHIShaderModuleRef PixelShader;
+		RHIShaderModuleRef VertexShader{};
+		RHIShaderModuleRef HullShader{};
+		RHIShaderModuleRef DomainShader{};
+		RHIShaderModuleRef GeometryShader{};
+		RHIShaderModuleRef PixelShader{};
 
 		RHIBlendState BlendState = RHIBlendStates::Opaque;
-		RHIDepthState DepthState;
-		RHIStencilState StencilState;
-		RHIRasterizerState RasterizerState;
+		RHIDepthState DepthState{};
+		RHIStencilState StencilState{};
+		RHIRasterizerState RasterizerState{};
 
 		FixedArray<ERHITextureFormat, RHIConstants::MaxColorTargets> ColourTargetFormats = {};
 		ERHITextureFormat DepthStencilFormat = ERHITextureFormat::D32;

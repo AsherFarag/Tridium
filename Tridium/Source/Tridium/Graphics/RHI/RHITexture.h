@@ -3,8 +3,9 @@
 
 namespace Tridium {
 
-	DEFINE_ALLOCATABLE_RHI_RESOURCE( Texture,
+	DEFINE_RHI_RESOURCE( Texture,
 		RHISamplerRef Sampler; // Sampler used for the texture. This is only required if RHI_SUPPORT_COMBINED_SAMPLERS is enabled ( found in RHIConfig.h )
+		virtual bool Resize( uint32_t a_Width, uint32_t a_Height, uint32_t a_Depth = 1 ) = 0;
 		)
 	{
 		Span<const uint8_t> InitialData = {}; // Initial data for the texture

@@ -5,9 +5,6 @@ namespace Tridium {
 
 	// Forward declarations
 	class RHIResource;
-	class RHIAllocatableResource;
-	class RHIResourceAllocator;
-	using RHIResourceAllocatorRef = SharedPtr<RHIResourceAllocator>;
 	// ====================
 
 	//=====================================================================
@@ -26,7 +23,6 @@ namespace Tridium {
         GraphicsPipelineState,
 		ComputePipelineState,
         CommandList,
-        ResourceAllocator,
         CommandAllocator,
 		SwapChain,
         COUNT
@@ -51,7 +47,7 @@ namespace Tridium {
 	//  For graphics APIs, a specific implementation of this class will be created.
 	//  E.g. OpenGLTexture -> RHITexture -> RHIResource
 	//======================================================================================================
-	class RHIResource
+	class RHIResource : public IRHIObject
 	{
     public:
         NON_COPYABLE_OR_MOVABLE( RHIResource );
@@ -171,24 +167,6 @@ namespace Tridium {
 		StringView Name;
 	};
 
-	class RHIAllocatableResource : public RHIResource
-	{
-	public:
-		const auto& GetAllocator() const { return m_Allocator; }
-
-		template<typename T>
-		static T::RefType Create( RHIResourceAllocatorRef a_Allocator )
-		{
-			static constexpr auto deleter = []( T* a_Resource ) { a_Resource->Release(); delete a_Resource; };
-			auto resource = new T();
-			resource->m_Allocator = std::move( a_Allocator );
-			return T::RefType( resource, deleter );
-		}
-
-	protected:
-		RHIResourceAllocatorRef m_Allocator = nullptr;
-	};
-
 } // namespace Tridium
 
 #define RHI_RESOURCE_BODY( _Type ) \
@@ -214,20 +192,6 @@ namespace Tridium {
         __VA_ARGS__                                                                                     \
     };                                                                                                  \
     struct RHI##_Name##Descriptor : public ::Tridium::RHIResourceDescriptor<RHI##_Name>
-
-// Helper macro to define an RHI resource type that can be allocated via an RHI resource allocator.
-#define DEFINE_ALLOCATABLE_RHI_RESOURCE(_Name, ...)                                                                 \
-	class RHI##_Name;                                                                                               \
-	struct RHI##_Name##Descriptor;                                                                                  \
-	using RHI##_Name##Ref = SharedPtr<RHI##_Name>;                                                                  \
-	using RHI##_Name##WeakRef = WeakPtr<RHI##_Name>;                                                                \
-	class RHI##_Name : public ::Tridium::RHIAllocatableResource, public ::Tridium::EnableSharedFromThis<RHI##_Name> \
-	{                                                                                                               \
-	public:                                                                                                         \
-		RHI_RESOURCE_BODY(_Name)                                                                                    \
-		__VA_ARGS__                                                                                                 \
-	};                                                                                                              \
-	struct RHI##_Name##Descriptor : public ::Tridium::RHIResourceDescriptor<RHI##_Name>
 
 // Helper macro to define the implementation of a resource type.
 // For usage in an RHI implementation, such as OpenGLTexture.

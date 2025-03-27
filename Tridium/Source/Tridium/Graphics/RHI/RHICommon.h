@@ -71,6 +71,11 @@ namespace Tridium {
 			return true;
 		}
 
+		static bool SupportsMultithreading()
+		{
+			return s_RHIGlobals.SupportsMultithreading;
+		}
+
 		static ERHITextureAlignment GetTextureAlignment()
 		{
 			switch ( RHI::GetRHIType() )

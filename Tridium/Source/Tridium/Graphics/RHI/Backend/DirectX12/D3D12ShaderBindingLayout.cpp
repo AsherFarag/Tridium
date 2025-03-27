@@ -59,7 +59,7 @@ namespace Tridium {
             {
                 if ( binding.IsInlined() )
                 {
-					rootParams.EmplaceBack().AsConstants( binding.WordSize, D3D12::To<D3D12_SHADER_VISIBILITY>::From( binding.Visibility ), binding.BindSlot );
+					rootParams.EmplaceBack().AsConstants( binding.WordSize, D3D12::Translate( binding.Visibility ), binding.BindSlot );
                 }
                 else
                 {
@@ -68,7 +68,7 @@ namespace Tridium {
                     range.Resize( 1 ); // Single descriptor range
 					range[0] = D3D12::DescriptorRange( D3D12_DESCRIPTOR_RANGE_TYPE_CBV, binding.WordSize, binding.BindSlot );
 
-					rootParams.EmplaceBack().AsDescriptorTable( D3D12::To<D3D12_SHADER_VISIBILITY>::From( binding.Visibility ), range );
+					rootParams.EmplaceBack().AsDescriptorTable( D3D12::Translate( binding.Visibility ), range );
                 }
                 break;
             }
@@ -80,7 +80,7 @@ namespace Tridium {
                 range.Resize( 1 );
 				range[0] = D3D12::DescriptorRange( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, binding.BindSlot );
 
-				rootParams.EmplaceBack().AsCBV( D3D12::To<D3D12_SHADER_VISIBILITY>::From( binding.Visibility ), binding.BindSlot );
+				rootParams.EmplaceBack().AsCBV( D3D12::Translate( binding.Visibility ), binding.BindSlot );
                 break;
             }
             case ERHIShaderBindingType::Sampler:
@@ -91,7 +91,7 @@ namespace Tridium {
                 range.Resize( 1 );
 				range[0] = D3D12::DescriptorRange( D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, binding.BindSlot );
 
-				rootParams.EmplaceBack().AsDescriptorTable( D3D12::To<D3D12_SHADER_VISIBILITY>::From( binding.Visibility ), range );
+				rootParams.EmplaceBack().AsDescriptorTable( D3D12::Translate( binding.Visibility ), range );
                 break;
             }
             case ERHIShaderBindingType::CombinedSampler:
@@ -103,7 +103,7 @@ namespace Tridium {
                     range.Resize( 1 );
 					range[0] = D3D12::DescriptorRange( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, binding.BindSlot );
 
-					rootParams.EmplaceBack().AsDescriptorTable( D3D12::To<D3D12_SHADER_VISIBILITY>::From( binding.Visibility ), range );
+					rootParams.EmplaceBack().AsDescriptorTable( D3D12::Translate( binding.Visibility ), range );
                 }
                 {
                     // Dynamic sampler - Descriptor Heap Binding
@@ -112,7 +112,7 @@ namespace Tridium {
                     range.Resize( 1 );
 					range[0] = D3D12::DescriptorRange( D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, binding.BindSlot );
 
-					rootParams.EmplaceBack().AsDescriptorTable( D3D12::To<D3D12_SHADER_VISIBILITY>::From( binding.Visibility ), range );
+					rootParams.EmplaceBack().AsDescriptorTable( D3D12::Translate( binding.Visibility ), range );
                 }
 				break;
             }

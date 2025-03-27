@@ -3,8 +3,10 @@
 
 #if CONFIG_DEBUG
 	#define RHI_DEBUG_ENABLED 1
+	#define RHI_DEBUG_OP( x ) x
 #else
 	#define RHI_DEBUG_ENABLED 0
+	#define RHI_DEBUG_OP( x )
 #endif // CONFIG_DEBUG
 
 //=====================================================================

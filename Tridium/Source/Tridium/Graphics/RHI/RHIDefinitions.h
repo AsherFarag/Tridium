@@ -81,6 +81,9 @@ namespace Tridium {
 		ERHInterfaceType RHIType = ERHInterfaceType::Null;
 		bool UseDebug = false;
 		bool CreateSwapChain = true;
+
+		// Force single-threaded rendering.
+		bool SingleThreaded = false;
 	};
 
 
@@ -115,6 +118,17 @@ namespace Tridium {
 
 
 
+	//===========================
+	// RHI Object Interface
+	//===========================
+	class IRHIObject
+	{
+	public:
+		virtual ~IRHIObject() = default;
+	};
+
+
+	
 	//===========================
 	// Shading Path
 	//===========================
@@ -197,15 +211,29 @@ namespace Tridium {
 
 
 	//=====================================================================
-	// ERHIResourceAllocatorType
+	// ERHIDescriptorHeapType
 	//  The type of resource that the allocator is managing.
-	enum class ERHIResourceAllocatorType : uint8_t
+	enum class ERHIDescriptorHeapType : uint8_t
 	{
 		Unknown = 0,
 		RenderResource, // Resources such as textures, buffers, etc.
 		Sampler,
 		RenderTarget,
 		DepthStencil,
+	};
+
+	//=====================================================================
+	// RHIDescriptorHandle
+	//  A handle to a descriptor in a descriptor heap.
+	struct RHIDescriptorHandle
+	{
+		const ERHIDescriptorHeapType Type;
+		const uint32_t Index;
+
+		constexpr bool Valid() const { return Type != ERHIDescriptorHeapType::Unknown && Index != 0xFFFFFFFFu; }
+		explicit constexpr RHIDescriptorHandle( ERHIDescriptorHeapType a_Type, uint32_t a_Index ) : Type( a_Type ), Index( a_Index ) {}
+		// Returns an invalid descriptor handle.
+		explicit constexpr RHIDescriptorHandle() : Type( ERHIDescriptorHeapType::Unknown ), Index( 0xFFFFFFFFu ) {}
 	};
 
 
@@ -608,6 +636,8 @@ namespace Tridium {
 
 	// Returns the size in bytes of the given texture format.
 	constexpr uint8_t GetTextureFormatSize( ERHITextureFormat a_Format );
+	// Returns if the texture format is a depth format.
+	constexpr bool IsRHIDepthFormat( ERHITextureFormat a_Format );
 
 
 
@@ -840,6 +870,20 @@ namespace Tridium {
 			case BC5:     return 16;
 			case BC7:     return 16;
 			default:      return 0;
+		}
+	}
+
+	constexpr bool IsRHIDepthFormat( ERHITextureFormat a_Format )
+	{
+		switch ( a_Format )
+		{
+			using enum ERHITextureFormat;
+			case D16:
+			case D32:
+			case D24S8:
+				return true;
+			default:
+				return false;
 		}
 	}
 

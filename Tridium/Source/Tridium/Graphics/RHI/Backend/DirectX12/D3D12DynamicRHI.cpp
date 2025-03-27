@@ -22,7 +22,6 @@
 #include "D3D12ShaderBindingLayout.h"
 #include "D3D12CommandList.h"
 #include "D3D12SwapChain.h"
-#include "D3D12ResourceAllocator.h"
 
 namespace Tridium {
 
@@ -65,6 +64,12 @@ namespace Tridium {
             return false;
         }
 
+		// Retrieve the adapter
+		if ( FAILED( m_DXGIFactory->EnumAdapters( 0, &m_Adapter ) ) )
+		{
+			return false;
+		}
+
 		// Create the command queue
         D3D12_COMMAND_QUEUE_DESC cmdQueueDesc{};
         cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
@@ -101,6 +106,33 @@ namespace Tridium {
             return false;
         }
 
+		// Create the Memory Allocator
+		using enum D3D12MA::ALLOCATOR_FLAGS;
+		int allocatorFlags = D3D12MA::ALLOCATOR_FLAG_NONE;
+		allocatorFlags |= ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED;
+		allocatorFlags |= ALLOCATOR_FLAG_MSAA_TEXTURES_ALWAYS_COMMITTED;
+		allocatorFlags |= !RHIQuery::SupportsMultithreading() ? ALLOCATOR_FLAG_SINGLETHREADED : ALLOCATOR_FLAG_NONE;
+		D3D12MA::ALLOCATOR_DESC  allocatorDesc = {
+			.Flags = D3D12MA::ALLOCATOR_FLAGS( allocatorFlags ),
+			.pDevice = m_Device.Get(),
+			.PreferredBlockSize = 0,
+			.pAllocationCallbacks = nullptr,
+			.pAdapter = m_Adapter.Get()
+		};
+		allocatorDesc.pDevice = m_Device.Get();
+		allocatorDesc.pAdapter = m_Adapter.Get();
+		allocatorDesc.PreferredBlockSize = 0;
+		if ( FAILED( D3D12MA::CreateAllocator( &allocatorDesc, &m_Allocator ) ) )
+		{
+			return false;
+		}
+
+		// Init the descriptor heap manager
+		TODO( "Figure out some better values/where to get them from" );
+		const uint32_t numResourceDescriptors = 2048;
+		const uint32_t numSamplerDescriptors = 512;
+		m_DescriptorHeapManager.Init( m_Device.Get(), numResourceDescriptors, numSamplerDescriptors );
+
         return true;
     }
 
@@ -131,7 +163,7 @@ namespace Tridium {
 
     bool D3D12RHI::ExecuteCommandList( RHICommandListRef a_CommandList )
     {
-		D3D12::GraphicsCommandList* cmdList = a_CommandList->As<D3D12CommandList>()->CommandList.Get();
+		ID3D12::GraphicsCommandList* cmdList = a_CommandList->As<D3D12CommandList>()->CommandList.Get();
 		if ( FAILED( cmdList->Close() ) )
 		{
 			return false;
@@ -139,6 +171,7 @@ namespace Tridium {
 
         ID3D12CommandList* cmdLists[] = { cmdList };
         m_CommandQueue->ExecuteCommandLists( 1, cmdLists );
+
 		return true;
     }
 
@@ -177,16 +210,16 @@ namespace Tridium {
 	// RESOURCE CREATION
 	//////////////////////////////////////////////////////////////////////////
 
-	RHISamplerRef D3D12RHI::CreateSampler( const RHISamplerDescriptor& a_Desc, const RHIResourceAllocatorRef& a_Allocator )
+	RHISamplerRef D3D12RHI::CreateSampler( const RHISamplerDescriptor& a_Desc )
 	{
-		RHISamplerRef sampler = RHISampler::Create<D3D12Sampler>( a_Allocator );
+		RHISamplerRef sampler = RHIResource::Create<D3D12Sampler>();
 		CHECK( sampler->Commit( &a_Desc ) );
 		return sampler;
 	}
 
-	RHITextureRef D3D12RHI::CreateTexture( const RHITextureDescriptor& a_Desc, const RHIResourceAllocatorRef& a_Allocator )
+	RHITextureRef D3D12RHI::CreateTexture( const RHITextureDescriptor& a_Desc )
 	{
-		RHITextureRef tex = RHITexture::Create<D3D12Texture>( a_Allocator );
+		RHITextureRef tex = RHIResource::Create<D3D12Texture>();
 		CHECK( tex->Commit( &a_Desc ) );
 		return tex;
 	}
@@ -231,13 +264,6 @@ namespace Tridium {
 		RHIShaderBindingLayoutRef sbl = RHIResource::Create<D3D12ShaderBindingLayout>();
 		CHECK( sbl->Commit( &a_Desc ) );
 		return sbl;
-	}
-
-	RHIResourceAllocatorRef D3D12RHI::CreateResourceAllocator( const RHIResourceAllocatorDescriptor& a_Desc )
-	{
-		RHIResourceAllocatorRef ra = RHIResource::Create<D3D12ResourceAllocator>();
-		CHECK( ra->Commit( &a_Desc ) );
-		return ra;
 	}
 
 	RHISwapChainRef D3D12RHI::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )

@@ -344,7 +344,9 @@ namespace Tridium {
 		}
 
 		// Pack matrices in column-major or row-major order.
-		if ( a_Input.Flags.HasFlag( ERHIShaderCompilerFlags::RowMajor ) )
+		if ( a_Input.Flags.HasFlag( ERHIShaderCompilerFlags::RowMajor ) 
+			|| a_Input.Format == ERHIShaderFormat::HLSL6
+			|| a_Input.Format == ERHIShaderFormat::HLSL6_XBOX )
 		{
 			args.EmplaceBack( L"-Zpr" );
 		}
