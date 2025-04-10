@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/c29c4232-733e-4336-86fb-666d9cee1717)# Tridium
+# Tridium
 ## About
 A 3D game engine featuring an Editor, Physics, ECS, C++ Runtime-Reflection, Serialization, PBR Graphics, and a dynamically-bound RHI system with support for OpenGL and DirectX12.
 To find my latest changes, check out the RHI branch.
