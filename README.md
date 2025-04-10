@@ -8,3 +8,4 @@ To find my latest changes, check out the RHI branch.
 Videos of this project can be found on my [LinkedIn](www.linkedin.com/in/asherfarag).
 
 ![1731220361690](https://github.com/user-attachments/assets/44aac046-a593-46c5-94e9-8eb240d1e0ca)
+![LinkedinGif](https://github.com/user-attachments/assets/cc169e08-8cb0-4f55-88bf-23a1fbe5b180)
