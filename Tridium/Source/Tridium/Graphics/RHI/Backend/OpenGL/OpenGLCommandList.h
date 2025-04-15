@@ -3,21 +3,25 @@
 
 namespace Tridium {
 
-	class OpenGLCommandList : public RHICommandList
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( OpenGLCommandList, RHICommandList )
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION( OpenGL );
+		RHI_RESOURCE_IMPLEMENTATION_BODY( OpenGLCommandList, ERHInterfaceType::OpenGL );
 
-		bool Commit( const void* a_Params ) override { ParamsToDescriptor<RHICommandListDescriptor>( a_Params ); return true; }
-		bool Release() override { return true; }
-		bool IsValid() const override { return true; }
-		const void* NativePtr() const override { return nullptr; }
+		virtual bool Commit( const RHICommandListDescriptor& a_Desc ) override;
+		virtual bool Release() override { return true; }
+		virtual bool IsValid() const override { return true; }
+		virtual const void* NativePtr() const override { return nullptr; }
 
-		bool SetGraphicsCommands( const RHIGraphicsCommandBuffer& a_CmdBuffer ) override;
-		bool SetComputeCommands( const RHIComputeCommandBuffer& a_CmdBuffer ) override;
+		virtual bool SetGraphicsCommands( const RHIGraphicsCommandBuffer& a_CmdBuffer ) override;
+		virtual bool SetComputeCommands( const RHIComputeCommandBuffer& a_CmdBuffer ) override;
 
 	private:
 		Array<GLuint> m_UBOs;
+		struct State
+		{
+			uint32_t NumColorTargets = 0;
+		} m_State;
 
 		void SetShaderBindingLayout( const RHICommand::SetShaderBindingLayout& a_Data );
 		void SetShaderInput( const RHICommand::SetShaderInput& a_Data );
@@ -39,10 +43,6 @@ namespace Tridium {
 		void SetComputePipelineState( const RHICommand::SetComputePipelineState& a_Data );
 		void DispatchCompute( const RHICommand::DispatchCompute& a_Data );
 		void DispatchComputeIndirect( const RHICommand::DispatchComputeIndirect& a_Data );
-
-		void FenceSignal( const RHICommand::FenceSignal& a_Data );
-		void FenceWait( const RHICommand::FenceWait& a_Data );
-		void Execute( const RHICommand::Execute& a_Data );
 	};
 
 } // namespace Tridium

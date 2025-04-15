@@ -19,6 +19,13 @@ namespace Tridium {
 			return To<ToType>::From(a_From);
 		}
 
+		template<typename _From>
+		constexpr auto Translate( EnumFlags<_From> a_From )
+		{
+			using ToType = To<_From>::FromType;
+			return To<ToType>::From( a_From );
+		}
+
 		//////////////////////////////////////////////////////////////////////////
 		// RHI BLEND OP - D3D12 BLEND 
 		//////////////////////////////////////////////////////////////////////////
@@ -33,12 +40,12 @@ namespace Tridium {
 				{
 				case D3D12_BLEND_ZERO:            return ERHIBlendOp::Zero;
 				case D3D12_BLEND_ONE:             return ERHIBlendOp::One;
-				case D3D12_BLEND_SRC_COLOR:       return ERHIBlendOp::SrcColour;
-				case D3D12_BLEND_INV_SRC_COLOR:   return ERHIBlendOp::OneMinusSrcColour;
+				case D3D12_BLEND_SRC_COLOR:       return ERHIBlendOp::SrcColor;
+				case D3D12_BLEND_INV_SRC_COLOR:   return ERHIBlendOp::OneMinusSrcColor;
 				case D3D12_BLEND_SRC_ALPHA:       return ERHIBlendOp::SrcAlpha;
 				case D3D12_BLEND_INV_SRC_ALPHA:   return ERHIBlendOp::OneMinusSrcAlpha;
-				case D3D12_BLEND_DEST_COLOR:      return ERHIBlendOp::DstColour;
-				case D3D12_BLEND_INV_DEST_COLOR:  return ERHIBlendOp::OneMinusDstColour;
+				case D3D12_BLEND_DEST_COLOR:      return ERHIBlendOp::DstColor;
+				case D3D12_BLEND_INV_DEST_COLOR:  return ERHIBlendOp::OneMinusDstColor;
 				case D3D12_BLEND_DEST_ALPHA:      return ERHIBlendOp::DstAlpha;
 				case D3D12_BLEND_INV_DEST_ALPHA:  return ERHIBlendOp::OneMinusDstAlpha;
 				case D3D12_BLEND_SRC_ALPHA_SAT:   return ERHIBlendOp::SrcAlphaSaturate;
@@ -57,12 +64,12 @@ namespace Tridium {
 				{
 				case ERHIBlendOp::Zero:              return D3D12_BLEND_ZERO;
 				case ERHIBlendOp::One:               return D3D12_BLEND_ONE;
-				case ERHIBlendOp::SrcColour:         return D3D12_BLEND_SRC_COLOR;
-				case ERHIBlendOp::OneMinusSrcColour: return D3D12_BLEND_INV_SRC_COLOR;
+				case ERHIBlendOp::SrcColor:         return D3D12_BLEND_SRC_COLOR;
+				case ERHIBlendOp::OneMinusSrcColor: return D3D12_BLEND_INV_SRC_COLOR;
 				case ERHIBlendOp::SrcAlpha:          return D3D12_BLEND_SRC_ALPHA;
 				case ERHIBlendOp::OneMinusSrcAlpha:  return D3D12_BLEND_INV_SRC_ALPHA;
-				case ERHIBlendOp::DstColour:         return D3D12_BLEND_DEST_COLOR;
-				case ERHIBlendOp::OneMinusDstColour: return D3D12_BLEND_INV_DEST_COLOR;
+				case ERHIBlendOp::DstColor:         return D3D12_BLEND_DEST_COLOR;
+				case ERHIBlendOp::OneMinusDstColor: return D3D12_BLEND_INV_DEST_COLOR;
 				case ERHIBlendOp::DstAlpha:          return D3D12_BLEND_DEST_ALPHA;
 				case ERHIBlendOp::OneMinusDstAlpha:  return D3D12_BLEND_INV_DEST_ALPHA;
 				case ERHIBlendOp::SrcAlphaSaturate:  return D3D12_BLEND_SRC_ALPHA_SAT;
@@ -223,16 +230,16 @@ namespace Tridium {
 		struct To<D3D12_PRIMITIVE_TOPOLOGY_TYPE>
 		{
 			using FromType = ERHITopology;
-			static constexpr D3D12_PRIMITIVE_TOPOLOGY_TYPE From( ERHITopology a_Topology )
+			static constexpr D3D_PRIMITIVE_TOPOLOGY From( ERHITopology a_Topology )
 			{
 				switch ( a_Topology )
 				{
-				case ERHITopology::Point:         return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
-				case ERHITopology::Line:          return D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
-				case ERHITopology::Triangle:      return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-				case ERHITopology::LineStrip:     return D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
-				case ERHITopology::TriangleStrip: return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-				default:                          return D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED;
+				case ERHITopology::Point:         return D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+				case ERHITopology::Line:          return D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+				case ERHITopology::Triangle:      return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+				case ERHITopology::LineStrip:     return D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
+				case ERHITopology::TriangleStrip: return D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+				default:                          return D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
 				}
 			}
 		};
@@ -242,128 +249,200 @@ namespace Tridium {
 		//////////////////////////////////////////////////////////////////////////
 
 		template<>
-		struct To<ERHITextureFormat>
+		struct To<ERHIFormat>
 		{
 			using FromType = DXGI_FORMAT;
-			static constexpr ERHITextureFormat From( DXGI_FORMAT a_Format )
+			static constexpr ERHIFormat From( DXGI_FORMAT a_Format )
 			{
 				switch ( a_Format )
 				{
-				case DXGI_FORMAT_R8_UNORM:              return ERHITextureFormat::R8;
-				case DXGI_FORMAT_R8G8_UNORM:            return ERHITextureFormat::RG8;
-				case DXGI_FORMAT_R8G8B8A8_UNORM:        return ERHITextureFormat::RGBA8;
-				case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:   return ERHITextureFormat::SRGBA8;
-				case DXGI_FORMAT_R16_UNORM:             return ERHITextureFormat::R16;
-				case DXGI_FORMAT_R16G16_UNORM:          return ERHITextureFormat::RG16;
-				case DXGI_FORMAT_R16G16B16A16_UNORM:    return ERHITextureFormat::RGBA16;
-				case DXGI_FORMAT_R16_FLOAT:             return ERHITextureFormat::R16F;
-				case DXGI_FORMAT_R16G16_FLOAT:          return ERHITextureFormat::RG16F;
-				case DXGI_FORMAT_R16G16B16A16_FLOAT:    return ERHITextureFormat::RGBA16F;
-				case DXGI_FORMAT_R32_FLOAT:             return ERHITextureFormat::R32F;
-				case DXGI_FORMAT_R32G32_FLOAT:          return ERHITextureFormat::RG32F;
-				case DXGI_FORMAT_R32G32B32A32_FLOAT:    return ERHITextureFormat::RGBA32F;
-				case DXGI_FORMAT_R16_SINT:              return ERHITextureFormat::R16I;
-				case DXGI_FORMAT_R16G16_SINT:           return ERHITextureFormat::RG16I;
-				case DXGI_FORMAT_R16G16B16A16_SINT:     return ERHITextureFormat::RGBA16I;
-				case DXGI_FORMAT_R32_SINT:              return ERHITextureFormat::R32I;
-				case DXGI_FORMAT_R32G32_SINT:           return ERHITextureFormat::RG32I;
-				case DXGI_FORMAT_R32G32B32A32_SINT:     return ERHITextureFormat::RGBA32I;
-				case DXGI_FORMAT_D16_UNORM:             return ERHITextureFormat::D16;
-				case DXGI_FORMAT_D32_FLOAT:             return ERHITextureFormat::D32;
-				case DXGI_FORMAT_D24_UNORM_S8_UINT:     return ERHITextureFormat::D24S8;
-				case DXGI_FORMAT_BC1_UNORM:             return ERHITextureFormat::BC1;
-				case DXGI_FORMAT_BC3_UNORM:             return ERHITextureFormat::BC3;
-				case DXGI_FORMAT_BC4_UNORM:             return ERHITextureFormat::BC4;
-				case DXGI_FORMAT_BC5_UNORM:             return ERHITextureFormat::BC5;
-				case DXGI_FORMAT_BC7_UNORM:             return ERHITextureFormat::BC7;
-				default:                                return ERHITextureFormat::Unknown;
+					case DXGI_FORMAT_UNKNOWN:              return ERHIFormat::Unknown;
+
+					// 8-bit Unsigned-Normalized
+					case DXGI_FORMAT_R8_UNORM:             return ERHIFormat::R8_UNORM;
+					case DXGI_FORMAT_R8G8_UNORM:           return ERHIFormat::RG8_UNORM;
+					case DXGI_FORMAT_R8G8B8A8_UNORM:       return ERHIFormat::RGBA8_UNORM;
+
+					// 8-bit Signed-Integer
+					case DXGI_FORMAT_R8_SINT:              return ERHIFormat::R8_SINT;
+					case DXGI_FORMAT_R8G8_SINT:            return ERHIFormat::RG8_SINT;
+					case DXGI_FORMAT_R8G8B8A8_SINT:        return ERHIFormat::RGBA8_SINT;
+
+					// 8-bit Unsigned-Integer
+					case DXGI_FORMAT_R8_UINT:              return ERHIFormat::R8_UINT;
+					case DXGI_FORMAT_R8G8_UINT:            return ERHIFormat::RG8_UINT;
+					case DXGI_FORMAT_R8G8B8A8_UINT:        return ERHIFormat::RGBA8_UINT;
+
+					// 16-bit Unsigned-Normalized
+					case DXGI_FORMAT_R16_UNORM:            return ERHIFormat::R16_UNORM;
+					case DXGI_FORMAT_R16G16_UNORM:         return ERHIFormat::RG16_UNORM;
+					case DXGI_FORMAT_R16G16B16A16_UNORM:   return ERHIFormat::RGBA16_UNORM;
+
+					// 16-bit Float
+					case DXGI_FORMAT_R16_FLOAT:            return ERHIFormat::R16_FLOAT;
+					case DXGI_FORMAT_R16G16_FLOAT:         return ERHIFormat::RG16_FLOAT;
+					case DXGI_FORMAT_R16G16B16A16_FLOAT:   return ERHIFormat::RGBA16_FLOAT;
+
+					// 16-bit Signed-Integer
+					case DXGI_FORMAT_R16_SINT:             return ERHIFormat::R16_SINT;
+					case DXGI_FORMAT_R16G16_SINT:          return ERHIFormat::RG16_SINT;
+					case DXGI_FORMAT_R16G16B16A16_SINT:    return ERHIFormat::RGBA16_SINT;
+
+					// 16-bit Unsigned-Integer
+					case DXGI_FORMAT_R16_UINT:             return ERHIFormat::R16_UINT;
+					case DXGI_FORMAT_R16G16_UINT:          return ERHIFormat::RG16_UINT;
+					case DXGI_FORMAT_R16G16B16A16_UINT:    return ERHIFormat::RGBA16_UINT;
+
+					// 32-bit Float
+					case DXGI_FORMAT_R32_FLOAT:            return ERHIFormat::R32_FLOAT;
+					case DXGI_FORMAT_R32G32_FLOAT:         return ERHIFormat::RG32_FLOAT;
+					case DXGI_FORMAT_R32G32B32_FLOAT:      return ERHIFormat::RGB32_FLOAT;
+					case DXGI_FORMAT_R32G32B32A32_FLOAT:   return ERHIFormat::RGBA32_FLOAT;
+
+					// 32-bit Signed-Integer
+					case DXGI_FORMAT_R32_SINT:             return ERHIFormat::R32_SINT;
+					case DXGI_FORMAT_R32G32_SINT:          return ERHIFormat::RG32_SINT;
+					case DXGI_FORMAT_R32G32B32_SINT:       return ERHIFormat::RGB32_SINT;
+					case DXGI_FORMAT_R32G32B32A32_SINT:    return ERHIFormat::RGBA32_SINT;
+
+					// 32-bit Unsigned-Integer
+					case DXGI_FORMAT_R32_UINT:             return ERHIFormat::R32_UINT;
+					case DXGI_FORMAT_R32G32_UINT:          return ERHIFormat::RG32_UINT;
+					case DXGI_FORMAT_R32G32B32_UINT:       return ERHIFormat::RGB32_UINT;
+					case DXGI_FORMAT_R32G32B32A32_UINT:    return ERHIFormat::RGBA32_UINT;
+
+					// SRGB
+					case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:  return ERHIFormat::SRGBA8_UNORM;
+
+					// Depth-Stencil
+					case DXGI_FORMAT_D16_UNORM:            return ERHIFormat::D16_UNORM;
+					case DXGI_FORMAT_D32_FLOAT:            return ERHIFormat::D32_FLOAT;
+					case DXGI_FORMAT_D24_UNORM_S8_UINT:    return ERHIFormat::D24_UNORM_S8_UINT;
+
+					// Compressed
+					case DXGI_FORMAT_BC1_UNORM:            return ERHIFormat::BC1_UNORM;
+					case DXGI_FORMAT_BC3_UNORM:            return ERHIFormat::BC3_UNORM;
+					case DXGI_FORMAT_BC4_UNORM:            return ERHIFormat::BC4_UNORM;
+					case DXGI_FORMAT_BC5_UNORM:            return ERHIFormat::BC5_UNORM;
+					case DXGI_FORMAT_BC7_UNORM:            return ERHIFormat::BC7_UNORM;
+
+					default:                               return ERHIFormat::Unknown;
 				}
 			}
 		};
-
-		template<>
-		struct To<ERHIVertexElementType>
-		{
-			using FromType = DXGI_FORMAT;
-			static constexpr ERHIVertexElementType From( DXGI_FORMAT a_Format )
-			{
-				switch ( a_Format )
-				{
-				case DXGI_FORMAT_R32_FLOAT:          return ERHIVertexElementType::Float1;
-				case DXGI_FORMAT_R32G32_FLOAT:       return ERHIVertexElementType::Float2;
-				case DXGI_FORMAT_R32G32B32_FLOAT:    return ERHIVertexElementType::Float3;
-				case DXGI_FORMAT_R32G32B32A32_FLOAT: return ERHIVertexElementType::Float4;
-				case DXGI_FORMAT_R8G8B8A8_UINT:      return ERHIVertexElementType::UByte4;
-				case DXGI_FORMAT_R32_SINT:           return ERHIVertexElementType::Int1;
-				case DXGI_FORMAT_R32G32_SINT:        return ERHIVertexElementType::Int2;
-				case DXGI_FORMAT_R32G32B32_SINT:     return ERHIVertexElementType::Int3;
-				case DXGI_FORMAT_R32G32B32A32_SINT:  return ERHIVertexElementType::Int4;
-				case DXGI_FORMAT_R32_UINT:           return ERHIVertexElementType::UInt1;
-				case DXGI_FORMAT_R32G32_UINT:        return ERHIVertexElementType::UInt2;
-				case DXGI_FORMAT_R32G32B32_UINT:     return ERHIVertexElementType::UInt3;
-				case DXGI_FORMAT_R32G32B32A32_UINT:  return ERHIVertexElementType::UInt4;
-				default:                             return ERHIVertexElementType::None;
-				}
-			}
-		};
-
 		template<>
 		struct To<DXGI_FORMAT>
 		{
-			static constexpr DXGI_FORMAT From( ERHITextureFormat a_Format )
+			static constexpr DXGI_FORMAT From( ERHIFormat a_Format )
 			{
 				switch ( a_Format )
 				{
-				case ERHITextureFormat::R8:      return DXGI_FORMAT_R8_UNORM;
-				case ERHITextureFormat::RG8:     return DXGI_FORMAT_R8G8_UNORM;
-				case ERHITextureFormat::RGBA8:   return DXGI_FORMAT_R8G8B8A8_UNORM;
-				case ERHITextureFormat::SRGBA8:  return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-				case ERHITextureFormat::R16:     return DXGI_FORMAT_R16_UNORM;
-				case ERHITextureFormat::RG16:    return DXGI_FORMAT_R16G16_UNORM;
-				case ERHITextureFormat::RGBA16:  return DXGI_FORMAT_R16G16B16A16_UNORM;
-				case ERHITextureFormat::R16F:    return DXGI_FORMAT_R16_FLOAT;
-				case ERHITextureFormat::RG16F:   return DXGI_FORMAT_R16G16_FLOAT;
-				case ERHITextureFormat::RGBA16F: return DXGI_FORMAT_R16G16B16A16_FLOAT;
-				case ERHITextureFormat::R32F:    return DXGI_FORMAT_R32_FLOAT;
-				case ERHITextureFormat::RG32F:   return DXGI_FORMAT_R32G32_FLOAT;
-				case ERHITextureFormat::RGBA32F: return DXGI_FORMAT_R32G32B32A32_FLOAT;
-				case ERHITextureFormat::R16I:    return DXGI_FORMAT_R16_SINT;
-				case ERHITextureFormat::RG16I:   return DXGI_FORMAT_R16G16_SINT;
-				case ERHITextureFormat::RGBA16I: return DXGI_FORMAT_R16G16B16A16_SINT;
-				case ERHITextureFormat::R32I:    return DXGI_FORMAT_R32_SINT;
-				case ERHITextureFormat::RG32I:   return DXGI_FORMAT_R32G32_SINT;
-				case ERHITextureFormat::RGBA32I: return DXGI_FORMAT_R32G32B32A32_SINT;
-				case ERHITextureFormat::D16:     return DXGI_FORMAT_D16_UNORM;
-				case ERHITextureFormat::D32:     return DXGI_FORMAT_D32_FLOAT;
-				case ERHITextureFormat::D24S8:   return DXGI_FORMAT_D24_UNORM_S8_UINT;
-				case ERHITextureFormat::BC1:     return DXGI_FORMAT_BC1_UNORM;
-				case ERHITextureFormat::BC3:     return DXGI_FORMAT_BC3_UNORM;
-				case ERHITextureFormat::BC4:     return DXGI_FORMAT_BC4_UNORM;
-				case ERHITextureFormat::BC5:     return DXGI_FORMAT_BC5_UNORM;
-				case ERHITextureFormat::BC7:     return DXGI_FORMAT_BC7_UNORM;
-				default:                         return DXGI_FORMAT_UNKNOWN;
+					case ERHIFormat::Unknown:           return DXGI_FORMAT_UNKNOWN;
+
+					// 8-bit Unsigned-Normalized
+					case ERHIFormat::R8_UNORM:          return DXGI_FORMAT_R8_UNORM;
+					case ERHIFormat::RG8_UNORM:         return DXGI_FORMAT_R8G8_UNORM;
+					case ERHIFormat::RGB8_UNORM:        return DXGI_FORMAT_UNKNOWN; // DXGI does not support RGB8_UNORM directly
+					case ERHIFormat::RGBA8_UNORM:       return DXGI_FORMAT_R8G8B8A8_UNORM;
+
+					// 8-bit Float (not natively supported in DXGI)
+					case ERHIFormat::R8_FLOAT:          return DXGI_FORMAT_UNKNOWN;
+					case ERHIFormat::RG8_FLOAT:         return DXGI_FORMAT_UNKNOWN;
+					case ERHIFormat::RGB8_FLOAT:        return DXGI_FORMAT_UNKNOWN;
+					case ERHIFormat::RGBA8_FLOAT:       return DXGI_FORMAT_UNKNOWN;
+
+					// 8-bit Signed-Integer
+					case ERHIFormat::R8_SINT:           return DXGI_FORMAT_R8_SINT;
+					case ERHIFormat::RG8_SINT:          return DXGI_FORMAT_R8G8_SINT;
+					case ERHIFormat::RGB8_SINT:         return DXGI_FORMAT_UNKNOWN;
+					case ERHIFormat::RGBA8_SINT:        return DXGI_FORMAT_R8G8B8A8_SINT;
+
+					// 8-bit Unsigned-Integer
+					case ERHIFormat::R8_UINT:           return DXGI_FORMAT_R8_UINT;
+					case ERHIFormat::RG8_UINT:          return DXGI_FORMAT_R8G8_UINT;
+					case ERHIFormat::RGB8_UINT:         return DXGI_FORMAT_UNKNOWN;
+					case ERHIFormat::RGBA8_UINT:        return DXGI_FORMAT_R8G8B8A8_UINT;
+
+					// 16-bit Unsigned-Normalized
+					case ERHIFormat::R16_UNORM:         return DXGI_FORMAT_R16_UNORM;
+					case ERHIFormat::RG16_UNORM:        return DXGI_FORMAT_R16G16_UNORM;
+					case ERHIFormat::RGB16_UNORM:       return DXGI_FORMAT_UNKNOWN;
+					case ERHIFormat::RGBA16_UNORM:      return DXGI_FORMAT_R16G16B16A16_UNORM;
+
+					// 16-bit Float
+					case ERHIFormat::R16_FLOAT:         return DXGI_FORMAT_R16_FLOAT;
+					case ERHIFormat::RG16_FLOAT:        return DXGI_FORMAT_R16G16_FLOAT;
+					case ERHIFormat::RGB16_FLOAT:       return DXGI_FORMAT_UNKNOWN;
+					case ERHIFormat::RGBA16_FLOAT:      return DXGI_FORMAT_R16G16B16A16_FLOAT;
+
+					// 16-bit Signed-Integer
+					case ERHIFormat::R16_SINT:          return DXGI_FORMAT_R16_SINT;
+					case ERHIFormat::RG16_SINT:         return DXGI_FORMAT_R16G16_SINT;
+					case ERHIFormat::RGB16_SINT:        return DXGI_FORMAT_UNKNOWN;
+					case ERHIFormat::RGBA16_SINT:       return DXGI_FORMAT_R16G16B16A16_SINT;
+
+					// 16-bit Unsigned-Integer
+					case ERHIFormat::R16_UINT:          return DXGI_FORMAT_R16_UINT;
+					case ERHIFormat::RG16_UINT:         return DXGI_FORMAT_R16G16_UINT;
+					case ERHIFormat::RGB16_UINT:        return DXGI_FORMAT_UNKNOWN;
+					case ERHIFormat::RGBA16_UINT:       return DXGI_FORMAT_R16G16B16A16_UINT;
+
+					// 32-bit Unsigned-Normalized (DXGI doesn't support *_UNORM for 32-bit)
+					case ERHIFormat::R32_UNORM:         return DXGI_FORMAT_UNKNOWN;
+					case ERHIFormat::RG32_UNORM:        return DXGI_FORMAT_UNKNOWN;
+					case ERHIFormat::RGB32_UNORM:       return DXGI_FORMAT_UNKNOWN;
+					case ERHIFormat::RGBA32_UNORM:      return DXGI_FORMAT_UNKNOWN;
+
+					// 32-bit Float
+					case ERHIFormat::R32_FLOAT:         return DXGI_FORMAT_R32_FLOAT;
+					case ERHIFormat::RG32_FLOAT:        return DXGI_FORMAT_R32G32_FLOAT;
+					case ERHIFormat::RGB32_FLOAT:       return DXGI_FORMAT_R32G32B32_FLOAT;
+					case ERHIFormat::RGBA32_FLOAT:      return DXGI_FORMAT_R32G32B32A32_FLOAT;
+
+					// 32-bit Signed-Integer
+					case ERHIFormat::R32_SINT:          return DXGI_FORMAT_R32_SINT;
+					case ERHIFormat::RG32_SINT:         return DXGI_FORMAT_R32G32_SINT;
+					case ERHIFormat::RGB32_SINT:        return DXGI_FORMAT_R32G32B32_SINT;
+					case ERHIFormat::RGBA32_SINT:       return DXGI_FORMAT_R32G32B32A32_SINT;
+
+					// 32-bit Unsigned-Integer
+					case ERHIFormat::R32_UINT:          return DXGI_FORMAT_R32_UINT;
+					case ERHIFormat::RG32_UINT:         return DXGI_FORMAT_R32G32_UINT;
+					case ERHIFormat::RGB32_UINT:        return DXGI_FORMAT_R32G32B32_UINT;
+					case ERHIFormat::RGBA32_UINT:       return DXGI_FORMAT_R32G32B32A32_UINT;
+
+					// SRGB
+					case ERHIFormat::SRGBA8_UNORM:      return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+
+					// Depth-Stencil
+					case ERHIFormat::D16_UNORM:         return DXGI_FORMAT_D16_UNORM;
+					case ERHIFormat::D32_FLOAT:         return DXGI_FORMAT_D32_FLOAT;
+					case ERHIFormat::D24_UNORM_S8_UINT: return DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+					// Compressed Formats
+					case ERHIFormat::BC1_UNORM:         return DXGI_FORMAT_BC1_UNORM;
+					case ERHIFormat::BC3_UNORM:         return DXGI_FORMAT_BC3_UNORM;
+					case ERHIFormat::BC4_UNORM:         return DXGI_FORMAT_BC4_UNORM;
+					case ERHIFormat::BC5_UNORM:         return DXGI_FORMAT_BC5_UNORM;
+					case ERHIFormat::BC7_UNORM:         return DXGI_FORMAT_BC7_UNORM;
+
+					default:						    return DXGI_FORMAT_UNKNOWN;
 				}
 			}
 
-			static constexpr DXGI_FORMAT From( ERHIVertexElementType a_Format )
+			static constexpr DXGI_FORMAT From( ERHIDataType a_Type )
 			{
-				switch ( a_Format )
+				switch ( a_Type )
 				{
-				case ERHIVertexElementType::Float1: return DXGI_FORMAT_R32_FLOAT;
-				case ERHIVertexElementType::Float2: return DXGI_FORMAT_R32G32_FLOAT;
-				case ERHIVertexElementType::Float3: return DXGI_FORMAT_R32G32B32_FLOAT;
-				case ERHIVertexElementType::Float4: return DXGI_FORMAT_R32G32B32A32_FLOAT;
-				case ERHIVertexElementType::UByte4: return DXGI_FORMAT_R8G8B8A8_UINT;
-				case ERHIVertexElementType::Color:  return DXGI_FORMAT_R32G32B32A32_FLOAT;
-				case ERHIVertexElementType::Int1:   return DXGI_FORMAT_R32_SINT;
-				case ERHIVertexElementType::Int2:   return DXGI_FORMAT_R32G32_SINT;
-				case ERHIVertexElementType::Int3:   return DXGI_FORMAT_R32G32B32_SINT;
-				case ERHIVertexElementType::Int4:   return DXGI_FORMAT_R32G32B32A32_SINT;
-				case ERHIVertexElementType::UInt1:  return DXGI_FORMAT_R32_UINT;
-				case ERHIVertexElementType::UInt2:  return DXGI_FORMAT_R32G32_UINT;
-				case ERHIVertexElementType::UInt3:  return DXGI_FORMAT_R32G32B32_UINT;
-				case ERHIVertexElementType::UInt4:  return DXGI_FORMAT_R32G32B32A32_UINT;
-				default:                            return DXGI_FORMAT_UNKNOWN;
+				case ERHIDataType::UInt8:   return DXGI_FORMAT_R8_UINT;
+				case ERHIDataType::UInt16:  return DXGI_FORMAT_R16_UINT;
+				case ERHIDataType::UInt32:  return DXGI_FORMAT_R32_UINT;
+				case ERHIDataType::Int8:    return DXGI_FORMAT_R8_SINT;
+				case ERHIDataType::Int16:   return DXGI_FORMAT_R16_SINT;
+				case ERHIDataType::Int32:   return DXGI_FORMAT_R32_SINT;
+				case ERHIDataType::Float16: return DXGI_FORMAT_R16_FLOAT;
+				case ERHIDataType::Float32: return DXGI_FORMAT_R32_FLOAT;
+				default:                    return DXGI_FORMAT_UNKNOWN;
 				}
 			}
 		};
@@ -434,52 +513,63 @@ namespace Tridium {
 		template<>
 		struct To<D3D12_RESOURCE_STATES>
 		{
-			using FromType = ERHIResourceState;
-			static constexpr D3D12_RESOURCE_STATES From( ERHIResourceState a_State )
+			using FromType = ERHIResourceStates;
+			static constexpr D3D12_RESOURCE_STATES From( ERHIResourceStates a_State )
 			{
-				switch ( a_State )
-				{
-				case ERHIResourceState::General:              return D3D12_RESOURCE_STATE_COMMON;
-				case ERHIResourceState::CopySource:           return D3D12_RESOURCE_STATE_COPY_SOURCE;
-				case ERHIResourceState::CopyDest:             return D3D12_RESOURCE_STATE_COPY_DEST;
-				case ERHIResourceState::RenderTarget:         return D3D12_RESOURCE_STATE_RENDER_TARGET;
-				case ERHIResourceState::DepthStencilWrite:    return D3D12_RESOURCE_STATE_DEPTH_WRITE;
-				case ERHIResourceState::DepthStencilReadOnly: return D3D12_RESOURCE_STATE_DEPTH_READ;
-				case ERHIResourceState::ShaderResource:       return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-				case ERHIResourceState::UnorderedAccess:      return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-				case ERHIResourceState::IndirectArgument:     return D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
-				case ERHIResourceState::VertexBuffer:         return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-				case ERHIResourceState::IndexBuffer:          return D3D12_RESOURCE_STATE_INDEX_BUFFER;
-				case ERHIResourceState::ConstantBuffer:       return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-				case ERHIResourceState::Present:              return D3D12_RESOURCE_STATE_PRESENT;
-				case ERHIResourceState::GPUWrite:             return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-				default:                                      return D3D12_RESOURCE_STATE_COMMON;
-				}
+				const EnumFlags stateFlags = EnumFlags( a_State );
+				D3D12_RESOURCE_STATES d3d12State = D3D12_RESOURCE_STATE_COMMON;
+
+				if ( stateFlags.HasFlag( ERHIResourceStates::CopySource ) )
+					d3d12State |= D3D12_RESOURCE_STATE_COPY_SOURCE;
+				if ( stateFlags.HasFlag( ERHIResourceStates::CopyDest ) )
+					d3d12State |= D3D12_RESOURCE_STATE_COPY_DEST;
+				if ( stateFlags.HasFlag( ERHIResourceStates::RenderTarget ) )
+					d3d12State |= D3D12_RESOURCE_STATE_RENDER_TARGET;
+				if ( stateFlags.HasFlag( ERHIResourceStates::DepthStencilWrite ) )
+					d3d12State |= D3D12_RESOURCE_STATE_DEPTH_WRITE;
+				if ( stateFlags.HasFlag( ERHIResourceStates::DepthStencilRead ) )
+					d3d12State |= D3D12_RESOURCE_STATE_DEPTH_READ;
+				if ( stateFlags.HasFlag( ERHIResourceStates::ShaderResource ) )
+					d3d12State |= D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+				if ( stateFlags.HasFlag( ERHIResourceStates::UnorderedAccess ) )
+					d3d12State |= D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+				if ( stateFlags.HasFlag( ERHIResourceStates::IndirectArgument ) )
+					d3d12State |= D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+				if ( stateFlags.HasFlag( ERHIResourceStates::VertexBuffer ) )
+					d3d12State |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+				if ( stateFlags.HasFlag( ERHIResourceStates::IndexBuffer ) )
+					d3d12State |= D3D12_RESOURCE_STATE_INDEX_BUFFER;
+				if ( stateFlags.HasFlag( ERHIResourceStates::ConstantBuffer ) )
+					d3d12State |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+				if ( stateFlags.HasFlag( ERHIResourceStates::Present ) )
+					d3d12State |= D3D12_RESOURCE_STATE_PRESENT;
+
+				return d3d12State;
 			}
 		};
 
 		template<>
-		struct To<ERHIResourceState>
+		struct To<ERHIResourceStates>
 		{
 			using FromType = D3D12_RESOURCE_STATES;
-			static constexpr ERHIResourceState From( D3D12_RESOURCE_STATES a_State )
+			static constexpr ERHIResourceStates From( D3D12_RESOURCE_STATES a_State )
 			{
 				switch ( a_State )
 				{
-				case D3D12_RESOURCE_STATE_COMMON:                     return ERHIResourceState::General;
-				case D3D12_RESOURCE_STATE_COPY_SOURCE:                return ERHIResourceState::CopySource;
-				case D3D12_RESOURCE_STATE_COPY_DEST:                  return ERHIResourceState::CopyDest;
-				case D3D12_RESOURCE_STATE_RENDER_TARGET:              return ERHIResourceState::RenderTarget;
-				case D3D12_RESOURCE_STATE_DEPTH_WRITE:                return ERHIResourceState::DepthStencilWrite;
-				case D3D12_RESOURCE_STATE_DEPTH_READ:                 return ERHIResourceState::DepthStencilReadOnly;
-				case D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE:      return ERHIResourceState::ShaderResource;
-				case D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE:  return ERHIResourceState::ShaderResource;
-				case D3D12_RESOURCE_STATE_UNORDERED_ACCESS:           return ERHIResourceState::UnorderedAccess;
-				case D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT:          return ERHIResourceState::IndirectArgument;
-				case D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER: return ERHIResourceState::VertexBuffer;
-				case D3D12_RESOURCE_STATE_INDEX_BUFFER:               return ERHIResourceState::IndexBuffer;
-				//case D3D12_RESOURCE_STATE_PRESENT:                  return ERHIResourceState::Present;
-				default:                                              return ERHIResourceState::General;
+				case D3D12_RESOURCE_STATE_COMMON:                     return ERHIResourceStates::Common;
+				case D3D12_RESOURCE_STATE_COPY_SOURCE:                return ERHIResourceStates::CopySource;
+				case D3D12_RESOURCE_STATE_COPY_DEST:                  return ERHIResourceStates::CopyDest;
+				case D3D12_RESOURCE_STATE_RENDER_TARGET:              return ERHIResourceStates::RenderTarget;
+				case D3D12_RESOURCE_STATE_DEPTH_WRITE:                return ERHIResourceStates::DepthStencilWrite;
+				case D3D12_RESOURCE_STATE_DEPTH_READ:                 return ERHIResourceStates::DepthStencilRead;
+				case D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE:      return ERHIResourceStates::ShaderResource;
+				case D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE:  return ERHIResourceStates::ShaderResource;
+				case D3D12_RESOURCE_STATE_UNORDERED_ACCESS:           return ERHIResourceStates::UnorderedAccess;
+				case D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT:          return ERHIResourceStates::IndirectArgument;
+				case D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER: return ERHIResourceStates::VertexBuffer;
+				case D3D12_RESOURCE_STATE_INDEX_BUFFER:               return ERHIResourceStates::IndexBuffer;
+				//case D3D12_RESOURCE_STATE_PRESENT:                    return ERHIResourceStates::Present;
+				default:                                              return ERHIResourceStates::Unknown;
 				}
 			}
 		};
@@ -663,6 +753,36 @@ namespace Tridium {
 				case ERHITextureDimension::TextureCube:    return a_IsArray ? D3D12_SRV_DIMENSION_TEXTURECUBEARRAY : D3D12_SRV_DIMENSION_TEXTURECUBE;
 				default:                                   return D3D12_SRV_DIMENSION_UNKNOWN;
 				}
+			}
+		};
+
+		//////////////////////////////////////////////////////////////////////////
+		// RHI CLEAR FLAG - D3D12 CLEAR FLAG
+		//////////////////////////////////////////////////////////////////////////
+
+		template<>
+		struct To<D3D12_CLEAR_FLAGS>
+		{
+			using FromType = ERHIClearFlags;
+			static constexpr D3D12_CLEAR_FLAGS From( ERHIClearFlags a_Flag )
+			{
+				int flags = (D3D12_CLEAR_FLAGS)0;
+				if ( bool( a_Flag & ERHIClearFlags::Depth ) ) flags |= (int)D3D12_CLEAR_FLAG_DEPTH;
+				if ( bool( a_Flag & ERHIClearFlags::Stencil ) ) flags |= (int)D3D12_CLEAR_FLAG_STENCIL;
+				return (D3D12_CLEAR_FLAGS)flags;
+			}
+		};
+
+		template<>
+		struct To<ERHIClearFlags>
+		{
+			using FromType = D3D12_CLEAR_FLAGS;
+			static constexpr ERHIClearFlags From( D3D12_CLEAR_FLAGS a_Flag )
+			{
+				ERHIClearFlags flags = (ERHIClearFlags)0;
+				if ( a_Flag & D3D12_CLEAR_FLAG_DEPTH ) flags |= ERHIClearFlags::Depth;
+				if ( a_Flag & D3D12_CLEAR_FLAG_STENCIL ) flags |= ERHIClearFlags::Stencil;
+				return flags;
 			}
 		};
 

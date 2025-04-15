@@ -1,6 +1,7 @@
 #include "tripch.h"
 #include "OpenGLCommandList.h"
 #include "OpenGLTexture.h"
+#include "OpenGLBuffer.h"
 #include "OpenGLSampler.h"
 #include "OpenGLMesh.h"
 #include "OpenGLPipelineState.h"
@@ -8,6 +9,12 @@
 #include "OpenGLShaderBindingLayout.h"
 
 namespace Tridium {
+
+	bool OpenGLCommandList::Commit( const RHICommandListDescriptor& a_Desc )
+	{
+		m_Descriptor = a_Desc;
+		return true;
+	}
 
     bool OpenGLCommandList::SetGraphicsCommands( const RHIGraphicsCommandBuffer& a_CmdBuffer )
     {
@@ -33,15 +40,13 @@ namespace Tridium {
 				PerformCmd( SetComputePipelineState );
 				PerformCmd( DispatchCompute );
 				PerformCmd( DispatchComputeIndirect );
-				PerformCmd( FenceSignal );
-				PerformCmd( FenceWait );
-				PerformCmd( Execute );
 				default: ASSERT_LOG( false, "Invalid command type '{0}' being used in SetGraphicsCommands", RHI::GetCommandName( cmd.Type() ) ); break;
 			}
 		}
 
 		OpenGL3::DeleteBuffers( m_UBOs.Size(), m_UBOs.Data() );
 		m_UBOs.Clear();
+		m_State = {};
 
 		TODO( "Temp fix?" );
 		GLState::BindProgram( 0 );
@@ -53,6 +58,7 @@ namespace Tridium {
 
 	bool OpenGLCommandList::SetComputeCommands( const RHIComputeCommandBuffer& a_CmdBuffer )
 	{
+		NOT_IMPLEMENTED;
 		return false;
 	}
 
@@ -77,7 +83,7 @@ namespace Tridium {
 		if ( !ASSERT_LOG( gpso, "No graphics pipeline state bound!" ) )
 			return;
 
-		const RHIShaderBinding& binding = sbl->GetDescriptor()->GetBindingFromName( a_Data.NameHash );
+		const RHIShaderBinding& binding = sbl->Descriptor().GetBindingFromName( a_Data.NameHash );
 		const GLint uniformLocation = gpso->TryGetUniformLocation( binding.Name );
 		if ( uniformLocation < 0 )
 		{
@@ -179,8 +185,10 @@ namespace Tridium {
 			break;
 		}
 		case ERHIShaderBindingType::Mutable:
+			NOT_IMPLEMENTED;
 			break;
 		case ERHIShaderBindingType::Storage:
+			NOT_IMPLEMENTED;
 			break;
 		case ERHIShaderBindingType::Texture:
 		{
@@ -188,6 +196,7 @@ namespace Tridium {
 			break;
 		}
 		case ERHIShaderBindingType::RWTexture:
+			NOT_IMPLEMENTED;
 			break;
 		case ERHIShaderBindingType::Sampler:
 		{
@@ -212,7 +221,7 @@ namespace Tridium {
 			}
 
 			OpenGLSampler* sampler = texture->Sampler->As<OpenGLSampler>();
-			OpenGL4::BindTextureUnit( uniformLocation, texture->GetGLHandle() );
+			OpenGL4::BindTextureUnit( uniformLocation, texture->TextureObj );
 			OpenGL4::BindSampler( uniformLocation, sampler->GetGLHandle() );
 			break;
 		}
@@ -224,7 +233,7 @@ namespace Tridium {
 
 	void OpenGLCommandList::ResourceBarrier( const RHICommand::ResourceBarrier& a_Data )
 	{
-		// TODO: Implement
+		//NOT_IMPLEMENTED;
 	}
 
 	void OpenGLCommandList::SetGraphicsPipelineState( const RHICommand::SetGraphicsPipelineState& a_Data )
@@ -249,7 +258,87 @@ namespace Tridium {
 		// Bind the VAO
 		GLState::BindVertexArray( pso->GetVAO() );
 
-		// Set the rasterizer state
+
+		// Set blend state
+		for ( uint32_t i = 0; i < RHIConstants::MaxColorTargets; ++i )
+		{
+			const RHIBlendState& blendState = a_Data.PSO->Descriptor().BlendState;
+			if ( blendState.IsEnabled )
+			{
+				OpenGL3::Enablei( GL_BLEND, i );
+				OpenGL4::BlendFuncSeparatei( i, 
+					OpenGL::Translate( blendState.SrcFactorColor ),
+					OpenGL::Translate( blendState.DstFactorColor ),
+					OpenGL::Translate( blendState.SrcFactorAlpha ),
+					OpenGL::Translate( blendState.DstFactorAlpha ) );
+				OpenGL4::BlendEquationi( i, OpenGL::Translate( blendState.BlendEquation ) );
+			}
+			else
+			{
+				OpenGL3::Disablei( GL_BLEND, i );
+			}
+		}
+
+		// Set depth state
+		const RHIDepthState& depthState = a_Data.PSO->Descriptor().DepthState;
+		if ( depthState.IsEnabled )
+		{
+			OpenGL3::Enable( GL_DEPTH_TEST );
+			OpenGL3::DepthMask( depthState.DepthOp == ERHIDepthOp::Replace ? GL_TRUE : GL_FALSE );
+			OpenGL3::DepthFunc( OpenGL::Translate( depthState.DepthOp ) );
+		}
+		else
+		{
+			OpenGL3::Disable( GL_DEPTH_TEST );
+		}
+
+		// Set stencil state
+		const RHIStencilState& stencilState = a_Data.PSO->Descriptor().StencilState;
+		if ( stencilState.IsEnabled )
+		{
+			OpenGL3::Enable( GL_STENCIL_TEST );
+			TODO( "Set the stencil state" );
+			//OpenGL3::StencilFuncSeparate( GL_FRONT, OpenGL::Translate( stencilState.Comparison ), stencilState, stencilState.FrontFace.Mask );
+			//OpenGL3::StencilOpSeparate( GL_FRONT, OpenGL::Translate( stencilState.Fail ), OpenGL::Translate( stencilState.FrontFace.DepthFailOp ), OpenGL::Translate( stencilState.FrontFace.PassOp ) );
+			//OpenGL3::StencilFuncSeparate( GL_BACK, OpenGL::Translate( stencilState.Comparison ), stencilState.Reference, stencilState.BackFace.Mask );
+			//OpenGL3::StencilOpSeparate( GL_BACK, OpenGL::Translate( stencilState.Fail ), OpenGL::Translate( stencilState.BackFace.DepthFailOp ), OpenGL::Translate( stencilState.BackFace.PassOp ) );
+		}
+		else
+		{
+			OpenGL3::Disable( GL_STENCIL_TEST );
+		}
+
+		// Set rasterizer state
+		const RHIRasterizerState& rasterizerState = a_Data.PSO->Descriptor().RasterizerState;
+		switch ( rasterizerState.CullMode )
+		{
+		case ERHIRasterizerCullMode::None:
+			OpenGL3::Disable( GL_CULL_FACE );
+			break;
+		case ERHIRasterizerCullMode::Front:
+			OpenGL3::Enable( GL_CULL_FACE );
+			OpenGL3::CullFace( GL_FRONT );
+			break;
+		case ERHIRasterizerCullMode::Back:
+			OpenGL3::Enable( GL_CULL_FACE );
+			OpenGL3::CullFace( GL_BACK );
+			break;
+		default: ASSERT_LOG( false, "Invalid cull mode in Graphics Pipeline State!" ); break;
+		}
+		switch ( rasterizerState.FillMode )
+		{
+		case ERHIRasterizerFillMode::Point:
+			OpenGL3::PolygonMode( GL_FRONT_AND_BACK, GL_POINT );
+			break;
+		case ERHIRasterizerFillMode::Solid:
+			OpenGL3::PolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+			break;
+		case ERHIRasterizerFillMode::Wireframe:
+			OpenGL3::PolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+			break;
+		default: ASSERT_LOG( false, "Invalid fill mode in Graphics Pipeline State!" ); break;
+		}
+		OpenGL3::FrontFace( rasterizerState.Clockwise ? GL_CW : GL_CCW );
 	}
 
 	void OpenGLCommandList::SetRenderTargets( const RHICommand::SetRenderTargets& a_Data )
@@ -275,18 +364,19 @@ namespace Tridium {
 		constexpr int mipmapLevelToRenderTo = 0;
 
 		// Bind the render targets
-		for ( size_t i = 0; i < a_Data.RTV.Size(); ++i )
+		m_State.NumColorTargets = a_Data.RTV.Size();
+		for ( size_t i = 0; i < m_State.NumColorTargets; ++i )
 		{
 			OpenGLTexture* rtv = a_Data.RTV[i]->As<OpenGLTexture>();
-			OpenGL3::FramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, rtv->GetGLHandle(), mipmapLevelToRenderTo );
+			OpenGL3::FramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, rtv->TextureObj, mipmapLevelToRenderTo );
 		}
 
 		// Bind the depth stencil target
 		if ( a_Data.DSV )
 		{
 			OpenGLTexture* dsv = a_Data.DSV->As<OpenGLTexture>();
-			const bool hasStencil = dsv->GetDescriptor()->Format == ERHITextureFormat::D24S8;
-			OpenGL3::FramebufferTexture2D( GL_FRAMEBUFFER, hasStencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, dsv->GetGLHandle(), mipmapLevelToRenderTo );
+			const bool hasStencil = GetRHIFormatInfo( dsv->Descriptor().Format ).HasStencil;
+			OpenGL3::FramebufferTexture2D( GL_FRAMEBUFFER, hasStencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, dsv->TextureObj, mipmapLevelToRenderTo );
 		}
 
 		ENSURE( OpenGL3::CheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE );
@@ -298,16 +388,22 @@ namespace Tridium {
 
 	void OpenGLCommandList::ClearRenderTargets( const RHICommand::ClearRenderTargets& a_Data )
 	{
-		if ( a_Data.RTV.Size() > 0 )
+		if ( a_Data.ClearFlags.HasFlag( ERHIClearFlags::Color ) )
 		{
-			const Color& colour = a_Data.ClearColor;
-			OpenGL4::ClearColor( colour.r, colour.g, colour.b, colour.a );
-			GLbitfield clearMask = GL_COLOR_BUFFER_BIT;
-			clearMask |= a_Data.DepthBit ? GL_DEPTH_BUFFER_BIT : 0;
-			clearMask |= a_Data.StencilBit ? GL_STENCIL_BUFFER_BIT : 0;
-			OpenGL4::Clear( clearMask );
-
-			TODO( "Support for multiple render targets" );
+			for ( size_t i = 0; i < m_State.NumColorTargets; ++i )
+			{
+				const Color& color = a_Data.ClearColorValues[i];
+				OpenGL3::ClearBufferfv( GL_COLOR, i, &color.r );
+			}
+		}
+		if ( a_Data.ClearFlags.HasFlag( ERHIClearFlags::Depth ) )
+		{
+			OpenGL3::ClearBufferfv( GL_DEPTH, 0, &a_Data.DepthValue );
+		}
+		if ( a_Data.ClearFlags.HasFlag( ERHIClearFlags::Stencil ) )
+		{
+			GLint stencil = a_Data.StencilValue;
+			OpenGL3::ClearBufferiv( GL_STENCIL, 0, &stencil );
 		}
 	}
 
@@ -315,7 +411,7 @@ namespace Tridium {
 	{
 		for ( uint32_t i = 0; i < a_Data.Rects.Size(); ++i )
 		{
-			const ScissorRect& scissor = a_Data.Rects[i];
+			const RHIScissorRect& scissor = a_Data.Rects[i];
 			const GLint left = scissor.Left;
 			const GLint bottom = scissor.Bottom;
 			const GLsizei width = scissor.Right - scissor.Left;
@@ -326,12 +422,12 @@ namespace Tridium {
 
 	void OpenGLCommandList::SetViewports( const RHICommand::SetViewports& a_Data )
 	{
-		OpenGL1::Viewport( a_Data.Viewports[0].X, a_Data.Viewports[0].Y, a_Data.Viewports[0].Width, a_Data.Viewports[0].Height );
-		//for ( uint32_t i = 0; i < a_Data.Viewports.Size(); ++i )
-		//{
-		//	const Viewport& vp = a_Data.Viewports[i];
-		//	OpenGL4::ViewportIndexedf( i, vp.X, vp.Y, vp.Width, vp.Height );
-		//}
+		//OpenGL1::Viewport( a_Data.Viewports[0].X, a_Data.Viewports[0].Y, a_Data.Viewports[0].Width, a_Data.Viewports[0].Height );
+		for ( uint32_t i = 0; i < a_Data.Viewports.Size(); ++i )
+		{
+			const RHIViewport& vp = a_Data.Viewports[i];
+			OpenGL4::ViewportIndexedf( i, vp.X, vp.Y, vp.Width, vp.Height );
+		}
 	}
 
 	void OpenGLCommandList::SetIndexBuffer( const RHICommand::SetIndexBuffer& a_Data )
@@ -346,7 +442,7 @@ namespace Tridium {
 		}
 		else
 		{
-			GLState::s_BoundVBO = a_Data.VBO->As<OpenGLVertexBuffer>()->GetGLHandle();
+			GLState::s_BoundVBO = a_Data.VBO->As<OpenGLBuffer>()->BufferObj;
 		}
 
 		if ( GLState::s_BoundVBO && GLState::s_BoundIBO )
@@ -399,18 +495,6 @@ namespace Tridium {
 	}
 
 	void OpenGLCommandList::DispatchComputeIndirect( const RHICommand::DispatchComputeIndirect& a_Data )
-	{
-	}
-
-	void OpenGLCommandList::FenceSignal( const RHICommand::FenceSignal& a_Data )
-	{
-	}
-
-	void OpenGLCommandList::FenceWait( const RHICommand::FenceWait& a_Data )
-	{
-	}
-
-	void OpenGLCommandList::Execute( const RHICommand::Execute& a_Data )
 	{
 	}
 

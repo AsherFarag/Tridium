@@ -1,6 +1,7 @@
 #include "tripch.h"
 #include "OpenGLSwapChain.h"
 #include "OpenGLDynamicRHI.h"
+#include "../../RHI.h"
 
 namespace Tridium {
 
@@ -8,7 +9,6 @@ namespace Tridium {
     {
 		if ( Window )
         {
-			const RHITextureDescriptor* desc = m_Framebuffer.BackBufferTexture->GetDescriptor();
 			GLState::BindFBO( 0 );
 
 			// Render the framebuffer to the screen
@@ -57,16 +57,12 @@ namespace Tridium {
 		return true;
 	}
 
-    bool OpenGLSwapChain::Commit( const void* a_Params )
+	bool OpenGLSwapChain::Commit( const RHISwapChainDescriptor& a_Desc )
     {
-		const auto* desc = ParamsToDescriptor<RHISwapChainDescriptor>( a_Params );
-		if ( !desc )
-		{
-			return false;
-		}
+		m_Descriptor = a_Desc;
 
-		m_Width = desc->Width;
-		m_Height = desc->Height;
+		m_Width = a_Desc.Width;
+		m_Height = a_Desc.Height;
 
 		Window = glfwGetCurrentContext();
 		if ( !Window )
@@ -74,7 +70,7 @@ namespace Tridium {
 			return false;
 		}
 
-		glfwSwapInterval( desc->Flags.HasFlag( ERHISwapChainFlags::UseVSync ) ? 1 : 0 );
+		glfwSwapInterval( a_Desc.Flags.HasFlag( ERHISwapChainFlags::UseVSync ) ? 1 : 0 );
 
 		OpenGLDynamicRHI* rhi = RHI::GetOpenGLRHI();
 		if ( !rhi )
@@ -82,7 +78,7 @@ namespace Tridium {
 			return false;
 		}
 
-		if ( !m_Framebuffer.Init( *desc ) )
+		if ( !m_Framebuffer.Init( a_Desc ) )
 		{
 			return false;
 		}
@@ -100,15 +96,16 @@ namespace Tridium {
 	bool OpenGLFramebuffer::Init( const RHISwapChainDescriptor& a_Desc )
 	{
 		// Create the back buffer texture
-		RHITextureDescriptor textureDesc;
-		textureDesc.Width = a_Desc.Width;
-		textureDesc.Height = a_Desc.Height;
-		textureDesc.Format = ERHITextureFormat::RGBA8;
-		textureDesc.UsageHint = ERHIUsageHint::RenderTarget;
-		textureDesc.Dimension = ERHITextureDimension::Texture2D;
-		textureDesc.IsRenderTarget = true;
-		textureDesc.Name = "Back Buffer";
-		BackBufferTexture = RHI::GetDynamicRHI()->CreateTexture( textureDesc );
+		const auto texDesc =
+			RHITextureDescriptor{}
+			.SetName( "BackBuffer" )
+			.SetFormat( a_Desc.Format )
+			.SetWidth( a_Desc.Width )
+			.SetHeight( a_Desc.Height )
+			.SetDimension( ERHITextureDimension::Texture2D )
+			.SetBindFlags( ERHIBindFlags::RenderTarget | ERHIBindFlags::ShaderResource );
+
+		BackBufferTexture = RHI::CreateTexture( texDesc );
 		if ( !BackBufferTexture )
 		{
 			return false;

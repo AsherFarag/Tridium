@@ -3,21 +3,28 @@
 
 namespace Tridium {
 
-	class D3D12Texture final : public RHITexture
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( D3D12Texture, RHITexture )
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION( DirectX12 );
+		RHI_RESOURCE_IMPLEMENTATION_BODY( D3D12Texture, ERHInterfaceType::DirectX12 );
 
-		bool Commit( const void* a_Params ) override;
-		bool Release() override;
-		bool Write( const Span<const Byte>& a_Data, size_t a_DstOffset = 0 ) override;
-		bool IsWritable() const override;
-		size_t GetSizeInBytes() const override;
-		bool IsValid() const override;
-		const void* NativePtr() const override;
-		bool Resize( uint32_t a_Width, uint32_t a_Height, uint32_t a_Depth = 1 ) override;
+		virtual bool Commit( const RHITextureDescriptor & a_Desc ) override;
+		virtual bool Release() override;
+		virtual size_t GetSizeInBytes() const override;
+		virtual const void* NativePtr() const override { return Texture.Resource.Get(); }
+		virtual bool IsValid() const override { return Texture.Valid(); }
+		virtual bool Read( Array<Byte>& o_Data, size_t a_SrcOffset = 0 ) { return false; }
+		virtual bool IsReadable() const { return false; }
+		virtual bool Write( const Span<const Byte>& a_Data );
+		virtual bool IsWritable() const;
+		virtual bool IsReady() const;
+		virtual void Wait();
+		virtual bool Resize( uint32_t a_Width, uint32_t a_Height, uint32_t a_Depth = 1 );
 
 		D3D12::ManagedResource Texture{};
+
+	private:
+		uint64_t m_CopyFenceValue = 0;
 	};
 
 }

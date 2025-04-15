@@ -10,7 +10,7 @@ namespace Tridium {
 		D3D12_SHADER_BYTECODE GetShaderBytecode( const RHIShaderModuleRef& a_Shader )
 		{
 			return a_Shader
-				? D3D12_SHADER_BYTECODE( a_Shader->GetDescriptor()->Bytecode.data(), a_Shader->GetDescriptor()->Bytecode.size_bytes() )
+				? D3D12_SHADER_BYTECODE( a_Shader->Descriptor().Bytecode.data(), a_Shader->Descriptor().Bytecode.size_bytes() )
 				: D3D12_SHADER_BYTECODE();
 		}
 
@@ -20,8 +20,8 @@ namespace Tridium {
 			desc.AlphaToCoverageEnable = false;
 			desc.IndependentBlendEnable = false;
 			desc.RenderTarget[0].BlendEnable    = a_BlendState.IsEnabled;
-			desc.RenderTarget[0].SrcBlend       = D3D12::Translate( a_BlendState.SrcFactorColour );
-			desc.RenderTarget[0].DestBlend      = D3D12::Translate( a_BlendState.DstFactorColour );
+			desc.RenderTarget[0].SrcBlend       = D3D12::Translate( a_BlendState.SrcFactorColor );
+			desc.RenderTarget[0].DestBlend      = D3D12::Translate( a_BlendState.DstFactorColor );
 			desc.RenderTarget[0].BlendOp        = D3D12::Translate( a_BlendState.BlendEquation );
 			desc.RenderTarget[0].SrcBlendAlpha  = D3D12::Translate( a_BlendState.SrcFactorAlpha );
 			desc.RenderTarget[0].DestBlendAlpha = D3D12::Translate( a_BlendState.DstFactorAlpha );
@@ -85,14 +85,14 @@ namespace Tridium {
 
 	} // namespace ToD3D12
 
-    bool D3D12GraphicsPipelineState::Commit( const void* a_Params )
+	bool D3D12GraphicsPipelineState::Commit( const RHIGraphicsPipelineStateDescriptor& a_Desc )
     {
-		const RHIGraphicsPipelineStateDescriptor* desc = ParamsToDescriptor<RHIGraphicsPipelineStateDescriptor>( a_Params );
+		m_Descriptor = a_Desc;
 
 		// Create the vertex input layout
-		for ( size_t i = 0; i < desc->VertexLayout.Elements.Size(); ++i )
+		for ( size_t i = 0; i < a_Desc.VertexLayout.Elements.Size(); ++i )
 		{
-			const RHIVertexAttribute& element = desc->VertexLayout.Elements[i];
+			const RHIVertexAttribute& element = a_Desc.VertexLayout.Elements[i];
 			VertexLayout[i] = {
 				.SemanticName = element.Name.data(), 
 				.SemanticIndex = 0,
@@ -109,67 +109,65 @@ namespace Tridium {
 		psd.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 		// Set the root signature
-		psd.pRootSignature = desc->ShaderBindingLayout->As<D3D12ShaderBindingLayout>()->m_RootSignature.Get();
+		psd.pRootSignature = a_Desc.ShaderBindingLayout->As<D3D12ShaderBindingLayout>()->m_RootSignature.Get();
 
 		// Set the input layout
-		psd.InputLayout.NumElements = desc->VertexLayout.Elements.Size();
+		psd.InputLayout.NumElements = a_Desc.VertexLayout.Elements.Size();
 		psd.InputLayout.pInputElementDescs = VertexLayout;
 		psd.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
 
 		// Set the shaders
-		psd.VS = ToD3D12::GetShaderBytecode( desc->VertexShader );
-		psd.HS = ToD3D12::GetShaderBytecode( desc->HullShader );
-		psd.DS = ToD3D12::GetShaderBytecode( desc->DomainShader );
-		psd.GS = ToD3D12::GetShaderBytecode( desc->GeometryShader );
-		psd.PS = ToD3D12::GetShaderBytecode( desc->PixelShader );
+		psd.VS = ToD3D12::GetShaderBytecode( a_Desc.VertexShader );
+		psd.HS = ToD3D12::GetShaderBytecode( a_Desc.HullShader );
+		psd.DS = ToD3D12::GetShaderBytecode( a_Desc.DomainShader );
+		psd.GS = ToD3D12::GetShaderBytecode( a_Desc.GeometryShader );
+		psd.PS = ToD3D12::GetShaderBytecode( a_Desc.PixelShader );
 
 		// Set the blend state
-		psd.BlendState = ToD3D12::GetBlendDesc( desc->BlendState );
+		psd.BlendState = ToD3D12::GetBlendDesc( a_Desc.BlendState );
 
 		// Set the sample mask
 		psd.SampleMask = UINT_MAX; // Enable all samples
 
 		// Set the rasterizer state
-		psd.RasterizerState = ToD3D12::GetRasterizerDesc( *desc );
+		psd.RasterizerState = ToD3D12::GetRasterizerDesc( a_Desc );
 
 		// Set the depth stencil state
-		psd.DepthStencilState = ToD3D12::GetDepthStencilDesc( *desc );
-		psd.DSVFormat = D3D12::Translate( desc->DepthStencilFormat );
+		psd.DepthStencilState = ToD3D12::GetDepthStencilDesc( a_Desc );
+		psd.DSVFormat = D3D12::Translate( a_Desc.DepthStencilFormat );
 
-		psd.PrimitiveTopologyType = D3D12::Translate( desc->Topology );
-
-		psd.NumRenderTargets = desc->ColourTargetFormats.Size();
-		for ( size_t i = 0; i < desc->ColourTargetFormats.Size(); ++i )
+		switch ( a_Desc.Topology )
 		{
-			psd.RTVFormats[i] = D3D12::Translate( desc->ColourTargetFormats[i] );
+			case ERHITopology::Point:         psd.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT; break;
+			case ERHITopology::Line:          psd.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE; break;
+			case ERHITopology::LineStrip:     psd.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE; break;
+			case ERHITopology::Triangle:      psd.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE; break;
+			case ERHITopology::TriangleStrip: psd.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE; break;
+			default:         ASSERT( false ); psd.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED; break;
 		}
-		psd.DSVFormat = D3D12::Translate( desc->DepthStencilFormat );
+
+		psd.NumRenderTargets = a_Desc.ColorTargetFormats.Size();
+		for ( size_t i = 0; i < a_Desc.ColorTargetFormats.Size(); ++i )
+		{
+			psd.RTVFormats[i] = D3D12::Translate( a_Desc.ColorTargetFormats[i] );
+		}
+		psd.DSVFormat = D3D12::Translate( a_Desc.DepthStencilFormat );
 		psd.SampleDesc.Count = 1;
 		psd.SampleDesc.Quality = 0;
 		psd.NodeMask = 0;
 		psd.CachedPSO = { nullptr, 0 };
 
 		// Create the pipeline state object
-		ComPtr<ID3D12::Device> device = RHI::GetD3D12RHI()->GetDevice();
+		ComPtr<ID3D12::Device> device = GetD3D12RHI()->GetDevice();
 		if ( FAILED( device->CreateGraphicsPipelineState( &psd, IID_PPV_ARGS( &PSO ) ) ) )
 		{
 			LOG( LogCategory::RHI, Error, "Failed to create graphics pipeline state" );
 			return false;
 		}
 
-
-	#if RHI_DEBUG_ENABLED
-		if ( RHIQuery::IsDebug() && !desc->Name.empty() )
-		{
-			WString wName( desc->Name.begin(), desc->Name.end() );
-			PSO->SetName( wName.c_str() );
-			D3D12Context::Get()->StringStorage.EmplaceBack( std::move( wName ) );
-		}
-	#endif
+		D3D12_SET_DEBUG_NAME( PSO.Get(), a_Desc.Name );
 
 		return true;
-
-		return false;
     }
 
 	bool D3D12GraphicsPipelineState::Release()

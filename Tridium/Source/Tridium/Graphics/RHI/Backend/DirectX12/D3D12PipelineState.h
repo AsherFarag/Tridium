@@ -3,11 +3,12 @@
 
 namespace Tridium {
 
-	class D3D12GraphicsPipelineState final : public RHIGraphicsPipelineState
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( D3D12GraphicsPipelineState, RHIGraphicsPipelineState )
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION( DirectX12 );
-		bool Commit( const void* a_Params ) override;
+		RHI_RESOURCE_IMPLEMENTATION_BODY( D3D12GraphicsPipelineState, ERHInterfaceType::DirectX12 );
+
+		bool Commit( const RHIGraphicsPipelineStateDescriptor& a_Desc ) override;
 		bool Release() override;
 		bool IsValid() const override { return PSO != nullptr; }
 		const void* NativePtr() const override { return PSO.Get(); }

@@ -117,7 +117,7 @@ namespace Tridium {
 		constexpr auto rend() const { return m_Data.rend(); }
 
 	private:
-		std::array<T, _Size> m_Data;
+		std::array<T, _Size> m_Data{};
 	};
 	// ================================================================================================
 
@@ -166,46 +166,52 @@ namespace Tridium {
 		constexpr size_t MaxSize() const { return _Size; }
 		constexpr bool IsEmpty() const { return ( m_Size == 0 ); }
 		constexpr bool IsValidIndex( size_t a_Index ) const { return ( ( a_Index >= 0 ) && ( a_Index < m_Size ) ); }
-		constexpr void Fill( const T& a_Value ) { m_Storage.Fill( a_Value ); }
+		constexpr void Fill( const T& a_Value ) { m_Storage.Fill( a_Value ); m_Size = MaxSize(); }
 		constexpr void Swap( InlineArray& a_Other ) { m_Storage.Swap( a_Other.m_Storage ); }
 		constexpr void Resize( size_t a_Size ) { m_Size = Math::Min( a_Size, MaxSize() ); }
 
+		constexpr void Fill( const T& a_Value, size_t a_Size )
+		{
+			_Assert( a_Size <= MaxSize(), "Inline Array is full" );
+			if ( a_Size < m_Size )
+			{
+				// Destroy the elements beyond the new size
+				for ( size_t i = a_Size; i < m_Size; ++i )
+				{
+					m_Storage[i].~T();
+				}
+			}
+
+			for ( size_t i = 0; i < a_Size; ++i )
+			{
+				m_Storage[i] = a_Value;
+			}
+		}
+
 		constexpr void PushBack( const T& a_Value )
 		{
-			if constexpr ( !_ForceConstexpr )
-			{
-			#if CONFIG_ENABLE_BOUNDS_CHECK
-				ENSURE_LOG( m_Size < _Size, "Inline Array is full" );
-			#endif
-			}
+			_Assert( m_Size < MaxSize(), "Inline Array is full" );
 			m_Storage[m_Size++] = a_Value;
 		}
 
 		constexpr void PopBack()
 		{
-			m_Size--;
+			if ( m_Size == 0 )
+				return;
+
+			m_Storage[--m_Size].~T();
 		}
 
 		template<typename... _Args>
 		constexpr auto& EmplaceBack( _Args&&... a_Args )
 		{
-			if constexpr ( !_ForceConstexpr )
-			{
-			#if CONFIG_ENABLE_BOUNDS_CHECK
-				ENSURE_LOG( m_Size < _Size, "Inline Array is full" );
-			#endif
-			}
+			_Assert( m_Size < MaxSize(), "Inline Array is full" );
 			return m_Storage[m_Size++] = T( std::forward<_Args>( a_Args )... );
 		}
 
 		constexpr Iterator Insert( Iterator a_Position, const T& a_Value )
 		{
-			if constexpr ( !_ForceConstexpr )
-			{
-			#if CONFIG_ENABLE_BOUNDS_CHECK
-				CENSURE_LOG( m_Size < _Size, "Inline Array is full" );
-			#endif
-			}
+			_Assert( m_Size < MaxSize(), "Inline Array is full" );
 			for ( Iterator it = m_Storage.End(); it != a_Position; --it )
 			{
 				*it = *( it - 1 );
@@ -219,9 +225,10 @@ namespace Tridium {
 		{
 			for ( Iterator it = a_Position; it != m_Storage.End() - 1; ++it )
 			{
-				*it = *( it + 1 );
+				*it = std::move( *( it + 1 ) );
 			}
-			--m_Size;
+			m_Size--;
+
 			return a_Position;
 		}
 
@@ -257,8 +264,22 @@ namespace Tridium {
 		constexpr auto rend() const { return m_Storage.rbegin() + m_Size; }
 
 	private:
-		Storage m_Storage;
+		Storage m_Storage{};
 		size_t m_Size = 0;
+
+		void _Assert( bool a_Value, const char* a_Message )
+		{
+		#if CONFIG_ENABLE_BOUNDS_CHECK
+			if constexpr ( !_ForceConstexpr )
+			{
+				ENSURE_LOG( a_Value, a_Message );
+			}
+			else
+			{
+				assert( a_Value );
+			}
+		#endif	
+		}
 	};
 
 

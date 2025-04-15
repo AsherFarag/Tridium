@@ -55,11 +55,11 @@ namespace Tridium {
 		}
 	};
 
-	class OpenGLSwapChain : public RHISwapChain
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( OpenGLSwapChain, RHISwapChain )
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION( OpenGL );
-		bool Commit( const void* a_Params ) override;
+		RHI_RESOURCE_IMPLEMENTATION_BODY( OpenGLSwapChain, ERHInterfaceType::OpenGL );
+		bool Commit( const RHISwapChainDescriptor& a_Desc ) override;
 		bool Release() override;
 		bool IsValid() const override { return Window != nullptr; }
 		const void* NativePtr() const override { return Window; }

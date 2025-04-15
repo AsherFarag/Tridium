@@ -66,7 +66,7 @@ namespace Tridium {
 			desc.Width = 1280;
 			desc.Height = 720;
 			desc.BufferCount = 2;
-			desc.Format = ERHITextureFormat::RGBA8;
+			desc.Format = ERHIFormat::RGBA8_UNORM;
 			desc.Flags = ERHISwapChainFlags::UseVSync;
 			s_RHIGlobals.SwapChain = RHI::CreateSwapChain( desc );
 			if ( s_RHIGlobals.SwapChain == nullptr )
@@ -78,13 +78,25 @@ namespace Tridium {
 			}
 		}
 
+		// Create the frame fence
+		s_RHIGlobals.Fence = RHI::CreateFence();
+		// Set the initial frame index
+		s_RHIGlobals.FrameIndex = 0;
+		// And initialise the fence values
+		s_RHIGlobals.FrameFenceValue = 0;
+		//s_RHIGlobals.FrameFenceValues.Fill( 0, a_Config.MaxFramesInFlight );
+		//for ( uint64_t& fenceValue : s_RHIGlobals.FrameFenceValues )
+		//{
+		//	fenceValue = 0;
+		//}
+
 		return true;
 	}
 
 	bool RHI::Shutdown()
 	{
-
-		RHI::FenceSignal( RHI::CreateFence() );
+		TODO( "This" );
+		RHI::FrameFenceWait();
 
 		if ( s_DynamicRHI == nullptr )
 		{
@@ -112,7 +124,7 @@ namespace Tridium {
 		bool success = swapChain->Present();
 		if ( success )
 		{
-			s_RHIGlobals.FrameIndex++;
+			++s_RHIGlobals.FrameIndex;
 			s_RHIGlobals.FrameIndex %= RHIConstants::MaxFrameBuffers;
 		}
 
@@ -127,6 +139,15 @@ namespace Tridium {
 		}
 
 		return s_DynamicRHI->ExecuteCommandList( a_CommandList );
+	}
+
+	void RHI::FrameFenceWait()
+	{
+		const RHIFenceRef& fence = RHI::GetGlobalFence();
+		if ( fence )
+		{
+			fence->Wait( ++s_RHIGlobals.FrameFenceValue );
+		}
 	}
 
 	uint32_t RHI::FrameIndex()
@@ -156,30 +177,14 @@ namespace Tridium {
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	// FENCE FUNCTIONS
-	//////////////////////////////////////////////////////////////////////////
-
-	RHIFence RHI::CreateFence()
-	{
-		CHECK( s_DynamicRHI );
-		return s_DynamicRHI->CreateFence();
-	}
-
-	ERHIFenceState RHI::GetFenceState( RHIFence a_Fence )
-	{
-		CHECK( s_DynamicRHI );
-		return s_DynamicRHI->GetFenceState( a_Fence );
-	}
-
-	void RHI::FenceSignal( RHIFence a_Fence )
-	{
-		CHECK( s_DynamicRHI );
-		s_DynamicRHI->FenceSignal( a_Fence );
-	}
-
-	//////////////////////////////////////////////////////////////////////////
 	// RESOURCE CREATION
 	//////////////////////////////////////////////////////////////////////////
+
+	RHIFenceRef RHI::CreateFence( const RHIFenceDescriptor& a_Desc )
+	{
+		CHECK( s_DynamicRHI );
+		return s_DynamicRHI->CreateFence( a_Desc );
+	}
 
 	RHISamplerRef RHI::CreateSampler( const RHISamplerDescriptor& a_Desc )
 	{
@@ -187,34 +192,28 @@ namespace Tridium {
 		return s_DynamicRHI->CreateSampler( a_Desc );
 	}
 
-	RHITextureRef RHI::CreateTexture( const RHITextureDescriptor& a_Desc )
+	RHITextureRef RHI::CreateTexture( const RHITextureDescriptor& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
 	{
 		CHECK( s_DynamicRHI );
-		return s_DynamicRHI->CreateTexture( a_Desc );
+		return s_DynamicRHI->CreateTexture( a_Desc, a_SubResourcesData );
 	}
 
-	RHIIndexBufferRef RHI::CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc )
+	RHIBufferRef RHI::CreateBuffer( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data )
 	{
 		CHECK( s_DynamicRHI );
-		return s_DynamicRHI->CreateIndexBuffer( a_Desc );
-	}
-
-	RHIVertexBufferRef RHI::CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc )
-	{
-		CHECK( s_DynamicRHI );
-		return s_DynamicRHI->CreateVertexBuffer( a_Desc );
-	}
-
-	RHIGraphicsPipelineStateRef RHI::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc )
-	{
-		CHECK( s_DynamicRHI );
-		return s_DynamicRHI->CreateGraphicsPipelineState( a_Desc );
+		return s_DynamicRHI->CreateBuffer( a_Desc, a_Data );
 	}
 
 	RHICommandListRef RHI::CreateCommandList( const RHICommandListDescriptor& a_Desc )
 	{
 		CHECK( s_DynamicRHI );
 		return s_DynamicRHI->CreateCommandList( a_Desc );
+	}
+
+	RHISwapChainRef RHI::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )
+	{
+		CHECK( s_DynamicRHI );
+		return s_DynamicRHI->CreateSwapChain( a_Desc );
 	}
 
 	RHIShaderModuleRef RHI::CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc )
@@ -229,48 +228,10 @@ namespace Tridium {
 		return s_DynamicRHI->CreateShaderBindingLayout( a_Desc );
 	}
 
-	RHISwapChainRef RHI::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )
+	RHIGraphicsPipelineStateRef RHI::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc )
 	{
 		CHECK( s_DynamicRHI );
-		return s_DynamicRHI->CreateSwapChain( a_Desc );
-	}
-
-	RHITextureRef RHI::CreateTexture2D( uint32_t a_Width, uint32_t a_Height, Span<const uint8_t> a_Data, ERHITextureFormat a_Format, const char* a_Name, ERHIUsageHint a_Usage )
-	{
-		const size_t ExpectedSize = a_Width * a_Height * GetTextureFormatSize( a_Format );
-		if ( !ASSERT_LOG( a_Data.size() == ExpectedSize, "Data size does not match the expected size for the given texture format!" ) )
-		{
-			return nullptr;
-		}
-
-		RHITextureDescriptor desc;
-		desc.Name = a_Name;
-		desc.Width = a_Width;
-		desc.Height = a_Height;
-		desc.InitialData = a_Data;
-		desc.Format = a_Format;
-		desc.UsageHint = a_Usage;
-		return CreateTexture( desc );
-	}
-
-	RHIIndexBufferRef RHI::CreateIndexBuffer( Span<const Byte> a_InitialData, ERHIDataType a_DataType, const char* a_Name, ERHIUsageHint a_UsageHint )
-	{
-		RHIIndexBufferDescriptor desc;
-		desc.Name = a_Name;
-		desc.InitialData = a_InitialData;
-		desc.UsageHint = a_UsageHint;
-		desc.DataType = a_DataType;
-		return CreateIndexBuffer( desc );
-	}
-
-	RHIVertexBufferRef RHI::CreateVertexBuffer( Span<const Byte> a_InitialData, RHIVertexLayout a_Layout, const char* a_Name, ERHIUsageHint a_UsageHint )
-	{
-		RHIVertexBufferDescriptor desc;
-		desc.Name = a_Name;
-		desc.InitialData = a_InitialData;
-		desc.Layout = a_Layout;
-		desc.UsageHint = a_UsageHint;
-		return CreateVertexBuffer( desc );
+		return s_DynamicRHI->CreateGraphicsPipelineState( a_Desc );
 	}
 
 	//////////////////////////////////////////////////////////////////////////

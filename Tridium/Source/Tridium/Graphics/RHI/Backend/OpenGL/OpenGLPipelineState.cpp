@@ -4,11 +4,9 @@
 
 namespace Tridium {
 
-    bool OpenGLGraphicsPipelineState::Commit( const void* a_Params )
+	bool OpenGLGraphicsPipelineState::Commit( const RHIGraphicsPipelineStateDescriptor& a_Desc )
     {
-		const auto* desc = ParamsToDescriptor<RHIGraphicsPipelineStateDescriptor>( a_Params );
-		if ( !desc )
-			return false;
+		m_Descriptor = a_Desc;
 
 		// Create the shader program
 		{
@@ -26,11 +24,11 @@ namespace Tridium {
 					}
 				};
 
-			AttachShader( desc->VertexShader, m_ShaderProgramID );
-			AttachShader( desc->HullShader, m_ShaderProgramID );
-			AttachShader( desc->DomainShader, m_ShaderProgramID );
-			AttachShader( desc->GeometryShader, m_ShaderProgramID );
-			AttachShader( desc->PixelShader, m_ShaderProgramID );
+			AttachShader( a_Desc.VertexShader, m_ShaderProgramID );
+			AttachShader( a_Desc.HullShader, m_ShaderProgramID );
+			AttachShader( a_Desc.DomainShader, m_ShaderProgramID );
+			AttachShader( a_Desc.GeometryShader, m_ShaderProgramID );
+			AttachShader( a_Desc.PixelShader, m_ShaderProgramID );
 
 			// Link the program
 			OpenGL4::LinkProgram( m_ShaderProgramID );
@@ -61,11 +59,11 @@ namespace Tridium {
 					}
 				};
 
-			DetachShader( desc->VertexShader, m_ShaderProgramID );
-			DetachShader( desc->HullShader, m_ShaderProgramID );
-			DetachShader( desc->DomainShader, m_ShaderProgramID );
-			DetachShader( desc->GeometryShader, m_ShaderProgramID );
-			DetachShader( desc->PixelShader, m_ShaderProgramID );
+			DetachShader( a_Desc.VertexShader, m_ShaderProgramID );
+			DetachShader( a_Desc.HullShader, m_ShaderProgramID );
+			DetachShader( a_Desc.DomainShader, m_ShaderProgramID );
+			DetachShader( a_Desc.GeometryShader, m_ShaderProgramID );
+			DetachShader( a_Desc.PixelShader, m_ShaderProgramID );
 		}
 
 		// Create the VAO
@@ -76,14 +74,14 @@ namespace Tridium {
 		// Collect the uniform locations
 		{
 			m_UnifromLocations.clear();
-			for ( const RHIShaderBinding& binding : desc->ShaderBindingLayout->GetDescriptor()->Bindings )
+			for ( const RHIShaderBinding& binding : a_Desc.ShaderBindingLayout->Descriptor().Bindings )
 			{
 				const auto InitUniform = [&]( StringView a_Name )
 					{
 						GLint location = OpenGL4::GetUniformLocation( m_ShaderProgramID, a_Name.data() );
 						if ( location < 0 )
 						{
-							LOG( LogCategory::RHI, Error, "Uniform '{0}' not found in shader while committing PSO '{1}'", a_Name, desc->Name );
+							LOG( LogCategory::RHI, Error, "Uniform '{0}' not found in shader while committing PSO '{1}'", a_Name, a_Desc.Name );
 						}
 						else
 						{
@@ -161,9 +159,9 @@ namespace Tridium {
 		GLState::BindVertexArray( a_VAO ); // Ensure the VAO is bound
 
 		// Bind the vertex layout
-		for ( uint32_t i = 0; i < GetDescriptor()->VertexLayout.Elements.Size(); ++i )
+		for ( uint32_t i = 0; i < Descriptor().VertexLayout.Elements.Size(); ++i )
 		{
-			const RHIVertexAttribute& element = GetDescriptor()->VertexLayout.Elements[i];
+			const RHIVertexAttribute& element = Descriptor().VertexLayout.Elements[i];
 			OpenGLVertexElementType type = ToOpenGL::GetVertexElementType( element.Type );
 			if ( !type.Valid() )
 			{
@@ -171,7 +169,7 @@ namespace Tridium {
 				return false;
 			}
 
-			const uint32_t stride = GetDescriptor()->VertexLayout.Stride;
+			const uint32_t stride = Descriptor().VertexLayout.Stride;
 			OpenGL2::EnableVertexAttribArray( i );
 			OpenGL2::VertexAttribPointer( i, type.Count, type.Type, type.Normalized, stride, reinterpret_cast<const void*>( element.Offset ) );
 		}

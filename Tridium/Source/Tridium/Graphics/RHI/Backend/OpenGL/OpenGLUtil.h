@@ -1,5 +1,8 @@
 #pragma once
 #include "OpenGL4.h"
+#include "OpenGLState.h"
+#include "Utils/OpenGLToRHI.h"
+#include "Utils/OpenGLWrappers.h"
 #include <Tridium/Graphics/RHI/RHICommon.h>
 
 namespace Tridium {
@@ -92,12 +95,12 @@ namespace Tridium {
 				using enum ERHIBlendOp;
 				case Zero:              return GL_ZERO;
 				case One:               return GL_ONE;
-				case SrcColour:         return GL_SRC_COLOR;
-				case OneMinusSrcColour: return GL_ONE_MINUS_SRC_COLOR;
+				case SrcColor:         return GL_SRC_COLOR;
+				case OneMinusSrcColor: return GL_ONE_MINUS_SRC_COLOR;
 				case SrcAlpha:          return GL_SRC_ALPHA;
 				case OneMinusSrcAlpha:  return GL_ONE_MINUS_SRC_ALPHA;
-				case DstColour:         return GL_DST_COLOR;
-				case OneMinusDstColour: return GL_ONE_MINUS_DST_COLOR;
+				case DstColor:         return GL_DST_COLOR;
+				case OneMinusDstColor: return GL_ONE_MINUS_DST_COLOR;
 				case DstAlpha:          return GL_DST_ALPHA;
 				case OneMinusDstAlpha:  return GL_ONE_MINUS_DST_ALPHA;
 				case SrcAlphaSaturate:  return GL_SRC_ALPHA_SATURATE;
@@ -134,39 +137,40 @@ namespace Tridium {
 			}
 		}
 
-		inline constexpr OpenGLVertexElementType GetVertexElementType( ERHIVertexElementType a_Type )
+		inline constexpr OpenGLVertexElementType GetVertexElementType( ERHIFormat format )
 		{
-			switch ( a_Type )
+			switch ( format )
 			{
-				using enum ERHIVertexElementType;
-				case Float1:    return { GL_FLOAT, 1, 4 };
-				case Float2:    return { GL_FLOAT, 2, 4 };
-				case Float3:    return { GL_FLOAT, 3, 4 };
-				case Float4:    return { GL_FLOAT, 4, 4 };
-				case UByte4:    return { GL_UNSIGNED_BYTE, 4, 1 };
-				case Color:     return { GL_FLOAT, 4, 4 };
-				case Short2:    return { GL_SHORT, 2, 2 };
-				case Short4:    return { GL_SHORT, 4, 2 };
-				case Short2N:   return { GL_SHORT, 2, 2, true };
-				case Short4N:   return { GL_SHORT, 4, 2, true };
-				case Half2:     return { GL_HALF_FLOAT, 2, 2 };
-				case Half4:     return { GL_HALF_FLOAT, 4, 2 };
-				case UShort2:   return { GL_UNSIGNED_SHORT, 2, 2 };
-				case UShort4:   return { GL_UNSIGNED_SHORT, 4, 2 };
-				case UShort2N:  return { GL_UNSIGNED_SHORT, 2, 2, true };
-				case UShort4N:  return { GL_UNSIGNED_SHORT, 4, 2, true };
-				case URGB10A2N: return { GL_UNSIGNED_INT_2_10_10_10_REV, 1, 4, true };
-				case Int1:      return { GL_INT, 1, 4 };
-				case Int2:      return { GL_INT, 2, 4 };
-				case Int3:      return { GL_INT, 3, 4 };
-				case Int4:      return { GL_INT, 4, 4 };
-				case UInt1:     return { GL_UNSIGNED_INT, 1, 4 };
-				case UInt2:     return { GL_UNSIGNED_INT, 2, 4 };
-				case UInt3:     return { GL_UNSIGNED_INT, 3, 4 };
-				case UInt4:     return { GL_UNSIGNED_INT, 4, 4 };
-				default:        return { 0, 0, 0 };
+			case RHIVertexElementFormats::Half1: return { GL_HALF_FLOAT, 1, 2 };
+			case RHIVertexElementFormats::Half2: return { GL_HALF_FLOAT, 2, 2 };
+			case RHIVertexElementFormats::Half3: return { GL_HALF_FLOAT, 3, 2 };
+			case RHIVertexElementFormats::Half4: return { GL_HALF_FLOAT, 4, 2 };
+			case RHIVertexElementFormats::Float1: return { GL_FLOAT, 1, 4 };
+			case RHIVertexElementFormats::Float2: return { GL_FLOAT, 2, 4 };
+			case RHIVertexElementFormats::Float3: return { GL_FLOAT, 3, 4 };
+			case RHIVertexElementFormats::Float4: return { GL_FLOAT, 4, 4 };
+			case RHIVertexElementFormats::Short1: return { GL_SHORT, 1, 2 };
+			case RHIVertexElementFormats::Short2: return { GL_SHORT, 2, 2 };
+			case RHIVertexElementFormats::Short3: return { GL_SHORT, 3, 2 };
+			case RHIVertexElementFormats::Short4: return { GL_SHORT, 4, 2 };
+			case RHIVertexElementFormats::UShort1: return { GL_UNSIGNED_SHORT, 1, 2 };
+			case RHIVertexElementFormats::UShort2: return { GL_UNSIGNED_SHORT, 2, 2 };
+			case RHIVertexElementFormats::UShort3: return { GL_UNSIGNED_SHORT, 3, 2 };
+			case RHIVertexElementFormats::UShort4: return { GL_UNSIGNED_SHORT, 4, 2 };
+			case RHIVertexElementFormats::Int1: return { GL_INT, 1, 4 };
+			case RHIVertexElementFormats::Int2: return { GL_INT, 2, 4 };
+			case RHIVertexElementFormats::Int3: return { GL_INT, 3, 4 };
+			case RHIVertexElementFormats::Int4: return { GL_INT, 4, 4 };
+			case RHIVertexElementFormats::UInt1: return { GL_UNSIGNED_INT, 1, 4 };
+			case RHIVertexElementFormats::UInt2: return { GL_UNSIGNED_INT, 2, 4 };
+			case RHIVertexElementFormats::UInt3: return { GL_UNSIGNED_INT, 3, 4 };
+			case RHIVertexElementFormats::UInt4: return { GL_UNSIGNED_INT, 4, 4 };
+			case RHIVertexElementFormats::Color: return { GL_UNSIGNED_BYTE, 4, 1, true };
+			case RHIVertexElementFormats::ColorSRGB: return { GL_UNSIGNED_BYTE, 4, 1, true };
+			default: return { 0, 0, 0 };
 			}
-			}
+		}
+
 
 	} // namespace ToOpenGL
 

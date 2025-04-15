@@ -4,24 +4,20 @@
 
 namespace Tridium {
 
-	class D3D12Sampler final : public RHISampler
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( D3D12Sampler, RHISampler )
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION( DirectX12 );
-		bool Commit( const void* a_Params ) override
+		RHI_RESOURCE_IMPLEMENTATION_BODY( D3D12Sampler, ERHInterfaceType::DirectX12 )
+		bool Commit( const RHISamplerDescriptor& a_Desc )
 		{
-			const auto* desc = ParamsToDescriptor<RHISamplerDescriptor>( a_Params );
-			if ( desc == nullptr )
-			{
-				return false;
-			}
+			m_Descriptor = a_Desc;
 
 			// Create the sampler heap
 			D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};
 			heapDesc.NumDescriptors = 1;
 			heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
 			heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-			if ( FAILED( RHI::GetD3D12RHI()->GetDevice()->CreateDescriptorHeap( &heapDesc, IID_PPV_ARGS( &SamplerHeap ) ) ) )
+			if ( FAILED( GetD3D12RHI()->GetDevice()->CreateDescriptorHeap( &heapDesc, IID_PPV_ARGS( &SamplerHeap ) ) ) )
 			{
 				return false;
 			}
@@ -30,21 +26,21 @@ namespace Tridium {
 			SamplerHandle = SamplerHeap->GetGPUDescriptorHandleForHeapStart();
 
 			// Create the sampler
-			SamplerDesc.Filter = D3D12::Translate( desc->Filter );
-			SamplerDesc.AddressU = D3D12::Translate( desc->AddressU );
-			SamplerDesc.AddressV = D3D12::Translate( desc->AddressV );
-			SamplerDesc.AddressW = D3D12::Translate( desc->AddressW );
-			SamplerDesc.MipLODBias = desc->MipLODBias;
-			SamplerDesc.MaxAnisotropy = desc->MaxAnisotropy;
-			SamplerDesc.ComparisonFunc = D3D12::Translate( desc->ComparisonFunc );
-			SamplerDesc.BorderColor[0] = desc->BorderColor.r;
-			SamplerDesc.BorderColor[1] = desc->BorderColor.g;
-			SamplerDesc.BorderColor[2] = desc->BorderColor.b;
-			SamplerDesc.BorderColor[3] = desc->BorderColor.a;
-			SamplerDesc.MinLOD = desc->MinLOD;
-			SamplerDesc.MaxLOD = desc->MaxLOD;
+			SamplerDesc.Filter = D3D12::Translate( a_Desc.Filter );
+			SamplerDesc.AddressU = D3D12::Translate( a_Desc.AddressU );
+			SamplerDesc.AddressV = D3D12::Translate( a_Desc.AddressV );
+			SamplerDesc.AddressW = D3D12::Translate( a_Desc.AddressW );
+			SamplerDesc.MipLODBias = a_Desc.MipLODBias;
+			SamplerDesc.MaxAnisotropy = a_Desc.MaxAnisotropy;
+			SamplerDesc.ComparisonFunc = D3D12::Translate( a_Desc.ComparisonFunc );
+			SamplerDesc.BorderColor[0] = a_Desc.BorderColor.r;
+			SamplerDesc.BorderColor[1] = a_Desc.BorderColor.g;
+			SamplerDesc.BorderColor[2] = a_Desc.BorderColor.b;
+			SamplerDesc.BorderColor[3] = a_Desc.BorderColor.a;
+			SamplerDesc.MinLOD = a_Desc.MinLOD;
+			SamplerDesc.MaxLOD = a_Desc.MaxLOD;
 
-			RHI::GetD3D12RHI()->GetDevice()->CreateSampler( &SamplerDesc, SamplerHeap->GetCPUDescriptorHandleForHeapStart() );
+			GetD3D12RHI()->GetDevice()->CreateSampler( &SamplerDesc, SamplerHeap->GetCPUDescriptorHandleForHeapStart() );
 
 			return true;
 		}

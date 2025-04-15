@@ -1,4 +1,5 @@
 #pragma once
+#include "../../RHI.h"
 #include "D3D12.h"
 #include "D3D12Util.h"
 #include <Tridium/Graphics/RHI/DynamicRHI.h>
@@ -11,6 +12,7 @@
 #include <Tridium/Graphics/RHI/RHIShaderBindingLayout.h>
 #include <Tridium/Graphics/RHI/RHISwapChain.h>
 #include <Tridium/Graphics/RHI/RHIDescriptorAllocator.h>
+#include <Tridium/Graphics/RHI/RHIFence.h>
 
 DECLARE_LOG_CATEGORY( DirectX );
 

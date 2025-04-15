@@ -15,6 +15,11 @@
 
 #include <type_traits>
 
+#ifndef D3D12CalcSubresource
+	#define D3D12CalcSubresource(MipSlice, ArraySlice, PlaneSlice, MipLevels, ArraySize) \
+		((MipSlice) + (ArraySlice) * (MipLevels) + (PlaneSlice) * (MipLevels) * (ArraySize))
+#endif
+
 namespace Tridium {
 
 	//=====================================================================

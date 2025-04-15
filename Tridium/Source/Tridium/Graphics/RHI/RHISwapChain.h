@@ -26,22 +26,33 @@ namespace Tridium {
 		uint32_t Quality = 0;
 	};
 
-	DEFINE_RHI_RESOURCE( SwapChain,
-		virtual bool Present() = 0;
-		virtual RHITextureRef GetBackBuffer() = 0;
-		virtual bool Resize( uint32_t a_Width, uint32_t a_Height ) = 0;
-		virtual uint32_t GetWidth() const = 0;
-		virtual uint32_t GetHeight() const = 0;
-		)
+	//=====================================================================
+	// RHI Swap Chain
+	//  A swap chain is a collection of buffers that are used to present the final image to the screen.
+	//=====================================================================
+
+	DECLARE_RHI_RESOURCE_DESCRIPTOR( RHISwapChainDescriptor, RHISwapChain )
 	{
 		uint32_t Width = 0;
 		uint32_t Height = 0;
 		uint32_t BufferCount = 0;
 		ERHIUsageHint BufferUsage = ERHIUsageHint::RenderTarget;
 		ERHIScaleMode ScaleMode = ERHIScaleMode::None;
-		ERHITextureFormat Format = ERHITextureFormat::RGBA8;
+		ERHIFormat Format = ERHIFormat::RGBA8_UNORM;
 		RHISampleSettings SampleSettings{};
 		EnumFlags<ERHISwapChainFlags> Flags = ERHISwapChainFlags::Default;
+	};
+
+	DECLARE_RHI_RESOURCE_INTERFACE( RHISwapChain )
+	{
+		RHI_RESOURCE_INTERFACE_BODY( RHISwapChain, ERHIResourceType::SwapChain );
+
+		virtual bool Commit( const RHISwapChainDescriptor& a_Desc ) = 0;
+		virtual bool Present() = 0;
+		virtual RHITextureRef GetBackBuffer() = 0;
+		virtual bool Resize( uint32_t a_Width, uint32_t a_Height ) = 0;
+		virtual uint32_t GetWidth() const = 0;
+		virtual uint32_t GetHeight() const = 0;
 	};
 
 }

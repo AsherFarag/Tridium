@@ -3,30 +3,26 @@
 
 namespace Tridium {
 
-	class OpenGLSampler final : public RHISampler
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( OpenGLSampler, RHISampler )
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION( OpenGL );
+		RHI_RESOURCE_IMPLEMENTATION_BODY( OpenGLSampler, ERHInterfaceType::OpenGL );
 
-		bool Commit( const void* a_Params ) override
+		bool Commit( const RHISamplerDescriptor& a_Desc ) override
 		{
-			const auto* desc = ParamsToDescriptor<RHISamplerDescriptor>( a_Params );
-			if ( desc == nullptr )
-			{
-				return false;
-			}
+			m_Descriptor = a_Desc;
 			OpenGL3::GenSamplers( 1, &m_SamplerID );
-			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_MIN_FILTER, ToOpenGL::GetFilter( desc->Filter ) );
-			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_MAG_FILTER, ToOpenGL::GetFilter( desc->Filter ) );
-			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_WRAP_S, ToOpenGL::GetAddressMode( desc->AddressU ) );
-			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_WRAP_T, ToOpenGL::GetAddressMode( desc->AddressV ) );
-			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_WRAP_R, ToOpenGL::GetAddressMode( desc->AddressW ) );
-			OpenGL3::SamplerParameterf( m_SamplerID, GL_TEXTURE_LOD_BIAS, desc->MipLODBias );
-			OpenGL3::SamplerParameterf( m_SamplerID, GL_TEXTURE_MAX_ANISOTROPY, desc->MaxAnisotropy );
-			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_COMPARE_FUNC, ToOpenGL::GetComparisonFunc( desc->ComparisonFunc ) );
-			OpenGL3::SamplerParameterfv( m_SamplerID, GL_TEXTURE_BORDER_COLOR, &desc->BorderColor.r );
-			OpenGL3::SamplerParameterf( m_SamplerID, GL_TEXTURE_MIN_LOD, desc->MinLOD );
-			OpenGL3::SamplerParameterf( m_SamplerID, GL_TEXTURE_MAX_LOD, desc->MaxLOD );
+			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_MIN_FILTER, ToOpenGL::GetFilter( a_Desc.Filter ) );
+			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_MAG_FILTER, ToOpenGL::GetFilter( a_Desc.Filter ) );
+			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_WRAP_S, ToOpenGL::GetAddressMode( a_Desc.AddressU ) );
+			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_WRAP_T, ToOpenGL::GetAddressMode( a_Desc.AddressV ) );
+			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_WRAP_R, ToOpenGL::GetAddressMode( a_Desc.AddressW ) );
+			OpenGL3::SamplerParameterf( m_SamplerID, GL_TEXTURE_LOD_BIAS, a_Desc.MipLODBias );
+			OpenGL3::SamplerParameterf( m_SamplerID, GL_TEXTURE_MAX_ANISOTROPY, a_Desc.MaxAnisotropy );
+			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_COMPARE_FUNC, ToOpenGL::GetComparisonFunc( a_Desc.ComparisonFunc ) );
+			OpenGL3::SamplerParameterfv( m_SamplerID, GL_TEXTURE_BORDER_COLOR, &a_Desc.BorderColor.r );
+			OpenGL3::SamplerParameterf( m_SamplerID, GL_TEXTURE_MIN_LOD, a_Desc.MinLOD );
+			OpenGL3::SamplerParameterf( m_SamplerID, GL_TEXTURE_MAX_LOD, a_Desc.MaxLOD );
 			return true;
 		}
 

@@ -5,11 +5,11 @@
 namespace Tridium {
 
 
-	class OpenGLShaderModule : public RHIShaderModule
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( OpenGLShaderModule, RHIShaderModule )
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION( OpenGL );
-		bool Commit( const void* a_Params ) override;
+		RHI_RESOURCE_IMPLEMENTATION_BODY( OpenGLShaderModule, ERHInterfaceType::OpenGL );
+		bool Commit( const RHIShaderModuleDescriptor& a_Desc ) override;
 		bool Release() override;
 		bool IsValid() const override { return m_ShaderID != 0; }
 		const void* NativePtr() const override { return &m_ShaderID; }

@@ -3,10 +3,11 @@
 
 namespace Tridium {
 
-	class D3D12ShaderBindingLayout : public RHIShaderBindingLayout
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( D3D12ShaderBindingLayout, RHIShaderBindingLayout )
 	{
 	public:
-		bool Commit( const void* a_Params ) override;
+		RHI_RESOURCE_IMPLEMENTATION_BODY( D3D12ShaderBindingLayout, ERHInterfaceType::DirectX12 );
+		bool Commit( const RHIShaderBindingLayoutDescriptor & a_Desc ) override;
 		bool Release() override;
 		bool IsValid() const override;
 		const void* NativePtr() const override;

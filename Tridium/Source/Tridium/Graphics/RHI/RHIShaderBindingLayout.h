@@ -178,21 +178,23 @@ namespace Tridium {
 		template<typename T>
 		void ReflectInlinedConstant( StringView a_Parent )
 		{
+			TODO( "Can make this more efficient by statically caching the fields" );
 			ForEachField( T{}, [this, &a_Parent]( StringView a_Name, auto& a_Field )
 				{
+					using FieldType = std::decay_t<decltype( a_Field )>;
 					String name;
 					name.reserve( a_Parent.size() + a_Name.size() + 1 );
 					name.append( a_Parent );
 					name.push_back( '.' );
 					name.append( a_Name );
 
-					if constexpr ( IsRHITensorType<std::decay_t<decltype( a_Field )>> )
+					if constexpr ( IsRHITensorType<FieldType> )
 					{
-						InlinedConstant->Tensors.EmplaceBack( std::move( name ), RHITensorType::From<std::decay_t<decltype( a_Field )>>() );
+						InlinedConstant->Tensors.EmplaceBack( std::move( name ), RHITensorType::From<FieldType>() );
 					}
-					else if constexpr ( Concepts::Aggregate<std::decay_t<decltype( a_Field )>> )
+					else if constexpr ( Concepts::Aggregate<FieldType> )
 					{
-						ReflectInlinedConstants<std::decay_t<decltype( a_Field )>>( name );
+						ReflectInlinedConstants<FieldType>( name );
 					}
 					else
 					{
@@ -209,7 +211,9 @@ namespace Tridium {
 	//  Represents the layout for bindable resources in a shader.
 	//  An API equivalent is a Root Signature in DirectX 12.
 	//  For Vulkan, this would be a Descriptor Set Layout.
-	DEFINE_RHI_RESOURCE( ShaderBindingLayout )
+	//=======================================================
+
+	DECLARE_RHI_RESOURCE_DESCRIPTOR( RHIShaderBindingLayoutDescriptor, RHIShaderBindingLayout )
 	{
 		Array<RHIShaderBinding> Bindings;
 		UnorderedMap<hash_t, uint32_t> BindingMap; // Maps a hash of the binding name to the index in the Bindings array.
@@ -255,6 +259,10 @@ namespace Tridium {
 		}
 	};
 
-
+	DECLARE_RHI_RESOURCE_INTERFACE( RHIShaderBindingLayout )
+	{
+		RHI_RESOURCE_INTERFACE_BODY( RHIShaderBindingLayout, ERHIResourceType::ShaderBindingLayout );
+		virtual bool Commit( const RHIShaderBindingLayoutDescriptor& a_Desc ) = 0;
+	};
 
 } // namespace Tridium

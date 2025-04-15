@@ -59,7 +59,7 @@ namespace Tridium {
 
 	bool D3D12SwapChain::ResizeBuffers()
 	{
-		RHI::GetD3D12RHI()->FenceSignal( RHI::GetD3D12RHI()->CreateFence() );
+		//RHI::FrameFenceWait();
 
 		ReleaseBuffers();
 
@@ -91,22 +91,19 @@ namespace Tridium {
 	bool D3D12SwapChain::GetBackBuffers()
 	{
 		// Create textures and handles to view
-		RHITextureDescriptor rtvDesc;
-		rtvDesc.Format = GetDescriptor()->Format;
-		rtvDesc.Width = GetDescriptor()->Width;
-		rtvDesc.Height = GetDescriptor()->Height;
-		rtvDesc.Depth = 1;
-		rtvDesc.Layers = 1;
-		rtvDesc.Mips = 1;
-		rtvDesc.UsageHint = ERHIUsageHint::RenderTarget;
-		rtvDesc.Dimension = ERHITextureDimension::Texture2D;
-		rtvDesc.IsRenderTarget = true;
+		const auto rtvDesc =
+			RHITextureDescriptor{}
+			.SetFormat( Descriptor().Format )
+			.SetWidth( Descriptor().Width )
+			.SetHeight( Descriptor().Height )
+			.SetDimension( ERHITextureDimension::Texture2D )
+			.SetBindFlags( ERHIBindFlags::RenderTarget | ERHIBindFlags::ShaderResource );
 
 		for ( uint32_t i = 0; i < RTVs.Size(); i++ )
 		{
 			if ( !RTVs[i] )
 			{
-				RTVs[i] = RHI::GetD3D12RHI()->CreateTexture( rtvDesc );
+				RTVs[i] = RHI::CreateTexture( rtvDesc );
 			}
 
 			D3D12Texture* tex = RTVs[i]->As<D3D12Texture>();
@@ -118,7 +115,7 @@ namespace Tridium {
 		#if RHI_DEBUG_ENABLED
 			if ( RHIQuery::IsDebug() )
 			{
-				WString name = GetDescriptor()->Name.empty() ? L"SwapChain" : WString( GetDescriptor()->Name.begin(), GetDescriptor()->Name.end() );
+				WString name = Descriptor().Name.empty() ? L"SwapChain" : WString( Descriptor().Name.begin(), Descriptor().Name.end() );
 				name += L" RTV[" + std::to_wstring( i ) + L"]";
 				tex->Texture.Resource.Get()->SetName( name.c_str() );
 				D3D12Context::Get()->StringStorage.EmplaceBack( std::move( name ) );
@@ -129,16 +126,12 @@ namespace Tridium {
 		return true;
 	}
 
-	bool D3D12SwapChain::Commit( const void* a_Params )
+	bool D3D12SwapChain::Commit( const RHISwapChainDescriptor& a_Desc )
     {
-		const auto* desc = ParamsToDescriptor<RHISwapChainDescriptor>( a_Params );
-		if ( !desc )
-		{
-			return false;
-		}
+		m_Descriptor = a_Desc;
 
 		// Get the RHI
-		D3D12RHI* rhi = RHI::GetD3D12RHI();
+		D3D12RHI* rhi = GetD3D12RHI();
 
 
 		// Get the native window handle
@@ -150,26 +143,26 @@ namespace Tridium {
 
 		// Create the swap chain descriptor
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
-		swapChainDesc.Width = m_Width = desc->Width;
-		swapChainDesc.Height = m_Height = desc->Height;
-		swapChainDesc.Format = D3D12::Translate( desc->Format );
+		swapChainDesc.Width = m_Width = a_Desc.Width;
+		swapChainDesc.Height = m_Height = a_Desc.Height;
+		swapChainDesc.Format = D3D12::Translate( a_Desc.Format );
 		TODO( "Stereo?" );
 		swapChainDesc.Stereo = false;
-		swapChainDesc.SampleDesc.Count = desc->SampleSettings.Count;
-		swapChainDesc.SampleDesc.Quality = desc->SampleSettings.Quality;
+		swapChainDesc.SampleDesc.Count = a_Desc.SampleSettings.Count;
+		swapChainDesc.SampleDesc.Quality = a_Desc.SampleSettings.Quality;
 		TODO( "Use RHIUsageHint for BufferUsage?" );
 		swapChainDesc.BufferUsage = DXGI_USAGE_BACK_BUFFER | DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferCount = desc->BufferCount;
+		swapChainDesc.BufferCount = a_Desc.BufferCount;
 		swapChainDesc.Scaling = 
-			desc->ScaleMode == ERHIScaleMode::Stretch
+			a_Desc.ScaleMode == ERHIScaleMode::Stretch
 			? DXGI_SCALING_STRETCH
-			: desc->ScaleMode == ERHIScaleMode::AspectRatioStretch
+			: a_Desc.ScaleMode == ERHIScaleMode::AspectRatioStretch
 				? DXGI_SCALING_ASPECT_RATIO_STRETCH
 				: DXGI_SCALING_NONE;
 		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
 		swapChainDesc.Flags = 0;
-		swapChainDesc.Flags |= desc->Flags.HasFlag( ERHISwapChainFlags::UseVSync ) ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+		swapChainDesc.Flags |= a_Desc.Flags.HasFlag( ERHISwapChainFlags::UseVSync ) ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 		swapChainDesc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 		TODO( "this?" );
@@ -189,7 +182,7 @@ namespace Tridium {
 		}
 
 		// Resize the RTVs array to the buffer count
-		RTVs.Resize( desc->BufferCount );
+		RTVs.Resize( a_Desc.BufferCount );
 
 		// Get the back buffers
 		if ( !GetBackBuffers() )

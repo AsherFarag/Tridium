@@ -19,15 +19,15 @@ namespace Tridium {
 		// Name of the attribute
 		StringView Name;
 		// Data type of the attribute
-		ERHIVertexElementType Type;
+		ERHIFormat Type;
 		// Offset in bytes from the start of the vertex layout.
 		// Calculated by the RHIVertexLayout.
 		uint16_t Offset;
 
-		constexpr RHIVertexAttribute() : Name(), Type( ERHIVertexElementType::None ), Offset( 0 ) {}
-		constexpr RHIVertexAttribute( StringView a_Name, ERHIVertexElementType a_Type )
+		constexpr RHIVertexAttribute() : Name(), Type( ERHIFormat::Unknown ), Offset( 0 ) {}
+		constexpr RHIVertexAttribute( StringView a_Name, ERHIFormat a_Type )
 			: Name( a_Name ), Type( a_Type ), Offset( 0 ) {}
-		constexpr RHIVertexAttribute( const char* a_Name, ERHIVertexElementType a_Type )
+		constexpr RHIVertexAttribute( const char* a_Name, ERHIFormat a_Type )
 			: Name( a_Name ), Type( a_Type ), Offset( 0 ) {}
 	};
 
@@ -47,23 +47,9 @@ namespace Tridium {
 			for ( auto& element : Elements )
 			{
 				element.Offset = Stride;
-				Stride += GetRHIVertexElementTypeSize( element.Type );
+				Stride += GetRHIFormatInfo( element.Type ).Bytes();
 			}
 		}
-	};
-
-	DEFINE_RHI_RESOURCE( IndexBuffer )
-	{
-		Span<const Byte> InitialData = {};
-		ERHIUsageHint UsageHint = ERHIUsageHint::Default;
-		ERHIDataType DataType = ERHIDataType::UInt16;
-	};
-
-	DEFINE_RHI_RESOURCE( VertexBuffer )
-	{
-		Span<const Byte> InitialData = {};
-		ERHIUsageHint UsageHint = ERHIUsageHint::Default;
-		RHIVertexLayout Layout;
 	};
 
 } // namespace Tridium

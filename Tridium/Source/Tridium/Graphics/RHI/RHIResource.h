@@ -8,7 +8,7 @@ namespace Tridium {
 	// ====================
 
 	//=====================================================================
-	// ERHIResourceType
+	// RHI Resource Type
 	//  The type of resource.
 	//=====================================================================
 	enum class ERHIResourceType : uint8_t
@@ -17,15 +17,15 @@ namespace Tridium {
         Texture,
         ShaderModule,
         Buffer,
-        VertexBuffer,
-        IndexBuffer,
         ShaderBindingLayout,
         GraphicsPipelineState,
 		ComputePipelineState,
         CommandList,
         CommandAllocator,
 		SwapChain,
-        COUNT
+		Fence,
+        COUNT,
+		Unknown = 0xFF,
 	};
 
 	namespace Concepts {
@@ -41,7 +41,7 @@ namespace Tridium {
 	} // namespace Concepts
 
 	//======================================================================================================
-	// RHIResource
+	// RHI Resource
 	//  An abstract class that represents a resource that can be committed to the GPU.
 	//  Resources can be textures, buffers, samplers, etc.
 	//  For graphics APIs, a specific implementation of this class will be created.
@@ -52,41 +52,26 @@ namespace Tridium {
     public:
         NON_COPYABLE_OR_MOVABLE( RHIResource );
 
-		// Commits the resource to the GPU.
-		virtual bool Commit( const void* a_Params ) = 0;
-
 		// Releases the GPU and CPU resources associated with this resource.
 		virtual bool Release() = 0;
 
-		// Reads data from the resource.
-		virtual bool Read( Span<Byte>& o_Data, size_t a_SrcOffset = 0 ) { return false; }
-		virtual bool IsReadable() const { return false; }
-
-		// Writes data to the resource.
-		virtual bool Write( const Span<const Byte>& a_Data, size_t a_DstOffset = 0 ) { return false; }
-		virtual bool IsWritable() const { return false; }
-
-		// Maps the specified location on the GPU to a memory address on the CPU.
-		virtual bool Map( uint64_t a_Offset = 0, int64_t a_Length = -1, ERHIMappingMode a_MappingMode = ERHIMappingMode::Default ) { return false; }
-		// Unmaps the memory address on the CPU. Must be called after Map.
-		virtual bool Unmap() { return false; }
-		virtual bool IsMappable() const { return false; }
-
-		// Returns the size of the resource in bytes.
+		// Returns the size, in bytes, of the allocated memory for the resource on the GPU.
+		// Returns 0 if the size is unknown.
 		virtual size_t GetSizeInBytes() const { return 0; }
 
 		// Returns the type of the resource.
 		virtual ERHIResourceType GetType() const = 0;
 
-		// Returns whether the resource is valid.
+		// Returns whether this resource is valid.
 		virtual bool IsValid() const = 0;
 
 		// Gets a pointer to the native resource.
-		// E.g. OpenGLTexture -> GLuint
+		// E.g. OpenGLTexture -> GLuint, D3D12Texture -> ID3D12Resource
 		virtual const void* NativePtr() const = 0;
 
-		// Gets a pointer to the native resource.
-		// E.g. OpenGLTexture -> GLuint*
+		// Gets a pointer to the native resource and casts it to the specified type.
+		// E.g. OpenGLTexture->NativePtrAs<GLuint>() -> GLuint*,
+		//      D3D12Texture->NativePtrAs<ID3D12Resource>() -> ID3D12Resource*
 		template<typename T>
 		T* NativePtrAs() const
 		{
@@ -138,62 +123,120 @@ namespace Tridium {
 			return T::RefType( new T(), deleter );
 		}
 
-    public:
-		OpaquePtr Descriptor = nullptr;
-
 	protected:
 		RHIResource() = default;
 		virtual ~RHIResource() = default;
-
-		template<typename T>
-		const T* ParamsToDescriptor( const void* a_Params )
-		{
-			Descriptor = MakeUnique<T>( *reinterpret_cast<const T*>( a_Params ) );
-			return reinterpret_cast<const T*>( Descriptor.Get() );
-		}
 	};
 
+	// Strong reference-counting pointer to an RHI resource.
 	using RHIResourceRef = SharedPtr<RHIResource>;
+	// Weak reference-counting pointer to an RHI resource.
 	using RHIResourceWeakRef = SharedPtr<RHIResource>;
 
 	//=======================================================
 	// RHI Resource Descriptor
-	//  A struct that describes an RHI resource.
+	//  A base class for describing an RHI resource.
 	//=======================================================
-	template<typename T> requires Concepts::IsRHIResource<T>
+	template<typename _Descriptor, typename _Resource>
 	struct RHIResourceDescriptor
 	{
-		using ResourceType = T;
+		using Super = RHIResourceDescriptor<_Descriptor, _Resource>;
+		using ResourceType = _Resource;
 		StringView Name;
+
+		constexpr _Descriptor& SetName( StringView a_Name )
+		{
+			Name = a_Name;
+			return static_cast<_Descriptor&>( *this );
+		}
+	};
+
+	//==========================================================
+	// RHI Resource barrier
+	//  Describes a state transition for an RHI resource.
+	//  Can be used for manual state transitions for RHI resources via RHI::TransitionResourceStates.
+	//==========================================================
+	struct RHIResourceBarrier
+	{
+		RHIResource* Resource = nullptr;
+		ERHIResourceStates Before = ERHIResourceStates::Unknown;
+		ERHIResourceStates After = ERHIResourceStates::Unknown;
+	};
+
+	// Temp
+	class IRHIGpuResource
+	{
+	public:
+		// Reads data from the resource.
+		virtual bool Read( Span<Byte>& o_Data, size_t a_SrcOffset = 0 ) { return false; }
+		virtual bool IsReadable() const { return false; }
+
+		// Writes data to the resource.
+		virtual bool Write( const RHICommandListRef& a_CmdList, const Span<const Byte>& a_Data, size_t a_DstOffset = 0 ) { return false; }
+		virtual bool IsWritable() const { return false; }
+
+		// Returns whether the resource is ready to be used.
+		virtual bool IsReady() const { return true; }
+		// Waits for the resource to be ready.
+		virtual void Wait() {}
+
+		// Maps the specified location on the GPU to a memory address on the CPU.
+		virtual bool Map( uint64_t a_Offset = 0, int64_t a_Length = -1, ERHIMappingMode a_MappingMode = ERHIMappingMode::Default ) { return false; }
+		// Unmaps the memory address on the CPU. Must be called after Map.
+		virtual bool Unmap() { return false; }
+		virtual bool IsMappable() const { return false; }
 	};
 
 } // namespace Tridium
 
-#define RHI_RESOURCE_BODY( _Type ) \
-	public:                                                                                                \
-		using DescriptorType = RHI##_Type##Descriptor;                                                     \
-		using RefType = RHI##_Type##Ref;                                                                   \
-		using WeakRefType = RHI##_Type##WeakRef;                                                           \
-		static constexpr ::Tridium::ERHIResourceType Type = ::Tridium::ERHIResourceType::_Type;            \
-		::Tridium::ERHIResourceType GetType() const override { return Type; }                              \
-		const DescriptorType* GetDescriptor() const { return (const DescriptorType*)(Descriptor.Get()); }
- 
+// Helper macro for defining a base RHI resource type, such as RHITexture, RHISampler, etc.
+// _ClassName: The name of the resource type. Should be prefixed with RHI. E.g. _ClassName = RHITexture
+// Note: RHI_RESOURCE_INTERFACE_BODY must be used with this macro.
+#define DECLARE_RHI_RESOURCE_INTERFACE( _ClassName ) \
+	class _ClassName; \
+	struct _ClassName##Descriptor; \
+	using _ClassName##Ref = ::Tridium::SharedPtr<_ClassName>; \
+	using _ClassName##WeakRef = ::Tridium::WeakPtr<_ClassName>; \
+	class _ClassName : public RHIResource, public EnableSharedFromThis<_ClassName>
 
-// Helper macro to define a base RHI resource type and its descriptor.
-#define DEFINE_RHI_RESOURCE(_Name, ...)                                                                 \
-    class RHI##_Name;                                                                                   \
-    struct RHI##_Name##Descriptor;                                                                      \
-    using RHI##_Name##Ref = SharedPtr<RHI##_Name>;                                                      \
-    using RHI##_Name##WeakRef = WeakPtr<RHI##_Name>;                                                    \
-    class RHI##_Name : public ::Tridium::RHIResource, public ::Tridium::EnableSharedFromThis<RHI##_Name>\
-    {                                                                                                   \
-    public:                                                                                             \
-        RHI_RESOURCE_BODY(_Name)                                                                        \
-        __VA_ARGS__                                                                                     \
-    };                                                                                                  \
-    struct RHI##_Name##Descriptor : public ::Tridium::RHIResourceDescriptor<RHI##_Name>
+// Helper macro for defining the body of a base RHI resource type.
+// _ClassName: The name of the resource type. Should be prefixed with RHI. E.g. _ClassName = RHITexture
+// _RHIResourceType: The type of the resource. E.g. _RHIResourceType = ERHIResourceType::Texture
+// Note: Must be used in the body of a DECLARE_RHI_RESOURCE_INTERFACE declaration.
+#define RHI_RESOURCE_INTERFACE_BODY( _ClassName, _RHIResourceType ) \
+public: \
+	using DescriptorType = _ClassName##Descriptor; \
+	using RefType = _ClassName##Ref; \
+	using WeakRefType = _ClassName##WeakRef; \
+	static constexpr ::Tridium::ERHIResourceType Type = ::Tridium::_RHIResourceType; \
+	::Tridium::ERHIResourceType GetType() const override { return Type; } \
+	const DescriptorType& Descriptor() const { return m_Descriptor; } \
+protected: \
+	DescriptorType m_Descriptor; \
+public:
 
-// Helper macro to define the implementation of a resource type.
-// For usage in an RHI implementation, such as OpenGLTexture.
-#define RHI_RESOURCE_IMPLEMENTATION( GraphicsAPI )												    \
-		static constexpr ::Tridium::ERHInterfaceType API = ::Tridium::ERHInterfaceType::GraphicsAPI;
+
+// Helper macro for defining an RHI resource descriptor.
+// _ClassName: The name of the resource descriptor. Should be prefixed with RHI and the suffix should be Descriptor. E.g. _ClassName = RHITextureDescriptor
+// _Resource: The resource type that the descriptor describes. E.g. _Resource = RHITexture
+#define DECLARE_RHI_RESOURCE_DESCRIPTOR( _ClassName, _Resource ) \
+	struct _ClassName : public ::Tridium::RHIResourceDescriptor<_ClassName, _Resource>
+
+// Helper macro for defining a graphics API specific implementation of an RHI resource.
+// _ClassName: The name of the resource implementation. Should be prefixed with the graphics API. E.g. _ClassName = OpenGLTexture
+// _ParentResource: The parent resource type that the implementation inherits from. E.g. _ParentResource = RHITexture
+// Note: RHI_RESOURCE_IMPLEMENTATION_BODY must be used with this macro.
+#define DECLARE_RHI_RESOURCE_IMPLEMENTATION( _ClassName, _ParentResource ) \
+	class _ClassName; \
+	struct _ClassName##Descriptor; \
+	using _ClassName##Ref = ::Tridium::SharedPtr<_ClassName>; \
+	using _ClassName##WeakRef = ::Tridium::WeakPtr<_ClassName>; \
+	class _ClassName : public _ParentResource
+
+// Helper macro for defining the body of a graphics API specific implementation of an RHI resource.
+// _ClassName: The name of the resource implementation. Should be prefixed with the graphics API. E.g. _ClassName = OpenGLTexture
+// _RHIInterfaceType: The type of the RHI interface. E.g. _RHIInterfaceType = ERHInterfaceType::OpenGL
+// Note: Must be used in the body of a DECLARE_RHI_RESOURCE_IMPLEMENTATION declaration.
+#define RHI_RESOURCE_IMPLEMENTATION_BODY( _ClassName, _RHIInterfaceType ) \
+public: \
+	static constexpr ::Tridium::ERHInterfaceType API = _RHIInterfaceType;

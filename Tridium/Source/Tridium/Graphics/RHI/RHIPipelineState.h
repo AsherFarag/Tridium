@@ -41,8 +41,8 @@ namespace Tridium {
 	struct RHIBlendState
 	{
 		bool IsEnabled = false;
-		ERHIBlendOp SrcFactorColour = ERHIBlendOp::SrcAlpha;
-		ERHIBlendOp DstFactorColour = ERHIBlendOp::OneMinusSrcAlpha;
+		ERHIBlendOp SrcFactorColor = ERHIBlendOp::SrcAlpha;
+		ERHIBlendOp DstFactorColor = ERHIBlendOp::OneMinusSrcAlpha;
 		ERHIBlendOp SrcFactorAlpha = ERHIBlendOp::SrcAlpha;
 		ERHIBlendOp DstFactorAlpha = ERHIBlendOp::DstAlpha;
 		ERHIBlendEq BlendEquation = ERHIBlendEq::Add;
@@ -77,7 +77,9 @@ namespace Tridium {
 	//=======================================================================
 	// RHIGraphicsPipelineState
 	//  A pipeline state object that contains the state of the GPU pipeline.
-	DEFINE_RHI_RESOURCE( GraphicsPipelineState )
+	//=======================================================================
+
+	DECLARE_RHI_RESOURCE_DESCRIPTOR( RHIGraphicsPipelineStateDescriptor, RHIGraphicsPipelineState )
 	{
 		ERHITopology Topology = ERHITopology::Triangle;
 		RHIVertexLayout VertexLayout{};
@@ -94,8 +96,8 @@ namespace Tridium {
 		RHIStencilState StencilState{};
 		RHIRasterizerState RasterizerState{};
 
-		FixedArray<ERHITextureFormat, RHIConstants::MaxColorTargets> ColourTargetFormats = {};
-		ERHITextureFormat DepthStencilFormat = ERHITextureFormat::D32;
+		FixedArray<ERHIFormat, RHIConstants::MaxColorTargets> ColorTargetFormats = {};
+		ERHIFormat DepthStencilFormat = ERHIFormat::D16_UNORM;
 
 		const RHIShaderModuleRef& GetShader( ERHIShaderType a_Type ) const
 		{
@@ -110,6 +112,12 @@ namespace Tridium {
 
 			return nullptr;
 		}
+	};
+
+	DECLARE_RHI_RESOURCE_INTERFACE( RHIGraphicsPipelineState )
+	{
+		RHI_RESOURCE_INTERFACE_BODY( RHIGraphicsPipelineState, ERHIResourceType::GraphicsPipelineState );
+		virtual bool Commit( const RHIGraphicsPipelineStateDescriptor& a_Desc ) = 0;
 	};
 
 } // namespace Tridium

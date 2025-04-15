@@ -2,6 +2,8 @@
 #include "D3D12Common.h"
 #include "D3D12Context.h"
 #include "D3D12DescriptorHeap.h"
+#include "D3D12Fence.h"
+#include "Utils/D3D12UploadBuffer.h"
 #include "Utils/ThirdParty/D3D12MemAlloc.h"
 
 namespace Tridium {
@@ -53,21 +55,12 @@ namespace Tridium {
 		static constexpr ERHInterfaceType GetStaticRHIType() { return ERHInterfaceType::DirectX12; }
 		//==============================================
 
-		//====================================================
-		// Creates a fence that can be used to synchronize the CPU and GPU.
-		virtual RHIFence CreateFence() const override;
-		// Queries the state of a fence.
-		virtual ERHIFenceState GetFenceState( RHIFence a_Fence ) const override;
-		// Blocks the calling CPU thread until the fence is signaled by the GPU.
-		virtual void FenceSignal( RHIFence a_Fence ) override;
-		//=====================================================
-
 		//=====================================================
 		// Resource creation
+		virtual RHIFenceRef CreateFence( const RHIFenceDescriptor& a_Desc ) override;
 		virtual RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc ) override;
-		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc ) override;
-		virtual RHIIndexBufferRef CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc ) override;
-		virtual RHIVertexBufferRef CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc ) override;
+		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) override;
+		virtual RHIBufferRef CreateBuffer( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data ) override;
 		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc ) override;
 		virtual RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc ) override;
 		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc ) override;
@@ -85,10 +78,15 @@ namespace Tridium {
 		const auto& GetCommandAllocator() const { return m_CommandAllocator; }
 		const auto& GetCommandList() const { return m_CommandList; }
 		const auto& GetAllocator() const { return m_Allocator; }
-		const auto& GetFence() const { return m_Fence; }
-		ID3D12::FenceValue& GetFenceValue() { return m_FenceValue; }
-		HANDLE GetFenceEvent() const { return m_FenceEvent; }
+		const auto& GetUploadBuffer() const { return m_UploadBuffer; }
+		auto& GetUploadBuffer() { return m_UploadBuffer; }
 		size_t GetNextCommandListIndex() { return m_NextCommandListIndex; }
+
+		const auto& GetCopyQueue() const { return m_CopyQueue; }
+		const auto& GetCopyCmdAllocator() const { return m_CopyAllocator; }
+		const auto& GetCopyCmdList() const { return m_CopyCommandList; }
+		const auto& GetCopyFence() const { return m_CopyFence; }
+		uint64_t IncrementCopyFence() { return ++m_CopyFenceValue; }
 
 		D3D12::DescriptorHeapManager& GetDescriptorHeapManager() { return m_DescriptorHeapManager; }
 		const D3D12::DescriptorHeapManager& GetDescriptorHeapManager() const { return m_DescriptorHeapManager; }
@@ -110,12 +108,20 @@ namespace Tridium {
 		ComPtr<ID3D12::CommandAllocator> m_CommandAllocator = nullptr;
 		ComPtr<ID3D12::GraphicsCommandList> m_CommandList = nullptr;
 		ComPtr<D3D12MA::Allocator> m_Allocator = nullptr;
-		ComPtr<ID3D12::Fence> m_Fence = nullptr;
-		ID3D12::FenceValue m_FenceValue = 0;
-		HANDLE m_FenceEvent = nullptr;
 		D3D12::DescriptorHeapManager m_DescriptorHeapManager{};
 		size_t m_NextCommandListIndex = 0;
 		Array<D3D12::DeferredDeleteObject> m_ObjectsToDelete{};
+		D3D12::UploadBuffer m_UploadBuffer{};
+
+		TODO( "Most likely temp" );
+		RHIFenceRef m_Fence = nullptr;
+		uint64_t m_FenceValue = 0;
+
+		ComPtr<ID3D12CommandQueue> m_CopyQueue = nullptr;
+		ComPtr<ID3D12CommandAllocator> m_CopyAllocator = nullptr;
+		ComPtr<ID3D12GraphicsCommandList> m_CopyCommandList = nullptr;
+		D3D12FenceRef m_CopyFence = nullptr;
+		uint64_t m_CopyFenceValue = 0;
 
 		//=====================================================
 
@@ -129,18 +135,16 @@ namespace Tridium {
 	#endif
 	};
 
-	namespace RHI {
-		static D3D12RHI* GetD3D12RHI()
+	static D3D12RHI* GetD3D12RHI()
+	{
+	#if RHI_DEBUG_ENABLED
+		if ( s_DynamicRHI->GetRHIType() != ERHInterfaceType::DirectX12 )
 		{
-		#if RHI_DEBUG_ENABLED
-			if ( s_DynamicRHI->GetRHIType() != ERHInterfaceType::DirectX12 )
-			{
-				ASSERT_LOG( false, "The current RHI is not DirectX 12!" );
-				return nullptr;
-			}
-		#endif
-			return static_cast<D3D12RHI*>( s_DynamicRHI );
+			ASSERT_LOG( false, "The current RHI is not DirectX 12!" );
+			return nullptr;
 		}
+	#endif
+		return static_cast<D3D12RHI*>( s_DynamicRHI );
 	}
 
 }

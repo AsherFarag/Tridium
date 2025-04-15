@@ -163,14 +163,19 @@ namespace Tridium {
 				}
 			}
 
+			RHITextureSubresourceData testImgSubresData;
+			testImgSubresData.Data = testImgData;
+			testImgSubresData.RowStride = 64 * 4; // 4 bytes per pixel
+
+
 			// - Create a texture -
-			RHITextureDescriptor desc;
-			desc.InitialData = testImgData; // std::span<const uint8_t> 
-			desc.Width = 64;
-			desc.Height = 64;
-			desc.Format = ERHITextureFormat::RGBA8;
-			desc.Name = "My texture";
-			RHITextureRef tex = RHI::CreateTexture( desc );
+			RHITextureDescriptor texDesc;
+			texDesc.InitialData = testImgData; // std::span<const uint8_t> 
+			texDesc.Width = 64;
+			texDesc.Height = 64;
+			texDesc.Format = ERHIFormat::RGBA8_UNORM;
+			texDesc.Name = "My texture";
+			RHITextureRef tex = RHI::CreateTexture( texDesc, testImgSubresData );
 
 			// - Create a sampler -
 			RHISamplerDescriptor samplerDesc;
@@ -193,8 +198,8 @@ namespace Tridium {
 			// - Create a vertex layout -
 			RHIVertexLayout layout =
 			{
-				{ "POSITION", ERHIVertexElementType::Float3 },
-				{ "TEXCOORD", ERHIVertexElementType::Float2 }
+				{ "POSITION", RHIVertexElementFormats::Float3 },
+				{ "TEXCOORD", RHIVertexElementFormats::Float2 }
 			};
 
 			// Quad
@@ -255,20 +260,15 @@ namespace Tridium {
 				{ { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f } }
 			};
 
-			RHIVertexBufferDescriptor vbDesc;
-			vbDesc.Layout = layout;
-			vbDesc.InitialData = Span<const Byte>( (const Byte*)( &vertices[0] ), sizeof(vertices));
+			RHIBufferDescriptor vbDesc;
 			vbDesc.Name = "My beautiful vertex buffer";
-
-			RHIVertexBufferRef vb = RHI::CreateVertexBuffer( vbDesc );
-
+			RHIBufferRef vb = RHI::CreateBuffer( vbDesc );
 
 			// - Create a Vertex Buffer -
-			RHIVertexBufferDescriptor cubeVBODesc;
-			cubeVBODesc.Layout = layout;
-			cubeVBODesc.InitialData = Span<const uint8_t>( (const uint8_t*)( &cubeVerts[0] ), sizeof( cubeVerts ) );
+			RHIBufferDescriptor cubeVBODesc;
 			cubeVBODesc.Name = "Cube VBO";
-			RHIVertexBufferRef cubeVBO = RHI::CreateVertexBuffer( cubeVBODesc );
+			cubeVBODesc.BindFlags = ERHIBindFlags::VertexBuffer;
+			RHIBufferRef cubeVBO = RHI::CreateBuffer( cubeVBODesc );
 
 			// HLSL Source code
 			StringView vertCode = R"(
@@ -320,12 +320,11 @@ struct VSOutput
 	float2 uv : TEXCOORD;
 };
 
-Texture2D Texture : register( t0 );
-SamplerState Sampler : register( s0 );
+COMBINED_SAMPLER( Texture, Texture2D, 0 );
 
 float4 main( VSOutput input ) : SV_Target
 {
-	return Texture.Sample( Sampler, input.uv ) * inlinedConstants.Colour;
+	return Sample( Texture, input.uv ) * inlinedConstants.Colour;
 }
 )";
 
@@ -351,28 +350,36 @@ float4 main( VSOutput input ) : SV_Target
 			RHIGraphicsPipelineStateDescriptor psd;
 			psd.VertexShader = vertShader;
 			psd.PixelShader = pixelShader;
-			psd.ColourTargetFormats[0] = ERHITextureFormat::RGBA8;
+			psd.ColorTargetFormats[0] = ERHIFormat::RGBA8_UNORM;
 			psd.VertexLayout = layout;
 			psd.ShaderBindingLayout = sbl;
 			psd.RasterizerState.CullMode = ERHIRasterizerCullMode::None;
 			psd.Name = "My pipeline state";
 			RHIGraphicsPipelineStateRef pso = RHI::CreateGraphicsPipelineState( psd );
 
-			RHICommandListRef cmdList = RHI::CreateCommandList( { "My beautiful command list" } );
-
 			// - Create depth buffer -
 			RHITextureDescriptor depthDesc;
 			depthDesc.Width = 1280;
 			depthDesc.Height = 720;
-			depthDesc.Format = ERHITextureFormat::D32;
+			depthDesc.Format = ERHIFormat::D32_FLOAT;
 			depthDesc.Name = "My depth buffer";
-			depthDesc.IsRenderTarget = true;
-			depthDesc.UsageHint = ERHIUsageHint::RenderTarget;
+			depthDesc.BindFlags = ERHIBindFlags::DepthStencil;
+			depthDesc.ClearValue.emplace( 1.0f, 0 );
 			RHITextureRef depthTex = RHI::CreateTexture( depthDesc );
+
+			RHICommandListRef cmdList = RHI::CreateCommandList( { "My beautiful command list" } );
+
+			RHIGraphicsCommandBuffer cmdBuffer1{};
+			cmdBuffer1.ResourceBarrier( tex.get(), ERHIResourceStates::CopyDest, ERHIResourceStates::ShaderResource);
+			cmdBuffer1.ResourceBarrier( vb.get(), ERHIResourceStates::CopyDest, ERHIResourceStates::VertexBuffer );
+			cmdBuffer1.ResourceBarrier( cubeVBO.get(), ERHIResourceStates::CopyDest, ERHIResourceStates::VertexBuffer );
+			cmdList->SetGraphicsCommands( cmdBuffer1 );
+			RHI::ExecuteCommandList( cmdList );
+
 
 			// Temp
 			float time = 0.0f;
-			const Color clearColour = Color{ 0.2f, 0.35f, 0.5f, 1.0f };
+			const Color clearColor = Color{ 0.2f, 0.35f, 0.5f, 1.0f };
 			int f{};
 			while ( true )
 			{
@@ -386,12 +393,16 @@ float4 main( VSOutput input ) : SV_Target
 					// Resize the depth buffer to match the swap chain
 					const uint32_t width = RHI::GetSwapChain()->GetWidth();
 					const uint32_t height = RHI::GetSwapChain()->GetHeight();
-					depthTex->Resize( width, height );
+					if ( width == 0 || height == 0 )
+						continue;
+
+					//depthTex->Resize( width, height );
 
 					RHIGraphicsCommandBuffer cmdBuffer;
-					cmdBuffer.ResourceBarrier( rt, ERHIResourceState::Present, ERHIResourceState::RenderTarget )
-						.SetRenderTargets( { &rt, 1 }, depthTex )
-						.ClearRenderTargets( { &rt, 1 }, clearColour, true );
+					cmdBuffer.ResourceBarrier( rt.get(), ERHIResourceStates::Present, ERHIResourceStates::RenderTarget )
+						.ResourceBarrier( depthTex.get(), ERHIResourceStates::Present, ERHIResourceStates::DepthStencilWrite )
+						.SetRenderTargets( { &rt, 1}, depthTex.get() )
+						.ClearRenderTargets( ERHIClearFlags::ColorDepth, clearColor );
 
 					cmdBuffer.SetGraphicsPipelineState( pso );
 					cmdBuffer.SetShaderBindingLayout( sbl );
@@ -400,7 +411,7 @@ float4 main( VSOutput input ) : SV_Target
 					cmdBuffer.SetPrimitiveTopology( ERHITopology::Triangle );
 
 					// Set the viewport
-					Viewport vp;
+					RHIViewport vp;
 					vp.Width = width;
 					vp.Height = height;
 					vp.X = 0;
@@ -410,7 +421,7 @@ float4 main( VSOutput input ) : SV_Target
 					cmdBuffer.SetViewports( { &vp, 1 } );
 
 					// Set Scissors
-					ScissorRect scissor;
+					RHIScissorRect scissor;
 					scissor.Left = 0;
 					scissor.Top = 0;
 					scissor.Right = width;
@@ -441,16 +452,17 @@ float4 main( VSOutput input ) : SV_Target
 					// Draw
 					
 					cmdBuffer.SetShaderInput( "inlinedConstants"_H, inlinedConstants );
-					cmdBuffer.SetShaderInput( "Texture"_H, tex );
+					//cmdBuffer.SetShaderInput( "Texture"_H, tex );
 					cmdBuffer.SetVertexBuffer( cubeVBO );
 					cmdBuffer.Draw( 0, sizeof( cubeVerts ) / sizeof( Vertex ) );
 
-					cmdBuffer.ResourceBarrier( rt, ERHIResourceState::RenderTarget, ERHIResourceState::Present );
+					cmdBuffer.ResourceBarrier( rt.get(), ERHIResourceStates::RenderTarget, ERHIResourceStates::Present);
+					cmdBuffer.ResourceBarrier( depthTex.get(), ERHIResourceStates::DepthStencilWrite, ERHIResourceStates::Present);
 
 					cmdList->SetGraphicsCommands( cmdBuffer );
 
 					RHI::ExecuteCommandList( cmdList );
-					RHI::FenceSignal( RHI::CreateFence() );
+					RHI::GetGlobalFence()->Wait( s_RHIGlobals.FrameFenceValue );
 				}
 #endif
 				RHI::Present();

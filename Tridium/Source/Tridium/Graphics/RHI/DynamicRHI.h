@@ -6,15 +6,16 @@ namespace Tridium {
 
 	//==============================================
 	// Forward declarations
-	FORWARD_DECLARE_RHI_RESOURCE( Sampler );
-	FORWARD_DECLARE_RHI_RESOURCE( Texture );
-	FORWARD_DECLARE_RHI_RESOURCE( IndexBuffer );
-	FORWARD_DECLARE_RHI_RESOURCE( VertexBuffer );
-	FORWARD_DECLARE_RHI_RESOURCE( GraphicsPipelineState );
-	FORWARD_DECLARE_RHI_RESOURCE( CommandList );
-	FORWARD_DECLARE_RHI_RESOURCE( ShaderModule );
-	FORWARD_DECLARE_RHI_RESOURCE( ShaderBindingLayout );
-	FORWARD_DECLARE_RHI_RESOURCE( SwapChain );
+	struct RHITextureSubresourceData;
+	FORWARD_DECLARE_RHI_RESOURCE( RHISampler );
+	FORWARD_DECLARE_RHI_RESOURCE( RHITexture );
+	FORWARD_DECLARE_RHI_RESOURCE( RHIBuffer );
+	FORWARD_DECLARE_RHI_RESOURCE( RHIGraphicsPipelineState );
+	FORWARD_DECLARE_RHI_RESOURCE( RHICommandList );
+	FORWARD_DECLARE_RHI_RESOURCE( RHIShaderModule );
+	FORWARD_DECLARE_RHI_RESOURCE( RHIShaderBindingLayout );
+	FORWARD_DECLARE_RHI_RESOURCE( RHISwapChain );
+	FORWARD_DECLARE_RHI_RESOURCE( RHIFence );
 	//==============================================
 
 	//==============================================
@@ -41,26 +42,17 @@ namespace Tridium {
 		static constexpr ERHInterfaceType GetStaticRHIType() { return ERHInterfaceType::Null; }
 		//==============================================
 
-		//====================================================
-		// Creates a fence that can be used to synchronize the CPU and GPU.
-		virtual RHIFence CreateFence() const = 0;
-		// Queries the state of a fence.
-		virtual ERHIFenceState GetFenceState( RHIFence a_Fence ) const = 0;
-		// Blocks the calling CPU thread until the fence is signaled by the GPU.
-		virtual void FenceSignal( RHIFence a_Fence ) = 0;
-		//=====================================================
-
 		//=====================================================
 		// Resource creation
 		virtual RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc ) = 0;
-		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc ) = 0;
-		virtual RHIIndexBufferRef CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc ) = 0;
-		virtual RHIVertexBufferRef CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc ) = 0;
+		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) = 0;
+		virtual RHIBufferRef CreateBuffer( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data ) = 0;
 		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc ) = 0;
 		virtual RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc ) = 0;
 		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc ) = 0;
 		virtual RHIShaderBindingLayoutRef CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc ) = 0;
 		virtual RHISwapChainRef CreateSwapChain( const RHISwapChainDescriptor& a_Desc ) = 0;
+		virtual RHIFenceRef CreateFence( const RHIFenceDescriptor& a_Desc ) = 0;
 		//=====================================================
 
 		#if RHI_DEBUG_ENABLED

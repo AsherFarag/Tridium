@@ -28,7 +28,7 @@ namespace Tridium::D3D12 {
 		}
 
 		ComPtr<ID3D12RootSignature> rootSignature;
-		hr = RHI::GetD3D12RHI()->GetDevice()->CreateRootSignature( 0, serializedRootSig->GetBufferPointer(), serializedRootSig->GetBufferSize(), IID_PPV_ARGS( &rootSignature ) );
+		hr = GetD3D12RHI()->GetDevice()->CreateRootSignature( 0, serializedRootSig->GetBufferPointer(), serializedRootSig->GetBufferSize(), IID_PPV_ARGS( &rootSignature ) );
 		if ( FAILED( hr ) )
 		{
 			LOG( LogCategory::DirectX, Error, "Failed to create root signature" );

@@ -35,23 +35,20 @@ namespace Tridium {
         MakeStaticSampler( D3D12_FILTER_MIN_MAG_MIP_LINEAR,       D3D12_TEXTURE_ADDRESS_MODE_CLAMP, 5, 1000 ),
     };
 
-    bool D3D12ShaderBindingLayout::Commit( const void* a_Params )
+	bool D3D12ShaderBindingLayout::Commit( const RHIShaderBindingLayoutDescriptor& a_Desc )
     {
-		const auto* desc = ParamsToDescriptor<RHIShaderBindingLayoutDescriptor>( a_Params );
-        if ( !desc )
-            return false;
-
-		const auto& device = RHI::GetD3D12RHI()->GetDevice();
+		m_Descriptor = a_Desc;
+		const auto& device = GetD3D12RHI()->GetDevice();
 
 		Array<D3D12::RootParameter> rootParams;
 
 		// Reserve space for the root parameters
-		rootParams.Reserve( desc->Bindings.Size() );
+		rootParams.Reserve( a_Desc.Bindings.Size() );
 
         Array<Array<D3D12::DescriptorRange>> descriptorRangesList; // Stores ranges for each root param
-        descriptorRangesList.Reserve( desc->Bindings.Size() ); // Reserve memory
+        descriptorRangesList.Reserve( a_Desc.Bindings.Size() ); // Reserve memory
 
-        for ( const auto& binding : desc->Bindings )
+        for ( const auto& binding : a_Desc.Bindings )
         {
             switch ( binding.BindingType )
             {
@@ -130,9 +127,9 @@ namespace Tridium {
         m_RootSignature = rootSignatureDesc.Create();
 
         #if RHI_DEBUG_ENABLED
-        if ( RHIQuery::IsDebug() && !desc->Name.empty() )
+        if ( RHIQuery::IsDebug() && !a_Desc.Name.empty() )
         {
-			WString wName( desc->Name.begin(), desc->Name.end() );
+			WString wName( a_Desc.Name.begin(), a_Desc.Name.end() );
             m_RootSignature->SetName( wName.c_str() );
             D3D12Context::Get()->StringStorage.EmplaceBack( std::move( wName ) );
         }

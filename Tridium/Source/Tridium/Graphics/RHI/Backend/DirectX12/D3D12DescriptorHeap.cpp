@@ -47,7 +47,7 @@ namespace Tridium::D3D12 {
 		if ( IsPoolable() )
 		{
 			// Return the heap to the pool.
-			RHI::GetD3D12RHI()->GetDescriptorHeapManager().AddHeapToPool( std::move( m_Heap ), m_Type, m_NumDescriptors, m_Flags );
+			GetD3D12RHI()->GetDescriptorHeapManager().AddHeapToPool( std::move( m_Heap ), m_Type, m_NumDescriptors, m_Flags );
 		}
 	}
 
@@ -116,7 +116,7 @@ namespace Tridium::D3D12 {
 
 	void DescriptorHeapManager::DeferredFreeHeap( DescriptorHeapRef&& a_Heap )
 	{
-		RHI::GetD3D12RHI()->DeferredDelete( std::move( a_Heap ) );
+		GetD3D12RHI()->DeferredDelete( std::move( a_Heap ) );
 	}
 
 	void DescriptorHeapManager::ImmediateFreeHeap( DescriptorHeapRef&& a_Heap )

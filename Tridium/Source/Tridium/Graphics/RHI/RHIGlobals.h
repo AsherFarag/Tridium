@@ -1,10 +1,12 @@
 #pragma once
 #include "RHIDefinitions.h"
+#include "RHIConstants.h"
 #include <Tridium/Containers/String.h>
 
 namespace Tridium {
 
 	using RHISwapChainRef = SharedPtr<class RHISwapChain>;
+	using RHIFenceRef = SharedPtr<class RHIFence>;
 
 	//===========================
 	// RHI Globals
@@ -16,14 +18,23 @@ namespace Tridium {
 		bool IsRHIInitialised = false;
 
 		// The RHI configuration.
-		RHIConfig Config;
+		RHIConfig Config{};
 
 		// The swap chain instance used by the RHI.
 		// This is set by the RHI implementation automatically but can be overridden by the user.
 		// An example for overriding the swap chain is to use a custom swap chain for VR.
-		RHISwapChainRef SwapChain;
+		// Initialised by RHI::Initialise.
+		RHISwapChainRef SwapChain{};
 
-		// The current frame index.
+		// The fence instance used by the RHI.
+		// Initialised by RHI::Initialise.
+		RHIFenceRef Fence{};
+
+		// Fence values for each frame.
+		uint64_t FrameFenceValue{};
+
+		// The current frame index of the frame buffer.
+		// This will never exceed RHIConstants::MaxFrameBuffers.
 		uint32_t FrameIndex = 0u;
 
 		//====================================================
@@ -41,7 +52,7 @@ namespace Tridium {
 			String AdapterDriverDate;
 			uint32_t DeviceID = 0u;
 			uint32_t VendorID = 0u;
-		} GPUInfo;
+		} GPUInfo{};
 	};
 
 	extern RHIGlobals s_RHIGlobals;
@@ -51,6 +62,11 @@ namespace Tridium {
 
 	namespace RHI {
 
+		inline bool IsInitialised()
+		{
+			return s_RHIGlobals.IsRHIInitialised;
+		}
+
 		inline const RHISwapChainRef& GetSwapChain()
 		{
 			return s_RHIGlobals.SwapChain;
@@ -59,6 +75,11 @@ namespace Tridium {
 		inline void SetSwapChain( const RHISwapChainRef& a_SwapChain )
 		{
 			s_RHIGlobals.SwapChain = a_SwapChain;
+		}
+
+		inline const RHIFenceRef& GetGlobalFence()
+		{
+			return s_RHIGlobals.Fence;
 		}
 
 	}

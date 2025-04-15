@@ -9,6 +9,7 @@
 #include "RHICommandList.h"
 #include "RHIShaderBindingLayout.h"
 #include "RHISwapChain.h"
+#include "RHIFence.h"
 
 namespace Tridium {
 
@@ -25,6 +26,9 @@ namespace Tridium {
 		bool Present();
 		// Execute the given command list on the GPU.
 		bool ExecuteCommandList( const RHICommandListRef& a_CommandList );
+
+		// Wait for the frame fence to complete.
+		void FrameFenceWait();
 		//===========================
 
 		//===========================
@@ -33,46 +37,28 @@ namespace Tridium {
 		//===========================
 
 		//===========================
-		// Fence functions
-	
-		// Creates a fence that can be used to synchronize the CPU and GPU.
-		RHIFence CreateFence();
-		// Queries the state of a fence.
-		ERHIFenceState GetFenceState( RHIFence a_Fence );
-		// Blocks the calling CPU thread until the fence is signaled by the GPU.
-		void FenceSignal( RHIFence a_Fence );
-		//===========================
-
-		//===========================
 		// Resource creation
-		RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc );
-		RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc );
-		RHIIndexBufferRef CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc );
-		RHIVertexBufferRef CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc );
-		RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc );
-		RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc );
-		RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc );
-		RHIShaderBindingLayoutRef CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc );
-		RHISwapChainRef CreateSwapChain( const RHISwapChainDescriptor& a_Desc );
+		[[nodiscard]] RHIFenceRef CreateFence( const RHIFenceDescriptor& a_Desc );
+		[[nodiscard]] RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc );
+		[[nodiscard]] RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData = {} );
+		[[nodiscard]] RHIBufferRef CreateBuffer( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data = {} );
+		[[nodiscard]] RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc );
+		[[nodiscard]] RHISwapChainRef CreateSwapChain( const RHISwapChainDescriptor& a_Desc );
+		[[nodiscard]] RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc );
+		[[nodiscard]] RHIShaderBindingLayoutRef CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc );
+		[[nodiscard]] RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc );
 
-		RHITextureRef CreateTexture2D( 
-			uint32_t a_Width, uint32_t a_Height,
-			Span<const uint8_t> a_Data,
-			ERHITextureFormat a_Format = ERHITextureFormat::RGBA8,
-			const char* a_Name = nullptr,
-			ERHIUsageHint a_Usage = ERHIUsageHint::Default );
+		// Wrappers
 
-		RHIIndexBufferRef CreateIndexBuffer(
-			Span<const Byte> a_InitialData,
-			ERHIDataType a_DataType = ERHIDataType::UInt16,
-			const char* a_Name = nullptr,
-			ERHIUsageHint a_UsageHint = ERHIUsageHint::Default );
+		[[nodiscard]] inline RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc, RHITextureSubresourceData a_SubResourcesData )
+		{
+			return CreateTexture( a_Desc, Span<RHITextureSubresourceData>{ &a_SubResourcesData, 1 } );
+		}
 
-		RHIVertexBufferRef CreateVertexBuffer(
-			Span<const Byte> a_InitialData,
-			RHIVertexLayout a_Layout,
-			const char* a_Name = nullptr,
-			ERHIUsageHint a_UsageHint = ERHIUsageHint::Default );
+		inline RHIFenceRef CreateFence( ERHIFenceType a_Type = ERHIFenceType::CPUWaitOnly, StringView a_Name = {} )
+		{
+			return CreateFence( RHIFenceDescriptor{ a_Name, a_Type } );
+		}
 		//===========================
 	}
 

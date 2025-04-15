@@ -3,12 +3,12 @@
 
 namespace Tridium {
 
-	class D3D12SwapChain : public RHISwapChain
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( D3D12SwapChain, RHISwapChain )
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION( DirectX12 );
+		RHI_RESOURCE_IMPLEMENTATION_BODY( D3D12SwapChain, ERHInterfaceType::DirectX12 );
 
-		bool Commit( const void* a_Params ) override;
+		bool Commit( const RHISwapChainDescriptor& a_Desc ) override;
 		bool Release() override;
 		bool IsValid() const override;
 		const void* NativePtr() const override { return SwapChain.Get(); }

@@ -3,11 +3,15 @@
 
 namespace Tridium {
 
-	class OpenGLShaderBindingLayout : public RHIShaderBindingLayout
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( OpenGLShaderBindingLayout, RHIShaderBindingLayout )
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION( OpenGL );
-		bool Commit( const void* a_Params ) override { ParamsToDescriptor<RHIShaderBindingLayoutDescriptor>( a_Params ); return true; }
+		RHI_RESOURCE_IMPLEMENTATION_BODY( OpenGLShaderBindingLayout, ERHInterfaceType::OpenGL );
+		bool Commit( const RHIShaderBindingLayoutDescriptor & a_Desc ) override
+		{
+			m_Descriptor = a_Desc;
+			return true;
+		}
 		bool Release() override { return true; }
 		bool IsValid() const override { return true; }
 		const void* NativePtr() const override { return nullptr; }

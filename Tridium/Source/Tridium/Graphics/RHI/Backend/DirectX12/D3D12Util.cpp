@@ -9,7 +9,7 @@ namespace Tridium::D3D12 {
 	{
 		if ( a_Allocator == nullptr )
 		{
-			a_Allocator = RHI::GetD3D12RHI()->GetAllocator().Get();
+			a_Allocator = GetD3D12RHI()->GetAllocator().Get();
 		}
 
 		HRESULT hr = a_Allocator->CreateResource(

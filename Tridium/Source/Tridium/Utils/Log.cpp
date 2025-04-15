@@ -9,11 +9,6 @@ namespace Tridium {
 
 	void Log::Init()
 	{
-		// Colours are swapped for some reason
-		auto RED = FOREGROUND_BLUE;
-		auto GREEN = FOREGROUND_GREEN;
-		auto BLUE = FOREGROUND_RED;
-
 		// Create a color sink
 		s_ColorSink = MakeShared<spdlog::sinks::stdout_color_sink_mt>();
 		s_ColorSink->set_pattern( "%^%T [%n] %v%$" );

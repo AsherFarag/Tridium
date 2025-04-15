@@ -4,20 +4,16 @@
 
 namespace Tridium {
 
-    bool D3D12ShaderModule::Commit( const void* a_Params )
+	bool D3D12ShaderModule::Commit( const RHIShaderModuleDescriptor& a_Desc )
     {
-        const RHIShaderModuleDescriptor* desc = ParamsToDescriptor<RHIShaderModuleDescriptor>( a_Params );
-		if ( desc == nullptr )
-		{
-			return false;
-		}
+		m_Descriptor = a_Desc;
 
 		// Copy the byte code from the descriptor span
-        Bytecode.Resize( desc->Bytecode.size() );
-		std::memcpy( Bytecode.Data(), desc->Bytecode.data(), desc->Bytecode.size_bytes() );
+        Bytecode.Resize( a_Desc.Bytecode.size() );
+		std::memcpy( Bytecode.Data(), a_Desc.Bytecode.data(), a_Desc.Bytecode.size_bytes() );
 
 		TODO( "Pretty dirty, figure out a better relationship for a shader and its bytecode" );
-		Descriptor.Get<RHIShaderModuleDescriptor>()->Bytecode = Bytecode;
+		m_Descriptor.Bytecode = Bytecode;
 
         return true;
     }

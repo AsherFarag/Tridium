@@ -46,4 +46,9 @@ namespace Tridium {
 	_Type _Name : register( t##_Slot ); \
 	SamplerState _Name##_Sampler : register( s##_Slot )
 
+#define GetCombinedSampler( _Texture ) _Texture##_Sampler
+
+// Use for sampling combined samplers
+#define Sample( _Texture, _UV ) _Texture.Sample( GetCombinedSampler( _Texture ), _UV )
+
 #endif // __cplusplus

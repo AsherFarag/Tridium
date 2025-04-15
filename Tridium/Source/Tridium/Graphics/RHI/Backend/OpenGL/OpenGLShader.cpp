@@ -4,16 +4,12 @@
 
 namespace Tridium {
 
-	bool OpenGLShaderModule::Commit( const void* a_Params )
+	bool OpenGLShaderModule::Commit( const RHIShaderModuleDescriptor& a_Desc )
 	{
-		const auto* desc = ParamsToDescriptor<RHIShaderModuleDescriptor>( a_Params );
-		if ( desc == nullptr )
-		{
-			return false;
-		}
+		m_Descriptor = a_Desc;
 
 		// Create GLSL from the SPIR-V bytecode using SPIRV-Cross
-		spirv_cross::CompilerGLSL glslCompiler( reinterpret_cast<const uint32_t*>( desc->Bytecode.data() ), desc->Bytecode.size_bytes() / sizeof( uint32_t ) );
+		spirv_cross::CompilerGLSL glslCompiler( reinterpret_cast<const uint32_t*>( a_Desc.Bytecode.data() ), a_Desc.Bytecode.size_bytes() / sizeof( uint32_t ) );
 		spirv_cross::CompilerGLSL::Options options;
 		options.version = 450;
 		options.es = false;
@@ -42,7 +38,7 @@ namespace Tridium {
 		String glsl = glslCompiler.compile();
 
 		// Create the shader and compile the GLSL source
-		m_ShaderID = OpenGL2::CreateShader( ToOpenGL::GetShaderType( desc->Type ) );
+		m_ShaderID = OpenGL2::CreateShader( ToOpenGL::GetShaderType( a_Desc.Type ) );
 		const char* source = glsl.c_str();
 		OpenGL2::ShaderSource( m_ShaderID, 1, &source, nullptr );
 		OpenGL2::CompileShader( m_ShaderID );
@@ -59,13 +55,13 @@ namespace Tridium {
 			OpenGL2::GetShaderiv( m_ShaderID, GL_INFO_LOG_LENGTH, &length );
 			Array<GLchar> infoLog( length );
 			OpenGL2::GetShaderInfoLog( m_ShaderID, length, &length, infoLog.Data() );
-			LOG( LogCategory::OpenGL, Error, "OpenGLShaderModule::Commit: Failed to compile shader '{0}' - Error: {1}", desc->Name, infoLog.Data() );
+			LOG( LogCategory::OpenGL, Error, "OpenGLShaderModule::Commit: Failed to compile shader '{0}' - Error: {1}", a_Desc.Name, infoLog.Data() );
 			return false;
 		}
 
-		if ( RHIQuery::IsDebug() && !desc->Name.empty() )
+		if ( RHIQuery::IsDebug() && !a_Desc.Name.empty() )
 		{
-			OpenGL4::ObjectLabel( GL_SHADER, m_ShaderID, desc->Name.size(), static_cast<const GLchar*>( desc->Name.data() ) );
+			OpenGL4::ObjectLabel( GL_SHADER, m_ShaderID, a_Desc.Name.size(), static_cast<const GLchar*>( a_Desc.Name.data() ) );
 		}
 	#endif
 

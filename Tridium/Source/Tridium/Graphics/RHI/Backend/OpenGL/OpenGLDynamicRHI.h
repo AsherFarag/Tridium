@@ -30,21 +30,12 @@ namespace Tridium {
 		static constexpr ERHInterfaceType GetStaticRHIType() { return ERHInterfaceType::OpenGL; }
 		//==============================================
 
-		//====================================================
-		// Creates a fence that can be used to synchronize the CPU and GPU.
-		virtual RHIFence CreateFence() const override;
-		// Queries the state of a fence.
-		virtual ERHIFenceState GetFenceState( RHIFence a_Fence ) const override;
-		// Blocks the calling CPU thread until the fence is signaled by the GPU.
-		virtual void FenceSignal( RHIFence a_Fence ) override;
-		//=====================================================
-
 		//=====================================================
 		// Resource creation
+		virtual RHIFenceRef CreateFence( const RHIFenceDescriptor& a_Desc ) override;
 		virtual RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc ) override;
-		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc ) override;
-		virtual RHIIndexBufferRef CreateIndexBuffer( const RHIIndexBufferDescriptor& a_Desc ) override;
-		virtual RHIVertexBufferRef CreateVertexBuffer( const RHIVertexBufferDescriptor& a_Desc ) override;
+		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) override;
+		virtual RHIBufferRef CreateBuffer( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data ) override;
 		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc ) override;
 		virtual RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc ) override;
 		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc ) override;
