@@ -37,7 +37,7 @@ namespace Tridium {
 
 	bool D3D12ShaderBindingLayout::Commit( const RHIShaderBindingLayoutDescriptor& a_Desc )
     {
-		m_Descriptor = a_Desc;
+		m_Desc = a_Desc;
 		const auto& device = GetD3D12RHI()->GetDevice();
 
 		Array<D3D12::RootParameter> rootParams;

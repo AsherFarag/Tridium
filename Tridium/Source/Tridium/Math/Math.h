@@ -82,104 +82,104 @@ namespace Tridium::Math {
 
 	// Returns the minimum of two values.
 	template<typename _A, typename _B>
-	constexpr inline _A Min( _A a, _B b ) { return glm::min( a, b ); }
+	constexpr inline auto Min( _A a, _B b ) { return glm::min( a, b ); }
 
 	// Returns the maximum of two values.
 	template<typename _A, typename _B>
-	constexpr inline _A Max( _A a, _B b ) { return glm::max( a, b ); }
+	constexpr inline auto Max( _A a, _B b ) { return glm::max( a, b ); }
 
 	// Clamps a value between a minimum and maximum value.
 	template<typename _Value, typename _Gen>
-	constexpr inline _Value Clamp( _Value a_Value, _Gen a_Min, _Gen a_Max ) { return glm::clamp( a_Value, a_Min, a_Max ); }
+	constexpr inline auto Clamp( _Value a_Value, _Gen a_Min, _Gen a_Max ) { return glm::clamp( a_Value, a_Min, a_Max ); }
 
 	// Linear interpolates between a and b by the interpolation factor.
 	template<typename _GenT, typename _GenU>
-	constexpr inline _GenT Lerp( _GenT a_A, _GenT a_B, _GenU a_InterpolationFactor ) { return glm::mix( a_A, a_B, a_InterpolationFactor ); }
+	constexpr inline auto Lerp( _GenT a_A, _GenT a_B, _GenU a_InterpolationFactor ) { return glm::mix( a_A, a_B, a_InterpolationFactor ); }
 
 	// Clamped linear interpolation between a and b by the interpolation factor ( 0 - 1 ).
 	// i.e. the result will always be between a and b.
 	template<typename _GenT, typename _GenU>
-	constexpr inline _GenT ClampedLerp( _GenT a_A, _GenT a_B, _GenU a_InterpolationFactor ) { return Lerp( a_A, a_B, Clamp( a_InterpolationFactor, 0.0f, 1.0f ) ); }
+	constexpr inline auto ClampedLerp( _GenT a_A, _GenT a_B, _GenU a_InterpolationFactor ) { return Lerp( a_A, a_B, Clamp( a_InterpolationFactor, 0.0f, 1.0f ) ); }
 
 	// Returns the absolute value of a value.
 	template<typename _Gen>
-	constexpr inline _Gen Abs( _Gen a_Value ) { return glm::abs( a_Value ); }
+	constexpr inline auto Abs( _Gen a_Value ) { return glm::abs( a_Value ); }
 
 	// Returns the sign of a value.
 	template<typename _Gen>
-	constexpr inline _Gen Sign( _Gen a_Value ) { return glm::sign( a_Value ); }
+	constexpr inline auto Sign( _Gen a_Value ) { return glm::sign( a_Value ); }
 
 	// Returns the square root of a value.
 	template<typename _Gen>
-	constexpr inline _Gen Sqrt( _Gen a_Value ) { return glm::sqrt( a_Value ); }
+	constexpr inline auto Sqrt( _Gen a_Value ) { return glm::sqrt( a_Value ); }
 
 	// Returns the square of a value.
 	template<typename _Gen>
-	constexpr inline _Gen Sqr( _Gen a_Value ) { return a_Value * a_Value; }
+	constexpr inline auto Sqr( _Gen a_Value ) { return a_Value * a_Value; }
 
 	// Returns the sine of a value.
 	template<typename _Gen>
-	constexpr inline _Gen Sin( _Gen a_Value ) { return glm::sin( a_Value ); }
+	constexpr inline auto Sin( _Gen a_Value ) { return glm::sin( a_Value ); }
 
 	// Returns the cosine of a value.
 	template<typename _Gen>
-	constexpr inline _Gen Cos( _Gen a_Value ) { return glm::cos( a_Value ); }
+	constexpr inline auto Cos( _Gen a_Value ) { return glm::cos( a_Value ); }
 
 	// Returns the tangent of a value.
 	template<typename _Gen>
-	constexpr inline _Gen Tan( _Gen a_Value ) { return glm::tan( a_Value ); }
+	constexpr inline auto Tan( _Gen a_Value ) { return glm::tan( a_Value ); }
 
 	// Returns the arc sine of a value.
 	template<typename _Gen>
-	constexpr inline _Gen ASin( _Gen a_Value ) { return glm::asin( a_Value ); }
+	constexpr inline auto ASin( _Gen a_Value ) { return glm::asin( a_Value ); }
 
 	// Returns the arc cosine of a value.
 	template<typename _Gen>
-	constexpr inline _Gen ACos( _Gen a_Value ) { return glm::acos( a_Value ); }
+	constexpr inline auto ACos( _Gen a_Value ) { return glm::acos( a_Value ); }
 
 	// Returns the arc tangent of a value.
 	template<typename _Gen>
-	constexpr inline _Gen ATan( _Gen a_Value ) { return glm::atan( a_Value ); }
+	constexpr inline auto ATan( _Gen a_Value ) { return glm::atan( a_Value ); }
 
 	// Returns the arc tangent of y/x.
 	template<typename _Gen>
-	constexpr inline _Gen ATan2( _Gen a_Y, _Gen a_X ) { return glm::atan( a_Y, a_X ); }
+	constexpr inline auto ATan2( _Gen a_Y, _Gen a_X ) { return glm::atan( a_Y, a_X ); }
 
 	// Returns the power of a value.
 	template<typename _Gen>
-	constexpr inline _Gen Pow( _Gen a_Base, _Gen a_Exponent ) { return glm::pow( a_Base, a_Exponent ); }
+	constexpr inline auto Pow( _Gen a_Base, _Gen a_Exponent ) { return glm::pow( a_Base, a_Exponent ); }
 
 	// Returns the natural logarithm of a value.
 	template<typename _Gen>
-	constexpr inline _Gen Log( _Gen a_Value ) { return glm::log( a_Value ); }
+	constexpr inline auto Log( _Gen a_Value ) { return glm::log( a_Value ); }
 
 	// Returns the base 2 logarithm of a value.
 	template<typename _Gen>
-	constexpr inline _Gen Log2( _Gen a_Value ) { return glm::log2( a_Value ); }
+	constexpr inline auto Log2( _Gen a_Value ) { return glm::log2( a_Value ); }
 
 	// Returns the smallest integer value not less than a value.
 	template<typename _Gen>
-	constexpr inline _Gen Ceil( _Gen a_Value ) { return glm::ceil( a_Value ); }
+	constexpr inline auto Ceil( _Gen a_Value ) { return glm::ceil( a_Value ); }
 
 	// Returns the largest integer value not greater than a value.
 	template<typename _Gen>
-	constexpr inline _Gen Floor( _Gen a_Value ) { return glm::floor( a_Value ); }
+	constexpr inline auto Floor( _Gen a_Value ) { return glm::floor( a_Value ); }
 
 	// Returns the nearest integer value.
 	template<typename _Gen>
-	constexpr inline _Gen Round( _Gen a_Value ) { return glm::round( a_Value ); }
+	constexpr inline auto Round( _Gen a_Value ) { return glm::round( a_Value ); }
 
 	// Returns the fractional part of a value.
 	template<typename _Gen>
-	constexpr inline _Gen Fract( _Gen a_Value ) { return glm::fract( a_Value ); }
+	constexpr inline auto Fract( _Gen a_Value ) { return glm::fract( a_Value ); }
 
 	// Returns the value in radians
 	template<typename _Gen>
-	constexpr inline _Gen Radians( _Gen a_Degrees ) { return glm::radians( a_Degrees ); }
+	constexpr inline auto Radians( _Gen a_Degrees ) { return glm::radians( a_Degrees ); }
 
 	// Returns the value in degrees
 	template<typename _Gen>
-	constexpr inline _Gen Degrees( _Gen a_Radians ) { return glm::degrees( a_Radians ); }
+	constexpr inline auto Degrees( _Gen a_Radians ) { return glm::degrees( a_Radians ); }
 
 	// Returns a quaternion from an axis and an angle.
 	template<typename _Gen>

@@ -1,6 +1,6 @@
 #pragma once
 #include "RHIResource.h"
-#include "RHIMesh.h"
+#include "RHIVertexLayout.h"
 #include "RHITexture.h"
 #include "RHIShader.h"
 #include "RHIShaderBindingLayout.h"

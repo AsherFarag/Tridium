@@ -2,7 +2,7 @@
 #include "RHICommon.h"
 #include "DynamicRHI.h"
 #include "RHITexture.h"
-#include "RHIMesh.h"
+#include "RHIVertexLayout.h"
 #include "RHIPipelineState.h"
 #include "ShaderLibrary.h"
 #include "RHIBuffer.h"

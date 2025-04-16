@@ -213,7 +213,9 @@ namespace Tridium {
 
         // Close and execute copy commands
         if ( FAILED( copyCmdList->Close() ) )
+        {
             return false;
+        }
 
         ID3D12CommandList* cmdLists[] = { copyCmdList.Get() };
         copyQueue->ExecuteCommandLists( 1, cmdLists );

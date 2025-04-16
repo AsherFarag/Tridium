@@ -59,7 +59,7 @@ namespace Tridium {
 
 	bool OpenGLSwapChain::Commit( const RHISwapChainDescriptor& a_Desc )
     {
-		m_Descriptor = a_Desc;
+		m_Desc = a_Desc;
 
 		m_Width = a_Desc.Width;
 		m_Height = a_Desc.Height;

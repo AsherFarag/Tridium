@@ -19,6 +19,14 @@ namespace Tridium {
 		if ( !SwapChain )
 			return false;
 
+		if ( GetBackBuffer()->GetState() != ERHIResourceStates::Present )
+		{
+			// We need to transition the back buffer to present
+			auto& cmdCtx = GetD3D12RHI()->GetCommandContext( ED3D12CommandQueueType::Direct );
+			cmdCtx.Signal();
+			cmdCtx.Wait();
+		}
+
 		SwapChain->Present( 1, 0 );
 
 		if ( m_ShouldResize && !ResizeBuffers() )
@@ -66,11 +74,13 @@ namespace Tridium {
 		// Resize the swap chain
 		if ( FAILED( SwapChain->ResizeBuffers( RTVs.Size(), m_Width, m_Height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING ) ) )
 		{
+			ASSERT_LOG( false, "Failed to resize swap chain buffers!" );
 			return false;
 		}
 
 		if ( !GetBackBuffers() )
 		{
+			ASSERT_LOG( false, "Failed to get back buffers!" );
 			return false;
 		}
 
@@ -109,6 +119,7 @@ namespace Tridium {
 			D3D12Texture* tex = RTVs[i]->As<D3D12Texture>();
 			if ( FAILED( SwapChain->GetBuffer( i, IID_PPV_ARGS( &tex->Texture.Resource ) ) ) )
 			{
+				ASSERT_LOG( false, "Failed to get back buffer!" );
 				return false;
 			}
 
@@ -128,7 +139,7 @@ namespace Tridium {
 
 	bool D3D12SwapChain::Commit( const RHISwapChainDescriptor& a_Desc )
     {
-		m_Descriptor = a_Desc;
+		m_Desc = a_Desc;
 
 		// Get the RHI
 		D3D12RHI* rhi = GetD3D12RHI();
@@ -169,10 +180,13 @@ namespace Tridium {
 		DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsDesc{};
 		fsDesc.Windowed = true;
 
+		auto& directCmdCtx = rhi->GetCommandContext( ED3D12CommandQueueType::Direct );
+
 		// Create the swap chain
 		ComPtr<IDXGISwapChain1> swapChain;
-		if ( FAILED( rhi->GetFactory()->CreateSwapChainForHwnd( rhi->GetCommandQueue().Get(), hWnd, &swapChainDesc, &fsDesc, nullptr, &swapChain)) )
+		if ( FAILED( rhi->GetFactory()->CreateSwapChainForHwnd( directCmdCtx.CmdQueue.Get(), hWnd, &swapChainDesc, &fsDesc, nullptr, &swapChain) ) )
 		{
+			ASSERT_LOG( false, "Failed to create swap chain!" );
 			return false;
 		}
 

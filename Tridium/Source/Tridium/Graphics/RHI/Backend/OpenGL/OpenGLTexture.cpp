@@ -23,6 +23,11 @@ namespace Tridium {
 	//	return TextureObj.Valid();
 	//}
 
+	OpenGLTexture::OpenGLTexture( const RHITextureDescriptor& a_Desc )
+		: RHITexture( a_Desc )
+	{
+	}
+
 	bool OpenGLTexture::Release()
 	{
 		TextureObj.Release();
@@ -49,7 +54,7 @@ namespace Tridium {
 
 	bool OpenGLTexture::Commit( const RHITextureDescriptor& a_Desc )
 	{
-		m_Descriptor = a_Desc;
+		m_Desc = a_Desc;
 		return true;
 	}
 

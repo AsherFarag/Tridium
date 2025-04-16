@@ -116,11 +116,11 @@ namespace Tridium {
 			return nullptr;
 		}
 
-		template<typename T> requires Concepts::IsRHIResource<T>
-		static T::RefType Create()
+		template<typename T, typename... _Args> requires Concepts::IsRHIResource<T>
+		static T::RefType Create( _Args&&... a_Args )
 		{
-			static constexpr auto deleter = +[]( T* a_Resource ) { a_Resource->Release(); delete a_Resource; };
-			return T::RefType( new T(), deleter );
+			static constexpr auto deleter = +[]( T* a_Resource ) { delete a_Resource; };
+			return T::RefType( new T( std::forward<_Args>( a_Args )... ), deleter );
 		}
 
 	protected:
@@ -210,9 +210,9 @@ public: \
 	using WeakRefType = _ClassName##WeakRef; \
 	static constexpr ::Tridium::ERHIResourceType Type = ::Tridium::_RHIResourceType; \
 	::Tridium::ERHIResourceType GetType() const override { return Type; } \
-	const DescriptorType& Descriptor() const { return m_Descriptor; } \
+	const DescriptorType& Descriptor() const { return m_Desc; } \
 protected: \
-	DescriptorType m_Descriptor; \
+	DescriptorType m_Desc; \
 public:
 
 

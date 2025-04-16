@@ -4,7 +4,7 @@
 #include "RHICommandAllocator.h"
 #include "RHISampler.h"
 #include "RHITexture.h"
-#include "RHIMesh.h"
+#include "RHIVertexLayout.h"
 #include "RHIPipelineState.h"
 #include "RHIShader.h"
 #include "RHIBuffer.h"
@@ -926,7 +926,7 @@ namespace Tridium {
 		{
 			rtvs[i] = a_RTV[i].get();
 		}
-		return SetRenderTargets( rtvs, a_DSV, a_StateTransitionMode PASS_DEBUG_INFO );
+		return SetRenderTargets( Span<RHITexture*>{ rtvs, a_RTV.size() }, a_DSV, a_StateTransitionMode PASS_DEBUG_INFO );
 	}
 
 	inline RHIGraphicsCommandBuffer& RHIGraphicsCommandBuffer::ClearRenderTargets( 

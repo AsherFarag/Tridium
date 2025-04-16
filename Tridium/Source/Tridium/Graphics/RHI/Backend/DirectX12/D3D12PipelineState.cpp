@@ -87,7 +87,7 @@ namespace Tridium {
 
 	bool D3D12GraphicsPipelineState::Commit( const RHIGraphicsPipelineStateDescriptor& a_Desc )
     {
-		m_Descriptor = a_Desc;
+		m_Desc = a_Desc;
 
 		// Create the vertex input layout
 		for ( size_t i = 0; i < a_Desc.VertexLayout.Elements.Size(); ++i )

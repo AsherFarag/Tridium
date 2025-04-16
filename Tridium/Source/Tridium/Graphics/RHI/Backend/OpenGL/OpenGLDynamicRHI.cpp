@@ -98,7 +98,7 @@ namespace Tridium {
 			return nullptr;
 		}
 
-		RHITextureRef tex = RHIResource::Create<OpenGLTexture>();
+		RHITextureRef tex = RHIResource::Create<OpenGLTexture>( a_Desc );
 		auto* glTex = static_cast<OpenGLTexture*>( tex.get() );
 		glTex->Commit( a_Desc );
 
@@ -127,7 +127,7 @@ namespace Tridium {
 
 	RHIBufferRef OpenGLDynamicRHI::CreateBuffer( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data )
 	{
-		RHIBufferRef buffer = RHIResource::Create<OpenGLBuffer>();
+		RHIBufferRef buffer = RHIResource::Create<OpenGLBuffer>( a_Desc );
 		return buffer;
 	}
 

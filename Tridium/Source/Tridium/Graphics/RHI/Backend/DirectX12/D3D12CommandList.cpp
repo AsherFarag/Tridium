@@ -24,12 +24,13 @@ namespace Tridium {
 
 	bool D3D12CommandList::Commit( const RHICommandListDescriptor& a_Desc )
 	{
-		m_Descriptor = a_Desc;
+		m_Desc = a_Desc;
 		D3D12RHI* rhi = GetD3D12RHI();
-		if ( FAILED( rhi->GetDevice()->CreateCommandList1( 0, D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS( &CommandList ) ) ) )
-		{
-			return false;
-		}
+		CommandList = rhi->GetCommandContext( ED3D12CommandQueueType::Direct ).CmdList;
+		//if ( FAILED( rhi->GetDevice()->CreateCommandList1( 0, D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS( &CommandList ) ) ) )
+		//{
+		//	return false;
+		//}
 
 		return true;
 	}
@@ -45,16 +46,18 @@ namespace Tridium {
 		D3D12RHI* rhi = GetD3D12RHI();
 		CHECK( rhi );
 
-		const auto& cmdAllocator = rhi->GetCommandAllocator();
+		const auto& cmdAllocator = rhi->GetCommandContext( ED3D12CommandQueueType::Direct ).CmdAllocator;
 		// Reset the command allocator
 		if ( FAILED( cmdAllocator->Reset() ) )
 		{
+			ASSERT_LOG( false, "Failed to reset command allocator!" );
 			return false;
 		}
 
 		// Reset the command list
 		if ( FAILED( CommandList->Reset( cmdAllocator.Get(), nullptr ) ) )
 		{
+			ASSERT_LOG( false, "Failed to reset command list!" );
 			return false;
 		}
 
@@ -113,6 +116,10 @@ namespace Tridium {
 		{
 			const D3D12_RESOURCE_STATES before = D3D12::Translate( barrier.Before );
 			const D3D12_RESOURCE_STATES after = D3D12::Translate( barrier.After );
+			if ( before == after )
+			{
+				continue;
+			}
 
 			auto& d3d12Barrier = m_State.D3D12Barriers.EmplaceBack();
 			d3d12Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -340,6 +347,11 @@ namespace Tridium {
 		barrier.Transition.StateAfter = D3D12::Translate( a_Cmd.Barrier.After );
 		barrier.Transition.Subresource = 0;
 		CommandList->ResourceBarrier( 1, &barrier );
+
+		// Update the resource state
+		a_Cmd.Barrier.Resource->GetType() == ERHIResourceType::Texture ?
+			static_cast<D3D12Texture*>( a_Cmd.Barrier.Resource )->SetState( a_Cmd.Barrier.After ) :
+			static_cast<D3D12Buffer*>( a_Cmd.Barrier.Resource )->SetState( a_Cmd.Barrier.After );
 	}
 
 	void D3D12CommandList::UpdateBuffer( const RHICommand::UpdateBuffer& a_Cmd )
@@ -607,6 +619,14 @@ namespace Tridium {
 
 		CommitBarriers();
 
+		// Set the render targets
+		m_State.Graphics.CurrentRTs.Clear();
+		for ( RHITexture* rtv : a_Cmd.RTV )
+		{
+			m_State.Graphics.CurrentRTs.EmplaceBack( rtv );
+		}
+		m_State.Graphics.CurrentDSV = a_Cmd.DSV;
+
 		const auto& device = GetD3D12RHI()->GetDevice();
 		m_State.LastRTVHeap = m_State.Heaps.EmplaceBack( GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap(
 			ERHIDescriptorHeapType::RenderTarget,
@@ -643,6 +663,33 @@ namespace Tridium {
 
 	void D3D12CommandList::ClearRenderTargets( const RHICommand::ClearRenderTargets& a_Cmd )
 	{
+		if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Transition )
+		{
+			// Set the render target state for all RTVs and DSVs
+			for ( RHITexture* rtv : m_State.Graphics.CurrentRTs )
+			{
+				m_ResourceStateTracker.RequireTextureState( *rtv, ERHIResourceStates::RenderTarget );
+			}
+			if ( m_State.Graphics.CurrentDSV )
+			{
+				m_ResourceStateTracker.RequireTextureState( *m_State.Graphics.CurrentDSV, ERHIResourceStates::DepthStencilWrite );
+			}
+		}
+		else if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Validate )
+		{
+			// Check the render target state for all RTVs and DSVs
+			for ( RHITexture* rtv : m_State.Graphics.CurrentRTs )
+			{
+				RHI_DEV_CHECK( rtv->GetState() == ERHIResourceStates::RenderTarget, "Render target state is not RenderTarget!" );
+			}
+			if ( m_State.Graphics.CurrentDSV )
+			{
+				RHI_DEV_CHECK( m_State.Graphics.CurrentDSV->GetState() == ERHIResourceStates::DepthStencilWrite, "Depth stencil state is not DepthStencilWrite!" );
+			}
+		}
+
+		CommitBarriers();
+
 		if ( a_Cmd.ClearFlags.HasFlag( ERHIClearFlags::Color ) && m_State.LastRTVHeap )
 		{
 			for ( size_t i = 0; i < m_State.LastRTVHeap->NumDescriptors(); ++i )
@@ -706,6 +753,9 @@ namespace Tridium {
 		{
 			RHI_DEV_CHECK( a_Cmd.IBO->GetState() == ERHIResourceStates::IndexBuffer, "Index buffer state is not IndexBuffer!" );
 		}
+
+		CommitBarriers();
+
 		D3D12_INDEX_BUFFER_VIEW ibv{};
 		ibv.BufferLocation = a_Cmd.IBO->As<D3D12Buffer>()->ManagedBuffer.Resource->GetGPUVirtualAddress();
 		ibv.SizeInBytes = static_cast<UINT>( a_Cmd.IBO->As<D3D12Buffer>()->ManagedBuffer.Resource->GetDesc().Width );
@@ -723,6 +773,8 @@ namespace Tridium {
 		{
 			RHI_DEV_CHECK( a_Cmd.VBO->GetState() == ERHIResourceStates::VertexBuffer, "Vertex buffer state is not VertexBuffer!" );
 		}
+
+		CommitBarriers();
 
 		D3D12_VERTEX_BUFFER_VIEW vbv{};
 		vbv.BufferLocation = a_Cmd.VBO->As<D3D12Buffer>()->ManagedBuffer.Resource->GetGPUVirtualAddress();

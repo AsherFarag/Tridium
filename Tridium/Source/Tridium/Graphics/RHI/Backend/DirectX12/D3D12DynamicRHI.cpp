@@ -10,7 +10,7 @@
 // Resources
 #include <Tridium/Graphics/RHI/RHICommandList.h>
 #include <Tridium/Graphics/RHI/RHITexture.h>
-#include <Tridium/Graphics/RHI/RHIMesh.h>
+#include <Tridium/Graphics/RHI/RHIVertexLayout.h>
 #include <Tridium/Graphics/RHI/RHIPipelineState.h>
 
 // Backend resources
@@ -89,6 +89,66 @@ namespace Tridium {
             return false;
         }
 
+		// Set up Command Contexts
+		for ( size_t i = 0; i < m_CmdContexts.Size(); ++i )
+		{
+			// Set up the command context and set the command queue type
+			D3D12CommandContext& cmdCtx = m_CmdContexts[i];
+
+			ED3D12CommandQueueType cmdQueueType = static_cast<ED3D12CommandQueueType>( i );
+			D3D12_COMMAND_LIST_TYPE d3d12CmdListType;
+			switch ( cmdQueueType )
+			{
+				case ED3D12CommandQueueType::Direct:  d3d12CmdListType = D3D12_COMMAND_LIST_TYPE_DIRECT;  break;
+				case ED3D12CommandQueueType::Compute: d3d12CmdListType = D3D12_COMMAND_LIST_TYPE_COMPUTE; break;
+				case ED3D12CommandQueueType::Copy:    d3d12CmdListType = D3D12_COMMAND_LIST_TYPE_COPY;    break;
+				default: ASSERT_LOG( false, "Invalid command queue type!" ); break;
+			}
+
+			// Create the command queue
+			{
+				D3D12_COMMAND_QUEUE_DESC cmdQueueDesc{};
+				cmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_HIGH;
+				cmdQueueDesc.NodeMask = 0;
+				cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+				cmdQueueDesc.Type = d3d12CmdListType;
+
+				if ( FAILED( m_Device->CreateCommandQueue( &cmdQueueDesc, IID_PPV_ARGS( &cmdCtx.CmdQueue ) ) ) )
+				{
+					return false;
+				}
+			}
+
+			// Create the command allocator
+			if ( FAILED( m_Device->CreateCommandAllocator( d3d12CmdListType, IID_PPV_ARGS( &cmdCtx.CmdAllocator ) ) ) )
+			{
+				return false;
+			}
+
+			// Create the command list
+			if ( FAILED( m_Device->CreateCommandList1( 0, d3d12CmdListType, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS( &cmdCtx.CmdList ) ) ) )
+			{
+				return false;
+			}
+
+			// Create the fence
+			cmdCtx.FenceValue = 0;
+			cmdCtx.FenceEvent = CreateEvent( nullptr, FALSE, FALSE, nullptr );
+			if ( cmdCtx.FenceEvent == nullptr )
+			{
+				return false;
+			}
+			if ( FAILED( m_Device->CreateFence( cmdCtx.FenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS( &cmdCtx.Fence ) ) ) )
+			{
+				return false;
+			}
+
+			TODO( "Temp" );
+			cmdCtx.CmdQueue->SetName( L"CmdCtx-RHICommandQueue" );
+			cmdCtx.CmdAllocator->SetName( L"CmdCtx-RHICommandAllocator" );
+			cmdCtx.Fence->SetName( L"CmdCtx-RHICommandFence" );
+		}
+
 		// Create the command list
         if ( FAILED( m_Device->CreateCommandList1( 0, D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS( &m_CommandList ) ) ) )
         {
@@ -136,42 +196,6 @@ namespace Tridium {
 			return false;
 		}
 
-		// Init Copy Objects
-		{
-			// Create the copy command queue
-			D3D12_COMMAND_QUEUE_DESC copyQueueDesc{};
-			copyQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
-			copyQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
-			copyQueueDesc.NodeMask = 0;
-			copyQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-			if ( FAILED( m_Device->CreateCommandQueue( &copyQueueDesc, IID_PPV_ARGS( &m_CopyQueue ) ) ) )
-			{
-				return false;
-			}
-			D3D12_SET_DEBUG_NAME( m_CopyQueue.Get(), StringView{ "RHICopyCmdQueue" } );
-
-			// Create the copy command allocator
-			if ( FAILED( m_Device->CreateCommandAllocator( D3D12_COMMAND_LIST_TYPE_COPY, IID_PPV_ARGS( &m_CopyAllocator ) ) ) )
-			{
-				return false;
-			}
-			D3D12_SET_DEBUG_NAME( m_CopyAllocator.Get(), StringView{ "RHICopyCmdAllocator" } );
-
-			// Create the copy command list
-			if ( FAILED( m_Device->CreateCommandList1( 0, D3D12_COMMAND_LIST_TYPE_COPY, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS( &m_CopyCommandList ) ) ) )
-			{
-				return false;
-			}
-			D3D12_SET_DEBUG_NAME( m_CopyCommandList.Get(), StringView{ "RHICopyCmdList" } );
-
-			// Create the copy fence
-			m_CopyFence = SharedPtrCast<D3D12Fence>( CreateFence( RHIFenceDescriptor{ "RHICopyFence", ERHIFenceType::CPUWaitOnly } ) );
-			if ( !m_CopyFence )
-			{
-				return false;
-			}
-		}
-
 
         return true;
     }
@@ -179,13 +203,6 @@ namespace Tridium {
 	bool D3D12RHI::Shutdown()
 	{
 		m_UploadBuffer.Release();
-
-		// Release the copy objects
-		m_CopyCommandList.Release();
-		m_CopyAllocator.Release();
-		m_CopyQueue.Release();
-		m_CopyFence->Release();
-		m_CopyFence.reset();
 
 		m_CommandList.Release();
 		m_CommandAllocator.Release();
@@ -215,10 +232,10 @@ namespace Tridium {
 		}
 
         ID3D12CommandList* cmdLists[] = { cmdList };
-        m_CommandQueue->ExecuteCommandLists( 1, cmdLists );
-		m_CommandQueue->Signal( RHI::GetGlobalFence()->NativePtrAs<ID3D12Fence>(), ++s_RHIGlobals.FrameFenceValue );
-		RHI::GetGlobalFence()->Wait( s_RHIGlobals.FrameFenceValue );
-		return true;
+		auto& cmdCtx = GetCommandContext( ED3D12CommandQueueType::Direct );
+		cmdCtx.CmdQueue->ExecuteCommandLists( 1, cmdLists );
+		cmdCtx.Signal();
+		cmdCtx.Wait();
 
 		return true;
     }
@@ -243,13 +260,13 @@ namespace Tridium {
 
 	RHITextureRef D3D12RHI::CreateTexture( const RHITextureDescriptor& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
 	{
-		RHITextureRef tex = RHIResource::Create<D3D12Texture>();
+		RHITextureRef tex = RHIResource::Create<D3D12Texture>( a_Desc, a_SubResourcesData );
 		return tex;
 	}
 
 	RHIBufferRef D3D12RHI::CreateBuffer( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data )
 	{
-		RHIBufferRef buffer = RHIResource::Create<D3D12Buffer>();
+		RHIBufferRef buffer = RHIResource::Create<D3D12Buffer>( a_Desc, a_Data );
 		return buffer;
 	}
 

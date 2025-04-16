@@ -10,7 +10,7 @@ namespace Tridium {
 		RHI_RESOURCE_IMPLEMENTATION_BODY( D3D12Sampler, ERHInterfaceType::DirectX12 )
 		bool Commit( const RHISamplerDescriptor& a_Desc )
 		{
-			m_Descriptor = a_Desc;
+			m_Desc = a_Desc;
 
 			// Create the sampler heap
 			D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};
@@ -19,6 +19,7 @@ namespace Tridium {
 			heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 			if ( FAILED( GetD3D12RHI()->GetDevice()->CreateDescriptorHeap( &heapDesc, IID_PPV_ARGS( &SamplerHeap ) ) ) )
 			{
+				ASSERT_LOG( false, "Failed to create sampler heap!" );
 				return false;
 			}
 

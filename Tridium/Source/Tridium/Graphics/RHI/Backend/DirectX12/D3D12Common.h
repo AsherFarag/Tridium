@@ -2,8 +2,9 @@
 #include "../../RHI.h"
 #include "D3D12.h"
 #include "D3D12Util.h"
+#include "D3D12ToRHI.h"
 #include <Tridium/Graphics/RHI/DynamicRHI.h>
-#include <Tridium/Graphics/RHI/RHIMesh.h>
+#include <Tridium/Graphics/RHI/RHIVertexLayout.h>
 #include <Tridium/Graphics/RHI/RHISampler.h>
 #include <Tridium/Graphics/RHI/RHITexture.h>
 #include <Tridium/Graphics/RHI/RHIPipelineState.h>
@@ -45,10 +46,6 @@ namespace Tridium {
 		using SwapChain = IDXGISwapChain3;
 		using Resource = ID3D12Resource2;
 		using DescriptorHeap = ID3D12DescriptorHeap;
-	#if RHI_DEBUG_ENABLED
-		using D3D12Debug = ID3D12Debug;
-		using DXGIDebug = IDXGIDebug1;
-	#endif
 	}
 	//=====================================================================
 

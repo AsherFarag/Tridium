@@ -11,7 +11,7 @@ namespace Tridium {
 
 	bool D3D12Fence::Commit( const RHIFenceDescriptor& a_Desc )
     {
-		m_Descriptor = a_Desc;
+		m_Desc = a_Desc;
 		const auto& device = GetD3D12RHI()->GetDevice();
 		const auto flags = D3D12_FENCE_FLAG_NONE;
         if ( FAILED( device->CreateFence( 0, flags, IID_PPV_ARGS( &m_Fence ) ) ) )
@@ -20,7 +20,7 @@ namespace Tridium {
 			return false;
         }
 
-		D3D12_SET_DEBUG_NAME( m_Fence.Get(), m_Descriptor.Name );
+		D3D12_SET_DEBUG_NAME( m_Fence.Get(), m_Desc.Name );
 
 		m_FenceEvent = CreateEvent( 
 			nullptr,    // default security attributes

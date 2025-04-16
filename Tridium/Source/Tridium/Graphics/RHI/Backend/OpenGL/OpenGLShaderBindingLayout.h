@@ -9,7 +9,7 @@ namespace Tridium {
 		RHI_RESOURCE_IMPLEMENTATION_BODY( OpenGLShaderBindingLayout, ERHInterfaceType::OpenGL );
 		bool Commit( const RHIShaderBindingLayoutDescriptor & a_Desc ) override
 		{
-			m_Descriptor = a_Desc;
+			m_Desc = a_Desc;
 			return true;
 		}
 		bool Release() override { return true; }

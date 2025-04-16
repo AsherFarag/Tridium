@@ -7,6 +7,9 @@
 
 namespace Tridium {
 
+	//=========================================================
+	// D3D12 Command List
+	//  DirectX 12 implementation of the RHICommandList interface.
 	DECLARE_RHI_RESOURCE_IMPLEMENTATION( D3D12CommandList, RHICommandList )
 	{
 	public:
@@ -39,6 +42,8 @@ namespace Tridium {
 			struct GraphicsState
 			{
 				D3D12GraphicsPipelineStateRef PSO{};
+				Array<RHITexture*> CurrentRTs{};
+				RHITexture* CurrentDSV{};
 			} Graphics{};
 
 			struct ComputeState

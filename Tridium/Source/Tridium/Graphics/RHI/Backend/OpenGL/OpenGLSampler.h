@@ -10,7 +10,7 @@ namespace Tridium {
 
 		bool Commit( const RHISamplerDescriptor& a_Desc ) override
 		{
-			m_Descriptor = a_Desc;
+			m_Desc = a_Desc;
 			OpenGL3::GenSamplers( 1, &m_SamplerID );
 			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_MIN_FILTER, ToOpenGL::GetFilter( a_Desc.Filter ) );
 			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_MAG_FILTER, ToOpenGL::GetFilter( a_Desc.Filter ) );

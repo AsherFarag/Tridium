@@ -22,7 +22,8 @@ namespace Tridium {
 	{
 	public:
 		RHI_RESOURCE_IMPLEMENTATION_BODY( OpenGLTexture, ERHInterfaceType::OpenGL );
-
+		OpenGLTexture( const RHITextureDescriptor & a_Desc );
+		virtual ~OpenGLTexture() override = default;
 		virtual bool Commit( const RHITextureDescriptor & a_Desc ) override;
 		virtual bool Release() override;
 		virtual size_t GetSizeInBytes() const override;

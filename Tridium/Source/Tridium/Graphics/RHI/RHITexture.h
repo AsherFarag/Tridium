@@ -3,6 +3,30 @@
 
 namespace Tridium {
 
+	inline constexpr uint32_t CalculateMipLevelCount( const uint32_t a_Width )
+	{
+		if ( a_Width == 0 )
+			return 0;
+
+		uint32_t mips = 0;
+		while ( ( a_Width >> mips ) > 0 )
+			++mips;
+
+		CHECK_LOG( a_Width >= ( 1U << ( mips - 1 ) ) && a_Width < ( 1U << mips ), "Incorrect number of Mip levels" );
+		return mips;
+	}
+
+	inline constexpr uint32_t CalculateMipLevelCount( const uint32_t a_Width, const uint32_t a_Height )
+	{
+		return CalculateMipLevelCount( Math::Max( a_Width, a_Height ) );
+	}
+
+	inline constexpr uint32_t CalculateMipLevelCount( const uint32_t a_Width, const uint32_t a_Height, const uint32_t a_Depth )
+	{
+		return CalculateMipLevelCount( Math::Max( Math::Max( a_Width, a_Height ), a_Depth ) );
+	}
+
+
 	//==========================================================================================
 	// RHI Texture Subresource Data
 	//  A structure that holds the data for a subresource of a texture.
@@ -139,7 +163,33 @@ namespace Tridium {
 	{
 		RHI_RESOURCE_INTERFACE_BODY( RHITexture, ERHIResourceType::Texture );
 
-		virtual bool Commit( const RHITextureDescriptor& a_Desc ) = 0;
+		RHITexture( const RHITextureDescriptor & a_Desc )
+			: m_Desc( a_Desc )
+		{
+			if ( m_Desc.Mips == 0 )
+			{
+				if ( m_Desc.Is1D() )
+				{
+					m_Desc.Mips = CalculateMipLevelCount( m_Desc.Width );
+				}
+				else if ( m_Desc.Is2D() )
+				{
+					m_Desc.Mips = CalculateMipLevelCount( m_Desc.Width, m_Desc.Height );
+				}
+				else if ( m_Desc.Is3D() )
+				{
+					m_Desc.Mips = CalculateMipLevelCount( m_Desc.Width, m_Desc.Height, m_Desc.Depth );
+				}
+				else
+				{
+					ASSERT_LOG( false, "Invalid texture dimension" );
+				}
+			}
+		}
+
+		virtual ~RHITexture() = default;
+
+		virtual bool Commit( const RHITextureDescriptor& a_Desc ) { return false; }
 
 		// Returns the internal state of the texture.
 		ERHIResourceStates GetState() const { return m_State; }

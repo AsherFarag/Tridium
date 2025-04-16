@@ -7,7 +7,7 @@
 // Resources
 #include <Tridium/Graphics/RHI/RHICommandList.h>
 #include <Tridium/Graphics/RHI/RHITexture.h>
-#include <Tridium/Graphics/RHI/RHIMesh.h>
+#include <Tridium/Graphics/RHI/RHIVertexLayout.h>
 #include <Tridium/Graphics/RHI/RHIPipelineState.h>
 
 

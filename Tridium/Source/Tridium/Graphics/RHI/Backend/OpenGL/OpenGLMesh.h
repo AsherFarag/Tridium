@@ -1,6 +1,6 @@
 #pragma once
 #include "OpenGLCommon.h"
-#include <Tridium/Graphics/RHI/RHIMesh.h>
+#include <Tridium/Graphics/RHI/RHIVertexLayout.h>
 
 namespace Tridium {
 

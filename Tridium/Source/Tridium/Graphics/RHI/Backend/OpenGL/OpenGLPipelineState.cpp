@@ -6,7 +6,7 @@ namespace Tridium {
 
 	bool OpenGLGraphicsPipelineState::Commit( const RHIGraphicsPipelineStateDescriptor& a_Desc )
     {
-		m_Descriptor = a_Desc;
+		m_Desc = a_Desc;
 
 		// Create the shader program
 		{

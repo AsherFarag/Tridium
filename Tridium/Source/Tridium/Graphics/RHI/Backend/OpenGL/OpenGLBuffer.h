@@ -9,10 +9,16 @@ namespace Tridium {
 	public:
 		RHI_RESOURCE_IMPLEMENTATION_BODY( OpenGLBuffer, ERHInterfaceType::OpenGL );
 
+		OpenGLBuffer( const RHIBufferDescriptor & a_Desc )
+			: RHIBuffer( a_Desc )
+		{
+		}
+
+		virtual ~OpenGLBuffer() override = default;
 		virtual bool Commit( const RHIBufferDescriptor& a_Desc ) override
 		{
 			TODO( "Implement OpenGLBuffer::Commit" );
-			m_Descriptor = a_Desc;
+			m_Desc = a_Desc;
 			return true;
 		}
 		virtual bool Release() override { BufferObj.Release(); return true; }

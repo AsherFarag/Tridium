@@ -5,7 +5,7 @@ namespace Tridium {
 
     bool OpenGLFence::Commit( const RHIFenceDescriptor& a_Desc )
     {
-		m_Descriptor = a_Desc;
+		m_Desc = a_Desc;
 		if ( a_Desc.Type != ERHIFenceType::CPUWaitOnly )
 		{
 			ASSERT_LOG( false, "Only CPUWaitOnly fences are supported in OpenGL" );

@@ -31,12 +31,69 @@ namespace Tridium {
 	} D3D12Tiers;
 
 	namespace D3D12 {
-		struct DeferredDeleteObject
-		{
-		};
+		struct DeferredDeleteObject {};
 
 		inline const D3D12TierInfo& TierInfo() { return D3D12Tiers.Tier2; }
 	}
+
+	enum class ED3D12CommandQueueType
+	{
+		Direct,
+		Compute,
+		Copy,
+		COUNT,
+		Unknown = ~0
+	};
+
+	struct D3D12CommandContext
+	{
+		ComPtr<ID3D12CommandQueue> CmdQueue = nullptr;
+		ComPtr<ID3D12CommandAllocator> CmdAllocator = nullptr;
+		ComPtr<ID3D12GraphicsCommandList> CmdList = nullptr;
+
+		ComPtr<ID3D12Fence1> Fence = nullptr;
+		HANDLE FenceEvent = nullptr;
+		uint64_t FenceValue = 0;
+
+		~D3D12CommandContext()
+		{
+			if ( CmdList )
+			{
+				CmdList->Release();
+			}
+			if ( CmdAllocator )
+			{
+				CmdAllocator->Reset();
+			}
+			if ( CmdQueue )
+			{
+				CmdQueue->Signal( Fence.Get(), FenceValue );
+			}
+			if ( FenceEvent )
+			{
+				CloseHandle( FenceEvent );
+				FenceEvent = nullptr;
+			}
+		}
+
+		void Signal()
+		{
+			if ( CmdQueue )
+			{
+				FenceValue++;
+				CmdQueue->Signal( Fence.Get(), FenceValue );
+			}
+		}
+
+		void Wait()
+		{
+			if ( Fence->GetCompletedValue() < FenceValue ) 
+			{
+				Fence->SetEventOnCompletion( FenceValue, FenceEvent );
+				WaitForSingleObject( FenceEvent, INFINITE );
+			}
+		}
+	};
 
 	class D3D12RHI final : public IDynamicRHI
 	{
@@ -72,21 +129,24 @@ namespace Tridium {
 		// D3D12 Specific
 		//====================================================
 
+		auto& GetCommandContext( ED3D12CommandQueueType a_Type )
+		{
+			ASSERT_LOG( a_Type < ED3D12CommandQueueType::COUNT, "Invalid command queue type!" );
+			return m_CmdContexts[static_cast<size_t>( a_Type )];
+		}
+
+		const auto& GetCommandContext( ED3D12CommandQueueType a_Type ) const
+		{
+			ASSERT_LOG( a_Type < ED3D12CommandQueueType::COUNT, "Invalid command queue type!" );
+			return m_CmdContexts[static_cast<size_t>( a_Type )];
+		}
+
 		const auto& GetFactory() const { return m_DXGIFactory; }
 		const auto& GetDevice() const { return m_Device; }
-		const auto& GetCommandQueue() const { return m_CommandQueue; }
-		const auto& GetCommandAllocator() const { return m_CommandAllocator; }
-		const auto& GetCommandList() const { return m_CommandList; }
 		const auto& GetAllocator() const { return m_Allocator; }
 		const auto& GetUploadBuffer() const { return m_UploadBuffer; }
 		auto& GetUploadBuffer() { return m_UploadBuffer; }
 		size_t GetNextCommandListIndex() { return m_NextCommandListIndex; }
-
-		const auto& GetCopyQueue() const { return m_CopyQueue; }
-		const auto& GetCopyCmdAllocator() const { return m_CopyAllocator; }
-		const auto& GetCopyCmdList() const { return m_CopyCommandList; }
-		const auto& GetCopyFence() const { return m_CopyFence; }
-		uint64_t IncrementCopyFence() { return ++m_CopyFenceValue; }
 
 		D3D12::DescriptorHeapManager& GetDescriptorHeapManager() { return m_DescriptorHeapManager; }
 		const D3D12::DescriptorHeapManager& GetDescriptorHeapManager() const { return m_DescriptorHeapManager; }
@@ -112,16 +172,11 @@ namespace Tridium {
 		size_t m_NextCommandListIndex = 0;
 		Array<D3D12::DeferredDeleteObject> m_ObjectsToDelete{};
 		D3D12::UploadBuffer m_UploadBuffer{};
+		FixedArray<D3D12CommandContext, size_t( ED3D12CommandQueueType::COUNT )> m_CmdContexts{};
 
 		TODO( "Most likely temp" );
 		RHIFenceRef m_Fence = nullptr;
 		uint64_t m_FenceValue = 0;
-
-		ComPtr<ID3D12CommandQueue> m_CopyQueue = nullptr;
-		ComPtr<ID3D12CommandAllocator> m_CopyAllocator = nullptr;
-		ComPtr<ID3D12GraphicsCommandList> m_CopyCommandList = nullptr;
-		D3D12FenceRef m_CopyFence = nullptr;
-		uint64_t m_CopyFenceValue = 0;
 
 		//=====================================================
 
@@ -130,8 +185,8 @@ namespace Tridium {
 		virtual void DumpDebug() override;
 
 	private:
-		ComPtr<ID3D12::D3D12Debug> m_D3D12Debug = nullptr;
-		ComPtr<ID3D12::DXGIDebug> m_DXGIDebug = nullptr;
+		ComPtr<ID3D12Debug> m_D3D12Debug = nullptr;
+		ComPtr<IDXGIDebug1> m_DXGIDebug = nullptr;
 	#endif
 	};
 
