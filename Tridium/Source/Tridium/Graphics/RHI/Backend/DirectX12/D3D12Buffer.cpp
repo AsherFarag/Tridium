@@ -32,7 +32,7 @@ namespace Tridium {
 		if ( initData )
 		{
 			m_Desc.Size = a_Data.size();
-			D3D12CommandContext& copyCmdCtx = GetD3D12RHI()->GetCommandContext( ED3D12CommandQueueType::Copy );
+			D3D12CommandContext& copyCmdCtx = GetD3D12RHI()->GetCommandContext( ERHICommandQueueType::Copy );
 
 			// Create the upload buffer
 			D3D12::ManagedResource uploadBuffer{};
@@ -87,8 +87,7 @@ namespace Tridium {
 
 			ID3D12CommandList* cmdLists[] = { copyCmdCtx.CmdList.Get() };
 			copyCmdCtx.CmdQueue->ExecuteCommandLists( 1, cmdLists );
-			copyCmdCtx.Signal();
-			copyCmdCtx.Wait();
+			copyCmdCtx.Wait( copyCmdCtx.Signal() );
 		}
 	}
 

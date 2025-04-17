@@ -71,22 +71,83 @@ namespace Tridium {
 
 	//===========================
 	// RHI Feature Support
-	//===========================
 	enum class ERHIFeatureSupport : uint8_t
 	{
 		// The RHI feature is completely unavailable at runtime.
 		Unsupported,
 
-		// The RHI feature can be available at runtime based on hardware or driver.
-		RuntimeDependent,
+		//// The RHI feature can be available at runtime based on hardware or driver.
+		//RuntimeDependent,
 
-		// The RHI feature is guaranteed to be available at runtime.
-		RuntimeGuaranteed,
+		//// The RHI feature is guaranteed to be available at runtime.
+		//RuntimeGuaranteed,
 
-		COUNT,
-		NUM_BITS = 2,
+		TODO( "Do we only need these two?" )
+		Supported
 	};
-	RHI_ENUM_SIZE_ASSERT( ERHIFeatureSupport );
+
+
+
+	//======================================================================
+	// RHI Feature
+	enum class ERHIFeature : uint8_t
+	{
+		ComputeShaders,
+		GeometryShaders,
+		Tesselation,
+		RayTracing,
+		BindlessResources,
+		COUNT,
+		Invalid = ~0
+	};
+
+
+
+	//======================================================================
+	// RHI Feature Info
+	//  Describes a specific feature supported by the RHI device.
+	struct RHIFeatureInfo
+	{
+		ERHIFeature Feature() const { return m_Feature; }
+		StringView Name() const { return m_Name; }
+		ERHIFeatureSupport Support() const { return m_Support; }
+
+		void SetSupport( ERHIFeatureSupport a_Support ) { m_Support = a_Support; }
+		RHIFeatureInfo() = default;
+		RHIFeatureInfo( ERHIFeature a_Feature, StringView a_Name, ERHIFeatureSupport a_Support = ERHIFeatureSupport::Unsupported )
+			: m_Feature( a_Feature ), m_Name( a_Name ), m_Support( a_Support ) {}
+	private:
+		ERHIFeature m_Feature = ERHIFeature::Invalid;
+		StringView m_Name{ "Unknown" };
+		ERHIFeatureSupport m_Support = ERHIFeatureSupport::Unsupported;
+	};
+
+
+
+	//======================================================================
+	// RHI Device Features
+	//  Describes the features supported by the RHI device.
+	struct RHIDeviceFeatures
+	{
+		FixedArray<RHIFeatureInfo, uint8_t( ERHIFeature::COUNT )> Features;
+
+		const RHIFeatureInfo& GetFeatureInfo( ERHIFeature a_Feature ) const
+		{
+			RHI_DEV_CHECK( uint8_t( a_Feature ) < uint8_t( ERHIFeature::COUNT ), "Invalid feature requested!" );
+			return Features[static_cast<uint8_t>(a_Feature)];
+		}
+
+		RHIDeviceFeatures()
+		{
+		#define DEFINE_FEATURE( _Feature ) Features[static_cast<uint8_t>( ERHIFeature::_Feature )] = { ERHIFeature::_Feature, #_Feature, ERHIFeatureSupport::Unsupported };
+			DEFINE_FEATURE( ComputeShaders );
+			DEFINE_FEATURE( GeometryShaders );
+			DEFINE_FEATURE( Tesselation );
+			DEFINE_FEATURE( RayTracing );
+			DEFINE_FEATURE( BindlessResources );
+		#undef DEFINE_FEATURE
+		}
+	};
 
 
 
@@ -427,7 +488,7 @@ namespace Tridium {
 
 
 	//=====================================================================
-	// ERHIDescriptorHeapType
+	// RHI Descriptor Heap Type
 	//  The type of resource that the allocator is managing.
 	enum class ERHIDescriptorHeapType : uint8_t
 	{
@@ -438,8 +499,10 @@ namespace Tridium {
 		DepthStencil,
 	};
 
+
+
 	//=====================================================================
-	// RHIDescriptorHandle
+	// RHI Descriptor Handle
 	//  A handle to a descriptor in a descriptor heap.
 	struct RHIDescriptorHandle
 	{
@@ -450,6 +513,19 @@ namespace Tridium {
 		explicit constexpr RHIDescriptorHandle( ERHIDescriptorHeapType a_Type, uint32_t a_Index ) : Type( a_Type ), Index( a_Index ) {}
 		// Returns an invalid descriptor handle.
 		explicit constexpr RHIDescriptorHandle() : Type( ERHIDescriptorHeapType::Unknown ), Index( 0xFFFFFFFFu ) {}
+	};
+
+
+
+	//======================================================================
+	// RHI Command Queue Type
+	//  Used to specify the type of command queue a command list will be submitted to.
+	enum class ERHICommandQueueType : uint8_t
+	{
+		Graphics,
+		Compute,
+		Copy,
+		COUNT
 	};
 
 
@@ -747,8 +823,7 @@ namespace Tridium {
 	//==========================================================
 	// RHI Fence Value
 	//  A monotonically increasing value associated with fence signaling.
-	using uint64_t = uint64_t;
-	constexpr uint64_t InvalidRHIFenceValue = UINT64_MAX;
+	constexpr uint64_t InvalidRHIFenceValue = ~0ull;
 	//==========================================================
 
 

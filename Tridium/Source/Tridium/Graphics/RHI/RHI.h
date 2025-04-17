@@ -34,6 +34,9 @@ namespace Tridium {
 		//===========================
 		// RHI Query and Functions
 		uint32_t FrameIndex();
+		RHIFeatureInfo GetFeatureInfo( ERHIFeature a_Feature );
+		ERHIFeatureSupport GetFeatureSupport( ERHIFeature a_Feature );
+		bool IsFeatureSupported( ERHIFeature a_Feature );
 		//===========================
 
 		//===========================

@@ -8,13 +8,15 @@ namespace Tridium {
 	public:
 		RHI_RESOURCE_IMPLEMENTATION_BODY( OpenGLCommandList, ERHInterfaceType::OpenGL );
 
-		virtual bool Commit( const RHICommandListDescriptor& a_Desc ) override;
+		OpenGLCommandList( const RHICommandListDescriptor& a_Desc );
 		virtual bool Release() override { return true; }
 		virtual bool IsValid() const override { return true; }
 		virtual const void* NativePtr() const override { return nullptr; }
 
 		virtual bool SetGraphicsCommands( const RHIGraphicsCommandBuffer& a_CmdBuffer ) override;
 		virtual bool SetComputeCommands( const RHIComputeCommandBuffer& a_CmdBuffer ) override;
+		virtual bool IsCompleted() const override { return true; }
+		virtual void WaitUntilCompleted() override {}
 
 	private:
 		Array<GLuint> m_UBOs;

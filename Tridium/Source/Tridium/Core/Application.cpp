@@ -458,7 +458,7 @@ float4 main( VSOutput input ) : SV_Target
 					cmdList->SetGraphicsCommands( cmdBuffer );
 
 					RHI::ExecuteCommandList( cmdList );
-					//RHI::GetGlobalFence()->Wait( s_RHIGlobals.FrameFenceValue );
+					cmdList->WaitUntilCompleted();
 				}
 #endif
 				RHI::Present();

@@ -127,8 +127,7 @@ namespace Tridium {
 
 	RHIBufferRef OpenGLDynamicRHI::CreateBuffer( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data )
 	{
-		RHIBufferRef buffer = RHIResource::Create<OpenGLBuffer>( a_Desc );
-		return buffer;
+		return RHIResource::Create<OpenGLBuffer>( a_Desc );
 	}
 
 	RHIGraphicsPipelineStateRef OpenGLDynamicRHI::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc )
@@ -140,9 +139,7 @@ namespace Tridium {
 
 	RHICommandListRef OpenGLDynamicRHI::CreateCommandList( const RHICommandListDescriptor& a_Desc )
 	{
-		RHICommandListRef cl = RHIResource::Create<OpenGLCommandList>();
-		CHECK( cl->Commit( a_Desc ) );
-		return cl;
+		return RHIResource::Create<OpenGLCommandList>( a_Desc );
 	}
 
 	RHIShaderModuleRef OpenGLDynamicRHI::CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc )

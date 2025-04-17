@@ -138,7 +138,14 @@ namespace Tridium {
 			return false;
 		}
 
-		return s_DynamicRHI->ExecuteCommandList( a_CommandList );
+		bool success = s_DynamicRHI->ExecuteCommandList( a_CommandList );
+		if ( !success )
+		{
+			LOG( LogCategory::RHI, Error, "Failed to execute command list!" );
+			return false;
+		}
+
+		a_CommandList->SetPendingExecution( true );
 	}
 
 	void RHI::FrameFenceWait()
@@ -153,6 +160,25 @@ namespace Tridium {
 	uint32_t RHI::FrameIndex()
 	{
 		return s_RHIGlobals.FrameIndex;
+	}
+
+	RHIFeatureInfo RHI::GetFeatureInfo( ERHIFeature a_Feature )
+	{
+		if ( s_DynamicRHI == nullptr )
+		{
+			return RHIFeatureInfo();
+		}
+		return s_DynamicRHI->GetDeviceFeatures().GetFeatureInfo( a_Feature );
+	}
+
+	ERHIFeatureSupport RHI::GetFeatureSupport( ERHIFeature a_Feature )
+	{
+		return RHI::GetFeatureInfo( a_Feature ).Support();
+	}
+
+	bool RHI::IsFeatureSupported( ERHIFeature a_Feature )
+	{
+		return RHI::GetFeatureSupport( a_Feature ) == ERHIFeatureSupport::Supported;
 	}
 
 	const char* RHI::GetRHIName()

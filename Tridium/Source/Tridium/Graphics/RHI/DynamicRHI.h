@@ -21,7 +21,6 @@ namespace Tridium {
 	//==============================================
 	// DynamicRHI Interface
 	//  The core interace for the dynamicly bound RHI.
-	//==============================================
 	class IDynamicRHI
 	{
 	public:
@@ -55,12 +54,21 @@ namespace Tridium {
 		virtual RHIFenceRef CreateFence( const RHIFenceDescriptor& a_Desc ) = 0;
 		//=====================================================
 
+		//=====================================================
+		// Miscellaneous
+		const RHIDeviceFeatures& GetDeviceFeatures() const { return m_DeviceFeatures; }
+		//=====================================================
+
+
 		#if RHI_DEBUG_ENABLED
 
 		// Dump debug information about the RHI into the console.
 		virtual void DumpDebug() {}
 
 		#endif // RHI_DEBUG_ENABLED
+
+	protected:
+		RHIDeviceFeatures m_DeviceFeatures{};
 	};
 
 	//==============================================

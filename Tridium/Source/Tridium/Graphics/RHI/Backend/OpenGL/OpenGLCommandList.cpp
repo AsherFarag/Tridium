@@ -10,10 +10,9 @@
 
 namespace Tridium {
 
-	bool OpenGLCommandList::Commit( const RHICommandListDescriptor& a_Desc )
+	OpenGLCommandList::OpenGLCommandList( const RHICommandListDescriptor& a_Desc )
+		: RHICommandList( a_Desc )
 	{
-		m_Desc = a_Desc;
-		return true;
 	}
 
     bool OpenGLCommandList::SetGraphicsCommands( const RHIGraphicsCommandBuffer& a_CmdBuffer )

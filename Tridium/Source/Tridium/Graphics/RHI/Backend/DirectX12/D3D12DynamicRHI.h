@@ -36,15 +36,6 @@ namespace Tridium {
 		inline const D3D12TierInfo& TierInfo() { return D3D12Tiers.Tier2; }
 	}
 
-	enum class ED3D12CommandQueueType
-	{
-		Direct,
-		Compute,
-		Copy,
-		COUNT,
-		Unknown = ~0
-	};
-
 	struct D3D12CommandContext
 	{
 		ComPtr<ID3D12CommandQueue> CmdQueue = nullptr;
@@ -57,44 +48,40 @@ namespace Tridium {
 
 		~D3D12CommandContext()
 		{
-			if ( CmdList )
-			{
-				CmdList->Release();
-			}
-			if ( CmdAllocator )
-			{
-				CmdAllocator->Reset();
-			}
-			if ( CmdQueue )
-			{
-				CmdQueue->Signal( Fence.Get(), FenceValue );
-			}
-			if ( FenceEvent )
-			{
-				CloseHandle( FenceEvent );
-				FenceEvent = nullptr;
-			}
+			if ( CmdList ) CmdList->Release();
+			if ( CmdAllocator ) CmdAllocator->Reset();
+			if ( CmdQueue ) CmdQueue->Signal( Fence.Get(), FenceValue );
+			if ( FenceEvent ) CloseHandle( FenceEvent );
 		}
 
-		void Signal()
+		[[nodiscard]] bool IsFenceComplete( uint64_t a_FenceValue ) const
+		{
+			return CmdQueue && (Fence->GetCompletedValue() >= a_FenceValue);
+		}
+
+		[[nodiscard]] uint64_t Signal()
 		{
 			if ( CmdQueue )
 			{
-				FenceValue++;
-				CmdQueue->Signal( Fence.Get(), FenceValue );
+				CmdQueue->Signal( Fence.Get(), ++FenceValue );
+				return FenceValue;
 			}
+			return 0;
 		}
 
-		void Wait()
+		void Wait( uint64_t a_FenceValue )
 		{
-			if ( Fence->GetCompletedValue() < FenceValue ) 
+			if ( Fence->GetCompletedValue() < a_FenceValue )
 			{
-				Fence->SetEventOnCompletion( FenceValue, FenceEvent );
+				Fence->SetEventOnCompletion( a_FenceValue, FenceEvent );
 				WaitForSingleObject( FenceEvent, INFINITE );
 			}
 		}
 	};
 
+	//======================================================================
+	// D3D12 RHI
+	//  DirectX12 Dynamic RHI implementation.
 	class D3D12RHI final : public IDynamicRHI
 	{
 	public:
@@ -129,15 +116,15 @@ namespace Tridium {
 		// D3D12 Specific
 		//====================================================
 
-		auto& GetCommandContext( ED3D12CommandQueueType a_Type )
+		auto& GetCommandContext( ERHICommandQueueType a_Type )
 		{
-			ASSERT_LOG( a_Type < ED3D12CommandQueueType::COUNT, "Invalid command queue type!" );
+			ASSERT_LOG( a_Type < ERHICommandQueueType::COUNT, "Invalid command queue type!" );
 			return m_CmdContexts[static_cast<size_t>( a_Type )];
 		}
 
-		const auto& GetCommandContext( ED3D12CommandQueueType a_Type ) const
+		const auto& GetCommandContext( ERHICommandQueueType a_Type ) const
 		{
-			ASSERT_LOG( a_Type < ED3D12CommandQueueType::COUNT, "Invalid command queue type!" );
+			ASSERT_LOG( a_Type < ERHICommandQueueType::COUNT, "Invalid command queue type!" );
 			return m_CmdContexts[static_cast<size_t>( a_Type )];
 		}
 
@@ -172,7 +159,7 @@ namespace Tridium {
 		size_t m_NextCommandListIndex = 0;
 		Array<D3D12::DeferredDeleteObject> m_ObjectsToDelete{};
 		D3D12::UploadBuffer m_UploadBuffer{};
-		FixedArray<D3D12CommandContext, size_t( ED3D12CommandQueueType::COUNT )> m_CmdContexts{};
+		FixedArray<D3D12CommandContext, size_t( ERHICommandQueueType::COUNT )> m_CmdContexts{};
 
 		TODO( "Most likely temp" );
 		RHIFenceRef m_Fence = nullptr;

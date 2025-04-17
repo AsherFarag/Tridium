@@ -95,13 +95,13 @@ namespace Tridium {
 			// Set up the command context and set the command queue type
 			D3D12CommandContext& cmdCtx = m_CmdContexts[i];
 
-			ED3D12CommandQueueType cmdQueueType = static_cast<ED3D12CommandQueueType>( i );
+			ERHICommandQueueType cmdQueueType = static_cast<ERHICommandQueueType>( i );
 			D3D12_COMMAND_LIST_TYPE d3d12CmdListType;
 			switch ( cmdQueueType )
 			{
-				case ED3D12CommandQueueType::Direct:  d3d12CmdListType = D3D12_COMMAND_LIST_TYPE_DIRECT;  break;
-				case ED3D12CommandQueueType::Compute: d3d12CmdListType = D3D12_COMMAND_LIST_TYPE_COMPUTE; break;
-				case ED3D12CommandQueueType::Copy:    d3d12CmdListType = D3D12_COMMAND_LIST_TYPE_COPY;    break;
+				case ERHICommandQueueType::Graphics:  d3d12CmdListType = D3D12_COMMAND_LIST_TYPE_DIRECT;  break;
+				case ERHICommandQueueType::Compute: d3d12CmdListType = D3D12_COMMAND_LIST_TYPE_COMPUTE; break;
+				case ERHICommandQueueType::Copy:    d3d12CmdListType = D3D12_COMMAND_LIST_TYPE_COPY;    break;
 				default: ASSERT_LOG( false, "Invalid command queue type!" ); break;
 			}
 
@@ -224,7 +224,7 @@ namespace Tridium {
 
     bool D3D12RHI::ExecuteCommandList( RHICommandListRef a_CommandList )
     {
-		ID3D12::GraphicsCommandList* cmdList = a_CommandList->As<D3D12CommandList>()->CommandList.Get();
+		ID3D12GraphicsCommandList* cmdList = a_CommandList->As<D3D12CommandList>()->GraphicsCommandList();
 		if ( FAILED( cmdList->Close() ) )
 		{
 			LOG( LogCategory::DirectX, Error, "Failed to close command list" );
@@ -232,10 +232,9 @@ namespace Tridium {
 		}
 
         ID3D12CommandList* cmdLists[] = { cmdList };
-		auto& cmdCtx = GetCommandContext( ED3D12CommandQueueType::Direct );
+		auto& cmdCtx = GetCommandContext( a_CommandList->Descriptor().QueueType );
 		cmdCtx.CmdQueue->ExecuteCommandLists( 1, cmdLists );
-		cmdCtx.Signal();
-		cmdCtx.Wait();
+		a_CommandList->SetFenceValue( cmdCtx.Signal() );
 
 		return true;
     }
@@ -279,8 +278,7 @@ namespace Tridium {
 
 	RHICommandListRef D3D12RHI::CreateCommandList( const RHICommandListDescriptor& a_Desc )
 	{
-		RHICommandListRef cmdList = RHIResource::Create<D3D12CommandList>();
-		CHECK( cmdList->Commit( a_Desc ) );
+		RHICommandListRef cmdList = RHIResource::Create<D3D12CommandList>( a_Desc );
 		return cmdList;
 	}
 

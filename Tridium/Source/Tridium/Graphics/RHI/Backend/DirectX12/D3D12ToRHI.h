@@ -26,6 +26,19 @@ namespace Tridium {
 			return To<ToType>::From( a_From );
 		}
 
+		template<typename _To, typename _From>
+		constexpr _To Translate( _From a_From )
+		{
+			return To<_To>::From( a_From );
+		}
+
+		template<typename _To, typename _From>
+		constexpr EnumFlags<_To> Translate( EnumFlags<_From> a_From )
+		{
+			return To<_To>::From( static_cast<_From>( a_From ) );
+		}
+
+
 		//////////////////////////////////////////////////////////////////////////
 		// RHI BLEND OP - D3D12 BLEND 
 		//////////////////////////////////////////////////////////////////////////
@@ -783,6 +796,42 @@ namespace Tridium {
 				if ( a_Flag & D3D12_CLEAR_FLAG_DEPTH ) flags |= ERHIClearFlags::Depth;
 				if ( a_Flag & D3D12_CLEAR_FLAG_STENCIL ) flags |= ERHIClearFlags::Stencil;
 				return flags;
+			}
+		};
+
+		////////////////////////////////////////////////////////////////////////////
+		// RHI COMMAND QUEUE TYPE - D3D12 COMMAND LIST TYPE
+		////////////////////////////////////////////////////////////////////////////
+
+		template<>
+		struct To<ERHICommandQueueType>
+		{
+			using FromType = D3D12_COMMAND_LIST_TYPE;
+			static constexpr ERHICommandQueueType From( D3D12_COMMAND_LIST_TYPE a_Type )
+			{
+				switch ( a_Type )
+				{
+				case D3D12_COMMAND_LIST_TYPE_DIRECT:   return ERHICommandQueueType::Graphics;
+				case D3D12_COMMAND_LIST_TYPE_COMPUTE:  return ERHICommandQueueType::Compute;
+				case D3D12_COMMAND_LIST_TYPE_COPY:     return ERHICommandQueueType::Copy;
+				default:                               return ERHICommandQueueType::Graphics;
+				}
+			}
+		};
+
+		template<>
+		struct To<D3D12_COMMAND_LIST_TYPE>
+		{
+			using FromType = ERHICommandQueueType;
+			static constexpr D3D12_COMMAND_LIST_TYPE From( ERHICommandQueueType a_Type )
+			{
+				switch ( a_Type )
+				{
+				case ERHICommandQueueType::Graphics: return D3D12_COMMAND_LIST_TYPE_DIRECT;
+				case ERHICommandQueueType::Compute:  return D3D12_COMMAND_LIST_TYPE_COMPUTE;
+				case ERHICommandQueueType::Copy:     return D3D12_COMMAND_LIST_TYPE_COPY;
+				default:                             return D3D12_COMMAND_LIST_TYPE_DIRECT;
+				}
 			}
 		};
 

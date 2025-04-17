@@ -15,16 +15,23 @@ namespace Tridium {
 	public:
 		RHI_RESOURCE_IMPLEMENTATION_BODY( D3D12CommandList, ERHInterfaceType::DirectX12 );
 
-		bool Commit( const RHICommandListDescriptor& a_Desc ) override;
-		bool Release() override;
-		bool IsValid() const override { return CommandList != nullptr; }
-		const void* NativePtr() const override { return CommandList.Get(); }
+		D3D12CommandList( const RHICommandListDescriptor & a_Desc );
+		virtual bool Release() override;
+		virtual bool IsValid() const override { return CommandList != nullptr; }
+		virtual const void* NativePtr() const override { return CommandList.Get(); }
 
-		bool SetGraphicsCommands( const RHIGraphicsCommandBuffer& a_CmdBuffer ) override;
-		bool SetComputeCommands( const RHIComputeCommandBuffer& a_CmdBuffer ) override;
+		virtual bool SetGraphicsCommands( const RHIGraphicsCommandBuffer& a_CmdBuffer ) override;
+		virtual bool SetComputeCommands( const RHIComputeCommandBuffer& a_CmdBuffer ) override;
+		virtual bool IsCompleted() const override;
+		virtual void WaitUntilCompleted() override;
 
-		TODO( "Seperate cmd lists into graphics and compute" );
-		ComPtr<ID3D12::GraphicsCommandList> CommandList{};
+		ID3D12GraphicsCommandList* GraphicsCommandList() const
+		{
+			RHI_DEV_CHECK( m_Desc.QueueType == ERHICommandQueueType::Graphics, "Command list is not a graphics command list!" );
+			return static_cast<ID3D12GraphicsCommandList*>(CommandList.Get());
+		}
+
+		ComPtr<ID3D12CommandList> CommandList{};
 		RHIShaderBindingLayout* CurrentSBL = nullptr;
 
 	private:

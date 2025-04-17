@@ -22,7 +22,7 @@ namespace Tridium {
 		if ( GetBackBuffer()->GetState() != ERHIResourceStates::Present )
 		{
 			// We need to transition the back buffer to present
-			auto& cmdCtx = GetD3D12RHI()->GetCommandContext( ED3D12CommandQueueType::Direct );
+			auto& cmdCtx = GetD3D12RHI()->GetCommandContext( ERHICommandQueueType::Graphics );
 			cmdCtx.Signal();
 			cmdCtx.Wait();
 		}
@@ -180,7 +180,7 @@ namespace Tridium {
 		DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsDesc{};
 		fsDesc.Windowed = true;
 
-		auto& directCmdCtx = rhi->GetCommandContext( ED3D12CommandQueueType::Direct );
+		auto& directCmdCtx = rhi->GetCommandContext( ERHICommandQueueType::Graphics );
 
 		// Create the swap chain
 		ComPtr<IDXGISwapChain1> swapChain;
