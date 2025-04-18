@@ -716,7 +716,7 @@ namespace field_reflection
         }
 
         template <typename T, typename Func, std::size_t... Is, field_referenceable U = std::remove_cvref_t<T>>
-        void for_each_field_impl(T&& t, Func&& func, std::index_sequence<Is...>)
+        constexpr void for_each_field_impl(T&& t, Func&& func, std::index_sequence<Is...>)
         {
             if constexpr (requires { (func(get_field<Is>(t)), ...); })
             {
@@ -734,7 +734,7 @@ namespace field_reflection
 
         template <typename T1, typename T2, typename Func, std::size_t... Is,
                   field_referenceable U = std::remove_cvref_t<T1>>
-        void for_each_field_impl(T1&& t1, T2&& t2, Func&& func, std::index_sequence<Is...>)
+            constexpr void for_each_field_impl(T1&& t1, T2&& t2, Func&& func, std::index_sequence<Is...>)
         {
             if constexpr (requires { (func(get_field<Is>(t1), get_field<Is>(t2)), ...); })
             {
@@ -834,14 +834,14 @@ namespace field_reflection
     template <typename T1, typename T2, typename Func, field_referenceable U1 = std::remove_cvref_t<T1>,
               field_referenceable U2 = std::remove_cvref_t<T2>>
     requires std::is_same_v<U1, U2>
-    void for_each_field(T1&& t1, T2&& t2, Func&& func)
+    constexpr void for_each_field(T1&& t1, T2&& t2, Func&& func)
     {
         detail::for_each_field_impl(std::forward<T1>(t1), std::forward<T2>(t2), std::forward<Func>(func),
                                     std::make_index_sequence<field_count<U1>>());
     }
 
     template <typename T, typename Func, field_referenceable U = std::remove_cvref_t<T>>
-    void for_each_field(T&& t, Func&& func)
+    constexpr void for_each_field(T&& t, Func&& func)
     {
         detail::for_each_field_impl(std::forward<T>(t), std::forward<Func>(func),
                                     std::make_index_sequence<field_count<U>>());
@@ -884,17 +884,28 @@ namespace field_reflection
 
 namespace Tridium {
 
+	// Get the number of fields in a class or struct
+    template<typename T>
+	constexpr size_t GetFieldCount()
+	{
+		return field_reflection::field_count<T>;
+	}
+
     template <typename T1, typename T2, typename _Func,
         field_reflection::field_referenceable U1 = std::remove_cvref_t<T1>,
         field_reflection::field_referenceable U2 = std::remove_cvref_t<T2>>
         requires std::is_same_v<U1, U2>
-    void ForEachField( T1&& a_Object1, T2&& a_Object2, _Func&& a_Func )
+    constexpr void ForEachField( T1&& a_Object1, T2&& a_Object2, _Func&& a_Func )
     {
 		field_reflection::for_each_field( std::forward<T1>( a_Object1 ), std::forward<T2>( a_Object2 ), std::forward<_Func>( a_Func ) );
     }
 
+	// Iterate over each field in a class or struct
+	// a_Func can be of multiple types:
+	// 1. a_Func( a_FieldName (StringView), a_FieldValue (auto&) )
+	// 2. a_Func( a_FieldValue (auto&) )
 	template <typename T, typename _Func, field_reflection::field_referenceable U = std::remove_cvref_t<T>>
-	void ForEachField( T&& a_Object, _Func&& a_Func )
+	constexpr void ForEachField( T&& a_Object, _Func&& a_Func )
 	{
 		field_reflection::for_each_field( std::forward<T>( a_Object ), std::forward < _Func >( a_Func ) );
 	}

@@ -90,11 +90,16 @@ namespace Tridium {
 		m_Desc = a_Desc;
 
 		// Create the vertex input layout
+		// We create tempory strings here of the vertex element names,
+		// as RHIVertexAttribute::Name is a StringView and can be not null terminated.
+		// And SemanticName requires a null terminated string.
+		FixedArray<String, RHIConstants::MaxVertexAttributes> vertexElementNames;
 		for ( size_t i = 0; i < a_Desc.VertexLayout.Elements.Size(); ++i )
 		{
+			vertexElementNames[i] = a_Desc.VertexLayout.Elements[i].Name;
 			const RHIVertexAttribute& element = a_Desc.VertexLayout.Elements[i];
 			VertexLayout[i] = {
-				.SemanticName = element.Name.data(), 
+				.SemanticName = vertexElementNames[i].c_str(),
 				.SemanticIndex = 0,
 				.Format = D3D12::Translate( element.Type ),
 				.InputSlot = 0,

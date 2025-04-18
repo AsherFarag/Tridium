@@ -224,16 +224,15 @@ namespace Tridium {
 
     bool D3D12RHI::ExecuteCommandList( RHICommandListRef a_CommandList )
     {
-		ID3D12GraphicsCommandList* cmdList = a_CommandList->As<D3D12CommandList>()->GraphicsCommandList();
-		if ( FAILED( cmdList->Close() ) )
+		D3D12CommandList* cmdList = a_CommandList->As<D3D12CommandList>();
+		if ( FAILED( cmdList->GraphicsCommandList()->Close() ) )
 		{
 			LOG( LogCategory::DirectX, Error, "Failed to close command list" );
 			return false;
 		}
 
-        ID3D12CommandList* cmdLists[] = { cmdList };
 		auto& cmdCtx = GetCommandContext( a_CommandList->Descriptor().QueueType );
-		cmdCtx.CmdQueue->ExecuteCommandLists( 1, cmdLists );
+		cmdCtx.CmdQueue->ExecuteCommandLists( 1, &cmdList->CommandList );
 		a_CommandList->SetFenceValue( cmdCtx.Signal() );
 
 		return true;

@@ -267,16 +267,12 @@ namespace Tridium {
 		Storage m_Storage{};
 		size_t m_Size = 0;
 
-		void _Assert( bool a_Value, const char* a_Message )
+		constexpr void _Assert( bool a_Value, const char* a_Message )
 		{
 		#if CONFIG_ENABLE_BOUNDS_CHECK
 			if constexpr ( !_ForceConstexpr )
 			{
 				ENSURE_LOG( a_Value, a_Message );
-			}
-			else
-			{
-				assert( a_Value );
 			}
 		#endif	
 		}

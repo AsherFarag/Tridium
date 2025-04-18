@@ -40,6 +40,8 @@ namespace Tridium {
 	{
 		s_Instance = nullptr;
 	}
+
+
 	
 	void Application::Run()
 	{
@@ -115,7 +117,7 @@ namespace Tridium {
 		m_Window->SetEventCallback( [this]( Event& a_Event ) { this->OnEvent( a_Event ); } );
 
 		RHIConfig config;
-		config.RHIType = ERHInterfaceType::OpenGL;
+		config.RHIType = ERHInterfaceType::DirectX12;
 		config.UseDebug = true;
 		bool initSuccess = RHI::Initialise( config );
 		LOG( LogCategory::RHI, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), initSuccess );
@@ -192,16 +194,10 @@ namespace Tridium {
 
 			struct Vertex
 			{
-				Vector3 Position;
-				Vector2 UV;
+				Vector3 POSITION;
+				Vector2 TEXCOORD;
 			};
-
-			// - Create a vertex layout -
-			RHIVertexLayout layout =
-			{
-				{ "POSITION", RHIVertexElementFormats::Float3 },
-				{ "TEXCOORD", RHIVertexElementFormats::Float2 }
-			};
+			constexpr RHIVertexLayout layout = RHIVertexLayout::From<Vertex>();
 
 			// Quad
 			Vertex vertices[] =
@@ -448,7 +444,7 @@ float4 main( VSOutput input ) : SV_Target
 					// Draw
 					
 					cmdBuffer.SetShaderInput( "inlinedConstants"_H, inlinedConstants );
-					//cmdBuffer.SetShaderInput( "Texture"_H, tex );
+					cmdBuffer.SetShaderInput( "Texture"_H, tex );
 					cmdBuffer.SetVertexBuffer( cubeVBO );
 					cmdBuffer.Draw( 0, sizeof( cubeVerts ) / sizeof( Vertex ) );
 
