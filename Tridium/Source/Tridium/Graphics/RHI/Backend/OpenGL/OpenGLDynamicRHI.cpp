@@ -3,6 +3,8 @@
 #include "OpenGLCommon.h"
 #include <iostream>
 
+#include <Tridium/Graphics/RHI/RHI.h>
+
 // Resources
 #include "OpenGLSampler.h"
 #include "OpenGLTexture.h"
@@ -69,7 +71,7 @@ namespace Tridium {
 
 	bool OpenGLDynamicRHI::ExecuteCommandList( RHICommandListRef a_CommandList )
 	{
-		return false;
+		return true;
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -78,14 +80,14 @@ namespace Tridium {
 
 	RHIFenceRef OpenGLDynamicRHI::CreateFence( const RHIFenceDescriptor& a_Desc )
 	{
-		RHIFenceRef fence = RHIResource::Create<OpenGLFence>();
+		RHIFenceRef fence = RHI::CreateNativeResource<OpenGLFence>();
 		CHECK( fence->Commit( a_Desc ) );
 		return fence;
 	}
 
 	RHISamplerRef OpenGLDynamicRHI::CreateSampler( const RHISamplerDescriptor& a_Desc )
 	{
-		RHISamplerRef sampler = RHIResource::Create<OpenGLSampler>();
+		RHISamplerRef sampler = RHI::CreateNativeResource<OpenGLSampler>();
 		CHECK( sampler->Commit( a_Desc ) );
 		return sampler;
 	}
@@ -98,7 +100,7 @@ namespace Tridium {
 			return nullptr;
 		}
 
-		RHITextureRef tex = RHIResource::Create<OpenGLTexture>( a_Desc );
+		RHITextureRef tex = RHI::CreateNativeResource<OpenGLTexture>( a_Desc );
 		auto* glTex = static_cast<OpenGLTexture*>( tex.get() );
 		glTex->Commit( a_Desc );
 
@@ -110,6 +112,7 @@ namespace Tridium {
 
 		// Generate a texture handle
 		glTex->TextureObj.Create();
+		OpenGL1::BindTexture( GL_TEXTURE_2D, glTex->TextureObj );
 		glTex->TextureObj.SetName( a_Desc.Name );
 		if ( !glTex->TextureObj.Valid() )
 		{
@@ -119,46 +122,49 @@ namespace Tridium {
 		TODO( "This only works for 2D textures and not multiple subresources!" );
 		// Set the texture data
 		OpenGL4::TextureStorage2D( glTex->TextureObj, 1, glTex->GLFormat.InternalFormat, a_Desc.Width, a_Desc.Height );
-		OpenGL4::TextureSubImage2D( glTex->TextureObj, 0, 0, 0, a_Desc.Width, a_Desc.Height,
-			glTex->GLFormat.Format, glTex->GLFormat.Type, a_SubResourcesData[0].Data.data() );
+		if ( a_SubResourcesData.size() > 0 )
+		{
+			OpenGL4::TextureSubImage2D( glTex->TextureObj, 0, 0, 0, a_Desc.Width, a_Desc.Height,
+				glTex->GLFormat.Format, glTex->GLFormat.Type, a_SubResourcesData[0].Data.data() );
+		}
 
 		return tex;
 	}
 
 	RHIBufferRef OpenGLDynamicRHI::CreateBuffer( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data )
 	{
-		return RHIResource::Create<OpenGLBuffer>( a_Desc );
+		return RHI::CreateNativeResource<OpenGLBuffer>( a_Desc );
 	}
 
 	RHIGraphicsPipelineStateRef OpenGLDynamicRHI::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc )
 	{
-		RHIGraphicsPipelineStateRef pso = RHIResource::Create<OpenGLGraphicsPipelineState>();
+		RHIGraphicsPipelineStateRef pso = RHI::CreateNativeResource<OpenGLGraphicsPipelineState>();
 		CHECK( pso->Commit( a_Desc ) );
 		return pso;
 	}
 
 	RHICommandListRef OpenGLDynamicRHI::CreateCommandList( const RHICommandListDescriptor& a_Desc )
 	{
-		return RHIResource::Create<OpenGLCommandList>( a_Desc );
+		return RHI::CreateNativeResource<OpenGLCommandList>( a_Desc );
 	}
 
 	RHIShaderModuleRef OpenGLDynamicRHI::CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc )
 	{
-		RHIShaderModuleRef shader = RHIResource::Create<OpenGLShaderModule>();
+		RHIShaderModuleRef shader = RHI::CreateNativeResource<OpenGLShaderModule>();
 		CHECK( shader->Commit( a_Desc ) );
 		return shader;
 	}
 
 	RHIShaderBindingLayoutRef OpenGLDynamicRHI::CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc )
 	{
-		RHIShaderBindingLayoutRef sbl = RHIResource::Create<OpenGLShaderBindingLayout>();
+		RHIShaderBindingLayoutRef sbl = RHI::CreateNativeResource<OpenGLShaderBindingLayout>();
 		CHECK( sbl->Commit( a_Desc ) );
 		return sbl;
 	}
 
 	RHISwapChainRef OpenGLDynamicRHI::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )
 	{
-		RHISwapChainRef sc = RHIResource::Create<OpenGLSwapChain>();
+		RHISwapChainRef sc = RHI::CreateNativeResource<OpenGLSwapChain>();
 		CHECK( sc->Commit( a_Desc ) );
 		return sc;
 	}

@@ -26,25 +26,10 @@ namespace Tridium {
 		ERHInterfaceType GetRHIType();
 
 		// Get the global dynamically bound RHI.
-		static IDynamicRHI* GetDynamicRHI()
-		{
-			return s_DynamicRHI;
-		}
+		static IDynamicRHI* GetDynamicRHI() { return s_DynamicRHI; }
 
 		// Get the name of the given RHI type.
-		constexpr const char* GetRHIName( ERHInterfaceType a_API )
-		{
-			switch ( a_API )
-			{
-				using enum ERHInterfaceType;
-				case OpenGL:    return "OpenGL";
-				case DirectX11: return "DirectX 11";
-				case DirectX12: return "DirectX 12";
-				case Vulkan:    return "Vulkan";
-				case Metal:     return "Metal";
-				default:        return "Null";
-			}
-		}
+		constexpr const char* GetRHIName( ERHInterfaceType a_API );
 	}
 
 	// RHI Query and Functions
@@ -113,6 +98,24 @@ namespace Tridium {
 			default:
 				return ERHIShaderFormat::Unknown;
 			}
+		}
+	} // namespace RHIQuery
+
+	//======================================================================
+	// RHI Implementation
+	//======================================================================
+
+	constexpr const char* RHI::GetRHIName( ERHInterfaceType a_API )
+	{
+		switch ( a_API )
+		{
+			using enum ERHInterfaceType;
+			case OpenGL:    return "OpenGL";
+			case DirectX11: return "DirectX 11";
+			case DirectX12: return "DirectX 12";
+			case Vulkan:    return "Vulkan";
+			case Metal:     return "Metal";
+			default:        return "Null";
 		}
 	}
 

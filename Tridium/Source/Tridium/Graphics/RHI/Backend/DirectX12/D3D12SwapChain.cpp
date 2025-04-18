@@ -21,10 +21,10 @@ namespace Tridium {
 
 		if ( GetBackBuffer()->GetState() != ERHIResourceStates::Present )
 		{
+			TODO( "We should not be stalling the GPU here!" );
 			// We need to transition the back buffer to present
 			auto& cmdCtx = GetD3D12RHI()->GetCommandContext( ERHICommandQueueType::Graphics );
-			cmdCtx.Signal();
-			cmdCtx.Wait();
+			cmdCtx.Wait( cmdCtx.Signal() );
 		}
 
 		SwapChain->Present( 1, 0 );

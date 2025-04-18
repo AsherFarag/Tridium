@@ -50,7 +50,6 @@ namespace Tridium {
 		constexpr bool operator==( const BasicColor& other ) const { return r == other.r && g == other.g && b == other.b && a == other.a; }
 		constexpr bool operator!=( const BasicColor& other ) const { return !( *this == other ); }
 
-		// HSV
 		static BasicColor FromHSV( T a_Hue, T a_Saturation, T a_Value, T a_Alpha = T( 1 ) )
 		{
 			T c = a_Value * a_Saturation;

@@ -284,7 +284,7 @@ namespace Tridium {
 		{
 			OpenGL3::Enable( GL_DEPTH_TEST );
 			OpenGL3::DepthMask( depthState.DepthOp == ERHIDepthOp::Replace ? GL_TRUE : GL_FALSE );
-			OpenGL3::DepthFunc( OpenGL::Translate( depthState.DepthOp ) );
+			OpenGL3::DepthFunc( OpenGL::Translate( depthState.Comparison ) );
 		}
 		else
 		{
@@ -345,7 +345,6 @@ namespace Tridium {
 		if ( !a_Data.RTV[0] )
 		{
 			GLState::BindFBO( 0 );
-			OpenGL3::BindFramebuffer( GL_FRAMEBUFFER, 0 );
 			return;
 		}
 
@@ -378,7 +377,27 @@ namespace Tridium {
 			OpenGL3::FramebufferTexture2D( GL_FRAMEBUFFER, hasStencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, dsv->TextureObj, mipmapLevelToRenderTo );
 		}
 
-		ENSURE( OpenGL3::CheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE );
+		bool isComplete = OpenGL3::CheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE;
+		if ( !isComplete )
+		{
+			// Get the error msg
+			GLenum status = OpenGL3::CheckFramebufferStatus( GL_FRAMEBUFFER );
+			switch ( status )
+			{
+			case GL_FRAMEBUFFER_UNDEFINED: LOG( LogCategory::RHI, Error, "Framebuffer is undefined!" ); break;
+			case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: LOG( LogCategory::RHI, Error, "Framebuffer incomplete attachment!" ); break;
+			case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: LOG( LogCategory::RHI, Error, "Framebuffer incomplete missing attachment!" ); break;
+			case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: LOG( LogCategory::RHI, Error, "Framebuffer incomplete draw buffer!" ); break;
+			case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: LOG( LogCategory::RHI, Error, "Framebuffer incomplete read buffer!" ); break;
+			case GL_FRAMEBUFFER_UNSUPPORTED: LOG( LogCategory::RHI, Error, "Framebuffer unsupported!" ); break;
+			case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: LOG( LogCategory::RHI, Error, "Framebuffer incomplete multisample!" ); break;
+			case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: LOG( LogCategory::RHI, Error, "Framebuffer incomplete layer targets!" ); break;
+			default: LOG( LogCategory::RHI, Error, "Framebuffer unknown error!" ); break;
+			}
+
+			ASSERT_LOG( false, "Framebuffer is not complete!" );
+			return;
+		}
 
 		// Set the draw buffers
 		constexpr GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7 };

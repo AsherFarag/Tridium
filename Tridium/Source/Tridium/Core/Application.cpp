@@ -115,7 +115,7 @@ namespace Tridium {
 		m_Window->SetEventCallback( [this]( Event& a_Event ) { this->OnEvent( a_Event ); } );
 
 		RHIConfig config;
-		config.RHIType = ERHInterfaceType::DirectX12;
+		config.RHIType = ERHInterfaceType::OpenGL;
 		config.UseDebug = true;
 		bool initSuccess = RHI::Initialise( config );
 		LOG( LogCategory::RHI, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), initSuccess );
@@ -363,7 +363,7 @@ float4 main( VSOutput input ) : SV_Target
 			RHITextureDescriptor depthDesc;
 			depthDesc.Width = 1280;
 			depthDesc.Height = 720;
-			depthDesc.Format = ERHIFormat::D16_UNORM;
+			depthDesc.Format = ERHIFormat::D32_FLOAT;
 			depthDesc.Name = "My depth buffer";
 			depthDesc.BindFlags = ERHIBindFlags::DepthStencil;
 			depthDesc.ClearValue.emplace( 1.0f, 0 );

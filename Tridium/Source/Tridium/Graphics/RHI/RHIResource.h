@@ -116,11 +116,12 @@ namespace Tridium {
 			return nullptr;
 		}
 
-		template<typename T, typename... _Args> requires Concepts::IsRHIResource<T>
-		static T::RefType Create( _Args&&... a_Args )
+		// Creates a handle to the existing RHI resource.
+		template<Concepts::IsRHIResource T, typename... _Args>
+		static T::RefType CreateHandle( T* a_Resource )
 		{
 			static constexpr auto deleter = +[]( T* a_Resource ) { delete a_Resource; };
-			return T::RefType( new T( std::forward<_Args>( a_Args )... ), deleter );
+			return T::RefType( a_Resource, deleter );
 		}
 
 	protected:
