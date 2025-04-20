@@ -284,8 +284,8 @@ void PrintTypeName<bool>()
 struct MyComponent
 {
 	REFLECT_TEST( MyComponent );
-	Field<int, EditAnywhere | Serialize, Range<0, 10>> IntField;
-	Field<float, VisibleAnywhere, Range<0, 10>> FloatField;
+	Field<int, EditAnywhere | Serialize, Range<0.1f, 10.0f>> IntField;
+	Field<float, VisibleAnywhere, Range<0.1f, 10.0f>> FloatField;
 	Field<bool> BoolField;
 };
 
