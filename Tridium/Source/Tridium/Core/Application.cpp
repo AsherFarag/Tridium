@@ -194,8 +194,8 @@ namespace Tridium {
 
 			struct Vertex
 			{
-				Vector3 POSITION;
-				Vector2 TEXCOORD;
+				Vector3 Position;
+				Vector2 UV;
 			};
 			constexpr RHIVertexLayout layout = RHIVertexLayout::From<Vertex>();
 
@@ -283,17 +283,23 @@ struct InlinedConstants
 
 INLINED_CONSTANT( inlinedConstants, InlinedConstants );
 
+struct Vertex
+{
+	float3 Position : Position;
+	float2 UV : UV;
+};
+
 struct VSOutput
 {
     float4 pos : SV_Position;  
 	float2 uv : TEXCOORD;
 };
 
-VSOutput main( float3 pos : POSITION, float2 uv : TEXCOORD ) 
+VSOutput main( Vertex a_Vertex ) 
 {
 	VSOutput output;
-	output.pos = mul( float4( pos, 1.0f ), inlinedConstants.PVM );
-	output.uv = uv;
+	output.pos = mul( float4( a_Vertex.Position, 1.0f ), inlinedConstants.PVM );
+	output.uv = a_Vertex.UV;
 	return output;
 }
 )";

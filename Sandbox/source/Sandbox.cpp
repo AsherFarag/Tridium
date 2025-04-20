@@ -10,6 +10,8 @@
 
 #include <Tridium/Editor/Commands/CommandManager.h>
 
+#include <Tridium/Reflection/FieldReflection.h>
+
 using namespace Tridium;
 
 class ShooterPlayerComponent : public NativeScriptComponent
@@ -277,19 +279,28 @@ void PrintTypeName<bool>()
 }
 
 #include <Tridium/Reflection/FieldReflection.h>
+#include <Tridium/Reflection/Reflect.h>
+
+struct MyComponent
+{
+	REFLECT_TEST( MyComponent );
+	Field<int, EditAnywhere | Serialize, Range<0, 10>> IntField;
+	Field<float, VisibleAnywhere, Range<0, 10>> FloatField;
+	Field<bool> BoolField;
+};
 
 void test()
 {
-	Aggregate a{ 1.0f, 2, true, 3.0f };
-	//ForEachField( a, []( auto& field )
-	//	{
-	//		PrintTypeName<std::decay_t<decltype( field ) >>();
-	//	} );
-
-	//ForEachField( a, []( StringView name, auto& field )
-	//	{
-	//		std::cout << name << ", ";
-	//	} );
+	MyComponent myComponent;
+	using Field1 = decltype(myComponent.IntField);
+	if constexpr ( Field1::Has<RangeAttribute>() )
+	{
+		std::cout << "IntField has RangeAttribute - Min: " << Field1::Get<RangeAttribute>().Min << ", Max: " << Field1::Get<RangeAttribute>().Max << std::endl;
+	}
+	else
+	{
+		std::cout << "IntField does not have RangeAttribute" << std::endl;
+	}
 }
 
 struct Test
@@ -304,5 +315,6 @@ Test testInstance;
 
 GameInstance* Tridium::CreateGameInstance()
 {
+
 	return new SandboxGameInstance();
 }
