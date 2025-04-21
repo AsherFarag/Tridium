@@ -246,14 +246,6 @@ class SandboxGameInstance : public Tridium::GameInstance
 	}
 };
 
-struct Aggregate
-{
-	float a;
-	int b;
-	float c;
-	bool d;
-};
-
 template<typename T>
 void PrintTypeName()
 {
@@ -281,26 +273,73 @@ void PrintTypeName<bool>()
 #include <Tridium/Reflection/FieldReflection.h>
 #include <Tridium/Reflection/Reflect.h>
 
+
+
 struct MyComponent
 {
 	REFLECT_TEST( MyComponent );
-	Field<int, EditAnywhere | Serialize, Range<0.1f, 10.0f>> IntField;
-	Field<float, VisibleAnywhere, Range<0.1f, 10.0f>> FloatField;
+	int GetInt() const
+	{
+		return IntField.Value * 3;
+	}
+	void SetInt( int a_Value )
+	{
+		IntField.Value = a_Value;
+	}
+
+	void PrintFloat()
+	{
+		std::cout << "Float: " << FloatField.Value << std::endl;
+	}
+	Field<int, EditAnywhere, Range<0.1f, 10.015f>, Getter<&GetInt>, Setter<&SetInt>> IntField;
+	Field<float, Range<0.1f, 10.0f>> FloatField;
 	Field<bool> BoolField;
 };
+
+template<>
+struct CustomReflector<MyComponent>
+{
+	Field<int, EditAnywhere, Range<0.1f, 10.0f>, Getter<&MyComponent::IntField>, Setter<&MyComponent::IntField>> IntField;
+	Function<&MyComponent::PrintFloat> PrintFloat;
+};
+
+template<typename T>
+void PrintTypeName( const T& a_Value )
+{
+	using ValueType = std::decay_t<decltype(a_Value)>;
+	std::cout << GetTypeName<ValueType>();
+}
+
+template<typename _ValueType, IsFieldAttribute... _MetaAttributes>
+void PrintFieldType( const Field<_ValueType, _MetaAttributes...>& a_Field )
+{
+	using FieldType = std::decay_t<decltype(a_Field)>;
+	std::cout << GetTypeName<typename FieldType::ValueType>();
+	if constexpr ( FieldType::template Has<RangeAttribute>() )
+	{
+		std::cout << ", Range{ Min: " << FieldType::template Get<RangeAttribute>().Min << ", Max: " << FieldType::template Get<RangeAttribute>().Max << " }";
+	}
+}
 
 void test()
 {
 	MyComponent myComponent;
-	using Field1 = decltype(myComponent.IntField);
-	if constexpr ( Field1::Has<RangeAttribute>() )
-	{
-		std::cout << "IntField has RangeAttribute - Min: " << Field1::Get<RangeAttribute>().Min << ", Max: " << Field1::Get<RangeAttribute>().Max << std::endl;
-	}
-	else
-	{
-		std::cout << "IntField does not have RangeAttribute" << std::endl;
-	}
+	myComponent.IntField.Value = 5;
+	myComponent.IntField.SetValue( myComponent, 10 );
+	myComponent.FloatField.Value = 5.0f;
+	CustomReflector<MyComponent>{}.IntField.SetValue( myComponent, 20 );
+	CustomReflector<MyComponent>{}.PrintFloat.Invoke( myComponent );
+
+	std::cout << "Test " << CustomReflector<MyComponent>{}.IntField.GetValue( myComponent ) << std::endl;
+	std::cout << "Int Value " << myComponent.IntField.GetValue( myComponent ) << std::endl;
+	ForEachField( myComponent,
+		[]( StringView a_Name, auto& a_Field )
+		{
+			std::cout << "Field: " << a_Name << ", Type: ";
+			PrintFieldType( a_Field );
+			std::cout << std::endl;
+		}
+	);
 }
 
 struct Test
