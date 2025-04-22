@@ -82,14 +82,14 @@ namespace Tridium {
 	public:
 		// Returns whether the given trait is present in the meta attributes
 		template<template<typename> typename _Trait>
-		static consteval bool Has()
+		static consteval bool HasMeta()
 		{
 			return HasTrait<_Trait>::Value;
 		}
 
 		// Returns the first trait that matches the given template
 		template<template<typename> typename _Trait> requires HasTrait<_Trait>::Value
-		static consteval auto Get()
+		static consteval auto GetMeta()
 		{
 			return GetTrait<_Trait>::Value();
 		}
@@ -126,6 +126,50 @@ namespace Tridium {
 		using FieldType = Field<_ValueType, _FieldAttributes...>;
 		using ValueType = _ValueType;
 		ValueType Value;
+
+		constexpr Field() = default;
+		constexpr Field( const ValueType& a_Value ) : Value( a_Value ) {}
+		constexpr Field( ValueType&& a_Value ) : Value( std::move( a_Value ) ) {}
+
+		template<IsFieldAttribute... _OtherAttributes>
+		constexpr Field( const Field<_ValueType, _OtherAttributes...>& a_OtherField ) : Value( a_OtherField.Value ) {}
+		template<IsFieldAttribute... _OtherAttributes>
+		constexpr Field( Field<_ValueType, _OtherAttributes...>&& a_OtherField ) : Value( std::move( a_OtherField.Value ) ) {}
+
+		constexpr ~Field() = default;
+
+		constexpr operator ValueType& () { return Value; }
+		constexpr operator const ValueType& () const { return Value; }
+
+		constexpr Field& operator=( const Field& a_OtherField )
+		{
+			if ( this != &a_OtherField )
+			{
+				Value = a_OtherField.Value;
+			}
+			return *this;
+		}
+
+		constexpr Field& operator=( Field&& a_OtherField ) noexcept
+		{
+			if ( this != &a_OtherField )
+			{
+				Value = std::move( a_OtherField.Value );
+			}
+			return *this;
+		}
+
+		constexpr Field& operator=( const ValueType& a_Value )
+		{
+			Value = a_Value;
+			return *this;
+		}
+
+		constexpr Field& operator=( ValueType&& a_Value ) noexcept
+		{
+			Value = std::move( a_Value );
+			return *this;
+		}
 	};
 
 
@@ -181,34 +225,58 @@ namespace Tridium {
 	struct RangeAttribute<Range<_Min, _Max>> : std::true_type {};
 	//=====================================================
 
+
+	//namespace Detail {
+
+	//}
+
+	//struct Property : FieldAttribute
+	//{
+
+	//};
+
 	//=====================================================
 	// Getter - Editor Only
 	//  A meta attribute used for specifying a getter function for a field that will be used by the inspector.
-	//  '_Getter' can be a member function pointer.
+	//  '_Getter' can be a member object pointer (such as &MyComponent::MyInt) or a function pointer (such as &MyComponent::GetInt).
 	template<typename T>
 	struct GetterAttribute : std::false_type {};
 	template<auto _Getter>
+		requires std::is_member_object_pointer_v<decltype(_Getter)> || apl::is_member_fn_v<decltype(_Getter)>
 	struct Getter : FieldAttribute
 	{
 	private:
-		static constexpr bool IsFieldMemberPointer = std::is_member_object_pointer_v<decltype(_Getter)>;
-		template<typename T>
-		static constexpr bool IsInvocable = requires(const T & a_Object) {
+		static constexpr bool IsMemberObjPointer = std::is_member_object_pointer_v<decltype(_Getter)>;
+
+		using ObjectType = std::conditional_t<IsMemberObjPointer,
+			typename std::member_traits<decltype(_Getter)>::class_type,
+			typename apl::member_fn<_Getter>::object_type
+		>;
+
+		using MemberType = std::conditional_t < IsMemberObjPointer,
+			typename std::member_traits<decltype(_Getter)>::member_type,
+			typename apl::member_fn<_Getter>::return_type
+		>;
+
+		static constexpr bool IsInvocable = requires(const ObjectType& a_Object) 
+		{
 			std::invoke( _Getter, a_Object );
 		};
+
+		ObjectType* m_Object = nullptr;
+
 	public:
-		template<typename T>
-		static constexpr auto GetValue( const T& a_Object )
+		static constexpr auto GetValue( const ObjectType& a_Object )
 		{
 			// If _Getter is a member pointer, such as &MyComponent::MyInt, we need to dereference it.
-			if constexpr ( IsFieldMemberPointer )
+			if constexpr ( IsMemberObjPointer )
 			{
 				using ValueType = std::decay_t<decltype(a_Object.*_Getter)>;
 				// If the member pointer is to a Field, we need to use .Value to get the value.
 				if constexpr ( IsField<ValueType> )
 				{
 					// If the field has a defined getter attribute, we need to call it.
-					if constexpr ( ValueType::template Has<GetterAttribute>() )
+					if constexpr ( ValueType::template HasMeta<GetterAttribute>() )
 					{
 						return (a_Object.*_Getter).GetValue( a_Object );
 					}
@@ -224,7 +292,7 @@ namespace Tridium {
 				}
 			}
 			// If _Getter is a function pointer, such as &MyComponent::GetInt, we need to call it.
-			else if constexpr ( IsInvocable<T> )
+			else if constexpr ( IsInvocable )
 			{
 				return std::invoke( _Getter, a_Object );
 			}
@@ -267,7 +335,7 @@ namespace Tridium {
 				if constexpr ( IsField<FieldType> )
 				{
 					// If the field has a defined setter attribute, we need to call it.
-					if constexpr ( FieldType::template Has<SetterAttribute>() )
+					if constexpr ( FieldType::template HasMeta<SetterAttribute>() )
 					{
 						(a_Object.*_Setter).SetValue( a_Object, a_Value );
 					}

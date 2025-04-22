@@ -291,7 +291,7 @@ struct MyComponent
 	{
 		std::cout << "Float: " << FloatField.Value << std::endl;
 	}
-	Field<int, EditAnywhere, Range<0.1f, 10.015f>, Getter<&GetInt>, Setter<&SetInt>> IntField;
+	Field<int, EditAnywhere, Range<0.1f, 10.015f>, Getter<&MyComponent::GetInt>, Setter<&MyComponent::SetInt>> IntField;
 	Field<float, Range<0.1f, 10.0f>> FloatField;
 	Field<bool> BoolField;
 };
@@ -299,7 +299,7 @@ struct MyComponent
 template<>
 struct CustomReflector<MyComponent>
 {
-	Field<int, EditAnywhere, Range<0.1f, 10.0f>, Getter<&MyComponent::IntField>, Setter<&MyComponent::IntField>> IntField;
+	Field<int, EditAnywhere, Range<0.1f, 10.0f>> IntField;
 	Function<&MyComponent::PrintFloat> PrintFloat;
 };
 
@@ -315,9 +315,9 @@ void PrintFieldType( const Field<_ValueType, _MetaAttributes...>& a_Field )
 {
 	using FieldType = std::decay_t<decltype(a_Field)>;
 	std::cout << GetTypeName<typename FieldType::ValueType>();
-	if constexpr ( FieldType::template Has<RangeAttribute>() )
+	if constexpr ( FieldType::template HasMeta<RangeAttribute>() )
 	{
-		std::cout << ", Range{ Min: " << FieldType::template Get<RangeAttribute>().Min << ", Max: " << FieldType::template Get<RangeAttribute>().Max << " }";
+		std::cout << ", Range{ Min: " << FieldType::template GetMeta<RangeAttribute>().Min << ", Max: " << FieldType::template GetMeta<RangeAttribute>().Max << " }";
 	}
 }
 
@@ -327,10 +327,9 @@ void test()
 	myComponent.IntField.Value = 5;
 	myComponent.IntField.SetValue( myComponent, 10 );
 	myComponent.FloatField.Value = 5.0f;
-	CustomReflector<MyComponent>{}.IntField.SetValue( myComponent, 20 );
+	//CustomReflector<MyComponent>{}.IntField.SetValue( myComponent, 20 );
 	CustomReflector<MyComponent>{}.PrintFloat.Invoke( myComponent );
-
-	std::cout << "Test " << CustomReflector<MyComponent>{}.IntField.GetValue( myComponent ) << std::endl;
+	//std::cout << "Test " << CustomReflector<MyComponent>{}.IntField.GetValue( myComponent ) << std::endl;
 	std::cout << "Int Value " << myComponent.IntField.GetValue( myComponent ) << std::endl;
 	ForEachField( myComponent,
 		[]( StringView a_Name, auto& a_Field )

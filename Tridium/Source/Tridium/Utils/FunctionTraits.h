@@ -4,6 +4,19 @@
 #include <type_traits>
 #include <functional>
 
+namespace std {
+
+	template<typename T>
+	struct member_traits : std::false_type {};
+
+	template<typename _Class, typename _Member>
+	struct member_traits<_Class _Member::*> : std::true_type
+	{
+		using class_type = _Class;
+		using member_type = _Member;
+	};
+}
+
 namespace apl {
 
 	enum function_flags
