@@ -273,27 +273,30 @@ void PrintTypeName<bool>()
 #include <Tridium/Reflection/FieldReflection.h>
 #include <Tridium/Reflection/Reflect.h>
 
-
-
 struct MyComponent
 {
 	REFLECT_TEST( MyComponent );
-	int GetInt() const
+	int& GetInt()
 	{
-		return IntField.Value * 3;
+		std::cout << "\n GetInt was called " << std::format( "Value: {}", IntField.GetInternalValue() ) << std::endl;
+		return IntField.GetInternalValue();
 	}
 	void SetInt( int a_Value )
 	{
-		IntField.Value = a_Value;
+		std::cout << "\n SetInt was called " << std::format( "Old Value: {}, New Value: {}", IntField.GetInternalValue(), a_Value ) << std::endl;
+		IntField.GetInternalValue() = a_Value;
 	}
-
 	void PrintFloat()
 	{
-		std::cout << "Float: " << FloatField.Value << std::endl;
+		std::cout << "Float: " << FloatField.GetInternalValue() << std::endl;
 	}
-	Field<int, EditAnywhere, Range<0.1f, 10.015f>, Getter<&MyComponent::GetInt>, Setter<&MyComponent::SetInt>> IntField;
-	Field<float, Range<0.1f, 10.0f>> FloatField;
-	Field<bool> BoolField;
+
+	Field<int, EditAnywhere, Range<0.1f, 10.015f>, Property<&GetInt, &SetInt>>
+		IntField{ this, 10 };
+	Field<float, Range<0.1f, 10.0f>>
+		FloatField{ 5.0f };
+	Field<bool, EditAnywhere>
+		BoolField;
 };
 
 template<>
@@ -323,20 +326,24 @@ void PrintFieldType( const Field<_ValueType, _MetaAttributes...>& a_Field )
 
 void test()
 {
-	MyComponent myComponent;
-	myComponent.IntField.Value = 5;
-	myComponent.IntField.SetValue( myComponent, 10 );
-	myComponent.FloatField.Value = 5.0f;
-	//CustomReflector<MyComponent>{}.IntField.SetValue( myComponent, 20 );
+	MyComponent myComponent{};
+	myComponent.IntField = 33;
 	CustomReflector<MyComponent>{}.PrintFloat.Invoke( myComponent );
-	//std::cout << "Test " << CustomReflector<MyComponent>{}.IntField.GetValue( myComponent ) << std::endl;
-	std::cout << "Int Value " << myComponent.IntField.GetValue( myComponent ) << std::endl;
+	std::cout << "Int Value " << myComponent.IntField << std::endl;
 	ForEachField( myComponent,
-		[]( StringView a_Name, auto& a_Field )
+		[]( StringView a_Name, const auto& a_Field )
 		{
 			std::cout << "Field: " << a_Name << ", Type: ";
 			PrintFieldType( a_Field );
 			std::cout << std::endl;
+		}
+	);
+
+	ForEachField( CustomReflector<MyComponent>{},
+		[]( StringView a_Name, const auto& a_Field )
+		{
+			using FieldType = std::decay_t<decltype(a_Field)>;
+			if constexpr ( IsFunc )
 		}
 	);
 }

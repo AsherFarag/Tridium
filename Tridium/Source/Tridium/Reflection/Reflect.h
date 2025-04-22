@@ -17,7 +17,9 @@ namespace Tridium {
 	//        struct RangeAttribute<Range<_Min, _Max>> : std::true_type {};
 	//
 	//        This allows the static reflection system to query for these attributes, regardless of the parameterized types.
-	struct MetaAttribute {};
+	struct MetaAttribute 
+	{
+	};
 
 
 
@@ -27,27 +29,28 @@ namespace Tridium {
 	template<typename T>
 	concept IsMetaAttribute = std::is_base_of_v<MetaAttribute, T> || std::is_same_v<T, MetaAttribute>;
 
+	namespace Detail {
 
+		struct Dummy {};
 
-	//=====================================================
-	// Meta Property
-	//  A base class for all meta properties such as functions and fields.
-	template<IsMetaAttribute... _MetaAttributes>
-	struct MetaProperty : _MetaAttributes...
-	{
-	private:
-		// Helper to check if a trait is present in the meta attributes
-		template<template<typename> typename _Trait>
+		// Check if a specific meta trait exists among the attributes
+		template<template<typename> typename _Trait, IsMetaAttribute... _MetaAttributes>
 		struct HasTrait
 		{
 			static constexpr bool Value = (_Trait<_MetaAttributes>::value || ...);
 		};
 
-		// Helper to get the first trait that matches the given template
-		// Recursively checks each type in the variadic template pack until it finds a match.
-		template<template<typename> typename _Trait, typename... Ts>
-		struct GetTraitImpl;
+		// Base case: No types left to search.
+		template<template<typename> typename _Trait, typename...>
+		struct GetTraitImpl
+		{
+			static constexpr auto Value()
+			{
+				return Dummy{}; // Optional fallback type
+			}
+		};
 
+		// Recursive case: Check first type, then recurse
 		template<template<typename> typename _Trait, typename T, typename... Ts>
 		struct GetTraitImpl<_Trait, T, Ts...>
 		{
@@ -60,38 +63,39 @@ namespace Tridium {
 			}
 		};
 
-		template<template<typename> typename _Trait>
-		struct GetTraitImpl<_Trait>
-		{
-			static constexpr auto Value()
-			{
-				static_assert(sizeof( _Trait ) == 0, "No matching type found");
-			}
-		};
 
-		// Helper to get a trait's value
-		template<template<typename> typename _Trait>
+		// Wrapper for ease of use in the field system
+		template<template<typename> typename _Trait, IsMetaAttribute... _MetaAttributes>
 		struct GetTrait
 		{
 			static constexpr auto Value()
 			{
 				return GetTraitImpl<_Trait, _MetaAttributes...>::Value();
 			}
-		};
 
-	public:
+			using AttributeType = decltype(Value());
+		};
+	}
+
+
+	//=====================================================
+	// Meta Property
+	//  A base class for all meta properties such as functions and fields.
+	template<IsMetaAttribute... _MetaAttributes>
+	struct MetaProperty : public _MetaAttributes...
+	{
 		// Returns whether the given trait is present in the meta attributes
 		template<template<typename> typename _Trait>
 		static consteval bool HasMeta()
 		{
-			return HasTrait<_Trait>::Value;
+			return Detail::HasTrait<_Trait>::Value;
 		}
 
 		// Returns the first trait that matches the given template
 		template<template<typename> typename _Trait> requires HasTrait<_Trait>::Value
 		static consteval auto GetMeta()
 		{
-			return GetTrait<_Trait>::Value();
+			return Detail::GetTrait<_Trait>::Value();
 		}
 	};
 
@@ -101,7 +105,9 @@ namespace Tridium {
 	// Field Attribute
 	//  A base class for all field attributes.
 	//  Attributes that are specific to 'Field' must inherit from this class.
-	struct FieldAttribute : MetaAttribute {};
+	struct FieldAttribute : MetaAttribute
+	{
+	};
 
 
 
@@ -112,6 +118,65 @@ namespace Tridium {
 	concept IsFieldAttribute = std::is_base_of_v<FieldAttribute, T> || std::is_same_v<T, FieldAttribute>;
 
 
+	namespace Detail {
+
+		template<typename _ValueType, typename _PropertyType>
+		struct PropertyWrapper;
+
+		template<typename _ValueType>
+		struct PropertyWrapper<_ValueType, Dummy>
+		{
+			using ObjectType = void;
+			using ValueType = _ValueType;
+			// Gets the value of the field without any processing (such as from Property<Get, Set>).
+			// WARNING: Avoid using this directly, as this is meant for internal use of the owning class.
+			ValueType& GetInternalValue() { return m_Value; }
+			// Gets the value of the field without any processing (such as from Property<Get, Set>).
+			// WARNING: Avoid using this directly, as this is meant for internal use of the owning class.
+			const ValueType& GetInternalValue() const { return m_Value; }
+
+			ValueType& Get()
+			{
+				return m_Value;
+			}
+
+			const ValueType& Get() const
+			{
+				return m_Value;
+			}
+
+			void Set( const ValueType& a_Value )
+			{
+				m_Value = a_Value;
+			}
+
+			void Set( ValueType&& a_Value )
+			{
+				m_Value = std::move( a_Value );
+			}
+
+			PropertyWrapper() = default;
+			PropertyWrapper( const PropertyWrapper& a_Other ) : m_Value( a_Other.m_Value ) {}
+			PropertyWrapper( PropertyWrapper&& a_Other ) : m_Value( std::move( a_Other.m_Value ) ) {}
+			PropertyWrapper( const ValueType& a_Value ) : m_Value( a_Value ) {}
+			PropertyWrapper( ValueType&& a_Value ) : m_Value( std::move( a_Value ) ) {}
+			PropertyWrapper& operator=( const PropertyWrapper& a_Other ) { m_Value = a_Other.m_Value; return *this; }
+			PropertyWrapper& operator=( PropertyWrapper&& a_Other ) { m_Value = std::move( a_Other.m_Value ); return *this; }
+			PropertyWrapper& operator=( const ValueType& a_Value ) { m_Value = a_Value; return *this; }
+			PropertyWrapper& operator=( ValueType&& a_Value ) { m_Value = std::move( a_Value ); return *this; }
+			operator ValueType& () { return m_Value; }
+			operator const ValueType& () const { return m_Value; }
+			operator ValueType* () { return &m_Value; }
+			operator const ValueType* () const { return &m_Value; }
+
+		private:
+			ValueType m_Value;
+		};
+	}
+
+	// Forward declare the Property class
+	template<typename T>
+	struct PropertyAttribute : std::false_type {};
 
 	//=====================================================
 	// Field
@@ -120,59 +185,82 @@ namespace Tridium {
 	//  - _ValueType: The type of the value. For example, int, float, etc.
 	//  - _FieldAttributes: A variadic template parameter that allows for multiple meta attributes to be passed in.
 	template<typename _ValueType, IsFieldAttribute... _FieldAttributes>
-	struct Field : MetaProperty<_FieldAttributes...>
+	struct Field :
+		// If the field has a PropertyAttribute, we need to wrap the value type in a PropertyWrapper.
+		std::conditional_t< 
+			Detail::HasTrait<PropertyAttribute, _FieldAttributes...>::Value,
+			Detail::PropertyWrapper<_ValueType, typename Detail::GetTrait<PropertyAttribute, _FieldAttributes...>::AttributeType>,
+			Detail::PropertyWrapper<_ValueType, Detail::Dummy>
+		>,
+		MetaProperty<_FieldAttributes...>
 	{
+	private:
+		static constexpr bool HasPropertyAttribute = Detail::HasTrait<PropertyAttribute, _FieldAttributes...>::Value;
+		using PropertyWrapper = std::conditional_t <
+			HasPropertyAttribute,
+			Detail::PropertyWrapper<_ValueType, typename Detail::GetTrait<PropertyAttribute, _FieldAttributes...>::AttributeType>,
+			Detail::PropertyWrapper<_ValueType, Detail::Dummy>
+		>;
+		using ObjectType = PropertyWrapper::ObjectType;
+
 	public:
-		using FieldType = Field<_ValueType, _FieldAttributes...>;
-		using ValueType = _ValueType;
-		ValueType Value;
+		using ValueType = PropertyWrapper::ValueType;
 
-		constexpr Field() = default;
-		constexpr Field( const ValueType& a_Value ) : Value( a_Value ) {}
-		constexpr Field( ValueType&& a_Value ) : Value( std::move( a_Value ) ) {}
-
-		template<IsFieldAttribute... _OtherAttributes>
-		constexpr Field( const Field<_ValueType, _OtherAttributes...>& a_OtherField ) : Value( a_OtherField.Value ) {}
-		template<IsFieldAttribute... _OtherAttributes>
-		constexpr Field( Field<_ValueType, _OtherAttributes...>&& a_OtherField ) : Value( std::move( a_OtherField.Value ) ) {}
-
-		constexpr ~Field() = default;
-
-		constexpr operator ValueType& () { return Value; }
-		constexpr operator const ValueType& () const { return Value; }
-
-		constexpr Field& operator=( const Field& a_OtherField )
+		Field& operator=( const Field& a_Other )
 		{
-			if ( this != &a_OtherField )
-			{
-				Value = a_OtherField.Value;
-			}
+			PropertyWrapper::Set( a_Other.Get() );
 			return *this;
 		}
 
-		constexpr Field& operator=( Field&& a_OtherField ) noexcept
+		Field& operator=( const PropertyWrapper::ValueType& a_Value )
 		{
-			if ( this != &a_OtherField )
-			{
-				Value = std::move( a_OtherField.Value );
-			}
+			PropertyWrapper::Set( a_Value );
 			return *this;
 		}
 
-		constexpr Field& operator=( const ValueType& a_Value )
+		//======================================================
+		// Defined Property Attribute
+		//  These constructors are used when the field has a defined property attribute.
+		//  a_Object must be a pointer to the object that owns the field. ( such as using 'this' )
+		//==================================================
+
+		constexpr Field( ObjectType* a_Object ) requires HasPropertyAttribute
+			: PropertyWrapper( a_Object )
 		{
-			Value = a_Value;
-			return *this;
 		}
 
-		constexpr Field& operator=( ValueType&& a_Value ) noexcept
+		constexpr Field( ObjectType* a_Object, const _ValueType& a_Value ) requires HasPropertyAttribute
+			: PropertyWrapper( a_Object, a_Value )
 		{
-			Value = std::move( a_Value );
-			return *this;
 		}
+
+		constexpr Field( ObjectType* a_Object, _ValueType&& a_Value ) requires HasPropertyAttribute
+			: PropertyWrapper( a_Object, std::move( a_Value ) )
+		{
+		}
+
+		//======================================================
+		// No Defined Property Attribute
+		//  These constructors are used when the field does not have a defined property attribute.
+		//==================================================
+
+		constexpr Field() requires !HasPropertyAttribute
+			: PropertyWrapper()
+		{
+		}
+
+		constexpr Field( const _ValueType& a_Value ) requires !HasPropertyAttribute
+			: PropertyWrapper( a_Value )
+		{
+		}
+
+		constexpr Field( _ValueType&& a_Value ) requires !HasPropertyAttribute
+			: PropertyWrapper( std::move( a_Value ) )
+		{
+		}
+
+		//======================================================
 	};
-
-
 
 	template<typename T>
 	struct IsField_Trait : std::false_type {};
@@ -225,28 +313,14 @@ namespace Tridium {
 	struct RangeAttribute<Range<_Min, _Max>> : std::true_type {};
 	//=====================================================
 
-
-	//namespace Detail {
-
-	//}
-
-	//struct Property : FieldAttribute
-	//{
-
-	//};
-
-	//=====================================================
-	// Getter - Editor Only
-	//  A meta attribute used for specifying a getter function for a field that will be used by the inspector.
-	//  '_Getter' can be a member object pointer (such as &MyComponent::MyInt) or a function pointer (such as &MyComponent::GetInt).
-	template<typename T>
-	struct GetterAttribute : std::false_type {};
 	template<auto _Getter>
 		requires std::is_member_object_pointer_v<decltype(_Getter)> || apl::is_member_fn_v<decltype(_Getter)>
-	struct Getter : FieldAttribute
+	struct Get
 	{
-	private:
-		static constexpr bool IsMemberObjPointer = std::is_member_object_pointer_v<decltype(_Getter)>;
+		using Getter = decltype(_Getter);
+		static constexpr bool IsMemberObjPointer = std::is_member_object_pointer_v<Getter>;
+		static constexpr bool IsMemberFn = apl::is_member_fn_v<Getter>;
+		static constexpr bool IsMemberFnConst = apl::is_member_fn_const_v<Getter>;
 
 		using ObjectType = std::conditional_t<IsMemberObjPointer,
 			typename std::member_traits<decltype(_Getter)>::class_type,
@@ -258,110 +332,136 @@ namespace Tridium {
 			typename apl::member_fn<_Getter>::return_type
 		>;
 
-		static constexpr bool IsInvocable = requires(const ObjectType& a_Object) 
-		{
-			std::invoke( _Getter, a_Object );
-		};
+		using ReturnType = std::conditional_t < IsMemberObjPointer,
+			MemberType,
+			typename apl::member_fn<_Getter>::return_type
+		>;
 
-		ObjectType* m_Object = nullptr;
+		static_assert(std::is_invocable_v<Getter, ObjectType>, "Getter is not invocable with the given object type.");
 
-	public:
-		static constexpr auto GetValue( const ObjectType& a_Object )
+		static constexpr ReturnType GetValue( ObjectType& a_Object )
 		{
-			// If _Getter is a member pointer, such as &MyComponent::MyInt, we need to dereference it.
 			if constexpr ( IsMemberObjPointer )
 			{
 				using ValueType = std::decay_t<decltype(a_Object.*_Getter)>;
 				// If the member pointer is to a Field, we need to use .Value to get the value.
 				if constexpr ( IsField<ValueType> )
 				{
-					// If the field has a defined getter attribute, we need to call it.
-					if constexpr ( ValueType::template HasMeta<GetterAttribute>() )
-					{
-						return (a_Object.*_Getter).GetValue( a_Object );
-					}
-					// Else return the value directly.
-					else
-					{
-						return (a_Object.*_Getter).Value;
-					}
+					//// If the field has a defined getter attribute, we need to call it.
+					//if constexpr ( ValueType::template HasMeta<GetterAttribute>() )
+					//{
+					//	return (a_Object.*_Getter).GetValue( a_Object );
+					//}
+					//else
+					//{
+					//	return (a_Object.*_Getter).Value;
+					//}
+					return (a_Object.*_Getter).Value;
 				}
 				else
 				{
 					return a_Object.*_Getter;
 				}
 			}
-			// If _Getter is a function pointer, such as &MyComponent::GetInt, we need to call it.
-			else if constexpr ( IsInvocable )
-			{
-				return std::invoke( _Getter, a_Object );
-			}
 			else
 			{
-				static_assert(false, "Getter must be a member pointer or a callable that takes the object as an argument.");
+				// Using decltype(auto) as std::invoke can decay the return type.(e.g. int& -> int)
+				return std::invoke( _Getter, a_Object );
 			}
 		}
 	};
-	template<auto _Getter>
-	struct GetterAttribute<Getter<_Getter>> : std::true_type {};
-	//=====================================================
 
-	//=====================================================
-	// Setter - Editor Only
-	//  A meta attribute used for specifying a setter function for a field that will be used by the inspector.
-	//  '_Setter' can be a member function pointer.
-	template<typename T>
-	struct SetterAttribute : std::false_type {};
+	template<auto _Getter, typename = void>
+	struct IsGetterTrait : std::false_type {};
+
+	template<auto _Getter>
+	struct IsGetterTrait<_Getter, std::void_t<typename Get<_Getter>::ObjectType>> : std::true_type {};
+
+	template<auto _Getter>
+	concept IsGetter = IsGetterTrait<_Getter>::value;
+
+
 	template<auto _Setter>
-	struct Setter : FieldAttribute
+		requires std::is_member_object_pointer_v<decltype(_Setter)> || apl::is_member_fn_v<decltype(_Setter)>
+	struct Set
 	{
-	private:
-		static constexpr bool IsFieldMemberPointer = std::is_member_object_pointer_v<decltype(_Setter)>;
-		template<typename _ObjectType, typename _ValueType>
-		static constexpr bool IsInvocable = requires( _ObjectType& a_Object, const _ValueType& a_Value )
+		using Setter = decltype(_Setter);
+		static constexpr bool IsMemberObjPointer = std::is_member_object_pointer_v<Setter>;
+		static constexpr bool IsMemberFn = apl::is_member_fn_v<Setter>;
+		static constexpr bool IsMemberFnConst = IsMemberFn ? apl::is_member_fn_const_v<Setter> : false;
+		using ObjectType = std::conditional_t<IsMemberObjPointer,
+			typename std::member_traits<decltype(_Setter)>::class_type,
+			typename apl::member_fn<_Setter>::object_type
+		>;
+		using ArgType = std::conditional_t < IsMemberObjPointer,
+			typename std::member_traits<decltype(_Setter)>::member_type,
+			typename apl::arg_t<0u, typename apl::member_fn<_Setter>::args_type>
+		>;
+		using ReturnType = std::conditional_t < IsMemberObjPointer,
+			void,
+			typename apl::member_fn<_Setter>::return_type
+		>;
+
+		static constexpr ReturnType SetValue( ObjectType& a_Object, ArgType a_Value )
 		{
-			std::invoke( _Setter, a_Object, a_Value );
-		};
-	public:
-		// Sets the value of the field using the setter function.
-		// a_Object is the object that contains the field.
-		template<typename _ObjectType, typename _ValueType>
-		static constexpr void SetValue( _ObjectType& a_Object, const _ValueType& a_Value )
-		{
-			if constexpr ( IsFieldMemberPointer )
+			if constexpr ( IsMemberObjPointer )
 			{
-				using FieldType = std::decay_t<decltype(a_Object.*_Setter)>;
+				using ValueType = std::decay_t<decltype(a_Object.*_Setter)>;
 				// If the member pointer is to a Field, we need to use .Value to get the value.
-				if constexpr ( IsField<FieldType> )
+				if constexpr ( IsField<ValueType> )
 				{
 					// If the field has a defined setter attribute, we need to call it.
-					if constexpr ( FieldType::template HasMeta<SetterAttribute>() )
-					{
-						(a_Object.*_Setter).SetValue( a_Object, a_Value );
-					}
-					else
-					{
-						(a_Object.*_Setter).Value = a_Value;
-					}
+					//if constexpr ( ValueType::template HasMeta<SetterAttribute>() )
+					//{
+					//	(a_Object.*_Setter).SetValue( a_Object, a_Value );
+					//}
+					//else
+					//{
+					//	(a_Object.*_Setter).Value = a_Value;
+					//}
+					(a_Object.*_Setter).Set( a_Value );
 				}
 				else
 				{
 					a_Object.*_Setter = a_Value;
 				}
 			}
-			else if constexpr ( IsInvocable<_ObjectType, _ValueType> )
+			else if constexpr ( IsMemberFn )
 			{
-				std::invoke( _Setter, a_Object, a_Value );
-			}
-			else
-			{
-				static_assert(false, "Setter must be a member pointer or a callable that takes the object and value as arguments.");
+				if constexpr ( std::is_void_v<ReturnType> )
+				{
+					std::invoke( _Setter, a_Object, a_Value );
+				}
+				else
+				{
+					return std::invoke( _Setter, a_Object, a_Value );
+				}
 			}
 		}
 	};
+
+	template<typename T>
+	struct IsSetterTrait : std::false_type {};
 	template<auto _Setter>
-	struct SetterAttribute<Setter<_Setter>> : std::true_type {};
-	//=====================================================
+		requires std::is_member_object_pointer_v<decltype(_Setter)> || apl::is_member_fn_v<decltype(_Setter)>
+	struct IsSetterTrait<Set<_Setter>> : std::true_type {};
+	template<auto _Setter>
+	concept IsSetter = IsSetterTrait<Set<_Setter>>::value;
+
+	template<auto _Getter, auto _Setter>
+		requires (std::is_same_v<typename Get<_Getter>::ObjectType, typename Set<_Setter>::ObjectType>)
+	struct Property : FieldAttribute
+	{
+		using Getter = Get<_Getter>;
+		using Setter = Set<_Setter>;
+		using ObjectType = typename Getter::ObjectType;
+		using ValueType = typename Getter::ReturnType;
+		using MemberType = typename Getter::MemberType;
+		using ArgType = typename Setter::ArgType;
+	};
+
+	template<auto _Getter, auto _Setter>
+	struct PropertyAttribute<Property<_Getter, _Setter>> : std::true_type {};
 
 #pragma endregion
 
@@ -469,6 +569,85 @@ namespace Tridium {
 			};
 
 			static inline StaticReflector s_StaticReflector{};
+		};
+
+		template<typename _ValueType, typename _PropertyAttribute>
+		struct PropertyWrapper : _PropertyAttribute
+		{
+			using Getter = typename _PropertyAttribute::Getter;
+			using Setter = typename _PropertyAttribute::Setter;
+			using ValueType = _ValueType;
+			using ObjectType = typename _PropertyAttribute::ObjectType;
+			using ArgType = typename _PropertyAttribute::ArgType;
+
+			// Gets the value of the field without any processing (such as from Property<Get, Set>).
+			// WARNING: Avoid using this directly, as this is meant for internal use of the owning class.
+			ValueType& GetInternalValue() { return m_Value; }
+			// Gets the value of the field without any processing (such as from Property<Get, Set>).
+			// WARNING: Avoid using this directly, as this is meant for internal use of the owning class.
+			const ValueType& GetInternalValue() const { return m_Value; }
+
+
+			// Allow implicit conversion to value
+			operator decltype(auto)() const
+			{
+				return Get();
+			}
+
+			operator decltype(auto)() requires !Getter::IsMemberFnConst
+			{
+				return Get();
+			}
+
+			// Compound assignment operators
+			PropertyWrapper& operator+=( const ValueType & a_Rhs ) { Set( Get() + a_Rhs ); return *this; }
+			PropertyWrapper& operator-=( const ValueType & a_Rhs ) { Set( Get() - a_Rhs ); return *this; }
+			PropertyWrapper& operator*=( const ValueType & a_Rhs ) { Set( Get() * a_Rhs ); return *this; }
+			PropertyWrapper& operator/=( const ValueType & a_Rhs ) { Set( Get() / a_Rhs ); return *this; }
+
+			// Pre/post increment & decrement
+			PropertyWrapper& operator++() { Set( Get() + 1 ); return *this; }
+			PropertyWrapper operator++( int ) { ValueType temp = Get(); Set( temp + 1 ); return temp; }
+
+			PropertyWrapper& operator--() { Set( Get() - 1 ); return *this; }
+			PropertyWrapper operator--( int ) { ValueType temp = Get(); Set( temp - 1 ); return temp; }
+
+			ValueType Get() requires ( Getter::IsMemberObjPointer || !apl::is_member_fn_const_v<Getter::Getter> )
+			{
+				return Getter::GetValue( *m_Object );
+			}
+
+			ValueType Get() const
+			{
+				return Getter::GetValue( *m_Object );
+			}
+
+			void Set( ArgType value ) const
+			{
+				Setter::SetValue( *m_Object, value );
+			}
+
+			// Constructors
+
+			constexpr PropertyWrapper( ObjectType* a_Object )
+				: m_Object( a_Object ) 
+			{}
+
+			constexpr PropertyWrapper( ObjectType* a_Object, const ValueType& a_Value )
+				: m_Object( a_Object )
+			{
+				Set( a_Value );
+			}
+
+			constexpr PropertyWrapper( ObjectType* a_Object, ValueType&& a_Value )
+				: m_Object( a_Object )
+			{
+				Set( std::move( a_Value ) );
+			}
+
+		private:
+			ObjectType* m_Object = nullptr;
+			ValueType m_Value;
 		};
 	}
 

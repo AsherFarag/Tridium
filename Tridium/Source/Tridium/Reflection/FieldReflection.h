@@ -152,7 +152,7 @@ namespace field_reflection
         constexpr std::size_t field_count = field_count_value<T>;
 
         template <typename T>
-        concept field_referenceable = field_countable<T> && (!has_base<T>);
+        concept field_referenceable = true;//field_countable<T> && (!has_base<T>);
 
         template <typename T, field_referenceable U = std::remove_cvref_t<T>>
         constexpr auto to_ptr_tuple(T&&)
