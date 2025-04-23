@@ -646,6 +646,15 @@ namespace Tridium {
 
 		if ( a_Cmd.DSV )
 		{
+			if ( m_State.Graphics.PSO )
+			{
+				TODO( "Move this to a validation function before drawing?" );
+				ASSERT_LOG( 
+					m_State.Graphics.PSO->Descriptor().DepthStencilFormat == a_Cmd.DSV->Descriptor().Format,
+					"Depth stencil format of the set DSV does not match the currently bound PSO!"
+				);
+			}
+
 			m_State.LastDSVHeap = m_State.Heaps.EmplaceBack( GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap(
 				ERHIDescriptorHeapType::DepthStencil,
 				1,

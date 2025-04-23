@@ -499,6 +499,18 @@ namespace Tridium {
 		DepthStencil,
 	};
 
+	constexpr StringView RHIDescriptorHeapTypeToString( ERHIDescriptorHeapType a_Type )
+	{
+		switch ( a_Type )
+		{
+		case ERHIDescriptorHeapType::RenderResource: return "RenderResource";
+		case ERHIDescriptorHeapType::Sampler:        return "Sampler";
+		case ERHIDescriptorHeapType::RenderTarget:   return "RenderTarget";
+		case ERHIDescriptorHeapType::DepthStencil:   return "DepthStencil";
+		default:                                     return "Unknown";
+		}
+	}
+
 
 
 	//=====================================================================

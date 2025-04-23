@@ -32,7 +32,7 @@ namespace Tridium {
         void OpenFile( const FilePath& a_FilePath );
 
     private:
-        virtual bool OnKeyPressed( KeyPressedEvent& e ) override;
+        virtual bool OnKeyPressed( const KeyPressedEvent& e ) override;
 		OpenedScript* GetOpenedScript( const LuaScriptHandle& a_Handle );
 		void SetTheme( ETheme a_Theme );
 

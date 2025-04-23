@@ -68,7 +68,9 @@ namespace Tridium::D3D12 {
 		ENSURE_LOG( SUCCEEDED( hr ), "Failed to create descriptor heap!" );
 
 		D3D12_SET_DEBUG_NAME( heap.Get(), a_DebugName );
-		LOG( LogCategory::RHI, Debug, "Heap Created!" );
+		LOG( LogCategory::RHI, Debug, "Heap Created - Name: {0}, Type: {1}, NumDescriptors: {2}",
+			a_DebugName, RHIDescriptorHeapTypeToString( a_Type ), a_NumDescriptors );
+
 		return MakeShared<DescriptorHeap>( a_Device, std::move( heap ), a_NumDescriptors, a_Type, a_Flags, a_IsGlobal );
 	}
 
@@ -116,6 +118,7 @@ namespace Tridium::D3D12 {
 
 	void DescriptorHeapManager::DeferredFreeHeap( DescriptorHeapRef&& a_Heap )
 	{
+
 		GetD3D12RHI()->DeferredDelete( std::move( a_Heap ) );
 	}
 

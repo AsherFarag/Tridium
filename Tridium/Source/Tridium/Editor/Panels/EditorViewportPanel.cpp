@@ -106,12 +106,12 @@ namespace Tridium {
 
 	bool EditorViewportPanel::OnKeyPressed( KeyPressedEvent& e )
 	{
-		if ( e.IsRepeat() )
+		if ( e.IsRepeat )
 			return false;
 
 		if ( !ImGuizmo::IsUsing() )
 		{
-			switch ( e.GetKeyCode() )
+			switch ( e.KeyCode )
 			{
 			case EInputKey::E:
 			{

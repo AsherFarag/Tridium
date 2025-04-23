@@ -12,3 +12,4 @@
 #include "String.h"
 #include "Tuple.h"
 #include "Variant.h"
+#include "Queue.h"

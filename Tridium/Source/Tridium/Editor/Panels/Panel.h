@@ -21,12 +21,12 @@ namespace Tridium {
 		inline bool IsFocused() const { return m_IsFocused; }
 
 	protected:
-		virtual bool OnKeyPressed( KeyPressedEvent& e ) { return false; }
-		virtual bool OnKeyReleased( KeyReleasedEvent& e ) { return false; }
-		virtual bool OnKeyTyped( KeyTypedEvent& e ) { return false; }
-		virtual bool OnMouseMoved( MouseMovedEvent& e ) { return false; }
-		virtual bool OnMouseButtonPressed( MouseButtonPressedEvent& e ) { return false; }
-		virtual bool OnMouseButtonReleased( MouseButtonReleasedEvent& e ) { return false; }
+		virtual bool OnKeyPressed( const KeyPressedEvent& a_Event ) { return false; }
+		virtual bool OnKeyReleased( const KeyReleasedEvent& a_Event ) { return false; }
+		virtual bool OnKeyTyped( const KeyTypedEvent& a_Event ) { return false; }
+		virtual bool OnMouseMoved( const MouseMovedEvent& a_Event ) { return false; }
+		virtual bool OnMouseButtonPressed( const MouseButtonPressedEvent& a_Event ) { return false; }
+		virtual bool OnMouseButtonReleased( const MouseButtonReleasedEvent& a_Event ) { return false; }
 
 		bool ImGuiBegin(ImGuiWindowFlags a_WindowFlags = 0);
 		void ImGuiEnd();
@@ -35,7 +35,7 @@ namespace Tridium {
 		virtual void OnClose() {};
 
 	protected:
-		std::string m_Name;
+		String m_Name;
 		PanelStack* m_Owner = nullptr;
 		bool m_Open = true;
 		bool m_IsHovered = false;

@@ -17,6 +17,24 @@ namespace Tridium {
 
 	static bool s_GLFWInitialized = false;
 
+	constexpr EInputMouseButton TranslateMouseButton( int button )
+	{
+		switch ( button )
+		{
+		case GLFW_MOUSE_BUTTON_LEFT:   return EInputMouseButton::Left;
+		case GLFW_MOUSE_BUTTON_RIGHT:  return EInputMouseButton::Right;
+		case GLFW_MOUSE_BUTTON_MIDDLE: return EInputMouseButton::Middle;
+		case GLFW_MOUSE_BUTTON_4:      return EInputMouseButton::Button4;
+		case GLFW_MOUSE_BUTTON_5:      return EInputMouseButton::Button5;
+		case GLFW_MOUSE_BUTTON_6:      return EInputMouseButton::Button6;
+		case GLFW_MOUSE_BUTTON_7:      return EInputMouseButton::Button7;
+		case GLFW_MOUSE_BUTTON_8:      return EInputMouseButton::Button8;
+		}
+
+		ASSERT_LOG( false, "Unknown mouse button!" );
+		return EInputMouseButton::None;
+	}
+
 	static void GLFWErrorCallback( int error, const char* description )
 	{
 		LOG( LogCategory::Application, Error, "GLFW Error ({0}): {1}", error, description );
@@ -124,8 +142,7 @@ namespace Tridium {
 				data.Width = width;
 				data.Height = height;
 
-				WindowResizeEvent event( width, height );
-				data.EventCallback( event );
+				data.EventCallback( WindowResizeEvent( width, height ) );
 			} );
 
 		glfwSetWindowCloseCallback( m_Window, []( GLFWwindow* window )
@@ -177,13 +194,14 @@ namespace Tridium {
 				{
 				case GLFW_PRESS:
 				{
-					MouseButtonPressedEvent event( button );
-					data.EventCallback( event );
+					EInputMouseButton key = TranslateMouseButton( button );
+					data.EventCallback( MouseButtonPressedEvent( key ) );
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					MouseButtonReleasedEvent event( button );
+					EInputMouseButton key = TranslateMouseButton( button );
+					MouseButtonReleasedEvent event( key );
 					data.EventCallback( event );
 					break;
 				}

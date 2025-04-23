@@ -127,20 +127,20 @@ namespace Tridium {
 		ImGui::End();
 	}
 
-	void EditorLayer::OnEvent( Event& e )
+	void EditorLayer::OnEvent( Event& a_Event )
 	{
 		for ( auto it = m_PanelStack.end(); it != m_PanelStack.begin(); )
 		{
-			( *--it ).second->OnEvent( e );
-			if ( e.Handled )
+			( *--it ).second->OnEvent( a_Event );
+			if ( a_Event.Handled )
 				break;
 		}
 
-		if ( e.Handled )
+		if ( a_Event.Handled )
 			return;
 
-		EventDispatcher dispatcher( e );
-		dispatcher.Dispatch<KeyPressedEvent>( TE_BIND_EVENT_FN( EditorLayer::OnKeyPressed, 1 ) );
+		EventDispatcher dispatcher( a_Event );
+		dispatcher.Dispatch<KeyPressedEvent>( [this]( const KeyPressedEvent& a_Event ) -> bool { return OnKeyPressed( a_Event ); } );
 	}
 
 	void EditorLayer::OnBeginScene()
@@ -176,15 +176,15 @@ namespace Tridium {
 		Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Normal );
 	}
 
-	bool EditorLayer::OnKeyPressed( KeyPressedEvent& e )
+	bool EditorLayer::OnKeyPressed( const KeyPressedEvent& e )
 	{
-		if ( e.IsRepeat() )
+		if ( e.IsRepeat )
 			return false;
 
 		bool control = Input::IsKeyPressed( EInputKey::LeftControl );
 		bool alt = Input::IsKeyPressed( EInputKey::LeftAlt );
 
-		switch ( e.GetKeyCode() )
+		switch ( e.KeyCode )
 		{
 		case EInputKey::S:
 		{

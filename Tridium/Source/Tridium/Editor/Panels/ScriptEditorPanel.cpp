@@ -122,12 +122,12 @@ namespace Tridium {
 		OpenHandle( handle );
 	}
 
-	bool ScriptEditorPanel::OnKeyPressed( KeyPressedEvent& e )
+	bool ScriptEditorPanel::OnKeyPressed( const KeyPressedEvent& e )
 	{
 		const bool control = Input::IsKeyPressed( EInputKey::LeftControl ) || Input::IsKeyPressed( EInputKey::LeftControl );
 		const bool shift = Input::IsKeyPressed( EInputKey::LeftShift ) || Input::IsKeyPressed( EInputKey::RightShift );
 
-		switch ( e.GetKeyCode() )
+		switch ( e.KeyCode )
 		{
 		case EInputKey::S:
 			if ( control )

@@ -47,8 +47,7 @@ namespace Tridium {
 
 		//================================================================
 		// Event Handling
-		TODO( "Set this up with a proper event system and input handler" );
-		void OnEvent( Event& a_Event );
+		void EnqueueEvent( const Event& a_Event ) { m_EventQueue.emplace( a_Event ); }
 		//================================================================
 
 		//================================================================
@@ -66,21 +65,24 @@ namespace Tridium {
 		const FrameInfo& GetFrameInfo() const { return m_PrevFrameInfo; }
 
 	private:
-		bool              m_Running;
-		CmdLineArgs       m_CommandLineArgs;
-		UniquePtr<Window> m_Window;
-		LayerStack        m_LayerStack;
-		GameViewport      m_GameViewport;
-		FrameInfo         m_PrevFrameInfo;
+		bool              m_Running = false;
+		CmdLineArgs       m_CommandLineArgs{};
+		UniquePtr<Window> m_Window = nullptr;
+		LayerStack        m_LayerStack{};
+		GameViewport      m_GameViewport{};
+		FrameInfo         m_PrevFrameInfo{};
 		uint32_t          m_MaxFPS = 144u;
+		Queue<Event>      m_EventQueue;
 
 	private:
-		bool OnWindowResized( WindowResizeEvent& e );
-		bool OnWindowClosed( WindowCloseEvent& e );
+		bool OnWindowResized( const WindowResizeEvent& a_Event );
+		bool OnWindowClosed( const WindowCloseEvent& a_Event );
 
 		bool Init();
 		void Update();
 		void Shutdown();
+
+		void FlushEventQueue();
 
 		static Application* s_Instance;
 	};

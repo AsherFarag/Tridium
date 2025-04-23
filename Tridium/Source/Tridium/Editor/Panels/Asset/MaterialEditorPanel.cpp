@@ -61,14 +61,14 @@ namespace Tridium {
 		}
 	}
 
-	bool MaterialEditorPanel::OnKeyPressed( KeyPressedEvent& e )
+	bool MaterialEditorPanel::OnKeyPressed( const KeyPressedEvent& e )
 	{
-		if ( e.IsRepeat() )
+		if ( e.IsRepeat )
 			return false;
 
 		bool control = Input::IsKeyPressed( EInputKey::LeftControl );
 
-		switch ( e.GetKeyCode() )
+		switch ( e.KeyCode )
 		{
 			case EInputKey::S:
 			{

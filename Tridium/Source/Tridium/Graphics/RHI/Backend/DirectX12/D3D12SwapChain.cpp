@@ -67,8 +67,6 @@ namespace Tridium {
 
 	bool D3D12SwapChain::ResizeBuffers()
 	{
-		//RHI::FrameFenceWait();
-
 		ReleaseBuffers();
 
 		// Resize the swap chain

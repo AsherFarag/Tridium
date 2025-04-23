@@ -246,6 +246,8 @@ class SandboxGameInstance : public Tridium::GameInstance
 	}
 };
 
+#if 0
+
 template<typename T>
 void PrintTypeName()
 {
@@ -323,38 +325,38 @@ void PrintFieldType( const Field<_ValueType, _MetaAttributes...>& a_Field )
 		std::cout << ", Range{ Min: " << FieldType::template GetMeta<RangeAttribute>().Min << ", Max: " << FieldType::template GetMeta<RangeAttribute>().Max << " }";
 	}
 }
-
+#endif
 void test()
 {
-	MyComponent myComponent{};
-	myComponent.IntField = 33;
-	CustomReflector<MyComponent>{}.PrintFloat( myComponent );
-	std::cout << "Int Value " << myComponent.IntField << std::endl;
-	ForEachField( myComponent,
-		[]( StringView a_Name, const auto& a_Field )
-		{
-			std::cout << "Field: " << a_Name << ", Type: ";
-			PrintFieldType( a_Field );
-			std::cout << std::endl;
-		}
-	);
+	//MyComponent myComponent{};
+	//myComponent.IntField = 33;
+	//CustomReflector<MyComponent>{}.PrintFloat( myComponent );
+	//std::cout << "Int Value " << myComponent.IntField << std::endl;
+	//ForEachField( myComponent,
+	//	[]( StringView a_Name, const auto& a_Field )
+	//	{
+	//		std::cout << "Field: " << a_Name << ", Type: ";
+	//		PrintFieldType( a_Field );
+	//		std::cout << std::endl;
+	//	}
+	//);
 
-	ForEachField( CustomReflector<MyComponent>{},
-		[&]( StringView a_Name, const auto& a_Field )
-		{
-			using FieldType = std::decay_t<decltype(a_Field)>;
-			if constexpr ( IsFunction<FieldType> )
-			{
-				std::cout << "Function: " << a_Name << ", Result: ";
-				a_Field.Invoke( myComponent );
-			}
-			else
-			{
-				std::cout << "Field: " << a_Name;
-			}
-			std::cout << std::endl;
-		}
-	);
+	//ForEachField( CustomReflector<MyComponent>{},
+	//	[&]( StringView a_Name, const auto& a_Field )
+	//	{
+	//		using FieldType = std::decay_t<decltype(a_Field)>;
+	//		if constexpr ( IsFunction<FieldType> )
+	//		{
+	//			std::cout << "Function: " << a_Name << ", Result: ";
+	//			a_Field.Invoke( myComponent );
+	//		}
+	//		else
+	//		{
+	//			std::cout << "Field: " << a_Name;
+	//		}
+	//		std::cout << std::endl;
+	//	}
+	//);
 }
 
 struct Test

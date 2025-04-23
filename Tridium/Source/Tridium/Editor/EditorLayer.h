@@ -66,7 +66,7 @@ namespace Tridium {
 		ESceneState CurrentSceneState = ESceneState::Edit;
 
 	private:
-		bool OnKeyPressed( KeyPressedEvent& e );
+		bool OnKeyPressed( const KeyPressedEvent& e );
 		void DrawMenuBar();
 
 	private:

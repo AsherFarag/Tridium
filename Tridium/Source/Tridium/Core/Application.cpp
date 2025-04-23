@@ -114,7 +114,7 @@ namespace Tridium {
 		props.Width = 1280;
 		props.Height = 720;
 		m_Window = Window::Create( props );
-		m_Window->SetEventCallback( [this]( Event& a_Event ) { this->OnEvent( a_Event ); } );
+		m_Window->SetEventCallback( [this]( const Event& a_Event ) { this->EnqueueEvent( a_Event ); } );
 
 		RHIConfig config;
 		config.RHIType = ERHInterfaceType::DirectX12;
@@ -355,6 +355,7 @@ float4 main( VSOutput input ) : SV_Target
 			psd.VertexShader = vertShader;
 			psd.PixelShader = pixelShader;
 			psd.ColorTargetFormats[0] = ERHIFormat::RGBA8_UNORM;
+			psd.DepthStencilFormat = ERHIFormat::D32_FLOAT;
 			psd.VertexLayout = layout;
 			psd.ShaderBindingLayout = sbl;
 			psd.RasterizerState.CullMode = ERHIRasterizerCullMode::None;
@@ -397,8 +398,7 @@ float4 main( VSOutput input ) : SV_Target
 					//depthTex->Resize( width, height );
 
 					RHIGraphicsCommandBuffer cmdBuffer;
-					cmdBuffer/*.ResourceBarrier( rt.get(), ERHIResourceStates::Present, ERHIResourceStates::RenderTarget )
-						.ResourceBarrier( depthTex.get(), ERHIResourceStates::Present, ERHIResourceStates::DepthStencilWrite )*/
+					cmdBuffer
 						.SetRenderTargets( { &rt, 1}, depthTex.get() )
 						.ClearRenderTargets( ERHIClearFlags::ColorDepth, clearColor );
 
@@ -489,6 +489,8 @@ float4 main( VSOutput input ) : SV_Target
 	{
 		PROFILE_FUNCTION( ProfilerCategory::Application );
 
+		FlushEventQueue();
+
 		// Update Loop ========================================================================================
 
 	#if !IS_EDITOR
@@ -573,32 +575,38 @@ float4 main( VSOutput input ) : SV_Target
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////
-	void Application::OnEvent( Event& a_Event )
+	void Application::FlushEventQueue()
 	{
-		EventDispatcher dispatcher( a_Event );
-		dispatcher.Dispatch<WindowCloseEvent>( TE_BIND_EVENT_FN( Application::OnWindowClosed, 1 ) );
-		dispatcher.Dispatch<WindowResizeEvent>( TE_BIND_EVENT_FN( Application::OnWindowResized, 1 ) );
-	
-		for ( auto it = m_LayerStack.end(); it != m_LayerStack.begin(); )
+		while ( !m_EventQueue.empty() )
 		{
-			if ( a_Event.Handled )
-				break;
+			Event& event = m_EventQueue.front();
 
-			( *--it )->OnEvent( a_Event );
+			EventDispatcher dispatcher( event );
+			dispatcher.Dispatch<WindowCloseEvent>( [this]( const WindowCloseEvent& a_Event ) -> bool { return OnWindowClosed( a_Event ); } );
+			dispatcher.Dispatch<WindowResizeEvent>( [this]( const WindowResizeEvent& a_Event ) -> bool { return OnWindowResized( a_Event ); } );
+			for ( auto it = m_LayerStack.end(); it != m_LayerStack.begin(); )
+			{
+				if ( event.Handled )
+					break;
+
+				(*--it)->OnEvent( event );
+			}
+
+			m_EventQueue.pop();
 		}
 	}
 
-	bool Application::OnWindowResized( WindowResizeEvent& e )
+	bool Application::OnWindowResized( const WindowResizeEvent& a_Event )
 	{
 		if ( !RHI::GetSwapChain() )
 			return false;
 
-		RHI::GetSwapChain()->Resize( e.GetWidth(), e.GetHeight() );
+		RHI::GetSwapChain()->Resize( a_Event.Width, a_Event.Height );
 		return true;
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////
-	bool Application::OnWindowClosed( WindowCloseEvent& e )
+	bool Application::OnWindowClosed( const WindowCloseEvent& a_Event )
 	{
 		m_Running = false;
 		return true;

@@ -320,7 +320,7 @@ namespace Tridium {
 
 	template<auto _Getter>
 		requires std::is_member_object_pointer_v<decltype(_Getter)> || apl::is_member_fn_v<decltype(_Getter)>
-	struct Get
+	struct PropertyGetter
 	{
 		using Getter = decltype(_Getter);
 		static constexpr bool IsMemberObjPointer = std::is_member_object_pointer_v<Getter>;
@@ -380,7 +380,7 @@ namespace Tridium {
 	struct IsGetterTrait : std::false_type {};
 
 	template<auto _Getter>
-	struct IsGetterTrait<_Getter, std::void_t<typename Get<_Getter>::ObjectType>> : std::true_type {};
+	struct IsGetterTrait<_Getter, std::void_t<typename PropertyGetter<_Getter>::ObjectType>> : std::true_type {};
 
 	template<auto _Getter>
 	concept IsGetter = IsGetterTrait<_Getter>::value;
@@ -388,7 +388,7 @@ namespace Tridium {
 
 	template<auto _Setter>
 		requires std::is_member_object_pointer_v<decltype(_Setter)> || apl::is_member_fn_v<decltype(_Setter)>
-	struct Set
+	struct PropertySetter
 	{
 		using Setter = decltype(_Setter);
 		static constexpr bool IsMemberObjPointer = std::is_member_object_pointer_v<Setter>;
@@ -449,12 +449,12 @@ namespace Tridium {
 	struct IsSetterTrait : std::false_type {};
 	template<auto _Setter>
 		requires std::is_member_object_pointer_v<decltype(_Setter)> || apl::is_member_fn_v<decltype(_Setter)>
-	struct IsSetterTrait<Set<_Setter>> : std::true_type {};
+	struct IsSetterTrait<PropertySetter<_Setter>> : std::true_type {};
 	template<auto _Setter>
-	concept IsSetter = IsSetterTrait<Set<_Setter>>::value;
+	concept IsSetter = IsSetterTrait<PropertySetter<_Setter>>::value;
 
 	template<auto _Getter, auto _Setter>
-		requires (std::is_same_v<typename Get<_Getter>::ObjectType, typename Set<_Setter>::ObjectType>)
+		requires (std::is_same_v<typename PropertyGetter<_Getter>::ObjectType, typename PropertySetter<_Setter>::ObjectType>)
 	struct Property : FieldAttribute
 	{
 		using Getter = Get<_Getter>;

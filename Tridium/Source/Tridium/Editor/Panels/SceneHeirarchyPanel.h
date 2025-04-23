@@ -21,7 +21,7 @@ namespace Tridium {
 		void SetSelectedGameObject( GameObject gameObject );
 
 	private:
-		virtual bool OnKeyPressed( KeyPressedEvent& e ) override;
+		virtual bool OnKeyPressed( const KeyPressedEvent& e ) override;
 
 		void DrawSceneHeirarchy();
 		void OpenAddPopUp();

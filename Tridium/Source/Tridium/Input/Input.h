@@ -76,6 +76,7 @@ namespace Tridium {
 		Button6 = 5,
 		Button7 = 6,
 		Button8 = 7,
+        None,
 		Left = Button1,
 		Right = Button2,
 		Middle = Button3
@@ -209,5 +210,149 @@ namespace Tridium {
         Menu = 348
     };
 
+	// Converts an EInputMouseButton to a string
+	constexpr StringView ToString( EInputMouseButton a_Button )
+	{
+		switch ( a_Button )
+		{
+		case EInputMouseButton::Left:    return "Left";
+		case EInputMouseButton::Right:   return "Right";
+		case EInputMouseButton::Middle:  return "Middle";
+		case EInputMouseButton::Button4: return "Button4";
+		case EInputMouseButton::Button5: return "Button5";
+		case EInputMouseButton::Button6: return "Button6";
+		case EInputMouseButton::Button7: return "Button7";
+		case EInputMouseButton::Button8: return "Button8";
+		default:                         return "Unknown";
+		}
+	}
 
+	// Converts an EInputKey to a string
+	constexpr StringView ToString( EInputKey a_Key )
+	{
+		switch ( a_Key )
+		{
+		case EInputKey::Space: return "Space";
+		case EInputKey::Apostrophe: return "Apostrophe";
+		case EInputKey::Comma: return "Comma";
+		case EInputKey::Minus: return "Minus";
+		case EInputKey::Period: return "Period";
+		case EInputKey::Slash: return "Slash";
+		case EInputKey::Zero: return "0";
+		case EInputKey::One: return "1";
+		case EInputKey::Two: return "2";
+		case EInputKey::Three: return "3";
+		case EInputKey::Four: return "4";
+		case EInputKey::Five: return "5";
+		case EInputKey::Six: return "6";
+		case EInputKey::Seven: return "7";
+		case EInputKey::Eight: return "8";
+		case EInputKey::Nine: return "9";
+		case EInputKey::Semicolon: return "Semicolon";
+		case EInputKey::Equal: return "Equal";
+		case EInputKey::A: return "A";
+		case EInputKey::B: return "B";
+		case EInputKey::C: return "C";
+		case EInputKey::D: return "D";
+		case EInputKey::E: return "E";
+		case EInputKey::F: return "F";
+		case EInputKey::G: return "G";
+		case EInputKey::H: return "H";
+		case EInputKey::I: return "I";
+		case EInputKey::J: return "J";
+		case EInputKey::K: return "K";
+		case EInputKey::L: return "L";
+		case EInputKey::M: return "M";
+		case EInputKey::N: return "N";
+		case EInputKey::O: return "O";
+		case EInputKey::P: return "P";
+		case EInputKey::Q: return "Q";
+		case EInputKey::R: return "R";
+		case EInputKey::S: return "S";
+		case EInputKey::T: return "T";
+		case EInputKey::U: return "U";
+		case EInputKey::V: return "V";
+		case EInputKey::W: return "W";
+		case EInputKey::X: return "X";
+		case EInputKey::Y: return "Y";
+		case EInputKey::Z: return "Z";
+		case EInputKey::LeftBracket:      return "LeftBracket";
+		case EInputKey::Backslash:        return "Backslash";
+		case EInputKey::RightBracket:     return "RightBracket";
+		case EInputKey::GraveAccent:      return "GraveAccent";
+		case EInputKey::World1:           return "World1";
+		case EInputKey::World2:           return "World2";
+		case EInputKey::Escape:           return "Escape";
+		case EInputKey::Enter:            return "Enter";
+		case EInputKey::Tab:              return "Tab";
+		case EInputKey::Backspace:        return "Backspace";
+		case EInputKey::Insert:           return "Insert";
+		case EInputKey::Delete:           return "Delete";
+		case EInputKey::Right:            return "Right";
+		case EInputKey::Left:             return "Left";
+		case EInputKey::Down:             return "Down";
+		case EInputKey::Up:               return "Up";
+		case EInputKey::PageUp:           return "PageUp";
+		case EInputKey::PageDown:         return "PageDown";
+		case EInputKey::Home:             return "Home";
+		case EInputKey::End:              return "End";
+		case EInputKey::CapsLock:         return "CapsLock";
+		case EInputKey::ScrollLock:       return "ScrollLock";
+		case EInputKey::NumLock:          return "NumLock";
+		case EInputKey::PrintScreen:      return "PrintScreen";
+		case EInputKey::Pause:            return "Pause";
+		case EInputKey::F1:               return "F1";
+		case EInputKey::F2:               return "F2";
+		case EInputKey::F3:               return "F3";
+		case EInputKey::F4:               return "F4";
+		case EInputKey::F5:               return "F5";
+		case EInputKey::F6:               return "F6";
+		case EInputKey::F7:               return "F7";
+		case EInputKey::F8:               return "F8";
+		case EInputKey::F9:               return "F9";
+		case EInputKey::F10:              return "F10";
+		case EInputKey::F11:              return "F11";
+		case EInputKey::F12:              return "F12";
+		case EInputKey::F13:              return "F13";
+		case EInputKey::F14:              return "F14";
+		case EInputKey::F15:              return "F15";
+		case EInputKey::F16:              return "F16";
+		case EInputKey::F17:              return "F17";
+		case EInputKey::F18:              return "F18";
+		case EInputKey::F19:              return "F19";
+		case EInputKey::F20:              return "F20";
+		case EInputKey::F21:              return "F21";
+		case EInputKey::F22:              return "F22";
+		case EInputKey::F23:              return "F23";
+		case EInputKey::F24:              return "F24";
+		case EInputKey::F25:              return "F25";
+		case EInputKey::KeyPad0:          return "KeyPad0";
+		case EInputKey::KeyPad1:          return "KeyPad1";
+		case EInputKey::KeyPad2:          return "KeyPad2";
+		case EInputKey::KeyPad3:          return "KeyPad3";
+		case EInputKey::KeyPad4:          return "KeyPad4";
+		case EInputKey::KeyPad5:          return "KeyPad5";
+		case EInputKey::KeyPad6:          return "KeyPad6";
+		case EInputKey::KeyPad7:          return "KeyPad7";
+		case EInputKey::KeyPad8:          return "KeyPad8";
+		case EInputKey::KeyPad9:          return "KeyPad9";
+		case EInputKey::KeyPadDecimal:    return "KeyPadDecimal";
+		case EInputKey::KeyPadDivide:     return "KeyPadDivide";
+		case EInputKey::KeyPadMultiply:   return "KeyPadMultiply";
+		case EInputKey::KeyPadSubtract:   return "KeyPadSubtract";
+		case EInputKey::KeyPadAdd:        return "KeyPadAdd";
+		case EInputKey::KeyPadEnter:      return "KeyPadEnter";
+		case EInputKey::KeyPadEqual:      return "KeyPadEqual";
+		case EInputKey::LeftShift:        return "LeftShift";
+		case EInputKey::LeftControl:      return "LeftControl";
+		case EInputKey::LeftAlt:          return "LeftAlt";
+		case EInputKey::LeftSuper:        return "LeftSuper";
+		case EInputKey::RightShift:       return "RightShift";
+		case EInputKey::RightControl:     return "RightControl";
+		case EInputKey::RightAlt:         return "RightAlt";
+		case EInputKey::RightSuper:       return "RightSuper";
+		case EInputKey::Menu:             return "Menu";
+		default: return "Unknown";
+		}
+	}
 }

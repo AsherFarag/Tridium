@@ -37,16 +37,16 @@ namespace Tridium {
 	}
 
 
-	bool SceneHeirarchyPanel::OnKeyPressed( KeyPressedEvent& e )
+	bool SceneHeirarchyPanel::OnKeyPressed( const KeyPressedEvent& e )
 	{
-		if ( e.IsRepeat() )
+		if ( e.IsRepeat )
 			return false;
 
 		bool shift = Input::IsKeyPressed( EInputKey::LeftShift );
 		bool control = Input::IsKeyPressed( EInputKey::LeftControl );
 		bool alt = Input::IsKeyPressed( EInputKey::LeftAlt );
 
-		switch ( e.GetKeyCode() )
+		switch ( e.KeyCode )
 		{
 		case EInputKey::Delete:
 		{

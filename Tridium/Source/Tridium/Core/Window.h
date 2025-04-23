@@ -27,7 +27,7 @@ namespace Tridium {
 	class Window
 	{
 	public:
-		using EventCallbackFn = std::function<void( Event& )>;
+		using EventCallbackFn = std::function<void( const Event& )>;
 
 		virtual ~Window() = default;
 
