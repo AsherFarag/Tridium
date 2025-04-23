@@ -1,6 +1,6 @@
 #pragma once
 #include <Tridium/Core/Layer.h>
-#include <Tridium/Events/Eventsfwd.h>
+#include <Tridium/Events/Event.h>
 #include "IconsFontAwesome6.h"
 
 enum ImGuiKey;

@@ -67,6 +67,10 @@ namespace Tridium {
 
 	bool D3D12SwapChain::ResizeBuffers()
 	{
+		// Wait for the GPU to finish
+		auto& cmdCtx = GetD3D12RHI()->GetCommandContext( ERHICommandQueueType::Graphics );
+		cmdCtx.Wait( cmdCtx.Signal() );
+
 		ReleaseBuffers();
 
 		// Resize the swap chain
@@ -102,8 +106,8 @@ namespace Tridium {
 		const auto rtvDesc =
 			RHITextureDescriptor{}
 			.SetFormat( Descriptor().Format )
-			.SetWidth( Descriptor().Width )
-			.SetHeight( Descriptor().Height )
+			.SetWidth( m_Width )
+			.SetHeight( m_Height )
 			.SetDimension( ERHITextureDimension::Texture2D )
 			.SetBindFlags( ERHIBindFlags::RenderTarget | ERHIBindFlags::ShaderResource );
 

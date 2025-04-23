@@ -445,6 +445,13 @@ namespace Tridium {
 
 	void D3D12CommandList::UpdateTexture( const RHICommand::UpdateTexture& a_Cmd )
 	{
+		TODO( "Handle different texture sizes" );
+		if ( a_Cmd.Data.Data.empty() )
+		{
+			RHI_DEV_CHECK( false, "No data provided for texture update!" );
+			return;
+		}
+
 		// Transition or validate resource state
 		if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Transition )
 		{
@@ -458,7 +465,7 @@ namespace Tridium {
 		CommitBarriers();
 
 		// Create an upload buffer
-		auto& uploadBuffer = m_State.D3D12Resources.EmplaceBack();
+		D3D12::ManagedResource& uploadBuffer = m_State.D3D12Resources.EmplaceBack();
 		D3D12MA::ALLOCATION_DESC allocDesc = {};
 		allocDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
 
@@ -497,11 +504,28 @@ namespace Tridium {
 			return;
 
 		// Copy data to upload buffer
-		char* uploadBufferAddress = nullptr;
-		D3D12_RANGE mapRange = { 0, static_cast<SIZE_T>( requiredSize ) };
-		uploadBuffer.Resource->Map( 0, &mapRange, reinterpret_cast<void**>( &uploadBufferAddress ) );
-		std::memcpy( uploadBufferAddress, a_Cmd.Data.Data.data(), a_Cmd.Data.Data.size() );
-		uploadBuffer.Resource->Unmap( 0, nullptr );
+		{
+			char* uploadBufferAddress = nullptr;
+			D3D12_RANGE mapRange = { 0, static_cast<SIZE_T>(requiredSize) };
+			uploadBuffer.Resource->Map( 0, &mapRange, reinterpret_cast<void**>(&uploadBufferAddress) );
+
+			const uint8_t* srcData = a_Cmd.Data.Data.data();
+			uint8_t* dstData = reinterpret_cast<uint8_t*>(uploadBufferAddress);
+			// We copy row by row, slice by slice here because the GPU layout may be different from the CPU layout
+			for ( uint32_t z = 0; z < footprint.Footprint.Depth; ++z )
+			{
+				for ( uint32_t y = 0; y < numRows; ++y )
+				{
+					std::memcpy(
+						dstData + z * footprint.Footprint.RowPitch * numRows + y * footprint.Footprint.RowPitch,
+						srcData + z * a_Cmd.Data.DepthStride + y * a_Cmd.Data.RowStride,
+						std::min<size_t>( a_Cmd.Data.RowStride, footprint.Footprint.RowPitch )
+					);
+				}
+			}
+
+			uploadBuffer.Resource->Unmap( 0, nullptr );
+		}
 
 		// Setup copy locations
 		D3D12_TEXTURE_COPY_LOCATION dstLocation = {};
@@ -547,28 +571,18 @@ namespace Tridium {
 			RHI_DEV_CHECK( a_Cmd.DstTexture->GetState() == ERHIResourceStates::CopyDest, "Destination texture state is not CopyDest!" );
 		}
 
-		D3D12_TEXTURE_COPY_LOCATION dstLocation = {};
-		dstLocation.pResource = a_Cmd.DstTexture->As<D3D12Texture>()->Texture.Resource.Get();
-		dstLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-		dstLocation.SubresourceIndex = D3D12CalcSubresource( 
-			a_Cmd.DstRegion.MinZ, a_Cmd.DstRegion.MinY, a_Cmd.DstRegion.MinX,
-			a_Cmd.DstTexture->Descriptor().Mips, a_Cmd.DstTexture->Descriptor().Depth);
-
-		D3D12_TEXTURE_COPY_LOCATION srcLocation = {};
-		srcLocation.pResource = a_Cmd.SrcTexture->As<D3D12Texture>()->Texture.Resource.Get();
-		srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-		srcLocation.SubresourceIndex = D3D12CalcSubresource( 
-			a_Cmd.SrcRegion.MinZ, a_Cmd.SrcRegion.MinY, a_Cmd.SrcRegion.MinX,
-			a_Cmd.SrcTexture->Descriptor().Mips, a_Cmd.SrcTexture->Descriptor().Depth );
-
-		GraphicsCommandList()->CopyTextureRegion(
-			&dstLocation,
-			a_Cmd.DstRegion.MinX,
-			a_Cmd.DstRegion.MinY,
-			a_Cmd.DstRegion.MinZ,
-			&srcLocation,
-			nullptr // use full source footprint
+		const bool success = a_Cmd.DstTexture->As<D3D12Texture>()->CopyTexture(
+			*GraphicsCommandList(),
+			*a_Cmd.SrcTexture->As<D3D12Texture>(),
+			a_Cmd.SrcMipLevel,
+			a_Cmd.SrcArraySlice,
+			a_Cmd.SrcRegion,
+			a_Cmd.DstMipLevel,
+			a_Cmd.DstArraySlice,
+			a_Cmd.DstRegion
 		);
+
+		ASSERT_LOG( success, "Failed to copy texture {0} to {1}!", a_Cmd.SrcTexture->Descriptor().Name, a_Cmd.DstTexture->Descriptor().Name );
 	}
 
 	void D3D12CommandList::SetGraphicsPipelineState( const RHICommand::SetGraphicsPipelineState& a_Cmd )

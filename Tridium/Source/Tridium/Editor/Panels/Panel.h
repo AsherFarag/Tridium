@@ -2,7 +2,7 @@
 
 #if IS_EDITOR
 #include <Tridium/ImGui/ImGui.h>
-#include <Tridium/Events/Eventsfwd.h>
+#include <Tridium/Events/Event.h>
 
 namespace Tridium {
 

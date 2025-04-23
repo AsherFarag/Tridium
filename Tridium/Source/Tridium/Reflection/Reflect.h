@@ -673,7 +673,7 @@ namespace Tridium {
 			}
 
 		private:
-			ObjectType* m_Object = nullptr;
+			ObjectType* const m_Object = nullptr;
 			ValueType m_Value;
 		};
 	}

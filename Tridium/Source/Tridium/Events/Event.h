@@ -235,27 +235,27 @@ namespace Tridium {
 
 		EEventType Type() const
 		{
-			return std::visit( []( const auto& event ) { return event.Type; }, Data );
+			return std::visit( []( const auto& a_Event ) { return a_Event.Type; }, Data );
 		}
 
 		StringView Name() const
 		{
-			return std::visit( []( const auto& event ) { return event.Name; }, Data );
+			return std::visit( []( const auto& a_Event ) { return a_Event.Name; }, Data );
 		}
 
 		EEventCategory Category() const
 		{
-			return std::visit( []( const auto& event ) { return event.Category; }, Data );
+			return std::visit( []( const auto& a_Event ) { return a_Event.Category; }, Data );
 		}
 
 		String ToString() const
 		{
-			return std::visit( []( const auto& event ) { return event.ToString(); }, Data );
+			return std::visit( []( const auto& a_Event ) { return a_Event.ToString(); }, Data );
 		}
 
-		bool IsInCategory( EEventCategory category ) const
+		bool IsInCategory( EEventCategory a_Category ) const
 		{
-			return EnumFlags( Category() ).HasFlag( category );
+			return EnumFlags( Category() ).HasFlag( a_Category );
 		}
 
 		template<IsEventType T>

@@ -1,6 +1,7 @@
 #pragma once
 
 // - Common Includes -
+#include <Tridium/Core/Cast.h>
 #include <Tridium/Core/Config.h>
 #include <Tridium/Core/Types.h>
 #include <Tridium/Core/Hash.h>

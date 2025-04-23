@@ -335,4 +335,56 @@ namespace Tridium {
 
 #endif
 
+	bool D3D12Texture::CopyTexture(
+		ID3D12GraphicsCommandList& a_CmdList, D3D12Texture& a_SrcTexture,
+		uint32_t a_SrcMipLevel, uint32_t a_SrcArraySlice, Box a_SrcRegion,
+		uint32_t a_DstMipLevel, uint32_t a_DstArraySlice, Box a_DstRegion )
+	{
+		D3D12_TEXTURE_COPY_LOCATION dstLocation = {};
+		dstLocation.pResource = this->Texture.Resource.Get();
+		dstLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+		dstLocation.SubresourceIndex = D3D12CalcSubresource(
+			a_DstRegion.MinZ, a_DstRegion.MinY, a_DstRegion.MinX,
+			m_Desc.Mips, m_Desc.Depth
+		);
+
+		D3D12_TEXTURE_COPY_LOCATION srcLocation = {};
+		srcLocation.pResource = a_SrcTexture.Texture.Resource.Get();
+		srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+		srcLocation.SubresourceIndex = D3D12CalcSubresource(
+			a_SrcRegion.MinZ, a_SrcRegion.MinY, a_SrcRegion.MinX,
+			a_SrcTexture.Descriptor().Mips, a_SrcTexture.Descriptor().Depth 
+		);
+
+		// Valid if the regions are valid and can fit in their respective textures
+		if ( a_SrcRegion.MinX < 0 || a_SrcRegion.MinY < 0 || a_SrcRegion.MinZ < 0 ||
+			a_SrcRegion.MaxX > a_SrcTexture.Descriptor().Width ||
+			a_SrcRegion.MaxY > a_SrcTexture.Descriptor().Height ||
+			a_SrcRegion.MaxZ > a_SrcTexture.Descriptor().Depth )
+		{
+			RHI_DEV_CHECK( false, "Source region is invalid!" );
+			return false;
+		}
+
+		if ( a_DstRegion.MinX < 0 || a_DstRegion.MinY < 0 || a_DstRegion.MinZ < 0 ||
+			a_DstRegion.MaxX > m_Desc.Width ||
+			a_DstRegion.MaxY > m_Desc.Height ||
+			a_DstRegion.MaxZ > m_Desc.Depth )
+		{
+			RHI_DEV_CHECK( false, "Destination region is invalid!" );
+			return false;
+		}
+
+		a_CmdList.CopyTextureRegion(
+			&dstLocation,
+			a_DstRegion.MinX,
+			a_DstRegion.MinY,
+			a_DstRegion.MinZ,
+			&srcLocation,
+			nullptr // use full source footprint
+		);
+
+		return true;
+	}
+
 } // namespace Tridium::D3D12

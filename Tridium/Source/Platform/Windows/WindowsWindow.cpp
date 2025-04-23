@@ -1,9 +1,7 @@
 #include "tripch.h"
 #include "WindowsWindow.h"
 
-#include <Tridium/Events/KeyEvent.h>
-#include <Tridium/Events/ApplicationEvent.h>
-#include <Tridium/Events/MouseEvent.h>
+#include <Tridium/Events/Event.h>
 
 #include <Platform/OpenGL/OpenGLContext.h>
 
@@ -58,6 +56,12 @@ namespace Tridium {
 	void WindowsWindow::OnUpdate()
 	{
 		glfwPollEvents();
+
+		TODO( "Remove this once we are using the RHI" );
+		if ( true )
+		{
+			glfwSwapBuffers( m_Window );
+		}
 	}
 
 	bool WindowsWindow::IsMinimized() const

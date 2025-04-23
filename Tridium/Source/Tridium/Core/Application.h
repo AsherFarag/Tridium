@@ -3,8 +3,7 @@
 #include <Tridium/Core/Window.h>
 #include <Tridium/Core/LayerStack.h>
 #include <Tridium/Core/CommandLine.h>
-
-#include <Tridium/Events/ApplicationEvent.h>
+#include <Tridium/Events/Event.h>
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Graphics/Rendering/GameViewport.h>
 

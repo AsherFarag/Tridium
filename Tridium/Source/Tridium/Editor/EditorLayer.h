@@ -3,7 +3,7 @@
 
 #include <Tridium/Core/Layer.h>
 #include <Tridium/Graphics/Rendering/Texture.h>
-#include <Tridium/Events/Eventsfwd.h>
+#include <Tridium/Events/Event.h>
 
 #include "Panels/Panel.h"
 

@@ -117,13 +117,13 @@ namespace Tridium {
 		m_Window->SetEventCallback( [this]( const Event& a_Event ) { this->EnqueueEvent( a_Event ); } );
 
 		RHIConfig config;
-		config.RHIType = ERHInterfaceType::DirectX12;
-		config.UseDebug = true;
+		config.RHIType = ERHInterfaceType::OpenGL;
+		config.UseDebug = false;
 		bool initSuccess = RHI::Initialise( config );
 		LOG( LogCategory::RHI, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), initSuccess );
 
 		// TEMP!
-#if 1
+#if 0
 		{
 			uint8_t testImgData[64 * 64 * 4];
 			//for ( size_t y = 0; y < 64; y++ )
@@ -382,22 +382,33 @@ float4 main( VSOutput input ) : SV_Target
 			int f{};
 			while ( true )
 			{
-#if 1
+#if 0
 				++f;
 				m_Window->OnUpdate();
+				FlushEventQueue();
 				time = glfwGetTime();
 				{
 					RHITextureRef rt = RHI::GetSwapChain()->GetBackBuffer();
 
 					// Resize the depth buffer to match the swap chain
-					const uint32_t width = RHI::GetSwapChain()->GetWidth();
-					const uint32_t height = RHI::GetSwapChain()->GetHeight();
+					const auto rtDesc = rt->Descriptor();
+					const uint32_t width = rtDesc.Width;
+					const uint32_t height = rtDesc.Height;
 					if ( width == 0 || height == 0 )
 						continue;
-
-					//depthTex->Resize( width, height );
-
 					RHIGraphicsCommandBuffer cmdBuffer;
+
+					const auto& depthDesc = depthTex->Descriptor();
+					if ( width != depthDesc.Width || height != depthDesc.Height )
+					{
+						// Create new depth texture
+						RHITextureDescriptor newDepthDesc = depthDesc;
+						newDepthDesc.Width = width;
+						newDepthDesc.Height = height;
+
+						depthTex = RHI::CreateTexture( newDepthDesc );
+					}
+
 					cmdBuffer
 						.SetRenderTargets( { &rt, 1}, depthTex.get() )
 						.ClearRenderTargets( ERHIClearFlags::ColorDepth, clearColor );
