@@ -118,6 +118,13 @@ namespace Tridium {
 	concept IsFieldAttribute = std::is_base_of_v<FieldAttribute, T> || std::is_same_v<T, FieldAttribute>;
 
 
+
+	// Forward declare the Property class
+	template<typename T>
+	struct PropertyAttribute : std::false_type {};
+
+
+
 	namespace Detail {
 
 		template<typename _ValueType, typename _PropertyType>
@@ -172,11 +179,14 @@ namespace Tridium {
 		private:
 			ValueType m_Value;
 		};
-	}
 
-	// Forward declare the Property class
-	template<typename T>
-	struct PropertyAttribute : std::false_type {};
+		template<typename _ValueType, IsFieldAttribute... _FieldAttributes>
+		using GetPropertyWrapper = 
+			std::conditional_t<HasTrait<PropertyAttribute, _FieldAttributes...>::Value,
+				PropertyWrapper<_ValueType, typename GetTrait<PropertyAttribute, _FieldAttributes...>::AttributeType>,
+				PropertyWrapper<_ValueType, Dummy>
+			>;
+	}
 
 	//=====================================================
 	// Field
@@ -186,12 +196,7 @@ namespace Tridium {
 	//  - _FieldAttributes: A variadic template parameter that allows for multiple meta attributes to be passed in.
 	template<typename _ValueType, IsFieldAttribute... _FieldAttributes>
 	struct Field :
-		// If the field has a PropertyAttribute, we need to wrap the value type in a PropertyWrapper.
-		std::conditional_t< 
-			Detail::HasTrait<PropertyAttribute, _FieldAttributes...>::Value,
-			Detail::PropertyWrapper<_ValueType, typename Detail::GetTrait<PropertyAttribute, _FieldAttributes...>::AttributeType>,
-			Detail::PropertyWrapper<_ValueType, Detail::Dummy>
-		>,
+		Detail::GetPropertyWrapper<_ValueType, _FieldAttributes...>,
 		MetaProperty<_FieldAttributes...>
 	{
 	private:
@@ -526,7 +531,29 @@ namespace Tridium {
 		  std::conditional_t<apl::is_member_fn_v<decltype(_Function)>,
 				Detail::MemberFunction<_Function>,
 				Detail::StaticFunction<_Function>>
-	{};
+	{
+		static constexpr bool IsMemberFn = apl::is_member_fn_v<decltype(_Function)>;
+		static constexpr bool IsStaticFn = apl::is_static_fn_v<decltype(_Function)>;
+
+		auto operator()( typename Detail::MemberFunction<_Function>::ObjectParamType a_Object, auto&&... a_Args ) const
+			requires IsMemberFn
+		{
+			return Detail::MemberFunction<_Function>::Invoke( a_Object, std::forward<decltype(a_Args)>( a_Args )... );
+		}
+	};
+
+
+
+	template<typename T>
+	struct IsFunction_Trait : std::false_type {};
+	template<auto _Function, IsFunctionAttribute... _FunctionAttributes>
+		requires (apl::is_member_fn_v<decltype(_Function)> || apl::is_static_fn_v<decltype(_Function)>)
+	struct IsFunction_Trait<Function<_Function, _FunctionAttributes...>> : std::true_type {};
+	//=====================================================
+	// Is Function
+	//  A useful concept for checking if 'T' is a Function type.
+	template<typename T>
+	concept IsFunction = IsFunction_Trait<T>::value;
 
 
 

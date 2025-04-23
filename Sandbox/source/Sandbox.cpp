@@ -328,7 +328,7 @@ void test()
 {
 	MyComponent myComponent{};
 	myComponent.IntField = 33;
-	CustomReflector<MyComponent>{}.PrintFloat.Invoke( myComponent );
+	CustomReflector<MyComponent>{}.PrintFloat( myComponent );
 	std::cout << "Int Value " << myComponent.IntField << std::endl;
 	ForEachField( myComponent,
 		[]( StringView a_Name, const auto& a_Field )
@@ -340,10 +340,19 @@ void test()
 	);
 
 	ForEachField( CustomReflector<MyComponent>{},
-		[]( StringView a_Name, const auto& a_Field )
+		[&]( StringView a_Name, const auto& a_Field )
 		{
 			using FieldType = std::decay_t<decltype(a_Field)>;
-			if constexpr ( IsFunc )
+			if constexpr ( IsFunction<FieldType> )
+			{
+				std::cout << "Function: " << a_Name << ", Result: ";
+				a_Field.Invoke( myComponent );
+			}
+			else
+			{
+				std::cout << "Field: " << a_Name;
+			}
+			std::cout << std::endl;
 		}
 	);
 }
