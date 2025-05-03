@@ -1,0 +1,4 @@
+// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+// such as names of functions and macros.
+// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+#define REFLECT_TEST(_Type) private: static inline const ::Tridium::Detail::Reflect<_Type> __InternalReflector{}; using enum ::Tridium::Meta::Detail::EPropertyAccess; template<auto _Getter, auto _Setter> using Property = ::Tridium::Property<_Type, _Getter, _Setter>; public:

@@ -12,6 +12,8 @@
 
 #include <Tridium/Reflection/FieldReflection.h>
 
+#include <Tridium/Common/Invoker.h>
+
 using namespace Tridium;
 
 class ShooterPlayerComponent : public NativeScriptComponent
@@ -239,138 +241,209 @@ BEGIN_REFLECT_COMPONENT( EnemyAIComponent )
 	PROPERTY( m_MaxSpeed, Serialize | EditAnywhere )
 END_REFLECT( EnemyAIComponent )
 
-class SandboxGameInstance : public Tridium::GameInstance
-{
-	virtual void Init() override
-	{
-	}
-};
 
-#if 0
 
-template<typename T>
-void PrintTypeName()
-{
-	std::cout << "Unknown, " << std::endl;
-}
 
-template<>
-void PrintTypeName<int>()
-{
-	std::cout << "int, " << std::endl;
-}
 
-template<>
-void PrintTypeName<float>()
-{
-	std::cout << "float, " << std::endl;
-}
 
-template<>
-void PrintTypeName<bool>()
-{
-	std::cout << "bool, " << std::endl;
-}
 
 #include <Tridium/Reflection/FieldReflection.h>
 #include <Tridium/Reflection/Reflect.h>
 
+struct ScopedImGuiDisable
+{
+	ScopedImGuiDisable( bool a_Enabled )
+		: Enabled( a_Enabled )
+	{
+		if ( Enabled )
+			ImGui::BeginDisabled( true );
+	}
+
+	~ScopedImGuiDisable()
+	{
+		if ( Enabled )
+			ImGui::EndDisabled();
+	}
+
+	bool Enabled;
+};
+
+class SandboxLayer : public Layer
+{
+public:
+	SandboxLayer()
+		: Layer( "SandboxLayer" )
+	{
+	}
+
+	//virtual void OnImGuiDraw() override
+	//{
+	//	if ( ImGui::Begin( "Compile Time Reflection Test" ) )
+	//	{
+	//		ForEachField( Component,
+	//			[]( StringView a_Name, auto& a_Field )
+	//			{
+	//				using FieldType = std::decay_t<decltype(a_Field)>;
+
+	//				// Only draw the field if it is of type Field<>
+	//				// and if it has EditAnywhere & VisibleAnywhere attributes
+	//				if constexpr ( IsField<FieldType> && ( FieldType::template HasMeta<EditAnywhereAttribute>() || FieldType::template HasMeta<VisibleAnywhereAttribute>() ) ) 
+	//				{
+	//					// Create a temp string as ImGui requires a null-terminated string
+	//					const String name( a_Name.data(), a_Name.size() );
+
+	//					// Will make the fields read-only if the field has the VisibleAnywhereAttribute.
+	//					// Will be reverted when this scope is destroyed.
+	//					ScopedImGuiDisable scopedDisable( FieldType::template HasMeta<VisibleAnywhereAttribute>() );
+
+	//					// Get the type of value stored in the field
+	//					using ValueType = typename FieldType::ValueType;
+
+	//					// If the value type is int
+	//					if constexpr ( std::is_same_v<ValueType, int> )
+	//					{
+	//						int& value = a_Field.Get();
+	//						// If the field has a range attribute, use a slider
+	//						if constexpr ( FieldType::template HasMeta<RangeAttribute>() )
+	//						{
+	//							// Get the range attribute
+	//							constexpr auto range = FieldType::template GetMeta<RangeAttribute>();
+	//							ImGui::SliderInt( name.c_str(), &value, range.Min, range.Max );
+	//						}
+	//						else
+	//						{
+	//							ImGui::InputInt( name.c_str(), &value );
+	//						}
+	//					}
+	//					// Else if the value type is float
+	//					else if constexpr ( std::is_same_v<ValueType, float> )
+	//					{
+	//						float& value = a_Field.Get();
+	//						// If the field has a range attribute, use a slider
+	//						if constexpr ( FieldType::template HasMeta<RangeAttribute>() )
+	//						{
+	//							// Get the range attribute
+	//							constexpr auto range = FieldType::template GetMeta<RangeAttribute>();
+	//							ImGui::SliderFloat( name.c_str(), &value, range.Min, range.Max );
+	//						}
+	//						else
+	//						{
+	//							ImGui::InputFloat( name.c_str(), &value );
+	//						}
+	//					}
+	//					// Else if the value type is bool
+	//					else if constexpr ( std::is_same_v<ValueType, bool> )
+	//					{
+	//						bool& value = a_Field.Get();
+	//						ImGui::Checkbox( name.c_str(), &value );
+	//					}
+	//				}
+	//			}
+	//		);
+	//	}
+	//	ImGui::End();
+	//}
+
+	//MyComponent Component;
+};
+
+
+
+
+class SandboxGameInstance : public Tridium::GameInstance
+{
+	virtual void Init() override
+	{
+		Application::Get()->PushLayer( new SandboxLayer() );
+	}
+};
+
+
+
 struct MyComponent
 {
 	REFLECT_TEST( MyComponent );
-	int& GetInt()
+
+	int& GetIntField()
 	{
-		std::cout << "\n GetInt was called " << std::format( "Value: {}", IntField.GetInternalValue() ) << std::endl;
-		return IntField.GetInternalValue();
-	}
-	void SetInt( int a_Value )
-	{
-		std::cout << "\n SetInt was called " << std::format( "Old Value: {}, New Value: {}", IntField.GetInternalValue(), a_Value ) << std::endl;
-		IntField.GetInternalValue() = a_Value;
-	}
-	void PrintFloat()
-	{
-		std::cout << "Float: " << FloatField.GetInternalValue() << std::endl;
+		std::cout << "GetIntField was Called: " << IntField.Value << std::endl;
+		return IntField.Value;
 	}
 
-	Field<int, EditAnywhere, Range<0.1f, 10.015f>, Property<&GetInt, &SetInt>>
-		IntField{ this, 10 };
-	Field<float, Range<0.1f, 10.0f>>
-		FloatField{ 5.0f };
-	Field<bool, EditAnywhere>
-		BoolField;
+	void SetIntField( int a_Value )
+	{
+		std::cout << "SetIntField was Called: " 
+			<< std::format( "Old - {}, New - {}", IntField.Value, a_Value ) << std::endl;
+		IntField.Value = a_Value;
+	}
+
+	// Int Field with Custom Get/Set like in C#
+	Field<int, Property<&GetIntField, &SetIntField>>
+		IntField{ this, 0 };
+
+	String GetStringField()
+	{
+		return std::format( "{}", IntField.Value );
+	}
+
+	static String StaticGetStringField()
+	{
+		return std::format( "Static" );
+	}
 };
-
-template<>
-struct CustomReflector<MyComponent>
+	
+void Test()
 {
-	Field<int, EditAnywhere, Range<0.1f, 10.0f>> IntField;
-	Function<&MyComponent::PrintFloat> PrintFloat;
-};
+	MyComponent myComponent{};
 
-template<typename T>
-void PrintTypeName( const T& a_Value )
-{
-	using ValueType = std::decay_t<decltype(a_Value)>;
-	std::cout << GetTypeName<ValueType>();
+	// Set Int Called
+	myComponent.IntField = 5;
+
+	// Get Int Called
+	int value = myComponent.IntField;
+
+	//  Get Int Called then Set Int Called
+	myComponent.IntField = myComponent.IntField * 2;
+
+	// Set Int Called
+	myComponent.IntField = value * 10;
 }
 
-template<typename _ValueType, IsFieldAttribute... _MetaAttributes>
-void PrintFieldType( const Field<_ValueType, _MetaAttributes...>& a_Field )
+struct TestInit
 {
-	using FieldType = std::decay_t<decltype(a_Field)>;
-	std::cout << GetTypeName<typename FieldType::ValueType>();
-	if constexpr ( FieldType::template HasMeta<RangeAttribute>() )
+	TestInit()
 	{
-		std::cout << ", Range{ Min: " << FieldType::template GetMeta<RangeAttribute>().Min << ", Max: " << FieldType::template GetMeta<RangeAttribute>().Max << " }";
-	}
-}
-#endif
-void test()
-{
-	//MyComponent myComponent{};
-	//myComponent.IntField = 33;
-	//CustomReflector<MyComponent>{}.PrintFloat( myComponent );
-	//std::cout << "Int Value " << myComponent.IntField << std::endl;
-	//ForEachField( myComponent,
-	//	[]( StringView a_Name, const auto& a_Field )
-	//	{
-	//		std::cout << "Field: " << a_Name << ", Type: ";
-	//		PrintFieldType( a_Field );
-	//		std::cout << std::endl;
-	//	}
-	//);
+		MyComponent myComponent{};
+		myComponent.IntField = 10;
 
-	//ForEachField( CustomReflector<MyComponent>{},
-	//	[&]( StringView a_Name, const auto& a_Field )
-	//	{
-	//		using FieldType = std::decay_t<decltype(a_Field)>;
-	//		if constexpr ( IsFunction<FieldType> )
-	//		{
-	//			std::cout << "Function: " << a_Name << ", Result: ";
-	//			a_Field.Invoke( myComponent );
-	//		}
-	//		else
-	//		{
-	//			std::cout << "Field: " << a_Name;
-	//		}
-	//		std::cout << std::endl;
-	//	}
-	//);
-}
+		Invoker<String()> invoker;
+		invoker.Bind<&MyComponent::GetStringField>( myComponent );
+		String value = invoker();
+		std::cout << "Static Value: " << value << std::endl;
 
-struct Test
-{
-	Test()
-	{
-		test();
+		invoker.Bind<&MyComponent::StaticGetStringField>();
+		String staticValue = invoker();
+		std::cout << "Static Value: " << staticValue << std::endl;
+
+		invoker.Bind < []() { return "Lambda"; } > ();
+		String lambdaValue = invoker();
+		std::cout << "Lambda Value: " << lambdaValue << std::endl;
+
+		Invoker<void()> invoker2;
+		MulticastInvoker<void()> multicastInvoker;
+		InvokerHandle handle = multicastInvoker.Add( invoker2 );
+
+		//Test();
+		//while ( true )
+		//{
+		//	std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
+		//}
 	}
 };
 
-Test testInstance;
+TestInit testInstance;
 
 GameInstance* Tridium::CreateGameInstance()
 {
-
 	return new SandboxGameInstance();
 }
