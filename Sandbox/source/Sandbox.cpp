@@ -429,9 +429,26 @@ struct TestInit
 		String lambdaValue = invoker();
 		std::cout << "Lambda Value: " << lambdaValue << std::endl;
 
-		Invoker<void()> invoker2;
-		MulticastInvoker<void()> multicastInvoker;
+		Invoker<bool()> invoker2 = []() -> bool { std::cout << "Hello World" << std::endl; return true; };
+		invoker2();
+		auto invoker3 = invoker2;
+		invoker3();
+		auto invoker4 = invoker2;
+		invoker4();
+
+		MulticastInvoker<bool()> multicastInvoker;
 		InvokerHandle handle = multicastInvoker.Add( invoker2 );
+		std::cout << "Handle2: " << handle << std::endl;
+		multicastInvoker.Broadcast();
+		handle = multicastInvoker.Add( invoker3 );
+		std::cout << "Handle3: " << handle << std::endl;
+		multicastInvoker.Broadcast();
+		handle = multicastInvoker.Add( invoker4 );
+		std::cout << "Handle4: " << handle << std::endl;
+		multicastInvoker.Broadcast();
+		multicastInvoker.Broadcast( []( bool d ) { std::cout << "Lambda Invoked" << std::endl; } );
+		std::cout << "Removed = " << multicastInvoker.Remove( handle ) << std::endl;
+		multicastInvoker.Broadcast();
 
 		//Test();
 		//while ( true )
