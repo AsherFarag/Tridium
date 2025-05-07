@@ -39,6 +39,7 @@ namespace Tridium {
 			// Init D3D12 Debug layer
 			if ( FAILED( D3D12GetDebugInterface( IID_PPV_ARGS( &m_D3D12Debug ) ) ) )
 			{
+				LOG( LogCategory::DirectX, Error, "Failed to create D3D12 debug interface!" );
 				return false;
 			}
 
@@ -47,6 +48,7 @@ namespace Tridium {
 			// Init DXGI Debug
 			if ( FAILED( DXGIGetDebugInterface1( 0, IID_PPV_ARGS( &m_DXGIDebug ) ) ) )
 			{
+				LOG( LogCategory::DirectX, Error, "Failed to create DXGI debug interface!" );
 				return false;
 			}
 
@@ -57,37 +59,40 @@ namespace Tridium {
 		// Create the DXGIFactory
         if ( FAILED( CreateDXGIFactory2( 0, IID_PPV_ARGS( &m_DXGIFactory ) ) ) )
         {
+			LOG( LogCategory::DirectX, Error, "Failed to create DXGIFactory!" );
             return false;
         }
 
 		// Create the device
         if ( FAILED( D3D12CreateDevice( nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS( &m_Device ) ) ) )
         {
+			LOG( LogCategory::DirectX, Error, "Failed to create D3D12 device!" );
             return false;
         }
 
-		// Retrieve the adapter
-		if ( FAILED( m_DXGIFactory->EnumAdapters( 0, &m_Adapter ) ) )
-		{
-			return false;
+		// Get the max supported D3D12 device version
+#define QUERY_D3D12_DEVICE_VERSION( _Version ) \
+		if ( ID3D12Device##_Version* deviceVersion = nullptr; SUCCEEDED( m_Device->QueryInterface<ID3D12Device##_Version>( &deviceVersion ) ) ) \
+		{ \
+			m_MaxD3D12DeviceVersion = _Version; \
 		}
 
-		// Create the command queue
-        D3D12_COMMAND_QUEUE_DESC cmdQueueDesc{};
-        cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-        cmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_HIGH;
-        cmdQueueDesc.NodeMask = 0;
-        cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-        if ( FAILED( m_Device->CreateCommandQueue( &cmdQueueDesc, IID_PPV_ARGS( &m_CommandQueue ) ) ) )
-        {
-            return false;
-        }
+		QUERY_D3D12_DEVICE_VERSION( 1 );
+		QUERY_D3D12_DEVICE_VERSION( 2 );
+		QUERY_D3D12_DEVICE_VERSION( 3 );
+		QUERY_D3D12_DEVICE_VERSION( 4 );
+		QUERY_D3D12_DEVICE_VERSION( 5 );
 
-		// Create the command allocator and command list
-        if ( FAILED( m_Device->CreateCommandAllocator( D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS( &m_CommandAllocator ) ) ) )
-        {
-            return false;
-        }
+#undef QUERY_D3D12_DEVICE_VERSION
+
+
+
+		// Retrieve the adapter
+		if ( FAILED( m_DXGIFactory->EnumAdapters( 0, &m_DXGIAdapter ) ) )
+		{
+			LOG( LogCategory::DirectX, Error, "Failed to enumerate adapters!" );
+			return false;
+		}
 
 		// Set up Command Contexts
 		for ( size_t i = 0; i < m_CmdContexts.Size(); ++i )
@@ -126,7 +131,7 @@ namespace Tridium {
 			}
 
 			// Create the command list
-			if ( FAILED( m_Device->CreateCommandList1( 0, d3d12CmdListType, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS( &cmdCtx.CmdList ) ) ) )
+			if ( FAILED( GetD3D12Device4()->CreateCommandList1(0, d3d12CmdListType, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&cmdCtx.CmdList))) )
 			{
 				return false;
 			}
@@ -149,19 +154,6 @@ namespace Tridium {
 			cmdCtx.Fence->SetName( L"CmdCtx-RHICommandFence" );
 		}
 
-		// Create the command list
-        if ( FAILED( m_Device->CreateCommandList1( 0, D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS( &m_CommandList ) ) ) )
-        {
-            return false;
-        }
-
-		// Create the fence TEMP?
-		m_Fence = CreateFence( RHIFenceDescriptor() );
-		if ( !m_Fence )
-		{
-			return false;
-		}
-
 		// Create the Memory Allocator
 		using enum D3D12MA::ALLOCATOR_FLAGS;
 		int allocatorFlags = D3D12MA::ALLOCATOR_FLAG_NONE;
@@ -173,10 +165,10 @@ namespace Tridium {
 			.pDevice = m_Device.Get(),
 			.PreferredBlockSize = 0,
 			.pAllocationCallbacks = nullptr,
-			.pAdapter = m_Adapter.Get()
+			.pAdapter = m_DXGIAdapter.Get()
 		};
 		allocatorDesc.pDevice = m_Device.Get();
-		allocatorDesc.pAdapter = m_Adapter.Get();
+		allocatorDesc.pAdapter = m_DXGIAdapter.Get();
 		allocatorDesc.PreferredBlockSize = 0;
 		if ( FAILED( D3D12MA::CreateAllocator( &allocatorDesc, &m_Allocator ) ) )
 		{
@@ -204,14 +196,9 @@ namespace Tridium {
 	{
 		m_UploadBuffer.Release();
 
-		m_CommandList.Release();
-		m_CommandAllocator.Release();
-		m_CommandQueue.Release();
 		m_Device.Release();
 
 		m_DXGIFactory.Release();
-
-		m_Fence.reset();
 
     #if RHI_DEBUG_ENABLED
 		DumpDebug();

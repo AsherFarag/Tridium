@@ -68,7 +68,7 @@ namespace Tridium {
 			numRows.Resize( numSubresources );
 			rowSizeInBytes.Resize( numSubresources );
 
-			GetD3D12RHI()->GetDevice()->GetCopyableFootprints(
+			GetD3D12RHI()->GetD3D12Device()->GetCopyableFootprints(
 				&d3d12Desc, 0, numSubresources, 0,
 				layouts.Data(), numRows.Data(), rowSizeInBytes.Data(), &uploadBufferSize
 			);

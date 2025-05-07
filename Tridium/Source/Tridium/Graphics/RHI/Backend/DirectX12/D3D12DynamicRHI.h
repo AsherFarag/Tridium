@@ -36,6 +36,9 @@ namespace Tridium {
 		inline const D3D12TierInfo& TierInfo() { return D3D12Tiers.Tier2; }
 	}
 
+	//======================================================================
+	// D3D12 Command Context
+	//  Owns and manages the command queue, command allocator, command list and fence.
 	struct D3D12CommandContext
 	{
 		ComPtr<ID3D12CommandQueue> CmdQueue = nullptr;
@@ -78,6 +81,8 @@ namespace Tridium {
 			}
 		}
 	};
+
+
 
 	//======================================================================
 	// D3D12 RHI
@@ -128,12 +133,30 @@ namespace Tridium {
 			return m_CmdContexts[static_cast<size_t>( a_Type )];
 		}
 
-		const auto& GetFactory() const { return m_DXGIFactory; }
-		const auto& GetDevice() const { return m_Device; }
+		const auto& GetDXGIFactory() const { return m_DXGIFactory; }
+		const auto& GetDXGIAdapter() const { return m_DXGIAdapter; }
 		const auto& GetAllocator() const { return m_Allocator; }
 		const auto& GetUploadBuffer() const { return m_UploadBuffer; }
 		auto& GetUploadBuffer() { return m_UploadBuffer; }
 		size_t GetNextCommandListIndex() { return m_NextCommandListIndex; }
+
+		bool SupportsDeviceVersion( uint32_t a_Version ) const { return m_MaxD3D12DeviceVersion >= a_Version; }
+		ID3D12Device* GetD3D12Device() const { return m_Device.Get(); }
+
+#define GET_D3D12_DEVICE( _Version ) \
+		ID3D12Device##_Version* GetD3D12Device##_Version() const \
+		{ \
+			RHI_DEV_CHECK( m_MaxD3D12DeviceVersion >= _Version, "D3D12Device" #_Version " is not supported! Max supported version is: ", m_MaxD3D12DeviceVersion ); \
+			return static_cast<ID3D12Device##_Version*>( m_Device.Get() ); \
+		}
+
+		GET_D3D12_DEVICE( 1 );
+		GET_D3D12_DEVICE( 2 );
+		GET_D3D12_DEVICE( 3 );
+		GET_D3D12_DEVICE( 4 );
+		GET_D3D12_DEVICE( 5 );
+
+#undef GET_D3D12_DEVICE
 
 		D3D12::DescriptorHeapManager& GetDescriptorHeapManager() { return m_DescriptorHeapManager; }
 		const D3D12::DescriptorHeapManager& GetDescriptorHeapManager() const { return m_DescriptorHeapManager; }
@@ -148,22 +171,18 @@ namespace Tridium {
 		//====================================================
 
 	private:
-		ComPtr<ID3D12::Factory> m_DXGIFactory = nullptr;
-		ComPtr<ID3D12::Device> m_Device = nullptr;
-		ComPtr<IDXGIAdapter> m_Adapter = nullptr;
-		ComPtr<ID3D12::CommandQueue> m_CommandQueue = nullptr;
-		ComPtr<ID3D12::CommandAllocator> m_CommandAllocator = nullptr;
-		ComPtr<ID3D12::GraphicsCommandList> m_CommandList = nullptr;
+		ComPtr<IDXGIAdapter> m_DXGIAdapter = nullptr;
+		ComPtr<IDXGIFactory> m_DXGIFactory = nullptr;
+		ComPtr<ID3D12Device> m_Device = nullptr;
 		ComPtr<D3D12MA::Allocator> m_Allocator = nullptr;
 		D3D12::DescriptorHeapManager m_DescriptorHeapManager{};
+
+		uint32_t m_MaxD3D12DeviceVersion = 0;
+
 		size_t m_NextCommandListIndex = 0;
 		Array<D3D12::DeferredDeleteObject> m_ObjectsToDelete{};
 		D3D12::UploadBuffer m_UploadBuffer{};
 		FixedArray<D3D12CommandContext, size_t( ERHICommandQueueType::COUNT )> m_CmdContexts{};
-
-		TODO( "Most likely temp" );
-		RHIFenceRef m_Fence = nullptr;
-		uint64_t m_FenceValue = 0;
 
 		//=====================================================
 

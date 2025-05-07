@@ -11,6 +11,12 @@
 	#define IF_RHI_DEBUG_ELSE( _DebugTrue, _DebugFalse ) _DebugFalse
 #endif // CONFIG_DEBUG
 
+#if RHI_DEBUG_ENABLED
+	#define RHI_USE_DEBUG_NAMES 1
+#else
+	#define RHI_USE_DEBUG_NAMES 0
+#endif // RHI_DEBUG_ENABLED
+
 //=====================================================================
 // Backends
 #define RHI_ENABLE_BACKEND_DIRECTX11 0

@@ -163,8 +163,7 @@ namespace Tridium {
 		psd.CachedPSO = { nullptr, 0 };
 
 		// Create the pipeline state object
-		ComPtr<ID3D12::Device> device = GetD3D12RHI()->GetDevice();
-		if ( FAILED( device->CreateGraphicsPipelineState( &psd, IID_PPV_ARGS( &PSO ) ) ) )
+		if ( FAILED( GetD3D12RHI()->GetD3D12Device()->CreateGraphicsPipelineState( &psd, IID_PPV_ARGS( &PSO ) ) ) )
 		{
 			LOG( LogCategory::RHI, Error, "Failed to create graphics pipeline state" );
 			return false;

@@ -9,9 +9,41 @@ namespace Tridium {
 	public:
 		RHI_RESOURCE_IMPLEMENTATION_BODY( OpenGLBuffer, ERHInterfaceType::OpenGL );
 
-		OpenGLBuffer( const RHIBufferDescriptor & a_Desc )
+		OpenGLBuffer( const RHIBufferDescriptor & a_Desc, Span<const uint8_t> a_Data = {} )
 			: RHIBuffer( a_Desc )
 		{
+			BufferObj.Create();
+			if ( !BufferObj.Valid() )
+			{
+				ASSERT_LOG( false, "Failed to create OpenGL buffer" );
+				return;
+			}
+
+			if ( a_Data.size() == 0 )
+			{
+				return;
+			}
+
+			// Vertex buffer
+			if ( EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::VertexBuffer ) )
+			{
+				GLState::BindVertexBuffer( BufferObj );
+				OpenGL1::BufferData( GL_ARRAY_BUFFER, a_Desc.Size, a_Data.data(), GL_STATIC_DRAW );
+				GLState::BindVertexBuffer( 0 );
+			}
+			// Index buffer
+			else if ( EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::IndexBuffer ) )
+			{
+				GLState::BindIndexBuffer( BufferObj );
+				OpenGL1::BufferData( GL_ELEMENT_ARRAY_BUFFER, a_Desc.Size, a_Data.data(), GL_STATIC_DRAW );
+				GLState::BindIndexBuffer( 0 );
+			}
+			else
+			{
+				NOT_IMPLEMENTED;
+			}
+
+			BufferObj.SetName( a_Desc.Name );
 		}
 
 		virtual ~OpenGLBuffer() override = default;

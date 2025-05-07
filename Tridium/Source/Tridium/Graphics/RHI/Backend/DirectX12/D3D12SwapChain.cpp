@@ -186,7 +186,14 @@ namespace Tridium {
 
 		// Create the swap chain
 		ComPtr<IDXGISwapChain1> swapChain;
-		if ( FAILED( rhi->GetFactory()->CreateSwapChainForHwnd( directCmdCtx.CmdQueue.Get(), hWnd, &swapChainDesc, &fsDesc, nullptr, &swapChain) ) )
+		ComPtr<IDXGIFactory4> dxgiFactory;
+		if ( !rhi->GetDXGIFactory().QueryInterface( dxgiFactory ) )
+		{
+			ASSERT_LOG( false, "Failed to get DXGI factory!" );
+			return false;
+		}
+
+		if ( FAILED( dxgiFactory->CreateSwapChainForHwnd( directCmdCtx.CmdQueue.Get(), hWnd, &swapChainDesc, &fsDesc, nullptr, &swapChain) ) )
 		{
 			ASSERT_LOG( false, "Failed to create swap chain!" );
 			return false;

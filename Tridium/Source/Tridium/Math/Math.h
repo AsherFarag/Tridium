@@ -13,9 +13,12 @@ namespace Tridium {
 
 	// Vector types.
 
-	template<typename T> using TVector2 = glm::vec<2, T>;
-	template<typename T> using TVector3 = glm::vec<3, T>;
-	template<typename T> using TVector4 = glm::vec<4, T>;
+	template<size_t _Count, typename T> 
+	using TVector = glm::vec<_Count, T>;
+
+	template<typename T> using TVector2 = TVector<2, T>;
+	template<typename T> using TVector3 = TVector<3, T>;
+	template<typename T> using TVector4 = TVector<4, T>;
 
 	using f32Vector2 = TVector2<float>;
 	using f32Vector3 = TVector3<float>;
@@ -79,6 +82,34 @@ namespace Tridium {
 }
 
 namespace Tridium::Math {
+
+	// Returns the machine epsilon, that is,
+	// the difference between 1.0 and the next value representable by the floating-point type _Gen.
+	// ( From cppreference on std::numeric_limits )
+	template<typename _Gen>
+	constexpr inline _Gen Epsilon() { return std::numeric_limits<_Gen>::epsilon(); }
+
+	// Returns true if two values are approximately equal within a given epsilon.
+	// This is useful for comparing floating point values.
+	template<typename _Gen>
+	constexpr inline bool Approx( 
+		const _Gen& a_A,
+		const _Gen& a_B,
+		const _Gen& a_Epsilon = _Gen( 0.000001 ) )
+	{
+		return glm::epsilonEqual( a_A, a_B, a_Epsilon );
+	}
+
+	// Returns true if two values are approximately equal within a given epsilon.
+	// This is useful for comparing floating point values.
+	template<size_t _Count, typename _Gen>
+	constexpr inline bool Approx( 
+		const TVector<_Count, _Gen>& a_A,
+		const TVector<_Count, _Gen>& a_B,
+		const _Gen& a_Epsilon = _Gen( 0.000001 ) )
+	{
+		return glm::epsilonEqual( a_A, a_B, a_Epsilon );
+	}
 
 	// Returns the minimum of two values.
 	template<typename _A, typename _B>

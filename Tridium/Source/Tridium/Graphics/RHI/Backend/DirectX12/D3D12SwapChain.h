@@ -18,7 +18,7 @@ namespace Tridium {
 		uint32_t GetWidth() const override { return m_Width; }
 		uint32_t GetHeight() const override { return m_Height; }
 
-		ComPtr<ID3D12::SwapChain> SwapChain;
+		ComPtr<IDXGISwapChain3> SwapChain;
 		InlineArray<RHITextureRef, RHIConstants::MaxColorTargets> RTVs;
 
 	private:

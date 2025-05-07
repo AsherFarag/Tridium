@@ -133,7 +133,7 @@ namespace Tridium {
 
 	RHIBufferRef OpenGLDynamicRHI::CreateBuffer( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data )
 	{
-		return RHI::CreateNativeResource<OpenGLBuffer>( a_Desc );
+		return RHI::CreateNativeResource<OpenGLBuffer>( a_Desc, a_Data );
 	}
 
 	RHIGraphicsPipelineStateRef OpenGLDynamicRHI::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc )

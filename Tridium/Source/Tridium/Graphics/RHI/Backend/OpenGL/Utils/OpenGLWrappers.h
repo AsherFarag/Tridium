@@ -85,7 +85,7 @@ namespace Tridium::OpenGL {
 
 		void SetName( StringView a_Name )
 		{
-		#if RHI_DEBUG_ENABLED
+		#if RHI_USE_DEBUG_NAMES
 			if ( glObjectLabel && Valid() && !a_Name.empty() )
 			{
 				OpenGL4::ObjectLabel( GLFactory::Type(), m_Handle, a_Name.size(), static_cast<const GLchar*>( a_Name.data() ) );

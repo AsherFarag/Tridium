@@ -25,7 +25,7 @@ namespace Tridium {
 	D3D12CommandList::D3D12CommandList( const RHICommandListDescriptor& a_Desc )
 		: RHICommandList( a_Desc )
 	{
-		const HRESULT hr = GetD3D12RHI()->GetDevice()->CreateCommandList1( 
+		const HRESULT hr = GetD3D12RHI()->GetD3D12Device4()->CreateCommandList1( 
 			0, D3D12::Translate( m_Desc.QueueType ), D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS( &CommandList )
 		);
 
@@ -214,7 +214,7 @@ namespace Tridium {
 
 				const auto* tex = static_cast<const D3D12Texture*>( a_Cmd.Payload.References[0] );
 
-				GetD3D12RHI()->GetDevice()->CreateShaderResourceView(
+				GetD3D12RHI()->GetD3D12Device()->CreateShaderResourceView(
 					tex->Texture.Resource.Get(),
 					&srvDesc,
 					srvHeap->GetCPUHandle( 0 )
@@ -282,7 +282,7 @@ namespace Tridium {
 				srvDesc.Texture2D.PlaneSlice = 0;
 				srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 
-				GetD3D12RHI()->GetDevice()->CreateShaderResourceView(
+				GetD3D12RHI()->GetD3D12Device()->CreateShaderResourceView(
 					tex->Texture.Resource.Get(),
 					&srvDesc,
 					srvHeap->GetCPUHandle( 0 )
@@ -314,7 +314,7 @@ namespace Tridium {
 					ED3D12DescriptorHeapFlags::Poolable | ED3D12DescriptorHeapFlags::GPUVisible,
 					"Sampler Heap" ) );
 
-				GetD3D12RHI()->GetDevice()->CreateSampler(
+				GetD3D12RHI()->GetD3D12Device()->CreateSampler(
 					&samplerDesc,
 					samplerHeap->GetCPUHandle( 0 )
 				);
@@ -477,7 +477,7 @@ namespace Tridium {
 		UINT64 rowSizeInBytes = 0;
 		UINT64 totalBytes = 0;
 
-		GetD3D12RHI()->GetDevice()->GetCopyableFootprints(
+		GetD3D12RHI()->GetD3D12Device()->GetCopyableFootprints(
 			&textureDesc,
 			a_Cmd.MipLevel,
 			1,
@@ -643,7 +643,7 @@ namespace Tridium {
 		}
 		m_State.Graphics.CurrentDSV = a_Cmd.DSV;
 
-		const auto& device = GetD3D12RHI()->GetDevice();
+		const auto& device = GetD3D12RHI()->GetD3D12Device();
 		m_State.LastRTVHeap = m_State.Heaps.EmplaceBack( GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap(
 			ERHIDescriptorHeapType::RenderTarget,
 			a_Cmd.RTV.Size(),

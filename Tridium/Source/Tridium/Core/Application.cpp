@@ -117,13 +117,13 @@ namespace Tridium {
 		m_Window->SetEventCallback( [this]( const Event& a_Event ) { this->EnqueueEvent( a_Event ); } );
 
 		RHIConfig config;
-		config.RHIType = ERHInterfaceType::OpenGL;
-		config.UseDebug = false;
+		config.RHIType = ERHInterfaceType::DirectX12;
+		config.UseDebug = true;
 		bool initSuccess = RHI::Initialise( config );
 		LOG( LogCategory::RHI, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), initSuccess );
 
 		// TEMP!
-#if 0
+#if 1
 		{
 			uint8_t testImgData[64 * 64 * 4];
 			//for ( size_t y = 0; y < 64; y++ )
@@ -375,6 +375,14 @@ float4 main( VSOutput input ) : SV_Target
 
 			RHICommandListRef cmdList = RHI::CreateCommandList( { "My beautiful command list" } );
 
+			float a = 0.3f;
+			float b = 0.1f;
+			b += 0.2f;
+			b += 9.0f;
+			b -= 9.0f;
+			constexpr float eps = Math::Epsilon<float>();
+			std::cout << std::format( "eps {}\n{} == {} is {}", eps, a, b, Math::Approx(a, b) ? "true" : "false");
+			std::cout << std::endl;
 
 			// Temp
 			float time = 0.0f;
@@ -382,7 +390,7 @@ float4 main( VSOutput input ) : SV_Target
 			int f{};
 			while ( true )
 			{
-#if 0
+#if 1
 				++f;
 				m_Window->OnUpdate();
 				FlushEventQueue();

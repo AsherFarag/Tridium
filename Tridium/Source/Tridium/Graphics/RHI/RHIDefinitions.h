@@ -26,14 +26,14 @@ DECLARE_LOG_CATEGORY( RHI );
 #endif
 
 #if RHI_ENABLE_DEV_CHECKS
-	#define RHI_DEV_CHECK( _Condition, _Message ) \
+	#define RHI_DEV_CHECK( _Condition, ... ) \
 			do { \
 				if ( !(_Condition) ) { \
-					ASSERT_LOG( false, "RHI Dev Error - " _Message ); \
+					ASSERT_LOG( false, "RHI Dev Error - ", ##__VA_ARGS__ ); \
 				} \
 			} while ( false )
 #else
-	#define RHI_DEV_CHECK( _Condition, _Message ) do {} while ( false )
+	#define RHI_DEV_CHECK( _Condition, ... ) do {} while ( false )
 #endif // RHI_ENABLE_DEV_CHECKS
 
 namespace Tridium {

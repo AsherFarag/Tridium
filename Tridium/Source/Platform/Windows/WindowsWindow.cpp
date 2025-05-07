@@ -58,7 +58,7 @@ namespace Tridium {
 		glfwPollEvents();
 
 		TODO( "Remove this once we are using the RHI" );
-		if ( true )
+		if ( false )
 		{
 			glfwSwapBuffers( m_Window );
 		}

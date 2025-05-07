@@ -107,7 +107,7 @@ namespace Tridium {
 		}
 
 		template<typename T>
-		bool QueryInterface( ComPtr<T>& a_Other, HRESULT* a_ErrorCode = nullptr )
+		bool QueryInterface( ComPtr<T>& a_Other, HRESULT* a_ErrorCode = nullptr ) const
 		{
 			if ( m_Ptr )
 			{

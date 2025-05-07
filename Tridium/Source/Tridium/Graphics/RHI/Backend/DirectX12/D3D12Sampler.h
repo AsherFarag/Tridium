@@ -17,7 +17,7 @@ namespace Tridium {
 			heapDesc.NumDescriptors = 1;
 			heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
 			heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-			if ( FAILED( GetD3D12RHI()->GetDevice()->CreateDescriptorHeap( &heapDesc, IID_PPV_ARGS( &SamplerHeap ) ) ) )
+			if ( FAILED( GetD3D12RHI()->GetD3D12Device()->CreateDescriptorHeap( &heapDesc, IID_PPV_ARGS( &SamplerHeap ) ) ) )
 			{
 				ASSERT_LOG( false, "Failed to create sampler heap!" );
 				return false;
@@ -41,7 +41,7 @@ namespace Tridium {
 			SamplerDesc.MinLOD = a_Desc.MinLOD;
 			SamplerDesc.MaxLOD = a_Desc.MaxLOD;
 
-			GetD3D12RHI()->GetDevice()->CreateSampler( &SamplerDesc, SamplerHeap->GetCPUDescriptorHandleForHeapStart() );
+			GetD3D12RHI()->GetD3D12Device()->CreateSampler( &SamplerDesc, SamplerHeap->GetCPUDescriptorHandleForHeapStart() );
 
 			return true;
 		}
@@ -82,7 +82,7 @@ namespace Tridium {
 		}
 
 		D3D12_SAMPLER_DESC SamplerDesc{};
-		ComPtr<ID3D12::DescriptorHeap> SamplerHeap;
+		ComPtr<ID3D12DescriptorHeap> SamplerHeap;
 		D3D12_GPU_DESCRIPTOR_HANDLE SamplerHandle = {};
 	};
 

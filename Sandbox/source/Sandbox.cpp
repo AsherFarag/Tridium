@@ -12,7 +12,7 @@
 
 #include <Tridium/Reflection/FieldReflection.h>
 
-#include <Tridium/Common/Invoker.h>
+#include <Tridium/Common/Function.h>
 
 using namespace Tridium;
 
@@ -413,42 +413,55 @@ struct TestInit
 {
 	TestInit()
 	{
-		MyComponent myComponent{};
-		myComponent.IntField = 10;
+		//MyComponent myComponent{};
+		//myComponent.IntField = 10;
 
-		Invoker<String()> invoker;
-		invoker.Bind<&MyComponent::GetStringField>( myComponent );
-		String value = invoker();
-		std::cout << "Static Value: " << value << std::endl;
+		//Invoker<String()> invoker;
+		//invoker.Bind<&MyComponent::GetStringField>( myComponent );
+		//String value = invoker();
+		//std::cout << "Static Value: " << value << std::endl;
 
-		invoker.Bind<&MyComponent::StaticGetStringField>();
-		String staticValue = invoker();
-		std::cout << "Static Value: " << staticValue << std::endl;
+		//invoker.Bind<&MyComponent::StaticGetStringField>();
+		//String staticValue = invoker();
+		//std::cout << "Static Value: " << staticValue << std::endl;
 
-		invoker.Bind < []() { return "Lambda"; } > ();
-		String lambdaValue = invoker();
-		std::cout << "Lambda Value: " << lambdaValue << std::endl;
+		//invoker.Bind < []() { return "Lambda"; } > ();
+		//String lambdaValue = invoker();
+		//std::cout << "Lambda Value: " << lambdaValue << std::endl;
 
-		Invoker<bool()> invoker2 = []() -> bool { std::cout << "Hello World" << std::endl; return true; };
-		invoker2();
-		auto invoker3 = invoker2;
-		invoker3();
-		auto invoker4 = invoker2;
-		invoker4();
+		//Invoker<bool()> invoker2 = []() -> bool { std::cout << "Hello World" << std::endl; return true; };
+		//invoker2();
+		//auto invoker3 = invoker2;
+		//invoker3();
+		//auto invoker4 = invoker2;
+		//invoker4();
 
-		MulticastInvoker<bool()> multicastInvoker;
-		InvokerHandle handle = multicastInvoker.Add( invoker2 );
-		std::cout << "Handle2: " << handle << std::endl;
-		multicastInvoker.Broadcast();
-		handle = multicastInvoker.Add( invoker3 );
-		std::cout << "Handle3: " << handle << std::endl;
-		multicastInvoker.Broadcast();
-		handle = multicastInvoker.Add( invoker4 );
-		std::cout << "Handle4: " << handle << std::endl;
-		multicastInvoker.Broadcast();
-		multicastInvoker.Broadcast( []( bool d ) { std::cout << "Lambda Invoked" << std::endl; } );
-		std::cout << "Removed = " << multicastInvoker.Remove( handle ) << std::endl;
-		multicastInvoker.Broadcast();
+		//int i = 13;
+		//Delegate<int()> delegate;
+		//delegate = [&i]() -> int
+		//	{
+		//		i++;
+		//		std::cout << "Delegate Called " << i << std::endl;
+		//		return i;
+		//	};
+		//delegate();
+		//delegate();
+		//delegate();
+		//delegate();
+
+		//MulticastInvoker<bool()> multicastInvoker;
+		//DelegateHandle handle = multicastInvoker.Add( invoker2 );
+		//std::cout << "Handle2: " << handle << std::endl;
+		//multicastInvoker.Broadcast();
+		//handle = multicastInvoker.Add( invoker3 );
+		//std::cout << "Handle3: " << handle << std::endl;
+		//multicastInvoker.Broadcast();
+		//handle = multicastInvoker.Add( invoker4 );
+		//std::cout << "Handle4: " << handle << std::endl;
+		//multicastInvoker.Broadcast();
+		//multicastInvoker.Broadcast( []( bool d ) { std::cout << "Lambda Invoked" << std::endl; } );
+		//std::cout << "Removed = " << multicastInvoker.Remove( handle ) << std::endl;
+		//multicastInvoker.Broadcast();
 
 		//Test();
 		//while ( true )

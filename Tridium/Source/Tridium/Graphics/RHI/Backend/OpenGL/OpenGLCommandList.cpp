@@ -108,17 +108,17 @@ namespace Tridium {
 					TODO( "Get the uniform properly" );
 					const GLint bindSlot = OpenGL3::GetUniformLocation( GLState::s_BoundProgram, name.c_str() );
 
-					const float* asFloats = reinterpret_cast<const float*>( &a_Data.Payload.InlineData[offset * WordSize] );
-					const double* asDoubles = reinterpret_cast<const double*>( &a_Data.Payload.InlineData[offset * WordSize] );
-					const int32_t* asInt32s = reinterpret_cast<const int32_t*>( &a_Data.Payload.InlineData[offset * WordSize] );
-					const uint32_t* asUint32s = reinterpret_cast<const uint32_t*>( &a_Data.Payload.InlineData[offset * WordSize] );
+					const float* asFloats = ReinterpretCast<const float*>( &a_Data.Payload.InlineData[offset * WordSize] );
+					const double* asDoubles = ReinterpretCast<const double*>( &a_Data.Payload.InlineData[offset * WordSize] );
+					const int32_t* asInt32s = ReinterpretCast<const int32_t*>( &a_Data.Payload.InlineData[offset * WordSize] );
+					const uint32_t* asUint32s = ReinterpretCast<const uint32_t*>( &a_Data.Payload.InlineData[offset * WordSize] );
 
 					// Increment the offset by the size of the tensor
 					offset += numWords;
 
 					switch ( numWords )
 					{
-					case 1:
+					case 1: // Scalar
 						switch ( dataType )
 						{
 						case ERHIDataType::Float32: OpenGL3::Uniform1fv( bindSlot, 1, asFloats ); break;
@@ -172,6 +172,9 @@ namespace Tridium {
 						case ERHIDataType::Float32: OpenGL2::UniformMatrix4fv( bindSlot, 1, GL_FALSE, asFloats ); break;
 						case ERHIDataType::Float64: OpenGL4::UniformMatrix4dv( bindSlot, 1, GL_FALSE, asDoubles ); break;
 						}
+						break;
+					default:
+						ASSERT_LOG( false, "Invalid number of words in constant buffer!" );
 						break;
 					}
 				}

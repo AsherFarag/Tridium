@@ -17,8 +17,8 @@
 
 DECLARE_LOG_CATEGORY( DirectX );
 
-#if RHI_DEBUG_ENABLED
-#define D3D12_SET_DEBUG_NAME( _Object, _Name ) \
+#if RHI_USE_DEBUG_NAMES
+	#define D3D12_SET_DEBUG_NAME( _Object, _Name ) \
 	do { \
 		if ( RHIQuery::IsDebug() && !_Name.empty() ) \
 		{ \
@@ -28,25 +28,5 @@ DECLARE_LOG_CATEGORY( DirectX );
 		} \
 	} while ( false )
 #else
-#define D3D12_SET_DEBUG_NAME( _Object, _Name )
-#endif
-
-namespace Tridium {
-
-	//=====================================================================
-	// Type definitions for DirectX12 to avoid versioning issues
-	namespace ID3D12 {
-		using Factory = IDXGIFactory7;
-		using Device = ID3D12Device8;
-		using CommandQueue = ID3D12CommandQueue;
-		using CommandAllocator = ID3D12CommandAllocator;
-		using GraphicsCommandList = ID3D12GraphicsCommandList;
-		using Fence = ID3D12Fence1;
-		using FenceValue = uint64_t;
-		using SwapChain = IDXGISwapChain3;
-		using Resource = ID3D12Resource2;
-		using DescriptorHeap = ID3D12DescriptorHeap;
-	}
-	//=====================================================================
-
-}
+	#define D3D12_SET_DEBUG_NAME( _Object, _Name )
+#endif // RHI_USE_DEBUG_NAMES
