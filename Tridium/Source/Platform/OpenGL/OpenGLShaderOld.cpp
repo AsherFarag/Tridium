@@ -30,7 +30,7 @@ namespace Tridium {
 		if ( type == "geometry" )
 			return GL_GEOMETRY_SHADER;
 
-		ASSERT_LOG( false, "Invalid shader type!" );
+		ASSERT( false, "Invalid shader type!" );
 		return 0;
 	}
 
@@ -79,7 +79,7 @@ namespace Tridium {
 
 			size_t begin = pos + typeTokenLength + 1;
 			std::string type = source.substr( begin, eol - begin );
-			ASSERT_LOG( IsValidShaderType(type), "Invalid shader type specification!");
+			ASSERT( IsValidShaderType(type), "Invalid shader type specification!");
 
 			size_t nextLinePos = source.find_first_not_of( "\r\n", eol );
 			pos = source.find( typeToken, nextLinePos );
@@ -93,7 +93,7 @@ namespace Tridium {
 	void OpenGLShaderOld::Compile( const ShaderSources& shaderSources )
 	{
 		GLuint program = glCreateProgram();
-		ASSERT_LOG( shaderSources.size() <= 3, "Only 3 shaders are supported currently!" );
+		ASSERT( shaderSources.size() <= 3, "Only 3 shaders are supported currently!" );
 		std::array<GLenum, 3> glShaderIDs;
 
 		uint32_t glShaderIDIndex = 0;
@@ -204,7 +204,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetInt( const char* name, const int val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -217,7 +217,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetInt2( const char* name, const iVector2& val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -230,7 +230,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetInt3( const char* name, const iVector3& val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -242,7 +242,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetInt4( const char* name, const iVector4& val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -255,7 +255,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetFloat( const char* name, const float val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -268,7 +268,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetFloat2( const char* name, const Vector2& val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -281,7 +281,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetFloat3( const char* name, const Vector3& val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -294,7 +294,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetFloat4( const char* name, const Vector4& val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -307,7 +307,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetMatrix2( const char* name, const Matrix2& val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -320,7 +320,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetMatrix3( const char* name, const Matrix3& val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -333,7 +333,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetMatrix4( const char* name, const Matrix4& val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -346,7 +346,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetInt( const char* name, const uint32_t count, const int* val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -359,7 +359,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetInt2( const char* name, const uint32_t count, const iVector2* val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -372,7 +372,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetInt3( const char* name, const uint32_t count, const iVector3* val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -385,7 +385,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetInt4( const char* name, const uint32_t count, const iVector4* val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -398,7 +398,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetFloat( const char* name, const uint32_t count, const float* val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -411,7 +411,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetFloat2( const char* name, const uint32_t count, const Vector2* val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -424,7 +424,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetFloat3( const char* name, const uint32_t count, const Vector3* val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -437,7 +437,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetFloat4( const char* name, const uint32_t count, const Vector4* val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -450,7 +450,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetMatrix2( const char* name, const uint32_t count, const Matrix2* val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -463,7 +463,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetMatrix3( const char* name, const uint32_t count, const Matrix3* val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
@@ -476,7 +476,7 @@ namespace Tridium {
 
 	bool OpenGLShaderOld::SetMatrix4( const char* name, const uint32_t count, const Matrix4* val )
 	{
-		ASSERT_LOG( m_RendererID > 0, "Invalid shader program" );
+		ASSERT( m_RendererID > 0, "Invalid shader program" );
 		int i = glGetUniformLocation( m_RendererID, name );
 		if ( i < 0 ) {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );

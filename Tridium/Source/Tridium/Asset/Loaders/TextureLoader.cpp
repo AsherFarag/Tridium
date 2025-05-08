@@ -30,7 +30,7 @@ namespace Tridium {
 				a_Specification.TextureFormat = ETextureFormat::RGBA32F;
 				break;
 			default:
-				ASSERT_LOG( false, "Unknown texture format!" );
+				ASSERT( false, "Unknown texture format!" );
 				break;
 			}
 
@@ -69,7 +69,7 @@ namespace Tridium {
 				a_Specification.TextureFormat = ETextureFormat::RGBA8;
 				break;
 			default:
-				ASSERT_LOG( false, "Unknown texture format!" );
+				ASSERT( false, "Unknown texture format!" );
 				break;
 			}
 
@@ -116,7 +116,7 @@ namespace Tridium {
 				specification.TextureFormat = ETextureFormat::RGBA32F;
 				break;
 			default:
-				ASSERT_LOG( false, "Unknown texture format!" );
+				ASSERT( false, "Unknown texture format!" );
 				break;
 			}
 
@@ -155,7 +155,7 @@ namespace Tridium {
 					specification.TextureFormat = ETextureFormat::RGBA8;
 					break;
 				default:
-					ASSERT_LOG( false, "Unknown texture format!" );
+					ASSERT( false, "Unknown texture format!" );
 					break;
 				}
 
@@ -200,7 +200,7 @@ namespace Tridium {
 			specification.TextureFormat = ETextureFormat::RGBA32F;
 			break;
 		default:
-			ASSERT_LOG( false, "Unknown texture format!" );
+			ASSERT( false, "Unknown texture format!" );
 			break;
 		}
 

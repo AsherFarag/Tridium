@@ -35,7 +35,7 @@ namespace Tridium {
 		// Stride of the vertex layout in bytes
 		uint32_t Stride = 0;
 		// Array of vertex attributes
-		InlineArray<RHIVertexAttribute, RHIConstants::MaxVertexAttributes, /*_ForceConstexpr*/ true> Elements{};
+		InlineArray<RHIVertexAttribute, RHIConstants::MaxVertexAttributes> Elements{};
 
 		constexpr RHIVertexLayout() = default;
 		constexpr RHIVertexLayout( const std::initializer_list<RHIVertexAttribute>& a_Elements )

@@ -19,7 +19,7 @@ namespace Tridium {
 
 	bool RHI::Initialise( const RHIConfig& a_Config )
 	{
-		if ( !ASSERT_LOG( !s_RHIGlobals.IsRHIInitialised, "RHI has already been previously initialised!" ) )
+		if ( !ASSERT( !s_RHIGlobals.IsRHIInitialised, "RHI has already been previously initialised!" ) )
 		{
 			return false;
 		}
@@ -133,7 +133,7 @@ namespace Tridium {
 
 	bool RHI::ExecuteCommandList( const RHICommandListRef& a_CommandList )
 	{
-		if ( !ASSERT_LOG( s_RHIGlobals.IsRHIInitialised, "RHI has not been initialised!" ) )
+		if ( !ASSERT( s_RHIGlobals.IsRHIInitialised, "RHI has not been initialised!" ) )
 		{
 			return false;
 		}
@@ -181,7 +181,7 @@ namespace Tridium {
 		return RHI::GetFeatureSupport( a_Feature ) == ERHIFeatureSupport::Supported;
 	}
 
-	const char* RHI::GetRHIName()
+	StringView RHI::GetRHIName()
 	{
 		if ( s_DynamicRHI == nullptr )
 		{

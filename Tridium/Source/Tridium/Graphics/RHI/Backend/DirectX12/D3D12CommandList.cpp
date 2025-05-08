@@ -29,7 +29,7 @@ namespace Tridium {
 			0, D3D12::Translate( m_Desc.QueueType ), D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS( &CommandList )
 		);
 
-		ENSURE_LOG( SUCCEEDED( hr ), "Failed to create command list!" );
+		ENSURE( SUCCEEDED( hr ), "Failed to create command list!" );
 	}
 
 	bool D3D12CommandList::Release()
@@ -49,14 +49,14 @@ namespace Tridium {
 		// Reset the command allocator
 		if ( FAILED( cmdAllocator->Reset() ) )
 		{
-			ASSERT_LOG( false, "Failed to reset command allocator!" );
+			ASSERT( false, "Failed to reset command allocator!" );
 			return false;
 		}
 
 		// Reset the command list
 		if ( FAILED( GraphicsCommandList()->Reset( cmdAllocator.Get(), nullptr ) ) )
 		{
-			ASSERT_LOG( false, "Failed to reset command list!" );
+			ASSERT( false, "Failed to reset command list!" );
 			return false;
 		}
 
@@ -86,7 +86,7 @@ namespace Tridium {
 				PerformCmd( SetComputePipelineState );
 				PerformCmd( DispatchCompute );
 				PerformCmd( DispatchComputeIndirect );
-				default: ASSERT_LOG( false, "Unknown command type!" ); break;
+				default: ASSERT( false, "Unknown command type!" ); break;
 			}
 		}
 
@@ -143,7 +143,7 @@ namespace Tridium {
 	{
 		if ( !CurrentSBL )
 		{
-			ASSERT_LOG( false, "No Shader Binding Layout set!" );
+			ASSERT( false, "No Shader Binding Layout set!" );
 			return;
 		}
 
@@ -151,7 +151,7 @@ namespace Tridium {
 		const int32_t index = desc.GetBindingIndex( a_Cmd.NameHash );
 		if ( index == -1 )
 		{
-			ASSERT_LOG( false, "Shader Binding not found!" );
+			ASSERT( false, "Shader Binding not found!" );
 			return;
 		}
 		const RHIShaderBinding& binding = desc.Bindings.At( index );
@@ -333,7 +333,7 @@ namespace Tridium {
 		}
 		default:
 		{
-			ASSERT_LOG( false, "Unknown Shader Binding Type!" );
+			ASSERT( false, "Unknown Shader Binding Type!" );
 			break;
 		}
 		}
@@ -582,7 +582,7 @@ namespace Tridium {
 			a_Cmd.DstRegion
 		);
 
-		ASSERT_LOG( success, "Failed to copy texture {0} to {1}!", a_Cmd.SrcTexture->Descriptor().Name, a_Cmd.DstTexture->Descriptor().Name );
+		ASSERT( success, "Failed to copy texture {0} to {1}!", a_Cmd.SrcTexture->Descriptor().Name, a_Cmd.DstTexture->Descriptor().Name );
 	}
 
 	void D3D12CommandList::SetGraphicsPipelineState( const RHICommand::SetGraphicsPipelineState& a_Cmd )
@@ -663,7 +663,7 @@ namespace Tridium {
 			if ( m_State.Graphics.PSO )
 			{
 				TODO( "Move this to a validation function before drawing?" );
-				ASSERT_LOG( 
+				ASSERT( 
 					m_State.Graphics.PSO->Descriptor().DepthStencilFormat == a_Cmd.DSV->Descriptor().Format,
 					"Depth stencil format of the set DSV does not match the currently bound PSO!"
 				);

@@ -33,7 +33,7 @@ namespace Tridium::Debug {
 		}
 		default:
 		{
-			ASSERT_LOG( false, "Invalid EDrawDuration" );
+			ASSERT( false, "Invalid EDrawDuration" );
 			break;
 		}
 		}
@@ -62,7 +62,7 @@ namespace Tridium::Debug {
 		}
 		default:
 		{
-			ASSERT_LOG( false, "Invalid EDrawDuration" );
+			ASSERT( false, "Invalid EDrawDuration" );
 			break;
 		}
 		}

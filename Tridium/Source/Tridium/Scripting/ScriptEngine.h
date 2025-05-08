@@ -24,7 +24,7 @@ namespace Tridium {
 			static bool s_TypeInitialized = false;
 			if ( s_TypeInitialized )
 			{
-				ASSERT_LOG( false, "RegisterType can only be called once per type!" );
+				ASSERT( false, "RegisterType can only be called once per type!" );
 				return {};
 			}
 
@@ -40,7 +40,7 @@ namespace Tridium {
 		{
 			if ( m_RegisteredTypes.find( a_TypeName ) == m_RegisteredTypes.end() )
 			{
-				ASSERT_LOG( false, "Type not registered!" );
+				ASSERT( false, "Type not registered!" );
 				return {};
 			}
 

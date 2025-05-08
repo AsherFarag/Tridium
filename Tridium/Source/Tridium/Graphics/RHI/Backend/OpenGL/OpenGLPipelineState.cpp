@@ -165,7 +165,7 @@ namespace Tridium {
 			OpenGLVertexElementType type = ToOpenGL::GetVertexElementType( element.Type );
 			if ( !type.Valid() )
 			{
-				ASSERT_LOG( false, "Invalid vertex element type" );
+				ASSERT( false, "Invalid vertex element type" );
 				return false;
 			}
 

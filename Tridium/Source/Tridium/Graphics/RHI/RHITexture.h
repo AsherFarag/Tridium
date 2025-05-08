@@ -12,7 +12,7 @@ namespace Tridium {
 		while ( ( a_Width >> mips ) > 0 )
 			++mips;
 
-		CHECK_LOG( a_Width >= ( 1U << ( mips - 1 ) ) && a_Width < ( 1U << mips ), "Incorrect number of Mip levels" );
+		CHECK( a_Width >= ( 1U << ( mips - 1 ) ) && a_Width < ( 1U << mips ), "Incorrect number of Mip levels" );
 		return mips;
 	}
 
@@ -182,7 +182,7 @@ namespace Tridium {
 				}
 				else
 				{
-					ASSERT_LOG( false, "Invalid texture dimension" );
+					ASSERT( false, "Invalid texture dimension" );
 				}
 			}
 		}

@@ -31,7 +31,7 @@ namespace Tridium {
 
 		if ( m_ShouldResize && !ResizeBuffers() )
 		{
-			ASSERT_LOG( false, "Failed to resize buffers" );
+			ASSERT( false, "Failed to resize buffers" );
 			return false;
 		}
 
@@ -76,13 +76,13 @@ namespace Tridium {
 		// Resize the swap chain
 		if ( FAILED( SwapChain->ResizeBuffers( RTVs.Size(), m_Width, m_Height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING ) ) )
 		{
-			ASSERT_LOG( false, "Failed to resize swap chain buffers!" );
+			ASSERT( false, "Failed to resize swap chain buffers!" );
 			return false;
 		}
 
 		if ( !GetBackBuffers() )
 		{
-			ASSERT_LOG( false, "Failed to get back buffers!" );
+			ASSERT( false, "Failed to get back buffers!" );
 			return false;
 		}
 
@@ -94,7 +94,7 @@ namespace Tridium {
 	{
 		for ( uint32_t i = 0; i < RTVs.Size(); i++ )
 		{
-			ASSERT_LOG( RTVs[i].use_count() == 1, "RTV owned by the swap chain is still in use - You should not be keeping a reference to the back buffer!" );
+			ASSERT( RTVs[i].use_count() == 1, "RTV owned by the swap chain is still in use - You should not be keeping a reference to the back buffer!" );
 			RTVs[i]->Release();
 			RTVs[i] = nullptr;
 		}
@@ -121,7 +121,7 @@ namespace Tridium {
 			D3D12Texture* tex = RTVs[i]->As<D3D12Texture>();
 			if ( FAILED( SwapChain->GetBuffer( i, IID_PPV_ARGS( &tex->Texture.Resource ) ) ) )
 			{
-				ASSERT_LOG( false, "Failed to get back buffer!" );
+				ASSERT( false, "Failed to get back buffer!" );
 				return false;
 			}
 
@@ -189,13 +189,13 @@ namespace Tridium {
 		ComPtr<IDXGIFactory4> dxgiFactory;
 		if ( !rhi->GetDXGIFactory().QueryInterface( dxgiFactory ) )
 		{
-			ASSERT_LOG( false, "Failed to get DXGI factory!" );
+			ASSERT( false, "Failed to get DXGI factory!" );
 			return false;
 		}
 
 		if ( FAILED( dxgiFactory->CreateSwapChainForHwnd( directCmdCtx.CmdQueue.Get(), hWnd, &swapChainDesc, &fsDesc, nullptr, &swapChain) ) )
 		{
-			ASSERT_LOG( false, "Failed to create swap chain!" );
+			ASSERT( false, "Failed to create swap chain!" );
 			return false;
 		}
 

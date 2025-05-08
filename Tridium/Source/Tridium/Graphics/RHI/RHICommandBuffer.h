@@ -646,7 +646,7 @@ namespace Tridium {
 			m_Buffers.insert( a_Barrier.Resource->As<RHIBuffer>()->shared_from_this() );
 			break;
 		default:
-			ASSERT_LOG( false, "Can only set resource barriers for textures and buffers!" );
+			ASSERT( false, "Can only set resource barriers for textures and buffers!" );
 			return Self();
 		}
 
@@ -900,13 +900,13 @@ namespace Tridium {
 		{
 			if ( !a_RTV[i] || !a_RTV[i]->IsValid() )
 			{
-				ASSERT_LOG( false, "Render target is null!" );
+				ASSERT( false, "Render target is null!" );
 				continue;
 			}
 
 			if ( !EnumFlags( a_RTV[i]->Descriptor().BindFlags ).HasFlag( ERHIBindFlags::RenderTarget ) )
 			{
-				ASSERT_LOG( false, "Texture is not a render target!" );
+				ASSERT( false, "Texture is not a render target!" );
 				continue;
 			}
 

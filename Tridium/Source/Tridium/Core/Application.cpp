@@ -257,16 +257,14 @@ namespace Tridium {
 				{ { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f } }
 			};
 
-			RHIBufferDescriptor vbDesc;
-			vbDesc.Name = "My beautiful vertex buffer";
-			//RHIBufferRef vb = RHI::CreateBuffer( vbDesc );
-
 			// - Create a Vertex Buffer -
 			RHIBufferDescriptor cubeVBODesc;
 			cubeVBODesc.Name = "Cube VBO";
 			cubeVBODesc.BindFlags = ERHIBindFlags::VertexBuffer;
 			cubeVBODesc.Size = sizeof( cubeVerts );
 			RHIBufferRef cubeVBO = RHI::CreateBuffer( cubeVBODesc, Span<uint8_t>{ reinterpret_cast<uint8_t*>( cubeVerts ), sizeof( cubeVerts ) } );
+
+
 
 			// HLSL Source code
 			StringView vertCode = R"(
@@ -331,6 +329,15 @@ float4 main( VSOutput input ) : SV_Target
 	return Sample( Texture, input.uv ) * inlinedConstants.Colour;
 }
 )";
+
+			for ( int i = 0; i < 10; ++i )
+			{
+				if ( ASSERT_ONCE( false, "Hi" ) )
+				{
+					std::printf( "Oh no!" );
+					// Do something
+				}
+			}
 
 			struct InlinedConstants
 			{

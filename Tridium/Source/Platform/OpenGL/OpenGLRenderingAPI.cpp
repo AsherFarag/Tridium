@@ -24,7 +24,7 @@ namespace Tridium {
 			case EDepthCompareOperator::Always: return GL_ALWAYS;
 			}
 
-			ASSERT_LOG( false, "Unknown depth compare operator!" );
+			ASSERT( false, "Unknown depth compare operator!" );
 			return 0;
 		}
 	}
@@ -62,7 +62,7 @@ namespace Tridium {
 			glBlendFunc( GL_SRC_ALPHA, GL_ONE );
 			break;
 		default:
-			ASSERT_LOG( false, "Unknown blend mode!" );
+			ASSERT( false, "Unknown blend mode!" );
 			break;
 		}
 	}
@@ -102,7 +102,7 @@ namespace Tridium {
 			break;
 		}
 		default:
-			ASSERT_LOG( false, "Unknown cull mode!" );
+			ASSERT( false, "Unknown cull mode!" );
 		}
 	}
 
@@ -130,7 +130,7 @@ namespace Tridium {
 			glPolygonMode( a_Faces == EFaces::Front ? GL_FRONT : a_Faces == EFaces::Back ? GL_BACK : GL_FRONT_AND_BACK, GL_POINT );
 			break;
 		default:
-			ASSERT_LOG( false, "Unknown polygon mode!" );
+			ASSERT( false, "Unknown polygon mode!" );
 			break;
 		}
 	}

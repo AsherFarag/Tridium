@@ -12,7 +12,7 @@ namespace Tridium {
 			return MakeShared<JoltMeshCollider>();
 		}
 
-		ASSERT_LOG( false, "Unknown physics API" );
+		ASSERT( false, "Unknown physics API" );
 		return nullptr;
 	}
 
@@ -24,7 +24,7 @@ namespace Tridium {
 			return MakeShared<JoltMeshCollider>( a_Vertices, a_Indices, a_BoundingBox );
 		}
 
-		ASSERT_LOG( false, "Unknown physics API" );
+		ASSERT( false, "Unknown physics API" );
 		return nullptr;
     }
 

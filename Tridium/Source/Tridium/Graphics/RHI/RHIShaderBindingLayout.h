@@ -121,7 +121,7 @@ namespace Tridium {
 			return *this;
 		}
 
-		// Set the binding as referenced textures, such as a Texture2D.
+		// Set the binding as referenced textures, such as a Texture.
 		// The data is referenced from a buffer and is not inlined in the shader.
 		// This can be used for texture data types such as textures, etc.
 		// In DirectX 12, this would be a Shader Resource View, and in Vulkan, this would be a Sampled Image.
@@ -133,7 +133,7 @@ namespace Tridium {
 			return *this;
 		}
 
-		// Set the binding as referenced RWTextures, such as a RWTexture2D.
+		// Set the binding as referenced RWTextures, such as a Texture.
 		// The data is referenced from a buffer and is not inlined in the shader.
 		// This can be used for texture data types such as textures, etc.
 		// In DirectX 12, this would be an Unordered Access View, and in Vulkan, this would be a Storage Image.
@@ -231,7 +231,7 @@ namespace Tridium {
 				Bindings.Resize( a_InputIndex + 1 );
 			}
 
-			ASSERT_LOG( BindingMap.find( a_Name ) == BindingMap.end(), "Binding with name hash already exists" );
+			ASSERT( BindingMap.find( a_Name ) == BindingMap.end(), "Binding with name hash already exists" );
 			BindingMap[a_Name] = a_InputIndex;
 			RHIShaderBinding& binding = Bindings[a_InputIndex];
 			binding.Name = a_Name;
@@ -254,7 +254,7 @@ namespace Tridium {
 		const RHIShaderBinding& GetBindingFromName( hash_t a_Name ) const
 		{
 			int32_t index = GetBindingIndex( a_Name );
-			ASSERT_LOG( index != -1, "Binding with name hash does not exist" );
+			ASSERT( index != -1, "Binding with name hash does not exist" );
 			return Bindings[index];
 		}
 	};

@@ -1,102 +1,176 @@
 #pragma once
 #include "Config.h"
 #include <Tridium/Utils/Macro.h>
+#include <format>
+#include <Tridium/Containers/String.h>
 
-// Use of namespace to hide function names from the global namespace
-namespace Tridium::Internal {
+namespace Tridium::Debug {
+
+	// Helpers
+	namespace Detail {
+
+		void AssertMessage( StringView a_Message );
+
+		template<typename... _Args>
+		inline String FormatMsg( StringView a_Fmt, const _Args&... a_Args )
+		{
+			return std::vformat( a_Fmt, std::make_format_args( std::forward<const _Args>( a_Args )... ) );
+		}
+
+		inline String FormatMsg()
+		{
+			return {};
+		}
+
+		#define _ASSERT_MSG_FORMAT_WRAPPER( _Type ) \
+			_Type " Failed: '{}', Where: Line - " TOSTRING( __LINE__ ) ", File - " TRIDIUM_FILE ", Function - " TRIDIUM_FUNCTION
+		
+		#define _DO_ONCE_WRAPPER( _Condition, _AssertMacro, _HasDoneStorage ) \
+			([]( bool a_Condition ) { \
+				_HasDoneStorage bool s_HasDone = false; if (!s_HasDone) { _AssertMacro; s_HasDone |= !a_Condition; } return a_Condition; \
+			}( _Condition ))
+	}
+
+
+
+#if CONFIG_PLATFORM_WINDOWS
+	#define DEBUG_BREAK() __debugbreak()
+	#define ABORT() abort()
+#else
+	#define DEBUG_BREAK() No Debug Break for this platform
+	#define ABORT() No Abort for this platform
+#endif // CONFIG_PLATFORM_WINDOWS
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-// CHECKS
+// CHECK
+//	Checks are used to verify conditions that shouldn't happen, but are not critical to the program.
+// 	By default, checks are enabled in all builds except shipping builds.
+// 	Checks also return the passed condition, so they can be used as a predicate in an if statement.
+// 	Example: if ( CHECK( x ) ) { ... }
+// 			 if ( CHECK( false ) ) - is the equivalent to - if ( false )
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 #ifndef CONFIG_CHECKS_ENABLED
 	#define CONFIG_CHECKS_ENABLED !CONFIG_SHIPPING
 #endif // !CONFIG_CHECKS_ENABLED
 
+	template<typename... _Args>
+	bool Check( bool a_Condition, StringView a_Fmt, const _Args&... a_Args )
+	{
+	#if CONFIG_CHECKS_ENABLED
+		if ( !a_Condition && !a_Fmt.empty() )
+			Detail::AssertMessage( Detail::FormatMsg( a_Fmt, std::forward<const _Args>( a_Args )... ) );
+	#endif // CONFIG_CHECKS_ENABLED
+
+		return a_Condition;
+	}
+
 #if CONFIG_CHECKS_ENABLED
-	// Checks if the condition is true, if not, it logs that the check failed at the source location.
-	// Note: This does not break the program, it only logs the check failure.
-	#define CHECK(x) (::Tridium::Internal::Check(static_cast<bool>(x), TRIDIUM_FUNCTION, TRIDIUM_FILE, TRIDIUM_LINE))
+	// Checks that the condition is true, if not, it logs that the check failed at the source location.
+	#define CHECK(_Condition, ...) \
+		(::Tridium::Debug::Check(static_cast<bool>(_Condition), _ASSERT_MSG_FORMAT_WRAPPER("CHECK"), ::Tridium::Debug::Detail::FormatMsg( __VA_ARGS__ ) ))
 
-	// Checks if the condition is true, if not, it logs that the check failed at the source location with a custom message.
-	// Note: This does not break the program, it only logs the check failure.
-	#define CHECK_LOG(x, ...) (::Tridium::Internal::Check_Log(static_cast<bool>(x), TRIDIUM_FUNCTION, TRIDIUM_FILE, TRIDIUM_LINE, __VA_ARGS__))
+	// Same as CHECK, but will only check once among all threads.
+	#define CHECK_ONCE(_Condition, ...) \
+		_DO_ONCE_WRAPPER( _Condition, CHECK(_Condition, __VA_ARGS__), static )
 
-	void Check( bool a_Condition, const char* a_Function, const char* a_File, int a_Line );
-	void Check_Log( bool a_Condition, const char* a_Function, const char* a_File, int a_Line, const char* a_FormatString, ... );
+	// Same as CHECK, but will only check once among per thread.
+	#define CHECK_ONCE_PER_THREAD(_Condition, ...) \
+		_DO_ONCE_WRAPPER( _Condition, CHECK(_Condition, __VA_ARGS__), thread_local )
+
 #else
-	#define CHECK(x)
-	#define CHECK_LOG(x, ...)
+	#define CHECK(_Condition, ...)
+	#define CHECK_ONCE(_Condition, ...)
+	#define CHECK_ONCE_PER_THREAD(_Condition, ...)
 #endif // CONFIG_CHECKS_ENABLED
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // ASSERTS
+// 	Asserts are used to verify conditions that shouldn't happen and will cause a debug break if the assert fails.
+// 	By default, ASSERT's are enabled in all builds except shipping builds.
+// 	Asserts also return the passed condition, so they can be used as a predicate in an if statement.
+//  Example: if ( ASSERT( x ) ) { ... }
+// 	  		 if ( ASSERT( false ) ) - is the equivalent to - if ( false )
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 #ifndef CONFIG_ASSERTS_ENABLED
 	#define CONFIG_ASSERTS_ENABLED !CONFIG_SHIPPING
 #endif // !CONFIG_ASSERTS_ENABLED
 
+	template<typename... _Args>
+	bool Assert( bool a_Condition, StringView a_Fmt = {}, const _Args&... a_Args )
+	{
+	#if CONFIG_ASSERTS_ENABLED
+		if ( !a_Condition )
+		{
+			if ( !a_Fmt.empty() )
+				Detail::AssertMessage( Detail::FormatMsg( a_Fmt, std::forward<const _Args>( a_Args )... ) );
+
+			DEBUG_BREAK();
+		}
+	#endif // CONFIG_ASSERTS_ENABLED
+
+		return a_Condition;
+	}
+
 #if CONFIG_ASSERTS_ENABLED
-	#define BREAK_ON_ASSERT_FAIL 1
 
-	// Asserts if the condition is false, if so, it logs that the assert failed at the source location and breaks.
-	// Can be used as a predicate in an if statement. Example: if ( ASSERT( x ) ) { ... }
-	// Note: The boolean output is the same as the input condition. So, if the condition is false, the assert will break and return false.
-	#define ASSERT(x) (::Tridium::Internal::Assert(static_cast<bool>(x), TRIDIUM_FUNCTION, TRIDIUM_FILE, TRIDIUM_LINE))
+	// Asserts that the condition is true, if not, it logs that the assert failed at the source location and breaks the program.
+	#define ASSERT(_Condition, ...) \
+		(::Tridium::Debug::Assert(static_cast<bool>(_Condition), _ASSERT_MSG_FORMAT_WRAPPER("ASSERT"), ::Tridium::Debug::Detail::FormatMsg( __VA_ARGS__ ) ))
 
-	// Asserts if the condition is false, if so, it logs that the assert failed at the source location with a custom message and breaks.
-	// Can be used as a predicate in an if statement. Example: if ( ASSERT_LOG( x, "Message" ) ) { ... }
-	// Note: The boolean output is the same as the input condition. So, if the condition is false, the assert will break and return false.
-	#define ASSERT_LOG(x, ...) (::Tridium::Internal::Assert_Log(static_cast<bool>(x), TRIDIUM_FUNCTION, TRIDIUM_FILE, TRIDIUM_LINE, __VA_ARGS__))
+	// Same as ASSERT, but will only assert once among all threads.
+	#define ASSERT_ONCE(_Condition, ...) \
+		_DO_ONCE_WRAPPER( _Condition, ASSERT(_Condition, __VA_ARGS__), static )
 
-	// Works the same as ASSERT, but only asserts once. If the condition is false, it will assert and then never assert again.
-	#define ASSERT_ONCE(x) do { static bool s_HasAsserted = false; if ( !s_HasAsserted && !(x) ) { s_HasAsserted = true; ASSERT( x ); } } while ( false )
+	// Same as ASSERT, but will only assert once among per thread.
+	#define ASSERT_ONCE_PER_THREAD(_Condition, ...) \
+		_DO_ONCE_WRAPPER( _Condition, ASSERT(_Condition, __VA_ARGS__), thread_local )
 
-	// Works the same as ASSERT_LOG, but only asserts once. If the condition is false, it will assert and then never assert again.
-	#define ASSERT_ONCE_LOG(x, ...) do { static bool s_HasAsserted = false; if ( !s_HasAsserted && !(x) ) { s_HasAsserted = true; ASSERT_LOG( x, __VA_ARGS__ ); } } while ( false )
 
-	// Works the same as ASSERT, but only asserts once per thread. If the condition is false, it will assert and then never assert again in that thread.
-	#define ASSERT_ONCE_PER_THREAD(x) do { thread_local bool s_HasAsserted = false; if ( !s_HasAsserted && !(x) ) { s_HasAsserted = true; ASSERT( x ); } } while ( false )
-
-	// Works the same as ASSERT_LOG, but only asserts once per thread. If the condition is false, it will assert and then never assert again in that thread.
-	#define ASSERT_ONCE_PER_THREAD_LOG(x, ...) do { thread_local bool s_HasAsserted = false; if ( !s_HasAsserted && !(x) ) { s_HasAsserted = true; ASSERT_LOG( x, __VA_ARGS__ ); } } while ( false )
-
-	bool Assert( bool a_Condition, const char* a_Function, const char* a_File, int a_Line );
-	bool Assert_Log( bool a_Condition, const char* a_Function, const char* a_File, int a_Line, const char* a_FormatString, ... );
 #else
-	#define BREAK_ON_ASSERT_FAIL 0
-	#define ASSERT(x) (x)
-	#define ASSERT_LOG(x, ...) (x)
-	#define ASSERT_ONCE(x) (x)
-	#define ASSERT_ONCE_LOG(x, ...) (x)
-	#define ASSERT_ONCE_PER_THREAD(x) (x)
-	#define ASSERT_ONCE_PER_THREAD_LOG(x, ...) (x)
+	#define ASSERT(_Condition, ...)
+	#define ASSERT_ONCE(_Condition, ...)
+	#define ASSERT_ONCE_PER_THREAD(_Condition, ...)
 #endif // CONFIG_ASSERTS_ENABLED
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // ENSURES
+//  Ensures are used to verify conditions that, if invalid, can be fatal to the program.
+// 	By default, ENSURE's are always enabled.
+//  They will always log the failure and then abort the program.
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 #ifndef CONFIG_ENSURES_ENABLED 
-	#define CONFIG_ENSURES_ENABLED ( CONFIG_DEBUG || CONFIG_SHIPPING )
+	#define CONFIG_ENSURES_ENABLED 1
 #endif // CONFIG_ENSURES_ENABLED
 
+
+	template<typename... _Args>
+	void Ensure( bool a_Condition, StringView a_Fmt = {}, const _Args&... a_Args )
+	{
+	#if CONFIG_ENSURES_ENABLED
+		if ( !a_Condition )
+		{
+			if ( !a_Fmt.empty() )
+				Detail::AssertMessage( Detail::FormatMsg( a_Fmt, std::forward<const _Args>( a_Args )... ) );
+
+			ABORT();
+		}
+	#endif // CONFIG_ENSURES_ENABLED
+	}
+
 #if CONFIG_ENSURES_ENABLED
-	// Ensures that the condition is true, if not, it logs that the ensure failed at the source location and breaks the program, even in shipping builds.
-	// Use this for conditions that should never fail and can cause serious issues if they do.
-	#define ENSURE(x) (::Tridium::Internal::Ensure(static_cast<bool>(x), TRIDIUM_FUNCTION, TRIDIUM_FILE, TRIDIUM_LINE))
-
-	// Ensures that the condition is true, if not, it logs that the ensure failed at the source location with a custom message and breaks the program, even in shipping builds.
-	// Use this for conditions that should never fail and can cause serious issues if they do.
-	#define ENSURE_LOG(x, ...) (::Tridium::Internal::Ensure_Log(static_cast<bool>(x), TRIDIUM_FUNCTION, TRIDIUM_FILE, TRIDIUM_LINE, __VA_ARGS__))
-
-
-	bool Ensure( bool a_Condition, const char* a_Function, const char* a_File, int a_Line );
-	bool Ensure_Log( bool a_Condition, const char* a_Function, const char* a_File, int a_Line, const char* a_FormatString, ... );
+	#define ENSURE(_Condition, ...) \
+		(::Tridium::Debug::Ensure(static_cast<bool>(_Condition), _ASSERT_MSG_FORMAT_WRAPPER("ENSURE"), ::Tridium::Debug::Detail::FormatMsg( __VA_ARGS__ ) ))
 #else
-	#define ENSURE(x) (x)
-	#define ENSURE_LOG(x, ...) (x)
+	#define ENSURE(_Condition, ...)
 #endif // CONFIG_ENSURES_ENABLED
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -112,7 +186,7 @@ namespace Tridium::Internal {
 #if NOT_IMPLEMENTED_ENABLED
 	#define NOT_IMPLEMENTED \
 		NOT_IMPLEMENTED_STATIC; \
-		( ::Tridium::Internal::NotImplemented( TRIDIUM_FUNCTION, TRIDIUM_FILE, TRIDIUM_LINE ) )
+		( ::Tridium::Debug::NotImplemented( TRIDIUM_FUNCTION, TRIDIUM_FILE, TRIDIUM_LINE ) )
 
 	void NotImplemented( const char* a_Function, const char* a_File, int a_Line );
 #else

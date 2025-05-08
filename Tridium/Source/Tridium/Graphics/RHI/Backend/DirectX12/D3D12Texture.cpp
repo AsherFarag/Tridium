@@ -47,7 +47,7 @@ namespace Tridium {
 		// Create the texture
 		if ( !Texture.Commit( d3d12Desc, D3D12::Translate( initialState ), clearValuePtr ) )
 		{
-			ASSERT_LOG( false, "Failed to create D3D12 texture" );
+			ASSERT( false, "Failed to create D3D12 texture" );
 			return;
 		}
 
@@ -90,7 +90,7 @@ namespace Tridium {
 			uploadBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 			if ( !uploadBuffer.Commit( uploadBufferDesc, allocDesc, D3D12_RESOURCE_STATE_GENERIC_READ ) )
 			{
-				ASSERT_LOG( false, "Failed to create D3D12 upload buffer" );
+				ASSERT( false, "Failed to create D3D12 upload buffer" );
 				return;
 			}
 
@@ -107,12 +107,12 @@ namespace Tridium {
 			TODO( "Should we be doing this, this way?" );
 			if ( FAILED( copyCmdCtx.CmdAllocator->Reset() ) )
 			{
-				ASSERT_LOG( false, "Failed to reset command allocator" );
+				ASSERT( false, "Failed to reset command allocator" );
 				return;
 			}
 			if ( FAILED( copyCmdCtx.CmdList->Reset( copyCmdCtx.CmdAllocator.Get(), nullptr ) ) )
 			{
-				ASSERT_LOG( false, "Failed to reset command list" );
+				ASSERT( false, "Failed to reset command list" );
 				return;
 			}
 
@@ -128,7 +128,7 @@ namespace Tridium {
 			// Execute the copy command list
 			if ( FAILED( copyCmdCtx.CmdList->Close() ) )
 			{
-				ASSERT_LOG( false, "Failed to close command list" );
+				ASSERT( false, "Failed to close command list" );
 				return;
 			}
 
@@ -178,7 +178,7 @@ namespace Tridium {
 		else if ( m_Desc.Is3D() )
 			desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE3D;
 		else
-			ASSERT_LOG( false, "Invalid texture dimension" );
+			ASSERT( false, "Invalid texture dimension" );
 
 		desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 		EnumFlags bindFlags = m_Desc.BindFlags;

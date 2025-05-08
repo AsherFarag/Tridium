@@ -7,7 +7,7 @@ namespace Tridium {
     bool ProfileSessionSerializer::SerializeJSON( const ProfilerSession& a_Session, const String& a_Path )
     {
         std::ofstream file( a_Path );
-		if ( !ASSERT_LOG( file.is_open(), "Failed to open file for writing." ) )
+		if ( !ASSERT( file.is_open(), "Failed to open file for writing." ) )
 		{
 			return false;
 		}

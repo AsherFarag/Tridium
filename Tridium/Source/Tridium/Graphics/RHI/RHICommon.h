@@ -20,7 +20,7 @@ namespace Tridium {
 	namespace RHI {
 
 		// Get the name of the dynamically bound RHI.
-		const char* GetRHIName();
+		StringView GetRHIName();
 
 		// Get the type of the dynamically bound RHI.
 		ERHInterfaceType GetRHIType();
@@ -29,7 +29,7 @@ namespace Tridium {
 		static IDynamicRHI* GetDynamicRHI() { return s_DynamicRHI; }
 
 		// Get the name of the given RHI type.
-		constexpr const char* GetRHIName( ERHInterfaceType a_API );
+		constexpr StringView GetRHIName( ERHInterfaceType a_API );
 	}
 
 	// RHI Query and Functions
@@ -105,7 +105,7 @@ namespace Tridium {
 	// RHI Implementation
 	//======================================================================
 
-	constexpr const char* RHI::GetRHIName( ERHInterfaceType a_API )
+	constexpr StringView RHI::GetRHIName( ERHInterfaceType a_API )
 	{
 		switch ( a_API )
 		{

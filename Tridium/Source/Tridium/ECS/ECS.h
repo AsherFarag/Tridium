@@ -48,14 +48,14 @@ namespace Tridium {
 		template <typename T, typename... Args>
 		T& AddComponentToEntity( EntityID a_Entity, Args&&... args )
 		{
-			ASSERT_LOG( !m_Registry.any_of<T>( a_Entity ), "Entity already has this component!" );
+			ASSERT( !m_Registry.any_of<T>( a_Entity ), "Entity already has this component!" );
 			return m_Registry.emplace<T>( a_Entity, std::forward<Args>( args )... );
 		}
 
 		template <typename T>
 		T& GetComponentFromEntity( EntityID a_Entity )
 		{
-			ENSURE_LOG( m_Registry.any_of<T>( a_Entity ), "Entity does not have this component!" );
+			ENSURE( m_Registry.any_of<T>( a_Entity ), "Entity does not have this component!" );
 			return m_Registry.get<T>( a_Entity );
 		}
 
@@ -74,7 +74,7 @@ namespace Tridium {
 		template <typename T>
 		void RemoveComponentFromEntity( EntityID a_Entity )
 		{
-			ASSERT_LOG( m_Registry.any_of<T>( a_Entity ), "Entity does not have this component!" );
+			ASSERT( m_Registry.any_of<T>( a_Entity ), "Entity does not have this component!" );
 			m_Registry.remove<T>( a_Entity );
 		}
 

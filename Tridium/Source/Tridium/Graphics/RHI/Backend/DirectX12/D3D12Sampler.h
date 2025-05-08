@@ -19,7 +19,7 @@ namespace Tridium {
 			heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 			if ( FAILED( GetD3D12RHI()->GetD3D12Device()->CreateDescriptorHeap( &heapDesc, IID_PPV_ARGS( &SamplerHeap ) ) ) )
 			{
-				ASSERT_LOG( false, "Failed to create sampler heap!" );
+				ASSERT( false, "Failed to create sampler heap!" );
 				return false;
 			}
 

@@ -87,7 +87,7 @@ namespace Tridium {
 		m_AssetManager.reset( CreateAssetManager() );
 		if ( !m_AssetManager )
 		{
-			return ASSERT_LOG( false, "Engine::Init: Failed to create Asset Manager" );
+			return ASSERT( false, "Engine::Init: Failed to create Asset Manager" );
 		}
 		m_AssetManager->Init();
 
@@ -97,7 +97,7 @@ namespace Tridium {
 		// 4. Initialize Post-Engine-Init Modules
 		if ( !InitModules( EEngineInitStage::PostEngineInit ) )
 		{
-			return ASSERT_LOG( false, "Engine::Init: Failed to initialize engine modules" );
+			return ASSERT( false, "Engine::Init: Failed to initialize engine modules" );
 		}
 
 		m_ImGuiLayer = new ImGuiLayer();
@@ -117,7 +117,7 @@ namespace Tridium {
 		// 6. Init Scene
 		if ( !InitScene() )
 		{
-			return ASSERT_LOG( false, "Engine::Init: Failed to initialize scene" );
+			return ASSERT( false, "Engine::Init: Failed to initialize scene" );
 		}
 
 		return true;
@@ -198,7 +198,7 @@ namespace Tridium {
 				}
 				default:
 				{
-					ASSERT_LOG( false, "Unknown error level" );
+					ASSERT( false, "Unknown error level" );
 					break;
 				}
 			}
@@ -282,7 +282,7 @@ namespace Tridium {
 				}
 				default:
 				{
-					ASSERT_LOG( false, "Unknown error level" );
+					ASSERT( false, "Unknown error level" );
 					break;
 				}
 			}

@@ -29,7 +29,7 @@ namespace Tridium {
 		case GLFW_MOUSE_BUTTON_8:      return EInputMouseButton::Button8;
 		}
 
-		ASSERT_LOG( false, "Unknown mouse button!" );
+		ASSERT( false, "Unknown mouse button!" );
 		return EInputMouseButton::None;
 	}
 
@@ -118,7 +118,7 @@ namespace Tridium {
 		if ( !s_GLFWInitialized )
 		{
 			int success = glfwInit();
-			ASSERT_LOG( success, "Could not initialize GLFW!" );
+			ASSERT( success, "Could not initialize GLFW!" );
 			glfwSetErrorCallback( GLFWErrorCallback );
 			s_GLFWInitialized = true;
 		}

@@ -17,7 +17,7 @@ namespace Tridium {
 	{
 		static constexpr size_t s_TypeHash = entt::type_hash<T>::value();
 		auto it = m_Systems.find( s_TypeHash );
-		if ( !ASSERT_LOG( it == m_Systems.end(), "Attempted to add a System that already exists!" ) )
+		if ( !ASSERT( it == m_Systems.end(), "Attempted to add a System that already exists!" ) )
 		{
 			return SharedPtrCast<T>( it->second );
 		}
@@ -139,7 +139,7 @@ namespace Tridium {
 	template <typename T, typename... Args>
 	inline T& Scene::AddComponentToGameObject( GameObject a_GameObject, Args&&... args )
 	{
-		ASSERT_LOG( !GameObjectHasComponent<T>( a_GameObject ), "GameObject already has this component!" );
+		ASSERT( !GameObjectHasComponent<T>( a_GameObject ), "GameObject already has this component!" );
 		T& component = m_ECS.AddComponentToEntity<T>( a_GameObject, std::forward<Args>( args )... );
 		return component;
 	}
@@ -158,7 +158,7 @@ namespace Tridium {
 	template<typename T>
 	inline T& Scene::GetComponentFromGameObject( GameObject a_GameObject )
 	{
-		ASSERT_LOG( GameObjectHasComponent<T>( a_GameObject ), "GameObject does not have this component!" );
+		ASSERT( GameObjectHasComponent<T>( a_GameObject ), "GameObject does not have this component!" );
 		return m_ECS.GetComponentFromEntity<T>( a_GameObject );
 	}
 
@@ -177,7 +177,7 @@ namespace Tridium {
 	template<typename T>
 	inline void Scene::RemoveComponentFromGameObject( GameObject a_GameObject )
 	{
-		ASSERT_LOG( GameObjectHasComponent<T>( a_GameObject ), "GameObject does not have this component!" );
+		ASSERT( GameObjectHasComponent<T>( a_GameObject ), "GameObject does not have this component!" );
 		m_ECS.RemoveComponentFromEntity<T>( a_GameObject );
 	}
 

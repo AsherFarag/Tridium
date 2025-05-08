@@ -32,7 +32,7 @@ namespace Tridium {
 
             default:	
             {
-				ASSERT_LOG( false, "RHIShaderCompiler::Compile: Unsupported shader format." );
+				ASSERT( false, "RHIShaderCompiler::Compile: Unsupported shader format." );
                 break;
             }
         }

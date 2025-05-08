@@ -17,7 +17,7 @@ namespace Tridium::OpenGL {
 			case NotEqual: return GL_NOTEQUAL;
 			case GreaterEqual: return GL_GEQUAL;
 			case Always: return GL_ALWAYS;
-			default: ASSERT_LOG( false, "Invalid comparison" ); return GL_NEVER;
+			default: ASSERT( false, "Invalid comparison" ); return GL_NEVER;
 		}
 	}
 
@@ -62,7 +62,7 @@ namespace Tridium::OpenGL {
 			using enum ERHIDepthOp;
 			case Keep: return GL_KEEP;
 			case Replace: return GL_REPLACE;
-			default: ASSERT_LOG( false, "Invalid depth operation" ); return GL_KEEP;
+			default: ASSERT( false, "Invalid depth operation" ); return GL_KEEP;
 		}
 	}
 
@@ -79,7 +79,7 @@ namespace Tridium::OpenGL {
 			case Decrement: return GL_DECR;
 			//case DecrementWrap: return GL_DECR_WRAP;
 			case Invert: return GL_INVERT;
-			default: ASSERT_LOG( false, "Invalid stencil operation" ); return GL_KEEP;
+			default: ASSERT( false, "Invalid stencil operation" ); return GL_KEEP;
 		}
 	}
 

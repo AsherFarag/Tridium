@@ -39,7 +39,7 @@ namespace Tridium {
 				PerformCmd( SetComputePipelineState );
 				PerformCmd( DispatchCompute );
 				PerformCmd( DispatchComputeIndirect );
-				default: ASSERT_LOG( false, "Invalid command type '{0}' being used in SetGraphicsCommands", RHI::GetCommandName( cmd.Type() ) ); break;
+				default: ASSERT( false, "Invalid command type '{0}' being used in SetGraphicsCommands", RHI::GetCommandName( cmd.Type() ) ); break;
 			}
 		}
 
@@ -65,7 +65,7 @@ namespace Tridium {
 	{
 		if ( a_Data.SBL == nullptr ) [[unlikely]]
 		{
-			ASSERT_LOG( false, "Attempting to bind a null shader binding layout!" );
+			ASSERT( false, "Attempting to bind a null shader binding layout!" );
 			return;
 		}
 
@@ -75,11 +75,11 @@ namespace Tridium {
 	void OpenGLCommandList::SetShaderInput( const RHICommand::SetShaderInput& a_Data )
 	{
 		SharedPtr<OpenGLShaderBindingLayout> sbl = GLState::s_BoundSBL.lock();
-		if ( !ASSERT_LOG( sbl, "No shader binding layout bound!" ) )
+		if ( !ASSERT( sbl, "No shader binding layout bound!" ) )
 			return;
 
 		SharedPtr<OpenGLGraphicsPipelineState> gpso = GLState::s_BoundGraphicsPSO.lock();
-		if ( !ASSERT_LOG( gpso, "No graphics pipeline state bound!" ) )
+		if ( !ASSERT( gpso, "No graphics pipeline state bound!" ) )
 			return;
 
 		const RHIShaderBinding& binding = sbl->Descriptor().GetBindingFromName( a_Data.NameHash );
@@ -174,7 +174,7 @@ namespace Tridium {
 						}
 						break;
 					default:
-						ASSERT_LOG( false, "Invalid number of words in constant buffer!" );
+						ASSERT( false, "Invalid number of words in constant buffer!" );
 						break;
 					}
 				}
@@ -194,7 +194,7 @@ namespace Tridium {
 			break;
 		case ERHIShaderBindingType::Texture:
 		{
-			ASSERT_LOG( false, "OpenGL requires textures and samplers to be combined in the shader! - Use a Texture binding instead and set the sampler in the texture." );
+			ASSERT( false, "OpenGL requires textures and samplers to be combined in the shader! - Use a Texture binding instead and set the sampler in the texture." );
 			break;
 		}
 		case ERHIShaderBindingType::RWTexture:
@@ -202,14 +202,14 @@ namespace Tridium {
 			break;
 		case ERHIShaderBindingType::Sampler:
 		{
-			ASSERT_LOG( false, "OpenGL requires textures and samplers to be combined in the shader! - Use a Texture binding instead and set the sampler in the texture." );
+			ASSERT( false, "OpenGL requires textures and samplers to be combined in the shader! - Use a Texture binding instead and set the sampler in the texture." );
 			break;
 		}
 		case ERHIShaderBindingType::CombinedSampler:
 		{
 			if ( !a_Data.Payload.IsReference ) [[unlikely]]
 			{
-				ASSERT_LOG( false, "Invalid shader input - a Texture can not be inlined!" );
+				ASSERT( false, "Invalid shader input - a Texture can not be inlined!" );
 				break;
 			}
 
@@ -218,7 +218,7 @@ namespace Tridium {
 			OpenGLTexture* texture = static_cast<OpenGLTexture*>( a_Data.Payload.References[0] );
 			if ( !( texture->Sampler ) )
 			{
-				ASSERT_LOG( false, "Texture has no sampler! - OpenGL requires Textures to have a Sampler, you can set the sampler on the RHITexture." );
+				ASSERT( false, "Texture has no sampler! - OpenGL requires Textures to have a Sampler, you can set the sampler on the RHITexture." );
 				break;
 			}
 
@@ -228,7 +228,7 @@ namespace Tridium {
 			break;
 		}
 		default:
-			ASSERT_LOG( false, "Unknown shader binding type!" );
+			ASSERT( false, "Unknown shader binding type!" );
 			return;
 		}
 	}
@@ -325,7 +325,7 @@ namespace Tridium {
 			OpenGL3::Enable( GL_CULL_FACE );
 			OpenGL3::CullFace( GL_BACK );
 			break;
-		default: ASSERT_LOG( false, "Invalid cull mode in Graphics Pipeline State!" ); break;
+		default: ASSERT( false, "Invalid cull mode in Graphics Pipeline State!" ); break;
 		}
 		switch ( rasterizerState.FillMode )
 		{
@@ -338,7 +338,7 @@ namespace Tridium {
 		case ERHIRasterizerFillMode::Wireframe:
 			OpenGL3::PolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 			break;
-		default: ASSERT_LOG( false, "Invalid fill mode in Graphics Pipeline State!" ); break;
+		default: ASSERT( false, "Invalid fill mode in Graphics Pipeline State!" ); break;
 		}
 		OpenGL3::FrontFace( rasterizerState.Clockwise ? GL_CW : GL_CCW );
 	}
@@ -398,7 +398,7 @@ namespace Tridium {
 			default: LOG( LogCategory::RHI, Error, "Framebuffer unknown error!" ); break;
 			}
 
-			ASSERT_LOG( false, "Framebuffer is not complete!" );
+			ASSERT( false, "Framebuffer is not complete!" );
 			return;
 		}
 

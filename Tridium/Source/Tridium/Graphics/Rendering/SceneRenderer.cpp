@@ -47,7 +47,7 @@ namespace Tridium {
 			spec.MinFilter = ETextureFilter::Linear;
 			spec.MagFilter = ETextureFilter::Linear;
 			m_BrdfLUT = TextureLoader::LoadTexture( spec, Engine::Get()->GetEngineAssetsDirectory() / "Renderer/BRDF-LUT.png" );
-			ASSERT_LOG( m_BrdfLUT, "Failed to load BRDF LUT" );
+			ASSERT( m_BrdfLUT, "Failed to load BRDF LUT" );
 		}
 
 		// Set Debug Assets
@@ -143,7 +143,7 @@ namespace Tridium {
 			}
 			default:
 			{
-				ASSERT_LOG( false, "Unknown render mode" );
+				ASSERT( false, "Unknown render mode" );
 				break;
 			}
 			}

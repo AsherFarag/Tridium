@@ -23,7 +23,7 @@ namespace Tridium {
 			case EFramebufferTextureFormat::RED_INT:     return GL_INT;
 			}
 
-			ASSERT_LOG( false, "Unknown FramebufferTextureFormat!" );
+			ASSERT( false, "Unknown FramebufferTextureFormat!" );
 			return 0;
 		}
 
@@ -262,7 +262,7 @@ namespace Tridium {
 
 		if ( m_ColorAttachments.size() > 1 )
 		{
-			ASSERT_LOG( m_ColorAttachments.size() <= 8, "More than 8 color attachments when invalidating this Framebuffer");
+			ASSERT( m_ColorAttachments.size() <= 8, "More than 8 color attachments when invalidating this Framebuffer");
 			GLenum buffers[ 8 ] =
 			{ GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7 };
 			glDrawBuffers( m_ColorAttachments.size(), buffers );
@@ -275,7 +275,7 @@ namespace Tridium {
 			glReadBuffer( GL_NONE );
 		}
 
-		ASSERT_LOG( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!" );
+		ASSERT( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!" );
 
 		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	}
@@ -321,7 +321,7 @@ namespace Tridium {
 
 	int OpenGLFramebuffer::ReadPixel( uint32_t attachmentIndex, int x, int y )
 	{
-		ASSERT_LOG( attachmentIndex < m_ColorAttachments.size(), "attachmentIndex out of m_ColorAttachments scope");
+		ASSERT( attachmentIndex < m_ColorAttachments.size(), "attachmentIndex out of m_ColorAttachments scope");
 
 		glReadBuffer( GL_COLOR_ATTACHMENT0 + attachmentIndex );
 		int pixelData;
@@ -332,7 +332,7 @@ namespace Tridium {
 
 	void OpenGLFramebuffer::ClearAttachment( uint32_t attachmentIndex, int value )
 	{
-		ASSERT_LOG( attachmentIndex < m_ColorAttachments.size(), "attachmentIndex out of m_ColorAttachments scope" );
+		ASSERT( attachmentIndex < m_ColorAttachments.size(), "attachmentIndex out of m_ColorAttachments scope" );
 
 		auto& spec = m_ColorAttachmentSpecifications[ attachmentIndex ];
 		glClearTexImage( m_ColorAttachments[ attachmentIndex ], 0,

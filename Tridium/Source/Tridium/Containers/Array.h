@@ -19,7 +19,7 @@ namespace Tridium {
 	//  An array of contiguous memory with a fixed size.
 	//  STD equivalent: std::array
 	//=================================================================================================
-	template<typename T, size_t _Size, bool _ForceConstexpr = false>
+	template<typename T, size_t _Size>
 	class FixedArray
 	{
 	public:
@@ -37,10 +37,10 @@ namespace Tridium {
 
 		constexpr T& operator[]( size_t a_Index )
 		{
-			if constexpr ( !_ForceConstexpr )
+			if ( !std::is_constant_evaluated() )
 			{
 			#if CONFIG_ENABLE_BOUNDS_CHECK
-				ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
+				ENSURE( IsValidIndex( a_Index ), "Index out of bounds" );
 			#endif
 			}
 			return m_Data[a_Index];
@@ -48,10 +48,10 @@ namespace Tridium {
 
 		constexpr const T& operator[]( size_t a_Index ) const
 		{
-			if constexpr ( !_ForceConstexpr )
+			if ( !std::is_constant_evaluated() )
 			{
 			#if CONFIG_ENABLE_BOUNDS_CHECK
-				ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
+				ENSURE( IsValidIndex( a_Index ), "Index out of bounds" );
 			#endif
 			}
 			return m_Data[a_Index];
@@ -59,10 +59,10 @@ namespace Tridium {
 
 		constexpr T& At( size_t a_Index )
 		{
-			if constexpr ( !_ForceConstexpr )
+			if ( !std::is_constant_evaluated() )
 			{
 			#if CONFIG_ENABLE_BOUNDS_CHECK
-				ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
+				ENSURE( IsValidIndex( a_Index ), "Index out of bounds" );
 			#endif
 			}
 			return m_Data[a_Index];
@@ -70,10 +70,10 @@ namespace Tridium {
 
 		constexpr const T& At( size_t a_Index ) const
 		{
-			if constexpr ( !_ForceConstexpr )
+			if ( !std::is_constant_evaluated() )
 			{
 			#if CONFIG_ENABLE_BOUNDS_CHECK
-				ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
+				ENSURE( IsValidIndex( a_Index ), "Index out of bounds" );
 			#endif
 			}
 			return m_Data[a_Index];
@@ -127,11 +127,11 @@ namespace Tridium {
 	//  An array of contiguous memory with a fixed MAX size.
 	//  STD equivalent: std::array
 	//=================================================================================================
-	template<typename T, size_t _Size, bool _ForceConstexpr = false>
+	template<typename T, size_t _Size>
 	class InlineArray
 	{
 	public:
-		using Storage = FixedArray<T, _Size, _ForceConstexpr>;
+		using Storage = FixedArray<T, _Size>;
 		using Iterator = typename Storage::Iterator;
 		using ConstIterator = typename Storage::ConstIterator;
 		using ReverseIterator = typename Storage::ReverseIterator;
@@ -270,9 +270,9 @@ namespace Tridium {
 		constexpr void _Assert( bool a_Value, const char* a_Message )
 		{
 		#if CONFIG_ENABLE_BOUNDS_CHECK
-			if constexpr ( !_ForceConstexpr )
+			if ( !std::is_constant_evaluated() )
 			{
-				ENSURE_LOG( a_Value, a_Message );
+				ENSURE( a_Value, a_Message );
 			}
 		#endif	
 		}
@@ -305,7 +305,7 @@ namespace Tridium {
 		T& operator[]( size_t a_Index )
 		{
 		#if CONFIG_ENABLE_BOUNDS_CHECK
-			ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
+			ENSURE( IsValidIndex( a_Index ), "Index out of bounds" );
 		#endif
 			return m_Data[a_Index];
 		}
@@ -313,7 +313,7 @@ namespace Tridium {
 		const T& operator[]( size_t a_Index ) const
 		{
 		#if CONFIG_ENABLE_BOUNDS_CHECK
-			ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
+			ENSURE( IsValidIndex( a_Index ), "Index out of bounds" );
 		#endif
 			return m_Data[a_Index];
 		}
@@ -321,7 +321,7 @@ namespace Tridium {
 		T& At( size_t a_Index )
 		{
 		#if CONFIG_ENABLE_BOUNDS_CHECK
-			ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
+			ENSURE( IsValidIndex( a_Index ), "Index out of bounds" );
 		#endif
 			return m_Data[a_Index];
 		}
@@ -329,7 +329,7 @@ namespace Tridium {
 		const T& At( size_t a_Index ) const
 		{
 		#if CONFIG_ENABLE_BOUNDS_CHECK
-			ENSURE_LOG( IsValidIndex( a_Index ), "Index out of bounds" );
+			ENSURE( IsValidIndex( a_Index ), "Index out of bounds" );
 		#endif
 			return m_Data[a_Index];
 		}

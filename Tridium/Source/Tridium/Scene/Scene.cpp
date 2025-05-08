@@ -442,7 +442,7 @@ namespace Tridium {
 				continue;
 
 			Optional<Refl::InitComponentFunc> initComponentFuncProp = componentType.GetMetaAttribute<Refl::InitComponentFunc>( Refl::Props::InitComponentProp::ID );
-			if ( ASSERT_LOG( initComponentFuncProp.has_value(), "Component meta type does not have an InitComponent function!" ) )
+			if ( ASSERT( initComponentFuncProp.has_value(), "Component meta type does not have an InitComponent function!" ) )
 				initComponentFuncProp.value()( *this );
 		}
 	}

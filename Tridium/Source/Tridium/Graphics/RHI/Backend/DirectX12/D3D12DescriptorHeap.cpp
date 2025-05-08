@@ -65,7 +65,7 @@ namespace Tridium::D3D12 {
 		desc.NodeMask = 0;
 		ComPtr<ID3D12DescriptorHeap> heap;
 		HRESULT hr = a_Device->CreateDescriptorHeap( &desc, IID_PPV_ARGS( &heap ) );
-		ENSURE_LOG( SUCCEEDED( hr ), "Failed to create descriptor heap!" );
+		ENSURE( SUCCEEDED( hr ), "Failed to create descriptor heap!" );
 
 		D3D12_SET_DEBUG_NAME( heap.Get(), a_DebugName );
 		LOG( LogCategory::RHI, Debug, "Heap Created - Name: {0}, Type: {1}, NumDescriptors: {2}",
@@ -108,7 +108,7 @@ namespace Tridium::D3D12 {
 			}
 
 			TODO( "Handle if the global heap is full." );
-			ASSERT_LOG( false, "Global heap is full!" );
+			ASSERT( false, "Global heap is full!" );
 			return nullptr;
 		}
 
@@ -127,7 +127,7 @@ namespace Tridium::D3D12 {
 		if ( !a_Heap->IsGlobal() )
 		{
 			// Destroy the heap
-			ENSURE_LOG( a_Heap.use_count() == 1, "Heap is still in use! " );
+			ENSURE( a_Heap.use_count() == 1, "Heap is still in use! " );
 			a_Heap.reset();
 			return;
 		}
@@ -151,7 +151,7 @@ namespace Tridium::D3D12 {
 
 	void DescriptorHeapManager::Init( Device* a_Device, uint32_t a_NumGlobalResourceDescriptors, uint32_t a_NumGlobalSamplerDescriptors )
 	{
-		ENSURE_LOG( a_Device, "Device is null!" );
+		ENSURE( a_Device, "Device is null!" );
 		m_Device = a_Device;
 
 		m_GlobalHeaps = Array<DescriptorManager>(); // ( m_GlobalHeaps was not initialized properly )

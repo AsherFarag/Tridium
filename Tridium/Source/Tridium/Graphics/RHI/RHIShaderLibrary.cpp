@@ -25,7 +25,7 @@ namespace Tridium {
 			case 'c': return ERHIShaderType::Compute;
 		}
 
-		ASSERT_LOG( false, "Unknown shader type suffix '{0}' while loading shader '{1}'", shaderSuffix, a_FileName );
+		ASSERT( false, "Unknown shader type suffix '{0}' while loading shader '{1}'", shaderSuffix, a_FileName );
 		return ERHIShaderType::Unknown;
 	}
 

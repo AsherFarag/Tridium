@@ -15,7 +15,7 @@ namespace Tridium {
 			return MakeShared<OpenGLEnvironmentMap>( a_EquirectangularTexture );
 		}
 
-		ASSERT_LOG( false, "Unknown RendererAPI!" );
+		ASSERT( false, "Unknown RendererAPI!" );
 		return nullptr;
     }
 

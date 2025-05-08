@@ -110,7 +110,7 @@ namespace Tridium {
 			static constexpr hash_t hash = Hashing::TypeHash<T>();
 
 			// Ensure the module has not already been registered.
-			if ( !ASSERT_LOG( Get()->m_ModuleTypes.find( hash ) == Get()->m_ModuleTypes.end(), "Module already registered" ) )
+			if ( !ASSERT( Get()->m_ModuleTypes.find( hash ) == Get()->m_ModuleTypes.end(), "Module already registered" ) )
 				return;
 
 			EngineModuleInfo info;

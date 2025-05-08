@@ -2,7 +2,9 @@
 
 #define BIT(x) (1 << x)
 
-#define Stringize( x ) #x 
+#define Stringize( x ) #x
+#define STRINGIFY( x ) #x
+#define TOSTRING( x ) STRINGIFY( x )
 #define WRAP( m, x ) m(x)
 #define PRAGMA(p) _Pragma(#p)
 #define EXPAND(x) x

@@ -57,7 +57,7 @@ namespace Tridium {
 		#if RHI_DEBUG_ENABLED
 			if ( s_DynamicRHI->GetRHIType() != ERHInterfaceType::OpenGL )
 			{
-				ASSERT_LOG( false, "The current RHI is not OpenGL!" );
+				ASSERT( false, "The current RHI is not OpenGL!" );
 				return nullptr;
 			}
 		#endif

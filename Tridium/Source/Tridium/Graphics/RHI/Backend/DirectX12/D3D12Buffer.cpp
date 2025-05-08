@@ -9,7 +9,7 @@ namespace Tridium {
 		m_Desc.Size = Math::Max( a_Desc.Size, a_Data.size_bytes() );
 		if ( m_Desc.Size == 0 )
 		{
-			ASSERT_LOG( false, "Buffer size is 0!" );
+			ASSERT( false, "Buffer size is 0!" );
 			return;
 		}
 
@@ -23,7 +23,7 @@ namespace Tridium {
 		// Create the texture
 		if ( !ManagedBuffer.Commit( d3d12Desc, D3D12::Translate( initialState ) ) )
 		{
-			ASSERT_LOG( false, "Failed to create D3D12 buffer" );
+			ASSERT( false, "Failed to create D3D12 buffer" );
 			return;
 		}
 
@@ -51,7 +51,7 @@ namespace Tridium {
 			uploadBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 			if ( !uploadBuffer.Commit( uploadBufferDesc, allocDesc, D3D12_RESOURCE_STATE_GENERIC_READ ) )
 			{
-				ASSERT_LOG( false, "Failed to create D3D12 upload buffer" );
+				ASSERT( false, "Failed to create D3D12 upload buffer" );
 				return;
 			}
 
@@ -66,12 +66,12 @@ namespace Tridium {
 			TODO( "Should we be doing this, this way?" );
 			if ( FAILED( copyCmdCtx.CmdAllocator->Reset() ) )
 			{
-				ASSERT_LOG( false, "Failed to reset command allocator" );
+				ASSERT( false, "Failed to reset command allocator" );
 				return;
 			}
 			if ( FAILED( copyCmdCtx.CmdList->Reset( copyCmdCtx.CmdAllocator.Get(), nullptr ) ) )
 			{
-				ASSERT_LOG( false, "Failed to reset command list" );
+				ASSERT( false, "Failed to reset command list" );
 				return;
 			}
 
@@ -81,7 +81,7 @@ namespace Tridium {
 			// Execute the copy command list
 			if ( FAILED( copyCmdCtx.CmdList->Close() ) )
 			{
-				ASSERT_LOG( false, "Failed to close command list" );
+				ASSERT( false, "Failed to close command list" );
 				return;
 			}
 

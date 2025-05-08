@@ -35,13 +35,13 @@ namespace Tridium {
     uint64_t D3D12Fence::GetCompletedValue()
     {
 		uint64_t value = m_Fence->GetCompletedValue();
-		ENSURE_LOG( value != UINT64_MAX, "If the device is removed, the fence value will be UINT64_MAX" );
+		ENSURE( value != UINT64_MAX, "If the device is removed, the fence value will be UINT64_MAX" );
 		return uint64_t( value );
     }
 
 	void D3D12Fence::Signal( uint64_t a_Value )
 	{
-		ASSERT_LOG( Descriptor().Type == ERHIFenceType::General, "Signaling on a CPUWaitOnly fence, fence type must be ERHIFenceType::General" );
+		ASSERT( Descriptor().Type == ERHIFenceType::General, "Signaling on a CPUWaitOnly fence, fence type must be ERHIFenceType::General" );
 		m_Fence->Signal( a_Value );
 	}
 

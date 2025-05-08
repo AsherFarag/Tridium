@@ -66,7 +66,7 @@ namespace Tridium {
 		case EShaderDataType::Bool:	   return 1;
 		}
 
-		ASSERT_LOG( false, "Unkown ShaderDataType!" );
+		ASSERT( false, "Unkown ShaderDataType!" );
 		return 0;
 	}
 

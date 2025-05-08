@@ -82,7 +82,7 @@ namespace Tridium::Util {
 			case EMotionType::Kinematic: return JPH::EMotionType::Kinematic;
 		}
 
-		ASSERT_LOG( false, "Unknown motion type" );
+		ASSERT( false, "Unknown motion type" );
 		return JPH::EMotionType::Static;
 	}
 
@@ -95,7 +95,7 @@ namespace Tridium::Util {
 			case JPH::EMotionType::Kinematic: return EMotionType::Kinematic;
 		}
 
-		ASSERT_LOG( false, "Unknown motion type" );
+		ASSERT( false, "Unknown motion type" );
 		return EMotionType::Static;
 	}
 

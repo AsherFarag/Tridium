@@ -157,7 +157,7 @@ namespace Tridium::IO {
 
 		for ( auto goNode : gameObjectsNode )
 		{
-			ASSERT_LOG( DeserializeGameObject( goNode, a_Data ), "Failed to deserialize GameObject from a scene file!" );
+			ASSERT( DeserializeGameObject( goNode, a_Data ), "Failed to deserialize GameObject from a scene file!" );
 		}
 
 		return true;
@@ -167,7 +167,7 @@ namespace Tridium::IO {
 	{
 		if ( !go.IsValid() || !go.TryGetComponent<GUIDComponent>() )
 		{
-			ASSERT_LOG( false, "GameObject is invalid or does not have a GUIDComponent!" );
+			ASSERT( false, "GameObject is invalid or does not have a GUIDComponent!" );
 			return;
 		}
 
@@ -252,7 +252,7 @@ namespace Tridium::IO {
 		else
 			return false;
 
-		ASSERT_LOG( a_Scene.GetECS().CreateEntity( go.ID() ) == go.ID(), "The created GameObject should be the same as the hint!" );
+		ASSERT( a_Scene.GetECS().CreateEntity( go.ID() ) == go.ID(), "The created GameObject should be the same as the hint!" );
 		a_Scene.AddComponentToGameObject<GUIDComponent>( go, guid );
 		a_Scene.AddComponentToGameObject<TagComponent>( go, std::move( tag ) );
 		a_Scene.AddComponentToGameObject<TransformComponent>( go );

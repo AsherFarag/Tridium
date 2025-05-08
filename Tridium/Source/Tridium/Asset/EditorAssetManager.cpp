@@ -127,7 +127,7 @@ namespace Tridium {
 
 	bool EditorAssetManager::AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset )
 	{
-		ASSERT_LOG( a_Asset, "[AssetManager] Asset is nullptr" );
+		ASSERT( a_Asset, "[AssetManager] Asset is nullptr" );
 
 		if ( m_MemoryAssets.contains( a_Handle ) )
 		{

@@ -262,7 +262,7 @@ namespace Tridium {
 		}
 		}
 
-		ASSERT_LOG( false, "GetShaderModelFlag: Unsupported shader type." );
+		ASSERT( false, "GetShaderModelFlag: Unsupported shader type." );
 		return L"";
 	};
 
@@ -319,7 +319,7 @@ namespace Tridium {
 			}
 			default:
 			{
-				ASSERT_LOG( false, "DXCompiler::Compile: Unsupported shader format." );
+				ASSERT( false, "DXCompiler::Compile: Unsupported shader format." );
 				return {};
 			}
 		}

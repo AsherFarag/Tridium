@@ -190,7 +190,7 @@ namespace Tridium {
 		{
 			if ( !std::is_constant_evaluated() )
 			{
-				ENSURE_LOG( m_Function != nullptr, "Attempting to invoke an unbound function." );
+				ENSURE( m_Function != nullptr, "Attempting to invoke an unbound function." );
 			}
 
 			return m_Function( m_Instance, a_Args... );
@@ -264,7 +264,7 @@ namespace Tridium {
 
 		ReturnType Invoke( _Args... a_Args ) const
 		{
-			ASSERT_LOG( m_Function != nullptr, "Attempting to invoke an unbound function." );
+			ASSERT( m_Function != nullptr, "Attempting to invoke an unbound function." );
 			return m_Function( std::forward<_Args>( a_Args )... );
 		}
 

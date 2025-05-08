@@ -144,7 +144,7 @@ namespace Tridium {
 		for ( uint32_t i = 0; i < a_Mesh->mNumFaces; ++i )
 		{
 			const aiFace& face = a_Mesh->mFaces[i];
-			ASSERT_LOG( face.mNumIndices == 3, "Face is not a triangle" );
+			ASSERT( face.mNumIndices == 3, "Face is not a triangle" );
 
 			submesh.Indices.push_back( face.mIndices[0] );
 			submesh.Indices.push_back( face.mIndices[1] );

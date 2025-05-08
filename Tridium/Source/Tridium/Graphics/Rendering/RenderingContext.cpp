@@ -12,7 +12,7 @@ namespace Tridium {
 			return MakeUnique<OpenGLContext>( window );
 		}
 
-		ASSERT_LOG( false, "Unknown RendererAPI!" );
+		ASSERT( false, "Unknown RendererAPI!" );
 		return nullptr;
     }
 }

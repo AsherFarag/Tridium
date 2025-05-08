@@ -8,7 +8,7 @@ namespace Tridium {
 		m_Desc = a_Desc;
 		if ( a_Desc.Type != ERHIFenceType::CPUWaitOnly )
 		{
-			ASSERT_LOG( false, "Only CPUWaitOnly fences are supported in OpenGL" );
+			ASSERT( false, "Only CPUWaitOnly fences are supported in OpenGL" );
 			return false;
 		}
 
@@ -57,13 +57,13 @@ namespace Tridium {
 
 	void OpenGLFence::Signal( uint64_t a_Value )
 	{
-		ASSERT_LOG( Descriptor().Type == ERHIFenceType::General, "Signaling on a CPUWaitOnly fence, fence type must be ERHIFenceType::General" );
-		ASSERT_LOG( false, "OpenGL does not support signaling fences" );
+		ASSERT( Descriptor().Type == ERHIFenceType::General, "Signaling on a CPUWaitOnly fence, fence type must be ERHIFenceType::General" );
+		ASSERT( false, "OpenGL does not support signaling fences" );
 	}
 
 	void OpenGLFence::Wait( uint64_t a_Value )
 	{
-		//ASSERT_LOG( Descriptor().Type == ERHIFenceType::General, "Waiting on a CPUWaitOnly fence, fence type must be ERHIFenceType::General" );
+		//ASSERT( Descriptor().Type == ERHIFenceType::General, "Waiting on a CPUWaitOnly fence, fence type must be ERHIFenceType::General" );
 		while ( GetCompletedValue() < a_Value )
 		{
 			// Wait for the fence to be signaled

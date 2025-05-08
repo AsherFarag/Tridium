@@ -107,7 +107,7 @@ namespace Tridium {
 				case ERHICommandQueueType::Graphics:  d3d12CmdListType = D3D12_COMMAND_LIST_TYPE_DIRECT;  break;
 				case ERHICommandQueueType::Compute: d3d12CmdListType = D3D12_COMMAND_LIST_TYPE_COMPUTE; break;
 				case ERHICommandQueueType::Copy:    d3d12CmdListType = D3D12_COMMAND_LIST_TYPE_COPY;    break;
-				default: ASSERT_LOG( false, "Invalid command queue type!" ); break;
+				default: ASSERT( false, "Invalid command queue type!" ); break;
 			}
 
 			// Create the command queue

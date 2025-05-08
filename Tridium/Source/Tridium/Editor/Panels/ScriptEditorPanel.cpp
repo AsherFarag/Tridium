@@ -69,14 +69,14 @@ namespace Tridium {
 		SharedPtr<ScriptAsset> script = AssetManager::GetAsset<ScriptAsset>( a_Handle );
 		if ( !script )
 		{
-			ASSERT_LOG( false, "Failed to open script handle" );
+			ASSERT( false, "Failed to open script handle" );
 			return;
 		}
 
 		const auto& metaData = EditorAssetManager::Get()->GetAssetMetaData( a_Handle );
 		if ( !metaData.IsValid() || metaData.AssetType != EAssetType::LuaScript )
 		{
-			ASSERT_LOG( false, "Failed to retrieve Asset Meta Data" );
+			ASSERT( false, "Failed to retrieve Asset Meta Data" );
 			return;
 		}
 
@@ -100,7 +100,7 @@ namespace Tridium {
 		SharedPtr<ScriptAsset> script = AssetManager::GetAsset<ScriptAsset>( a_Handle );
 		if ( !script )
 		{
-			ASSERT_LOG( false, "Failed to save script handle" );
+			ASSERT( false, "Failed to save script handle" );
 			return;
 		}
 
@@ -313,7 +313,7 @@ namespace Tridium {
 		SharedPtr<ScriptAsset> script = AssetManager::GetAsset<ScriptAsset>( a_Handle );
 		if ( !script )
 		{
-			ASSERT_LOG( false, "Failed to recompile script handle" );
+			ASSERT( false, "Failed to recompile script handle" );
 			return;
 		}
 

@@ -24,7 +24,7 @@ namespace Tridium {
 		{
 			if ( seenImageIDs.contains( sampler.image_id ) )
 			{
-				ASSERT_LOG( false, "Textures used with multiple samplers are not supported!" );
+				ASSERT( false, "Textures used with multiple samplers are not supported!" );
 				continue;
 			}
 

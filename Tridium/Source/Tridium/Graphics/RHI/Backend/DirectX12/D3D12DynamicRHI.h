@@ -123,13 +123,13 @@ namespace Tridium {
 
 		auto& GetCommandContext( ERHICommandQueueType a_Type )
 		{
-			ASSERT_LOG( a_Type < ERHICommandQueueType::COUNT, "Invalid command queue type!" );
+			ASSERT( a_Type < ERHICommandQueueType::COUNT, "Invalid command queue type!" );
 			return m_CmdContexts[static_cast<size_t>( a_Type )];
 		}
 
 		const auto& GetCommandContext( ERHICommandQueueType a_Type ) const
 		{
-			ASSERT_LOG( a_Type < ERHICommandQueueType::COUNT, "Invalid command queue type!" );
+			ASSERT( a_Type < ERHICommandQueueType::COUNT, "Invalid command queue type!" );
 			return m_CmdContexts[static_cast<size_t>( a_Type )];
 		}
 
@@ -201,7 +201,7 @@ namespace Tridium {
 	#if RHI_DEBUG_ENABLED
 		if ( s_DynamicRHI->GetRHIType() != ERHInterfaceType::DirectX12 )
 		{
-			ASSERT_LOG( false, "The current RHI is not DirectX 12!" );
+			ASSERT( false, "The current RHI is not DirectX 12!" );
 			return nullptr;
 		}
 	#endif

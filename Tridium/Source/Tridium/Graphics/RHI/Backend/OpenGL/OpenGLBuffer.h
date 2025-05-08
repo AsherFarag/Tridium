@@ -15,7 +15,7 @@ namespace Tridium {
 			BufferObj.Create();
 			if ( !BufferObj.Valid() )
 			{
-				ASSERT_LOG( false, "Failed to create OpenGL buffer" );
+				ASSERT( false, "Failed to create OpenGL buffer" );
 				return;
 			}
 

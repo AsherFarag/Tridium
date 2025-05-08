@@ -164,30 +164,6 @@ namespace Tridium {
 		ERHIResourceStates After = ERHIResourceStates::Unknown;
 	};
 
-	// Temp
-	class IRHIGpuResource
-	{
-	public:
-		// Reads data from the resource.
-		virtual bool Read( Span<Byte>& o_Data, size_t a_SrcOffset = 0 ) { return false; }
-		virtual bool IsReadable() const { return false; }
-
-		// Writes data to the resource.
-		virtual bool Write( const RHICommandListRef& a_CmdList, const Span<const Byte>& a_Data, size_t a_DstOffset = 0 ) { return false; }
-		virtual bool IsWritable() const { return false; }
-
-		// Returns whether the resource is ready to be used.
-		virtual bool IsReady() const { return true; }
-		// Waits for the resource to be ready.
-		virtual void Wait() {}
-
-		// Maps the specified location on the GPU to a memory address on the CPU.
-		virtual bool Map( uint64_t a_Offset = 0, int64_t a_Length = -1, ERHIMappingMode a_MappingMode = ERHIMappingMode::Default ) { return false; }
-		// Unmaps the memory address on the CPU. Must be called after Map.
-		virtual bool Unmap() { return false; }
-		virtual bool IsMappable() const { return false; }
-	};
-
 } // namespace Tridium
 
 // Helper macro for defining a base RHI resource type, such as RHITexture, RHISampler, etc.

@@ -18,7 +18,7 @@ namespace Tridium {
 			return new OpenGLTextureOld( a_Specification );
 		}
 
-		ASSERT_LOG( false, "Unknown RendererAPI!" );
+		ASSERT( false, "Unknown RendererAPI!" );
 		return nullptr;
 	}
 
@@ -31,7 +31,7 @@ namespace Tridium {
 			return new OpenGLTextureOld( a_Specification, a_TextureData );
 		}
 
-		ASSERT_LOG( false, "Unknown RendererAPI!" );
+		ASSERT( false, "Unknown RendererAPI!" );
 		return nullptr;
 	}
 
@@ -43,7 +43,7 @@ namespace Tridium {
 		case OpenGL:
 			return new OpenGLCubeMap( a_Specification, a_Texture );
 		}
-		ASSERT_LOG( false, "Unknown RendererAPI!" );
+		ASSERT( false, "Unknown RendererAPI!" );
 		return nullptr;
 	}
 
@@ -55,7 +55,7 @@ namespace Tridium {
 		case OpenGL:
 			return new OpenGLCubeMap( a_Specification, a_CubeMapData );
 		}
-		ASSERT_LOG( false, "Unknown RendererAPI!" );
+		ASSERT( false, "Unknown RendererAPI!" );
 		return nullptr;
 	}
 

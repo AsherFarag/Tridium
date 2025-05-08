@@ -29,7 +29,7 @@ DECLARE_LOG_CATEGORY( RHI );
 	#define RHI_DEV_CHECK( _Condition, ... ) \
 			do { \
 				if ( !(_Condition) ) { \
-					ASSERT_LOG( false, "RHI Dev Error - ", ##__VA_ARGS__ ); \
+					ASSERT( false, "RHI Dev Error - ", ##__VA_ARGS__ ); \
 				} \
 			} while ( false )
 #else

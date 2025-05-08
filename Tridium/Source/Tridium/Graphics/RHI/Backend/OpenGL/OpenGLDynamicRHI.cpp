@@ -34,7 +34,7 @@ namespace Tridium {
 		int status = gladLoadGLLoader( (GLADloadproc)glfwGetProcAddress );
 		if ( status == 0 )
 		{
-			ASSERT_LOG( false, "Failed to initialize GLAD!" );
+			ASSERT( false, "Failed to initialize GLAD!" );
 			return false;
 		}
 

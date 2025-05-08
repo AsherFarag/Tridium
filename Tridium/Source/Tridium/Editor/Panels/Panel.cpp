@@ -35,7 +35,7 @@ namespace Tridium {
 	{
 		OnClose();
 
-		ASSERT_LOG( m_Owner, "Panel does not have an owner!" );
+		ASSERT( m_Owner, "Panel does not have an owner!" );
 		m_Owner->DestroyPanel( this );
 	}
 
