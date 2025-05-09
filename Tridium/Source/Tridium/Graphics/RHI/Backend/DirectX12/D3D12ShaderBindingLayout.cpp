@@ -52,7 +52,7 @@ namespace Tridium {
         {
             switch ( binding.BindingType )
             {
-            case ERHIShaderBindingType::Constant:
+            case ERHIShaderBindingType::ConstantBuffer:
             {
                 if ( binding.IsInlined() )
                 {
@@ -70,7 +70,7 @@ namespace Tridium {
                 break;
             }
             case ERHIShaderBindingType::Texture:
-            case ERHIShaderBindingType::Mutable:
+            case ERHIShaderBindingType::MutableBuffer:
             {
                 descriptorRangesList.EmplaceBack();
                 auto& range = descriptorRangesList.Back();
