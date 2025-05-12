@@ -430,10 +430,30 @@ namespace Tridium {
 
 		RHIBindingSet( const RHIBindingSetDescriptor& a_Desc, const RHIBindingLayoutRef& a_Layout )
 			: m_Desc( a_Desc ), m_Layout( a_Layout )
-		{}
+		{
+			ENSURE( m_Layout != nullptr, "Binding layout is null!" );
+			RHI_DEV_CHECK( a_Desc.Bindings.Size() <= m_Layout->Descriptor().Bindings.Size(), "Binding set has more bindings than the provided layout!" );
+
+			// We want to store hard references to the resources in the binding set.
+			m_ResourceHandles.Reserve( m_Desc.Bindings.Size() );
+			for ( const RHIBindingSetItem& binding : m_Desc.Bindings )
+			{
+				if ( binding.Resource != nullptr )
+				{
+					RHI_DEV_CHECK( binding.Resource->GetType() == ERHIResourceType::Texture
+						|| binding.Resource->GetType() == ERHIResourceType::Buffer
+						|| binding.Resource->GetType() == ERHIResourceType::Sampler,
+						"Invalid resource type '{0}' in shader binding set '{1}'", RHIResourceTypeToString( binding.Resource->GetType() ), a_Desc.Name
+					);
+
+					m_ResourceHandles.EmplaceBack( std::move( binding.Resource->SharedFromThis() ) );
+				}
+			}
+		}
 
 	protected:
 		RHIBindingLayoutRef m_Layout{};
+		Array<RHIResourceRef> m_ResourceHandles{};
 	};
 	
 

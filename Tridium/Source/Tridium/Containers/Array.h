@@ -2,6 +2,8 @@
 #include <Tridium/Core/Assert.h>
 #include <array>
 #include <vector>
+#include "InitList.h"
+#include <type_traits>
 
 namespace Tridium {
 
@@ -11,6 +13,21 @@ namespace Tridium {
 	#else
 		#define CONFIG_ENABLE_BOUNDS_CHECK 0
 	#endif // CONFIG_DEBUG
+#endif
+
+#if CONFIG_ENABLE_BOUNDS_CHECK
+	#define TRIDIUM_ARRAY_ASSERT( _Condition, _Message ) \
+		if ( std::is_constant_evaluated() ) \
+		{ \
+			if ( !(_Condition) ) \
+				throw "Assertion failed: " _Message; \
+		} \
+		else \
+		{ \
+			ENSURE( _Condition, _Message ); \
+		}
+#else
+	#define TRIDIUM_ARRAY_ASSERT( _Condition, _Message )
 #endif
 
 	//=================================================================================================
@@ -31,51 +48,31 @@ namespace Tridium {
 		constexpr FixedArray() = default;
 		constexpr FixedArray( const FixedArray& a_Other ) = default;
 		constexpr FixedArray( FixedArray&& a_Other ) = default;
-		constexpr FixedArray( const std::initializer_list<T>& a_InitializerList ) { std::copy( a_InitializerList.begin(), a_InitializerList.end(), m_Data.begin() ); }
+		constexpr FixedArray( InitList<T> a_InitList ) { Fill( a_InitList ); }
 		constexpr FixedArray& operator=( const FixedArray& a_Other ) = default;
 		constexpr FixedArray& operator=( FixedArray&& a_Other ) = default;
 
 		constexpr T& operator[]( size_t a_Index )
 		{
-			if ( !std::is_constant_evaluated() )
-			{
-			#if CONFIG_ENABLE_BOUNDS_CHECK
-				ENSURE( IsValidIndex( a_Index ), "Index out of bounds" );
-			#endif
-			}
+			TRIDIUM_ARRAY_ASSERT( IsValidIndex( a_Index ), "Index out of bounds" );
 			return m_Data[a_Index];
 		}
 
 		constexpr const T& operator[]( size_t a_Index ) const
 		{
-			if ( !std::is_constant_evaluated() )
-			{
-			#if CONFIG_ENABLE_BOUNDS_CHECK
-				ENSURE( IsValidIndex( a_Index ), "Index out of bounds" );
-			#endif
-			}
+			TRIDIUM_ARRAY_ASSERT( IsValidIndex( a_Index ), "Index out of bounds" );
 			return m_Data[a_Index];
 		}
 
 		constexpr T& At( size_t a_Index )
 		{
-			if ( !std::is_constant_evaluated() )
-			{
-			#if CONFIG_ENABLE_BOUNDS_CHECK
-				ENSURE( IsValidIndex( a_Index ), "Index out of bounds" );
-			#endif
-			}
+			TRIDIUM_ARRAY_ASSERT( IsValidIndex( a_Index ), "Index out of bounds" );
 			return m_Data[a_Index];
 		}
 
 		constexpr const T& At( size_t a_Index ) const
 		{
-			if ( !std::is_constant_evaluated() )
-			{
-			#if CONFIG_ENABLE_BOUNDS_CHECK
-				ENSURE( IsValidIndex( a_Index ), "Index out of bounds" );
-			#endif
-			}
+			TRIDIUM_ARRAY_ASSERT( IsValidIndex( a_Index ), "Index out of bounds" );
 			return m_Data[a_Index];
 		}
 
@@ -93,8 +90,16 @@ namespace Tridium {
 		constexpr bool IsEmpty() const { return false; }
 		constexpr bool IsValidIndex( size_t a_Index ) const { return ( ( a_Index >= 0 ) && ( a_Index < _Size ) ); }
 
-		constexpr void Fill( const T& a_Value ) { m_Data.fill( a_Value ); }
 		constexpr void Swap( FixedArray& a_Other ) { m_Data.swap( a_Other.m_Data ); }
+		constexpr void Fill( const T& a_Value ) { m_Data.fill( a_Value ); }
+		constexpr void Fill( InitList<T> a_InitializerList )
+		{
+			TRIDIUM_ARRAY_ASSERT( a_InitializerList.Size() <= MaxSize(), "Initializer list is too large" );
+			for ( size_t i = 0; i < a_InitializerList.Size() && i < MaxSize(); ++i )
+			{
+				m_Data[i] = a_InitializerList[i];
+			}
+		}
 
 		constexpr Iterator Begin() { return m_Data.begin(); }
 		constexpr ConstIterator Begin() const { return m_Data.begin(); }
@@ -173,7 +178,7 @@ namespace Tridium {
 
 		constexpr void Fill( const T& a_Value, size_t a_Size )
 		{
-			_Assert( a_Size <= MaxSize(), "Inline Array is full" );
+			TRIDIUM_ARRAY_ASSERT( a_Size <= MaxSize(), "Inline Array is full" );
 			if ( a_Size < m_Size )
 			{
 				// Destroy the elements beyond the new size
@@ -200,7 +205,7 @@ namespace Tridium {
 
 		constexpr void PushBack( const T& a_Value )
 		{
-			_Assert( m_Size < MaxSize(), "Inline Array is full" );
+			TRIDIUM_ARRAY_ASSERT( m_Size < MaxSize(), "Inline Array is full" );
 			m_Storage[m_Size++] = a_Value;
 		}
 
@@ -215,13 +220,13 @@ namespace Tridium {
 		template<typename... _Args>
 		constexpr auto& EmplaceBack( _Args&&... a_Args )
 		{
-			_Assert( m_Size < MaxSize(), "Inline Array is full" );
+			TRIDIUM_ARRAY_ASSERT( m_Size < MaxSize(), "Inline Array is full" );
 			return m_Storage[m_Size++] = T( std::forward<_Args>( a_Args )... );
 		}
 
 		constexpr Iterator Insert( Iterator a_Position, const T& a_Value )
 		{
-			_Assert( m_Size < MaxSize(), "Inline Array is full" );
+			TRIDIUM_ARRAY_ASSERT( m_Size < MaxSize(), "Inline Array is full" );
 			for ( Iterator it = m_Storage.End(); it != a_Position; --it )
 			{
 				*it = *( it - 1 );
@@ -276,16 +281,6 @@ namespace Tridium {
 	private:
 		Storage m_Storage{};
 		size_t m_Size = 0;
-
-		constexpr void _Assert( bool a_Value, const char* a_Message )
-		{
-		#if CONFIG_ENABLE_BOUNDS_CHECK
-			if ( !std::is_constant_evaluated() )
-			{
-				ENSURE( a_Value, a_Message );
-			}
-		#endif	
-		}
 	};
 
 
@@ -314,33 +309,25 @@ namespace Tridium {
 
 		T& operator[]( size_t a_Index )
 		{
-		#if CONFIG_ENABLE_BOUNDS_CHECK
-			ENSURE( IsValidIndex( a_Index ), "Index out of bounds" );
-		#endif
+			TRIDIUM_ARRAY_ASSERT( IsValidIndex( a_Index ), "Index out of bounds" );
 			return m_Data[a_Index];
 		}
 
 		const T& operator[]( size_t a_Index ) const
 		{
-		#if CONFIG_ENABLE_BOUNDS_CHECK
-			ENSURE( IsValidIndex( a_Index ), "Index out of bounds" );
-		#endif
+			TRIDIUM_ARRAY_ASSERT( IsValidIndex( a_Index ), "Index out of bounds" );
 			return m_Data[a_Index];
 		}
 
 		T& At( size_t a_Index )
 		{
-		#if CONFIG_ENABLE_BOUNDS_CHECK
-			ENSURE( IsValidIndex( a_Index ), "Index out of bounds" );
-		#endif
+			TRIDIUM_ARRAY_ASSERT( IsValidIndex( a_Index ), "Index out of bounds" );
 			return m_Data[a_Index];
 		}
 
 		const T& At( size_t a_Index ) const
 		{
-		#if CONFIG_ENABLE_BOUNDS_CHECK
-			ENSURE( IsValidIndex( a_Index ), "Index out of bounds" );
-		#endif
+			TRIDIUM_ARRAY_ASSERT( IsValidIndex( a_Index ), "Index out of bounds" );
 			return m_Data[a_Index];
 		}
 
@@ -355,6 +342,7 @@ namespace Tridium {
 
 		size_t Size() const { return m_Data.size(); }
 		size_t MaxSize() const { return m_Data.max_size(); }
+		size_t Capacity() const { return m_Data.capacity(); }
 		bool IsEmpty() const { return m_Data.empty(); }
 		bool IsValidIndex( size_t a_Index ) const { return ( ( a_Index >= 0 ) && ( a_Index < m_Data.size() ) ); }
 		void Fill( const T& a_Value ) { m_Data.fill( a_Value ); }

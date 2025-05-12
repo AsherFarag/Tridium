@@ -29,6 +29,50 @@ namespace Tridium {
 		Unknown = 0xFF,
 	};
 
+	static constexpr StringView RHIResourceTypeToString( ERHIResourceType a_Type )
+	{
+		switch ( a_Type )
+		{
+			case ERHIResourceType::Sampler:               return "Sampler";
+			case ERHIResourceType::Texture:               return "Texture";
+			case ERHIResourceType::ShaderModule:          return "ShaderModule";
+			case ERHIResourceType::Buffer:                return "Buffer";
+			case ERHIResourceType::BindingLayout:         return "BindingLayout";
+			case ERHIResourceType::BindingSet:            return "BindingSet";
+			case ERHIResourceType::GraphicsPipelineState: return "GraphicsPipelineState";
+			case ERHIResourceType::ComputePipelineState:  return "ComputePipelineState";
+			case ERHIResourceType::CommandList:           return "CommandList";
+			case ERHIResourceType::CommandAllocator:      return "CommandAllocator";
+			case ERHIResourceType::SwapChain:             return "SwapChain";
+			case ERHIResourceType::Fence:                 return "Fence";
+			case ERHIResourceType::Unknown:               return "Unknown";
+			default:                                      return "<INVALID>";
+		}
+	}
+
+	static constexpr ERHIResourceType RHIResourceTypeFromString( StringView a_Type )
+	{
+		switch ( Hashing::Hash( ReinterpretCast<const uint8_t*>(a_Type.data()), a_Type.size() ) )
+		{
+			case "Sampler"_H:               return ERHIResourceType::Sampler;
+			case "Texture"_H:               return ERHIResourceType::Texture;
+			case "ShaderModule"_H:          return ERHIResourceType::ShaderModule;
+			case "Buffer"_H:                return ERHIResourceType::Buffer;
+			case "BindingLayout"_H:         return ERHIResourceType::BindingLayout;
+			case "BindingSet"_H:            return ERHIResourceType::BindingSet;
+			case "GraphicsPipelineState"_H: return ERHIResourceType::GraphicsPipelineState;
+			case "ComputePipelineState"_H:  return ERHIResourceType::ComputePipelineState;
+			case "CommandList"_H:           return ERHIResourceType::CommandList;
+			case "CommandAllocator"_H:      return ERHIResourceType::CommandAllocator;
+			case "SwapChain"_H:             return ERHIResourceType::SwapChain;
+			case "Fence"_H:                 return ERHIResourceType::Fence;
+		}
+
+		return ERHIResourceType::Unknown;
+	}
+
+	//=====================================================================
+
 	namespace Concepts {
 
 		template<typename T>
@@ -41,6 +85,12 @@ namespace Tridium {
 
 	} // namespace Concepts
 
+
+	// Strong reference-counting pointer to an RHI resource.
+	using RHIResourceRef = SharedPtr<class RHIResource>;
+	// Weak reference-counting pointer to an RHI resource.
+	using RHIResourceWeakRef = WeakPtr<class RHIResource>;
+
 	//======================================================================================================
 	// RHI Resource
 	//  An abstract class that represents a resource that can be committed to the GPU.
@@ -48,7 +98,7 @@ namespace Tridium {
 	//  For graphics APIs, a specific implementation of this class will be created.
 	//  E.g. RHITexture_OpenGLImpl -> RHITexture -> RHIResource
 	//======================================================================================================
-	class RHIResource : public IRHIObject
+	class RHIResource : public IRHIObject, public EnableSharedFromThis<RHIResource>
 	{
     public:
         NON_COPYABLE_OR_MOVABLE( RHIResource );
@@ -125,15 +175,22 @@ namespace Tridium {
 			return T::RefType( a_Resource, deleter );
 		}
 
+		RHIResourceRef SharedFromThis()
+		{
+			return shared_from_this();
+		}
+
+		RHIResourceWeakRef WeakFromThis()
+		{
+			return weak_from_this();
+		}
+
 	protected:
 		RHIResource() = default;
 		virtual ~RHIResource() = default;
 	};
 
-	// Strong reference-counting pointer to an RHI resource.
-	using RHIResourceRef = SharedPtr<RHIResource>;
-	// Weak reference-counting pointer to an RHI resource.
-	using RHIResourceWeakRef = SharedPtr<RHIResource>;
+
 
 	//=======================================================
 	// RHI Resource Descriptor
@@ -175,7 +232,7 @@ namespace Tridium {
 	struct _ClassName##Descriptor; \
 	using _ClassName##Ref = ::Tridium::SharedPtr<_ClassName>; \
 	using _ClassName##WeakRef = ::Tridium::WeakPtr<_ClassName>; \
-	class _ClassName : public RHIResource, public EnableSharedFromThis<_ClassName>
+	class _ClassName : public RHIResource
 
 // Helper macro for defining the body of a base RHI resource type.
 // _ClassName: The name of the resource type. Should be prefixed with RHI. E.g. _ClassName = RHITexture
@@ -189,6 +246,8 @@ public: \
 	static constexpr ::Tridium::ERHIResourceType Type = ::Tridium::_RHIResourceType; \
 	::Tridium::ERHIResourceType GetType() const override { return Type; } \
 	const DescriptorType& Descriptor() const { return m_Desc; } \
+	RefType SharedFromThis() { return std::static_pointer_cast<_ClassName>( std::move( shared_from_this() ) ); } \
+	WeakRefType WeakFromThis() { return std::static_pointer_cast<_ClassName>( std::move( shared_from_this() ) ); } \
 protected: \
 	DescriptorType m_Desc; \
 public:

@@ -29,18 +29,13 @@ namespace Tridium {
 	{
 		// The size of the buffer in bytes. Uniform buffers must be aligned to 16 bytes.
 		size_t Size = 0;
-		// Bind flags.
 		ERHIBindFlags BindFlags = ERHIBindFlags::None;
-		// Buffer usage hint.
 		ERHIUsage Usage = ERHIUsage::Default;
-		// CPU access flags. None by default.
 		ERHICpuAccess CpuAccess = ERHICpuAccess::None;
-		// The type of the buffer. This is used to determine how the buffer is accessed.
 		ERHIBufferType Type = ERHIBufferType::Undefined;
-		// For structured buffers, the stride of each element in the buffer.
-		// In bytes.
-		uint32_t Stride = 0;
 		ERHIFormat Format = ERHIFormat::Unknown;
+		// For structured buffers, the stride of each element in the buffer. In bytes.
+		uint32_t Stride = 0;
 
 		constexpr RHIBufferDescriptor() = default;
 		constexpr RHIBufferDescriptor(

@@ -640,10 +640,10 @@ namespace Tridium {
 		switch ( a_Barrier.Resource->GetType() )
 		{
 		case ERHIResourceType::Texture:
-			m_Textures.insert( a_Barrier.Resource->As<RHITexture>()->shared_from_this() );
+			m_Textures.insert( a_Barrier.Resource->As<RHITexture>()->SharedFromThis() );
 			break;
 		case ERHIResourceType::Buffer:
-			m_Buffers.insert( a_Barrier.Resource->As<RHIBuffer>()->shared_from_this() );
+			m_Buffers.insert( a_Barrier.Resource->As<RHIBuffer>()->SharedFromThis() );
 			break;
 		default:
 			ASSERT( false, "Can only set resource barriers for textures and buffers!" );
@@ -893,7 +893,7 @@ namespace Tridium {
 		if ( a_DSV )
 		{
 			data.DSV = a_DSV;
-			m_Textures.insert( a_DSV->shared_from_this() );
+			m_Textures.insert( a_DSV->SharedFromThis() );
 		}
 
 		for ( size_t i = 0; i < a_RTV.size() && i < data.RTV.MaxSize(); ++i )
@@ -911,7 +911,7 @@ namespace Tridium {
 			}
 
 			data.RTV.PushBack( a_RTV[i] );
-			m_Textures.insert( a_RTV[i]->shared_from_this() );
+			m_Textures.insert( a_RTV[i]->SharedFromThis() );
 		}
 
 		ADD_DEBUG_INFO();

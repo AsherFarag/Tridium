@@ -24,7 +24,7 @@ namespace Tridium {
         constexpr InitList( const T* a_First, const T* a_Last ) noexcept
             : m_First( a_First ), m_Last( a_Last ) {}
 
-		constexpr InitList( const std::initializer_list<T>& a_InitializerList ) noexcept
+		constexpr InitList( std::initializer_list<T> a_InitializerList ) noexcept
 			: m_First( a_InitializerList.begin() ), m_Last( a_InitializerList.end() ) {}
 
 		[[nodiscard]] constexpr const T* Begin() const noexcept { return m_First; }
