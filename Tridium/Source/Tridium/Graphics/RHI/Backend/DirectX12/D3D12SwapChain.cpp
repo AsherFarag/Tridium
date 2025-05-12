@@ -14,12 +14,81 @@
 
 namespace Tridium {
 
-	bool D3D12SwapChain::Present()
+	RHISwapChain_D3D12Impl::RHISwapChain_D3D12Impl( const DescriptorType& a_Desc )
+		: RHISwapChain( a_Desc )
+	{
+		D3D12RHI* rhi = GetD3D12RHI();
+
+		HWND hWnd = glfwGetWin32Window( glfwGetCurrentContext() );
+		if ( !ASSERT( hWnd != NULL,
+			"Failed to get window handle while creating RHISwapChain" ) )
+		{
+			return;
+		}
+
+		// Create the swap chain descriptor
+		DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
+		swapChainDesc.Width = m_Width = a_Desc.Width;
+		swapChainDesc.Height = m_Height = a_Desc.Height;
+		swapChainDesc.Format = D3D12::Translate( a_Desc.Format );
+		TODO( "Stereo?" );
+		swapChainDesc.Stereo = false;
+		swapChainDesc.SampleDesc.Count = a_Desc.SampleSettings.Count;
+		swapChainDesc.SampleDesc.Quality = a_Desc.SampleSettings.Quality;
+		TODO( "Use RHIUsageHint for BufferUsage?" );
+		swapChainDesc.BufferUsage = DXGI_USAGE_BACK_BUFFER | DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		swapChainDesc.BufferCount = a_Desc.BufferCount;
+		swapChainDesc.Scaling =
+			a_Desc.ScaleMode == ERHIScaleMode::Stretch
+			? DXGI_SCALING_STRETCH
+			: a_Desc.ScaleMode == ERHIScaleMode::AspectRatioStretch
+			? DXGI_SCALING_ASPECT_RATIO_STRETCH
+			: DXGI_SCALING_NONE;
+		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+		swapChainDesc.Flags = 0;
+		swapChainDesc.Flags |= a_Desc.Flags.HasFlag( ERHISwapChainFlags::UseVSync ) ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+		swapChainDesc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+		TODO( "this?" );
+		DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsDesc{};
+		fsDesc.Windowed = true;
+
+		auto& directCmdCtx = rhi->GetCommandContext( ERHICommandQueueType::Graphics );
+
+		// Create the swap chain
+		ComPtr<IDXGISwapChain1> swapChain;
+		ComPtr<IDXGIFactory4> dxgiFactory;
+		if ( !ASSERT( rhi->GetDXGIFactory().QueryInterface( dxgiFactory ),
+			"Failed to get DXGI factory!" ) )
+		{
+			return;
+		}
+
+		if ( !ASSERT(
+			SUCCEEDED( dxgiFactory->CreateSwapChainForHwnd( directCmdCtx.CmdQueue.Get(), hWnd, &swapChainDesc, &fsDesc, nullptr, &swapChain ) ),
+			"Failed to create swap chain!" ) )
+		{
+			return;
+		}
+
+		if ( !ASSERT( swapChain.QueryInterface( SwapChain ), "Failed to query swap chain interface!" ) )
+		{
+			return;
+		}
+
+		// Resize the RTVs array to the buffer count
+		RTVs.Resize( a_Desc.BufferCount );
+
+		ASSERT( GetBackBuffers(), "Failed to get back buffers!" );
+	}
+
+	bool RHISwapChain_D3D12Impl::Present()
 	{
 		if ( !SwapChain )
 			return false;
 
-		if ( GetBackBuffer()->GetState() != ERHIResourceStates::Present )
+		if ( GetBackBuffer()->State() != ERHIResourceStates::Present )
 		{
 			TODO( "We should not be stalling the GPU here!" );
 			// We need to transition the back buffer to present
@@ -38,14 +107,14 @@ namespace Tridium {
 		return true;
 	}
 
-	RHITextureRef D3D12SwapChain::GetBackBuffer()
+	RHITextureRef RHISwapChain_D3D12Impl::GetBackBuffer()
 	{
 		if ( !SwapChain )
 			return nullptr;
 		return RTVs[SwapChain->GetCurrentBackBufferIndex()];
 	}
 
-	bool D3D12SwapChain::Resize( uint32_t a_Width, uint32_t a_Height )
+	bool RHISwapChain_D3D12Impl::Resize( uint32_t a_Width, uint32_t a_Height )
 	{
 		if ( !SwapChain )
 		{
@@ -65,7 +134,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool D3D12SwapChain::ResizeBuffers()
+	bool RHISwapChain_D3D12Impl::ResizeBuffers()
 	{
 		// Wait for the GPU to finish
 		auto& cmdCtx = GetD3D12RHI()->GetCommandContext( ERHICommandQueueType::Graphics );
@@ -90,7 +159,7 @@ namespace Tridium {
 		return true;
 	}
 
-	void D3D12SwapChain::ReleaseBuffers()
+	void RHISwapChain_D3D12Impl::ReleaseBuffers()
 	{
 		for ( uint32_t i = 0; i < RTVs.Size(); i++ )
 		{
@@ -100,7 +169,7 @@ namespace Tridium {
 		}
 	}
 
-	bool D3D12SwapChain::GetBackBuffers()
+	bool RHISwapChain_D3D12Impl::GetBackBuffers()
 	{
 		// Create textures and handles to view
 		const auto rtvDesc =
@@ -118,7 +187,7 @@ namespace Tridium {
 				RTVs[i] = RHI::CreateTexture( rtvDesc );
 			}
 
-			D3D12Texture* tex = RTVs[i]->As<D3D12Texture>();
+			RHITexture_D3D12Impl* tex = RTVs[i]->As<RHITexture_D3D12Impl>();
 			if ( FAILED( SwapChain->GetBuffer( i, IID_PPV_ARGS( &tex->Texture.Resource ) ) ) )
 			{
 				ASSERT( false, "Failed to get back buffer!" );
@@ -139,84 +208,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool D3D12SwapChain::Commit( const RHISwapChainDescriptor& a_Desc )
-    {
-		m_Desc = a_Desc;
-
-		// Get the RHI
-		D3D12RHI* rhi = GetD3D12RHI();
-
-
-		// Get the native window handle
-		HWND hWnd = glfwGetWin32Window( glfwGetCurrentContext() );
-		if ( hWnd == NULL )
-		{
-			return false;
-		}
-
-		// Create the swap chain descriptor
-		DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
-		swapChainDesc.Width = m_Width = a_Desc.Width;
-		swapChainDesc.Height = m_Height = a_Desc.Height;
-		swapChainDesc.Format = D3D12::Translate( a_Desc.Format );
-		TODO( "Stereo?" );
-		swapChainDesc.Stereo = false;
-		swapChainDesc.SampleDesc.Count = a_Desc.SampleSettings.Count;
-		swapChainDesc.SampleDesc.Quality = a_Desc.SampleSettings.Quality;
-		TODO( "Use RHIUsageHint for BufferUsage?" );
-		swapChainDesc.BufferUsage = DXGI_USAGE_BACK_BUFFER | DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferCount = a_Desc.BufferCount;
-		swapChainDesc.Scaling = 
-			a_Desc.ScaleMode == ERHIScaleMode::Stretch
-			? DXGI_SCALING_STRETCH
-			: a_Desc.ScaleMode == ERHIScaleMode::AspectRatioStretch
-				? DXGI_SCALING_ASPECT_RATIO_STRETCH
-				: DXGI_SCALING_NONE;
-		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
-		swapChainDesc.Flags = 0;
-		swapChainDesc.Flags |= a_Desc.Flags.HasFlag( ERHISwapChainFlags::UseVSync ) ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
-		swapChainDesc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-
-		TODO( "this?" );
-		DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsDesc{};
-		fsDesc.Windowed = true;
-
-		auto& directCmdCtx = rhi->GetCommandContext( ERHICommandQueueType::Graphics );
-
-		// Create the swap chain
-		ComPtr<IDXGISwapChain1> swapChain;
-		ComPtr<IDXGIFactory4> dxgiFactory;
-		if ( !rhi->GetDXGIFactory().QueryInterface( dxgiFactory ) )
-		{
-			ASSERT( false, "Failed to get DXGI factory!" );
-			return false;
-		}
-
-		if ( FAILED( dxgiFactory->CreateSwapChainForHwnd( directCmdCtx.CmdQueue.Get(), hWnd, &swapChainDesc, &fsDesc, nullptr, &swapChain) ) )
-		{
-			ASSERT( false, "Failed to create swap chain!" );
-			return false;
-		}
-
-		if ( !swapChain.QueryInterface( SwapChain ) )
-		{
-			return false;
-		}
-
-		// Resize the RTVs array to the buffer count
-		RTVs.Resize( a_Desc.BufferCount );
-
-		// Get the back buffers
-		if ( !GetBackBuffers() )
-		{
-			return false;
-		}
-
-		return true;
-    }
-
-	bool D3D12SwapChain::Release()
+	bool RHISwapChain_D3D12Impl::Release()
 	{
 		SwapChain.Release();
 		for ( auto& rtv : RTVs )
@@ -227,7 +219,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool D3D12SwapChain::IsValid() const
+	bool RHISwapChain_D3D12Impl::IsValid() const
 	{
 		return SwapChain != nullptr;
 	}

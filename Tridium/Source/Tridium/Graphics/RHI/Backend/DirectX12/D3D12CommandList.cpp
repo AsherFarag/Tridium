@@ -147,7 +147,7 @@ namespace Tridium {
 			return;
 		}
 
-		const RHIShaderBindingLayoutDescriptor& desc = CurrentSBL->Descriptor();
+		const RHIBindingLayoutDescriptor& desc = CurrentSBL->Descriptor();
 		const int32_t index = desc.GetBindingIndex( a_Cmd.NameHash );
 		if ( index == -1 )
 		{
@@ -156,26 +156,29 @@ namespace Tridium {
 		}
 		const RHIShaderBinding& binding = desc.Bindings.At( index );
 
-		switch ( binding.BindingType )
+		switch ( binding.Type() )
 		{
-		case ERHIShaderBindingType::ConstantBuffer:
+		case ERHIShaderBindingType::InlinedConstants:
 		{
-			if ( binding.IsInlined() )
-			{
-				GraphicsCommandList()->SetGraphicsRoot32BitConstants( RootParameters::Constants, binding.WordSize, static_cast<const void*>( &a_Cmd.Payload.InlineData[0] ), 0 );
-			}
-			else
-			{
-				NOT_IMPLEMENTED;
-			}
+			GraphicsCommandList()->SetGraphicsRoot32BitConstants(
+				RootParameters::Constants,
+				NumDWORDsFromBytes( binding.Size ),
+				Cast<const void*>( &a_Cmd.Payload.InlineData[0] ),
+				0 
+			);
 			break;
 		}
-		case ERHIShaderBindingType::MutableBuffer:
+		case ERHIShaderBindingType::ConstantBuffer:
 		{
 			NOT_IMPLEMENTED;
 			break;
 		}
-		case ERHIShaderBindingType::Storage:
+		case ERHIShaderBindingType::StructuredBuffer:
+		{
+			NOT_IMPLEMENTED;
+			break;
+		}
+		case ERHIShaderBindingType::StorageBuffer:
 		{
 			NOT_IMPLEMENTED;
 			break;
@@ -212,7 +215,7 @@ namespace Tridium {
 				srvDesc.Texture2D.PlaneSlice = 0;
 				srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 
-				const auto* tex = static_cast<const D3D12Texture*>( a_Cmd.Payload.References[0] );
+				const auto* tex = static_cast<const RHITexture_D3D12Impl*>( a_Cmd.Payload.References[0] );
 
 				GetD3D12RHI()->GetD3D12Device()->CreateShaderResourceView(
 					tex->Texture.Resource.Get(),
@@ -227,7 +230,7 @@ namespace Tridium {
 
 			break;
 		}
-		case ERHIShaderBindingType::RWTexture:
+		case ERHIShaderBindingType::StorageTexture:
 		{
 			NOT_IMPLEMENTED;
 			break;
@@ -240,7 +243,7 @@ namespace Tridium {
 			}
 			else
 			{
-				D3D12Sampler* sampler = static_cast<D3D12Sampler*>( a_Cmd.Payload.References[0] );
+				RHISampler_D3D12Impl* sampler = static_cast<RHISampler_D3D12Impl*>( a_Cmd.Payload.References[0] );
 				GraphicsCommandList()->SetDescriptorHeaps( 1, &sampler->SamplerHeap );
 				GraphicsCommandList()->SetGraphicsRootDescriptorTable( RootParameters::Samplers, sampler->SamplerHeap->GetGPUDescriptorHandleForHeapStart() );
 			}
@@ -258,7 +261,7 @@ namespace Tridium {
 			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-			const auto* tex = static_cast<const D3D12Texture*>( a_Cmd.Payload.References[0] );
+			const auto* tex = static_cast<const RHITexture_D3D12Impl*>( a_Cmd.Payload.References[0] );
 
 			if ( a_Cmd.Payload.Count > 1 )
 			{
@@ -352,7 +355,7 @@ namespace Tridium {
 
 		// Update the resource state
 		a_Cmd.Barrier.Resource->GetType() == ERHIResourceType::Texture ?
-			static_cast<D3D12Texture*>( a_Cmd.Barrier.Resource )->SetState( a_Cmd.Barrier.After ) :
+			static_cast<RHITexture_D3D12Impl*>( a_Cmd.Barrier.Resource )->SetState( a_Cmd.Barrier.After ) :
 			static_cast<D3D12Buffer*>( a_Cmd.Barrier.Resource )->SetState( a_Cmd.Barrier.After );
 	}
 
@@ -397,7 +400,7 @@ namespace Tridium {
 		}
 		else if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Validate )
 		{
-			RHI_DEV_CHECK( a_Cmd.Buffer->GetState() == ERHIResourceStates::CopyDest, "Buffer state is not CopyDest!" );
+			RHI_DEV_CHECK( a_Cmd.Buffer->State() == ERHIResourceStates::CopyDest, "Buffer state is not CopyDest!" );
 		}
 
 		CommitBarriers();
@@ -420,7 +423,7 @@ namespace Tridium {
 		}
 		else if ( a_Cmd.SrcStateTransitionMode == ERHIResourceStateTransitionMode::Validate )
 		{
-			RHI_DEV_CHECK( a_Cmd.Source->GetState() == ERHIResourceStates::CopySource, "Source buffer state is not CopySource!" );
+			RHI_DEV_CHECK( a_Cmd.Source->State() == ERHIResourceStates::CopySource, "Source buffer state is not CopySource!" );
 		}
 		// Check the destination buffer state
 		if ( a_Cmd.DstStateTransitionMode == ERHIResourceStateTransitionMode::Transition )
@@ -429,7 +432,7 @@ namespace Tridium {
 		}
 		else if ( a_Cmd.DstStateTransitionMode == ERHIResourceStateTransitionMode::Validate )
 		{
-			RHI_DEV_CHECK( a_Cmd.Destination->GetState() == ERHIResourceStates::CopyDest, "Destination buffer state is not CopyDest!" );
+			RHI_DEV_CHECK( a_Cmd.Destination->State() == ERHIResourceStates::CopyDest, "Destination buffer state is not CopyDest!" );
 		}
 
 		CommitBarriers();
@@ -459,7 +462,7 @@ namespace Tridium {
 		}
 		else if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Validate )
 		{
-			RHI_DEV_CHECK( a_Cmd.Texture->GetState() == ERHIResourceStates::CopyDest, "Texture state is not CopyDest!" );
+			RHI_DEV_CHECK( a_Cmd.Texture->State() == ERHIResourceStates::CopyDest, "Texture state is not CopyDest!" );
 		}
 
 		CommitBarriers();
@@ -469,7 +472,7 @@ namespace Tridium {
 		D3D12MA::ALLOCATION_DESC allocDesc = {};
 		allocDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
 
-		D3D12_RESOURCE_DESC textureDesc = a_Cmd.Texture->As<D3D12Texture>()->Texture.Resource->GetDesc();
+		D3D12_RESOURCE_DESC textureDesc = a_Cmd.Texture->As<RHITexture_D3D12Impl>()->Texture.Resource->GetDesc();
 
 		UINT64 requiredSize = 0;
 		D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint = {};
@@ -529,7 +532,7 @@ namespace Tridium {
 
 		// Setup copy locations
 		D3D12_TEXTURE_COPY_LOCATION dstLocation = {};
-		dstLocation.pResource = a_Cmd.Texture->As<D3D12Texture>()->Texture.Resource.Get();
+		dstLocation.pResource = a_Cmd.Texture->As<RHITexture_D3D12Impl>()->Texture.Resource.Get();
 		dstLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 		dstLocation.SubresourceIndex = D3D12CalcSubresource( a_Cmd.MipLevel, a_Cmd.ArraySlice, 0, textureDesc.MipLevels, textureDesc.DepthOrArraySize );
 
@@ -559,7 +562,7 @@ namespace Tridium {
 		}
 		else if ( a_Cmd.SrcStateTransitionMode == ERHIResourceStateTransitionMode::Validate )
 		{
-			RHI_DEV_CHECK( a_Cmd.SrcTexture->GetState() == ERHIResourceStates::CopySource, "Source texture state is not CopySource!" );
+			RHI_DEV_CHECK( a_Cmd.SrcTexture->State() == ERHIResourceStates::CopySource, "Source texture state is not CopySource!" );
 		}
 		// Check the destination texture state
 		if ( a_Cmd.DstStateTransitionMode == ERHIResourceStateTransitionMode::Transition )
@@ -568,12 +571,12 @@ namespace Tridium {
 		}
 		else if ( a_Cmd.DstStateTransitionMode == ERHIResourceStateTransitionMode::Validate )
 		{
-			RHI_DEV_CHECK( a_Cmd.DstTexture->GetState() == ERHIResourceStates::CopyDest, "Destination texture state is not CopyDest!" );
+			RHI_DEV_CHECK( a_Cmd.DstTexture->State() == ERHIResourceStates::CopyDest, "Destination texture state is not CopyDest!" );
 		}
 
-		const bool success = a_Cmd.DstTexture->As<D3D12Texture>()->CopyTexture(
+		const bool success = a_Cmd.DstTexture->As<RHITexture_D3D12Impl>()->CopyTexture(
 			*GraphicsCommandList(),
-			*a_Cmd.SrcTexture->As<D3D12Texture>(),
+			*a_Cmd.SrcTexture->As<RHITexture_D3D12Impl>(),
 			a_Cmd.SrcMipLevel,
 			a_Cmd.SrcArraySlice,
 			a_Cmd.SrcRegion,
@@ -587,14 +590,14 @@ namespace Tridium {
 
 	void D3D12CommandList::SetGraphicsPipelineState( const RHICommand::SetGraphicsPipelineState& a_Cmd )
 	{
-		m_State.Graphics.PSO = SharedPtrCast<D3D12GraphicsPipelineState>( a_Cmd.PSO->shared_from_this() );
+		m_State.Graphics.PSO = SharedPtrCast<RHIGraphicsPipelineState_D3D12Impl>( a_Cmd.PSO->shared_from_this() );
 		GraphicsCommandList()->SetPipelineState( m_State.Graphics.PSO->PSO.Get() );
 	}
 
 	void D3D12CommandList::SetShaderBindingLayout( const RHICommand::SetShaderBindingLayout& a_Cmd )
 	{
 		CurrentSBL = a_Cmd.SBL;
-		GraphicsCommandList()->SetGraphicsRootSignature( a_Cmd.SBL->As<D3D12ShaderBindingLayout>()->m_RootSignature.Get() );
+		GraphicsCommandList()->SetGraphicsRootSignature( a_Cmd.SBL->As<RHIBindingLayout_D3D12Impl>()->m_RootSignature.Get() );
 	}
 
 	void D3D12CommandList::SetRenderTargets( const RHICommand::SetRenderTargets& a_Cmd )
@@ -625,11 +628,11 @@ namespace Tridium {
 			// Check the render target state for all RTVs and DSVs
 			for ( RHITexture* rtv : a_Cmd.RTV )
 			{
-				RHI_DEV_CHECK( rtv->GetState() == ERHIResourceStates::RenderTarget, "Render target state is not RenderTarget!" );
+				RHI_DEV_CHECK( rtv->State() == ERHIResourceStates::RenderTarget, "Render target state is not RenderTarget!" );
 			}
 			if ( a_Cmd.DSV )
 			{
-				RHI_DEV_CHECK( a_Cmd.DSV->GetState() == ERHIResourceStates::DepthStencilWrite, "Depth stencil state is not DepthStencilWrite!" );
+				RHI_DEV_CHECK( a_Cmd.DSV->State() == ERHIResourceStates::DepthStencilWrite, "Depth stencil state is not DepthStencilWrite!" );
 			}
 		}
 
@@ -654,7 +657,7 @@ namespace Tridium {
 		D3D12_CPU_DESCRIPTOR_HANDLE rtvs[RHIConstants::MaxColorTargets];
 		for ( size_t i = 0; i < a_Cmd.RTV.Size(); ++i )
 		{
-			device->CreateRenderTargetView( a_Cmd.RTV[i]->As<D3D12Texture>()->Texture.Resource.Get(), nullptr, m_State.LastRTVHeap->GetCPUHandle( i ) );
+			device->CreateRenderTargetView( a_Cmd.RTV[i]->As<RHITexture_D3D12Impl>()->Texture.Resource.Get(), nullptr, m_State.LastRTVHeap->GetCPUHandle( i ) );
 			rtvs[i] = m_State.LastRTVHeap->GetCPUHandle( i );
 		}
 
@@ -664,7 +667,7 @@ namespace Tridium {
 			{
 				TODO( "Move this to a validation function before drawing?" );
 				ASSERT( 
-					m_State.Graphics.PSO->Descriptor().DepthStencilFormat == a_Cmd.DSV->Descriptor().Format,
+					m_State.Graphics.PSO->Descriptor().FramebufferInfo.DepthStencilFormat == a_Cmd.DSV->Descriptor().Format,
 					"Depth stencil format of the set DSV does not match the currently bound PSO!"
 				);
 			}
@@ -675,7 +678,7 @@ namespace Tridium {
 				ED3D12DescriptorHeapFlags::Poolable,
 				"DSV Heap" ) );
 
-			device->CreateDepthStencilView( a_Cmd.DSV->As<D3D12Texture>()->Texture.Resource.Get(), nullptr, m_State.LastDSVHeap->GetCPUHandle( 0 ) );
+			device->CreateDepthStencilView( a_Cmd.DSV->As<RHITexture_D3D12Impl>()->Texture.Resource.Get(), nullptr, m_State.LastDSVHeap->GetCPUHandle( 0 ) );
 			D3D12_CPU_DESCRIPTOR_HANDLE dsv = m_State.LastDSVHeap->GetCPUHandle( 0 );
 			GraphicsCommandList()->OMSetRenderTargets( a_Cmd.RTV.Size(), rtvs, false, &dsv );
 		}
@@ -705,11 +708,11 @@ namespace Tridium {
 			// Check the render target state for all RTVs and DSVs
 			for ( RHITexture* rtv : m_State.Graphics.CurrentRTs )
 			{
-				RHI_DEV_CHECK( rtv->GetState() == ERHIResourceStates::RenderTarget, "Render target state is not RenderTarget!" );
+				RHI_DEV_CHECK( rtv->State() == ERHIResourceStates::RenderTarget, "Render target state is not RenderTarget!" );
 			}
 			if ( m_State.Graphics.CurrentDSV )
 			{
-				RHI_DEV_CHECK( m_State.Graphics.CurrentDSV->GetState() == ERHIResourceStates::DepthStencilWrite, "Depth stencil state is not DepthStencilWrite!" );
+				RHI_DEV_CHECK( m_State.Graphics.CurrentDSV->State() == ERHIResourceStates::DepthStencilWrite, "Depth stencil state is not DepthStencilWrite!" );
 			}
 		}
 
@@ -776,7 +779,7 @@ namespace Tridium {
 		}
 		else if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Validate )
 		{
-			RHI_DEV_CHECK( a_Cmd.IBO->GetState() == ERHIResourceStates::IndexBuffer, "Index buffer state is not IndexBuffer!" );
+			RHI_DEV_CHECK( a_Cmd.IBO->State() == ERHIResourceStates::IndexBuffer, "Index buffer state is not IndexBuffer!" );
 		}
 
 		CommitBarriers();
@@ -796,7 +799,7 @@ namespace Tridium {
 		}
 		else if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Validate )
 		{
-			RHI_DEV_CHECK( a_Cmd.VBO->GetState() == ERHIResourceStates::VertexBuffer, "Vertex buffer state is not VertexBuffer!" );
+			RHI_DEV_CHECK( a_Cmd.VBO->State() == ERHIResourceStates::VertexBuffer, "Vertex buffer state is not VertexBuffer!" );
 		}
 
 		CommitBarriers();

@@ -5,7 +5,7 @@
 
 namespace Tridium {
 
-    bool OpenGLSwapChain::Present()
+    bool RHISwapChain_OpenGLImpl::Present()
     {
 		if ( Window )
         {
@@ -33,12 +33,12 @@ namespace Tridium {
         return false;
     }
 
-	RHITextureRef OpenGLSwapChain::GetBackBuffer()
+	RHITextureRef RHISwapChain_OpenGLImpl::GetBackBuffer()
 	{
 		return m_Framebuffer.BackBufferTexture;
 	}
 
-	bool OpenGLSwapChain::Resize( uint32_t a_Width, uint32_t a_Height )
+	bool RHISwapChain_OpenGLImpl::Resize( uint32_t a_Width, uint32_t a_Height )
 	{
 		if ( !Window )
 		{
@@ -57,36 +57,26 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLSwapChain::Commit( const RHISwapChainDescriptor& a_Desc )
+	RHISwapChain_OpenGLImpl::RHISwapChain_OpenGLImpl( const DescriptorType& a_Desc )
+		: RHISwapChain( a_Desc )
     {
-		m_Desc = a_Desc;
-
 		m_Width = a_Desc.Width;
 		m_Height = a_Desc.Height;
 
 		Window = glfwGetCurrentContext();
-		if ( !Window )
+		if ( !ASSERT( Window, "Failed to get current OpenGL context!" ) )
 		{
-			return false;
+			return;
 		}
 
 		glfwSwapInterval( a_Desc.Flags.HasFlag( ERHISwapChainFlags::UseVSync ) ? 1 : 0 );
 
 		OpenGLDynamicRHI* rhi = RHI::GetOpenGLRHI();
-		if ( !rhi )
-		{
-			return false;
-		}
 
-		if ( !m_Framebuffer.Init( a_Desc ) )
-		{
-			return false;
-		}
-
-		return true;
+		ASSERT( m_Framebuffer.Init( a_Desc ), "Failed to create OpenGL framebuffer!" );
     }
 
-	bool OpenGLSwapChain::Release()
+	bool RHISwapChain_OpenGLImpl::Release()
 	{
 		Window = nullptr;
 		m_Framebuffer = {};

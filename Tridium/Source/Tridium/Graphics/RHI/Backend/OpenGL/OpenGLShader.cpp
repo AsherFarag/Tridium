@@ -4,10 +4,9 @@
 
 namespace Tridium {
 
-	bool OpenGLShaderModule::Commit( const RHIShaderModuleDescriptor& a_Desc )
+	RHIShaderModule_OpenGLImpl::RHIShaderModule_OpenGLImpl( const DescriptorType& a_Desc )
+		: RHIShaderModule( a_Desc )
 	{
-		m_Desc = a_Desc;
-
 		// Create GLSL from the SPIR-V bytecode using SPIRV-Cross
 		spirv_cross::CompilerGLSL glslCompiler( reinterpret_cast<const uint32_t*>( a_Desc.Bytecode.data() ), a_Desc.Bytecode.size_bytes() / sizeof( uint32_t ) );
 		spirv_cross::CompilerGLSL::Options options;
@@ -31,7 +30,7 @@ namespace Tridium {
 			seenImageIDs.insert( sampler.image_id );
 			const String& texName = glslCompiler.get_name( sampler.image_id );
 			// Set the name of the combined sampler to the texture name.
-			// This is helpful for setting Texture Shader Inputs via the OpenGLCommandList.
+			// This is helpful for setting Texture Shader Inputs via the RHICommandList_OpenGLImpl.
 			glslCompiler.set_name( sampler.combined_id, texName );
 		}
 
@@ -44,7 +43,7 @@ namespace Tridium {
 		OpenGL2::CompileShader( m_ShaderID );
 
 	#if RHI_DEBUG_ENABLED
-		std::cout << "OpenGLShaderModule::Commit: Compiling shader '\n" << glsl << "'" << std::endl;
+		std::cout << "RHIShaderModule_OpenGLImpl::Commit: Compiling shader '\n" << glsl << "'" << std::endl;
 
 		// Check for compilation errors
 		GLint success = 0;
@@ -55,8 +54,8 @@ namespace Tridium {
 			OpenGL2::GetShaderiv( m_ShaderID, GL_INFO_LOG_LENGTH, &length );
 			Array<GLchar> infoLog( length );
 			OpenGL2::GetShaderInfoLog( m_ShaderID, length, &length, infoLog.Data() );
-			LOG( LogCategory::OpenGL, Error, "OpenGLShaderModule::Commit: Failed to compile shader '{0}' - Error: {1}", a_Desc.Name, infoLog.Data() );
-			return false;
+			LOG( LogCategory::OpenGL, Error, "RHIShaderModule_OpenGLImpl::Commit: Failed to compile shader '{0}' - Error: {1}", a_Desc.Name, infoLog.Data() );
+			Release();
 		}
 
 		if ( RHIQuery::IsDebug() && !a_Desc.Name.empty() )
@@ -64,11 +63,9 @@ namespace Tridium {
 			OpenGL4::ObjectLabel( GL_SHADER, m_ShaderID, a_Desc.Name.size(), static_cast<const GLchar*>( a_Desc.Name.data() ) );
 		}
 	#endif
-
-		return IsValid();
 	}
 
-	bool OpenGLShaderModule::Release()
+	bool RHIShaderModule_OpenGLImpl::Release()
 	{
 		if ( IsValid() )
 		{

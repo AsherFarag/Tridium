@@ -3,7 +3,7 @@
 #include "RHIVertexLayout.h"
 #include "RHITexture.h"
 #include "RHIShader.h"
-#include "RHIShaderBindingLayout.h"
+#include "RHIShaderBindings.h"
 
 namespace Tridium {
 
@@ -79,11 +79,13 @@ namespace Tridium {
 	//  A pipeline state object that contains the state of the GPU pipeline.
 	//=======================================================================
 
+	//==============================================
+	// RHI Graphics Pipeline State Descriptor
 	DECLARE_RHI_RESOURCE_DESCRIPTOR( RHIGraphicsPipelineStateDescriptor, RHIGraphicsPipelineState )
 	{
 		ERHITopology Topology = ERHITopology::Triangle;
 		RHIVertexLayout VertexLayout{};
-		RHIShaderBindingLayoutRef ShaderBindingLayout{};
+		RHIBindingLayoutRef BindingLayout{};
 
 		RHIShaderModuleRef VertexShader{};
 		RHIShaderModuleRef HullShader{};
@@ -96,28 +98,31 @@ namespace Tridium {
 		RHIStencilState StencilState{};
 		RHIRasterizerState RasterizerState{};
 
-		FixedArray<ERHIFormat, RHIConstants::MaxColorTargets> ColorTargetFormats = {};
-		ERHIFormat DepthStencilFormat = ERHIFormat::D16_UNORM;
+		RHIFramebufferInfo FramebufferInfo{};
 
-		const RHIShaderModuleRef& GetShader( ERHIShaderType a_Type ) const
+		RHIShaderModule* GetShader( ERHIShaderType a_Type ) const
 		{
 			switch ( a_Type )
 			{
-				case ERHIShaderType::Vertex:     return VertexShader;
-				case ERHIShaderType::Hull:       return HullShader;
-				case ERHIShaderType::Domain:     return DomainShader;
-				case ERHIShaderType::Geometry:   return GeometryShader;
-				case ERHIShaderType::Pixel:      return PixelShader;
+				case ERHIShaderType::Vertex:     return VertexShader.get();
+				case ERHIShaderType::Hull:       return HullShader.get();
+				case ERHIShaderType::Domain:     return DomainShader.get();
+				case ERHIShaderType::Geometry:   return GeometryShader.get();
+				case ERHIShaderType::Pixel:      return PixelShader.get();
 			}
 
+			RHI_DEV_CHECK( false, "Attempting to retrieve an invalid shader type from a GraphicsPipelineState" );
 			return nullptr;
 		}
 	};
 
+	//==============================================
+	// RHI Graphics Pipeline State Interface
 	DECLARE_RHI_RESOURCE_INTERFACE( RHIGraphicsPipelineState )
 	{
 		RHI_RESOURCE_INTERFACE_BODY( RHIGraphicsPipelineState, ERHIResourceType::GraphicsPipelineState );
-		virtual bool Commit( const RHIGraphicsPipelineStateDescriptor& a_Desc ) = 0;
+		RHIGraphicsPipelineState( const DescriptorType& a_Desc )
+			: m_Desc( a_Desc ) {}
 	};
 
 } // namespace Tridium

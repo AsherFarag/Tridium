@@ -32,7 +32,7 @@ namespace Tridium {
 		}
 
 		ComPtr<ID3D12CommandList> CommandList{};
-		RHIShaderBindingLayout* CurrentSBL = nullptr;
+		RHIBindingLayout* CurrentSBL = nullptr;
 
 	private:
 		RHIResourceStateTracker m_ResourceStateTracker{};
@@ -48,7 +48,7 @@ namespace Tridium {
 
 			struct GraphicsState
 			{
-				D3D12GraphicsPipelineStateRef PSO{};
+				SharedPtr<RHIGraphicsPipelineState_D3D12Impl> PSO{};
 				Array<RHITexture*> CurrentRTs{};
 				RHITexture* CurrentDSV{};
 			} Graphics{};

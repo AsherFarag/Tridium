@@ -7,7 +7,7 @@
 #include "ShaderLibrary.h"
 #include "RHIBuffer.h"
 #include "RHICommandList.h"
-#include "RHIShaderBindingLayout.h"
+#include "RHIShaderBindings.h"
 #include "RHISwapChain.h"
 #include "RHIFence.h"
 
@@ -48,7 +48,7 @@ namespace Tridium {
 		[[nodiscard]] RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc );
 		[[nodiscard]] RHISwapChainRef CreateSwapChain( const RHISwapChainDescriptor& a_Desc );
 		[[nodiscard]] RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc );
-		[[nodiscard]] RHIShaderBindingLayoutRef CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc );
+		[[nodiscard]] RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDescriptor& a_Desc );
 		[[nodiscard]] RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc );
 
 		// Constructs a specific RHIResource Implementation and registers it with the RHI.

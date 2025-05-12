@@ -151,7 +151,7 @@ namespace Tridium {
 		#pragma region Base
 		struct SetShaderBindingLayout
 		{
-			RHIShaderBindingLayout* SBL;
+			RHIBindingLayout* SBL;
 		};
 
 		struct SetShaderInput
@@ -394,7 +394,7 @@ namespace Tridium {
 		//=====================================================
 		// Set Shader Binding Layout
 		// - Sets the shader binding layout for the command buffer.
-		CommandBufferType& SetShaderBindingLayout( RHIShaderBindingLayoutRef a_SBL DEBUG_INFO_PARAM );
+		CommandBufferType& SetShaderBindingLayout( RHIBindingLayoutRef a_SBL DEBUG_INFO_PARAM );
 
 		//=====================================================
 		// Set Shader Input
@@ -474,7 +474,7 @@ namespace Tridium {
 		Array<RHICommand> Commands;
 
 	protected:
-		UnorderedSet<RHIShaderBindingLayoutRef> m_ShaderBindingLayouts;
+		UnorderedSet<RHIBindingLayoutRef> m_ShaderBindingLayouts;
 		UnorderedSet<RHICommandListRef>         m_CommandLists;
 		UnorderedSet<RHISamplerRef>             m_Samplers;
 		UnorderedSet<RHITextureRef>             m_Textures;
@@ -608,7 +608,7 @@ namespace Tridium {
 
 	template<typename _CommandBufferType>
 	inline _CommandBufferType& RHIBaseCommandBuffer<_CommandBufferType>::SetShaderBindingLayout( 
-		RHIShaderBindingLayoutRef a_SBL DEBUG_INFO )
+		RHIBindingLayoutRef a_SBL DEBUG_INFO )
 	{
 		Commands.EmplaceBack( RHICommand::SetShaderBindingLayout{ a_SBL.get() } );
 		m_ShaderBindingLayouts.insert( std::move( a_SBL ) );

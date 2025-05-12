@@ -4,23 +4,22 @@
 
 namespace Tridium {
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( D3D12Sampler, RHISampler )
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHISampler_D3D12Impl, RHISampler )
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( D3D12Sampler, ERHInterfaceType::DirectX12 )
-		bool Commit( const RHISamplerDescriptor& a_Desc )
+		RHI_RESOURCE_IMPLEMENTATION_BODY( RHISampler_D3D12Impl, ERHInterfaceType::DirectX12 )
+		RHISampler_D3D12Impl( const DescriptorType & a_Desc )
+			: RHISampler( a_Desc )
 		{
-			m_Desc = a_Desc;
-
 			// Create the sampler heap
 			D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};
 			heapDesc.NumDescriptors = 1;
 			heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
 			heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-			if ( FAILED( GetD3D12RHI()->GetD3D12Device()->CreateDescriptorHeap( &heapDesc, IID_PPV_ARGS( &SamplerHeap ) ) ) )
+			if ( !ASSERT( SUCCEEDED( GetD3D12RHI()->GetD3D12Device()->CreateDescriptorHeap( &heapDesc, IID_PPV_ARGS( &SamplerHeap ) ) ),
+				"Failed to create sampler heap!" ) )
 			{
-				ASSERT( false, "Failed to create sampler heap!" );
-				return false;
+				return;
 			}
 
 			// Get the handle
@@ -42,8 +41,6 @@ namespace Tridium {
 			SamplerDesc.MaxLOD = a_Desc.MaxLOD;
 
 			GetD3D12RHI()->GetD3D12Device()->CreateSampler( &SamplerDesc, SamplerHeap->GetCPUDescriptorHandleForHeapStart() );
-
-			return true;
 		}
 
 		bool Release() override

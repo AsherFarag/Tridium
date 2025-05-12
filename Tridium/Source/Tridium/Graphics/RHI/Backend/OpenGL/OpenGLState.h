@@ -3,13 +3,13 @@
 
 namespace Tridium {
 
-	class OpenGLGraphicsPipelineState;
-	class OpenGLShaderBindingLayout;
+	class RHIGraphicsPipelineState_OpenGLImpl;
+	class RHIBindingLayout_OpenGLImpl;
 
 	namespace GLState {
 
-		extern WeakPtr<OpenGLGraphicsPipelineState> s_BoundGraphicsPSO;
-		extern WeakPtr<OpenGLShaderBindingLayout> s_BoundSBL;
+		extern WeakPtr<RHIGraphicsPipelineState_OpenGLImpl> s_BoundGraphicsPSO;
+		extern WeakPtr<RHIBindingLayout_OpenGLImpl> s_BoundSBL;
 		extern GLuint s_BoundProgram;
 		extern GLuint s_BoundFBO;
 		extern GLuint s_BoundIBO;

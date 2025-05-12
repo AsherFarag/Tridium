@@ -3,12 +3,12 @@
 
 namespace Tridium {
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( OpenGLCommandList, RHICommandList )
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHICommandList_OpenGLImpl, RHICommandList )
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( OpenGLCommandList, ERHInterfaceType::OpenGL );
+		RHI_RESOURCE_IMPLEMENTATION_BODY( RHICommandList_OpenGLImpl, ERHInterfaceType::OpenGL );
 
-		OpenGLCommandList( const RHICommandListDescriptor& a_Desc );
+		RHICommandList_OpenGLImpl( const DescriptorType& a_Desc );
 		virtual bool Release() override { return true; }
 		virtual bool IsValid() const override { return true; }
 		virtual const void* NativePtr() const override { return nullptr; }

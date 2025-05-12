@@ -4,11 +4,11 @@
 
 namespace Tridium {
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( OpenGLGraphicsPipelineState, RHIGraphicsPipelineState )
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHIGraphicsPipelineState_OpenGLImpl, RHIGraphicsPipelineState )
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( OpenGLGraphicsPipelineState, ERHInterfaceType::OpenGL );
-		bool Commit( const RHIGraphicsPipelineStateDescriptor& a_Desc ) override;
+		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIGraphicsPipelineState_OpenGLImpl, ERHInterfaceType::OpenGL );
+		RHIGraphicsPipelineState_OpenGLImpl( const DescriptorType& a_Desc );
 		bool Release() override;
 		bool IsValid() const override;
 		const void* NativePtr() const override { return nullptr; }

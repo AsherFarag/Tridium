@@ -6,16 +6,16 @@
 #include "OpenGLMesh.h"
 #include "OpenGLPipelineState.h"
 #include "OpenGLState.h"
-#include "OpenGLShaderBindingLayout.h"
+#include "OpenGLShaderBindings.h"
 
 namespace Tridium {
 
-	OpenGLCommandList::OpenGLCommandList( const RHICommandListDescriptor& a_Desc )
+	RHICommandList_OpenGLImpl::RHICommandList_OpenGLImpl( const DescriptorType& a_Desc )
 		: RHICommandList( a_Desc )
 	{
 	}
 
-    bool OpenGLCommandList::SetGraphicsCommands( const RHIGraphicsCommandBuffer& a_CmdBuffer )
+    bool RHICommandList_OpenGLImpl::SetGraphicsCommands( const RHIGraphicsCommandBuffer& a_CmdBuffer )
     {
 		// Execute the commands
 		for ( const RHICommand& cmd : a_CmdBuffer.Commands )
@@ -55,13 +55,13 @@ namespace Tridium {
 		return true;
     }
 
-	bool OpenGLCommandList::SetComputeCommands( const RHIComputeCommandBuffer& a_CmdBuffer )
+	bool RHICommandList_OpenGLImpl::SetComputeCommands( const RHIComputeCommandBuffer& a_CmdBuffer )
 	{
 		NOT_IMPLEMENTED;
 		return false;
 	}
 
-	void OpenGLCommandList::SetShaderBindingLayout( const RHICommand::SetShaderBindingLayout& a_Data )
+	void RHICommandList_OpenGLImpl::SetShaderBindingLayout( const RHICommand::SetShaderBindingLayout& a_Data )
 	{
 		if ( a_Data.SBL == nullptr ) [[unlikely]]
 		{
@@ -69,127 +69,128 @@ namespace Tridium {
 			return;
 		}
 
-		GLState::s_BoundSBL = SharedPtrCast<OpenGLShaderBindingLayout>( a_Data.SBL->shared_from_this() );
+		GLState::s_BoundSBL = SharedPtrCast<RHIBindingLayout_OpenGLImpl>( a_Data.SBL->shared_from_this() );
 	}
 
-	void OpenGLCommandList::SetShaderInput( const RHICommand::SetShaderInput& a_Data )
+	void RHICommandList_OpenGLImpl::SetShaderInput( const RHICommand::SetShaderInput& a_Data )
 	{
-		SharedPtr<OpenGLShaderBindingLayout> sbl = GLState::s_BoundSBL.lock();
+		SharedPtr<RHIBindingLayout_OpenGLImpl> sbl = GLState::s_BoundSBL.lock();
 		if ( !ASSERT( sbl, "No shader binding layout bound!" ) )
 			return;
 
-		SharedPtr<OpenGLGraphicsPipelineState> gpso = GLState::s_BoundGraphicsPSO.lock();
+		SharedPtr<RHIGraphicsPipelineState_OpenGLImpl> gpso = GLState::s_BoundGraphicsPSO.lock();
 		if ( !ASSERT( gpso, "No graphics pipeline state bound!" ) )
 			return;
 
-		const RHIShaderBinding& binding = sbl->Descriptor().GetBindingFromName( a_Data.NameHash );
-		const GLint uniformLocation = gpso->TryGetUniformLocation( binding.Name );
+		const RHIShaderBinding binding = sbl->Descriptor().GetBindingFromName( a_Data.NameHash );
+		const GLint uniformLocation = gpso->TryGetUniformLocation( a_Data.NameHash );
 		if ( uniformLocation < 0 )
 		{
-			LOG( LogCategory::RHI, Error, "Uniform '{0}' not found in shader while setting shader input", binding.Name.String() );
+			LOG( LogCategory::RHI, Error,
+				"Uniform '{0}' not found in shader while setting shader input",
+				sbl->Descriptor().GetBindingName( a_Data.NameHash ) );
 			return;
 		}
 
-		switch ( binding.BindingType )
+		switch ( binding.Type() )
 		{
-		case ERHIShaderBindingType::ConstantBuffer:
+		case ERHIShaderBindingType::InlinedConstants:
 		{
-			if ( binding.IsInlined() )
+			size_t offset = 0;
+			int32_t bindingIndex = -1;
+#if 0
+			for ( const auto& [name, tensorType] : binding.InlinedConstant->Tensors )
 			{
-				size_t offset = 0;
-				int32_t bindingIndex = -1;
-				for ( const auto& [name, tensorType] : binding.InlinedConstant->Tensors )
+				bindingIndex++;
+
+				constexpr int32_t WordSize = 4;
+				const int32_t numWords = tensorType.GetSizeInBytes() >> 2;
+				const ERHIDataType dataType = tensorType.ElementType;
+				TODO( "Get the uniform properly" );
+				const GLint bindSlot = OpenGL3::GetUniformLocation( GLState::s_BoundProgram, name.c_str() );
+
+				const float* asFloats = ReinterpretCast<const float*>( &a_Data.Payload.InlineData[offset * WordSize] );
+				const double* asDoubles = ReinterpretCast<const double*>( &a_Data.Payload.InlineData[offset * WordSize] );
+				const int32_t* asInt32s = ReinterpretCast<const int32_t*>( &a_Data.Payload.InlineData[offset * WordSize] );
+				const uint32_t* asUint32s = ReinterpretCast<const uint32_t*>( &a_Data.Payload.InlineData[offset * WordSize] );
+
+				// Increment the offset by the size of the tensor
+				offset += numWords;
+
+				switch ( numWords )
 				{
-					bindingIndex++;
-
-					constexpr int32_t WordSize = 4;
-					const int32_t numWords = tensorType.GetSizeInBytes() >> 2;
-					const ERHIDataType dataType = tensorType.ElementType;
-					TODO( "Get the uniform properly" );
-					const GLint bindSlot = OpenGL3::GetUniformLocation( GLState::s_BoundProgram, name.c_str() );
-
-					const float* asFloats = ReinterpretCast<const float*>( &a_Data.Payload.InlineData[offset * WordSize] );
-					const double* asDoubles = ReinterpretCast<const double*>( &a_Data.Payload.InlineData[offset * WordSize] );
-					const int32_t* asInt32s = ReinterpretCast<const int32_t*>( &a_Data.Payload.InlineData[offset * WordSize] );
-					const uint32_t* asUint32s = ReinterpretCast<const uint32_t*>( &a_Data.Payload.InlineData[offset * WordSize] );
-
-					// Increment the offset by the size of the tensor
-					offset += numWords;
-
-					switch ( numWords )
+				case 1: // Scalar
+					switch ( dataType )
 					{
-					case 1: // Scalar
-						switch ( dataType )
-						{
-						case ERHIDataType::Float32: OpenGL3::Uniform1fv( bindSlot, 1, asFloats ); break;
-						case ERHIDataType::Float64: OpenGL4::Uniform1dv( bindSlot, 1, asDoubles ); break;
-						case ERHIDataType::Int32:   OpenGL2::Uniform1iv( bindSlot, 1, asInt32s ); break;
-						case ERHIDataType::UInt32:  OpenGL3::Uniform1uiv( bindSlot, 1, asUint32s ); break;
-						}
-						break;
-
-					case 2: // Vector2
-						switch ( dataType )
-						{
-						case ERHIDataType::Float32: OpenGL2::Uniform2fv( bindSlot, 1, asFloats ); break;
-						case ERHIDataType::Float64: OpenGL4::Uniform2dv( bindSlot, 1, asDoubles ); break;
-						case ERHIDataType::Int32:   OpenGL2::Uniform2iv( bindSlot, 1, asInt32s ); break;
-						case ERHIDataType::UInt32:  OpenGL3::Uniform2uiv( bindSlot, 1, asUint32s ); break;
-						}
-						break;
-
-					case 3: // Vector3
-						switch ( dataType )
-						{
-						case ERHIDataType::Float32: OpenGL3::Uniform3fv( bindSlot, 1, asFloats ); break;
-						case ERHIDataType::Float64: OpenGL4::Uniform3dv( bindSlot, 1, asDoubles ); break;
-						case ERHIDataType::Int32:   OpenGL2::Uniform3iv( bindSlot, 1, asInt32s ); break;
-						case ERHIDataType::UInt32:  OpenGL3::Uniform3uiv( bindSlot, 1, asUint32s ); break;
-						}
-						break;
-
-					case 4: // Vector4
-						switch ( dataType )
-						{
-						case ERHIDataType::Float32: OpenGL3::Uniform4fv( bindSlot, 1, asFloats ); break;
-						case ERHIDataType::Float64: OpenGL4::Uniform4dv( bindSlot, 1, asDoubles ); break;
-						case ERHIDataType::Int32:   OpenGL2::Uniform4iv( bindSlot, 1, asInt32s ); break;
-						case ERHIDataType::UInt32:  OpenGL3::Uniform4uiv( bindSlot, 1, asUint32s ); break;
-						}
-						break;
-
-					case 9: // Matrix3
-						switch ( dataType )
-						{
-						case ERHIDataType::Float32: OpenGL2::UniformMatrix3fv( bindSlot, 1, GL_FALSE, asFloats ); break;
-						case ERHIDataType::Float64: OpenGL4::UniformMatrix3dv( bindSlot, 1, GL_FALSE, asDoubles ); break;
-						}
-						break;
-
-					case 16: // Matrix4
-						switch ( dataType )
-						{
-						case ERHIDataType::Float32: OpenGL2::UniformMatrix4fv( bindSlot, 1, GL_FALSE, asFloats ); break;
-						case ERHIDataType::Float64: OpenGL4::UniformMatrix4dv( bindSlot, 1, GL_FALSE, asDoubles ); break;
-						}
-						break;
-					default:
-						ASSERT( false, "Invalid number of words in constant buffer!" );
-						break;
+					case ERHIDataType::Float32: OpenGL3::Uniform1fv( bindSlot, 1, asFloats ); break;
+					case ERHIDataType::Float64: OpenGL4::Uniform1dv( bindSlot, 1, asDoubles ); break;
+					case ERHIDataType::Int32:   OpenGL2::Uniform1iv( bindSlot, 1, asInt32s ); break;
+					case ERHIDataType::UInt32:  OpenGL3::Uniform1uiv( bindSlot, 1, asUint32s ); break;
 					}
+					break;
+
+				case 2: // Vector2
+					switch ( dataType )
+					{
+					case ERHIDataType::Float32: OpenGL2::Uniform2fv( bindSlot, 1, asFloats ); break;
+					case ERHIDataType::Float64: OpenGL4::Uniform2dv( bindSlot, 1, asDoubles ); break;
+					case ERHIDataType::Int32:   OpenGL2::Uniform2iv( bindSlot, 1, asInt32s ); break;
+					case ERHIDataType::UInt32:  OpenGL3::Uniform2uiv( bindSlot, 1, asUint32s ); break;
+					}
+					break;
+
+				case 3: // Vector3
+					switch ( dataType )
+					{
+					case ERHIDataType::Float32: OpenGL3::Uniform3fv( bindSlot, 1, asFloats ); break;
+					case ERHIDataType::Float64: OpenGL4::Uniform3dv( bindSlot, 1, asDoubles ); break;
+					case ERHIDataType::Int32:   OpenGL2::Uniform3iv( bindSlot, 1, asInt32s ); break;
+					case ERHIDataType::UInt32:  OpenGL3::Uniform3uiv( bindSlot, 1, asUint32s ); break;
+					}
+					break;
+
+				case 4: // Vector4
+					switch ( dataType )
+					{
+					case ERHIDataType::Float32: OpenGL3::Uniform4fv( bindSlot, 1, asFloats ); break;
+					case ERHIDataType::Float64: OpenGL4::Uniform4dv( bindSlot, 1, asDoubles ); break;
+					case ERHIDataType::Int32:   OpenGL2::Uniform4iv( bindSlot, 1, asInt32s ); break;
+					case ERHIDataType::UInt32:  OpenGL3::Uniform4uiv( bindSlot, 1, asUint32s ); break;
+					}
+					break;
+
+				case 9: // Matrix3
+					switch ( dataType )
+					{
+					case ERHIDataType::Float32: OpenGL2::UniformMatrix3fv( bindSlot, 1, GL_FALSE, asFloats ); break;
+					case ERHIDataType::Float64: OpenGL4::UniformMatrix3dv( bindSlot, 1, GL_FALSE, asDoubles ); break;
+					}
+					break;
+
+				case 16: // Matrix4
+					switch ( dataType )
+					{
+					case ERHIDataType::Float32: OpenGL2::UniformMatrix4fv( bindSlot, 1, GL_FALSE, asFloats ); break;
+					case ERHIDataType::Float64: OpenGL4::UniformMatrix4dv( bindSlot, 1, GL_FALSE, asDoubles ); break;
+					}
+					break;
+				default:
+					ASSERT( false, "Invalid number of words in constant buffer!" );
+					break;
 				}
 			}
-			else
-			{
-				// Referenced constant
-				NOT_IMPLEMENTED;
-			}
+#endif
 			break;
 		}
-		case ERHIShaderBindingType::MutableBuffer:
+		case ERHIShaderBindingType::ConstantBuffer:
+		{
 			NOT_IMPLEMENTED;
 			break;
-		case ERHIShaderBindingType::Storage:
+		}
+		case ERHIShaderBindingType::StructuredBuffer:
+			NOT_IMPLEMENTED;
+			break;
+		case ERHIShaderBindingType::StorageBuffer:
 			NOT_IMPLEMENTED;
 			break;
 		case ERHIShaderBindingType::Texture:
@@ -197,7 +198,7 @@ namespace Tridium {
 			ASSERT( false, "OpenGL requires textures and samplers to be combined in the shader! - Use a Texture binding instead and set the sampler in the texture." );
 			break;
 		}
-		case ERHIShaderBindingType::RWTexture:
+		case ERHIShaderBindingType::StorageTexture:
 			NOT_IMPLEMENTED;
 			break;
 		case ERHIShaderBindingType::Sampler:
@@ -215,14 +216,14 @@ namespace Tridium {
 
 			// The names of Combined Samplers in GLSL have been set to the Texture name ( from HLSL )
 			// So we can just bind the texture and sampler together
-			OpenGLTexture* texture = static_cast<OpenGLTexture*>( a_Data.Payload.References[0] );
+			RHITexture_OpenGLImpl* texture = static_cast<RHITexture_OpenGLImpl*>( a_Data.Payload.References[0] );
 			if ( !( texture->Sampler ) )
 			{
 				ASSERT( false, "Texture has no sampler! - OpenGL requires Textures to have a Sampler, you can set the sampler on the RHITexture." );
 				break;
 			}
 
-			OpenGLSampler* sampler = texture->Sampler->As<OpenGLSampler>();
+			RHISampler_OpenGLImpl* sampler = texture->Sampler->As<RHISampler_OpenGLImpl>();
 			OpenGL4::BindTextureUnit( uniformLocation, texture->TextureObj );
 			OpenGL4::BindSampler( uniformLocation, sampler->GetGLHandle() );
 			break;
@@ -233,12 +234,12 @@ namespace Tridium {
 		}
 	}
 
-	void OpenGLCommandList::ResourceBarrier( const RHICommand::ResourceBarrier& a_Data )
+	void RHICommandList_OpenGLImpl::ResourceBarrier( const RHICommand::ResourceBarrier& a_Data )
 	{
 		//NOT_IMPLEMENTED;
 	}
 
-	void OpenGLCommandList::SetGraphicsPipelineState( const RHICommand::SetGraphicsPipelineState& a_Data )
+	void RHICommandList_OpenGLImpl::SetGraphicsPipelineState( const RHICommand::SetGraphicsPipelineState& a_Data )
 	{
 		if ( a_Data.PSO == nullptr )
 		{
@@ -246,13 +247,13 @@ namespace Tridium {
 			return;
 		}
 
-		OpenGLGraphicsPipelineState* pso = a_Data.PSO->As<OpenGLGraphicsPipelineState>();
+		RHIGraphicsPipelineState_OpenGLImpl* pso = a_Data.PSO->As<RHIGraphicsPipelineState_OpenGLImpl>();
 		if ( !GLState::s_BoundGraphicsPSO.expired() && GLState::s_BoundGraphicsPSO.lock().get() == pso )
 		{
 			return;
 		}
 
-		GLState::s_BoundGraphicsPSO = SharedPtrCast<OpenGLGraphicsPipelineState>( a_Data.PSO->shared_from_this() );
+		GLState::s_BoundGraphicsPSO = SharedPtrCast<RHIGraphicsPipelineState_OpenGLImpl>( a_Data.PSO->shared_from_this() );
 
 		// Bind the shader program
 		GLState::BindProgram( pso->GetShaderProgramID() );
@@ -343,7 +344,7 @@ namespace Tridium {
 		OpenGL3::FrontFace( rasterizerState.Clockwise ? GL_CW : GL_CCW );
 	}
 
-	void OpenGLCommandList::SetRenderTargets( const RHICommand::SetRenderTargets& a_Data )
+	void RHICommandList_OpenGLImpl::SetRenderTargets( const RHICommand::SetRenderTargets& a_Data )
 	{
 		if ( !a_Data.RTV[0] )
 		{
@@ -368,14 +369,14 @@ namespace Tridium {
 		m_State.NumColorTargets = a_Data.RTV.Size();
 		for ( size_t i = 0; i < m_State.NumColorTargets; ++i )
 		{
-			OpenGLTexture* rtv = a_Data.RTV[i]->As<OpenGLTexture>();
+			RHITexture_OpenGLImpl* rtv = a_Data.RTV[i]->As<RHITexture_OpenGLImpl>();
 			OpenGL3::FramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, rtv->TextureObj, mipmapLevelToRenderTo );
 		}
 
 		// Bind the depth stencil target
 		if ( a_Data.DSV )
 		{
-			OpenGLTexture* dsv = a_Data.DSV->As<OpenGLTexture>();
+			RHITexture_OpenGLImpl* dsv = a_Data.DSV->As<RHITexture_OpenGLImpl>();
 			const bool hasStencil = GetRHIFormatInfo( dsv->Descriptor().Format ).HasStencil;
 			OpenGL3::FramebufferTexture2D( GL_FRAMEBUFFER, hasStencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, dsv->TextureObj, mipmapLevelToRenderTo );
 		}
@@ -407,7 +408,7 @@ namespace Tridium {
 		OpenGL3::DrawBuffers( a_Data.RTV.Size(), drawBuffers );
 	}
 
-	void OpenGLCommandList::ClearRenderTargets( const RHICommand::ClearRenderTargets& a_Data )
+	void RHICommandList_OpenGLImpl::ClearRenderTargets( const RHICommand::ClearRenderTargets& a_Data )
 	{
 		if ( a_Data.ClearFlags.HasFlag( ERHIClearFlags::Color ) )
 		{
@@ -428,7 +429,7 @@ namespace Tridium {
 		}
 	}
 
-	void OpenGLCommandList::SetScissors( const RHICommand::SetScissors& a_Data )
+	void RHICommandList_OpenGLImpl::SetScissors( const RHICommand::SetScissors& a_Data )
 	{
 		for ( uint32_t i = 0; i < a_Data.Rects.Size(); ++i )
 		{
@@ -441,7 +442,7 @@ namespace Tridium {
 		}
 	}
 
-	void OpenGLCommandList::SetViewports( const RHICommand::SetViewports& a_Data )
+	void RHICommandList_OpenGLImpl::SetViewports( const RHICommand::SetViewports& a_Data )
 	{
 		//OpenGL1::Viewport( a_Data.Viewports[0].X, a_Data.Viewports[0].Y, a_Data.Viewports[0].Width, a_Data.Viewports[0].Height );
 		for ( uint32_t i = 0; i < a_Data.Viewports.Size(); ++i )
@@ -451,11 +452,11 @@ namespace Tridium {
 		}
 	}
 
-	void OpenGLCommandList::SetIndexBuffer( const RHICommand::SetIndexBuffer& a_Data )
+	void RHICommandList_OpenGLImpl::SetIndexBuffer( const RHICommand::SetIndexBuffer& a_Data )
 	{
 	}
 
-	void OpenGLCommandList::SetVertexBuffer( const RHICommand::SetVertexBuffer& a_Data )
+	void RHICommandList_OpenGLImpl::SetVertexBuffer( const RHICommand::SetVertexBuffer& a_Data )
 	{
 		if ( a_Data.VBO == nullptr )
 		{
@@ -463,7 +464,7 @@ namespace Tridium {
 		}
 		else
 		{
-			GLState::s_BoundVBO = a_Data.VBO->As<OpenGLBuffer>()->BufferObj;
+			GLState::s_BoundVBO = a_Data.VBO->As<RHIBuffer_OpenGLImpl>()->BufferObj;
 		}
 
 		if ( GLState::s_BoundVBO && GLState::s_BoundIBO )
@@ -491,31 +492,31 @@ namespace Tridium {
 		}
 	}
 
-	void OpenGLCommandList::SetPrimitiveTopology( const RHICommand::SetPrimitiveTopology& a_Data )
+	void RHICommandList_OpenGLImpl::SetPrimitiveTopology( const RHICommand::SetPrimitiveTopology& a_Data )
 	{
 		GLState::s_BoundPrimitiveTopology = ToOpenGL::GetTopology( a_Data.Topology );
 	}
 
-	void OpenGLCommandList::Draw( const RHICommand::Draw& a_Data )
+	void RHICommandList_OpenGLImpl::Draw( const RHICommand::Draw& a_Data )
 	{
 		OpenGL1::DrawArrays( GLState::s_BoundPrimitiveTopology, a_Data.VertexStart, a_Data.VertexCount );
 	}
 
-	void OpenGLCommandList::DrawIndexed( const RHICommand::DrawIndexed& a_Data )
+	void RHICommandList_OpenGLImpl::DrawIndexed( const RHICommand::DrawIndexed& a_Data )
 	{
 		TODO( "Fix index start i fink" );
 		OpenGL2::DrawElements( GLState::s_BoundPrimitiveTopology, a_Data.IndexCount, GL_UNSIGNED_INT, reinterpret_cast<const void*>( a_Data.IndexStart ) );
 	}
 
-	void OpenGLCommandList::SetComputePipelineState( const RHICommand::SetComputePipelineState& a_Data )
+	void RHICommandList_OpenGLImpl::SetComputePipelineState( const RHICommand::SetComputePipelineState& a_Data )
 	{
 	}
 
-	void OpenGLCommandList::DispatchCompute( const RHICommand::DispatchCompute& a_Data )
+	void RHICommandList_OpenGLImpl::DispatchCompute( const RHICommand::DispatchCompute& a_Data )
 	{
 	}
 
-	void OpenGLCommandList::DispatchComputeIndirect( const RHICommand::DispatchComputeIndirect& a_Data )
+	void RHICommandList_OpenGLImpl::DispatchComputeIndirect( const RHICommand::DispatchComputeIndirect& a_Data )
 	{
 	}
 

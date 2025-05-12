@@ -503,23 +503,6 @@ namespace Tridium {
 		};
 
 		//////////////////////////////////////////////////////////////////////////
-		// RHI USAGE HINT - D3D12 HEAP TYPE
-		//////////////////////////////////////////////////////////////////////////
-
-		template<>
-		struct To<D3D12_HEAP_TYPE>
-		{
-			using FromType = ERHIUsageHint;
-			static constexpr D3D12_HEAP_TYPE From( ERHIUsageHint a_Type )
-			{
-				if ( EnumFlags( a_Type ).HasFlag( ERHIUsageHint::CPUWriteMany ) ) return D3D12_HEAP_TYPE_UPLOAD;
-				if ( EnumFlags( a_Type ).HasFlag( ERHIUsageHint::GPUWriteMany ) ) return D3D12_HEAP_TYPE_DEFAULT;
-				if ( EnumFlags( a_Type ).HasFlag( ERHIUsageHint::CPUReadMany ) )  return D3D12_HEAP_TYPE_READBACK;
-				return D3D12_HEAP_TYPE_DEFAULT; // Default to GPU memory
-			}
-		};
-
-		//////////////////////////////////////////////////////////////////////////
 		// RHI RESOURCE STATE - D3D12 RESOURCE STATES
 		//////////////////////////////////////////////////////////////////////////
 

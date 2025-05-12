@@ -18,13 +18,11 @@ namespace Tridium {
 		}
 	};
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( OpenGLTexture, RHITexture )
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHITexture_OpenGLImpl, RHITexture )
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( OpenGLTexture, ERHInterfaceType::OpenGL );
-		OpenGLTexture( const RHITextureDescriptor & a_Desc );
-		virtual ~OpenGLTexture() override = default;
-		virtual bool Commit( const RHITextureDescriptor & a_Desc ) override;
+		RHI_RESOURCE_IMPLEMENTATION_BODY( RHITexture_OpenGLImpl, ERHInterfaceType::OpenGL );
+		RHITexture_OpenGLImpl( const DescriptorType & a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData );
 		virtual bool Release() override;
 		virtual size_t GetSizeInBytes() const override;
 		virtual const void* NativePtr() const { return TextureObj.NativePtr(); }

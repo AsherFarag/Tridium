@@ -36,7 +36,6 @@ namespace Tridium {
 		uint32_t Width = 0;
 		uint32_t Height = 0;
 		uint32_t BufferCount = 0;
-		ERHIUsageHint BufferUsage = ERHIUsageHint::RenderTarget;
 		ERHIScaleMode ScaleMode = ERHIScaleMode::None;
 		ERHIFormat Format = ERHIFormat::RGBA8_UNORM;
 		RHISampleSettings SampleSettings{};
@@ -47,7 +46,9 @@ namespace Tridium {
 	{
 		RHI_RESOURCE_INTERFACE_BODY( RHISwapChain, ERHIResourceType::SwapChain );
 
-		virtual bool Commit( const RHISwapChainDescriptor& a_Desc ) = 0;
+		RHISwapChain( const DescriptorType& a_Desc )
+			: m_Desc( a_Desc ) {}
+
 		virtual bool Present() = 0;
 		virtual RHITextureRef GetBackBuffer() = 0;
 		virtual bool Resize( uint32_t a_Width, uint32_t a_Height ) = 0;

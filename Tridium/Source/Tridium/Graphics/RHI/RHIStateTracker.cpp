@@ -5,7 +5,7 @@ namespace Tridium {
 
 	void RHIResourceStateTracker::RequireTextureState( RHITexture& a_Texture, ERHIResourceStates a_NewState )
 	{
-		const ERHIResourceStates currentState = a_Texture.GetState();
+		const ERHIResourceStates currentState = a_Texture.State();
 		const bool isTransitionNeeded = currentState != a_NewState;
 		if ( isTransitionNeeded )
 		{
@@ -22,7 +22,7 @@ namespace Tridium {
 			return;
 		}
 
-		const ERHIResourceStates currentState = a_Buffer.GetState();
+		const ERHIResourceStates currentState = a_Buffer.State();
 		const bool isTransitionNeeded = currentState != a_NewState;
 		if ( isTransitionNeeded )
 		{

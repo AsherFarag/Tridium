@@ -42,6 +42,11 @@ namespace Tridium {
 		size_t DepthStride = 0;
 	};
 
+	namespace RHIConstants {
+		static constexpr uint32_t AllMipLevels = ~0u;
+		static constexpr uint32_t AllArraySlices = ~0u;
+	}
+
 
 
 	//==========================================================================================
@@ -64,23 +69,20 @@ namespace Tridium {
 			uint32_t Depth = 1; // Number of depth slices in a 3D texture.
 			uint32_t ArraySize; // Number of array slices in a 1D or 2D texture array.
 		};
-		// Data format of the texture.
-		ERHIFormat Format = ERHIFormat::Unknown;
-		// Number of mip levels in the texture.
+		// Number of mip levels in the texture. NOTE: This is set by RHITexture.
 		uint32_t Mips = 1;
 		// Number of samples. Only 2D and 2D array textures can be multisampled.
 		uint32_t Samples = 1;
+		// If a texture is required to be cleared, it is usually more performant to have a clear value set here.
+		Optional<RHIClearValue> ClearValue{};
+		// Data format of the texture.
+		ERHIFormat Format = ERHIFormat::Unknown;
 		// Bind flags.
 		ERHIBindFlags BindFlags = ERHIBindFlags::None;
 		// Texture usage hint .
 		ERHIUsage Usage = ERHIUsage::Default;
 		// CPU access flags. None by default.
 		ERHICpuAccess CpuAccess = ERHICpuAccess::None;
-		// If a texture is required to be cleared, it is usually more performant to have a clear value set here.
-		Optional<RHIClearValue> ClearValue{};
-		// Initial data for the texture that will be used when creating the texture.
-		// Can be null.
-		Span<const uint8_t> InitialData{};
 
 		constexpr RHITextureDescriptor() = default;
 		constexpr RHITextureDescriptor( StringView a_Name,
@@ -94,8 +96,7 @@ namespace Tridium {
 			ERHIBindFlags a_BindFlags = RHITextureDescriptor{}.BindFlags,
 			ERHIUsage a_Usage = RHITextureDescriptor{}.Usage,
 			ERHICpuAccess a_CpuAccess = RHITextureDescriptor{}.CpuAccess,
-			Optional<RHIClearValue> a_ClearValue = RHITextureDescriptor{}.ClearValue,
-			Span<const uint8_t> a_InitialData = RHITextureDescriptor{}.InitialData )
+			Optional<RHIClearValue> a_ClearValue = RHITextureDescriptor{}.ClearValue )
 			: Super( a_Name )
 			, Dimension( a_Dimension )
 			, Width( a_Width )
@@ -108,7 +109,6 @@ namespace Tridium {
 			, Usage( a_Usage )
 			, CpuAccess( a_CpuAccess )
 			, ClearValue( a_ClearValue )
-			, InitialData( a_InitialData )
 		{}
 
 		constexpr bool IsArray() const
@@ -156,7 +156,6 @@ namespace Tridium {
 		constexpr inline RHITextureDescriptor& SetUsage( ERHIUsage a_Usage ) { Usage = a_Usage; return *this; }
 		constexpr inline RHITextureDescriptor& SetCpuAccess( ERHICpuAccess a_CpuAccess ) { CpuAccess = a_CpuAccess; return *this; }
 		constexpr inline RHITextureDescriptor& SetClearValue( Optional<RHIClearValue> a_ClearValue ) { ClearValue = a_ClearValue; return *this; }
-		constexpr inline RHITextureDescriptor& SetInitialData( Span<const uint8_t> a_InitialData ) { InitialData = a_InitialData; return *this; }
 	};
 
 	DECLARE_RHI_RESOURCE_INTERFACE( RHITexture )
@@ -166,7 +165,7 @@ namespace Tridium {
 		RHITexture( const RHITextureDescriptor & a_Desc )
 			: m_Desc( a_Desc )
 		{
-			if ( m_Desc.Mips == 0 )
+			if ( m_Desc.Mips == RHIConstants::AllMipLevels )
 			{
 				if ( m_Desc.Is1D() )
 				{
@@ -189,10 +188,8 @@ namespace Tridium {
 
 		virtual ~RHITexture() = default;
 
-		virtual bool Commit( const RHITextureDescriptor& a_Desc ) { return false; }
-
 		// Returns the internal state of the texture.
-		ERHIResourceStates GetState() const { return m_State; }
+		ERHIResourceStates State() const { return m_State; }
 
 		// Sets the internal state of the texture.
 		// NOTE: This does not perform a state transition. This only sets the internal state of the texture.
@@ -210,29 +207,41 @@ namespace Tridium {
 	//==========================================================================================
 	// RHI Texture Subresource Set
 	//  Describes a set of subresources in a texture.
-	//===========================================================================================
+	//==========================================================================================
 	struct RHITextureSubresourceSet
 	{
-		static constexpr uint32_t AllMipLevels = ~0u;
-		static constexpr uint32_t AllArraySlices = ~0u;
-
 		uint32_t BaseMipLevel = 0;
-		uint32_t MipLevelCount = 1;
+		uint32_t NumMipLevels = 1;
 		uint32_t BaseArraySlice = 0;
-		uint32_t ArraySliceCount = 1;
+		uint32_t NumArraySlices = 1;
 
-		constexpr RHITextureSubresourceSet() = default;
-		constexpr RHITextureSubresourceSet( uint32_t a_BaseMipLevel, uint32_t a_MipLevelCount, uint32_t a_BaseArraySlice, uint32_t a_ArraySliceCount )
-			: BaseMipLevel( a_BaseMipLevel )
-			, MipLevelCount( a_MipLevelCount )
-			, BaseArraySlice( a_BaseArraySlice )
-			, ArraySliceCount( a_ArraySliceCount )
+		constexpr RHITextureSubresourceSet() noexcept = default;
+		constexpr RHITextureSubresourceSet( uint32_t a_BaseMipLevel, uint32_t a_NumMipLevels,
+			uint32_t a_BaseArraySlice, uint32_t a_NumArraySlices ) noexcept
+			: BaseMipLevel( a_BaseMipLevel ), NumMipLevels( a_NumMipLevels ),
+			BaseArraySlice( a_BaseArraySlice ), NumArraySlices( a_NumArraySlices ) 
 		{}
+
+		constexpr bool operator==( const RHITextureSubresourceSet& a_Other ) const noexcept
+		{
+			return BaseMipLevel == a_Other.BaseMipLevel && NumMipLevels == a_Other.NumMipLevels &&
+				BaseArraySlice == a_Other.BaseArraySlice && NumArraySlices == a_Other.NumArraySlices;
+		}
+
+		constexpr bool operator!=( const RHITextureSubresourceSet& a_Other ) const noexcept
+		{
+			return !operator==( a_Other );
+		}
 
 		constexpr bool IsEntireTexture( const RHITextureDescriptor& a_Desc ) const
 		{
-			return BaseMipLevel == 0 && MipLevelCount == a_Desc.Mips
-				&& BaseArraySlice == 0 && ArraySliceCount == ( a_Desc.IsArray() ? a_Desc.ArraySize : 1 );
+			return BaseMipLevel == 0 && NumMipLevels == a_Desc.Mips
+				&& BaseArraySlice == 0 && NumArraySlices == ( a_Desc.IsArray() ? a_Desc.ArraySize : 1 );
+		}
+
+		static constexpr RHITextureSubresourceSet All() noexcept
+		{
+			return RHITextureSubresourceSet{ 0, RHIConstants::AllMipLevels, 0, RHIConstants::AllArraySlices };
 		}
 	};
 

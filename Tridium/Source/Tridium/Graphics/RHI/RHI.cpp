@@ -248,10 +248,10 @@ namespace Tridium {
 		return s_DynamicRHI->CreateShaderModule( a_Desc );
 	}
 
-	RHIShaderBindingLayoutRef RHI::CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc )
+	RHIBindingLayoutRef RHI::CreateBindingLayout( const RHIBindingLayoutDescriptor& a_Desc )
 	{
 		CHECK( s_DynamicRHI );
-		return s_DynamicRHI->CreateShaderBindingLayout( a_Desc );
+		return s_DynamicRHI->CreateBindingLayout( a_Desc );
 	}
 
 	RHIGraphicsPipelineStateRef RHI::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc )

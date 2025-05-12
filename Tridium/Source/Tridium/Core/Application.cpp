@@ -117,7 +117,7 @@ namespace Tridium {
 		m_Window->SetEventCallback( [this]( const Event& a_Event ) { this->EnqueueEvent( a_Event ); } );
 
 		RHIConfig config;
-		config.RHIType = ERHInterfaceType::DirectX12;
+		config.RHIType = ERHInterfaceType::OpenGL;
 		config.UseDebug = true;
 		bool initSuccess = RHI::Initialise( config );
 		LOG( LogCategory::RHI, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), initSuccess );
@@ -172,7 +172,6 @@ namespace Tridium {
 
 			// - Create a texture -
 			RHITextureDescriptor texDesc;
-			texDesc.InitialData = testImgData; // std::span<const uint8_t> 
 			texDesc.Width = 64;
 			texDesc.Height = 64;
 			texDesc.Format = ERHIFormat::RGBA8_UNORM;
@@ -330,15 +329,6 @@ float4 main( VSOutput input ) : SV_Target
 }
 )";
 
-			for ( int i = 0; i < 10; ++i )
-			{
-				if ( ASSERT_ONCE( false, "Hi" ) )
-				{
-					std::printf( "Oh no!" );
-					// Do something
-				}
-			}
-
 			struct InlinedConstants
 			{
 				float4x4 PVM;
@@ -349,23 +339,25 @@ float4 main( VSOutput input ) : SV_Target
 			RHIShaderModuleRef pixelShader = ShaderLibrary::LoadShader( pixelCode, "My pixel shader", ERHIShaderType::Pixel );
 
 			// Create Shader Binding Layout
-			RHIShaderBindingLayoutDescriptor sblDesc;
+			RHIBindingLayoutDescriptor sblDesc;
 			sblDesc.Name = "My shader binding layout";
-			sblDesc.Visibility = ERHIShaderVisibility::Pixel;
+			sblDesc.Visibility = ERHIShaderVisibility::All;
 			sblDesc.AddBinding( "Texture"_H ).AsCombinedSampler(0);
-			sblDesc.AddBinding( "inlinedConstants"_H ).AsInlinedConstants( 0 );
+			sblDesc.AddBinding( "inlinedConstants"_H ).AsInlinedConstants( 0, sizeof( InlinedConstants ) );
 
 
-			RHIShaderBindingLayoutRef sbl = RHI::CreateShaderBindingLayout( sblDesc );
+			RHIBindingLayoutRef sbl = RHI::CreateBindingLayout( sblDesc );
+
+			RHIFramebufferInfo fbInfo;
+			fbInfo.SetColorFormats( { ERHIFormat::RGBA8_UNORM } );
 
 			// - Create pipeline state -
 			RHIGraphicsPipelineStateDescriptor psd;
 			psd.VertexShader = vertShader;
 			psd.PixelShader = pixelShader;
-			psd.ColorTargetFormats[0] = ERHIFormat::RGBA8_UNORM;
-			psd.DepthStencilFormat = ERHIFormat::D32_FLOAT;
+			psd.FramebufferInfo = fbInfo;
 			psd.VertexLayout = layout;
-			psd.ShaderBindingLayout = sbl;
+			psd.BindingLayout = sbl;
 			psd.RasterizerState.CullMode = ERHIRasterizerCullMode::None;
 			psd.Name = "My pipeline state";
 			RHIGraphicsPipelineStateRef pso = RHI::CreateGraphicsPipelineState( psd );
@@ -382,15 +374,6 @@ float4 main( VSOutput input ) : SV_Target
 			RHITextureRef depthTex = RHI::CreateTexture( depthDesc );
 
 			RHICommandListRef cmdList = RHI::CreateCommandList( { "My beautiful command list" } );
-
-			float a = 0.3f;
-			float b = 0.1f;
-			b += 0.2f;
-			b += 9.0f;
-			b -= 9.0f;
-			constexpr float eps = Math::Epsilon<float>();
-			std::cout << std::format( "eps {}\n{} == {} is {}", eps, a, b, Math::Approx(a, b) ? "true" : "false");
-			std::cout << std::endl;
 
 			// Temp
 			float time = 0.0f;

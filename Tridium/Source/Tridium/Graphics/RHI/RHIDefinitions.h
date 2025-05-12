@@ -26,12 +26,7 @@ DECLARE_LOG_CATEGORY( RHI );
 #endif
 
 #if RHI_ENABLE_DEV_CHECKS
-	#define RHI_DEV_CHECK( _Condition, ... ) \
-			do { \
-				if ( !(_Condition) ) { \
-					ASSERT( false, "RHI Dev Error - ", ##__VA_ARGS__ ); \
-				} \
-			} while ( false )
+	#define RHI_DEV_CHECK( _Condition, ... ) ASSERT( _Condition, "RHI Dev Error - ", ##__VA_ARGS__ )
 #else
 	#define RHI_DEV_CHECK( _Condition, ... ) do {} while ( false )
 #endif // RHI_ENABLE_DEV_CHECKS
@@ -199,6 +194,42 @@ namespace Tridium {
 
 
 	//============================
+	// RHI Buffer Range
+	//  Represents a range of bytes in a buffer.
+	//============================
+	struct RHIBufferRange
+	{
+		size_t Offset = 0; // Offset in bytes from the start of the buffer.
+		size_t Size = 0;  // Size in bytes of the range.
+
+		constexpr RHIBufferRange() noexcept = default;
+		constexpr RHIBufferRange( size_t a_Offset, size_t a_Size ) noexcept
+			: Offset( a_Offset ), Size( a_Size ) {}
+
+		constexpr bool operator==( const RHIBufferRange& a_Other ) const noexcept
+		{
+			return Offset == a_Other.Offset && Size == a_Other.Size;
+		}
+
+		constexpr bool operator!=( const RHIBufferRange& a_Other ) const noexcept
+		{
+			return !operator==( a_Other );
+		}
+
+		constexpr bool Valid() const noexcept
+		{
+			return Size != 0 && Offset + Size <= ~0u;
+		}
+
+		static constexpr RHIBufferRange EntireBuffer() noexcept
+		{
+			return RHIBufferRange{ 0, ~0u };
+		}
+	};
+
+
+
+	//============================
 	// Box
 	//  Represents a 3D box in space.
 	//============================
@@ -299,59 +330,12 @@ namespace Tridium {
 	};
 
 
-	
-	//===========================
-	// RHI Shading Path
-	//===========================
-	enum class ERHIShadingPath : uint8_t
-	{
-		Deferred,
-		Forward,
-		COUNT,
-		NUM_BITS = 1,
-	};
-	RHI_ENUM_SIZE_ASSERT( ERHIShadingPath );
-
-
-
-	//=====================================================================
-	// RHI Usage Hint
-	//  A hint to the RHI about how the resource will be used.
-	//  This can be used to optimize the resource for the intended usage.
-	//=====================================================================
-	enum class ERHIUsageHint : uint8_t
-	{
-		CPUWriteNever = 0b00 << 0,
-		CPUWriteFew = 0b01 << 0,
-		CPUWriteOnce = CPUWriteFew,
-		CPUWriteMany = 0b11 << 0,
-		CPUReadNever = 0b00 << 2,
-		CPUReadFew = 0b01 << 2,
-		CPUReadMany = 0b11 << 2,
-		GPUWriteNever = 0b00 << 4,
-		GPUWriteFew = 0b01 << 4,
-		GPUWriteMany = 0b11 << 4,
-		GPUReadNever = 0b00 << 6,
-		GPUReadFew = 0b01 << 6,
-		GPUReadMany = 0b11 << 6,
-
-		OneWriteManyDraw = CPUWriteOnce | GPUReadMany,                         // Use if the resource only uses initial data from the descriptor.
-		ManyWriteManyDraw = CPUWriteMany | GPUReadMany,                        // Use if the resource is expected to be Mapped/Written to many times.
-		OneWriteFewDraw = CPUWriteOnce | GPUReadFew,                           // Use for streaming resources.
-		RenderTarget = CPUWriteNever | GPUWriteMany | GPUReadNever,            // Use for render target (Only valid for 2D textures).
-		RWRenderTarget = CPUWriteNever | GPUWriteMany | GPUReadMany,           // Use for rw-enabled render target (Only valid for 2D textures).
-		MutableBuffer = CPUWriteFew | CPUReadFew | GPUWriteMany | GPUReadMany, // Use for a simple MutableBuffer.
-
-		Default = OneWriteManyDraw,
-	};
-
-
 
 	//======================================================================
 	// RHI Bind Flags
 	//  Describes which parts of a pipeline the resource can be bound to.
 	//======================================================================
-	enum class ERHIBindFlags : uint32_t
+	enum class ERHIBindFlags : uint8_t
 	{
 		None = 0,
 		// The buffer can be used as a vertex buffer.
@@ -1042,7 +1026,7 @@ namespace Tridium {
 
 		constexpr uint32_t Bytes() const noexcept { return BytesPerBlock * Blocks; }
 	};
-
+	//===========================================================
 
 	// Returns the RHIFormatInfo for a given format.
 	static constexpr const RHIFormatInfo& GetRHIFormatInfo( ERHIFormat a_Format )
@@ -1145,6 +1129,74 @@ namespace Tridium {
 
 		return s_FormatInfos[size_t( a_Format )];
 	}
+
+
+
+	//===========================================================
+	// RHI Framebuffer Info
+	//  Used to describe a framebuffer and its compatibility with a render pass.
+	struct RHIFramebufferInfo
+	{
+		InlineArray<ERHIFormat, RHIConstants::MaxColorTargets> ColorFormats{};
+		ERHIFormat DepthStencilFormat = ERHIFormat::Unknown;
+		// The number of samples per pixel (MSAA).
+		uint32_t SampleCount = 1;
+		// Index into a list of quality levels supported by the device.
+		uint32_t SampleQuality = 0;
+
+		constexpr bool operator==( const RHIFramebufferInfo& a_Other ) const noexcept
+		{
+			if ( ColorFormats.Size() != a_Other.ColorFormats.Size()
+				|| DepthStencilFormat != a_Other.DepthStencilFormat
+				|| SampleCount != a_Other.SampleCount
+				|| SampleQuality != a_Other.SampleQuality )
+				return false;
+
+			for ( size_t i = 0; i < ColorFormats.Size(); ++i )
+			{
+				if ( ColorFormats[i] != a_Other.ColorFormats[i] )
+					return false;
+			}
+
+			return true;
+		}
+
+		constexpr bool operator!=( const RHIFramebufferInfo& a_Other ) const noexcept
+		{
+			return !operator==( a_Other );
+		}
+
+		constexpr RHIFramebufferInfo& SetColorFormats( InitList<ERHIFormat> a_ColorFormats ) noexcept
+		{
+			ColorFormats.Clear();
+			for ( const ERHIFormat& format : a_ColorFormats )
+			{
+				if ( ColorFormats.Size() == RHIConstants::MaxColorTargets )
+					break;
+				ColorFormats.PushBack( format );
+			}
+			return *this;
+		}
+
+		constexpr RHIFramebufferInfo& SetDepthStencilFormat( ERHIFormat a_DepthStencilFormat ) noexcept
+		{
+			DepthStencilFormat = a_DepthStencilFormat;
+			return *this;
+		}
+
+		constexpr RHIFramebufferInfo& SetSampleCount( uint32_t a_SampleCount ) noexcept
+		{
+			SampleCount = a_SampleCount;
+			return *this;
+		}
+
+		constexpr RHIFramebufferInfo& SetSampleQuality( uint32_t a_SampleQuality ) noexcept
+		{
+			SampleQuality = a_SampleQuality;
+			return *this;
+		}
+	};
+	//===========================================================
 
 
 

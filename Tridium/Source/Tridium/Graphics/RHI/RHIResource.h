@@ -17,7 +17,8 @@ namespace Tridium {
         Texture,
         ShaderModule,
         Buffer,
-        ShaderBindingLayout,
+        BindingLayout,
+		BindingSet,
         GraphicsPipelineState,
 		ComputePipelineState,
         CommandList,
@@ -45,7 +46,7 @@ namespace Tridium {
 	//  An abstract class that represents a resource that can be committed to the GPU.
 	//  Resources can be textures, buffers, samplers, etc.
 	//  For graphics APIs, a specific implementation of this class will be created.
-	//  E.g. OpenGLTexture -> RHITexture -> RHIResource
+	//  E.g. RHITexture_OpenGLImpl -> RHITexture -> RHIResource
 	//======================================================================================================
 	class RHIResource : public IRHIObject
 	{
@@ -62,16 +63,16 @@ namespace Tridium {
 		// Returns the type of the resource.
 		virtual ERHIResourceType GetType() const = 0;
 
-		// Returns whether this resource is valid.
+		// Returns whether this resource is in a usable state.
 		virtual bool IsValid() const = 0;
 
 		// Gets a pointer to the native resource.
-		// E.g. OpenGLTexture -> GLuint, D3D12Texture -> ID3D12Resource
+		// E.g. RHITexture_OpenGLImpl -> GLuint, RHITexture_D3D12Impl -> ID3D12Resource
 		virtual const void* NativePtr() const = 0;
 
 		// Gets a pointer to the native resource and casts it to the specified type.
-		// E.g. OpenGLTexture->NativePtrAs<GLuint>() -> GLuint*,
-		//      D3D12Texture->NativePtrAs<ID3D12Resource>() -> ID3D12Resource*
+		// E.g. RHITexture_OpenGLImpl->NativePtrAs<GLuint>() -> GLuint*,
+		//      RHITexture_D3D12Impl->NativePtrAs<ID3D12Resource>() -> ID3D12Resource*
 		template<typename T>
 		T* NativePtrAs() const
 		{
@@ -197,21 +198,19 @@ public:
 // _ClassName: The name of the resource descriptor. Should be prefixed with RHI and the suffix should be Descriptor. E.g. _ClassName = RHITextureDescriptor
 // _Resource: The resource type that the descriptor describes. E.g. _Resource = RHITexture
 #define DECLARE_RHI_RESOURCE_DESCRIPTOR( _ClassName, _Resource ) \
-	struct _ClassName : public ::Tridium::RHIResourceDescriptor<_ClassName, _Resource>
+	struct _ClassName : public ::Tridium::RHIResourceDescriptor<_ClassName, class _Resource>
 
 // Helper macro for defining a graphics API specific implementation of an RHI resource.
-// _ClassName: The name of the resource implementation. Should be prefixed with the graphics API. E.g. _ClassName = OpenGLTexture
+// _ClassName: The name of the resource implementation. Should be prefixed with the graphics API. E.g. _ClassName = RHITexture_OpenGLImpl
 // _ParentResource: The parent resource type that the implementation inherits from. E.g. _ParentResource = RHITexture
 // Note: RHI_RESOURCE_IMPLEMENTATION_BODY must be used with this macro.
 #define DECLARE_RHI_RESOURCE_IMPLEMENTATION( _ClassName, _ParentResource ) \
 	class _ClassName; \
 	struct _ClassName##Descriptor; \
-	using _ClassName##Ref = ::Tridium::SharedPtr<_ClassName>; \
-	using _ClassName##WeakRef = ::Tridium::WeakPtr<_ClassName>; \
 	class _ClassName : public _ParentResource
 
 // Helper macro for defining the body of a graphics API specific implementation of an RHI resource.
-// _ClassName: The name of the resource implementation. Should be prefixed with the graphics API. E.g. _ClassName = OpenGLTexture
+// _ClassName: The name of the resource implementation. Should be prefixed with the graphics API. E.g. _ClassName = RHITexture_OpenGLImpl
 // _RHIInterfaceType: The type of the RHI interface. E.g. _RHIInterfaceType = ERHInterfaceType::OpenGL
 // Note: Must be used in the body of a DECLARE_RHI_RESOURCE_IMPLEMENTATION declaration.
 #define RHI_RESOURCE_IMPLEMENTATION_BODY( _ClassName, _RHIInterfaceType ) \

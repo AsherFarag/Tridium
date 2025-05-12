@@ -25,7 +25,9 @@ namespace Tridium {
 	DECLARE_RHI_RESOURCE_INTERFACE( RHISampler )
 	{
 		RHI_RESOURCE_INTERFACE_BODY( RHISampler, ERHIResourceType::Sampler );
-		virtual bool Commit( const RHISamplerDescriptor& a_Descriptor ) = 0;
+		RHISampler( const DescriptorType& a_Desc )
+			: m_Desc( a_Desc )
+		{}
 	};
 
 } // namespace Tridium

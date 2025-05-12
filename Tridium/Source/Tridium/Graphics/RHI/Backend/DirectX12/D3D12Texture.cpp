@@ -5,7 +5,7 @@
 
 namespace Tridium {
 
-	D3D12Texture::D3D12Texture( const RHITextureDescriptor& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
+	RHITexture_D3D12Impl::RHITexture_D3D12Impl( const RHITextureDescriptor& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
 		: RHITexture( a_Desc )
 	{
 		const bool initData = a_SubResourcesData.size() > 0;
@@ -138,13 +138,13 @@ namespace Tridium {
 		}
 	}
 
-	bool D3D12Texture::Release()
+	bool RHITexture_D3D12Impl::Release()
 	{
 		Texture.Release();
 		return true;
 	}
 
-	size_t D3D12Texture::GetSizeInBytes() const
+	size_t RHITexture_D3D12Impl::GetSizeInBytes() const
 	{
 		if ( !IsValid() )
 			return 0;
@@ -154,7 +154,7 @@ namespace Tridium {
 		return Descriptor().Width * Descriptor().Height * bytesPerPixel;
 	}
 
-	D3D12_RESOURCE_DESC D3D12Texture::GetD3D12ResourceDesc() const
+	D3D12_RESOURCE_DESC RHITexture_D3D12Impl::GetD3D12ResourceDesc() const
 	{
 		D3D12_RESOURCE_DESC desc{};
 
@@ -201,7 +201,7 @@ namespace Tridium {
 
 #if 0
 
-	bool D3D12Texture::Write( const Span<const Byte>& a_Data )
+	bool RHITexture_D3D12Impl::Write( const Span<const Byte>& a_Data )
 	{
 		if ( !IsValid() ) return false;
 
@@ -279,7 +279,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool D3D12Texture::IsWritable() const
+	bool RHITexture_D3D12Impl::IsWritable() const
 	{
 		if ( !IsValid() )
 		{
@@ -289,7 +289,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool D3D12Texture::Resize( uint32_t a_Width, uint32_t a_Height, uint32_t a_Depth )
+	bool RHITexture_D3D12Impl::Resize( uint32_t a_Width, uint32_t a_Height, uint32_t a_Depth )
 	{
 		if ( !IsValid() )
 		{
@@ -310,7 +310,7 @@ namespace Tridium {
 		return Commit( m_Desc );
 	}
 
-	bool D3D12Texture::IsReady() const
+	bool RHITexture_D3D12Impl::IsReady() const
 	{
 		if ( !IsValid() 
 			|| GetD3D12RHI()->GetCopyFence()->GetCompletedValue() < m_CopyFenceValue )
@@ -321,7 +321,7 @@ namespace Tridium {
 		return true;
 	}
 
-	void D3D12Texture::Wait()
+	void RHITexture_D3D12Impl::Wait()
 	{
 		if ( !IsValid() )
 		{
@@ -335,8 +335,8 @@ namespace Tridium {
 
 #endif
 
-	bool D3D12Texture::CopyTexture(
-		ID3D12GraphicsCommandList& a_CmdList, D3D12Texture& a_SrcTexture,
+	bool RHITexture_D3D12Impl::CopyTexture(
+		ID3D12GraphicsCommandList& a_CmdList, RHITexture_D3D12Impl& a_SrcTexture,
 		uint32_t a_SrcMipLevel, uint32_t a_SrcArraySlice, Box a_SrcRegion,
 		uint32_t a_DstMipLevel, uint32_t a_DstArraySlice, Box a_DstRegion )
 	{

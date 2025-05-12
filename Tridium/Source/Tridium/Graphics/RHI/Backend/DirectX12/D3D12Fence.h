@@ -3,13 +3,13 @@
 
 namespace Tridium {
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( D3D12Fence, RHIFence )
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHIFence_D3D12Impl, RHIFence )
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( D3D12Fence, ERHInterfaceType::DirectX12 );
-		virtual ~D3D12Fence();
+		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIFence_D3D12Impl, ERHInterfaceType::DirectX12 );
+		RHIFence_D3D12Impl( const DescriptorType& a_Desc );
+		virtual ~RHIFence_D3D12Impl();
 
-		bool Commit( const RHIFenceDescriptor& a_Desc ) override;
 		bool Release() override;
 		bool IsValid() const override;
 		const void* NativePtr() const override;

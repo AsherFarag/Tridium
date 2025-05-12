@@ -3,11 +3,11 @@
 
 namespace Tridium {
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( OpenGLFence, RHIFence )
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHIFence_OpenGLImpl, RHIFence )
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( OpenGLFence, ERHInterfaceType::OpenGL );
-		bool Commit( const RHIFenceDescriptor& a_Desc ) override;
+		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIFence_OpenGLImpl, ERHInterfaceType::OpenGL );
+		RHIFence_OpenGLImpl( const DescriptorType& a_Desc );
 		bool Release() override;
 		bool IsValid() const override;
 		const void* NativePtr() const override;

@@ -1,12 +1,12 @@
 #include "tripch.h"
 #include "OpenGLState.h"
 #include "OpenGLPipelineState.h"
-#include "OpenGLShaderBindingLayout.h"
+#include "OpenGLShaderBindings.h"
 
 namespace Tridium::GLState {
 
-	WeakPtr<OpenGLGraphicsPipelineState> s_BoundGraphicsPSO;
-	WeakPtr<OpenGLShaderBindingLayout> s_BoundSBL;
+	WeakPtr<RHIGraphicsPipelineState_OpenGLImpl> s_BoundGraphicsPSO;
+	WeakPtr<RHIBindingLayout_OpenGLImpl> s_BoundSBL;
 	GLenum s_BoundPrimitiveTopology = GL_TRIANGLES;
 	GLuint s_BoundProgram = 0u;
 	GLuint s_BoundFBO = 0u;

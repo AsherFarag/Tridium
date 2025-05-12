@@ -4,22 +4,21 @@
 
 namespace Tridium {
 
-	bool OpenGLGraphicsPipelineState::Commit( const RHIGraphicsPipelineStateDescriptor& a_Desc )
+	RHIGraphicsPipelineState_OpenGLImpl::RHIGraphicsPipelineState_OpenGLImpl( const DescriptorType& a_Desc )
+		: RHIGraphicsPipelineState( a_Desc )
     {
-		m_Desc = a_Desc;
-
 		// Create the shader program
 		{
 			m_ShaderProgramID = OpenGL4::CreateProgram();
-			if ( !m_ShaderProgramID )
-				return false;
+			if ( !ASSERT( m_ShaderProgramID != 0, "Failed to create shader program!" ) )
+				return;
 
 			// Attach the shaders
 			static constexpr auto AttachShader = +[]( const RHIShaderModuleRef& a_Shader, GLuint a_ProgramID )
 				{
 					if ( a_Shader )
 					{
-						OpenGLShaderModule* shader = a_Shader->As<OpenGLShaderModule>();
+						RHIShaderModule_OpenGLImpl* shader = a_Shader->As<RHIShaderModule_OpenGLImpl>();
 						OpenGL4::AttachShader( a_ProgramID, shader->GetGLHandle() );
 					}
 				};
@@ -42,7 +41,7 @@ namespace Tridium {
 				GLchar infoLog[512];
 				OpenGL4::GetProgramInfoLog( m_ShaderProgramID, 512, nullptr, infoLog );
 				LOG( LogCategory::RHI, Error, "Shader program linking failed: {0}", infoLog );
-				return false;
+				return;
 			}
 		#endif
 
@@ -54,7 +53,7 @@ namespace Tridium {
 				{
 					if ( a_Shader )
 					{
-						OpenGLShaderModule* shader = a_Shader->As<OpenGLShaderModule>();
+						RHIShaderModule_OpenGLImpl* shader = a_Shader->As<RHIShaderModule_OpenGLImpl>();
 						OpenGL4::DetachShader( a_ProgramID, shader->GetGLHandle() );
 					}
 				};
@@ -74,7 +73,7 @@ namespace Tridium {
 		// Collect the uniform locations
 		{
 			m_UnifromLocations.clear();
-			for ( const RHIShaderBinding& binding : a_Desc.ShaderBindingLayout->Descriptor().Bindings )
+			for ( const RHIShaderBinding& binding : a_Desc.BindingLayout->Descriptor().Bindings )
 			{
 				const auto InitUniform = [&]( StringView a_Name )
 					{
@@ -85,37 +84,31 @@ namespace Tridium {
 						}
 						else
 						{
-							m_UnifromLocations[binding.Name] = location;
+							m_UnifromLocations[binding.NameHash] = location;
 						}
 					};
 
-				if ( binding.IsInlined() )
-				{
-					for ( const auto& [name, tensorType] : binding.InlinedConstant->Tensors )
-					{
-						InitUniform( name );
-					}
-				}
-				else if ( binding.IsReferencedSamplers() )
+				if ( binding.Type() == ERHIShaderBindingType::Sampler )
 				{
 					// OpenGL combines samplers and textures into a single binding
-					m_UnifromLocations[binding.Name] = -1;
+					m_UnifromLocations[binding.NameHash] = -1;
 				}
 				else
 				{
-					InitUniform( binding.Name.String() );
+					InitUniform( m_Desc.BindingLayout->Descriptor().GetBindingName( binding.NameHash ) );
 				}
 			}
 		}
 
 		// Collect combined samplers
 		{
+			TODO( "the hell is this" );
 			m_CombinedSamplers.clear();
 			static constexpr auto CollectCombinedSamplers = +[]( const RHIShaderModuleRef& a_Shader, UnorderedMap<StringView, Array<StringView>>& a_CombinedSamplers )
 				{
 					if ( a_Shader )
 					{
-						OpenGLShaderModule* shader = a_Shader->As<OpenGLShaderModule>();
+						RHIShaderModule_OpenGLImpl* shader = a_Shader->As<RHIShaderModule_OpenGLImpl>();
 						//for ( const auto& [texName, samplerNames] : shader->GetCombinedSamplers() )
 						//{
 						//	Array<StringView>& samplers = a_CombinedSamplers[texName];
@@ -128,11 +121,9 @@ namespace Tridium {
 					}
 				};
 		}
-
-		return true;
     }
 
-	bool OpenGLGraphicsPipelineState::Release()
+	bool RHIGraphicsPipelineState_OpenGLImpl::Release()
 	{
 		if ( m_ShaderProgramID )
 		{
@@ -149,12 +140,12 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLGraphicsPipelineState::IsValid() const
+	bool RHIGraphicsPipelineState_OpenGLImpl::IsValid() const
 	{
 		return m_ShaderProgramID != 0;
 	}
 
-	bool OpenGLGraphicsPipelineState::ApplyVertexLayoutToVAO( GLuint a_VAO )
+	bool RHIGraphicsPipelineState_OpenGLImpl::ApplyVertexLayoutToVAO( GLuint a_VAO )
 	{
 		GLState::BindVertexArray( a_VAO ); // Ensure the VAO is bound
 

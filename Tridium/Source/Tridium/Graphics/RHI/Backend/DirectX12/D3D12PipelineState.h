@@ -3,18 +3,19 @@
 
 namespace Tridium {
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( D3D12GraphicsPipelineState, RHIGraphicsPipelineState )
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHIGraphicsPipelineState_D3D12Impl, RHIGraphicsPipelineState )
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( D3D12GraphicsPipelineState, ERHInterfaceType::DirectX12 );
+		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIGraphicsPipelineState_D3D12Impl, ERHInterfaceType::DirectX12 );
 
-		bool Commit( const RHIGraphicsPipelineStateDescriptor& a_Desc ) override;
+		RHIGraphicsPipelineState_D3D12Impl( const DescriptorType& a_Desc );
 		bool Release() override;
 		bool IsValid() const override { return PSO != nullptr; }
 		const void* NativePtr() const override { return PSO.Get(); }
 
 		ComPtr<ID3D12PipelineState> PSO;
 		D3D12_INPUT_ELEMENT_DESC VertexLayout[RHIConstants::MaxVertexAttributes];
+		uint32_t VertexLayoutSize = 0;
 	};
 
 } // namespace Tridium

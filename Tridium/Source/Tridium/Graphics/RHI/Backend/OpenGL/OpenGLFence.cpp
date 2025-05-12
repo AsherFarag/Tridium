@@ -3,19 +3,13 @@
 
 namespace Tridium {
 
-    bool OpenGLFence::Commit( const RHIFenceDescriptor& a_Desc )
+   RHIFence_OpenGLImpl::RHIFence_OpenGLImpl( const RHIFenceDescriptor& a_Desc )
+	   : RHIFence( a_Desc )
     {
-		m_Desc = a_Desc;
-		if ( a_Desc.Type != ERHIFenceType::CPUWaitOnly )
-		{
-			ASSERT( false, "Only CPUWaitOnly fences are supported in OpenGL" );
-			return false;
-		}
-
-		return true;
+		ASSERT( a_Desc.Type == ERHIFenceType::CPUWaitOnly, "Only CPUWaitOnly fences are supported in OpenGL" );
     }
 
-	bool OpenGLFence::Release()
+	bool RHIFence_OpenGLImpl::Release()
 	{
 		while ( !m_PendingFences.empty() )
 		{
@@ -25,17 +19,17 @@ namespace Tridium {
 		return true;
 	}
 
-	bool OpenGLFence::IsValid() const
+	bool RHIFence_OpenGLImpl::IsValid() const
 	{
 		return true;
 	}
 
-	const void* OpenGLFence::NativePtr() const
+	const void* RHIFence_OpenGLImpl::NativePtr() const
 	{
 		return nullptr;
 	}
 
-	uint64_t OpenGLFence::GetCompletedValue()
+	uint64_t RHIFence_OpenGLImpl::GetCompletedValue()
 	{
 		while ( !m_PendingFences.empty() )
 		{
@@ -55,13 +49,13 @@ namespace Tridium {
 		return m_PendingFences.empty() ? InvalidRHIFenceValue : m_PendingFences.front().first;
 	}
 
-	void OpenGLFence::Signal( uint64_t a_Value )
+	void RHIFence_OpenGLImpl::Signal( uint64_t a_Value )
 	{
 		ASSERT( Descriptor().Type == ERHIFenceType::General, "Signaling on a CPUWaitOnly fence, fence type must be ERHIFenceType::General" );
 		ASSERT( false, "OpenGL does not support signaling fences" );
 	}
 
-	void OpenGLFence::Wait( uint64_t a_Value )
+	void RHIFence_OpenGLImpl::Wait( uint64_t a_Value )
 	{
 		//ASSERT( Descriptor().Type == ERHIFenceType::General, "Waiting on a CPUWaitOnly fence, fence type must be ERHIFenceType::General" );
 		while ( GetCompletedValue() < a_Value )

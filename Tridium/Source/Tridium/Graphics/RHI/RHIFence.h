@@ -16,8 +16,10 @@ namespace Tridium {
 	DECLARE_RHI_RESOURCE_INTERFACE( RHIFence )
 	{
 		RHI_RESOURCE_INTERFACE_BODY( RHIFence, ERHIResourceType::Fence );
+		RHIFence( const DescriptorType& a_Desc )
+			: m_Desc( a_Desc )
+		{}
 
-		virtual bool Commit( const RHIFenceDescriptor& a_Desc ) = 0;
 		virtual uint64_t GetCompletedValue() = 0;
 		virtual void Signal( uint64_t a_Value ) = 0;
 		virtual void Wait( uint64_t a_Value ) = 0;

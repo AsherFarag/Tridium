@@ -10,7 +10,7 @@
 #include <Tridium/Graphics/RHI/RHIPipelineState.h>
 #include <Tridium/Graphics/RHI/RHICommandList.h>
 #include <Tridium/Graphics/RHI/RHIShader.h>
-#include <Tridium/Graphics/RHI/RHIShaderBindingLayout.h>
+#include <Tridium/Graphics/RHI/RHIShaderBindings.h>
 #include <Tridium/Graphics/RHI/RHISwapChain.h>
 #include <Tridium/Graphics/RHI/RHIDescriptorAllocator.h>
 #include <Tridium/Graphics/RHI/RHIFence.h>

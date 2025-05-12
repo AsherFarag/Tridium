@@ -23,6 +23,42 @@
 
 namespace Tridium {
 
+	//  Converts a number of bytes to a number of WORDs. A WORD is 2 bytes.
+	[[nodiscard]] inline uint32_t NumWORDsFromBytes( uint32_t a_Value ) noexcept
+	{
+		return (a_Value + sizeof( uint16_t ) - 1) / sizeof( uint16_t );
+	}
+
+	// Converts a number of WORDs to a number of bytes. A WORD is 2 bytes.
+	[[nodiscard]] inline uint32_t NumBytesFromWORDs( uint32_t a_Value ) noexcept
+	{
+		return  a_Value * sizeof( uint16_t );
+	}
+
+	// Converts a number of bytes to a number of DWORDs. A DWORD is 4 bytes.
+	[[nodiscard]] inline uint32_t NumDWORDsFromBytes( uint32_t a_Value ) noexcept
+	{
+		return (a_Value + sizeof( uint32_t ) - 1) / sizeof( uint32_t );
+	}
+
+	// Converts a number of DWORDs to a number of bytes. A DWORD is 4 bytes.
+	[[nodiscard]] inline uint32_t NumBytesFromDWORDs( uint32_t a_Value ) noexcept
+	{
+		return  a_Value * sizeof( uint32_t );
+	}
+
+	// Converts a number of bytes to a number of QWORDs. A QWORD is 8 bytes.
+	[[nodiscard]] inline uint32_t NumQWORDsFromBytes( uint32_t a_Value ) noexcept
+	{
+		return (a_Value + sizeof( uint64_t ) - 1) / sizeof( uint64_t );
+	}
+
+	// Converts a number of QWORDs to a number of bytes. A QWORD is 8 bytes.
+	[[nodiscard]] inline uint32_t NumBytesFromQWORDs( uint32_t a_Value ) noexcept
+	{
+		return  a_Value * sizeof( uint64_t );
+	}
+
 	//=====================================================================
 	// Concept definitions
 	namespace D3D12::Concepts {

@@ -1,7 +1,7 @@
 #pragma once
 #include <Tridium/Core/Types.h>
 
-namespace RHIConstants {
+namespace Tridium::RHIConstants {
 	 
 	static constexpr uint32_t MaxViewports        = 16u;  // Maximum number of viewports that can be set in a single draw call.
 	static constexpr uint32_t MaxVertexAttributes = 16u;  // Maximum number of vertex attributes that can be bound to a vertex buffer.

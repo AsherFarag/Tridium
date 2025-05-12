@@ -143,7 +143,8 @@ namespace Tridium {
 		constexpr InlineArray& operator=( const InlineArray& a_Other ) = default;
 		constexpr InlineArray& operator=( InlineArray&& a_Other ) = default;
 
-		constexpr InlineArray( const std::initializer_list<T>& a_InitializerList )
+		constexpr InlineArray( std::initializer_list<T> a_InitializerList )
+			: m_Size( 0 )
 		{
 			for ( const T& value : a_InitializerList )
 			{
@@ -186,6 +187,15 @@ namespace Tridium {
 			{
 				m_Storage[i] = a_Value;
 			}
+		}
+
+		constexpr void Clear()
+		{
+			for ( size_t i = 0; i < m_Size; ++i )
+			{
+				m_Storage[i].~T();
+			}
+			m_Size = 0;
 		}
 
 		constexpr void PushBack( const T& a_Value )

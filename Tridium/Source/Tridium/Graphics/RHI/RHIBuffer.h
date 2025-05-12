@@ -80,7 +80,7 @@ namespace Tridium {
 		virtual bool Commit( const RHIBufferDescriptor& a_Desc ) = 0;
 
 		// Returns the internal state of the buffer.
-		ERHIResourceStates GetState() const { return m_State; }
+		ERHIResourceStates State() const { return m_State; }
 
 		// Sets the internal state of the buffer.
 		// NOTE: This does not perform a state transition. This only sets the internal state of the buffer.

@@ -13,7 +13,7 @@ namespace Tridium {
 	FORWARD_DECLARE_RHI_RESOURCE( RHIGraphicsPipelineState );
 	FORWARD_DECLARE_RHI_RESOURCE( RHICommandList );
 	FORWARD_DECLARE_RHI_RESOURCE( RHIShaderModule );
-	FORWARD_DECLARE_RHI_RESOURCE( RHIShaderBindingLayout );
+	FORWARD_DECLARE_RHI_RESOURCE( RHIBindingLayout );
 	FORWARD_DECLARE_RHI_RESOURCE( RHISwapChain );
 	FORWARD_DECLARE_RHI_RESOURCE( RHIFence );
 	//==============================================
@@ -49,7 +49,7 @@ namespace Tridium {
 		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc ) = 0;
 		virtual RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc ) = 0;
 		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc ) = 0;
-		virtual RHIShaderBindingLayoutRef CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc ) = 0;
+		virtual RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDescriptor& a_Desc ) = 0;
 		virtual RHISwapChainRef CreateSwapChain( const RHISwapChainDescriptor& a_Desc ) = 0;
 		virtual RHIFenceRef CreateFence( const RHIFenceDescriptor& a_Desc ) = 0;
 		//=====================================================

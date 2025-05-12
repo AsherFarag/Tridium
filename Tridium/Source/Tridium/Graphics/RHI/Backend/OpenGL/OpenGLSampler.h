@@ -3,14 +3,14 @@
 
 namespace Tridium {
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( OpenGLSampler, RHISampler )
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHISampler_OpenGLImpl, RHISampler )
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( OpenGLSampler, ERHInterfaceType::OpenGL );
+		RHI_RESOURCE_IMPLEMENTATION_BODY( RHISampler_OpenGLImpl, ERHInterfaceType::OpenGL );
 
-		bool Commit( const RHISamplerDescriptor& a_Desc ) override
+		RHISampler_OpenGLImpl( const DescriptorType& a_Desc )
+			: RHISampler( a_Desc )
 		{
-			m_Desc = a_Desc;
 			OpenGL3::GenSamplers( 1, &m_SamplerID );
 			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_MIN_FILTER, ToOpenGL::GetFilter( a_Desc.Filter ) );
 			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_MAG_FILTER, ToOpenGL::GetFilter( a_Desc.Filter ) );
@@ -23,7 +23,6 @@ namespace Tridium {
 			OpenGL3::SamplerParameterfv( m_SamplerID, GL_TEXTURE_BORDER_COLOR, &a_Desc.BorderColor.r );
 			OpenGL3::SamplerParameterf( m_SamplerID, GL_TEXTURE_MIN_LOD, a_Desc.MinLOD );
 			OpenGL3::SamplerParameterf( m_SamplerID, GL_TEXTURE_MAX_LOD, a_Desc.MaxLOD );
-			return true;
 		}
 
 		bool Release() override

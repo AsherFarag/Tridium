@@ -231,62 +231,47 @@ namespace Tridium {
 
 	RHIFenceRef D3D12RHI::CreateFence( const RHIFenceDescriptor& a_Desc )
 	{
-		RHIFenceRef fence = RHI::CreateNativeResource<D3D12Fence>( );
-		CHECK( fence->Commit( a_Desc ) );
-		return fence;
+		return RHI::CreateNativeResource<RHIFence_D3D12Impl>( a_Desc );
 	}
 
 	RHISamplerRef D3D12RHI::CreateSampler( const RHISamplerDescriptor& a_Desc )
 	{
-		RHISamplerRef sampler = RHI::CreateNativeResource<D3D12Sampler>();
-		CHECK( sampler->Commit( a_Desc ) );
-		return sampler;
+		return RHI::CreateNativeResource<RHISampler_D3D12Impl>( a_Desc );
 	}
 
 	RHITextureRef D3D12RHI::CreateTexture( const RHITextureDescriptor& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
 	{
-		RHITextureRef tex = RHI::CreateNativeResource<D3D12Texture>( a_Desc, a_SubResourcesData );
-		return tex;
+		return RHI::CreateNativeResource<RHITexture_D3D12Impl>( a_Desc, a_SubResourcesData );
 	}
 
 	RHIBufferRef D3D12RHI::CreateBuffer( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data )
 	{
-		RHIBufferRef buffer = RHI::CreateNativeResource<D3D12Buffer>( a_Desc, a_Data );
-		return buffer;
+		return RHI::CreateNativeResource<D3D12Buffer>( a_Desc, a_Data );
 	}
 
 	RHIGraphicsPipelineStateRef D3D12RHI::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc )
 	{
-		RHIGraphicsPipelineStateRef pipeline = RHI::CreateNativeResource<D3D12GraphicsPipelineState>();
-		CHECK( pipeline->Commit( a_Desc ) );
-		return pipeline;
+		return RHI::CreateNativeResource<RHIGraphicsPipelineState_D3D12Impl>( a_Desc );
 	}
 
 	RHICommandListRef D3D12RHI::CreateCommandList( const RHICommandListDescriptor& a_Desc )
 	{
-		RHICommandListRef cmdList = RHI::CreateNativeResource<D3D12CommandList>( a_Desc );
-		return cmdList;
+		return RHI::CreateNativeResource<D3D12CommandList>( a_Desc );
 	}
 
 	RHIShaderModuleRef D3D12RHI::CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc )
 	{
-		RHIShaderModuleRef shader = RHI::CreateNativeResource<D3D12ShaderModule>();
-		CHECK( shader->Commit( a_Desc ) );
-		return shader;
+		return RHI::CreateNativeResource<RHIShaderModule_D3D12Impl>( a_Desc );
 	}
 
-	RHIShaderBindingLayoutRef D3D12RHI::CreateShaderBindingLayout( const RHIShaderBindingLayoutDescriptor& a_Desc )
+	RHIBindingLayoutRef D3D12RHI::CreateBindingLayout( const RHIBindingLayoutDescriptor& a_Desc )
 	{
-		RHIShaderBindingLayoutRef sbl = RHI::CreateNativeResource<D3D12ShaderBindingLayout>();
-		CHECK( sbl->Commit( a_Desc ) );
-		return sbl;
+		return RHI::CreateNativeResource<RHIBindingLayout_D3D12Impl>( a_Desc );
 	}
 
 	RHISwapChainRef D3D12RHI::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )
 	{
-		RHISwapChainRef swapChain = RHI::CreateNativeResource<D3D12SwapChain>();
-		CHECK( swapChain->Commit( a_Desc ) );
-		return swapChain;
+		return RHI::CreateNativeResource<RHISwapChain_D3D12Impl>( a_Desc );
 	}
 
 	//////////////////////////////////////////////////////////////////////////

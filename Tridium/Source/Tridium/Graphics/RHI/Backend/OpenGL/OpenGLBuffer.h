@@ -4,12 +4,12 @@
 
 namespace Tridium {
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( OpenGLBuffer, RHIBuffer )
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHIBuffer_OpenGLImpl, RHIBuffer )
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( OpenGLBuffer, ERHInterfaceType::OpenGL );
+		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIBuffer_OpenGLImpl, ERHInterfaceType::OpenGL );
 
-		OpenGLBuffer( const RHIBufferDescriptor & a_Desc, Span<const uint8_t> a_Data = {} )
+		RHIBuffer_OpenGLImpl( const RHIBufferDescriptor & a_Desc, Span<const uint8_t> a_Data = {} )
 			: RHIBuffer( a_Desc )
 		{
 			BufferObj.Create();
@@ -46,10 +46,10 @@ namespace Tridium {
 			BufferObj.SetName( a_Desc.Name );
 		}
 
-		virtual ~OpenGLBuffer() override = default;
+		virtual ~RHIBuffer_OpenGLImpl() override = default;
 		virtual bool Commit( const RHIBufferDescriptor& a_Desc ) override
 		{
-			TODO( "Implement OpenGLBuffer::Commit" );
+			TODO( "Implement RHIBuffer_OpenGLImpl::Commit" );
 			m_Desc = a_Desc;
 			return true;
 		}

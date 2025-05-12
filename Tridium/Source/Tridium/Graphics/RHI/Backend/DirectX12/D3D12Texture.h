@@ -3,12 +3,12 @@
 
 namespace Tridium {
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( D3D12Texture, RHITexture )
+	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHITexture_D3D12Impl, RHITexture )
 	{
-		RHI_RESOURCE_IMPLEMENTATION_BODY( D3D12Texture, ERHInterfaceType::DirectX12 );
+		RHI_RESOURCE_IMPLEMENTATION_BODY( RHITexture_D3D12Impl, ERHInterfaceType::DirectX12 );
 
-		D3D12Texture( const RHITextureDescriptor & a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData = {} );
-		~D3D12Texture() override = default;
+		RHITexture_D3D12Impl( const RHITextureDescriptor & a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData = {} );
+		~RHITexture_D3D12Impl() override = default;
 
 		virtual bool Release() override;
 		virtual size_t GetSizeInBytes() const override;
@@ -23,7 +23,7 @@ namespace Tridium {
 		//	uint32_t a_MipLevel, uint32_t a_ArraySlice, Box a_Region, const RHITextureSubresourceData& a_Data );
 
 		bool CopyTexture( 
-			ID3D12GraphicsCommandList& a_CmdList, D3D12Texture& a_SrcTexture,
+			ID3D12GraphicsCommandList& a_CmdList, RHITexture_D3D12Impl& a_SrcTexture,
 			uint32_t a_SrcMipLevel, uint32_t a_SrcArraySlice, Box a_SrcRegion,
 			uint32_t a_DstMipLevel, uint32_t a_DstArraySlice, Box a_DstRegion
 		);
