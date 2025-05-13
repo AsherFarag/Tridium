@@ -144,27 +144,32 @@ namespace Tridium {
 			return GetType() == T::Type;
 		}
 
-		// Will return a pointer to this resource if it is the same type.
+		// Checked cast to the specified type in Debug mode, otherwise a static cast.
 		template<typename T> requires Concepts::IsRHIResource<T>
 		T* As()
 		{
-			if ( Is<T>() )
+		#if RHI_DEBUG_ENABLED
+			if ( !Is<T>() )
 			{
-				return static_cast<T*>( this );
+				return nullptr;
 			}
+		#endif
 
-			return nullptr;
+			return Cast<T*>(this);
 		}
 
-		// Will return a pointer to this resource if it is the same type.
+		// Checked cast to the specified type in Debug mode, otherwise a static cast.
 		template<typename T> requires Concepts::IsRHIResource<T>
 		const T* As() const
 		{
-			if ( Is<T>() )
+		#if RHI_DEBUG_ENABLED
+			if ( !Is<T>() )
 			{
-				return static_cast<const T*>( this );
+				return nullptr;
 			}
-			return nullptr;
+		#endif
+
+			return Cast<const T*>( this );
 		}
 
 		// Creates a handle to the existing RHI resource.

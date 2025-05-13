@@ -353,7 +353,8 @@ namespace Tridium {
 		// Default is column-major
 		else
 		{
-			args.EmplaceBack( L"-Zpc" );
+			//args.EmplaceBack( L"-Zpc" );
+			args.EmplaceBack( L"-Zpr" );
 		}
 
 		////////////////////////////////////////

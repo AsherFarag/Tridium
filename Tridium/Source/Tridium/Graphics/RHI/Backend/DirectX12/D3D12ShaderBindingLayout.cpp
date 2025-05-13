@@ -144,4 +144,24 @@ namespace Tridium {
 		return m_RootSignature.Get();
     }
 
+    RHIBindingSet_D3D12Impl::RHIBindingSet_D3D12Impl( const DescriptorType& a_Desc )
+		: RHIBindingSet( a_Desc )
+    {
+    }
+
+    bool RHIBindingSet_D3D12Impl::Release()
+    {
+		return true;
+    }
+
+    bool RHIBindingSet_D3D12Impl::IsValid() const
+    {
+        return true;
+    }
+
+    const void* RHIBindingSet_D3D12Impl::NativePtr() const
+    {
+		return nullptr;
+    }
+
 }

@@ -14,22 +14,6 @@ namespace Tridium {
 	// Forward declarations
 	class RHICommandList;
 	using RHICommandListRef = SharedPtr<RHICommandList>;
-    
-	//======================================================================================================
-    // RHI Shader Input Payload
-    //  A structure that holds shader input data,
-    //  including a count of inputs and either an array of references to textures or inline data.
-	//======================================================================================================
-	struct RHIShaderInputPayload
-	{
-		uint8_t Count;
-		bool IsReference;
-		union
-		{
-			void* References[RHIConstants::MaxTextureBindings];
-			uint8_t InlineData[sizeof( References )];
-		};
-	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Graphics Command Buffer
@@ -40,8 +24,9 @@ namespace Tridium {
 	//=====================================================
 	enum class ERHICommandType : uint8_t
 	{
-		SetShaderBindingLayout,
-		SetShaderInput,
+		SetBindingLayout,
+		SetShaderBindings,
+		SetInlinedConstants,
 		ResourceBarrier,
 		UpdateBuffer,
 		CopyBuffer,
@@ -80,8 +65,8 @@ namespace Tridium {
 		{
 			switch ( a_Type )
 			{
-			case ERHICommandType::SetShaderBindingLayout:   return "SetShaderBindingLayout";
-			case ERHICommandType::SetShaderInput:           return "SetShaderInput";
+			case ERHICommandType::SetBindingLayout:         return "SetBindingLayout";
+			case ERHICommandType::SetShaderBindings:        return "SetShaderBindings";
 			case ERHICommandType::ResourceBarrier:          return "ResourceBarrier";
 			case ERHICommandType::UpdateBuffer:             return "UpdateBuffer";
 			case ERHICommandType::CopyBuffer:               return "CopyBuffer";
@@ -103,15 +88,15 @@ namespace Tridium {
 			case ERHICommandType::DispatchCompute:          return "DispatchCompute";
 			case ERHICommandType::DispatchComputeIndirect:  return "DispatchComputeIndirect";
 			}
-			return "Unknown";
+			return "<INVALID>";
 		}
 
 		inline constexpr const char* GetCommandNameWithSpaces( ERHICommandType a_Type )
 		{
 			switch ( a_Type )
 			{
-			case ERHICommandType::SetShaderBindingLayout:   return "Set Shader Binding Layout";
-			case ERHICommandType::SetShaderInput:           return "Set Shader Input";
+			case ERHICommandType::SetBindingLayout:         return "Set Binding Layout";
+			case ERHICommandType::SetShaderBindings:        return "Set Shader Bindings";
 			case ERHICommandType::ResourceBarrier:          return "Resource Barrier";
 			case ERHICommandType::UpdateBuffer:             return "Update Buffer";
 			case ERHICommandType::CopyBuffer:               return "Copy Buffer";
@@ -133,7 +118,7 @@ namespace Tridium {
 			case ERHICommandType::DispatchCompute:          return "Dispatch Compute";
 			case ERHICommandType::DispatchComputeIndirect:  return "Dispatch Compute Indirect";
 			}
-			return "Unknown";
+			return "<INVALID>";
 		}
 	}
 
@@ -149,16 +134,20 @@ namespace Tridium {
         #pragma region Commands
 
 		#pragma region Base
-		struct SetShaderBindingLayout
+		struct SetBindingLayout
 		{
 			RHIBindingLayout* SBL;
 		};
 
-		struct SetShaderInput
+		struct SetShaderBindings
 		{
-			hash_t NameHash;
-			RHIShaderInputPayload Payload;
-			ERHIResourceStateTransitionMode StateTransitionMode;
+			RHIBindingSet* BindingSet;
+		};
+
+		struct SetInlinedConstants
+		{
+			FixedArray<uint8_t, RHIConstants::MaxInlinedConstantsSize> Data;
+			RHIBufferRange Range;
 		};
 
 		struct ResourceBarrier
@@ -171,7 +160,7 @@ namespace Tridium {
 			RHIBuffer* Buffer;
 			Span<const uint8_t> Data;
 			size_t Offset;
-			ERHIResourceStateTransitionMode StateTransitionMode;
+			ERHIStateTransition StateTransitionMode;
 		};
 
 		struct CopyBuffer
@@ -179,10 +168,10 @@ namespace Tridium {
 			size_t Size;
 			RHIBuffer* Source;
 			size_t SourceOffset;
-			ERHIResourceStateTransitionMode SrcStateTransitionMode;
+			ERHIStateTransition SrcStateTransitionMode;
 			RHIBuffer* Destination;
 			size_t DestinationOffset;
-			ERHIResourceStateTransitionMode DstStateTransitionMode;
+			ERHIStateTransition DstStateTransitionMode;
 		};
 
 		struct UpdateTexture
@@ -192,7 +181,7 @@ namespace Tridium {
 			uint32_t ArraySlice;
 			Box Region;
 			RHITextureSubresourceData Data;
-			ERHIResourceStateTransitionMode StateTransitionMode;
+			ERHIStateTransition StateTransitionMode;
 		};
 
 		struct CopyTexture
@@ -201,12 +190,12 @@ namespace Tridium {
 			uint32_t SrcMipLevel;
 			uint32_t SrcArraySlice;
 			Box SrcRegion;
-			ERHIResourceStateTransitionMode SrcStateTransitionMode;
+			ERHIStateTransition SrcStateTransitionMode;
 			RHITexture* DstTexture;
 			uint32_t DstMipLevel;
 			uint32_t DstArraySlice;
 			Box DstRegion;
-			ERHIResourceStateTransitionMode DstStateTransitionMode;
+			ERHIStateTransition DstStateTransitionMode;
 		};
 
 		#pragma endregion
@@ -222,7 +211,7 @@ namespace Tridium {
         {
             InlineArray<RHITexture*, RHIConstants::MaxColorTargets> RTV;
             RHITexture* DSV;
-			ERHIResourceStateTransitionMode StateTransitionMode;
+			ERHIStateTransition StateTransitionMode;
         };
 
         struct ClearRenderTargets 
@@ -231,7 +220,7 @@ namespace Tridium {
 			float DepthValue;
 			uint8_t StencilValue;
 			EnumFlags<ERHIClearFlags> ClearFlags;
-			ERHIResourceStateTransitionMode StateTransitionMode;
+			ERHIStateTransition StateTransitionMode;
         };
 
         struct SetScissors 
@@ -247,13 +236,13 @@ namespace Tridium {
         struct SetIndexBuffer 
         {
 			RHIBuffer* IBO;
-			ERHIResourceStateTransitionMode StateTransitionMode;
+			ERHIStateTransition StateTransitionMode;
         };
 
         struct SetVertexBuffer 
         {
             RHIBuffer* VBO;
-			ERHIResourceStateTransitionMode StateTransitionMode;
+			ERHIStateTransition StateTransitionMode;
         };
 
         struct SetPrimitiveTopology 
@@ -297,8 +286,9 @@ namespace Tridium {
         #pragma endregion
 
 		Variant<
-			SetShaderBindingLayout,
-			SetShaderInput,
+			SetBindingLayout,
+			SetShaderBindings,
+			SetInlinedConstants,
 			ResourceBarrier,
 			UpdateBuffer,
 			CopyBuffer,
@@ -394,15 +384,29 @@ namespace Tridium {
 		//=====================================================
 		// Set Shader Binding Layout
 		// - Sets the shader binding layout for the command buffer.
-		CommandBufferType& SetShaderBindingLayout( RHIBindingLayoutRef a_SBL DEBUG_INFO_PARAM );
+		CommandBufferType& SetBindingLayout( 
+			RHIBindingLayoutRef a_SBL DEBUG_INFO_PARAM );
 
 		//=====================================================
-		// Set Shader Input
-		// - Will attempt to set the shader variable, with the given name found in the shader binding layout, to the given value.
-		template<typename T>
-		CommandBufferType& SetShaderInput( 
-			HashedString a_Name, T a_Value,
-			ERHIResourceStateTransitionMode a_StateTransitionMode = ERHIResourceStateTransitionMode::Transition DEBUG_INFO_PARAM );
+		// Set Shader Bindings
+		// - Sets the shader bindings for the command buffer.
+		CommandBufferType& SetShaderBindings( 
+			RHIBindingSetRef a_BindingSet DEBUG_INFO_PARAM );
+
+		//=====================================================
+		// Set Inlined Constants
+		// - An offset, in 32-bit values, can be defined to specify where the constants should be written. 
+		// - NOTE: The max size of a_Data is defined by RHIConstants::MaxInlinedConstantsSize - a_OffsetIn32Bits.
+		CommandBufferType& SetInlinedConstants(
+			Span<const uint8_t> a_Data, uint32_t a_OffsetIn32Bits = 0 DEBUG_INFO_PARAM );
+
+		//=====================================================
+		// Set Inlined Constants
+		// - An offset, in 32-bit values, can be defined to specify where the constants should be written. 
+		// - NOTE: The max size of a_Data is defined by RHIConstants::MaxInlinedConstantsSize - a_OffsetIn32Bits.
+		template<typename T> requires std::is_pod_v<T>
+		CommandBufferType& SetInlinedConstants(
+			const T& a_Data, uint32_t a_OffsetIn32Bits = 0 DEBUG_INFO_PARAM );
 
 		//=====================================================
 		// Resource Barrier
@@ -426,7 +430,7 @@ namespace Tridium {
 		CommandBufferType& UpdateBuffer(
 			RHIBufferRef a_Buffer,
 			Span<const uint8_t> a_Data, size_t a_Offset = 0,
-			ERHIResourceStateTransitionMode a_StateTransitionMode = ERHIResourceStateTransitionMode::Transition DEBUG_INFO_PARAM );
+			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition DEBUG_INFO_PARAM );
 
 		//=====================================================
 		// Copy Buffer
@@ -436,7 +440,7 @@ namespace Tridium {
 			RHIBufferRef a_SrcBuffer,
 			RHIBufferRef a_DstBuffer,
 			size_t a_Size, size_t a_SrcOffset = 0, size_t a_DstOffset = 0,
-			ERHIResourceStateTransitionMode a_StateTransitionMode = ERHIResourceStateTransitionMode::Transition DEBUG_INFO_PARAM );
+			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition DEBUG_INFO_PARAM );
 
 		//=====================================================
 		// Update Texture
@@ -446,7 +450,7 @@ namespace Tridium {
 			RHITextureRef a_Texture,
 			uint32_t a_MipLevel, uint32_t a_ArraySlice, Box a_Region,
 			const RHITextureSubresourceData& a_Data,
-			ERHIResourceStateTransitionMode a_StateTransitionMode = ERHIResourceStateTransitionMode::Transition DEBUG_INFO_PARAM );
+			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition DEBUG_INFO_PARAM );
 
 		//=====================================================
 		// Copy Texture
@@ -456,8 +460,8 @@ namespace Tridium {
 			RHITextureRef a_SrcTexture, RHITextureRef a_DstTexture,
 			uint32_t a_SrcMipLevel, uint32_t a_SrcArraySlice, Box a_SrcRegion,
 			uint32_t a_DstMipLevel, uint32_t a_DstArraySlice, Box a_DstRegion,
-			ERHIResourceStateTransitionMode a_SrcStateTransitionMode = ERHIResourceStateTransitionMode::Transition,
-			ERHIResourceStateTransitionMode a_DstStateTransitionMode = ERHIResourceStateTransitionMode::Transition DEBUG_INFO_PARAM );
+			ERHIStateTransition a_SrcStateTransitionMode = ERHIStateTransition::Transition,
+			ERHIStateTransition a_DstStateTransitionMode = ERHIStateTransition::Transition DEBUG_INFO_PARAM );
 
 		//=====================================================
 		// Copy Texture
@@ -467,28 +471,21 @@ namespace Tridium {
 			RHITextureRef a_SrcTexture, RHITextureRef a_DstTexture,
 			uint32_t a_SrcMipLevel, uint32_t a_SrcArraySlice,
 			uint32_t a_DstMipLevel, uint32_t a_DstArraySlice,
-			ERHIResourceStateTransitionMode a_SrcStateTransitionMode = ERHIResourceStateTransitionMode::Transition,
-			ERHIResourceStateTransitionMode a_DstStateTransitionMode = ERHIResourceStateTransitionMode::Transition DEBUG_INFO_PARAM );
+			ERHIStateTransition a_SrcStateTransitionMode = ERHIStateTransition::Transition,
+			ERHIStateTransition a_DstStateTransitionMode = ERHIStateTransition::Transition DEBUG_INFO_PARAM );
 
 	public:
 		Array<RHICommand> Commands;
 
 	protected:
 		UnorderedSet<RHIBindingLayoutRef> m_ShaderBindingLayouts;
-		UnorderedSet<RHICommandListRef>         m_CommandLists;
-		UnorderedSet<RHISamplerRef>             m_Samplers;
-		UnorderedSet<RHITextureRef>             m_Textures;
-		UnorderedSet<RHIBufferRef>              m_Buffers;
+		UnorderedSet<RHICommandListRef>   m_CommandLists;
+		UnorderedSet<RHITextureRef>       m_Textures;
+		UnorderedSet<RHIBufferRef>        m_Buffers;
+		UnorderedSet<RHIBindingSetRef>    m_BindingSets;
 
 	protected:
 		CommandBufferType& Self() { return static_cast<CommandBufferType&>( *this ); }
-
-		template<typename T>
-		static void BuildShaderInput(
-			T a_Value, RHIShaderInputPayload& o_Payload,
-			UnorderedSet<RHISamplerRef>& o_Samplers,
-			UnorderedSet<RHITextureRef>& o_TextureRefs,
-			UnorderedSet<RHIBufferRef>& o_Buffers );
 	};
 
 
@@ -507,37 +504,37 @@ namespace Tridium {
 		// Set Index Buffer
 		// - Sets the index buffer for the command buffer.
 		// - Note: This can perform a resource state transition if needed.
-		RHIGraphicsCommandBuffer& SetIndexBuffer( RHIBufferRef a_IBO, ERHIResourceStateTransitionMode a_StateTransitionMode = ERHIResourceStateTransitionMode::Transition DEBUG_INFO_PARAM );
+		RHIGraphicsCommandBuffer& SetIndexBuffer( RHIBufferRef a_IBO, ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition DEBUG_INFO_PARAM );
 
 		//=====================================================
 		// Set Vertex Buffer
 		// - Sets the vertex buffer for the command buffer.
 		// - Note: This can perform a resource state transition if needed.
-		RHIGraphicsCommandBuffer& SetVertexBuffer( RHIBufferRef a_VBO, ERHIResourceStateTransitionMode a_StateTransitionMode = ERHIResourceStateTransitionMode::Transition DEBUG_INFO_PARAM );
+		RHIGraphicsCommandBuffer& SetVertexBuffer( RHIBufferRef a_VBO, ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition DEBUG_INFO_PARAM );
 
 		//=====================================================
 		// Set Render Targets
 		// - Sets the render targets for the command buffer.
 		// - Note: This can perform a resource state transition if needed.
-		RHIGraphicsCommandBuffer& SetRenderTargets( Span<RHITexture*> a_RTV, RHITexture* a_DSV, ERHIResourceStateTransitionMode a_StateTransitionMode = ERHIResourceStateTransitionMode::Transition DEBUG_INFO_PARAM );
+		RHIGraphicsCommandBuffer& SetRenderTargets( Span<RHITexture*> a_RTV, RHITexture* a_DSV, ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition DEBUG_INFO_PARAM );
 
 		//=====================================================
 		// Set Render Targets
 		// - Sets the render targets for the command buffer.
 		// - Note: This can perform a resource state transition if needed.
-		RHIGraphicsCommandBuffer& SetRenderTargets( Span<RHITextureRef> a_RTV, RHITexture* a_DSV, ERHIResourceStateTransitionMode a_StateTransitionMode = ERHIResourceStateTransitionMode::Transition DEBUG_INFO_PARAM );
+		RHIGraphicsCommandBuffer& SetRenderTargets( Span<RHITextureRef> a_RTV, RHITexture* a_DSV, ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition DEBUG_INFO_PARAM );
 
 		//=====================================================
 		// Clear Render Targets
 		// - Clears the render targets for the command buffer.
 		// - Note: This can perform a resource state transition if needed.
-		RHIGraphicsCommandBuffer& ClearRenderTargets( ERHIClearFlags a_Flags, Span<Color> a_ClearColors, float a_DepthValue = 1.0f, uint8_t a_StencilValue = 0u, ERHIResourceStateTransitionMode a_StateTransitionMode = ERHIResourceStateTransitionMode::Transition DEBUG_INFO_PARAM );
+		RHIGraphicsCommandBuffer& ClearRenderTargets( ERHIClearFlags a_Flags, Span<Color> a_ClearColors, float a_DepthValue = 1.0f, uint8_t a_StencilValue = 0u, ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition DEBUG_INFO_PARAM );
 
 		//=====================================================
 		// Clear Render Targets
 		// - Clears the render targets for the command buffer.
 		// - Note: This can perform a resource state transition if needed.
-		RHIGraphicsCommandBuffer& ClearRenderTargets( ERHIClearFlags a_Flags, Color a_ClearColor, float a_DepthValue = 1.0f, uint8_t a_StencilValue = 0u, ERHIResourceStateTransitionMode a_StateTransitionMode = ERHIResourceStateTransitionMode::Transition DEBUG_INFO_PARAM );
+		RHIGraphicsCommandBuffer& ClearRenderTargets( ERHIClearFlags a_Flags, Color a_ClearColor, float a_DepthValue = 1.0f, uint8_t a_StencilValue = 0u, ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition DEBUG_INFO_PARAM );
 
 		//=====================================================
 		// Set Scissors
@@ -596,8 +593,6 @@ namespace Tridium {
 
 
 
-
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// IMPLEMENTATION																					  //
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -607,26 +602,44 @@ namespace Tridium {
 	//===================================
 
 	template<typename _CommandBufferType>
-	inline _CommandBufferType& RHIBaseCommandBuffer<_CommandBufferType>::SetShaderBindingLayout( 
+	inline _CommandBufferType& RHIBaseCommandBuffer<_CommandBufferType>::SetBindingLayout( 
 		RHIBindingLayoutRef a_SBL DEBUG_INFO )
 	{
-		Commands.EmplaceBack( RHICommand::SetShaderBindingLayout{ a_SBL.get() } );
+		Commands.EmplaceBack( RHICommand::SetBindingLayout{ a_SBL.get() } );
 		m_ShaderBindingLayouts.insert( std::move( a_SBL ) );
 		ADD_DEBUG_INFO();
 		return Self();
 	}
 
 	template<typename _CommandBufferType>
-	template<typename T>
-	inline _CommandBufferType& RHIBaseCommandBuffer<_CommandBufferType>::SetShaderInput( 
-		HashedString a_Name, T a_Value, ERHIResourceStateTransitionMode a_StateTransitionMode DEBUG_INFO )
+	inline _CommandBufferType& RHIBaseCommandBuffer<_CommandBufferType>::SetShaderBindings( 
+		RHIBindingSetRef a_BindingSet DEBUG_INFO )
 	{
-		RHICommand& cmd = Commands.EmplaceBack( RHICommand::SetShaderInput() );
-		RHICommand::SetShaderInput& data = cmd.Get<RHICommand::SetShaderInput>();
-		data.NameHash = a_Name;
-		data.Payload = RHIShaderInputPayload();
-		data.StateTransitionMode = a_StateTransitionMode;
-		BuildShaderInput( a_Value, data.Payload, m_Samplers, m_Textures, m_Buffers );
+		Commands.EmplaceBack( RHICommand::SetShaderBindings( a_BindingSet.get() ) );
+		m_BindingSets.insert( std::move( a_BindingSet ) );
+		ADD_DEBUG_INFO();
+		return Self();
+	}
+
+	template<typename _CommandBufferType>
+	inline _CommandBufferType& RHIBaseCommandBuffer<_CommandBufferType>::SetInlinedConstants(
+		Span<const uint8_t> a_Data, uint32_t a_OffsetIn32Bits DEBUG_INFO )
+	{
+		const uint32_t offsetInBytes = a_OffsetIn32Bits * sizeof( uint32_t );
+		RHI_DEV_CHECK( a_Data.size_bytes() <= RHIConstants::MaxInlinedConstantsSize - offsetInBytes, "Inlined constants size exceeds the maximum size!" );
+		Commands.EmplaceBack( RHICommand::SetInlinedConstants( a_Data, RHIBufferRange( offsetInBytes, a_Data.size_bytes() ) ) );
+		ADD_DEBUG_INFO();
+		return Self();
+	}
+
+	template<typename _CommandBufferType>
+	template<typename T> requires std::is_pod_v<T>
+	inline _CommandBufferType& RHIBaseCommandBuffer<_CommandBufferType>::SetInlinedConstants(
+		const T& a_Data, uint32_t a_OffsetIn32Bits DEBUG_INFO )
+	{
+		const uint32_t offsetInBytes = a_OffsetIn32Bits * sizeof( uint32_t );
+		RHI_DEV_CHECK( sizeof( T ) <= RHIConstants::MaxInlinedConstantsSize - offsetInBytes, "Inlined constants size exceeds the maximum size!" );
+		Commands.EmplaceBack( RHICommand::SetInlinedConstants( Span<const uint8_t>( ReinterpretCast<const uint8_t*>(&a_Data), sizeof( T ) ), RHIBufferRange( offsetInBytes, sizeof( T ) ) ) );
 		ADD_DEBUG_INFO();
 		return Self();
 	}
@@ -664,7 +677,7 @@ namespace Tridium {
 
 	template<typename _CommandBufferType>
 	inline _CommandBufferType& RHIBaseCommandBuffer<_CommandBufferType>::UpdateBuffer( 
-		RHIBufferRef a_Buffer, Span<const uint8_t> a_Data, size_t a_Offset, ERHIResourceStateTransitionMode a_StateTransitionMode DEBUG_INFO )
+		RHIBufferRef a_Buffer, Span<const uint8_t> a_Data, size_t a_Offset, ERHIStateTransition a_StateTransitionMode DEBUG_INFO )
 	{
 		Commands.EmplaceBack( RHICommand::UpdateBuffer( a_Buffer.get(), a_Data, a_Offset, a_StateTransitionMode ) );
 		m_Buffers.insert( std::move( a_Buffer ) );
@@ -674,7 +687,7 @@ namespace Tridium {
 
 	template<typename _CommandBufferType>
 	inline _CommandBufferType& RHIBaseCommandBuffer<_CommandBufferType>::CopyBuffer(
-		RHIBufferRef a_SrcBuffer, RHIBufferRef a_DstBuffer, size_t a_Size, size_t a_SrcOffset, size_t a_DstOffset, ERHIResourceStateTransitionMode a_StateTransitionMode DEBUG_INFO )
+		RHIBufferRef a_SrcBuffer, RHIBufferRef a_DstBuffer, size_t a_Size, size_t a_SrcOffset, size_t a_DstOffset, ERHIStateTransition a_StateTransitionMode DEBUG_INFO )
 	{
 		Commands.EmplaceBack( RHICommand::CopyBuffer( a_SrcBuffer.get(), a_DstBuffer.get(), a_Size, a_SrcOffset, a_StateTransitionMode ) );
 		m_Buffers.insert( std::move( a_SrcBuffer ) );
@@ -686,7 +699,7 @@ namespace Tridium {
 
 	template<typename _CommandBufferType>
 	inline _CommandBufferType& RHIBaseCommandBuffer<_CommandBufferType>::UpdateTexture(
-		RHITextureRef a_Texture, uint32_t a_MipLevel, uint32_t a_ArraySlice, Box a_Region, const RHITextureSubresourceData& a_Data, ERHIResourceStateTransitionMode a_StateTransitionMode DEBUG_INFO )
+		RHITextureRef a_Texture, uint32_t a_MipLevel, uint32_t a_ArraySlice, Box a_Region, const RHITextureSubresourceData& a_Data, ERHIStateTransition a_StateTransitionMode DEBUG_INFO )
 	{
 		Commands.EmplaceBack( RHICommand::UpdateTexture( a_Texture.get(), a_MipLevel, a_ArraySlice, a_Region, a_Data, a_StateTransitionMode ) );
 		m_Textures.insert( std::move( a_Texture ) );
@@ -699,7 +712,7 @@ namespace Tridium {
 		RHITextureRef a_SrcTexture, RHITextureRef a_DstTexture,
 		uint32_t a_SrcMipLevel, uint32_t a_SrcArraySlice, Box a_SrcRegion,
 		uint32_t a_DstMipLevel, uint32_t a_DstArraySlice, Box a_DstRegion,
-		ERHIResourceStateTransitionMode a_SrcStateTransitionMode, ERHIResourceStateTransitionMode a_DstStateTransitionMode
+		ERHIStateTransition a_SrcStateTransitionMode, ERHIStateTransition a_DstStateTransitionMode
 		DEBUG_INFO )
 	{
 		RHICommand::CopyTexture& cmd = Commands.EmplaceBack( RHICommand::CopyTexture() ).Get<RHICommand::CopyTexture>();
@@ -725,7 +738,7 @@ namespace Tridium {
 		RHITextureRef a_SrcTexture, RHITextureRef a_DstTexture,
 		uint32_t a_SrcMipLevel, uint32_t a_SrcArraySlice,
 		uint32_t a_DstMipLevel, uint32_t a_DstArraySlice,
-		ERHIResourceStateTransitionMode a_SrcStateTransitionMode, ERHIResourceStateTransitionMode a_DstStateTransitionMode
+		ERHIStateTransition a_SrcStateTransitionMode, ERHIStateTransition a_DstStateTransitionMode
 		DEBUG_INFO )
 	{
 		RHICommand::CopyTexture& cmd = Commands.EmplaceBack( RHICommand::CopyTexture() ).Get<RHICommand::CopyTexture>();
@@ -756,94 +769,6 @@ namespace Tridium {
 		return Self();
 	}
 
-	template<typename _CommandBufferType>
-	template<typename T>
-	inline void RHIBaseCommandBuffer<_CommandBufferType>::BuildShaderInput( 
-		T a_Value,
-		RHIShaderInputPayload& o_Payload,
-		UnorderedSet<RHISamplerRef>& o_Samplers,
-		UnorderedSet<RHITextureRef>& o_TextureRefs, 
-		UnorderedSet<RHIBufferRef>& o_Buffers )
-	{
-		using UnderlyingType = std::remove_const_t<std::remove_reference_t<T>>;
-
-		// Copy Texture Span
-		if constexpr ( Concepts::IsSame<UnderlyingType, Span<RHITextureRef>> )
-		{
-			o_Payload.Count = static_cast<uint8_t>( a_Value.size() );
-			o_Payload.IsReference = true;
-			auto it = o_Payload.References;
-
-			for ( auto& texRef : a_Value )
-			{
-				*( it++ ) = static_cast<void*>( texRef.get() );
-				o_TextureRefs.insert( texRef );
-			}
-		}
-		// Copy Texture
-		else if constexpr ( Concepts::IsConvertible<T, RHITextureRef> )
-		{
-			o_Payload.Count = 1;
-			o_Payload.IsReference = true;
-			o_Payload.References[0] = static_cast<void*>( a_Value.get() );
-			o_TextureRefs.insert( a_Value );
-		}
-		// Copy Sampler Span
-		else if constexpr ( Concepts::IsSame<UnderlyingType, Span<RHISamplerRef>> )
-		{
-			o_Payload.Count = static_cast<uint8_t>( a_Value.size() );
-			o_Payload.IsReference = true;
-			auto it = o_Payload.References;
-			for ( auto& samplerRef : a_Value )
-			{
-				*( it++ ) = static_cast<void*>( samplerRef.get() );
-				o_Samplers.insert( samplerRef );
-			}
-		}
-		// Copy Sampler
-		else if constexpr ( Concepts::IsConvertible<T, RHISamplerRef> )
-		{
-			o_Payload.Count = 1;
-			o_Payload.IsReference = true;
-			o_Payload.References[0] = static_cast<void*>( a_Value.get() );
-			o_Samplers.insert( a_Value );
-		}
-		// Copy Buffer Span
-		else if constexpr ( Concepts::IsSame<UnderlyingType, Span<RHIBufferRef>> )
-		{
-			o_Payload.Count = static_cast<uint8_t>( a_Value.size() );
-			o_Payload.IsReference = true;
-			auto it = o_Payload.References;
-
-			for ( auto& bufRef : a_Value )
-			{
-				*( it++ ) = static_cast<void*>( bufRef.get() );
-				o_Buffers.insert( bufRef );
-			}
-		}
-		// Copy Buffer
-		else if constexpr ( Concepts::IsConvertible<T, RHIBufferRef> )
-		{
-			o_Payload.Count = 1;
-			o_Payload.IsReference = true;
-			o_Payload.References[0] = static_cast<void*>( a_Value.get() );
-			o_Buffers.insert( a_Value );
-		}
-		// Copy POD Type
-		else
-		{
-			constexpr size_t InlineDataSize = sizeof( o_Payload.InlineData );
-
-			static_assert( Concepts::IsTriviallyCopyable<T>, "Type must be trivially copyable!" );
-			static_assert( sizeof( T ) <= InlineDataSize, "Value is too large to be stored inline!" );
-
-			o_Payload.Count = sizeof( T );
-			o_Payload.IsReference = false;
-			void* data = &o_Payload.InlineData;
-			std::memcpy( data, &a_Value, sizeof( T ) );
-		}
-	}
-
 
 
 	//===================================
@@ -860,7 +785,7 @@ namespace Tridium {
 	}
 
 	inline RHIGraphicsCommandBuffer& RHIGraphicsCommandBuffer::SetIndexBuffer(
-		RHIBufferRef a_IBO, ERHIResourceStateTransitionMode a_StateTransitionMode DEBUG_INFO )
+		RHIBufferRef a_IBO, ERHIStateTransition a_StateTransitionMode DEBUG_INFO )
 	{
 		RHI_DEV_CHECK( EnumFlags( a_IBO->Descriptor().BindFlags ).HasFlag( ERHIBindFlags::IndexBuffer ), "Buffer is not an index buffer!" );
 		RHI_DEV_CHECK( a_IBO->Descriptor().Size > 0, "Buffer size is zero!" );
@@ -872,7 +797,7 @@ namespace Tridium {
 	}
 
 	inline RHIGraphicsCommandBuffer& RHIGraphicsCommandBuffer::SetVertexBuffer( 
-		RHIBufferRef a_VBO, ERHIResourceStateTransitionMode a_StateTransitionMode DEBUG_INFO )
+		RHIBufferRef a_VBO, ERHIStateTransition a_StateTransitionMode DEBUG_INFO )
 	{
 		RHI_DEV_CHECK( EnumFlags( a_VBO->Descriptor().BindFlags ).HasFlag( ERHIBindFlags::VertexBuffer ), "Buffer is not a vertex buffer!" );
 		RHI_DEV_CHECK( a_VBO->Descriptor().Size > 0, "Buffer size is zero!" );
@@ -884,7 +809,7 @@ namespace Tridium {
 	}
 
 	inline RHIGraphicsCommandBuffer& RHIGraphicsCommandBuffer::SetRenderTargets( 
-		Span<RHITexture*> a_RTV, RHITexture* a_DSV, ERHIResourceStateTransitionMode a_StateTransitionMode DEBUG_INFO )
+		Span<RHITexture*> a_RTV, RHITexture* a_DSV, ERHIStateTransition a_StateTransitionMode DEBUG_INFO )
 	{
 		RHICommand& cmd = Commands.EmplaceBack( RHICommand::SetRenderTargets() );
 		RHICommand::SetRenderTargets& data = cmd.Get<RHICommand::SetRenderTargets>();
@@ -919,7 +844,7 @@ namespace Tridium {
 	}
 
 	inline RHIGraphicsCommandBuffer& RHIGraphicsCommandBuffer::SetRenderTargets( 
-		Span<RHITextureRef> a_RTV, RHITexture* a_DSV, ERHIResourceStateTransitionMode a_StateTransitionMode DEBUG_INFO )
+		Span<RHITextureRef> a_RTV, RHITexture* a_DSV, ERHIStateTransition a_StateTransitionMode DEBUG_INFO )
 	{
 		RHITexture* rtvs[RHIConstants::MaxColorTargets];
 		for ( size_t i = 0; i < a_RTV.size() && i < RHIConstants::MaxColorTargets; ++i )
@@ -930,7 +855,7 @@ namespace Tridium {
 	}
 
 	inline RHIGraphicsCommandBuffer& RHIGraphicsCommandBuffer::ClearRenderTargets( 
-		ERHIClearFlags a_Flags, Span<Color> a_ClearColors, float a_DepthValue, uint8_t a_StencilValue, ERHIResourceStateTransitionMode a_StateTransitionMode DEBUG_INFO )
+		ERHIClearFlags a_Flags, Span<Color> a_ClearColors, float a_DepthValue, uint8_t a_StencilValue, ERHIStateTransition a_StateTransitionMode DEBUG_INFO )
 	{
 		RHICommand& cmd = Commands.EmplaceBack( RHICommand::ClearRenderTargets() );
 		RHICommand::ClearRenderTargets& data = cmd.Get<RHICommand::ClearRenderTargets>();
@@ -947,7 +872,7 @@ namespace Tridium {
 	}
 
 	inline RHIGraphicsCommandBuffer& RHIGraphicsCommandBuffer::ClearRenderTargets( 
-		ERHIClearFlags a_Flags, Color a_ClearColor, float a_DepthValue, uint8_t a_StencilValue, ERHIResourceStateTransitionMode a_StateTransitionMode DEBUG_INFO )
+		ERHIClearFlags a_Flags, Color a_ClearColor, float a_DepthValue, uint8_t a_StencilValue, ERHIStateTransition a_StateTransitionMode DEBUG_INFO )
 	{
 		RHICommand& cmd = Commands.EmplaceBack( RHICommand::ClearRenderTargets() );
 		RHICommand::ClearRenderTargets& data = cmd.Get<RHICommand::ClearRenderTargets>();

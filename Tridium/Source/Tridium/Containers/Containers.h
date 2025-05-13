@@ -3,6 +3,7 @@
 #include "Array.h"
 #include "BidirectionalMap.h"
 #include "BitSet.h"
+#include "Expected.h"
 #include "InitList.h"
 #include "List.h"
 #include "Map.h"

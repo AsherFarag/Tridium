@@ -13,6 +13,10 @@ namespace Tridium {
 	RHICommandList_OpenGLImpl::RHICommandList_OpenGLImpl( const DescriptorType& a_Desc )
 		: RHICommandList( a_Desc )
 	{
+		m_InlinedConstantsUBO.Create();
+		OpenGL1::BindBuffer( GL_UNIFORM_BUFFER, m_InlinedConstantsUBO );
+		OpenGL1::BufferData( GL_UNIFORM_BUFFER, RHIConstants::MaxInlinedConstantsSize, nullptr, GL_DYNAMIC_DRAW );
+		OpenGL1::BindBuffer( GL_UNIFORM_BUFFER, 0 );
 	}
 
     bool RHICommandList_OpenGLImpl::SetGraphicsCommands( const RHIGraphicsCommandBuffer& a_CmdBuffer )
@@ -23,8 +27,9 @@ namespace Tridium {
 			switch ( cmd.Type() )
 			{
 			#define PerformCmd( _CmdType ) case ERHICommandType::_CmdType: _CmdType( cmd.Get<ERHICommandType::_CmdType>() ); break
-				PerformCmd( SetShaderBindingLayout );
-				PerformCmd( SetShaderInput );
+				PerformCmd( SetBindingLayout );
+				PerformCmd( SetShaderBindings );
+				PerformCmd( SetInlinedConstants );
 				PerformCmd( ResourceBarrier );
 				PerformCmd( SetGraphicsPipelineState );
 				PerformCmd( SetRenderTargets );
@@ -61,7 +66,7 @@ namespace Tridium {
 		return false;
 	}
 
-	void RHICommandList_OpenGLImpl::SetShaderBindingLayout( const RHICommand::SetShaderBindingLayout& a_Data )
+	void RHICommandList_OpenGLImpl::SetBindingLayout( const RHICommand::SetBindingLayout& a_Data )
 	{
 		if ( a_Data.SBL == nullptr ) [[unlikely]]
 		{
@@ -72,166 +77,81 @@ namespace Tridium {
 		GLState::s_BoundSBL = SharedPtrCast<RHIBindingLayout_OpenGLImpl>( a_Data.SBL->shared_from_this() );
 	}
 
-	void RHICommandList_OpenGLImpl::SetShaderInput( const RHICommand::SetShaderInput& a_Data )
+	void RHICommandList_OpenGLImpl::SetShaderBindings( const RHICommand::SetShaderBindings& a_Data )
 	{
-		SharedPtr<RHIBindingLayout_OpenGLImpl> sbl = GLState::s_BoundSBL.lock();
-		if ( !ASSERT( sbl, "No shader binding layout bound!" ) )
-			return;
-
 		SharedPtr<RHIGraphicsPipelineState_OpenGLImpl> gpso = GLState::s_BoundGraphicsPSO.lock();
 		if ( !ASSERT( gpso, "No graphics pipeline state bound!" ) )
 			return;
 
-		const RHIShaderBinding binding = sbl->Descriptor().GetBindingFromName( a_Data.NameHash );
-		const GLint uniformLocation = gpso->TryGetUniformLocation( a_Data.NameHash );
-		if ( uniformLocation < 0 )
-		{
-			LOG( LogCategory::RHI, Error,
-				"Uniform '{0}' not found in shader while setting shader input",
-				sbl->Descriptor().GetBindingName( a_Data.NameHash ) );
-			return;
-		}
+		auto* sbl = a_Data.BindingSet->Descriptor().Layout->As<RHIBindingLayout_OpenGLImpl>();
+		auto* bindingSet = a_Data.BindingSet->As<RHIBindingSet_OpenGLImpl>();
 
-		switch ( binding.Type() )
+		for ( auto& binding : bindingSet->Descriptor().Bindings )
 		{
-		case ERHIShaderBindingType::InlinedConstants:
-		{
-			size_t offset = 0;
-			int32_t bindingIndex = -1;
-#if 0
-			for ( const auto& [name, tensorType] : binding.InlinedConstant->Tensors )
+			switch ( binding.Type )
 			{
-				bindingIndex++;
-
-				constexpr int32_t WordSize = 4;
-				const int32_t numWords = tensorType.GetSizeInBytes() >> 2;
-				const ERHIDataType dataType = tensorType.ElementType;
-				TODO( "Get the uniform properly" );
-				const GLint bindSlot = OpenGL3::GetUniformLocation( GLState::s_BoundProgram, name.c_str() );
-
-				const float* asFloats = ReinterpretCast<const float*>( &a_Data.Payload.InlineData[offset * WordSize] );
-				const double* asDoubles = ReinterpretCast<const double*>( &a_Data.Payload.InlineData[offset * WordSize] );
-				const int32_t* asInt32s = ReinterpretCast<const int32_t*>( &a_Data.Payload.InlineData[offset * WordSize] );
-				const uint32_t* asUint32s = ReinterpretCast<const uint32_t*>( &a_Data.Payload.InlineData[offset * WordSize] );
-
-				// Increment the offset by the size of the tensor
-				offset += numWords;
-
-				switch ( numWords )
+			case ERHIShaderBindingType::InlinedConstants:
+			{
+				// This is handled by SetInlinedConstants
+				break;
+			}
+			case ERHIShaderBindingType::ConstantBuffer:
+			{
+				NOT_IMPLEMENTED;
+				break;
+			}
+			case ERHIShaderBindingType::StructuredBuffer:
+				NOT_IMPLEMENTED;
+				break;
+			case ERHIShaderBindingType::StorageBuffer:
+				NOT_IMPLEMENTED;
+				break;
+			case ERHIShaderBindingType::Texture:
+			{
+				ASSERT( false, "OpenGL requires textures and samplers to be combined in the shader! - Use a Texture binding instead and set the sampler in the texture." );
+				break;
+			}
+			case ERHIShaderBindingType::StorageTexture:
+				NOT_IMPLEMENTED;
+				break;
+			case ERHIShaderBindingType::Sampler:
+			{
+				ASSERT( false, "OpenGL requires textures and samplers to be combined in the shader! - Use a Texture binding instead and set the sampler in the texture." );
+				break;
+			}
+			case ERHIShaderBindingType::CombinedSampler:
+			{
+				// The names of Combined Samplers in GLSL have been set to the Texture name ( from HLSL )
+				// So we can just bind the texture and sampler together
+				RHITexture_OpenGLImpl* texture = binding.Resource->As<RHITexture_OpenGLImpl>();
+				if ( !(texture->Sampler) )
 				{
-				case 1: // Scalar
-					switch ( dataType )
-					{
-					case ERHIDataType::Float32: OpenGL3::Uniform1fv( bindSlot, 1, asFloats ); break;
-					case ERHIDataType::Float64: OpenGL4::Uniform1dv( bindSlot, 1, asDoubles ); break;
-					case ERHIDataType::Int32:   OpenGL2::Uniform1iv( bindSlot, 1, asInt32s ); break;
-					case ERHIDataType::UInt32:  OpenGL3::Uniform1uiv( bindSlot, 1, asUint32s ); break;
-					}
-					break;
-
-				case 2: // Vector2
-					switch ( dataType )
-					{
-					case ERHIDataType::Float32: OpenGL2::Uniform2fv( bindSlot, 1, asFloats ); break;
-					case ERHIDataType::Float64: OpenGL4::Uniform2dv( bindSlot, 1, asDoubles ); break;
-					case ERHIDataType::Int32:   OpenGL2::Uniform2iv( bindSlot, 1, asInt32s ); break;
-					case ERHIDataType::UInt32:  OpenGL3::Uniform2uiv( bindSlot, 1, asUint32s ); break;
-					}
-					break;
-
-				case 3: // Vector3
-					switch ( dataType )
-					{
-					case ERHIDataType::Float32: OpenGL3::Uniform3fv( bindSlot, 1, asFloats ); break;
-					case ERHIDataType::Float64: OpenGL4::Uniform3dv( bindSlot, 1, asDoubles ); break;
-					case ERHIDataType::Int32:   OpenGL2::Uniform3iv( bindSlot, 1, asInt32s ); break;
-					case ERHIDataType::UInt32:  OpenGL3::Uniform3uiv( bindSlot, 1, asUint32s ); break;
-					}
-					break;
-
-				case 4: // Vector4
-					switch ( dataType )
-					{
-					case ERHIDataType::Float32: OpenGL3::Uniform4fv( bindSlot, 1, asFloats ); break;
-					case ERHIDataType::Float64: OpenGL4::Uniform4dv( bindSlot, 1, asDoubles ); break;
-					case ERHIDataType::Int32:   OpenGL2::Uniform4iv( bindSlot, 1, asInt32s ); break;
-					case ERHIDataType::UInt32:  OpenGL3::Uniform4uiv( bindSlot, 1, asUint32s ); break;
-					}
-					break;
-
-				case 9: // Matrix3
-					switch ( dataType )
-					{
-					case ERHIDataType::Float32: OpenGL2::UniformMatrix3fv( bindSlot, 1, GL_FALSE, asFloats ); break;
-					case ERHIDataType::Float64: OpenGL4::UniformMatrix3dv( bindSlot, 1, GL_FALSE, asDoubles ); break;
-					}
-					break;
-
-				case 16: // Matrix4
-					switch ( dataType )
-					{
-					case ERHIDataType::Float32: OpenGL2::UniformMatrix4fv( bindSlot, 1, GL_FALSE, asFloats ); break;
-					case ERHIDataType::Float64: OpenGL4::UniformMatrix4dv( bindSlot, 1, GL_FALSE, asDoubles ); break;
-					}
-					break;
-				default:
-					ASSERT( false, "Invalid number of words in constant buffer!" );
+					ASSERT( false, "Texture has no sampler! - OpenGL requires Textures to have a Sampler, you can set the sampler on the RHITexture." );
 					break;
 				}
-			}
-#endif
-			break;
-		}
-		case ERHIShaderBindingType::ConstantBuffer:
-		{
-			NOT_IMPLEMENTED;
-			break;
-		}
-		case ERHIShaderBindingType::StructuredBuffer:
-			NOT_IMPLEMENTED;
-			break;
-		case ERHIShaderBindingType::StorageBuffer:
-			NOT_IMPLEMENTED;
-			break;
-		case ERHIShaderBindingType::Texture:
-		{
-			ASSERT( false, "OpenGL requires textures and samplers to be combined in the shader! - Use a Texture binding instead and set the sampler in the texture." );
-			break;
-		}
-		case ERHIShaderBindingType::StorageTexture:
-			NOT_IMPLEMENTED;
-			break;
-		case ERHIShaderBindingType::Sampler:
-		{
-			ASSERT( false, "OpenGL requires textures and samplers to be combined in the shader! - Use a Texture binding instead and set the sampler in the texture." );
-			break;
-		}
-		case ERHIShaderBindingType::CombinedSampler:
-		{
-			if ( !a_Data.Payload.IsReference ) [[unlikely]]
-			{
-				ASSERT( false, "Invalid shader input - a Texture can not be inlined!" );
+
+				RHISampler_OpenGLImpl* sampler = texture->Sampler->As<RHISampler_OpenGLImpl>();
+				OpenGL4::BindTextureUnit( binding.Slot, texture->TextureObj );
+				OpenGL4::BindSampler( binding.Slot, sampler->GetGLHandle() );
 				break;
 			}
-
-			// The names of Combined Samplers in GLSL have been set to the Texture name ( from HLSL )
-			// So we can just bind the texture and sampler together
-			RHITexture_OpenGLImpl* texture = static_cast<RHITexture_OpenGLImpl*>( a_Data.Payload.References[0] );
-			if ( !( texture->Sampler ) )
-			{
-				ASSERT( false, "Texture has no sampler! - OpenGL requires Textures to have a Sampler, you can set the sampler on the RHITexture." );
-				break;
+			default:
+				ASSERT( false, "Unknown shader binding type!" );
+				return;
 			}
+		}
+		
+	}
 
-			RHISampler_OpenGLImpl* sampler = texture->Sampler->As<RHISampler_OpenGLImpl>();
-			OpenGL4::BindTextureUnit( uniformLocation, texture->TextureObj );
-			OpenGL4::BindSampler( uniformLocation, sampler->GetGLHandle() );
-			break;
-		}
-		default:
-			ASSERT( false, "Unknown shader binding type!" );
-			return;
-		}
+	void RHICommandList_OpenGLImpl::SetInlinedConstants( const RHICommand::SetInlinedConstants& a_Data )
+	{
+		OpenGL1::BindBuffer( GL_UNIFORM_BUFFER, m_InlinedConstantsUBO );
+		OpenGL1::BufferSubData( GL_UNIFORM_BUFFER, a_Data.Range.Offset, a_Data.Range.Size, a_Data.Data.Data() );
+		OpenGL1::BindBuffer( GL_UNIFORM_BUFFER, 0 );
+
+		TODO( "Location is always 0, will this always be true?" );
+		const GLuint location = 0;
+		OpenGL3::BindBufferBase( GL_UNIFORM_BUFFER, location, m_InlinedConstantsUBO );
 	}
 
 	void RHICommandList_OpenGLImpl::ResourceBarrier( const RHICommand::ResourceBarrier& a_Data )

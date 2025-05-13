@@ -19,14 +19,16 @@ namespace Tridium {
 		virtual void WaitUntilCompleted() override {}
 
 	private:
+		OpenGL::GLUBOWrapper m_InlinedConstantsUBO;
 		Array<GLuint> m_UBOs;
 		struct State
 		{
 			uint32_t NumColorTargets = 0;
 		} m_State;
 
-		void SetShaderBindingLayout( const RHICommand::SetShaderBindingLayout& a_Data );
-		void SetShaderInput( const RHICommand::SetShaderInput& a_Data );
+		void SetBindingLayout( const RHICommand::SetBindingLayout& a_Data );
+		void SetShaderBindings( const RHICommand::SetShaderBindings& a_Data );
+		void SetInlinedConstants( const RHICommand::SetInlinedConstants& a_Data );
 		void ResourceBarrier( const RHICommand::ResourceBarrier& a_Data );
 
 		// Graphics

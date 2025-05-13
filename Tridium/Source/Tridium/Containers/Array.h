@@ -2,8 +2,9 @@
 #include <Tridium/Core/Assert.h>
 #include <array>
 #include <vector>
-#include "InitList.h"
 #include <type_traits>
+#include "InitList.h"
+#include "Span.h"
 
 namespace Tridium {
 
@@ -49,6 +50,7 @@ namespace Tridium {
 		constexpr FixedArray( const FixedArray& a_Other ) = default;
 		constexpr FixedArray( FixedArray&& a_Other ) = default;
 		constexpr FixedArray( InitList<T> a_InitList ) { Fill( a_InitList ); }
+		constexpr FixedArray( Span<const T> a_InitList ) { Fill( a_InitList ); }
 		constexpr FixedArray& operator=( const FixedArray& a_Other ) = default;
 		constexpr FixedArray& operator=( FixedArray&& a_Other ) = default;
 
@@ -98,6 +100,15 @@ namespace Tridium {
 			for ( size_t i = 0; i < a_InitializerList.Size() && i < MaxSize(); ++i )
 			{
 				m_Data[i] = a_InitializerList[i];
+			}
+		}
+
+		constexpr void Fill( Span<const T> a_Data )
+		{
+			TRIDIUM_ARRAY_ASSERT( a_Data.size() <= MaxSize(), "Initializer list is too large" );
+			for ( size_t i = 0; i < a_Data.size() && i < MaxSize(); ++i )
+			{
+				m_Data[i] = a_Data[i];
 			}
 		}
 

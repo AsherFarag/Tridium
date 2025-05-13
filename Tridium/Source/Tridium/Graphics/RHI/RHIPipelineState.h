@@ -93,6 +93,8 @@ namespace Tridium {
 		RHIShaderModuleRef GeometryShader{};
 		RHIShaderModuleRef PixelShader{};
 
+		InlineArray<RHIBindingLayoutRef, 5> BindingLayouts{};
+
 		RHIBlendState BlendState = RHIBlendStates::Opaque;
 		RHIDepthState DepthState{};
 		RHIStencilState StencilState{};

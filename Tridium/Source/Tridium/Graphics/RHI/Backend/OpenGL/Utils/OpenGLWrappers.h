@@ -151,4 +151,24 @@ namespace Tridium::OpenGL {
 	};
 	using GLTextureWrapper = GLObjWrapper<GLTextureFactory>;
 
+	class GLUniformBufferFactory
+	{
+	public:
+		static GLuint Create()
+		{
+			GLuint handle = 0;
+			OpenGL1::GenBuffers( 1, &handle );
+			return handle;
+		}
+		static void Delete( GLuint a_Handle )
+		{
+			OpenGL1::DeleteBuffers( 1, &a_Handle );
+		}
+		static constexpr GLenum Type()
+		{
+			return GL_UNIFORM_BUFFER;
+		}
+	};
+	using GLUBOWrapper = GLObjWrapper<GLUniformBufferFactory>;
+
 }

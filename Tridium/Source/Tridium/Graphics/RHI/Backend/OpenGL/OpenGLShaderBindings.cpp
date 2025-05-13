@@ -3,9 +3,15 @@
 
 namespace Tridium {
 
-	RHIBindingSet_OpenGLImpl::RHIBindingSet_OpenGLImpl( const DescriptorType& a_Desc, const RHIBindingLayoutRef& a_Layout )
-		: RHIBindingSet( a_Desc, a_Layout )
+	RHIBindingLayout_OpenGLImpl::RHIBindingLayout_OpenGLImpl( const DescriptorType& a_Desc )
+		: RHIBindingLayout( a_Desc )
 	{
+	}
+
+	RHIBindingSet_OpenGLImpl::RHIBindingSet_OpenGLImpl( const DescriptorType& a_Desc )
+		: RHIBindingSet( a_Desc )
+	{
+
 	}
 
 }

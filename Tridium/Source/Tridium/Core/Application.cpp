@@ -117,7 +117,7 @@ namespace Tridium {
 		m_Window->SetEventCallback( [this]( const Event& a_Event ) { this->EnqueueEvent( a_Event ); } );
 
 		RHIConfig config;
-		config.RHIType = ERHInterfaceType::DirectX12;
+		config.RHIType = ERHInterfaceType::OpenGL;
 		config.UseDebug = true;
 		bool initSuccess = RHI::Initialise( config );
 		LOG( LogCategory::RHI, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), initSuccess );
@@ -413,7 +413,7 @@ float4 main( VSOutput input ) : SV_Target
 						.ClearRenderTargets( ERHIClearFlags::ColorDepth, clearColor );
 
 					cmdBuffer.SetGraphicsPipelineState( pso );
-					cmdBuffer.SetShaderBindingLayout( sbl );
+					cmdBuffer.SetBindingLayout( sbl );
 
 					// Set the primitive topology
 					cmdBuffer.SetPrimitiveTopology( ERHITopology::Triangle );
@@ -452,15 +452,20 @@ float4 main( VSOutput input ) : SV_Target
 					float4x4 view = glm::lookAt( Vector3( 0.0f, 0.0f, -2.0f ), Vector3( 0.0f, 0.0f, 0.0f ), Vector3( 0.0f, 1.0f, 0.0f ) );
 					float4x4 projection = glm::perspective( Math::Radians( 90.0f ), (float)width / (float)height, 0.1f, 100.0f );
 
-					// Construct the inlined constants
+					// Construct the inlined constants ( random struct thats casted to an array of bytes )
 					InlinedConstants inlinedConstants;
 					inlinedConstants.Colour = CycleRGB( time, 1.0f );
 					inlinedConstants.PVM = projection * view * model;
 
-					// Draw
+					RHIBindingSetDescriptor bindingSetDesc{ sbl };
+					bindingSetDesc.AddCombinedSampler( "Texture"_H, *tex );
+					RHIBindingSetRef bindingSet = RHI::CreateBindingSet( bindingSetDesc );
 					
-					cmdBuffer.SetShaderInput( "inlinedConstants"_H, inlinedConstants );
-					cmdBuffer.SetShaderInput( "Texture"_H, tex );
+					cmdBuffer.SetShaderBindings( bindingSet );
+					cmdBuffer.SetInlinedConstants( inlinedConstants );
+
+
+
 					cmdBuffer.SetVertexBuffer( cubeVBO );
 					cmdBuffer.Draw( 0, sizeof( cubeVerts ) / sizeof( Vertex ) );
 

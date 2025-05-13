@@ -363,7 +363,6 @@ namespace Tridium {
 	//======================================================================
 	// RHI Usage
 	//  Describes the usage of an RHI resource and how it can be written to.
-	//======================================================================
 	enum class ERHIUsage : uint8_t
 	{
 		// Default Resource
@@ -394,12 +393,12 @@ namespace Tridium {
 		//  - D3D11: D3D11_USAGE_DYNAMIC
 		Dynamic,
 	};
+	//======================================================================
 
 
 
 	//=====================================================================
 	// RHI CPU Access
-	//=====================================================================
 	enum class ERHICpuAccess : uint8_t
 	{
 		None = 0,		          // Inaccessible to CPU
@@ -407,13 +406,13 @@ namespace Tridium {
 		Write = 1 << 1,           // Can be mapped for writing by the CPU
 		ReadWrite = Read | Write, // Can be mapped for reading and writing by the CPU
 	};
+	//=====================================================================
 
 
 
 	//=====================================================================
 	// RHI Resource State
 	//  The state of a resource indicating how it is used.
-	//=====================================================================
 	enum class ERHIResourceStates : uint16_t
 	{
 		// Common states            // D3D12_RESOURCE_STATE_                                | VK_IMAGE_LAYOUT_                  | VK_ACCESS_            
@@ -439,24 +438,24 @@ namespace Tridium {
 		ConstantBuffer = 1 << 12,   // VERTEX_AND_CONSTANT_BUFFER                           | n/a                               | CONSTANT_BUFFER_READ_BIT
 	};
 	ENUM_ENABLE_BITMASK_OPERATORS( ERHIResourceStates );
+	//=====================================================================
 
 
 
 	//=====================================================================
-	// RHI Resource State Transition Mode
+	// RHI State Transition Mode
 	//  Specifies how an RHI command should handle the resource state,
 	//  if the command requires a spcific state.
-	//=====================================================================
-	enum class ERHIResourceStateTransitionMode : uint8_t
+	enum class ERHIStateTransition : uint8_t
 	{
 		// The resource state is unknown to the RHI. 
 		// All state transitions are expected to be handled outside of the RHI.
-		// Note: Use 'None' instead.
+		// NOTE: Use 'None' instead.
 		Unknown = 0,
 
 		// Perform a state transition on the resource to the state required by the RHI command.
-		// Note: Automatic state transitions are NOT thread-safe.
-		//		 If the resource is used in multiple threads, use 'None' or 'Validate' instead.
+		// NOTE: Automatic state transitions are NOT thread-safe.
+		//       If the resource is used in multiple threads, use 'None' or 'Validate' instead.
 		Transition,
 
 		// Performs no state transitions on the resource, 
@@ -465,9 +464,10 @@ namespace Tridium {
 
 		// Performs no state transitions on the resource and does not verify that the resource is in the correct state.
 		// Use if resource state transitions are handled outside of the RHI.
-		// Note: In debug mode, this will still validate the resource.
+		// NOTE: In debug mode, this will still validate the resource.
 		None = IF_RHI_DEBUG_ELSE( Validate, Unknown ),
 	};
+	//=====================================================================
 
 
 

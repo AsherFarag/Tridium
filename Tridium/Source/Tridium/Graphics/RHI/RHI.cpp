@@ -40,11 +40,17 @@ namespace Tridium {
 				break;
 			}
 		#endif
+			default:
+			{
+				// Unsupported RHI type
+				LOG( LogCategory::RHI, Error, "Unsupported RHI type: ", static_cast<uint32_t>(a_Config.RHIType) );
+				return false;
+			}
 		}
 
-		if ( s_DynamicRHI == nullptr )
+		if ( !ASSERT( s_DynamicRHI ) )
 		{
-			return ASSERT( false );
+			return false;
 		}
 
 		if ( s_DynamicRHI->Init( a_Config ) == false )
@@ -252,6 +258,12 @@ namespace Tridium {
 	{
 		CHECK( s_DynamicRHI );
 		return s_DynamicRHI->CreateBindingLayout( a_Desc );
+	}
+
+	RHIBindingSetRef RHI::CreateBindingSet( const RHIBindingSetDescriptor& a_Desc )
+	{
+		CHECK( s_DynamicRHI );
+		return s_DynamicRHI->CreateBindingSet( a_Desc );
 	}
 
 	RHIGraphicsPipelineStateRef RHI::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc )

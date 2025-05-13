@@ -66,8 +66,9 @@ namespace Tridium {
 			switch ( cmd.Type() )
 			{
 			#define PerformCmd( _CmdType ) case ERHICommandType::_CmdType: _CmdType( cmd.Get<ERHICommandType::_CmdType>() ); break
-				PerformCmd( SetShaderBindingLayout );
-				PerformCmd( SetShaderInput );
+				PerformCmd( SetBindingLayout );
+				PerformCmd( SetShaderBindings );
+				PerformCmd( SetInlinedConstants );
 				PerformCmd( ResourceBarrier );
 				PerformCmd( UpdateBuffer );
 				PerformCmd( CopyBuffer );
@@ -139,207 +140,202 @@ namespace Tridium {
 
 	//////////////////////////////////////////////////////////////////////////
 
-	void D3D12CommandList::SetShaderInput( const RHICommand::SetShaderInput& a_Cmd )
+	void D3D12CommandList::SetShaderBindings( const RHICommand::SetShaderBindings& a_Cmd )
 	{
-		if ( !CurrentSBL )
-		{
-			ASSERT( false, "No Shader Binding Layout set!" );
-			return;
-		}
+		RHIBindingSet_D3D12Impl* bindingSet = a_Cmd.BindingSet->As<RHIBindingSet_D3D12Impl>();
+		RHIBindingLayout_D3D12Impl* bindingLayout = bindingSet->Descriptor().Layout->As<RHIBindingLayout_D3D12Impl>();
 
-		const RHIBindingLayoutDescriptor& desc = CurrentSBL->Descriptor();
-		const int32_t index = desc.GetBindingIndex( a_Cmd.NameHash );
-		if ( index == -1 )
+		for ( auto& binding : bindingSet->Descriptor().Bindings )
 		{
-			ASSERT( false, "Shader Binding not found!" );
-			return;
-		}
-		const RHIShaderBinding& binding = desc.Bindings.At( index );
-
-		switch ( binding.Type() )
-		{
-		case ERHIShaderBindingType::InlinedConstants:
-		{
-			GraphicsCommandList()->SetGraphicsRoot32BitConstants(
-				RootParameters::Constants,
-				NumDWORDsFromBytes( binding.Size ),
-				Cast<const void*>( &a_Cmd.Payload.InlineData[0] ),
-				0 
-			);
-			break;
-		}
-		case ERHIShaderBindingType::ConstantBuffer:
-		{
-			NOT_IMPLEMENTED;
-			break;
-		}
-		case ERHIShaderBindingType::StructuredBuffer:
-		{
-			NOT_IMPLEMENTED;
-			break;
-		}
-		case ERHIShaderBindingType::StorageBuffer:
-		{
-			NOT_IMPLEMENTED;
-			break;
-		}
-		case ERHIShaderBindingType::Texture:
-		{
-			const D3D12::DescriptorHeapRef& srvHeap = m_State.Heaps.EmplaceBack( GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap(
-				ERHIDescriptorHeapType::RenderResource,
-				8,
-				ED3D12DescriptorHeapFlags::Poolable,
-				"SRV Heap" ) );
-
-			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			if ( a_Cmd.Payload.Count > 1 )
+			switch ( binding.Type )
 			{
-				// Texture Array
-				srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
-				srvDesc.Texture2DArray.MostDetailedMip = 0;
-				srvDesc.Texture2DArray.MipLevels = 1;
-				srvDesc.Texture2DArray.FirstArraySlice = 0;
-				srvDesc.Texture2DArray.ArraySize = a_Cmd.Payload.Count;
-				srvDesc.Texture2DArray.PlaneSlice = 0;
-				srvDesc.Texture2DArray.ResourceMinLODClamp = 0.0f;
-
-				NOT_IMPLEMENTED;
-			}
-			else
+			case ERHIShaderBindingType::InlinedConstants:
 			{
-				// Single Texture
-				srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-				srvDesc.Texture2D.MostDetailedMip = 0;
-				srvDesc.Texture2D.MipLevels = 1;
-				srvDesc.Texture2D.PlaneSlice = 0;
-				srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-
-				const auto* tex = static_cast<const RHITexture_D3D12Impl*>( a_Cmd.Payload.References[0] );
-
-				GetD3D12RHI()->GetD3D12Device()->CreateShaderResourceView(
-					tex->Texture.Resource.Get(),
-					&srvDesc,
-					srvHeap->GetCPUHandle( 0 )
-				);
+				// This is handled by SetInlinedConstants
+				break;
 			}
-
-			ID3D12DescriptorHeap* d3d12Heap = srvHeap->Heap();
-			GraphicsCommandList()->SetDescriptorHeaps( 1, &d3d12Heap );
-			GraphicsCommandList()->SetGraphicsRootDescriptorTable( RootParameters::Textures, srvHeap->GetGPUHandle( 0 ) );
-
-			break;
-		}
-		case ERHIShaderBindingType::StorageTexture:
-		{
-			NOT_IMPLEMENTED;
-			break;
-		}
-		case ERHIShaderBindingType::Sampler:
-		{
-			if ( a_Cmd.Payload.Count > 1 )
+			case ERHIShaderBindingType::ConstantBuffer:
 			{
 				NOT_IMPLEMENTED;
+				break;
 			}
-			else
+			case ERHIShaderBindingType::StructuredBuffer:
 			{
-				RHISampler_D3D12Impl* sampler = static_cast<RHISampler_D3D12Impl*>( a_Cmd.Payload.References[0] );
+				NOT_IMPLEMENTED;
+				break;
+			}
+			case ERHIShaderBindingType::StorageBuffer:
+			{
+				NOT_IMPLEMENTED;
+				break;
+			}
+			case ERHIShaderBindingType::Texture:
+			{
+				const D3D12::DescriptorHeapRef& srvHeap = m_State.Heaps.EmplaceBack( GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap(
+					ERHIDescriptorHeapType::RenderResource,
+					8,
+					ED3D12DescriptorHeapFlags::Poolable,
+					"SRV Heap" ) );
+
+				D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+				srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+				if (/* a_Cmd.Payload.Count > 1 */ false)
+				{
+					TODO( "Handle texture arrays" );
+					// Texture Array
+					//srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+					//srvDesc.Texture2DArray.MostDetailedMip = 0;
+					//srvDesc.Texture2DArray.MipLevels = 1;
+					//srvDesc.Texture2DArray.FirstArraySlice = 0;
+					//srvDesc.Texture2DArray.ArraySize = a_Cmd.Payload.Count;
+					//srvDesc.Texture2DArray.PlaneSlice = 0;
+					//srvDesc.Texture2DArray.ResourceMinLODClamp = 0.0f;
+
+					NOT_IMPLEMENTED;
+				}
+				else
+				{
+					// Single Texture
+					srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+					srvDesc.Texture2D.MostDetailedMip = 0;
+					srvDesc.Texture2D.MipLevels = 1;
+					srvDesc.Texture2D.PlaneSlice = 0;
+					srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+
+					const auto* tex = Cast<const RHITexture_D3D12Impl*>( binding.Resource );
+
+					GetD3D12RHI()->GetD3D12Device()->CreateShaderResourceView(
+						tex->Texture.Resource.Get(),
+						&srvDesc,
+						srvHeap->GetCPUHandle( 0 )
+					);
+				}
+
+				ID3D12DescriptorHeap* d3d12Heap = srvHeap->Heap();
+				GraphicsCommandList()->SetDescriptorHeaps( 1, &d3d12Heap );
+				GraphicsCommandList()->SetGraphicsRootDescriptorTable( RootParameters::Textures, srvHeap->GetGPUHandle( 0 ) );
+
+				break;
+			}
+			case ERHIShaderBindingType::StorageTexture:
+			{
+				NOT_IMPLEMENTED;
+				break;
+			}
+			case ERHIShaderBindingType::Sampler:
+			{
+				auto* sampler = binding.Resource->As<RHISampler_D3D12Impl>();
 				GraphicsCommandList()->SetDescriptorHeaps( 1, &sampler->SamplerHeap );
 				GraphicsCommandList()->SetGraphicsRootDescriptorTable( RootParameters::Samplers, sampler->SamplerHeap->GetGPUDescriptorHandleForHeapStart() );
+				break;
 			}
-			break;
-		}
-		case ERHIShaderBindingType::CombinedSampler:
-		{
-			// Create the SRV Heap
-			D3D12::DescriptorHeapRef srvHeap = m_State.Heaps.EmplaceBack( GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap(
-				ERHIDescriptorHeapType::RenderResource,
-				8,
-				ED3D12DescriptorHeapFlags::Poolable | ED3D12DescriptorHeapFlags::GPUVisible,
-				"SRV Heap" ) );
-
-			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-
-			const auto* tex = static_cast<const RHITexture_D3D12Impl*>( a_Cmd.Payload.References[0] );
-
-			if ( a_Cmd.Payload.Count > 1 )
+			case ERHIShaderBindingType::CombinedSampler:
 			{
-				// Texture Array
-				srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
-				srvDesc.Texture2DArray.MostDetailedMip = 0;
-				srvDesc.Texture2DArray.MipLevels = 1;
-				srvDesc.Texture2DArray.FirstArraySlice = 0;
-				srvDesc.Texture2DArray.ArraySize = a_Cmd.Payload.Count;
-				srvDesc.Texture2DArray.PlaneSlice = 0;
-				srvDesc.Texture2DArray.ResourceMinLODClamp = 0.0f;
-
-				NOT_IMPLEMENTED;
-			}
-			else
-			{
-				// Single Texture
-				srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-				srvDesc.Texture2D.MostDetailedMip = 0;
-				srvDesc.Texture2D.MipLevels = 1;
-				srvDesc.Texture2D.PlaneSlice = 0;
-				srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-
-				GetD3D12RHI()->GetD3D12Device()->CreateShaderResourceView(
-					tex->Texture.Resource.Get(),
-					&srvDesc,
-					srvHeap->GetCPUHandle( 0 )
-				);
-
-				// Retrieve the sampler from the texture
-				const auto& sampler = tex->Sampler->Descriptor();
-
-				// Create the Sampler Descriptor
-				D3D12_SAMPLER_DESC samplerDesc{};
-				samplerDesc.Filter = D3D12::Translate( sampler.Filter );
-				samplerDesc.AddressU = D3D12::Translate( sampler.AddressU );
-				samplerDesc.AddressV = D3D12::Translate( sampler.AddressV );
-				samplerDesc.AddressW = D3D12::Translate( sampler.AddressW );
-				samplerDesc.MipLODBias = sampler.MipLODBias;
-				samplerDesc.MaxAnisotropy = sampler.MaxAnisotropy;
-				samplerDesc.ComparisonFunc = D3D12::Translate( sampler.ComparisonFunc );
-				samplerDesc.BorderColor[0] = sampler.BorderColor.r;
-				samplerDesc.BorderColor[1] = sampler.BorderColor.g;
-				samplerDesc.BorderColor[2] = sampler.BorderColor.b;
-				samplerDesc.BorderColor[3] = sampler.BorderColor.a;
-				samplerDesc.MinLOD = sampler.MinLOD;
-				samplerDesc.MaxLOD = sampler.MaxLOD;
-
-				// Create the Sampler Heap
-				D3D12::DescriptorHeapRef samplerHeap = m_State.Heaps.EmplaceBack( GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap(
-					ERHIDescriptorHeapType::Sampler,
-					1,
+				// Create the SRV Heap
+				D3D12::DescriptorHeapRef srvHeap = m_State.Heaps.EmplaceBack( GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap(
+					ERHIDescriptorHeapType::RenderResource,
+					8,
 					ED3D12DescriptorHeapFlags::Poolable | ED3D12DescriptorHeapFlags::GPUVisible,
-					"Sampler Heap" ) );
+					"SRV Heap" ) );
 
-				GetD3D12RHI()->GetD3D12Device()->CreateSampler(
-					&samplerDesc,
-					samplerHeap->GetCPUHandle( 0 )
-				);
+				D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+				srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+				auto* tex = binding.Resource->As<RHITexture_D3D12Impl>();
+
+				if ( /*a_Cmd.Payload.Count > 1 */ false)
+				{
+					// Texture Array
+					//srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+					//srvDesc.Texture2DArray.MostDetailedMip = 0;
+					//srvDesc.Texture2DArray.MipLevels = 1;
+					//srvDesc.Texture2DArray.FirstArraySlice = 0;
+					//srvDesc.Texture2DArray.ArraySize = a_Cmd.Payload.Count;
+					//srvDesc.Texture2DArray.PlaneSlice = 0;
+					//srvDesc.Texture2DArray.ResourceMinLODClamp = 0.0f;
+
+					NOT_IMPLEMENTED;
+				}
+				else
+				{
+					// Single Texture
+					srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+					srvDesc.Texture2D.MostDetailedMip = 0;
+					srvDesc.Texture2D.MipLevels = 1;
+					srvDesc.Texture2D.PlaneSlice = 0;
+					srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+
+					GetD3D12RHI()->GetD3D12Device()->CreateShaderResourceView(
+						tex->Texture.Resource.Get(),
+						&srvDesc,
+						srvHeap->GetCPUHandle( 0 )
+					);
+
+					// Retrieve the sampler from the texture
+					const auto& sampler = tex->Sampler->Descriptor();
+
+					// Create the Sampler Descriptor
+					D3D12_SAMPLER_DESC samplerDesc{};
+					samplerDesc.Filter = D3D12::Translate( sampler.Filter );
+					samplerDesc.AddressU = D3D12::Translate( sampler.AddressU );
+					samplerDesc.AddressV = D3D12::Translate( sampler.AddressV );
+					samplerDesc.AddressW = D3D12::Translate( sampler.AddressW );
+					samplerDesc.MipLODBias = sampler.MipLODBias;
+					samplerDesc.MaxAnisotropy = sampler.MaxAnisotropy;
+					samplerDesc.ComparisonFunc = D3D12::Translate( sampler.ComparisonFunc );
+					samplerDesc.BorderColor[0] = sampler.BorderColor.r;
+					samplerDesc.BorderColor[1] = sampler.BorderColor.g;
+					samplerDesc.BorderColor[2] = sampler.BorderColor.b;
+					samplerDesc.BorderColor[3] = sampler.BorderColor.a;
+					samplerDesc.MinLOD = sampler.MinLOD;
+					samplerDesc.MaxLOD = sampler.MaxLOD;
+
+					// Create the Sampler Heap
+					D3D12::DescriptorHeapRef samplerHeap = m_State.Heaps.EmplaceBack( GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap(
+						ERHIDescriptorHeapType::Sampler,
+						1,
+						ED3D12DescriptorHeapFlags::Poolable | ED3D12DescriptorHeapFlags::GPUVisible,
+						"Sampler Heap" ) );
+
+					GetD3D12RHI()->GetD3D12Device()->CreateSampler(
+						&samplerDesc,
+						samplerHeap->GetCPUHandle( 0 )
+					);
 
 
 
-				// Bind both SRV and Sampler heaps
-				ID3D12DescriptorHeap* heaps[] = { srvHeap->Heap(), samplerHeap->Heap() };
-				GraphicsCommandList()->SetDescriptorHeaps( 2, heaps );
+					// Bind both SRV and Sampler heaps
+					ID3D12DescriptorHeap* heaps[] = { srvHeap->Heap(), samplerHeap->Heap() };
+					GraphicsCommandList()->SetDescriptorHeaps( 2, heaps );
 
-				GraphicsCommandList()->SetGraphicsRootDescriptorTable( RootParameters::Textures, srvHeap->GetGPUHandle( 0 ) );
-				GraphicsCommandList()->SetGraphicsRootDescriptorTable( RootParameters::Samplers, samplerHeap->GetGPUHandle( 0 ) );
+					GraphicsCommandList()->SetGraphicsRootDescriptorTable( RootParameters::Textures, srvHeap->GetGPUHandle( 0 ) );
+					GraphicsCommandList()->SetGraphicsRootDescriptorTable( RootParameters::Samplers, samplerHeap->GetGPUHandle( 0 ) );
+				}
+
+				break;
 			}
+			default:
+			{
+				ASSERT( false, "Unknown Shader Binding Type!" );
+				break;
+			}
+			}
+		}
+	}
 
-			break;
-		}
-		default:
-		{
-			ASSERT( false, "Unknown Shader Binding Type!" );
-			break;
-		}
-		}
+	void D3D12CommandList::SetInlinedConstants( const RHICommand::SetInlinedConstants& a_Cmd )
+	{
+	#if RHI_ENABLE_DEV_CHECKS
+		// Check if the currently bound root signature matches supports the inlined constants
+		TODO( "Check if the currently bound root signature supports inlined constants" );
+	#endif
+
+		GraphicsCommandList()->SetGraphicsRoot32BitConstants(
+			RootParameters::Constants,
+			NumDWORDsFromBytes( a_Cmd.Range.Size ),
+			Cast<const void*>( a_Cmd.Data.Data() ),
+			NumDWORDsFromBytes( a_Cmd.Range.Offset )
+		);
 	}
 
 	void D3D12CommandList::ResourceBarrier( const RHICommand::ResourceBarrier& a_Cmd )
@@ -394,11 +390,11 @@ namespace Tridium {
 		uploadBuffer.Resource->Unmap( 0, &uploadRange );
 
 		// Check the buffer state
-		if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Transition )
+		if ( a_Cmd.StateTransitionMode == ERHIStateTransition::Transition )
 		{
 			m_ResourceStateTracker.RequireBufferState( *a_Cmd.Buffer, ERHIResourceStates::CopyDest );
 		}
-		else if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Validate )
+		else if ( a_Cmd.StateTransitionMode == ERHIStateTransition::Validate )
 		{
 			RHI_DEV_CHECK( a_Cmd.Buffer->State() == ERHIResourceStates::CopyDest, "Buffer state is not CopyDest!" );
 		}
@@ -417,20 +413,20 @@ namespace Tridium {
 	void D3D12CommandList::CopyBuffer( const RHICommand::CopyBuffer& a_Cmd )
 	{
 		// Check the source buffer state
-		if ( a_Cmd.SrcStateTransitionMode == ERHIResourceStateTransitionMode::Transition )
+		if ( a_Cmd.SrcStateTransitionMode == ERHIStateTransition::Transition )
 		{
 			m_ResourceStateTracker.RequireBufferState( *a_Cmd.Source, ERHIResourceStates::CopySource );
 		}
-		else if ( a_Cmd.SrcStateTransitionMode == ERHIResourceStateTransitionMode::Validate )
+		else if ( a_Cmd.SrcStateTransitionMode == ERHIStateTransition::Validate )
 		{
 			RHI_DEV_CHECK( a_Cmd.Source->State() == ERHIResourceStates::CopySource, "Source buffer state is not CopySource!" );
 		}
 		// Check the destination buffer state
-		if ( a_Cmd.DstStateTransitionMode == ERHIResourceStateTransitionMode::Transition )
+		if ( a_Cmd.DstStateTransitionMode == ERHIStateTransition::Transition )
 		{
 			m_ResourceStateTracker.RequireBufferState( *a_Cmd.Destination, ERHIResourceStates::CopyDest );
 		}
-		else if ( a_Cmd.DstStateTransitionMode == ERHIResourceStateTransitionMode::Validate )
+		else if ( a_Cmd.DstStateTransitionMode == ERHIStateTransition::Validate )
 		{
 			RHI_DEV_CHECK( a_Cmd.Destination->State() == ERHIResourceStates::CopyDest, "Destination buffer state is not CopyDest!" );
 		}
@@ -456,11 +452,11 @@ namespace Tridium {
 		}
 
 		// Transition or validate resource state
-		if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Transition )
+		if ( a_Cmd.StateTransitionMode == ERHIStateTransition::Transition )
 		{
 			m_ResourceStateTracker.RequireTextureState( *a_Cmd.Texture, ERHIResourceStates::CopyDest );
 		}
-		else if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Validate )
+		else if ( a_Cmd.StateTransitionMode == ERHIStateTransition::Validate )
 		{
 			RHI_DEV_CHECK( a_Cmd.Texture->State() == ERHIResourceStates::CopyDest, "Texture state is not CopyDest!" );
 		}
@@ -556,20 +552,20 @@ namespace Tridium {
 	void D3D12CommandList::CopyTexture( const RHICommand::CopyTexture& a_Cmd )
 	{
 		// Check the source texture state
-		if ( a_Cmd.SrcStateTransitionMode == ERHIResourceStateTransitionMode::Transition )
+		if ( a_Cmd.SrcStateTransitionMode == ERHIStateTransition::Transition )
 		{
 			m_ResourceStateTracker.RequireTextureState( *a_Cmd.SrcTexture, ERHIResourceStates::CopySource );
 		}
-		else if ( a_Cmd.SrcStateTransitionMode == ERHIResourceStateTransitionMode::Validate )
+		else if ( a_Cmd.SrcStateTransitionMode == ERHIStateTransition::Validate )
 		{
 			RHI_DEV_CHECK( a_Cmd.SrcTexture->State() == ERHIResourceStates::CopySource, "Source texture state is not CopySource!" );
 		}
 		// Check the destination texture state
-		if ( a_Cmd.DstStateTransitionMode == ERHIResourceStateTransitionMode::Transition )
+		if ( a_Cmd.DstStateTransitionMode == ERHIStateTransition::Transition )
 		{
 			m_ResourceStateTracker.RequireTextureState( *a_Cmd.DstTexture, ERHIResourceStates::CopyDest );
 		}
-		else if ( a_Cmd.DstStateTransitionMode == ERHIResourceStateTransitionMode::Validate )
+		else if ( a_Cmd.DstStateTransitionMode == ERHIStateTransition::Validate )
 		{
 			RHI_DEV_CHECK( a_Cmd.DstTexture->State() == ERHIResourceStates::CopyDest, "Destination texture state is not CopyDest!" );
 		}
@@ -594,7 +590,7 @@ namespace Tridium {
 		GraphicsCommandList()->SetPipelineState( m_State.Graphics.PSO->PSO.Get() );
 	}
 
-	void D3D12CommandList::SetShaderBindingLayout( const RHICommand::SetShaderBindingLayout& a_Cmd )
+	void D3D12CommandList::SetBindingLayout( const RHICommand::SetBindingLayout& a_Cmd )
 	{
 		CurrentSBL = a_Cmd.SBL;
 		GraphicsCommandList()->SetGraphicsRootSignature( a_Cmd.SBL->As<RHIBindingLayout_D3D12Impl>()->m_RootSignature.Get() );
@@ -611,7 +607,7 @@ namespace Tridium {
 			return;
 		}
 
-		if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Transition )
+		if ( a_Cmd.StateTransitionMode == ERHIStateTransition::Transition )
 		{
 			// Set the render target state for all RTVs and DSVs
 			for ( RHITexture* rtv : a_Cmd.RTV )
@@ -623,7 +619,7 @@ namespace Tridium {
 				m_ResourceStateTracker.RequireTextureState( *a_Cmd.DSV, ERHIResourceStates::DepthStencilWrite );
 			}
 		}
-		else if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Validate )
+		else if ( a_Cmd.StateTransitionMode == ERHIStateTransition::Validate )
 		{
 			// Check the render target state for all RTVs and DSVs
 			for ( RHITexture* rtv : a_Cmd.RTV )
@@ -691,7 +687,7 @@ namespace Tridium {
 
 	void D3D12CommandList::ClearRenderTargets( const RHICommand::ClearRenderTargets& a_Cmd )
 	{
-		if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Transition )
+		if ( a_Cmd.StateTransitionMode == ERHIStateTransition::Transition )
 		{
 			// Set the render target state for all RTVs and DSVs
 			for ( RHITexture* rtv : m_State.Graphics.CurrentRTs )
@@ -703,7 +699,7 @@ namespace Tridium {
 				m_ResourceStateTracker.RequireTextureState( *m_State.Graphics.CurrentDSV, ERHIResourceStates::DepthStencilWrite );
 			}
 		}
-		else if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Validate )
+		else if ( a_Cmd.StateTransitionMode == ERHIStateTransition::Validate )
 		{
 			// Check the render target state for all RTVs and DSVs
 			for ( RHITexture* rtv : m_State.Graphics.CurrentRTs )
@@ -773,11 +769,11 @@ namespace Tridium {
 
 	void D3D12CommandList::SetIndexBuffer( const RHICommand::SetIndexBuffer& a_Cmd )
 	{
-		if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Transition )
+		if ( a_Cmd.StateTransitionMode == ERHIStateTransition::Transition )
 		{
 			m_ResourceStateTracker.RequireBufferState( *a_Cmd.IBO, ERHIResourceStates::IndexBuffer );
 		}
-		else if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Validate )
+		else if ( a_Cmd.StateTransitionMode == ERHIStateTransition::Validate )
 		{
 			RHI_DEV_CHECK( a_Cmd.IBO->State() == ERHIResourceStates::IndexBuffer, "Index buffer state is not IndexBuffer!" );
 		}
@@ -793,11 +789,11 @@ namespace Tridium {
 
 	void D3D12CommandList::SetVertexBuffer( const RHICommand::SetVertexBuffer& a_Cmd )
 	{
-		if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Transition )
+		if ( a_Cmd.StateTransitionMode == ERHIStateTransition::Transition )
 		{
 			m_ResourceStateTracker.RequireBufferState( *a_Cmd.VBO, ERHIResourceStates::VertexBuffer );
 		}
-		else if ( a_Cmd.StateTransitionMode == ERHIResourceStateTransitionMode::Validate )
+		else if ( a_Cmd.StateTransitionMode == ERHIStateTransition::Validate )
 		{
 			RHI_DEV_CHECK( a_Cmd.VBO->State() == ERHIResourceStates::VertexBuffer, "Vertex buffer state is not VertexBuffer!" );
 		}

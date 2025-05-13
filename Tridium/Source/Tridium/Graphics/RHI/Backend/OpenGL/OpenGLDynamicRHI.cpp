@@ -118,6 +118,11 @@ namespace Tridium {
 		return RHI::CreateNativeResource<RHIBindingLayout_OpenGLImpl>( a_Desc );
 	}
 
+	RHIBindingSetRef OpenGLDynamicRHI::CreateBindingSet( const RHIBindingSetDescriptor& a_Desc )
+	{
+		return RHI::CreateNativeResource<RHIBindingSet_OpenGLImpl>( a_Desc );
+	}
+
 	RHISwapChainRef OpenGLDynamicRHI::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )
 	{
 		return RHI::CreateNativeResource<RHISwapChain_OpenGLImpl>( a_Desc );

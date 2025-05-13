@@ -76,8 +76,9 @@ namespace Tridium {
 
 		// Commands
 
-		void SetShaderBindingLayout( const RHICommand::SetShaderBindingLayout& a_Data );
-		void SetShaderInput( const RHICommand::SetShaderInput& a_Data );
+		void SetBindingLayout( const RHICommand::SetBindingLayout& a_Data );
+		void SetShaderBindings( const RHICommand::SetShaderBindings& a_Data );
+		void SetInlinedConstants( const RHICommand::SetInlinedConstants& a_Data );
 		void ResourceBarrier( const RHICommand::ResourceBarrier& a_Data );
 		void UpdateBuffer( const RHICommand::UpdateBuffer& a_Data );
 		void CopyBuffer( const RHICommand::CopyBuffer& a_Data );

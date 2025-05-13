@@ -8,9 +8,7 @@ namespace Tridium {
 	public:
 		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIBindingLayout_OpenGLImpl, ERHInterfaceType::OpenGL );
 
-		RHIBindingLayout_OpenGLImpl( const DescriptorType & a_Desc )
-			: RHIBindingLayout( a_Desc )
-		{}
+		RHIBindingLayout_OpenGLImpl( const DescriptorType & a_Desc );
 
 		bool Release() override { return true; }
 		bool IsValid() const override { return true; }
@@ -21,7 +19,7 @@ namespace Tridium {
 	{
 	public:
 		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIBindingSet_OpenGLImpl, ERHInterfaceType::OpenGL );
-		RHIBindingSet_OpenGLImpl( const DescriptorType & a_Desc, const RHIBindingLayoutRef & a_Layout );
+		RHIBindingSet_OpenGLImpl( const DescriptorType & a_Desc );
 		bool Release() override { return true; }
 		bool IsValid() const override { return true; }
 		const void* NativePtr() const override { return nullptr; }

@@ -37,7 +37,7 @@ namespace Tridium {
 #if defined( __PSSL__ )
 	// Defined elsewhere
 #elif defined( __spirv__ )
-	#define INLINED_CONSTANT( _Name, _Type ) [[vk::push_constant]] _Type _Name
+	#define INLINED_CONSTANT( _Name, _Type ) ConstantBuffer< _Type > _Name : register( b0 )
 #else
 	#define INLINED_CONSTANT( _Name, _Type ) ConstantBuffer< _Type > _Name : register( b0 )
 #endif

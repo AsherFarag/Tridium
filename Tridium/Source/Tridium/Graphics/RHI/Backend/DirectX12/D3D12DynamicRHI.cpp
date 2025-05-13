@@ -269,6 +269,11 @@ namespace Tridium {
 		return RHI::CreateNativeResource<RHIBindingLayout_D3D12Impl>( a_Desc );
 	}
 
+	RHIBindingSetRef D3D12RHI::CreateBindingSet( const RHIBindingSetDescriptor& a_Desc )
+	{
+		return RHI::CreateNativeResource<RHIBindingSet_D3D12Impl>( a_Desc );
+	}
+
 	RHISwapChainRef D3D12RHI::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )
 	{
 		return RHI::CreateNativeResource<RHISwapChain_D3D12Impl>( a_Desc );
