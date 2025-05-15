@@ -1,7 +1,5 @@
 #include "tripch.h"
-#include "D3D12Util.h"
-#include "D3D12DynamicRHI.h"
-#include <Tridium/Graphics/RHI/RHI.h>
+#include "RHI_D3D12Impl.h"
 
 namespace Tridium::D3D12 {
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <Tridium/Graphics/RHI/RHIShaderCompiler.h>
 
-namespace Tridium {
+namespace Tridium::D3D12 {
 
 	class DXCompiler final
 	{

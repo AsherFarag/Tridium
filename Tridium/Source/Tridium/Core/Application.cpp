@@ -17,7 +17,6 @@
 #include <Tridium/Graphics/RHI/RHI.h>
 #include <Tridium/Graphics/RHI/RHIShaderCompiler.h>
 #include <Tridium/Math/MathConstants.h>
-#include <Tridium/Graphics/RHI/Backend/DirectX12/D3D12DynamicRHI.h>
 #include <GLFW/glfw3.h>
 #include <Tridium/Reflection/FieldReflection.h>
 

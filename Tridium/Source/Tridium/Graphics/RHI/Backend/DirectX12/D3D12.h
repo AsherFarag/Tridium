@@ -1,12 +1,12 @@
 #pragma once
-#include <Tridium/Graphics/RHI/RHICommon.h>
+#include <Tridium/Graphics/RHI/RHIConfig.h>
 
 #ifndef NOMINMAX
 	#define NOMINMAX
 #endif
 
 #include <d3d12.h>
-#include "d3dx12.h"
+#include "ThirdParty/d3dx12.h"
 #include <dxgi1_6.h>
 	
 #if RHI_DEBUG_ENABLED
@@ -16,12 +16,12 @@
 
 #include <type_traits>
 
-#ifndef D3D12CalcSubresource
-	#define D3D12CalcSubresource(MipSlice, ArraySlice, PlaneSlice, MipLevels, ArraySize) \
-		((MipSlice) + (ArraySlice) * (MipLevels) + (PlaneSlice) * (MipLevels) * (ArraySize))
-#endif
+namespace Tridium::D3D12 {
 
-namespace Tridium {
+	[[nodiscard]] inline auto CalcSubresource( uint32_t a_MipSlice, uint32_t a_ArraySlice, uint32_t a_PlaneSlice, uint32_t a_MipLevels, uint32_t a_ArraySize ) noexcept
+	{
+		return ((a_MipSlice)+(a_ArraySlice) * (a_MipLevels)+(a_PlaneSlice) * (a_MipLevels) * (a_ArraySize));
+	}
 
 	//  Converts a number of bytes to a number of WORDs. A WORD is 2 bytes.
 	[[nodiscard]] inline uint32_t NumWORDsFromBytes( uint32_t a_Value ) noexcept
@@ -60,19 +60,11 @@ namespace Tridium {
 	}
 
 	//=====================================================================
-	// Concept definitions
-	namespace D3D12::Concepts {
-		template<typename T>
-		concept IsIUnknown = std::is_base_of_v<IUnknown, T>;
-	}
-	//=====================================================================
-
-	//=====================================================================
 	// Com Pointer
 	//  A templated smart pointer for COM objects.
 	//  This pointer will automatically add and release references.
 	//  Similar to Microsoft::WRL::ComPtr.
-	template<typename T> requires D3D12::Concepts::IsIUnknown<T>
+	template<typename T> requires std::is_base_of_v<class IUnknown, T>
 	class ComPtr
 	{
 	public:
@@ -154,13 +146,13 @@ namespace Tridium {
 			return false;
 		}
 
-		bool operator==( const ComPtr<T>& other ) const
+		bool operator==( const ComPtr<T>& a_Other ) const
 		{
-			return m_Ptr == other.m_Ptr;
+			return m_Ptr == a_Other.m_Ptr;
 		}
-		bool operator==( const T* other ) const
+		bool operator==( const T* a_Other ) const
 		{
-			return m_Ptr == other;
+			return m_Ptr == a_Other;
 		}
 
 		T* operator->()

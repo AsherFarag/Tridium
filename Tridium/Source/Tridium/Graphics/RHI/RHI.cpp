@@ -3,10 +3,10 @@
 
 // Backends
 #if RHI_ENABLE_BACKEND_DIRECTX12
-	#include "Backend/DirectX12/D3D12DynamicRHI.h"
+	#include "Backend/DirectX12/RHI_D3D12Impl.h"
 #endif
 #if RHI_ENABLE_BACKEND_OPENGL
-	#include "Backend/OpenGL/OpenGLDynamicRHI.h"
+	#include "Backend/OpenGL/RHI_OpenGLImpl.h"
 #endif
 
 namespace Tridium {
@@ -29,14 +29,14 @@ namespace Tridium {
 		#if RHI_ENABLE_BACKEND_OPENGL
 			case ERHInterfaceType::OpenGL:
 			{
-				s_DynamicRHI = new OpenGLDynamicRHI();
+				s_DynamicRHI = new OpenGL::DynamicRHI_OpenGLImpl();
 				break;
 			}
 		#endif
 		#if RHI_ENABLE_BACKEND_DIRECTX12
 			case ERHInterfaceType::DirectX12:
 			{
-				s_DynamicRHI = new D3D12RHI();
+				s_DynamicRHI = new D3D12::DynamicRHI_D3D12Impl();
 				break;
 			}
 		#endif

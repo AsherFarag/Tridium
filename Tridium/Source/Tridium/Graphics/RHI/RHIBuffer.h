@@ -71,8 +71,6 @@ namespace Tridium {
 		RHIBuffer( const RHIBufferDescriptor& a_Desc )
 			: m_Desc( a_Desc ) {}
 		virtual ~RHIBuffer() = default;
-		
-		virtual bool Commit( const RHIBufferDescriptor& a_Desc ) = 0;
 
 		// Returns the internal state of the buffer.
 		ERHIResourceStates State() const { return m_State; }

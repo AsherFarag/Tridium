@@ -29,8 +29,8 @@ namespace Tridium {
 		ERHIStencilOp Fail = ERHIStencilOp::Keep;
 		ERHIStencilOp DepthFail = ERHIStencilOp::Keep;
 		ERHIStencilOp Pass = ERHIStencilOp::Keep;
-		uint8_t StencilReadMask = 0x00;
-		uint8_t StencilWriteMask = 0x00;
+		uint8_t StencilReadMask = 0;
+		uint8_t StencilWriteMask = 0;
 	};
 
 
@@ -93,7 +93,7 @@ namespace Tridium {
 		RHIShaderModuleRef GeometryShader{};
 		RHIShaderModuleRef PixelShader{};
 
-		InlineArray<RHIBindingLayoutRef, 5> BindingLayouts{};
+		InlineArray<RHIBindingLayoutRef, RHIConstants::MaxBindingLayouts> BindingLayouts{};
 
 		RHIBlendState BlendState = RHIBlendStates::Opaque;
 		RHIDepthState DepthState{};

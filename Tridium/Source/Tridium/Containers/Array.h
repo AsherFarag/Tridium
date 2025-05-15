@@ -54,6 +54,9 @@ namespace Tridium {
 		constexpr FixedArray& operator=( const FixedArray& a_Other ) = default;
 		constexpr FixedArray& operator=( FixedArray&& a_Other ) = default;
 
+		constexpr operator Span<T>() { return Span<T>( m_Data.data(), _Size ); }
+		constexpr operator Span<const T>() const { return Span<const T>( m_Data.data(), _Size ); }
+
 		constexpr T& operator[]( size_t a_Index )
 		{
 			TRIDIUM_ARRAY_ASSERT( IsValidIndex( a_Index ), "Index out of bounds" );
@@ -158,7 +161,6 @@ namespace Tridium {
 		constexpr InlineArray( InlineArray&& a_Other ) = default;
 		constexpr InlineArray& operator=( const InlineArray& a_Other ) = default;
 		constexpr InlineArray& operator=( InlineArray&& a_Other ) = default;
-
 		constexpr InlineArray( std::initializer_list<T> a_InitializerList )
 			: m_Size( 0 )
 		{
@@ -167,6 +169,9 @@ namespace Tridium {
 				PushBack( value );
 			}
 		}
+
+		constexpr operator Span<T>() { return Span<T>( m_Storage.Data(), m_Size ); }
+		constexpr operator Span<const T>() const { return Span<const T>( m_Storage.Data(), m_Size ); }
 
 		constexpr T& operator[]( size_t a_Index ) { return m_Storage[a_Index]; }
 		constexpr const T& operator[]( size_t a_Index ) const { return m_Storage[a_Index]; }
@@ -318,6 +323,9 @@ namespace Tridium {
 		Array& operator=( const Array& a_Other ) = default;
 		Array& operator=( Array&& a_Other ) = default;
 
+		operator Span<T>() { return Span<T>( m_Data.data(), m_Data.size() ); }
+		operator Span<const T>() const { return Span<const T>( m_Data.data(), m_Data.size() ); }
+
 		T& operator[]( size_t a_Index )
 		{
 			TRIDIUM_ARRAY_ASSERT( IsValidIndex( a_Index ), "Index out of bounds" );
@@ -369,9 +377,12 @@ namespace Tridium {
 		template<typename... _Args>
 		auto& EmplaceBack( _Args&&... a_Args ) { return m_Data.emplace_back( std::forward<_Args>( a_Args )... ); }
 
-		Iterator Insert( Iterator a_Position, const T& a_Value ) { return m_Data.insert( a_Position, a_Value ); }
 		Iterator Erase( Iterator a_Position ) { return m_Data.erase( a_Position ); }
 		Iterator Erase( Iterator a_First, Iterator a_Last ) { return m_Data.erase( a_First, a_Last ); }
+
+		Iterator Insert( Iterator a_Position, const T& a_Value ) { return m_Data.insert( a_Position, a_Value ); }
+		template<typename _Iter>
+		Iterator Insert( Iterator a_Position, _Iter a_First, _Iter a_Last ) { return m_Data.insert( a_Position, a_First, a_Last ); }
 
 		Iterator Begin() { return m_Data.begin(); }
 		ConstIterator Begin() const { return m_Data.begin(); }

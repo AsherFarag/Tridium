@@ -1,14 +1,15 @@
 #include "tripch.h"
 #include <Tridium/Core/Platform.h>
 #include "DXCompiler.h"
-#include "D3D12Common.h"
+#include "D3D12.h"
 #include <dxcapi.h>  // DXC Compiler API
 #include <d3d12shader.h>  // D3D12 Shader Reflection
 #include <Tridium/Engine/Engine.h>
+#include "RHI_D3D12Impl.h"
 
 #pragma comment(lib, "dxcompiler.lib")
 
-namespace Tridium {
+namespace Tridium::D3D12 {
 
 	// Internal state for the DXC compiler.
 	struct DXCInternalState

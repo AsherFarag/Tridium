@@ -1,7 +1,7 @@
 #pragma once
 #include "OpenGL4.h"
 
-namespace Tridium {
+namespace Tridium::OpenGL {
 
 	class RHIGraphicsPipelineState_OpenGLImpl;
 	class RHIBindingLayout_OpenGLImpl;

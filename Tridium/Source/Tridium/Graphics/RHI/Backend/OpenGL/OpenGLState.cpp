@@ -1,9 +1,8 @@
 #include "tripch.h"
 #include "OpenGLState.h"
-#include "OpenGLPipelineState.h"
-#include "OpenGLShaderBindings.h"
+#include "RHI_OpenGLImpl.h"
 
-namespace Tridium::GLState {
+namespace Tridium::OpenGL::GLState{
 
 	WeakPtr<RHIGraphicsPipelineState_OpenGLImpl> s_BoundGraphicsPSO;
 	WeakPtr<RHIBindingLayout_OpenGLImpl> s_BoundSBL;

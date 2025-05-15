@@ -25,7 +25,7 @@ namespace Tridium {
             case ERHIShaderFormat::SPIRV_OpenGL:
             case ERHIShaderFormat::HLSL6_XBOX:
             {
-                output = DXCompiler::Compile( a_Input );
+                output = D3D12::DXCompiler::Compile( a_Input );
 				break;
             }
         #endif // RHI_ENABLE_SHADER_COMPILER_DX

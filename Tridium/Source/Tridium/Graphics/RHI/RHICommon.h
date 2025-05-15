@@ -8,6 +8,7 @@
 #include <Tridium/Core/Config.h>
 #include <Tridium/Core/Memory.h>
 #include <Tridium/Core/Enum.h>
+#include <Tridium/Core/Cast.h>
 #include <Tridium/Containers/Containers.h>
 #include <Tridium/Utils/Concepts.h>
 #include <Tridium/Utils/Todo.h>
