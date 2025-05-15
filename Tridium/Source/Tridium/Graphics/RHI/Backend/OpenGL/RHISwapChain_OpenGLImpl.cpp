@@ -114,7 +114,7 @@ namespace Tridium::OpenGL {
 		// Set the vertex attributes
 		OpenGL3::VertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( float ) * 5, nullptr );
 		OpenGL3::EnableVertexAttribArray( 0 );
-		OpenGL3::VertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, sizeof( float ) * 5, reinterpret_cast<void*>( sizeof( float ) * 3 ) );
+		OpenGL3::VertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, sizeof( float ) * 5, ReinterpretCast<void*>( sizeof( float ) * 3 ) );
 		OpenGL3::EnableVertexAttribArray( 1 );
 
 		// Bind the IBO

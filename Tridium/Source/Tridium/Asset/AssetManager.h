@@ -15,7 +15,7 @@ namespace Tridium {
 		template<typename T> requires Concepts::IsBaseOf<AssetManagerBase, T>
 		static T* Get()
 		{
-			return static_cast<T*>( Engine::Get()->GetAssetManager() );
+			return Cast<T*>( Engine::Get()->GetAssetManager() );
 		}
 
 		template<typename T> requires Concepts::IsBaseOf<Asset, T>

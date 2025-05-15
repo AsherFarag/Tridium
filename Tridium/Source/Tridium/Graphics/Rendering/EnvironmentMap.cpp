@@ -40,8 +40,8 @@ namespace Tridium {
 
 		TextureSpecification textureSpecification =
 		{
-			.Width = static_cast<uint32_t>( width ),
-			.Height = static_cast<uint32_t>( height ),
+			.Width = Cast<uint32_t>( width ),
+			.Height = Cast<uint32_t>( height ),
 			.Depth = 0u,
 			.TextureFormat = ETextureFormat::RGB16F,
 			.GenerateMips = false,

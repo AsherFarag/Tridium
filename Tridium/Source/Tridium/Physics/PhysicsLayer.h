@@ -34,20 +34,20 @@ namespace Tridium {
 	{
 	public:
 		PhysicsLayerMask();
-		PhysicsLayerMask( const std::bitset<static_cast<size_t>( EPhysicsLayer::NUM_LAYERS )>& a_LayerMask );
+		PhysicsLayerMask( const std::bitset<Cast<size_t>( EPhysicsLayer::NUM_LAYERS )>& a_LayerMask );
 
 		void SetCollisionResponse( EPhysicsLayer a_Layer, ECollisionResponse a_Response )
 		{
-			m_LayerMask.set( static_cast<size_t>( a_Layer ), a_Response != ECollisionResponse::Ignore );
+			m_LayerMask.set( Cast<size_t>( a_Layer ), a_Response != ECollisionResponse::Ignore );
 		}
 
 		ECollisionResponse GetCollisionResponse( EPhysicsLayer a_Layer ) const
 		{
-			return m_LayerMask.test( static_cast<size_t>( a_Layer ) ) ? ECollisionResponse::Block : ECollisionResponse::Ignore;
+			return m_LayerMask.test( Cast<size_t>( a_Layer ) ) ? ECollisionResponse::Block : ECollisionResponse::Ignore;
 		}
 
 	private:
-		std::bitset<static_cast<size_t>( EPhysicsLayer::NUM_LAYERS )> m_LayerMask;
+		std::bitset<Cast<size_t>( EPhysicsLayer::NUM_LAYERS )> m_LayerMask;
 	};
 
 	class PhysicsLayerManager
@@ -55,21 +55,21 @@ namespace Tridium {
 	public:
 		const PhysicsLayerMask& GetLayerMask( EPhysicsLayer a_Layer ) const
 		{
-			return m_LayerMasks.at( static_cast<size_t>( a_Layer ) );
+			return m_LayerMasks.at( Cast<size_t>( a_Layer ) );
 		}
 
 		void SetLayerMask( EPhysicsLayer a_Layer, const PhysicsLayerMask& a_Mask )
 		{
-			m_LayerMasks[static_cast<size_t>( a_Layer )] = a_Mask;
+			m_LayerMasks[Cast<size_t>( a_Layer )] = a_Mask;
 		}
 
 		ECollisionResponse GetCollisionResponse( EPhysicsLayer a_Layer, EPhysicsLayer a_OtherLayer ) const
 		{
-			return m_LayerMasks[static_cast<size_t>( a_Layer )].GetCollisionResponse( a_OtherLayer );
+			return m_LayerMasks[Cast<size_t>( a_Layer )].GetCollisionResponse( a_OtherLayer );
 		}
 		 
 	private:
-		std::array<PhysicsLayerMask, static_cast<size_t>(EPhysicsLayer::NUM_LAYERS)> m_LayerMasks;
+		std::array<PhysicsLayerMask, Cast<size_t>(EPhysicsLayer::NUM_LAYERS)> m_LayerMasks;
 	};
 
 } // namespace Tridium

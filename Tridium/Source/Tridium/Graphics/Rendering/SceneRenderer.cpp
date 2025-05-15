@@ -1105,7 +1105,7 @@ namespace Tridium {
 				m_SkyboxShader->SetFloat( "u_Exposure", m_SceneEnvironment.HDRI.Exposure );
 				m_SkyboxShader->SetFloat( "u_Gamma", m_SceneEnvironment.HDRI.Gamma );
 				const uint32_t MaxMipLevels = 5;
-				float roughness = static_cast<float>( m_SceneEnvironment.HDRI.Blur * ( MaxMipLevels - 1 ) );
+				float roughness = Cast<float>( m_SceneEnvironment.HDRI.Blur * ( MaxMipLevels - 1 ) );
 				m_SkyboxShader->SetFloat( "u_Roughness", roughness );
 
 				radianceMap->Bind();

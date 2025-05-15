@@ -35,7 +35,7 @@ namespace Tridium {
 		template<typename _To, typename _From>
 		constexpr EnumFlags<_To> Translate( EnumFlags<_From> a_From )
 		{
-			return To<_To>::From( static_cast<_From>( a_From ) );
+			return To<_To>::From( Cast<_From>( a_From ) );
 		}
 
 

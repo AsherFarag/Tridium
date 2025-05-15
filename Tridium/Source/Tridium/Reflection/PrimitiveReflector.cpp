@@ -26,7 +26,7 @@ namespace Tridium::Refl::Internal {
 		{
 			// Const cast the pointer if it is a const pointer
 			if ( a_Handle.allow_cast<const T*>( ) )
-				return ::Tridium::Editor::DrawProperty( a_Name, *const_cast<T*>( a_Handle.cast<const T*>() ), drawFlags );
+				return ::Tridium::Editor::DrawProperty( a_Name, *ConstCast<T*>( a_Handle.cast<const T*>() ), drawFlags );
 			else
 				return ::Tridium::Editor::DrawProperty( a_Name, *a_Handle.cast<T*>(), drawFlags );
 		}

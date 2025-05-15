@@ -19,8 +19,8 @@ namespace Tridium {
 			if ( !data )
 				return nullptr;
 
-			a_Specification.Width = static_cast<uint32_t>( width );
-			a_Specification.Height = static_cast<uint32_t>( height );
+			a_Specification.Width = Cast<uint32_t>( width );
+			a_Specification.Height = Cast<uint32_t>( height );
 			switch ( channels )
 			{
 			case 3:
@@ -52,8 +52,8 @@ namespace Tridium {
 			if ( !data )
 				return nullptr;
 
-			a_Specification.Width = static_cast<uint32_t>( width );
-			a_Specification.Height = static_cast<uint32_t>( height );
+			a_Specification.Width = Cast<uint32_t>( width );
+			a_Specification.Height = Cast<uint32_t>( height );
 			switch ( channels )
 			{
 			case 1:
@@ -105,8 +105,8 @@ namespace Tridium {
 			if ( !data )
 				return nullptr;
 
-			specification.Width = static_cast<uint32_t>( width );
-			specification.Height = static_cast<uint32_t>( height );
+			specification.Width = Cast<uint32_t>( width );
+			specification.Height = Cast<uint32_t>( height );
 			switch ( channels )
 			{
 			case 3:
@@ -138,8 +138,8 @@ namespace Tridium {
 			if ( !data )
 				return nullptr;
 
-				specification.Width = static_cast<uint32_t>( width );
-				specification.Height = static_cast<uint32_t>( height );
+				specification.Width = Cast<uint32_t>( width );
+				specification.Height = Cast<uint32_t>( height );
 				switch ( channels )
 				{
 				case 1:
@@ -189,8 +189,8 @@ namespace Tridium {
 			return nullptr;
 
 		TextureSpecification specification;
-		specification.Width = static_cast<uint32_t>( width );
-		specification.Height = static_cast<uint32_t>( height );
+		specification.Width = Cast<uint32_t>( width );
+		specification.Height = Cast<uint32_t>( height );
 		switch ( channels )
 		{
 		case 3:

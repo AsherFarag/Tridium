@@ -28,7 +28,7 @@ DECLARE_LOG_CATEGORY( OpenGL );
 		do { \
 			if ( ::Tridium::RHIQuery::IsDebug() && !_Name.empty() ) \
 			{ \
-				OpenGL4::ObjectLabel( GL_TEXTURE, _Handle, _Name.size(), static_cast<const GLchar*>( _Name.data() ) ); \
+				OpenGL4::ObjectLabel( GL_TEXTURE, _Handle, _Name.size(), Cast<const GLchar*>( _Name.data() ) ); \
 			} \
 		} while ( false )
 #else

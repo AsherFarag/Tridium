@@ -44,7 +44,7 @@ namespace Tridium::OpenGL {
 	{
 		GLint size = 0;
 		OpenGL1::GetBufferParameteriv( BufferObj, GL_BUFFER_SIZE, &size );
-		return static_cast<size_t>(size);
+		return Cast<size_t>(size);
 	}
 
 }

@@ -25,7 +25,7 @@ struct StructInfoSaver
 {
 	friend void callOnMember(StructInfoGetter<Parent, ChildIndex, Visitor>, Parent& instance, std::ptrdiff_t offset, const Visitor& visitor) 
 	{
-		visitor(*reinterpret_cast<ChildType*>(reinterpret_cast<char*>(&instance) + offset));
+		visitor(*ReinterpretCast<ChildType*>(ReinterpretCast<char*>(&instance) + offset));
 	}
 
 	friend constexpr std::size_t getSize(StructInfoGetter<Parent, ChildIndex, Visitor>) 

@@ -267,7 +267,7 @@ namespace Tridium {
 		template<EEventType _Type>
 		bool Is() const
 		{
-			return std::holds_alternative<static_cast<size_t>( _Type )>( Data );
+			return std::holds_alternative<Cast<size_t>( _Type )>( Data );
 		}
 
 		template<IsEventType T>
@@ -285,7 +285,7 @@ namespace Tridium {
 		template<EEventType _Type>
 		const auto& Get() const
 		{
-			return std::get<static_cast<size_t>( _Type )>( Data );
+			return std::get<Cast<size_t>( _Type )>( Data );
 		}
 
 		Event() = default;

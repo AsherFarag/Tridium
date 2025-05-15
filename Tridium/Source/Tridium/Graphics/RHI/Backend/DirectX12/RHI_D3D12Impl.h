@@ -284,7 +284,7 @@ namespace Tridium::D3D12 {
 			D3D12_RANGE range = { 0, 0 };
 			m_UploadBuffer.Resource->Map( 0, &range, &mappedData );
 
-			return reinterpret_cast<uint8_t*>(mappedData) + o_Offset;
+			return ReinterpretCast<uint8_t*>(mappedData) + o_Offset;
 		}
 
 		void Reset()
@@ -677,7 +677,7 @@ namespace Tridium::D3D12 {
 		ID3D12GraphicsCommandList* GraphicsCommandList() const
 		{
 			RHI_DEV_CHECK( m_Desc.QueueType == ERHICommandQueueType::Graphics, "Command list is not a graphics command list!" );
-			return static_cast<ID3D12GraphicsCommandList*>(CommandList.Get());
+			return Cast<ID3D12GraphicsCommandList*>(CommandList.Get());
 		}
 
 		ComPtr<ID3D12CommandList> CommandList{};
@@ -794,13 +794,13 @@ namespace Tridium::D3D12 {
 		auto& GetCommandContext( ERHICommandQueueType a_Type )
 		{
 			ASSERT( a_Type < ERHICommandQueueType::COUNT, "Invalid command queue type!" );
-			return m_CmdContexts[static_cast<size_t>( a_Type )];
+			return m_CmdContexts[Cast<size_t>( a_Type )];
 		}
 
 		const auto& GetCommandContext( ERHICommandQueueType a_Type ) const
 		{
 			ASSERT( a_Type < ERHICommandQueueType::COUNT, "Invalid command queue type!" );
-			return m_CmdContexts[static_cast<size_t>( a_Type )];
+			return m_CmdContexts[Cast<size_t>( a_Type )];
 		}
 
 		const auto& GetDXGIFactory() const { return m_DXGIFactory; }

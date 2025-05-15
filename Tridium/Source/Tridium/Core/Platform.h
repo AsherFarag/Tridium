@@ -14,8 +14,8 @@
 	#include <Windows.h>
 
 	#define Tridium_LoadLibrary( a_Path ) ::LoadLibraryA( a_Path )
-	#define Tridium_GetProcAddress( a_Library, a_FunctionName ) ::GetProcAddress( static_cast<HMODULE>( a_Library ), a_FunctionName )
-	#define Tridium_FreeLibrary( a_Library ) ::FreeLibrary( static_cast<HMODULE>( a_Library ) )
+	#define Tridium_GetProcAddress( a_Library, a_FunctionName ) ::GetProcAddress( Cast<HMODULE>( a_Library ), a_FunctionName )
+	#define Tridium_FreeLibrary( a_Library ) ::FreeLibrary( Cast<HMODULE>( a_Library ) )
 
 #elif CONFIG_PLATFORM_LINUX
 	#include <dlfcn.h>

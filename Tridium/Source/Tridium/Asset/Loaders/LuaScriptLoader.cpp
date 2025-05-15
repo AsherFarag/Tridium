@@ -19,7 +19,7 @@ namespace Tridium {
 		}
 
 		// Save the script to the file.
-		const ScriptAsset* script = static_cast<const ScriptAsset*>( a_Asset.get() );
+		const ScriptAsset* script = Cast<const ScriptAsset*>( a_Asset.get() );
 		out.write( script->GetSource().c_str(), script->GetSource().size() );
 		out.close();
     }

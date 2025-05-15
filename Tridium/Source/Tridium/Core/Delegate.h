@@ -26,7 +26,7 @@ namespace Tridium {
 		template <typename T>
 		void DeleterFunction( void* a_Object )
 		{
-			delete static_cast<T*>( a_Object );
+			delete Cast<T*>( a_Object );
 		}
 
 		template <auto _Func>
@@ -40,7 +40,7 @@ namespace Tridium {
 		template <typename T>
 		static _Return FunctorInvocation( void* a_Instance, _Args... a_Args )
 		{
-			T* Object = static_cast<T*>( a_Instance );
+			T* Object = Cast<T*>( a_Instance );
 			return ( *Object )( std::forward<_Args>( a_Args )... );
 		}
 
@@ -175,7 +175,7 @@ namespace Tridium {
 			{
 				m_Function = (void*)FunctorInvocation<FunctorType>;
 				m_Object = new FunctorType( std::forward<T>( a_Functor ) );
-				m_Deleter = +[]( void* a_Object ) { delete static_cast<FunctorType*>( a_Object ); };
+				m_Deleter = +[]( void* a_Object ) { delete Cast<FunctorType*>( a_Object ); };
 			}
 			else
 			{

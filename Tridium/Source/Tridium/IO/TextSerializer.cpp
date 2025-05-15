@@ -154,7 +154,7 @@ namespace Tridium::IO {
 	template<> 
 	void SerializeToText( Archive& a_Archive, const GameObject& a_Value )
 	{
-		a_Archive << static_cast<EntityIDType>( a_Value.ID() );
+		a_Archive << Cast<EntityIDType>( a_Value.ID() );
 	}
 
 

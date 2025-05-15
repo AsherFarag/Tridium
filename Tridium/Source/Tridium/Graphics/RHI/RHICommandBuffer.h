@@ -342,7 +342,7 @@ namespace Tridium {
 
 		ERHICommandType Type() const
 		{
-			return static_cast<ERHICommandType>( Data.index() );
+			return Cast<ERHICommandType>( Data.index() );
 		}
 
 	#if RHI_DEBUG_ENABLED
@@ -485,7 +485,7 @@ namespace Tridium {
 		UnorderedSet<RHIBindingSetRef>    m_BindingSets;
 
 	protected:
-		CommandBufferType& Self() { return static_cast<CommandBufferType&>( *this ); }
+		CommandBufferType& Self() { return Cast<CommandBufferType&>( *this ); }
 	};
 
 

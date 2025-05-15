@@ -129,12 +129,12 @@ namespace Tridium {
 		const RHIFeatureInfo& GetFeatureInfo( ERHIFeature a_Feature ) const
 		{
 			RHI_DEV_CHECK( uint8_t( a_Feature ) < uint8_t( ERHIFeature::COUNT ), "Invalid feature requested!" );
-			return Features[static_cast<uint8_t>(a_Feature)];
+			return Features[Cast<uint8_t>(a_Feature)];
 		}
 
 		RHIDeviceFeatures()
 		{
-		#define DEFINE_FEATURE( _Feature ) Features[static_cast<uint8_t>( ERHIFeature::_Feature )] = { ERHIFeature::_Feature, #_Feature, ERHIFeatureSupport::Unsupported };
+		#define DEFINE_FEATURE( _Feature ) Features[Cast<uint8_t>( ERHIFeature::_Feature )] = { ERHIFeature::_Feature, #_Feature, ERHIFeatureSupport::Unsupported };
 			DEFINE_FEATURE( ComputeShaders );
 			DEFINE_FEATURE( GeometryShaders );
 			DEFINE_FEATURE( Tesselation );
@@ -263,8 +263,8 @@ namespace Tridium {
 
 		template<typename T>
 		constexpr TBox( const TVector3<T>& a_Min, const TVector3<T>& a_Max ) noexcept
-			: MinX( static_cast<ScalarType>( a_Min.x ) ), MinY( static_cast<ScalarType>( a_Min.y ) ), MinZ( static_cast<ScalarType>( a_Min.z ) ),
-			  MaxX( static_cast<ScalarType>( a_Max.x ) ), MaxY( static_cast<ScalarType>( a_Max.y ) ), MaxZ( static_cast<ScalarType>( a_Max.z ) ) 
+			: MinX( Cast<ScalarType>( a_Min.x ) ), MinY( Cast<ScalarType>( a_Min.y ) ), MinZ( Cast<ScalarType>( a_Min.z ) ),
+			  MaxX( Cast<ScalarType>( a_Max.x ) ), MaxY( Cast<ScalarType>( a_Max.y ) ), MaxZ( Cast<ScalarType>( a_Max.z ) ) 
 		{}
 
 		constexpr ScalarType Width() const noexcept { return MaxX - MinX; }

@@ -35,11 +35,13 @@ namespace Tridium {
 					}
 
 					// Asset Type
+					TODO( "Fix this bro what" );
 					char* assetType = const_cast<char*>( AssetTypeToString( metaData.AssetType ) );
 					ImGui::InputText( "Asset Type", assetType, 32, inputFlags );
 
 					// Asset Loaded
 					const char* assetLoaded = metaData.IsAssetLoaded ? "True" : "False";
+					TODO( "Bruh" );
 					ImGui::InputText( "Asset Loaded", const_cast<char*>( assetLoaded ), inputFlags );
 
 					if ( auto it = assetRegistry.AssetDependencies.find( handle ); it != assetRegistry.AssetDependencies.end() )

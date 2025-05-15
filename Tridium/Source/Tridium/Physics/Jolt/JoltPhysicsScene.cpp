@@ -59,7 +59,7 @@ namespace Tridium {
 		public:
 			virtual bool ShouldCollide( JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2 ) const override
 			{
-				ECollisionResponse response = s_PhysicsLayerManager.GetCollisionResponse( static_cast<EPhysicsLayer>( inObject1 ), static_cast<EPhysicsLayer>( inObject2 ) );
+				ECollisionResponse response = s_PhysicsLayerManager.GetCollisionResponse( Cast<EPhysicsLayer>( inObject1 ), Cast<EPhysicsLayer>( inObject2 ) );
 				return response == ECollisionResponse::Block;
 			}
 		};
@@ -83,9 +83,9 @@ namespace Tridium {
 		public:
 			BPLayerInterfaceImpl()
 			{
-				mObjectToBroadPhase[static_cast<JPH::ObjectLayer>( EPhysicsLayer::Static  )] = BroadPhaseLayers::NON_MOVING;
-				mObjectToBroadPhase[static_cast<JPH::ObjectLayer>( EPhysicsLayer::Dynamic )] = BroadPhaseLayers::MOVING;
-				mObjectToBroadPhase[static_cast<JPH::ObjectLayer>( EPhysicsLayer::Player  )] = BroadPhaseLayers::MOVING;
+				mObjectToBroadPhase[Cast<JPH::ObjectLayer>( EPhysicsLayer::Static  )] = BroadPhaseLayers::NON_MOVING;
+				mObjectToBroadPhase[Cast<JPH::ObjectLayer>( EPhysicsLayer::Dynamic )] = BroadPhaseLayers::MOVING;
+				mObjectToBroadPhase[Cast<JPH::ObjectLayer>( EPhysicsLayer::Player  )] = BroadPhaseLayers::MOVING;
 			}
 
 			virtual JPH::uint GetNumBroadPhaseLayers() const override
@@ -95,7 +95,7 @@ namespace Tridium {
 
 			virtual JPH::BroadPhaseLayer GetBroadPhaseLayer( JPH::ObjectLayer inLayer ) const override
 			{
-				JPH_ASSERT( inLayer < static_cast<JPH::ObjectLayer>( EPhysicsLayer::NUM_LAYERS ) );
+				JPH_ASSERT( inLayer < Cast<JPH::ObjectLayer>( EPhysicsLayer::NUM_LAYERS ) );
 				return mObjectToBroadPhase[inLayer];
 			}
 		private:
@@ -108,7 +108,7 @@ namespace Tridium {
 		public:
 			virtual bool ShouldCollide( JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2 ) const override
 			{
-				switch ( static_cast<EPhysicsLayer>( inLayer1 ) )
+				switch ( Cast<EPhysicsLayer>( inLayer1 ) )
 				{
 				case EPhysicsLayer::Static:
 					return inLayer2 == BroadPhaseLayers::MOVING;
@@ -331,7 +331,7 @@ namespace Tridium {
 
 		// Create the body creation settings
 		const JPH::EMotionType motionType = Util::ToJoltMotionType( a_RigidBody.GetMotionType() );
-		const JPH::ObjectLayer layer = static_cast<JPH::ObjectLayer>( a_RigidBody.GetPhysicsLayer() );
+		const JPH::ObjectLayer layer = Cast<JPH::ObjectLayer>( a_RigidBody.GetPhysicsLayer() );
 		JPH::BodyCreationSettings bodySettings( compoundSettings, position, rotation, motionType, layer );
 		bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::MassAndInertiaProvided;
 		bodySettings.mMassPropertiesOverride = massProperties;
@@ -490,7 +490,7 @@ namespace Tridium {
 			m_PhysicsSystem.DrawBodies( drawSettings, JPH::DebugRenderer::sInstance );
 			//m_PhysicsSystem.DrawConstraints( JPH::DebugRenderer::sInstance );
 
-			static_cast<JoltDebugRenderer*>( JPH::DebugRenderer::sInstance )->Render( a_ViewProjection );
+			Cast<JoltDebugRenderer*>( JPH::DebugRenderer::sInstance )->Render( a_ViewProjection );
 		}
 	}
 

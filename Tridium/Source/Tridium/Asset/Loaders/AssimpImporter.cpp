@@ -81,8 +81,8 @@ namespace Tridium {
 
 	void AssimpImporter::ProcessNode( SharedPtr<MeshSource>& a_MeshSource, const void* a_AssimpScene, void* a_AssimpNode, const Matrix4& a_ParentTransform )
 	{
-		const aiScene* a_Scene = static_cast<const aiScene*>( a_AssimpScene );
-		const aiNode* a_Node = static_cast<aiNode*>( a_AssimpNode );
+		const aiScene* a_Scene = Cast<const aiScene*>( a_AssimpScene );
+		const aiNode* a_Node = Cast<aiNode*>( a_AssimpNode );
 
 		Matrix4 localTransform = Util::Mat4FromAIMatrix4x4( a_Node->mTransformation );
 		Matrix4 transform = a_ParentTransform * localTransform;
@@ -110,8 +110,8 @@ namespace Tridium {
 
 	SubMesh AssimpImporter::ProcessSubMesh( SharedPtr<MeshSource>& a_MeshSource, const void* a_AssimpScene, void* a_AssimpMesh )
 	{
-		const aiScene* a_Scene = static_cast<const aiScene*>( a_AssimpScene );
-		const aiMesh* a_Mesh = static_cast<aiMesh*>( a_AssimpMesh );
+		const aiScene* a_Scene = Cast<const aiScene*>( a_AssimpScene );
+		const aiMesh* a_Mesh = Cast<aiMesh*>( a_AssimpMesh );
 
 		SubMesh submesh;
 
@@ -175,7 +175,7 @@ namespace Tridium {
 
 	void AssimpImporter::ExtractMaterials( void* a_AssimpScene, SharedPtr<MeshSource>& a_MeshSource )
 	{
-		const aiScene* a_Scene = static_cast<aiScene*>( a_AssimpScene );
+		const aiScene* a_Scene = Cast<aiScene*>( a_AssimpScene );
 		if ( !a_Scene->HasMaterials() )
 			return;
 
@@ -212,9 +212,9 @@ namespace Tridium {
 	TextureHandle AssimpImporter::ExtractTexture( void* a_AssimpScene, void* a_AssimpMaterial, int a_AssimpTextureType )
 	{
 		SharedPtr<TextureLoader> textureLoader = SharedPtrCast<TextureLoader>( AssetFactory::GetAssetLoader( EAssetType::Texture ) );
-		aiScene* aiScn = static_cast<aiScene*>( a_AssimpScene );
-		aiMaterial* aiMat = static_cast<aiMaterial*>( a_AssimpMaterial );
-		aiTextureType aiTexType = static_cast<aiTextureType>( a_AssimpTextureType );
+		aiScene* aiScn = Cast<aiScene*>( a_AssimpScene );
+		aiMaterial* aiMat = Cast<aiMaterial*>( a_AssimpMaterial );
+		aiTextureType aiTexType = Cast<aiTextureType>( a_AssimpTextureType );
 		aiString aiTexturePath;
 
 		if ( aiMat->GetTexture( aiTexType, 0, &aiTexturePath ) == AI_FAILURE )

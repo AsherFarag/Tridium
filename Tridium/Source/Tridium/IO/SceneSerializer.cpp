@@ -22,7 +22,7 @@ namespace YAML {
 		static Node encode( const Tridium::EntityID& rhs )
 		{
 			Node node;
-			node.push_back( static_cast<Tridium::EntityIDType>( rhs ) );
+			node.push_back( Tridium::Cast<Tridium::EntityIDType>( rhs ) );
 			return node;
 		}
 
@@ -35,7 +35,7 @@ namespace YAML {
 
 	YAML::Emitter& operator<<( YAML::Emitter& out, const Tridium::EntityID& v )
 	{
-		out << static_cast<Tridium::EntityIDType>( v );
+		out << Tridium::Cast<Tridium::EntityIDType>( v );
 		return out;
 	};
 

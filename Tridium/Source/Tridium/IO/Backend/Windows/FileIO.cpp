@@ -36,7 +36,7 @@ namespace Tridium {
 		file.seekg( 0, std::ios::beg );
 
 		Array<uint8_t> buffer( size );
-		file.read( reinterpret_cast<char*>( buffer.Data() ), size );
+		file.read( ReinterpretCast<char*>( buffer.Data() ), size );
 		return buffer;
 	}
 
@@ -59,7 +59,7 @@ namespace Tridium {
 		{
 			return false;
 		}
-		file.write( reinterpret_cast<const char*>( data.Data() ), data.Size() );
+		file.write( ReinterpretCast<const char*>( data.Data() ), data.Size() );
 		return true;
 	}
 

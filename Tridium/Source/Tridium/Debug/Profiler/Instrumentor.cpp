@@ -92,7 +92,7 @@ namespace Tridium {
 		ProfileResult result =
 		{
 			.Description = a_Description,
-			.ThreadID = static_cast<uint32_t>( std::hash<std::thread::id>{}( std::this_thread::get_id() ) ),
+			.ThreadID = Cast<uint32_t>( std::hash<std::thread::id>{}( std::this_thread::get_id() ) ),
 			.TimeStamp = { GetTime(), TimeStamp::s_InvalidTimeStamp }
 		};
 
@@ -111,14 +111,14 @@ namespace Tridium {
 		ProfileResult result = frameData.CallStack.top();
 		frameData.CallStack.pop();
 		result.TimeStamp.End = GetTime();
-		result.Depth = static_cast<uint32_t>( frameData.CallStack.size() );
+		result.Depth = Cast<uint32_t>( frameData.CallStack.size() );
 		frameData.CollectedResults.PushBack( result );
 	}
 
 	TimeStamp::TimeType Instrumentor::GetTime() const
 	{
 		long long nowMicroSeconds = std::chrono::duration_cast<std::chrono::microseconds>( std::chrono::high_resolution_clock::now().time_since_epoch() ).count();
-		return static_cast<TimeStamp::TimeType>( nowMicroSeconds );
+		return Cast<TimeStamp::TimeType>( nowMicroSeconds );
 	}
 
 } // namespace Tridium

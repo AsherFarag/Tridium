@@ -60,7 +60,7 @@ namespace Tridium::Refl::Internal {
 
 		T& value = a_Handle.type().is_pointer_like() ?
 			( a_Handle.allow_cast<const T*>( ) ?
-				*const_cast<T*>( a_Handle.cast<const T*>() ) : *a_Handle.cast<T*>() )
+				*ConstCast<T*>( a_Handle.cast<const T*>() ) : *a_Handle.cast<T*>() )
 			: a_Handle.cast<T&>();
 
 		const std::string& valueStr = a_EnumToString.at( value );

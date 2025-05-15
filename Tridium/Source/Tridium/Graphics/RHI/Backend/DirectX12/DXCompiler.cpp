@@ -37,7 +37,7 @@ namespace Tridium::D3D12 {
 			}
 
 			// Get the entry point.
-			CreateInstance = reinterpret_cast<DxcCreateInstanceProc>( Platform::GetProcAddress( dxcModule, "DxcCreateInstance" ) );
+			CreateInstance = ReinterpretCast<DxcCreateInstanceProc>( Platform::GetProcAddress( dxcModule, "DxcCreateInstance" ) );
 			if ( CreateInstance == nullptr )
 			{
 				LOG( LogCategory::DirectX, Error, "Failed to get DxcCreateInstance entry point" );
@@ -141,7 +141,7 @@ namespace Tridium::D3D12 {
 		HRESULT hr = dxcCompiler->Compile(
 			&sourceBuffer,
 			argsRaw.Data(),
-			static_cast<uint32_t>( argsRaw.Size() ),
+			Cast<uint32_t>( argsRaw.Size() ),
 			includeHandler.Get(),
 			IID_PPV_ARGS( &dxcResult )
 		);

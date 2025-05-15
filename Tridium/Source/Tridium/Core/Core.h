@@ -22,8 +22,8 @@ namespace Tridium {
 	template<typename _Flags, typename _EnumFlag>
 	constexpr bool HasFlag( _Flags Flags, _EnumFlag Flag )
 	{
-		std::underlying_type_t<_EnumFlag> flag = static_cast<std::underlying_type_t<_EnumFlag>>( Flag );
-		return ( static_cast<std::underlying_type_t<_EnumFlag>>(Flags) & static_cast<std::underlying_type_t<_EnumFlag>>( Flag ) ) == flag;
+		std::underlying_type_t<_EnumFlag> flag = Cast<std::underlying_type_t<_EnumFlag>>( Flag );
+		return ( Cast<std::underlying_type_t<_EnumFlag>>(Flags) & Cast<std::underlying_type_t<_EnumFlag>>( Flag ) ) == flag;
 	}
 
 	template<typename _Array>

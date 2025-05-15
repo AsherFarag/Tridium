@@ -29,7 +29,7 @@ namespace Tridium {
 	public:
 		GameObject() : m_ID( NullEntity ) {}
 		GameObject( EntityID a_ID ) : m_ID( a_ID ) {}
-		GameObject( EntityIDType a_ID ) : m_ID( static_cast<EntityID>( a_ID ) ) {}
+		GameObject( EntityIDType a_ID ) : m_ID( Cast<EntityID>( a_ID ) ) {}
 		~GameObject() = default;
 
 		operator EntityID () { return m_ID; }

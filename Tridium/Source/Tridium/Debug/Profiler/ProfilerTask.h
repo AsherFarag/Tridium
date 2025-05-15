@@ -31,7 +31,7 @@ namespace Tridium {
 			, Line( a_Line )
 			, Filter( a_Filter )
 			, Color( a_Color )
-			, ID( Hashing::HashCombine( Hashing::HashString( a_File ), static_cast<size_t>(a_Line) ) )
+			, ID( Hashing::HashCombine( Hashing::HashString( a_File ), Cast<size_t>(a_Line) ) )
 		{
 		}
 	};
@@ -48,12 +48,12 @@ namespace Tridium {
 		TimeType End; // In Microseconds.
 
 		TimeType GetDuration() const { return End - Start; }
-		double GetDurationMilli() const { return static_cast<double>( GetDuration() ) / 1000.0; }
-		double GetDurationSeconds() const { return static_cast<double>( GetDuration() ) / 1000000.0; }
-		double GetStartMilli() const { return static_cast<double>( Start ) / 1000.0; }
-		double GetStartSeconds() const { return static_cast<double>( Start ) / 1000000.0; }
-		double GetEndMilli() const { return static_cast<double>( End ) / 1000.0; }
-		double GetEndSeconds() const { return static_cast<double>( End ) / 1000000.0; }
+		double GetDurationMilli() const { return Cast<double>( GetDuration() ) / 1000.0; }
+		double GetDurationSeconds() const { return Cast<double>( GetDuration() ) / 1000000.0; }
+		double GetStartMilli() const { return Cast<double>( Start ) / 1000.0; }
+		double GetStartSeconds() const { return Cast<double>( Start ) / 1000000.0; }
+		double GetEndMilli() const { return Cast<double>( End ) / 1000.0; }
+		double GetEndSeconds() const { return Cast<double>( End ) / 1000000.0; }
 
 		bool operator==( const TimeStamp& other ) const
 		{

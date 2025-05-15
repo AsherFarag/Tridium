@@ -19,11 +19,11 @@ namespace Tridium {
 		constexpr operator Vector4() const { return Vector4( r, g, b, a ); }
 		constexpr operator Vector3() const { return Vector3( r, g, b ); }
 
-		constexpr const T& operator[]( size_t a_Index ) const { return reinterpret_cast<const T*>( this )[a_Index]; }
+		constexpr const T& operator[]( size_t a_Index ) const { return ReinterpretCast<const T*>( this )[a_Index]; }
 		constexpr T& operator[]( size_t a_Index )
 		{
 			static_assert( sizeof( BasicColor ) == 4 * sizeof( T ), "BasicColor layout must be tightly packed." );
-			return reinterpret_cast<T*>( this )[a_Index];
+			return ReinterpretCast<T*>( this )[a_Index];
 		}
 
 

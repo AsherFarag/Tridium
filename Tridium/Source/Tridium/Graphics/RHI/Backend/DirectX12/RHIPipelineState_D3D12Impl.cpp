@@ -98,7 +98,7 @@ namespace Tridium::D3D12 {
 				.SemanticIndex = 0,
 				.Format = D3D12::Translate( element.Type ),
 				.InputSlot = 0,
-				.AlignedByteOffset = static_cast<UINT>( element.Offset ),
+				.AlignedByteOffset = Cast<UINT>( element.Offset ),
 				.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
 				.InstanceDataStepRate = 0
 			};
@@ -217,7 +217,7 @@ namespace Tridium::D3D12 {
 
 		if ( !rootParams.IsEmpty() )
 		{
-			rootSigDesc.Desc_1_1.NumParameters = static_cast<UINT>(rootParams.Size());
+			rootSigDesc.Desc_1_1.NumParameters = Cast<UINT>(rootParams.Size());
 			rootSigDesc.Desc_1_1.pParameters = rootParams.Data();
 		}
 

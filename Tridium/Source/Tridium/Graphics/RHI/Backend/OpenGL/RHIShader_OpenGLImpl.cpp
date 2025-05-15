@@ -8,7 +8,7 @@ namespace Tridium::OpenGL {
 		: RHIShaderModule( a_Desc )
 	{
 		// Create GLSL from the SPIR-V bytecode using SPIRV-Cross
-		spirv_cross::CompilerGLSL glslCompiler( reinterpret_cast<const uint32_t*>( a_Desc.Bytecode.data() ), a_Desc.Bytecode.size_bytes() / sizeof( uint32_t ) );
+		spirv_cross::CompilerGLSL glslCompiler( ReinterpretCast<const uint32_t*>( a_Desc.Bytecode.data() ), a_Desc.Bytecode.size_bytes() / sizeof( uint32_t ) );
 		spirv_cross::CompilerGLSL::Options options;
 		options.version = 450;
 		options.es = false;
@@ -60,7 +60,7 @@ namespace Tridium::OpenGL {
 
 		if ( RHIQuery::IsDebug() && !a_Desc.Name.empty() )
 		{
-			OpenGL4::ObjectLabel( GL_SHADER, m_ShaderID, a_Desc.Name.size(), static_cast<const GLchar*>( a_Desc.Name.data() ) );
+			OpenGL4::ObjectLabel( GL_SHADER, m_ShaderID, a_Desc.Name.size(), Cast<const GLchar*>( a_Desc.Name.data() ) );
 		}
 	#endif
 	}

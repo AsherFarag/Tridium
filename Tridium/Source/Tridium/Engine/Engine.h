@@ -93,7 +93,7 @@ namespace Tridium {
 	inline T* Engine::GetModule()
 	{
 		constexpr hash_t hash = Hashing::TypeHash<T>();
-		return static_cast<T*>( GetModule( hash ) );
+		return Cast<T*>( GetModule( hash ) );
 	}
 
 } // namespace Tridium

@@ -17,7 +17,7 @@ namespace Tridium {
 			{
 				out << YAML::Key << "Name" << YAML::Value << a_Project.Name;
 				out << YAML::Key << "AssetDirectory" << YAML::Value << a_Project.Editor.AssetDirectory.ToString();
-				out << YAML::Key << "StartScene" << YAML::Value << static_cast<SceneHandle::Type>( a_Project.StartScene.ID() );
+				out << YAML::Key << "StartScene" << YAML::Value << Cast<SceneHandle::Type>( a_Project.StartScene.ID() );
 			}
 			out << YAML::EndMap; // Configuration
 		}

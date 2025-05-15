@@ -215,7 +215,7 @@ namespace Tridium {
 	template<typename T, bool _ExplicitSetup, bool _IsOwning, bool _IsThreadSafe>
     inline void ISingleton<T, _ExplicitSetup, _IsOwning, _IsThreadSafe>::Deleter::operator()( T* a_Ptr ) const
     {
-        static_cast<ThisType&>(*a_Ptr).OnSingletonDestroyed();
+        Cast<ThisType&>(*a_Ptr).OnSingletonDestroyed();
         delete a_Ptr;
     }
 
@@ -224,11 +224,11 @@ namespace Tridium {
 	{
 		if constexpr ( IsOwning )
 		{
-			return static_cast<ThisType*>( s_Instance.get() );
+			return Cast<ThisType*>( s_Instance.get() );
 		}
 		else
 		{
-			return static_cast<ThisType*>( s_Instance );
+			return Cast<ThisType*>( s_Instance );
 		}
 	}
 

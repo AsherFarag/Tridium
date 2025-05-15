@@ -177,7 +177,7 @@ namespace Tridium {
 			}
 
 			constexpr Category( ProfilerFilter::Filter a_Filter, EColor a_Color )
-				: Filter( a_Filter ), Color( static_cast<ProfilerColor>( a_Color ) )
+				: Filter( a_Filter ), Color( Cast<ProfilerColor>( a_Color ) )
 			{
 			}
 		};

@@ -43,7 +43,7 @@ namespace Tridium {
 			default:
 			{
 				// Unsupported RHI type
-				LOG( LogCategory::RHI, Error, "Unsupported RHI type: ", static_cast<uint32_t>(a_Config.RHIType) );
+				LOG( LogCategory::RHI, Error, "Unsupported RHI type: ", Cast<uint32_t>(a_Config.RHIType) );
 				return false;
 			}
 		}

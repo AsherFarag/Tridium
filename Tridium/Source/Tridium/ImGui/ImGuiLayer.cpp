@@ -67,7 +67,7 @@ namespace Tridium {
 		ImGui::GetExtraBoldFont();
 		AddIconsToFont();
 
-		GLFWwindow* window = static_cast<GLFWwindow*>( Application::Get()->GetWindow().GetNativeWindow() );
+		GLFWwindow* window = Cast<GLFWwindow*>( Application::Get()->GetWindow().GetNativeWindow() );
 
 		// Set up Platform/Render bindings
 		TODO( "Make this API specific!" );

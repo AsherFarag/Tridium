@@ -82,8 +82,8 @@ namespace Tridium::D3D12 {
 			Span<const D3D12_STATIC_SAMPLER_DESC> a_StaticSamplers = {},
 			D3D12_ROOT_SIGNATURE_FLAGS a_Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE )
 			: D3D12_ROOT_SIGNATURE_DESC1{
-				static_cast<UINT>( a_Parameters.size() ), a_Parameters.data(),
-				static_cast<UINT>( a_StaticSamplers.size() ), a_StaticSamplers.data(),
+				Cast<UINT>( a_Parameters.size() ), a_Parameters.data(),
+				Cast<UINT>( a_StaticSamplers.size() ), a_StaticSamplers.data(),
 				a_Flags }
 		{
 		}

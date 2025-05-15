@@ -123,7 +123,7 @@ namespace Tridium {
 
 			for ( const auto& [threadID, thread] : a_Session.ProfiledThreads )
 			{
-				const uint32_t id = reinterpret_cast<const uint32_t&>( threadID );
+				const uint32_t id = ReinterpretCast<const uint32_t&>( threadID );
 				ImGui::TableNextRow();
 
 				// Draw the thread name and id

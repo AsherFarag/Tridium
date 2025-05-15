@@ -83,7 +83,7 @@ namespace Tridium {
 
 			bool HasClassFlag( EClassFlags a_Flag ) const
 			{
-				return static_cast<bool>( GetClassFlags() & a_Flag );
+				return Cast<bool>( GetClassFlags() & a_Flag );
 			}
 
 			const char* GetCleanTypeName() const
@@ -96,7 +96,7 @@ namespace Tridium {
 
 			bool HasMetaAttribute( MetaIDType a_ID ) const
 			{
-				return static_cast<bool>( GetMetaAttribute( a_ID ) );
+				return Cast<bool>( GetMetaAttribute( a_ID ) );
 			}
 
 			//////////////////////////////////////////////////////////////////////////

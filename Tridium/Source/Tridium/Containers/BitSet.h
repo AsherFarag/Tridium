@@ -35,7 +35,7 @@ namespace Tridium {
         using UnderlyingT = std::underlying_type_t<T>;
 
     public:
-        constexpr BitFlags() : m_Flags( static_cast<UnderlyingT>( 0 ) ) {}
+        constexpr BitFlags() : m_Flags( Cast<UnderlyingT>( 0 ) ) {}
         constexpr explicit BitFlags( T v ) : m_Flags( ToUnderlying( v ) ) {}
         constexpr BitFlags( std::initializer_list<T> vs ) : BitFlags() 
         {
@@ -56,11 +56,11 @@ namespace Tridium {
         // Unsets a single flag value.
         constexpr void Unset( T v ) { m_Flags &= ~ToUnderlying( v ); }
         // Clears all flag values.
-        constexpr void Clear() { m_Flags = static_cast<UnderlyingT>( 0 ); }
+        constexpr void Clear() { m_Flags = Cast<UnderlyingT>( 0 ); }
 
         constexpr operator bool() const 
         {
-            return m_Flags != static_cast<UnderlyingT>( 0 );
+            return m_Flags != Cast<UnderlyingT>( 0 );
         }
 
         friend constexpr BitFlags operator|( BitFlags lhs, T rhs ) 
@@ -162,7 +162,7 @@ namespace Tridium {
 
     private:
         constexpr explicit BitFlags( UnderlyingT flags ) : m_Flags( flags ) {}
-        static constexpr UnderlyingT ToUnderlying( T v ) { return static_cast<UnderlyingT>( v ); }
+        static constexpr UnderlyingT ToUnderlying( T v ) { return Cast<UnderlyingT>( v ); }
 
         UnderlyingT m_Flags;
     };

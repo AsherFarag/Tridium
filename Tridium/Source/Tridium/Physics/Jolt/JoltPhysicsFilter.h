@@ -19,7 +19,7 @@ namespace Tridium {
 		virtual bool ShouldCollide( JPH::ObjectLayer inObjectLayer ) const override
 		{
 			TODO( "Implement proper Channel filters" )
-			EPhysicsLayer objectLayer = static_cast<EPhysicsLayer>( inObjectLayer );
+			EPhysicsLayer objectLayer = Cast<EPhysicsLayer>( inObjectLayer );
 			switch ( RayCastChannel )
 			{
 			case ERayCastChannel::Visibility:
@@ -65,13 +65,13 @@ namespace Tridium {
 		/// Filter function. Returns true if we should collide with inBodyID
 		virtual bool ShouldCollide( const JPH::BodyID& inBodyID ) const override
 		{
-			return !BodyFilter.contains( static_cast<PhysicsBodyID>( inBodyID.GetIndexAndSequenceNumber() ) );
+			return !BodyFilter.contains( Cast<PhysicsBodyID>( inBodyID.GetIndexAndSequenceNumber() ) );
 		}
 
 		/// Filter function. Returns true if we should collide with inBody (this is called after the body is locked and makes it possible to filter based on body members)
 		virtual bool ShouldCollideLocked( const JPH::Body& inBody ) const override
 		{
-			return !BodyFilter.contains( static_cast<PhysicsBodyID>( inBody.GetID().GetIndexAndSequenceNumber() ));
+			return !BodyFilter.contains( Cast<PhysicsBodyID>( inBody.GetID().GetIndexAndSequenceNumber() ));
 		}
 
 		PhysicsBodyFilter BodyFilter;

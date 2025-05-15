@@ -65,12 +65,12 @@ namespace Tridium::Util {
 
 	inline JPH::ObjectLayer ToJoltObjectLayer( EPhysicsLayer a_PhysicsLayer )
 	{
-		return static_cast<JPH::ObjectLayer>( a_PhysicsLayer );
+		return Cast<JPH::ObjectLayer>( a_PhysicsLayer );
 	}
 
 	inline EPhysicsLayer ToTridiumObjectLayer( JPH::ObjectLayer a_ObjectLayer )
 	{
-		return static_cast<EPhysicsLayer>( a_ObjectLayer );
+		return Cast<EPhysicsLayer>( a_ObjectLayer );
 	}
 
 	inline JPH::EMotionType ToJoltMotionType( EMotionType a_MotionType )

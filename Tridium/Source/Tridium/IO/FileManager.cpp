@@ -14,7 +14,7 @@ namespace Tridium::IO {
 
 		for ( const auto& entry : fs::directory_iterator( (const fs::path&)a_Directory ) )
 		{
-			if ( entry.is_regular_file() && static_cast<FilePath>( entry.path().filename() ) == a_File.GetFilename() )
+			if ( entry.is_regular_file() && Cast<FilePath>( entry.path().filename() ) == a_File.GetFilename() )
 			{
 				return FilePath::FromPath( entry.path() );
 			}

@@ -161,7 +161,7 @@ namespace Tridium::OpenGL {
 
 			const uint32_t stride = Descriptor().VertexLayout.Stride;
 			OpenGL2::EnableVertexAttribArray( i );
-			OpenGL2::VertexAttribPointer( i, type.Count, type.Type, type.Normalized, stride, reinterpret_cast<const void*>( element.Offset ) );
+			OpenGL2::VertexAttribPointer( i, type.Count, type.Type, type.Normalized, stride, ReinterpretCast<const void*>( element.Offset ) );
 		}
 
 		return true;

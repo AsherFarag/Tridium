@@ -32,8 +32,8 @@ namespace apl {
 		_rvalue		= 0b10000000,
 	};
 
-	constexpr function_flags operator|( const function_flags l, const function_flags r ) { return static_cast< function_flags >( static_cast< int >( l ) | static_cast< int >( r ) ); }
-	constexpr function_flags operator&( const function_flags l, const function_flags r ) { return static_cast< function_flags >( static_cast< int >( l ) & static_cast< int >( r ) ); }
+	constexpr function_flags operator|( const function_flags l, const function_flags r ) { return Cast< function_flags >( Cast< int >( l ) | Cast< int >( r ) ); }
+	constexpr function_flags operator&( const function_flags l, const function_flags r ) { return Cast< function_flags >( Cast< int >( l ) & Cast< int >( r ) ); }
 
 	template < typename >
 	struct tuple_as_args;
@@ -279,16 +279,16 @@ namespace apl {
 	struct has_noexcept_lambda_op : std::false_type {}; // operator() const noexcept
 
 	template < typename _Generic, typename _Return, typename... _Args >
-	struct has_mutable_lambda_op< _Generic, _Return( _Args... ), std::void_t< decltype( static_cast< _Return( _Generic::* )( _Args... ) >( &_Generic::operator() ) ) > > : std::true_type {};
+	struct has_mutable_lambda_op< _Generic, _Return( _Args... ), std::void_t< decltype( Cast< _Return( _Generic::* )( _Args... ) >( &_Generic::operator() ) ) > > : std::true_type {};
 
 	template < typename _Generic, typename _Return, typename... _Args >
-	struct has_lambda_op< _Generic, _Return( _Args... ), std::void_t< decltype( static_cast< _Return( _Generic::* )( _Args... ) const >( &_Generic::operator() ) ) > > : std::true_type {};
+	struct has_lambda_op< _Generic, _Return( _Args... ), std::void_t< decltype( Cast< _Return( _Generic::* )( _Args... ) const >( &_Generic::operator() ) ) > > : std::true_type {};
 
 	template < typename _Generic, typename _Return, typename... _Args >
-	struct has_mutable_noexcept_lambda_op< _Generic, _Return( _Args... ), std::void_t< decltype( static_cast< _Return( _Generic::* )( _Args... ) noexcept >( &_Generic::operator() ) ) > > : std::true_type {};
+	struct has_mutable_noexcept_lambda_op< _Generic, _Return( _Args... ), std::void_t< decltype( Cast< _Return( _Generic::* )( _Args... ) noexcept >( &_Generic::operator() ) ) > > : std::true_type {};
 
 	template < typename _Generic, typename _Return, typename... _Args >
-	struct has_noexcept_lambda_op< _Generic, _Return( _Args... ), std::void_t< decltype( static_cast< _Return( _Generic::* )( _Args... ) const noexcept >( &_Generic::operator() ) ) > > : std::true_type {};
+	struct has_noexcept_lambda_op< _Generic, _Return( _Args... ), std::void_t< decltype( Cast< _Return( _Generic::* )( _Args... ) const noexcept >( &_Generic::operator() ) ) > > : std::true_type {};
 
 	template < typename _Generic, typename _Signature >
 	static constexpr bool has_mutable_lambda_op_v = has_mutable_lambda_op< _Generic, _Signature >::value;
@@ -316,22 +316,22 @@ namespace apl {
 			{
 				if constexpr ( has_mutable_lambda_op_v< _Generic, _Return( _Args... ) > )
 				{
-					return static_cast< _Return( _Generic::* )( _Args... ) >( &_Generic::operator() );
+					return Cast< _Return( _Generic::* )( _Args... ) >( &_Generic::operator() );
 				}
 
 				else if constexpr ( has_lambda_op_v< _Generic, _Return( _Args... ) > )
 				{
-					return static_cast< _Return( _Generic::* )( _Args... ) const >( &_Generic::operator() );
+					return Cast< _Return( _Generic::* )( _Args... ) const >( &_Generic::operator() );
 				}
 
 				else if constexpr ( has_mutable_noexcept_lambda_op_v< _Generic, _Return( _Args... ) > )
 				{
-					return static_cast< _Return( _Generic::* )( _Args... ) noexcept >( &_Generic::operator() );
+					return Cast< _Return( _Generic::* )( _Args... ) noexcept >( &_Generic::operator() );
 				}
 
 				else if constexpr ( has_noexcept_lambda_op_v< _Generic, _Return( _Args... ) > )
 				{
-					return static_cast< _Return( _Generic::* )( _Args... ) const noexcept >( &_Generic::operator() );
+					return Cast< _Return( _Generic::* )( _Args... ) const noexcept >( &_Generic::operator() );
 				}
 
 				else

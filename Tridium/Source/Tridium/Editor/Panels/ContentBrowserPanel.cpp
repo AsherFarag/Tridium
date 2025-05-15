@@ -155,7 +155,7 @@ namespace Tridium {
 
 			EFileType type = EFileType::Folder;
 			if ( !directoryEntry.is_directory() )
-				type = static_cast<EFileType>( GetAssetTypeFromFileExtension( directoryEntry.path().extension().string() ) );
+				type = Cast<EFileType>( GetAssetTypeFromFileExtension( directoryEntry.path().extension().string() ) );
 
 			AssetMetaData metaData = EditorAssetManager::Get()->GetAssetMetaData( filePath );
 
@@ -639,7 +639,7 @@ namespace Tridium {
 		else // Must be an Unimported Asset
 			icon = ContentItemIcons::s_UnimportedAssetIcon;
 
-		const AssetTypeInfo& typeInfo = AssetTypeManager::GetAssetTypeInfo( static_cast<EAssetType>( Type ) );
+		const AssetTypeInfo& typeInfo = AssetTypeManager::GetAssetTypeInfo( Cast<EAssetType>( Type ) );
 		ImVec4 color = ImVec4( typeInfo.Color.x, typeInfo.Color.y, typeInfo.Color.z, typeInfo.Color.w );
 
 		RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), color, a_Size );

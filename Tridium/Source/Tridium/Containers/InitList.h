@@ -31,7 +31,7 @@ namespace Tridium {
 
         [[nodiscard]] constexpr const T* End() const noexcept { return m_Last; }
 
-        [[nodiscard]] constexpr size_t Size() const noexcept { return static_cast<size_t>(m_Last - m_First); }
+        [[nodiscard]] constexpr size_t Size() const noexcept { return Cast<size_t>(m_Last - m_First); }
 
 		constexpr operator std::initializer_list<T>() const noexcept {
 			return std::initializer_list<T>( m_First, m_Last );

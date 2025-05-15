@@ -230,7 +230,7 @@ namespace Tridium {
 				int goID = m_FBO->ReadPixel( 0, mouseX, mouseY );
 				m_IDFBO->Unbind();
 
-				Editor::Events::OnGameObjectSelected.Broadcast( static_cast<EntityID>( goID ) );
+				Editor::Events::OnGameObjectSelected.Broadcast( Cast<EntityID>( goID ) );
 			}
 		}
 
@@ -369,7 +369,7 @@ namespace Tridium {
 				if ( !meshSource )
 					return;
 
-				m_GameObjectIDShader->SetInt( "uID", static_cast<uint32_t>( go ) );
+				m_GameObjectIDShader->SetInt( "uID", Cast<uint32_t>( go ) );
 				for ( uint32_t subMeshIndex : mesh->GetSubMeshes() )
 				{
 					const SubMesh& subMesh = meshSource->GetSubMeshes()[subMeshIndex];

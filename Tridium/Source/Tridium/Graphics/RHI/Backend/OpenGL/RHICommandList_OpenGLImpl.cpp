@@ -418,7 +418,7 @@ namespace Tridium::OpenGL {
 	void RHICommandList_OpenGLImpl::DrawIndexed( const RHICommand::DrawIndexed& a_Data )
 	{
 		TODO( "Fix index start i fink" );
-		OpenGL2::DrawElements( GLState::s_BoundPrimitiveTopology, a_Data.IndexCount, GL_UNSIGNED_INT, reinterpret_cast<const void*>( a_Data.IndexStart ) );
+		OpenGL2::DrawElements( GLState::s_BoundPrimitiveTopology, a_Data.IndexCount, GL_UNSIGNED_INT, ReinterpretCast<const void*>( a_Data.IndexStart ) );
 	}
 
 	void RHICommandList_OpenGLImpl::SetComputePipelineState( const RHICommand::SetComputePipelineState& a_Data )

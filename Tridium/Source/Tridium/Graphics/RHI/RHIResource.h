@@ -211,7 +211,7 @@ namespace Tridium {
 		constexpr _Descriptor& SetName( StringView a_Name )
 		{
 			Name = a_Name;
-			return static_cast<_Descriptor&>( *this );
+			return Cast<_Descriptor&>( *this );
 		}
 	};
 

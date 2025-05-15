@@ -343,8 +343,8 @@ namespace Tridium::D3D12 {
 
 		// Update the resource state
 		a_Cmd.Barrier.Resource->GetType() == ERHIResourceType::Texture ?
-			static_cast<RHITexture_D3D12Impl*>( a_Cmd.Barrier.Resource )->SetState( a_Cmd.Barrier.After ) :
-			static_cast<RHIBuffer_D3D12Impl*>( a_Cmd.Barrier.Resource )->SetState( a_Cmd.Barrier.After );
+			Cast<RHITexture_D3D12Impl*>( a_Cmd.Barrier.Resource )->SetState( a_Cmd.Barrier.After ) :
+			Cast<RHIBuffer_D3D12Impl*>( a_Cmd.Barrier.Resource )->SetState( a_Cmd.Barrier.After );
 	}
 
 	void RHICommandList_D3D12Impl::UpdateBuffer( const RHICommand::UpdateBuffer& a_Cmd )
@@ -497,11 +497,11 @@ namespace Tridium::D3D12 {
 		// Copy data to upload buffer
 		{
 			char* uploadBufferAddress = nullptr;
-			D3D12_RANGE mapRange = { 0, static_cast<SIZE_T>(requiredSize) };
-			uploadBuffer.Resource->Map( 0, &mapRange, reinterpret_cast<void**>(&uploadBufferAddress) );
+			D3D12_RANGE mapRange = { 0, Cast<SIZE_T>(requiredSize) };
+			uploadBuffer.Resource->Map( 0, &mapRange, ReinterpretCast<void**>(&uploadBufferAddress) );
 
 			const uint8_t* srcData = a_Cmd.Data.Data.data();
-			uint8_t* dstData = reinterpret_cast<uint8_t*>(uploadBufferAddress);
+			uint8_t* dstData = ReinterpretCast<uint8_t*>(uploadBufferAddress);
 			// We copy row by row, slice by slice here because the GPU layout may be different from the CPU layout
 			for ( uint32_t z = 0; z < footprint.Footprint.Depth; ++z )
 			{
@@ -756,7 +756,7 @@ namespace Tridium::D3D12 {
 		static_assert( offsetof( RHIViewport, MinDepth ) == offsetof( D3D12_VIEWPORT, MinDepth ) );
 		static_assert( offsetof( RHIViewport, MaxDepth ) == offsetof( D3D12_VIEWPORT, MaxDepth ) );
 
-		GraphicsCommandList()->RSSetViewports( a_Cmd.Viewports.Size(), reinterpret_cast<const D3D12_VIEWPORT*>( a_Cmd.Viewports.Data() ) );
+		GraphicsCommandList()->RSSetViewports( a_Cmd.Viewports.Size(), ReinterpretCast<const D3D12_VIEWPORT*>( a_Cmd.Viewports.Data() ) );
 	}
 
 	void RHICommandList_D3D12Impl::SetIndexBuffer( const RHICommand::SetIndexBuffer& a_Cmd )
@@ -774,7 +774,7 @@ namespace Tridium::D3D12 {
 
 		D3D12_INDEX_BUFFER_VIEW ibv{};
 		ibv.BufferLocation = a_Cmd.IBO->As<RHIBuffer_D3D12Impl>()->ManagedBuffer.Resource->GetGPUVirtualAddress();
-		ibv.SizeInBytes = static_cast<UINT>( a_Cmd.IBO->As<RHIBuffer_D3D12Impl>()->ManagedBuffer.Resource->GetDesc().Width );
+		ibv.SizeInBytes = Cast<UINT>( a_Cmd.IBO->As<RHIBuffer_D3D12Impl>()->ManagedBuffer.Resource->GetDesc().Width );
 		ibv.Format = D3D12::Translate( a_Cmd.IBO->Descriptor().Format );
 		GraphicsCommandList()->IASetIndexBuffer( &ibv );
 	}
@@ -794,7 +794,7 @@ namespace Tridium::D3D12 {
 
 		D3D12_VERTEX_BUFFER_VIEW vbv{};
 		vbv.BufferLocation = a_Cmd.VBO->As<RHIBuffer_D3D12Impl>()->ManagedBuffer.Resource->GetGPUVirtualAddress();
-		vbv.SizeInBytes = static_cast<UINT>( a_Cmd.VBO->As<RHIBuffer_D3D12Impl>()->ManagedBuffer.Resource->GetDesc().Width );
+		vbv.SizeInBytes = Cast<UINT>( a_Cmd.VBO->As<RHIBuffer_D3D12Impl>()->ManagedBuffer.Resource->GetDesc().Width );
 		vbv.StrideInBytes = m_State.Graphics.PSO->Descriptor().VertexLayout.Stride;
 		GraphicsCommandList()->IASetVertexBuffers( 0, 1, &vbv );
 	}

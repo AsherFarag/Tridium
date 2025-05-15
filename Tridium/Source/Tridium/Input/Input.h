@@ -36,9 +36,9 @@ namespace Tridium {
 		static Input* Get() { return s_Instance.get(); }
 
 		// Returns true if this key is down this frame
-		inline static bool IsKeyPressed( EInputKey a_Keycode ) { return Get()->IsKeyPressedImpl( static_cast<int>( a_Keycode ) ); }
+		inline static bool IsKeyPressed( EInputKey a_Keycode ) { return Get()->IsKeyPressedImpl( Cast<int>( a_Keycode ) ); }
 
-        inline static bool IsMouseButtonPressed( EInputMouseButton a_Button ) { return Get()->IsMouseButtonPressedImpl( static_cast<int>( a_Button ) ); }
+        inline static bool IsMouseButtonPressed( EInputMouseButton a_Button ) { return Get()->IsMouseButtonPressedImpl( Cast<int>( a_Button ) ); }
 		inline static Vector2 GetMousePosition() { return Get()->GetMousePositionImpl(); }
 		inline static float GetMouseX() { return Get()->GetMouseXImpl(); }
 		inline static float GetMouseY() { return Get()->GetMouseYImpl(); }

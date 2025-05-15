@@ -63,7 +63,7 @@ namespace Tridium {
 			// If panel already exists
 			if ( auto it = m_Panels.find( typeHash ); it != m_Panels.end() )
 			{
-				return static_cast<T*>( it->second );
+				return Cast<T*>( it->second );
 			}
 
 			T* newPanel = new T( std::forward<Args>( args )... );
@@ -83,7 +83,7 @@ namespace Tridium {
 			// If panel exists
 			if ( auto it = m_Panels.find( typeHash ); it != m_Panels.end() )
 			{
-				return static_cast<T*>( it->second );
+				return Cast<T*>( it->second );
 			}
 
 			LOG( LogCategory::Editor, Warn, "Attempted to pull non-existent panel!" );
@@ -113,7 +113,7 @@ namespace Tridium {
 			// If panel exists
 			if ( auto it = m_Panels.find( typeHash ); it != m_Panels.end() )
 			{
-				return static_cast<T*>( it->second );
+				return Cast<T*>( it->second );
 			}
 
 			return nullptr;
@@ -128,7 +128,7 @@ namespace Tridium {
 			// If panel exists
 			if ( auto it = m_Panels.find( typeHash ); it != m_Panels.end() )
 			{
-				return static_cast<T*>( it->second );
+				return Cast<T*>( it->second );
 			}
 
 			T* newPanel = new T();

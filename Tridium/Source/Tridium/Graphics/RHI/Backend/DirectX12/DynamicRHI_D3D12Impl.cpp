@@ -88,7 +88,7 @@ namespace Tridium::D3D12 {
 			// Set up the command context and set the command queue type
 			CommandContext& cmdCtx = m_CmdContexts[i];
 
-			ERHICommandQueueType cmdQueueType = static_cast<ERHICommandQueueType>( i );
+			ERHICommandQueueType cmdQueueType = Cast<ERHICommandQueueType>( i );
 			D3D12_COMMAND_LIST_TYPE d3d12CmdListType;
 			switch ( cmdQueueType )
 			{

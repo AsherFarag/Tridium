@@ -56,7 +56,7 @@ namespace Tridium::D3D12 {
 			CommandContext& copyCmdCtx = GetD3D12RHI()->GetCommandContext( ERHICommandQueueType::Copy );
 
 			UINT64 uploadBufferSize = 0;
-			UINT numSubresources = static_cast<UINT>( a_SubResourcesData.size() );
+			UINT numSubresources = Cast<UINT>( a_SubResourcesData.size() );
 
 			Array<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> layouts;
 			Array<UINT> numRows;
@@ -97,8 +97,8 @@ namespace Tridium::D3D12 {
 			for ( UINT i = 0; i < numSubresources; ++i )
 			{
 				d3d12SubResData[i].pData = a_SubResourcesData[i].Data.data();
-				d3d12SubResData[i].RowPitch = static_cast<LONG_PTR>( a_SubResourcesData[i].RowStride );
-				d3d12SubResData[i].SlicePitch = static_cast<LONG_PTR>( a_SubResourcesData[i].DepthStride );
+				d3d12SubResData[i].RowPitch = Cast<LONG_PTR>( a_SubResourcesData[i].RowStride );
+				d3d12SubResData[i].SlicePitch = Cast<LONG_PTR>( a_SubResourcesData[i].DepthStride );
 			}
 
 			// Ensure the copy command list is reset
@@ -160,7 +160,7 @@ namespace Tridium::D3D12 {
 		desc.Width = UINT{ m_Desc.Width };
 		desc.Height = UINT{ m_Desc.Height };
 		desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-		desc.MipLevels = static_cast<UINT16>( m_Desc.Mips );
+		desc.MipLevels = Cast<UINT16>( m_Desc.Mips );
 		desc.SampleDesc.Count = UINT{ m_Desc.Samples };
 		desc.SampleDesc.Quality = 0;
 

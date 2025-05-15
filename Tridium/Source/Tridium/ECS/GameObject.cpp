@@ -16,7 +16,7 @@ namespace Tridium {
             if ( componentStorage.contains( m_ID ) )
                 components.EmplaceBack( 
                     Refl::ResolveMetaType( componentStorage.type() ),
-                    static_cast<Component*>( componentStorage.value( m_ID ) )
+                    Cast<Component*>( componentStorage.value( m_ID ) )
                 );
 		}
 

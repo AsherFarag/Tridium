@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <limits.h>
+#include "Cast.h"
 
 #define NON_COPYABLE( Type )\
     Type( const Type& ) = delete;\

@@ -207,7 +207,7 @@ namespace Tridium {
     void JoltDebugRenderer::DrawGeometry( RMat44Arg inModelMatrix, const AABox& inWorldSpaceBounds, float inLODScaleSq, ColorArg inModelColor, const GeometryRef& inGeometry, ECullMode inCullMode, ECastShadow inCastShadow, EDrawMode inDrawMode )
 	{
 		const JPH::Array<LOD>& geometryLods = inGeometry->mLODs;
-		TriangleData* triangleBatch = static_cast<TriangleData*>( geometryLods[0].mTriangleBatch.GetPtr() );
+		TriangleData* triangleBatch = Cast<TriangleData*>( geometryLods[0].mTriangleBatch.GetPtr() );
 		m_GeometryCalls.emplace_back( triangleBatch, Util::ToTridiumMat4( inModelMatrix ) );
     }
 

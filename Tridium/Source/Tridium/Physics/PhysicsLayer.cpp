@@ -7,7 +7,7 @@ namespace Tridium {
 	PhysicsLayerMask::PhysicsLayerMask()
 	{
 	}
-	PhysicsLayerMask::PhysicsLayerMask( const std::bitset<static_cast<size_t>( EPhysicsLayer::NUM_LAYERS )>& a_LayerMask )
+	PhysicsLayerMask::PhysicsLayerMask( const std::bitset<Cast<size_t>( EPhysicsLayer::NUM_LAYERS )>& a_LayerMask )
 		: m_LayerMask( a_LayerMask ) {}
 
 

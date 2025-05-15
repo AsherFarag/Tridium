@@ -196,7 +196,7 @@ namespace Tridium {
 				ImGui::PopStyleColor();
 			}
 
-			ImGui::PushID( ImGui::GetID( static_cast<const void*>( a_Node.Name ) ) );
+			ImGui::PushID( ImGui::GetID( Cast<const void*>( a_Node.Name ) ) );
 			ImGui::BeginGroup();
 			{
 				// Draw Icon
@@ -540,7 +540,7 @@ namespace Tridium {
 						bool useScaleLock = false;
 						{
 							ImGuiStorage* storage = ImGui::GetStateStorage();
-							ImGuiID id = ImGui::GetID( reinterpret_cast<const void*>( a_GO.ID() ) );
+							ImGuiID id = ImGui::GetID( ReinterpretCast<const void*>( a_GO.ID() ) );
 							useScaleLock = storage->GetBool( id, false );
 							ImGui::SameLine();
 							ImGui::PushID( "Lock" );
@@ -630,7 +630,7 @@ namespace Tridium {
 			if ( s_BlacklistedComponents.contains( metaType.ID() ) )
 				continue;
 
-			NativeScriptComponent* asNative = metaType.IsBaseOf( Refl::ResolveMetaType<NativeScriptComponent>() ) ? static_cast<NativeScriptComponent*>( component ) : nullptr;
+			NativeScriptComponent* asNative = metaType.IsBaseOf( Refl::ResolveMetaType<NativeScriptComponent>() ) ? Cast<NativeScriptComponent*>( component ) : nullptr;
 
 			const char* icon = s_ComponentIcons.contains( metaType.ID() ) ? s_ComponentIcons.at( metaType.ID() ) : TE_ICON_GEARS;
 			const char* className = Helpers::GetCleanClassName( metaType.GetCleanTypeName() );
@@ -748,7 +748,7 @@ namespace Tridium {
 		{
 			if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_CONTENT_BROWSER_ITEM ) )
 			{
-				FilePath filePath( static_cast<const char*>( payload->Data ) );
+				FilePath filePath( Cast<const char*>( payload->Data ) );
 				auto ext = filePath.GetExtension();
 
 				TODO( "DragDrop Add Component" );

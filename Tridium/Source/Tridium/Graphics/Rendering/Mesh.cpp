@@ -81,7 +81,7 @@ namespace Tridium {
 			m_BoundingBox = meshSourceRef->GetBoundingBox();
 
 			const std::vector<MaterialHandle>& meshMaterials = meshSourceRef->GetMaterials();
-			uint32_t numMaterials = static_cast<uint32_t>( meshMaterials.size() );
+			uint32_t numMaterials = Cast<uint32_t>( meshMaterials.size() );
 			m_Materials.resize( numMaterials );
 			for ( uint32_t i = 0; i < numMaterials; i++ )
 				m_Materials[i] = meshMaterials[i];
@@ -114,7 +114,7 @@ namespace Tridium {
 			}
 
 			const std::vector<MaterialHandle>& meshMaterials = meshSourceRef->GetMaterials();
-			uint32_t numMaterials = static_cast<uint32_t>( meshMaterials.size() );
+			uint32_t numMaterials = Cast<uint32_t>( meshMaterials.size() );
 			m_Materials.resize( numMaterials );
 			for ( uint32_t i = 0; i < numMaterials; i++ )
 				m_Materials[i] = meshMaterials[i];

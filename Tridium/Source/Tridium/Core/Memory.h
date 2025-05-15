@@ -85,7 +85,7 @@ namespace Tridium {
 		using Deleter = void( * )( void* );
 
 		template<typename T>
-		static constexpr Deleter DefaultDeleter() { return +[]( void* a_Ptr ) { delete static_cast<T*>( a_Ptr ); }; }
+		static constexpr Deleter DefaultDeleter() { return +[]( void* a_Ptr ) { delete Cast<T*>( a_Ptr ); }; }
 
 		OpaquePtr() = default;
 		OpaquePtr( std::nullptr_t ) {}
@@ -152,7 +152,7 @@ namespace Tridium {
 		}
 
 		template<typename T>
-		T* Get() const { return static_cast<T*>( Get() ); }
+		T* Get() const { return Cast<T*>( Get() ); }
 
 		template<typename T>
 		void Reset( T* a_Ptr, Deleter a_Deleter = DefaultDeleter<T>() )

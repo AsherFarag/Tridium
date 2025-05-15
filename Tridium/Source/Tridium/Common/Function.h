@@ -150,7 +150,7 @@ namespace Tridium {
 			{
 				m_Function = []( const void* a_Instance, _Args... a_Args ) -> ReturnType
 					{
-						return (static_cast<_InstanceType*>(const_cast<void*>(a_Instance))->*_Function)(a_Args...);
+						return (Cast<_InstanceType*>(ConstCast<void*>(a_Instance))->*_Function)(a_Args...);
 					};
 			}
 			else
@@ -270,7 +270,7 @@ namespace Tridium {
 
 		bool Valid() const
 		{
-			return static_cast<bool>(m_Function);
+			return Cast<bool>(m_Function);
 		}
 
 		void Reset()

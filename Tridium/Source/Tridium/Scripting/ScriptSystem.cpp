@@ -36,7 +36,7 @@ namespace Tridium {
 				const auto& event = std::get<OnComponentCreatedEvent>( a_Event.EventData );
 				if ( event.ComponentTypeID == Refl::ResolveMetaType<LuaScriptComponent>().ID() )
 				{
-					InitLuaScriptComponent( *static_cast<LuaScriptComponent*>( event.Component ) );
+					InitLuaScriptComponent( *Cast<LuaScriptComponent*>( event.Component ) );
 				}
 				break;
 			}
@@ -45,7 +45,7 @@ namespace Tridium {
 				const auto& event = std::get<OnComponentDestroyedEvent>( a_Event.EventData );
 				if ( event.ComponentTypeID == Refl::ResolveMetaType<LuaScriptComponent>().ID() )
 				{
-					OnLuaScriptComponentDestroyed( *static_cast<LuaScriptComponent*>( event.Component ) );
+					OnLuaScriptComponentDestroyed( *Cast<LuaScriptComponent*>( event.Component ) );
 				}
 				break;
 			}
@@ -113,7 +113,7 @@ namespace Tridium {
 		a_Component.m_Environment.set_on( scriptFunc );
 
 		// Add local variables to the environment.
-		a_Component.m_Environment["gameObject"] = static_cast<GameObject>( a_Component.GetGameObject() );
+		a_Component.m_Environment["gameObject"] = Cast<GameObject>( a_Component.GetGameObject() );
 		TransformComponent& transform = a_Component.GetGameObject().GetTransform();
 		a_Component.m_Environment["transform"] = &transform;
 
