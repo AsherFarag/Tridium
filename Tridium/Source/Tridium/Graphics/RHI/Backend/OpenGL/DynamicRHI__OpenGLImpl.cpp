@@ -32,7 +32,8 @@ namespace Tridium::OpenGL {
 			OpenGL4::Enable( GL_DEBUG_OUTPUT );
 			OpenGL4::Enable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
 			OpenGL4::DebugMessageCallback( DebugCallback, nullptr );
-			OpenGL4::DebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE );
+			// Disable Detailed info logs
+			OpenGL4::DebugMessageControl( GL_DONT_CARE, GL_DEBUG_TYPE_OTHER, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE );
 		}
 	#endif
 
@@ -43,9 +44,6 @@ namespace Tridium::OpenGL {
 		OpenGL1::Enable( GL_BLEND );
 		OpenGL1::BlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 		OpenGL1::Enable( GL_TEXTURE_CUBE_MAP_SEAMLESS );
-
-		const GLubyte* stringVer = OpenGL1::GetString( GL_VERSION );
-		LOG( LogCategory::OpenGL, Info, "OpenGL Version: {0}", ReinterpretCast<const char*>( stringVer ) );
 
 		return true;
 	}
@@ -113,6 +111,161 @@ namespace Tridium::OpenGL {
 	RHISwapChainRef DynamicRHI_OpenGLImpl::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )
 	{
 		return RHI::CreateNativeResource<RHISwapChain_OpenGLImpl>( a_Desc );
+	}
+
+	GPUInfo DynamicRHI_OpenGLImpl::GetGPUInfo() const
+	{
+		GPUInfo gpuInfo{};
+
+		// Vendor ID
+		{
+			TODO( "This is a temp hack and does not handle all Vendors" );
+			static const UnorderedMap<StringView, EGPUVendorID> vendorMap =
+			{
+				{ "NVIDIA Corporation", EGPUVendorID::Nvidia },
+				{ "Intel", EGPUVendorID::Intel },
+				{ "AMD", EGPUVendorID::Amd },  { "ATI", EGPUVendorID::Amd },
+				{ "Apple", EGPUVendorID::Apple },
+				{ "Qualcomm", EGPUVendorID::Qualcomm },
+				{ "ARM", EGPUVendorID::Arm },
+				{ "Microsoft", EGPUVendorID::Microsoft },
+			};
+
+			const GLubyte* vendor = OpenGL1::GetString( GL_VENDOR );
+			StringView vendorStr = ReinterpretCast<const char*>( vendor );
+			auto it = vendorMap.find( vendorStr );
+			if ( it != vendorMap.end() )
+			{
+				gpuInfo.VendorID = Cast<uint32_t>( it->second );
+			}
+			else
+			{
+				gpuInfo.VendorID = Cast<uint32_t>( EGPUVendorID::Unknown );
+				LOG( LogCategory::RHI, Error, "Unknown GPU Vendor: {0}", vendorStr );
+			}
+		}
+
+		// Device Name
+		{
+			const GLubyte* deviceName = OpenGL1::GetString( GL_RENDERER );
+			gpuInfo.DeviceName = ReinterpretCast<const char*>( deviceName );
+		}
+
+		// Driver Version
+		{
+			const GLubyte* driverVersion = OpenGL1::GetString( GL_VERSION );
+			gpuInfo.DriverVersion = ReinterpretCast<const char*>( driverVersion );
+		}
+
+		// VRAM Total
+		{
+			switch ( Cast<EGPUVendorID>( gpuInfo.VendorID ) )
+			{
+				case EGPUVendorID::Nvidia:
+				{
+				#ifndef GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX 
+					#define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX 0x9049
+				#endif
+					int vram = 0;
+					OpenGL1::GetIntegerv( GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &vram );
+					gpuInfo.VRAMBytes = Cast<size_t>( vram ) * 1024 * 1024;
+				}
+				break;
+				case EGPUVendorID::Amd:
+				{
+				#ifndef TEXTURE_FREE_MEMORY_ATI
+					#define TEXTURE_FREE_MEMORY_ATI 0x87FC
+				#endif
+					int vram = 0;
+					OpenGL1::GetIntegerv( TEXTURE_FREE_MEMORY_ATI, &vram );
+					gpuInfo.VRAMBytes = Cast<size_t>( vram ) * 1024 * 1024;
+				}
+				break;
+			}
+		}
+
+		// Features
+		{
+			// Get the highest shader model supported
+			StringView versionStr = ReinterpretCast<const char*>( OpenGL1::GetString( GL_SHADING_LANGUAGE_VERSION ) );
+			char majorVersion = 0;
+			char minorVersion = 0;
+			if ( versionStr.size() >= 4 )
+			{
+				// Version string format: "4.50 NVIDIA 470.57.02"
+				// Major version == 4
+				// Minor version == 50
+				majorVersion = versionStr[0];
+				minorVersion = versionStr[2];
+				switch ( majorVersion )
+				{
+				case '4':
+				{
+					switch ( minorVersion )
+					{
+					case '3':
+					{
+						// GLSL 4.3 is equivalent to D3D Shader Model 5.0
+						// From: https://www.khronos.org/opengl/wiki/Detecting_the_Shader_Model
+						gpuInfo.DeviceFeatures.HighestShaderModel = ERHIShaderModel::SM_5_0;
+						break;
+					}
+					default:
+					{
+						TODO( "Add some better version checking here" );
+						gpuInfo.DeviceFeatures.HighestShaderModel = ERHIShaderModel::SM_6_0;
+						break;
+					}
+					}
+					break;
+				}
+				default:
+				{
+					// Default to the minimum shader model
+					LOG( LogCategory::RHI, Error, "Unknown shader model version in '{0}', setting Highest Shader Model to SM_5_0", versionStr );
+					gpuInfo.DeviceFeatures.HighestShaderModel = ERHIShaderModel::SM_5_0;
+					break;
+				}
+				}
+
+				LOG( LogCategory::RHI, Info, 
+					"OpenGL Shader Model '{0}.{1}', setting Highest Shader Model to 'ERHIShaderModel::{2}'",
+					majorVersion, minorVersion, ToString( gpuInfo.DeviceFeatures.HighestShaderModel ) );
+			}
+			else
+			{
+				gpuInfo.DeviceFeatures.HighestShaderModel = ERHIShaderModel::SM_5_0;
+				LOG( LogCategory::RHI, Error, "Failed to parse shader model version: '{0}', setting Highest Shader Model to SM_5_0", versionStr );
+			}
+
+			constexpr auto SupportsFeature = []( const char* a_Name ) -> bool
+				{
+					GLint nExtensions = 0;
+					OpenGL1::GetIntegerv( GL_NUM_EXTENSIONS, &nExtensions );
+					for ( GLint i = 0; i < nExtensions; ++i )
+					{
+						const char* ext = (const char*)OpenGL3::GetStringi( GL_EXTENSIONS, i );
+						if ( std::strcmp( ext, a_Name ) == 0 )
+							return true;
+					}
+
+					return false;
+				};
+
+		#define InitFeature( _Feature, _Support ) \
+			gpuInfo.DeviceFeatures.Features[Cast<uint8_t>( _Feature )].SetSupport( ( _Support ) ? ERHIFeatureSupport::Supported : ERHIFeatureSupport::Unsupported )
+
+			using enum ERHIFeature;
+			InitFeature( ComputeShaders, SupportsFeature( "GL_ARB_compute_shader" ) );
+			InitFeature( MeshShaders, SupportsFeature( "GL_NV_mesh_shader" ) );
+			InitFeature( Tesselation, SupportsFeature( "GL_ARB_tessellation_shader" ) );
+			InitFeature( RayTracing, SupportsFeature( "GL_NV_ray_tracing" ) );
+			InitFeature( BindlessResources, SupportsFeature( "GL_ARB_bindless_texture" ) );
+
+		#undef InitFeature
+		}
+
+		return gpuInfo;
 	}
 
 	//////////////////////////////////////////////////////////////////////////

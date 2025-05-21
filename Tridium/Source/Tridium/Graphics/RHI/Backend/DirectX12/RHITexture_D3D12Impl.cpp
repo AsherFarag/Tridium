@@ -49,7 +49,7 @@ namespace Tridium::D3D12 {
 			return;
 		}
 
-		D3D12_SET_DEBUG_NAME( Texture.Resource, a_Desc.Name );
+		D3D12_SET_DEBUG_NAME( Texture.Resource, m_Desc.Name, L"Unnamed Texture" );
 
 		if ( initData )
 		{
@@ -116,8 +116,8 @@ namespace Tridium::D3D12 {
 
 			UpdateSubresources(
 				copyCmdCtx.CmdList.Get(),
-				Texture.Resource.Get(),
-				uploadBuffer.Resource.Get(),
+				Texture.Resource,
+				uploadBuffer.Resource,
 				0, 0,
 				numSubresources,
 				d3d12SubResData.Data()
@@ -144,7 +144,7 @@ namespace Tridium::D3D12 {
 
 	size_t RHITexture_D3D12Impl::GetSizeInBytes() const
 	{
-		if ( !IsValid() )
+		if ( !Valid() )
 			return 0;
 
 		D3D12_RESOURCE_DESC desc = Texture.Resource->GetDesc();
@@ -201,7 +201,7 @@ namespace Tridium::D3D12 {
 
 	bool RHITexture_D3D12Impl::Write( const Span<const Byte>& a_Data )
 	{
-		if ( !IsValid() ) return false;
+		if ( !Valid() ) return false;
 
 		auto* rhi = GetD3D12RHI();
 		const auto& device = rhi->GetDevice();
@@ -279,7 +279,7 @@ namespace Tridium::D3D12 {
 
 	bool RHITexture_D3D12Impl::IsWritable() const
 	{
-		if ( !IsValid() )
+		if ( !Valid() )
 		{
 			return false;
 		}
@@ -289,7 +289,7 @@ namespace Tridium::D3D12 {
 
 	bool RHITexture_D3D12Impl::Resize( uint32_t a_Width, uint32_t a_Height, uint32_t a_Depth )
 	{
-		if ( !IsValid() )
+		if ( !Valid() )
 		{
 			return false;
 		}
@@ -310,7 +310,7 @@ namespace Tridium::D3D12 {
 
 	bool RHITexture_D3D12Impl::IsReady() const
 	{
-		if ( !IsValid() 
+		if ( !Valid() 
 			|| GetD3D12RHI()->GetCopyFence()->GetCompletedValue() < m_CopyFenceValue )
 		{
 			return false;
@@ -321,7 +321,7 @@ namespace Tridium::D3D12 {
 
 	void RHITexture_D3D12Impl::Wait()
 	{
-		if ( !IsValid() )
+		if ( !Valid() )
 		{
 			return;
 		}
@@ -339,7 +339,7 @@ namespace Tridium::D3D12 {
 		uint32_t a_DstMipLevel, uint32_t a_DstArraySlice, Box a_DstRegion )
 	{
 		D3D12_TEXTURE_COPY_LOCATION dstLocation = {};
-		dstLocation.pResource = this->Texture.Resource.Get();
+		dstLocation.pResource = this->Texture.Resource;
 		dstLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 		dstLocation.SubresourceIndex = CalcSubresource(
 			a_DstRegion.MinZ, a_DstRegion.MinY, a_DstRegion.MinX,
@@ -347,7 +347,7 @@ namespace Tridium::D3D12 {
 		);
 
 		D3D12_TEXTURE_COPY_LOCATION srcLocation = {};
-		srcLocation.pResource = a_SrcTexture.Texture.Resource.Get();
+		srcLocation.pResource = a_SrcTexture.Texture.Resource;
 		srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 		srcLocation.SubresourceIndex = CalcSubresource(
 			a_SrcRegion.MinZ, a_SrcRegion.MinY, a_SrcRegion.MinX,

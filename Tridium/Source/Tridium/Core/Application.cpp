@@ -44,7 +44,11 @@ namespace Tridium {
 	
 	void Application::Run()
 	{
-		Init();
+		if ( !Init() )
+		{
+			LOG( LogCategory::Application, Fatal, "Failed to initialise the application" );
+			return;
+		}
 
 		m_Running = true;
 
@@ -115,11 +119,16 @@ namespace Tridium {
 		m_Window = Window::Create( props );
 		m_Window->SetEventCallback( [this]( const Event& a_Event ) { this->EnqueueEvent( a_Event ); } );
 
-		RHIConfig config;
-		config.RHIType = ERHInterfaceType::OpenGL;
+		RHIConfig config{};
+		config.RHIType = ERHInterfaceType::DirectX12;
 		config.UseDebug = true;
 		bool initSuccess = RHI::Initialise( config );
 		LOG( LogCategory::RHI, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), initSuccess );
+
+		LOG( LogCategory::RHI, Info, "RHI Vendor {0}", ToString( Cast<EGPUVendorID>( s_RHIGlobals.GPUInfo.VendorID ) ) );
+		LOG( LogCategory::RHI, Info, "RHI Device {0}", s_RHIGlobals.GPUInfo.DeviceName );
+		LOG( LogCategory::RHI, Info, "RHI Driver {0}", s_RHIGlobals.GPUInfo.DriverVersion );
+		LOG( LogCategory::RHI, Info, "RHI VRAM {0} MB", s_RHIGlobals.GPUInfo.VRAMBytes / 1024 / 1024 );
 
 		// TEMP!
 #if 1
@@ -194,6 +203,7 @@ namespace Tridium {
 			{
 				Vector3 Position;
 				Vector2 UV;
+				Vector3 Normal;
 			};
 			constexpr RHIVertexLayout layout = RHIVertexLayout::From<Vertex>();
 
@@ -212,47 +222,47 @@ namespace Tridium {
 			Vertex cubeVerts[] =
 			{
 				// Front
-				{ { -0.5f, -0.5f, 0.5f }, { 0.0f, 1.0f } },
-				{ { 0.5f, -0.5f,  0.5f }, { 1.0f, 1.0f } },
-				{ { -0.5f, 0.5f,  0.5f }, { 0.0f, 0.0f } },
-				{ { 0.5f, -0.5f,  0.5f }, { 1.0f, 1.0f } },
-				{ { 0.5f, 0.5f,   0.5f }, { 1.0f, 0.0f } },
-				{ { -0.5f, 0.5f,  0.5f }, { 0.0f, 0.0f } },
+				{ { -0.5f, -0.5f, 0.5f }, { 0.0f, 1.0f }, { 0.0f, 0.0f, 1.0f } },
+				{ { 0.5f, -0.5f,  0.5f }, { 1.0f, 1.0f }, { 0.0f, 0.0f, 1.0f } },
+				{ { -0.5f, 0.5f,  0.5f }, { 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
+				{ { 0.5f, -0.5f,  0.5f }, { 1.0f, 1.0f }, { 0.0f, 0.0f, 1.0f } },
+				{ { 0.5f, 0.5f,   0.5f }, { 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
+				{ { -0.5f, 0.5f,  0.5f }, { 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
 				// Back
-				{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } },
-				{ { -0.5f, 0.5f,  -0.5f }, { 0.0f, 0.0f } },
-				{ { 0.5f, -0.5f,  -0.5f }, { 1.0f, 1.0f } },
-				{ { 0.5f, -0.5f,  -0.5f }, { 1.0f, 1.0f } },
-				{ { -0.5f, 0.5f,  -0.5f }, { 0.0f, 0.0f } },
-				{ { 0.5f, 0.5f,   -0.5f }, { 1.0f, 0.0f } },
+				{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f }, { 0.0f, 0.0f, -1.0f } },
+				{ { -0.5f, 0.5f,  -0.5f }, { 0.0f, 0.0f }, { 0.0f, 0.0f, -1.0f } },
+				{ { 0.5f, -0.5f,  -0.5f }, { 1.0f, 1.0f }, { 0.0f, 0.0f, -1.0f } },
+				{ { 0.5f, -0.5f,  -0.5f }, { 1.0f, 1.0f }, { 0.0f, 0.0f, -1.0f } },
+				{ { -0.5f, 0.5f,  -0.5f }, { 0.0f, 0.0f }, { 0.0f, 0.0f, -1.0f } },
+				{ { 0.5f, 0.5f,   -0.5f }, { 1.0f, 0.0f }, { 0.0f, 0.0f, -1.0f } },
 				// Left
-				{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } },
-				{ { -0.5f, 0.5f,  -0.5f }, { 0.0f, 0.0f } },
-				{ { -0.5f, -0.5f, 0.5f }, { 1.0f, 1.0f } },
-				{ { -0.5f, -0.5f, 0.5f }, { 1.0f, 1.0f } },
-				{ { -0.5f, 0.5f,  -0.5f }, { 0.0f, 0.0f } },
-				{ { -0.5f, 0.5f,  0.5f }, { 1.0f, 0.0f } },
+				{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f }, { -1.0f, 0.0f, 0.0f } },
+				{ { -0.5f, 0.5f,  -0.5f }, { 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f } },
+				{ { -0.5f, -0.5f, 0.5f }, { 1.0f, 1.0f } , { -1.0f, 0.0f, 0.0f } },
+				{ { -0.5f, -0.5f, 0.5f }, { 1.0f, 1.0f } , { -1.0f, 0.0f, 0.0f } },
+				{ { -0.5f, 0.5f,  -0.5f }, { 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f } },
+				{ { -0.5f, 0.5f,  0.5f }, { 1.0f, 0.0f } , { -1.0f, 0.0f, 0.0f } },
 				// Right
-				{ { 0.5f, -0.5f, 0.5f }, { 0.0f, 1.0f } },
-				{ { 0.5f, 0.5f,  0.5f }, { 0.0f, 0.0f } },
-				{ { 0.5f, -0.5f, -0.5f }, { 1.0f, 1.0f } },
-				{ { 0.5f, -0.5f, -0.5f }, { 1.0f, 1.0f } },
-				{ { 0.5f, 0.5f,  0.5f }, { 0.0f, 0.0f } },
-				{ { 0.5f, 0.5f,  -0.5f }, { 1.0f, 0.0f } },
+				{ { 0.5f, -0.5f, 0.5f }, { 0.0f, 1.0f } , { 1.0f, 0.0f, 0.0f } },
+				{ { 0.5f, 0.5f,  0.5f }, { 0.0f, 0.0f } , { 1.0f, 0.0f, 0.0f } },
+				{ { 0.5f, -0.5f, -0.5f }, { 1.0f, 1.0f }, { 1.0f, 0.0f, 0.0f } },
+				{ { 0.5f, -0.5f, -0.5f }, { 1.0f, 1.0f }, { 1.0f, 0.0f, 0.0f } },
+				{ { 0.5f, 0.5f,  0.5f }, { 0.0f, 0.0f } , { 1.0f, 0.0f, 0.0f } },
+				{ { 0.5f, 0.5f,  -0.5f }, { 1.0f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
 				// Top
-				{ { -0.5f, 0.5f, 0.5f }, { 0.0f, 1.0f } },
-				{ { 0.5f, 0.5f,  0.5f }, { 1.0f, 1.0f } },
-				{ { -0.5f, 0.5f, -0.5f }, { 0.0f, 0.0f } },
-				{ { 0.5f, 0.5f,  0.5f }, { 1.0f, 1.0f } },
-				{ { 0.5f, 0.5f,  -0.5f }, { 1.0f, 0.0f } },
-				{ { -0.5f, 0.5f, -0.5f }, { 0.0f, 0.0f } },
+				{ { -0.5f, 0.5f, 0.5f }, { 0.0f, 1.0f } , { 0.0f, 1.0f, 0.0f } },
+				{ { 0.5f, 0.5f,  0.5f }, { 1.0f, 1.0f } , { 0.0f, 1.0f, 0.0f } },
+				{ { -0.5f, 0.5f, -0.5f }, { 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
+				{ { 0.5f, 0.5f,  0.5f }, { 1.0f, 1.0f } , { 0.0f, 1.0f, 0.0f } },
+				{ { 0.5f, 0.5f,  -0.5f }, { 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
+				{ { -0.5f, 0.5f, -0.5f }, { 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
 				// Bottom
-				{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } },
-				{ { 0.5f, -0.5f,  -0.5f }, { 1.0f, 1.0f } },
-				{ { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f } },
-				{ { 0.5f, -0.5f,  -0.5f }, { 1.0f, 1.0f } },
-				{ { 0.5f, -0.5f,  0.5f }, { 1.0f, 0.0f } },
-				{ { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f } }
+				{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } , { 0.0f, -1.0f, 0.0f }},
+				{ { 0.5f, -0.5f,  -0.5f }, { 1.0f, 1.0f } , { 0.0f, -1.0f, 0.0f }},
+				{ { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f }  , { 0.0f, -1.0f, 0.0f }},
+				{ { 0.5f, -0.5f,  -0.5f }, { 1.0f, 1.0f } , { 0.0f, -1.0f, 0.0f }},
+				{ { 0.5f, -0.5f,  0.5f }, { 1.0f, 0.0f }  , { 0.0f, -1.0f, 0.0f }},
+				{ { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f }  , { 0.0f, -1.0f, 0.0f }}
 			};
 
 			// - Create a Vertex Buffer -
@@ -268,34 +278,50 @@ namespace Tridium {
 			StringView vertCode = R"(
 #include "Globals.hlsli"
 
-struct InlinedConstants
+struct Light
 {
-	// Vertex Shader
-	float4x4 PVM;
-
-	// Pixel Shader
 	float4 Colour;
+	float3 Position;
+	float Intensity;
 };
 
-INLINED_CONSTANT( inlinedConstants, InlinedConstants );
+struct InlinedConstants
+{
+	float4x4 PVM;
+	float4x4 Model;
+};
+
+INLINED_CONSTANTS( inlinedConstants, InlinedConstants );
+
+struct Constants
+{
+	Light LightData;
+};
+
+CONSTANT_BUFFER( constants, Constants, 1 );
 
 struct Vertex
 {
 	float3 Position : Position;
 	float2 UV : UV;
+	float3 Normal : Normal;
 };
 
 struct VSOutput
 {
     float4 pos : SV_Position;  
+	float3 worldPos : WORLD_POSITION;
 	float2 uv : TEXCOORD;
+	float3 normal : NORMAL;
 };
 
-VSOutput main( Vertex a_Vertex ) 
+VSOutput VSMain( Vertex a_Vertex ) 
 {
 	VSOutput output;
+	output.worldPos = mul( float4( a_Vertex.Position, 1.0f ), inlinedConstants.Model ).xyz;
 	output.pos = mul( float4( a_Vertex.Position, 1.0f ), inlinedConstants.PVM );
 	output.uv = a_Vertex.UV;
+	output.normal = a_Vertex.Normal;
 	return output;
 }
 )";
@@ -303,35 +329,72 @@ VSOutput main( Vertex a_Vertex )
 			StringView pixelCode = R"(
 #include "Globals.hlsli"
 
+struct Light
+{
+	float4 Colour;
+	float3 Position;
+	float Intensity;
+};
+
 struct InlinedConstants
 {
 	// Vertex Shader
 	float4x4 PVM;
-
-	// Pixel Shader
-	float4 Colour;
+	float4x4 Model;
 };
 
-INLINED_CONSTANT( inlinedConstants, InlinedConstants );
+INLINED_CONSTANTS( inlinedConstants, InlinedConstants );
+
+struct Constants
+{
+	Light LightData;
+};
+
+CONSTANT_BUFFER( constants, Constants, 1 );
 
 struct VSOutput
 {
     float4 pos : SV_Position;  
+	float3 worldPos : WORLD_POSITION;
 	float2 uv : TEXCOORD;
+	float3 normal : NORMAL;
 };
 
 COMBINED_SAMPLER( Texture, Texture2D, 0 );
 
-float4 main( VSOutput input ) : SV_Target
+float4 PSMain( VSOutput input ) : SV_Target
 {
-	return Sample( Texture, input.uv ) * inlinedConstants.Colour;
+	// Simple Phong Lighting
+	float3 normal = normalize( input.normal );
+	float3 lightDir = normalize( constants.LightData.Position - input.worldPos );
+	float3 viewDir = normalize( float3( 0.0f, 0.0f, -1.0f ) - input.worldPos );
+	float3 reflectDir = reflect( -lightDir, normal );
+	float3 ambient = 0.1f * constants.LightData.Colour.rgb;
+	float3 diffuse = max( dot( normal, lightDir ), 0.0f ) * constants.LightData.Colour.rgb;
+	float3 specular = 1000.0f * pow( max( dot( viewDir, reflectDir ), 0.0f ), 32.0f ) * constants.LightData.Colour.rgb;
+	float3 color = ambient + diffuse + specular;
+	color *= constants.LightData.Intensity;
+	//color *= Sample( Texture, input.uv ).rgb;
+	return float4( color, 1.0f );
 }
 )";
+
+			struct Light
+			{
+				float4 Colour;
+				float3 Position;
+				float Intensity;
+			};
 
 			struct InlinedConstants
 			{
 				float4x4 PVM;
-				float4 Colour;
+				float4x4 Model;
+			};
+
+			struct Constants
+			{
+				Light LightData;
 			};
 
 			RHIShaderModuleRef vertShader = ShaderLibrary::LoadShader( vertCode, "My vert shader", ERHIShaderType::Vertex );
@@ -341,17 +404,20 @@ float4 main( VSOutput input ) : SV_Target
 			RHIBindingLayoutDescriptor sblDesc;
 			sblDesc.Name = "My shader binding layout";
 			sblDesc.Visibility = ERHIShaderVisibility::All;
-			sblDesc.AddBinding( "Texture"_H ).AsCombinedSampler(0);
-			sblDesc.AddBinding( "inlinedConstants"_H ).AsInlinedConstants( 0, sizeof( InlinedConstants ) );
+			sblDesc.AddBinding( "inlinedConstants"_H ).AsInlinedConstants( 0, 128 );
+			sblDesc.AddBinding( "constants"_H ).AsConstantBuffer(1);
+			sblDesc.AddBinding( "Texture"_H ).AsCombinedSampler( 2 );
 
 
 			RHIBindingLayoutRef sbl = RHI::CreateBindingLayout( sblDesc );
 
-			RHIFramebufferInfo fbInfo;
-			fbInfo.SetColorFormats( { ERHIFormat::RGBA8_UNORM } );
+			RHIFramebufferInfo fbInfo{};
+			fbInfo.SetColorFormats( { ERHIFormat::RGBA8_UNORM }  );
+			fbInfo.SetDepthStencilFormat( ERHIFormat::D32_FLOAT );
 
 			// - Create pipeline state -
-			RHIGraphicsPipelineStateDescriptor psd;
+			RHIGraphicsPipelineStateDescriptor psd{};
+			psd.Topology = ERHITopology::Triangle;
 			psd.VertexShader = vertShader;
 			psd.PixelShader = pixelShader;
 			psd.FramebufferInfo = fbInfo;
@@ -372,13 +438,13 @@ float4 main( VSOutput input ) : SV_Target
 			depthDesc.Dimension = ERHITextureDimension::Texture2D;
 			RHITextureRef depthTex = RHI::CreateTexture( depthDesc );
 
-			RHICommandListRef cmdList = RHI::CreateCommandList( { "My beautiful command list" } );
+			RHICommandListRef cmdList = RHI::CreateCommandList( {} );
 
 			// Temp
 			float time = 0.0f;
 			const Color clearColor = Color{ 0.2f, 0.35f, 0.5f, 1.0f };
 			int f{};
-			while ( true )
+			while ( time < 5.0 )
 			{
 #if 1
 				++f;
@@ -387,6 +453,8 @@ float4 main( VSOutput input ) : SV_Target
 				time = glfwGetTime();
 				{
 					RHITextureRef rt = RHI::GetSwapChain()->GetBackBuffer();
+					if ( !rt )
+						continue;
 
 					// Resize the depth buffer to match the swap chain
 					const auto rtDesc = rt->Descriptor();
@@ -453,19 +521,44 @@ float4 main( VSOutput input ) : SV_Target
 
 					// Construct the inlined constants ( random struct thats casted to an array of bytes )
 					InlinedConstants inlinedConstants;
-					inlinedConstants.Colour = CycleRGB( time, 1.0f );
 					inlinedConstants.PVM = projection * view * model;
+					inlinedConstants.Model = model;
+
+					Constants constants{};
+					Light light;
+					light.Colour = CycleRGB( time, 1.0f );
+					light.Position = Vector3( 0.0f, 0.0f, 2.0f );
+					light.Intensity = 1;
+					constants.LightData = light;
+
+					RHIBufferDescriptor constantsDesc{
+						"constants buffer",
+						256,
+						ERHIBindFlags::ConstantBuffer 
+					};
+
+					RHIBufferRef constantsBuffer = RHI::CreateBuffer( 
+						constantsDesc, Span<uint8_t>{ reinterpret_cast<uint8_t*>(&constants), sizeof( Constants ) }
+					);
 
 					RHIBindingSetDescriptor bindingSetDesc{ sbl };
 					bindingSetDesc.AddCombinedSampler( "Texture"_H, *tex );
+					bindingSetDesc.AddConstantBuffer( "constants"_H, *constantsBuffer );
 					RHIBindingSetRef bindingSet = RHI::CreateBindingSet( bindingSetDesc );
-					
-					cmdBuffer.SetShaderBindings( bindingSet );
-					cmdBuffer.SetInlinedConstants( inlinedConstants );
-
-
-
 					cmdBuffer.SetVertexBuffer( cubeVBO );
+					cmdBuffer.SetShaderBindings( bindingSet );
+
+					cmdBuffer.SetInlinedConstants( inlinedConstants );
+					cmdBuffer.Draw( 0, sizeof( cubeVerts ) / sizeof( Vertex ) );
+
+					inlinedConstants.Model = glm::translate( Matrix4( 1.0f ), Vector3(-pos.x, -pos.y, pos.z) );
+					inlinedConstants.PVM = projection * view * inlinedConstants.Model;
+					cmdBuffer.SetInlinedConstants( inlinedConstants );
+					cmdBuffer.Draw( 0, sizeof( cubeVerts ) / sizeof( Vertex ) );
+
+					inlinedConstants.Model = glm::translate( Matrix4( 1.0f ), Vector3( 0.5 * -pos.x, -pos.y, -pos.x + pos.z ) );
+					inlinedConstants.PVM = projection * view * inlinedConstants.Model;
+					cmdBuffer.SetInlinedConstants( inlinedConstants );
 					cmdBuffer.Draw( 0, sizeof( cubeVerts ) / sizeof( Vertex ) );
 
 					cmdBuffer.ResourceBarrier( rt.get(), ERHIResourceStates::RenderTarget, ERHIResourceStates::Present);
@@ -483,7 +576,7 @@ float4 main( VSOutput input ) : SV_Target
 
 		RHI::Shutdown();
 
-		return true;
+		return false;
 
 #endif
 

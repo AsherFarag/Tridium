@@ -24,9 +24,9 @@ namespace std {
 		std::size_t operator()( const Tridium::DrawCommandKey& key ) const noexcept
 		{
 			size_t seed = 0;
-			Tridium::HashCombine( seed, std::hash<Tridium::GUID>{}( key.Mesh.ID() ) );
-			Tridium::HashCombine( seed, std::hash<uint32_t>{}( key.SubMeshIndex ) );
-			Tridium::HashCombine( seed, std::hash<Tridium::GUID>{}( key.Material.ID() ) );
+			seed = Tridium::Hashing::HashCombine( seed, std::hash<Tridium::GUID>{}( key.Mesh.ID() ) );
+			seed = Tridium::Hashing::HashCombine( seed, std::hash<uint32_t>{}( key.SubMeshIndex ) );
+			seed = Tridium::Hashing::HashCombine( seed, std::hash<Tridium::GUID>{}( key.Material.ID() ) );
 			return seed;
 		}
 	};

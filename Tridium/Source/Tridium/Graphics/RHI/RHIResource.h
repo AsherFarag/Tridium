@@ -8,70 +8,6 @@ namespace Tridium {
 	// ====================
 
 	//=====================================================================
-	// RHI Resource Type
-	//  The type of resource.
-	//=====================================================================
-	enum class ERHIResourceType : uint8_t
-	{
-        Sampler,
-        Texture,
-        ShaderModule,
-        Buffer,
-        BindingLayout,
-		BindingSet,
-        GraphicsPipelineState,
-		ComputePipelineState,
-        CommandList,
-        CommandAllocator,
-		SwapChain,
-		Fence,
-        COUNT,
-		Unknown = 0xFF,
-	};
-
-	static constexpr StringView RHIResourceTypeToString( ERHIResourceType a_Type )
-	{
-		switch ( a_Type )
-		{
-			case ERHIResourceType::Sampler:               return "Sampler";
-			case ERHIResourceType::Texture:               return "Texture";
-			case ERHIResourceType::ShaderModule:          return "ShaderModule";
-			case ERHIResourceType::Buffer:                return "Buffer";
-			case ERHIResourceType::BindingLayout:         return "BindingLayout";
-			case ERHIResourceType::BindingSet:            return "BindingSet";
-			case ERHIResourceType::GraphicsPipelineState: return "GraphicsPipelineState";
-			case ERHIResourceType::ComputePipelineState:  return "ComputePipelineState";
-			case ERHIResourceType::CommandList:           return "CommandList";
-			case ERHIResourceType::CommandAllocator:      return "CommandAllocator";
-			case ERHIResourceType::SwapChain:             return "SwapChain";
-			case ERHIResourceType::Fence:                 return "Fence";
-			case ERHIResourceType::Unknown:               return "Unknown";
-			default:                                      return "<INVALID>";
-		}
-	}
-
-	static constexpr ERHIResourceType RHIResourceTypeFromString( StringView a_Type )
-	{
-		switch ( Hashing::Hash( ReinterpretCast<const uint8_t*>(a_Type.data()), a_Type.size() ) )
-		{
-			case "Sampler"_H:               return ERHIResourceType::Sampler;
-			case "Texture"_H:               return ERHIResourceType::Texture;
-			case "ShaderModule"_H:          return ERHIResourceType::ShaderModule;
-			case "Buffer"_H:                return ERHIResourceType::Buffer;
-			case "BindingLayout"_H:         return ERHIResourceType::BindingLayout;
-			case "BindingSet"_H:            return ERHIResourceType::BindingSet;
-			case "GraphicsPipelineState"_H: return ERHIResourceType::GraphicsPipelineState;
-			case "ComputePipelineState"_H:  return ERHIResourceType::ComputePipelineState;
-			case "CommandList"_H:           return ERHIResourceType::CommandList;
-			case "CommandAllocator"_H:      return ERHIResourceType::CommandAllocator;
-			case "SwapChain"_H:             return ERHIResourceType::SwapChain;
-			case "Fence"_H:                 return ERHIResourceType::Fence;
-		}
-
-		return ERHIResourceType::Unknown;
-	}
-
-	//=====================================================================
 
 	namespace Concepts {
 
@@ -114,7 +50,7 @@ namespace Tridium {
 		virtual ERHIResourceType GetType() const = 0;
 
 		// Returns whether this resource is in a usable state.
-		virtual bool IsValid() const = 0;
+		virtual bool Valid() const = 0;
 
 		// Gets a pointer to the native resource.
 		// E.g. RHITexture_OpenGLImpl -> GLuint, RHITexture_D3D12Impl -> ID3D12Resource
@@ -176,7 +112,7 @@ namespace Tridium {
 		template<Concepts::IsRHIResource T, typename... _Args>
 		static T::RefType CreateHandle( T* a_Resource )
 		{
-			static constexpr auto deleter = +[]( T* a_Resource ) { delete a_Resource; };
+			static constexpr auto deleter = +[]( T* a_Resource ) { a_Resource->Release(); delete a_Resource; };
 			return T::RefType( a_Resource, deleter );
 		}
 
@@ -193,26 +129,6 @@ namespace Tridium {
 	protected:
 		RHIResource() = default;
 		virtual ~RHIResource() = default;
-	};
-
-
-
-	//=======================================================
-	// RHI Resource Descriptor
-	//  A base class for describing an RHI resource.
-	//=======================================================
-	template<typename _Descriptor, typename _Resource>
-	struct RHIResourceDescriptor
-	{
-		using Super = RHIResourceDescriptor<_Descriptor, _Resource>;
-		using ResourceType = _Resource;
-		StringView Name;
-
-		constexpr _Descriptor& SetName( StringView a_Name )
-		{
-			Name = a_Name;
-			return Cast<_Descriptor&>( *this );
-		}
 	};
 
 	//==========================================================

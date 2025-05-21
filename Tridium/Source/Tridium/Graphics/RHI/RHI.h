@@ -78,11 +78,6 @@ namespace Tridium {
 		{
 			return CreateTexture( a_Desc, Span<RHITextureSubresourceData>{ &a_SubResourcesData, 1 } );
 		}
-
-		inline RHIFenceRef CreateFence( ERHIFenceType a_Type = ERHIFenceType::CPUWaitOnly, StringView a_Name = {} )
-		{
-			return CreateFence( RHIFenceDescriptor{ a_Name, a_Type } );
-		}
 		//===========================
 	}
 

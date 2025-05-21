@@ -8,9 +8,14 @@ namespace Tridium {
 	//  Command lists are used to submit work to the GPU.
 	//======================================================================================================
 
-	DECLARE_RHI_RESOURCE_DESCRIPTOR( RHICommandListDescriptor, RHICommandList )
+	struct RHICommandListDescriptor
 	{
+		using ResourceType = class RHICommandList;
 		ERHICommandQueueType QueueType = ERHICommandQueueType::Graphics;
+		String Name{};
+
+		constexpr auto& SetQueueType( ERHICommandQueueType a_QueueType ) { QueueType = a_QueueType; return *this; }
+		constexpr auto& SetName( StringView a_Name ) { Name = a_Name; return *this; }
 	};
 
 	DECLARE_RHI_RESOURCE_INTERFACE( RHICommandList )

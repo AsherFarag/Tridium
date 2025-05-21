@@ -7,10 +7,10 @@ namespace Tridium::D3D12 {
 	{
 		enum
 		{
-			Constants = 2,
+			Constants = 0,
 			CBV = 1,
-			Textures = 0,
-			Samplers = 1,
+			Textures = 2,
+			Samplers = 3,
 		};
 	}
 
@@ -137,6 +137,59 @@ namespace Tridium::D3D12 {
 		RHIBindingSet_D3D12Impl* bindingSet = a_Cmd.BindingSet->As<RHIBindingSet_D3D12Impl>();
 		RHIBindingLayout_D3D12Impl* bindingLayout = bindingSet->Descriptor().Layout->As<RHIBindingLayout_D3D12Impl>();
 
+		// Validate State
+		for ( auto& binding : bindingSet->Descriptor().Bindings )
+		{
+			if ( binding.StateTransitionMode == ERHIStateTransition::None )
+			{
+				continue;
+			}
+
+			if ( binding.StateTransitionMode == ERHIStateTransition::Transition )
+			{
+				switch ( binding.Type )
+				{
+				case ERHIShaderBindingType::InlinedConstants:
+					break;
+				case ERHIShaderBindingType::ConstantBuffer:
+					m_ResourceStateTracker.RequireBufferState(
+						*binding.Resource->As<RHIBuffer>(),
+						ERHIResourceStates::ConstantBuffer );
+					break;
+				case ERHIShaderBindingType::StructuredBuffer:
+					m_ResourceStateTracker.RequireBufferState(
+						*binding.Resource->As<RHIBuffer>(),
+						ERHIResourceStates::UnorderedAccess );
+					break;
+				case ERHIShaderBindingType::StorageBuffer:
+					m_ResourceStateTracker.RequireBufferState(
+						*binding.Resource->As<RHIBuffer>(),
+						ERHIResourceStates::UnorderedAccess );
+					break;
+				case ERHIShaderBindingType::Texture:
+					m_ResourceStateTracker.RequireTextureState(
+						*binding.Resource->As<RHITexture>(),
+						ERHIResourceStates::ShaderResource );
+					break;
+				case ERHIShaderBindingType::StorageTexture:
+					m_ResourceStateTracker.RequireTextureState(
+						*binding.Resource->As<RHITexture>(),
+						ERHIResourceStates::UnorderedAccess );
+					break;
+				case ERHIShaderBindingType::Sampler:
+					// Samplers do not require a state transition
+					break;
+				case ERHIShaderBindingType::CombinedSampler:
+					// Combined samplers do not require a state transition
+					break;
+				default:
+					ASSERT( false, "Unknown binding type!" );
+					break;
+				}
+			}
+		}
+		CommitBarriers();
+
 		for ( auto& binding : bindingSet->Descriptor().Bindings )
 		{
 			switch ( binding.Type )
@@ -148,7 +201,27 @@ namespace Tridium::D3D12 {
 			}
 			case ERHIShaderBindingType::ConstantBuffer:
 			{
-				NOT_IMPLEMENTED;
+				RHIBuffer_D3D12Impl* buffer = binding.Resource->As<RHIBuffer_D3D12Impl>();
+				size_t bufferSize = binding.Range == RHIBufferRange::EntireBuffer() ? buffer->GetSizeInBytes() : binding.Range.Size;
+				RHI_DEV_CHECK( bufferSize % 256 == 0, "Constant buffer size must be aligned to 256 bytes!" );
+				TODO( "Handle constant buffers" );
+				const D3D12::DescriptorHeapRef& cbvHeap = m_State.Heaps.EmplaceBack( GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap(
+					ERHIDescriptorHeapType::RenderResource,
+					8,
+					EDescriptorHeapFlags::Poolable | EDescriptorHeapFlags::GPUVisible,
+					"CBV Heap" ) );
+
+				D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc{};
+				cbvDesc.BufferLocation = buffer->ManagedBuffer.Resource->GetGPUVirtualAddress();
+				cbvDesc.SizeInBytes = bufferSize;
+				GetD3D12RHI()->GetD3D12Device()->CreateConstantBufferView(
+					&cbvDesc,
+					cbvHeap->GetCPUHandle( 0 )
+				);
+				ID3D12DescriptorHeap* d3d12Heap = cbvHeap->Heap();
+				GraphicsCommandList()->SetDescriptorHeaps( 1, &d3d12Heap );
+				GraphicsCommandList()->SetGraphicsRootConstantBufferView( RootParameters::CBV, buffer->ManagedBuffer.Resource->GetGPUVirtualAddress() );
+
 				break;
 			}
 			case ERHIShaderBindingType::StructuredBuffer:
@@ -163,7 +236,7 @@ namespace Tridium::D3D12 {
 			}
 			case ERHIShaderBindingType::Texture:
 			{
-				const D3D12::DescriptorHeapRef& srvHeap = m_State.Heaps.EmplaceBack( GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap(
+				const DescriptorHeapRef& srvHeap = m_State.Heaps.EmplaceBack( GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap(
 					ERHIDescriptorHeapType::RenderResource,
 					8,
 					EDescriptorHeapFlags::Poolable,
@@ -197,7 +270,7 @@ namespace Tridium::D3D12 {
 					const auto* tex = Cast<const RHITexture_D3D12Impl*>( binding.Resource );
 
 					GetD3D12RHI()->GetD3D12Device()->CreateShaderResourceView(
-						tex->Texture.Resource.Get(),
+						tex->Texture.Resource,
 						&srvDesc,
 						srvHeap->GetCPUHandle( 0 )
 					);
@@ -258,7 +331,7 @@ namespace Tridium::D3D12 {
 					srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 
 					GetD3D12RHI()->GetD3D12Device()->CreateShaderResourceView(
-						tex->Texture.Resource.Get(),
+						tex->Texture.Resource,
 						&srvDesc,
 						srvHeap->GetCPUHandle( 0 )
 					);
@@ -394,9 +467,9 @@ namespace Tridium::D3D12 {
 		CommitBarriers();
 
 		GraphicsCommandList()->CopyBufferRegion(
-			buffer->ManagedBuffer.Resource.Get(),
+			buffer->ManagedBuffer.Resource,
 			a_Cmd.Offset,
-			uploadBuffer.Resource.Get(),
+			uploadBuffer.Resource,
 			0,
 			a_Cmd.Data.size()
 		);
@@ -426,9 +499,9 @@ namespace Tridium::D3D12 {
 		CommitBarriers();
 
 		GraphicsCommandList()->CopyBufferRegion(
-			a_Cmd.Destination->As<RHIBuffer_D3D12Impl>()->ManagedBuffer.Resource.Get(),
+			a_Cmd.Destination->As<RHIBuffer_D3D12Impl>()->ManagedBuffer.Resource,
 			a_Cmd.DestinationOffset,
-			a_Cmd.Source->As<RHIBuffer_D3D12Impl>()->ManagedBuffer.Resource.Get(),
+			a_Cmd.Source->As<RHIBuffer_D3D12Impl>()->ManagedBuffer.Resource,
 			a_Cmd.SourceOffset,
 			a_Cmd.Size
 		);
@@ -520,12 +593,12 @@ namespace Tridium::D3D12 {
 
 		// Setup copy locations
 		D3D12_TEXTURE_COPY_LOCATION dstLocation = {};
-		dstLocation.pResource = a_Cmd.Texture->As<RHITexture_D3D12Impl>()->Texture.Resource.Get();
+		dstLocation.pResource = a_Cmd.Texture->As<RHITexture_D3D12Impl>()->Texture.Resource;
 		dstLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 		dstLocation.SubresourceIndex = CalcSubresource( a_Cmd.MipLevel, a_Cmd.ArraySlice, 0, textureDesc.MipLevels, textureDesc.DepthOrArraySize );
 
 		D3D12_TEXTURE_COPY_LOCATION srcLocation = {};
-		srcLocation.pResource = uploadBuffer.Resource.Get();
+		srcLocation.pResource = uploadBuffer.Resource;
 		srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
 		srcLocation.PlacedFootprint = footprint;
 
@@ -645,7 +718,7 @@ namespace Tridium::D3D12 {
 		D3D12_CPU_DESCRIPTOR_HANDLE rtvs[RHIConstants::MaxColorTargets];
 		for ( size_t i = 0; i < a_Cmd.RTV.Size(); ++i )
 		{
-			device->CreateRenderTargetView( a_Cmd.RTV[i]->As<RHITexture_D3D12Impl>()->Texture.Resource.Get(), nullptr, m_State.LastRTVHeap->GetCPUHandle( i ) );
+			device->CreateRenderTargetView( a_Cmd.RTV[i]->As<RHITexture_D3D12Impl>()->Texture.Resource, nullptr, m_State.LastRTVHeap->GetCPUHandle( i ) );
 			rtvs[i] = m_State.LastRTVHeap->GetCPUHandle( i );
 		}
 
@@ -666,7 +739,7 @@ namespace Tridium::D3D12 {
 				EDescriptorHeapFlags::Poolable,
 				"DSV Heap" ) );
 
-			device->CreateDepthStencilView( a_Cmd.DSV->As<RHITexture_D3D12Impl>()->Texture.Resource.Get(), nullptr, m_State.LastDSVHeap->GetCPUHandle( 0 ) );
+			device->CreateDepthStencilView( a_Cmd.DSV->As<RHITexture_D3D12Impl>()->Texture.Resource, nullptr, m_State.LastDSVHeap->GetCPUHandle( 0 ) );
 			D3D12_CPU_DESCRIPTOR_HANDLE dsv = m_State.LastDSVHeap->GetCPUHandle( 0 );
 			GraphicsCommandList()->OMSetRenderTargets( a_Cmd.RTV.Size(), rtvs, false, &dsv );
 		}

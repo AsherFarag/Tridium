@@ -19,7 +19,7 @@ namespace Tridium::OpenGL {
 		return true;
 	}
 
-	bool RHIFence_OpenGLImpl::IsValid() const
+	bool RHIFence_OpenGLImpl::Valid() const
 	{
 		return true;
 	}

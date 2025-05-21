@@ -22,7 +22,7 @@ namespace Tridium {
 		for ( const auto&& [id, type] : Refl::ResolveMetaTypes() )
 		{
 			Refl::MetaType metaType = type;
-			if ( HasFlag( metaType.GetClassFlags(), Refl::EClassFlags::Scriptable ) )
+			if ( EnumFlags( metaType.GetClassFlags() ).HasFlag( Refl::EClassFlags::Scriptable ) )
 			{
 				TextEditor::Identifier id;
 				id.mDeclaration = "Tridium Type";

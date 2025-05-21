@@ -26,7 +26,7 @@ DECLARE_LOG_CATEGORY( RHI );
 #endif
 
 #if RHI_ENABLE_DEV_CHECKS
-	#define RHI_DEV_CHECK( _Condition, ... ) ASSERT( _Condition, "RHI Dev Error - ", ##__VA_ARGS__ )
+	#define RHI_DEV_CHECK( _Condition, ... ) ASSERT( _Condition, "RHI Dev Error - {}", __VA_ARGS__ )
 #else
 	#define RHI_DEV_CHECK( _Condition, ... ) do {} while ( false )
 #endif // RHI_ENABLE_DEV_CHECKS
@@ -48,19 +48,73 @@ namespace Tridium {
 
 
 
+	//===========================
+	// RHI Configuration
+	struct RHIConfig
+	{
+		// The RHI backend to use.
+		ERHInterfaceType RHIType = ERHInterfaceType::Null;
+
+		// Enables debug features for the RHI.
+		// NOTE: This option does nothing if RHI_DEBUG_ENABLED is false.
+		bool UseDebug = false;
+
+		// If true, the RHI will automatically create a swap chain.
+		// Set this to false if you want to create a swap chain manually.
+		bool CreateSwapChain = true;
+
+		// Force single-threaded rendering.
+		bool SingleThreaded = false;
+
+		// This specifies how many frames the CPU can prepare while the GPU is rendering.
+		uint32_t MaxFramesInFlight = RHIConstants::MaxFrameBuffers;
+	};
+
+
+
 	//====================================
 	// RHI Vendor
 	//====================================
-	enum class ERHIVendor : uint8_t
+	enum class EGPUVendorID : uint32_t
 	{
-		Unknown,
-		NVIDIA,
-		AMD,
-		Intel,
-		ARM,
-		Apple,
-		Microsoft,
+		// The vendor ID is has not been queried and is currently unknown.
+		Unknown		= 0,
+		// The vendor ID is invalid.
+		Invalid		= 0xFFFFFFFF,
+
+		Amd			= 0x1002,
+		ImgTec		= 0x1010,
+		Nvidia		= 0x10DE, 
+		Arm			= 0x13B5, 
+		Broadcom	= 0x14E4,
+		Qualcomm	= 0x5143,
+		Intel		= 0x8086,
+		Apple		= 0x106B,
+		Vivante		= 0x7a05,
+		VeriSilicon	= 0x1EB1,
+		SamsungAMD  = 0x144D,
+		Microsoft   = 0x1414
 	};
+
+	inline constexpr EGPUVendorID GetVendorID( uint32_t a_VendorID )
+	{
+		switch ( a_VendorID )
+		{
+		case 0x1002: return EGPUVendorID::Amd;
+		case 0x1010: return EGPUVendorID::ImgTec;
+		case 0x10DE: return EGPUVendorID::Nvidia;
+		case 0x13B5: return EGPUVendorID::Arm;
+		case 0x14E4: return EGPUVendorID::Broadcom;
+		case 0x5143: return EGPUVendorID::Qualcomm;
+		case 0x8086: return EGPUVendorID::Intel;
+		case 0x106B: return EGPUVendorID::Apple;
+		case 0x7a05: return EGPUVendorID::Vivante;
+		case 0x1EB1: return EGPUVendorID::VeriSilicon;
+		case 0x144D: return EGPUVendorID::SamsungAMD;
+		case 0x1414: return EGPUVendorID::Microsoft;
+		default:     return EGPUVendorID::Invalid;
+		}
+	}
 
 
 
@@ -85,16 +139,56 @@ namespace Tridium {
 
 	//======================================================================
 	// RHI Feature
-	enum class ERHIFeature : uint8_t
+	enum class ERHIFeature : uint32_t
 	{
 		ComputeShaders,
-		GeometryShaders,
+		MeshShaders,
 		Tesselation,
 		RayTracing,
 		BindlessResources,
 		COUNT,
-		Invalid = ~0
+		Invalid = ~0u
 	};
+
+
+
+	//=======================================================
+	// RHI Shader Format
+	enum class ERHIShaderFormat : uint8_t
+	{
+		Unknown = 0,
+		HLSL6,
+		SPIRV,	      // SPIR-V for Vulkan
+		SPIRV_OpenGL, // SPIR-V for OpenGL
+
+		// Console-Platform Specific
+		HLSL6_XBOX, // HLSL for Xbox
+		PSSL,       // PlayStation Shader Language
+
+		COUNT,
+		NUM_BITS = 3,
+	};
+	RHI_ENUM_SIZE_ASSERT( ERHIShaderFormat );
+
+	//=======================================================
+	// RHI Shader Model
+	//  The version of the shader model to use.
+	//  The higher the version, the more features are available.
+	enum class ERHIShaderModel
+	{
+		Unknown,
+		SM_5_0,
+		SM_6_0,
+		SM_6_1,
+		SM_6_2,
+		SM_6_3,
+		SM_6_4,
+		SM_6_5,
+		SM_6_6,
+		COUNT,
+		NUM_BITS = 4,
+	};
+	RHI_ENUM_SIZE_ASSERT( ERHIShaderModel );
 
 
 
@@ -124,7 +218,8 @@ namespace Tridium {
 	//  Describes the features supported by the RHI device.
 	struct RHIDeviceFeatures
 	{
-		FixedArray<RHIFeatureInfo, uint8_t( ERHIFeature::COUNT )> Features;
+		FixedArray<RHIFeatureInfo, uint8_t( ERHIFeature::COUNT )> Features{};
+		ERHIShaderModel HighestShaderModel = ERHIShaderModel::Unknown;
 
 		const RHIFeatureInfo& GetFeatureInfo( ERHIFeature a_Feature ) const
 		{
@@ -134,31 +229,28 @@ namespace Tridium {
 
 		RHIDeviceFeatures()
 		{
-		#define DEFINE_FEATURE( _Feature ) Features[Cast<uint8_t>( ERHIFeature::_Feature )] = { ERHIFeature::_Feature, #_Feature, ERHIFeatureSupport::Unsupported };
+	#define DEFINE_FEATURE( _Feature ) Features[Cast<uint8_t>( ERHIFeature::_Feature )] = { ERHIFeature::_Feature, #_Feature, ERHIFeatureSupport::Unsupported };
 			DEFINE_FEATURE( ComputeShaders );
-			DEFINE_FEATURE( GeometryShaders );
+			DEFINE_FEATURE( MeshShaders );
 			DEFINE_FEATURE( Tesselation );
 			DEFINE_FEATURE( RayTracing );
 			DEFINE_FEATURE( BindlessResources );
-		#undef DEFINE_FEATURE
+	#undef DEFINE_FEATURE
 		}
 	};
 
 
 
-	//===========================
-	// RHI Configuration
-	//===========================
-	struct RHIConfig
+	//====================================
+	// GPU Info
+	//  Static information about the GPU that is created on RHI initialisation.
+	struct GPUInfo
 	{
-		ERHInterfaceType RHIType = ERHInterfaceType::Null;
-		bool UseDebug = false;
-		bool CreateSwapChain = true;
-
-		// Force single-threaded rendering.
-		bool SingleThreaded = false;
-
-		uint32_t MaxFramesInFlight = RHIConstants::MaxFrameBuffers;
+		uint32_t VendorID = Cast<uint32_t>( EGPUVendorID::Invalid );
+		String DeviceName{};
+		String DriverVersion{};
+		size_t VRAMBytes = 0; // Total available VRAM in bytes. NOTE: This is not always available on all platforms.
+		RHIDeviceFeatures DeviceFeatures{};
 	};
 
 
@@ -167,7 +259,6 @@ namespace Tridium {
 	// RHI Scissor Rect
 	//  A rectangle used to clip rendering to a specific area.
 	//  For example, clearing a specific area of the screen.
-	//===========================
 	struct RHIScissorRect
 	{
 		uint16_t Left;
@@ -180,7 +271,6 @@ namespace Tridium {
 
 	//===========================
 	// RHI Viewport
-	//===========================
 	struct RHIViewport
 	{
 		float X;        // Top-left corner of the viewport.
@@ -196,7 +286,6 @@ namespace Tridium {
 	//============================
 	// RHI Buffer Range
 	//  Represents a range of bytes in a buffer.
-	//============================
 	struct RHIBufferRange
 	{
 		size_t Offset = 0; // Offset in bytes from the start of the buffer.
@@ -229,10 +318,27 @@ namespace Tridium {
 
 
 
+	//==========================================================
+	// RHI Buffer Type
+	//  Describes how the buffer is accessed.
+	enum class ERHIBufferType : uint8_t
+	{
+		Undefined = 0,
+		// This buffer is accessed via raw bytes.
+		// RHIBufferDescriptor::Stride must specify the size of the format.
+		Raw,
+		// Accessing this buffer uses format conversion.
+		// RHIBufferDescriptor::Stride must match the size of the format.
+		Formatted,
+		// This buffer is accessed via a structure. RHIBufferDescriptor::Stride defines the size of the structure.
+		Structured,
+	};
+
+
+
 	//============================
 	// Box
 	//  Represents a 3D box in space.
-	//============================
 	template<typename _Scalar>
 	struct TBox
 	{
@@ -288,7 +394,6 @@ namespace Tridium {
 	//===========================
 	// RHI Clear Flags
 	//  Used to specify which buffers to clear.
-	//===========================
 	enum class ERHIClearFlags : uint8_t
 	{
 		Color        = 1 << 0,
@@ -305,7 +410,6 @@ namespace Tridium {
 
 	//===========================
 	// RHI Clear Value
-	//===========================
 	union RHIClearValue
 	{
 		constexpr explicit RHIClearValue() noexcept : Color( 0.0f, 0.0f, 0.0f, 1.0f ) {}
@@ -322,7 +426,6 @@ namespace Tridium {
 
 	//===========================
 	// RHI Object Interface
-	//===========================
 	class IRHIObject
 	{
 	public:
@@ -331,30 +434,68 @@ namespace Tridium {
 
 
 
+	//=====================================================================
+	// RHI Resource Type
+	//  The type of resource.
+	//=====================================================================
+	enum class ERHIResourceType : uint8_t
+	{
+        Sampler,
+        Texture,
+        ShaderModule,
+        Buffer,
+        BindingLayout,
+		BindingSet,
+        GraphicsPipelineState,
+		ComputePipelineState,
+        CommandList,
+        CommandAllocator,
+		SwapChain,
+		Fence,
+        COUNT,
+		Unknown = 0xFF,
+	};
+
+
+
 	//======================================================================
 	// RHI Bind Flags
-	//  Describes which parts of a pipeline the resource can be bound to.
-	//======================================================================
+	//  Describes how a resource (buffer or texture) can be used in the pipeline.
 	enum class ERHIBindFlags : uint8_t
 	{
 		None = 0,
-		// The buffer can be used as a vertex buffer.
+
+		// The buffer can be bound as a vertex buffer to the input assembler stage.
 		VertexBuffer = 1 << 0,
-		// The buffer can be used as an index buffer.
+
+		// The buffer can be bound as an index buffer to the input assembler stage.
 		IndexBuffer = 1 << 1,
-		// The buffer can be used as a uniform buffer.
-		// NOTE: This flag cannot be combined with any other flags.
-		UniformBuffer = 1 << 2,
-		// The buffer or texture can be used as a shader resource.
+
+		// The buffer can be bound as a uniform (constant) buffer to shader stages.
+		// NOTE: This flag is exclusive and should not be combined with other flags.
+		// It implies structured layout and read-only access in shaders.
+		ConstantBuffer = 1 << 2,
+
+		// The resource (buffer or texture) can be accessed in shaders as a read-only
+		// shader resource (e.g., textures, structured buffers, or typed buffers).
 		ShaderResource = 1 << 3,
-		// The buffer or texture can be used as an unordered access view
+
+		// The resource can be bound for unordered (read/write) access in shaders.
+		// Typically used for compute shaders or RWStructuredBuffers.
 		UnorderedAccess = 1 << 4,
-		// The texture can be used as a render target.
+
+		// The texture can be used as a color render target.
 		RenderTarget = 1 << 5,
-		// The texture can be used as a depth stencil target.
+
+		// The texture can be used as a depth or depth-stencil render target.
 		DepthStencil = 1 << 6,
-		// The buffer can be used as a buffer for indirect draw commands.
+
+		// The buffer can be used to store indirect draw or dispatch arguments
+		// (e.g., for multi-draw indirect or compute dispatch).
 		IndirectArgument = 1 << 7,
+
+		_MIN = VertexBuffer,
+		_MAX = IndirectArgument
 	};
 	ENUM_ENABLE_BITMASK_OPERATORS( ERHIBindFlags );
 
@@ -362,7 +503,7 @@ namespace Tridium {
 
 	//======================================================================
 	// RHI Usage
-	//  Describes the usage of an RHI resource and how it can be written to.
+	//  Describes how the resource is used and how many times it will be updated.
 	enum class ERHIUsage : uint8_t
 	{
 		// Default Resource
@@ -399,6 +540,7 @@ namespace Tridium {
 
 	//=====================================================================
 	// RHI CPU Access
+	//  Specifies if and how the CPU can access an RHI resource.
 	enum class ERHICpuAccess : uint8_t
 	{
 		None = 0,		          // Inaccessible to CPU
@@ -450,8 +592,7 @@ namespace Tridium {
 	{
 		// The resource state is unknown to the RHI. 
 		// All state transitions are expected to be handled outside of the RHI.
-		// NOTE: Use 'None' instead.
-		Unknown = 0,
+		None = 0,
 
 		// Perform a state transition on the resource to the state required by the RHI command.
 		// NOTE: Automatic state transitions are NOT thread-safe.
@@ -461,11 +602,6 @@ namespace Tridium {
 		// Performs no state transitions on the resource, 
 		// but does verify that the resource is in the correct state.
 		Validate,
-
-		// Performs no state transitions on the resource and does not verify that the resource is in the correct state.
-		// Use if resource state transitions are handled outside of the RHI.
-		// NOTE: In debug mode, this will still validate the resource.
-		None = IF_RHI_DEBUG_ELSE( Validate, Unknown ),
 	};
 	//=====================================================================
 
@@ -550,55 +686,15 @@ namespace Tridium {
 	{
 		Unknown = 0,
 		Vertex,
-		Hull,
-		Domain,
+		Hull,     // Vulkan == Tessellation Control
+		Domain,   // Vulkan == Tessellation Evaluation
 		Geometry,
-		Pixel,
+		Pixel,    // Vulkan == Fragment
 		Compute,
 		COUNT,
 		NUM_BITS = 3,
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHIShaderType );
-
-
-
-	//=======================================================
-	// RHI Shader Format
-	enum class ERHIShaderFormat : uint8_t
-	{
-		Unknown = 0,
-		HLSL6,
-		SPIRV,	      // SPIR-V for Vulkan
-		SPIRV_OpenGL, // SPIR-V for OpenGL
-
-		// Console-Platform Specific
-		HLSL6_XBOX, // HLSL for Xbox
-		PSSL,       // PlayStation Shader Language
-
-		COUNT,
-		NUM_BITS = 3,
-	};
-	RHI_ENUM_SIZE_ASSERT( ERHIShaderFormat );
-
-	//=======================================================
-	// RHI Shader Model
-	//  The version of the shader model to use.
-	//  The higher the version, the more features are available.
-	enum class ERHIShaderModel
-	{
-		Unknown,
-		SM_5_0,
-		SM_6_0,
-		SM_6_1,
-		SM_6_2,
-		SM_6_3,
-		SM_6_4,
-		SM_6_5,
-		SM_6_6,
-		COUNT,
-		NUM_BITS = 4,
-	};
-	RHI_ENUM_SIZE_ASSERT( ERHIShaderModel );
 
 
 

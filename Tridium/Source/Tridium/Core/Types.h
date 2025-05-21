@@ -1,6 +1,4 @@
 #pragma once
-#include <stdint.h>
-#include <limits.h>
 #include "Cast.h"
 
 #define NON_COPYABLE( Type )\
@@ -17,7 +15,17 @@
 
 namespace Tridium {
 
-	using Byte = uint8_t;
-	using float32_t = float;
-	using float64_t = double;
+    using int8_t   = signed char;
+    using int16_t  = short;
+    using int32_t  = int;
+    using int64_t  = long long;
+    using uint8_t  = unsigned char;
+    using uint16_t = unsigned short;
+    using uint32_t = unsigned int;
+    using uint64_t = unsigned long long;
+
+    using float32_t = float;
+    using float64_t = double;
+
+    using Byte = uint8_t;
 }

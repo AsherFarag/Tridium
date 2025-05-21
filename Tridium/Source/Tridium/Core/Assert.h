@@ -186,7 +186,8 @@ namespace Tridium::Debug {
 #if NOT_IMPLEMENTED_ENABLED
 	#define NOT_IMPLEMENTED \
 		NOT_IMPLEMENTED_STATIC; \
-		( ::Tridium::Debug::NotImplemented( TRIDIUM_FUNCTION, TRIDIUM_FILE, TRIDIUM_LINE ) )
+		DEBUG_BREAK(); \
+		::Tridium::Debug::Detail::AssertMessage( "Not Implemented - Where: Line - " TOSTRING( __LINE__ ) ", File - " TOSTRING( TRIDIUM_FILE ) ", Function - " TOSTRING( TRIDIUM_FUNCTION ) )
 
 	void NotImplemented( const char* a_Function, const char* a_File, int a_Line );
 #else

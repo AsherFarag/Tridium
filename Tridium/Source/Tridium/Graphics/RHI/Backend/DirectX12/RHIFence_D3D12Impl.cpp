@@ -15,7 +15,7 @@ namespace Tridium::D3D12 {
 			return;
         }
 
-		D3D12_SET_DEBUG_NAME( m_Fence.Get(), m_Desc.Name );
+		D3D12_SET_DEBUG_NAME( m_Fence.Get(), m_Desc.Name, L"Unnamed Fence" );
 
 		m_FenceEvent = CreateEvent( 
 			nullptr,    // default security attributes
@@ -76,7 +76,7 @@ namespace Tridium::D3D12 {
 		return true;
 	}
 
-	bool RHIFence_D3D12Impl::IsValid() const
+	bool RHIFence_D3D12Impl::Valid() const
 	{
 		return m_Fence != nullptr;
 	}

@@ -198,4 +198,16 @@ namespace Tridium::OpenGL {
 		}
 	}
 
+	inline constexpr GLenum Translate( ERHIUsage a_Usage )
+	{
+		switch ( a_Usage )
+		{
+			using enum ERHIUsage;
+		case Default: return GL_STATIC_DRAW;
+		case Static:  return GL_STATIC_DRAW;
+		case Dynamic: return GL_DYNAMIC_DRAW;
+		default:      return GL_STATIC_DRAW;
+		}
+	}
+
 } // namespace Tridium::OpenGL

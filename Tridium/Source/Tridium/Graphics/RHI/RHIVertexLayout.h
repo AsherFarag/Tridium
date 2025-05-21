@@ -12,7 +12,7 @@ namespace Tridium {
 		LineStrip,
 		TriangleStrip,
 		COUNT,
-		Unknown,
+		Unknown = ~0u,
 	};
 
 	struct RHIVertexAttribute
@@ -38,7 +38,7 @@ namespace Tridium {
 		InlineArray<RHIVertexAttribute, RHIConstants::MaxVertexAttributes> Elements{};
 
 		constexpr RHIVertexLayout() = default;
-		constexpr RHIVertexLayout( const std::initializer_list<RHIVertexAttribute>& a_Elements )
+		constexpr RHIVertexLayout( InitList<RHIVertexAttribute> a_Elements )
 			: Elements( a_Elements )
 		{
 			// Calculate offsets and stride

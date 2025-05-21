@@ -28,7 +28,7 @@ namespace Tridium::Refl::Internal {
 	{
 		static const MetaType metaType = ResolveMetaType<T>();
 		bool wasChanged = false;
-		EPropertyFlags overrideFlag = HasFlag( a_Flags, EPropertyFlags::VisibleAnywhere ) ? EPropertyFlags::VisibleAnywhere : EPropertyFlags::EPF_None;
+		EPropertyFlags overrideFlag = EnumFlags( a_Flags ).HasFlag( EPropertyFlags::VisibleAnywhere ) ? EPropertyFlags::VisibleAnywhere : EPropertyFlags::EPF_None;
 
 		if ( ImGui::TreeNodeEx( a_Name ) )
 		{

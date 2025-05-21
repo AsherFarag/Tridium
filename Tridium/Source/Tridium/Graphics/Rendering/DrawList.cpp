@@ -38,11 +38,11 @@ namespace Tridium {
 
 			// Get the material that will be used, either from the override list or the mesh source
 			MaterialHandle material = MaterialHandle::InvalidID;
-			if ( IsValidIndex( a_OverrideMaterials, subMeshIndex ) )
+			if ( subMeshIndex < a_OverrideMaterials.size() )
 			{
 				material = a_OverrideMaterials[subMeshIndex];
 			}
-			else if ( IsValidIndex( meshSource->GetMaterials(), subMesh.MaterialIndex ) )
+			else if ( subMesh.MaterialIndex < meshSource->GetMaterials().size() )
 			{
 				material = meshSource->GetMaterials()[subMesh.MaterialIndex];
 			}

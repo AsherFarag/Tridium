@@ -58,7 +58,7 @@ namespace Tridium {
 
 		//=====================================================
 		// Miscellaneous
-		const RHIDeviceFeatures& GetDeviceFeatures() const { return m_DeviceFeatures; }
+		virtual GPUInfo GetGPUInfo() const = 0;
 		//=====================================================
 
 
@@ -68,9 +68,6 @@ namespace Tridium {
 		virtual void DumpDebug() {}
 
 		#endif // RHI_DEBUG_ENABLED
-
-	protected:
-		RHIDeviceFeatures m_DeviceFeatures{};
 	};
 
 	//==============================================

@@ -163,7 +163,7 @@ namespace Tridium::D3D12 {
 			return;
 		}
 
-		D3D12_SET_DEBUG_NAME( PSO.Get(), a_Desc.Name );
+		D3D12_SET_DEBUG_NAME( PSO.Get(), a_Desc.Name, L"Unnamed Pipeline State" );
     }
 
 	bool RHIGraphicsPipelineState_D3D12Impl::Release()
@@ -215,7 +215,7 @@ namespace Tridium::D3D12 {
 		if ( a_IsLocal )
 			rootSigDesc.Desc_1_1.Flags |= D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
 
-		if ( !rootParams.IsEmpty() )
+		if ( !rootParams.Empty() )
 		{
 			rootSigDesc.Desc_1_1.NumParameters = Cast<UINT>(rootParams.Size());
 			rootSigDesc.Desc_1_1.pParameters = rootParams.Data();

@@ -10,11 +10,9 @@
 
 namespace Tridium {
 
-    ShaderCompilerOutput RHIShaderCompiler::Compile( const ShaderCompilerInput& a_Input )
+    Expected<ShaderCompilerOutput, String> RHIShaderCompiler::Compile( const ShaderCompilerInput& a_Input )
     {
-		ShaderCompilerOutput output;
-
-        #if RHI_ENABLE_SHADER_COMPILER
+    #if RHI_ENABLE_SHADER_COMPILER
 
         switch ( a_Input.Format )
         {
@@ -25,21 +23,18 @@ namespace Tridium {
             case ERHIShaderFormat::SPIRV_OpenGL:
             case ERHIShaderFormat::HLSL6_XBOX:
             {
-                output = D3D12::DXCompiler::Compile( a_Input );
+                return D3D12::DXCompiler::Compile( a_Input );
 				break;
             }
         #endif // RHI_ENABLE_SHADER_COMPILER_DX
-
-            default:	
-            {
-				ASSERT( false, "RHIShaderCompiler::Compile: Unsupported shader format." );
-                break;
-            }
         }
 
-        #endif // RHI_ENABLE_SHADER_COMPILER
+		return Unexpected( "RHIShaderCompiler::Compile: Unsupported shader format." );
 
-		return output;
+    #else
+		RHI_DEV_CHECK( false, "RHIShaderCompiler::Compile: Shader compiler is not enabled." );
+		return Unexpected( "Shader compiler is not enabled." );
+    #endif // RHI_ENABLE_SHADER_COMPILER
     }
 
 } // namespace Tridium

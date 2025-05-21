@@ -47,7 +47,7 @@ namespace Tridium::D3D12 {
 		rootParams.Reserve( a_Desc.Bindings.Size() );
 
         Array<Array<DescriptorRange>> descriptorRangesList; // Stores ranges for each root param
-        descriptorRangesList.Reserve( a_Desc.Bindings.Size() ); // Reserve memory
+        descriptorRangesList.Reserve( a_Desc.Bindings.Size() );
 
         for ( const auto& binding : a_Desc.Bindings )
         {
@@ -60,12 +60,7 @@ namespace Tridium::D3D12 {
 			}
             case ERHIShaderBindingType::ConstantBuffer:
             {
-                descriptorRangesList.EmplaceBack(); // New range for this param
-                auto& range = descriptorRangesList.Back();
-                range.Resize( 1 ); // Single descriptor range
-                range[0] = D3D12::DescriptorRange( D3D12_DESCRIPTOR_RANGE_TYPE_CBV, NumDWORDsFromBytes( binding.Size ), binding.Slot);
-
-                rootParams.EmplaceBack().AsDescriptorTable( d3d12Visibility, range );
+				rootParams.EmplaceBack().AsCBV( d3d12Visibility, binding.Slot );
                 break;
             }
             case ERHIShaderBindingType::Texture:
@@ -76,7 +71,7 @@ namespace Tridium::D3D12 {
                 range.Resize( 1 );
 				range[0] = D3D12::DescriptorRange( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, binding.Slot );
 
-				rootParams.EmplaceBack().AsCBV( d3d12Visibility, binding.Slot );
+				rootParams.EmplaceBack().AsSRV( d3d12Visibility, binding.Slot );
                 break;
             }
             case ERHIShaderBindingType::Sampler:
@@ -125,7 +120,7 @@ namespace Tridium::D3D12 {
 
         m_RootSignature = rootSignatureDesc.Create();
 
-		D3D12_SET_DEBUG_NAME( m_RootSignature.Get(), a_Desc.Name );
+		D3D12_SET_DEBUG_NAME( m_RootSignature.Get(), a_Desc.Name, L"Unnamed Root Signature" );
     }
 
     bool RHIBindingLayout_D3D12Impl::Release()
@@ -134,7 +129,7 @@ namespace Tridium::D3D12 {
         return true;
     }
 
-    bool RHIBindingLayout_D3D12Impl::IsValid() const
+    bool RHIBindingLayout_D3D12Impl::Valid() const
     {
 		return m_RootSignature != nullptr;
     }
@@ -154,7 +149,7 @@ namespace Tridium::D3D12 {
 		return true;
     }
 
-    bool RHIBindingSet_D3D12Impl::IsValid() const
+    bool RHIBindingSet_D3D12Impl::Valid() const
     {
         return true;
     }

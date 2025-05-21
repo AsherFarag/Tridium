@@ -98,7 +98,6 @@ namespace Tridium::D3D12 {
 
 		if ( m_ShouldResize && !ResizeBuffers() )
 		{
-			ASSERT( false, "Failed to resize buffers" );
 			return false;
 		}
 
@@ -124,8 +123,8 @@ namespace Tridium::D3D12 {
 			return true;
 		}
 
-		m_Width = a_Width;
-		m_Height = a_Height;
+		m_Width = Math::Max( a_Width, 8u );
+		m_Height = Math::Max( a_Height, 8u );
 
 		m_ShouldResize = true;
 
@@ -143,13 +142,13 @@ namespace Tridium::D3D12 {
 		// Resize the swap chain
 		if ( FAILED( SwapChain->ResizeBuffers( RTVs.Size(), m_Width, m_Height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING ) ) )
 		{
-			ASSERT( false, "Failed to resize swap chain buffers!" );
+			LOG( LogCategory::DirectX, Error, "Failed to resize swap chain buffers!" );
 			return false;
 		}
 
 		if ( !GetBackBuffers() )
 		{
-			ASSERT( false, "Failed to get back buffers!" );
+			LOG( LogCategory::DirectX, Error, "Failed to get back buffers!" );
 			return false;
 		}
 
@@ -180,9 +179,14 @@ namespace Tridium::D3D12 {
 
 		for ( uint32_t i = 0; i < RTVs.Size(); i++ )
 		{
+			RHITextureDescriptor desc = rtvDesc;
+		#if RHI_DEBUG_ENABLED
+			desc.Name = std::format( "{} RTV[{}]", Descriptor().Name, i );
+		#endif
+
 			if ( !RTVs[i] )
 			{
-				RTVs[i] = RHI::CreateTexture( rtvDesc );
+				RTVs[i] = RHI::CreateTexture( desc );
 			}
 
 			RHITexture_D3D12Impl* tex = RTVs[i]->As<RHITexture_D3D12Impl>();
@@ -191,16 +195,6 @@ namespace Tridium::D3D12 {
 				ASSERT( false, "Failed to get back buffer!" );
 				return false;
 			}
-
-		#if RHI_DEBUG_ENABLED
-			if ( RHIQuery::IsDebug() )
-			{
-				WString name = Descriptor().Name.empty() ? L"SwapChain" : WString( Descriptor().Name.begin(), Descriptor().Name.end() );
-				name += L" RTV[" + std::to_wstring( i ) + L"]";
-				tex->Texture.Resource.Get()->SetName( name.c_str() );
-				D3D12Context::Get()->StringStorage.EmplaceBack( std::move( name ) );
-			}
-		#endif
 		}
 
 		return true;
@@ -211,13 +205,19 @@ namespace Tridium::D3D12 {
 		SwapChain.Release();
 		for ( auto& rtv : RTVs )
 		{
+			ASSERT( rtv.use_count() == 1, "RTV owned by the swap chain is still in use - You should not be keeping a reference to the back buffer!" );
+			TODO( "Hack as for some reason the ID3D12Resource's have one extra ref. Figure this out." );
+			if ( ID3D12Resource* resource = rtv->As<RHITexture_D3D12Impl>()->Texture.Allocation->GetResource() )
+			{
+				resource->Release();
+			}
+			rtv->Release();
 			rtv = nullptr;
 		}
-		RTVs.Resize( 0 );
 		return true;
 	}
 
-	bool RHISwapChain_D3D12Impl::IsValid() const
+	bool RHISwapChain_D3D12Impl::Valid() const
 	{
 		return SwapChain != nullptr;
 	}

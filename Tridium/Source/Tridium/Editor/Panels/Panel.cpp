@@ -10,10 +10,10 @@ namespace Tridium {
 			return;
 
 		EventDispatcher dispatcher( e );
-		dispatcher.Dispatch<KeyPressedEvent>( TE_BIND_EVENT_FN( Panel::OnKeyPressed, 1 ) );
-		dispatcher.Dispatch<MouseButtonPressedEvent>( TE_BIND_EVENT_FN( Panel::OnMouseButtonPressed, 1 ) );
-		dispatcher.Dispatch<MouseButtonReleasedEvent>( TE_BIND_EVENT_FN( Panel::OnMouseButtonReleased, 1 ) );
-		dispatcher.Dispatch<MouseMovedEvent>( TE_BIND_EVENT_FN( Panel::OnMouseMoved, 1 ) );
+		dispatcher.Dispatch<KeyPressedEvent>( std::bind( &Panel::OnKeyPressed, this, std::placeholders::_1 ) );
+		dispatcher.Dispatch<MouseButtonPressedEvent>( std::bind( &Panel::OnMouseButtonPressed, this, std::placeholders::_1 ) );
+		dispatcher.Dispatch<MouseButtonReleasedEvent>( std::bind( &Panel::OnMouseButtonReleased, this, std::placeholders::_1 ) );
+		dispatcher.Dispatch<MouseMovedEvent>( std::bind( &Panel::OnMouseMoved, this, std::placeholders::_1 ) );
 	}
 
 	bool Panel::ImGuiBegin( ImGuiWindowFlags a_WindowFlags )

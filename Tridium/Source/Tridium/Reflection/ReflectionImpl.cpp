@@ -7,7 +7,7 @@ namespace Tridium::Refl::Internal {
     {
         for ( auto&& [id, metaData] : a_MetaType.Properties() )
         {
-            if ( !HasFlag( metaData.propFlags(), EPropertyFlags::Serialize ) )
+            if ( !EnumFlags( metaData.propFlags() ).HasFlag( EPropertyFlags::Serialize ) )
             {
                 continue;
             }
@@ -100,7 +100,7 @@ namespace Tridium::Refl::Internal {
     {
         for ( auto&& [id, metaData] : a_MetaType.Properties() )
         {
-            if ( !HasFlag( metaData.propFlags(), EPropertyFlags::Serialize ) )
+            if ( !EnumFlags( metaData.propFlags() ).HasFlag( EPropertyFlags::Serialize ) )
             {
                 continue;
             }

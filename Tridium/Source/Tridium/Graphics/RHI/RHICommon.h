@@ -1,6 +1,7 @@
 #pragma once
 #include "RHIConfig.h"
 #include "RHIDefinitions.h"
+#include "RHIToString.h"
 #include "RHIGlobals.h"
 #include "DynamicRHI.h"
 #include "RHIConstants.h"
@@ -31,13 +32,9 @@ namespace Tridium {
 
 		// Get the name of the given RHI type.
 		constexpr StringView GetRHIName( ERHInterfaceType a_API );
-	}
-
-	// RHI Query and Functions
-	namespace RHIQuery {
 
 		// Are we in debug mode?
-		static bool IsDebug()
+		inline bool IsDebug()
 		{
 		#if RHI_DEBUG_ENABLED
 			return s_RHIGlobals.Config.UseDebug;
@@ -47,9 +44,9 @@ namespace Tridium {
 		}
 
 		// Can samplers be used as separate objects?
-		static bool SupportsSeparateSamplers()
+		inline bool SupportsSeparateSamplers()
 		{
-			if ( RHI::GetRHIType() == ERHInterfaceType::OpenGL )
+			if ( GetRHIType() == ERHInterfaceType::OpenGL )
 			{
 				return false;
 			}
@@ -57,14 +54,14 @@ namespace Tridium {
 			return true;
 		}
 
-		static bool SupportsMultithreading()
+		inline bool SupportsMultithreading()
 		{
 			return s_RHIGlobals.SupportsMultithreading;
 		}
 
-		static ERHITextureAlignment GetTextureAlignment()
+		inline ERHITextureAlignment GetTextureAlignment()
 		{
-			switch ( RHI::GetRHIType() )
+			switch ( GetRHIType() )
 			{
 				using enum ERHInterfaceType;
 
@@ -83,24 +80,23 @@ namespace Tridium {
 
 		}
 
-		static ERHIShaderFormat GetShaderFormat()
+		inline ERHIShaderFormat GetShaderFormat()
 		{
-			switch ( RHI::GetRHIType() )
+			switch ( GetRHIType() )
 			{
 				using enum ERHInterfaceType;
 			case DirectX11:
 			case DirectX12:
 				return ERHIShaderFormat::HLSL6;
-
 			case OpenGL:
+				return ERHIShaderFormat::SPIRV_OpenGL;
 			case Vulkan:
 				return ERHIShaderFormat::SPIRV;
-
 			default:
 				return ERHIShaderFormat::Unknown;
 			}
 		}
-	} // namespace RHIQuery
+	} // namespace RHI
 
 	//======================================================================
 	// RHI Implementation

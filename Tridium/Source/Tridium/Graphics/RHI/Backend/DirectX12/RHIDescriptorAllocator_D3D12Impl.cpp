@@ -65,7 +65,7 @@ namespace Tridium::D3D12 {
 		HRESULT hr = a_Device->CreateDescriptorHeap( &desc, IID_PPV_ARGS( &heap ) );
 		ENSURE( SUCCEEDED( hr ), "Failed to create descriptor heap!" );
 
-		D3D12_SET_DEBUG_NAME( heap.Get(), a_DebugName );
+		D3D12_SET_DEBUG_NAME( heap.Get(), a_DebugName, L"Unnamed DescriptorHeap" );
 		LOG( LogCategory::RHI, Debug, "Heap Created - Name: {0}, Type: {1}, NumDescriptors: {2}",
 			a_DebugName, RHIDescriptorHeapTypeToString( a_Type ), a_NumDescriptors );
 
@@ -181,6 +181,20 @@ namespace Tridium::D3D12 {
 
 	void DescriptorHeapManager::Shutdown()
 	{
+		std::lock_guard lock( m_PooledHeapsMutex );
+		for ( auto& pooledHeap : m_PooledHeaps )
+		{
+			ENSURE( pooledHeap.Heap, "Heap is null!" );
+			pooledHeap.Heap.Release();
+		}
+
+		for ( auto& globalHeap : m_GlobalHeaps )
+		{
+			globalHeap.Release();
+		}
+
+		m_GlobalHeaps.Clear();
+		m_Shutdown = true;
 	}
 
 	ComPtr<ID3D12DescriptorHeap> DescriptorHeapManager::AcquirePooledHeap( ERHIDescriptorHeapType a_Type, uint32_t a_NumDescriptors, EDescriptorHeapFlags a_Flags )

@@ -4,29 +4,13 @@
 namespace Tridium {
 
 	//==========================================================
-	// RHI Buffer Type
-	//  Describes how the buffer is accessed.
-	//===========================================================
-	enum class ERHIBufferType : uint8_t
-	{
-		Undefined = 0,
-		// This buffer is accessed via raw bytes.
-		// RHIBufferDescriptor::Stride must specify the size of the format.
-		Raw,
-		// Accessing this buffer uses format conversion.
-		// RHIBufferDescriptor::Stride must match the size of the format.
-		Formatted,
-		// This buffer is accessed via a structure. RHIBufferDescriptor::Stride defines the size of the structure.
-		Structured,
-	};
-
-	//==========================================================
 	// RHI Buffer
 	//  A buffer represents a contiguous block of memory on the GPU.
 	//==========================================================
 
-	DECLARE_RHI_RESOURCE_DESCRIPTOR( RHIBufferDescriptor, RHIBuffer )
+	struct RHIBufferDescriptor
 	{
+		using ResourceType = class RHIBuffer;
 		// The size of the buffer in bytes. Uniform buffers must be aligned to 16 bytes.
 		size_t Size = 0;
 		ERHIBindFlags BindFlags = ERHIBindFlags::None;
@@ -36,6 +20,7 @@ namespace Tridium {
 		ERHIFormat Format = ERHIFormat::Unknown;
 		// For structured buffers, the stride of each element in the buffer. In bytes.
 		uint32_t Stride = 0;
+		String Name{};
 
 		constexpr RHIBufferDescriptor() = default;
 		constexpr RHIBufferDescriptor(
@@ -46,7 +31,7 @@ namespace Tridium {
 			ERHICpuAccess a_CpuAccess = RHIBufferDescriptor{}.CpuAccess,
 			ERHIBufferType a_Type = RHIBufferDescriptor{}.Type,
 			uint32_t a_Stride = RHIBufferDescriptor{}.Stride )
-			: Super( a_Name )
+			: Name( a_Name )
 			, Size( a_Size )
 			, BindFlags( a_BindFlags )
 			, Usage( a_Usage )
@@ -62,6 +47,7 @@ namespace Tridium {
 		constexpr RHIBufferDescriptor& SetCpuAccess( ERHICpuAccess a_CpuAccess ) { CpuAccess = a_CpuAccess; return *this; }
 		constexpr RHIBufferDescriptor& SetType( ERHIBufferType a_Type ) { Type = a_Type; return *this; }
 		constexpr RHIBufferDescriptor& SetStride( uint32_t a_Stride ) { Stride = a_Stride; return *this; }
+		constexpr RHIBufferDescriptor& SetName( StringView a_Name ) { Name = a_Name; return *this; }
 	};
 
 	DECLARE_RHI_RESOURCE_INTERFACE( RHIBuffer )
@@ -69,7 +55,14 @@ namespace Tridium {
 		RHI_RESOURCE_INTERFACE_BODY( RHIBuffer, ERHIResourceType::Buffer );
 
 		RHIBuffer( const RHIBufferDescriptor& a_Desc )
-			: m_Desc( a_Desc ) {}
+			: m_Desc( a_Desc ) 
+		{
+			RHI_DEV_CHECK( !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::RenderTarget )
+						&& !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::DepthStencil ),
+				std::format( "Buffer '{}' cannot be created with bind flags '{}'", a_Desc.Name, ToString( a_Desc.BindFlags ) ) );
+
+		}
+
 		virtual ~RHIBuffer() = default;
 
 		// Returns the internal state of the buffer.

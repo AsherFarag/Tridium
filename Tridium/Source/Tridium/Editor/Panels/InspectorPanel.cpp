@@ -88,7 +88,7 @@ namespace Tridium {
 
 			ImGui::TextUnformatted( a_Documentation->Description.c_str() );
 
-			if ( !a_Documentation->Members.IsEmpty() &&
+			if ( !a_Documentation->Members.Empty() &&
 				ImGui::TreeNode( "Members" ) )
 			{
 				for ( const VariableDocumentation& member : a_Documentation->Members )
@@ -105,7 +105,7 @@ namespace Tridium {
 				ImGui::TreePop();
 			}
 
-			if ( !a_Documentation->Functions.IsEmpty() &&
+			if ( !a_Documentation->Functions.Empty() &&
 				ImGui::TreeNode( "Functions" ) )
 			{
 				for ( const FunctionDocumentation& function : a_Documentation->Functions )
@@ -114,7 +114,7 @@ namespace Tridium {
 					{
 						ImGui::TextUnformatted( function.ReturnType.c_str() );
 						ImGui::TextUnformatted( function.Description.c_str() );
-						if ( !function.Parameters.IsEmpty() &&
+						if ( !function.Parameters.Empty() &&
 							ImGui::TreeNode( "Parameters" ) )
 						{
 							for ( const VariableDocumentation& param : function.Parameters )

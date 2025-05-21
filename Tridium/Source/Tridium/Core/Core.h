@@ -4,6 +4,7 @@
 #include <Tridium/Core/Cast.h>
 #include <Tridium/Core/Config.h>
 #include <Tridium/Core/Types.h>
+#include <Tridium/Core/Error.h>
 #include <Tridium/Core/Hash.h>
 #include <Tridium/Core/Memory.h>
 #include <Tridium/Core/Time.h>
@@ -16,30 +17,6 @@
 #include <Tridium/IO/FilePath.h>
 #include <Tridium/Utils/Macro.h>
 #include <Tridium/Reflection/ReflectionFwd.h>
-
-namespace Tridium {
-
-	template<typename _Flags, typename _EnumFlag>
-	constexpr bool HasFlag( _Flags Flags, _EnumFlag Flag )
-	{
-		std::underlying_type_t<_EnumFlag> flag = Cast<std::underlying_type_t<_EnumFlag>>( Flag );
-		return ( Cast<std::underlying_type_t<_EnumFlag>>(Flags) & Cast<std::underlying_type_t<_EnumFlag>>( Flag ) ) == flag;
-	}
-
-	template<typename _Array>
-	bool IsValidIndex( const _Array& a_Array, uint32_t a_Index )
-	{
-		return  a_Index >= 0 && a_Index < a_Array.size();
-	}
-
-	inline constexpr void HashCombine( size_t& a_Seed, size_t a_Hash )
-	{
-		a_Seed ^= a_Hash + 0x9e3779b9 + ( a_Seed << 6 ) + ( a_Seed >> 2 );
-	}
-
-}
-
-#define TE_BIND_EVENT_FN(fn, PlaceHolder) std::bind( &fn, this, std::placeholders::_##PlaceHolder )
 
 // ------------------
 

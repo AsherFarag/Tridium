@@ -18,7 +18,7 @@ namespace Tridium::Refl::Internal {
 	bool DrawBasicType( const char* a_Name, MetaAny& a_Handle, EPropertyFlags a_Flags )
 	{
 		::Tridium::EDrawPropertyFlags drawFlags
-			= HasFlag( a_Flags, ::Tridium::Refl::EPropertyFlags::EditAnywhere )
+			= EnumFlags( a_Flags ).HasFlag( ::Tridium::Refl::EPropertyFlags::EditAnywhere )
 			? ::Tridium::EDrawPropertyFlags::Editable : ::Tridium::EDrawPropertyFlags::ReadOnly;
 
 		MetaAny handle = a_Handle.type().is_pointer_like() ? *a_Handle : a_Handle;

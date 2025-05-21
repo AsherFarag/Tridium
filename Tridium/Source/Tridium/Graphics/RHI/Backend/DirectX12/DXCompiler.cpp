@@ -16,7 +16,7 @@ namespace Tridium::D3D12 {
 	{
 		DxcCreateInstanceProc CreateInstance = nullptr;
 
-		bool IsValid() const { return CreateInstance != nullptr; }
+		bool Valid() const { return CreateInstance != nullptr; }
 
 		DXCInternalState( const String& a_Modifier = "" )
 		{
@@ -74,21 +74,27 @@ namespace Tridium::D3D12 {
 		return s_DXCInternalState_XBOX;
 	}
 
-	const wchar_t* GetShaderModelFlag( ERHIShaderType a_Type, ERHIShaderModel a_Model );
-	Optional<Array<WString>> CreateCompilerArguments( const ShaderCompilerInput& a_Input );
+	Expected<Pair<ERHIShaderType, StringView>, String> GetShaderTypeAndEntryPoint( const ShaderCompilerInput& a_Input );
+	WStringView GetShaderModelFlag( ERHIShaderType a_Type, ERHIShaderModel a_Model );
+	Expected<Array<WString>, String> CreateCompilerArguments( const ShaderCompilerInput& a_Input, ERHIShaderType a_ShaderType, StringView a_EntryPoint );
 	void GetReflectionData( const ComPtr<IDxcBlob>& a_ReflectionBlob, ShaderCompilerOutput& a_Output );
 
-    ShaderCompilerOutput DXCompiler::Compile( const ShaderCompilerInput& a_Input )
+    Expected<ShaderCompilerOutput, String> DXCompiler::Compile( const ShaderCompilerInput& a_Input )
     {
-        ShaderCompilerOutput output;
+		auto typeAndEntryPoint = GetShaderTypeAndEntryPoint( a_Input );
+		if ( typeAndEntryPoint.IsError() )
+		{
+			return Unexpected( std::format( "Failed to get shader type and entry point because '{}'", typeAndEntryPoint.Error() ) );
+		}
+
+		const auto [shaderType, entryPoint] = typeAndEntryPoint.Value();
 
 		DXCInternalState& dxcState = ( a_Input.Format == ERHIShaderFormat::HLSL6_XBOX ) ? GetDXCInternalState_XBOX() : GetDXCInternalState();
 
 		// Check if the DXC compiler is available.
-		if ( !dxcState.IsValid() )
+		if ( !dxcState.Valid() )
 		{
-			LOG( LogCategory::DirectX, Error, "DXC compiler is not available" );
-			return {};
+			return Unexpected( "DXC compiler is not available" );
 		}
 
 		// Create the DXC compiler.
@@ -97,22 +103,19 @@ namespace Tridium::D3D12 {
 
 		if ( FAILED( dxcState.CreateInstance( CLSID_DxcUtils, IID_PPV_ARGS( &dxcUtils ) ) ) )
 		{
-			LOG( LogCategory::DirectX, Error, "Failed to create DXC Utils" );
-			return {};
+			return Unexpected( "Failed to create DXC Utils" );
 		}
 
 		if ( FAILED( dxcState.CreateInstance( CLSID_DxcCompiler, IID_PPV_ARGS( &dxcCompiler ) ) ) )
 		{
-			LOG( LogCategory::DirectX, Error, "Failed to create DXC Compiler" );
-			return {};
+			return Unexpected( "Failed to create DXC Compiler" );
 		}
 
 		// Include handler
 		ComPtr<IDxcIncludeHandler> includeHandler;
 		if ( FAILED( dxcUtils->CreateDefaultIncludeHandler( &includeHandler ) ) )
 		{
-			LOG( LogCategory::DirectX, Error, "Failed to create DXC Include Handler" );
-			return {};
+			return Unexpected( "Failed to create DXC Include Handler" );
 		}
 
 		DxcBuffer sourceBuffer;
@@ -120,18 +123,16 @@ namespace Tridium::D3D12 {
 		sourceBuffer.Size = a_Input.Source.size();
 		sourceBuffer.Encoding = DXC_CP_UTF8;
 
-
 		// Create the arguments to pass to the compiler.
-		Optional<Array<WString>> args = CreateCompilerArguments( a_Input );
-		if ( !args.has_value() )
+		Expected<Array<WString>, String> args = CreateCompilerArguments( a_Input, shaderType, entryPoint );
+		if ( args.IsError() )
 		{
-			LOG( LogCategory::DirectX, Error, "Failed to create compiler arguments" );
-			return {};
+			return Unexpected( std::format( "Failed to create compiler arguments '{}'", args.Error() ) );
 		}
 
 		Array<const wchar_t*> argsRaw;
 		argsRaw.Reserve( args->Size() );
-		for ( const WString& arg : args.value() )
+		for ( const WString& arg : args.Value() )
 		{
 			argsRaw.PushBack( arg.c_str() );
 		}
@@ -149,49 +150,123 @@ namespace Tridium::D3D12 {
 		// Check if compilation failed.
 		if ( FAILED( hr ) )
 		{
-			output.Error = "Failed to compile shader";
-			return output;
+			return Unexpected( "Failed to compile shader" );
 		}
 
-		// Get the error( if it exists ) and shader blobs.
+		// Get the error ( if it exists )
 		ComPtr<IDxcBlobUtf8> errorBlob;
 		if ( FAILED( dxcResult->GetOutput( DXC_OUT_ERRORS, IID_PPV_ARGS( &errorBlob ), nullptr ) ) )
 		{
-			output.Error = "Failed to get error blob";
-			return output;
+			return Unexpected( "Failed to compile shader and retrieve the corresponding error" );
 		}
 
-		if ( errorBlob )
+		if ( errorBlob != nullptr && errorBlob->GetStringLength() > 0 )
 		{
-			output.Error = String( errorBlob->GetStringPointer() );
+			return Unexpected( errorBlob->GetStringPointer() );
 		}
 
 		ComPtr<IDxcBlob> shaderBlob;
-		if ( FAILED( dxcResult->GetOutput( DXC_OUT_OBJECT, IID_PPV_ARGS( &shaderBlob ), nullptr ) ) )
+		if ( FAILED( dxcResult->GetOutput( DXC_OUT_OBJECT, IID_PPV_ARGS( &shaderBlob ), nullptr ) )
+			|| shaderBlob == nullptr )
 		{
-			return output;
+			return Unexpected( "Failed to get shader blob" );
 		}
 
-		// Get the reflection data.
-		//ComPtr<IDxcBlob> reflectionBlob;
-		//if ( FAILED( dxcResult->GetOutput( DXC_OUT_REFLECTION, IID_PPV_ARGS( &reflectionBlob ), nullptr ) ) )
-		//{
-		//	output.Error = "Failed to get reflection blob";
-		//	return output;
-		//}
-		//GetReflectionData( reflectionBlob, output );
+		if ( shaderBlob->GetBufferSize() <= 0 )
+		{
+			return Unexpected( "Shader blob is empty" );
+		}
+
+		ShaderCompilerOutput output;
 
 		// Copy the shader blob to the output.
-		if ( shaderBlob && shaderBlob->GetBufferSize() > 0 )
-		{
-			output.ByteCode.Resize( shaderBlob->GetBufferSize() );
-			std::memcpy( output.ByteCode.Data(), shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize() );
-		}
+		output.ByteCode.Resize( shaderBlob->GetBufferSize() );
+		std::memcpy( output.ByteCode.Data(), shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize() );
+
+		// Get the shader type.
+
 
 		return output;
     }
 
-	const wchar_t* GetShaderModelFlag( ERHIShaderType a_Type, ERHIShaderModel a_Model )
+	Expected<Pair<ERHIShaderType, StringView>, String> GetShaderTypeAndEntryPoint( const ShaderCompilerInput& a_Input )
+	{
+		StringView entryPoint = a_Input.EntryPoint;
+		if ( entryPoint.empty() )
+		{
+			if ( a_Input.ShaderType == ERHIShaderType::Unknown )
+			{
+				// Attempt to parse the entry point from the source code.
+				TODO( "Hack to find entry point" );
+				size_t index = a_Input.Source.find( "SMain(" );
+				const size_t entryPointLength = 6; // Length of "VSMain"
+				if ( index == String::npos || index == 0 )
+				{
+					return Unexpected( "Failed to find entry point" );
+				}
+
+				entryPoint = StringView{ &a_Input.EntryPoint.at( index - 1 ), entryPointLength };
+			}
+			else
+			{
+				// Set the entry point to the default one for the shader type.
+				switch ( a_Input.ShaderType )
+				{
+				case ERHIShaderType::Vertex:   entryPoint = "VSMain"; break;
+				case ERHIShaderType::Hull:     entryPoint = "HSMain"; break;
+				case ERHIShaderType::Domain:   entryPoint = "DSMain"; break;
+				case ERHIShaderType::Geometry: entryPoint = "GSMain"; break;
+				case ERHIShaderType::Pixel:    entryPoint = "PSMain"; break;
+				case ERHIShaderType::Compute:  entryPoint = "CSMain"; break;
+				default: ASSERT( false ); return Unexpected( "Unknown shader type" );
+				}
+
+				// Check if the entry point is valid.
+				if ( a_Input.Source.find( entryPoint ) == String::npos )
+				{
+					return Unexpected( std::format( "Expected Entry point '{}' not found", entryPoint ) );
+				}
+			}
+		}
+
+		ERHIShaderType shaderType = a_Input.ShaderType;
+		if ( shaderType == ERHIShaderType::Unknown )
+		{
+			// Attempt to parse the shader type from the entry point.
+			if ( entryPoint.starts_with( "VS" ) )
+			{
+				shaderType = ERHIShaderType::Vertex;
+			}
+			else if ( entryPoint.starts_with( "HS" ) )
+			{
+				shaderType = ERHIShaderType::Hull;
+			}
+			else if ( entryPoint.starts_with( "DS" ) )
+			{
+				shaderType = ERHIShaderType::Domain;
+			}
+			else if ( entryPoint.starts_with( "GS" ) )
+			{
+				shaderType = ERHIShaderType::Geometry;
+			}
+			else if ( entryPoint.starts_with( "PS" ) )
+			{
+				shaderType = ERHIShaderType::Pixel;
+			}
+			else if ( entryPoint.starts_with( "CS" ) )
+			{
+				shaderType = ERHIShaderType::Compute;
+			}
+			else
+			{
+				return Unexpected( "Unknown shader type" );
+			}
+		}
+
+		return Pair{ shaderType, entryPoint };
+	}
+
+	WStringView GetShaderModelFlag( ERHIShaderType a_Type, ERHIShaderModel a_Model )
 	{
 		switch ( a_Type )
 		{
@@ -267,12 +342,24 @@ namespace Tridium::D3D12 {
 		return L"";
 	};
 
-	Optional< Array<WString> > CreateCompilerArguments( const ShaderCompilerInput& a_Input )
+	Expected<Array<WString>, String> CreateCompilerArguments( const ShaderCompilerInput& a_Input, ERHIShaderType a_ShaderType, StringView a_EntryPoint )
 	{
 		// Arguments that will be passed to the compiler.
-		Array<WString> args = {
-			L"-res_may_alias",
-		};
+		Array<WString> args; args.Reserve( a_Input.CustomArguments.Size() );
+
+		// Add custom arguments.
+		for ( const auto& customArg : a_Input.CustomArguments )
+		{
+			args.EmplaceBack( ToWString( customArg ) );
+		}
+
+		// Only use custom arguments and return here.
+		if ( a_Input.OverrideDefaultArguments )
+		{
+			return args;
+		}
+
+		args.EmplaceBack( L"-res_may_alias" );
 
 		// Set the optimization level.
 		if ( a_Input.Flags.HasFlag( ERHIShaderCompilerFlags::DisableOptimization ) )
@@ -320,8 +407,7 @@ namespace Tridium::D3D12 {
 			}
 			default:
 			{
-				ASSERT( false, "DXCompiler::Compile: Unsupported shader format." );
-				return {};
+				return Unexpected( "Unsupported shader format" );
 			}
 		}
 
@@ -329,7 +415,7 @@ namespace Tridium::D3D12 {
 		// Convert the shader type and model to a string for the compiler.
 		// E.g. "vs_5_0" for a vertex shader with shader model 5.0.
 		args.EmplaceBack( L"-T" );
-		args.EmplaceBack( GetShaderModelFlag( a_Input.ShaderType, a_Input.MinimumModel ) );
+		args.EmplaceBack( GetShaderModelFlag( a_ShaderType, a_Input.MinimumModel ) );
 
 		#if RHI_DEBUG_ENABLED
 		if ( a_Input.Flags.HasFlag( ERHIShaderCompilerFlags::EnableDebugInfo ) )
@@ -363,17 +449,8 @@ namespace Tridium::D3D12 {
 		////////////////////////////////////////
 
 		// Add the entry point.
-		if ( !a_Input.EntryPoint.empty() )
-		{
-			args.EmplaceBack( L"-E" );
-			args.EmplaceBack( a_Input.EntryPoint.begin(), a_Input.EntryPoint.end() );
-		}
-		else
-		{
-			// Default entry point
-			args.EmplaceBack( L"-E" );
-			args.EmplaceBack( L"main" );
-		}
+		args.EmplaceBack( L"-E" );
+		args.EmplaceBack( a_EntryPoint.begin(), a_EntryPoint.end() );
 
 		////////////////////////////////////////
 		// DEFINITIONS
@@ -410,16 +487,6 @@ namespace Tridium::D3D12 {
 		{
 			args.EmplaceBack( L"-I" );
 			args.EmplaceBack( includeDir.begin(), includeDir.end() );
-		}
-
-		////////////////////////////////////////
-		// CUSTOM ARGUMENTS
-		////////////////////////////////////////
-
-		// Add custom arguments.
-		for ( const auto& customArg : a_Input.CustomArguments )
-		{
-			args.EmplaceBack( customArg.begin(), customArg.end() );
 		}
 
 		return args;

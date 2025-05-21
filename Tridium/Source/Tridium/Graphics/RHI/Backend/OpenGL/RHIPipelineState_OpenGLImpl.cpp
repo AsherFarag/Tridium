@@ -71,32 +71,32 @@ namespace Tridium::OpenGL {
 
 		// Collect the uniform locations
 		{
-			m_UnifromLocations.clear();
-			for ( const RHIShaderBinding& binding : a_Desc.BindingLayout->Descriptor().Bindings )
-			{
-				const auto InitUniform = [&]( StringView a_Name )
-					{
-						GLint location = OpenGL4::GetUniformLocation( m_ShaderProgramID, a_Name.data() );
-						if ( location < 0 )
-						{
-							LOG( LogCategory::RHI, Error, "Uniform '{0}' not found in shader while committing PSO '{1}'", a_Name, a_Desc.Name );
-						}
-						else
-						{
-							m_UnifromLocations[binding.NameHash] = location;
-						}
-					};
+			//m_UnifromLocations.clear();
+			//for ( const RHIShaderBinding& binding : a_Desc.BindingLayout->Descriptor().Bindings )
+			//{
+			//	const auto InitUniform = [&]( StringView a_Name )
+			//		{
+			//			GLint location = OpenGL4::GetUniformLocation( m_ShaderProgramID, a_Name.data() );
+			//			if ( location < 0 )
+			//			{
+			//				LOG( LogCategory::RHI, Error, "Uniform '{0}' not found in shader while committing PSO '{1}'", a_Name, a_Desc.Name );
+			//			}
+			//			else
+			//			{
+			//				m_UnifromLocations[binding.NameHash] = location;
+			//			}
+			//		};
 
-				if ( binding.Type() == ERHIShaderBindingType::Sampler )
-				{
-					// OpenGL combines samplers and textures into a single binding
-					m_UnifromLocations[binding.NameHash] = -1;
-				}
-				else
-				{
-					InitUniform( m_Desc.BindingLayout->Descriptor().GetBindingName( binding.NameHash ) );
-				}
-			}
+			//	if ( binding.Type() == ERHIShaderBindingType::Sampler )
+			//	{
+			//		// OpenGL combines samplers and textures into a single binding
+			//		m_UnifromLocations[binding.NameHash] = -1;
+			//	}
+			//	else
+			//	{
+			//		InitUniform( m_Desc.BindingLayout->Descriptor().GetBindingName( binding.NameHash ) );
+			//	}
+			//}
 		}
 
 		// Collect combined samplers
@@ -139,7 +139,7 @@ namespace Tridium::OpenGL {
 		return true;
 	}
 
-	bool RHIGraphicsPipelineState_OpenGLImpl::IsValid() const
+	bool RHIGraphicsPipelineState_OpenGLImpl::Valid() const
 	{
 		return m_ShaderProgramID != 0;
 	}

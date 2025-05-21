@@ -73,14 +73,15 @@ namespace Tridium::D3D12 {
 
 #undef QUERY_D3D12_DEVICE_VERSION
 
-
-
 		// Retrieve the adapter
 		if ( FAILED( m_DXGIFactory->EnumAdapters( 0, &m_DXGIAdapter ) ) )
 		{
 			LOG( LogCategory::DirectX, Error, "Failed to enumerate adapters!" );
 			return false;
 		}
+
+		// Initialise GPU Info
+		GPUInfo gpuInfo{};
 
 		// Set up Command Contexts
 		for ( size_t i = 0; i < m_CmdContexts.Size(); ++i )
@@ -147,7 +148,7 @@ namespace Tridium::D3D12 {
 		int allocatorFlags = D3D12MA::ALLOCATOR_FLAG_NONE;
 		allocatorFlags |= ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED;
 		allocatorFlags |= ALLOCATOR_FLAG_MSAA_TEXTURES_ALWAYS_COMMITTED;
-		allocatorFlags |= !RHIQuery::SupportsMultithreading() ? ALLOCATOR_FLAG_SINGLETHREADED : ALLOCATOR_FLAG_NONE;
+		allocatorFlags |= !RHI::SupportsMultithreading() ? ALLOCATOR_FLAG_SINGLETHREADED : ALLOCATOR_FLAG_NONE;
 		D3D12MA::ALLOCATOR_DESC  allocatorDesc = {
 			.Flags = D3D12MA::ALLOCATOR_FLAGS( allocatorFlags ),
 			.pDevice = m_Device.Get(),
@@ -182,16 +183,36 @@ namespace Tridium::D3D12 {
 
 	bool DynamicRHI_D3D12Impl::Shutdown()
 	{
+		for ( auto& cmdCtx : m_CmdContexts )
+		{
+			cmdCtx.Wait( cmdCtx.Signal() );
+			cmdCtx.~CommandContext();
+		}
+		
+		TODO( "Temp fix " );
+		s_RHIGlobals = {};
+
 		m_UploadBuffer.Release();
 
-		m_Device.Release();
+		m_DescriptorHeapManager.Shutdown();
+
+		m_Allocator.Release();
+
+		if ( ID3D12Device* device = m_Device.Get(); ULONG refCount = m_Device.Release() )
+		{
+			LOG( LogCategory::DirectX, Error, "D3D12 device still has {0} references! - Destroying the device anyway", refCount );
+			for ( ULONG i = 0; i < refCount; ++i )
+			{
+				device->Release();
+			}
+		}
 
 		m_DXGIFactory.Release();
 
     #if RHI_DEBUG_ENABLED
+		m_D3D12Debug.Release();
 		DumpDebug();
 		m_DXGIDebug.Release();
-		m_D3D12Debug.Release();
     #endif
 
 		return true;
@@ -265,6 +286,64 @@ namespace Tridium::D3D12 {
 	RHISwapChainRef DynamicRHI_D3D12Impl::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )
 	{
 		return RHI::CreateNativeResource<RHISwapChain_D3D12Impl>( a_Desc );
+	}
+
+	GPUInfo DynamicRHI_D3D12Impl::GetGPUInfo() const
+	{
+		GPUInfo gpuInfo{};
+		if ( m_DXGIAdapter )
+		{
+			DXGI_ADAPTER_DESC desc{};
+			m_DXGIAdapter->GetDesc( &desc );
+			gpuInfo.VendorID = desc.VendorId;
+			gpuInfo.DriverVersion = ToString( desc.Revision );
+			gpuInfo.DeviceName = ToString( WStringView( desc.Description ) );
+			gpuInfo.VRAMBytes = desc.DedicatedVideoMemory;
+		}
+
+		
+		D3D_SHADER_MODEL highestShaderModel = D3D_SHADER_MODEL::D3D_SHADER_MODEL_6_0;
+		if ( D3D12_FEATURE_DATA_SHADER_MODEL shaderModel{}; 
+			SUCCEEDED( m_Device->CheckFeatureSupport( D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof( shaderModel ) ) ) )
+		{
+			highestShaderModel = shaderModel.HighestShaderModel;
+			gpuInfo.DeviceFeatures.HighestShaderModel = Translate( highestShaderModel );
+		}
+
+		// Check for feature support
+
+		auto InitFeature = [&gpuInfo]( ERHIFeature a_Feature, bool a_Support )
+			{
+				gpuInfo.DeviceFeatures.Features[Cast<uint32_t>( a_Feature )].SetSupport( a_Support ? ERHIFeatureSupport::Supported : ERHIFeatureSupport::Unsupported );
+			};
+
+		// Compute shaders are always supported in D3D12
+		InitFeature( ERHIFeature::ComputeShaders, highestShaderModel >= D3D_SHADER_MODEL::D3D_SHADER_MODEL_5_1 );
+
+		
+		if ( D3D12_FEATURE_DATA_D3D12_OPTIONS options{};
+			SUCCEEDED( m_Device->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof( options ) ) ) )
+		{
+			// From: https://microsoft.github.io/DirectX-Specs/d3d/HLSL_SM_6_6_DynamicResources.html
+			InitFeature( ERHIFeature::BindlessResources, 
+				highestShaderModel >= D3D_SHADER_MODEL::D3D_SHADER_MODEL_6_6
+				&& options.ResourceBindingTier >= D3D12_RESOURCE_BINDING_TIER_3 );
+		}
+
+		if ( D3D12_FEATURE_DATA_D3D12_OPTIONS5 options{}; 
+			SUCCEEDED( m_Device->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS5, &options, sizeof( options ) ) ) )
+		{
+			InitFeature( ERHIFeature::RayTracing, options.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED );
+		}
+
+		if ( D3D12_FEATURE_DATA_D3D12_OPTIONS7 options{};
+			SUCCEEDED( m_Device->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS7, &options, sizeof( options ) ) ) )
+		{
+			InitFeature( ERHIFeature::MeshShaders, options.MeshShaderTier != D3D12_MESH_SHADER_TIER_NOT_SUPPORTED );
+		}
+		
+
+		return gpuInfo;
 	}
 
 	//////////////////////////////////////////////////////////////////////////

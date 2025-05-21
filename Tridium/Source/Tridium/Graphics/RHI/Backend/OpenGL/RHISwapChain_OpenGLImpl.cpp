@@ -38,7 +38,7 @@ namespace Tridium::OpenGL {
 
 	bool RHISwapChain_OpenGLImpl::Resize( uint32_t a_Width, uint32_t a_Height )
 	{
-		if ( !Window )
+		if ( !Window || !a_Width || !a_Height )
 		{
 			return false;
 		}
@@ -87,7 +87,8 @@ namespace Tridium::OpenGL {
 			ERHITextureDimension::Texture2D,
 			a_Desc.Width, a_Desc.Height, 1,
 			a_Desc.Format
-		).SetBindFlags( ERHIBindFlags::RenderTarget | ERHIBindFlags::ShaderResource );
+		).SetBindFlags( ERHIBindFlags::RenderTarget | ERHIBindFlags::ShaderResource )
+		.SetUsage( ERHIUsage::Dynamic );
 
 		BackBufferTexture = RHI::CreateTexture( texDesc );
 		if ( !BackBufferTexture )
@@ -168,10 +169,10 @@ namespace Tridium::OpenGL {
 
 	void Framebuffer::Resize( uint32_t a_Width, uint32_t a_Height )
 	{
-		// We just need to resize the back buffer texture
-		OpenGL1::BindTexture( GL_TEXTURE_2D, *BackBufferTexture->NativePtrAs<GLuint>() );
-		OpenGL1::TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, a_Width, a_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr );
-		OpenGL1::BindTexture( GL_TEXTURE_2D, 0 );
+		auto desc = BackBufferTexture->Descriptor();
+		desc.Width = a_Width;
+		desc.Height = a_Height;
+		BackBufferTexture = RHI::CreateTexture( desc );
 	}
 
 } // namespace Tridium

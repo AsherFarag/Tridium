@@ -38,6 +38,49 @@ namespace Tridium {
 			return To<_To>::From( Cast<_From>( a_From ) );
 		}
 
+		//////////////////////////////////////////////////////////////////////////
+		// RHI SHADER MODEL - D3D12 SHADER MODEL
+		//////////////////////////////////////////////////////////////////////////
+
+		template<>
+		struct To<ERHIShaderModel>
+		{
+			using FromType = D3D_SHADER_MODEL;
+			static constexpr ERHIShaderModel From( D3D_SHADER_MODEL a_Model )
+			{
+				switch ( a_Model )
+				{
+				case D3D_SHADER_MODEL_5_1: return ERHIShaderModel::SM_5_0;
+				case D3D_SHADER_MODEL_6_0: return ERHIShaderModel::SM_6_0;
+				case D3D_SHADER_MODEL_6_1: return ERHIShaderModel::SM_6_1;
+				case D3D_SHADER_MODEL_6_2: return ERHIShaderModel::SM_6_2;
+				case D3D_SHADER_MODEL_6_3: return ERHIShaderModel::SM_6_3;
+				case D3D_SHADER_MODEL_6_4: return ERHIShaderModel::SM_6_4;
+				case D3D_SHADER_MODEL_6_5: return ERHIShaderModel::SM_6_5;
+				default:                   return ERHIShaderModel::SM_5_0;
+				}
+			}
+		};
+
+		template<>
+		struct To<D3D_SHADER_MODEL>
+		{
+			using FromType = ERHIShaderModel;
+			static constexpr D3D_SHADER_MODEL From( ERHIShaderModel a_Model )
+			{
+				switch ( a_Model )
+				{
+				case ERHIShaderModel::SM_5_0: return D3D_SHADER_MODEL_5_1;
+				case ERHIShaderModel::SM_6_0: return D3D_SHADER_MODEL_6_0;
+				case ERHIShaderModel::SM_6_1: return D3D_SHADER_MODEL_6_1;
+				case ERHIShaderModel::SM_6_2: return D3D_SHADER_MODEL_6_2;
+				case ERHIShaderModel::SM_6_3: return D3D_SHADER_MODEL_6_3;
+				case ERHIShaderModel::SM_6_4: return D3D_SHADER_MODEL_6_4;
+				case ERHIShaderModel::SM_6_5: return D3D_SHADER_MODEL_6_5;
+				default:                      return D3D_SHADER_MODEL_5_1;
+				}
+			}
+		};
 
 		//////////////////////////////////////////////////////////////////////////
 		// RHI BLEND OP - D3D12 BLEND 

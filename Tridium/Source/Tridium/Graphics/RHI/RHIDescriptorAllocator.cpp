@@ -48,7 +48,7 @@ namespace Tridium {
 		// Set to an invalid index
 		o_BaseIndex = 0xFFFFFFFFu;
 
-		if ( m_Ranges.IsEmpty() )
+		if ( m_Ranges.Empty() )
 		{
 			return false;
 		}

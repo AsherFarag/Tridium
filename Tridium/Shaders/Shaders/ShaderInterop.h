@@ -37,9 +37,9 @@ namespace Tridium {
 #if defined( __PSSL__ )
 	// Defined elsewhere
 #elif defined( __spirv__ )
-	#define INLINED_CONSTANT( _Name, _Type ) ConstantBuffer< _Type > _Name : register( b0 )
+	#define INLINED_CONSTANTS( _Name, _Type ) ConstantBuffer< _Type > _Name : register( b0 )
 #else
-	#define INLINED_CONSTANT( _Name, _Type ) ConstantBuffer< _Type > _Name : register( b0 )
+	#define INLINED_CONSTANTS( _Name, _Type ) ConstantBuffer< _Type > _Name : register( b0 )
 #endif
 
 #define COMBINED_SAMPLER( _Name, _Type, _Slot ) \

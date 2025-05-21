@@ -22,11 +22,11 @@
 DECLARE_LOG_CATEGORY( DirectX );
 
 #if RHI_USE_DEBUG_NAMES
-	#define D3D12_SET_DEBUG_NAME( _Object, _Name ) \
+	#define D3D12_SET_DEBUG_NAME( _Object, _Name, _DefaultName ) \
 	do { \
-		if ( RHIQuery::IsDebug() && !_Name.empty() ) \
+		if ( RHI::IsDebug() && static_cast<bool>( _Object ) ) \
 		{ \
-			::Tridium::WString wName( _Name.begin(), _Name.end() ); \
+			::Tridium::WString wName = !_Name.empty() ? WString( _Name.begin(), _Name.end() ) : WString( _DefaultName ); \
 			_Object->SetName( wName.c_str() ); \
 			::Tridium::D3D12::D3D12Context::Get()->StringStorage.EmplaceBack( std::move( wName ) ); \
 		} \
@@ -111,11 +111,11 @@ namespace Tridium::D3D12 {
 		{
 			if ( this != &other )
 			{
-				m_ParentDevice = std::move( other.m_ParentDevice );
+				m_ParentDevice = std::exchange( other.m_ParentDevice, nullptr );
 			}
 			return *this;
 		}
-		virtual ~DeviceChild() = default;
+		virtual ~DeviceChild() {}
 		ID3D12Device* ParentDevice() const { return m_ParentDevice; }
 
 	private:
@@ -157,14 +157,23 @@ namespace Tridium::D3D12 {
 	struct ManagedResource
 	{
 		ComPtr<D3D12MA::Allocation> Allocation{};
-		ComPtr<ID3D12Resource> Resource{};
+		ID3D12Resource* Resource = nullptr;
+
+		~ManagedResource()
+		{
+			Release();
+		}
 
 		bool Valid() const { return Allocation && Resource; }
 
 		void Release()
 		{
 			Allocation.Release();
-			Resource.Release();
+			if ( Resource )
+			{
+				Resource->Release();
+				Resource = nullptr;
+			}
 		}
 
 		bool Commit( const D3D12_RESOURCE_DESC& a_ResourceDesc,
@@ -199,10 +208,19 @@ namespace Tridium::D3D12 {
 
 		~CommandContext()
 		{
-			if ( CmdList ) CmdList->Release();
+			if ( CmdList ) CmdList.Release();
 			if ( CmdAllocator ) CmdAllocator->Reset();
 			if ( CmdQueue ) CmdQueue->Signal( Fence.Get(), FenceValue );
 			if ( FenceEvent ) CloseHandle( FenceEvent );
+
+			// Set the resources to null so they are not released again
+			TODO( "Hacky fix for D3D12 Shutdown" );
+			CmdQueue = nullptr;
+			CmdAllocator = nullptr;
+			CmdList = nullptr;
+			Fence = nullptr;
+			FenceEvent = nullptr;
+			FenceValue = 0;
 		}
 
 		[[nodiscard]] bool IsFenceComplete( uint64_t a_FenceValue ) const
@@ -292,7 +310,7 @@ namespace Tridium::D3D12 {
 			m_CurrentOffset = 0;
 		}
 
-		ID3D12Resource* GetResource() const { return m_UploadBuffer.Resource.Get(); }
+		ID3D12Resource* GetResource() const { return m_UploadBuffer.Resource; }
 
 	private:
 		ManagedResource m_UploadBuffer{};
@@ -383,6 +401,12 @@ namespace Tridium::D3D12 {
 		// Returns true if the given heap is a child of this manager.
 		bool IsHeapAChild( const DescriptorHeap& a_Heap ) const { return m_Heap->Heap() == a_Heap.Heap(); }
 
+		void Release()
+		{
+			ENSURE( m_Heap.use_count() == 1, "Heap is still in use! " );
+			m_Heap.reset();
+		}
+
 	private:
 		DescriptorHeapRef m_Heap;
 	};
@@ -407,6 +431,7 @@ namespace Tridium::D3D12 {
 		void AddHeapToPool( ComPtr<ID3D12DescriptorHeap>&& a_Heap, ERHIDescriptorHeapType a_Type, uint32_t a_NumDescriptors, EDescriptorHeapFlags a_Flags );
 
 	private:
+		bool m_Shutdown = false;
 		ID3D12Device* m_Device = nullptr;
 		Array<DescriptorManager> m_GlobalHeaps{};
 
@@ -431,7 +456,7 @@ namespace Tridium::D3D12 {
 
 		NON_COPYABLE( DescriptorHeapManager );
 		DescriptorHeapManager() = default;
-		~DescriptorHeapManager() { Shutdown(); }
+		~DescriptorHeapManager() { ENSURE( m_Shutdown, "DescriptorHeapManager was not shutdown!" ); }
 
 		// Initialize the descriptor heap manager
 		void Init( ID3D12Device* a_Device, uint32_t a_NumGlobalResourceDescriptors, uint32_t a_NumGlobalSamplerDescriptors );
@@ -466,7 +491,7 @@ namespace Tridium::D3D12 {
 		virtual ~RHIFence_D3D12Impl();
 
 		bool Release() override;
-		bool IsValid() const override;
+		bool Valid() const override;
 		const void* NativePtr() const override;
 
 		uint64_t GetCompletedValue() override;
@@ -491,8 +516,8 @@ namespace Tridium::D3D12 {
 
 		virtual bool Release() override;
 		virtual size_t GetSizeInBytes() const override;
-		virtual const void* NativePtr() const override { return Texture.Resource.Get(); }
-		virtual bool IsValid() const override { return Texture.Valid(); }
+		virtual const void* NativePtr() const override { return Texture.Resource; }
+		virtual bool Valid() const override { return Texture.Valid(); }
 
 		// D3D12 specific functions
 		[[nodiscard]] D3D12_RESOURCE_DESC GetD3D12ResourceDesc() const;
@@ -521,9 +546,9 @@ namespace Tridium::D3D12 {
 
 		RHIBuffer_D3D12Impl( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data = {} );
 		virtual bool Release() override { ManagedBuffer.Release(); return true; }
-		virtual bool IsValid() const override { return ManagedBuffer.Valid(); }
-		virtual size_t GetSizeInBytes() const override { return ManagedBuffer.Allocation->GetSize(); }
-		virtual const void* NativePtr() const override { return ManagedBuffer.Resource.Get(); }
+		virtual bool Valid() const override { return ManagedBuffer.Valid(); }
+		virtual size_t GetSizeInBytes() const override { return ManagedBuffer.Resource->GetDesc().Width; }
+		virtual const void* NativePtr() const override { return ManagedBuffer.Resource; }
 
 		// D3D12 specific functions
 		D3D12_RESOURCE_DESC GetD3D12ResourceDesc() const;
@@ -542,7 +567,7 @@ namespace Tridium::D3D12 {
 		RHISampler_D3D12Impl( const DescriptorType & a_Desc );
 
 		bool Release() override { SamplerHeap.Release(); SamplerHandle = {}; SamplerDesc = {}; return true; }
-		bool IsValid() const override { return SamplerHeap != nullptr; }
+		bool Valid() const override { return SamplerHeap != nullptr; }
 		const void* NativePtr() const override { return SamplerHeap.Get(); }
 
 		D3D12_STATIC_SAMPLER_DESC GetStaticSamplerDesc( uint32_t a_ShaderRegister, ERHIShaderVisibility a_ShaderVisibility = ERHIShaderVisibility::All ) const;
@@ -562,7 +587,7 @@ namespace Tridium::D3D12 {
 		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIBindingLayout_D3D12Impl, ERHInterfaceType::DirectX12 );
 		RHIBindingLayout_D3D12Impl( const DescriptorType & a_Desc );
 		bool Release() override;
-		bool IsValid() const override;
+		bool Valid() const override;
 		const void* NativePtr() const override;
 
 		ComPtr<ID3D12RootSignature> m_RootSignature;
@@ -584,7 +609,7 @@ namespace Tridium::D3D12 {
 		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIBindingSet_D3D12Impl, ERHInterfaceType::DirectX12 );
 		RHIBindingSet_D3D12Impl( const DescriptorType & a_Desc );
 		bool Release() override;
-		bool IsValid() const override;
+		bool Valid() const override;
 		const void* NativePtr() const override;
 	};
 
@@ -598,7 +623,7 @@ namespace Tridium::D3D12 {
 		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIShaderModule_D3D12Impl, ERHInterfaceType::DirectX12 )
 		RHIShaderModule_D3D12Impl( const DescriptorType & a_Desc );
 		bool Release() override;
-		bool IsValid() const override;
+		bool Valid() const override;
 		const void* NativePtr() const override;
 
 		Array<Byte> Bytecode;
@@ -615,7 +640,7 @@ namespace Tridium::D3D12 {
 
 		RHIGraphicsPipelineState_D3D12Impl( const DescriptorType & a_Desc );
 		bool Release() override;
-		bool IsValid() const override { return PSO != nullptr; }
+		bool Valid() const override { return PSO != nullptr; }
 		const void* NativePtr() const override { return PSO.Get(); }
 
 		ComPtr<ID3D12PipelineState> PSO;
@@ -634,7 +659,7 @@ namespace Tridium::D3D12 {
 
 		RHISwapChain_D3D12Impl( const DescriptorType & a_Desc );
 		bool Release() override;
-		bool IsValid() const override;
+		bool Valid() const override;
 		const void* NativePtr() const override { return SwapChain.Get(); }
 		bool Present() override;
 		RHITextureRef GetBackBuffer() override;
@@ -666,7 +691,7 @@ namespace Tridium::D3D12 {
 
 		RHICommandList_D3D12Impl( const RHICommandListDescriptor & a_Desc );
 		virtual bool Release() override;
-		virtual bool IsValid() const override { return CommandList != nullptr; }
+		virtual bool Valid() const override { return CommandList != nullptr; }
 		virtual const void* NativePtr() const override { return CommandList.Get(); }
 
 		virtual bool SetGraphicsCommands( const RHIGraphicsCommandBuffer & a_CmdBuffer ) override;
@@ -785,6 +810,11 @@ namespace Tridium::D3D12 {
 		virtual RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDescriptor& a_Desc ) override;
 		virtual RHIBindingSetRef CreateBindingSet( const RHIBindingSetDescriptor& a_Desc ) override;
 		virtual RHISwapChainRef CreateSwapChain( const RHISwapChainDescriptor& a_Desc ) override;
+		//=====================================================
+
+		//=====================================================
+		// Miscellaneous
+		virtual GPUInfo GetGPUInfo() const override;
 		//=====================================================
 
 		//====================================================

@@ -43,21 +43,16 @@ namespace Tridium {
 			default:
 			{
 				// Unsupported RHI type
-				LOG( LogCategory::RHI, Error, "Unsupported RHI type: ", Cast<uint32_t>(a_Config.RHIType) );
+				LOG( LogCategory::RHI, Error, "Unsupported RHI type: {0}", ToString( a_Config.RHIType ) );
 				return false;
 			}
 		}
 
-		if ( !ASSERT( s_DynamicRHI ) )
-		{
-			return false;
-		}
+		ScopeGuard shutdownGuard( [] { delete s_DynamicRHI; s_DynamicRHI = nullptr; } );
 
 		if ( s_DynamicRHI->Init( a_Config ) == false )
 		{
 			// Failed to initialise the rendering API
-			delete s_DynamicRHI;
-			s_DynamicRHI = nullptr;
 			return false;
 		}
 
@@ -65,6 +60,7 @@ namespace Tridium {
 		s_RHIGlobals.Config = a_Config;
 		TODO( "Set up proper Multithreading query" );
 		s_RHIGlobals.SupportsMultithreading = a_Config.SingleThreaded == false;
+		s_RHIGlobals.GPUInfo = s_DynamicRHI->GetGPUInfo();
 		
 		if ( a_Config.CreateSwapChain )
 		{
@@ -74,18 +70,17 @@ namespace Tridium {
 			desc.BufferCount = 2;
 			desc.Format = ERHIFormat::RGBA8_UNORM;
 			desc.Flags = ERHISwapChainFlags::UseVSync;
+			desc.Name = "RHI SwapChain";
 			s_RHIGlobals.SwapChain = RHI::CreateSwapChain( desc );
 			if ( s_RHIGlobals.SwapChain == nullptr )
 			{
 				// Failed to create the swap chain
-				delete s_DynamicRHI;
-				s_DynamicRHI = nullptr;
 				return false;
 			}
 		}
 
 		// Create the frame fence
-		s_RHIGlobals.Fence = RHI::CreateFence();
+		s_RHIGlobals.Fence = RHI::CreateFence( RHIFenceDescriptor{} );
 		// Set the initial frame index
 		s_RHIGlobals.FrameIndex = 0;
 		// And initialise the fence values
@@ -96,23 +91,21 @@ namespace Tridium {
 		//	fenceValue = 0;
 		//}
 
+		shutdownGuard.Dismiss();
 		return true;
 	}
 
 	bool RHI::Shutdown()
 	{
-		TODO( "This" );
-		RHI::FrameFenceWait();
-
 		if ( s_DynamicRHI == nullptr )
 		{
 			return false;
 		}
 
-		s_RHIGlobals = RHIGlobals();
-
 		// Shutdown the rendering API
 		bool success = s_DynamicRHI->Shutdown();
+
+		s_RHIGlobals = {};
 
 		delete s_DynamicRHI;
 		s_DynamicRHI = nullptr;
@@ -170,11 +163,7 @@ namespace Tridium {
 
 	RHIFeatureInfo RHI::GetFeatureInfo( ERHIFeature a_Feature )
 	{
-		if ( s_DynamicRHI == nullptr )
-		{
-			return RHIFeatureInfo();
-		}
-		return s_DynamicRHI->GetDeviceFeatures().GetFeatureInfo( a_Feature );
+		return s_RHIGlobals.GPUInfo.DeviceFeatures.GetFeatureInfo( a_Feature );
 	}
 
 	ERHIFeatureSupport RHI::GetFeatureSupport( ERHIFeature a_Feature )

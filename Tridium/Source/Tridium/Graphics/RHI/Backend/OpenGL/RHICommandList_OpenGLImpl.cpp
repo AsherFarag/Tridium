@@ -90,7 +90,15 @@ namespace Tridium::OpenGL {
 			}
 			case ERHIShaderBindingType::ConstantBuffer:
 			{
-				NOT_IMPLEMENTED;
+				RHIBuffer_OpenGLImpl* buffer = binding.Resource->As<RHIBuffer_OpenGLImpl>();
+				if ( binding.Range == RHIBufferRange::EntireBuffer() )
+				{
+					OpenGL4::BindBufferBase( GL_UNIFORM_BUFFER, binding.Slot, buffer->BufferObj );
+				}
+				else
+				{
+					OpenGL4::BindBufferRange( GL_UNIFORM_BUFFER, binding.Slot, buffer->BufferObj, binding.Range.Offset, binding.Range.Size );
+				}
 				break;
 			}
 			case ERHIShaderBindingType::StructuredBuffer:
@@ -168,12 +176,8 @@ namespace Tridium::OpenGL {
 
 		GLState::s_BoundGraphicsPSO = SharedPtrCast<RHIGraphicsPipelineState_OpenGLImpl>( a_Data.PSO->shared_from_this() );
 
-		// Bind the shader program
-		GLState::BindProgram( pso->GetShaderProgramID() );
-
 		// Bind the VAO
 		GLState::BindVertexArray( pso->GetVAO() );
-
 
 		// Set blend state
 		for ( uint32_t i = 0; i < RHIConstants::MaxColorTargets; ++i )
@@ -255,6 +259,10 @@ namespace Tridium::OpenGL {
 		default: ASSERT( false, "Invalid fill mode in Graphics Pipeline State!" ); break;
 		}
 		OpenGL3::FrontFace( rasterizerState.Clockwise ? GL_CW : GL_CCW );
+
+
+		// Bind the shader program last to avoid unnecessary state changes
+		GLState::BindProgram( pso->GetShaderProgramID() );
 	}
 
 	void RHICommandList_OpenGLImpl::SetRenderTargets( const RHICommand::SetRenderTargets& a_Data )

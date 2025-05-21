@@ -20,6 +20,9 @@ namespace Tridium {
 		// The RHI configuration.
 		RHIConfig Config{};
 
+		// Static information about the GPU.
+		GPUInfo GPUInfo{};
+
 		// The swap chain instance used by the RHI.
 		// This is set by the RHI implementation automatically but can be overridden by the user.
 		// An example for overriding the swap chain is to use a custom swap chain for VR.
@@ -43,16 +46,6 @@ namespace Tridium {
 
 		// Whether the RHI supports being able to send commands from multiple threads.
 		bool SupportsMultithreading = false;
-
-		struct GPUInfo
-		{
-			String AdapterName;
-			String AdapterInternalDriverVersion;
-			String AdapterUserDriverVersion;
-			String AdapterDriverDate;
-			uint32_t DeviceID = 0u;
-			uint32_t VendorID = 0u;
-		} GPUInfo{};
 	};
 
 	extern RHIGlobals s_RHIGlobals;

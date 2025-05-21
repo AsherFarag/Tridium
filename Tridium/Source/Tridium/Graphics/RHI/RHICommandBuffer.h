@@ -648,7 +648,7 @@ namespace Tridium {
 	inline _CommandBufferType& RHIBaseCommandBuffer<_CommandBufferType>::ResourceBarrier( 
 		RHIResourceBarrier a_Barrier DEBUG_INFO )
 	{
-		RHI_DEV_CHECK( a_Barrier.Resource || a_Barrier.Resource->IsValid(), "Failed to create a resource barrier as the resource is invalid!" );
+		RHI_DEV_CHECK( a_Barrier.Resource || a_Barrier.Resource->Valid(), "Failed to create a resource barrier as the resource is invalid!" );
 
 		switch ( a_Barrier.Resource->GetType() )
 		{
@@ -778,6 +778,7 @@ namespace Tridium {
 	inline RHIGraphicsCommandBuffer& RHIGraphicsCommandBuffer::SetGraphicsPipelineState( 
 		RHIGraphicsPipelineStateRef a_PSO DEBUG_INFO )
 	{
+		RHI_DEV_CHECK( a_PSO->Valid(), "Pipeline state is invalid!" );
 		Commands.EmplaceBack( RHICommand::SetGraphicsPipelineState{ a_PSO.get() } );
 		m_PipelineStates.insert( std::move( a_PSO ) );
 		ADD_DEBUG_INFO();
@@ -787,6 +788,7 @@ namespace Tridium {
 	inline RHIGraphicsCommandBuffer& RHIGraphicsCommandBuffer::SetIndexBuffer(
 		RHIBufferRef a_IBO, ERHIStateTransition a_StateTransitionMode DEBUG_INFO )
 	{
+		RHI_DEV_CHECK( a_IBO && a_IBO->Valid(), "Buffer is invalid!" );
 		RHI_DEV_CHECK( EnumFlags( a_IBO->Descriptor().BindFlags ).HasFlag( ERHIBindFlags::IndexBuffer ), "Buffer is not an index buffer!" );
 		RHI_DEV_CHECK( a_IBO->Descriptor().Size > 0, "Buffer size is zero!" );
 
@@ -799,6 +801,7 @@ namespace Tridium {
 	inline RHIGraphicsCommandBuffer& RHIGraphicsCommandBuffer::SetVertexBuffer( 
 		RHIBufferRef a_VBO, ERHIStateTransition a_StateTransitionMode DEBUG_INFO )
 	{
+		RHI_DEV_CHECK( a_VBO && a_VBO->Valid(), "Buffer is invalid!" );
 		RHI_DEV_CHECK( EnumFlags( a_VBO->Descriptor().BindFlags ).HasFlag( ERHIBindFlags::VertexBuffer ), "Buffer is not a vertex buffer!" );
 		RHI_DEV_CHECK( a_VBO->Descriptor().Size > 0, "Buffer size is zero!" );
 
@@ -823,7 +826,7 @@ namespace Tridium {
 
 		for ( size_t i = 0; i < a_RTV.size() && i < data.RTV.MaxSize(); ++i )
 		{
-			if ( !a_RTV[i] || !a_RTV[i]->IsValid() )
+			if ( !a_RTV[i] || !a_RTV[i]->Valid() )
 			{
 				ASSERT( false, "Render target is null!" );
 				continue;

@@ -58,7 +58,7 @@ namespace Tridium::OpenGL {
 			Release();
 		}
 
-		if ( RHIQuery::IsDebug() && !a_Desc.Name.empty() )
+		if ( RHI::IsDebug() && !a_Desc.Name.empty() )
 		{
 			OpenGL4::ObjectLabel( GL_SHADER, m_ShaderID, a_Desc.Name.size(), Cast<const GLchar*>( a_Desc.Name.data() ) );
 		}
@@ -67,7 +67,7 @@ namespace Tridium::OpenGL {
 
 	bool RHIShaderModule_OpenGLImpl::Release()
 	{
-		if ( IsValid() )
+		if ( Valid() )
 		{
 			OpenGL2::DeleteShader( m_ShaderID );
 		}

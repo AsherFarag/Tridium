@@ -88,13 +88,13 @@ namespace Tridium {
 		input.Source = cachedShader.Source;
 		input.ShaderType = a_Type;
 		// Get the shader format from the RHI
-		input.Format = RHIQuery::GetShaderFormat();
+		input.Format = RHI::GetShaderFormat();
 
 		// Compile the shader
-		ShaderCompilerOutput output = RHIShaderCompiler::Compile( input );
-		if ( !output.IsValid() )
+		auto output = RHIShaderCompiler::Compile( input );
+		if ( output.IsError() )
 		{
-			LOG( LogCategory::Rendering, Error, "Failed to compile shader '{0}' - Error: {1}", cachedShader.Name, output.Error );
+			LOG( LogCategory::Rendering, Error, "Failed to compile shader '{0}' - Error: {1}", cachedShader.Name, output.Error() );
 			return nullptr;
 		}
 
@@ -102,7 +102,7 @@ namespace Tridium {
 		RHIShaderModuleDescriptor desc;
 		desc.Name = cachedShader.Name;
 		desc.Type = input.ShaderType;
-		desc.Bytecode = output.ByteCode;
+		desc.Bytecode = output.Value().ByteCode;
 		desc.Source = cachedShader.Source;
 
 		// Create the shader module

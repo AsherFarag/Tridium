@@ -19,7 +19,7 @@ namespace Tridium::D3D12 {
         return false;
     }
 
-    bool RHIShaderModule_D3D12Impl::IsValid() const
+    bool RHIShaderModule_D3D12Impl::Valid() const
     {
         return true;
     }

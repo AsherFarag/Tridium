@@ -1,11 +1,13 @@
 #pragma once
 #include <type_traits>
 #include <utility>
+#include <initializer_list>
 #include <Tridium/Core/Assert.h>
+#include "Optional.h"
 
 namespace Tridium {
 
-	//TODO( "Probably make Expected use a Variant as it is safer and I think I forgot some edge cases" );
+	//TODO( "Probably make Expected use a variant or something
 
 #define EXPECTED_ASSERT(_Condition, _Message) \
 		if constexpr ( std::is_constant_evaluated() ) \
@@ -18,67 +20,71 @@ namespace Tridium {
 			ENSURE( _Condition, _Message ); \
 		}
 
-	template<typename _Error>
-	class Unexpected
-	{
+	template <class _Error>
+	class Unexpected {
 	public:
 		using ErrorType = _Error;
+		constexpr Unexpected( Unexpected const& ) = default;
+		constexpr Unexpected( Unexpected&& ) = default;  // NOLINT
+		constexpr auto operator=( Unexpected const& ) -> Unexpected & = default;
+		constexpr auto operator=( Unexpected&& ) -> Unexpected & = default;  // NOLINT
+		~Unexpected() = default;
 
-		constexpr Unexpected( const _Error& a_Error )
-			: m_Error( a_Error ) {}
-		constexpr Unexpected( _Error&& a_Error ) noexcept
-			: m_Error( std::move( a_Error ) ) {}
+		template <class... _Args>
+			requires std::constructible_from<_Error, _Args...>
+		constexpr explicit Unexpected( std::in_place_t, _Args&&... a_Args )
+			: m_Error( std::forward<_Args>( a_Args )... )
+		{}
 
-		template<typename _UError>
-		constexpr Unexpected( const Unexpected<_UError>& a_Other )
-			: m_Error( a_Other.m_Error ) {}
+		template <class U, class... _Args>
+			requires std::constructible_from< _Error, std::initializer_list<U>&, _Args... > 
+		constexpr explicit Unexpected( 
+			std::in_place_t,
+			std::initializer_list<U> a_InitList,
+			_Args&&... a_Args )
+			: m_Error( a_InitList, std::forward<_Args>( a_Args )... )
+		{}
 
-		template<typename _UError>
-        constexpr Unexpected( Unexpected<_UError>&& a_Other ) noexcept
-            : m_Error( std::move( a_Other.m_Error ) ) {}
+		template <class _UError = _Error>
+			requires (!std::same_as<std::remove_cvref_t<_UError>, Unexpected>)
+			&& (!std::same_as<std::remove_cvref_t<_UError>, std::in_place_t>)
+			&& std::constructible_from<_Error, _UError>
+		constexpr explicit Unexpected( _UError&& a_Error )
+			: m_Error( std::forward<_UError>( a_Error ) )
+		{}
 
-		constexpr Unexpected& operator=( const Unexpected& a_Other )
+		constexpr _Error const&  Error() const& noexcept  { return m_Error; }
+		constexpr _Error&        Error() & noexcept { return m_Error; }
+		constexpr _Error const&& Error() const&& noexcept { return std::move( m_Error ); }
+		constexpr _Error&&       Error() && noexcept { return std::move( m_Error ); }
+
+		constexpr void Swap( Unexpected& other ) noexcept(std::is_nothrow_swappable_v<_Error>) requires(std::is_swappable_v<_Error>)
 		{
-			if ( this != &a_Other )
+			std::swap( m_Error, other.m_Error );
+		}
+
+		template <class _UError>
+			requires(requires(_Error const& x, _UError const& y) 
 			{
-				m_Error = a_Other.m_Error;
-			}
-			return *this;
-		}
-
-		constexpr Unexpected& operator=( Unexpected && a_Other ) noexcept
+				{ x == y } -> std::convertible_to<bool>; 
+			})
+		friend constexpr bool operator==( Unexpected const& a_A, Unexpected<_UError> const& a_B )
 		{
-			if ( this != &a_Other )
-			{
-				m_Error = std::move( a_Other.m_Error );
-			}
-			return *this;
+			return a_A.Error() == a_B.Error();
 		}
 
-		[[nodiscard]] constexpr _Error& Error() { return m_Error; }
-		[[nodiscard]] constexpr const _Error& Error() const { return m_Error; }
-
-		template<typename _UError>
-		[[nodiscard]] constexpr bool operator==( const Unexpected<_UError>& a_Other ) const
+		friend constexpr void swap( Unexpected& a_X, Unexpected& a_Y ) noexcept(noexcept(a_X.Swap( a_Y )))
+			requires(std::is_swappable_v<_Error>) 
 		{
-			return m_Error == a_Other.Error();
+			a_X.Swap( a_Y );
 		}
 
-		template<typename _UError>
-		[[nodiscard]] constexpr bool operator!=( const Unexpected<_UError>& a_Other ) const
-		{
-			return m_Error != a_Other.Error();
-		}
-
-    private:
+	private: 
 		_Error m_Error;
-
-		template<typename _UError>
-		friend class Unexpected;
-
-		template<typename _Value, typename _UError>
-		friend class Expected;
 	};
+
+	template <class _Error>
+	Unexpected( _Error ) -> Unexpected<_Error>;
 
 	template<typename _Value, typename _Error>
 	class Expected
@@ -115,6 +121,7 @@ namespace Tridium {
 				new (&m_Error) _Error( a_Other.m_Error );
 			}
 		}
+
 		constexpr Expected( Expected&& a_Other ) noexcept
 			: m_HasValue( a_Other.m_HasValue )
 		{
@@ -130,12 +137,12 @@ namespace Tridium {
 
 		template<typename _UError>
 		constexpr Expected( const Unexpected<_UError>& a_Error ) noexcept
-			: m_Error( a_Error.m_Error ), m_HasValue( false )
+			: m_Error( a_Error.Error() ), m_HasValue( false )
 		{}
 
 		template<typename _UError>
 		constexpr Expected( Unexpected<_UError>&& a_Error ) noexcept
-			: m_Error( std::move( a_Error.m_Error ) ), m_HasValue( false )
+			: m_Error( std::move( std::move( a_Error ).Error() ) ), m_HasValue( false )
 		{}
 
 		template <typename... _Args>
@@ -147,22 +154,15 @@ namespace Tridium {
 		{
 			if ( this != &a_Other )
 			{
-				if ( m_HasValue )
-				{
-					m_Value.~_Value();
-				}
-				else
-				{
-					m_Error.~_Error();
-				}
+				Clear();
 				m_HasValue = a_Other.m_HasValue;
 				if ( m_HasValue )
 				{
-					new (&m_Value) _Value( a_Other.m_Value );
+					std::construct_at( std::addressof( m_Value ), a_Other.m_Value );
 				}
 				else
 				{
-					new (&m_Error) _Error( a_Other.m_Error );
+					std::construct_at( std::addressof( m_Error ), a_Other.m_Error );
 				}
 			}
 			return *this;
@@ -172,22 +172,15 @@ namespace Tridium {
 		{
 			if ( this != &a_Other )
 			{
-				if ( m_HasValue )
-				{
-					m_Value.~_Value();
-				}
-				else
-				{
-					m_Error.~_Error();
-				}
+				Clear();
 				m_HasValue = a_Other.m_HasValue;
 				if ( m_HasValue )
 				{
-					new (&m_Value) _Value( std::move( a_Other.m_Value ) );
+					std::construct_at( std::addressof( m_Value ), std::move( a_Other.m_Value ) );
 				}
 				else
 				{
-					new (&m_Error) _Error( std::move( a_Other.m_Error ) );
+					std::construct_at( std::addressof( m_Error ), std::move( a_Other.m_Error ) );
 				}
 			}
 			return *this;
@@ -195,14 +188,7 @@ namespace Tridium {
 
 		constexpr ~Expected()
 		{
-			if ( m_HasValue )
-			{
-				m_Value.~_Value();
-			}
-			else
-			{
-				m_Error.~_Error();
-			}
+			Clear();
 		}
 
 		[[nodiscard]] constexpr bool IsError() const noexcept { return !m_HasValue; }
@@ -218,8 +204,6 @@ namespace Tridium {
 		[[nodiscard]] constexpr const _Value* operator->() const { return &Value(); }
 
 		[[nodiscard]] constexpr explicit operator bool() const { return m_HasValue; }
-		[[nodiscard]] constexpr _Value& GetValueOr( _Value& a_Default ) { return m_HasValue ? m_Value : a_Default; }
-		[[nodiscard]] constexpr const _Value& GetValueOr( _Value& a_Default ) const { return m_HasValue ? m_Value : a_Default; }
 
 	private:
 		union
@@ -228,6 +212,50 @@ namespace Tridium {
 			_Error m_Error;
 		};
 		bool m_HasValue;
+
+	private:
+		constexpr void Clear()
+		{
+			if ( m_HasValue )
+			{
+				if constexpr ( !std::is_trivially_destructible_v<_Value> )
+				{
+					m_Value.~_Value();
+				}
+			}
+			else if constexpr ( !std::is_trivially_destructible_v<_Error> )
+			{
+				m_Error.~_Error();
+			}
+		}
 	};
+
+	template<typename _Error>
+	class Expected<void, _Error>
+	{
+	public:
+		using ValueType = void;
+		using ErrorType = _Error;
+
+		constexpr Expected() noexcept = default;
+		constexpr Expected( const Expected& a_Other ) noexcept = default;
+		constexpr Expected( Expected&& a_Other ) noexcept = default;
+		constexpr Expected& operator=( const Expected& a_Other ) noexcept = default;
+		constexpr Expected& operator=( Expected&& a_Other ) noexcept = default;
+		constexpr Expected( const _Error& a_Error ) noexcept : m_Error( a_Error ) {}
+		constexpr Expected( _Error&& a_Error ) noexcept : m_Error( std::move( a_Error ) ) {}
+		constexpr Expected( const Unexpected<_Error>& a_Error ) noexcept : m_Error( a_Error.Error() ) {}
+		constexpr Expected( Unexpected<_Error>&& a_Error ) noexcept : m_Error( std::move( std::move( a_Error ).Error() ) ) {}
+
+		[[nodiscard]] constexpr bool IsError() const noexcept { return !m_Error.has_value(); }
+		[[nodiscard]] constexpr bool HasValue() const noexcept { return !IsError(); }
+		[[nodiscard]] constexpr _Error& Error() { EXPECTED_ASSERT( IsError(), "Attempting to access error when there is no error" ); return m_Error.value(); }
+		[[nodiscard]] constexpr const _Error& Error() const { EXPECTED_ASSERT( IsError(), "Attempting to access error when there is no error" ); return m_Error.value(); }
+		[[nodiscard]] constexpr explicit operator bool() const { return HasValue(); }
+
+	private:
+		Optional<_Error> m_Error{};
+	};
+
 
 } // namespace Tridium

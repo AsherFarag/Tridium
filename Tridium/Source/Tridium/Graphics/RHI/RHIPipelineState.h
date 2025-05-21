@@ -81,9 +81,10 @@ namespace Tridium {
 
 	//==============================================
 	// RHI Graphics Pipeline State Descriptor
-	DECLARE_RHI_RESOURCE_DESCRIPTOR( RHIGraphicsPipelineStateDescriptor, RHIGraphicsPipelineState )
+	struct RHIGraphicsPipelineStateDescriptor
 	{
-		ERHITopology Topology = ERHITopology::Triangle;
+		using ResourceType = class RHIGraphicsPipelineState;
+		ERHITopology Topology = ERHITopology::Unknown;
 		RHIVertexLayout VertexLayout{};
 		RHIBindingLayoutRef BindingLayout{};
 
@@ -101,6 +102,8 @@ namespace Tridium {
 		RHIRasterizerState RasterizerState{};
 
 		RHIFramebufferInfo FramebufferInfo{};
+
+		String Name{};
 
 		RHIShaderModule* GetShader( ERHIShaderType a_Type ) const
 		{

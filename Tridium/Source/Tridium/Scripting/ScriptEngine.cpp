@@ -23,7 +23,7 @@ namespace Tridium {
 		for ( const auto&& [id, type] : Refl::ResolveMetaTypes() )
 		{
 			Refl::MetaType metaType = type;
-			if ( !metaType.IsValid() || !HasFlag( metaType.GetClassFlags(), Refl::EClassFlags::Scriptable ) )
+			if ( !metaType.IsValid() || !EnumFlags( metaType.GetClassFlags() ).HasFlag( Refl::EClassFlags::Scriptable ) )
 				continue;
 
 			Refl::MetaAttribute regFuncAtt = metaType.GetMetaAttribute( Refl::Props::RegisterScriptableProp::ID );

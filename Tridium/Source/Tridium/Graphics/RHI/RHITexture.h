@@ -55,37 +55,29 @@ namespace Tridium {
 	//  Textures can be 1D, 2D, 3D, or cubemaps.
 	//===========================================================================================
 
-	DECLARE_RHI_RESOURCE_DESCRIPTOR( RHITextureDescriptor, RHITexture )
+	struct RHITextureDescriptor
 	{
-		// Texure Dimension
+		using ResourceType = class RHITexture;
 		ERHITextureDimension Dimension = ERHITextureDimension::Unknown;
-		// Width of the texture
 		uint32_t Width = 1;     
-		// Height of the texture
 		uint32_t Height = 1;
-		// Depth or Array-Size of the texture
 		union
 		{
 			uint32_t Depth = 1; // Number of depth slices in a 3D texture.
 			uint32_t ArraySize; // Number of array slices in a 1D or 2D texture array.
 		};
-		// Number of mip levels in the texture. NOTE: This is set by RHITexture.
-		uint32_t Mips = 1;
-		// Number of samples. Only 2D and 2D array textures can be multisampled.
-		uint32_t Samples = 1;
-		// If a texture is required to be cleared, it is usually more performant to have a clear value set here.
+		uint32_t Mips = 1; // Number of mip levels in the texture. NOTE: If set to 0, it will be the maximum number of mips for the texture size.
+		uint32_t Samples = 1; // Number of samples. Only 2D and 2D array textures can be multisampled.
 		Optional<RHIClearValue> ClearValue{};
-		// Data format of the texture.
 		ERHIFormat Format = ERHIFormat::Unknown;
-		// Bind flags.
 		ERHIBindFlags BindFlags = ERHIBindFlags::None;
-		// Texture usage hint .
 		ERHIUsage Usage = ERHIUsage::Default;
-		// CPU access flags. None by default.
 		ERHICpuAccess CpuAccess = ERHICpuAccess::None;
+		String Name{};
 
 		constexpr RHITextureDescriptor() = default;
-		constexpr RHITextureDescriptor( StringView a_Name,
+		constexpr RHITextureDescriptor( 
+			StringView a_Name,
 			ERHITextureDimension a_Dimension,
 			uint32_t a_Width,
 			uint32_t a_Height,
@@ -97,7 +89,7 @@ namespace Tridium {
 			ERHIUsage a_Usage = RHITextureDescriptor{}.Usage,
 			ERHICpuAccess a_CpuAccess = RHITextureDescriptor{}.CpuAccess,
 			Optional<RHIClearValue> a_ClearValue = RHITextureDescriptor{}.ClearValue )
-			: Super( a_Name )
+			: Name( a_Name )
 			, Dimension( a_Dimension )
 			, Width( a_Width )
 			, Height( a_Height )
@@ -144,18 +136,19 @@ namespace Tridium {
 				|| Dimension == ERHITextureDimension::TextureCubeArray;
 		}
 
-		constexpr inline RHITextureDescriptor& SetDimension( ERHITextureDimension a_Dimension ) { Dimension = a_Dimension; return *this; }
-		constexpr inline RHITextureDescriptor& SetWidth( uint32_t a_Width ) { Width = a_Width; return *this; }
-		constexpr inline RHITextureDescriptor& SetHeight( uint32_t a_Height ) { Height = a_Height; return *this; }
-		constexpr inline RHITextureDescriptor& SetDepth( uint32_t a_Depth ) { Depth = a_Depth; return *this; }
-		constexpr inline RHITextureDescriptor& SetArraySize( uint32_t a_ArraySize ) { ArraySize = a_ArraySize; return *this; }
-		constexpr inline RHITextureDescriptor& SetFormat( ERHIFormat a_Format ) { Format = a_Format; return *this; }
-		constexpr inline RHITextureDescriptor& SetMips( uint32_t a_Mips ) { Mips = a_Mips; return *this; }
-		constexpr inline RHITextureDescriptor& SetSamples( uint32_t a_Samples ) { Samples = a_Samples; return *this; }
-		constexpr inline RHITextureDescriptor& SetBindFlags( ERHIBindFlags a_BindFlags ) { BindFlags = a_BindFlags; return *this; }
-		constexpr inline RHITextureDescriptor& SetUsage( ERHIUsage a_Usage ) { Usage = a_Usage; return *this; }
-		constexpr inline RHITextureDescriptor& SetCpuAccess( ERHICpuAccess a_CpuAccess ) { CpuAccess = a_CpuAccess; return *this; }
-		constexpr inline RHITextureDescriptor& SetClearValue( Optional<RHIClearValue> a_ClearValue ) { ClearValue = a_ClearValue; return *this; }
+		constexpr auto& SetDimension( ERHITextureDimension a_Dimension ) { Dimension = a_Dimension; return *this; }
+		constexpr auto& SetWidth( uint32_t a_Width ) { Width = a_Width; return *this; }
+		constexpr auto& SetHeight( uint32_t a_Height ) { Height = a_Height; return *this; }
+		constexpr auto& SetDepth( uint32_t a_Depth ) { Depth = a_Depth; return *this; }
+		constexpr auto& SetArraySize( uint32_t a_ArraySize ) { ArraySize = a_ArraySize; return *this; }
+		constexpr auto& SetFormat( ERHIFormat a_Format ) { Format = a_Format; return *this; }
+		constexpr auto& SetMips( uint32_t a_Mips ) { Mips = a_Mips; return *this; }
+		constexpr auto& SetSamples( uint32_t a_Samples ) { Samples = a_Samples; return *this; }
+		constexpr auto& SetBindFlags( ERHIBindFlags a_BindFlags ) { BindFlags = a_BindFlags; return *this; }
+		constexpr auto& SetUsage( ERHIUsage a_Usage ) { Usage = a_Usage; return *this; }
+		constexpr auto& SetCpuAccess( ERHICpuAccess a_CpuAccess ) { CpuAccess = a_CpuAccess; return *this; }
+		constexpr auto& SetClearValue( Optional<RHIClearValue> a_ClearValue ) { ClearValue = a_ClearValue; return *this; }
+		constexpr auto& SetName( StringView a_Name ) { Name = a_Name; return *this; }
 	};
 
 	DECLARE_RHI_RESOURCE_INTERFACE( RHITexture )
@@ -165,6 +158,12 @@ namespace Tridium {
 		RHITexture( const RHITextureDescriptor & a_Desc )
 			: m_Desc( a_Desc )
 		{
+			RHI_DEV_CHECK( !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::VertexBuffer )
+						&& !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::IndexBuffer )
+						&& !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::ConstantBuffer )
+						&& !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::IndirectArgument ),
+				std::format( "Texture '{}' cannot be created with bind flags '{}'", a_Desc.Name, ToString( a_Desc.BindFlags ) ) );
+
 			if ( m_Desc.Mips == RHIConstants::AllMipLevels )
 			{
 				if ( m_Desc.Is1D() )

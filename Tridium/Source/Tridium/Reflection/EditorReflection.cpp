@@ -53,7 +53,7 @@ namespace Tridium {
 
             ret.IsOpen = ImGui::TreeNodeEx( a_Name, ImGuiTreeNodeFlags_DefaultOpen );
 
-            if ( HasFlag( a_Flags, EPropertyFlags::EditAnywhere ) )
+            if ( EnumFlags( a_Flags ).HasFlag( EPropertyFlags::EditAnywhere ) )
             {
                 ImGui::SameLine();
                 ret.WasRemoved = DrawRemoveElementButton( TE_ICON_TRASH_CAN );
@@ -149,13 +149,13 @@ namespace Tridium {
                 }
             }
 
-            if ( !HasFlag(a_DrawFlag, EPropertyFlags::EditAnywhere) 
+            if ( !EnumFlags( a_DrawFlag).HasFlag( EPropertyFlags::EditAnywhere )
                 && a_AssociativeContainer.size() == 0 )
             {
                 ImGui::Text( "Empty" );
             }
 
-            if ( HasFlag( a_DrawFlag, EPropertyFlags::EditAnywhere )
+            if ( EnumFlags( a_DrawFlag ).HasFlag( EPropertyFlags::EditAnywhere )
                 && DrawAddElementButton( "Add Element" ) )
             {
                 auto newKey = a_AssociativeContainer.key_type().construct();
@@ -209,7 +209,7 @@ namespace Tridium {
 					ImGui::PopItemWidth();
 					ImVec2 currentCursorPos = ImGui::GetCursorPos();
 
-					if ( HasFlag( a_DrawFlag, EPropertyFlags::EditAnywhere ) )
+					if ( EnumFlags( a_DrawFlag ).HasFlag( EPropertyFlags::EditAnywhere ) )
                     {
 						ImGui::ScopedID elementID( index );
 						ImGui::SetCursorPosY( oldCursorPosY + 2.5f );
@@ -227,7 +227,7 @@ namespace Tridium {
                 }
             }
 
-			if ( HasFlag( a_DrawFlag, EPropertyFlags::EditAnywhere ) )
+			if ( EnumFlags( a_DrawFlag ).HasFlag( EPropertyFlags::EditAnywhere ) )
             {
                 if ( DrawAddElementButton( "Add Element" ) )
                 {
@@ -237,7 +237,7 @@ namespace Tridium {
                 }
             }
 
-			if ( !HasFlag( a_DrawFlag, EPropertyFlags::EditAnywhere ) 
+			if ( !EnumFlags( a_DrawFlag ).HasFlag( EPropertyFlags::EditAnywhere )
                 && a_SequenceContainer.size() == 0 )
 			{
 				ImGui::Text( "Empty" );
@@ -269,12 +269,12 @@ namespace Tridium {
 
                 // Get the appropiate draw flag
                 // If the draw flag is none, skip the property
-                if ( HasFlag( metaData.propFlags(), EditAnywhere )
+                if ( EnumFlags( metaData.propFlags() ).HasFlag( EditAnywhere )
                     && a_OverrideFlag != VisibleAnywhere )
                 {
                     drawFlag = EditAnywhere;
                 }
-                else if ( HasFlag( metaData.propFlags(), VisibleAnywhere )
+                else if ( EnumFlags( metaData.propFlags() ).HasFlag( VisibleAnywhere )
                     || a_OverrideFlag == VisibleAnywhere )
                 {
                     drawFlag = VisibleAnywhere;

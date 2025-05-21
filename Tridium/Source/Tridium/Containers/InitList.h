@@ -37,6 +37,14 @@ namespace Tridium {
 			return std::initializer_list<T>( m_First, m_Last );
 		}
 
+		[[nodiscard]] constexpr const T& operator[]( size_t a_Index ) const noexcept {
+			return m_First[a_Index];
+		}
+
+		[[nodiscard]] constexpr const T& At( size_t a_Index ) const noexcept {
+			return m_First[a_Index];
+		}
+
     private:
         const T* m_First;
         const T* m_Last;

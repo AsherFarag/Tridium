@@ -21,6 +21,12 @@ namespace Tridium {
 	};
 	ENUM_ENABLE_BITMASK_OPERATORS( ERHIShaderCompilerFlags );
 
+
+
+	//=======================================================
+	// RHI Shader Optimization Level
+	//  Defines the level of optimization to be used when compiling the shader.
+	//  Should be kept on Default, unless the shader code is required to be debugged.
 	enum class ERHIShaderOptimizationLevel : uint8_t
 	{
 		Level1,
@@ -33,6 +39,7 @@ namespace Tridium {
 
 	//=======================================================
 	// RHI Shader Compiler Input
+	//  Contains input parameters and the text source-code for the shader compiler.
 	struct ShaderCompilerInput
 	{
 		StringView Source{};
@@ -42,21 +49,24 @@ namespace Tridium {
 		EnumFlags<ERHIShaderCompilerFlags> Flags       = ERHIShaderCompilerFlags::Default;
 		ERHIShaderOptimizationLevel OptimizationLevel  = ERHIShaderOptimizationLevel::Default;
 
-		String EntryPoint{}; // Default is "main"
+		// If the ShaderType is set to unknown, the EntryPoint must follow the standard of <ShaderType>Main
+		// E.g. "VSMain" for a vertex shader, "PSMain" for a pixel shader, etc.
+		String EntryPoint{};
 		UnorderedMap<String, String> Defines{};
 		Array<String> IncludeDirectories{};
 		Array<String> CustomArguments{}; // Custom arguments to pass to the compiler. Note: These are directly passed to the compiler and may not be supported by all compilers.
+		bool OverrideDefaultArguments = false; // If true, the default arguments will be ignored and only the custom arguments will be used.
 	};
 
 	//=======================================================
 	// RHI Shader Compiler Output
+	//  
 	struct ShaderCompilerOutput
 	{
-		ERHIShaderType ShaderType{ ERHIShaderType::Unknown };
+		// If the ShaderType from the compiler-input is set to Unknown, this will be the type the compiler was able to determine.
+		// Otherwise, this will be the same as the input type.
+		ERHIShaderType ShaderType = ERHIShaderType::Unknown;
 		Array<Byte> ByteCode{};
-		String Error{};
-
-		bool IsValid() const { return ByteCode.Size() > 0; }
 	};
 
 
@@ -64,11 +74,11 @@ namespace Tridium {
 	//=======================================================
 	// RHI Shader Compiler
 	//  Generates shader byte code for the RHI.
-	//  This class is responsible for preprocessing, compiling and linking shaders.
+	//  This class is responsible for preprocessing and compiling string source code into byte code.
 	class RHIShaderCompiler final
 	{
 	public:
-		static ShaderCompilerOutput Compile( const ShaderCompilerInput& a_Input );
+		static Expected<ShaderCompilerOutput, String> Compile( const ShaderCompilerInput& a_Input );
 	};
 
 } // namespace Tridium

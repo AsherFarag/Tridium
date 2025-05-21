@@ -26,7 +26,7 @@ namespace Tridium::D3D12 {
 			return;
 		}
 
-		D3D12_SET_DEBUG_NAME( ManagedBuffer.Resource, m_Desc.Name );
+		D3D12_SET_DEBUG_NAME( ManagedBuffer.Resource, m_Desc.Name, L"Unnamed Buffer" );
 
 		if ( initData )
 		{
@@ -75,7 +75,7 @@ namespace Tridium::D3D12 {
 			}
 
 			// Copy data to buffer
-			copyCmdCtx.CmdList->CopyBufferRegion( ManagedBuffer.Resource.Get(), 0, uploadBuffer.Resource.Get(), 0, m_Desc.Size );
+			copyCmdCtx.CmdList->CopyBufferRegion( ManagedBuffer.Resource, 0, uploadBuffer.Resource, 0, m_Desc.Size );
 
 			// Execute the copy command list
 			if ( FAILED( copyCmdCtx.CmdList->Close() ) )
