@@ -70,7 +70,7 @@ namespace Tridium::Debug {
 #if CONFIG_CHECKS_ENABLED
 	// Checks that the condition is true, if not, it logs that the check failed at the source location.
 	#define CHECK(_Condition, ...) \
-		(::Tridium::Debug::Check(Cast<bool>(_Condition), _ASSERT_MSG_FORMAT_WRAPPER("CHECK"), ::Tridium::Debug::Detail::FormatMsg( __VA_ARGS__ ) ))
+		(::Tridium::Debug::Check(::Tridium::Cast<bool>(_Condition), _ASSERT_MSG_FORMAT_WRAPPER("CHECK"), ::Tridium::Debug::Detail::FormatMsg( __VA_ARGS__ ) ))
 
 	// Same as CHECK, but will only check once among all threads.
 	#define CHECK_ONCE(_Condition, ...) \
@@ -81,7 +81,7 @@ namespace Tridium::Debug {
 		_DO_ONCE_WRAPPER( _Condition, CHECK(_Condition, __VA_ARGS__), thread_local )
 
 #else
-	#define CHECK(_Condition, ...)
+	#define CHECK(_Condition, ...) (::Tridium::Cast<bool>(_Condition))
 	#define CHECK_ONCE(_Condition, ...)
 	#define CHECK_ONCE_PER_THREAD(_Condition, ...)
 #endif // CONFIG_CHECKS_ENABLED
@@ -121,7 +121,7 @@ namespace Tridium::Debug {
 
 	// Asserts that the condition is true, if not, it logs that the assert failed at the source location and breaks the program.
 	#define ASSERT(_Condition, ...) \
-		(::Tridium::Debug::Assert(Cast<bool>(_Condition), _ASSERT_MSG_FORMAT_WRAPPER("ASSERT"), ::Tridium::Debug::Detail::FormatMsg( __VA_ARGS__ ) ))
+		(::Tridium::Debug::Assert(::Tridium::Cast<bool>(_Condition), _ASSERT_MSG_FORMAT_WRAPPER("ASSERT"), ::Tridium::Debug::Detail::FormatMsg( __VA_ARGS__ ) ))
 
 	// Same as ASSERT, but will only assert once among all threads.
 	#define ASSERT_ONCE(_Condition, ...) \
@@ -133,7 +133,7 @@ namespace Tridium::Debug {
 
 
 #else
-	#define ASSERT(_Condition, ...)
+	#define ASSERT(_Condition, ...) (::Tridium::Cast<bool>(_Condition))
 	#define ASSERT_ONCE(_Condition, ...)
 	#define ASSERT_ONCE_PER_THREAD(_Condition, ...)
 #endif // CONFIG_ASSERTS_ENABLED
@@ -168,7 +168,7 @@ namespace Tridium::Debug {
 
 #if CONFIG_ENSURES_ENABLED
 	#define ENSURE(_Condition, ...) \
-		(::Tridium::Debug::Ensure(Cast<bool>(_Condition), _ASSERT_MSG_FORMAT_WRAPPER("ENSURE"), ::Tridium::Debug::Detail::FormatMsg( __VA_ARGS__ ) ))
+		(::Tridium::Debug::Ensure(::Tridium::Cast<bool>(_Condition), _ASSERT_MSG_FORMAT_WRAPPER("ENSURE"), ::Tridium::Debug::Detail::FormatMsg( __VA_ARGS__ ) ))
 #else
 	#define ENSURE(_Condition, ...)
 #endif // CONFIG_ENSURES_ENABLED

@@ -125,7 +125,7 @@ namespace Tridium::D3D12 {
 
     bool RHIBindingLayout_D3D12Impl::Release()
     {
-		m_RootSignature.Release();
+		m_RootSignature.Reset();
         return true;
     }
 

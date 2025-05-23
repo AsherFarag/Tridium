@@ -1,7 +1,6 @@
 #pragma once
 #include <Tridium/Core/Types.h>
 #include <Tridium/Core/GUID.h>
-#include <Tridium/Utils/StringHelpers.h>
 
 namespace Tridium {
 

@@ -137,14 +137,14 @@ namespace Tridium {
 			return false;
 		}
 
-		bool success = s_DynamicRHI->ExecuteCommandList( a_CommandList );
-		if ( !success )
+		if ( !s_DynamicRHI->ExecuteCommandList( a_CommandList ) )
 		{
 			LOG( LogCategory::RHI, Error, "Failed to execute command list!" );
 			return false;
 		}
 
 		a_CommandList->SetPendingExecution( true );
+		return true;
 	}
 
 	void RHI::FrameFenceWait()

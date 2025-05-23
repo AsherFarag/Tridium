@@ -363,8 +363,8 @@ namespace Tridium {
 		#define ADD_DEBUG_INFO() do { Commands.Back().Debug.Source = a_SourceLocation; } while ( false )
 		#define PASS_DEBUG_INFO , a_SourceLocation
 	#else 
+		#define DEBUG_INFO
 		#define DEBUG_INFO_PARAM
-		#define DEBUG_INFO_PARAM_PARAM
 		#define ADD_DEBUG_INFO() do {} while ( false )
 		#define PASS_DEBUG_INFO
 	#endif // RHI_DEBUG_ENABLED

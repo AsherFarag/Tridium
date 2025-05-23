@@ -18,7 +18,7 @@ namespace Tridium::D3D12 {
 		: RHICommandList( a_Desc )
 	{
 		const HRESULT hr = GetD3D12RHI()->GetD3D12Device4()->CreateCommandList1( 
-			0, D3D12::Translate( m_Desc.QueueType ), D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS( &CommandList )
+			0, D3D12::Translate( m_Desc.QueueType ), D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS( CommandList.GetAddressOf() )
 		);
 
 		ENSURE( SUCCEEDED( hr ), "Failed to create command list!" );
@@ -26,7 +26,7 @@ namespace Tridium::D3D12 {
 
 	bool RHICommandList_D3D12Impl::Release()
 	{
-		CommandList.Release();
+		CommandList.Reset();
 		return true;
 	}
 

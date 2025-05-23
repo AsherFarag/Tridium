@@ -33,7 +33,7 @@ namespace Tridium {
 			{ ".lua", EAssetType::LuaScript },
 		};
 
-		if ( auto it = s_Extensions.find( Util::ToLowerCase( a_Extension ) ); it != s_Extensions.end() )
+		if ( auto it = s_Extensions.find( Util::ToLower( StringView{ a_Extension } ) ); it != s_Extensions.end() )
 		{
 			return it->second;
 		}

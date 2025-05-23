@@ -47,13 +47,13 @@ namespace Tridium::D3D12 {
 			// Initialize the DXC compiler.
 			ComPtr<IDxcUtils> dxcUtils;
 			ComPtr<IDxcCompiler3> dxcCompiler;
-			if ( FAILED( CreateInstance( CLSID_DxcUtils, IID_PPV_ARGS( &dxcUtils ) ) ) )
+			if ( FAILED( CreateInstance( CLSID_DxcUtils, IID_PPV_ARGS( dxcUtils.GetAddressOf() ) ) ) )
 			{
 				LOG( LogCategory::DirectX, Error, "Failed to create DXC Utils" );
 				return;
 			}
 
-			if ( FAILED( CreateInstance( CLSID_DxcCompiler, IID_PPV_ARGS( &dxcCompiler ) ) ) )
+			if ( FAILED( CreateInstance( CLSID_DxcCompiler, IID_PPV_ARGS( dxcCompiler.GetAddressOf() ) ) ) )
 			{
 				LOG( LogCategory::DirectX, Error, "Failed to create DXC Compiler" );
 				return;
@@ -101,12 +101,12 @@ namespace Tridium::D3D12 {
 		ComPtr<IDxcUtils> dxcUtils;
 		ComPtr<IDxcCompiler3> dxcCompiler;
 
-		if ( FAILED( dxcState.CreateInstance( CLSID_DxcUtils, IID_PPV_ARGS( &dxcUtils ) ) ) )
+		if ( FAILED( dxcState.CreateInstance( CLSID_DxcUtils, IID_PPV_ARGS( dxcUtils.GetAddressOf() ) ) ) )
 		{
 			return Unexpected( "Failed to create DXC Utils" );
 		}
 
-		if ( FAILED( dxcState.CreateInstance( CLSID_DxcCompiler, IID_PPV_ARGS( &dxcCompiler ) ) ) )
+		if ( FAILED( dxcState.CreateInstance( CLSID_DxcCompiler, IID_PPV_ARGS( dxcCompiler.GetAddressOf() ) ) ) )
 		{
 			return Unexpected( "Failed to create DXC Compiler" );
 		}
@@ -144,7 +144,7 @@ namespace Tridium::D3D12 {
 			argsRaw.Data(),
 			Cast<uint32_t>( argsRaw.Size() ),
 			includeHandler.Get(),
-			IID_PPV_ARGS( &dxcResult )
+			IID_PPV_ARGS( dxcResult.GetAddressOf() )
 		);
 
 		// Check if compilation failed.
@@ -155,7 +155,7 @@ namespace Tridium::D3D12 {
 
 		// Get the error ( if it exists )
 		ComPtr<IDxcBlobUtf8> errorBlob;
-		if ( FAILED( dxcResult->GetOutput( DXC_OUT_ERRORS, IID_PPV_ARGS( &errorBlob ), nullptr ) ) )
+		if ( FAILED( dxcResult->GetOutput( DXC_OUT_ERRORS, IID_PPV_ARGS( errorBlob.GetAddressOf() ), nullptr ) ) )
 		{
 			return Unexpected( "Failed to compile shader and retrieve the corresponding error" );
 		}
@@ -166,7 +166,7 @@ namespace Tridium::D3D12 {
 		}
 
 		ComPtr<IDxcBlob> shaderBlob;
-		if ( FAILED( dxcResult->GetOutput( DXC_OUT_OBJECT, IID_PPV_ARGS( &shaderBlob ), nullptr ) )
+		if ( FAILED( dxcResult->GetOutput( DXC_OUT_OBJECT, IID_PPV_ARGS( shaderBlob.GetAddressOf() ), nullptr ) )
 			|| shaderBlob == nullptr )
 		{
 			return Unexpected( "Failed to get shader blob" );
@@ -499,7 +499,7 @@ namespace Tridium::D3D12 {
 		uint32_t shaderIndex = 0;
 
 		// Get the reflection interface.
-		if ( FAILED( DxcCreateInstance( CLSID_DxcContainerReflection, IID_PPV_ARGS( &reflection ) ) ) )
+		if ( FAILED( DxcCreateInstance( CLSID_DxcContainerReflection, IID_PPV_ARGS( reflection.GetAddressOf() ) ) ) )
 		{
 			LOG( LogCategory::DirectX, Error, "Failed to create DXC Container Reflection" );
 			return;
@@ -520,7 +520,7 @@ namespace Tridium::D3D12 {
 		}
 
 		// Get the reflection interface.
-		if ( FAILED( reflection->GetPartReflection( shaderIndex, IID_PPV_ARGS( &shaderReflection ) ) ) )
+		if ( FAILED( reflection->GetPartReflection( shaderIndex, IID_PPV_ARGS( shaderReflection.GetAddressOf() ) ) ) )
 		{
 			LOG( LogCategory::DirectX, Error, "Failed to get shader reflection" );
 			return;

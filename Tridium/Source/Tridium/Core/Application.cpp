@@ -538,7 +538,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 					};
 
 					RHIBufferRef constantsBuffer = RHI::CreateBuffer( 
-						constantsDesc, Span<uint8_t>{ reinterpret_cast<uint8_t*>(&constants), sizeof( Constants ) }
+						constantsDesc, Span{ ReinterpretCast<uint8_t*>(&constants), sizeof( Constants ) }
 					);
 
 					RHIBindingSetDescriptor bindingSetDesc{ sbl };

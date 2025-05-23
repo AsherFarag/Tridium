@@ -39,7 +39,7 @@ namespace Tridium {
 		using CharTraits = std::char_traits<_Char>;
 
 	private:
-		TStringView<_Char> m_String;
+		BasicStringView<_Char> m_String;
 		hash_t m_Hash;
 
 		
@@ -56,7 +56,7 @@ namespace Tridium {
 
 	public:
 		constexpr BasicHashedString() noexcept : m_String(), m_Hash( 0 ) {}
-		constexpr BasicHashedString( TStringView<_Char> a_String )
+		constexpr BasicHashedString( BasicStringView<_Char> a_String )
 			: m_String( a_String ), m_Hash( Helper( a_String.data(), a_String.size() ) ) {}
 		constexpr BasicHashedString( const BasicHashedString& a_Other )
 			: m_String( a_Other.m_String ), m_Hash( a_Other.m_Hash ) {}
@@ -69,7 +69,7 @@ namespace Tridium {
 		}
 
 		constexpr hash_t Hash() const noexcept { return m_Hash; }
-		constexpr TStringView<_Char> String() const noexcept { return m_String; }
+		constexpr BasicStringView<_Char> String() const noexcept { return m_String; }
 
 		constexpr bool operator==( const BasicHashedString& a_Other ) const noexcept { return m_Hash == a_Other.m_Hash; }
 		constexpr bool operator!=( const BasicHashedString& a_Other ) const noexcept { return m_Hash != a_Other.m_Hash; }

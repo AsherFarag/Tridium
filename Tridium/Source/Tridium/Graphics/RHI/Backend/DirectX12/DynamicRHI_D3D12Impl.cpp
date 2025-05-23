@@ -25,7 +25,7 @@ namespace Tridium::D3D12 {
 		if ( a_Config.UseDebug )
 		{
 			// Init D3D12 Debug layer
-			if ( FAILED( D3D12GetDebugInterface( IID_PPV_ARGS( &m_D3D12Debug ) ) ) )
+			if ( FAILED( D3D12GetDebugInterface( IID_PPV_ARGS( m_D3D12Debug.GetAddressOf() ) ) ) )
 			{
 				LOG( LogCategory::DirectX, Error, "Failed to create D3D12 debug interface!" );
 				return false;
@@ -34,7 +34,7 @@ namespace Tridium::D3D12 {
 			m_D3D12Debug->EnableDebugLayer();
 
 			// Init DXGI Debug
-			if ( FAILED( DXGIGetDebugInterface1( 0, IID_PPV_ARGS( &m_DXGIDebug ) ) ) )
+			if ( FAILED( DXGIGetDebugInterface1( 0, IID_PPV_ARGS( m_DXGIDebug.GetAddressOf() ) ) ) )
 			{
 				LOG( LogCategory::DirectX, Error, "Failed to create DXGI debug interface!" );
 				return false;
@@ -45,14 +45,14 @@ namespace Tridium::D3D12 {
 	#endif
 
 		// Create the DXGIFactory
-        if ( FAILED( CreateDXGIFactory2( 0, IID_PPV_ARGS( &m_DXGIFactory ) ) ) )
+        if ( FAILED( CreateDXGIFactory2( 0, IID_PPV_ARGS( m_DXGIFactory.GetAddressOf() ) ) ) )
         {
 			LOG( LogCategory::DirectX, Error, "Failed to create DXGIFactory!" );
             return false;
         }
 
 		// Create the device
-        if ( FAILED( D3D12CreateDevice( nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS( &m_Device ) ) ) )
+        if ( FAILED( D3D12CreateDevice( nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS( m_Device.GetAddressOf() ) ) ) )
         {
 			LOG( LogCategory::DirectX, Error, "Failed to create D3D12 device!" );
             return false;
@@ -107,20 +107,20 @@ namespace Tridium::D3D12 {
 				cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 				cmdQueueDesc.Type = d3d12CmdListType;
 
-				if ( FAILED( m_Device->CreateCommandQueue( &cmdQueueDesc, IID_PPV_ARGS( &cmdCtx.CmdQueue ) ) ) )
+				if ( FAILED( m_Device->CreateCommandQueue( &cmdQueueDesc, IID_PPV_ARGS( cmdCtx.CmdQueue.GetAddressOf() ) ) ) )
 				{
 					return false;
 				}
 			}
 
 			// Create the command allocator
-			if ( FAILED( m_Device->CreateCommandAllocator( d3d12CmdListType, IID_PPV_ARGS( &cmdCtx.CmdAllocator ) ) ) )
+			if ( FAILED( m_Device->CreateCommandAllocator( d3d12CmdListType, IID_PPV_ARGS( cmdCtx.CmdAllocator.GetAddressOf() ) ) ) )
 			{
 				return false;
 			}
 
 			// Create the command list
-			if ( FAILED( GetD3D12Device4()->CreateCommandList1(0, d3d12CmdListType, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&cmdCtx.CmdList))) )
+			if ( FAILED( GetD3D12Device4()->CreateCommandList1( 0, d3d12CmdListType, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS( cmdCtx.CmdList.GetAddressOf() ) ) ) )
 			{
 				return false;
 			}
@@ -132,7 +132,7 @@ namespace Tridium::D3D12 {
 			{
 				return false;
 			}
-			if ( FAILED( m_Device->CreateFence( cmdCtx.FenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS( &cmdCtx.Fence ) ) ) )
+			if ( FAILED( m_Device->CreateFence( cmdCtx.FenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS( cmdCtx.Fence.GetAddressOf() ) ) ) )
 			{
 				return false;
 			}
@@ -159,7 +159,7 @@ namespace Tridium::D3D12 {
 		allocatorDesc.pDevice = m_Device.Get();
 		allocatorDesc.pAdapter = m_DXGIAdapter.Get();
 		allocatorDesc.PreferredBlockSize = 0;
-		if ( FAILED( D3D12MA::CreateAllocator( &allocatorDesc, &m_Allocator ) ) )
+		if ( FAILED( D3D12MA::CreateAllocator( &allocatorDesc, m_Allocator.GetAddressOf() ) ) )
 		{
 			return false;
 		}
@@ -171,7 +171,7 @@ namespace Tridium::D3D12 {
 		m_DescriptorHeapManager.Init( m_Device.Get(), numResourceDescriptors, numSamplerDescriptors );
 
 		// Create the upload buffer
-		if ( !m_UploadBuffer.Commit( 1024 * 1024 * 64, *m_Allocator ) )
+		if ( !m_UploadBuffer.Commit( 1024 * 1024 * 64, *m_Allocator.Get() ) )
 		{
 			LOG( LogCategory::DirectX, Error, "Failed to create upload buffer" );
 			return false;
@@ -193,26 +193,37 @@ namespace Tridium::D3D12 {
 		s_RHIGlobals = {};
 
 		m_UploadBuffer.Release();
-
 		m_DescriptorHeapManager.Shutdown();
 
-		m_Allocator.Release();
-
-		if ( ID3D12Device* device = m_Device.Get(); ULONG refCount = m_Device.Release() )
+		if ( ULONG refCount = ForceDeleteIUnknown( m_Allocator.GetAddressOf() ) )
 		{
-			LOG( LogCategory::DirectX, Error, "D3D12 device still has {0} references! - Destroying the device anyway", refCount );
-			for ( ULONG i = 0; i < refCount; ++i )
-			{
-				device->Release();
-			}
+			LOG( LogCategory::DirectX, Error, "D3D12MA allocator still has {0} references! - Destroying the allocator anyway", refCount );
 		}
 
-		m_DXGIFactory.Release();
+		if ( ULONG refCount = ForceDeleteIUnknown( m_DXGIAdapter.GetAddressOf() ) )
+		{
+			LOG( LogCategory::DirectX, Error, "DXGIAdapter still has {0} references! - Destroying the adapter anyway", refCount );
+		}
+
+		if ( ULONG refCount = ForceDeleteIUnknown( m_DXGIFactory.GetAddressOf() ) )
+		{
+			LOG( LogCategory::DirectX, Error, "DXGIFactory still has {0} references! - Destroying the factory anyway", refCount );
+		}
+
+		if ( ULONG refCount = ForceDeleteIUnknown( m_Device.GetAddressOf() ) )
+		{
+			LOG( LogCategory::DirectX, Error, "D3D12 device still has {0} references! - Destroying the device anyway", refCount );
+		}
 
     #if RHI_DEBUG_ENABLED
-		m_D3D12Debug.Release();
+
+		if ( ULONG refCount = ForceDeleteIUnknown( m_D3D12Debug.GetAddressOf() ) )
+		{
+			LOG( LogCategory::DirectX, Error, "D3D12 debug interface still has {0} references! - Destroying the debug interface anyway", refCount );
+		}
+
 		DumpDebug();
-		m_DXGIDebug.Release();
+		m_DXGIDebug.Reset();
     #endif
 
 		return true;
@@ -228,7 +239,7 @@ namespace Tridium::D3D12 {
 		}
 
 		auto& cmdCtx = GetCommandContext( a_CommandList->Descriptor().QueueType );
-		cmdCtx.CmdQueue->ExecuteCommandLists( 1, &cmdList->CommandList );
+		cmdCtx.CmdQueue->ExecuteCommandLists( 1, cmdList->CommandList.GetAddressOf() );
 		a_CommandList->SetFenceValue( cmdCtx.Signal() );
 
 		return true;

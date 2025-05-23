@@ -16,6 +16,8 @@
 
 #include <type_traits>
 
+#include <wrl/client.h>
+
 namespace Tridium::D3D12 {
 
 	[[nodiscard]] inline auto CalcSubresource( uint32_t a_MipSlice, uint32_t a_ArraySlice, uint32_t a_PlaneSlice, uint32_t a_MipLevels, uint32_t a_ArraySize ) noexcept
@@ -59,6 +61,9 @@ namespace Tridium::D3D12 {
 		return  a_Value * sizeof( uint64_t );
 	}
 
+	using Microsoft::WRL::ComPtr;
+
+#if 0
 	//=====================================================================
 	// Com Pointer
 	//  A templated smart pointer for COM objects.
@@ -209,5 +214,6 @@ namespace Tridium::D3D12 {
 	private:
 		T* m_Ptr = nullptr;
 	};
+#endif
 
 }

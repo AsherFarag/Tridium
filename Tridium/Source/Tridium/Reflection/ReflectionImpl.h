@@ -103,12 +103,16 @@ else if constexpr ( _HasFlag( Flags, ::Tridium::Refl::EPropertyFlags::ScriptRead
 
 // - DRAW PROPERTY -
 
+#if WITH_EDITOR
 #define _ATTRIBUTE_DRAW_PROPERTY \
 	factory.prop( ::Tridium::Refl::Props::DrawPropertyProp::ID, \
 		+[](const char* a_Name, MetaAny& a_Handle, EPropertyFlags a_Flags) \
 			{ \
 				return ::Tridium::Refl::Internal::DrawClassAsProperty<ClassType>(a_Name, a_Handle, a_Flags); \
 			 } );
+#else
+#define _ATTRIBUTE_DRAW_PROPERTY
+#endif // WITH_EDITOR
 
 // ----------------
 

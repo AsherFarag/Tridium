@@ -1,13 +1,12 @@
 #include "tripch.h"
 #include "OpenGLShaderOld.h"
 #include <fstream>
-#include <Tridium/Utils/StringHelpers.h>
 
 namespace Tridium {
 
-	static bool IsValidShaderType( const std::string& a_Type )
+	static bool IsValidShaderType( const String& a_Type )
 	{
-		std::string type = Util::ToLowerCase( a_Type );
+		String type = Util::ToLower( StringView{ a_Type } );
 
 		if ( type == "vertex" )
 			return true;
@@ -19,9 +18,9 @@ namespace Tridium {
 		return false;
 	}
 
-	static GLenum ShaderTypeFromString( const std::string& a_Type )
+	static GLenum ShaderTypeFromString( const String& a_Type )
 	{
-		std::string type = Util::ToLowerCase( a_Type );
+		String type = Util::ToLower( StringView{ a_Type } );
 
 		if ( type == "vertex" )
 			return GL_VERTEX_SHADER;

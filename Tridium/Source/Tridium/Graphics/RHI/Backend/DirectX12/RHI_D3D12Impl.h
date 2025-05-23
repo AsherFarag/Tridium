@@ -90,6 +90,19 @@ namespace Tridium::D3D12 {
 
 	inline const D3D12TierInfo& TierInfo() { return { D3D12_MAX_SHADER_VISIBLE_DESCRIPTOR_HEAP_SIZE_TIER_2, D3D12_MAX_SHADER_VISIBLE_SAMPLER_HEAP_SIZE }; }
 
+	// Returns the Number
+	template<typename T> requires std::is_base_of_v<IUnknown, T>
+	inline ULONG ForceDeleteIUnknown( T** const a_Object )
+	{
+		if ( !a_Object || !(*a_Object) ) return 0;
+		ULONG refCount = (*a_Object)->Release();
+		// Keep calling Release until the reference count is 0
+		if ( refCount )
+			while ( (*a_Object)->Release() ) {}
+		(*a_Object) = nullptr;
+		return refCount;
+	}
+
 	TODO( "Implement this or remove it" );
 	struct DeferredDeleteObject {};
 
@@ -168,7 +181,7 @@ namespace Tridium::D3D12 {
 
 		void Release()
 		{
-			Allocation.Release();
+			Allocation.Reset();
 			if ( Resource )
 			{
 				Resource->Release();
@@ -208,7 +221,7 @@ namespace Tridium::D3D12 {
 
 		~CommandContext()
 		{
-			if ( CmdList ) CmdList.Release();
+			if ( CmdList ) CmdList.Reset();
 			if ( CmdAllocator ) CmdAllocator->Reset();
 			if ( CmdQueue ) CmdQueue->Signal( Fence.Get(), FenceValue );
 			if ( FenceEvent ) CloseHandle( FenceEvent );
@@ -566,7 +579,7 @@ namespace Tridium::D3D12 {
 		RHI_RESOURCE_IMPLEMENTATION_BODY( RHISampler_D3D12Impl, ERHInterfaceType::DirectX12 )
 		RHISampler_D3D12Impl( const DescriptorType & a_Desc );
 
-		bool Release() override { SamplerHeap.Release(); SamplerHandle = {}; SamplerDesc = {}; return true; }
+		bool Release() override { SamplerHeap.Reset(); SamplerHandle = {}; SamplerDesc = {}; return true; }
 		bool Valid() const override { return SamplerHeap != nullptr; }
 		const void* NativePtr() const override { return SamplerHeap.Get(); }
 

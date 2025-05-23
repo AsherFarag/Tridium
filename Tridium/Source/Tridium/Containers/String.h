@@ -5,43 +5,20 @@ namespace Tridium {
 
 	// Basic string types
 
-	template<typename T>
-	using TString = std::basic_string<T, std::char_traits<T>, std::allocator<T>>;
-	template<typename T>
-	using TStringView = std::basic_string_view<T, std::char_traits<T>>;
-	template<typename T>
-	using TStringStream = std::basic_stringstream<T>;
+	template<typename _Elem, typename _Traits = std::char_traits<_Elem>, typename _Alloc = std::allocator<_Elem>>
+	using BasicString = std::basic_string<_Elem, _Traits, _Alloc>;
+	template<typename _Elem, typename _Traits = std::char_traits<_Elem>>
+	using BasicStringView = std::basic_string_view<_Elem, _Traits>;
+	template<typename _Elem, typename _Traits = std::char_traits<_Elem>, typename _Alloc = std::allocator<_Elem>>
+	using BasicStringStream = std::basic_stringstream<_Elem, _Traits, _Alloc>;
 
-	// String
+	using String = BasicString<char>;
+	using StringView = BasicStringView<char>;
+	using StringStream = BasicStringStream<char>;
 
-	using String = std::string;
-	using StringView = std::string_view;
-	using StringStream = std::stringstream;
-
-	// Wide string
-
-	using WString = std::wstring;
-	using WStringView = std::wstring_view;
-	using WStringStream = std::wstringstream;
-
-	namespace Util {
-		// Converts a string to lowercase.
-		template<typename T>
-		inline void ToLower( TString<T>& a_String )
-		{
-			for ( auto& c : a_String )
-				c = std::tolower( c );
-		}
-
-		// Converts a string to uppercase.
-		template<typename T>
-		inline void ToUpper( TString<T>& a_String )
-		{
-			for ( auto& c : a_String )
-				c = std::toupper( c );
-		}
-	}
-	
+	using WString = BasicString<wchar_t>;
+	using WStringView = BasicStringView<wchar_t>;
+	using WStringStream = BasicStringStream<wchar_t>;
 
 	template<typename T>
 	inline String ToString( const T& a_Value )

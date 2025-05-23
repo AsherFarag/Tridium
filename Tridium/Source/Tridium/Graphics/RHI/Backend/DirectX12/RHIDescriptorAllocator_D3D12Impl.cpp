@@ -62,7 +62,7 @@ namespace Tridium::D3D12 {
 		desc.Flags = Translate( a_Flags );
 		desc.NodeMask = 0;
 		ComPtr<ID3D12DescriptorHeap> heap;
-		HRESULT hr = a_Device->CreateDescriptorHeap( &desc, IID_PPV_ARGS( &heap ) );
+		HRESULT hr = a_Device->CreateDescriptorHeap( &desc, IID_PPV_ARGS( heap.GetAddressOf() ) );
 		ENSURE( SUCCEEDED( hr ), "Failed to create descriptor heap!" );
 
 		D3D12_SET_DEBUG_NAME( heap.Get(), a_DebugName, L"Unnamed DescriptorHeap" );
@@ -184,8 +184,10 @@ namespace Tridium::D3D12 {
 		std::lock_guard lock( m_PooledHeapsMutex );
 		for ( auto& pooledHeap : m_PooledHeaps )
 		{
-			ENSURE( pooledHeap.Heap, "Heap is null!" );
-			pooledHeap.Heap.Release();
+			if ( ULONG refCount = ForceDeleteIUnknown( pooledHeap.Heap.ReleaseAndGetAddressOf() ) )
+			{
+				LOG( LogCategory::DirectX, Error, "Pooled heap still has {0} references! - Destroying the heap anyway", refCount );
+			}
 		}
 
 		for ( auto& globalHeap : m_GlobalHeaps )

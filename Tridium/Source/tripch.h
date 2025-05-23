@@ -20,6 +20,7 @@
 #include <Tridium/Core/Assert.h>
 #include <Tridium/Utils/Log.h>
 #include <Tridium/Utils/Todo.h>
+#include <Tridium/Utils/StringUtils.h>
 #include <Tridium/Utils/ScopeGuard.h>
 #include <Tridium/Math/Math.h>
 #include <Tridium/Debug/Profiler/Profiler.h>

@@ -5,8 +5,6 @@ namespace Tridium::D3D12 {
 
 	bool ManagedResource::Commit( const D3D12_RESOURCE_DESC& a_ResourceDesc, const D3D12MA::ALLOCATION_DESC& a_AllocDesc, D3D12_RESOURCE_STATES a_InitialState, const D3D12_CLEAR_VALUE* a_ClearValue, D3D12MA::Allocator* a_Allocator )
 	{
-		LOG( LogCategory::RHI, Trace, "Creating resource" );
-
 		if ( a_Allocator == nullptr )
 		{
 			a_Allocator = GetD3D12RHI()->GetAllocator().Get();

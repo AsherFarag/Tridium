@@ -9,7 +9,7 @@ namespace Tridium::D3D12 {
 		const auto& device = GetD3D12RHI()->GetD3D12Device();
 		const auto flags = D3D12_FENCE_FLAG_NONE;
 
-        if ( !ASSERT( SUCCEEDED( device->CreateFence( 0, flags, IID_PPV_ARGS( &m_Fence ) ) ),
+        if ( !ASSERT( SUCCEEDED( device->CreateFence( 0, flags, IID_PPV_ARGS( m_Fence.GetAddressOf() ) ) ),
 			"Failed to create fence!" ) )
         {
 			return;
@@ -67,7 +67,7 @@ namespace Tridium::D3D12 {
 
 	bool RHIFence_D3D12Impl::Release()
 	{
-		m_Fence.Release();
+		m_Fence.Reset();
 		if ( m_FenceEvent != nullptr )
 		{
 			CloseHandle( m_FenceEvent );

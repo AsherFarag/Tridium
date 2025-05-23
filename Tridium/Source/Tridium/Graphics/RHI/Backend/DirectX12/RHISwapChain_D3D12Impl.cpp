@@ -57,7 +57,7 @@ namespace Tridium::D3D12 {
 		// Create the swap chain
 		ComPtr<IDXGISwapChain1> swapChain;
 		ComPtr<IDXGIFactory4> dxgiFactory;
-		if ( !ASSERT( rhi->GetDXGIFactory().QueryInterface( dxgiFactory ),
+		if ( !ASSERT( SUCCEEDED( rhi->GetDXGIFactory()->QueryInterface( dxgiFactory.GetAddressOf() ) ),
 			"Failed to get DXGI factory!" ) )
 		{
 			return;
@@ -70,7 +70,8 @@ namespace Tridium::D3D12 {
 			return;
 		}
 
-		if ( !ASSERT( swapChain.QueryInterface( SwapChain ), "Failed to query swap chain interface!" ) )
+		if ( !ASSERT( SUCCEEDED( swapChain->QueryInterface( SwapChain.GetAddressOf() ) ),
+			"Failed to query swap chain interface!" ) )
 		{
 			return;
 		}
@@ -202,7 +203,7 @@ namespace Tridium::D3D12 {
 
 	bool RHISwapChain_D3D12Impl::Release()
 	{
-		SwapChain.Release();
+		SwapChain.Reset();
 		for ( auto& rtv : RTVs )
 		{
 			ASSERT( rtv.use_count() == 1, "RTV owned by the swap chain is still in use - You should not be keeping a reference to the back buffer!" );

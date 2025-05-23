@@ -156,7 +156,7 @@ namespace Tridium::D3D12 {
 		psd.CachedPSO = { nullptr, 0 };
 
 		// Create the pipeline state object
-		if ( FAILED( GetD3D12RHI()->GetD3D12Device()->CreateGraphicsPipelineState( &psd, IID_PPV_ARGS( &PSO ) ) ) )
+		if ( FAILED( GetD3D12RHI()->GetD3D12Device()->CreateGraphicsPipelineState( &psd, IID_PPV_ARGS( PSO.GetAddressOf() ) ) ) )
 		{
 			LOG( LogCategory::RHI, Error, "Failed to create graphics pipeline state" );
 			Release();
@@ -168,7 +168,7 @@ namespace Tridium::D3D12 {
 
 	bool RHIGraphicsPipelineState_D3D12Impl::Release()
 	{
-		PSO.Release();
+		PSO.Reset();
 		return true;
 	}
 
@@ -239,7 +239,7 @@ namespace Tridium::D3D12 {
 		}
 
 		hr = GetD3D12RHI()->GetD3D12Device()->CreateRootSignature( 
-			0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(), IID_PPV_ARGS( &rootSig.D3D12Signature ) 
+			0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(), IID_PPV_ARGS( rootSig.D3D12Signature.GetAddressOf() )
 		);
 
 		if ( FAILED( hr ) )

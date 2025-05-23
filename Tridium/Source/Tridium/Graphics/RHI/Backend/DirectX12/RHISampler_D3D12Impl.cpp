@@ -11,7 +11,7 @@ namespace Tridium::D3D12 {
 		heapDesc.NumDescriptors = 1;
 		heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
 		heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-		if ( !ASSERT( SUCCEEDED( GetD3D12RHI()->GetD3D12Device()->CreateDescriptorHeap( &heapDesc, IID_PPV_ARGS( &SamplerHeap ) ) ),
+		if ( !ASSERT( SUCCEEDED( GetD3D12RHI()->GetD3D12Device()->CreateDescriptorHeap( &heapDesc, IID_PPV_ARGS( SamplerHeap.GetAddressOf() ) ) ),
 			"Failed to create sampler heap!" ) )
 		{
 			return;
