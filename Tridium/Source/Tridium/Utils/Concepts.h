@@ -55,6 +55,15 @@ namespace Tridium::Concepts {
 	template<typename T, template<typename...> typename _Template>
 	concept IsSpecialisation = Detail::IsSpecialisation<T, _Template>;
 
+	template<typename T>
+	concept FloatingPoint = std::is_floating_point_v<T>;
+
+	template<typename T>
+	concept Integral = std::is_integral_v<T>;
+
+	template<typename T>
+	concept Arithmetic = std::is_arithmetic_v<T>;
+
 	//================================================================
 	// Inheritance
 	//================================================================

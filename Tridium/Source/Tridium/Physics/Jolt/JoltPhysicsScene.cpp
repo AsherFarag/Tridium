@@ -197,8 +197,8 @@ namespace Tridium {
 		{
 			hit.Hit = true;
 			hit.Position = Util::ToTridiumVec3( ray.GetPointOnRay( rayResult.mFraction ) );
-			hit.Normal = glm::normalize( Util::ToTridiumVec3( ray.mDirection ) );
-			hit.Distance = glm::distance( a_Start, hit.Position );
+			hit.Normal = Util::ToTridiumVec3( ray.mDirection ).Normalized();
+			hit.Distance = Math::Distance( a_Start, hit.Position );
 			hit.HitBodyID = rayResult.mBodyID.GetIndexAndSequenceNumber();
 			hit.HitGameObject = GetGameObjectFromPhysicsBody( hit.HitBodyID );
 		}
@@ -259,7 +259,7 @@ namespace Tridium {
 			// Box Collider
 			if ( auto* bc = m_Scene->TryGetComponentFromGameObject<BoxColliderComponent>( a_GameObject ) )
 			{
-				const JPH::Vec3 halfExtents = JPH::Vec3( bc->GetHalfExtents().x * scale.GetX(), bc->GetHalfExtents().y * scale.GetY(), bc->GetHalfExtents().z * scale.GetZ() );
+				const JPH::Vec3 halfExtents = JPH::Vec3( bc->GetHalfExtents().X * scale.GetX(), bc->GetHalfExtents().Y * scale.GetY(), bc->GetHalfExtents().Z * scale.GetZ() );
 				const JPH::Ref<JPH::BoxShape> boxShape = new JPH::BoxShape( halfExtents );
 				const JPH::Vec3 center = Util::ToJoltVec3( bc->GetCenter() );
 				const JPH::Quat rotation = Util::ToJoltQuat( bc->GetRotation().Quat );

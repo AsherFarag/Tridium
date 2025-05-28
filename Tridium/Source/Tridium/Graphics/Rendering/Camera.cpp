@@ -26,27 +26,27 @@ namespace Tridium {
 	Frustum Camera::GetPerspectiveFrustum( const Vector3& a_Position, Vector3 a_Forward ) const
 	{
 		// Ensure forward is normalized
-		const Vector3 normal = glm::normalize( a_Forward );
+		const Vector3 normal = a_Forward.Normalized();
 		Frustum frustum;
 		const float halfVSide = m_Perspective.Far * glm::tan( glm::radians( m_Perspective.FOV ) * 0.5f );
 		const float halfHSide = halfVSide * GetAspectRatio();
 		const Vector3 frontMultFar = normal * m_Perspective.Far;
 		const Vector3 frontMultNear = normal * m_Perspective.Near;
 
-		const Vector3 right = glm::normalize( glm::cross( normal, { 0.0f, 1.0f, 0.0f } ) );
-		const Vector3 up = glm::normalize( glm::cross( right, normal ) );
+		const Vector3 right = Math::Cross( normal, { 0.0f, 1.0f, 0.0f } ).Normalized();
+		const Vector3 up = Math::Cross( right, normal ).Normalized();
 
 		static const auto CreatePlane = +[]( const Vector3& a_Normal, const Vector3& a_Position ) -> Plane
 			{
-				return { a_Normal, glm::dot( a_Normal, a_Position ) };
+				return { a_Normal, Math::Dot( a_Normal, a_Position ) };
 			};
 
 		frustum.Near = CreatePlane( normal, a_Position + frontMultNear );
 		frustum.Far = CreatePlane( -normal, a_Position + frontMultFar);
-		frustum.Right = CreatePlane( glm::cross( frontMultFar - right * halfHSide, up ), a_Position );
-		frustum.Left = CreatePlane( glm::cross( up, frontMultFar + right * halfHSide ), a_Position );
-		frustum.Top = CreatePlane( glm::cross( right, frontMultFar + up * halfVSide ), a_Position );
-		frustum.Bottom = CreatePlane( glm::cross( frontMultFar - up * halfVSide, right ), a_Position );
+		frustum.Right = CreatePlane( Math::Cross( frontMultFar - right * halfHSide, up ), a_Position );
+		frustum.Left = CreatePlane( Math::Cross( up, frontMultFar + right * halfHSide ), a_Position );
+		frustum.Top = CreatePlane( Math::Cross( right, frontMultFar + up * halfVSide ), a_Position );
+		frustum.Bottom = CreatePlane( Math::Cross( frontMultFar - up * halfVSide, right ), a_Position );
 
 		return frustum;
 	}

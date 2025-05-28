@@ -1497,52 +1497,20 @@ namespace Tridium {
 
 	//==========================================================
 
-	template<typename U>
-	struct RHITensorTypeTraits<TVector2<U>>
+	template<size_t _CountX, Concepts::Arithmetic T>
+	struct RHITensorTypeTraits<Vector<_CountX, T>>
 	{
-		static constexpr ERHIDataType ElementType = GetRHIDataType<U>();
-		static constexpr uint8_t ElementCountX = 2;
+		static constexpr ERHIDataType ElementType = GetRHIDataType<T>();
+		static constexpr uint8_t ElementCountX = Cast<uint8_t>(_CountX);
 		static constexpr uint8_t ElementCountY = 1;
 	};
 
-	template<typename U>
-	struct RHITensorTypeTraits<TVector3<U>>
+	template<size_t _CountX, size_t _CountY, Concepts::Arithmetic T>
+	struct RHITensorTypeTraits<Matrix<_CountX, _CountY, T>>
 	{
-		static constexpr ERHIDataType ElementType = GetRHIDataType<U>();
-		static constexpr uint8_t ElementCountX = 3;
-		static constexpr uint8_t ElementCountY = 1;
-	};
-
-	template<typename U>
-	struct RHITensorTypeTraits<TVector4<U>>
-	{
-		static constexpr ERHIDataType ElementType = GetRHIDataType<U>();
-		static constexpr uint8_t ElementCountX = 4;
-		static constexpr uint8_t ElementCountY = 1;
-	};
-
-	template<typename U>
-	struct RHITensorTypeTraits<TMatrix2<U>>
-	{
-		static constexpr ERHIDataType ElementType = GetRHIDataType<U>();
-		static constexpr uint8_t ElementCountX = 2;
-		static constexpr uint8_t ElementCountY = 2;
-	};
-
-	template<typename U>
-	struct RHITensorTypeTraits<TMatrix3<U>>
-	{
-		static constexpr ERHIDataType ElementType = GetRHIDataType<U>();
-		static constexpr uint8_t ElementCountX = 3;
-		static constexpr uint8_t ElementCountY = 3;
-	};
-
-	template<typename U>
-	struct RHITensorTypeTraits<TMatrix4<U>>
-	{
-		static constexpr ERHIDataType ElementType = GetRHIDataType<U>();
-		static constexpr uint8_t ElementCountX = 4;
-		static constexpr uint8_t ElementCountY = 4;
+		static constexpr ERHIDataType ElementType = GetRHIDataType<T>();
+		static constexpr uint8_t ElementCountX = Cast<uint8_t>( _CountX );
+		static constexpr uint8_t ElementCountY = Cast<uint8_t>( _CountY );
 	};
 
 	template<>

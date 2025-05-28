@@ -8,15 +8,15 @@
 
 namespace Tridium {
 
-	static Matrix4 s_CaptureProjection = glm::perspective( glm::radians( 90.0f ), 1.0f, 0.1f, 10.0f );
-	static Matrix4 s_CaptureViews[] =
+	static const Matrix4 s_CaptureProjection = Math::Perspective( Math::Radians( 90.0f ), 1.0f, 0.1f, 10.0f );
+	static const Matrix4 s_CaptureViews[] =
 	{
-		glm::lookAt( Vector3(0.0f), Vector3( 1.0f,  0.0f,  0.0f ),  Vector3( 0.0f, -1.0f,  0.0f ) ),
-		glm::lookAt( Vector3(0.0f), Vector3( -1.0f,  0.0f,  0.0f ), Vector3( 0.0f, -1.0f,  0.0f ) ),
-		glm::lookAt( Vector3(0.0f), Vector3( 0.0f,  1.0f,  0.0f ),  Vector3( 0.0f,  0.0f,  1.0f ) ),
-		glm::lookAt( Vector3(0.0f), Vector3( 0.0f, -1.0f,  0.0f ),  Vector3( 0.0f,  0.0f, -1.0f ) ),
-		glm::lookAt( Vector3(0.0f), Vector3( 0.0f,  0.0f,  1.0f ),  Vector3( 0.0f, -1.0f,  0.0f ) ),
-		glm::lookAt( Vector3(0.0f), Vector3( 0.0f,  0.0f, -1.0f ),  Vector3( 0.0f, -1.0f,  0.0f ) )
+		Math::LookAt( Vector3(0.0f), Vector3(  1.0f,  0.0f,  0.0f ),  Vector3( 0.0f, -1.0f,  0.0f ) ),
+		Math::LookAt( Vector3(0.0f), Vector3( -1.0f,  0.0f,  0.0f ),  Vector3( 0.0f, -1.0f,  0.0f ) ),
+		Math::LookAt( Vector3(0.0f), Vector3(  0.0f,  1.0f,  0.0f ),  Vector3( 0.0f,  0.0f,  1.0f ) ),
+		Math::LookAt( Vector3(0.0f), Vector3(  0.0f, -1.0f,  0.0f ),  Vector3( 0.0f,  0.0f, -1.0f ) ),
+		Math::LookAt( Vector3(0.0f), Vector3(  0.0f,  0.0f,  1.0f ),  Vector3( 0.0f, -1.0f,  0.0f ) ),
+		Math::LookAt( Vector3(0.0f), Vector3(  0.0f,  0.0f, -1.0f ),  Vector3( 0.0f, -1.0f,  0.0f ) )
 	};
 
 	void RenderCube()

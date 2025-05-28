@@ -18,19 +18,18 @@ namespace Tridium {
 		auto go = GetGameObject();
 		if ( !go.HasComponent<TransformComponent>() )
 			return;
-
+		
+		constexpr auto up = Vector3::Up();
 		auto& transform = GetGameObject().GetComponent<TransformComponent>();
-
-		constexpr Vector3 up( 0, 1, 0 );
 		auto forward = transform.GetForward();
-		auto right = glm::cross( forward, up );
+		auto right = Math::Cross( forward, up );
 
 
 		if ( Input::IsKeyPressed( EInputKey::W ) )
-			transform.Position -= Vector3(forward.x, 0, forward.z ) * Speed * dt;
+			transform.Position -= Vector3(forward.X, 0, forward.Z ) * Speed * dt;
 
 		if ( Input::IsKeyPressed( EInputKey::S ) )
-			transform.Position += Vector3( forward.x, 0, forward.z ) * Speed * dt;
+			transform.Position += Vector3( forward.X, 0, forward.Z ) * Speed * dt;
 
 		if ( Input::IsKeyPressed( EInputKey::A ) )
 			transform.Position += right * Speed * dt;
@@ -62,20 +61,20 @@ namespace Tridium {
 
 		// Mouse Rotation
 		Vector2 mouseDelta = Input::GetMousePosition() - m_LastMousePos;
-		float yawSign = up.y < 0 ? -1.0f : 1.0f;
+		constexpr float yawSign = up.Y < 0 ? -1.0f : 1.0f;
 
-		Vector3 euler = glm::degrees( transform.Rotation.Euler );
+		Vector3 euler = Math::Degrees( transform.Rotation.Euler );
 
-		euler.y -= yawSign * mouseDelta.x * LookSensitivity;
-		euler.x -= mouseDelta.y * LookSensitivity;
+		euler.Y -= yawSign * mouseDelta.X * LookSensitivity;
+		euler.X -= mouseDelta.Y * LookSensitivity;
 
 		constexpr float clampZone = 89.f;
-		if ( euler.x < -clampZone )
-			euler.x = -clampZone;
-		else if ( euler.x > clampZone )
-			euler.x = clampZone;
+		if ( euler.X < -clampZone )
+			euler.X = -clampZone;
+		else if ( euler.X > clampZone )
+			euler.X = clampZone;
 
-		transform.Rotation.SetFromEuler( glm::radians( euler ) );
+		transform.Rotation.SetFromEuler( Math::Radians( euler ) );
 
 		m_LastMousePos = Input::GetMousePosition();
 		m_LastMouseScroll = Input::GetMouseScrollYOffset();

@@ -223,7 +223,7 @@ namespace Tridium {
 			return false;
 		}
 
-		glUniform2i( i, val.x, val.y );
+		glUniform2i( i, val.X, val.Y );
 		return true;
 	}
 
@@ -235,7 +235,7 @@ namespace Tridium {
 			LOG( LogCategory::Rendering, Error, "Shader uniform {0} not found! Is it being used?", name );
 			return false;
 		}
-		glUniform3i( i, val.x, val.y, val.z );
+		glUniform3i( i, val.X, val.Y, val.Z );
 		return true;
 	}
 
@@ -248,7 +248,7 @@ namespace Tridium {
 			return false;
 		}
 
-		glUniform4i( i, val.x, val.y, val.z, val.w );
+		glUniform4i( i, val.X, val.Y, val.Z, val.W );
 		return true;
 	}
 
@@ -274,7 +274,7 @@ namespace Tridium {
 			return false;
 		}
 
-		glUniform2f( i, val.x, val.y );
+		glUniform2f( i, val.X, val.Y );
 		return true;
 	}
 
@@ -287,7 +287,7 @@ namespace Tridium {
 			return false;
 		}
 
-		glUniform3f( i, val.x, val.y, val.z );
+		glUniform3f( i, val.X, val.Y, val.Z );
 		return true;
 	}
 
@@ -300,7 +300,7 @@ namespace Tridium {
 			return false;
 		}
 
-		glUniform4f( i, val.x, val.y, val.z, val.w );
+		glUniform4f( i, val.X, val.Y, val.Z, val.W );
 		return true;
 	}
 

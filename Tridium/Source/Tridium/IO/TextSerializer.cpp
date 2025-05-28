@@ -15,8 +15,8 @@ namespace Tridium::IO {
 	{
 		a_Archive << YAML::Flow;
 		a_Archive << YAML::BeginSeq;
-		a_Archive << a_Value.x;
-		a_Archive << a_Value.y;
+		a_Archive << a_Value.X;
+		a_Archive << a_Value.Y;
 		a_Archive << YAML::EndSeq;
 	}
 
@@ -25,9 +25,9 @@ namespace Tridium::IO {
 	{
 		a_Archive << YAML::Flow;
 		a_Archive << YAML::BeginSeq;
-		a_Archive << a_Value.x;
-		a_Archive << a_Value.y;
-		a_Archive << a_Value.z;
+		a_Archive << a_Value.X;
+		a_Archive << a_Value.Y;
+		a_Archive << a_Value.Z;
 		a_Archive << YAML::EndSeq;
 	}
 
@@ -36,10 +36,10 @@ namespace Tridium::IO {
 	{
 		a_Archive << YAML::Flow;
 		a_Archive << YAML::BeginSeq;
-		a_Archive << a_Value.x;
-		a_Archive << a_Value.y;
-		a_Archive << a_Value.z;
-		a_Archive << a_Value.w;
+		a_Archive << a_Value.X;
+		a_Archive << a_Value.Y;
+		a_Archive << a_Value.Z;
+		a_Archive << a_Value.W;
 		a_Archive << YAML::EndSeq;
 	}
 
@@ -48,8 +48,8 @@ namespace Tridium::IO {
 	{
 		a_Archive << YAML::Flow;
 		a_Archive << YAML::BeginSeq;
-		a_Archive << a_Value.x;
-		a_Archive << a_Value.y;
+		a_Archive << a_Value.X;
+		a_Archive << a_Value.Y;
 		a_Archive << YAML::EndSeq;
 	}
 
@@ -58,9 +58,9 @@ namespace Tridium::IO {
 	{
 		a_Archive << YAML::Flow;
 		a_Archive << YAML::BeginSeq;
-		a_Archive << a_Value.x;
-		a_Archive << a_Value.y;
-		a_Archive << a_Value.z;
+		a_Archive << a_Value.X;
+		a_Archive << a_Value.Y;
+		a_Archive << a_Value.Z;
 		a_Archive << YAML::EndSeq;
 	}
 
@@ -69,10 +69,10 @@ namespace Tridium::IO {
 	{
 		a_Archive << YAML::Flow;
 		a_Archive << YAML::BeginSeq;
-		a_Archive << a_Value.x;
-		a_Archive << a_Value.y;
-		a_Archive << a_Value.z;
-		a_Archive << a_Value.w;
+		a_Archive << a_Value.X;
+		a_Archive << a_Value.Y;
+		a_Archive << a_Value.Z;
+		a_Archive << a_Value.W;
 		a_Archive << YAML::EndSeq;
 	}
 
@@ -135,9 +135,9 @@ namespace Tridium::IO {
 	{
 		a_Archive << YAML::Flow;
 		a_Archive << YAML::BeginSeq;
-		a_Archive << a_Value.Euler.x;
-		a_Archive << a_Value.Euler.y;
-		a_Archive << a_Value.Euler.z;
+		a_Archive << a_Value.Euler.X;
+		a_Archive << a_Value.Euler.Y;
+		a_Archive << a_Value.Euler.Z;
 		a_Archive << YAML::EndSeq;
 	}
 
@@ -219,8 +219,8 @@ namespace Tridium::IO {
 	{
 		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 2 )
 		{
-			o_Value.x = a_Node[0].as<float>();
-			o_Value.y = a_Node[1].as<float>();
+			o_Value.X = a_Node[0].as<float>();
+			o_Value.Y = a_Node[1].as<float>();
 			return true;
 		}
 		return false;
@@ -231,9 +231,9 @@ namespace Tridium::IO {
 	{
 		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 3 )
 		{
-			o_Value.x = a_Node[0].as<float>();
-			o_Value.y = a_Node[1].as<float>();
-			o_Value.z = a_Node[2].as<float>();
+			o_Value.X = a_Node[0].as<float>();
+			o_Value.Y = a_Node[1].as<float>();
+			o_Value.Z = a_Node[2].as<float>();
 			return true;
 		}
 		return false;
@@ -244,10 +244,10 @@ namespace Tridium::IO {
 	{
 		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 4 )
 		{
-			o_Value.x = a_Node[0].as<float>();
-			o_Value.y = a_Node[1].as<float>();
-			o_Value.z = a_Node[2].as<float>();
-			o_Value.w = a_Node[3].as<float>();
+			o_Value.X = a_Node[0].as<float>();
+			o_Value.Y = a_Node[1].as<float>();
+			o_Value.Z = a_Node[2].as<float>();
+			o_Value.W = a_Node[3].as<float>();
 			return true;
 		}
 		return false;
@@ -258,8 +258,8 @@ namespace Tridium::IO {
 	{
 		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 2 )
 		{
-			o_Value.x = a_Node[0].as<int>();
-			o_Value.y = a_Node[1].as<int>();
+			o_Value.X = a_Node[0].as<int>();
+			o_Value.Y = a_Node[1].as<int>();
 			return true;
 		}
 		return false;
@@ -270,9 +270,9 @@ namespace Tridium::IO {
 	{
 		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 3 )
 		{
-			o_Value.x = a_Node[0].as<int>();
-			o_Value.y = a_Node[1].as<int>();
-			o_Value.z = a_Node[2].as<int>();
+			o_Value.X = a_Node[0].as<int>();
+			o_Value.Y = a_Node[1].as<int>();
+			o_Value.Z = a_Node[2].as<int>();
 			return true;
 		}
 		return false;
@@ -283,10 +283,10 @@ namespace Tridium::IO {
 	{
 		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 4 )
 		{
-			o_Value.x = a_Node[0].as<int>();
-			o_Value.y = a_Node[1].as<int>();
-			o_Value.z = a_Node[2].as<int>();
-			o_Value.w = a_Node[3].as<int>();
+			o_Value.X = a_Node[0].as<int>();
+			o_Value.Y = a_Node[1].as<int>();
+			o_Value.Z = a_Node[2].as<int>();
+			o_Value.W = a_Node[3].as<int>();
 			return true;
 		}
 		return false;

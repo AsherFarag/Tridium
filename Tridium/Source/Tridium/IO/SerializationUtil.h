@@ -24,74 +24,30 @@ namespace YAML {
 		}
 	};
 
-	template<>
-	struct convert<Tridium::Vector2>
+	template<size_t _Count, ::Tridium::Concepts::Arithmetic T>
+	struct convert<Tridium::Vector<_Count, T>>
 	{
-		static Node encode( const Tridium::Vector2& rhs )
+		using Vector = Tridium::Vector<_Count, T>;
+		static Node encode( const Vector& rhs )
 		{
 			Node node;
-			node.push_back( rhs.x );
-			node.push_back( rhs.y );
+			for ( size_t i = 0; i < _Count; ++i )
+				node.push_back( rhs[i] );
 			return node;
 		}
 
-		static bool decode( const Node& node, Tridium::Vector2& rhs )
+		static bool decode( const Node& node, Tridium::Vector<_Count, T>& rhs )
 		{
-			if ( !node.IsSequence() || node.size() != 2 )
+			if ( !node.IsSequence() || node.size() != _Count )
 				return false;
 
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			return true;
-		}
-	};
+			for ( size_t i = 0; i < _Count; ++i )
+			{
+				if ( !node[i].IsScalar() )
+					return false;
 
-	template<>
-	struct convert<Tridium::Vector3>
-	{
-		static Node encode( const Tridium::Vector3& rhs )
-		{
-			Node node;
-			node.push_back( rhs.x );
-			node.push_back( rhs.y );
-			node.push_back( rhs.z );
-			return node;
-		}
-
-		static bool decode( const Node& node, Tridium::Vector3& rhs )
-		{
-			if ( !node.IsSequence() || node.size() != 3 )
-				return false;
-
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			rhs.z = node[2].as<float>();
-			return true;
-		}
-	};
-
-	template<>
-	struct convert<Tridium::Vector4>
-	{
-		static Node encode( const Tridium::Vector4& rhs )
-		{
-			Node node;
-			node.push_back( rhs.x );
-			node.push_back( rhs.y );
-			node.push_back( rhs.z );
-			node.push_back( rhs.w );
-			return node;
-		}
-
-		static bool decode( const Node& node, Tridium::Vector4& rhs )
-		{
-			if ( !node.IsSequence() || node.size() != 4 )
-				return false;
-
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			rhs.z = node[2].as<float>();
-			rhs.w = node[3].as<float>();
+				rhs[i] = node[i].as<T>();
+			}
 			return true;
 		}
 	};
@@ -160,11 +116,15 @@ namespace Tridium {
 	
 	YAML::Emitter& operator<<( YAML::Emitter& out, const GUID& v );
 
-	YAML::Emitter& operator<<( YAML::Emitter& out, const Vector2& v );
-
-	YAML::Emitter& operator<<( YAML::Emitter& out, const Vector3& v );
-
-	YAML::Emitter& operator<<( YAML::Emitter& out, const Vector4& v );
+	template<size_t _Count, Concepts::Arithmetic _Gen>
+	YAML::Emitter& operator<<( YAML::Emitter& out, const Vector<_Count, _Gen>& v )
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq;
+		for ( size_t i = 0; i < _Count; ++i ) out << v[i];
+		out << YAML::EndSeq;
+		return out;
+	}
 
 	YAML::Emitter& operator<<( YAML::Emitter& out, const Color& v );
 	

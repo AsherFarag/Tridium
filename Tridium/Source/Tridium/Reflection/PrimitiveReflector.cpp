@@ -115,49 +115,49 @@ namespace Tridium::Refl::Internal {
 			// Vector2
 			{
 				ReflectVectorType<Vector2>( "Vector2" )
-					.data<&Vector2::x>( "x"_hs, EPropertyFlags::ScriptReadWrite, "x", {} )
-					.data<&Vector2::y>( "y"_hs, EPropertyFlags::ScriptReadWrite, "y", {} );
+					.data<&Vector2::X>( "X"_hs, EPropertyFlags::ScriptReadWrite, "X", {} )
+					.data<&Vector2::Y>( "Y"_hs, EPropertyFlags::ScriptReadWrite, "Y", {} );
 			}
 
 			// Vector3
 			{
 				ReflectVectorType<Vector3>( "Vector3" )
-					.data<&Vector3::x>( "x"_hs, EPropertyFlags::ScriptReadWrite, "x", {} )
-					.data<&Vector3::y>( "y"_hs, EPropertyFlags::ScriptReadWrite, "y", {} )
-					.data<&Vector3::z>( "z"_hs, EPropertyFlags::ScriptReadWrite, "z", {} );
+					.data<&Vector3::X>( "X"_hs, EPropertyFlags::ScriptReadWrite, "X", {} )
+					.data<&Vector3::Y>( "Y"_hs, EPropertyFlags::ScriptReadWrite, "Y", {} )
+					.data<&Vector3::Z>( "Z"_hs, EPropertyFlags::ScriptReadWrite, "Z", {} );
 			}
 
 			// Vector4
 			{
 				ReflectVectorType<Vector4>( "Vector4" )
-					.data<&Vector4::x>( "x"_hs, EPropertyFlags::ScriptReadWrite, "x", {} )
-					.data<&Vector4::y>( "y"_hs, EPropertyFlags::ScriptReadWrite, "y", {} )
-					.data<&Vector4::z>( "z"_hs, EPropertyFlags::ScriptReadWrite, "z", {} )
-					.data<&Vector4::w>( "w"_hs, EPropertyFlags::ScriptReadWrite, "w", {} );
+					.data<&Vector4::X>( "X"_hs, EPropertyFlags::ScriptReadWrite, "X", {} )
+					.data<&Vector4::Y>( "Y"_hs, EPropertyFlags::ScriptReadWrite, "Y", {} )
+					.data<&Vector4::Z>( "Z"_hs, EPropertyFlags::ScriptReadWrite, "Z", {} )
+					.data<&Vector4::W>( "W"_hs, EPropertyFlags::ScriptReadWrite, "W", {} );
 			}
 
 			// iVector2
 			{
 				ReflectVectorType<iVector2>( "iVector2" )
-					.data<&iVector2::x>( "x"_hs, EPropertyFlags::ScriptReadWrite, "x", {} )
-					.data<&iVector2::y>( "y"_hs, EPropertyFlags::ScriptReadWrite, "y", {} );
+					.data<&iVector2::X>( "X"_hs, EPropertyFlags::ScriptReadWrite, "X", {} )
+					.data<&iVector2::Y>( "Y"_hs, EPropertyFlags::ScriptReadWrite, "Y", {} );
 			}
 
 			// iVector3
 			{
 				ReflectVectorType<iVector3>( "iVector3" )
-					.data<&iVector3::x>( "x"_hs, EPropertyFlags::ScriptReadWrite, "x", {} )
-					.data<&iVector3::y>( "y"_hs, EPropertyFlags::ScriptReadWrite, "y", {} )
-					.data<&iVector3::z>( "z"_hs, EPropertyFlags::ScriptReadWrite, "z", {} );
+					.data<&iVector3::X>( "X"_hs, EPropertyFlags::ScriptReadWrite, "X", {} )
+					.data<&iVector3::Y>( "Y"_hs, EPropertyFlags::ScriptReadWrite, "Y", {} )
+					.data<&iVector3::Z>( "Z"_hs, EPropertyFlags::ScriptReadWrite, "Z", {} );
 			}
 
 			// iVector4
 			{
 				ReflectVectorType<iVector4>( "iVector4" )
-					.data<&iVector4::x>( "x"_hs, EPropertyFlags::ScriptReadWrite, "x", {} )
-					.data<&iVector4::y>( "y"_hs, EPropertyFlags::ScriptReadWrite, "y", {} )
-					.data<&iVector4::z>( "z"_hs, EPropertyFlags::ScriptReadWrite, "z", {} )
-					.data<&iVector4::w>( "w"_hs, EPropertyFlags::ScriptReadWrite, "w", {} );
+					.data<&iVector4::X>( "X"_hs, EPropertyFlags::ScriptReadWrite, "X", {} )
+					.data<&iVector4::Y>( "Y"_hs, EPropertyFlags::ScriptReadWrite, "Y", {} )
+					.data<&iVector4::Z>( "Z"_hs, EPropertyFlags::ScriptReadWrite, "Z", {} )
+					.data<&iVector4::W>( "W"_hs, EPropertyFlags::ScriptReadWrite, "W", {} );
 			}
 
 			// Color

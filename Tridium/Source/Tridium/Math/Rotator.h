@@ -42,17 +42,17 @@ namespace Tridium {
 
 		Vector3 GetForward() const
 		{
-			return glm::normalize( glm::rotate( Quat, Vector3( 0.0f, 0.0f, -1.0f ) ) );
+			return glm::normalize( glm::rotate( Quat, Cast<const Vector3::GLMType&>( Vector3::Forward() * -1 ) ) );
 		}
 
 		Vector3 GetRight() const
 		{
-			return glm::normalize( glm::rotate( Quat, Vector3( 1.0f, 0.0f, 0.0f ) ) );
+			return glm::normalize( glm::rotate( Quat, Cast<const Vector3::GLMType&>( Vector3::Right() ) ) );
 		}
 
 		Vector3 GetUp() const
 		{
-			return glm::normalize( glm::rotate( Quat, Vector3( 0.0f, 1.0f, 0.0f ) ) );
+			return glm::normalize( glm::rotate( Quat, Cast<const Vector3::GLMType&>( Vector3::Up() ) ) );
 		}
 
 		void SetFromEuler( const Vector3& a_Euler )
@@ -69,19 +69,21 @@ namespace Tridium {
 
 		void SetFromAxisAngle( const Vector3& a_Axis, float a_Angle )
 		{
-			Quat = glm::angleAxis( a_Angle, a_Axis );
-			Euler = glm::eulerAngles( Quat );
+			Quat = Math::AngleAxis( a_Angle, a_Axis );
+			Euler = Math::EulerAngles( Quat );
 		}
 
 		void SetFromLookAt( const Vector3& a_Position, const Vector3& a_Target, const Vector3& a_Up )
 		{
-			Quat = glm::quatLookAt( glm::normalize( a_Target - a_Position ), a_Up );
+			Quat = glm::quatLookAt( Cast<Vector3::GLMType>( Vector3( a_Target - a_Position ).Normalized() ),
+				Cast<Vector3::GLMType>( a_Up.Normalized() ) );
 			Euler = glm::eulerAngles( Quat );
 		}
 
 		void SetFromToRotation( const Vector3& a_From, const Vector3& a_To )
 		{
-			Quat = glm::rotation( a_From, a_To );
+			Quat = glm::rotation( Cast<Vector3::GLMType>( a_From.Normalized() ),
+				Cast<Vector3::GLMType>( a_To.Normalized() ) );
 			Euler = glm::eulerAngles( Quat );
 		}
 

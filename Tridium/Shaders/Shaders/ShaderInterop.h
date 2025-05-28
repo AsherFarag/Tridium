@@ -8,22 +8,22 @@ namespace Tridium {
 
 	static const String s_ShaderPath = ( FilePath::CurrentPath() / "../Tridium/Shaders" ).ToString();
 
-	using int2 = i32Vector2;
-	using int3 = i32Vector3;
-	using int4 = i32Vector4;
+	using int2 = Vector<2, int32_t>;
+	using int3 = Vector<3, int32_t>;
+	using int4 = Vector<4, int32_t>;
 
 	using uint = uint32_t;
-	using uint2 = u32Vector2;
-	using uint3 = u32Vector3;
-	using uint4 = u32Vector4;
+	using uint2 = Vector<2, uint32_t>;
+	using uint3 = Vector<3, uint32_t>;
+	using uint4 = Vector<4, uint32_t>;
 
-	using float2 = f32Vector2;
-	using float3 = f32Vector3;
-	using float4 = f32Vector4;
+	using float2 = Vector<2, float32_t>;
+	using float3 = Vector<3, float32_t>;
+	using float4 = Vector<4, float32_t>;
 
-	using float2x2 = f32Matrix2;
-	using float3x3 = f32Matrix3;
-	using float4x4 = f32Matrix4;
+	using float2x2 = Matrix<2, 2, float32_t>;
+	using float3x3 = Matrix<3, 3, float32_t>;
+	using float4x4 = Matrix<4, 4, float32_t>;
 
 }
 

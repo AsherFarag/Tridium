@@ -120,7 +120,7 @@ namespace Tridium {
 		m_Window->SetEventCallback( [this]( const Event& a_Event ) { this->EnqueueEvent( a_Event ); } );
 
 		RHIConfig config{};
-		config.RHIType = ERHInterfaceType::DirectX12;
+		config.RHIType = ERHInterfaceType::OpenGL;
 		config.UseDebug = true;
 		bool initSuccess = RHI::Initialise( config );
 		LOG( LogCategory::RHI, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), initSuccess );
@@ -513,11 +513,11 @@ float4 PSMain( VSOutput input ) : SV_Target
 
 					// Get the PVM matrix
 					Vector3 pos = Vector3( 0.0f, 0.0f, 3.0f );
-					pos.y = Math::Sin( time ) * 2.0f;
-					pos.x = Math::Cos( time ) * 2.0f;
-					float4x4 model = glm::translate( Matrix4( 1.0f ), pos );
-					float4x4 view = glm::lookAt( Vector3( 0.0f, 0.0f, -2.0f ), Vector3( 0.0f, 0.0f, 0.0f ), Vector3( 0.0f, 1.0f, 0.0f ) );
-					float4x4 projection = glm::perspective( Math::Radians( 90.0f ), (float)width / (float)height, 0.1f, 100.0f );
+					pos.Y = Math::Sin( time ) * 2.0f;
+					pos.X = Math::Cos( time ) * 2.0f;
+					float4x4 model = Math::Translate( pos );
+					float4x4 view = Math::LookAt( Vector3( 0.0f, 0.0f, -2.0f ), Vector3( 0.0f, 0.0f, 0.0f ), Vector3( 0.0f, 1.0f, 0.0f ) );
+					float4x4 projection = Math::Perspective( Math::Radians( 90.0f ), (float)width / (float)height, 0.1f, 100.0f );
 
 					// Construct the inlined constants ( random struct thats casted to an array of bytes )
 					InlinedConstants inlinedConstants;
@@ -551,12 +551,12 @@ float4 PSMain( VSOutput input ) : SV_Target
 					cmdBuffer.SetInlinedConstants( inlinedConstants );
 					cmdBuffer.Draw( 0, sizeof( cubeVerts ) / sizeof( Vertex ) );
 
-					inlinedConstants.Model = glm::translate( Matrix4( 1.0f ), Vector3(-pos.x, -pos.y, pos.z) );
+					inlinedConstants.Model = Math::Translate( -pos );
 					inlinedConstants.PVM = projection * view * inlinedConstants.Model;
 					cmdBuffer.SetInlinedConstants( inlinedConstants );
 					cmdBuffer.Draw( 0, sizeof( cubeVerts ) / sizeof( Vertex ) );
 
-					inlinedConstants.Model = glm::translate( Matrix4( 1.0f ), Vector3( 0.5 * -pos.x, -pos.y, -pos.x + pos.z ) );
+					inlinedConstants.Model = Math::Translate( Vector3( 0.5 * -pos.X, -pos.Y, -pos.X + pos.Z ) );
 					inlinedConstants.PVM = projection * view * inlinedConstants.Model;
 					cmdBuffer.SetInlinedConstants( inlinedConstants );
 					cmdBuffer.Draw( 0, sizeof( cubeVerts ) / sizeof( Vertex ) );

@@ -212,8 +212,8 @@ namespace Tridium {
 					{
 						FramebufferSpecification spec =
 						{
-							.Width = (uint32_t)lightComponent.ShadowMapSize.x,
-							.Height = (uint32_t)lightComponent.ShadowMapSize.y,
+							.Width = (uint32_t)lightComponent.ShadowMapSize.X,
+							.Height = (uint32_t)lightComponent.ShadowMapSize.Y,
 							.Attachments = { EFramebufferTextureFormat::Depth },
 						};
 
@@ -236,7 +236,7 @@ namespace Tridium {
 
 					// - Update View Projection Matrix -
 					float lightNearPlane = -1000.0f; float lightFarPlane = 1000.0f;
-					Matrix4 lightView = glm::lookAt(
+					Matrix4 lightView = Math::LookAt(
 						m_SceneInfo.CameraPosition + ( light.Direction * -20.f ),
 						m_SceneInfo.CameraPosition,
 						{ 0.0f, 1.0f, 0.0f } );
@@ -296,12 +296,12 @@ namespace Tridium {
 					light.ShadowMap = lightComponent.ShadowMap;
 
 					Matrix4 shadowProjection = glm::perspective( glm::radians( 90.0f ), 1.0f, 0.1f, light.AttenuationRadius );
-					light.LightSpaceMatrices[0] = shadowProjection * glm::lookAt( light.Position, light.Position + Vector3( 1.0f, 0.0f, 0.0f ), Vector3( 0.0f, -1.0f, 0.0f ) );
-					light.LightSpaceMatrices[1] = shadowProjection * glm::lookAt( light.Position, light.Position + Vector3( -1.0f, 0.0f, 0.0f ), Vector3( 0.0f, -1.0f, 0.0f ) );
-					light.LightSpaceMatrices[2] = shadowProjection * glm::lookAt( light.Position, light.Position + Vector3( 0.0f, 1.0f, 0.0f ), Vector3( 0.0f, 0.0f, 1.0f ) );
-					light.LightSpaceMatrices[3] = shadowProjection * glm::lookAt( light.Position, light.Position + Vector3( 0.0f, -1.0f, 0.0f ), Vector3( 0.0f, 0.0f, -1.0f ) );
-					light.LightSpaceMatrices[4] = shadowProjection * glm::lookAt( light.Position, light.Position + Vector3( 0.0f, 0.0f, 1.0f ), Vector3( 0.0f, -1.0f, 0.0f ) );
-					light.LightSpaceMatrices[5] = shadowProjection * glm::lookAt( light.Position, light.Position + Vector3( 0.0f, 0.0f, -1.0f ), Vector3( 0.0f, -1.0f, 0.0f ) );
+					light.LightSpaceMatrices[0] = shadowProjection * Math::LookAt( light.Position, light.Position + Vector3( 1.0f, 0.0f, 0.0f ), Vector3( 0.0f, -1.0f, 0.0f ) );
+					light.LightSpaceMatrices[1] = shadowProjection * Math::LookAt( light.Position, light.Position + Vector3( -1.0f, 0.0f, 0.0f ), Vector3( 0.0f, -1.0f, 0.0f ) );
+					light.LightSpaceMatrices[2] = shadowProjection * Math::LookAt( light.Position, light.Position + Vector3( 0.0f, 1.0f, 0.0f ), Vector3( 0.0f, 0.0f, 1.0f ) );
+					light.LightSpaceMatrices[3] = shadowProjection * Math::LookAt( light.Position, light.Position + Vector3( 0.0f, -1.0f, 0.0f ), Vector3( 0.0f, 0.0f, -1.0f ) );
+					light.LightSpaceMatrices[4] = shadowProjection * Math::LookAt( light.Position, light.Position + Vector3( 0.0f, 0.0f, 1.0f ), Vector3( 0.0f, -1.0f, 0.0f ) );
+					light.LightSpaceMatrices[5] = shadowProjection * Math::LookAt( light.Position, light.Position + Vector3( 0.0f, 0.0f, -1.0f ), Vector3( 0.0f, -1.0f, 0.0f ) );
 
 					m_LightEnvironment.NumPointLights++;
 				}
@@ -328,8 +328,8 @@ namespace Tridium {
 					{
 						FramebufferSpecification spec =
 						{
-							.Width = (uint32_t)lightComponent.ShadowMapSize.x,
-							.Height = (uint32_t)lightComponent.ShadowMapSize.y,
+							.Width = (uint32_t)lightComponent.ShadowMapSize.X,
+							.Height = (uint32_t)lightComponent.ShadowMapSize.Y,
 							.Attachments = { EFramebufferTextureFormat::Depth },
 						};
 
@@ -351,8 +351,8 @@ namespace Tridium {
 					light.ShadowMap = lightComponent.ShadowMap;
 
 					float nearPlane = 0.1f; float farPlane = 1000.0f;
-					Matrix4 lightView = glm::lookAt( light.Position, light.Position + light.Direction, { 0.0f, 1.0f, 0.0f } );
-					Matrix4 lightProjection = glm::perspective( glm::radians( light.OuterConeAngle ) * 2.0f, 1.0f, nearPlane, farPlane );
+					Matrix4 lightView = Math::LookAt( light.Position, light.Position + light.Direction, { 0.0f, 1.0f, 0.0f } );
+					Matrix4 lightProjection = Math::Perspective( Math::Radians( light.OuterConeAngle ) * 2.0f, 1.0f, nearPlane, farPlane );
 					light.LightSpaceMatrix = lightProjection * lightView;
 
 					m_LightEnvironment.NumSpotLights++;
@@ -453,8 +453,8 @@ namespace Tridium {
 				if ( !directionalLight.CastsShadows )
 					continue;
 
-				RenderCommand::SetViewport( 0, 0, directionalLight.ShadowMapSize.x, directionalLight.ShadowMapSize.y );
-				directionalLight.ShadowMap->Resize( directionalLight.ShadowMapSize.x, directionalLight.ShadowMapSize.y );
+				RenderCommand::SetViewport( 0, 0, directionalLight.ShadowMapSize.X, directionalLight.ShadowMapSize.Y );
+				directionalLight.ShadowMap->Resize( directionalLight.ShadowMapSize.X, directionalLight.ShadowMapSize.Y );
 				directionalLight.ShadowMap->Bind();
 				RenderCommand::Clear();
 
@@ -529,8 +529,8 @@ namespace Tridium {
 				if ( !spotLight.CastsShadows )
 					continue;
 
-				RenderCommand::SetViewport( 0, 0, spotLight.ShadowMapSize.x, spotLight.ShadowMapSize.y );
-				spotLight.ShadowMap->Resize( spotLight.ShadowMapSize.x, spotLight.ShadowMapSize.y );
+				RenderCommand::SetViewport( 0, 0, spotLight.ShadowMapSize.X, spotLight.ShadowMapSize.Y );
+				spotLight.ShadowMap->Resize( spotLight.ShadowMapSize.X, spotLight.ShadowMapSize.Y );
 				spotLight.ShadowMap->Bind();
 				RenderCommand::Clear();
 
@@ -566,13 +566,13 @@ namespace Tridium {
 
 		// - GBuffer Pass -
 		{
-			m_DeferredData.GBuffer.Resize( viewportSize.x, viewportSize.y );
+			m_DeferredData.GBuffer.Resize( viewportSize.X, viewportSize.Y );
 			m_DeferredData.GBuffer.Bind();
 			RenderCommand::Clear();
 			RenderCommand::SetBlendmode( EBlendMode::None );
 
 			// - Reset Viewport -
-			RenderCommand::SetViewport( 0, 0, viewportSize.x, viewportSize.y );
+			RenderCommand::SetViewport( 0, 0, viewportSize.X, viewportSize.Y );
 
 			// Geometry Pass
 			{
@@ -582,7 +582,7 @@ namespace Tridium {
 			m_DeferredData.GBuffer.Unbind();
 		}
 
-		m_RenderTarget->Resize( viewportSize.x, viewportSize.y );
+		m_RenderTarget->Resize( viewportSize.X, viewportSize.Y );
 		m_RenderTarget->Bind();
 		RenderCommand::Clear();
 
@@ -595,8 +595,8 @@ namespace Tridium {
 		{
 			m_DeferredData.GBuffer.GetFramebuffer()->BlitTo( 
 				m_RenderTarget,
-				{ 0, 0 }, { viewportSize.x, viewportSize.y }, // Source min, max
-				{ 0, 0 }, { viewportSize.x, viewportSize.y }, // Destination min, max
+				{ 0, 0 }, { viewportSize.X, viewportSize.Y }, // Source min, max
+				{ 0, 0 }, { viewportSize.X, viewportSize.Y }, // Destination min, max
 				EFramebufferTextureFormat::Depth, ETextureFilter::Nearest );
 		}
 
@@ -884,7 +884,7 @@ namespace Tridium {
 
 		// - Reset Viewport -
 		const iVector2 viewportSize = m_SceneInfo.Camera.GetViewportSize();
-		RenderCommand::SetViewport( 0, 0, viewportSize.x, viewportSize.y );
+		RenderCommand::SetViewport( 0, 0, viewportSize.X, viewportSize.Y );
 
 		// - Geometry Pass -
 		{

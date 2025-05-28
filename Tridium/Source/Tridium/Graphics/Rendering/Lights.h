@@ -41,7 +41,7 @@ namespace Tridium {
 		Matrix4 LightSpaceMatrix;
 
 		// Temp?
-		iVector2 ShadowMapSize;
+		Vector2 ShadowMapSize;
 		SharedPtr<Framebuffer> ShadowMap;
 	};
 
@@ -56,7 +56,7 @@ namespace Tridium {
 		Matrix4 LightSpaceMatrix;
 
 		// Temp?
-		iVector2 ShadowMapSize;
+		Vector2 ShadowMapSize;
 		SharedPtr<Framebuffer> ShadowMap;
 	};
 }

@@ -575,34 +575,34 @@ namespace Tridium {
 								{
 									// Find the value that was changed
 									float changedValue = 0.0f;
-									if ( scale.x != oldScale.x )
-										changedValue = scale.x;
-									else if ( scale.y != oldScale.y )
-										changedValue = scale.y;
-									else if ( scale.z != oldScale.z )
-										changedValue = scale.z;
+									if ( scale.X != oldScale.X )
+										changedValue = scale.X;
+									else if ( scale.Y != oldScale.Y )
+										changedValue = scale.Y;
+									else if ( scale.Z != oldScale.Z )
+										changedValue = scale.Z;
 
 									// Calculate the proportional change based on the changed axis
-									if ( scale.x != oldScale.x )
+									if ( scale.X != oldScale.X )
 									{
 										// Lock the proportions by scaling the other axes
-										float proportion = oldScale.x == 0.0f ? 1.0f : scale.x / oldScale.x;
-										scale.y = oldScale.y * proportion;
-										scale.z = oldScale.z * proportion;
+										float proportion = oldScale.X == 0.0f ? 1.0f : scale.X / oldScale.X;
+										scale.Y = oldScale.Y * proportion;
+										scale.Z = oldScale.Z * proportion;
 									}
-									else if ( scale.y != oldScale.y )
+									else if ( scale.Y != oldScale.Y )
 									{
 										// Lock the proportions by scaling the other axes
-										float proportion = oldScale.y == 0.0f ? 1.0f : scale.y / oldScale.y;
-										scale.x = oldScale.x * proportion;
-										scale.z = oldScale.z * proportion;
+										float proportion = oldScale.Y == 0.0f ? 1.0f : scale.Y / oldScale.Y;
+										scale.X = oldScale.X * proportion;
+										scale.Z = oldScale.Z * proportion;
 									}
-									else if ( scale.z != oldScale.z )
+									else if ( scale.Z != oldScale.Z )
 									{
 										// Lock the proportions by scaling the other axes
-										float proportion = oldScale.z == 0.0f ? 1.0f : scale.z / oldScale.z;
-										scale.x = oldScale.x * proportion;
-										scale.y = oldScale.y * proportion;
+										float proportion = oldScale.Z == 0.0f ? 1.0f : scale.Z / oldScale.Z;
+										scale.X = oldScale.X * proportion;
+										scale.Y = oldScale.Y * proportion;
 									}
 								}
 							}

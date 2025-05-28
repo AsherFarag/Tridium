@@ -184,17 +184,17 @@ namespace Tridium {
 			if ( ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right) )
 				ImGui::SetWindowFocus();
 
-			Vector2 regionAvail = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
+			Vector2 regionAvail = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().x };
 			auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 			auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 			auto viewportOffset = ImGui::GetWindowPos();
-			Vector2 viewportBoundsMin = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
-			Vector2 viewportBoundsMax = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+			Vector2 viewportBoundsMin = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.x + viewportOffset.x };
+			Vector2 viewportBoundsMax = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.x + viewportOffset.x };
 
 			// Update the viewport size
 			m_ViewportSize = regionAvail;
-			m_EditorCamera->SetViewportSize( regionAvail.x, regionAvail.y );
-			m_FBO->Resize( regionAvail.x, regionAvail.y );
+			m_EditorCamera->SetViewportSize( regionAvail.X, regionAvail.X );
+			m_FBO->Resize( regionAvail.X, regionAvail.X );
 
 			SceneManager::GetActiveScene()->GetSceneRenderer().Render(m_FBO, *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position);
 
@@ -216,12 +216,12 @@ namespace Tridium {
 
 			if ( m_IsHovered && ImGui::IsItemClicked() && !ImGuizmo::IsUsingAny() )
 			{
-				m_IDFBO->Resize( regionAvail.x, regionAvail.y );
+				m_IDFBO->Resize( regionAvail.X, regionAvail.X );
 
 				auto [mx, my] = ImGui::GetMousePos();
-				mx -= viewportBoundsMin.x;
-				my -= viewportBoundsMin.y;
-				my = m_ViewportSize.y - my;
+				mx -= viewportBoundsMin.X;
+				my -= viewportBoundsMin.X;
+				my = m_ViewportSize.X - my;
 				int mouseX = (int)mx;
 				int mouseY = (int)my;
 
@@ -297,8 +297,8 @@ namespace Tridium {
 		SetImGuizmoColors();
 		ImGuizmo::SetOrthographic( false );
 		ImGuizmo::SetDrawlist();
-		ImGuizmo::SetRect( viewportBoundsMin.x, viewportBoundsMin.y,
-			viewportBoundsMax.x - viewportBoundsMin.x, viewportBoundsMax.y - viewportBoundsMin.y );
+		ImGuizmo::SetRect( viewportBoundsMin.X, viewportBoundsMin.X,
+			viewportBoundsMax.X - viewportBoundsMin.X, viewportBoundsMax.X - viewportBoundsMin.X );
 
 		if ( m_SelectedGameObject.IsValid() )
 		{
@@ -317,7 +317,7 @@ namespace Tridium {
 				(ImGuizmo::OPERATION)m_GizmoState, ImGuizmo::LOCAL,
 				&goWorldTransform[0][0], nullptr, shouldSnap ? &snapVals[0] : nullptr );
 
-			ImGuizmo::ViewManipulate( &camView[0][0], 8.0f, { viewportBoundsMax.x - 75, viewportBoundsMin.y }, { 75, 75 }, 0x10101010 );
+			ImGuizmo::ViewManipulate( &camView[0][0], 8.0f, { viewportBoundsMax.X - 75, viewportBoundsMin.X }, { 75, 75 }, 0x10101010 );
 
 			if ( ImGuizmo::IsUsingAny() )
 			{
@@ -334,7 +334,7 @@ namespace Tridium {
 			Matrix4 identity( 1.0f );
 			ImGuizmo::ViewManipulate( &camView[0][0], &camProjection[0][0],
 				(ImGuizmo::OPERATION)m_GizmoState, ImGuizmo::LOCAL,
-				&identity[0][0], 8.0f, ImVec2( viewportBoundsMax.x - 75, viewportBoundsMin.y ), ImVec2( 75, 75 ), 0x10101010 );
+				&identity[0][0], 8.0f, ImVec2( viewportBoundsMax.X - 75, viewportBoundsMin.X ), ImVec2( 75, 75 ), 0x10101010 );
 		}
 
 		// Update the Editor Camera's View Matrix

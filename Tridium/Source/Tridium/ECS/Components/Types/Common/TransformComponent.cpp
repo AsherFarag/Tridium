@@ -48,13 +48,13 @@ namespace Tridium {
 
 	Matrix4 TransformComponent::GetLocalTransform() const
 	{
-		Matrix4 rotationMatrix = glm::toMat4( Rotation.Quat );
+		Matrix4 rotationMatrix = Math::ToMat4( Rotation.Quat );
 
 		constexpr Matrix4 identity = Matrix4( 1.0f );
 
-		return glm::translate( identity, Position )
+		return Math::Translate( identity, Position )
 			* rotationMatrix
-			* glm::scale( identity, Scale );
+			* Math::Scale( identity, Scale );
 	}
 
 	Vector3 TransformComponent::GetForward() const
@@ -66,7 +66,7 @@ namespace Tridium {
 			forward += m_Parent.GetTransform().GetForward();
 		}
 
-		return glm::normalize(forward);
+		return forward.Normalized();
 	}
 
 	Vector3 TransformComponent::GetRight() const
@@ -106,7 +106,7 @@ namespace Tridium {
 		if ( m_Parent.IsValid() )
 		{
 			const Matrix4 parentTransform = glm::inverse( m_Parent.GetTransform().GetWorldTransform() );
-			Position = parentTransform * glm::vec4( a_Position, 1.0f );
+			Position = parentTransform * Vector4( a_Position, 1.0f );
 		}
 		else
 		{

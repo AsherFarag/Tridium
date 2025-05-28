@@ -31,17 +31,17 @@ namespace Tridium {
 	{
 		a_Type["Zero"] = +[]() -> _Vector { return _Vector( 0.0f ); };
 
-		a_Type["Normalized"] = glm::normalize<_Vector::length(), float, glm::packed_highp>;
-		a_Type["Length"] = glm::length<_Vector::length(), float, glm::packed_highp>;
-		a_Type["Dot"] = glm::dot<_Vector::length(), float, glm::packed_highp>;
+		a_Type["Normalized"] = +[]( const _Vector& a_Vector ) -> _Vector { return a_Vector.Normalized(); };
+		a_Type["Length"] = +[]( const _Vector& a_Vector ) -> float { return a_Vector.Length(); };
+		a_Type["Dot"] = +[]( const _Vector& a_A, const _Vector& a_B ) -> float { return Math::Dot( a_A, a_B ); };
 	}
 
 	void Scriptable<Vector2>::RegisterType( ScriptEngine& a_ScriptEngine )
 	{
 		auto type = a_ScriptEngine.RegisterNewType<Vector2>( "Vector2" );
 		type["new"] = sol::constructors<Vector2(), Vector2( float ), Vector2( float, float )>();
-		type["x"] = sol::property( &Vector2::x, &Vector2::x );
-		type["y"] = sol::property( &Vector2::y, &Vector2::y );
+		type["X"] = sol::property( &Vector2::X, &Vector2::X );
+		type["Y"] = sol::property( &Vector2::Y, &Vector2::Y );
 		RegisterVectorFunctions( type );
 	}
 
@@ -49,9 +49,9 @@ namespace Tridium {
 	{
 		auto type = a_ScriptEngine.RegisterNewType<Vector3>( "Vector3" );
 		type["new"] = sol::constructors<Vector3(), Vector3( float ), Vector3( float, float, float )>();
-		type["x"] = sol::property( &Vector3::x, &Vector3::x );
-		type["y"] = sol::property( &Vector3::y, &Vector3::y );
-		type["z"] = sol::property( &Vector3::z, &Vector3::z );
+		type["X"] = sol::property( &Vector3::X, &Vector3::X );
+		type["Y"] = sol::property( &Vector3::Y, &Vector3::Y );
+		type["Z"] = sol::property( &Vector3::Z, &Vector3::Z );
 		RegisterVectorFunctions( type );
 	}
 
@@ -59,40 +59,10 @@ namespace Tridium {
 	{
 		auto type = a_ScriptEngine.RegisterNewType<Vector4>( "Vector4" );
 		type["new"] = sol::constructors<Vector4(), Vector4( float ), Vector4( float, float, float, float )>();
-		type["x"] = sol::property( &Vector4::x, &Vector4::x );
-		type["y"] = sol::property( &Vector4::y, &Vector4::y );
-		type["z"] = sol::property( &Vector4::z, &Vector4::z );
-		type["w"] = sol::property( &Vector4::w, &Vector4::w );
-		RegisterVectorFunctions( type );
-	}
-
-	void Scriptable<iVector2>::RegisterType( ScriptEngine& a_ScriptEngine )
-	{
-		auto type = a_ScriptEngine.RegisterNewType<iVector2>( "iVector2" );
-		type["new"] = sol::constructors<iVector2(), iVector2( int ), iVector2( int, int )>();
-		type["x"] = sol::property( &iVector2::x, &iVector2::x );
-		type["y"] = sol::property( &iVector2::y, &iVector2::y );
-		RegisterVectorFunctions( type );
-	}
-
-	void Scriptable<iVector3>::RegisterType( ScriptEngine& a_ScriptEngine )
-	{
-		auto type = a_ScriptEngine.RegisterNewType<iVector3>( "iVector3" );
-		type["new"] = sol::constructors<iVector3(), iVector3( int ), iVector3( int, int, int )>();
-		type["x"] = sol::property( &iVector3::x, &iVector3::x );
-		type["y"] = sol::property( &iVector3::y, &iVector3::y );
-		type["z"] = sol::property( &iVector3::z, &iVector3::z );
-		RegisterVectorFunctions( type );
-	}
-
-	void Scriptable<iVector4>::RegisterType( ScriptEngine& a_ScriptEngine )
-	{
-		auto type = a_ScriptEngine.RegisterNewType<iVector4>( "iVector4" );
-		type["new"] = sol::constructors<iVector4(), iVector4( int ), iVector4( int, int, int, int )>();
-		type["x"] = sol::property( &iVector4::x, &iVector4::x );
-		type["y"] = sol::property( &iVector4::y, &iVector4::y );
-		type["z"] = sol::property( &iVector4::z, &iVector4::z );
-		type["w"] = sol::property( &iVector4::w, &iVector4::w );
+		type["X"] = sol::property( &Vector4::X, &Vector4::X );
+		type["Y"] = sol::property( &Vector4::Y, &Vector4::Y );
+		type["Z"] = sol::property( &Vector4::Z, &Vector4::Z );
+		type["W"] = sol::property( &Vector4::W, &Vector4::W );
 		RegisterVectorFunctions( type );
 	}
 
@@ -129,28 +99,28 @@ namespace Tridium {
 		type["new"] = sol::constructors<Rotator()>();
 
 		type["Pitch"] = sol::property( 
-			+[](const Rotator& a_Rotator) -> float { return glm::degrees(a_Rotator.Euler.x); },
-			+[]( Rotator& a_Rotator, float a_Value ) { a_Rotator.Euler.x = glm::radians( a_Value ); } );
+			+[](const Rotator& a_Rotator) -> float { return glm::degrees(a_Rotator.Euler.X); },
+			+[]( Rotator& a_Rotator, float a_Value ) { a_Rotator.Euler.X = glm::radians( a_Value ); } );
 
 		type["Yaw"] = sol::property(
-			+[]( const Rotator& a_Rotator ) -> float { return glm::degrees( a_Rotator.Euler.y ); },
-			+[]( Rotator& a_Rotator, float a_Value ) { a_Rotator.Euler.y = glm::radians( a_Value ); } );
+			+[]( const Rotator& a_Rotator ) -> float { return glm::degrees( a_Rotator.Euler.Y ); },
+			+[]( Rotator& a_Rotator, float a_Value ) { a_Rotator.Euler.Y = glm::radians( a_Value ); } );
 
 		type["Roll"] = sol::property(
-			+[]( const Rotator& a_Rotator ) -> float { return glm::degrees( a_Rotator.Euler.z ); },
-			+[]( Rotator& a_Rotator, float a_Value ) { a_Rotator.Euler.z = glm::radians( a_Value ); } );
+			+[]( const Rotator& a_Rotator ) -> float { return glm::degrees( a_Rotator.Euler.Z ); },
+			+[]( Rotator& a_Rotator, float a_Value ) { a_Rotator.Euler.Z = glm::radians( a_Value ); } );
 
 		type["Forward"] = sol::property(
 			+[]( const Rotator& a_Rotator ) -> Vector3 { return a_Rotator.GetForward(); },
-			+[]( Rotator& a_Rotator, const Vector3& a_Value ) { a_Rotator.SetFromQuaternion( glm::quatLookAt( a_Value, Vector3( 0.0f, 1.0f, 0.0f ) ) ); } );
+			+[]( Rotator& a_Rotator, const Vector3& a_Value ) { a_Rotator.SetFromQuaternion( Math::QuatLookAt( a_Value, Vector3::Up() ) ); } );
 
 		type["Right"] = sol::property(
 			+[]( const Rotator& a_Rotator ) -> Vector3 { return a_Rotator.GetRight(); },
-			+[]( Rotator& a_Rotator, const Vector3& a_Value ) { a_Rotator.SetFromQuaternion( glm::quatLookAt( Vector3( 0.0f, 1.0f, 0.0f ), a_Value ) ); } );
+			+[]( Rotator& a_Rotator, const Vector3& a_Value ) { a_Rotator.SetFromQuaternion( Math::QuatLookAt( Vector3::Right(), a_Value) ); });
 
 		type["Up"] = sol::property(
 			+[]( const Rotator& a_Rotator ) -> Vector3 { return a_Rotator.GetUp(); },
-			+[]( Rotator& a_Rotator, const Vector3& a_Value ) { a_Rotator.SetFromQuaternion( glm::quatLookAt( Vector3( 0.0f, 0.0f, 1.0f ), a_Value ) ); } );
+			+[]( Rotator& a_Rotator, const Vector3& a_Value ) { a_Rotator.SetFromQuaternion( Math::QuatLookAt( Vector3::Forward(), a_Value) ); });
 	}
 
 	void Scriptable<Color>::RegisterType( ScriptEngine& a_ScriptEngine )

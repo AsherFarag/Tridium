@@ -77,19 +77,19 @@ namespace Tridium::Debug {
 		// b2 - b1
 		// |     |
 		// b4 - b3
-		Vector3 b1 = { min.x, min.y, min.z };
-		Vector3 b2 = { max.x, min.y, min.z };
-		Vector3 b3 = { min.x, min.y, max.z };
-		Vector3 b4 = { max.x, min.y, max.z };
+		Vector3 b1 = { min.X, min.Y, min.Z };
+		Vector3 b2 = { max.X, min.Y, min.Z };
+		Vector3 b3 = { min.X, min.Y, max.Z };
+		Vector3 b4 = { max.X, min.Y, max.Z };
 
 		// Top face
 		// t2 - t1
 		// |     |
 		// t4 - t3
-		Vector3 t1 = { max.x, max.y, max.z };
-		Vector3 t2 = { min.x, max.y, max.z };
-		Vector3 t3 = { max.x, max.y, min.z };
-		Vector3 t4 = { min.x, max.y, min.z };
+		Vector3 t1 = { max.X, max.Y, max.Z };
+		Vector3 t2 = { min.X, max.Y, max.Z };
+		Vector3 t3 = { max.X, max.Y, min.Z };
+		Vector3 t4 = { min.X, max.Y, min.Z };
 
 		// Draw Top face
 		DrawLine( t1, t2, a_Color, a_DrawDuration, a_Duration );
@@ -119,20 +119,20 @@ namespace Tridium::Debug {
 		// b2 - b1
 		// |     |
 		// b4 - b3
-		Vector3 b1 = { min.x, min.y, min.z };
-		Vector3 b2 = { max.x, min.y, min.z };
-		Vector3 b3 = { min.x, min.y, max.z };
-		Vector3 b4 = { max.x, min.y, max.z };
+		Vector3 b1 = { min.X, min.Y, min.Z };
+		Vector3 b2 = { max.X, min.Y, min.Z };
+		Vector3 b3 = { min.X, min.Y, max.Z };
+		Vector3 b4 = { max.X, min.Y, max.Z };
 
 		// Top face
 		// t2 - t1
 		// |     |
 		// t4 - t3
 
-		Vector3 t4 = { max.x, max.y, max.z };
-		Vector3 t3 = { min.x, max.y, max.z };
-		Vector3 t2 = { max.x, max.y, min.z };
-		Vector3 t1 = { min.x, max.y, min.z };
+		Vector3 t4 = { max.X, max.Y, max.Z };
+		Vector3 t3 = { min.X, max.Y, max.Z };
+		Vector3 t2 = { max.X, max.Y, min.Z };
+		Vector3 t1 = { min.X, max.Y, min.Z };
 
 		// Draw Top face
 		DrawTriangle( t1, t2, t4, a_Color, a_DrawDuration, a_Duration );
@@ -234,14 +234,14 @@ namespace Tridium::Debug {
 	void DebugDrawer::DrawBox( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
 	{
 		Vector3 corners[8];
-		corners[0] = a_Center + a_Rotation * Vector3{ -a_HalfExtents.x, -a_HalfExtents.y, -a_HalfExtents.z };
-		corners[1] = a_Center + a_Rotation * Vector3{ a_HalfExtents.x, -a_HalfExtents.y, -a_HalfExtents.z };
-		corners[2] = a_Center + a_Rotation * Vector3{ a_HalfExtents.x, a_HalfExtents.y, -a_HalfExtents.z };
-		corners[3] = a_Center + a_Rotation * Vector3{ -a_HalfExtents.x, a_HalfExtents.y, -a_HalfExtents.z };
-		corners[4] = a_Center + a_Rotation * Vector3{ -a_HalfExtents.x, -a_HalfExtents.y, a_HalfExtents.z };
-		corners[5] = a_Center + a_Rotation * Vector3{ a_HalfExtents.x, -a_HalfExtents.y, a_HalfExtents.z };
-		corners[6] = a_Center + a_Rotation * Vector3{ a_HalfExtents.x, a_HalfExtents.y, a_HalfExtents.z };	
-		corners[7] = a_Center + a_Rotation * Vector3{ -a_HalfExtents.x, a_HalfExtents.y, a_HalfExtents.z };
+		corners[0] = a_Center + a_Rotation * Vector3{ -a_HalfExtents.X, -a_HalfExtents.Y, -a_HalfExtents.Z };
+		corners[1] = a_Center + a_Rotation * Vector3{  a_HalfExtents.X, -a_HalfExtents.Y, -a_HalfExtents.Z };
+		corners[2] = a_Center + a_Rotation * Vector3{  a_HalfExtents.X,  a_HalfExtents.Y, -a_HalfExtents.Z };
+		corners[3] = a_Center + a_Rotation * Vector3{ -a_HalfExtents.X,  a_HalfExtents.Y, -a_HalfExtents.Z };
+		corners[4] = a_Center + a_Rotation * Vector3{ -a_HalfExtents.X, -a_HalfExtents.Y,  a_HalfExtents.Z };
+		corners[5] = a_Center + a_Rotation * Vector3{  a_HalfExtents.X, -a_HalfExtents.Y,  a_HalfExtents.Z };
+		corners[6] = a_Center + a_Rotation * Vector3{  a_HalfExtents.X,  a_HalfExtents.Y,  a_HalfExtents.Z };	
+		corners[7] = a_Center + a_Rotation * Vector3{ -a_HalfExtents.X,  a_HalfExtents.Y,  a_HalfExtents.Z };
 
 		DrawLine( corners[0], corners[1], a_Color, a_DrawDuration, a_Duration );
 		DrawLine( corners[1], corners[2], a_Color, a_DrawDuration, a_Duration );
@@ -262,14 +262,14 @@ namespace Tridium::Debug {
 	void DebugDrawer::DrawBoxFilled( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
 	{
 		Vector3 corners[8];
-		corners[0] = a_Center + a_Rotation * Vector3{ -a_HalfExtents.x, -a_HalfExtents.y, -a_HalfExtents.z };
-		corners[1] = a_Center + a_Rotation * Vector3{ a_HalfExtents.x, -a_HalfExtents.y, -a_HalfExtents.z };
-		corners[2] = a_Center + a_Rotation * Vector3{ a_HalfExtents.x, a_HalfExtents.y, -a_HalfExtents.z };
-		corners[3] = a_Center + a_Rotation * Vector3{ -a_HalfExtents.x, a_HalfExtents.y, -a_HalfExtents.z };
-		corners[4] = a_Center + a_Rotation * Vector3{ -a_HalfExtents.x, -a_HalfExtents.y, a_HalfExtents.z };
-		corners[5] = a_Center + a_Rotation * Vector3{ a_HalfExtents.x, -a_HalfExtents.y, a_HalfExtents.z };
-		corners[6] = a_Center + a_Rotation * Vector3{ a_HalfExtents.x, a_HalfExtents.y, a_HalfExtents.z };
-		corners[7] = a_Center + a_Rotation * Vector3{ -a_HalfExtents.x, a_HalfExtents.y, a_HalfExtents.z };
+		corners[0] = a_Center + a_Rotation * Vector3{ -a_HalfExtents.X, -a_HalfExtents.Y, -a_HalfExtents.Z };
+		corners[1] = a_Center + a_Rotation * Vector3{  a_HalfExtents.X, -a_HalfExtents.Y, -a_HalfExtents.Z };
+		corners[2] = a_Center + a_Rotation * Vector3{  a_HalfExtents.X,  a_HalfExtents.Y, -a_HalfExtents.Z };
+		corners[3] = a_Center + a_Rotation * Vector3{ -a_HalfExtents.X,  a_HalfExtents.Y, -a_HalfExtents.Z };
+		corners[4] = a_Center + a_Rotation * Vector3{ -a_HalfExtents.X, -a_HalfExtents.Y,  a_HalfExtents.Z };
+		corners[5] = a_Center + a_Rotation * Vector3{  a_HalfExtents.X, -a_HalfExtents.Y,  a_HalfExtents.Z };
+		corners[6] = a_Center + a_Rotation * Vector3{  a_HalfExtents.X,  a_HalfExtents.Y,  a_HalfExtents.Z };
+		corners[7] = a_Center + a_Rotation * Vector3{ -a_HalfExtents.X,  a_HalfExtents.Y,  a_HalfExtents.Z };
 
 		DrawTriangle( corners[0], corners[1], corners[2], a_Color, a_DrawDuration, a_Duration );
 		DrawTriangle( corners[0], corners[2], corners[3], a_Color, a_DrawDuration, a_Duration );

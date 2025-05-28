@@ -11,8 +11,8 @@ namespace Tridium {
 		constexpr BasicColor() : r( T(0) ), g( T(0) ), b( T(0) ), a( T(1) ) {}
 		constexpr BasicColor( T a_Scalar, T a_Alpha = T(1) ) : r( a_Scalar ), g( a_Scalar ), b( a_Scalar ), a( a_Alpha ) {}
 		constexpr BasicColor( T a_Red, T a_Green, T a_Blue, T a_Alpha = T(1) ) : r( a_Red ), g( a_Green ), b( a_Blue ), a( a_Alpha ) {}
-		constexpr BasicColor( const Vector4& a_Vec ) : r( a_Vec.r ), g( a_Vec.g ), b( a_Vec.b ), a( a_Vec.a ) {}
-		constexpr BasicColor( const Vector3& a_Vec ) : r( a_Vec.r ), g( a_Vec.g ), b( a_Vec.b ), a( T(1) ) {}
+		constexpr BasicColor( const Vector4& a_Vec ) : r( a_Vec.X ), g( a_Vec.Y ), b( a_Vec.Z ), a( a_Vec.W ) {}
+		constexpr BasicColor( const Vector3& a_Vec ) : r( a_Vec.X ), g( a_Vec.Y ), b( a_Vec.Z ), a( T(1) ) {}
 		constexpr BasicColor( const BasicColor& a_Other ) = default;
 		constexpr BasicColor& operator=( const BasicColor& a_Other ) = default;
 

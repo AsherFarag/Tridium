@@ -155,10 +155,10 @@ namespace Tridium {
 
 		std::vector<Vertex> vertices;
 		vertices.resize( 4 );
-		vertices[0].Position = { -size.x, -size.y, 0.0f };
-		vertices[1].Position = { -size.x,  size.y, 0.0f };
-		vertices[2].Position = { size.x, -size.y, 0.0f };
-		vertices[3].Position = { size.x,  size.y, 0.0f };
+		vertices[0].Position = { -size.X, -size.Y, 0.0f };
+		vertices[1].Position = { -size.X,  size.Y, 0.0f };
+		vertices[2].Position = { size.X, -size.Y, 0.0f };
+		vertices[3].Position = { size.X,  size.Y, 0.0f };
 
 		// Set normals for each vertex (pointing out of the quad)
 		for ( auto& vertex : vertices ) {
@@ -179,60 +179,60 @@ namespace Tridium {
 		std::vector<Vertex> vertices( 24 );  // 4 vertices per face, 6 faces
 
 		// Front face
-		vertices[0].Position = { -size.x, -size.y, size.z };
-		vertices[1].Position = { size.x, -size.y, size.z };
-		vertices[2].Position = { size.x, size.y, size.z };
-		vertices[3].Position = { -size.x, size.y, size.z };
+		vertices[0].Position = { -size.X, -size.Y, size.Z };
+		vertices[1].Position = {  size.X, -size.Y, size.Z };
+		vertices[2].Position = {  size.X,  size.Y, size.Z };
+		vertices[3].Position = { -size.X,  size.Y, size.Z };
 		for ( int i = 0; i < 4; ++i ) {
 			vertices[i].Normal = { 0.0f, 0.0f, 1.0f };
 			vertices[i].UV = { ( i % 2 == 0 ) ? 0.0f : 1.0f, ( i < 2 ) ? 0.0f : 1.0f };
 		}
 
 		// Back face
-		vertices[4].Position = { size.x, -size.y, -size.z };
-		vertices[5].Position = { -size.x, -size.y, -size.z };
-		vertices[6].Position = { -size.x, size.y, -size.z };
-		vertices[7].Position = { size.x, size.y, -size.z };
+		vertices[4].Position = { size.X, -size.Y, -size.Z };
+		vertices[5].Position = { -size.X, -size.Y, -size.Z };
+		vertices[6].Position = { -size.X, size.Y, -size.Z };
+		vertices[7].Position = { size.X, size.Y, -size.Z };
 		for ( int i = 4; i < 8; ++i ) {
 			vertices[i].Normal = { 0.0f, 0.0f, -1.0f };
 			vertices[i].UV = { ( ( i - 4 ) % 2 == 0 ) ? 0.0f : 1.0f, ( i < 6 ) ? 0.0f : 1.0f };
 		}
 
 		// Top face
-		vertices[8].Position = { -size.x, size.y, size.z };
-		vertices[9].Position = { size.x, size.y, size.z };
-		vertices[10].Position = { size.x, size.y, -size.z };
-		vertices[11].Position = { -size.x, size.y, -size.z };
+		vertices[8].Position = { -size.X, size.Y, size.Z };
+		vertices[9].Position = { size.X, size.Y, size.Z };
+		vertices[10].Position = { size.X, size.Y, -size.Z };
+		vertices[11].Position = { -size.X, size.Y, -size.Z };
 		for ( int i = 8; i < 12; ++i ) {
 			vertices[i].Normal = { 0.0f, 1.0f, 0.0f };
 			vertices[i].UV = { ( ( i - 8 ) % 2 == 0 ) ? 0.0f : 1.0f, ( i < 10 ) ? 0.0f : 1.0f };
 		}
 
 		// Bottom face
-		vertices[12].Position = { -size.x, -size.y, -size.z };
-		vertices[13].Position = { size.x, -size.y, -size.z };
-		vertices[14].Position = { size.x, -size.y, size.z };
-		vertices[15].Position = { -size.x, -size.y, size.z };
+		vertices[12].Position = { -size.X, -size.Y, -size.Z };
+		vertices[13].Position = { size.X, -size.Y, -size.Z };
+		vertices[14].Position = { size.X, -size.Y, size.Z };
+		vertices[15].Position = { -size.X, -size.Y, size.Z };
 		for ( int i = 12; i < 16; ++i ) {
 			vertices[i].Normal = { 0.0f, -1.0f, 0.0f };
 			vertices[i].UV = { ( ( i - 12 ) % 2 == 0 ) ? 0.0f : 1.0f, ( i < 14 ) ? 0.0f : 1.0f };
 		}
 
 		// Right face
-		vertices[16].Position = { size.x, -size.y, size.z };
-		vertices[17].Position = { size.x, -size.y, -size.z };
-		vertices[18].Position = { size.x, size.y, -size.z };
-		vertices[19].Position = { size.x, size.y, size.z };
+		vertices[16].Position = { size.X, -size.Y, size.Z };
+		vertices[17].Position = { size.X, -size.Y, -size.Z };
+		vertices[18].Position = { size.X, size.Y, -size.Z };
+		vertices[19].Position = { size.X, size.Y, size.Z };
 		for ( int i = 16; i < 20; ++i ) {
 			vertices[i].Normal = { 1.0f, 0.0f, 0.0f };
 			vertices[i].UV = { ( ( i - 16 ) % 2 == 0 ) ? 0.0f : 1.0f, ( i < 18 ) ? 0.0f : 1.0f };
 		}
 
 		// Left face
-		vertices[20].Position = { -size.x, -size.y, -size.z };
-		vertices[21].Position = { -size.x, -size.y, size.z };
-		vertices[22].Position = { -size.x, size.y, size.z };
-		vertices[23].Position = { -size.x, size.y, -size.z };
+		vertices[20].Position = { -size.X, -size.Y, -size.Z };
+		vertices[21].Position = { -size.X, -size.Y, size.Z };
+		vertices[22].Position = { -size.X, size.Y, size.Z };
+		vertices[23].Position = { -size.X, size.Y, -size.Z };
 		for ( int i = 20; i < 24; ++i ) {
 			vertices[i].Normal = { -1.0f, 0.0f, 0.0f };
 			vertices[i].UV = { ( ( i - 20 ) % 2 == 0 ) ? 0.0f : 1.0f, ( i < 22 ) ? 0.0f : 1.0f };
@@ -362,7 +362,7 @@ namespace Tridium {
 				Vector3& u = unitCircleVertices[j];
 
 				Vertex& vertex = vertices.emplace_back();
-				vertex.Position = { u.x * radius, y, u.z * radius }; // X-Y-Z format
+				vertex.Position = { u.X * radius, y, u.Z * radius }; // X-Y-Z format
 				vertex.Normal = normals[j];
 				vertex.UV = { (float)j / a_Slices, t };
 			}
@@ -385,9 +385,9 @@ namespace Tridium {
 			Vector3& u = unitCircleVertices[i];
 
 			Vertex& vertex = vertices.emplace_back();
-			vertex.Position = { u.x * a_BaseRadius, y, u.z * a_BaseRadius };
+			vertex.Position = { u.X * a_BaseRadius, y, u.Z * a_BaseRadius };
 			vertex.Normal = { 0.0f, -1.0f, 0.0f };
-			vertex.UV = { -u.x * 0.5f + 0.5f, -u.z * 0.5f + 0.5f }; // flip horizontal
+			vertex.UV = { -u.X * 0.5f + 0.5f, -u.Z * 0.5f + 0.5f }; // flip horizontal
 		}
 
 		uint32_t topVertexIndex = vertices.size();
@@ -406,9 +406,9 @@ namespace Tridium {
 			Vector3& u = unitCircleVertices[i];
 
 			Vertex& vertex = vertices.emplace_back();
-			vertex.Position = { u.x * a_TopRadius, y, u.z * a_TopRadius };
+			vertex.Position = { u.X * a_TopRadius, y, u.Z * a_TopRadius };
 			vertex.Normal = { 0.0f, 1.0f, 0.0f };
-			vertex.UV = { u.x * 0.5f + 0.5f, -u.z * 0.5f + 0.5f };
+			vertex.UV = { u.X * 0.5f + 0.5f, -u.Z * 0.5f + 0.5f };
 		}
 
 		// put indices for sides
@@ -781,20 +781,20 @@ namespace Tridium {
 			Vector2 deltaUV2 = uv2 - uv0;
 
 			// Calculate the inverse determinant
-			float f = 1.0f / ( deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x );
+			float f = 1.0f / ( deltaUV1.X * deltaUV2.Y - deltaUV1.Y * deltaUV2.X );
 
 			// Calculate tangent and bitangent
 			Vector3 tangent;
-			tangent.x = f * ( deltaUV2.y * edge1.x - deltaUV1.y * edge2.x );
-			tangent.y = f * ( deltaUV2.y * edge1.y - deltaUV1.y * edge2.y );
-			tangent.z = f * ( deltaUV2.y * edge1.z - deltaUV1.y * edge2.z );
-			tangent = normalize( tangent );
+			tangent.X = f * ( deltaUV2.Y * edge1.X - deltaUV1.Y * edge2.X );
+			tangent.Y = f * ( deltaUV2.Y * edge1.Y - deltaUV1.Y * edge2.Y );
+			tangent.Z = f * ( deltaUV2.Y * edge1.Z - deltaUV1.Y * edge2.Z );
+			tangent = tangent.Normalized();
 
 			Vector3 bitangent;
-			bitangent.x = f * ( -deltaUV2.x * edge1.x + deltaUV1.x * edge2.x );
-			bitangent.y = f * ( -deltaUV2.x * edge1.y + deltaUV1.x * edge2.y );
-			bitangent.z = f * ( -deltaUV2.x * edge1.z + deltaUV1.x * edge2.z );
-			bitangent = normalize( bitangent );
+			bitangent.X = f * ( -deltaUV2.X * edge1.X + deltaUV1.X * edge2.X );
+			bitangent.Y = f * ( -deltaUV2.X * edge1.Y + deltaUV1.X * edge2.Y );
+			bitangent.Z = f * ( -deltaUV2.X * edge1.Z + deltaUV1.X * edge2.Z );
+			bitangent = bitangent.Normalized();
 
 			// Assign the tangent and bitangent to each vertex of the triangle
 			v0.Tangent = tangent;

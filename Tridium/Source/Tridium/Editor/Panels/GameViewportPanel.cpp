@@ -35,8 +35,8 @@ namespace Tridium {
 
 			// Update the viewport size
 			m_ViewportSize = regionAvail;
-			camera.SetViewportSize( regionAvail.x, regionAvail.y );
-			m_FBO->Resize( regionAvail.x, regionAvail.y );
+			camera.SetViewportSize( regionAvail.X, regionAvail.Y );
+			m_FBO->Resize( regionAvail.X, regionAvail.Y );
 
 			SceneManager::GetActiveScene()->GetSceneRenderer().Render( m_FBO, camera, view, position );
 

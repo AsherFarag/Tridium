@@ -60,24 +60,6 @@ namespace Tridium {
 	};
 
 	template <>
-	struct Scriptable<iVector2>
-	{
-		static void RegisterType( ScriptEngine& a_ScriptEngine );
-	};
-
-	template <>
-	struct Scriptable<iVector3>
-	{
-		static void RegisterType( ScriptEngine& a_ScriptEngine );
-	};
-
-	template <>
-	struct Scriptable<iVector4>
-	{
-		static void RegisterType( ScriptEngine& a_ScriptEngine );
-	};
-
-	template <>
 	struct Scriptable<Matrix2>
 	{
 		static void RegisterType( ScriptEngine& a_ScriptEngine );

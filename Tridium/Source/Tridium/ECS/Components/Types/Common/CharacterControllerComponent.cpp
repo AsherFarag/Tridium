@@ -48,11 +48,11 @@ namespace Tridium {
 
 		// Movement input
 		Vector2 movementInput = Vector2( 0.0f );
-		movementInput.y -= Input::IsKeyPressed( EInputKey::W );
-		movementInput.y += Input::IsKeyPressed( EInputKey::S );
-		movementInput.x += Input::IsKeyPressed( EInputKey::D );
-		movementInput.x -= Input::IsKeyPressed( EInputKey::A );
-		movementInput = glm::length( movementInput ) > 0.0f ? glm::normalize( movementInput ) : movementInput;
+		movementInput.Y -= Input::IsKeyPressed( EInputKey::W );
+		movementInput.Y += Input::IsKeyPressed( EInputKey::S );
+		movementInput.X += Input::IsKeyPressed( EInputKey::D );
+		movementInput.X -= Input::IsKeyPressed( EInputKey::A );
+		movementInput = movementInput.Length() > 0.0f ? movementInput.Normalized() : movementInput;
 		movementInput *= isGrounded ? 1.0f : m_AirMovementControl;
 		AddMovementInput( movementInput * a_DeltaTime );
 
@@ -87,11 +87,11 @@ namespace Tridium {
 
 		Vector3 velocity = rigidBody->GetLinearVelocity();
 
-		velocity += forward * a_Input.y * m_MovementSpeed;
-		velocity += right * a_Input.x * m_MovementSpeed;
+		velocity += forward * a_Input.Y * m_MovementSpeed;
+		velocity += right * a_Input.X * m_MovementSpeed;
 
-		if ( glm::length( velocity ) > m_MovementSpeed )
-			velocity = glm::normalize( velocity ) * m_MovementSpeed;
+		if ( velocity.Length() > m_MovementSpeed )
+			velocity = velocity.Normalized() * m_MovementSpeed;
 
 		rigidBody->SetLinearVelocity( velocity );
 	}
@@ -114,14 +114,14 @@ namespace Tridium {
 
 		TransformComponent& transform = GetGameObject().GetTransform();
 		Quaternion rotation = transform.Rotation.GetQuaternion();
-		Quaternion yawRotation = Quaternion( Vector3( 0.0f, -glm::radians( a_Input.x * m_LookSensitivity ), 0.0f ) );
+		Quaternion yawRotation = Quaternion( Vector3( 0.0f, -glm::radians( a_Input.X * m_LookSensitivity ), 0.0f ) );
 		rotation = yawRotation * rotation;
 		transform.Rotation.SetFromQuaternion( rotation );
 
 		TransformComponent& cameraTransform = m_CameraGameObject.GetTransform();
 		Vector3 cameraRotation = cameraTransform.Rotation.GetEuler();
-		cameraRotation.x -= glm::radians( a_Input.y * m_LookSensitivity );
-		cameraRotation.x = glm::clamp( cameraRotation.x, glm::radians( -89.0f ), glm::radians( 89.0f ) );
+		cameraRotation.X -= glm::radians( a_Input.Y * m_LookSensitivity );
+		cameraRotation.X = glm::clamp( cameraRotation.X, glm::radians( -89.0f ), glm::radians( 89.0f ) );
 		cameraTransform.Rotation.SetFromEuler( cameraRotation );
 	}
 

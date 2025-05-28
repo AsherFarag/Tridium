@@ -102,15 +102,23 @@ namespace Tridium::Debug {
 #endif // !CONFIG_ASSERTS_ENABLED
 
 	template<typename... _Args>
-	bool Assert( bool a_Condition, StringView a_Fmt = {}, const _Args&... a_Args )
+	constexpr bool Assert( bool a_Condition, StringView a_Fmt = {}, const _Args&... a_Args )
 	{
 	#if CONFIG_ASSERTS_ENABLED
-		if ( !a_Condition )
+		if ( std::is_constant_evaluated() )
 		{
-			if ( !a_Fmt.empty() )
-				Detail::AssertMessage( Detail::FormatMsg( a_Fmt, std::forward<const _Args>( a_Args )... ) );
+			if ( !a_Condition )
+				throw "Assert Failed";
+		}
+		else
+		{
+			if ( !a_Condition )
+			{
+				if ( !a_Fmt.empty() )
+					Detail::AssertMessage( Detail::FormatMsg( a_Fmt, std::forward<const _Args>( a_Args )... ) );
 
-			DEBUG_BREAK();
+				DEBUG_BREAK();
+			}
 		}
 	#endif // CONFIG_ASSERTS_ENABLED
 
@@ -119,9 +127,16 @@ namespace Tridium::Debug {
 
 #if CONFIG_ASSERTS_ENABLED
 
+	#define RUNTIME_ASSERT( _Condition, ...) \
+		( ::Tridium::Debug::Assert(::Tridium::Cast<bool>(_Condition), _ASSERT_MSG_FORMAT_WRAPPER("ASSERT"), ::Tridium::Debug::Detail::FormatMsg( __VA_ARGS__ ) ) )
+
+	#define CONSTEXPR_ASSERT( _Condition ) \
+		( ::Tridium::Debug::Assert(::Tridium::Cast<bool>(_Condition) ) )
+
+
 	// Asserts that the condition is true, if not, it logs that the assert failed at the source location and breaks the program.
 	#define ASSERT(_Condition, ...) \
-		(::Tridium::Debug::Assert(::Tridium::Cast<bool>(_Condition), _ASSERT_MSG_FORMAT_WRAPPER("ASSERT"), ::Tridium::Debug::Detail::FormatMsg( __VA_ARGS__ ) ))
+		( std::is_constant_evaluated() ? CONSTEXPR_ASSERT( _Condition ) : RUNTIME_ASSERT( _Condition, __VA_ARGS__ ) )
 
 	// Same as ASSERT, but will only assert once among all threads.
 	#define ASSERT_ONCE(_Condition, ...) \

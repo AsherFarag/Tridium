@@ -346,7 +346,7 @@ namespace Tridium {
 		TODO( "Not sure if this is correct, fix this later! " );
 		glBindFramebuffer( GL_READ_FRAMEBUFFER, m_RendererID );
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, target->GetRendererID() );
-		glBlitFramebuffer( srcMin.x, srcMin.y, srcMax.x, srcMax.y, dstMin.x, dstMin.y, dstMax.x, dstMax.y, mask, filter == ETextureFilter::Linear ? GL_LINEAR : GL_NEAREST );
+		glBlitFramebuffer( srcMin.X, srcMin.Y, srcMax.X, srcMax.Y, dstMin.X, dstMin.Y, dstMax.X, dstMax.Y, mask, filter == ETextureFilter::Linear ? GL_LINEAR : GL_NEAREST );
 	}
 
 	void OpenGLFramebuffer::BindAttatchment( uint32_t a_AttachmentIndex, uint32_t a_Slot )

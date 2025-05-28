@@ -35,12 +35,12 @@ namespace Tridium {
 
 	float WindowsInput::GetMouseXImpl()
 	{
-		return GetMousePositionImpl().x;
+		return GetMousePositionImpl().X;
 	}
 
 	float WindowsInput::GetMouseYImpl()
 	{
-		return GetMousePositionImpl().y;
+		return GetMousePositionImpl().Y;
 	}
 
 	void WindowsInput::SetInputModeImpl( EInputMode a_Mode, EInputModeValue a_Value )

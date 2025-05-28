@@ -108,7 +108,7 @@ namespace Tridium {
 
 	void OpenGLRenderingAPI::SetClearColor( const Vector4& color )
 	{
-		glClearColor( color.r, color.g, color.b, color.a );
+		glClearColor( color.X, color.Y, color.Z, color.W );
 	}
 
 	void OpenGLRenderingAPI::SetLineWidth( float width )

@@ -12,7 +12,7 @@ namespace Tridium::Util {
 
 	inline JPH::Vec3 ToJoltVec3( const Vector3& a_Vector )
 	{
-		return JPH::Vec3( a_Vector.x, a_Vector.y, a_Vector.z );
+		return JPH::Vec3( a_Vector.X, a_Vector.Y, a_Vector.Z );
 	}
 
 	inline JPH::Quat ToJoltQuat( const Quaternion& a_Quat )

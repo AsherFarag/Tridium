@@ -640,7 +640,7 @@ namespace Tridium {
 			icon = ContentItemIcons::s_UnimportedAssetIcon;
 
 		const AssetTypeInfo& typeInfo = AssetTypeManager::GetAssetTypeInfo( Cast<EAssetType>( Type ) );
-		ImVec4 color = ImVec4( typeInfo.Color.x, typeInfo.Color.y, typeInfo.Color.z, typeInfo.Color.w );
+		ImVec4 color = ImVec4( typeInfo.Color.X, typeInfo.Color.Y, typeInfo.Color.Z, typeInfo.Color.W );
 
 		RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), color, a_Size );
 		// If the item is double clicked, open it

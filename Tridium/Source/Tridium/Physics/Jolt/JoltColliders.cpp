@@ -16,7 +16,7 @@ namespace Tridium {
 		vertices.reserve( a_Vertices.size() );
 		for ( const Vector3& vertex : a_Vertices )
 		{
-			vertices.emplace_back( vertex.x, vertex.y, vertex.z );
+			vertices.emplace_back( vertex.X, vertex.Y, vertex.Z );
 		}
 
 		// Convert the indices to Jolt's format

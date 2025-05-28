@@ -408,10 +408,10 @@ namespace Tridium::Editor {
 	bool DrawProperty( const char* a_Name, Rotator& a_Value, EDrawPropertyFlags a_Flags )
 	{
 		IS_DISABLED( a_Flags );
-		Vector3 euler = glm::degrees( a_Value.Euler );
+		Vector3 euler = Math::Degrees( a_Value.Euler );
 		if ( DrawProperty( a_Name, euler, a_Flags ) )
 		{
-			a_Value.SetFromEuler( glm::radians( euler ) );
+			a_Value.SetFromEuler( Math::Radians( euler ) );
 			return true;
 		}
 

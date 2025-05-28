@@ -73,13 +73,13 @@ namespace Tridium {
 		if ( Input::IsKeyPressed( EInputKey::Up ) )
 		{
 			m_IsMoving = true;
-			Position.y += speed * dt;
+			Position.Y += speed * dt;
 		}
 
 		if ( Input::IsKeyPressed( EInputKey::Down ) )
 		{
 			m_IsMoving = true;
-			Position.y -= speed * dt;
+			Position.Y -= speed * dt;
 		}
 
 		// Rotation
@@ -111,17 +111,17 @@ namespace Tridium {
 
 	void EditorCamera::MouseRotate( const Vector2& mouseDelta )
 	{
-		float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
-		Yaw += yawSign * mouseDelta.x * Sensitivity;
-		Pitch += mouseDelta.y * Sensitivity;
+		float yawSign = GetUpDirection().Y < 0 ? -1.0f : 1.0f;
+		Yaw += yawSign * mouseDelta.X * Sensitivity;
+		Pitch += mouseDelta.Y * Sensitivity;
 		Pitch = glm::clamp( Pitch, glm::radians( -89.0f ), glm::radians( 89.0f ) );
 	}
 
 	void EditorCamera::RecalculateView()
 	{
 		Quaternion orientation = GetOrientation();
-		m_View = glm::translate( Matrix4( 1.f ), Position ) * glm::toMat4( orientation );
-		m_View = glm::inverse( m_View );
+		m_View = Math::Translate( Position ) * Math::ToMat4( orientation );
+		m_View = Math::Inverse( m_View );
 	}
 
 	void EditorCamera::Lerp()
@@ -142,17 +142,17 @@ namespace Tridium {
 
 	Vector3 EditorCamera::GetUpDirection() const
 	{
-		return glm::rotate( GetOrientation(), Vector3( 0.0f, 1.0f, 0.0f ) );
+		return Math::Rotate( GetOrientation(), Vector3::Up() );
 	}
 
 	Vector3 EditorCamera::GetRightDirection() const
 	{
-		return glm::rotate( GetOrientation(), Vector3( 1.0f, 0.0f, 0.0f ) );
+		return Math::Rotate( GetOrientation(), Vector3::Right() );
 	}
 
 	Vector3 EditorCamera::GetForwardDirection() const
 	{
-		return glm::rotate( GetOrientation(), Vector3( 0.0f, 0.0f, -1.0f ) );
+		return Math::Rotate( GetOrientation(), Vector3::Forward() );
 	}
 
 	Quaternion EditorCamera::GetOrientation() const
@@ -166,9 +166,9 @@ namespace Tridium {
 
 		constexpr Matrix4 identity = Matrix4( 1.0f );
 
-		return glm::translate( identity, Position )
+		return Math::Translate( identity, Position )
 			* rotationMatrix
-			* glm::scale( identity, Scale );
+			* Math::Scale( identity, Scale );
 	}
 
 	void EditorCamera::SetViewMatrix( const Matrix4& view )
@@ -179,8 +179,8 @@ namespace Tridium {
 		Vector3 upDir = glm::normalize( glm::vec3( view[0][1], view[1][1], view[2][1] ) );
 
 		// Calculate pitch and yaw from the look dir
-		Pitch = glm::asin( lookDir.y );
-		Yaw = glm::atan( lookDir.x, lookDir.z );
+		Pitch = Math::ASin( lookDir.Y );
+		Yaw = Math::ATan( lookDir.X, lookDir.Z );
 
 		m_View = view;
 	}

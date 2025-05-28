@@ -105,7 +105,7 @@ protected:
 		TransformComponent& cameraTransform = controller->GetCameraGameObject().GetTransform();
 		// Camera view forward direction is currently flipped to the actual transform forward direction
 		// This is a temporary fix until the camera component is fixed
-		Vector3 lookDirection = cameraTransform.GetOrientation() * Vector3( 0.0f, 0.0f, -1.0f );
+		Vector3 lookDirection = cameraTransform.GetOrientation() * -Vector3::Forward();
 
 		Vector3 rayBegin = cameraTransform.GetWorldPosition();
 		Vector3 rayEnd = rayBegin + lookDirection * 1000.0f;
@@ -207,11 +207,11 @@ public:
 			TransformComponent& targetTransform = m_Target.GetTransform();
 
 			Vector3 direction = targetTransform.GetWorldPosition() - tc.GetWorldPosition();
-			direction.y = 0.0f;
-			direction = glm::normalize( direction );
+			direction.Y = 0.0f;
+			direction.Normalize();
 
 			Vector3 velocity = rb->GetLinearVelocity() + direction * m_MaxSpeed;
-			if ( glm::length( velocity ) <= m_MaxSpeed )
+			if ( velocity.Length() <= m_MaxSpeed )
 			{
 				rb->SetLinearVelocity( velocity );
 			}
