@@ -11,9 +11,7 @@
 
 namespace Tridium {
 
-	// Forward declarations
-	class RHICommandList;
-	using RHICommandListRef = SharedPtr<RHICommandList>;
+#if 0
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Graphics Command Buffer
@@ -136,12 +134,12 @@ namespace Tridium {
 		#pragma region Base
 		struct SetBindingLayout
 		{
-			RHIBindingLayout* SBL;
+			IRHIBindingLayout* SBL;
 		};
 
 		struct SetShaderBindings
 		{
-			RHIBindingSet* BindingSet;
+			IRHIBindingSet* BindingSet;
 		};
 
 		struct SetInlinedConstants
@@ -157,7 +155,7 @@ namespace Tridium {
 
 		struct UpdateBuffer
 		{
-			RHIBuffer* Buffer;
+			IRHIBuffer* Buffer;
 			Span<const uint8_t> Data;
 			size_t Offset;
 			ERHIStateTransition StateTransitionMode;
@@ -166,17 +164,17 @@ namespace Tridium {
 		struct CopyBuffer
 		{
 			size_t Size;
-			RHIBuffer* Source;
+			IRHIBuffer* Source;
 			size_t SourceOffset;
 			ERHIStateTransition SrcStateTransitionMode;
-			RHIBuffer* Destination;
+			IRHIBuffer* Destination;
 			size_t DestinationOffset;
 			ERHIStateTransition DstStateTransitionMode;
 		};
 
 		struct UpdateTexture
 		{
-			RHITexture* Texture;
+			IRHITexture* Texture;
 			uint32_t MipLevel;
 			uint32_t ArraySlice;
 			Box Region;
@@ -186,12 +184,12 @@ namespace Tridium {
 
 		struct CopyTexture
 		{
-			RHITexture* SrcTexture;
+			IRHITexture* SrcTexture;
 			uint32_t SrcMipLevel;
 			uint32_t SrcArraySlice;
 			Box SrcRegion;
 			ERHIStateTransition SrcStateTransitionMode;
-			RHITexture* DstTexture;
+			IRHITexture* DstTexture;
 			uint32_t DstMipLevel;
 			uint32_t DstArraySlice;
 			Box DstRegion;
@@ -204,13 +202,13 @@ namespace Tridium {
 
         struct SetGraphicsPipelineState 
         {
-            RHIGraphicsPipelineState* PSO;
+            IRHIGraphicsPipelineState* PSO;
         };
 
         struct SetRenderTargets 
         {
-            InlineArray<RHITexture*, RHIConstants::MaxColorTargets> RTV;
-            RHITexture* DSV;
+            InlineArray<IRHITexture*, RHIConstants::MaxColorTargets> RTV;
+            IRHITexture* DSV;
 			ERHIStateTransition StateTransitionMode;
         };
 
@@ -235,13 +233,13 @@ namespace Tridium {
 
         struct SetIndexBuffer 
         {
-			RHIBuffer* IBO;
+			IRHIBuffer* IBO;
 			ERHIStateTransition StateTransitionMode;
         };
 
         struct SetVertexBuffer 
         {
-            RHIBuffer* VBO;
+            IRHIBuffer* VBO;
 			ERHIStateTransition StateTransitionMode;
         };
 
@@ -374,7 +372,7 @@ namespace Tridium {
 	// RHI Base Command Buffer
 	//  A buffer that holds a list of commands to be executed on the GPU.
 	//  Adding a command does not execute it immediately.
-	//  The command buffer must be submitted to a command list via RHICommandList::SetCommands.
+	//  The command buffer must be submitted to a command list via IRHICommandList::SetCommands.
 	//  To execute the commands, the command list must be submitted to the RHI via RHI::ExecuteCommandList.
 	template <typename _CommandBufferType>
 	struct RHIBaseCommandBuffer
@@ -420,7 +418,7 @@ namespace Tridium {
 		//  Adds a resource barrier to the command buffer.
 		//  Note: Only useful for manual resource state transitions.
 		CommandBufferType& ResourceBarrier( 
-			RHIResource* a_Resource,
+			IRHIObject* a_Resource,
 			ERHIResourceStates a_Before, ERHIResourceStates a_After DEBUG_INFO_PARAM );
 
 		//=====================================================
@@ -516,13 +514,13 @@ namespace Tridium {
 		// Set Render Targets
 		// - Sets the render targets for the command buffer.
 		// - Note: This can perform a resource state transition if needed.
-		RHIGraphicsCommandBuffer& SetRenderTargets( Span<RHITexture*> a_RTV, RHITexture* a_DSV, ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition DEBUG_INFO_PARAM );
+		RHIGraphicsCommandBuffer& SetRenderTargets( Span<IRHITexture*> a_RTV, IRHITexture* a_DSV, ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition DEBUG_INFO_PARAM );
 
 		//=====================================================
 		// Set Render Targets
 		// - Sets the render targets for the command buffer.
 		// - Note: This can perform a resource state transition if needed.
-		RHIGraphicsCommandBuffer& SetRenderTargets( Span<RHITextureRef> a_RTV, RHITexture* a_DSV, ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition DEBUG_INFO_PARAM );
+		RHIGraphicsCommandBuffer& SetRenderTargets( Span<RHITextureRef> a_RTV, IRHITexture* a_DSV, ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition DEBUG_INFO_PARAM );
 
 		//=====================================================
 		// Clear Render Targets
@@ -650,13 +648,13 @@ namespace Tridium {
 	{
 		RHI_DEV_CHECK( a_Barrier.Resource || a_Barrier.Resource->Valid(), "Failed to create a resource barrier as the resource is invalid!" );
 
-		switch ( a_Barrier.Resource->GetType() )
+		switch ( a_Barrier.Resource->Type() )
 		{
-		case ERHIResourceType::Texture:
-			m_Textures.insert( a_Barrier.Resource->As<RHITexture>()->SharedFromThis() );
+		case ERHIObjectType::Texture:
+			m_Textures.insert( a_Barrier.Resource->As<IRHITexture>()->SharedFromThis() );
 			break;
-		case ERHIResourceType::Buffer:
-			m_Buffers.insert( a_Barrier.Resource->As<RHIBuffer>()->SharedFromThis() );
+		case ERHIObjectType::Buffer:
+			m_Buffers.insert( a_Barrier.Resource->As<IRHIBuffer>()->SharedFromThis() );
 			break;
 		default:
 			ASSERT( false, "Can only set resource barriers for textures and buffers!" );
@@ -670,7 +668,7 @@ namespace Tridium {
 
 	template<typename _CommandBufferType>
 	inline _CommandBufferType& RHIBaseCommandBuffer<_CommandBufferType>::ResourceBarrier( 
-		RHIResource* a_Resource, ERHIResourceStates a_Before, ERHIResourceStates a_After DEBUG_INFO )
+		IRHIObject* a_Resource, ERHIResourceStates a_Before, ERHIResourceStates a_After DEBUG_INFO )
 	{
 		return ResourceBarrier( RHIResourceBarrier( a_Resource, a_Before, a_After ) PASS_DEBUG_INFO );
 	}
@@ -753,14 +751,14 @@ namespace Tridium {
 
 		// Set the regions to the entire texture
 		cmd.SrcRegion = Box(
-			0, a_SrcTexture->Descriptor().Width,
-			0, a_SrcTexture->Descriptor().Height,
-			0, a_SrcTexture->Descriptor().Depth
+			0, a_SrcTexture->Desc().Width,
+			0, a_SrcTexture->Desc().Height,
+			0, a_SrcTexture->Desc().Depth
 		);
 		cmd.DstRegion = Box(
-			0, a_DstTexture->Descriptor().Width,
-			0, a_DstTexture->Descriptor().Height,
-			0, a_DstTexture->Descriptor().Depth
+			0, a_DstTexture->Desc().Width,
+			0, a_DstTexture->Desc().Height,
+			0, a_DstTexture->Desc().Depth
 		);
 
 		m_Textures.insert( std::move( a_SrcTexture ) );
@@ -789,8 +787,8 @@ namespace Tridium {
 		RHIBufferRef a_IBO, ERHIStateTransition a_StateTransitionMode DEBUG_INFO )
 	{
 		RHI_DEV_CHECK( a_IBO && a_IBO->Valid(), "Buffer is invalid!" );
-		RHI_DEV_CHECK( EnumFlags( a_IBO->Descriptor().BindFlags ).HasFlag( ERHIBindFlags::IndexBuffer ), "Buffer is not an index buffer!" );
-		RHI_DEV_CHECK( a_IBO->Descriptor().Size > 0, "Buffer size is zero!" );
+		RHI_DEV_CHECK( EnumFlags( a_IBO->Desc().BindFlags ).HasFlag( ERHIBindFlags::IndexBuffer ), "Buffer is not an index buffer!" );
+		RHI_DEV_CHECK( a_IBO->Desc().Size > 0, "Buffer size is zero!" );
 
 		Commands.EmplaceBack( RHICommand::SetIndexBuffer{ a_IBO.get(), a_StateTransitionMode } );
 		m_Buffers.insert( std::move( a_IBO ) );
@@ -802,8 +800,8 @@ namespace Tridium {
 		RHIBufferRef a_VBO, ERHIStateTransition a_StateTransitionMode DEBUG_INFO )
 	{
 		RHI_DEV_CHECK( a_VBO && a_VBO->Valid(), "Buffer is invalid!" );
-		RHI_DEV_CHECK( EnumFlags( a_VBO->Descriptor().BindFlags ).HasFlag( ERHIBindFlags::VertexBuffer ), "Buffer is not a vertex buffer!" );
-		RHI_DEV_CHECK( a_VBO->Descriptor().Size > 0, "Buffer size is zero!" );
+		RHI_DEV_CHECK( EnumFlags( a_VBO->Desc().BindFlags ).HasFlag( ERHIBindFlags::VertexBuffer ), "Buffer is not a vertex buffer!" );
+		RHI_DEV_CHECK( a_VBO->Desc().Size > 0, "Buffer size is zero!" );
 
 		Commands.EmplaceBack( RHICommand::SetVertexBuffer{ a_VBO.get(), a_StateTransitionMode } );
 		m_Buffers.insert( std::move( a_VBO ) );
@@ -812,7 +810,7 @@ namespace Tridium {
 	}
 
 	inline RHIGraphicsCommandBuffer& RHIGraphicsCommandBuffer::SetRenderTargets( 
-		Span<RHITexture*> a_RTV, RHITexture* a_DSV, ERHIStateTransition a_StateTransitionMode DEBUG_INFO )
+		Span<IRHITexture*> a_RTV, IRHITexture* a_DSV, ERHIStateTransition a_StateTransitionMode DEBUG_INFO )
 	{
 		RHICommand& cmd = Commands.EmplaceBack( RHICommand::SetRenderTargets() );
 		RHICommand::SetRenderTargets& data = cmd.Get<RHICommand::SetRenderTargets>();
@@ -832,7 +830,7 @@ namespace Tridium {
 				continue;
 			}
 
-			if ( !EnumFlags( a_RTV[i]->Descriptor().BindFlags ).HasFlag( ERHIBindFlags::RenderTarget ) )
+			if ( !EnumFlags( a_RTV[i]->Desc().BindFlags ).HasFlag( ERHIBindFlags::RenderTarget ) )
 			{
 				ASSERT( false, "Texture is not a render target!" );
 				continue;
@@ -847,14 +845,14 @@ namespace Tridium {
 	}
 
 	inline RHIGraphicsCommandBuffer& RHIGraphicsCommandBuffer::SetRenderTargets( 
-		Span<RHITextureRef> a_RTV, RHITexture* a_DSV, ERHIStateTransition a_StateTransitionMode DEBUG_INFO )
+		Span<RHITextureRef> a_RTV, IRHITexture* a_DSV, ERHIStateTransition a_StateTransitionMode DEBUG_INFO )
 	{
-		RHITexture* rtvs[RHIConstants::MaxColorTargets];
+		IRHITexture* rtvs[RHIConstants::MaxColorTargets];
 		for ( size_t i = 0; i < a_RTV.size() && i < RHIConstants::MaxColorTargets; ++i )
 		{
 			rtvs[i] = a_RTV[i].get();
 		}
-		return SetRenderTargets( Span<RHITexture*>{ rtvs, a_RTV.size() }, a_DSV, a_StateTransitionMode PASS_DEBUG_INFO );
+		return SetRenderTargets( Span<IRHITexture*>{ rtvs, a_RTV.size() }, a_DSV, a_StateTransitionMode PASS_DEBUG_INFO );
 	}
 
 	inline RHIGraphicsCommandBuffer& RHIGraphicsCommandBuffer::ClearRenderTargets( 
@@ -965,5 +963,5 @@ namespace Tridium {
 #undef DEBUG_INFO_PARAM
 #undef ADD_DEBUG_INFO
 #undef PASS_DEBUG_INFO
-
+#endif
 } // namespace Tridium

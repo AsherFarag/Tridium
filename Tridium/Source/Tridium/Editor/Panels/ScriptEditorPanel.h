@@ -3,6 +3,8 @@
 #include "Panel.h"
 #include "ImTextEdit/TextEditor.h"
 #include <Tridium/Asset/AssetType.h>
+#include <Tridium/Asset/Asset.h>
+
 
 namespace Tridium {
 

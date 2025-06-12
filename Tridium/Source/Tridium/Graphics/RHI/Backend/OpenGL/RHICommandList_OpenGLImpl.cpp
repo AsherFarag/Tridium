@@ -1,10 +1,18 @@
 #include "tripch.h"
 #include "RHI_OpenGLImpl.h"
 
+#undef RHI_DEBUG_CMD_PARAM
+
+#if RHI_DEBUG_ENABLE_CMD_RECORDING
+	#define RHI_DEBUG_SRC_LOC_PARAM const SourceLocation& RHI_DEBUG_SRC_LOC
+#else
+	#define RHI_DEBUG_CMD_PARAM
+#endif // RHI_DEBUG_ENABLE_CMD_RECORDING
+
 namespace Tridium::OpenGL {
 
 	RHICommandList_OpenGLImpl::RHICommandList_OpenGLImpl( const DescriptorType& a_Desc )
-		: RHICommandList( a_Desc )
+		: IRHICommandList( a_Desc )
 	{
 		m_InlinedConstantsUBO.Create();
 		OpenGL1::BindBuffer( GL_UNIFORM_BUFFER, m_InlinedConstantsUBO );
@@ -12,52 +20,97 @@ namespace Tridium::OpenGL {
 		OpenGL1::BindBuffer( GL_UNIFORM_BUFFER, 0 );
 	}
 
-    bool RHICommandList_OpenGLImpl::SetGraphicsCommands( const RHIGraphicsCommandBuffer& a_CmdBuffer )
-    {
-		// Execute the commands
-		for ( const RHICommand& cmd : a_CmdBuffer.Commands )
-		{
-			switch ( cmd.Type() )
-			{
-			#define PerformCmd( _CmdType ) case ERHICommandType::_CmdType: _CmdType( cmd.Get<ERHICommandType::_CmdType>() ); break
-				PerformCmd( SetBindingLayout );
-				PerformCmd( SetShaderBindings );
-				PerformCmd( SetInlinedConstants );
-				PerformCmd( ResourceBarrier );
-				PerformCmd( SetGraphicsPipelineState );
-				PerformCmd( SetRenderTargets );
-				PerformCmd( ClearRenderTargets );
-				PerformCmd( SetScissors );
-				PerformCmd( SetViewports );
-				PerformCmd( SetIndexBuffer );
-				PerformCmd( SetVertexBuffer );
-				PerformCmd( SetPrimitiveTopology );
-				PerformCmd( Draw );
-				PerformCmd( DrawIndexed );
-				PerformCmd( SetComputePipelineState );
-				PerformCmd( DispatchCompute );
-				PerformCmd( DispatchComputeIndirect );
-				default: ASSERT( false, "Invalid command type '{0}' being used in SetGraphicsCommands", RHI::GetCommandName( cmd.Type() ) ); break;
-			}
-		}
-
-		OpenGL3::DeleteBuffers( m_UBOs.Size(), m_UBOs.Data() );
-		m_UBOs.Clear();
-		m_State = {};
-
-		TODO( "Temp fix?" );
-		GLState::BindProgram( 0 );
-		GLState::s_BoundGraphicsPSO.reset();
-		GLState::s_BoundSBL.reset();
-
-		return true;
-    }
-
-	bool RHICommandList_OpenGLImpl::SetComputeCommands( const RHIComputeCommandBuffer& a_CmdBuffer )
+	bool RHICommandList_OpenGLImpl::Open()
 	{
-		NOT_IMPLEMENTED;
 		return false;
 	}
+
+	bool RHICommandList_OpenGLImpl::Close()
+	{
+		return false;
+	}
+
+	void RHICommandList_OpenGLImpl::ClearState()
+	{
+		m_CurrentGraphicsState = {};
+		m_GraphicsStateValid = false;
+		m_ReferencedResources.Clear();
+	}
+
+	void RHICommandList_OpenGLImpl::ResourceBarrier( const RHIResourceBarrier& a_Barrier, RHI_DEBUG_SRC_LOC_PARAM )
+	{
+		IRHICommandList::ResourceBarrier( a_Barrier, RHI_DEBUG_SRC_LOC );
+		// OpenGL does not have a concept of resource barriers like Vulkan or Direct3D 12.
+	}
+
+	void RHICommandList_OpenGLImpl::UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes, RHI_DEBUG_SRC_LOC_PARAM )
+	{
+		IRHICommandList::UpdateBuffer( a_Buffer, a_Data, a_DataSizeBytes, a_DstOffsetBytes, RHI_DEBUG_SRC_LOC );
+		RHIBuffer_OpenGLImpl* buffer = a_Buffer.As<RHIBuffer_OpenGLImpl>();
+		if ( !ASSERT( buffer, "Buffer is not an OpenGL buffer!" ) )
+			return;
+
+		RHI_DEV_CHECK( a_DataSizeBytes == 0 || a_Data == nullptr, "Attempting to update a buffer with no data!" );
+		RHI_DEV_CHECK( a_DstOffsetBytes + a_DataSizeBytes > buffer->Desc().Size,
+			"Attempting to update a buffer beyond its size! Buffer size: {}, Update size: {}, Offset: {}", buffer->Desc().Size, a_DataSizeBytes, a_DstOffsetBytes );
+
+		NOT_IMPLEMENTED;
+	}
+
+	void RHICommandList_OpenGLImpl::CopyBuffer( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange, RHI_DEBUG_SRC_LOC_PARAM )
+	{
+		NOT_IMPLEMENTED;
+	}
+
+	void RHICommandList_OpenGLImpl::UpdateTexture( IRHITexture& a_Texture, const RHITextureSlice& a_DstSlice, RHITextureSubresourceData a_Data, RHI_DEBUG_SRC_LOC_PARAM )
+	{
+		NOT_IMPLEMENTED;
+	}
+
+	void RHICommandList_OpenGLImpl::CopyTexture( IRHITexture& a_DstTexture, const RHITextureSlice& a_DstSlice, IRHITexture& a_SrcTexture, const RHITextureSlice& a_SrcSlice, RHI_DEBUG_SRC_LOC_PARAM )
+	{
+		NOT_IMPLEMENTED;
+	}
+
+	void RHICommandList_OpenGLImpl::SetInlinedConstants( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes, RHI_DEBUG_SRC_LOC_PARAM ) 
+	{
+		OpenGL1::BindBuffer( GL_UNIFORM_BUFFER, m_InlinedConstantsUBO );
+		OpenGL1::BufferSubData( GL_UNIFORM_BUFFER, a_DstOffsetBytes, a_SizeBytes, a_Data );
+		OpenGL1::BindBuffer( GL_UNIFORM_BUFFER, 0 );
+
+		TODO( "Location is always 0, will this always be true?" );
+		constexpr GLuint location = 0;
+		OpenGL3::BindBufferBase( GL_UNIFORM_BUFFER, location, m_InlinedConstantsUBO );
+	}
+
+	void RHICommandList_OpenGLImpl::SetGraphicsState( const RHIGraphicsState& a_GraphicsState, RHI_DEBUG_SRC_LOC_PARAM ) 
+	{
+	}
+
+	void RHICommandList_OpenGLImpl::ClearRenderTargets( ERHIClearFlags a_Flags, Color a_ClearColor, float a_DepthValue, uint8_t a_StencilValue, int32_t a_ColorAttachmentIndex, RHI_DEBUG_SRC_LOC_PARAM )
+	{
+	}
+
+	void RHICommandList_OpenGLImpl::Draw( const RHIDrawArgs& a_DrawArgs, RHI_DEBUG_SRC_LOC_PARAM )
+	{
+	}
+	
+	void RHICommandList_OpenGLImpl::PushDebugGroup( StringView a_Name )
+	{
+		OpenGL4::PushDebugGroup( GL_DEBUG_SOURCE_APPLICATION, 0, a_Name.size(), a_Name.data() );
+	}
+
+	void RHICommandList_OpenGLImpl::PopDebugGroup()
+	{
+		OpenGL4::PopDebugGroup();
+	}
+
+	void RHICommandList_OpenGLImpl::InsertDebugMarker( StringView a_Name )
+	{
+		OpenGL4::DebugMessageInsert( GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_MARKER, 0, GL_DEBUG_SEVERITY_NOTIFICATION, a_Name.size(), a_Name.data() );
+	}
+
+#if 0
 
 	void RHICommandList_OpenGLImpl::SetBindingLayout( const RHICommand::SetBindingLayout& a_Data )
 	{
@@ -76,19 +129,19 @@ namespace Tridium::OpenGL {
 		if ( !ASSERT( gpso, "No graphics pipeline state bound!" ) )
 			return;
 
-		auto* sbl = a_Data.BindingSet->Descriptor().Layout->As<RHIBindingLayout_OpenGLImpl>();
+		auto* sbl = a_Data.BindingSet->Desc().Layout->As<RHIBindingLayout_OpenGLImpl>();
 		auto* bindingSet = a_Data.BindingSet->As<RHIBindingSet_OpenGLImpl>();
 
-		for ( auto& binding : bindingSet->Descriptor().Bindings )
+		for ( auto& binding : bindingSet->Desc().Bindings )
 		{
 			switch ( binding.Type )
 			{
-			case ERHIShaderBindingType::InlinedConstants:
+			case ERHIBindingType::InlinedConstants:
 			{
 				// This is handled by SetInlinedConstants
 				break;
 			}
-			case ERHIShaderBindingType::ConstantBuffer:
+			case ERHIBindingType::ConstantBuffer:
 			{
 				RHIBuffer_OpenGLImpl* buffer = binding.Resource->As<RHIBuffer_OpenGLImpl>();
 				if ( binding.Range == RHIBufferRange::EntireBuffer() )
@@ -101,33 +154,33 @@ namespace Tridium::OpenGL {
 				}
 				break;
 			}
-			case ERHIShaderBindingType::StructuredBuffer:
+			case ERHIBindingType::StructuredBuffer:
 				NOT_IMPLEMENTED;
 				break;
-			case ERHIShaderBindingType::StorageBuffer:
+			case ERHIBindingType::StorageBuffer:
 				NOT_IMPLEMENTED;
 				break;
-			case ERHIShaderBindingType::Texture:
+			case ERHIBindingType::Texture:
 			{
 				ASSERT( false, "OpenGL requires textures and samplers to be combined in the shader! - Use a Texture binding instead and set the sampler in the texture." );
 				break;
 			}
-			case ERHIShaderBindingType::StorageTexture:
+			case ERHIBindingType::StorageTexture:
 				NOT_IMPLEMENTED;
 				break;
-			case ERHIShaderBindingType::Sampler:
+			case ERHIBindingType::Sampler:
 			{
 				ASSERT( false, "OpenGL requires textures and samplers to be combined in the shader! - Use a Texture binding instead and set the sampler in the texture." );
 				break;
 			}
-			case ERHIShaderBindingType::CombinedSampler:
+			case ERHIBindingType::CombinedSampler:
 			{
 				// The names of Combined Samplers in GLSL have been set to the Texture name ( from HLSL )
 				// So we can just bind the texture and sampler together
 				RHITexture_OpenGLImpl* texture = binding.Resource->As<RHITexture_OpenGLImpl>();
 				if ( !(texture->Sampler) )
 				{
-					ASSERT( false, "Texture has no sampler! - OpenGL requires Textures to have a Sampler, you can set the sampler on the RHITexture." );
+					ASSERT( false, "Texture has no sampler! - OpenGL requires Textures to have a Sampler, you can set the sampler on the IRHITexture." );
 					break;
 				}
 
@@ -182,7 +235,7 @@ namespace Tridium::OpenGL {
 		// Set blend state
 		for ( uint32_t i = 0; i < RHIConstants::MaxColorTargets; ++i )
 		{
-			const RHIBlendState& blendState = a_Data.PSO->Descriptor().BlendState;
+			const RHIBlendState& blendState = a_Data.PSO->Desc().BlendState;
 			if ( blendState.IsEnabled )
 			{
 				OpenGL3::Enablei( GL_BLEND, i );
@@ -200,7 +253,7 @@ namespace Tridium::OpenGL {
 		}
 
 		// Set depth state
-		const RHIDepthState& depthState = a_Data.PSO->Descriptor().DepthState;
+		const RHIDepthState& depthState = a_Data.PSO->Desc().DepthState;
 		if ( depthState.IsEnabled )
 		{
 			OpenGL3::Enable( GL_DEPTH_TEST );
@@ -213,7 +266,7 @@ namespace Tridium::OpenGL {
 		}
 
 		// Set stencil state
-		const RHIStencilState& stencilState = a_Data.PSO->Descriptor().StencilState;
+		const RHIStencilState& stencilState = a_Data.PSO->Desc().StencilState;
 		if ( stencilState.IsEnabled )
 		{
 			OpenGL3::Enable( GL_STENCIL_TEST );
@@ -229,7 +282,7 @@ namespace Tridium::OpenGL {
 		}
 
 		// Set rasterizer state
-		const RHIRasterizerState& rasterizerState = a_Data.PSO->Descriptor().RasterizerState;
+		const RHIRasterizerState& rasterizerState = a_Data.PSO->Desc().RasterizerState;
 		switch ( rasterizerState.CullMode )
 		{
 		case ERHIRasterizerCullMode::None:
@@ -298,7 +351,7 @@ namespace Tridium::OpenGL {
 		if ( a_Data.DSV )
 		{
 			RHITexture_OpenGLImpl* dsv = a_Data.DSV->As<RHITexture_OpenGLImpl>();
-			const bool hasStencil = GetRHIFormatInfo( dsv->Descriptor().Format ).HasStencil;
+			const bool hasStencil = GetRHIFormatInfo( dsv->Desc().Format ).HasStencil;
 			OpenGL3::FramebufferTexture2D( GL_FRAMEBUFFER, hasStencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, dsv->TextureObj, mipmapLevelToRenderTo );
 		}
 
@@ -440,5 +493,7 @@ namespace Tridium::OpenGL {
 	void RHICommandList_OpenGLImpl::DispatchComputeIndirect( const RHICommand::DispatchComputeIndirect& a_Data )
 	{
 	}
+
+#endif
 
 } // namespace Tridium

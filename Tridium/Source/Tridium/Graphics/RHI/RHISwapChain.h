@@ -31,9 +31,9 @@ namespace Tridium {
 	//  A swap chain is a collection of buffers that are used to present the final image to the screen.
 	//=====================================================================
 
-	struct RHISwapChainDescriptor
+	struct RHISwapChainDesc
 	{
-		using ResourceType = class RHISwapChain;
+		using ResourceType = class IRHISwapChain;
 		uint32_t Width = 0;
 		uint32_t Height = 0;
 		uint32_t BufferCount = 0;
@@ -53,12 +53,12 @@ namespace Tridium {
 		constexpr auto& SetName( StringView a_Name ) { Name = a_Name; return *this; }
 	};
 
-	DECLARE_RHI_RESOURCE_INTERFACE( RHISwapChain )
+	class IRHISwapChain : public IRHIObject
 	{
-		RHI_RESOURCE_INTERFACE_BODY( RHISwapChain, ERHIResourceType::SwapChain );
+		RHI_OBJECT_INTERFACE_BODY( SwapChain );
 
-		RHISwapChain( const DescriptorType& a_Desc )
-			: m_Desc( a_Desc ) {}
+		IRHISwapChain( const DescriptorType& a_Desc ) : m_Desc( a_Desc ) {}
+		virtual ~IRHISwapChain() = default;
 
 		virtual bool Present() = 0;
 		virtual RHITextureRef GetBackBuffer() = 0;

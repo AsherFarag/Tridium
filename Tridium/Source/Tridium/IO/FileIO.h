@@ -8,49 +8,49 @@ namespace Tridium {
 	namespace IO {
 
 		// Check if a file exists
-		extern bool FileExists( const String& filepath );
+		extern bool FileExists( StringView a_Filepath );
 
 		// Read an entire file into a string
-		extern String ReadFile( const String& filepath );
+		extern String ReadFile( StringView a_Filepath );
 
 		// Read a binary file into a byte buffer
-		extern Array<uint8_t> ReadBinaryFile( const String& filepath );
+		extern Array<uint8_t> ReadBinaryFile( StringView a_Filepath );
 
 		// Write a string to a file (overwrites if exists)
-		extern bool WriteFile( const String& filepath, const String& data );
+		extern bool WriteFile( StringView a_Filepath, StringView data );
 
 		// Write a binary buffer to a file
-		extern bool WriteBinaryFile( const String& filepath, const Array<uint8_t>& data );
+		extern bool WriteBinaryFile( StringView a_Filepath, Span<const uint8_t> a_Data );
 
 		// Append a string to an existing file
-		extern bool AppendToFile( const String& filepath, const String& data );
+		extern bool AppendToFile( StringView a_Filepath, StringView a_Data );
 
 		// Get the size of a file in bytes
-		extern size_t GetFileSize( const String& filepath );
+		extern size_t GetFileSize( StringView a_Filepath );
 
 		// Delete a file
-		extern bool DeleteFile( const String& filepath );
+		extern bool DeleteFile( StringView a_Filepath );
 
 		// Rename a file
-		extern bool RenameFile( const String& oldPath, const String& newPath );
+		extern bool RenameFile( StringView a_FilePath, StringView newPath );
 
 		// Create a directory (if it doesn’t exist)
-		extern bool CreateDirectory( const String& dirPath );
+		extern bool CreateDirectory( StringView a_DirectoryPath );
 
 		// Delete a directory and all contents
-		extern bool DeleteDirectory( const String& dirPath );
+		extern bool DeleteDirectory( StringView a_DirectoryPath );
 
 		// List files in a directory
-		extern Array<String> ListFilesInDirectory( const String& dirPath );
+		extern Array<String> ListFilesInDirectory( StringView a_DirectoryPath, StringView a_Filter = "" );
 
 		// Get the file extension from a path
-		extern String GetFileExtension( const String& filepath );
+		extern String GetFileExtension( StringView a_Filepath );
 
 		// Get the filename (without directory path)
-		extern String GetFileName( const String& filepath );
+		extern String GetFileName( StringView a_Filepath );
 
-		// Get the directory path from a full filepath
-		extern String GetDirectoryPath( const String& filepath );
+		// Get the directory path from a full a_Filepath
+		extern String GetDirectoryPath( StringView a_Filepath );
 
 	} // namespace IO
 

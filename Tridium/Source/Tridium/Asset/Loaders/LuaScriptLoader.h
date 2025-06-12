@@ -2,10 +2,10 @@
 #include "AssetLoader.h"
 
 namespace Tridium {
-	class LuaScriptLoader : public IAssetLoader
+	class LuaScriptLoader : public IAssetLoaderOld
 	{
 	public:
-		// Inherited via IAssetLoader
+		// Inherited via IAssetLoaderOld
 		void SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset ) override;
 		SharedPtr<Asset> LoadAsset( const AssetMetaData& a_MetaData ) override;
 	};

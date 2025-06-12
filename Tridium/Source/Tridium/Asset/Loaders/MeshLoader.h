@@ -4,16 +4,16 @@
 
 namespace Tridium {
 
-	class MeshSourceLoader : public IAssetLoader
+	class MeshSourceLoader : public IAssetLoaderOld
 	{
-		// Inherited via IAssetLoader
+		// Inherited via IAssetLoaderOld
 		void SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset ) override {}
 		SharedPtr<Asset> LoadAsset( const AssetMetaData& a_MetaData ) override;
 	};
 
-	class StaticMeshLoader : public IAssetLoader
+	class StaticMeshLoader : public IAssetLoaderOld
 	{
-		// Inherited via IAssetLoader
+		// Inherited via IAssetLoaderOld
 		void SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset ) override;
 		SharedPtr<Asset> LoadAsset( const AssetMetaData& a_MetaData ) override;
 	};

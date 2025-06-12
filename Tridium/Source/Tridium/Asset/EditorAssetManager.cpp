@@ -1,7 +1,7 @@
 #include "tripch.h"
 #if 1// IS_EDITOR
 #include "EditorAssetManager.h"
-#include <Tridium/Asset/AssetFactory.h>
+#include <Tridium/Asset/AssetFactoryOld.h>
 #include <yaml-cpp/yaml.h>
 #include <fstream>
 
@@ -20,7 +20,7 @@ namespace Tridium {
 
 	void EditorAssetManager::Init()
 	{
-		AssetFactory::Init();
+		AssetFactoryOld::Init();
 		DeserializeAssetRegistry();
 
 		// Initialize asset factories
@@ -32,7 +32,7 @@ namespace Tridium {
 	{
 		//for ( auto& [handle, asset] : m_LoadedAssets )
 		//{
-		//	AssetFactory::SaveAsset( GetAssetMetaData( handle ), asset );
+		//	AssetFactoryOld::SaveAsset( GetAssetMetaData( handle ), asset );
 		//}
 
 		//SerializeAssetRegistry();
@@ -84,7 +84,7 @@ namespace Tridium {
 		};
 
 		LOG( LogCategory::Asset, Info, "Loading asset from: {0}", newMetaData.Path.ToString() );
-		asset = AssetFactory::LoadAsset( newMetaData );
+		asset = AssetFactoryOld::LoadAsset( newMetaData );
 
 		if ( !asset )
 		{
@@ -254,7 +254,7 @@ namespace Tridium {
 
 		if ( auto asset = GetAsset( a_Handle ); asset )
 		{
-			AssetFactory::SaveAsset( metaData, asset );
+			AssetFactoryOld::SaveAsset( metaData, asset );
 			return true;
 		}
 		return false;

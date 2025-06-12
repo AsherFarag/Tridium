@@ -2,17 +2,18 @@
 #if CONFIG_PLATFORM_WINDOWS
 #include <Tridium/IO/FileIO.h>
 #include <fstream>
+#include <filesystem>
 
 namespace Tridium {
 
-	bool IO::FileExists( const String& filepath )
+	bool IO::FileExists( StringView a_Filepath )
 	{
-		return std::filesystem::exists( filepath );
+		return std::filesystem::exists( a_Filepath );
 	}
 
-	String IO::ReadFile( const String& filepath )
+	String IO::ReadFile( StringView a_Filepath )
 	{
-		std::ifstream file( filepath );
+		std::ifstream file( a_Filepath.data() );
 		if ( !file.is_open() )
 		{
 			return {};
@@ -23,9 +24,9 @@ namespace Tridium {
 		return buffer.str();
 	}
 
-	Array<uint8_t> IO::ReadBinaryFile( const String& filepath )
+	Array<uint8_t> IO::ReadBinaryFile( StringView a_Filepath )
 	{
-		std::ifstream file( filepath, std::ios::binary );
+		std::ifstream file( a_Filepath.data(), std::ios::binary );
 		if ( !file.is_open() )
 		{
 			return {};
@@ -40,43 +41,43 @@ namespace Tridium {
 		return buffer;
 	}
 
-	bool IO::WriteFile( const String& filepath, const String& data )
+	bool IO::WriteFile( StringView a_Filepath, StringView a_Data )
 	{
-		std::ofstream file( filepath );
+		std::ofstream file( a_Filepath.data() );
 		if ( !file.is_open() )
 		{
 			return false;
 		}
 
-		file << data;
+		file << a_Data;
 		return true;
 	}
 
-	bool IO::WriteBinaryFile( const String& filepath, const Array<uint8_t>& data )
+	bool IO::WriteBinaryFile( StringView a_Filepath, Span<const uint8_t> a_Data )
 	{
-		std::ofstream file( filepath, std::ios::binary );
+		std::ofstream file( a_Filepath.data(), std::ios::binary);
 		if ( !file.is_open() )
 		{
 			return false;
 		}
-		file.write( ReinterpretCast<const char*>( data.Data() ), data.Size() );
+		file.write( ReinterpretCast<const char*>( a_Data.data() ), a_Data.size() );
 		return true;
 	}
 
-	bool IO::AppendToFile( const String& filepath, const String& data )
+	bool IO::AppendToFile( StringView a_Filepath, StringView a_Data )
 	{
-		std::ofstream file( filepath, std::ios::app );
+		std::ofstream file( a_Filepath.data(), std::ios::app );
 		if ( !file.is_open() )
 		{
 			return false;
 		}
-		file << data;
+		file << a_Data;
 		return true;
 	}
 
-	size_t IO::GetFileSize( const String& filepath )
+	size_t IO::GetFileSize( StringView a_Filepath )
 	{
-		std::ifstream file( filepath, std::ios::binary | std::ios::ate );
+		std::ifstream file( a_Filepath.data(), std::ios::binary | std::ios::ate );
 		if ( !file.is_open() )
 		{
 			return 0;
@@ -85,12 +86,12 @@ namespace Tridium {
 		return file.tellg();
 	}
 
-	bool IO::DeleteFile( const String& filepath )
+	bool IO::DeleteFile( StringView a_Filepath )
 	{
-		return std::filesystem::remove( filepath );
+		return std::filesystem::remove( a_Filepath );
 	}
 
-	bool IO::RenameFile( const String& oldPath, const String& newPath )
+	bool IO::RenameFile( StringView oldPath, StringView newPath )
 	{
 		std::error_code ec;
 		std::filesystem::rename( oldPath, newPath, ec );
@@ -98,39 +99,48 @@ namespace Tridium {
 		return !ec;
 	}
 
-	bool IO::CreateDirectory( const String& dirPath )
+	bool IO::CreateDirectory( StringView dirPath )
 	{
 		return std::filesystem::create_directories( dirPath );
 	}
 
-	bool IO::DeleteDirectory( const String& dirPath )
+	bool IO::DeleteDirectory( StringView dirPath )
 	{
 		return std::filesystem::remove_all( dirPath );
 	}
 
-	Array<String> IO::ListFilesInDirectory( const String& dirPath )
+	Array<String> IO::ListFilesInDirectory( StringView a_DirectoryPath, StringView a_Filter )
 	{
+		std::filesystem::path dirPath( a_DirectoryPath );
+		if ( !std::filesystem::exists( dirPath ) || !std::filesystem::is_directory( dirPath ) )
+		{
+			return {};
+		}
+
 		Array<String> files;
 		for ( const auto& entry : std::filesystem::directory_iterator( dirPath ) )
 		{
-			files.PushBack( entry.path().string() );
+			if ( entry.is_regular_file() && (a_Filter.empty() || entry.path().extension() == a_Filter) )
+			{
+				files.PushBack( entry.path().string() );
+			}
 		}
 		return files;
 	}
 
-	String IO::GetFileExtension( const String& filepath )
+	String IO::GetFileExtension( StringView a_Filepath )
 	{
-		return std::filesystem::path( filepath ).extension().string();
+		return std::filesystem::path( a_Filepath ).extension().string();
 	}
 
-	String IO::GetFileName( const String& filepath )
+	String IO::GetFileName( StringView a_Filepath )
 	{
-		return std::filesystem::path( filepath ).filename().string();
+		return std::filesystem::path( a_Filepath ).filename().string();
 	}
 
-	String IO::GetDirectoryPath( const String& filepath )
+	String IO::GetDirectoryPath( StringView a_Filepath )
 	{
-		return std::filesystem::path( filepath ).parent_path().string();
+		return std::filesystem::path( a_Filepath ).parent_path().string();
 	}
 
 } // namespace Tridium

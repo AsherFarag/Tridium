@@ -64,7 +64,7 @@ namespace Tridium {
 		
 		if ( a_Config.CreateSwapChain )
 		{
-			RHISwapChainDescriptor desc;
+			RHISwapChainDesc desc;
 			desc.Width = 1280;
 			desc.Height = 720;
 			desc.BufferCount = 2;
@@ -80,7 +80,7 @@ namespace Tridium {
 		}
 
 		// Create the frame fence
-		s_RHIGlobals.Fence = RHI::CreateFence( RHIFenceDescriptor{} );
+		s_RHIGlobals.Fence = RHI::CreateFence( RHIFenceDesc{} );
 		// Set the initial frame index
 		s_RHIGlobals.FrameIndex = 0;
 		// And initialise the fence values
@@ -201,61 +201,61 @@ namespace Tridium {
 	// RESOURCE CREATION
 	//////////////////////////////////////////////////////////////////////////
 
-	RHIFenceRef RHI::CreateFence( const RHIFenceDescriptor& a_Desc )
+	RHIFenceRef RHI::CreateFence( const RHIFenceDesc& a_Desc )
 	{
 		CHECK( s_DynamicRHI );
 		return s_DynamicRHI->CreateFence( a_Desc );
 	}
 
-	RHISamplerRef RHI::CreateSampler( const RHISamplerDescriptor& a_Desc )
+	RHISamplerRef RHI::CreateSampler( const RHISamplerDesc& a_Desc )
 	{
 		CHECK( s_DynamicRHI );
 		return s_DynamicRHI->CreateSampler( a_Desc );
 	}
 
-	RHITextureRef RHI::CreateTexture( const RHITextureDescriptor& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
+	RHITextureRef RHI::CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
 	{
 		CHECK( s_DynamicRHI );
 		return s_DynamicRHI->CreateTexture( a_Desc, a_SubResourcesData );
 	}
 
-	RHIBufferRef RHI::CreateBuffer( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data )
+	RHIBufferRef RHI::CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data )
 	{
 		CHECK( s_DynamicRHI );
 		return s_DynamicRHI->CreateBuffer( a_Desc, a_Data );
 	}
 
-	RHICommandListRef RHI::CreateCommandList( const RHICommandListDescriptor& a_Desc )
+	RHICommandListRef RHI::CreateCommandList( const RHICommandListDesc& a_Desc )
 	{
 		CHECK( s_DynamicRHI );
 		return s_DynamicRHI->CreateCommandList( a_Desc );
 	}
 
-	RHISwapChainRef RHI::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )
+	RHISwapChainRef RHI::CreateSwapChain( const RHISwapChainDesc& a_Desc )
 	{
 		CHECK( s_DynamicRHI );
 		return s_DynamicRHI->CreateSwapChain( a_Desc );
 	}
 
-	RHIShaderModuleRef RHI::CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc )
+	RHIShaderModuleRef RHI::CreateShaderModule( const RHIShaderModuleDesc& a_Desc )
 	{
 		CHECK( s_DynamicRHI );
 		return s_DynamicRHI->CreateShaderModule( a_Desc );
 	}
 
-	RHIBindingLayoutRef RHI::CreateBindingLayout( const RHIBindingLayoutDescriptor& a_Desc )
+	RHIBindingLayoutRef RHI::CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc )
 	{
 		CHECK( s_DynamicRHI );
 		return s_DynamicRHI->CreateBindingLayout( a_Desc );
 	}
 
-	RHIBindingSetRef RHI::CreateBindingSet( const RHIBindingSetDescriptor& a_Desc )
+	RHIBindingSetRef RHI::CreateBindingSet( const RHIBindingSetDesc& a_Desc )
 	{
 		CHECK( s_DynamicRHI );
 		return s_DynamicRHI->CreateBindingSet( a_Desc );
 	}
 
-	RHIGraphicsPipelineStateRef RHI::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc )
+	RHIGraphicsPipelineStateRef RHI::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc )
 	{
 		CHECK( s_DynamicRHI );
 		return s_DynamicRHI->CreateGraphicsPipelineState( a_Desc );

@@ -3,7 +3,6 @@
 #include "RHIDefinitions.h"
 #include "RHIToString.h"
 #include "RHIGlobals.h"
-#include "DynamicRHI.h"
 #include "RHIConstants.h"
 #include <Tridium/Graphics/Color.h>
 #include <Tridium/Core/Config.h>
@@ -17,6 +16,15 @@
 #include <Shaders/ShaderInterop.h>
 
 namespace Tridium {
+
+	// Forward declarations
+	class IDynamicRHI;
+
+	//==============================================
+	// The global dynamic RHI instance.
+	// Defined in RHI.cpp
+	extern IDynamicRHI* s_DynamicRHI;
+	//==============================================
 
 	// Common RHI functions
 	namespace RHI {

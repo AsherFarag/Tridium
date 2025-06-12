@@ -22,7 +22,7 @@ namespace Tridium {
 		{
 			Stack<ProfileResult> CallStack;
 			Array<ProfileResult> CollectedResults;
-			TimeStamp TimeStamp;
+			ProfilerTimeStamp TimeStamp;
 		};
 
 		struct ProfiledThreadResult
@@ -33,7 +33,7 @@ namespace Tridium {
 
 		String Name;
 		size_t NumOfFrames;
-		TimeStamp TimeStamp;
+		ProfilerTimeStamp TimeStamp;
 		UnorderedMap<std::thread::id, ProfiledThreadResult> ProfiledThreads;
 	};
 
@@ -62,7 +62,7 @@ namespace Tridium {
 
 		bool IsRecording() const { return m_CurrentState == EState::Recording && m_CurrentSession != nullptr; }
 
-		TimeStamp::TimeType GetTime() const;
+		ProfilerTimeStamp::TimeType GetTime() const;
 		EState CurrentState() const { return m_CurrentState; }
 		EState NextState() const { return m_NextState; }
 

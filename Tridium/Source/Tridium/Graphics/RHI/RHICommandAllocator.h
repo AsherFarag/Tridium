@@ -9,7 +9,7 @@ namespace Tridium {
 	////=============================================
 	//DECLARE_RHI_RESOURCE_INTERFACE( RHICommandAllocator )
 	//{
-	//	RHI_RESOURCE_INTERFACE_BODY( RHICommandAllocator, ERHIResourceType::CommandAllocator );
+	//	RHI_OBJECT_INTERFACE_BODY( RHICommandAllocator, ERHIObjectType::CommandAllocator );
 	//};
 
 	//DECLARE_RHI_RESOURCE_DESCRIPTOR( RHICommandAllocatorDescriptor, RHICommandAllocator )

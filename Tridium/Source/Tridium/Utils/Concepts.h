@@ -64,6 +64,17 @@ namespace Tridium::Concepts {
 	template<typename T>
 	concept Arithmetic = std::is_arithmetic_v<T>;
 
+	template<typename _Derived, typename _Base>
+	concept Derived = std::derived_from<_Derived, _Base>;
+
+	template<typename _Derived, typename _Base>
+	concept DerivedAndNotSame = std::derived_from<_Derived, _Base> && !std::same_as<_Derived, _Base>;
+
+	// If the type is a POD (Plain Old Data) type, it means it has trivial constructors, destructors, and copy operations.
+	// Essentially, a raw block of memory with no behavior attached to it.
+	template<typename T>
+	concept Pod = std::is_pod_v<T>;
+
 	//================================================================
 	// Inheritance
 	//================================================================

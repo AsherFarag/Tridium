@@ -32,7 +32,7 @@ namespace Tridium {
 
 			if ( RHIShaderModuleRef ref = FindShader( nameHash ) )
 			{
-				LOG( LogCategory::RHI, Warn, "Shader '{0}' already loaded: {1}", ref->Descriptor().Name.data(), a_Path.ToString() );
+				LOG( LogCategory::RHI, Warn, "Shader '{0}' already loaded: {1}", ref->Desc().Name.data(), a_Path.ToString() );
 				return ref;
 			}
 

@@ -1,27 +1,18 @@
 #pragma once
 #include "RHIDefinitions.h"
 #include "RHIGlobals.h"
+#include "RHIResource.h"
 
 namespace Tridium {
 
 	//==============================================
 	// Forward declarations
 	struct RHITextureSubresourceData;
-	FORWARD_DECLARE_RHI_RESOURCE( RHISampler );
-	FORWARD_DECLARE_RHI_RESOURCE( RHITexture );
-	FORWARD_DECLARE_RHI_RESOURCE( RHIBuffer );
-	FORWARD_DECLARE_RHI_RESOURCE( RHIGraphicsPipelineState );
-	FORWARD_DECLARE_RHI_RESOURCE( RHICommandList );
-	FORWARD_DECLARE_RHI_RESOURCE( RHIShaderModule );
-	FORWARD_DECLARE_RHI_RESOURCE( RHIBindingLayout );
-	FORWARD_DECLARE_RHI_RESOURCE( RHIBindingSet );
-	FORWARD_DECLARE_RHI_RESOURCE( RHISwapChain );
-	FORWARD_DECLARE_RHI_RESOURCE( RHIFence );
 	//==============================================
 
 	//==============================================
 	// DynamicRHI Interface
-	//  The core interace for the dynamicly bound RHI.
+	//  The core interface for the dynamically bound RHI.
 	class IDynamicRHI
 	{
 	public:
@@ -44,21 +35,37 @@ namespace Tridium {
 
 		//=====================================================
 		// Resource creation
-		virtual RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc ) = 0;
-		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) = 0;
-		virtual RHIBufferRef CreateBuffer( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data ) = 0;
-		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc ) = 0;
-		virtual RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc ) = 0;
-		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc ) = 0;
-		virtual RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDescriptor& a_Desc ) = 0;
-		virtual RHIBindingSetRef CreateBindingSet( const RHIBindingSetDescriptor& a_Desc ) = 0;
-		virtual RHISwapChainRef CreateSwapChain( const RHISwapChainDescriptor& a_Desc ) = 0;
-		virtual RHIFenceRef CreateFence( const RHIFenceDescriptor& a_Desc ) = 0;
+		virtual RHISamplerRef CreateSampler( const RHISamplerDesc& a_Desc ) = 0;
+		virtual RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) = 0;
+		virtual RHIBufferRef CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data ) = 0;
+		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc ) = 0;
+		virtual RHICommandListRef CreateCommandList( const RHICommandListDesc& a_Desc ) = 0;
+		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDesc& a_Desc ) = 0;
+		virtual RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc ) = 0;
+		virtual RHIBindingSetRef CreateBindingSet( const RHIBindingSetDesc& a_Desc ) = 0;
+		virtual RHISwapChainRef CreateSwapChain( const RHISwapChainDesc& a_Desc ) = 0;
+		virtual RHIFenceRef CreateFence( const RHIFenceDesc& a_Desc ) = 0;
 		//=====================================================
 
 		//=====================================================
 		// Miscellaneous
 		virtual GPUInfo GetGPUInfo() const = 0;
+		const auto& RegisteredResources() const { return m_RegisteredResources; }
+
+		virtual void RegisterRHIResource( IRHIObject& a_Resource ) 
+		{ 
+			m_RegisteredResources.emplace( std::hash<IRHIObject*>()( &a_Resource ), a_Resource.Weak() );
+		}
+
+		virtual bool UnregisterRHIResource( IRHIObject& a_Resource ) 
+		{
+			if ( auto it = m_RegisteredResources.find( std::hash<IRHIObject*>()( &a_Resource ) ); it != m_RegisteredResources.end() )
+			{
+				m_RegisteredResources.erase( it );
+				return true;
+			}
+			return false;
+		}
 		//=====================================================
 
 
@@ -68,13 +75,10 @@ namespace Tridium {
 		virtual void DumpDebug() {}
 
 		#endif // RHI_DEBUG_ENABLED
-	};
 
-	//==============================================
-	// The global dynamic RHI instance.
-	// Defined in RHI.cpp
-	extern IDynamicRHI* s_DynamicRHI;
-	//==============================================
+	protected:
+		UnorderedMap<size_t, RHIObjectWeakRef> m_RegisteredResources{}; // Resources registered with the RHI
+	};
 
 	namespace Concepts {
 		template<typename T>

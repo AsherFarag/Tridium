@@ -244,10 +244,12 @@ namespace Tridium {
 		constexpr Expected& operator=( Expected&& a_Other ) noexcept = default;
 		constexpr Expected( const _Error& a_Error ) noexcept : m_Error( a_Error ) {}
 		constexpr Expected( _Error&& a_Error ) noexcept : m_Error( std::move( a_Error ) ) {}
-		constexpr Expected( const Unexpected<_Error>& a_Error ) noexcept : m_Error( a_Error.Error() ) {}
-		constexpr Expected( Unexpected<_Error>&& a_Error ) noexcept : m_Error( std::move( std::move( a_Error ).Error() ) ) {}
+		template<typename _UError>
+		constexpr Expected( const Unexpected<_UError>& a_Error ) noexcept : m_Error( a_Error.Error() ) {}
+		template<typename _UError>
+		constexpr Expected( Unexpected<_UError>&& a_Error ) noexcept : m_Error( std::move( std::move( a_Error ).Error() ) ) {}
 
-		[[nodiscard]] constexpr bool IsError() const noexcept { return !m_Error.has_value(); }
+		[[nodiscard]] constexpr bool IsError() const noexcept { return m_Error.has_value(); }
 		[[nodiscard]] constexpr bool HasValue() const noexcept { return !IsError(); }
 		[[nodiscard]] constexpr _Error& Error() { EXPECTED_ASSERT( IsError(), "Attempting to access error when there is no error" ); return m_Error.value(); }
 		[[nodiscard]] constexpr const _Error& Error() const { EXPECTED_ASSERT( IsError(), "Attempting to access error when there is no error" ); return m_Error.value(); }

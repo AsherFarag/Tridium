@@ -1,5 +1,5 @@
 #include "tripch.h"
-#include "AssetFactory.h"
+#include "AssetFactoryOld.h"
 #include "Asset.h"
 #include "Loaders/AssetLoader.h"
 #include <Tridium/IO/FilePath.h>
@@ -14,9 +14,9 @@
 
 namespace Tridium {
 
-	std::unordered_map<EAssetType, SharedPtr<IAssetLoader>> AssetFactory::s_AssetFactories;
+	std::unordered_map<EAssetType, SharedPtr<IAssetLoaderOld>> AssetFactoryOld::s_AssetFactories;
 
-	void AssetFactory::Init()
+	void AssetFactoryOld::Init()
 	{
 		s_AssetFactories[EAssetType::Scene] = MakeShared<SceneLoader>();
 		s_AssetFactories[EAssetType::Texture] = MakeShared<TextureLoader>();
@@ -28,7 +28,7 @@ namespace Tridium {
 		s_AssetFactories[EAssetType::LuaScript] = MakeShared<LuaScriptLoader>();
 	}
 
-	void AssetFactory::SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
+	void AssetFactoryOld::SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
 	{
 		auto it = s_AssetFactories.find( a_MetaData.AssetType );
 		if ( it != s_AssetFactories.end() )
@@ -41,7 +41,7 @@ namespace Tridium {
 		}
 	}
 
-	SharedPtr<Asset> AssetFactory::LoadAsset( const AssetMetaData& a_MetaData )
+	SharedPtr<Asset> AssetFactoryOld::LoadAsset( const AssetMetaData& a_MetaData )
 	{
 		PROFILE_FUNCTION( ProfilerCategory::AssetStreaming );
 		auto it = s_AssetFactories.find( a_MetaData.AssetType );
@@ -58,7 +58,7 @@ namespace Tridium {
 		return nullptr;
 	}
 
-	SharedPtr<IAssetLoader> AssetFactory::GetAssetLoader( EAssetType a_Type )
+	SharedPtr<IAssetLoaderOld> AssetFactoryOld::GetAssetLoader( EAssetType a_Type )
 	{
 		auto it = s_AssetFactories.find( a_Type );
 		if ( it != s_AssetFactories.end() )

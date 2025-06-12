@@ -4,7 +4,7 @@
 namespace Tridium::D3D12 {
 
 	RHIFence_D3D12Impl::RHIFence_D3D12Impl( const DescriptorType& a_Desc )
-		: RHIFence( a_Desc )
+		: IRHIFence( a_Desc )
     {
 		const auto& device = GetD3D12RHI()->GetD3D12Device();
 		const auto flags = D3D12_FENCE_FLAG_NONE;
@@ -39,7 +39,7 @@ namespace Tridium::D3D12 {
 
 	void RHIFence_D3D12Impl::Signal( uint64_t a_Value )
 	{
-		ASSERT( Descriptor().Type == ERHIFenceType::General, "Signaling on a CPUWaitOnly fence, fence type must be ERHIFenceType::General" );
+		ASSERT( Desc().Type == ERHIFenceType::General, "Signaling on a CPUWaitOnly fence, fence type must be ERHIFenceType::General" );
 		m_Fence->Signal( a_Value );
 	}
 

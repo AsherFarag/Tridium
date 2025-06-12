@@ -4,7 +4,7 @@
 #include <Tridium/Asset/EditorAssetManager.h>
 #include <Tridium/Editor/Panels/Asset/MeshSourceImporterPanel.h>
 #include <Tridium/Graphics/Rendering/SceneRenderer.h>
-#include <Tridium/Asset/AssetFactory.h>
+#include <Tridium/Asset/AssetFactoryOld.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h> 
 #include <Tridium/Reflection/Reflection.h>
 

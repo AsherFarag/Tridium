@@ -8,9 +8,9 @@ namespace Tridium {
 	//  A sampler represents a texture sampling state and is used to sample textures in shaders.
 	//=======================================================
 
-	struct RHISamplerDescriptor
+	struct RHISamplerDesc
 	{
-		using ResourceType = class RHISampler;
+		using ResourceType = class IRHISampler;
 		ERHISamplerFilter Filter = ERHISamplerFilter::Bilinear;
 		ERHISamplerAddressMode AddressU = ERHISamplerAddressMode::Repeat;
 		ERHISamplerAddressMode AddressV = ERHISamplerAddressMode::Repeat;
@@ -36,12 +36,11 @@ namespace Tridium {
 		constexpr auto& SetName( StringView a_Name ) { Name = a_Name; return *this; }
 	};
 
-	DECLARE_RHI_RESOURCE_INTERFACE( RHISampler )
+	class IRHISampler : public IRHIObject
 	{
-		RHI_RESOURCE_INTERFACE_BODY( RHISampler, ERHIResourceType::Sampler );
-		RHISampler( const DescriptorType& a_Desc )
-			: m_Desc( a_Desc )
-		{}
+		RHI_OBJECT_INTERFACE_BODY( Sampler )
+		IRHISampler( const DescriptorType& a_Desc ) : m_Desc( a_Desc ) {}
+		virtual ~IRHISampler() = default;
 	};
 
 } // namespace Tridium

@@ -2,6 +2,7 @@
 #include <string>
 #include "AssetType.h"
 #include <memory>
+#include <Tridium/IO/FilePath.h>
 
 namespace Tridium {
 

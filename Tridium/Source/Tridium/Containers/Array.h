@@ -416,8 +416,22 @@ namespace Tridium {
 		Array( Array&& a_Other ) = default;
 		Array( size_t a_Size ) : m_Data( a_Size ) {}
 		Array( std::initializer_list<T> a_InitializerList ) : m_Data( a_InitializerList ) {}
+		Array( Span<const T> a_InitList ) : m_Data( a_InitList.begin(), a_InitList.end() ) {}
 		Array& operator=( const Array& a_Other ) = default;
 		Array& operator=( Array&& a_Other ) = default;
+
+		Array& operator=( std::initializer_list<T> a_InitializerList ) 
+		{ 
+			m_Data = std::vector<T>( a_InitializerList ); 
+			return *this; 
+		}
+
+		Array& operator=( Span<const T> a_InitList ) 
+		{ 
+			m_Data = std::vector<T>( a_InitList.begin(), a_InitList.end() ); 
+			return *this; 
+		}
+
 
 		operator Span<T>() { return Span<T>( m_Data.data(), m_Data.size() ); }
 		operator Span<const T>() const { return Span<const T>( m_Data.data(), m_Data.size() ); }

@@ -13,13 +13,13 @@
 namespace Tridium::D3D12 {
 
 	RHISwapChain_D3D12Impl::RHISwapChain_D3D12Impl( const DescriptorType& a_Desc )
-		: RHISwapChain( a_Desc )
+		: IRHISwapChain( a_Desc )
 	{
 		DynamicRHI_D3D12Impl* rhi = GetD3D12RHI();
 
 		HWND hWnd = glfwGetWin32Window( glfwGetCurrentContext() );
 		if ( !ASSERT( hWnd != NULL,
-			"Failed to get window handle while creating RHISwapChain" ) )
+			"Failed to get window handle while creating IRHISwapChain" ) )
 		{
 			return;
 		}
@@ -171,8 +171,8 @@ namespace Tridium::D3D12 {
 	{
 		// Create textures and handles to view
 		const auto rtvDesc =
-			RHITextureDescriptor{}
-			.SetFormat( Descriptor().Format )
+			RHITextureDesc{}
+			.SetFormat( Desc().Format )
 			.SetWidth( m_Width )
 			.SetHeight( m_Height )
 			.SetDimension( ERHITextureDimension::Texture2D )
@@ -180,9 +180,9 @@ namespace Tridium::D3D12 {
 
 		for ( uint32_t i = 0; i < RTVs.Size(); i++ )
 		{
-			RHITextureDescriptor desc = rtvDesc;
+			RHITextureDesc desc = rtvDesc;
 		#if RHI_DEBUG_ENABLED
-			desc.Name = std::format( "{} RTV[{}]", Descriptor().Name, i );
+			desc.Name = std::format( "{} RTV[{}]", Desc().Name, i );
 		#endif
 
 			if ( !RTVs[i] )

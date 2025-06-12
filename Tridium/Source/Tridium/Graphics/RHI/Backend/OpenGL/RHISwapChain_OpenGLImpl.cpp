@@ -56,7 +56,7 @@ namespace Tridium::OpenGL {
 	}
 
 	RHISwapChain_OpenGLImpl::RHISwapChain_OpenGLImpl( const DescriptorType& a_Desc )
-		: RHISwapChain( a_Desc )
+		: IRHISwapChain( a_Desc )
     {
 		m_Width = a_Desc.Width;
 		m_Height = a_Desc.Height;
@@ -79,10 +79,10 @@ namespace Tridium::OpenGL {
 		return true;
 	}
 
-	bool Framebuffer::Init( const RHISwapChainDescriptor& a_Desc )
+	bool Framebuffer::Init( const RHISwapChainDesc& a_Desc )
 	{
 		// Create the back buffer texture
-		const auto texDesc = RHITextureDescriptor(
+		const auto texDesc = RHITextureDesc(
 			"BackBuffer",
 			ERHITextureDimension::Texture2D,
 			a_Desc.Width, a_Desc.Height, 1,
@@ -169,7 +169,7 @@ namespace Tridium::OpenGL {
 
 	void Framebuffer::Resize( uint32_t a_Width, uint32_t a_Height )
 	{
-		auto desc = BackBufferTexture->Descriptor();
+		auto desc = BackBufferTexture->Desc();
 		desc.Width = a_Width;
 		desc.Height = a_Height;
 		BackBufferTexture = RHI::CreateTexture( desc );

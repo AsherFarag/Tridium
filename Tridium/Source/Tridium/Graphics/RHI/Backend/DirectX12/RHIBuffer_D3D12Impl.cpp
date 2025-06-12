@@ -2,8 +2,8 @@
 #include "RHI_D3D12Impl.h"
 
 namespace Tridium::D3D12 {
-	RHIBuffer_D3D12Impl::RHIBuffer_D3D12Impl( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data )
-		: RHIBuffer( a_Desc )
+	RHIBuffer_D3D12Impl::RHIBuffer_D3D12Impl( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data )
+		: IRHIBuffer( a_Desc )
 	{
 		m_Desc.Size = Math::Max( a_Desc.Size, a_Data.size_bytes() );
 		if ( m_Desc.Size == 0 )
@@ -12,15 +12,13 @@ namespace Tridium::D3D12 {
 			return;
 		}
 
-		const bool initData = a_Data.size() > 0;
-		ERHIResourceStates initialState = initData ? ERHIResourceStates::CopyDest : ERHIResourceStates::Common;
-		SetState( initialState );
+		// Initial state for buffers must always be Common, according to the D3D12 spec.
+		SetState( ERHIResourceStates::Common );
 
-		const RHIFormatInfo& formatInfo = GetRHIFormatInfo( a_Desc.Format );
 		D3D12_RESOURCE_DESC d3d12Desc = GetD3D12ResourceDesc();
 
 		// Create the texture
-		if ( !ManagedBuffer.Commit( d3d12Desc, D3D12::Translate( initialState ) ) )
+		if ( !ManagedBuffer.Commit( d3d12Desc, D3D12::Translate( State() ) ) )
 		{
 			ASSERT( false, "Failed to create D3D12 buffer" );
 			return;
@@ -28,8 +26,9 @@ namespace Tridium::D3D12 {
 
 		D3D12_SET_DEBUG_NAME( ManagedBuffer.Resource, m_Desc.Name, L"Unnamed Buffer" );
 
-		if ( initData )
+		if ( a_Data.size() > 0 )
 		{
+			SetState( ERHIResourceStates::CopyDest );
 			m_Desc.Size = a_Data.size();
 			CommandContext& copyCmdCtx = GetD3D12RHI()->GetCommandContext( ERHICommandQueueType::Copy );
 

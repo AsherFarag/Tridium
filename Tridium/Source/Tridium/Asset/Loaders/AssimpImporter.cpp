@@ -7,7 +7,7 @@
 #include <Tridium/Graphics/Rendering/Material.h>
 #include <Tridium/Graphics/Rendering/Mesh.h>
 
-#include <Tridium/Asset/AssetFactory.h>
+#include <Tridium/Asset/AssetFactoryOld.h>
 #include <Tridium/Asset/AssetManager.h>
 #include <Tridium/Asset/Loaders/TextureLoader.h>
 
@@ -211,7 +211,7 @@ namespace Tridium {
 
 	TextureHandle AssimpImporter::ExtractTexture( void* a_AssimpScene, void* a_AssimpMaterial, int a_AssimpTextureType )
 	{
-		SharedPtr<TextureLoader> textureLoader = SharedPtrCast<TextureLoader>( AssetFactory::GetAssetLoader( EAssetType::Texture ) );
+		SharedPtr<TextureLoader> textureLoader = SharedPtrCast<TextureLoader>( AssetFactoryOld::GetAssetLoader( EAssetType::Texture ) );
 		aiScene* aiScn = Cast<aiScene*>( a_AssimpScene );
 		aiMaterial* aiMat = Cast<aiMaterial*>( a_AssimpMaterial );
 		aiTextureType aiTexType = Cast<aiTextureType>( a_AssimpTextureType );

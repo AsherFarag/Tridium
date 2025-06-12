@@ -5,8 +5,8 @@
 
 namespace Tridium {
 
-	using RHISwapChainRef = SharedPtr<class RHISwapChain>;
-	using RHIFenceRef = SharedPtr<class RHIFence>;
+	using RHISwapChainRef = SharedPtr<class IRHISwapChain>;
+	using RHIFenceRef = SharedPtr<class IRHIFence>;
 
 	//===========================
 	// RHI Globals

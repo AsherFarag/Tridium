@@ -3,8 +3,8 @@
 
 namespace Tridium::D3D12 {
 
-	RHITexture_D3D12Impl::RHITexture_D3D12Impl( const RHITextureDescriptor& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
-		: RHITexture( a_Desc )
+	RHITexture_D3D12Impl::RHITexture_D3D12Impl( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
+		: IRHITexture( a_Desc )
 	{
 		const bool initData = a_SubResourcesData.size() > 0;
 		ERHIResourceStates initialState = initData ? ERHIResourceStates::CopyDest : ERHIResourceStates::Common;
@@ -96,7 +96,7 @@ namespace Tridium::D3D12 {
 			d3d12SubResData.Resize( numSubresources );
 			for ( UINT i = 0; i < numSubresources; ++i )
 			{
-				d3d12SubResData[i].pData = a_SubResourcesData[i].Data.data();
+				d3d12SubResData[i].pData = a_SubResourcesData[i].Data;
 				d3d12SubResData[i].RowPitch = Cast<LONG_PTR>( a_SubResourcesData[i].RowStride );
 				d3d12SubResData[i].SlicePitch = Cast<LONG_PTR>( a_SubResourcesData[i].DepthStride );
 			}
@@ -140,16 +140,6 @@ namespace Tridium::D3D12 {
 	{
 		Texture.Release();
 		return true;
-	}
-
-	size_t RHITexture_D3D12Impl::GetSizeInBytes() const
-	{
-		if ( !Valid() )
-			return 0;
-
-		D3D12_RESOURCE_DESC desc = Texture.Resource->GetDesc();
-		const uint32_t bytesPerPixel = GetRHIFormatInfo( Descriptor().Format ).BytesPerBlock;
-		return Descriptor().Width * Descriptor().Height * bytesPerPixel;
 	}
 
 	D3D12_RESOURCE_DESC RHITexture_D3D12Impl::GetD3D12ResourceDesc() const
@@ -213,8 +203,8 @@ namespace Tridium::D3D12 {
 		copyCmdAllocator->Reset();
 		copyCmdList->Reset( copyCmdAllocator.Get(), nullptr );
 
-		const size_t width = Descriptor().Width;
-		const size_t height = Descriptor().Height;
+		const size_t width = Desc().Width;
+		const size_t height = Desc().Height;
 
 		D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint = {};
 		uint64_t uploadSize = 0;
@@ -351,14 +341,14 @@ namespace Tridium::D3D12 {
 		srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 		srcLocation.SubresourceIndex = CalcSubresource(
 			a_SrcRegion.MinZ, a_SrcRegion.MinY, a_SrcRegion.MinX,
-			a_SrcTexture.Descriptor().Mips, a_SrcTexture.Descriptor().Depth 
+			a_SrcTexture.Desc().Mips, a_SrcTexture.Desc().Depth 
 		);
 
 		// Valid if the regions are valid and can fit in their respective textures
 		if ( a_SrcRegion.MinX < 0 || a_SrcRegion.MinY < 0 || a_SrcRegion.MinZ < 0 ||
-			a_SrcRegion.MaxX > a_SrcTexture.Descriptor().Width ||
-			a_SrcRegion.MaxY > a_SrcTexture.Descriptor().Height ||
-			a_SrcRegion.MaxZ > a_SrcTexture.Descriptor().Depth )
+			a_SrcRegion.MaxX > a_SrcTexture.Desc().Width ||
+			a_SrcRegion.MaxY > a_SrcTexture.Desc().Height ||
+			a_SrcRegion.MaxZ > a_SrcTexture.Desc().Depth )
 		{
 			RHI_DEV_CHECK( false, "Source region is invalid!" );
 			return false;

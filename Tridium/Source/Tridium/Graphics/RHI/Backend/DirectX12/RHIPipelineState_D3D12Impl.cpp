@@ -7,7 +7,7 @@ namespace Tridium::D3D12 {
 	D3D12_SHADER_BYTECODE GetShaderBytecode( const RHIShaderModuleRef& a_Shader )
 	{
 		return a_Shader
-			? D3D12_SHADER_BYTECODE( a_Shader->Descriptor().Bytecode.data(), a_Shader->Descriptor().Bytecode.size_bytes() )
+			? D3D12_SHADER_BYTECODE( a_Shader->Desc().Bytecode.data(), a_Shader->Desc().Bytecode.size_bytes() )
 			: D3D12_SHADER_BYTECODE();
 	}
 
@@ -27,7 +27,7 @@ namespace Tridium::D3D12 {
 		return desc;
 	}
 
-	D3D12_RASTERIZER_DESC GetRasterizerDesc( const RHIGraphicsPipelineStateDescriptor& a_PSD )
+	D3D12_RASTERIZER_DESC GetRasterizerDesc( const RHIGraphicsPipelineStateDesc& a_PSD )
 	{
 		D3D12_RASTERIZER_DESC desc{};
 
@@ -61,7 +61,7 @@ namespace Tridium::D3D12 {
 		return desc;
 	}
 
-	D3D12_DEPTH_STENCIL_DESC GetDepthStencilDesc( const RHIGraphicsPipelineStateDescriptor& a_PSD )
+	D3D12_DEPTH_STENCIL_DESC GetDepthStencilDesc( const RHIGraphicsPipelineStateDesc& a_PSD )
 	{
 		D3D12_DEPTH_STENCIL_DESC desc = {};
 		desc.DepthEnable = a_PSD.DepthState.IsEnabled;
@@ -81,27 +81,26 @@ namespace Tridium::D3D12 {
 	}
 
 	RHIGraphicsPipelineState_D3D12Impl::RHIGraphicsPipelineState_D3D12Impl( const DescriptorType& a_Desc )
-		: RHIGraphicsPipelineState( a_Desc )
+		: IRHIGraphicsPipelineState( a_Desc )
     {
 		// Create the vertex input layout
 		// We create tempory strings here of the vertex element names,
 		// as RHIVertexAttribute::Name is a StringView and can be not null terminated.
 		// And SemanticName requires a null terminated string.
 		FixedArray<String, RHIConstants::MaxVertexAttributes> vertexElementNames;
-		VertexLayoutSize = a_Desc.VertexLayout.Elements.Size();
-		for ( size_t i = 0; i < VertexLayoutSize; ++i )
+		for ( size_t i = 0; i < a_Desc.VertexLayout.Elements.Size(); ++i )
 		{
 			vertexElementNames[i] = a_Desc.VertexLayout.Elements[i].Name;
 			const RHIVertexAttribute& element = a_Desc.VertexLayout.Elements[i];
-			VertexLayout[i] = {
+			VertexLayout.EmplaceBack( D3D12_INPUT_ELEMENT_DESC{
 				.SemanticName = vertexElementNames[i].c_str(),
 				.SemanticIndex = 0,
 				.Format = D3D12::Translate( element.Type ),
 				.InputSlot = 0,
 				.AlignedByteOffset = Cast<UINT>( element.Offset ),
 				.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
-				.InstanceDataStepRate = 0
-			};
+				.InstanceDataStepRate = 0 
+				} );
 		}
 
 		// Create the pipeline state object
@@ -109,11 +108,11 @@ namespace Tridium::D3D12 {
 		psd.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 		// Set the root signature
-		psd.pRootSignature = a_Desc.BindingLayout->As<RHIBindingLayout_D3D12Impl>()->m_RootSignature.Get();
+		psd.pRootSignature = nullptr;//TODO a_Desc.BindingLayout->As<RHIBindingLayout_D3D12Impl>()->m_RootSignature.Get();
 
 		// Set the input layout
-		psd.InputLayout.NumElements = VertexLayoutSize;
-		psd.InputLayout.pInputElementDescs = VertexLayout;
+		psd.InputLayout.NumElements = VertexLayout.Size();
+		psd.InputLayout.pInputElementDescs = VertexLayout.Data();
 		psd.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
 
 		// Set the shaders
@@ -182,7 +181,7 @@ namespace Tridium::D3D12 {
 		// Visit each binding layout, get the num of bindings and add them to NumParams
 		size_t numParams = a_CustomParams.size();
 		for ( const auto& layout : a_Layouts ) 
-			numParams += layout->Descriptor().Bindings.Size();
+			numParams += layout->Desc().Bindings.Size();
 
 		Array<D3D12_ROOT_PARAMETER1> rootParams;
 		rootParams.Reserve( numParams );

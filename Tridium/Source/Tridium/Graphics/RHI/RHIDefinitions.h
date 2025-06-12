@@ -1,22 +1,16 @@
 #pragma once
-#include <Tridium/Core/Types.h>
-#include <Tridium/Core/Assert.h>
-#include <Tridium/Math/Math.h>
-#include <type_traits>
 #include "RHIConstants.h"
 #include "RHIConfig.h"
+#include <Tridium/Core/Types.h>
+#include <Tridium/Core/Assert.h>
+#include <Tridium/Core/Memory.h>
 #include <Tridium/Core/Enum.h>
+#include <Tridium/Math/Math.h>
 
 // Helper macro to assert that the enum size is within the bounds of the number of bits.
 // This is undefined at the end of the file.
 #define RHI_ENUM_SIZE_ASSERT( _Enum ) \
 	static_assert( std::underlying_type_t<_Enum>(_Enum::COUNT) <= ( 1 << std::underlying_type_t<_Enum>(_Enum::NUM_BITS) ), #_Enum "::COUNT exceeds NUM_BITS" )
-
-
-#define FORWARD_DECLARE_RHI_RESOURCE( _Name ) \
-	struct _Name##Descriptor; \
-	using _Name##Ref = SharedPtr<class _Name>; \
-	using _Name##WeakRef = WeakPtr<class _Name>
 
 // Define the log category for the RHI.
 DECLARE_LOG_CATEGORY( RHI );
@@ -44,6 +38,29 @@ namespace Tridium {
 		DirectX12,
 		Vulkan,
 		Metal,
+	};
+
+
+
+	//=====================================================================
+	// RHI Object Type
+	//  The type of object that can be created with the RHI device.
+	enum class ERHIObjectType : uint8_t
+	{
+        Sampler,
+        Texture,
+        ShaderModule,
+        Buffer,
+        BindingLayout,
+		BindingSet,
+        GraphicsPipelineState,
+		ComputePipelineState,
+        CommandList,
+        CommandAllocator,
+		SwapChain,
+		Fence,
+        COUNT,
+		Unknown = 0xFF,
 	};
 
 
@@ -325,12 +342,12 @@ namespace Tridium {
 	{
 		Undefined = 0,
 		// This buffer is accessed via raw bytes.
-		// RHIBufferDescriptor::Stride must specify the size of the format.
+		// RHIBufferDesc::Stride must specify the size of the format.
 		Raw,
 		// Accessing this buffer uses format conversion.
-		// RHIBufferDescriptor::Stride must match the size of the format.
+		// RHIBufferDesc::Stride must match the size of the format.
 		Formatted,
-		// This buffer is accessed via a structure. RHIBufferDescriptor::Stride defines the size of the structure.
+		// This buffer is accessed via a structure. RHIBufferDesc::Stride defines the size of the structure.
 		Structured,
 	};
 
@@ -422,38 +439,6 @@ namespace Tridium {
 			float Depth;
 			uint8_t Stencil;
 		};
-	};
-
-	//===========================
-	// RHI Object Interface
-	class IRHIObject
-	{
-	public:
-		virtual ~IRHIObject() = default;
-	};
-
-
-
-	//=====================================================================
-	// RHI Resource Type
-	//  The type of resource.
-	//=====================================================================
-	enum class ERHIResourceType : uint8_t
-	{
-        Sampler,
-        Texture,
-        ShaderModule,
-        Buffer,
-        BindingLayout,
-		BindingSet,
-        GraphicsPipelineState,
-		ComputePipelineState,
-        CommandList,
-        CommandAllocator,
-		SwapChain,
-		Fence,
-        COUNT,
-		Unknown = 0xFF,
 	};
 
 
@@ -1121,6 +1106,107 @@ namespace Tridium {
 		bool IsSRGB : 1;
 
 		constexpr uint32_t Bytes() const noexcept { return BytesPerBlock * Blocks; }
+		constexpr Color ConvertToColor( Span<const uint8_t> a_Data ) const noexcept 
+		{
+			static_assert(size_t( ERHIFormat::COUNT ) == 58);
+			const int bytesPerChannel = Bytes() / ((int)HasRed + (int)HasGreen + (int)HasBlue + (int)HasAlpha);
+			Color color{};
+			uint32_t offset = 0;
+
+			const auto readFloat = [&]( int bytes ) -> float 
+				{
+					if ( bytes != 4 )
+						return 0.0f; // Unsupported float format size
+
+					float value;
+					std::memcpy( &value, &a_Data[offset], 4 );
+					offset += 4;
+					return value;
+				};
+
+			const auto readInt = [&]( int bytes ) -> int32_t 
+				{
+					if ( bytes == 1 )
+					{
+						return Cast<int8_t>( a_Data[offset++] );
+					}
+					else if ( bytes == 2 ) 
+					{
+						int16_t val;
+						std::memcpy( &val, &a_Data[offset], 2 );
+						offset += 2;
+						return val;
+					}
+					else if ( bytes == 4 ) 
+					{
+						int32_t val;
+						std::memcpy( &val, &a_Data[offset], 4 );
+						offset += 4;
+						return val;
+					}
+					return 0;
+				};
+
+			const auto readUInt = [&]( int bytes ) -> uint32_t 
+				{
+					if ( bytes == 1 ) 
+					{
+						return a_Data[offset++];
+					}
+					else if ( bytes == 2 )
+					{
+						uint16_t val;
+						std::memcpy( &val, &a_Data[offset], 2 );
+						offset += 2;
+						return val;
+					}
+					else if ( bytes == 4 ) 
+					{
+						uint32_t val;
+						std::memcpy( &val, &a_Data[offset], 4 );
+						offset += 4;
+						return val;
+					}
+					return 0;
+				};
+
+			auto convertChannel = [&]( bool present ) -> float 
+				{
+					if ( !present )
+						return (Kind == ERHIFormatKind::Float || Kind == ERHIFormatKind::Int) ? 0.0f : 1.0f;
+
+					switch ( Kind ) 
+					{
+						case ERHIFormatKind::Float:
+						{
+							return readFloat( bytesPerChannel );
+						}
+						case ERHIFormatKind::Int:
+						{
+							return Cast<float>( readInt( bytesPerChannel ) );
+						}
+						case ERHIFormatKind::Normalized:
+						{
+							if ( IsSigned )
+								return Cast<float>( readInt( bytesPerChannel ) ) / ((1 << ((bytesPerChannel * 8) - 1)) - 1);
+							else
+								return Cast<float>( readUInt( bytesPerChannel ) ) / ((1 << (bytesPerChannel * 8)) - 1);
+						}
+						default:
+						{
+							return 0.0f;
+						}
+					}
+				};
+
+			color.r = convertChannel( HasRed );
+			color.g = convertChannel( HasGreen );
+			color.b = convertChannel( HasBlue );
+			color.a = convertChannel( HasAlpha );
+
+			return color;
+		}
+
 	};
 	//===========================================================
 

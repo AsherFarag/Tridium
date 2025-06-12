@@ -7,6 +7,7 @@
 #include <Tridium/Core/Application.h>
 #include <Tridium/Asset/EditorAssetManager.h>
 
+#include <Tridium/IO/FilePath.h>
 #include <Tridium/Editor/Editor.h>
 #include <Tridium/Editor/AssetImporter.h>
 #include <Tridium/Editor/EditorUtil.h>
@@ -408,7 +409,7 @@ namespace Tridium {
 								};
 
 								EditorAssetManager::Get()->CreateAsset( metaData, material );
-								AssetFactory::SaveAsset( metaData, material );
+								AssetFactoryOld::SaveAsset( metaData, material );
 							} );
 					}
 

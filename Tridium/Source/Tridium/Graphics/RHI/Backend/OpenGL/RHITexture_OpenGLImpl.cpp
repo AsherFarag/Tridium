@@ -4,7 +4,7 @@
 namespace Tridium::OpenGL {
 
 	RHITexture_OpenGLImpl::RHITexture_OpenGLImpl( const DescriptorType& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
-		: RHITexture( a_Desc )
+		: IRHITexture( a_Desc )
 	{
 		ASSERT( a_Desc.Usage != ERHIUsage::Static || !a_SubResourcesData.empty(),
 			"Static textures must be initialized with data!" );
@@ -74,7 +74,7 @@ namespace Tridium::OpenGL {
 							dstBox.MinX, dstBox.MinY,
 							dstBox.Width(), dstBox.Height(),
 							GLFormat.Format, GLFormat.Type,
-							a_SubResourcesData[mip].Data.data()
+							a_SubResourcesData[mip].Data
 						);
 					}
 				}
@@ -104,20 +104,20 @@ namespace Tridium::OpenGL {
 		return true;
 	}
 
-	size_t RHITexture_OpenGLImpl::GetSizeInBytes() const
-	{
-		if ( !Valid() )
-		{
-			return 0;
-		}
+	//size_t RHITexture_OpenGLImpl::GetSizeInBytes() const
+	//{
+	//	if ( !Valid() )
+	//	{
+	//		return 0;
+	//	}
 
-		GLint prevBinding = 0;
-		OpenGL1::GetIntegerv( GL_TEXTURE_BINDING_2D, &prevBinding );
-		OpenGL1::BindTexture( GL_TEXTURE_2D, TextureObj );
-		GLint size = 0;
-		OpenGL1::GetTexLevelParameteriv( GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &size );
-		OpenGL1::BindTexture( GL_TEXTURE_2D, prevBinding );
-		return size;
-	}
+	//	GLint prevBinding = 0;
+	//	OpenGL1::GetIntegerv( GL_TEXTURE_BINDING_2D, &prevBinding );
+	//	OpenGL1::BindTexture( GL_TEXTURE_2D, TextureObj );
+	//	GLint size = 0;
+	//	OpenGL1::GetTexLevelParameteriv( GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &size );
+	//	OpenGL1::BindTexture( GL_TEXTURE_2D, prevBinding );
+	//	return size;
+	//}
 
 } // namespace Tridium::GL

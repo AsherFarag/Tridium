@@ -195,31 +195,44 @@ namespace Tridium::D3D12 {
 		m_UploadBuffer.Release();
 		m_DescriptorHeapManager.Shutdown();
 
+		// Release all resources
+		LOG( LogCategory::RHI, Info, "Releasing all registered resources...", m_RegisteredResources.size() );
+		size_t numResources = 0;
+		for ( const auto& [hash, resourceWeakRef] : m_RegisteredResources )
+		{
+			if ( RHIObjectRef resource = resourceWeakRef.lock() )
+			{
+				numResources++;
+				resource->Release();
+			}
+		}
+		LOG( LogCategory::RHI, Info, "Released {0} resources", numResources );
+
 		if ( ULONG refCount = ForceDeleteIUnknown( m_Allocator.GetAddressOf() ) )
 		{
-			LOG( LogCategory::DirectX, Error, "D3D12MA allocator still has {0} references! - Destroying the allocator anyway", refCount );
+			LOG( LogCategory::DirectX, Warn, "D3D12MA allocator still has {0} references! - Destroying the allocator anyway", refCount );
 		}
 
 		if ( ULONG refCount = ForceDeleteIUnknown( m_DXGIAdapter.GetAddressOf() ) )
 		{
-			LOG( LogCategory::DirectX, Error, "DXGIAdapter still has {0} references! - Destroying the adapter anyway", refCount );
+			LOG( LogCategory::DirectX, Warn, "DXGIAdapter still has {0} references! - Destroying the adapter anyway", refCount );
 		}
 
 		if ( ULONG refCount = ForceDeleteIUnknown( m_DXGIFactory.GetAddressOf() ) )
 		{
-			LOG( LogCategory::DirectX, Error, "DXGIFactory still has {0} references! - Destroying the factory anyway", refCount );
+			LOG( LogCategory::DirectX, Warn, "DXGIFactory still has {0} references! - Destroying the factory anyway", refCount );
 		}
 
 		if ( ULONG refCount = ForceDeleteIUnknown( m_Device.GetAddressOf() ) )
 		{
-			LOG( LogCategory::DirectX, Error, "D3D12 device still has {0} references! - Destroying the device anyway", refCount );
+			LOG( LogCategory::DirectX, Warn, "D3D12 device still has {0} references! - Destroying the device anyway", refCount );
 		}
 
     #if RHI_DEBUG_ENABLED
 
 		if ( ULONG refCount = ForceDeleteIUnknown( m_D3D12Debug.GetAddressOf() ) )
 		{
-			LOG( LogCategory::DirectX, Error, "D3D12 debug interface still has {0} references! - Destroying the debug interface anyway", refCount );
+			LOG( LogCategory::DirectX, Warn, "D3D12 debug interface still has {0} references! - Destroying the debug interface anyway", refCount );
 		}
 
 		DumpDebug();
@@ -238,7 +251,7 @@ namespace Tridium::D3D12 {
 			return false;
 		}
 
-		auto& cmdCtx = GetCommandContext( a_CommandList->Descriptor().QueueType );
+		auto& cmdCtx = GetCommandContext( a_CommandList->Desc().QueueType );
 		cmdCtx.CmdQueue->ExecuteCommandLists( 1, cmdList->CommandList.GetAddressOf() );
 		a_CommandList->SetFenceValue( cmdCtx.Signal() );
 
@@ -249,54 +262,74 @@ namespace Tridium::D3D12 {
 	// RESOURCE CREATION
 	//////////////////////////////////////////////////////////////////////////
 
-	RHIFenceRef DynamicRHI_D3D12Impl::CreateFence( const RHIFenceDescriptor& a_Desc )
+	RHIFenceRef DynamicRHI_D3D12Impl::CreateFence( const RHIFenceDesc& a_Desc )
 	{
-		return RHI::CreateNativeResource<RHIFence_D3D12Impl>( a_Desc );
+		RHIFenceRef fence = RHI::CreateNativeObject<RHIFence_D3D12Impl>( a_Desc );
+		RegisterRHIResource( *fence.get() );
+		return fence;
 	}
 
-	RHISamplerRef DynamicRHI_D3D12Impl::CreateSampler( const RHISamplerDescriptor& a_Desc )
+	RHISamplerRef DynamicRHI_D3D12Impl::CreateSampler( const RHISamplerDesc& a_Desc )
 	{
-		return RHI::CreateNativeResource<RHISampler_D3D12Impl>( a_Desc );
+		RHISamplerRef sampler = RHI::CreateNativeObject<RHISampler_D3D12Impl>( a_Desc );
+		RegisterRHIResource( *sampler.get() );
+		return sampler;
 	}
 
-	RHITextureRef DynamicRHI_D3D12Impl::CreateTexture( const RHITextureDescriptor& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
+	RHITextureRef DynamicRHI_D3D12Impl::CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
 	{
-		return RHI::CreateNativeResource<RHITexture_D3D12Impl>( a_Desc, a_SubResourcesData );
+		RHITextureRef texture = RHI::CreateNativeObject<RHITexture_D3D12Impl>( a_Desc, a_SubResourcesData );
+		RegisterRHIResource( *texture.get() );
+		return texture;
 	}
 
-	RHIBufferRef DynamicRHI_D3D12Impl::CreateBuffer( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data )
+	RHIBufferRef DynamicRHI_D3D12Impl::CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data )
 	{
-		return RHI::CreateNativeResource<RHIBuffer_D3D12Impl>( a_Desc, a_Data );
+		RHIBufferRef buffer = RHI::CreateNativeObject<RHIBuffer_D3D12Impl>( a_Desc, a_Data );
+		RegisterRHIResource( *buffer.get() );
+		return buffer;
 	}
 
-	RHIGraphicsPipelineStateRef DynamicRHI_D3D12Impl::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc )
+	RHIGraphicsPipelineStateRef DynamicRHI_D3D12Impl::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc )
 	{
-		return RHI::CreateNativeResource<RHIGraphicsPipelineState_D3D12Impl>( a_Desc );
+ 		RHIGraphicsPipelineStateRef pso = RHI::CreateNativeObject<RHIGraphicsPipelineState_D3D12Impl>( a_Desc );
+		RegisterRHIResource( *pso.get() );
+		return pso;
 	}
 
-	RHICommandListRef DynamicRHI_D3D12Impl::CreateCommandList( const RHICommandListDescriptor& a_Desc )
+	RHICommandListRef DynamicRHI_D3D12Impl::CreateCommandList( const RHICommandListDesc& a_Desc )
 	{
-		return RHI::CreateNativeResource<RHICommandList_D3D12Impl>( a_Desc );
+ 		RHICommandListRef cmdList = RHI::CreateNativeObject<RHICommandList_D3D12Impl>( a_Desc );
+		RegisterRHIResource( *cmdList.get() );
+		return cmdList;
 	}
 
-	RHIShaderModuleRef DynamicRHI_D3D12Impl::CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc )
+	RHIShaderModuleRef DynamicRHI_D3D12Impl::CreateShaderModule( const RHIShaderModuleDesc& a_Desc )
 	{
-		return RHI::CreateNativeResource<RHIShaderModule_D3D12Impl>( a_Desc );
+		RHIShaderModuleRef shaderModule = RHI::CreateNativeObject<RHIShaderModule_D3D12Impl>( a_Desc );
+		RegisterRHIResource( *shaderModule.get() );
+		return shaderModule;
 	}
 
-	RHIBindingLayoutRef DynamicRHI_D3D12Impl::CreateBindingLayout( const RHIBindingLayoutDescriptor& a_Desc )
+	RHIBindingLayoutRef DynamicRHI_D3D12Impl::CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc )
 	{
-		return RHI::CreateNativeResource<RHIBindingLayout_D3D12Impl>( a_Desc );
+		RHIBindingLayoutRef bindingLayout = RHI::CreateNativeObject<RHIBindingLayout_D3D12Impl>( a_Desc );
+		RegisterRHIResource( *bindingLayout.get() );
+		return bindingLayout;
 	}
 
-	RHIBindingSetRef DynamicRHI_D3D12Impl::CreateBindingSet( const RHIBindingSetDescriptor& a_Desc )
+	RHIBindingSetRef DynamicRHI_D3D12Impl::CreateBindingSet( const RHIBindingSetDesc& a_Desc )
 	{
-		return RHI::CreateNativeResource<RHIBindingSet_D3D12Impl>( a_Desc );
+		RHIBindingSetRef bindingSet = RHI::CreateNativeObject<RHIBindingSet_D3D12Impl>( a_Desc );
+		RegisterRHIResource( *bindingSet.get() );
+		return bindingSet;
 	}
 
-	RHISwapChainRef DynamicRHI_D3D12Impl::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )
+	RHISwapChainRef DynamicRHI_D3D12Impl::CreateSwapChain( const RHISwapChainDesc& a_Desc )
 	{
-		return RHI::CreateNativeResource<RHISwapChain_D3D12Impl>( a_Desc );
+		RHISwapChainRef swapChain = RHI::CreateNativeObject<RHISwapChain_D3D12Impl>( a_Desc );
+		RegisterRHIResource( *swapChain.get() );
+		return swapChain;
 	}
 
 	GPUInfo DynamicRHI_D3D12Impl::GetGPUInfo() const

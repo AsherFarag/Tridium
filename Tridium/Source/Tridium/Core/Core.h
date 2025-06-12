@@ -13,8 +13,7 @@
 #include <Tridium/Containers/Containers.h>
 #include <Tridium/Math/Math.h>
 #include <Tridium/Math/Rotator.h>
-#include <Tridium/Asset/Asset.h>
-#include <Tridium/IO/FilePath.h>
+#include <Tridium/Math/AABB.h>
 #include <Tridium/Utils/Macro.h>
 #include <Tridium/Reflection/ReflectionFwd.h>
 

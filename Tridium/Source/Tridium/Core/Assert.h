@@ -1,8 +1,9 @@
 #pragma once
 #include "Config.h"
+#include <Tridium/Core/Cast.h>
 #include <Tridium/Utils/Macro.h>
-#include <format>
 #include <Tridium/Containers/String.h>
+#include <format>
 
 namespace Tridium::Debug {
 

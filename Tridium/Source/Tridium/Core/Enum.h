@@ -1,5 +1,6 @@
 #pragma once
 #include <type_traits>
+#include <Tridium/Core/Cast.h>
 
 #define ENUM_ENABLE_BITMASK_OPERATORS(EnumType) \
     inline constexpr EnumType operator|(EnumType lhs, EnumType rhs) { \

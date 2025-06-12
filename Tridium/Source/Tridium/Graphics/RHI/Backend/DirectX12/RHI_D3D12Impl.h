@@ -71,6 +71,7 @@ namespace Tridium::D3D12 {
 			? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	}
 
+	TODO( "Remove this or implement it" );
 	struct RootSignature
 	{
 		size_t Hash = 0;
@@ -496,10 +497,10 @@ namespace Tridium::D3D12 {
 	// FENCE IMPLEMENTATION
 	//=======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHIFence_D3D12Impl, RHIFence )
+	class RHIFence_D3D12Impl : public IRHIFence
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIFence_D3D12Impl, ERHInterfaceType::DirectX12 );
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHIFence_D3D12Impl, ERHInterfaceType::DirectX12 );
 		RHIFence_D3D12Impl( const DescriptorType & a_Desc );
 		virtual ~RHIFence_D3D12Impl();
 
@@ -520,15 +521,14 @@ namespace Tridium::D3D12 {
 	// TEXTURE IMPLEMENTATION
 	//=======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHITexture_D3D12Impl, RHITexture )
+	class RHITexture_D3D12Impl : public IRHITexture
 	{
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHITexture_D3D12Impl, ERHInterfaceType::DirectX12 );
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHITexture_D3D12Impl, ERHInterfaceType::DirectX12 );
 
-		RHITexture_D3D12Impl( const RHITextureDescriptor & a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData = {} );
+		RHITexture_D3D12Impl( const RHITextureDesc & a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData = {} );
 		~RHITexture_D3D12Impl() override = default;
 
 		virtual bool Release() override;
-		virtual size_t GetSizeInBytes() const override;
 		virtual const void* NativePtr() const override { return Texture.Resource; }
 		virtual bool Valid() const override { return Texture.Valid(); }
 
@@ -552,15 +552,14 @@ namespace Tridium::D3D12 {
 	// BUFFER IMPLEMENTATION
 	//=======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHIBuffer_D3D12Impl, RHIBuffer )
+	class RHIBuffer_D3D12Impl : public IRHIBuffer
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIBuffer_D3D12Impl, ERHInterfaceType::DirectX12 );
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBuffer_D3D12Impl, ERHInterfaceType::DirectX12 );
 
-		RHIBuffer_D3D12Impl( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data = {} );
+		RHIBuffer_D3D12Impl( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data = {} );
 		virtual bool Release() override { ManagedBuffer.Release(); return true; }
 		virtual bool Valid() const override { return ManagedBuffer.Valid(); }
-		virtual size_t GetSizeInBytes() const override { return ManagedBuffer.Resource->GetDesc().Width; }
 		virtual const void* NativePtr() const override { return ManagedBuffer.Resource; }
 
 		// D3D12 specific functions
@@ -573,10 +572,10 @@ namespace Tridium::D3D12 {
 	// SAMPLER IMPLEMENTATION
 	//==================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHISampler_D3D12Impl, RHISampler )
+	class RHISampler_D3D12Impl : public IRHISampler
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHISampler_D3D12Impl, ERHInterfaceType::DirectX12 )
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHISampler_D3D12Impl, ERHInterfaceType::DirectX12 )
 		RHISampler_D3D12Impl( const DescriptorType & a_Desc );
 
 		bool Release() override { SamplerHeap.Reset(); SamplerHandle = {}; SamplerDesc = {}; return true; }
@@ -594,16 +593,14 @@ namespace Tridium::D3D12 {
 	// BINDING LAYOUT IMPLEMENTATION
 	//=======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHIBindingLayout_D3D12Impl, RHIBindingLayout )
+	class RHIBindingLayout_D3D12Impl : public IRHIBindingLayout
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIBindingLayout_D3D12Impl, ERHInterfaceType::DirectX12 );
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBindingLayout_D3D12Impl, ERHInterfaceType::DirectX12 );
 		RHIBindingLayout_D3D12Impl( const DescriptorType & a_Desc );
 		bool Release() override;
 		bool Valid() const override;
 		const void* NativePtr() const override;
-
-		ComPtr<ID3D12RootSignature> m_RootSignature;
 
 		uint32_t InlinedConstantsSize = 0; // Size of the inlined constants in bytes
 		RootParameterIndex RootParamInlinedConstants = ~0;
@@ -616,10 +613,10 @@ namespace Tridium::D3D12 {
 	// BINDING SET IMPLEMENTATION
 	//=======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHIBindingSet_D3D12Impl, RHIBindingSet )
+	class RHIBindingSet_D3D12Impl : public IRHIBindingSet
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIBindingSet_D3D12Impl, ERHInterfaceType::DirectX12 );
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBindingSet_D3D12Impl, ERHInterfaceType::DirectX12 );
 		RHIBindingSet_D3D12Impl( const DescriptorType & a_Desc );
 		bool Release() override;
 		bool Valid() const override;
@@ -630,10 +627,10 @@ namespace Tridium::D3D12 {
 	// SHADER MODULE IMPLEMENTATION
 	//======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHIShaderModule_D3D12Impl, RHIShaderModule )
+	class RHIShaderModule_D3D12Impl : public IRHIShaderModule
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIShaderModule_D3D12Impl, ERHInterfaceType::DirectX12 )
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHIShaderModule_D3D12Impl, ERHInterfaceType::DirectX12 )
 		RHIShaderModule_D3D12Impl( const DescriptorType & a_Desc );
 		bool Release() override;
 		bool Valid() const override;
@@ -646,29 +643,29 @@ namespace Tridium::D3D12 {
 	// GRAPHICS PIPELINE STATE IMPLEMENTATION
 	//======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHIGraphicsPipelineState_D3D12Impl, RHIGraphicsPipelineState )
+	class RHIGraphicsPipelineState_D3D12Impl : public IRHIGraphicsPipelineState
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIGraphicsPipelineState_D3D12Impl, ERHInterfaceType::DirectX12 );
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHIGraphicsPipelineState_D3D12Impl, ERHInterfaceType::DirectX12 );
 
 		RHIGraphicsPipelineState_D3D12Impl( const DescriptorType & a_Desc );
 		bool Release() override;
 		bool Valid() const override { return PSO != nullptr; }
 		const void* NativePtr() const override { return PSO.Get(); }
 
+		SharedPtr<RootSignature> RootSignature;
 		ComPtr<ID3D12PipelineState> PSO;
-		D3D12_INPUT_ELEMENT_DESC VertexLayout[RHIConstants::MaxVertexAttributes];
-		uint32_t VertexLayoutSize = 0;
+		InlineArray<D3D12_INPUT_ELEMENT_DESC, RHIConstants::MaxVertexAttributes> VertexLayout;
 	};
 
 	//======================================================================
 	// SWAPCHAIN IMPLEMENTATION
 	//======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHISwapChain_D3D12Impl, RHISwapChain )
+	class RHISwapChain_D3D12Impl : public IRHISwapChain
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHISwapChain_D3D12Impl, ERHInterfaceType::DirectX12 );
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHISwapChain_D3D12Impl, ERHInterfaceType::DirectX12 );
 
 		RHISwapChain_D3D12Impl( const DescriptorType & a_Desc );
 		bool Release() override;
@@ -697,20 +694,42 @@ namespace Tridium::D3D12 {
 	// COMMAND LIST IMPLEMENTATION
 	//======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHICommandList_D3D12Impl, RHICommandList )
+	class RHICommandList_D3D12Impl : public IRHICommandList
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHICommandList_D3D12Impl, ERHInterfaceType::DirectX12 );
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHICommandList_D3D12Impl, ERHInterfaceType::DirectX12 );
 
-		RHICommandList_D3D12Impl( const RHICommandListDescriptor & a_Desc );
-		virtual bool Release() override;
-		virtual bool Valid() const override { return CommandList != nullptr; }
-		virtual const void* NativePtr() const override { return CommandList.Get(); }
+		RHICommandList_D3D12Impl( const RHICommandListDesc& a_Desc );
+		bool Release() override;
+		bool Valid() const override { return CommandList != nullptr; }
+		const void* NativePtr() const override { return CommandList.Get(); }
 
-		virtual bool SetGraphicsCommands( const RHIGraphicsCommandBuffer & a_CmdBuffer ) override;
-		virtual bool SetComputeCommands( const RHIComputeCommandBuffer & a_CmdBuffer ) override;
-		virtual bool IsCompleted() const override;
-		virtual void WaitUntilCompleted() override;
+		bool IsCompleted() const override;
+		void WaitUntilCompleted() override;
+
+		bool Open() override;
+		bool Close() override;
+		void ClearState() override;
+
+		void ResourceBarrier( const RHIResourceBarrier& a_Barrier, RHI_DEBUG_SRC_LOC_PARAM ) override;
+
+		void UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM ) override;
+		void CopyBuffer( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange, RHI_DEBUG_SRC_LOC_PARAM ) override;
+
+		void UpdateTexture( IRHITexture& a_Texture, const RHITextureSlice& a_DstSlice, RHITextureSubresourceData a_Data, RHI_DEBUG_SRC_LOC_PARAM ) override;
+		void CopyTexture( IRHITexture& a_DstTexture, const RHITextureSlice& a_DstSlice, IRHITexture& a_SrcTexture, const RHITextureSlice& a_SrcSlice, RHI_DEBUG_SRC_LOC_PARAM ) override;
+
+		void SetInlinedConstants( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM ) override;
+
+		void SetGraphicsState( const RHIGraphicsState& a_GraphicsState, RHI_DEBUG_SRC_LOC_PARAM ) override;
+		void ClearRenderTargets( ERHIClearFlags a_Flags, Color a_ClearColor, float a_DepthValue = 1.0f, uint8_t a_StencilValue = 0u, int32_t a_ColorAttachmentIndex = -1, RHI_DEBUG_SRC_LOC_PARAM ) override;
+		void SetScissors( Span<const RHIScissorRect> a_Scissors, RHI_DEBUG_SRC_LOC_PARAM ) override;
+		void SetViewports( Span<const RHIViewport> a_Viewports, RHI_DEBUG_SRC_LOC_PARAM ) override;
+		void Draw( const RHIDrawArgs& a_DrawArgs, RHI_DEBUG_SRC_LOC_PARAM ) override;
+
+		void PushDebugGroup( StringView a_Name ) override;
+		void PopDebugGroup() override;
+		void InsertDebugMarker( StringView a_Name ) override;
 
 		ID3D12GraphicsCommandList* GraphicsCommandList() const
 		{
@@ -719,75 +738,23 @@ namespace Tridium::D3D12 {
 		}
 
 		ComPtr<ID3D12CommandList> CommandList{};
-		RHIBindingLayout* CurrentSBL = nullptr;
+		IRHIBindingLayout* CurrentSBL = nullptr;
 
 	private:
 		RHIResourceStateTracker m_ResourceStateTracker{};
-		// Reset after each execution
-		struct State
-		{
-			Array<D3D12::ManagedResource> D3D12Resources{};
-			Array<D3D12_RESOURCE_BARRIER> D3D12Barriers{};
-			Array<D3D12::DescriptorHeapRef> Heaps{};
-			D3D12::DescriptorHeapRef LastRTVHeap{};
-			D3D12::DescriptorHeapRef LastDSVHeap{};
-			uint32_t ShaderInputOffset = 0;
-
-			struct GraphicsState
-			{
-				SharedPtr<RHIGraphicsPipelineState_D3D12Impl> PSO{};
-				Array<RHITexture*> CurrentRTs{};
-				RHITexture* CurrentDSV{};
-			} Graphics{};
-
-			struct ComputeState
-			{
-			} Compute{};
-
-			void Clear()
-			{
-				D3D12Resources.Clear();
-				D3D12Barriers.Clear();
-				Heaps.Clear();
-				LastRTVHeap = nullptr;
-				LastDSVHeap = nullptr;
-				ShaderInputOffset = 0;
-				Graphics.PSO = nullptr;
-			}
-		} m_State{};
-
+		Array<D3D12_RESOURCE_BARRIER> m_D3D12Barriers{};
 		uint64_t m_FenceValue = 0;
+
+		Array<RHIObjectRef> m_ReferencedResources{};
+
+		RHIGraphicsState m_CurrentGraphicsState{}; // Current graphics state for the command list.
+		bool m_GraphicsStateValid = false; // Whether the graphics state has been set.
 
 	private:
 		void CommitBarriers();
-
-		// Commands
-
-		void SetBindingLayout( const RHICommand::SetBindingLayout & a_Data );
-		void SetShaderBindings( const RHICommand::SetShaderBindings & a_Data );
-		void SetInlinedConstants( const RHICommand::SetInlinedConstants & a_Data );
-		void ResourceBarrier( const RHICommand::ResourceBarrier & a_Data );
-		void UpdateBuffer( const RHICommand::UpdateBuffer & a_Data );
-		void CopyBuffer( const RHICommand::CopyBuffer & a_Data );
-		void UpdateTexture( const RHICommand::UpdateTexture & a_Data );
-		void CopyTexture( const RHICommand::CopyTexture & a_Data );
-
-		// Graphics
-		void SetGraphicsPipelineState( const RHICommand::SetGraphicsPipelineState & a_Data );
-		void SetRenderTargets( const RHICommand::SetRenderTargets & a_Data );
-		void ClearRenderTargets( const RHICommand::ClearRenderTargets & a_Data );
-		void SetScissors( const RHICommand::SetScissors & a_Data );
-		void SetViewports( const RHICommand::SetViewports & a_Data );
-		void SetIndexBuffer( const RHICommand::SetIndexBuffer & a_Data );
-		void SetVertexBuffer( const RHICommand::SetVertexBuffer & a_Data );
-		void SetPrimitiveTopology( const RHICommand::SetPrimitiveTopology & a_Data );
-		void Draw( const RHICommand::Draw & a_Data );
-		void DrawIndexed( const RHICommand::DrawIndexed & a_Data );
-
-		// Compute
-		void SetComputePipelineState( const RHICommand::SetComputePipelineState & a_Data );
-		void DispatchCompute( const RHICommand::DispatchCompute & a_Data );
-		void DispatchComputeIndirect( const RHICommand::DispatchComputeIndirect & a_Data );
+		void BindGraphicsPipelineState( RHIGraphicsPipelineState_D3D12Impl* a_PSO, bool a_UpdateRootSignature );
+		void BindFramebuffer( const RHIFramebuffer& a_Framebuffer );
+		void BindGraphicsBindings( Span<IRHIBindingSet const* const> a_BindingSets, uint32_t a_UpdateMask, const SharedPtr<RootSignature>& a_RootSignature );
 	};
 
 	//======================================================================
@@ -813,16 +780,16 @@ namespace Tridium::D3D12 {
 
 		//=====================================================
 		// Resource creation
-		virtual RHIFenceRef CreateFence( const RHIFenceDescriptor& a_Desc ) override;
-		virtual RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc ) override;
-		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) override;
-		virtual RHIBufferRef CreateBuffer( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data ) override;
-		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc ) override;
-		virtual RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc ) override;
-		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc ) override;
-		virtual RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDescriptor& a_Desc ) override;
-		virtual RHIBindingSetRef CreateBindingSet( const RHIBindingSetDescriptor& a_Desc ) override;
-		virtual RHISwapChainRef CreateSwapChain( const RHISwapChainDescriptor& a_Desc ) override;
+		virtual RHIFenceRef CreateFence( const RHIFenceDesc& a_Desc ) override;
+		virtual RHISamplerRef CreateSampler( const RHISamplerDesc& a_Desc ) override;
+		virtual RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) override;
+		virtual RHIBufferRef CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data ) override;
+		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc ) override;
+		virtual RHICommandListRef CreateCommandList( const RHICommandListDesc& a_Desc ) override;
+		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDesc& a_Desc ) override;
+		virtual RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc ) override;
+		virtual RHIBindingSetRef CreateBindingSet( const RHIBindingSetDesc& a_Desc ) override;
+		virtual RHISwapChainRef CreateSwapChain( const RHISwapChainDesc& a_Desc ) override;
 		//=====================================================
 
 		//=====================================================

@@ -1,13 +1,13 @@
 #pragma once
 #include <Tridium/Asset/AssetType.h>
-#include <Tridium/Asset/AssetFactory.h>
+#include <Tridium/Asset/AssetFactoryOld.h>
 #include <Tridium/Asset/AssetMetaData.h>
 #include <Tridium/IO/FilePath.h>
 #include <Tridium/IO/Archive.h>
 
 namespace Tridium {
 
-	class IAssetLoader
+	class IAssetLoaderOld
 	{
 	public:
 		virtual void SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset ) = 0;

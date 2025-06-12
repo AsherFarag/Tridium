@@ -4,7 +4,7 @@
 
 namespace Tridium {
 
-	class TextureLoader : public IAssetLoader
+	class TextureLoader : public IAssetLoaderOld
 	{
 	public:
 		static SharedPtr<Texture> LoadTexture( TextureSpecification a_Specification, const FilePath& a_FilePath );
@@ -15,16 +15,16 @@ namespace Tridium {
 			metaData.AssetType = EAssetType::Texture;
 			metaData.Path = a_FilePath;
 
-			SharedPtr<IAssetLoader> loader = AssetFactory::GetAssetLoader( metaData.AssetType );
+			SharedPtr<IAssetLoaderOld> loader = AssetFactoryOld::GetAssetLoader( metaData.AssetType );
 			return SharedPtrCast<Texture>( loader->LoadAsset( metaData ) );
 		}
 
-		// Inherited via IAssetLoader
+		// Inherited via IAssetLoaderOld
 		void SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset ) override;
 		SharedPtr<Asset> LoadAsset( const AssetMetaData& a_MetaData ) override;
 	};
 
-	class CubeMapLoader : public IAssetLoader
+	class CubeMapLoader : public IAssetLoaderOld
 	{
 	public:
 		static SharedPtr<Texture> LoadCubeMap( const FilePath& a_FilePath )
@@ -33,11 +33,11 @@ namespace Tridium {
 			metaData.AssetType = EAssetType::CubeMap;
 			metaData.Path = a_FilePath;
 
-			SharedPtr<IAssetLoader> loader = AssetFactory::GetAssetLoader( metaData.AssetType );
+			SharedPtr<IAssetLoaderOld> loader = AssetFactoryOld::GetAssetLoader( metaData.AssetType );
 			return SharedPtrCast<Texture>( loader->LoadAsset( metaData ) );
 		}
 
-		// Inherited via IAssetLoader
+		// Inherited via IAssetLoaderOld
 		void SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset ) override;
 		SharedPtr<Asset> LoadAsset( const AssetMetaData& a_MetaData ) override;
 	};

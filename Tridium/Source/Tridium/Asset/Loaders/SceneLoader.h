@@ -3,11 +3,11 @@
 
 namespace Tridium {
 
-    class SceneLoader : public IAssetLoader
+    class SceneLoader : public IAssetLoaderOld
     {
     public:
 
-        // Inherited via IAssetLoader
+        // Inherited via IAssetLoaderOld
         void SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset ) override;
         SharedPtr<Asset> LoadAsset( const AssetMetaData& a_MetaData ) override;
     };

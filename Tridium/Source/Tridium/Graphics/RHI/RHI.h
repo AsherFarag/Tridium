@@ -41,40 +41,38 @@ namespace Tridium {
 
 		//===========================
 		// Resource creation
-		[[nodiscard]] RHIFenceRef CreateFence( const RHIFenceDescriptor& a_Desc );
-		[[nodiscard]] RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc );
-		[[nodiscard]] RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData = {} );
-		[[nodiscard]] RHIBufferRef CreateBuffer( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data = {} );
-		[[nodiscard]] RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc );
-		[[nodiscard]] RHISwapChainRef CreateSwapChain( const RHISwapChainDescriptor& a_Desc );
-		[[nodiscard]] RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc );
-		[[nodiscard]] RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDescriptor& a_Desc );
-		[[nodiscard]] RHIBindingSetRef CreateBindingSet( const RHIBindingSetDescriptor& a_Desc );
-		[[nodiscard]] RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc );
+		[[nodiscard]] RHIFenceRef CreateFence( const RHIFenceDesc& a_Desc );
+		[[nodiscard]] RHISamplerRef CreateSampler( const RHISamplerDesc& a_Desc );
+		[[nodiscard]] RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData = {} );
+		[[nodiscard]] RHIBufferRef CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data = {} );
+		[[nodiscard]] RHICommandListRef CreateCommandList( const RHICommandListDesc& a_Desc );
+		[[nodiscard]] RHISwapChainRef CreateSwapChain( const RHISwapChainDesc& a_Desc );
+		[[nodiscard]] RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDesc& a_Desc );
+		[[nodiscard]] RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc );
+		[[nodiscard]] RHIBindingSetRef CreateBindingSet( const RHIBindingSetDesc& a_Desc );
+		[[nodiscard]] RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc );
 
-		// Constructs a specific RHIResource Implementation and registers it with the RHI.
+		// Constructs a specific IRHIObject Implementation and registers it with the RHI.
 		// Used for creating resources that are not created by the RHI via RHI::CreateResource calls.
 		// Useful for also creating RHIResources from native API resources.
-		template<Concepts::IsRHIResourceImplemntation _NativeResource, typename... _Args>
-		[[nodiscard]] static typename _NativeResource::RefType CreateNativeResource( _Args&&... a_Args )
+		template<Concepts::IsRHIResourceImplementation _NativeResource, typename... _Args>
+		[[nodiscard]] static typename _NativeResource::RefType CreateNativeObject( _Args&&... a_Args )
 		{
-			typename _NativeResource::RefType resource = RHIResource::CreateHandle( new _NativeResource( std::forward<_Args>( a_Args )... ) );
-			return resource;
+			return IRHIObject::CreateHandle( new _NativeResource( std::forward<_Args>( a_Args )... ) );
 		}
 
 		// Creates a RHI Reference to the given resource and registers it with the RHI.
 		// Used for creating resources that are not created by the RHI via RHI::CreateResource calls.
 		// Useful for also creating RHIResources from native API resources.
-		template<Concepts::IsRHIResourceImplemntation T>
-		[[nodiscard]] static typename T::RefType CreateNativeResource( T* a_Resource )
+		template<Concepts::IsRHIResourceImplementation T>
+		[[nodiscard]] static typename T::RefType CreateNativeObject( T* a_Resource )
 		{
-			typename T::RefType resource = RHIResource::CreateHandle( a_Resource );
-			return resource;
+			return IRHIObject::CreateHandle( a_Resource );
 		}
 
 		// Wrappers
 
-		[[nodiscard]] inline RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc, RHITextureSubresourceData a_SubResourcesData )
+		[[nodiscard]] inline RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, RHITextureSubresourceData a_SubResourcesData )
 		{
 			return CreateTexture( a_Desc, Span<RHITextureSubresourceData>{ &a_SubResourcesData, 1 } );
 		}

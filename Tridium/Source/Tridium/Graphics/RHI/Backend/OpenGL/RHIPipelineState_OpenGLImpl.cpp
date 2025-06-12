@@ -4,7 +4,7 @@
 namespace Tridium::OpenGL {
 
 	RHIGraphicsPipelineState_OpenGLImpl::RHIGraphicsPipelineState_OpenGLImpl( const DescriptorType& a_Desc )
-		: RHIGraphicsPipelineState( a_Desc )
+		: IRHIGraphicsPipelineState( a_Desc )
     {
 		// Create the shader program
 		{
@@ -72,7 +72,7 @@ namespace Tridium::OpenGL {
 		// Collect the uniform locations
 		{
 			//m_UnifromLocations.clear();
-			//for ( const RHIShaderBinding& binding : a_Desc.BindingLayout->Descriptor().Bindings )
+			//for ( const RHIShaderBinding& binding : a_Desc.BindingLayout->Desc().Bindings )
 			//{
 			//	const auto InitUniform = [&]( StringView a_Name )
 			//		{
@@ -87,14 +87,14 @@ namespace Tridium::OpenGL {
 			//			}
 			//		};
 
-			//	if ( binding.Type() == ERHIShaderBindingType::Sampler )
+			//	if ( binding.Type() == ERHIBindingType::Sampler )
 			//	{
 			//		// OpenGL combines samplers and textures into a single binding
 			//		m_UnifromLocations[binding.NameHash] = -1;
 			//	}
 			//	else
 			//	{
-			//		InitUniform( m_Desc.BindingLayout->Descriptor().GetBindingName( binding.NameHash ) );
+			//		InitUniform( m_Desc.BindingLayout->Desc().GetBindingName( binding.NameHash ) );
 			//	}
 			//}
 		}
@@ -149,9 +149,9 @@ namespace Tridium::OpenGL {
 		GLState::BindVertexArray( a_VAO ); // Ensure the VAO is bound
 
 		// Bind the vertex layout
-		for ( uint32_t i = 0; i < Descriptor().VertexLayout.Elements.Size(); ++i )
+		for ( uint32_t i = 0; i < Desc().VertexLayout.Elements.Size(); ++i )
 		{
-			const RHIVertexAttribute& element = Descriptor().VertexLayout.Elements[i];
+			const RHIVertexAttribute& element = Desc().VertexLayout.Elements[i];
 			VertexElementType type = VertexElementType::From( element.Type );
 			if ( !type.Valid() )
 			{
@@ -159,7 +159,7 @@ namespace Tridium::OpenGL {
 				return false;
 			}
 
-			const uint32_t stride = Descriptor().VertexLayout.Stride;
+			const uint32_t stride = Desc().VertexLayout.Stride;
 			OpenGL2::EnableVertexAttribArray( i );
 			OpenGL2::VertexAttribPointer( i, type.Count, type.Type, type.Normalized, stride, ReinterpretCast<const void*>( element.Offset ) );
 		}

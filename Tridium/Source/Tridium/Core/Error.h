@@ -15,7 +15,6 @@ namespace Tridium {
 		constexpr ErrorCode Failed = 1;
 		constexpr ErrorCode OutOfMemory = 2;
 		constexpr ErrorCode OutOfBounds = 3;
-
 	} // namespace ErrorCodes
 
 } // namespace Tridium

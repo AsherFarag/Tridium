@@ -13,7 +13,7 @@ namespace Tridium {
 		}
 
 		// Convert from nanoseconds to micro
-		auto ToMicro = []( TimeStamp::TimeType a_Time )->TimeStamp::TimeType
+		auto ToMicro = []( ProfilerTimeStamp::TimeType a_Time )->ProfilerTimeStamp::TimeType
 			{
 				return a_Time / 1000;
 			};

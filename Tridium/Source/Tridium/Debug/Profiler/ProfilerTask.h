@@ -40,7 +40,7 @@ namespace Tridium {
 	// Time Stamp
 	//  A struct to store the start and end time of a profiled scope.
 	// ========================================================================
-	struct TimeStamp
+	struct ProfilerTimeStamp
 	{
 		using TimeType = int64_t;
 		static constexpr TimeType s_InvalidTimeStamp = -1;
@@ -55,7 +55,7 @@ namespace Tridium {
 		double GetEndMilli() const { return Cast<double>( End ) / 1000.0; }
 		double GetEndSeconds() const { return Cast<double>( End ) / 1000000.0; }
 
-		bool operator==( const TimeStamp& other ) const
+		bool operator==( const ProfilerTimeStamp& other ) const
 		{
 			return Start == other.Start && End == other.End;
 		}
@@ -70,7 +70,7 @@ namespace Tridium {
 		const ProfileDescription* Description = nullptr; // The description of the profiled scope.
 		uint32_t ThreadID = 0u; // The ID of the thread that the scope was profiled on.
 		uint32_t Depth = 0u; // The depth of the call stack.
-		TimeStamp TimeStamp; // The time stamp of the profiled scope.
+		ProfilerTimeStamp TimeStamp; // The time stamp of the profiled scope.
 
 		bool operator<( const ProfileResult& other ) const
 		{

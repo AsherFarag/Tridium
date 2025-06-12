@@ -2,6 +2,7 @@
 #include <Tridium/Core/Config.h>
 #include <Tridium/Containers/String.h>
 #include <Tridium/IO/FilePath.h>
+#include <Tridium/Asset/Asset.h>
 
 namespace Tridium {
 

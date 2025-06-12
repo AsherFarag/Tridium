@@ -4,7 +4,7 @@
 #include <Tridium/Graphics/Rendering/Mesh.h>
 #include <Tridium/Asset/Loaders/AssimpImporter.h>
 #include <Tridium/Core/Application.h>
-#include <Tridium/Asset/AssetFactory.h>
+#include <Tridium/Asset/AssetFactoryOld.h>
 #include <Tridium/Asset/EditorAssetManager.h>
 #include <Tridium/ImGui/ImGui.h>
 

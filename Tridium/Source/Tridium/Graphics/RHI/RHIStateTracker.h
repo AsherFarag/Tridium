@@ -15,8 +15,9 @@ namespace Tridium {
 	{
 		Array<RHIResourceBarrier> ResourceBarriers;
 
-		void RequireTextureState( RHITexture& a_Texture, ERHIResourceStates a_NewState );
-		void RequireBufferState( RHIBuffer& a_Buffer, ERHIResourceStates a_NewState );
+		void RequireTextureState( IRHITexture& a_Texture, ERHIResourceStates a_NewState );
+		void RequireBufferState( IRHIBuffer& a_Buffer, ERHIResourceStates a_NewState );
+		void Clear() { ResourceBarriers.Clear(); }
 	};
 
 }

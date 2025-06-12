@@ -3,51 +3,93 @@
 
 namespace Tridium {
 
-	// Forward declarations
-	class RHIResource;
-	// ====================
+	// = RHI Object Forward Declarations =
+	class IRHIObject;
+	class IRHIResource;
+	class IRHISampler;
+	class IRHITexture;
+	class IRHIShaderModule;
+	class IRHIBuffer;
+	class IRHIBindingLayout;
+	class IRHIBindingSet;
+	class IRHIGraphicsPipelineState;
+	class IRHIComputePipelineState;
+	class IRHICommandList;
+	class IRHICommandAllocator;
+	class IRHISwapChain;
+	class IRHIFence;
 
-	//=====================================================================
+	struct RHIObjectDesc;
+	struct RHIResourceDesc;
+	struct RHISamplerDesc;
+	struct RHITextureDesc;
+	struct RHIShaderModuleDesc;
+	struct RHIBufferDesc;
+	struct RHIBindingLayoutDesc;
+	struct RHIBindingSetDesc;
+	struct RHIGraphicsPipelineStateDesc;
+	struct RHIComputePipelineStateDesc;
+	struct RHICommandListDesc;
+	struct RHICommandAllocatorDesc;
+	struct RHISwapChainDesc;
+	struct RHIFenceDesc;
+
+	using RHIObjectRef                    = SharedPtr<IRHIObject>;
+	using RHIResourceRef                  = SharedPtr<IRHIResource>;
+	using RHISamplerRef                   = SharedPtr<IRHISampler>;
+	using RHITextureRef                   = SharedPtr<IRHITexture>;
+	using RHIShaderModuleRef              = SharedPtr<IRHIShaderModule>;
+	using RHIBufferRef		              = SharedPtr<IRHIBuffer>;
+	using RHIBindingLayoutRef             = SharedPtr<IRHIBindingLayout>;
+	using RHIBindingSetRef                = SharedPtr<IRHIBindingSet>;
+	using RHIGraphicsPipelineStateRef     = SharedPtr<IRHIGraphicsPipelineState>;
+	using RHIComputePipelineStateRef      = SharedPtr<IRHIComputePipelineState>;
+	using RHICommandListRef               = SharedPtr<IRHICommandList>;
+	using RHICommandAllocatorRef          = SharedPtr<IRHICommandAllocator>;
+	using RHISwapChainRef                 = SharedPtr<IRHISwapChain>;
+	using RHIFenceRef                     = SharedPtr<IRHIFence>;
+	using RHIObjectRef                    = SharedPtr<IRHIObject>;
+
+	using RHIObjectWeakRef                = WeakPtr<IRHIObject>;
+	using RHIResourceWeakRef              = WeakPtr<IRHIResource>;                 
+	using RHISamplerWeakRef               = WeakPtr<IRHISampler>;
+	using RHITextureWeakRef               = WeakPtr<IRHITexture>;
+	using RHIShaderModuleWeakRef          = WeakPtr<IRHIShaderModule>;
+	using RHIBufferWeakRef	              = WeakPtr<IRHIBuffer>;
+	using RHIBindingLayoutWeakRef         = WeakPtr<IRHIBindingLayout>;
+	using RHIBindingSetWeakRef            = WeakPtr<IRHIBindingSet>;
+	using RHIGraphicsPipelineStateWeakRef = WeakPtr<IRHIGraphicsPipelineState>;
+	using RHIComputePipelineStateWeakRef  = WeakPtr<IRHIComputePipelineState>;
+	using RHICommandListWeakRef           = WeakPtr<IRHICommandList>;
+	using RHICommandAllocatorWeakRef      = WeakPtr<IRHICommandAllocator>;
+	using RHISwapChainWeakRef             = WeakPtr<IRHISwapChain>;
+	using RHIFenceWeakRef                 = WeakPtr<IRHIFence>;
+	// ===================================
 
 	namespace Concepts {
 
 		template<typename T>
-		concept IsRHIResource = IsBaseOf<RHIResource, T>;
-
-		template<typename T>
-		concept IsRHIResourceImplemntation =
-			IsRHIResource<T>
-			&& requires ( T ) { T::API; };
+		concept IsRHIResourceImplementation = Derived<T, IRHIObject>&& requires (T) { { T::API } -> std::convertible_to<ERHInterfaceType>; };
 
 	} // namespace Concepts
 
-
-	// Strong reference-counting pointer to an RHI resource.
-	using RHIResourceRef = SharedPtr<class RHIResource>;
-	// Weak reference-counting pointer to an RHI resource.
-	using RHIResourceWeakRef = WeakPtr<class RHIResource>;
-
 	//======================================================================================================
-	// RHI Resource
-	//  An abstract class that represents a resource that can be committed to the GPU.
+	// RHI Object Interface
+	//  An interface class that represents a child device object.
 	//  Resources can be textures, buffers, samplers, etc.
 	//  For graphics APIs, a specific implementation of this class will be created.
-	//  E.g. RHITexture_OpenGLImpl -> RHITexture -> RHIResource
-	//======================================================================================================
-	class RHIResource : public IRHIObject, public EnableSharedFromThis<RHIResource>
+	//  E.g. RHICommandList_OpenGLImpl -> IRHICommandList -> IRHIObject
+	//		 RHITexture_OpenGLImpl -> IRHITexture -> IRHIResource -> IRHIObject
+	class IRHIObject : public EnableSharedFromThis<IRHIObject>
 	{
     public:
-        NON_COPYABLE_OR_MOVABLE( RHIResource );
+        NON_COPYABLE_OR_MOVABLE( IRHIObject );
 
-		// Releases the GPU and CPU resources associated with this resource.
+		// Releases the this device object, freeing it from the parent device.
 		virtual bool Release() = 0;
 
-		// Returns the size, in bytes, of the allocated memory for the resource on the GPU.
-		// Returns 0 if the size is unknown.
-		virtual size_t GetSizeInBytes() const { return 0; }
-
 		// Returns the type of the resource.
-		virtual ERHIResourceType GetType() const = 0;
+		virtual ERHIObjectType Type() const = 0;
 
 		// Returns whether this resource is in a usable state.
 		virtual bool Valid() const = 0;
@@ -68,20 +110,20 @@ namespace Tridium {
 		// Returns whether the resource is the same resource type.
 		// If 'T' is a specific implementation of a resource type, the API will also be checked.
 		// E.g. if 'T' is a D3D12 texture, the API will be checked to ensure it is D3D12.
-		template<typename T> requires Concepts::IsRHIResource<T>
+		template<Concepts::Derived<IRHIObject> T>
 		bool Is() const
 		{
-			if constexpr ( Concepts::IsRHIResourceImplemntation<T> )
+			if constexpr ( Concepts::IsRHIResourceImplementation<T> )
 			{
-				return GetType() == T::Type
+				return Type() == T::StaticType()
 					&& RHI::GetRHIType() == T::API;
 			}
 
-			return GetType() == T::Type;
+			return Type() == T::StaticType();
 		}
 
 		// Checked cast to the specified type in Debug mode, otherwise a static cast.
-		template<typename T> requires Concepts::IsRHIResource<T>
+		template<Concepts::Derived<IRHIObject> T>
 		T* As()
 		{
 		#if RHI_DEBUG_ENABLED
@@ -95,7 +137,7 @@ namespace Tridium {
 		}
 
 		// Checked cast to the specified type in Debug mode, otherwise a static cast.
-		template<typename T> requires Concepts::IsRHIResource<T>
+		template<Concepts::Derived<IRHIObject> T>
 		const T* As() const
 		{
 		#if RHI_DEBUG_ENABLED
@@ -108,91 +150,83 @@ namespace Tridium {
 			return Cast<const T*>( this );
 		}
 
-		// Creates a handle to the existing RHI resource.
-		template<Concepts::IsRHIResource T, typename... _Args>
-		static T::RefType CreateHandle( T* a_Resource )
+		// Creates a handle to the existing RHI Object.
+		template<Concepts::Derived<IRHIObject> T, typename... _Args>
+		static T::RefType CreateHandle( T* a_Object )
 		{
-			static constexpr auto deleter = +[]( T* a_Resource ) { a_Resource->Release(); delete a_Resource; };
-			return T::RefType( a_Resource, deleter );
+			static constexpr auto deleter = +[]( T* a_Object ) { a_Object->Release(); delete a_Object; };
+			return T::RefType( a_Object, deleter );
 		}
 
-		RHIResourceRef SharedFromThis()
+		RHIObjectRef SharedFromThis()
 		{
 			return shared_from_this();
 		}
 
-		RHIResourceWeakRef WeakFromThis()
+		RHIObjectWeakRef WeakFromThis()
 		{
 			return weak_from_this();
 		}
 
 	protected:
-		RHIResource() = default;
-		virtual ~RHIResource() = default;
+		IRHIObject() = default;
+		virtual ~IRHIObject() = default;
+	};
+
+	//==========================================================
+	// RHI Resource Interface
+	//  An interface class that represents a GPU resource (texture or a buffer).
+	class IRHIResource : public IRHIObject
+	{
+	public:
+		// Returns the internal state of the buffer.
+		ERHIResourceStates State() const { return m_State; }
+
+		// Sets the internal state of the buffer.
+		// NOTE: This does not perform a state transition. This only sets the internal state of the buffer.
+		//       Should only be used if manual state transitions have been completed and you want to return state management to the RHI.
+		void SetState( ERHIResourceStates a_State ) { m_State = a_State; }
+
+	protected:
+		ERHIResourceStates m_State = ERHIResourceStates::Unknown;
 	};
 
 	//==========================================================
 	// RHI Resource barrier
 	//  Describes a state transition for an RHI resource.
 	//  Can be used for manual state transitions for RHI resources via RHI::TransitionResourceStates.
-	//==========================================================
 	struct RHIResourceBarrier
 	{
-		RHIResource* Resource = nullptr;
+		IRHIResource* Resource = nullptr;
 		ERHIResourceStates Before = ERHIResourceStates::Unknown;
 		ERHIResourceStates After = ERHIResourceStates::Unknown;
 	};
 
 } // namespace Tridium
 
-// Helper macro for defining a base RHI resource type, such as RHITexture, RHISampler, etc.
-// _ClassName: The name of the resource type. Should be prefixed with RHI. E.g. _ClassName = RHITexture
-// Note: RHI_RESOURCE_INTERFACE_BODY must be used with this macro.
-#define DECLARE_RHI_RESOURCE_INTERFACE( _ClassName ) \
-	class _ClassName; \
-	struct _ClassName##Descriptor; \
-	using _ClassName##Ref = ::Tridium::SharedPtr<_ClassName>; \
-	using _ClassName##WeakRef = ::Tridium::WeakPtr<_ClassName>; \
-	class _ClassName : public RHIResource
+#define DECLARE_RHI_OBJECT_IMPLEMENTATION( _C, P) class _C : public P
 
 // Helper macro for defining the body of a base RHI resource type.
-// _ClassName: The name of the resource type. Should be prefixed with RHI. E.g. _ClassName = RHITexture
-// _RHIResourceType: The type of the resource. E.g. _RHIResourceType = ERHIResourceType::Texture
+// _RHIResourceType: The type of the resource. E.g. _RHIResourceType = Texture.
+//		This is used for string concatenation in the macro to define the type of the resource and its descriptor class.
 // Note: Must be used in the body of a DECLARE_RHI_RESOURCE_INTERFACE declaration.
-#define RHI_RESOURCE_INTERFACE_BODY( _ClassName, _RHIResourceType ) \
+#define RHI_OBJECT_INTERFACE_BODY( _RHIObjectType ) \
 public: \
-	using DescriptorType = _ClassName##Descriptor; \
-	using RefType = _ClassName##Ref; \
-	using WeakRefType = _ClassName##WeakRef; \
-	static constexpr ::Tridium::ERHIResourceType Type = ::Tridium::_RHIResourceType; \
-	::Tridium::ERHIResourceType GetType() const override { return Type; } \
-	const DescriptorType& Descriptor() const { return m_Desc; } \
-	RefType SharedFromThis() { return std::static_pointer_cast<_ClassName>( std::move( shared_from_this() ) ); } \
-	WeakRefType WeakFromThis() { return std::static_pointer_cast<_ClassName>( std::move( shared_from_this() ) ); } \
+	using DescriptorType = RHI##_RHIObjectType##Desc; \
+	using RefType = RHI##_RHIObjectType##Ref; \
+	using WeakRefType = RHI##_RHIObjectType##WeakRef; \
+	static constexpr ::Tridium::ERHIObjectType StaticType() { return ::Tridium::ERHIObjectType::_RHIObjectType; } \
+	::Tridium::ERHIObjectType Type() const override { return StaticType(); } \
+	const DescriptorType& Desc() const { return m_Desc; } \
+	RefType SharedFromThis() { return std::static_pointer_cast<IRHI##_RHIObjectType>( std::move( shared_from_this() ) ); } \
+	WeakRefType WeakFromThis() { return std::static_pointer_cast<IRHI##_RHIObjectType>( std::move( shared_from_this() ) ); } \
 protected: \
 	DescriptorType m_Desc; \
 public:
 
-
-// Helper macro for defining an RHI resource descriptor.
-// _ClassName: The name of the resource descriptor. Should be prefixed with RHI and the suffix should be Descriptor. E.g. _ClassName = RHITextureDescriptor
-// _Resource: The resource type that the descriptor describes. E.g. _Resource = RHITexture
-#define DECLARE_RHI_RESOURCE_DESCRIPTOR( _ClassName, _Resource ) \
-	struct _ClassName : public ::Tridium::RHIResourceDescriptor<_ClassName, class _Resource>
-
-// Helper macro for defining a graphics API specific implementation of an RHI resource.
-// _ClassName: The name of the resource implementation. Should be prefixed with the graphics API. E.g. _ClassName = RHITexture_OpenGLImpl
-// _ParentResource: The parent resource type that the implementation inherits from. E.g. _ParentResource = RHITexture
-// Note: RHI_RESOURCE_IMPLEMENTATION_BODY must be used with this macro.
-#define DECLARE_RHI_RESOURCE_IMPLEMENTATION( _ClassName, _ParentResource ) \
-	class _ClassName; \
-	struct _ClassName##Descriptor; \
-	class _ClassName : public _ParentResource
-
-// Helper macro for defining the body of a graphics API specific implementation of an RHI resource.
+// Helper macro for defining the body of a graphics API specific implementation of an RHIObject.
 // _ClassName: The name of the resource implementation. Should be prefixed with the graphics API. E.g. _ClassName = RHITexture_OpenGLImpl
 // _RHIInterfaceType: The type of the RHI interface. E.g. _RHIInterfaceType = ERHInterfaceType::OpenGL
-// Note: Must be used in the body of a DECLARE_RHI_RESOURCE_IMPLEMENTATION declaration.
-#define RHI_RESOURCE_IMPLEMENTATION_BODY( _ClassName, _RHIInterfaceType ) \
+#define RHI_OBJECT_IMPLEMENTATION_BODY( _ClassName, _RHIInterfaceType ) \
 public: \
 	static constexpr ::Tridium::ERHInterfaceType API = _RHIInterfaceType;

@@ -203,46 +203,46 @@ namespace Tridium {
 	}
 
 	//=========================================================
-	// ERHIResourceType
+	// ERHIObjectType
 	//==========================================================
 
-	static constexpr StringView ToString( ERHIResourceType a_Type )
+	static constexpr StringView ToString( ERHIObjectType a_Type )
 	{
 		switch ( a_Type )
 		{
-		case ERHIResourceType::Sampler:               return "Sampler";
-		case ERHIResourceType::Texture:               return "Texture";
-		case ERHIResourceType::ShaderModule:          return "ShaderModule";
-		case ERHIResourceType::Buffer:                return "Buffer";
-		case ERHIResourceType::BindingLayout:         return "BindingLayout";
-		case ERHIResourceType::BindingSet:            return "BindingSet";
-		case ERHIResourceType::GraphicsPipelineState: return "GraphicsPipelineState";
-		case ERHIResourceType::ComputePipelineState:  return "ComputePipelineState";
-		case ERHIResourceType::CommandList:           return "CommandList";
-		case ERHIResourceType::CommandAllocator:      return "CommandAllocator";
-		case ERHIResourceType::SwapChain:             return "SwapChain";
-		case ERHIResourceType::Fence:                 return "Fence";
-		case ERHIResourceType::Unknown:               return "Unknown";
+		case ERHIObjectType::Sampler:               return "Sampler";
+		case ERHIObjectType::Texture:               return "Texture";
+		case ERHIObjectType::ShaderModule:          return "ShaderModule";
+		case ERHIObjectType::Buffer:                return "Buffer";
+		case ERHIObjectType::BindingLayout:         return "BindingLayout";
+		case ERHIObjectType::BindingSet:            return "BindingSet";
+		case ERHIObjectType::GraphicsPipelineState: return "GraphicsPipelineState";
+		case ERHIObjectType::ComputePipelineState:  return "ComputePipelineState";
+		case ERHIObjectType::CommandList:           return "CommandList";
+		case ERHIObjectType::CommandAllocator:      return "CommandAllocator";
+		case ERHIObjectType::SwapChain:             return "SwapChain";
+		case ERHIObjectType::Fence:                 return "Fence";
+		case ERHIObjectType::Unknown:               return "Unknown";
 		default:                                      return "<INVALID>";
 		}
 	}
 
-	static constexpr bool FromString( StringView a_String, ERHIResourceType& o_Value )
+	static constexpr bool FromString( StringView a_String, ERHIObjectType& o_Value )
 	{
 		switch ( Hashing::Hash( ReinterpretCast<const uint8_t*>( a_String.data() ), a_String.size() ) )
 		{
-		case "Sampler"_H:               return Detail::AssignEnumValue( ERHIResourceType::Sampler, o_Value );
-		case "Texture"_H:               return Detail::AssignEnumValue( ERHIResourceType::Texture, o_Value );
-		case "ShaderModule"_H:          return Detail::AssignEnumValue( ERHIResourceType::ShaderModule, o_Value );
-		case "Buffer"_H:                return Detail::AssignEnumValue( ERHIResourceType::Buffer, o_Value );
-		case "BindingLayout"_H:         return Detail::AssignEnumValue( ERHIResourceType::BindingLayout, o_Value );
-		case "BindingSet"_H:            return Detail::AssignEnumValue( ERHIResourceType::BindingSet, o_Value );
-		case "GraphicsPipelineState"_H: return Detail::AssignEnumValue( ERHIResourceType::GraphicsPipelineState, o_Value );
-		case "ComputePipelineState"_H:  return Detail::AssignEnumValue( ERHIResourceType::ComputePipelineState, o_Value );
-		case "CommandList"_H:           return Detail::AssignEnumValue( ERHIResourceType::CommandList, o_Value );
-		case "CommandAllocator"_H:      return Detail::AssignEnumValue( ERHIResourceType::CommandAllocator, o_Value );
-		case "SwapChain"_H:             return Detail::AssignEnumValue( ERHIResourceType::SwapChain, o_Value );
-		case "Fence"_H:                 return Detail::AssignEnumValue( ERHIResourceType::Fence, o_Value );
+		case "Sampler"_H:               return Detail::AssignEnumValue( ERHIObjectType::Sampler, o_Value );
+		case "Texture"_H:               return Detail::AssignEnumValue( ERHIObjectType::Texture, o_Value );
+		case "ShaderModule"_H:          return Detail::AssignEnumValue( ERHIObjectType::ShaderModule, o_Value );
+		case "Buffer"_H:                return Detail::AssignEnumValue( ERHIObjectType::Buffer, o_Value );
+		case "BindingLayout"_H:         return Detail::AssignEnumValue( ERHIObjectType::BindingLayout, o_Value );
+		case "BindingSet"_H:            return Detail::AssignEnumValue( ERHIObjectType::BindingSet, o_Value );
+		case "GraphicsPipelineState"_H: return Detail::AssignEnumValue( ERHIObjectType::GraphicsPipelineState, o_Value );
+		case "ComputePipelineState"_H:  return Detail::AssignEnumValue( ERHIObjectType::ComputePipelineState, o_Value );
+		case "CommandList"_H:           return Detail::AssignEnumValue( ERHIObjectType::CommandList, o_Value );
+		case "CommandAllocator"_H:      return Detail::AssignEnumValue( ERHIObjectType::CommandAllocator, o_Value );
+		case "SwapChain"_H:             return Detail::AssignEnumValue( ERHIObjectType::SwapChain, o_Value );
+		case "Fence"_H:                 return Detail::AssignEnumValue( ERHIObjectType::Fence, o_Value );
 		}
 
 		return false;

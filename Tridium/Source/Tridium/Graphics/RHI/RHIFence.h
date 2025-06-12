@@ -8,9 +8,9 @@ namespace Tridium {
 	//  A fence is a synchronization primitive that can be used to synchronize the CPU and GPU.
 	//=======================================================
 
-	struct RHIFenceDescriptor
+	struct RHIFenceDesc
 	{
-		using ResourceType = class RHIFence;
+		using ResourceType = class IRHIFence;
 		ERHIFenceType Type = ERHIFenceType::CPUWaitOnly;
 		String Name{};
 
@@ -18,10 +18,10 @@ namespace Tridium {
 		constexpr auto& SetName( StringView a_Name ) { Name = a_Name; return *this; }
 	};
 
-	DECLARE_RHI_RESOURCE_INTERFACE( RHIFence )
+	class IRHIFence : public IRHIObject
 	{
-		RHI_RESOURCE_INTERFACE_BODY( RHIFence, ERHIResourceType::Fence );
-		RHIFence( const DescriptorType& a_Desc )
+		RHI_OBJECT_INTERFACE_BODY( Fence );
+		IRHIFence( const DescriptorType& a_Desc )
 			: m_Desc( a_Desc )
 		{}
 

@@ -5,7 +5,7 @@
 namespace Tridium::OpenGL {
 
 	RHIShaderModule_OpenGLImpl::RHIShaderModule_OpenGLImpl( const DescriptorType& a_Desc )
-		: RHIShaderModule( a_Desc )
+		: IRHIShaderModule( a_Desc )
 	{
 		// Create GLSL from the SPIR-V bytecode using SPIRV-Cross
 		spirv_cross::CompilerGLSL glslCompiler( ReinterpretCast<const uint32_t*>( a_Desc.Bytecode.data() ), a_Desc.Bytecode.size_bytes() / sizeof( uint32_t ) );

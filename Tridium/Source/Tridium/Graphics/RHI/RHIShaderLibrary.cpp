@@ -99,7 +99,7 @@ namespace Tridium {
 		}
 
 		// Construct the shader module descriptor
-		RHIShaderModuleDescriptor desc;
+		RHIShaderModuleDesc desc;
 		desc.Name = cachedShader.Name;
 		desc.Type = input.ShaderType;
 		desc.Bytecode = output.Value().ByteCode;

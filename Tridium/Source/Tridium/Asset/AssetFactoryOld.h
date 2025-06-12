@@ -4,27 +4,27 @@
 
 namespace Tridium {
 	class FilePath;
-	class IAssetLoader;
+	class IAssetLoaderOld;
 	struct AssetMetaData;
 
-	class AssetFactory
+	class AssetFactoryOld
 	{
 	public:
 		static void Init();
 		static void SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset );
 		static SharedPtr<Asset> LoadAsset( const AssetMetaData& a_MetaData );
 
-		static SharedPtr<IAssetLoader> GetAssetLoader( EAssetType a_Type );
+		static SharedPtr<IAssetLoaderOld> GetAssetLoader( EAssetType a_Type );
 
 		template<typename T>
-		static SharedPtr<IAssetLoader> GetAssetLoader()
+		static SharedPtr<IAssetLoaderOld> GetAssetLoader()
 		{
 			static_assert( std::is_base_of_v<Asset, T>, "T must inherit from Asset" );
 			return GetAssetLoader( T::StaticType() );
 		}
 
 	private:
-		static std::unordered_map<EAssetType, SharedPtr<IAssetLoader>> s_AssetFactories;
+		static std::unordered_map<EAssetType, SharedPtr<IAssetLoaderOld>> s_AssetFactories;
 	};
 
 }

@@ -29,7 +29,7 @@ namespace Tridium {
 	//               |               |         |
 	//            Range 2         Range 4   Range 6
 	//
-	// NOTE: This class is not an RHIResource and is not required for user level code.
+	// NOTE: This class is not an IRHIObject and is not required for user level code.
 	//		 It is used by RHI implementations that require descriptor management (e.g. D3D12).
 	class RHIDescriptorAllocator
 	{
@@ -65,7 +65,7 @@ namespace Tridium {
 	// Heap Descriptor Allocator
 	//  A Descriptor Allocator with a specified type of descriptor heap.
 	// 
-	// NOTE: This class is not an RHIResource and is not required for user level code.
+	// NOTE: This class is not an IRHIObject and is not required for user level code.
 	//		 It is used by RHI implementations that require descriptor management (e.g. D3D12).
 	class RHIHeapDescriptorAllocator : protected RHIDescriptorAllocator
 	{

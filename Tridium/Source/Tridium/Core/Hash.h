@@ -1,6 +1,8 @@
 #pragma once
 #include "Types.h"
+#include "Cast.h"
 #include <Tridium/Utils/TypeTraits.h>
+#include <ctype.h>
 
 namespace Tridium {
 
@@ -134,6 +136,67 @@ namespace Tridium {
 		TRIDIUM_NODISCARD constexpr HashedString TypeHash()
 		{
 			return HashString( GetTypeName<T>() );
+		}
+
+		namespace Util {
+
+			template<typename _Hashable, typename _Func>
+			[[nodiscard]] inline constexpr hash_t HashAs( const _Hashable& a_Hashable, _Func&& a_HashFunc )
+			{
+				hash_t hash = 2166136261U;
+				for ( const auto& elem : a_Hashable )
+				{
+					hash ^= Cast<hash_t>( a_HashFunc( elem ) );
+					hash *= 16777619U;
+				}
+				return hash;
+			}
+
+			// Hashes a string but converts each character to lower case while hashing.
+			template<typename _Elem>
+			[[nodiscard]] inline constexpr hash_t HashAsLowerCase( BasicStringView<_Elem> a_String )
+			{
+				return HashAs( a_String, []( _Elem c ) { return std::tolower( c ); } );
+			}
+
+			// Hashes a string but converts each character to upper case while hashing.
+			template<typename _Elem>
+			[[nodiscard]] inline constexpr hash_t HashAsUpperCase( BasicStringView<_Elem> a_String )
+			{
+				return HashAs( a_String, []( _Elem c ) { return std::toupper( c ); } );
+			}
+
+			// Hashes a string but skips whitespace and converts each character to lower case while hashing.
+			template<typename _Elem>
+			[[nodiscard]] inline constexpr hash_t HashAsLowerCaseAndTrimmed( BasicStringView<_Elem> a_String )
+			{
+				hash_t hash = 2166136261U;
+				for ( const auto& c : a_String )
+				{
+					if ( !std::isspace( c ) )
+					{
+						hash ^= std::tolower( c );
+						hash *= 16777619U;
+					}
+				}
+				return hash;
+			}
+
+			// Hashes a string but skips whitespace and converts each character to upper case while hashing.
+			template<typename _Elem>
+			[[nodiscard]] inline constexpr hash_t HashAsUpperCaseAndTrimmed( BasicStringView<_Elem> a_String )
+			{
+				hash_t hash = 2166136261U;
+				for ( const auto& c : a_String )
+				{
+					if ( !std::isspace( c ) )
+					{
+						hash ^= std::toupper( c );
+						hash *= 16777619U;
+					}
+				}
+				return hash;
+			}
 		}
 
 	} // namespace Hashing

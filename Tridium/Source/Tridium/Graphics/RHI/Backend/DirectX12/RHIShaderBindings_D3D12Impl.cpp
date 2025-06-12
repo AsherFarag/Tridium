@@ -36,8 +36,20 @@ namespace Tridium::D3D12 {
     };
 
 	RHIBindingLayout_D3D12Impl::RHIBindingLayout_D3D12Impl( const DescriptorType& a_Desc )
-        : RHIBindingLayout( a_Desc )
+        : IRHIBindingLayout( a_Desc )
     {
+        ERHIBindingType currentType = ERHIBindingType::Unknown;
+		D3D12_ROOT_CONSTANTS rootConstants{};
+
+        for ( const auto& binding : a_Desc.Bindings )
+        {
+            switch ( binding.Type() )
+            {
+            }
+        }
+
+
+    #if 0
 		const auto& device = GetD3D12RHI()->GetD3D12Device();
 		const D3D12_SHADER_VISIBILITY d3d12Visibility = D3D12::Translate( a_Desc.Visibility );
 
@@ -53,18 +65,18 @@ namespace Tridium::D3D12 {
         {
             switch ( binding.Type() )
             {
-			case ERHIShaderBindingType::InlinedConstants:
+			case ERHIBindingType::InlinedConstants:
 			{
 				rootParams.EmplaceBack().AsConstants( NumDWORDsFromBytes( binding.Size ), d3d12Visibility, binding.Slot );
 				break;
 			}
-            case ERHIShaderBindingType::ConstantBuffer:
+            case ERHIBindingType::ConstantBuffer:
             {
 				rootParams.EmplaceBack().AsCBV( d3d12Visibility, binding.Slot );
                 break;
             }
-            case ERHIShaderBindingType::Texture:
-            case ERHIShaderBindingType::StructuredBuffer:
+            case ERHIBindingType::Texture:
+            case ERHIBindingType::StructuredBuffer:
             {
                 descriptorRangesList.EmplaceBack();
                 auto& range = descriptorRangesList.Back();
@@ -74,7 +86,7 @@ namespace Tridium::D3D12 {
 				rootParams.EmplaceBack().AsSRV( d3d12Visibility, binding.Slot );
                 break;
             }
-            case ERHIShaderBindingType::Sampler:
+            case ERHIBindingType::Sampler:
             {
                 // Dynamic sampler - Descriptor Heap Binding
                 descriptorRangesList.EmplaceBack();
@@ -85,7 +97,7 @@ namespace Tridium::D3D12 {
 				rootParams.EmplaceBack().AsDescriptorTable( d3d12Visibility, range );
                 break;
             }
-            case ERHIShaderBindingType::CombinedSampler:
+            case ERHIBindingType::CombinedSampler:
             {
                 {
 					// Dynamic sampler - Descriptor Heap Binding
@@ -113,34 +125,37 @@ namespace Tridium::D3D12 {
         D3D12_ROOT_SIGNATURE_FLAGS flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 		// Create the root signature
-        RootSignatureDesc rootSignatureDesc(
-            { rootParams.Data(), rootParams.Size() },
+        RootSignatureDesc rootSignatureDesc{
+            rootParams,
             { s_StaticSamplerDescs, s_NumStaticSamplers },
-            flags );
+            flags 
+        };
 
-        m_RootSignature = rootSignatureDesc.Create();
-
-		D3D12_SET_DEBUG_NAME( m_RootSignature.Get(), a_Desc.Name, L"Unnamed Root Signature" );
+    #endif
     }
 
     bool RHIBindingLayout_D3D12Impl::Release()
     {
-		m_RootSignature.Reset();
+        InlinedConstantsSize = 0; // Size of the inlined constants in bytes
+        RootParamInlinedConstants = ~0;
+        RootParamSRV = ~0;
+        RootParamSamplers = ~0;
+        RootParams.Clear();
         return true;
     }
 
     bool RHIBindingLayout_D3D12Impl::Valid() const
     {
-		return m_RootSignature != nullptr;
+        return true;
     }
 
     const void* RHIBindingLayout_D3D12Impl::NativePtr() const
     {
-		return m_RootSignature.Get();
+        return nullptr;
     }
 
     RHIBindingSet_D3D12Impl::RHIBindingSet_D3D12Impl( const DescriptorType& a_Desc )
-		: RHIBindingSet( a_Desc )
+		: IRHIBindingSet( a_Desc )
     {
     }
 

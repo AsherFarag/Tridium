@@ -6,9 +6,14 @@ namespace Tridium {
 	// 3D Axis Aligned Bounding Box
 	struct AABB
 	{
-		static const AABB s_MaxAABB;
 		Vector3 Min{0.0f};
 		Vector3 Max{0.0f};
+
+		static constexpr AABB MaxAABB()
+		{
+			return AABB( Vector3( std::numeric_limits<float>::min() ),
+					     Vector3( std::numeric_limits<float>::max() ) );
+		}
 
 		AABB Transform( const Matrix4& a_Transform ) const
 		{
@@ -109,9 +114,14 @@ namespace Tridium {
 	// 2D Axis Aligned Bounding Box
 	struct Rect
 	{
-		static const Rect s_MaxRect;
 		Vector2 Min{ 0.0f };
 		Vector2 Max{ 0.0f };
+
+		static constexpr Rect MaxRect()
+		{
+			return Rect( Vector2( -std::numeric_limits<float>::max() ),
+						 Vector2( std::numeric_limits<float>::max() ) );
+		}
 
 		bool Intersects( const Rect& a_Other ) const
 		{

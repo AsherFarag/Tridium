@@ -75,15 +75,15 @@ namespace Tridium {
 
 
 	//=======================================================================
-	// RHIGraphicsPipelineState
+	// IRHIGraphicsPipelineState
 	//  A pipeline state object that contains the state of the GPU pipeline.
 	//=======================================================================
 
 	//==============================================
 	// RHI Graphics Pipeline State Descriptor
-	struct RHIGraphicsPipelineStateDescriptor
+	struct RHIGraphicsPipelineStateDesc
 	{
-		using ResourceType = class RHIGraphicsPipelineState;
+		using ResourceType = class IRHIGraphicsPipelineState;
 		ERHITopology Topology = ERHITopology::Unknown;
 		RHIVertexLayout VertexLayout{};
 		RHIBindingLayoutRef BindingLayout{};
@@ -105,7 +105,7 @@ namespace Tridium {
 
 		String Name{};
 
-		RHIShaderModule* GetShader( ERHIShaderType a_Type ) const
+		IRHIShaderModule* GetShader( ERHIShaderType a_Type ) const
 		{
 			switch ( a_Type )
 			{
@@ -123,11 +123,13 @@ namespace Tridium {
 
 	//==============================================
 	// RHI Graphics Pipeline State Interface
-	DECLARE_RHI_RESOURCE_INTERFACE( RHIGraphicsPipelineState )
+	class IRHIGraphicsPipelineState : public IRHIObject
 	{
-		RHI_RESOURCE_INTERFACE_BODY( RHIGraphicsPipelineState, ERHIResourceType::GraphicsPipelineState );
-		RHIGraphicsPipelineState( const DescriptorType& a_Desc )
-			: m_Desc( a_Desc ) {}
+		RHI_OBJECT_INTERFACE_BODY( GraphicsPipelineState )
+		IRHIGraphicsPipelineState( const DescriptorType& a_Desc )
+			: m_Desc( a_Desc ) 
+		{}
+		virtual ~IRHIGraphicsPipelineState() = default;
 	};
 
 } // namespace Tridium

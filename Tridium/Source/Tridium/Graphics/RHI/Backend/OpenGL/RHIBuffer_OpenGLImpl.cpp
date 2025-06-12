@@ -4,7 +4,7 @@
 namespace Tridium::OpenGL {
 
 	RHIBuffer_OpenGLImpl::RHIBuffer_OpenGLImpl( const DescriptorType& a_Desc, Span<const uint8_t> a_Data )
-		: RHIBuffer( a_Desc )
+		: IRHIBuffer( a_Desc )
 	{
 		BufferObj.Create();
 		if ( !BufferObj.Valid() )
@@ -46,11 +46,11 @@ namespace Tridium::OpenGL {
 		BufferObj.SetName( a_Desc.Name );
 	}
 
-	size_t RHIBuffer_OpenGLImpl::GetSizeInBytes() const
-	{
-		GLint size = 0;
-		OpenGL1::GetBufferParameteriv( BufferObj, GL_BUFFER_SIZE, &size );
-		return Cast<size_t>(size);
-	}
+	//size_t RHIBuffer_OpenGLImpl::GetSizeInBytes() const
+	//{
+	//	GLint size = 0;
+	//	OpenGL1::GetBufferParameteriv( BufferObj, GL_BUFFER_SIZE, &size );
+	//	return Cast<size_t>(size);
+	//}
 
 }

@@ -8,9 +8,9 @@ namespace Tridium {
 	//  A shader module represents a compiled shader stage.
 	//=======================================================
 
-	struct RHIShaderModuleDescriptor
+	struct RHIShaderModuleDesc
 	{
-		using ResourceType = class RHIShaderModule;
+		using ResourceType = class IRHIShaderModule;
 		ERHIShaderType Type = ERHIShaderType::Unknown; // The Shader Stage.
 		Span<const Byte> Bytecode{};                     // The compiled shader binary.
 		StringView Source{};                             // The source code of the shader.
@@ -22,11 +22,13 @@ namespace Tridium {
 		constexpr auto& SetName( StringView a_Name ) { Name = a_Name; return *this; }
 	};
 
-	DECLARE_RHI_RESOURCE_INTERFACE( RHIShaderModule )
+	class IRHIShaderModule : public IRHIObject
 	{
-		RHI_RESOURCE_INTERFACE_BODY( RHIShaderModule, ERHIResourceType::ShaderModule );
-		RHIShaderModule( const DescriptorType& a_Desc )
+		RHI_OBJECT_INTERFACE_BODY( ShaderModule )
+		IRHIShaderModule( const DescriptorType& a_Desc )
 			: m_Desc( a_Desc ) {}
+
+		virtual ~IRHIShaderModule() = default;
 	};
 
 } // namespace Tridium

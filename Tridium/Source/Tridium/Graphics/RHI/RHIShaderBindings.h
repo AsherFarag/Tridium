@@ -7,10 +7,10 @@
 namespace Tridium {
 
 	//==============================================
-	// RHI Shader Binding Type
+	// RHI Binding Type
 	//  Describes the type of shader resource bound to a shader stage.
 	//  Maps to concepts in D3D12 Root Signatures and Vulkan Descriptor Sets.
-	enum class ERHIShaderBindingType : uint8_t
+	enum class ERHIBindingType : uint8_t
 	{
 		Unknown = 0,
 
@@ -55,20 +55,20 @@ namespace Tridium {
 
 		uint32_t Slot : 16; // Register index in the shader.
 		uint32_t Size : 8;  // Size in bytes of the binding.
-		uint32_t PackedType : 8;
+		uint32_t PackedType : 8; // The ERHIBindingType packed into a uint32_t. Call Type() to get the enum value
 		hash_t NameHash; // Hash of the binding name. NOTE: This is set by the RHIShaderBindingLayout and is not set here.
 
 		// Default constructor does not initialize the binding for performance, as RHIShaderBinding are stored in a large fixed size array.
 		constexpr RHIShaderBinding() {}
 
-		constexpr ERHIShaderBindingType Type() const
+		constexpr ERHIBindingType Type() const
 		{
-			return Cast<ERHIShaderBindingType>(PackedType);
+			return Cast<ERHIBindingType>(PackedType);
 		}
 
 		constexpr bool Valid() const
 		{
-			return Slot != InvalidSlot && Type() != ERHIShaderBindingType::Unknown;
+			return Slot != InvalidSlot && Type() != ERHIBindingType::Unknown;
 		}
 
 		constexpr operator bool() const
@@ -91,7 +91,7 @@ namespace Tridium {
 		{ \
 			Slot = a_Slot; \
 			Size = 0; \
-			PackedType = Cast<uint32_t>( ERHIShaderBindingType::_Type ); \
+			PackedType = Cast<uint32_t>( ERHIBindingType::_Type ); \
 			return *this; \
 		} \
 		[[nodiscard]] static constexpr RHIShaderBinding _Type( const uint32_t a_Slot ) \
@@ -111,7 +111,7 @@ namespace Tridium {
 		{
 			Slot = a_Slot;
 			Size = a_Size;
-			PackedType = Cast<uint32_t>( ERHIShaderBindingType::InlinedConstants );
+			PackedType = Cast<uint32_t>( ERHIBindingType::InlinedConstants );
 			return *this;
 		}
 
@@ -120,7 +120,7 @@ namespace Tridium {
 			RHIShaderBinding binding;
 			binding.Slot = a_Slot;
 			binding.Size = a_Size;
-			binding.PackedType = Cast<uint32_t>( ERHIShaderBindingType::InlinedConstants );
+			binding.PackedType = Cast<uint32_t>( ERHIBindingType::InlinedConstants );
 			return binding;
 		}
 
@@ -131,7 +131,7 @@ namespace Tridium {
 			RHIShaderBinding binding;
 			binding.Slot = InvalidSlot;
 			binding.Size = 0;
-			binding.PackedType = Cast<uint32_t>( ERHIShaderBindingType::Unknown );
+			binding.PackedType = Cast<uint32_t>( ERHIBindingType::Unknown );
 			return binding;
 		}
 
@@ -145,9 +145,9 @@ namespace Tridium {
 
 	//==============================================
 	// RHI Shader Binding Layout Descriptor
-	struct RHIBindingLayoutDescriptor
+	struct RHIBindingLayoutDesc
 	{
-		using ResourceType = class RHIBindingLayout;
+		using ResourceType = class IRHIBindingLayout;
 		ERHIShaderVisibility Visibility = ERHIShaderVisibility::All; // Visibility of the binding. (e.g. Vertex, Pixel, Compute, etc.)
 		RHIShaderBindingArray Bindings{};
 		UnorderedMap<hash_t, Pair<uint32_t, String>> BindingMap{}; // Maps a hashed binding name to the index and string name of an item in the Bindings array.
@@ -243,11 +243,12 @@ namespace Tridium {
 
 	//==============================================
 	// RHI Shader Binding Layout Interface
-	DECLARE_RHI_RESOURCE_INTERFACE( RHIBindingLayout )
+	class IRHIBindingLayout : public IRHIResource
 	{
-		RHI_RESOURCE_INTERFACE_BODY( RHIBindingLayout, ERHIResourceType::BindingLayout );
-		RHIBindingLayout( const RHIBindingLayoutDescriptor& a_Desc )
+		RHI_OBJECT_INTERFACE_BODY( BindingLayout )
+		IRHIBindingLayout( const DescriptorType& a_Desc )
 			: m_Desc( a_Desc ) {}
+		virtual ~IRHIBindingLayout() = default;
 	};
 	//==============================================
 
@@ -263,9 +264,9 @@ namespace Tridium {
 	//  Represents a single shader binding in a set.
 	struct RHIBindingSetItem
 	{
-		RHIResource* Resource;
+		IRHIObject* Resource;
 		uint32_t Slot;
-		ERHIShaderBindingType Type;
+		ERHIBindingType Type;
 		ERHIStateTransition StateTransitionMode;
 		uint8_t Unused[2];
 
@@ -297,7 +298,7 @@ namespace Tridium {
 			RHIBindingSetItem item;
 			item.Resource = nullptr;
 			item.Slot = a_Slot;
-			item.Type = ERHIShaderBindingType::Unknown;
+			item.Type = ERHIBindingType::Unknown;
 			item.StateTransitionMode = ERHIStateTransition::None;
 			item.RawData[0] = 0;
 			item.RawData[1] = 0;
@@ -310,124 +311,124 @@ namespace Tridium {
 
 	//==============================================
 	// RHI Shader Binding Set Descriptor
-	struct RHIBindingSetDescriptor
+	struct RHIBindingSetDesc
 	{
-		using ResourceType = class RHIBindingSet;
+		using ResourceType = class IRHIBindingSet;
 		RHIBindingSetItemArray Bindings{};
 		RHIBindingLayoutRef Layout{}; // The layout that this binding set is based on.
 		String Name{};
 
-		RHIBindingSetDescriptor() = default;
-		RHIBindingSetDescriptor( const RHIBindingLayoutRef& a_Layout )
+		RHIBindingSetDesc() = default;
+		RHIBindingSetDesc( const RHIBindingLayoutRef& a_Layout )
 			: Layout( a_Layout ) {}
 
-		RHIBindingSetDescriptor& AddBinding( const RHIBindingSetItem& a_Binding )
+		RHIBindingSetDesc& AddBinding( const RHIBindingSetItem& a_Binding )
 		{
 			Bindings.PushBack( a_Binding );
 			return *this;
 		}
 
-		RHIBindingSetDescriptor& AddConstantBuffer(
-			uint32_t a_Slot, RHIBuffer& a_Buffer,
+		RHIBindingSetDesc& AddConstantBuffer(
+			uint32_t a_Slot, IRHIBuffer& a_Buffer,
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::None )
+			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
 		{
 			RHIBindingSetItem& item = Bindings.EmplaceBack();
 			item.Resource = &a_Buffer;
 			item.Slot = a_Slot;
-			item.Type = ERHIShaderBindingType::ConstantBuffer;
+			item.Type = ERHIBindingType::ConstantBuffer;
 			item.StateTransitionMode = a_StateTransitionMode;
 			item.Range = a_Range;
 			item.Unused[0] = 0; item.Unused[1] = 0;
 			return *this;
 		}
 
-		RHIBindingSetDescriptor& AddStructuredBuffer(
-			uint32_t a_Slot, RHIBuffer& a_Buffer,
+		RHIBindingSetDesc& AddStructuredBuffer(
+			uint32_t a_Slot, IRHIBuffer& a_Buffer,
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::None )
+			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
 		{
 			RHIBindingSetItem& item = Bindings.EmplaceBack();
 			item.Resource = &a_Buffer;
 			item.Slot = a_Slot;
-			item.Type = ERHIShaderBindingType::StructuredBuffer;
+			item.Type = ERHIBindingType::StructuredBuffer;
 			item.StateTransitionMode = a_StateTransitionMode;
 			item.Range = a_Range;
 			item.Unused[0] = 0; item.Unused[1] = 0;
 			return *this;
 		}
 
-		RHIBindingSetDescriptor& AddStorageBuffer(
-			uint32_t a_Slot, RHIBuffer& a_Buffer,
+		RHIBindingSetDesc& AddStorageBuffer(
+			uint32_t a_Slot, IRHIBuffer& a_Buffer,
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::None )
+			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
 		{
 			RHIBindingSetItem& item = Bindings.EmplaceBack();
 			item.Resource = &a_Buffer;
 			item.Slot = a_Slot;
-			item.Type = ERHIShaderBindingType::StorageBuffer;
+			item.Type = ERHIBindingType::StorageBuffer;
 			item.StateTransitionMode = a_StateTransitionMode;
 			item.Range = a_Range;
 			item.Unused[0] = 0; item.Unused[1] = 0;
 			return *this;
 		}
 
-		RHIBindingSetDescriptor& AddTexture(
-			uint32_t a_Slot, RHITexture& a_Texture,
+		RHIBindingSetDesc& AddTexture(
+			uint32_t a_Slot, IRHITexture& a_Texture,
+			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All(),
+			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
+		{
+			RHIBindingSetItem& item = Bindings.EmplaceBack();
+			item.Resource = &a_Texture;
+			item.Slot = a_Slot;
+			item.Type = ERHIBindingType::Texture;
+			item.StateTransitionMode = a_StateTransitionMode;
+			item.Subresources = a_Subresources;
+			item.Unused[0] = 0; item.Unused[1] = 0;
+			return *this;
+		}
+
+		RHIBindingSetDesc& AddStorageTexture(
+			uint32_t a_Slot, IRHITexture& a_Texture,
 			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All(),
 			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::None )
 		{
 			RHIBindingSetItem& item = Bindings.EmplaceBack();
 			item.Resource = &a_Texture;
 			item.Slot = a_Slot;
-			item.Type = ERHIShaderBindingType::Texture;
+			item.Type = ERHIBindingType::StorageTexture;
 			item.StateTransitionMode = a_StateTransitionMode;
 			item.Subresources = a_Subresources;
-			item.Unused[0] = 0; item.Unused[1] = 0; item.Unused[2] = 0;
+			item.Unused[0] = 0; item.Unused[1] = 0;
 			return *this;
 		}
 
-		RHIBindingSetDescriptor& AddStorageTexture(
-			uint32_t a_Slot, RHITexture& a_Texture,
-			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::None )
-		{
-			RHIBindingSetItem& item = Bindings.EmplaceBack();
-			item.Resource = &a_Texture;
-			item.Slot = a_Slot;
-			item.Type = ERHIShaderBindingType::StorageTexture;
-			item.StateTransitionMode = a_StateTransitionMode;
-			item.Subresources = a_Subresources;
-			item.Unused[0] = 0; item.Unused[1] = 0; item.Unused[2] = 0;
-			return *this;
-		}
-
-		RHIBindingSetDescriptor& AddSampler(
-			uint32_t a_Slot, RHISampler& a_Sampler,
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::None )
+		RHIBindingSetDesc& AddSampler(
+			uint32_t a_Slot, IRHISampler& a_Sampler,
+			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
 		{
 			RHIBindingSetItem& item = Bindings.EmplaceBack();
 			item.Resource = &a_Sampler;
 			item.Slot = a_Slot;
-			item.Type = ERHIShaderBindingType::Sampler;
+			item.Type = ERHIBindingType::Sampler;
 			item.StateTransitionMode = a_StateTransitionMode;
 			item.RawData[0] = 0; item.RawData[1] = 0;
 			item.Unused[0] = 0; item.Unused[1] = 0;
 			return *this;
 		}
 
-		RHIBindingSetDescriptor& AddCombinedSampler(
-			uint32_t a_Slot, RHITexture& a_Texture,
+		RHIBindingSetDesc& AddCombinedSampler(
+			uint32_t a_Slot, IRHITexture& a_Texture,
 			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::None )
+			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
 		{
 			RHIBindingSetItem& item = Bindings.EmplaceBack();
 			item.Resource = &a_Texture;
 			item.Slot = a_Slot;
-			item.Type = ERHIShaderBindingType::CombinedSampler;
+			item.Type = ERHIBindingType::CombinedSampler;
 			item.StateTransitionMode = a_StateTransitionMode;
 			item.Subresources = a_Subresources;
-			item.Unused[0] = 0; item.Unused[1] = 0; item.Unused[2] = 0;
+			item.Unused[0] = 0; item.Unused[1] = 0;
 			return *this;
 		}
 
@@ -436,83 +437,83 @@ namespace Tridium {
 		// These functions are only available if the layout is set.
 		//===========================================
 
-		RHIBindingSetDescriptor& AddConstantBuffer(
-			HashedString a_Name, RHIBuffer& a_Buffer,
+		RHIBindingSetDesc& AddConstantBuffer(
+			HashedString a_Name, IRHIBuffer& a_Buffer,
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::None )
+			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
-			auto binding = Layout->Descriptor().GetBindingFromName( a_Name );
-			ValidateBinding( binding, ERHIShaderBindingType::ConstantBuffer );
+			auto binding = Layout->Desc().GetBindingFromName( a_Name );
+			ValidateBinding( binding, ERHIBindingType::ConstantBuffer );
 			return AddConstantBuffer( binding.Slot, a_Buffer, a_Range, a_StateTransitionMode );
 		}
 
-		RHIBindingSetDescriptor& AddStructuredBuffer(
-			HashedString a_Name, RHIBuffer& a_Buffer,
+		RHIBindingSetDesc& AddStructuredBuffer(
+			HashedString a_Name, IRHIBuffer& a_Buffer,
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::None )
+			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
-			auto binding = Layout->Descriptor().GetBindingFromName( a_Name );
-			ValidateBinding( binding, ERHIShaderBindingType::StructuredBuffer );
+			auto binding = Layout->Desc().GetBindingFromName( a_Name );
+			ValidateBinding( binding, ERHIBindingType::StructuredBuffer );
 			return AddStructuredBuffer( binding.Slot, a_Buffer, a_Range, a_StateTransitionMode );
 		}
 
-		RHIBindingSetDescriptor& AddStorageBuffer(
-			HashedString a_Name, RHIBuffer& a_Buffer,
+		RHIBindingSetDesc& AddStorageBuffer(
+			HashedString a_Name, IRHIBuffer& a_Buffer,
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::None )
+			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
-			auto binding = Layout->Descriptor().GetBindingFromName( a_Name );
-			ValidateBinding( binding, ERHIShaderBindingType::StorageBuffer );
+			auto binding = Layout->Desc().GetBindingFromName( a_Name );
+			ValidateBinding( binding, ERHIBindingType::StorageBuffer );
 			return AddStorageBuffer( binding.Slot, a_Buffer, a_Range, a_StateTransitionMode );
 		}
 
-		RHIBindingSetDescriptor& AddTexture(
-			HashedString a_Name, RHITexture& a_Texture,
+		RHIBindingSetDesc& AddTexture(
+			HashedString a_Name, IRHITexture& a_Texture,
 			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::None )
+			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
-			auto binding = Layout->Descriptor().GetBindingFromName( a_Name );
-			ValidateBinding( binding, ERHIShaderBindingType::Texture );
+			auto binding = Layout->Desc().GetBindingFromName( a_Name );
+			ValidateBinding( binding, ERHIBindingType::Texture );
 			return AddTexture( binding.Slot, a_Texture, a_Subresources, a_StateTransitionMode );
 		}
 
-		RHIBindingSetDescriptor& AddStorageTexture(
-			HashedString a_Name, RHITexture& a_Texture,
+		RHIBindingSetDesc& AddStorageTexture(
+			HashedString a_Name, IRHITexture& a_Texture,
 			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::None )
+			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
-			auto binding = Layout->Descriptor().GetBindingFromName( a_Name );
-			ValidateBinding( binding, ERHIShaderBindingType::StorageTexture );
+			auto binding = Layout->Desc().GetBindingFromName( a_Name );
+			ValidateBinding( binding, ERHIBindingType::StorageTexture );
 			return AddStorageTexture( binding.Slot, a_Texture, a_Subresources, a_StateTransitionMode );
 		}
 
-		RHIBindingSetDescriptor& AddSampler(
-			HashedString a_Name, RHISampler& a_Sampler,
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::None )
+		RHIBindingSetDesc& AddSampler(
+			HashedString a_Name, IRHISampler& a_Sampler,
+			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
-			auto binding = Layout->Descriptor().GetBindingFromName( a_Name );
-			ValidateBinding( binding, ERHIShaderBindingType::Sampler );
+			auto binding = Layout->Desc().GetBindingFromName( a_Name );
+			ValidateBinding( binding, ERHIBindingType::Sampler );
 			return AddSampler( binding.Slot, a_Sampler, a_StateTransitionMode );
 		}
 
-		RHIBindingSetDescriptor& AddCombinedSampler(
-			HashedString a_Name, RHITexture& a_Texture,
+		RHIBindingSetDesc& AddCombinedSampler(
+			HashedString a_Name, IRHITexture& a_Texture,
 			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::None )
+			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
-			auto binding = Layout->Descriptor().GetBindingFromName( a_Name );
-			ValidateBinding( binding, ERHIShaderBindingType::CombinedSampler );
+			auto binding = Layout->Desc().GetBindingFromName( a_Name );
+			ValidateBinding( binding, ERHIBindingType::CombinedSampler );
 			return AddCombinedSampler( binding.Slot, a_Texture, a_Subresources, a_StateTransitionMode );
 		}
 
-		bool operator==( const RHIBindingSetDescriptor& a_Other ) const
+		bool operator==( const RHIBindingSetDesc& a_Other ) const
 		{
 			if ( Bindings.Size() != a_Other.Bindings.Size() )
 				return false;
@@ -526,13 +527,13 @@ namespace Tridium {
 			return true;
 		}
 
-		bool operator!=( const RHIBindingSetDescriptor& a_Other ) const
+		bool operator!=( const RHIBindingSetDesc& a_Other ) const
 		{
 			return !(operator==( a_Other ));
 		}
 
 	private:
-		void ValidateBinding( RHIShaderBinding& a_Binding, ERHIShaderBindingType a_RequiredType )
+		void ValidateBinding( RHIShaderBinding& a_Binding, ERHIBindingType a_RequiredType )
 		{
 			RHI_DEV_CHECK( a_Binding.Valid(), "Binding is invalid!" );
 			RHI_DEV_CHECK( a_Binding.Type() == a_RequiredType, "Binding type mismatch!" );
@@ -541,15 +542,15 @@ namespace Tridium {
 
 	//==============================================
 	// RHI Shader Binding Set Interface
-	DECLARE_RHI_RESOURCE_INTERFACE( RHIBindingSet )
+	class IRHIBindingSet : public IRHIObject
 	{
-		RHI_RESOURCE_INTERFACE_BODY( RHIBindingSet, ERHIResourceType::BindingSet );
+		RHI_OBJECT_INTERFACE_BODY( BindingSet );
 
-		RHIBindingSet( const RHIBindingSetDescriptor& a_Desc)
+		IRHIBindingSet( const RHIBindingSetDesc& a_Desc)
 			: m_Desc( a_Desc )
 		{
 			ENSURE( m_Desc.Layout != nullptr, "Binding layout is null!" );
-			RHI_DEV_CHECK( a_Desc.Bindings.Size() <= m_Desc.Layout->Descriptor().Bindings.Size(), "Binding set has more bindings than the provided layout!" );
+			RHI_DEV_CHECK( a_Desc.Bindings.Size() <= m_Desc.Layout->Desc().Bindings.Size(), "Binding set has more bindings than the provided layout!" );
 
 			// We want to store hard references to the resources in the binding set.
 			m_ResourceHandles.Reserve( m_Desc.Bindings.Size() );
@@ -557,10 +558,10 @@ namespace Tridium {
 			{
 				if ( binding.Resource != nullptr )
 				{
-					RHI_DEV_CHECK( binding.Resource->GetType() == ERHIResourceType::Texture
-						|| binding.Resource->GetType() == ERHIResourceType::Buffer
-						|| binding.Resource->GetType() == ERHIResourceType::Sampler,
-						std::format( "Invalid resource type '{}' in shader binding set '{}'", ToString( binding.Resource->GetType() ), a_Desc.Name ) );
+					RHI_DEV_CHECK( binding.Resource->Type() == ERHIObjectType::Texture
+						|| binding.Resource->Type() == ERHIObjectType::Buffer
+						|| binding.Resource->Type() == ERHIObjectType::Sampler,
+						std::format( "Invalid resource type '{}' in shader binding set '{}'", ToString( binding.Resource->Type() ), a_Desc.Name ) );
 
 					m_ResourceHandles.EmplaceBack( std::move( binding.Resource->SharedFromThis() ) );
 				}
@@ -568,7 +569,7 @@ namespace Tridium {
 		}
 
 	protected:
-		Array<RHIResourceRef> m_ResourceHandles{};
+		Array<RHIObjectRef> m_ResourceHandles{};
 	};
 	
 

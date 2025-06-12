@@ -172,7 +172,7 @@ namespace Tridium::OpenGL {
 
 		} ScreenQuad;
 
-		bool Init( const RHISwapChainDescriptor& a_Desc );
+		bool Init( const RHISwapChainDesc& a_Desc );
 		void Resize( uint32_t a_Width, uint32_t a_Height );
 
 		~Framebuffer()
@@ -190,13 +190,12 @@ namespace Tridium::OpenGL {
 	// TEXTURE IMPLEMENTATION
 	//======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHITexture_OpenGLImpl, RHITexture )
+	class RHITexture_OpenGLImpl : public IRHITexture
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHITexture_OpenGLImpl, ERHInterfaceType::OpenGL );
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHITexture_OpenGLImpl, ERHInterfaceType::OpenGL );
 		RHITexture_OpenGLImpl( const DescriptorType & a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData );
 		virtual bool Release() override;
-		virtual size_t GetSizeInBytes() const override;
 		virtual const void* NativePtr() const { return TextureObj.NativePtr(); }
 		virtual bool Valid() const override { return TextureObj.Valid(); }
 
@@ -208,17 +207,16 @@ namespace Tridium::OpenGL {
 	// BUFFER IMPLEMENTATION
 	//======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHIBuffer_OpenGLImpl, RHIBuffer )
+	class RHIBuffer_OpenGLImpl : public IRHIBuffer
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIBuffer_OpenGLImpl, ERHInterfaceType::OpenGL );
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBuffer_OpenGLImpl, ERHInterfaceType::OpenGL );
 
-		RHIBuffer_OpenGLImpl( const RHIBufferDescriptor & a_Desc, Span<const uint8_t> a_Data = {} );
+		RHIBuffer_OpenGLImpl( const RHIBufferDesc & a_Desc, Span<const uint8_t> a_Data = {} );
 
 		virtual ~RHIBuffer_OpenGLImpl() override = default;
 		virtual bool Release() override { BufferObj.Release(); return true; }
 		virtual bool Valid() const override { return BufferObj.Valid(); }
-		virtual size_t GetSizeInBytes() const override;
 		virtual const void* NativePtr() const override { return BufferObj.NativePtr(); }
 
 		OpenGL::GLBufferWrapper BufferObj{};
@@ -228,10 +226,10 @@ namespace Tridium::OpenGL {
 	// FENCE IMPLEMENTATION
 	//======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHIFence_OpenGLImpl, RHIFence )
+	class RHIFence_OpenGLImpl : public IRHIFence
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIFence_OpenGLImpl, ERHInterfaceType::OpenGL );
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHIFence_OpenGLImpl, ERHInterfaceType::OpenGL );
 		RHIFence_OpenGLImpl( const DescriptorType & a_Desc );
 		bool Release() override;
 		bool Valid() const override;
@@ -254,13 +252,13 @@ namespace Tridium::OpenGL {
 	// SAMPLER IMPLEMENTATION
 	//======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHISampler_OpenGLImpl, RHISampler )
+	class RHISampler_OpenGLImpl : public IRHISampler
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHISampler_OpenGLImpl, ERHInterfaceType::OpenGL );
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHISampler_OpenGLImpl, ERHInterfaceType::OpenGL );
 
 		RHISampler_OpenGLImpl( const DescriptorType & a_Desc )
-			: RHISampler( a_Desc )
+			: IRHISampler( a_Desc )
 		{
 			OpenGL3::GenSamplers( 1, &m_SamplerID );
 			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_MIN_FILTER, Translate( a_Desc.Filter ) );
@@ -295,10 +293,10 @@ namespace Tridium::OpenGL {
 	// BINDING LAYOUT IMPLEMENTATION
 	//======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHIBindingLayout_OpenGLImpl, RHIBindingLayout )
+	class RHIBindingLayout_OpenGLImpl : public IRHIBindingLayout
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIBindingLayout_OpenGLImpl, ERHInterfaceType::OpenGL );
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBindingLayout_OpenGLImpl, ERHInterfaceType::OpenGL );
 		RHIBindingLayout_OpenGLImpl( const DescriptorType & a_Desc );
 		bool Release() override { return true; }
 		bool Valid() const override { return true; }
@@ -309,10 +307,10 @@ namespace Tridium::OpenGL {
 	// BINDING SET IMPLEMENTATION
 	//======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHIBindingSet_OpenGLImpl, RHIBindingSet )
+	class RHIBindingSet_OpenGLImpl : public IRHIBindingSet
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIBindingSet_OpenGLImpl, ERHInterfaceType::OpenGL );
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBindingSet_OpenGLImpl, ERHInterfaceType::OpenGL );
 		RHIBindingSet_OpenGLImpl( const DescriptorType & a_Desc );
 		bool Release() override { return true; }
 		bool Valid() const override { return true; }
@@ -323,10 +321,10 @@ namespace Tridium::OpenGL {
 	// SHADER IMPLEMENTATION
 	//======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHIShaderModule_OpenGLImpl, RHIShaderModule )
+	class RHIShaderModule_OpenGLImpl : public IRHIShaderModule
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIShaderModule_OpenGLImpl, ERHInterfaceType::OpenGL );
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHIShaderModule_OpenGLImpl, ERHInterfaceType::OpenGL );
 
 		RHIShaderModule_OpenGLImpl( const DescriptorType & a_Desc );
 		bool Release() override;
@@ -343,10 +341,10 @@ namespace Tridium::OpenGL {
 	// GRAPHICS PIPELINE STATE IMPLEMENTATION
 	//======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHIGraphicsPipelineState_OpenGLImpl, RHIGraphicsPipelineState )
+	class RHIGraphicsPipelineState_OpenGLImpl : public IRHIGraphicsPipelineState
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHIGraphicsPipelineState_OpenGLImpl, ERHInterfaceType::OpenGL );
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHIGraphicsPipelineState_OpenGLImpl, ERHInterfaceType::OpenGL );
 		RHIGraphicsPipelineState_OpenGLImpl( const DescriptorType & a_Desc );
 		bool Release() override;
 		bool Valid() const override;
@@ -368,10 +366,10 @@ namespace Tridium::OpenGL {
 	// SWAPCHAIN IMPLEMENTATION
 	//======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHISwapChain_OpenGLImpl, RHISwapChain )
+	class RHISwapChain_OpenGLImpl : public IRHISwapChain
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHISwapChain_OpenGLImpl, ERHInterfaceType::OpenGL );
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHISwapChain_OpenGLImpl, ERHInterfaceType::OpenGL );
 		RHISwapChain_OpenGLImpl( const DescriptorType & a_Desc );
 		bool Release() override;
 		bool Valid() const override { return Window != nullptr; }
@@ -396,50 +394,46 @@ namespace Tridium::OpenGL {
 	// COMMAND LIST IMPLEMENTATION
 	//======================================================================
 
-	DECLARE_RHI_RESOURCE_IMPLEMENTATION( RHICommandList_OpenGLImpl, RHICommandList )
+	class RHICommandList_OpenGLImpl : public IRHICommandList
 	{
 	public:
-		RHI_RESOURCE_IMPLEMENTATION_BODY( RHICommandList_OpenGLImpl, ERHInterfaceType::OpenGL );
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHICommandList_OpenGLImpl, ERHInterfaceType::OpenGL );
 
 		RHICommandList_OpenGLImpl( const DescriptorType & a_Desc );
 		virtual bool Release() override { return true; }
 		virtual bool Valid() const override { return true; }
 		virtual const void* NativePtr() const override { return nullptr; }
 
-		virtual bool SetGraphicsCommands( const RHIGraphicsCommandBuffer & a_CmdBuffer ) override;
-		virtual bool SetComputeCommands( const RHIComputeCommandBuffer & a_CmdBuffer ) override;
 		virtual bool IsCompleted() const override { return true; }
 		virtual void WaitUntilCompleted() override {}
 
+		bool Open() override;
+		bool Close() override;
+		void ClearState() override;
+
+		void ResourceBarrier( const RHIResourceBarrier& a_Barrier, RHI_DEBUG_SRC_LOC_PARAM ) override;
+
+		void UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM ) override;
+		void CopyBuffer( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange, RHI_DEBUG_SRC_LOC_PARAM ) override;
+
+		void UpdateTexture( IRHITexture& a_Texture, const RHITextureSlice& a_DstSlice, RHITextureSubresourceData a_Data, RHI_DEBUG_SRC_LOC_PARAM ) override;
+		void CopyTexture( IRHITexture& a_DstTexture, const RHITextureSlice& a_DstSlice, IRHITexture& a_SrcTexture, const RHITextureSlice& a_SrcSlice, RHI_DEBUG_SRC_LOC_PARAM ) override;
+
+		void SetInlinedConstants( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM ) override;
+
+		void SetGraphicsState( const RHIGraphicsState& a_GraphicsState, RHI_DEBUG_SRC_LOC_PARAM ) override;
+		void ClearRenderTargets( ERHIClearFlags a_Flags, Color a_ClearColor, float a_DepthValue = 1.0f, uint8_t a_StencilValue = 0u, int32_t a_ColorAttachmentIndex = -1, RHI_DEBUG_SRC_LOC_PARAM ) override;
+		void Draw( const RHIDrawArgs& a_DrawArgs, RHI_DEBUG_SRC_LOC_PARAM ) override;
+
+		void PushDebugGroup( StringView a_Name ) override;
+		void PopDebugGroup() override;
+		void InsertDebugMarker( StringView a_Name ) override;
+
 	private:
-		OpenGL::GLUBOWrapper m_InlinedConstantsUBO;
-		Array<GLuint> m_UBOs;
-		struct State
-		{
-			uint32_t NumColorTargets = 0;
-		} m_State;
-
-		void SetBindingLayout( const RHICommand::SetBindingLayout & a_Data );
-		void SetShaderBindings( const RHICommand::SetShaderBindings & a_Data );
-		void SetInlinedConstants( const RHICommand::SetInlinedConstants & a_Data );
-		void ResourceBarrier( const RHICommand::ResourceBarrier & a_Data );
-
-		// Graphics
-		void SetGraphicsPipelineState( const RHICommand::SetGraphicsPipelineState & a_Data );
-		void SetRenderTargets( const RHICommand::SetRenderTargets & a_Data );
-		void ClearRenderTargets( const RHICommand::ClearRenderTargets & a_Data );
-		void SetScissors( const RHICommand::SetScissors & a_Data );
-		void SetViewports( const RHICommand::SetViewports & a_Data );
-		void SetIndexBuffer( const RHICommand::SetIndexBuffer & a_Data );
-		void SetVertexBuffer( const RHICommand::SetVertexBuffer & a_Data );
-		void SetPrimitiveTopology( const RHICommand::SetPrimitiveTopology & a_Data );
-		void Draw( const RHICommand::Draw & a_Data );
-		void DrawIndexed( const RHICommand::DrawIndexed & a_Data );
-
-		// Compute
-		void SetComputePipelineState( const RHICommand::SetComputePipelineState & a_Data );
-		void DispatchCompute( const RHICommand::DispatchCompute & a_Data );
-		void DispatchComputeIndirect( const RHICommand::DispatchComputeIndirect & a_Data );
+		GLUBOWrapper m_InlinedConstantsUBO{};
+		Array<RHIObjectRef> m_ReferencedResources{};
+		RHIGraphicsState m_CurrentGraphicsState{};
+		bool m_GraphicsStateValid = false;
 	};
 
 	//======================================================================
@@ -465,16 +459,16 @@ namespace Tridium::OpenGL {
 
 		//=====================================================
 		// Resource creation
-		virtual RHIFenceRef CreateFence( const RHIFenceDescriptor& a_Desc ) override;
-		virtual RHISamplerRef CreateSampler( const RHISamplerDescriptor& a_Desc ) override;
-		virtual RHITextureRef CreateTexture( const RHITextureDescriptor& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) override;
-		virtual RHIBufferRef CreateBuffer( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data ) override;
-		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc ) override;
-		virtual RHICommandListRef CreateCommandList( const RHICommandListDescriptor& a_Desc ) override;
-		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc ) override;
-		virtual RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDescriptor& a_Desc ) override;
-		virtual RHIBindingSetRef CreateBindingSet( const RHIBindingSetDescriptor& a_Desc ) override;
-		virtual RHISwapChainRef CreateSwapChain( const RHISwapChainDescriptor& a_Desc ) override;
+		virtual RHIFenceRef CreateFence( const RHIFenceDesc& a_Desc ) override;
+		virtual RHISamplerRef CreateSampler( const RHISamplerDesc& a_Desc ) override;
+		virtual RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) override;
+		virtual RHIBufferRef CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data ) override;
+		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc ) override;
+		virtual RHICommandListRef CreateCommandList( const RHICommandListDesc& a_Desc ) override;
+		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDesc& a_Desc ) override;
+		virtual RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc ) override;
+		virtual RHIBindingSetRef CreateBindingSet( const RHIBindingSetDesc& a_Desc ) override;
+		virtual RHISwapChainRef CreateSwapChain( const RHISwapChainDesc& a_Desc ) override;
 		//=====================================================
 
 		//=====================================================

@@ -3,7 +3,7 @@
 
 namespace Tridium {
 
-	void RHIResourceStateTracker::RequireTextureState( RHITexture& a_Texture, ERHIResourceStates a_NewState )
+	void RHIResourceStateTracker::RequireTextureState( IRHITexture& a_Texture, ERHIResourceStates a_NewState )
 	{
 		const ERHIResourceStates currentState = a_Texture.State();
 		const bool isTransitionNeeded = currentState != a_NewState;
@@ -14,9 +14,9 @@ namespace Tridium {
 		}
 	}
 
-	void RHIResourceStateTracker::RequireBufferState( RHIBuffer& a_Buffer, ERHIResourceStates a_NewState )
+	void RHIResourceStateTracker::RequireBufferState( IRHIBuffer& a_Buffer, ERHIResourceStates a_NewState )
 	{
-		if ( a_Buffer.Descriptor().CpuAccess != ERHICpuAccess::None )
+		if ( a_Buffer.Desc().CpuAccess != ERHICpuAccess::None )
 		{
 			// CPU access buffers can not change state.
 			return;

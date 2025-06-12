@@ -50,6 +50,19 @@ namespace Tridium::OpenGL {
 
 	bool DynamicRHI_OpenGLImpl::Shutdown()
 	{
+		// Release all resources
+		LOG( LogCategory::RHI, Info, "Releasing all registered resources...", m_RegisteredResources.size() );
+		size_t numResources = 0;
+		for ( const auto& [hash, resourceWeakRef] : m_RegisteredResources )
+		{
+			if ( RHIObjectRef resource = resourceWeakRef.lock() )
+			{
+				numResources++;
+				resource->Release();
+			}
+		}
+		LOG( LogCategory::RHI, Info, "Released {0} resources", numResources );
+
 		GLState::ClearState();
 		return true;
 	}
@@ -63,54 +76,74 @@ namespace Tridium::OpenGL {
 	// RESOURCE CREATION
 	//////////////////////////////////////////////////////////////////////////
 
-	RHIFenceRef DynamicRHI_OpenGLImpl::CreateFence( const RHIFenceDescriptor& a_Desc )
+	RHIFenceRef DynamicRHI_OpenGLImpl::CreateFence( const RHIFenceDesc& a_Desc )
 	{
-		return  RHI::CreateNativeResource<RHIFence_OpenGLImpl>( a_Desc );
+		RHIFenceRef fence = RHI::CreateNativeObject<RHIFence_OpenGLImpl>( a_Desc );
+		RegisterRHIResource( *fence );
+		return fence;
 	}
 
-	RHISamplerRef DynamicRHI_OpenGLImpl::CreateSampler( const RHISamplerDescriptor& a_Desc )
+	RHISamplerRef DynamicRHI_OpenGLImpl::CreateSampler( const RHISamplerDesc& a_Desc )
 	{
-		return RHI::CreateNativeResource<RHISampler_OpenGLImpl>( a_Desc );
+ 		RHISamplerRef sampler = RHI::CreateNativeObject<RHISampler_OpenGLImpl>( a_Desc );
+		RegisterRHIResource( *sampler );
+		return sampler;
 	}
 
-	RHITextureRef DynamicRHI_OpenGLImpl::CreateTexture( const RHITextureDescriptor& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
+	RHITextureRef DynamicRHI_OpenGLImpl::CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
 	{
-		return RHI::CreateNativeResource<RHITexture_OpenGLImpl>( a_Desc, a_SubResourcesData );
+ 		RHITextureRef texture = RHI::CreateNativeObject<RHITexture_OpenGLImpl>( a_Desc, a_SubResourcesData );
+		RegisterRHIResource( *texture );
+		return texture;
 	}
 
-	RHIBufferRef DynamicRHI_OpenGLImpl::CreateBuffer( const RHIBufferDescriptor& a_Desc, Span<const uint8_t> a_Data )
+	RHIBufferRef DynamicRHI_OpenGLImpl::CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data )
 	{
-		return RHI::CreateNativeResource<RHIBuffer_OpenGLImpl>( a_Desc, a_Data );
+ 		RHIBufferRef buffer = RHI::CreateNativeObject<RHIBuffer_OpenGLImpl>( a_Desc, a_Data );
+		RegisterRHIResource( *buffer );
+		return buffer;
 	}
 
-	RHIGraphicsPipelineStateRef DynamicRHI_OpenGLImpl::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDescriptor& a_Desc )
+	RHIGraphicsPipelineStateRef DynamicRHI_OpenGLImpl::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc )
 	{
-		return RHI::CreateNativeResource<RHIGraphicsPipelineState_OpenGLImpl>( a_Desc );
+ 		RHIGraphicsPipelineStateRef pso = RHI::CreateNativeObject<RHIGraphicsPipelineState_OpenGLImpl>( a_Desc );
+		RegisterRHIResource( *pso );
+		return pso;
 	}
 
-	RHICommandListRef DynamicRHI_OpenGLImpl::CreateCommandList( const RHICommandListDescriptor& a_Desc )
+	RHICommandListRef DynamicRHI_OpenGLImpl::CreateCommandList( const RHICommandListDesc& a_Desc )
 	{
-		return RHI::CreateNativeResource<RHICommandList_OpenGLImpl>( a_Desc );
+		RHICommandListRef commandList = RHI::CreateNativeObject<RHICommandList_OpenGLImpl>( a_Desc );
+		RegisterRHIResource( *commandList );
+		return commandList;
 	}
 
-	RHIShaderModuleRef DynamicRHI_OpenGLImpl::CreateShaderModule( const RHIShaderModuleDescriptor& a_Desc )
+	RHIShaderModuleRef DynamicRHI_OpenGLImpl::CreateShaderModule( const RHIShaderModuleDesc& a_Desc )
 	{
-		return RHI::CreateNativeResource<RHIShaderModule_OpenGLImpl>( a_Desc );
+		RHIShaderModuleRef shaderModule = RHI::CreateNativeObject<RHIShaderModule_OpenGLImpl>( a_Desc );
+		RegisterRHIResource( *shaderModule );
+		return shaderModule;
 	}
 
-	RHIBindingLayoutRef DynamicRHI_OpenGLImpl::CreateBindingLayout( const RHIBindingLayoutDescriptor& a_Desc )
+	RHIBindingLayoutRef DynamicRHI_OpenGLImpl::CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc )
 	{
-		return RHI::CreateNativeResource<RHIBindingLayout_OpenGLImpl>( a_Desc );
+		RHIBindingLayoutRef bindingLayout = RHI::CreateNativeObject<RHIBindingLayout_OpenGLImpl>( a_Desc );
+		RegisterRHIResource( *bindingLayout );
+		return bindingLayout;
 	}
 
-	RHIBindingSetRef DynamicRHI_OpenGLImpl::CreateBindingSet( const RHIBindingSetDescriptor& a_Desc )
+	RHIBindingSetRef DynamicRHI_OpenGLImpl::CreateBindingSet( const RHIBindingSetDesc& a_Desc )
 	{
-		return RHI::CreateNativeResource<RHIBindingSet_OpenGLImpl>( a_Desc );
+		RHIBindingSetRef bindingSet = RHI::CreateNativeObject<RHIBindingSet_OpenGLImpl>( a_Desc );
+		RegisterRHIResource( *bindingSet );
+		return bindingSet;
 	}
 
-	RHISwapChainRef DynamicRHI_OpenGLImpl::CreateSwapChain( const RHISwapChainDescriptor& a_Desc )
+	RHISwapChainRef DynamicRHI_OpenGLImpl::CreateSwapChain( const RHISwapChainDesc& a_Desc )
 	{
-		return RHI::CreateNativeResource<RHISwapChain_OpenGLImpl>( a_Desc );
+ 		RHISwapChainRef swapChain = RHI::CreateNativeObject<RHISwapChain_OpenGLImpl>( a_Desc );
+		RegisterRHIResource( *swapChain );
+		return swapChain;
 	}
 
 	GPUInfo DynamicRHI_OpenGLImpl::GetGPUInfo() const

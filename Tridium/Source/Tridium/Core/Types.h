@@ -1,5 +1,4 @@
 #pragma once
-#include "Cast.h"
 
 #define NON_COPYABLE( Type )\
     Type( const Type& ) = delete;\

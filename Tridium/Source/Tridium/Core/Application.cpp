@@ -19,8 +19,8 @@
 #include <Tridium/Math/MathConstants.h>
 #include <GLFW/glfw3.h>
 #include <Tridium/Reflection/FieldReflection.h>
-
-import Tridium.ECS;
+#include <Tridium/NewAsset/AssetDatabase.h>
+#include <Tridium/NewAsset/TextureAsset.h>
 
 namespace Tridium {
 
@@ -120,7 +120,7 @@ namespace Tridium {
 		m_Window->SetEventCallback( [this]( const Event& a_Event ) { this->EnqueueEvent( a_Event ); } );
 
 		RHIConfig config{};
-		config.RHIType = ERHInterfaceType::OpenGL;
+		config.RHIType = ERHInterfaceType::DirectX12;
 		config.UseDebug = true;
 		bool initSuccess = RHI::Initialise( config );
 		LOG( LogCategory::RHI, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), initSuccess );
@@ -133,6 +133,17 @@ namespace Tridium {
 		// TEMP!
 #if 1
 		{
+			if ( auto error = T::AssetDatabase::Init(); error.IsError() )
+			{
+				LOG( LogCategory::Asset, Error, "Failed to initialise the Asset Database: {0}", error.Error() );
+				return false;
+			}
+			else
+			{
+				LOG( LogCategory::Asset, Info, "Asset Database initialised successfully" );
+			}
+
+
 			uint8_t testImgData[64 * 64 * 4];
 			//for ( size_t y = 0; y < 64; y++ )
 			//{
@@ -179,16 +190,21 @@ namespace Tridium {
 
 
 			// - Create a texture -
-			RHITextureDescriptor texDesc;
+			RHITextureDesc texDesc;
 			texDesc.Width = 64;
 			texDesc.Height = 64;
 			texDesc.Format = ERHIFormat::RGBA8_UNORM;
 			texDesc.Name = "My texture";
 			texDesc.Dimension = ERHITextureDimension::Texture2D;
-			RHITextureRef tex = RHI::CreateTexture( texDesc, testImgSubresData );
+			auto texAsset = T::Texture::Create( testImgData, texDesc );
+			texAsset->ClearPixelData();
+			T::AssetMetadata texAssetMetadata = T::AssetMetadata::From( *texAsset );
+			texAssetMetadata.Name = texDesc.Name;
+			T::AssetDatabase::RegisterAsset( texAsset.get(), std::move( texAssetMetadata ) );
+			RHITextureRef tex = texAsset->IRHITexture();
 
 			// - Create a sampler -
-			RHISamplerDescriptor samplerDesc;
+			RHISamplerDesc samplerDesc;
 			samplerDesc.Filter = ERHISamplerFilter::Bilinear;
 			samplerDesc.AddressU = ERHISamplerAddressMode::Clamp;
 			samplerDesc.AddressV = ERHISamplerAddressMode::Clamp;
@@ -266,7 +282,7 @@ namespace Tridium {
 			};
 
 			// - Create a Vertex Buffer -
-			RHIBufferDescriptor cubeVBODesc;
+			RHIBufferDesc cubeVBODesc;
 			cubeVBODesc.Name = "Cube VBO";
 			cubeVBODesc.BindFlags = ERHIBindFlags::VertexBuffer;
 			cubeVBODesc.Size = sizeof( cubeVerts );
@@ -374,7 +390,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 	float3 specular = 1000.0f * pow( max( dot( viewDir, reflectDir ), 0.0f ), 32.0f ) * constants.LightData.Colour.rgb;
 	float3 color = ambient + diffuse + specular;
 	color *= constants.LightData.Intensity;
-	//color *= Sample( Texture, input.uv ).rgb;
+	color = Sample( Texture, input.uv ).rgb;
 	return float4( color, 1.0f );
 }
 )";
@@ -401,12 +417,12 @@ float4 PSMain( VSOutput input ) : SV_Target
 			RHIShaderModuleRef pixelShader = ShaderLibrary::LoadShader( pixelCode, "My pixel shader", ERHIShaderType::Pixel );
 
 			// Create Shader Binding Layout
-			RHIBindingLayoutDescriptor sblDesc;
+			RHIBindingLayoutDesc sblDesc;
 			sblDesc.Name = "My shader binding layout";
 			sblDesc.Visibility = ERHIShaderVisibility::All;
 			sblDesc.AddBinding( "inlinedConstants"_H ).AsInlinedConstants( 0, 128 );
-			sblDesc.AddBinding( "constants"_H ).AsConstantBuffer(1);
-			sblDesc.AddBinding( "Texture"_H ).AsCombinedSampler( 2 );
+			sblDesc.AddBinding( "constants"_H ).AsConstantBuffer( 1 );
+			sblDesc.AddBinding( "Texture"_H ).AsCombinedSampler( 0 );
 
 
 			RHIBindingLayoutRef sbl = RHI::CreateBindingLayout( sblDesc );
@@ -416,7 +432,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 			fbInfo.SetDepthStencilFormat( ERHIFormat::D32_FLOAT );
 
 			// - Create pipeline state -
-			RHIGraphicsPipelineStateDescriptor psd{};
+			RHIGraphicsPipelineStateDesc psd{};
 			psd.Topology = ERHITopology::Triangle;
 			psd.VertexShader = vertShader;
 			psd.PixelShader = pixelShader;
@@ -428,7 +444,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 			RHIGraphicsPipelineStateRef pso = RHI::CreateGraphicsPipelineState( psd );
 
 			// - Create depth buffer -
-			RHITextureDescriptor depthDesc;
+			RHITextureDesc depthDesc;
 			depthDesc.Width = 1280;
 			depthDesc.Height = 720;
 			depthDesc.Format = ERHIFormat::D32_FLOAT;
@@ -438,12 +454,15 @@ float4 PSMain( VSOutput input ) : SV_Target
 			depthDesc.Dimension = ERHITextureDimension::Texture2D;
 			RHITextureRef depthTex = RHI::CreateTexture( depthDesc );
 
-			RHICommandListRef cmdList = RHI::CreateCommandList( {} );
+			RHICommandListDesc cmdListDesc;
+			cmdListDesc.QueueType = ERHICommandQueueType::Graphics;
+			RHICommandListRef cmdList = RHI::CreateCommandList( cmdListDesc );
 
 			// Temp
 			float time = 0.0f;
 			const Color clearColor = Color{ 0.2f, 0.35f, 0.5f, 1.0f };
 			int f{};
+
 			while ( time < 5.0 )
 			{
 #if 1
@@ -452,38 +471,70 @@ float4 PSMain( VSOutput input ) : SV_Target
 				FlushEventQueue();
 				time = glfwGetTime();
 				{
+					cmdList->Open();
+					RHIGraphicsState graphicsState{};
+
 					RHITextureRef rt = RHI::GetSwapChain()->GetBackBuffer();
 					if ( !rt )
 						continue;
 
 					// Resize the depth buffer to match the swap chain
-					const auto rtDesc = rt->Descriptor();
+					const auto rtDesc = rt->Desc();
 					const uint32_t width = rtDesc.Width;
 					const uint32_t height = rtDesc.Height;
 					if ( width == 0 || height == 0 )
 						continue;
-					RHIGraphicsCommandBuffer cmdBuffer;
 
-					const auto& depthDesc = depthTex->Descriptor();
+					const auto& depthDesc = depthTex->Desc();
 					if ( width != depthDesc.Width || height != depthDesc.Height )
 					{
 						// Create new depth texture
-						RHITextureDescriptor newDepthDesc = depthDesc;
+						RHITextureDesc newDepthDesc = depthDesc;
 						newDepthDesc.Width = width;
 						newDepthDesc.Height = height;
 
 						depthTex = RHI::CreateTexture( newDepthDesc );
 					}
 
-					cmdBuffer
-						.SetRenderTargets( { &rt, 1}, depthTex.get() )
-						.ClearRenderTargets( ERHIClearFlags::ColorDepth, clearColor );
+					constexpr auto CycleRGB = +[]( float a_Time, float a_Speed = 1.0f )
+						{
+							float r = (Math::Sin( a_Speed * a_Time ) + 1.0f) / 2.0f;
+							float g = (Math::Sin( a_Speed * a_Time + 2.0f * Math::PI() / 3.0f ) + 1.0f) / 2.0f;
+							float b = (Math::Sin( a_Speed * a_Time + 4.0f * Math::PI() / 3.0f ) + 1.0f) / 2.0f;
+							return Color( r, g, b, 1.0f );
+						};
 
-					cmdBuffer.SetGraphicsPipelineState( pso );
-					cmdBuffer.SetBindingLayout( sbl );
+					Constants constants{};
+					Light light;
+					light.Colour = CycleRGB( time, 1.0f );
+					light.Position = Vector3( 0.0f, 0.0f, 2.0f );
+					light.Intensity = 1;
+					constants.LightData = light;
 
-					// Set the primitive topology
-					cmdBuffer.SetPrimitiveTopology( ERHITopology::Triangle );
+					RHIBufferDesc constantsDesc{
+						"constants buffer",
+						256,
+						ERHIBindFlags::ConstantBuffer
+					};
+
+					RHIBufferRef constantsBuffer = RHI::CreateBuffer(
+						constantsDesc, Span{ ReinterpretCast<uint8_t*>( &constants ), sizeof( Constants ) }
+					);
+
+					RHIBindingSetDesc bindingSetDesc{ sbl };
+					bindingSetDesc.AddCombinedSampler( "Texture"_H, *tex );
+					bindingSetDesc.AddConstantBuffer( "constants"_H, *constantsBuffer );
+					RHIBindingSetRef bindingSet = RHI::CreateBindingSet( bindingSetDesc );
+
+					graphicsState.PipelineState = pso.get();
+					graphicsState.Framebuffer.ColorAttachments = { rt.get() };
+					graphicsState.Framebuffer.DepthStencilAttachment = depthTex.get();
+					graphicsState.BindingSets = { bindingSet.get() };
+					graphicsState.VertexBuffer = cubeVBO.get();
+
+					cmdList->SetGraphicsState( graphicsState );
+
+					cmdList->ClearRenderTargets( ERHIClearFlags::ColorDepth, clearColor );
 
 					// Set the viewport
 					RHIViewport vp;
@@ -493,7 +544,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 					vp.Y = 0;
 					vp.MinDepth = 0.0f;
 					vp.MaxDepth = 1.0f;
-					cmdBuffer.SetViewports( { &vp, 1 } );
+					cmdList->SetViewports( { &vp, 1 } );
 
 					// Set Scissors
 					RHIScissorRect scissor;
@@ -501,15 +552,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 					scissor.Top = 0;
 					scissor.Right = width;
 					scissor.Bottom = height;
-					cmdBuffer.SetScissors( { &scissor, 1 } );
-
-					constexpr auto CycleRGB = +[]( float a_Time, float a_Speed = 1.0f )
-						{
-							float r = ( Math::Sin( a_Speed * a_Time ) + 1.0f ) / 2.0f;
-							float g = ( Math::Sin( a_Speed * a_Time + 2.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
-							float b = ( Math::Sin( a_Speed * a_Time + 4.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
-							return Color( r, g, b, 1.0f );
-						};
+					cmdList->SetScissors( { &scissor, 1 } );
 
 					// Get the PVM matrix
 					Vector3 pos = Vector3( 0.0f, 0.0f, 3.0f );
@@ -524,47 +567,30 @@ float4 PSMain( VSOutput input ) : SV_Target
 					inlinedConstants.PVM = projection * view * model;
 					inlinedConstants.Model = model;
 
-					Constants constants{};
-					Light light;
-					light.Colour = CycleRGB( time, 1.0f );
-					light.Position = Vector3( 0.0f, 0.0f, 2.0f );
-					light.Intensity = 1;
-					constants.LightData = light;
+					cmdList->SetInlinedConstants( inlinedConstants );
 
-					RHIBufferDescriptor constantsDesc{
-						"constants buffer",
-						256,
-						ERHIBindFlags::ConstantBuffer 
-					};
+					RHIDrawArgs drawArgs{};
+					drawArgs.BaseVertex = 0;
+					drawArgs.VertexCount = sizeof( cubeVerts ) / sizeof( Vertex );
 
-					RHIBufferRef constantsBuffer = RHI::CreateBuffer( 
-						constantsDesc, Span{ ReinterpretCast<uint8_t*>(&constants), sizeof( Constants ) }
-					);
-
-					RHIBindingSetDescriptor bindingSetDesc{ sbl };
-					bindingSetDesc.AddCombinedSampler( "Texture"_H, *tex );
-					bindingSetDesc.AddConstantBuffer( "constants"_H, *constantsBuffer );
-					RHIBindingSetRef bindingSet = RHI::CreateBindingSet( bindingSetDesc );
-					cmdBuffer.SetVertexBuffer( cubeVBO );
-					cmdBuffer.SetShaderBindings( bindingSet );
-
-					cmdBuffer.SetInlinedConstants( inlinedConstants );
-					cmdBuffer.Draw( 0, sizeof( cubeVerts ) / sizeof( Vertex ) );
+					cmdList->Draw( drawArgs );
 
 					inlinedConstants.Model = Math::Translate( -pos );
 					inlinedConstants.PVM = projection * view * inlinedConstants.Model;
-					cmdBuffer.SetInlinedConstants( inlinedConstants );
-					cmdBuffer.Draw( 0, sizeof( cubeVerts ) / sizeof( Vertex ) );
+					cmdList->SetInlinedConstants( inlinedConstants );
+
+					cmdList->Draw( drawArgs );
 
 					inlinedConstants.Model = Math::Translate( Vector3( 0.5 * -pos.X, -pos.Y, -pos.X + pos.Z ) );
 					inlinedConstants.PVM = projection * view * inlinedConstants.Model;
-					cmdBuffer.SetInlinedConstants( inlinedConstants );
-					cmdBuffer.Draw( 0, sizeof( cubeVerts ) / sizeof( Vertex ) );
+					cmdList->SetInlinedConstants( inlinedConstants );
 
-					cmdBuffer.ResourceBarrier( rt.get(), ERHIResourceStates::RenderTarget, ERHIResourceStates::Present);
-					cmdBuffer.ResourceBarrier( depthTex.get(), ERHIResourceStates::DepthStencilWrite, ERHIResourceStates::Present);
+					cmdList->Draw( drawArgs );
 
-					cmdList->SetGraphicsCommands( cmdBuffer );
+					cmdList->ResourceBarrier( *rt.get(), ERHIResourceStates::RenderTarget, ERHIResourceStates::Present );
+					cmdList->ResourceBarrier( *depthTex.get(), ERHIResourceStates::DepthStencilWrite, ERHIResourceStates::Present );
+
+					cmdList->Close();
 
 					RHI::ExecuteCommandList( cmdList );
 					cmdList->WaitUntilCompleted();
