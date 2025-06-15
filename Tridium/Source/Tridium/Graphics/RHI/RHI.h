@@ -52,24 +52,6 @@ namespace Tridium {
 		[[nodiscard]] RHIBindingSetRef CreateBindingSet( const RHIBindingSetDesc& a_Desc );
 		[[nodiscard]] RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc );
 
-		// Constructs a specific IRHIObject Implementation and registers it with the RHI.
-		// Used for creating resources that are not created by the RHI via RHI::CreateResource calls.
-		// Useful for also creating RHIResources from native API resources.
-		template<Concepts::IsRHIResourceImplementation _NativeResource, typename... _Args>
-		[[nodiscard]] static typename _NativeResource::RefType CreateNativeObject( _Args&&... a_Args )
-		{
-			return IRHIObject::CreateHandle( new _NativeResource( std::forward<_Args>( a_Args )... ) );
-		}
-
-		// Creates a RHI Reference to the given resource and registers it with the RHI.
-		// Used for creating resources that are not created by the RHI via RHI::CreateResource calls.
-		// Useful for also creating RHIResources from native API resources.
-		template<Concepts::IsRHIResourceImplementation T>
-		[[nodiscard]] static typename T::RefType CreateNativeObject( T* a_Resource )
-		{
-			return IRHIObject::CreateHandle( a_Resource );
-		}
-
 		// Wrappers
 
 		[[nodiscard]] inline RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, RHITextureSubresourceData a_SubResourcesData )

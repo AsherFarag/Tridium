@@ -376,7 +376,10 @@ struct VSOutput
 	float3 normal : NORMAL;
 };
 
-COMBINED_SAMPLER( Texture, Texture2D, 0 );
+//COMBINED_SAMPLER( Texture, Texture2D, 0 );
+
+Texture2D Texture : register( t0 );
+SamplerState TextureSampler : register( s0 );
 
 float4 PSMain( VSOutput input ) : SV_Target
 {
@@ -390,7 +393,8 @@ float4 PSMain( VSOutput input ) : SV_Target
 	float3 specular = 1000.0f * pow( max( dot( viewDir, reflectDir ), 0.0f ), 32.0f ) * constants.LightData.Colour.rgb;
 	float3 color = ambient + diffuse + specular;
 	color *= constants.LightData.Intensity;
-	color = Sample( Texture, input.uv ).rgb;
+	//color = Sample( Texture, input.uv ).rgb;
+	color = Texture.Sample( TextureSampler, input.uv ).rgb;
 	return float4( color, 1.0f );
 }
 )";
@@ -422,9 +426,9 @@ float4 PSMain( VSOutput input ) : SV_Target
 			sblDesc.Visibility = ERHIShaderVisibility::All;
 			sblDesc.AddBinding( "inlinedConstants"_H ).AsInlinedConstants( 0, 128 );
 			sblDesc.AddBinding( "constants"_H ).AsConstantBuffer( 1 );
-			sblDesc.AddBinding( "Texture"_H ).AsCombinedSampler( 0 );
-
-
+			//sblDesc.AddBinding( "Texture"_H ).AsCombinedSampler( 0 );
+			sblDesc.AddBinding( "Texture"_H ).AsTexture( 0 );
+			sblDesc.AddBinding( "TextureSampler"_H ).AsSampler( 0 );
 			RHIBindingLayoutRef sbl = RHI::CreateBindingLayout( sblDesc );
 
 			RHIFramebufferInfo fbInfo{};
@@ -438,7 +442,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 			psd.PixelShader = pixelShader;
 			psd.FramebufferInfo = fbInfo;
 			psd.VertexLayout = layout;
-			psd.BindingLayout = sbl;
+			psd.BindingLayouts.EmplaceBack( sbl );
 			psd.RasterizerState.CullMode = ERHIRasterizerCullMode::None;
 			psd.Name = "My pipeline state";
 			RHIGraphicsPipelineStateRef pso = RHI::CreateGraphicsPipelineState( psd );
@@ -522,13 +526,15 @@ float4 PSMain( VSOutput input ) : SV_Target
 					);
 
 					RHIBindingSetDesc bindingSetDesc{ sbl };
-					bindingSetDesc.AddCombinedSampler( "Texture"_H, *tex );
+					//bindingSetDesc.AddCombinedSampler( "Texture"_H, *tex );
 					bindingSetDesc.AddConstantBuffer( "constants"_H, *constantsBuffer );
+					bindingSetDesc.AddTexture( "Texture"_H, *tex );
+					bindingSetDesc.AddSampler( "TextureSampler"_H, *sampler );
 					RHIBindingSetRef bindingSet = RHI::CreateBindingSet( bindingSetDesc );
 
 					graphicsState.PipelineState = pso.get();
-					graphicsState.Framebuffer.ColorAttachments = { rt.get() };
-					graphicsState.Framebuffer.DepthStencilAttachment = depthTex.get();
+					graphicsState.Framebuffer.ColorAttachments = InitList{ RHIFramebuffer::Attachment{ rt.get() } };
+					graphicsState.Framebuffer.DepthStencilAttachment.Texture = depthTex.get();
 					graphicsState.BindingSets = { bindingSet.get() };
 					graphicsState.VertexBuffer = cubeVBO.get();
 

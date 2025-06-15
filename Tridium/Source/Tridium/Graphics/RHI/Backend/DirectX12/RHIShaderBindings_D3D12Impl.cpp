@@ -4,6 +4,26 @@
 
 namespace Tridium::D3D12 {
 
+    static constexpr bool AreBindingsCompatible( ERHIBindingType a_First, ERHIBindingType a_Second )
+    {
+        using enum ERHIBindingType;
+
+        if ( a_First == a_Second )
+            return true;
+
+        // SRV
+        if (   ( a_First == StructuredBuffer && a_Second == Texture )
+            || ( a_Second == StructuredBuffer && a_First == Texture ) )
+            return true;
+
+        // UAV
+        if (   ( a_First == StorageBuffer && a_Second == StorageTexture )
+            || ( a_Second == StorageBuffer && a_First == StorageTexture) )
+            return true;
+
+        return false;
+    }
+
 	static constexpr D3D12_STATIC_SAMPLER_DESC MakeStaticSampler( D3D12_FILTER a_Filter, D3D12_TEXTURE_ADDRESS_MODE a_WrapMode, uint32_t a_Register, uint32_t a_Space, uint32_t a_MaxAnisotropy = 1 )
     {
         D3D12_STATIC_SAMPLER_DESC result = {};
@@ -35,110 +55,141 @@ namespace Tridium::D3D12 {
         MakeStaticSampler( D3D12_FILTER_MIN_MAG_MIP_LINEAR,       D3D12_TEXTURE_ADDRESS_MODE_CLAMP, 5, 1000 ),
     };
 
+    // Based off NVRHI d3d12::BindingLayout()
 	RHIBindingLayout_D3D12Impl::RHIBindingLayout_D3D12Impl( const DescriptorType& a_Desc )
         : IRHIBindingLayout( a_Desc )
     {
+        uint32_t currentSlot = ~0u;
         ERHIBindingType currentType = ERHIBindingType::Unknown;
 		D3D12_ROOT_CONSTANTS rootConstants{};
 
         for ( const auto& binding : a_Desc.Bindings )
         {
-            switch ( binding.Type() )
+            if ( binding.Type() == ERHIBindingType::InlinedConstants )
             {
+                InlinedConstantsSize = binding.Size;
+                rootConstants.Num32BitValues = NumDWORDsFromBytes( binding.Size );
+                rootConstants.ShaderRegister = binding.Slot;
+                rootConstants.RegisterSpace = a_Desc.RegisterSpace;
+            }
+            // Do we need to start a new range?
+            else if ( !AreBindingsCompatible( binding.Type(), currentType )
+                || binding.Slot != currentSlot + 1 )
+            {
+                if ( binding.Type() == ERHIBindingType::Sampler )
+                {
+                    D3D12_DESCRIPTOR_RANGE1& range = DescriptorRangesSamplers.EmplaceBack();
+                    range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+                    range.NumDescriptors = 1;
+                    range.BaseShaderRegister = binding.Slot;
+                    range.RegisterSpace = a_Desc.RegisterSpace;
+                    range.OffsetInDescriptorsFromTableStart = DescriptorTableSizeSamplers++;
+                    range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
+                }
+                else
+                {
+                    D3D12_DESCRIPTOR_RANGE1& range = DescriptorRangesRenderResources.EmplaceBack();
+                    switch ( binding.Type() )
+                    {
+                        // SRV
+                        case ERHIBindingType::StructuredBuffer:
+                        case ERHIBindingType::Texture:
+                        {
+                            range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+                            break;
+                        }
+                        // UAV
+                        case ERHIBindingType::StorageBuffer:
+                        case ERHIBindingType::StorageTexture:
+                        {
+                            range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+                            break;
+                        }
+                        // CBV
+                        case ERHIBindingType::ConstantBuffer:
+                        {
+                            range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+                            break;
+                        }
+                        default:
+                        {
+                            RHI_DEV_CHECK( false, "Invalid binding type '{}'", ToString( binding.Type() ) );
+                            continue;
+                        }
+                    }
+
+                    range.NumDescriptors = 1;
+                    range.BaseShaderRegister = binding.Slot;
+                    range.RegisterSpace = a_Desc.RegisterSpace;
+                    range.OffsetInDescriptorsFromTableStart = DescriptorTableSizeRenderResources++;
+                    range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE;
+
+                    RenderResourceBindingLayouts.PushBack( binding );
+                }
+
+                currentSlot = binding.Slot;
+                currentType = binding.Type();
+            }
+            // Extend the current range
+            else
+            {
+                if ( binding.Type() == ERHIBindingType::Sampler )
+                {
+                    ASSERT( !DescriptorRangesSamplers.Empty() );
+                    D3D12_DESCRIPTOR_RANGE1& range = DescriptorRangesSamplers.EmplaceBack();
+                    range.NumDescriptors += 1;
+                    DescriptorTableSizeSamplers++;
+                }
+                else
+                {
+                    ASSERT( !DescriptorRangesRenderResources.Empty() );
+                    D3D12_DESCRIPTOR_RANGE1& range = DescriptorRangesRenderResources.EmplaceBack();
+                    range.NumDescriptors += 1;
+                    DescriptorTableSizeRenderResources++;
+                    RenderResourceBindingLayouts.PushBack( binding );
+                }
+
+                currentSlot = binding.Slot;
             }
         }
 
+        RootParams.Clear();
 
-    #if 0
-		const auto& device = GetD3D12RHI()->GetD3D12Device();
-		const D3D12_SHADER_VISIBILITY d3d12Visibility = D3D12::Translate( a_Desc.Visibility );
-
-		Array<RootParameter> rootParams;
-
-		// Reserve space for the root parameters
-		rootParams.Reserve( a_Desc.Bindings.Size() );
-
-        Array<Array<DescriptorRange>> descriptorRangesList; // Stores ranges for each root param
-        descriptorRangesList.Reserve( a_Desc.Bindings.Size() );
-
-        for ( const auto& binding : a_Desc.Bindings )
+        if ( rootConstants.Num32BitValues )
         {
-            switch ( binding.Type() )
-            {
-			case ERHIBindingType::InlinedConstants:
-			{
-				rootParams.EmplaceBack().AsConstants( NumDWORDsFromBytes( binding.Size ), d3d12Visibility, binding.Slot );
-				break;
-			}
-            case ERHIBindingType::ConstantBuffer:
-            {
-				rootParams.EmplaceBack().AsCBV( d3d12Visibility, binding.Slot );
-                break;
-            }
-            case ERHIBindingType::Texture:
-            case ERHIBindingType::StructuredBuffer:
-            {
-                descriptorRangesList.EmplaceBack();
-                auto& range = descriptorRangesList.Back();
-                range.Resize( 1 );
-				range[0] = D3D12::DescriptorRange( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, binding.Slot );
-
-				rootParams.EmplaceBack().AsSRV( d3d12Visibility, binding.Slot );
-                break;
-            }
-            case ERHIBindingType::Sampler:
-            {
-                // Dynamic sampler - Descriptor Heap Binding
-                descriptorRangesList.EmplaceBack();
-                auto& range = descriptorRangesList.Back();
-                range.Resize( 1 );
-				range[0] = D3D12::DescriptorRange( D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, binding.Slot );
-
-				rootParams.EmplaceBack().AsDescriptorTable( d3d12Visibility, range );
-                break;
-            }
-            case ERHIBindingType::CombinedSampler:
-            {
-                {
-					// Dynamic sampler - Descriptor Heap Binding
-                    descriptorRangesList.EmplaceBack();
-                    auto& range = descriptorRangesList.Back();
-                    range.Resize( 1 );
-					range[0] = D3D12::DescriptorRange( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, binding.Slot );
-
-					rootParams.EmplaceBack().AsDescriptorTable( d3d12Visibility, range );
-                }
-                {
-                    // Dynamic sampler - Descriptor Heap Binding
-                    descriptorRangesList.EmplaceBack();
-                    auto& range = descriptorRangesList.Back();
-                    range.Resize( 1 );
-					range[0] = D3D12::DescriptorRange( D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, binding.Slot );
-
-					rootParams.EmplaceBack().AsDescriptorTable( d3d12Visibility, range );
-                }
-				break;
-            }
-            }
+            D3D12_ROOT_PARAMETER1& param = RootParams.EmplaceBack();
+            param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+            param.ShaderVisibility = Translate( a_Desc.Visibility );
+            param.Constants = rootConstants;
+            RootParamInlinedConstants = RootParameterIndex( RootParams.Size() - 1 );
         }
 
-        D3D12_ROOT_SIGNATURE_FLAGS flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+        if ( DescriptorTableSizeSamplers )
+        {
+            D3D12_ROOT_PARAMETER1& param = RootParams.EmplaceBack();
+            param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+            param.ShaderVisibility = Translate( a_Desc.Visibility );
+            param.DescriptorTable.NumDescriptorRanges = UINT( DescriptorRangesSamplers.Size() );
+            param.DescriptorTable.pDescriptorRanges = &DescriptorRangesSamplers[0];
+            RootParamSamplers = RootParameterIndex( RootParams.Size() - 1 );
+        }
 
-		// Create the root signature
-        RootSignatureDesc rootSignatureDesc{
-            rootParams,
-            { s_StaticSamplerDescs, s_NumStaticSamplers },
-            flags 
-        };
-
-    #endif
+        if ( DescriptorTableSizeRenderResources > 0 )
+        {
+            D3D12_ROOT_PARAMETER1& param = RootParams.EmplaceBack();
+            param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+            param.ShaderVisibility = Translate( a_Desc.Visibility );
+            param.DescriptorTable.NumDescriptorRanges = UINT( DescriptorRangesRenderResources.Size() );
+            param.DescriptorTable.pDescriptorRanges = &DescriptorRangesRenderResources[0];
+            RootParamRenderResources = RootParameterIndex( RootParams.Size() - 1 );
+        }
     }
 
     bool RHIBindingLayout_D3D12Impl::Release()
     {
         InlinedConstantsSize = 0; // Size of the inlined constants in bytes
         RootParamInlinedConstants = ~0;
-        RootParamSRV = ~0;
+        RootParamRenderResources = ~0;
         RootParamSamplers = ~0;
         RootParams.Clear();
         return true;

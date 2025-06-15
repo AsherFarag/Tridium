@@ -71,16 +71,16 @@ namespace Tridium::D3D12 {
 			? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	}
 
-	TODO( "Remove this or implement it" );
 	struct RootSignature
 	{
-		size_t Hash = 0;
+		hash64_t Hash = 0;
 		InlineArray<Pair<RHIBindingLayoutRef, RootParameterIndex>, RHIConstants::MaxBindingLayouts> Layouts;
 		ComPtr<ID3D12RootSignature> D3D12Signature;
 		uint32_t InlinedConstantsSize = 0; // Size of the inlined constants in bytes
 		RootParameterIndex RootParamInlinedConstants = c_InvalidRootParameterIndex;
 
-		static RootSignature Build( Span<RHIBindingLayoutRef> a_Layouts, bool a_AllowInputLayout, bool a_IsLocal, Span<const D3D12_ROOT_PARAMETER1> a_CustomParams = {} );
+		bool Valid() const { return D3D12Signature && Layouts.Size(); }
+		static RootSignature Build( Span<const RHIBindingLayoutRef> a_Layouts, bool a_AllowInputLayout, bool a_IsLocal, Span<const D3D12_ROOT_PARAMETER1> a_CustomParams = {} );
 	};
 
 	struct D3D12TierInfo
@@ -425,6 +425,14 @@ namespace Tridium::D3D12 {
 		DescriptorHeapRef m_Heap;
 	};
 
+	struct DescriptorHeapManagerDesc
+	{
+		uint32_t NumGlobalResourceDescriptors     = 16384; // Number of resource descriptors in their static heap. (SRV, UAV, CBV).
+		uint32_t NumGlobalSamplerDescriptors      = 1024;  // Number of sampler descriptors in their static heap.
+		uint32_t NumGlobalRenderTargetDescriptors = 1024;  // Number of render target descriptors in their static heap.
+		uint32_t NumGlobalDepthStencilDescriptors = 1024;  // Number of depth stencil descriptors in their static heap.
+	};
+
 	//=====================================================================
 	// Descriptor Heap Manager
 	//  The primary descriptor heap manager for the device.
@@ -473,7 +481,7 @@ namespace Tridium::D3D12 {
 		~DescriptorHeapManager() { ENSURE( m_Shutdown, "DescriptorHeapManager was not shutdown!" ); }
 
 		// Initialize the descriptor heap manager
-		void Init( ID3D12Device* a_Device, uint32_t a_NumGlobalResourceDescriptors, uint32_t a_NumGlobalSamplerDescriptors );
+		void Init( ID3D12Device* a_Device, const DescriptorHeapManagerDesc& a_Desc );
 		void Shutdown();
 
 		// Try to retieve a pooled heap, can return null
@@ -501,7 +509,7 @@ namespace Tridium::D3D12 {
 	{
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIFence_D3D12Impl, ERHInterfaceType::DirectX12 );
-		RHIFence_D3D12Impl( const DescriptorType & a_Desc );
+		RHIFence_D3D12Impl( const DescriptorType& a_Desc );
 		virtual ~RHIFence_D3D12Impl();
 
 		bool Release() override;
@@ -526,7 +534,7 @@ namespace Tridium::D3D12 {
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHITexture_D3D12Impl, ERHInterfaceType::DirectX12 );
 
 		RHITexture_D3D12Impl( const RHITextureDesc & a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData = {} );
-		~RHITexture_D3D12Impl() override = default;
+		~RHITexture_D3D12Impl() override { Release(); }
 
 		virtual bool Release() override;
 		virtual const void* NativePtr() const override { return Texture.Resource; }
@@ -558,6 +566,8 @@ namespace Tridium::D3D12 {
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBuffer_D3D12Impl, ERHInterfaceType::DirectX12 );
 
 		RHIBuffer_D3D12Impl( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data = {} );
+		~RHIBuffer_D3D12Impl() override { Release(); }
+
 		virtual bool Release() override { ManagedBuffer.Release(); return true; }
 		virtual bool Valid() const override { return ManagedBuffer.Valid(); }
 		virtual const void* NativePtr() const override { return ManagedBuffer.Resource; }
@@ -577,6 +587,7 @@ namespace Tridium::D3D12 {
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHISampler_D3D12Impl, ERHInterfaceType::DirectX12 )
 		RHISampler_D3D12Impl( const DescriptorType & a_Desc );
+		~RHISampler_D3D12Impl() override { Release(); }
 
 		bool Release() override { SamplerHeap.Reset(); SamplerHandle = {}; SamplerDesc = {}; return true; }
 		bool Valid() const override { return SamplerHeap != nullptr; }
@@ -598,14 +609,21 @@ namespace Tridium::D3D12 {
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBindingLayout_D3D12Impl, ERHInterfaceType::DirectX12 );
 		RHIBindingLayout_D3D12Impl( const DescriptorType & a_Desc );
+		virtual ~RHIBindingLayout_D3D12Impl() { Release(); }
+
 		bool Release() override;
 		bool Valid() const override;
 		const void* NativePtr() const override;
 
 		uint32_t InlinedConstantsSize = 0; // Size of the inlined constants in bytes
-		RootParameterIndex RootParamInlinedConstants = ~0;
-		RootParameterIndex RootParamSRV = ~0;
-		RootParameterIndex RootParamSamplers = ~0;
+		RootParameterIndex RootParamInlinedConstants = c_InvalidRootParameterIndex;
+		RootParameterIndex RootParamRenderResources = c_InvalidRootParameterIndex;
+		RootParameterIndex RootParamSamplers = c_InvalidRootParameterIndex;
+		uint32_t DescriptorTableSizeRenderResources = 0; // Size of the descriptor table for SRV, UAV, CBV.
+		uint32_t DescriptorTableSizeSamplers = 0;
+		Array<D3D12_DESCRIPTOR_RANGE1> DescriptorRangesRenderResources{}; // Descriptor ranges for SRV, UAV,  CBV.
+		Array<D3D12_DESCRIPTOR_RANGE1> DescriptorRangesSamplers{};
+		Array<RHIShaderBinding> RenderResourceBindingLayouts{}; // All SRV, UAV, and CBV's in the binding layout.
 		InlineArray<D3D12_ROOT_PARAMETER1, 32> RootParams;
 	};
 
@@ -618,6 +636,8 @@ namespace Tridium::D3D12 {
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBindingSet_D3D12Impl, ERHInterfaceType::DirectX12 );
 		RHIBindingSet_D3D12Impl( const DescriptorType & a_Desc );
+		~RHIBindingSet_D3D12Impl() override { Release(); }
+
 		bool Release() override;
 		bool Valid() const override;
 		const void* NativePtr() const override;
@@ -632,6 +652,8 @@ namespace Tridium::D3D12 {
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIShaderModule_D3D12Impl, ERHInterfaceType::DirectX12 )
 		RHIShaderModule_D3D12Impl( const DescriptorType & a_Desc );
+		~RHIShaderModule_D3D12Impl() override { Release(); }
+
 		bool Release() override;
 		bool Valid() const override;
 		const void* NativePtr() const override;
@@ -647,13 +669,14 @@ namespace Tridium::D3D12 {
 	{
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIGraphicsPipelineState_D3D12Impl, ERHInterfaceType::DirectX12 );
+		RHIGraphicsPipelineState_D3D12Impl( const DescriptorType& a_Desc, SharedPtr<RootSignature> a_RootSig );
+		~RHIGraphicsPipelineState_D3D12Impl() override { Release(); }
 
-		RHIGraphicsPipelineState_D3D12Impl( const DescriptorType & a_Desc );
 		bool Release() override;
-		bool Valid() const override { return PSO != nullptr; }
+		bool Valid() const override { return PSO != nullptr && RootSig != nullptr; }
 		const void* NativePtr() const override { return PSO.Get(); }
 
-		SharedPtr<RootSignature> RootSignature;
+		SharedPtr<RootSignature> RootSig;
 		ComPtr<ID3D12PipelineState> PSO;
 		InlineArray<D3D12_INPUT_ELEMENT_DESC, RHIConstants::MaxVertexAttributes> VertexLayout;
 	};
@@ -666,8 +689,9 @@ namespace Tridium::D3D12 {
 	{
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHISwapChain_D3D12Impl, ERHInterfaceType::DirectX12 );
-
 		RHISwapChain_D3D12Impl( const DescriptorType & a_Desc );
+		~RHISwapChain_D3D12Impl() override { Release(); }
+
 		bool Release() override;
 		bool Valid() const override;
 		const void* NativePtr() const override { return SwapChain.Get(); }
@@ -698,8 +722,8 @@ namespace Tridium::D3D12 {
 	{
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHICommandList_D3D12Impl, ERHInterfaceType::DirectX12 );
-
 		RHICommandList_D3D12Impl( const RHICommandListDesc& a_Desc );
+		~RHICommandList_D3D12Impl() override { Release(); }
 		bool Release() override;
 		bool Valid() const override { return CommandList != nullptr; }
 		const void* NativePtr() const override { return CommandList.Get(); }
@@ -746,15 +770,21 @@ namespace Tridium::D3D12 {
 		uint64_t m_FenceValue = 0;
 
 		Array<RHIObjectRef> m_ReferencedResources{};
+		Array<SharedPtr<DescriptorHeap>> m_DescriptorHeaps{};
+		DescriptorHeap* m_RTVHeap = nullptr;
+		DescriptorHeap* m_DSVHeap = nullptr;
 
-		RHIGraphicsState m_CurrentGraphicsState{}; // Current graphics state for the command list.
 		bool m_GraphicsStateValid = false; // Whether the graphics state has been set.
+		RHIGraphicsState m_CurrentGraphicsState{}; // Current graphics state for the command list.
 
 	private:
 		void CommitBarriers();
 		void BindGraphicsPipelineState( RHIGraphicsPipelineState_D3D12Impl* a_PSO, bool a_UpdateRootSignature );
 		void BindFramebuffer( const RHIFramebuffer& a_Framebuffer );
 		void BindGraphicsBindings( Span<IRHIBindingSet const* const> a_BindingSets, uint32_t a_UpdateMask, const SharedPtr<RootSignature>& a_RootSignature );
+
+		// Helper for allocating and registering a descriptor heap to the command list.
+		const SharedPtr<DescriptorHeap>& AllocateHeap( ERHIDescriptorHeapType a_Type, uint32_t a_NumDescriptors, EDescriptorHeapFlags a_Flags, StringView a_DebugName = {} );
 	};
 
 	//======================================================================
@@ -863,8 +893,13 @@ namespace Tridium::D3D12 {
 		Array<DeferredDeleteObject> m_ObjectsToDelete{};
 		UploadBuffer m_UploadBuffer{};
 		FixedArray<CommandContext, size_t( ERHICommandQueueType::COUNT )> m_CmdContexts{};
+		UnorderedMap<hash64_t, WeakPtr<RootSignature>> m_RootSignatureCache{};
 
 		//=====================================================
+
+	private:
+		// Will either find an existing root signature or create a new one.
+		SharedPtr<RootSignature> GetRootSignature( Span<const RHIBindingLayoutRef> a_BindingLayouts, bool a_AllowInputLayout );
 
 	#if RHI_DEBUG_ENABLED
 	public:

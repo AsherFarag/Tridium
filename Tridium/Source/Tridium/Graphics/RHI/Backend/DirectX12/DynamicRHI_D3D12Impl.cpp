@@ -165,10 +165,7 @@ namespace Tridium::D3D12 {
 		}
 
 		// Init the descriptor heap manager
-		TODO( "Figure out some better values/where to get them from" );
-		const uint32_t numResourceDescriptors = 2048;
-		const uint32_t numSamplerDescriptors = 512;
-		m_DescriptorHeapManager.Init( m_Device.Get(), numResourceDescriptors, numSamplerDescriptors );
+		m_DescriptorHeapManager.Init( m_Device.Get(), DescriptorHeapManagerDesc{} );
 
 		// Create the upload buffer
 		if ( !m_UploadBuffer.Commit( 1024 * 1024 * 64, *m_Allocator.Get() ) )
@@ -245,16 +242,9 @@ namespace Tridium::D3D12 {
     bool DynamicRHI_D3D12Impl::ExecuteCommandList( RHICommandListRef a_CommandList )
     {
 		RHICommandList_D3D12Impl* cmdList = a_CommandList->As<RHICommandList_D3D12Impl>();
-		if ( FAILED( cmdList->GraphicsCommandList()->Close() ) )
-		{
-			LOG( LogCategory::DirectX, Error, "Failed to close command list" );
-			return false;
-		}
-
 		auto& cmdCtx = GetCommandContext( a_CommandList->Desc().QueueType );
 		cmdCtx.CmdQueue->ExecuteCommandLists( 1, cmdList->CommandList.GetAddressOf() );
 		a_CommandList->SetFenceValue( cmdCtx.Signal() );
-
 		return true;
     }
 
@@ -264,70 +254,71 @@ namespace Tridium::D3D12 {
 
 	RHIFenceRef DynamicRHI_D3D12Impl::CreateFence( const RHIFenceDesc& a_Desc )
 	{
-		RHIFenceRef fence = RHI::CreateNativeObject<RHIFence_D3D12Impl>( a_Desc );
+		RHIFenceRef fence = IRHIObject::Create<RHIFence_D3D12Impl>( a_Desc );
 		RegisterRHIResource( *fence.get() );
 		return fence;
 	}
 
 	RHISamplerRef DynamicRHI_D3D12Impl::CreateSampler( const RHISamplerDesc& a_Desc )
 	{
-		RHISamplerRef sampler = RHI::CreateNativeObject<RHISampler_D3D12Impl>( a_Desc );
+		RHISamplerRef sampler = IRHIObject::Create<RHISampler_D3D12Impl>( a_Desc );
 		RegisterRHIResource( *sampler.get() );
 		return sampler;
 	}
 
 	RHITextureRef DynamicRHI_D3D12Impl::CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
 	{
-		RHITextureRef texture = RHI::CreateNativeObject<RHITexture_D3D12Impl>( a_Desc, a_SubResourcesData );
+		RHITextureRef texture = IRHIObject::Create<RHITexture_D3D12Impl>( a_Desc, a_SubResourcesData );
 		RegisterRHIResource( *texture.get() );
 		return texture;
 	}
 
 	RHIBufferRef DynamicRHI_D3D12Impl::CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data )
 	{
-		RHIBufferRef buffer = RHI::CreateNativeObject<RHIBuffer_D3D12Impl>( a_Desc, a_Data );
+		RHIBufferRef buffer = IRHIObject::Create<RHIBuffer_D3D12Impl>( a_Desc, a_Data );
 		RegisterRHIResource( *buffer.get() );
 		return buffer;
 	}
 
 	RHIGraphicsPipelineStateRef DynamicRHI_D3D12Impl::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc )
 	{
- 		RHIGraphicsPipelineStateRef pso = RHI::CreateNativeObject<RHIGraphicsPipelineState_D3D12Impl>( a_Desc );
+		SharedPtr<RootSignature> rootSig = GetRootSignature( a_Desc.BindingLayouts, a_Desc.VertexLayout.Valid() );
+ 		RHIGraphicsPipelineStateRef pso = IRHIObject::Create<RHIGraphicsPipelineState_D3D12Impl>( a_Desc, rootSig );
 		RegisterRHIResource( *pso.get() );
 		return pso;
 	}
 
 	RHICommandListRef DynamicRHI_D3D12Impl::CreateCommandList( const RHICommandListDesc& a_Desc )
 	{
- 		RHICommandListRef cmdList = RHI::CreateNativeObject<RHICommandList_D3D12Impl>( a_Desc );
+ 		RHICommandListRef cmdList = IRHIObject::Create<RHICommandList_D3D12Impl>( a_Desc );
 		RegisterRHIResource( *cmdList.get() );
 		return cmdList;
 	}
 
 	RHIShaderModuleRef DynamicRHI_D3D12Impl::CreateShaderModule( const RHIShaderModuleDesc& a_Desc )
 	{
-		RHIShaderModuleRef shaderModule = RHI::CreateNativeObject<RHIShaderModule_D3D12Impl>( a_Desc );
+		RHIShaderModuleRef shaderModule = IRHIObject::Create<RHIShaderModule_D3D12Impl>( a_Desc );
 		RegisterRHIResource( *shaderModule.get() );
 		return shaderModule;
 	}
 
 	RHIBindingLayoutRef DynamicRHI_D3D12Impl::CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc )
 	{
-		RHIBindingLayoutRef bindingLayout = RHI::CreateNativeObject<RHIBindingLayout_D3D12Impl>( a_Desc );
+		RHIBindingLayoutRef bindingLayout = IRHIObject::Create<RHIBindingLayout_D3D12Impl>( a_Desc );
 		RegisterRHIResource( *bindingLayout.get() );
 		return bindingLayout;
 	}
 
 	RHIBindingSetRef DynamicRHI_D3D12Impl::CreateBindingSet( const RHIBindingSetDesc& a_Desc )
 	{
-		RHIBindingSetRef bindingSet = RHI::CreateNativeObject<RHIBindingSet_D3D12Impl>( a_Desc );
+		RHIBindingSetRef bindingSet = IRHIObject::Create<RHIBindingSet_D3D12Impl>( a_Desc );
 		RegisterRHIResource( *bindingSet.get() );
 		return bindingSet;
 	}
 
 	RHISwapChainRef DynamicRHI_D3D12Impl::CreateSwapChain( const RHISwapChainDesc& a_Desc )
 	{
-		RHISwapChainRef swapChain = RHI::CreateNativeObject<RHISwapChain_D3D12Impl>( a_Desc );
+		RHISwapChainRef swapChain = IRHIObject::Create<RHISwapChain_D3D12Impl>( a_Desc );
 		RegisterRHIResource( *swapChain.get() );
 		return swapChain;
 	}
@@ -390,12 +381,40 @@ namespace Tridium::D3D12 {
 		return gpuInfo;
 	}
 
+	SharedPtr<RootSignature> DynamicRHI_D3D12Impl::GetRootSignature( Span<const RHIBindingLayoutRef> a_BindingLayouts, bool a_AllowInputLayout )
+	{
+		hash64_t hash = 0;
+		for ( const auto& bindingLayout : a_BindingLayouts )
+			hash = Hashing::HashCombine( hash, bindingLayout.get() );
+
+		hash = Hashing::HashCombine( hash, a_AllowInputLayout );
+
+		// Check if the root signature is already cached
+		if ( auto it = m_RootSignatureCache.find( hash );
+			it != m_RootSignatureCache.end() && !it->second.expired() )
+		{
+			return it->second.lock();
+		}
+
+		// Create a new root signature
+		SharedPtr<RootSignature> newRootSignature{};
+		if ( RootSignature rootSig = RootSignature::Build( a_BindingLayouts, a_AllowInputLayout, false );
+			rootSig.Valid() )
+		{
+			rootSig.Hash = hash;
+			newRootSignature = MakeShared<RootSignature>( std::move( rootSig ) );
+			m_RootSignatureCache[hash] = newRootSignature;
+		}
+		
+		return newRootSignature;
+	}
+
 	//////////////////////////////////////////////////////////////////////////
     // DEBUG
 	//////////////////////////////////////////////////////////////////////////
 
 #if RHI_DEBUG_ENABLED
-    void DynamicRHI_D3D12Impl::DumpDebug()
+	void DynamicRHI_D3D12Impl::DumpDebug()
     {
         if ( m_DXGIDebug )
         {

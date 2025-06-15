@@ -104,6 +104,18 @@ namespace Tridium::D3D12 {
 
 	bool RHICommandList_D3D12Impl::Close()
 	{
+		CommitBarriers();
+
+		if ( FAILED( GraphicsCommandList()->Close() ) )
+		{
+			LOG( LogCategory::DirectX, Error, "Failed to close command list" );
+			return false;
+		}
+
+		m_GraphicsStateValid = false;
+		m_RTVHeap = nullptr;
+		m_DSVHeap = nullptr;
+
 		return true;
 	}
 
@@ -143,7 +155,7 @@ namespace Tridium::D3D12 {
 		bool isGraphics = false;
 		if ( m_CurrentGraphicsState.PipelineState )
 		{
-			rootSig = m_CurrentGraphicsState.PipelineState->As<RHIGraphicsPipelineState_D3D12Impl>()->RootSignature.get();
+			rootSig = m_CurrentGraphicsState.PipelineState->As<RHIGraphicsPipelineState_D3D12Impl>()->RootSig.get();
 			isGraphics = true;
 		}
 
@@ -184,7 +196,7 @@ namespace Tridium::D3D12 {
 
 		const bool updateRootSig = !m_GraphicsStateValid 
 			|| m_CurrentGraphicsState.PipelineState == nullptr
-			|| m_CurrentGraphicsState.PipelineState->As<RHIGraphicsPipelineState_D3D12Impl>()->RootSignature != pso->RootSignature;
+			|| m_CurrentGraphicsState.PipelineState->As<RHIGraphicsPipelineState_D3D12Impl>()->RootSig != pso->RootSig;
 
 		const bool updateFramebuffer = !m_GraphicsStateValid || m_CurrentGraphicsState.Framebuffer != a_GraphicsState.Framebuffer;
 		const bool updatePipelineState = !m_GraphicsStateValid || m_CurrentGraphicsState.PipelineState != a_GraphicsState.PipelineState;
@@ -209,13 +221,13 @@ namespace Tridium::D3D12 {
 		if ( updateFramebuffer )
 		{
 			BindFramebuffer( a_GraphicsState.Framebuffer );
-			for ( IRHITexture* attachment : a_GraphicsState.Framebuffer.ColorAttachments )
-				m_ReferencedResources.EmplaceBack( attachment->SharedFromThis() );
+			for ( const auto& attachment : a_GraphicsState.Framebuffer.ColorAttachments )
+				m_ReferencedResources.EmplaceBack( attachment.Texture->SharedFromThis() );
 			if ( a_GraphicsState.Framebuffer.DepthStencilAttachment )
-				m_ReferencedResources.EmplaceBack( a_GraphicsState.Framebuffer.DepthStencilAttachment->SharedFromThis() );
+				m_ReferencedResources.EmplaceBack( a_GraphicsState.Framebuffer.DepthStencilAttachment.Texture->SharedFromThis() );
 		}
 
-		BindGraphicsBindings( a_GraphicsState.BindingSets, bindingsUpdateMask, pso->RootSignature );
+		BindGraphicsBindings( a_GraphicsState.BindingSets, bindingsUpdateMask, pso->RootSig );
 
 		if ( updateIndexBuffer )
 		{
@@ -231,7 +243,7 @@ namespace Tridium::D3D12 {
 
 				TODO( "Add support for index buffer offset" );
 				ibv.BufferLocation = indexBuffer->ManagedBuffer.Resource->GetGPUVirtualAddress() /* + a_GraphicsState.IndexBufferOffset */;
-				//ibv.SizeInBytes = indexBuffer->GetSizeInBytes() /* - a_GraphicsState.IndexBufferOffset */;
+				ibv.SizeInBytes = indexBuffer->ManagedBuffer.Resource->GetDesc().Width /* - a_GraphicsState.IndexBufferOffset */;
 				ibv.Format = D3D12::Translate( indexBuffer->Desc().Format );
 				RHI_DEV_CHECK( ibv.Format == DXGI_FORMAT_R16_UINT || ibv.Format == DXGI_FORMAT_R32_UINT, "Invalid index buffer format!" );
 			}
@@ -253,7 +265,7 @@ namespace Tridium::D3D12 {
 
 				TODO( "Add support for vertex buffer offset" );
 				vbv.BufferLocation = vertexBuffer->ManagedBuffer.Resource->GetGPUVirtualAddress();
-				//vbv.SizeInBytes = vertexBuffer->GetSizeInBytes();
+				vbv.SizeInBytes = vertexBuffer->ManagedBuffer.Resource->GetDesc().Width;
 				vbv.StrideInBytes = vertexBuffer->Desc().Stride;
 			}
 
@@ -270,6 +282,46 @@ namespace Tridium::D3D12 {
 	{
 		IRHICommandList::ClearRenderTargets( a_Flags, a_ClearColor, a_DepthValue, a_StencilValue, a_ColorAttachmentIndex, RHI_DEBUG_SRC_LOC );
 		RHI_DEV_CHECK( m_GraphicsStateValid, "Graphics state is not valid for clearing render targets!" );
+
+		if ( EnumFlags( a_Flags ).HasFlag( ERHIClearFlags::Color ) )
+		{
+			if ( a_ColorAttachmentIndex < 0 )
+			{
+				// Clear all color attachments
+				for ( size_t i = 0; i < m_CurrentGraphicsState.Framebuffer.ColorAttachments.Size(); ++i )
+				{
+					D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_RTVHeap->GetCPUHandle( i );
+					GraphicsCommandList()->ClearRenderTargetView( rtvHandle, &a_ClearColor[0], 0, nullptr);
+				}
+			}
+			else
+			{
+				// Clear specific color attachment
+				RHI_DEV_CHECK( m_CurrentGraphicsState.Framebuffer.ColorAttachments.IsValidIndex( a_ColorAttachmentIndex ),
+					"Invalid color attachment index '{0}' for clearing render targets!", a_ColorAttachmentIndex );
+
+				D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_RTVHeap->GetCPUHandle( a_ColorAttachmentIndex );
+				GraphicsCommandList()->ClearRenderTargetView( rtvHandle, &a_ClearColor[0], 0, nullptr );
+			}
+		}
+
+		if ( m_CurrentGraphicsState.Framebuffer.DepthStencilAttachment )
+		{
+			D3D12_CLEAR_FLAGS clearFlags = D3D12_CLEAR_FLAGS( 0 );
+			if ( EnumFlags( a_Flags ).HasFlag( ERHIClearFlags::Depth ) ) clearFlags |= D3D12_CLEAR_FLAG_DEPTH;
+			if ( EnumFlags( a_Flags ).HasFlag( ERHIClearFlags::Stencil ) ) clearFlags |= D3D12_CLEAR_FLAG_STENCIL;
+			
+			if ( clearFlags )
+			{
+				GraphicsCommandList()->ClearDepthStencilView(
+					m_DSVHeap->GetCPUHandle( 0 ),
+					clearFlags,
+					a_DepthValue,
+					a_StencilValue,
+					0, nullptr
+				);
+			}
+		}
 	}
 
 	void RHICommandList_D3D12Impl::SetScissors( Span<const RHIScissorRect> a_Scissors, RHI_DEBUG_SRC_LOC_PARAM )
@@ -367,8 +419,8 @@ namespace Tridium::D3D12 {
 
 		if ( a_UpdateRootSignature )
 		{
-			ASSERT( a_PSO->RootSignature, "Graphics pipeline state does not have a valid root signature!" );
-			GraphicsCommandList()->SetGraphicsRootSignature( a_PSO->RootSignature->D3D12Signature.Get() );
+			ASSERT( a_PSO->RootSig, "Graphics pipeline state does not have a valid root signature!" );
+			GraphicsCommandList()->SetGraphicsRootSignature( a_PSO->RootSig->D3D12Signature.Get() );
 		}
 
 		GraphicsCommandList()->SetPipelineState( a_PSO->PSO.Get() );
@@ -377,13 +429,67 @@ namespace Tridium::D3D12 {
 
 	void RHICommandList_D3D12Impl::BindFramebuffer( const RHIFramebuffer& a_Framebuffer )
 	{
+		if ( m_AutomaticResourceStateTransitionEnabled )
+		{
+			m_ResourceStateTracker.SetResourceStatesForFramebuffer( a_Framebuffer );
+		}
 
+		CommitBarriers();
+
+		ID3D12Device* const device = GetD3D12RHI()->GetD3D12Device();
+		m_RTVHeap = AllocateHeap(
+			ERHIDescriptorHeapType::RenderTarget,
+			a_Framebuffer.ColorAttachments.Size(),
+			EDescriptorHeapFlags::None,
+			"RTV Heap"
+		).get();
+		ASSERT( m_RTVHeap, "Failed to allocate RTV heap!" );
+
+		// Create RTVs for color attachments
+		D3D12_CPU_DESCRIPTOR_HANDLE rtvs[RHIConstants::MaxColorTargets];
+		for ( size_t i = 0; i < a_Framebuffer.ColorAttachments.Size(); ++i )
+		{
+			device->CreateRenderTargetView( a_Framebuffer.ColorAttachments[i].Texture->As<RHITexture_D3D12Impl>()->Texture.Resource, nullptr, m_RTVHeap->GetCPUHandle( i ) );
+			rtvs[i] = m_RTVHeap->GetCPUHandle( i );
+		}
+
+		if ( a_Framebuffer.DepthStencilAttachment )
+		{
+			if ( m_CurrentGraphicsState.PipelineState )
+			{
+				ASSERT(
+					m_CurrentGraphicsState.PipelineState->Desc().FramebufferInfo.DepthStencilFormat == a_Framebuffer.DepthStencilAttachment.Texture->Desc().Format,
+					"Depth stencil format of the set DSV does not match the currently bound PSO!"
+				);
+			}
+
+			m_DSVHeap = AllocateHeap(
+				ERHIDescriptorHeapType::DepthStencil,
+				1,
+				EDescriptorHeapFlags::None,
+				"DSV Heap" 
+			).get();
+			ASSERT( m_DSVHeap, "Failed to allocate DSV heap!" );
+
+			device->CreateDepthStencilView( a_Framebuffer.DepthStencilAttachment.Texture->As<RHITexture_D3D12Impl>()->Texture.Resource, nullptr, m_DSVHeap->GetCPUHandle( 0 ) );
+			const D3D12_CPU_DESCRIPTOR_HANDLE dsv = m_DSVHeap->GetCPUHandle( 0 );
+			GraphicsCommandList()->OMSetRenderTargets( a_Framebuffer.ColorAttachments.Size(), rtvs, false, &dsv );
+		}
+		else
+		{
+			GraphicsCommandList()->OMSetRenderTargets( a_Framebuffer.ColorAttachments.Size(), rtvs, false, nullptr );
+			m_DSVHeap = nullptr;
+		}
 	}
 
 	void RHICommandList_D3D12Impl::BindGraphicsBindings( 
 		Span<IRHIBindingSet const* const> a_BindingSets, uint32_t a_UpdateMask, const SharedPtr<RootSignature>& a_RootSignature )
 	{
+	}
 
+	const SharedPtr<DescriptorHeap>& RHICommandList_D3D12Impl::AllocateHeap( ERHIDescriptorHeapType a_Type, uint32_t a_NumDescriptors, EDescriptorHeapFlags a_Flags, StringView a_DebugName )
+	{
+		return m_DescriptorHeaps.EmplaceBack( GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap( a_Type, a_NumDescriptors, a_Flags, a_DebugName ) );
 	}
 
 

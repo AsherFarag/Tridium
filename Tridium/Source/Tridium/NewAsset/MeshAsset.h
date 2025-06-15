@@ -56,8 +56,7 @@ namespace Tridium::T {
 	class MeshSource : public IAsset
 	{
 	public:
-		MeshSource( Private ) : IAsset( Private{} ) {}
-		static SharedPtr<MeshSource> Create() { return MakeShared<MeshSource>( Private{} ); }
+		static SharedPtr<MeshSource> Create() { return MakeShared<EnableMakeShared<MeshSource>>(); }
 		static SharedPtr<MeshSource> Create( Span<Vertex> a_Vertices, Span<uint32_t> a_Indices, const Matrix4& a_ModelTransform = Matrix4( 1.0f ) );
 		static constexpr EAssetType StaticType() { return EAssetType::MeshSource; }
 		EAssetType Type() const override { return StaticType(); }
@@ -92,8 +91,7 @@ namespace Tridium::T {
 			SharedPtr<MaterialAsset> OverrideMaterial; // Optional override material for this submesh
 		};
 
-		StaticMesh( Private ) : IAsset( Private{} ) {}
-		static SharedPtr<StaticMesh> Create() { return MakeShared<StaticMesh>( Private{} ); }
+		static SharedPtr<StaticMesh> Create() { return MakeShared<EnableMakeShared<StaticMesh>>(); }
 		static SharedPtr<StaticMesh> Create( SharedPtr<MeshSource> a_SourceMesh, Span<const MeshChunk> a_MeshChunks );
 		static constexpr EAssetType StaticType() { return EAssetType::StaticMesh; }
 		EAssetType Type() const override { return StaticType(); }

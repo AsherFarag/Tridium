@@ -39,6 +39,28 @@ namespace Tridium {
 		CombinedSampler,  // (DX12: SRV + Sampler manually combined) / (Vulkan: Combined Image Sampler)
 	};
 
+
+	//=========================================================
+	// ERHIBindingType
+	//=========================================================
+
+	static constexpr StringView ToString( ERHIBindingType a_Type )
+	{
+		switch ( a_Type )
+		{
+		case ERHIBindingType::Unknown:          return "Unknown";
+		case ERHIBindingType::InlinedConstants: return "InlinedConstants";
+		case ERHIBindingType::ConstantBuffer:   return "ConstantBuffer";  
+		case ERHIBindingType::StructuredBuffer: return "StructuredBuffer";
+		case ERHIBindingType::StorageBuffer:    return "StorageBuffer";   
+		case ERHIBindingType::Texture:          return "Texture";         
+		case ERHIBindingType::StorageTexture:   return "StorageTexture";  
+		case ERHIBindingType::Sampler:          return "Sampler";
+		case ERHIBindingType::CombinedSampler:  return "CombinedSampler";
+		default:                                return "<INVALID>";
+		}
+	}
+
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// RHI Shader Binding Layouts
 	//  An immutable layout that describes what resources can be bound to what slot, in a shader.
@@ -148,6 +170,7 @@ namespace Tridium {
 	struct RHIBindingLayoutDesc
 	{
 		using ResourceType = class IRHIBindingLayout;
+		uint32_t RegisterSpace = 0;
 		ERHIShaderVisibility Visibility = ERHIShaderVisibility::All; // Visibility of the binding. (e.g. Vertex, Pixel, Compute, etc.)
 		RHIShaderBindingArray Bindings{};
 		UnorderedMap<hash_t, Pair<uint32_t, String>> BindingMap{}; // Maps a hashed binding name to the index and string name of an item in the Bindings array.
@@ -563,7 +586,7 @@ namespace Tridium {
 						|| binding.Resource->Type() == ERHIObjectType::Sampler,
 						std::format( "Invalid resource type '{}' in shader binding set '{}'", ToString( binding.Resource->Type() ), a_Desc.Name ) );
 
-					m_ResourceHandles.EmplaceBack( std::move( binding.Resource->SharedFromThis() ) );
+					m_ResourceHandles.EmplaceBack( std::move( binding.Resource->Shared() ) );
 				}
 			}
 		}

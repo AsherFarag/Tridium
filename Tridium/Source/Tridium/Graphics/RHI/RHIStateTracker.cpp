@@ -1,5 +1,7 @@
 #include "tripch.h"
 #include "RHIStateTracker.h"
+#include "RHITexture.h"
+#include "RHIBuffer.h"
 
 namespace Tridium {
 
@@ -40,6 +42,24 @@ namespace Tridium {
 
 			ResourceBarriers.EmplaceBack() = RHIResourceBarrier( &a_Buffer, currentState, a_NewState );
 			a_Buffer.SetState( a_NewState );
+		}
+	}
+
+	void RHIResourceStateTracker::SetResourceStatesForFramebuffer( const RHIFramebuffer& a_Framebuffer )
+	{
+		ResourceBarriers.Reserve( ResourceBarriers.Size() + a_Framebuffer.ColorAttachments.Size() + 1 );
+
+		// Transition framebuffer attachments to render target state
+		for ( const auto& attachment : a_Framebuffer.ColorAttachments )
+		{
+			if ( attachment ) RequireTextureState( *attachment.Texture, ERHIResourceStates::RenderTarget );
+		}
+
+		if ( a_Framebuffer.DepthStencilAttachment )
+		{
+			RequireTextureState( *a_Framebuffer.DepthStencilAttachment.Texture,
+				a_Framebuffer.DepthStencilAttachment.ReadOnly ? ERHIResourceStates::DepthStencilRead : ERHIResourceStates::DepthStencilWrite
+			);
 		}
 	}
 

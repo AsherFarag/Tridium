@@ -6,7 +6,7 @@ namespace Tridium::T {
 
 	SharedPtr<Texture> Texture::Create( Array<uint8_t>&& a_Data, const RHITextureDesc& a_RHIDesc, bool a_CommitToRHI )
 	{
-		auto textureAsset = MakeShared<Texture>( Private{} );
+		auto textureAsset = Create();
 		textureAsset->UpdateTexture( a_Data, a_RHIDesc, a_CommitToRHI );
 		return textureAsset;
 	}

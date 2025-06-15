@@ -37,6 +37,8 @@ namespace Tridium {
 		// Array of vertex attributes
 		InlineArray<RHIVertexAttribute, RHIConstants::MaxVertexAttributes> Elements{};
 
+		constexpr bool Valid() const { return Stride > 0 && Elements.Size() > 0; }
+
 		constexpr RHIVertexLayout() = default;
 		constexpr RHIVertexLayout( InitList<RHIVertexAttribute> a_Elements )
 			: Elements( a_Elements )
@@ -64,7 +66,7 @@ namespace Tridium {
 					static_assert( IsRHIFormat<FieldType>, "Field type is not a supported RHIFormat" );
 
 					constexpr ERHIFormat format = GetRHIFormatFromType<FieldType>();
-					layout.Elements.EmplaceBack( a_FieldName, format, layout.Stride );
+					layout.Elements.PushBack( RHIVertexAttribute{ a_FieldName, format, uint16_t( layout.Stride ) } );
 					layout.Stride += GetRHIFormatInfo( format ).Bytes();
 				} 
 			);

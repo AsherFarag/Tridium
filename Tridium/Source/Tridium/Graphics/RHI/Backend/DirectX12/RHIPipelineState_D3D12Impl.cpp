@@ -80,9 +80,15 @@ namespace Tridium::D3D12 {
 		return desc;
 	}
 
-	RHIGraphicsPipelineState_D3D12Impl::RHIGraphicsPipelineState_D3D12Impl( const DescriptorType& a_Desc )
+	RHIGraphicsPipelineState_D3D12Impl::RHIGraphicsPipelineState_D3D12Impl( const DescriptorType& a_Desc, SharedPtr<RootSignature> a_RootSig )
 		: IRHIGraphicsPipelineState( a_Desc )
     {
+		ASSERT( a_RootSig, "Root signature must not be null" );
+
+		RootSig = std::move( a_RootSig );
+
+		// Create the ID3D12PipelineState object
+
 		// Create the vertex input layout
 		// We create tempory strings here of the vertex element names,
 		// as RHIVertexAttribute::Name is a StringView and can be not null terminated.
@@ -108,7 +114,7 @@ namespace Tridium::D3D12 {
 		psd.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 		// Set the root signature
-		psd.pRootSignature = nullptr;//TODO a_Desc.BindingLayout->As<RHIBindingLayout_D3D12Impl>()->m_RootSignature.Get();
+		psd.pRootSignature = RootSig->D3D12Signature.Get();
 
 		// Set the input layout
 		psd.InputLayout.NumElements = VertexLayout.Size();
@@ -171,7 +177,7 @@ namespace Tridium::D3D12 {
 		return true;
 	}
 
-	RootSignature RootSignature::Build( Span<RHIBindingLayoutRef> a_Layouts, bool a_AllowInputLayout, bool a_IsLocal, Span<const D3D12_ROOT_PARAMETER1> a_CustomParams )
+	RootSignature RootSignature::Build( Span<const RHIBindingLayoutRef> a_Layouts, bool a_AllowInputLayout, bool a_IsLocal, Span<const D3D12_ROOT_PARAMETER1> a_CustomParams )
 	{
 		TODO( "Support bindless" );
 
@@ -196,7 +202,7 @@ namespace Tridium::D3D12 {
 			const auto& layout = a_Layouts[i]->As<RHIBindingLayout_D3D12Impl>();
 			RootParameterIndex rootParamOffset = RootParameterIndex( rootParams.Size() );
 
-			rootSig.Layouts.EmplaceBack( layout, rootParamOffset );
+			rootSig.Layouts.EmplaceBack( a_Layouts[i], rootParamOffset );
 			rootParams.Insert( rootParams.End(), layout->RootParams.Begin(), layout->RootParams.End() );
 
 			if ( layout->InlinedConstantsSize > 0 )

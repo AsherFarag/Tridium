@@ -1,9 +1,13 @@
 #pragma once
 #include "RHICommon.h"
-#include "RHITexture.h"
-#include "RHIBuffer.h"
+#include "RHIResource.h"
 
 namespace Tridium {
+
+	// Forward declarations
+	class IRHITexture;
+	class IRHIBuffer;
+	struct RHIFramebuffer;
 
 	//=========================================================
 	// RHI Resource State Tracker
@@ -17,6 +21,7 @@ namespace Tridium {
 
 		void RequireTextureState( IRHITexture& a_Texture, ERHIResourceStates a_NewState );
 		void RequireBufferState( IRHIBuffer& a_Buffer, ERHIResourceStates a_NewState );
+		void SetResourceStatesForFramebuffer( const RHIFramebuffer& a_Framebuffer );
 		void Clear() { ResourceBarriers.Clear(); }
 	};
 

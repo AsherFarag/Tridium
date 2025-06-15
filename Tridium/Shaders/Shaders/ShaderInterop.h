@@ -49,6 +49,6 @@ namespace Tridium {
 #define GetCombinedSampler( _Texture ) _Texture##_Sampler
 
 // Use for sampling combined samplers
-#define Sample( _Texture, _UV ) _Texture.Sample( GetCombinedSampler( _Texture ), _UV )
+#define SAMPLE( _Texture, _UV ) _Texture.Sample( GetCombinedSampler( _Texture ), _UV )
 
 #endif // __cplusplus

@@ -195,6 +195,8 @@ namespace Tridium::OpenGL {
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHITexture_OpenGLImpl, ERHInterfaceType::OpenGL );
 		RHITexture_OpenGLImpl( const DescriptorType & a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData );
+		~RHITexture_OpenGLImpl() override { Release(); }
+
 		virtual bool Release() override;
 		virtual const void* NativePtr() const { return TextureObj.NativePtr(); }
 		virtual bool Valid() const override { return TextureObj.Valid(); }
@@ -211,10 +213,9 @@ namespace Tridium::OpenGL {
 	{
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBuffer_OpenGLImpl, ERHInterfaceType::OpenGL );
-
 		RHIBuffer_OpenGLImpl( const RHIBufferDesc & a_Desc, Span<const uint8_t> a_Data = {} );
+		~RHIBuffer_OpenGLImpl() override { Release(); }
 
-		virtual ~RHIBuffer_OpenGLImpl() override = default;
 		virtual bool Release() override { BufferObj.Release(); return true; }
 		virtual bool Valid() const override { return BufferObj.Valid(); }
 		virtual const void* NativePtr() const override { return BufferObj.NativePtr(); }
@@ -231,6 +232,8 @@ namespace Tridium::OpenGL {
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIFence_OpenGLImpl, ERHInterfaceType::OpenGL );
 		RHIFence_OpenGLImpl( const DescriptorType & a_Desc );
+		~RHIFence_OpenGLImpl() override { Release(); }
+
 		bool Release() override;
 		bool Valid() const override;
 		const void* NativePtr() const override;
@@ -256,7 +259,6 @@ namespace Tridium::OpenGL {
 	{
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHISampler_OpenGLImpl, ERHInterfaceType::OpenGL );
-
 		RHISampler_OpenGLImpl( const DescriptorType & a_Desc )
 			: IRHISampler( a_Desc )
 		{
@@ -273,6 +275,8 @@ namespace Tridium::OpenGL {
 			OpenGL3::SamplerParameterf( m_SamplerID, GL_TEXTURE_MIN_LOD, a_Desc.MinLOD );
 			OpenGL3::SamplerParameterf( m_SamplerID, GL_TEXTURE_MAX_LOD, a_Desc.MaxLOD );
 		}
+
+		~RHISampler_OpenGLImpl() override { Release(); }
 
 		bool Release() override
 		{
@@ -298,6 +302,8 @@ namespace Tridium::OpenGL {
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBindingLayout_OpenGLImpl, ERHInterfaceType::OpenGL );
 		RHIBindingLayout_OpenGLImpl( const DescriptorType & a_Desc );
+		~RHIBindingLayout_OpenGLImpl() override { Release(); }
+
 		bool Release() override { return true; }
 		bool Valid() const override { return true; }
 		const void* NativePtr() const override { return nullptr; }
@@ -312,6 +318,8 @@ namespace Tridium::OpenGL {
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBindingSet_OpenGLImpl, ERHInterfaceType::OpenGL );
 		RHIBindingSet_OpenGLImpl( const DescriptorType & a_Desc );
+		~RHIBindingSet_OpenGLImpl() override { Release(); }
+
 		bool Release() override { return true; }
 		bool Valid() const override { return true; }
 		const void* NativePtr() const override { return nullptr; }
@@ -325,8 +333,9 @@ namespace Tridium::OpenGL {
 	{
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIShaderModule_OpenGLImpl, ERHInterfaceType::OpenGL );
-
 		RHIShaderModule_OpenGLImpl( const DescriptorType & a_Desc );
+		~RHIShaderModule_OpenGLImpl() override { Release(); }
+
 		bool Release() override;
 		bool Valid() const override { return m_ShaderID != 0; }
 		const void* NativePtr() const override { return &m_ShaderID; }
@@ -346,6 +355,8 @@ namespace Tridium::OpenGL {
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIGraphicsPipelineState_OpenGLImpl, ERHInterfaceType::OpenGL );
 		RHIGraphicsPipelineState_OpenGLImpl( const DescriptorType & a_Desc );
+		~RHIGraphicsPipelineState_OpenGLImpl() override { Release(); }
+
 		bool Release() override;
 		bool Valid() const override;
 		const void* NativePtr() const override { return nullptr; }
@@ -371,6 +382,8 @@ namespace Tridium::OpenGL {
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHISwapChain_OpenGLImpl, ERHInterfaceType::OpenGL );
 		RHISwapChain_OpenGLImpl( const DescriptorType & a_Desc );
+		~RHISwapChain_OpenGLImpl() override { Release(); }
+
 		bool Release() override;
 		bool Valid() const override { return Window != nullptr; }
 		const void* NativePtr() const override { return Window; }
@@ -398,8 +411,9 @@ namespace Tridium::OpenGL {
 	{
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHICommandList_OpenGLImpl, ERHInterfaceType::OpenGL );
-
 		RHICommandList_OpenGLImpl( const DescriptorType & a_Desc );
+		~RHICommandList_OpenGLImpl() override { Release(); }
+
 		virtual bool Release() override { return true; }
 		virtual bool Valid() const override { return true; }
 		virtual const void* NativePtr() const override { return nullptr; }

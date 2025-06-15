@@ -129,6 +129,23 @@ namespace Tridium {
 	template<typename _Value, size_t _Size>
 	class InlineArray
 	{
+		union
+		{
+			bool m_Dummy = false; // Dummy to avoid m_Storage initialization
+			_Value m_Storage[_Size]; // Storage for the array elements
+		};
+		size_t m_Size = 0; // Current size of the array
+
+		constexpr void ConstexprInit()
+		{
+			if ( std::is_constant_evaluated() )
+			{
+				// If in constant evaluation, initialize the storage to avoid undefined behavior
+				for ( size_t i = 0; i < _Size; ++i )
+					std::construct_at( &m_Storage[i] );
+			}
+		}
+
 	public:
 		using ValueType = _Value;
 		using Iterator = _Value*;
@@ -139,15 +156,27 @@ namespace Tridium {
 		//============================================================================================
 		// Default constructor
 		constexpr InlineArray() 
-			: m_Size( 0 ) {}
+			: m_Size( 0 ), m_Dummy( false )
+		{
+			ConstexprInit();
+		}
+
+		constexpr InlineArray( const InlineArray& a_Other )
+			: m_Size( 0 ), m_Dummy( false )
+		{
+			ConstexprInit();
+			for ( const _Value& value : a_Other )
+				PushBack( value );
+		}
 
 		//============================================================================================
 		// Copy constructor
 		// NOTE: a_Other can be of any size and this array will attempt to copy as many elements as possible
 		template<size_t _OtherSize>
 		constexpr InlineArray( const InlineArray<_Value, _OtherSize>& a_Other )
-			: m_Size( 0 )
+			: m_Size( 0 ), m_Dummy( false )
 		{
+			ConstexprInit();
 			for ( const _Value& value : a_Other )
 				PushBack( value );
 		}
@@ -157,19 +186,21 @@ namespace Tridium {
 		// WARNING: a_Other is required to be able to fit into this array.
 		template<size_t _OtherSize>
 		constexpr InlineArray( InlineArray<_Value, _OtherSize>&& a_Other )
-			: m_Size( a_Other.m_Size )
+			: m_Size( 0 ), m_Dummy( false )
 		{
+			ConstexprInit();
 			TRIDIUM_ARRAY_ASSERT( a_Other.Size() <= MaxSize(), "Array size is out of bounds" );
-			for ( size_t i = 0; i < m_Size; ++i )
-				std::construct_at( &m_Storage[i], std::move( a_Other.m_Storage[i] ) );
+			for ( _Value& value : a_Other )
+				EmplaceBack( std::move( value ) );
 			a_Other.m_Size = 0;
 		}
 
 		//============================================================================================
 		// Copy constructor from InitList
 		constexpr InlineArray( InitList<_Value> a_List )
-			: m_Size( 0 )
+			: m_Size( 0 ), m_Dummy( false )
 		{
+			ConstexprInit();
 			TRIDIUM_ARRAY_ASSERT( a_List.Size() <= MaxSize(), "Initializer list is too large" );
 			Fill( a_List );
 		}
@@ -177,8 +208,9 @@ namespace Tridium {
 		//============================================================================================
 		// Copy constructor from Span
 		constexpr InlineArray( Span<const _Value> a_Span )
-			: m_Size( 0 )
+			: m_Size( 0 ), m_Dummy( false )
 		{
+			ConstexprInit();
 			TRIDIUM_ARRAY_ASSERT( a_Span.size() <= MaxSize(), "Initalizer span is too large" );
 			Fill( a_Span );
 		}
@@ -194,7 +226,7 @@ namespace Tridium {
 			{
 				Clear();
 				for ( const _Value& value : a_Other )
-					PushBack( value );
+					EmplaceBack( value );
 			}
 			return *this;
 		}
@@ -210,9 +242,8 @@ namespace Tridium {
 			{
 				TRIDIUM_ARRAY_ASSERT( a_Other.Size() <= MaxSize(), "Array size is out of bounds" );
 				Clear();
-				m_Size = a_Other.m_Size;
-				for ( size_t i = 0; i < m_Size; ++i )
-					std::construct_at( &m_Storage[i], std::move( a_Other.m_Storage[i] ) );
+				for ( _Value& value : a_Other )
+					EmplaceBack( std::move( value ) );
 				a_Other.m_Size = 0;
 			}
 			return *this;
@@ -240,20 +271,14 @@ namespace Tridium {
 
 		//============================================================================================
 		// Access
+		constexpr _Value* Data() { return &m_Storage[0]; }
+		constexpr const _Value* Data() const { return &m_Storage[0]; }
+
 		constexpr _Value& operator[]( size_t a_Index ) { return At( a_Index ); }
 		constexpr const _Value& operator[]( size_t a_Index ) const { return At( a_Index ); }
 
-		constexpr _Value& At( size_t a_Index )
-		{
-			TRIDIUM_ARRAY_ASSERT( IsValidIndex( a_Index ), "Index out of bounds" );
-			return m_Storage[a_Index];
-		}
-
-		constexpr const _Value& At( size_t a_Index ) const
-		{
-			TRIDIUM_ARRAY_ASSERT( IsValidIndex( a_Index ), "Index out of bounds" );
-			return m_Storage[a_Index];
-		}
+		constexpr _Value& At( size_t a_Index ) { TRIDIUM_ARRAY_ASSERT( IsValidIndex( a_Index ), "Index out of bounds" ); return Data()[a_Index]; }
+		constexpr const _Value& At( size_t a_Index ) const { TRIDIUM_ARRAY_ASSERT( IsValidIndex( a_Index ), "Index out of bounds" ); return Data()[a_Index]; }
 
 		constexpr _Value& Front() { TRIDIUM_ARRAY_ASSERT( !Empty(), "Array is empty"); return At(0); }
 		constexpr const _Value& Front() const { TRIDIUM_ARRAY_ASSERT( !Empty(), "Array is empty" ); return At( 0 ); }
@@ -261,11 +286,8 @@ namespace Tridium {
 		constexpr _Value& Back() { TRIDIUM_ARRAY_ASSERT( !Empty(), "Array is empty" ); return At( m_Size - 1 ); }
 		constexpr const _Value& Back() const { TRIDIUM_ARRAY_ASSERT( !Empty(), "Array is empty" ); return At( m_Size - 1 ); }
 
-		constexpr _Value* Data() { return m_Storage; }
-		constexpr const _Value* Data() const { return m_Storage; }
-
-		constexpr operator Span<_Value>() { return Span<_Value>( m_Storage, m_Size ); }
-		constexpr operator Span<const _Value>() const { return Span<const _Value>( m_Storage, m_Size ); }
+		constexpr operator Span<_Value>() { return Span<_Value>( Data(), m_Size); }
+		constexpr operator Span<const _Value>() const { return Span<const _Value>( Data(), m_Size ); }
 		//============================================================================================
 
 		//============================================================================================
@@ -280,60 +302,57 @@ namespace Tridium {
 		{
 			TRIDIUM_ARRAY_ASSERT( a_Size <= MaxSize(), "Size is out of bounds" );
 			for ( size_t i = m_Size; i < a_Size; ++i )
-				std::construct_at( &m_Storage[i] );
+				std::construct_at( &Data()[i] ); // Construct new elements
 			for ( size_t i = a_Size; i < m_Size; ++i )
-				m_Storage[i].~_Value();
+				std::destroy_at( &Data()[i] ); // Destroy excess elements
 			m_Size = a_Size;
 		}
 
 		constexpr void Fill( const _Value& a_Value )
 		{
-			for ( size_t i = 0; i < m_Size; ++i )
-				m_Storage[i] = a_Value;
+			Clear();
+			for ( size_t i = 0; i < MaxSize(); ++i )
+				EmplaceBack( a_Value );
 		}
 
 		constexpr void Fill( Span<const _Value> a_Data )
 		{
 			Clear();
-			for ( size_t i = 0; i < a_Data.size() || i < MaxSize(); ++i )
-				std::construct_at( &m_Storage[i], a_Data[i] );
-			m_Size = a_Data.size();
+			for ( size_t i = 0; i < std::min(a_Data.size(), MaxSize()); ++i )
+				EmplaceBack( a_Data[i] );
 		}
 
-		constexpr void Fill( InitList<_Value> a_InitializerList )
+		constexpr void Fill( InitList<_Value> a_InitList )
 		{
 			Clear();
-			for ( size_t i = 0; i < a_InitializerList.Size() || i < MaxSize(); ++i )
-				std::construct_at( &m_Storage[i], a_InitializerList[i] );
-			m_Size = a_InitializerList.Size();
+			for ( size_t i = 0; i < std::min( a_InitList.Size(), MaxSize() ); ++i )
+				EmplaceBack( a_InitList[i] );
 		}
 
 		constexpr void Clear() 
 		{
-			for ( size_t i = 0; i < m_Size; ++i )
-				m_Storage[i].~_Value();
-			m_Size = 0;
+			while( !Empty() )
+				PopBack();
 		}
 
 		constexpr void PushBack( const _Value& a_Value ) 
 		{
 			TRIDIUM_ARRAY_ASSERT( m_Size < MaxSize(), "Array is full" );
-			std::construct_at( &m_Storage[m_Size], a_Value );
-			++m_Size;
+			std::construct_at( &Data()[m_Size++], a_Value );
 		}
 
 		constexpr void PopBack() 
 		{
 			TRIDIUM_ARRAY_ASSERT( !Empty(), "Array is empty");
-			m_Storage[--m_Size].~_Value();
+			std::destroy_at( &Data()[--m_Size] ); // Update to use Data() for storage access
 		}
 
 		template<typename... _Args>
 		constexpr _Value& EmplaceBack( _Args&&... a_Args )
 		{
 			TRIDIUM_ARRAY_ASSERT( m_Size < MaxSize(), "Array is full" );
-			std::construct_at( &m_Storage[m_Size], std::forward<_Args>( a_Args )... );
-			return m_Storage[m_Size++];
+			std::construct_at( &Data()[m_Size], std::forward<_Args>( a_Args )... ); // Update to use Data()
+			return Data()[m_Size++]; // Update to use Data()
 		}
 
 		template<typename... _Args>
@@ -343,7 +362,7 @@ namespace Tridium {
 			TRIDIUM_ARRAY_ASSERT( a_Pos >= Begin() && a_Pos <= End(), "Position out of bounds" );
 			for ( Iterator it = End(); it != a_Pos; --it )
 				*it = std::move( *(it - 1) );
-			std::construct_at( a_Pos, std::forward<_Args>( a_Args )... );
+			std::construct_at( &Data()[a_Pos - Begin()], std::forward<_Args>( a_Args )... ); // Update to use Data()
 			++m_Size;
 			return *a_Pos;
 		}
@@ -354,7 +373,7 @@ namespace Tridium {
 			TRIDIUM_ARRAY_ASSERT( a_Pos >= Begin() && a_Pos <= End(), "Position out of bounds" );
 			for ( Iterator it = End(); it != a_Pos; --it )
 				*it = std::move( *(it - 1) );
-			std::construct_at( a_Pos, a_Value );
+			std::construct_at( &Data()[a_Pos - Begin()], a_Value ); // Update to use Data()
 			++m_Size;
 			return a_Pos;
 		}
@@ -372,7 +391,7 @@ namespace Tridium {
 		{
 			TRIDIUM_ARRAY_ASSERT( a_First >= Begin() && a_Last <= End(), "Position out of bounds" );
 			for ( Iterator it = a_First; it != a_Last; ++it )
-				it->~_Value();
+				std::destroy_at( &Data()[it - Begin()]); // Update to use Data() for storage access
 			for ( Iterator it = a_Last; it != End(); ++it )
 				*(it - (a_Last - a_First)) = std::move( *it );
 			m_Size -= (a_Last - a_First);
@@ -380,19 +399,15 @@ namespace Tridium {
 		}
 
 		// Iterators
-		constexpr Iterator Begin() { return m_Storage; }
-		constexpr ConstIterator Begin() const { return m_Storage; }
-		constexpr Iterator End() { return m_Storage + m_Size; }
-		constexpr ConstIterator End() const { return m_Storage + m_Size; }
+		constexpr Iterator Begin() { return Data(); }
+		constexpr ConstIterator Begin() const { return Data(); }
+		constexpr Iterator End() { return Data() + Size(); }
+		constexpr ConstIterator End() const { return Data() + Size(); }
 
 		constexpr ReverseIterator RBegin() { return ReverseIterator( End() ); }
 		constexpr ConstReverseIterator RBegin() const { return ConstReverseIterator( End() ); }
 		constexpr ReverseIterator REnd() { return ReverseIterator( Begin() ); }
 		constexpr ConstReverseIterator REnd() const { return ConstReverseIterator( Begin() ); }
-
-	private:
-		_Value m_Storage[_Size];
-		size_t m_Size;
 	};
 	//==============================================================================================
 

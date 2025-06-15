@@ -62,6 +62,45 @@ namespace Tridium {
 		uint32_t ArraySlice = 0;
 	};
 
+	struct RHIFramebuffer
+	{
+		struct Attachment
+		{
+			IRHITexture* Texture = nullptr;
+			bool ReadOnly = false;
+
+			operator bool() const { return Texture != nullptr; }
+
+			bool operator==( const Attachment& a_Other ) const
+			{
+				return Texture == a_Other.Texture && ReadOnly == a_Other.ReadOnly;
+			}
+
+			bool operator!=( const Attachment& a_Other ) const
+			{
+				return !operator==( a_Other );
+			}
+		};
+
+		InlineArray<Attachment, RHIConstants::MaxColorTargets> ColorAttachments{};
+		Attachment DepthStencilAttachment{};
+
+		bool operator==( const RHIFramebuffer& a_Other ) const
+		{
+			if ( DepthStencilAttachment != a_Other.DepthStencilAttachment )
+				return false;
+
+			if ( ColorAttachments.Size() != a_Other.ColorAttachments.Size() )
+				return false;
+
+			for ( size_t i = 0; i < ColorAttachments.Size(); ++i )
+			{
+				if ( ColorAttachments[i] != a_Other.ColorAttachments[i] )
+					return false;
+			}
+		}
+	};
+
 	namespace RHIConstants {
 		static constexpr uint32_t AllMipLevels = ~0u;
 		static constexpr uint32_t AllArraySlices = ~0u;

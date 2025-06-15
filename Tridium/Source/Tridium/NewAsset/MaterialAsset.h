@@ -10,8 +10,7 @@ namespace Tridium::T {
 	class MaterialAsset : public IAsset
 	{
 	public:
-		MaterialAsset( Private ) : IAsset( Private{} ) {}
-		static SharedPtr<MaterialAsset> Create() { return MakeShared<MaterialAsset>( Private{} ); }
+		static SharedPtr<MaterialAsset> Create() { return MakeShared<EnableMakeShared<MaterialAsset>>(); }
 		static constexpr EAssetType StaticType() { return EAssetType::Material; }
 		EAssetType Type() const override { return StaticType(); }
 		bool Valid() const override { return true; }

@@ -31,7 +31,7 @@ namespace Tridium {
 			, Line( a_Line )
 			, Filter( a_Filter )
 			, Color( a_Color )
-			, ID( Hashing::HashCombine( Hashing::HashString( a_File ), Cast<size_t>(a_Line) ) )
+			, ID( Hashing::HashCombine( Hashing::HashString( a_File ).Hash(), Cast<hash_t>(a_Line)))
 		{
 		}
 	};

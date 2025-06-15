@@ -80,6 +80,16 @@ namespace Tridium {
 		WeakPtr<const T> Weak() const { return this->weak_from_this(); }
 	};
 
+	// Helper struct to allow using std::make_shared with a class has a protected constructor.
+	template<typename T>
+	struct EnableMakeShared : public T
+	{
+		template<typename... _Args>
+		EnableMakeShared( _Args&&... args )
+			: T( std::forward<_Args>( args )... ) 
+		{}
+	};
+
 
 	//========================================================
 	// Opaque Pointer

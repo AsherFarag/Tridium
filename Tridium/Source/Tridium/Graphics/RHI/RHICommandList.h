@@ -27,27 +27,6 @@ namespace Tridium {
         #define RHI_ADD_DEBUG_CMD_INFO(...) do {} while ( false )
     #endif // RHI_DEBUG_ENABLE_CMD_RECORDING
 
-    struct RHIFramebuffer
-    {
-        InlineArray<IRHITexture*, RHIConstants::MaxColorTargets> ColorAttachments{};
-        IRHITexture* DepthStencilAttachment = nullptr;
-
-        bool operator==( const RHIFramebuffer& a_Other ) const
-        {
-            if ( DepthStencilAttachment != a_Other.DepthStencilAttachment )
-				return false;
-
-			if ( ColorAttachments.Size() != a_Other.ColorAttachments.Size() )
-				return false;
-
-			for ( size_t i = 0; i < ColorAttachments.Size(); ++i )
-            {
-                if ( ColorAttachments[i] != a_Other.ColorAttachments[i] )
-                    return false;
-			}
-		}
-    };
-
     struct RHIGraphicsState
     {
         IRHIGraphicsPipelineState* PipelineState = nullptr;
@@ -254,7 +233,7 @@ namespace Tridium {
         const auto& DebugCommands() const { return m_DebugCommands; }
     #endif
 
-    private:
+    protected:
         bool m_AutomaticResourceStateTransitionEnabled = true; // Automatically transition resource states when necessary
 
         uint64_t m_FenceValue = 0;

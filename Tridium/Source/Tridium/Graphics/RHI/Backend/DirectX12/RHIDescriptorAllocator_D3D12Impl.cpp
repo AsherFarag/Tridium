@@ -147,7 +147,7 @@ namespace Tridium::D3D12 {
 		m_PooledHeaps.EmplaceBack( std::move( a_Heap ), a_Type, a_NumDescriptors, a_Flags );
 	}
 
-	void DescriptorHeapManager::Init( ID3D12Device* a_Device, uint32_t a_NumGlobalResourceDescriptors, uint32_t a_NumGlobalSamplerDescriptors )
+	void DescriptorHeapManager::Init( ID3D12Device* a_Device, const DescriptorHeapManagerDesc& a_Desc )
 	{
 		ENSURE( a_Device, "Device is null!" );
 		m_Device = a_Device;
@@ -155,11 +155,11 @@ namespace Tridium::D3D12 {
 		m_GlobalHeaps = Array<DescriptorManager>(); // ( m_GlobalHeaps was not initialized properly )
 		m_GlobalHeaps.Reserve( 2 );
 
-		if ( a_NumGlobalResourceDescriptors > 0 )
+		if ( a_Desc.NumGlobalResourceDescriptors > 0 )
 		{
 			DescriptorHeapRef descHeap = CreateDescriptorHeap( 
 				m_Device,
-				a_NumGlobalResourceDescriptors,
+				a_Desc.NumGlobalResourceDescriptors,
 				ERHIDescriptorHeapType::RenderResource,
 				EDescriptorHeapFlags::GPUVisible, 
 				true, "GlobalResourceDescriptorHeap" );
@@ -167,15 +167,37 @@ namespace Tridium::D3D12 {
 			m_GlobalHeaps.EmplaceBack( m_Device, std::move( descHeap ) );
 		}
 
-		if ( a_NumGlobalSamplerDescriptors > 0 )
+		if ( a_Desc.NumGlobalSamplerDescriptors > 0 )
 		{
 			DescriptorHeapRef samplerHeap = CreateDescriptorHeap(
 				m_Device,
-				a_NumGlobalSamplerDescriptors,
+				a_Desc.NumGlobalSamplerDescriptors,
 				ERHIDescriptorHeapType::Sampler,
 				EDescriptorHeapFlags::GPUVisible,
 				true, "GlobalSamplerDescriptorHeap" );
 			m_GlobalHeaps.EmplaceBack( m_Device, std::move( samplerHeap ) );
+		}
+
+		if ( a_Desc.NumGlobalRenderTargetDescriptors > 0 )
+		{
+			DescriptorHeapRef rtvHeap = CreateDescriptorHeap(
+				m_Device,
+				a_Desc.NumGlobalRenderTargetDescriptors,
+				ERHIDescriptorHeapType::RenderTarget,
+				EDescriptorHeapFlags::None,
+				true, "GlobalRTVDescriptorHeap" );
+			m_GlobalHeaps.EmplaceBack( m_Device, std::move( rtvHeap ) );
+		}
+
+		if ( a_Desc.NumGlobalDepthStencilDescriptors > 0 )
+		{
+			DescriptorHeapRef dsvHeap = CreateDescriptorHeap(
+				m_Device,
+				a_Desc.NumGlobalDepthStencilDescriptors,
+				ERHIDescriptorHeapType::DepthStencil,
+				EDescriptorHeapFlags::None,
+				true, "GlobalDSVDescriptorHeap" );
+			m_GlobalHeaps.EmplaceBack( m_Device, std::move( dsvHeap ) );
 		}
 	}
 

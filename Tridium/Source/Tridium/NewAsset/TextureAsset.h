@@ -13,8 +13,7 @@ namespace Tridium::T {
 	class Texture : public IAsset
 	{
 	public:
-		Texture( Private ) : IAsset( Private{} ) {} 
-		static SharedPtr<Texture> Create() { return MakeShared<Texture>( Private{} ); }
+		static SharedPtr<Texture> Create() { return MakeShared<EnableMakeShared<Texture>>(); }
 		static SharedPtr<Texture> Create( Array<uint8_t>&& a_Data, const RHITextureDesc& a_RHIDesc, bool a_CommitToRHI = true );
 		static SharedPtr<Texture> Create( Span<const uint8_t> a_Data, const RHITextureDesc& a_RHIDesc, bool a_CommitToRHI = true );
 		static SharedPtr<Texture> Create( Array<uint8_t>&& a_Data, uint32_t a_Width, uint32_t a_Height, uint32_t a_DepthOrArraySize,

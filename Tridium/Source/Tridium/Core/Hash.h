@@ -6,8 +6,6 @@
 
 namespace Tridium {
 
-	using hash_t = uint32_t;
-
 	namespace HashAlgorithms {
 		TRIDIUM_NODISCARD constexpr hash_t fnv1a( const char* a_String, hash_t a_Hash = 2166136261U )
 		{
@@ -130,6 +128,13 @@ namespace Tridium {
 		TRIDIUM_NODISCARD inline constexpr hash_t HashCombine( hash_t a_Left, hash_t a_Right )
 		{
 			return a_Left ^ ( a_Right + 0x9e3779b9 + ( a_Left << 6 ) + ( a_Left >> 2 ) );
+		}
+
+		template<typename T>
+		TRIDIUM_NODISCARD constexpr hash64_t HashCombine( hash64_t a_Seed, const T& a_Value )
+		{
+			a_Seed ^= std::hash<T>{}( a_Value ) + 0x9e3779b9 + ( a_Seed << 6 ) + ( a_Seed >> 2 );
+			return a_Seed;
 		}
 
 		template <typename T>

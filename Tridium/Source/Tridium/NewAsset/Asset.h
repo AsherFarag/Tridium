@@ -54,11 +54,8 @@ namespace Tridium::T {
 	//  Assets are identified by a AssetID and are managed by the asset manager.
 	class IAsset : public EnableSharedFromThis<IAsset>
 	{
-	protected:
-		struct Private { explicit Private() = default; }; // To allow construction of IAsset only through MakeShared.
 	public:
 		NON_COPYABLE_OR_MOVABLE( IAsset );
-		IAsset( Private ) : m_AssetID( AssetID::Create() ), m_AssetFlags( EAssetFlags::MemoryOnly ) {}
 		virtual ~IAsset() = default;
 
 		auto ID() const { return m_AssetID; }
@@ -77,6 +74,8 @@ namespace Tridium::T {
 		EnumFlags<EAssetFlags> m_AssetFlags{ EAssetFlags::MemoryOnly };
 
 	protected:
+		IAsset() : m_AssetID( AssetID::Create() ), m_AssetFlags( EAssetFlags::MemoryOnly ) {}
+
 		friend class AssetDatabase;
 	};
 

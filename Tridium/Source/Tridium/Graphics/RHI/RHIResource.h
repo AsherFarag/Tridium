@@ -85,6 +85,13 @@ namespace Tridium {
     public:
         NON_COPYABLE_OR_MOVABLE( IRHIObject );
 
+		// Creates a new RHI object of the specified type and forwards the 'a_Args' to its constructor.
+		template<Concepts::Derived<IRHIObject> T, typename... _Args>
+		static T::RefType Create( _Args&&... a_Args )
+		{
+			return MakeShared<EnableMakeShared<T>>( std::forward<_Args>( a_Args )... );
+		}
+
 		// Releases the this device object, freeing it from the parent device.
 		virtual bool Release() = 0;
 
@@ -148,24 +155,6 @@ namespace Tridium {
 		#endif
 
 			return Cast<const T*>( this );
-		}
-
-		// Creates a handle to the existing RHI Object.
-		template<Concepts::Derived<IRHIObject> T, typename... _Args>
-		static T::RefType CreateHandle( T* a_Object )
-		{
-			static constexpr auto deleter = +[]( T* a_Object ) { a_Object->Release(); delete a_Object; };
-			return T::RefType( a_Object, deleter );
-		}
-
-		RHIObjectRef SharedFromThis()
-		{
-			return shared_from_this();
-		}
-
-		RHIObjectWeakRef WeakFromThis()
-		{
-			return weak_from_this();
 		}
 
 	protected:

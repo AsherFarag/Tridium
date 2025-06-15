@@ -86,7 +86,7 @@ namespace Tridium {
 		using ResourceType = class IRHIGraphicsPipelineState;
 		ERHITopology Topology = ERHITopology::Unknown;
 		RHIVertexLayout VertexLayout{};
-		RHIBindingLayoutRef BindingLayout{};
+		InlineArray<RHIBindingLayoutRef, RHIConstants::MaxBindingLayouts> BindingLayouts{};
 
 		RHIShaderModuleRef VertexShader{};
 		RHIShaderModuleRef HullShader{};
@@ -94,7 +94,6 @@ namespace Tridium {
 		RHIShaderModuleRef GeometryShader{};
 		RHIShaderModuleRef PixelShader{};
 
-		InlineArray<RHIBindingLayoutRef, RHIConstants::MaxBindingLayouts> BindingLayouts{};
 
 		RHIBlendState BlendState = RHIBlendStates::Opaque;
 		RHIDepthState DepthState{};
