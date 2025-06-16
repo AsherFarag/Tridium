@@ -3,8 +3,8 @@
 
 namespace Tridium::OpenGL {
 
-   RHIFence_OpenGLImpl::RHIFence_OpenGLImpl( const DescriptorType& a_Desc )
-	   : IRHIFence( a_Desc )
+   RHIFence_OpenGLImpl::RHIFence_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
+	   : IRHIFence( a_Device, a_Desc )
     {
 		ASSERT( a_Desc.Type == ERHIFenceType::CPUWaitOnly, "Only CPUWaitOnly fences are supported in OpenGL" );
     }

@@ -3,8 +3,8 @@
 
 namespace Tridium::OpenGL {
 
-	RHITexture_OpenGLImpl::RHITexture_OpenGLImpl( const DescriptorType& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
-		: IRHITexture( a_Desc )
+	RHITexture_OpenGLImpl::RHITexture_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
+		: IRHITexture( a_Device, a_Desc )
 	{
 		ASSERT( a_Desc.Usage != ERHIUsage::Static || !a_SubResourcesData.empty(),
 			"Static textures must be initialized with data!" );

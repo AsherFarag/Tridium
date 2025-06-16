@@ -3,8 +3,8 @@
 
 namespace Tridium::D3D12 {
 
-	RHIShaderModule_D3D12Impl::RHIShaderModule_D3D12Impl( const RHIShaderModuleDesc& a_Desc )
-		: IRHIShaderModule( a_Desc )
+	RHIShaderModule_D3D12Impl::RHIShaderModule_D3D12Impl( IDynamicRHI* a_Device, const RHIShaderModuleDesc& a_Desc )
+		: IRHIShaderModule( a_Device, a_Desc )
     {
 		// Copy the byte code from the descriptor span
         Bytecode.Resize( a_Desc.Bytecode.size() );

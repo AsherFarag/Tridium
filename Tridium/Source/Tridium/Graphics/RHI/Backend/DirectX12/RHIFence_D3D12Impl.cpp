@@ -3,8 +3,8 @@
 
 namespace Tridium::D3D12 {
 
-	RHIFence_D3D12Impl::RHIFence_D3D12Impl( const DescriptorType& a_Desc )
-		: IRHIFence( a_Desc )
+	RHIFence_D3D12Impl::RHIFence_D3D12Impl( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
+		: IRHIFence( a_Device, a_Desc )
     {
 		const auto& device = GetD3D12RHI()->GetD3D12Device();
 		const auto flags = D3D12_FENCE_FLAG_NONE;

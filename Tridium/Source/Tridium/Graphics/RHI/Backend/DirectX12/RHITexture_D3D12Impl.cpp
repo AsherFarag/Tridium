@@ -3,8 +3,8 @@
 
 namespace Tridium::D3D12 {
 
-	RHITexture_D3D12Impl::RHITexture_D3D12Impl( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
-		: IRHITexture( a_Desc )
+	RHITexture_D3D12Impl::RHITexture_D3D12Impl( IDynamicRHI* a_Device, const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
+		: IRHITexture( a_Device, a_Desc )
 	{
 		const bool initData = a_SubResourcesData.size() > 0;
 		ERHIResourceStates initialState = initData ? ERHIResourceStates::CopyDest : ERHIResourceStates::Common;

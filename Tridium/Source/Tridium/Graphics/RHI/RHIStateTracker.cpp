@@ -5,6 +5,17 @@
 
 namespace Tridium {
 
+	void RHIResourceStateTracker::AddResourceBarriers( Span<const RHIResourceBarrier> a_Barriers )
+	{
+		ResourceBarriers.Reserve( ResourceBarriers.Size() + a_Barriers.size() );
+		for ( const auto& barrier : a_Barriers )
+		{
+			RHI_DEV_CHECK( barrier.Resource, "Resource must not be null" );
+			ResourceBarriers.EmplaceBack() = barrier;
+			barrier.Resource->SetState( barrier.After );
+		}
+	}
+
 	void RHIResourceStateTracker::RequireTextureState( IRHITexture& a_Texture, ERHIResourceStates a_NewState )
 	{
 		const ERHIResourceStates currentState = a_Texture.State();

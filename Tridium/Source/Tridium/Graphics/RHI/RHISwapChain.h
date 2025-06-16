@@ -57,7 +57,7 @@ namespace Tridium {
 	{
 		RHI_OBJECT_INTERFACE_BODY( SwapChain );
 
-		IRHISwapChain( const DescriptorType& a_Desc ) : m_Desc( a_Desc ) {}
+		IRHISwapChain( IDynamicRHI* a_Device, const DescriptorType& a_Desc ) : IRHIObject( a_Device ), m_Desc( a_Desc ) {}
 		virtual ~IRHISwapChain() = default;
 
 		virtual bool Present() = 0;

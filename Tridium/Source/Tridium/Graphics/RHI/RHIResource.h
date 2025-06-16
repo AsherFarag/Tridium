@@ -3,7 +3,9 @@
 
 namespace Tridium {
 
-	// = RHI Object Forward Declarations =
+	// = Forward Declarations =
+	class IDynamicRHI;
+
 	class IRHIObject;
 	class IRHIResource;
 	class IRHISampler;
@@ -64,7 +66,7 @@ namespace Tridium {
 	using RHICommandAllocatorWeakRef      = WeakPtr<IRHICommandAllocator>;
 	using RHISwapChainWeakRef             = WeakPtr<IRHISwapChain>;
 	using RHIFenceWeakRef                 = WeakPtr<IRHIFence>;
-	// ===================================
+	// ===================
 
 	namespace Concepts {
 
@@ -87,10 +89,13 @@ namespace Tridium {
 
 		// Creates a new RHI object of the specified type and forwards the 'a_Args' to its constructor.
 		template<Concepts::Derived<IRHIObject> T, typename... _Args>
-		static T::RefType Create( _Args&&... a_Args )
+		static T::RefType Create( IDynamicRHI* a_RHI, _Args&&... a_Args )
 		{
-			return MakeShared<EnableMakeShared<T>>( std::forward<_Args>( a_Args )... );
+			return MakeShared<EnableMakeShared<T>>( a_RHI, std::forward<_Args>( a_Args )... );
 		}
+
+		// Returns the RHI device that owns this object.
+		IDynamicRHI* Device() const { return m_Device; }
 
 		// Releases the this device object, freeing it from the parent device.
 		virtual bool Release() = 0;
@@ -158,8 +163,11 @@ namespace Tridium {
 		}
 
 	protected:
-		IRHIObject() = default;
+		IRHIObject( IDynamicRHI* a_Device ) : m_Device( a_Device ) { RHI_DEV_CHECK( a_Device != nullptr, "RHI device cannot be null!" ); }
 		virtual ~IRHIObject() = default;
+
+	private:
+		IDynamicRHI* m_Device = nullptr; // Pointer to the RHI device that owns this object.
 	};
 
 	//==========================================================
@@ -178,6 +186,9 @@ namespace Tridium {
 
 	protected:
 		ERHIResourceStates m_State = ERHIResourceStates::Unknown;
+
+		IRHIResource( IDynamicRHI* a_Device ) : IRHIObject( a_Device ) {}
+		virtual ~IRHIResource() = default;
 	};
 
 	//==========================================================

@@ -81,7 +81,7 @@ namespace Tridium {
     {
         RHI_OBJECT_INTERFACE_BODY( CommandList );
 
-        IRHICommandList( const RHICommandListDesc& a_Desc ) : m_Desc( a_Desc ) {}
+        IRHICommandList( IDynamicRHI* a_Device, const RHICommandListDesc& a_Desc ) : IRHIObject( a_Device ), m_Desc( a_Desc ) {}
         virtual bool IsCompleted() const = 0;
         virtual void WaitUntilCompleted() = 0;
 
@@ -111,17 +111,26 @@ namespace Tridium {
 		// Resets the command list to its initial state and clears all owning references to resources.
 		virtual void ClearState() = 0;
 
-		// Creates a resource barrier that transitions the state of resource to the specified state.
+		// Adds a list of resource barriers to the command list, which are used to synchronize resource states.
 		// - OpenGL: No-op, OpenGL does not require explicit resource barriers.
 		// - DX12: Maps to ID3D12GraphicsCommandList::ResourceBarrier.
-        virtual void ResourceBarrier( const RHIResourceBarrier& a_Barrier, RHI_DEBUG_SRC_LOC_PARAM )
+        virtual void ResourceBarriers( Span<const RHIResourceBarrier> a_Barriers, RHI_DEBUG_SRC_LOC_PARAM )
         {
             RHI_ADD_DEBUG_CMD_INFO( "ResourceBarrier" );
 		}
 
-        void ResourceBarrier( IRHIResource& a_Resource, ERHIResourceStates a_OldState, ERHIResourceStates a_NewState, RHI_DEBUG_SRC_LOC_PARAM )
+		// Adds a single resource barrier to the command list.
+		// - See ResourceBarriers( Span<const RHIResourceBarrier>, RHI_DEBUG_SRC_LOC_PARAM ) for details.
+        void ResourceBarrier( const RHIResourceBarrier& a_Barrier, RHI_DEBUG_SRC_LOC_PARAM )
         {
-			ResourceBarrier( RHIResourceBarrier{ &a_Resource, a_OldState, a_NewState }, RHI_DEBUG_SRC_LOC );
+            ResourceBarriers( Span{ &a_Barrier, 1 }, RHI_DEBUG_SRC_LOC );
+        }
+
+		// Adds a resource barrier to transition the state of 'a_Resource' from its current state to 'a_NewState'.
+		// - See ResourceBarriers( Span<const RHIResourceBarrier>, RHI_DEBUG_SRC_LOC_PARAM ) for details.
+        void ResourceBarrier( IRHIResource& a_Resource, ERHIResourceStates a_NewState, RHI_DEBUG_SRC_LOC_PARAM )
+        {
+            ResourceBarrier( { &a_Resource, a_Resource.State(), a_NewState }, RHI_DEBUG_SRC_LOC );
 		}
 
         // Writes 'a_Data' from CPU memory into the GPU buffer 'a_Buffer' at the specified 'a_OffsetBytes' offset.

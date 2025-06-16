@@ -3,8 +3,8 @@
 
 namespace Tridium::D3D12 {
 
-	RHISampler_D3D12Impl::RHISampler_D3D12Impl( const DescriptorType& a_Desc )
-		: IRHISampler( a_Desc )
+	RHISampler_D3D12Impl::RHISampler_D3D12Impl( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
+		: IRHISampler( a_Device, a_Desc )
 	{
 		// Create the sampler heap
 		D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};

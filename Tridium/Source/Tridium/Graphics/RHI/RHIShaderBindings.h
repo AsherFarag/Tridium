@@ -266,11 +266,11 @@ namespace Tridium {
 
 	//==============================================
 	// RHI Shader Binding Layout Interface
-	class IRHIBindingLayout : public IRHIResource
+	class IRHIBindingLayout : public IRHIObject
 	{
 		RHI_OBJECT_INTERFACE_BODY( BindingLayout )
-		IRHIBindingLayout( const DescriptorType& a_Desc )
-			: m_Desc( a_Desc ) {}
+		IRHIBindingLayout( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
+			: IRHIObject( a_Device ), m_Desc( a_Desc ) {}
 		virtual ~IRHIBindingLayout() = default;
 	};
 	//==============================================
@@ -569,8 +569,8 @@ namespace Tridium {
 	{
 		RHI_OBJECT_INTERFACE_BODY( BindingSet );
 
-		IRHIBindingSet( const RHIBindingSetDesc& a_Desc)
-			: m_Desc( a_Desc )
+		IRHIBindingSet( IDynamicRHI* a_Device, const RHIBindingSetDesc& a_Desc)
+			: IRHIObject( a_Device ), m_Desc( a_Desc )
 		{
 			ENSURE( m_Desc.Layout != nullptr, "Binding layout is null!" );
 			RHI_DEV_CHECK( a_Desc.Bindings.Size() <= m_Desc.Layout->Desc().Bindings.Size(), "Binding set has more bindings than the provided layout!" );

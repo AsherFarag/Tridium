@@ -16,7 +16,7 @@ namespace Tridium::D3D12 {
 		, m_Type( a_Type )
 		, m_Flags( a_Flags )
 		, m_CPUBase( m_Heap->GetCPUDescriptorHandleForHeapStart() )
-		, m_GPUBase( m_Heap->GetGPUDescriptorHandleForHeapStart() )
+		, m_GPUBase( EnumFlags( a_Flags ).HasFlag( EDescriptorHeapFlags::GPUVisible ) ? m_Heap->GetGPUDescriptorHandleForHeapStart() : D3D12_GPU_DESCRIPTOR_HANDLE{} )
 		, m_IsGlobal( a_IsGlobal )
 		, m_IsSuballocation( false )
 		, m_Offet( 0u )

@@ -3,8 +3,8 @@
 
 namespace Tridium::OpenGL {
 
-	RHIBuffer_OpenGLImpl::RHIBuffer_OpenGLImpl( const DescriptorType& a_Desc, Span<const uint8_t> a_Data )
-		: IRHIBuffer( a_Desc )
+	RHIBuffer_OpenGLImpl::RHIBuffer_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType& a_Desc, Span<const uint8_t> a_Data )
+		: IRHIBuffer( a_Device, a_Desc )
 	{
 		BufferObj.Create();
 		if ( !BufferObj.Valid() )

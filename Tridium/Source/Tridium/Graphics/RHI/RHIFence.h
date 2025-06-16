@@ -21,8 +21,8 @@ namespace Tridium {
 	class IRHIFence : public IRHIObject
 	{
 		RHI_OBJECT_INTERFACE_BODY( Fence );
-		IRHIFence( const DescriptorType& a_Desc )
-			: m_Desc( a_Desc )
+		IRHIFence( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
+			: IRHIObject( a_Device ), m_Desc( a_Desc )
 		{}
 
 		virtual uint64_t GetCompletedValue() = 0;

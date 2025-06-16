@@ -25,8 +25,8 @@ namespace Tridium {
 	class IRHIShaderModule : public IRHIObject
 	{
 		RHI_OBJECT_INTERFACE_BODY( ShaderModule )
-		IRHIShaderModule( const DescriptorType& a_Desc )
-			: m_Desc( a_Desc ) {}
+		IRHIShaderModule( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
+			: IRHIObject( a_Device ), m_Desc( a_Desc ) {}
 
 		virtual ~IRHIShaderModule() = default;
 	};

@@ -80,8 +80,8 @@ namespace Tridium::D3D12 {
 		return desc;
 	}
 
-	RHIGraphicsPipelineState_D3D12Impl::RHIGraphicsPipelineState_D3D12Impl( const DescriptorType& a_Desc, SharedPtr<RootSignature> a_RootSig )
-		: IRHIGraphicsPipelineState( a_Desc )
+	RHIGraphicsPipelineState_D3D12Impl::RHIGraphicsPipelineState_D3D12Impl( IDynamicRHI* a_Device, const DescriptorType& a_Desc, SharedPtr<RootSignature> a_RootSig )
+		: IRHIGraphicsPipelineState( a_Device, a_Desc )
     {
 		ASSERT( a_RootSig, "Root signature must not be null" );
 

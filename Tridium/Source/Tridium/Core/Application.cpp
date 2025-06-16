@@ -593,8 +593,8 @@ float4 PSMain( VSOutput input ) : SV_Target
 
 					cmdList->Draw( drawArgs );
 
-					cmdList->ResourceBarrier( *rt.get(), ERHIResourceStates::RenderTarget, ERHIResourceStates::Present );
-					cmdList->ResourceBarrier( *depthTex.get(), ERHIResourceStates::DepthStencilWrite, ERHIResourceStates::Present );
+					cmdList->ResourceBarrier( *rt, ERHIResourceStates::Present );
+					cmdList->ResourceBarrier( *depthTex, ERHIResourceStates::Present );
 
 					cmdList->Close();
 

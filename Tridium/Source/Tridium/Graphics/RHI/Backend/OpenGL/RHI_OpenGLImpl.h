@@ -194,7 +194,7 @@ namespace Tridium::OpenGL {
 	{
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHITexture_OpenGLImpl, ERHInterfaceType::OpenGL );
-		RHITexture_OpenGLImpl( const DescriptorType & a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData );
+		RHITexture_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType & a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData );
 		~RHITexture_OpenGLImpl() override { Release(); }
 
 		virtual bool Release() override;
@@ -213,7 +213,7 @@ namespace Tridium::OpenGL {
 	{
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBuffer_OpenGLImpl, ERHInterfaceType::OpenGL );
-		RHIBuffer_OpenGLImpl( const RHIBufferDesc & a_Desc, Span<const uint8_t> a_Data = {} );
+		RHIBuffer_OpenGLImpl( IDynamicRHI* a_Device, const RHIBufferDesc & a_Desc, Span<const uint8_t> a_Data = {} );
 		~RHIBuffer_OpenGLImpl() override { Release(); }
 
 		virtual bool Release() override { BufferObj.Release(); return true; }
@@ -231,7 +231,7 @@ namespace Tridium::OpenGL {
 	{
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIFence_OpenGLImpl, ERHInterfaceType::OpenGL );
-		RHIFence_OpenGLImpl( const DescriptorType & a_Desc );
+		RHIFence_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType & a_Desc );
 		~RHIFence_OpenGLImpl() override { Release(); }
 
 		bool Release() override;
@@ -259,8 +259,8 @@ namespace Tridium::OpenGL {
 	{
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHISampler_OpenGLImpl, ERHInterfaceType::OpenGL );
-		RHISampler_OpenGLImpl( const DescriptorType & a_Desc )
-			: IRHISampler( a_Desc )
+		RHISampler_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType & a_Desc )
+			: IRHISampler( a_Device, a_Desc )
 		{
 			OpenGL3::GenSamplers( 1, &m_SamplerID );
 			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_MIN_FILTER, Translate( a_Desc.Filter ) );
@@ -301,7 +301,7 @@ namespace Tridium::OpenGL {
 	{
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBindingLayout_OpenGLImpl, ERHInterfaceType::OpenGL );
-		RHIBindingLayout_OpenGLImpl( const DescriptorType & a_Desc );
+		RHIBindingLayout_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType & a_Desc );
 		~RHIBindingLayout_OpenGLImpl() override { Release(); }
 
 		bool Release() override { return true; }
@@ -317,7 +317,7 @@ namespace Tridium::OpenGL {
 	{
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBindingSet_OpenGLImpl, ERHInterfaceType::OpenGL );
-		RHIBindingSet_OpenGLImpl( const DescriptorType & a_Desc );
+		RHIBindingSet_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType & a_Desc );
 		~RHIBindingSet_OpenGLImpl() override { Release(); }
 
 		bool Release() override { return true; }
@@ -333,7 +333,7 @@ namespace Tridium::OpenGL {
 	{
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIShaderModule_OpenGLImpl, ERHInterfaceType::OpenGL );
-		RHIShaderModule_OpenGLImpl( const DescriptorType & a_Desc );
+		RHIShaderModule_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType & a_Desc );
 		~RHIShaderModule_OpenGLImpl() override { Release(); }
 
 		bool Release() override;
@@ -354,7 +354,7 @@ namespace Tridium::OpenGL {
 	{
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIGraphicsPipelineState_OpenGLImpl, ERHInterfaceType::OpenGL );
-		RHIGraphicsPipelineState_OpenGLImpl( const DescriptorType & a_Desc );
+		RHIGraphicsPipelineState_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType & a_Desc );
 		~RHIGraphicsPipelineState_OpenGLImpl() override { Release(); }
 
 		bool Release() override;
@@ -381,7 +381,7 @@ namespace Tridium::OpenGL {
 	{
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHISwapChain_OpenGLImpl, ERHInterfaceType::OpenGL );
-		RHISwapChain_OpenGLImpl( const DescriptorType & a_Desc );
+		RHISwapChain_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType & a_Desc );
 		~RHISwapChain_OpenGLImpl() override { Release(); }
 
 		bool Release() override;
@@ -411,7 +411,7 @@ namespace Tridium::OpenGL {
 	{
 	public:
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHICommandList_OpenGLImpl, ERHInterfaceType::OpenGL );
-		RHICommandList_OpenGLImpl( const DescriptorType & a_Desc );
+		RHICommandList_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType & a_Desc );
 		~RHICommandList_OpenGLImpl() override { Release(); }
 
 		virtual bool Release() override { return true; }
@@ -425,7 +425,7 @@ namespace Tridium::OpenGL {
 		bool Close() override;
 		void ClearState() override;
 
-		void ResourceBarrier( const RHIResourceBarrier& a_Barrier, RHI_DEBUG_SRC_LOC_PARAM ) override;
+		void ResourceBarriers( Span<const RHIResourceBarrier> a_Barriers, RHI_DEBUG_SRC_LOC_PARAM ) override;
 
 		void UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM ) override;
 		void CopyBuffer( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange, RHI_DEBUG_SRC_LOC_PARAM ) override;

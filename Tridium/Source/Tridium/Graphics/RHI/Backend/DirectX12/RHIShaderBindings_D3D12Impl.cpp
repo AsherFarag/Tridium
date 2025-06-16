@@ -56,8 +56,8 @@ namespace Tridium::D3D12 {
     };
 
     // Based off NVRHI d3d12::BindingLayout()
-	RHIBindingLayout_D3D12Impl::RHIBindingLayout_D3D12Impl( const DescriptorType& a_Desc )
-        : IRHIBindingLayout( a_Desc )
+	RHIBindingLayout_D3D12Impl::RHIBindingLayout_D3D12Impl( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
+        : IRHIBindingLayout( a_Device, a_Desc )
     {
         uint32_t currentSlot = ~0u;
         ERHIBindingType currentType = ERHIBindingType::Unknown;
@@ -187,17 +187,22 @@ namespace Tridium::D3D12 {
 
     bool RHIBindingLayout_D3D12Impl::Release()
     {
-        InlinedConstantsSize = 0; // Size of the inlined constants in bytes
-        RootParamInlinedConstants = ~0;
-        RootParamRenderResources = ~0;
-        RootParamSamplers = ~0;
+        InlinedConstantsSize = 0;
+        RootParamInlinedConstants = c_InvalidRootParameterIndex;
+        RootParamRenderResources = c_InvalidRootParameterIndex;
+        RootParamSamplers = c_InvalidRootParameterIndex;
+        DescriptorTableSizeRenderResources = 0;
+        DescriptorTableSizeSamplers = 0;
+        DescriptorRangesRenderResources.Clear();
+        DescriptorRangesSamplers.Clear();
+        RenderResourceBindingLayouts.Clear();
         RootParams.Clear();
         return true;
     }
 
     bool RHIBindingLayout_D3D12Impl::Valid() const
     {
-        return true;
+		return true;
     }
 
     const void* RHIBindingLayout_D3D12Impl::NativePtr() const
@@ -205,8 +210,8 @@ namespace Tridium::D3D12 {
         return nullptr;
     }
 
-    RHIBindingSet_D3D12Impl::RHIBindingSet_D3D12Impl( const DescriptorType& a_Desc )
-		: IRHIBindingSet( a_Desc )
+    RHIBindingSet_D3D12Impl::RHIBindingSet_D3D12Impl( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
+		: IRHIBindingSet( a_Device, a_Desc )
     {
     }
 

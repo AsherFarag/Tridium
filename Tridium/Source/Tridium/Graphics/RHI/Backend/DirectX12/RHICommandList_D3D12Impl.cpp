@@ -18,8 +18,8 @@ namespace Tridium::D3D12 {
 		return ( a_Value + a_Alignment - 1 ) & ~( a_Alignment - 1 );
 	}
 
-	RHICommandList_D3D12Impl::RHICommandList_D3D12Impl( const RHICommandListDesc& a_Desc )
-		: IRHICommandList( a_Desc )
+	RHICommandList_D3D12Impl::RHICommandList_D3D12Impl( IDynamicRHI* a_Device, const RHICommandListDesc& a_Desc )
+		: IRHICommandList( a_Device, a_Desc )
 	{
 		const HRESULT hr = GetD3D12RHI()->GetD3D12Device4()->CreateCommandList1( 
 			0, D3D12::Translate( m_Desc.QueueType ), D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS( CommandList.GetAddressOf() )
@@ -128,9 +128,11 @@ namespace Tridium::D3D12 {
 		m_D3D12Barriers.Clear();
 	}
 
-	void RHICommandList_D3D12Impl::ResourceBarrier( const RHIResourceBarrier& a_Barrier, RHI_DEBUG_SRC_LOC_PARAM )
+	void RHICommandList_D3D12Impl::ResourceBarriers( Span<const RHIResourceBarrier> a_Barriers, RHI_DEBUG_SRC_LOC_PARAM )
 	{
-		m_ResourceStateTracker.ResourceBarriers.EmplaceBack( a_Barrier );
+		IRHICommandList::ResourceBarriers( a_Barriers, RHI_DEBUG_SRC_LOC );
+		m_ResourceStateTracker.AddResourceBarriers( a_Barriers );
+		CommitBarriers();
 	}
 
 	void RHICommandList_D3D12Impl::UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes, RHI_DEBUG_SRC_LOC_PARAM ) 
@@ -235,12 +237,6 @@ namespace Tridium::D3D12 {
 			if ( a_GraphicsState.IndexBuffer )
 			{
 				RHIBuffer_D3D12Impl* indexBuffer = a_GraphicsState.IndexBuffer->As<RHIBuffer_D3D12Impl>();
-
-				if ( IsAutomaticResourceStateTransitionEnabled() )
-				{
-					m_ResourceStateTracker.RequireBufferState( *indexBuffer, ERHIResourceStates::IndexBuffer );
-				}
-
 				TODO( "Add support for index buffer offset" );
 				ibv.BufferLocation = indexBuffer->ManagedBuffer.Resource->GetGPUVirtualAddress() /* + a_GraphicsState.IndexBufferOffset */;
 				ibv.SizeInBytes = indexBuffer->ManagedBuffer.Resource->GetDesc().Width /* - a_GraphicsState.IndexBufferOffset */;
@@ -258,11 +254,6 @@ namespace Tridium::D3D12 {
 			if ( a_GraphicsState.VertexBuffer )
 			{
 				RHIBuffer_D3D12Impl* vertexBuffer = a_GraphicsState.VertexBuffer->As<RHIBuffer_D3D12Impl>();
-				if ( IsAutomaticResourceStateTransitionEnabled() )
-				{
-					m_ResourceStateTracker.RequireBufferState( *vertexBuffer, ERHIResourceStates::VertexBuffer );
-				}
-
 				TODO( "Add support for vertex buffer offset" );
 				vbv.BufferLocation = vertexBuffer->ManagedBuffer.Resource->GetGPUVirtualAddress();
 				vbv.SizeInBytes = vertexBuffer->ManagedBuffer.Resource->GetDesc().Width;
@@ -271,6 +262,17 @@ namespace Tridium::D3D12 {
 
 			GraphicsCommandList()->IASetVertexBuffers( 0, 1, &vbv );
 		}
+
+		// Set Resource States for resources referenced by the graphics state
+		if ( IsAutomaticResourceStateTransitionEnabled() )
+		{
+			m_ResourceStateTracker.SetResourceStatesForFramebuffer( a_GraphicsState.Framebuffer );
+			if ( a_GraphicsState.IndexBuffer )
+				m_ResourceStateTracker.RequireBufferState( *a_GraphicsState.IndexBuffer, ERHIResourceStates::IndexBuffer );
+			if ( a_GraphicsState.VertexBuffer )
+				m_ResourceStateTracker.RequireBufferState( *a_GraphicsState.VertexBuffer, ERHIResourceStates::VertexBuffer );
+		}
+
 
 		CommitBarriers();
 

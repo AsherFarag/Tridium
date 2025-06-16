@@ -19,6 +19,7 @@ namespace Tridium {
 	{
 		Array<RHIResourceBarrier> ResourceBarriers;
 
+		void AddResourceBarriers( Span<const RHIResourceBarrier> a_Barriers );
 		void RequireTextureState( IRHITexture& a_Texture, ERHIResourceStates a_NewState );
 		void RequireBufferState( IRHIBuffer& a_Buffer, ERHIResourceStates a_NewState );
 		void SetResourceStatesForFramebuffer( const RHIFramebuffer& a_Framebuffer );

@@ -3,13 +3,13 @@
 
 namespace Tridium::OpenGL {
 
-	RHIBindingLayout_OpenGLImpl::RHIBindingLayout_OpenGLImpl( const DescriptorType& a_Desc )
-		: IRHIBindingLayout( a_Desc )
+	RHIBindingLayout_OpenGLImpl::RHIBindingLayout_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
+		: IRHIBindingLayout( a_Device, a_Desc )
 	{
 	}
 
-	RHIBindingSet_OpenGLImpl::RHIBindingSet_OpenGLImpl( const DescriptorType& a_Desc )
-		: IRHIBindingSet( a_Desc )
+	RHIBindingSet_OpenGLImpl::RHIBindingSet_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
+		: IRHIBindingSet( a_Device, a_Desc )
 	{
 
 	}

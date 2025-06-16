@@ -51,9 +51,9 @@ namespace Tridium {
 
 	class IRHIBuffer : public IRHIResource
 	{
-		RHI_OBJECT_INTERFACE_BODY( Buffer )
-		IRHIBuffer( const DescriptorType& a_Desc )
-			: m_Desc( a_Desc ) 
+		RHI_OBJECT_INTERFACE_BODY( Buffer );
+		IRHIBuffer( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
+			: IRHIResource( a_Device ), m_Desc( a_Desc )
 		{
 			RHI_DEV_CHECK( !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::RenderTarget )
 						&& !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::DepthStencil ),

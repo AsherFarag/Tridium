@@ -11,8 +11,8 @@
 
 namespace Tridium::OpenGL {
 
-	RHICommandList_OpenGLImpl::RHICommandList_OpenGLImpl( const DescriptorType& a_Desc )
-		: IRHICommandList( a_Desc )
+	RHICommandList_OpenGLImpl::RHICommandList_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
+		: IRHICommandList( a_Device, a_Desc )
 	{
 		m_InlinedConstantsUBO.Create();
 		OpenGL1::BindBuffer( GL_UNIFORM_BUFFER, m_InlinedConstantsUBO );
@@ -37,10 +37,9 @@ namespace Tridium::OpenGL {
 		m_ReferencedResources.Clear();
 	}
 
-	void RHICommandList_OpenGLImpl::ResourceBarrier( const RHIResourceBarrier& a_Barrier, RHI_DEBUG_SRC_LOC_PARAM )
+	void RHICommandList_OpenGLImpl::ResourceBarriers( Span<const RHIResourceBarrier> a_Barriers, RHI_DEBUG_SRC_LOC_PARAM )
 	{
-		IRHICommandList::ResourceBarrier( a_Barrier, RHI_DEBUG_SRC_LOC );
-		// OpenGL does not have a concept of resource barriers like Vulkan or Direct3D 12.
+		IRHICommandList::ResourceBarriers( a_Barriers, RHI_DEBUG_SRC_LOC );
 	}
 
 	void RHICommandList_OpenGLImpl::UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes, RHI_DEBUG_SRC_LOC_PARAM )

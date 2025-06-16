@@ -254,28 +254,28 @@ namespace Tridium::D3D12 {
 
 	RHIFenceRef DynamicRHI_D3D12Impl::CreateFence( const RHIFenceDesc& a_Desc )
 	{
-		RHIFenceRef fence = IRHIObject::Create<RHIFence_D3D12Impl>( a_Desc );
+		RHIFenceRef fence = IRHIObject::Create<RHIFence_D3D12Impl>( this, a_Desc );
 		RegisterRHIResource( *fence.get() );
 		return fence;
 	}
 
 	RHISamplerRef DynamicRHI_D3D12Impl::CreateSampler( const RHISamplerDesc& a_Desc )
 	{
-		RHISamplerRef sampler = IRHIObject::Create<RHISampler_D3D12Impl>( a_Desc );
+		RHISamplerRef sampler = IRHIObject::Create<RHISampler_D3D12Impl>( this, a_Desc );
 		RegisterRHIResource( *sampler.get() );
 		return sampler;
 	}
 
 	RHITextureRef DynamicRHI_D3D12Impl::CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
 	{
-		RHITextureRef texture = IRHIObject::Create<RHITexture_D3D12Impl>( a_Desc, a_SubResourcesData );
+		RHITextureRef texture = IRHIObject::Create<RHITexture_D3D12Impl>( this, a_Desc, a_SubResourcesData );
 		RegisterRHIResource( *texture.get() );
 		return texture;
 	}
 
 	RHIBufferRef DynamicRHI_D3D12Impl::CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data )
 	{
-		RHIBufferRef buffer = IRHIObject::Create<RHIBuffer_D3D12Impl>( a_Desc, a_Data );
+		RHIBufferRef buffer = IRHIObject::Create<RHIBuffer_D3D12Impl>( this, a_Desc, a_Data );
 		RegisterRHIResource( *buffer.get() );
 		return buffer;
 	}
@@ -283,42 +283,42 @@ namespace Tridium::D3D12 {
 	RHIGraphicsPipelineStateRef DynamicRHI_D3D12Impl::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc )
 	{
 		SharedPtr<RootSignature> rootSig = GetRootSignature( a_Desc.BindingLayouts, a_Desc.VertexLayout.Valid() );
- 		RHIGraphicsPipelineStateRef pso = IRHIObject::Create<RHIGraphicsPipelineState_D3D12Impl>( a_Desc, rootSig );
+ 		RHIGraphicsPipelineStateRef pso = IRHIObject::Create<RHIGraphicsPipelineState_D3D12Impl>( this, a_Desc, rootSig );
 		RegisterRHIResource( *pso.get() );
 		return pso;
 	}
 
 	RHICommandListRef DynamicRHI_D3D12Impl::CreateCommandList( const RHICommandListDesc& a_Desc )
 	{
- 		RHICommandListRef cmdList = IRHIObject::Create<RHICommandList_D3D12Impl>( a_Desc );
+ 		RHICommandListRef cmdList = IRHIObject::Create<RHICommandList_D3D12Impl>( this, a_Desc );
 		RegisterRHIResource( *cmdList.get() );
 		return cmdList;
 	}
 
 	RHIShaderModuleRef DynamicRHI_D3D12Impl::CreateShaderModule( const RHIShaderModuleDesc& a_Desc )
 	{
-		RHIShaderModuleRef shaderModule = IRHIObject::Create<RHIShaderModule_D3D12Impl>( a_Desc );
+		RHIShaderModuleRef shaderModule = IRHIObject::Create<RHIShaderModule_D3D12Impl>( this, a_Desc );
 		RegisterRHIResource( *shaderModule.get() );
 		return shaderModule;
 	}
 
 	RHIBindingLayoutRef DynamicRHI_D3D12Impl::CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc )
 	{
-		RHIBindingLayoutRef bindingLayout = IRHIObject::Create<RHIBindingLayout_D3D12Impl>( a_Desc );
+		RHIBindingLayoutRef bindingLayout = IRHIObject::Create<RHIBindingLayout_D3D12Impl>( this, a_Desc );
 		RegisterRHIResource( *bindingLayout.get() );
 		return bindingLayout;
 	}
 
 	RHIBindingSetRef DynamicRHI_D3D12Impl::CreateBindingSet( const RHIBindingSetDesc& a_Desc )
 	{
-		RHIBindingSetRef bindingSet = IRHIObject::Create<RHIBindingSet_D3D12Impl>( a_Desc );
+		RHIBindingSetRef bindingSet = IRHIObject::Create<RHIBindingSet_D3D12Impl>( this, a_Desc );
 		RegisterRHIResource( *bindingSet.get() );
 		return bindingSet;
 	}
 
 	RHISwapChainRef DynamicRHI_D3D12Impl::CreateSwapChain( const RHISwapChainDesc& a_Desc )
 	{
-		RHISwapChainRef swapChain = IRHIObject::Create<RHISwapChain_D3D12Impl>( a_Desc );
+		RHISwapChainRef swapChain = IRHIObject::Create<RHISwapChain_D3D12Impl>( this, a_Desc );
 		RegisterRHIResource( *swapChain.get() );
 		return swapChain;
 	}

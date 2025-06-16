@@ -3,8 +3,8 @@
 
 namespace Tridium::OpenGL {
 
-	RHIGraphicsPipelineState_OpenGLImpl::RHIGraphicsPipelineState_OpenGLImpl( const DescriptorType& a_Desc )
-		: IRHIGraphicsPipelineState( a_Desc )
+	RHIGraphicsPipelineState_OpenGLImpl::RHIGraphicsPipelineState_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
+		: IRHIGraphicsPipelineState( a_Device, a_Desc )
     {
 		// Create the shader program
 		{

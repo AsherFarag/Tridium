@@ -39,7 +39,7 @@ namespace Tridium {
 	class IRHISampler : public IRHIObject
 	{
 		RHI_OBJECT_INTERFACE_BODY( Sampler )
-		IRHISampler( const DescriptorType& a_Desc ) : m_Desc( a_Desc ) {}
+		IRHISampler( IDynamicRHI* a_Device, const DescriptorType& a_Desc ) : IRHIObject( a_Device ), m_Desc( a_Desc ) {}
 		virtual ~IRHISampler() = default;
 	};
 

@@ -2,8 +2,8 @@
 #include "RHI_D3D12Impl.h"
 
 namespace Tridium::D3D12 {
-	RHIBuffer_D3D12Impl::RHIBuffer_D3D12Impl( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data )
-		: IRHIBuffer( a_Desc )
+	RHIBuffer_D3D12Impl::RHIBuffer_D3D12Impl( IDynamicRHI* a_Device, const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data )
+		: IRHIBuffer( a_Device, a_Desc )
 	{
 		m_Desc.Size = Math::Max( a_Desc.Size, a_Data.size_bytes() );
 		if ( m_Desc.Size == 0 )

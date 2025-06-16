@@ -12,8 +12,8 @@
 
 namespace Tridium::D3D12 {
 
-	RHISwapChain_D3D12Impl::RHISwapChain_D3D12Impl( const DescriptorType& a_Desc )
-		: IRHISwapChain( a_Desc )
+	RHISwapChain_D3D12Impl::RHISwapChain_D3D12Impl( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
+		: IRHISwapChain( a_Device, a_Desc )
 	{
 		DynamicRHI_D3D12Impl* rhi = GetD3D12RHI();
 

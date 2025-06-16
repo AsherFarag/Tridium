@@ -214,8 +214,8 @@ namespace Tridium {
 	{
 		RHI_OBJECT_INTERFACE_BODY( Texture );
 
-		IRHITexture( const DescriptorType& a_Desc )
-			: m_Desc( a_Desc )
+		IRHITexture( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
+			: IRHIResource( a_Device ), m_Desc( a_Desc )
 		{
 			RHI_DEV_CHECK( !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::VertexBuffer )
 						&& !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::IndexBuffer )

@@ -55,8 +55,8 @@ namespace Tridium::OpenGL {
 		return true;
 	}
 
-	RHISwapChain_OpenGLImpl::RHISwapChain_OpenGLImpl( const DescriptorType& a_Desc )
-		: IRHISwapChain( a_Desc )
+	RHISwapChain_OpenGLImpl::RHISwapChain_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
+		: IRHISwapChain( a_Device, a_Desc )
     {
 		m_Width = a_Desc.Width;
 		m_Height = a_Desc.Height;

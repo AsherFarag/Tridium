@@ -125,8 +125,8 @@ namespace Tridium {
 	class IRHIGraphicsPipelineState : public IRHIObject
 	{
 		RHI_OBJECT_INTERFACE_BODY( GraphicsPipelineState )
-		IRHIGraphicsPipelineState( const DescriptorType& a_Desc )
-			: m_Desc( a_Desc ) 
+		IRHIGraphicsPipelineState( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
+			: IRHIObject( a_Device ), m_Desc( a_Desc ) 
 		{}
 		virtual ~IRHIGraphicsPipelineState() = default;
 	};
