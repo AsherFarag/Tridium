@@ -273,32 +273,63 @@ namespace Tridium {
 
 
 	//===========================
-	// RHI Scissor Rect
-	//  A rectangle used to clip rendering to a specific area.
-	//  For example, clearing a specific area of the screen.
-	struct RHIScissorRect
+	// RHI Viewport
+	struct RHIViewport
 	{
-		uint16_t Left;
-		uint16_t Top;
-		uint16_t Right;
-		uint16_t Bottom;
+		float X        = 0.0f; // Top-left corner of the viewport.
+		float Y        = 0.0f; // Top-left corner of the viewport.
+		float Width    = 0.0f; // Width of the viewport.
+		float Height   = 0.0f; // Height of the viewport.
+		float MinDepth = 0.0f; // Minimum depth of the viewport.
+		float MaxDepth = 1.0f; // Maximum depth of the viewport.
 	};
 
 
 
 	//===========================
-	// RHI Viewport
-	struct RHIViewport
+	// RHI Scissor Rect
+	//  A rectangle used to clip rendering to a specific area.
+	//  For example, clearing a specific area of the screen.
+	struct RHIScissorRect
 	{
-		float X;        // Top-left corner of the viewport.
-		float Y;        // Top-left corner of the viewport.
-		float Width;    // Width of the viewport.
-		float Height;   // Height of the viewport.
-		float MinDepth; // Minimum depth of the viewport.
-		float MaxDepth; // Maximum depth of the viewport.
+		uint16_t Left   = 0;
+		uint16_t Top    = 0;
+		uint16_t Right  = 0;
+		uint16_t Bottom = 0;
+
+		static constexpr RHIScissorRect From( const RHIViewport& a_Viewport ) noexcept
+		{
+			return RHIScissorRect{ .Left   = uint16_t( Math::Ceil( a_Viewport.X ) ),
+								   .Top    = uint16_t( Math::Ceil( a_Viewport.Y ) ),
+								   .Right  = uint16_t( Math::Floor( a_Viewport.X + a_Viewport.Width ) ),
+								   .Bottom = uint16_t( Math::Floor( a_Viewport.Y + a_Viewport.Height ) ) };
+		}
 	};
 
+	struct RHIViewportState
+	{
+		InlineArray<RHIViewport, RHIConstants::MaxViewports> Viewports;
+		InlineArray<RHIScissorRect, RHIConstants::MaxViewports> Scissors;
 
+		constexpr auto& AddViewport( const RHIViewport& a_Viewport ) noexcept
+		{
+			RHI_DEV_CHECK( Viewports.Size() < Viewports.MaxSize(), "Maximum number of viewports exceeded!");
+			Viewports.PushBack( a_Viewport );
+			return *this;
+		}
+
+		constexpr auto& AddScissor( const RHIScissorRect& a_Scissor ) noexcept
+		{
+			RHI_DEV_CHECK( Scissors.Size() < Scissors.MaxSize(), "Maximum number of scissors exceeded!" );
+			Scissors.PushBack( a_Scissor );
+			return *this;
+		}
+
+		constexpr auto& AddViewportAndScissor( const RHIViewport& a_Viewport ) noexcept
+		{
+			return AddViewport( a_Viewport ).AddScissor( RHIScissorRect::From( a_Viewport ) );
+		}
+	};
 
 	//============================
 	// RHI Buffer Range
@@ -340,7 +371,7 @@ namespace Tridium {
 	//  Describes how the buffer is accessed.
 	enum class ERHIBufferType : uint8_t
 	{
-		Undefined = 0,
+		Unknown = 0,
 		// This buffer is accessed via raw bytes.
 		// RHIBufferDesc::Stride must specify the size of the format.
 		Raw,

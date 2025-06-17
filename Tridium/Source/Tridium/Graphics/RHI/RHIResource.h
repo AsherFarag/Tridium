@@ -227,6 +227,8 @@ public:
 // Helper macro for defining the body of a graphics API specific implementation of an RHIObject.
 // _ClassName: The name of the resource implementation. Should be prefixed with the graphics API. E.g. _ClassName = RHITexture_OpenGLImpl
 // _RHIInterfaceType: The type of the RHI interface. E.g. _RHIInterfaceType = ERHInterfaceType::OpenGL
-#define RHI_OBJECT_IMPLEMENTATION_BODY( _ClassName, _RHIInterfaceType ) \
+#define RHI_OBJECT_IMPLEMENTATION_BODY( _ClassName, _GraphicsAPI, _RHIInterfaceType ) \
 public: \
-	static constexpr ::Tridium::ERHInterfaceType API = _RHIInterfaceType;
+	static constexpr ::Tridium::ERHInterfaceType API = _RHIInterfaceType; \
+	using DeviceType = class DynamicRHI_##_GraphicsAPI##Impl; \
+	DeviceType* Device() const { return reinterpret_cast<DeviceType*>( IRHIObject::Device() ); }

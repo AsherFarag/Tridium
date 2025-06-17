@@ -3,7 +3,6 @@
 
 namespace Tridium::RHIConstants {
 	static constexpr uint32_t MaxViewports            = 16u;           // Maximum number of viewports that can be set in a single draw call.
-	static constexpr uint32_t MaxScissorRects         = MaxViewports;  // Maximum number of scissor rectangles that can be set in a single draw call.
 	static constexpr uint32_t MaxVertexAttributes     = 16u;           // Maximum number of vertex attributes that can be bound to a vertex buffer.
 	static constexpr uint32_t MaxBindingLayouts       = 5u;            // Maximum number of binding layouts that can apart of a single pipeline state.
 	static constexpr uint32_t MaxShaderBindings       = 128u;          // Maximum number of shader bindings that can be used in a single draw call.

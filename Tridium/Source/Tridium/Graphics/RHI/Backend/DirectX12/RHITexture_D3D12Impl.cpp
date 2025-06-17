@@ -186,6 +186,53 @@ namespace Tridium::D3D12 {
 		return desc;
 	}
 
+	D3D12_SHADER_RESOURCE_VIEW_DESC RHITexture_D3D12Impl::CreateSRVDesc( ERHIFormat a_Format, ERHITextureDimension a_Dimension, RHITextureSubresourceSet a_Subresources )
+	{
+		if ( a_Dimension == ERHITextureDimension::Unknown )
+			a_Dimension = m_Desc.Dimension;
+		if ( a_Format == ERHIFormat::Unknown )
+			a_Format = m_Desc.Format;
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = Translate( a_Format );
+		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+		const uint32_t planeSlice = (srvDesc.Format == DXGI_FORMAT_X24_TYPELESS_G8_UINT) ? 1 : 0;
+		a_Subresources = a_Subresources.Resolve( m_Desc, false );
+
+		switch ( a_Dimension )
+		{
+			case ERHITextureDimension::Texture1D:
+				srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE1D;
+				srvDesc.Texture1D.MostDetailedMip = a_Subresources.BaseMipLevel;
+				srvDesc.Texture1D.MipLevels = a_Subresources.NumMipLevels;
+				break;
+			case ERHITextureDimension::Texture2D:
+				srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+				srvDesc.Texture2D.MostDetailedMip = a_Subresources.BaseMipLevel;
+				srvDesc.Texture2D.MipLevels = a_Subresources.NumMipLevels;
+				srvDesc.Texture2D.PlaneSlice = planeSlice; // For planar formats
+				break;
+			case ERHITextureDimension::Texture3D:
+				srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
+				srvDesc.Texture3D.MostDetailedMip = a_Subresources.BaseMipLevel;
+				srvDesc.Texture3D.MipLevels = a_Subresources.NumMipLevels;
+				break;
+			case ERHITextureDimension::TextureCube:
+				srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+				srvDesc.TextureCube.MostDetailedMip = a_Subresources.BaseMipLevel;
+				srvDesc.TextureCube.MipLevels = a_Subresources.NumMipLevels;
+				break;
+			default:
+				ASSERT( false, "Unsupported texture dimension for SRV" );
+				return {};
+		}
+
+		TODO( "Add support for array textures and other dimensions" );
+
+		return srvDesc;
+	}
+
 
 #if 0
 

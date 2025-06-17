@@ -193,22 +193,13 @@ namespace Tridium {
 			RHI_DEV_CHECK( Desc().QueueType == ERHICommandQueueType::Graphics, "ClearRenderTargets can only be called on graphics command lists." );
         }
 
-		// Binds an array of scissor rectangles to the rasterizer stage.
+		// Binds an array of viewports and scissor rectangles to the rendering pipeline.
 		// NOTE: The Graphics State (via SetGraphicsState(...)) must be set before calling this function.
-		// - OpenGL: Maps to glScissorIndexed or glScissor.
-		// - DX12: Maps to ID3D12GraphicsCommandList::RSSetScissorRects.
-        virtual void SetScissors( Span<const RHIScissorRect> a_Scissors, RHI_DEBUG_SRC_LOC_PARAM )
+		// - OpenGL: Maps to glViewportIndexed or glViewport & glScissorIndexed.
+		// - DX12: Maps to ID3D12GraphicsCommandList::RSSetViewports & ID3D12GraphicsCommandList::RSSetScissorRects.
+        virtual void SetViewportState( const RHIViewportState& a_Viewports, RHI_DEBUG_SRC_LOC_PARAM )
         {
-            RHI_ADD_DEBUG_CMD_INFO( "SetScissors" );
-        }
-
-		// Binds an array of viewports to the rasterizer stage.
-		// NOTE: The Graphics State (via SetGraphicsState(...)) must be set before calling this function.
-		// - OpenGL: Maps to glViewportIndexed or glViewport.
-		// - DX12: Maps to ID3D12GraphicsCommandList::RSSetViewports.
-        virtual void SetViewports( Span<const RHIViewport> a_Viewports, RHI_DEBUG_SRC_LOC_PARAM )
-        {
-            RHI_ADD_DEBUG_CMD_INFO( "SetViewports" );
+            RHI_ADD_DEBUG_CMD_INFO( "SetViewportState" );
 		}
 
 		// Draws primitives using the currently set graphics pipeline state.

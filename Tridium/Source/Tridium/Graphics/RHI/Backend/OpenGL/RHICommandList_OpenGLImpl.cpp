@@ -90,6 +90,10 @@ namespace Tridium::OpenGL {
 	{
 	}
 
+	void RHICommandList_OpenGLImpl::SetViewportState( const RHIViewportState& a_Viewports, RHI_DEBUG_SRC_LOC_PARAM )
+	{
+	}
+
 	void RHICommandList_OpenGLImpl::Draw( const RHIDrawArgs& a_DrawArgs, RHI_DEBUG_SRC_LOC_PARAM )
 	{
 	}

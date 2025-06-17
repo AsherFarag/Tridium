@@ -104,4 +104,66 @@ namespace Tridium::D3D12 {
 		desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 		return desc;
 	}
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC RHIBuffer_D3D12Impl::CreateSRVDesc( ERHIBufferType a_Type, RHIBufferRange a_Range, ERHIFormat a_Format ) const
+	{
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		a_Range.Offset = Math::Min( a_Range.Offset, m_Desc.Size );
+		a_Range.Size = Math::Min( a_Range.Size, m_Desc.Size - a_Range.Offset );
+
+		if ( a_Format == ERHIFormat::Unknown )
+			a_Format = m_Desc.Format; // Use the buffer's format if not specified
+
+		switch ( a_Type )
+		{
+			case ERHIBufferType::Raw:
+			{
+				srvDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+				srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
+				srvDesc.Buffer.FirstElement = NumDWORDsFromBytes( a_Range.Offset );
+				srvDesc.Buffer.NumElements = NumDWORDsFromBytes( a_Range.Size );
+				break;
+			}
+			case ERHIBufferType::Formatted:
+			{
+				RHI_DEV_CHECK( a_Format != ERHIFormat::Unknown, "Invalid format for formatted buffer SRV" );
+				RHIFormatInfo formatInfo = GetRHIFormatInfo( a_Format );
+				srvDesc.Format = Translate( a_Format );
+				srvDesc.Buffer.FirstElement = a_Range.Offset / formatInfo.BytesPerBlock;
+				srvDesc.Buffer.NumElements = a_Range.Size / formatInfo.BytesPerBlock;
+				break;
+			}
+			case ERHIBufferType::Structured:
+			{
+				RHI_DEV_CHECK( m_Desc.Stride != 0, "Stride must be set for structured buffers" );
+				srvDesc.Buffer.FirstElement = a_Range.Offset / m_Desc.Stride;
+				srvDesc.Buffer.NumElements = a_Range.Size / m_Desc.Stride;
+				srvDesc.Buffer.StructureByteStride = m_Desc.Stride;
+				break;
+			}
+			default:
+			{
+				ASSERT( false, "Unsupported buffer type for SRV" );
+				return {};
+			}
+		}
+
+		return srvDesc;
+	}
+
+	D3D12_CONSTANT_BUFFER_VIEW_DESC RHIBuffer_D3D12Impl::CreateCBVDesc( RHIBufferRange a_Range ) const
+	{
+		RHI_DEV_CHECK( m_Desc.IsConstantBuffer(), "Buffer is not a constant buffer" );
+		a_Range.Offset = Math::Min( a_Range.Offset, m_Desc.Size );
+		a_Range.Size = Math::Min( a_Range.Size, m_Desc.Size - a_Range.Offset );
+
+		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc{};
+		cbvDesc.BufferLocation = ManagedBuffer.Resource->GetGPUVirtualAddress() + a_Range.Offset;
+		cbvDesc.SizeInBytes = AlignUp( a_Range.Size, size_t( D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT ) );
+
+		return cbvDesc;
+	}
+
 }

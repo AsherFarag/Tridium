@@ -13,11 +13,6 @@
 
 namespace Tridium::D3D12 {
 
-	inline constexpr size_t AlignUp( size_t a_Value, size_t a_Alignment )
-	{
-		return ( a_Value + a_Alignment - 1 ) & ~( a_Alignment - 1 );
-	}
-
 	RHICommandList_D3D12Impl::RHICommandList_D3D12Impl( IDynamicRHI* a_Device, const RHICommandListDesc& a_Desc )
 		: IRHICommandList( a_Device, a_Desc )
 	{
@@ -209,7 +204,44 @@ namespace Tridium::D3D12 {
 		if ( updateRootSig )
 			bindingsUpdateMask = ~0;
 
-		// Commit descriptor heaps TODO
+		TODO( "Find a more efficient way for comitting descriptor heaps" );
+		// Commit descriptor heaps if needed
+		//{
+		//	constexpr size_t c_TransientHeapSize = 128; // TODO: Adjust size as needed
+		//	bool setDescriptorHeaps = false;
+
+		//	if ( m_SRVUAVHeap == nullptr )
+		//	{
+		//		setDescriptorHeaps = true;
+		//		m_SRVUAVHeap = AllocateHeap(
+		//			ERHIDescriptorHeapType::RenderResource,
+		//			c_TransientHeapSize,
+		//			EDescriptorHeapFlags::GPUVisible,
+		//			"CmdList RenderResource Transient Heap"
+		//		).get();
+		//		RHI_DEV_CHECK( m_SRVUAVHeap, "Failed to allocate transient descriptor heap!" );
+		//	}
+
+		//	if ( m_SamplerHeap == nullptr )
+		//	{
+		//		setDescriptorHeaps = true;
+		//		m_SamplerHeap = AllocateHeap(
+		//			ERHIDescriptorHeapType::Sampler,
+		//			c_TransientHeapSize,
+		//			EDescriptorHeapFlags::GPUVisible,
+		//			"CmdList Transient Sampler Heap"
+		//		).get();
+		//		RHI_DEV_CHECK( m_SamplerHeap, "Failed to allocate transient sampler heap!" );
+		//	}
+
+		//	if ( setDescriptorHeaps )
+		//	{
+		//		ID3D12DescriptorHeap* heaps[2] = { m_SRVUAVHeap->Heap(), m_SamplerHeap->Heap() };
+		//		GraphicsCommandList()->SetDescriptorHeaps( 2, heaps );
+		//		bindingsUpdateMask = ~0; // Force update of all bindings
+		//	}
+		//}
+
 
 		if ( bindingsUpdateMask == 0 )
 			bindingsUpdateMask = RHIUtil::ArrayDifferenceMask( m_CurrentGraphicsState.BindingSets, a_GraphicsState.BindingSets );
@@ -253,11 +285,14 @@ namespace Tridium::D3D12 {
 			D3D12_VERTEX_BUFFER_VIEW vbv{};
 			if ( a_GraphicsState.VertexBuffer )
 			{
-				RHIBuffer_D3D12Impl* vertexBuffer = a_GraphicsState.VertexBuffer->As<RHIBuffer_D3D12Impl>();
+				const RHIBuffer_D3D12Impl* vertexBuffer = a_GraphicsState.VertexBuffer->As<RHIBuffer_D3D12Impl>();
+				const uint32_t stride = vertexBuffer->Desc().Stride > 0
+					? vertexBuffer->Desc().Stride
+					: a_GraphicsState.PipelineState->Desc().VertexLayout.Stride; // Use PSO vertex layout stride if not specified
 				TODO( "Add support for vertex buffer offset" );
 				vbv.BufferLocation = vertexBuffer->ManagedBuffer.Resource->GetGPUVirtualAddress();
 				vbv.SizeInBytes = vertexBuffer->ManagedBuffer.Resource->GetDesc().Width;
-				vbv.StrideInBytes = vertexBuffer->Desc().Stride;
+				vbv.StrideInBytes = stride;
 			}
 
 			GraphicsCommandList()->IASetVertexBuffers( 0, 1, &vbv );
@@ -326,48 +361,45 @@ namespace Tridium::D3D12 {
 		}
 	}
 
-	void RHICommandList_D3D12Impl::SetScissors( Span<const RHIScissorRect> a_Scissors, RHI_DEBUG_SRC_LOC_PARAM )
+	void RHICommandList_D3D12Impl::SetViewportState( const RHIViewportState& a_Viewports, RHI_DEBUG_SRC_LOC_PARAM )
 	{
-		IRHICommandList::SetScissors( a_Scissors, RHI_DEBUG_SRC_LOC );
-		RHI_DEV_CHECK( m_GraphicsStateValid, "Graphics state is not valid for setting scissors!" );
-		RHI_DEV_CHECK( a_Scissors.size() <= RHIConstants::MaxScissorRects, "Too many scissor rectangles! - Only '{0}' are allowed.", RHIConstants::MaxScissorRects );
-
-		D3D12_RECT scissors[RHIConstants::MaxScissorRects];
-		for ( size_t i = 0; i < a_Scissors.size(); ++i )
-		{
-			const auto& scissor = a_Scissors[i];
-			scissors[i] = D3D12_RECT{ 
-				.left = scissor.Left,
-				.top = scissor.Top,
-				.right = scissor.Right,
-				.bottom = scissor.Bottom
-			};
-		}
-
-		GraphicsCommandList()->RSSetScissorRects( a_Scissors.size(), scissors );
-	}
-
-	void RHICommandList_D3D12Impl::SetViewports( Span<const RHIViewport> a_Viewports, RHI_DEBUG_SRC_LOC_PARAM ) 
-	{
-		IRHICommandList::SetViewports( a_Viewports, RHI_DEBUG_SRC_LOC );
+		IRHICommandList::SetViewportState( a_Viewports, RHI_DEBUG_SRC_LOC );
 		RHI_DEV_CHECK( m_GraphicsStateValid, "Graphics state is not valid for setting viewports!" );
-		RHI_DEV_CHECK( a_Viewports.size() <= RHIConstants::MaxViewports, "Too many viewports! - Only '{0}' are allowed.", RHIConstants::MaxViewports );
 
-		D3D12_VIEWPORT viewports[RHIConstants::MaxViewports];
-		for ( size_t i = 0; i < a_Viewports.size(); ++i )
+		// Set viewports
 		{
-			const auto& viewport = a_Viewports[i];
-			viewports[i] = D3D12_VIEWPORT{ 
-				.TopLeftX = viewport.X,
-				.TopLeftY = viewport.Y,
-				.Width = viewport.Width,
-				.Height = viewport.Height,
-				.MinDepth = viewport.MinDepth,
-				.MaxDepth = viewport.MaxDepth
-			};
+			D3D12_VIEWPORT viewports[RHIConstants::MaxViewports];
+			for ( size_t i = 0; i < a_Viewports.Viewports.Size(); ++i )
+			{
+				const auto& viewport = a_Viewports.Viewports[i];
+				viewports[i] = D3D12_VIEWPORT{
+					.TopLeftX = viewport.X,
+					.TopLeftY = viewport.Y,
+					.Width = viewport.Width,
+					.Height = viewport.Height,
+					.MinDepth = viewport.MinDepth,
+					.MaxDepth = viewport.MaxDepth
+				};
+			}
+
+			GraphicsCommandList()->RSSetViewports( a_Viewports.Viewports.Size(), viewports );
 		}
 
-		GraphicsCommandList()->RSSetViewports( a_Viewports.size(), viewports );
+		// Set scissor rectangles
+		{
+			D3D12_RECT scissors[RHIConstants::MaxViewports];
+			for ( size_t i = 0; i < a_Viewports.Scissors.Size(); ++i )
+			{
+				const auto& scissor = a_Viewports.Scissors[i];
+				scissors[i] = D3D12_RECT{ 
+					.left = scissor.Left,
+					.top = scissor.Top,
+					.right = scissor.Right,
+					.bottom = scissor.Bottom
+				};
+			}
+			GraphicsCommandList()->RSSetScissorRects( a_Viewports.Scissors.Size(), scissors );
+		}
 	}
 
 	void RHICommandList_D3D12Impl::Draw( const RHIDrawArgs& a_DrawArgs, RHI_DEBUG_SRC_LOC_PARAM ) 
@@ -484,10 +516,58 @@ namespace Tridium::D3D12 {
 		}
 	}
 
-	void RHICommandList_D3D12Impl::BindGraphicsBindings( 
-		Span<IRHIBindingSet const* const> a_BindingSets, uint32_t a_UpdateMask, const SharedPtr<RootSignature>& a_RootSignature )
+	void RHICommandList_D3D12Impl::BindGraphicsBindings(
+		Span<IRHIBindingSet const* const> a_BindingSets,
+		uint32_t a_UpdateMask,
+		const SharedPtr<RootSignature>& a_RootSignature )
 	{
+
+		{
+			TODO( "Fix this crap" );
+			auto* bindingSet = a_BindingSets[0]->As<RHIBindingSet_D3D12Impl>();
+			ID3D12DescriptorHeap* heaps[2] = { 
+				bindingSet->RenderResourceHeap ? bindingSet->RenderResourceHeap->Heap() : nullptr,
+				bindingSet->SamplerHeap ? bindingSet->SamplerHeap->Heap() : nullptr 
+			};
+			GraphicsCommandList()->SetDescriptorHeaps( 2, heaps );
+		}
+
+		if ( a_UpdateMask == 0 )
+			return; // No bindings to update
+
+		for ( size_t i = 0; i < a_BindingSets.size(); ++i )
+		{
+			if ( !a_BindingSets[i] || !a_BindingSets[i]->Valid() )
+				continue; // Skip invalid binding sets
+
+			const RHIBindingSet_D3D12Impl* bindingSet = a_BindingSets[i]->As<RHIBindingSet_D3D12Impl>();
+			RHIBindingLayout_D3D12Impl* bindingLayout = bindingSet->Desc().Layout->As<RHIBindingLayout_D3D12Impl>();
+			RootParameterIndex rootParamOffset = a_RootSignature->Layouts.At( i ).second;
+
+			const bool updateBindingSet = (a_UpdateMask & (1u << i)) != 0;
+			if ( updateBindingSet )
+			{
+				if ( bindingSet->SamplerHeap )
+				{
+					// Set the descriptor table for samplers
+					GraphicsCommandList()->SetGraphicsRootDescriptorTable(
+						rootParamOffset + bindingLayout->RootParamSamplers,
+						bindingSet->SamplerHeap->GetGPUHandle( 0 )
+					);
+				}
+
+				if ( bindingSet->RenderResourceHeap )
+				{
+					// Set the descriptor table for render resources (SRVs, UAVs, CBVs)
+					GraphicsCommandList()->SetGraphicsRootDescriptorTable(
+						rootParamOffset + bindingLayout->RootParamRenderResources,
+						bindingSet->RenderResourceHeap->GetGPUHandle( 0 )
+					);
+				}
+			}
+		}
 	}
+
 
 	const SharedPtr<DescriptorHeap>& RHICommandList_D3D12Impl::AllocateHeap( ERHIDescriptorHeapType a_Type, uint32_t a_NumDescriptors, EDescriptorHeapFlags a_Flags, StringView a_DebugName )
 	{

@@ -286,6 +286,7 @@ namespace Tridium {
 			cubeVBODesc.Name = "Cube VBO";
 			cubeVBODesc.BindFlags = ERHIBindFlags::VertexBuffer;
 			cubeVBODesc.Size = sizeof( cubeVerts );
+			//cubeVBODesc.Stride = sizeof( Vertex );
 			RHIBufferRef cubeVBO = RHI::CreateBuffer( cubeVBODesc, Span<uint8_t>{ reinterpret_cast<uint8_t*>( cubeVerts ), sizeof( cubeVerts ) } );
 
 
@@ -444,6 +445,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 			psd.VertexLayout = layout;
 			psd.BindingLayouts.EmplaceBack( sbl );
 			psd.RasterizerState.CullMode = ERHIRasterizerCullMode::None;
+			psd.DepthState.IsEnabled = true;
 			psd.Name = "My pipeline state";
 			RHIGraphicsPipelineStateRef pso = RHI::CreateGraphicsPipelineState( psd );
 
@@ -543,22 +545,9 @@ float4 PSMain( VSOutput input ) : SV_Target
 					cmdList->ClearRenderTargets( ERHIClearFlags::ColorDepth, clearColor );
 
 					// Set the viewport
-					RHIViewport vp;
-					vp.Width = width;
-					vp.Height = height;
-					vp.X = 0;
-					vp.Y = 0;
-					vp.MinDepth = 0.0f;
-					vp.MaxDepth = 1.0f;
-					cmdList->SetViewports( { &vp, 1 } );
-
-					// Set Scissors
-					RHIScissorRect scissor;
-					scissor.Left = 0;
-					scissor.Top = 0;
-					scissor.Right = width;
-					scissor.Bottom = height;
-					cmdList->SetScissors( { &scissor, 1 } );
+					RHIViewportState viewportState{};
+					viewportState.AddViewportAndScissor( RHIViewport( 0, 0, width, height ) );
+					cmdList->SetViewportState( viewportState );
 
 					// Get the PVM matrix
 					Vector3 pos = Vector3( 0.0f, 0.0f, 3.0f );

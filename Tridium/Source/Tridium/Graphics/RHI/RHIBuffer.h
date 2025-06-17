@@ -16,11 +16,13 @@ namespace Tridium {
 		ERHIBindFlags BindFlags = ERHIBindFlags::None;
 		ERHIUsage Usage = ERHIUsage::Default;
 		ERHICpuAccess CpuAccess = ERHICpuAccess::None;
-		ERHIBufferType Type = ERHIBufferType::Undefined;
+		ERHIBufferType Type = ERHIBufferType::Unknown;
 		ERHIFormat Format = ERHIFormat::Unknown;
 		// For structured buffers, the stride of each element in the buffer. In bytes.
 		uint32_t Stride = 0;
 		String Name{};
+
+		constexpr bool IsConstantBuffer() const { return EnumFlags( BindFlags ).HasFlag( ERHIBindFlags::ConstantBuffer ); }
 
 		constexpr RHIBufferDesc() = default;
 		constexpr RHIBufferDesc(

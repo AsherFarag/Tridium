@@ -290,8 +290,13 @@ namespace Tridium {
 		IRHIObject* Resource;
 		uint32_t Slot;
 		ERHIBindingType Type;
-		ERHIStateTransition StateTransitionMode;
-		uint8_t Unused[2];
+		ERHIFormat Format; // Optional format for the binding, used for textures and buffers.
+		union
+		{
+			ERHIBufferType BufferType; // Optional buffer type for the binding, used for buffers.
+			ERHITextureDimension TextureDimension; // Optional texture dimension for the binding, used for textures.
+		};
+		uint8_t Unused[1]; // Unused padding that is initialized to zero.
 
 		union
 		{
@@ -305,6 +310,8 @@ namespace Tridium {
 			return Resource == a_Other.Resource
 				&& Slot == a_Other.Slot
 				&& Type == a_Other.Type
+				&& Format == a_Other.Format
+				&& BufferType == a_Other.BufferType
 				&& RawData[0] == a_Other.RawData[0]
 				&& RawData[1] == a_Other.RawData[1];
 		}
@@ -314,6 +321,8 @@ namespace Tridium {
 			return !operator==( a_Other );
 		}
 
+		// Default constructor does not initialize the item for performance, as RHIBindingSetItem are stored in a large fixed size array.
+		// Use the static None() function to create an empty item.
 		RHIBindingSetItem() {}
 
 		static RHIBindingSetItem None( uint32_t a_Slot = RHIShaderBinding::InvalidSlot )
@@ -322,10 +331,11 @@ namespace Tridium {
 			item.Resource = nullptr;
 			item.Slot = a_Slot;
 			item.Type = ERHIBindingType::Unknown;
-			item.StateTransitionMode = ERHIStateTransition::None;
+			item.Format = ERHIFormat::Unknown;
+			item.BufferType = ERHIBufferType::Unknown;
 			item.RawData[0] = 0;
 			item.RawData[1] = 0;
-			item.Unused[0] = 0; item.Unused[1] = 0;
+			item.Unused[0] = 0;
 			return item;
 		}
 	};
@@ -353,105 +363,91 @@ namespace Tridium {
 
 		RHIBindingSetDesc& AddConstantBuffer(
 			uint32_t a_Slot, IRHIBuffer& a_Buffer,
-			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
+			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
 		{
-			RHIBindingSetItem& item = Bindings.EmplaceBack();
+			RHIBindingSetItem& item = Bindings.EmplaceBack( RHIBindingSetItem::None() );
 			item.Resource = &a_Buffer;
 			item.Slot = a_Slot;
 			item.Type = ERHIBindingType::ConstantBuffer;
-			item.StateTransitionMode = a_StateTransitionMode;
 			item.Range = a_Range;
-			item.Unused[0] = 0; item.Unused[1] = 0;
 			return *this;
 		}
 
 		RHIBindingSetDesc& AddStructuredBuffer(
 			uint32_t a_Slot, IRHIBuffer& a_Buffer,
-			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
+			ERHIBufferType a_BufferType = ERHIBufferType::Unknown,
+			ERHIFormat a_Format = ERHIFormat::Unknown,
+			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
 		{
-			RHIBindingSetItem& item = Bindings.EmplaceBack();
+			RHIBindingSetItem& item = Bindings.EmplaceBack( RHIBindingSetItem::None() );
 			item.Resource = &a_Buffer;
 			item.Slot = a_Slot;
 			item.Type = ERHIBindingType::StructuredBuffer;
-			item.StateTransitionMode = a_StateTransitionMode;
 			item.Range = a_Range;
-			item.Unused[0] = 0; item.Unused[1] = 0;
+			item.BufferType = a_BufferType == ERHIBufferType::Unknown ? a_Buffer.Desc().Type : a_BufferType;
+			item.Format = a_Format;
 			return *this;
 		}
 
 		RHIBindingSetDesc& AddStorageBuffer(
 			uint32_t a_Slot, IRHIBuffer& a_Buffer,
-			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
+			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
 		{
-			RHIBindingSetItem& item = Bindings.EmplaceBack();
+			RHIBindingSetItem& item = Bindings.EmplaceBack( RHIBindingSetItem::None() );
 			item.Resource = &a_Buffer;
 			item.Slot = a_Slot;
 			item.Type = ERHIBindingType::StorageBuffer;
-			item.StateTransitionMode = a_StateTransitionMode;
 			item.Range = a_Range;
-			item.Unused[0] = 0; item.Unused[1] = 0;
 			return *this;
 		}
 
 		RHIBindingSetDesc& AddTexture(
 			uint32_t a_Slot, IRHITexture& a_Texture,
-			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
+			ERHIFormat a_Format = ERHIFormat::Unknown,
+			ERHITextureDimension a_TextureDimension = ERHITextureDimension::Unknown,
+			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All() )
 		{
-			RHIBindingSetItem& item = Bindings.EmplaceBack();
+			RHIBindingSetItem& item = Bindings.EmplaceBack( RHIBindingSetItem::None() );
 			item.Resource = &a_Texture;
 			item.Slot = a_Slot;
 			item.Type = ERHIBindingType::Texture;
-			item.StateTransitionMode = a_StateTransitionMode;
 			item.Subresources = a_Subresources;
-			item.Unused[0] = 0; item.Unused[1] = 0;
+			item.Format = a_Format;
+			item.TextureDimension = a_TextureDimension == ERHITextureDimension::Unknown ? a_Texture.Desc().Dimension : a_TextureDimension;
 			return *this;
 		}
 
 		RHIBindingSetDesc& AddStorageTexture(
 			uint32_t a_Slot, IRHITexture& a_Texture,
-			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::None )
+			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All() )
 		{
-			RHIBindingSetItem& item = Bindings.EmplaceBack();
+			RHIBindingSetItem& item = Bindings.EmplaceBack( RHIBindingSetItem::None() );
 			item.Resource = &a_Texture;
 			item.Slot = a_Slot;
 			item.Type = ERHIBindingType::StorageTexture;
-			item.StateTransitionMode = a_StateTransitionMode;
 			item.Subresources = a_Subresources;
-			item.Unused[0] = 0; item.Unused[1] = 0;
 			return *this;
 		}
 
 		RHIBindingSetDesc& AddSampler(
-			uint32_t a_Slot, IRHISampler& a_Sampler,
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
+			uint32_t a_Slot, IRHISampler& a_Sampler )
 		{
-			RHIBindingSetItem& item = Bindings.EmplaceBack();
+			RHIBindingSetItem& item = Bindings.EmplaceBack( RHIBindingSetItem::None() );
 			item.Resource = &a_Sampler;
 			item.Slot = a_Slot;
 			item.Type = ERHIBindingType::Sampler;
-			item.StateTransitionMode = a_StateTransitionMode;
-			item.RawData[0] = 0; item.RawData[1] = 0;
-			item.Unused[0] = 0; item.Unused[1] = 0;
 			return *this;
 		}
 
 		RHIBindingSetDesc& AddCombinedSampler(
 			uint32_t a_Slot, IRHITexture& a_Texture,
-			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
+			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All() )
 		{
-			RHIBindingSetItem& item = Bindings.EmplaceBack();
+			RHIBindingSetItem& item = Bindings.EmplaceBack( RHIBindingSetItem::None() );
 			item.Resource = &a_Texture;
 			item.Slot = a_Slot;
 			item.Type = ERHIBindingType::CombinedSampler;
-			item.StateTransitionMode = a_StateTransitionMode;
 			item.Subresources = a_Subresources;
-			item.Unused[0] = 0; item.Unused[1] = 0;
 			return *this;
 		}
 
@@ -462,78 +458,75 @@ namespace Tridium {
 
 		RHIBindingSetDesc& AddConstantBuffer(
 			HashedString a_Name, IRHIBuffer& a_Buffer,
-			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
+			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
 			auto binding = Layout->Desc().GetBindingFromName( a_Name );
 			ValidateBinding( binding, ERHIBindingType::ConstantBuffer );
-			return AddConstantBuffer( binding.Slot, a_Buffer, a_Range, a_StateTransitionMode );
+			return AddConstantBuffer( binding.Slot, a_Buffer, a_Range );
 		}
 
 		RHIBindingSetDesc& AddStructuredBuffer(
 			HashedString a_Name, IRHIBuffer& a_Buffer,
-			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
+			ERHIBufferType a_BufferType = ERHIBufferType::Unknown,
+			ERHIFormat a_Format = ERHIFormat::Unknown,
+			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
 			auto binding = Layout->Desc().GetBindingFromName( a_Name );
 			ValidateBinding( binding, ERHIBindingType::StructuredBuffer );
-			return AddStructuredBuffer( binding.Slot, a_Buffer, a_Range, a_StateTransitionMode );
+			return AddStructuredBuffer( binding.Slot, a_Buffer, a_BufferType, a_Format, a_Range );
 		}
 
 		RHIBindingSetDesc& AddStorageBuffer(
 			HashedString a_Name, IRHIBuffer& a_Buffer,
-			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
+			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
 			auto binding = Layout->Desc().GetBindingFromName( a_Name );
 			ValidateBinding( binding, ERHIBindingType::StorageBuffer );
-			return AddStorageBuffer( binding.Slot, a_Buffer, a_Range, a_StateTransitionMode );
+			return AddStorageBuffer( binding.Slot, a_Buffer, a_Range );
 		}
 
 		RHIBindingSetDesc& AddTexture(
 			HashedString a_Name, IRHITexture& a_Texture,
-			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
+			ERHIFormat a_Format = ERHIFormat::Unknown,
+			ERHITextureDimension a_TextureDimension = ERHITextureDimension::Unknown,
+			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All() )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
 			auto binding = Layout->Desc().GetBindingFromName( a_Name );
 			ValidateBinding( binding, ERHIBindingType::Texture );
-			return AddTexture( binding.Slot, a_Texture, a_Subresources, a_StateTransitionMode );
+			return AddTexture( binding.Slot, a_Texture, a_Format, a_TextureDimension, a_Subresources );
 		}
 
 		RHIBindingSetDesc& AddStorageTexture(
 			HashedString a_Name, IRHITexture& a_Texture,
-			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
+			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All() )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
 			auto binding = Layout->Desc().GetBindingFromName( a_Name );
 			ValidateBinding( binding, ERHIBindingType::StorageTexture );
-			return AddStorageTexture( binding.Slot, a_Texture, a_Subresources, a_StateTransitionMode );
+			return AddStorageTexture( binding.Slot, a_Texture, a_Subresources );
 		}
 
 		RHIBindingSetDesc& AddSampler(
-			HashedString a_Name, IRHISampler& a_Sampler,
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
+			HashedString a_Name, IRHISampler& a_Sampler )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
 			auto binding = Layout->Desc().GetBindingFromName( a_Name );
 			ValidateBinding( binding, ERHIBindingType::Sampler );
-			return AddSampler( binding.Slot, a_Sampler, a_StateTransitionMode );
+			return AddSampler( binding.Slot, a_Sampler );
 		}
 
 		RHIBindingSetDesc& AddCombinedSampler(
 			HashedString a_Name, IRHITexture& a_Texture,
-			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All(),
-			ERHIStateTransition a_StateTransitionMode = ERHIStateTransition::Transition )
+			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All() )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
 			auto binding = Layout->Desc().GetBindingFromName( a_Name );
 			ValidateBinding( binding, ERHIBindingType::CombinedSampler );
-			return AddCombinedSampler( binding.Slot, a_Texture, a_Subresources, a_StateTransitionMode );
+			return AddCombinedSampler( binding.Slot, a_Texture, a_Subresources );
 		}
 
 		bool operator==( const RHIBindingSetDesc& a_Other ) const

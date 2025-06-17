@@ -286,6 +286,40 @@ namespace Tridium {
 				&& BaseArraySlice == 0 && NumArraySlices == ( a_Desc.IsArray() ? a_Desc.ArraySize : 1 );
 		}
 
+		constexpr RHITextureSubresourceSet Resolve( const RHITextureDesc& a_Desc, bool a_SingleMipLevel )
+		{
+			RHITextureSubresourceSet result = *this;
+
+			if ( a_SingleMipLevel )
+			{
+				result.NumMipLevels = 1;
+			}
+			else
+			{
+				int lastMipLevel = Math::Min( BaseMipLevel + NumMipLevels, a_Desc.Mips );
+				result.NumMipLevels = uint32_t( Math::Max( 0u, lastMipLevel - BaseMipLevel ) );
+			}
+
+			switch ( a_Desc.Dimension )
+			{
+			case ERHITextureDimension::Texture1DArray:
+			case ERHITextureDimension::Texture2DArray:
+			case ERHITextureDimension::TextureCube:
+			case ERHITextureDimension::TextureCubeArray:
+			{
+				int lastArraySlice = Math::Min( BaseArraySlice + NumArraySlices, a_Desc.ArraySize );
+				result.NumArraySlices = uint32_t( Math::Max( 0u, lastArraySlice - BaseArraySlice ) );
+				break;
+			}
+			default:
+				result.BaseArraySlice = 0;
+				result.NumArraySlices = 1;
+				break;
+			}
+
+			return result;
+		}
+
 		static constexpr RHITextureSubresourceSet All() noexcept
 		{
 			return RHITextureSubresourceSet{ 0, RHIConstants::AllMipLevels, 0, RHIConstants::AllArraySlices };
