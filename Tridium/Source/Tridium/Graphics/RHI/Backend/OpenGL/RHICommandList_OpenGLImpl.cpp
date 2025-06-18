@@ -333,91 +333,167 @@ namespace Tridium::OpenGL {
 
 	void RHICommandList_OpenGLImpl::BindGraphicsPipelineState( const RHIGraphicsPipelineState_OpenGLImpl& a_GraphicsPipelineState )
 	{
+		const RHIGraphicsPipelineStateDesc& desc = a_GraphicsPipelineState.Desc();
 		OpenGL3::BindVertexArray( a_GraphicsPipelineState.GetVAO() );
 
-		// Set blend state
-		for ( uint32_t i = 0; i < RHIConstants::MaxColorTargets; ++i )
+		// Topology
+		// We don't need to set the topology explicitly in OpenGL, as it is determined by the draw call.
+
+		// Blend State
 		{
-			const RHIBlendState& blendState = a_GraphicsPipelineState.Desc().BlendState;
-			if ( blendState.IsEnabled )
+			const RHIBlendState& blendState = desc.BlendState;
+			OpenGL1::Enable( GL_BLEND );
+
+			if ( blendState.AlphaToCoverageEnabled )
+				OpenGL1::Enable( GL_SAMPLE_ALPHA_TO_COVERAGE );
+			else
+				OpenGL1::Disable( GL_SAMPLE_ALPHA_TO_COVERAGE );
+
+			if ( blendState.IndependentBlendEnabled )
 			{
-				OpenGL3::Enablei( GL_BLEND, i );
-				OpenGL4::BlendFuncSeparatei( i,
-					OpenGL::Translate( blendState.SrcFactorColor ),
-					OpenGL::Translate( blendState.DstFactorColor ),
-					OpenGL::Translate( blendState.SrcFactorAlpha ),
-					OpenGL::Translate( blendState.DstFactorAlpha ) );
-				OpenGL4::BlendEquationi( i, OpenGL::Translate( blendState.BlendEquation ) );
+				for ( uint32_t i = 0; i < blendState.RenderTargets.MaxSize(); ++i )
+				{
+					const auto& rtBlendState = blendState.RenderTargets[i];
+					if ( rtBlendState.BlendEnabled )
+					{
+						OpenGL3::Enablei( GL_BLEND, i );
+						OpenGL4::BlendFuncSeparatei( i,
+							Translate( rtBlendState.SrcColor ),
+							Translate( rtBlendState.DstColor ),
+							Translate( rtBlendState.SrcAlpha ),
+							Translate( rtBlendState.DstAlpha ) );
+
+						OpenGL4::BlendEquationSeparatei( i,
+							Translate( rtBlendState.BlendOpColor ),
+							Translate( rtBlendState.BlendOpAlpha ) );
+
+						EnumFlags colorWriteMask = rtBlendState.ColorWriteMask;
+						OpenGL3::ColorMaski( i,
+							colorWriteMask.HasFlag( ERHIColorMask::Red ) ? GL_TRUE : GL_FALSE,
+							colorWriteMask.HasFlag( ERHIColorMask::Green ) ? GL_TRUE : GL_FALSE,
+							colorWriteMask.HasFlag( ERHIColorMask::Blue ) ? GL_TRUE : GL_FALSE,
+							colorWriteMask.HasFlag( ERHIColorMask::Alpha ) ? GL_TRUE : GL_FALSE );
+					}
+					else
+					{
+						OpenGL3::Disablei( GL_BLEND, i );
+					}
+				}
 			}
 			else
 			{
-				OpenGL3::Disablei( GL_BLEND, i );
+				const auto& rtBlendState = blendState.RenderTargets[0];
+				OpenGL3::Enable( GL_BLEND );
+				OpenGL4::BlendFuncSeparate(
+					Translate( rtBlendState.SrcColor ),
+					Translate( rtBlendState.DstColor ),
+					Translate( rtBlendState.SrcAlpha ),
+					Translate( rtBlendState.DstAlpha ) );
+
+				OpenGL4::BlendEquationSeparate(
+					Translate( rtBlendState.BlendOpColor ),
+					Translate( rtBlendState.BlendOpAlpha ) );
+
+				EnumFlags colorWriteMask = rtBlendState.ColorWriteMask;
+				OpenGL1::ColorMask(
+					colorWriteMask.HasFlag( ERHIColorMask::Red ) ? GL_TRUE : GL_FALSE,
+					colorWriteMask.HasFlag( ERHIColorMask::Green ) ? GL_TRUE : GL_FALSE,
+					colorWriteMask.HasFlag( ERHIColorMask::Blue ) ? GL_TRUE : GL_FALSE,
+					colorWriteMask.HasFlag( ERHIColorMask::Alpha ) ? GL_TRUE : GL_FALSE );
+			}
+
+			// OpenGL only supports a single logic operation for blending, so we set it globally.
+			if ( blendState.RenderTargets[0].LogicOpEnabled )
+			{
+				OpenGL1::Enable( GL_COLOR_LOGIC_OP );
+				OpenGL1::LogicOp( Translate( blendState.RenderTargets[0].LogicOp ) );
+			}
+			else
+			{
+				OpenGL1::Disable( GL_COLOR_LOGIC_OP );
 			}
 		}
 
-		// Set depth state
-		const RHIDepthState& depthState = a_GraphicsPipelineState.Desc().DepthState;
-		if ( depthState.IsEnabled )
+		// Depth State
 		{
-			OpenGL3::Enable( GL_DEPTH_TEST );
-			OpenGL3::DepthMask( depthState.DepthOp == ERHIDepthOp::Replace ? GL_TRUE : GL_FALSE );
-			OpenGL3::DepthFunc( OpenGL::Translate( depthState.Comparison ) );
-		}
-		else
-		{
-			OpenGL3::Disable( GL_DEPTH_TEST );
+			const RHIDepthState& depthState = desc.DepthState;
+			if ( depthState.DepthTestEnabled )
+				OpenGL1::Enable( GL_DEPTH_TEST );
+			else
+				OpenGL1::Disable( GL_DEPTH_TEST );
+
+			OpenGL1::DepthMask( depthState.DepthWriteEnabled ? GL_TRUE : GL_FALSE );
+			OpenGL1::DepthFunc( Translate( depthState.Comparison ) );
 		}
 
-		// Set stencil state
-		const RHIStencilState& stencilState = a_GraphicsPipelineState.Desc().StencilState;
-		if ( stencilState.IsEnabled )
+		// Stencil State
 		{
-			OpenGL3::Enable( GL_STENCIL_TEST );
-			//OpenGL3::StencilFuncSeparate( GL_FRONT, OpenGL::Translate( stencilState.Comparison ), stencilState.Reference, stencilState.FrontFace.Mask );
-			//OpenGL3::StencilOpSeparate( GL_FRONT, OpenGL::Translate( stencilState.Fail ), OpenGL::Translate( stencilState.FrontFace.DepthFailOp ), OpenGL::Translate( stencilState.FrontFace.PassOp ) );
-			//OpenGL3::StencilFuncSeparate( GL_BACK, OpenGL::Translate( stencilState.Comparison ), stencilState.Reference, stencilState.BackFace.Mask );
-			//OpenGL3::StencilOpSeparate( GL_BACK, OpenGL::Translate( stencilState.Fail ), OpenGL::Translate( stencilState.BackFace.DepthFailOp ), OpenGL::Translate( stencilState.BackFace.PassOp ) );
-		}
-		else
-		{
-			OpenGL3::Disable( GL_STENCIL_TEST );
+			const RHIStencilState& stencilState = desc.StencilState;
+			if ( stencilState.Enabled )
+			{
+				OpenGL3::Enable( GL_STENCIL_TEST );
+				OpenGL3::StencilFuncSeparate( GL_FRONT, Translate( stencilState.FrontFace.Comparison ), stencilState.RefValue, stencilState.ReadMask );
+				OpenGL3::StencilOpSeparate( GL_FRONT, Translate( stencilState.FrontFace.StencilFailOp ), Translate( stencilState.FrontFace.DepthFailOp ), Translate( stencilState.FrontFace.PassOp ) );
+				OpenGL3::StencilFuncSeparate( GL_BACK, Translate( stencilState.BackFace.Comparison ), stencilState.RefValue, stencilState.ReadMask );
+				OpenGL3::StencilOpSeparate( GL_BACK, Translate( stencilState.BackFace.StencilFailOp ), Translate( stencilState.BackFace.DepthFailOp ), Translate( stencilState.BackFace.PassOp ) );
+			}
+			else
+			{
+				OpenGL3::Disable( GL_STENCIL_TEST );
+			}
 		}
 
-		// Set rasterizer state
-		const RHIRasterizerState& rasterizerState = a_GraphicsPipelineState.Desc().RasterizerState;
-		switch ( rasterizerState.CullMode )
+		// Rasterizer State
 		{
-		case ERHIRasterizerCullMode::None:
-			OpenGL3::Disable( GL_CULL_FACE );
-			break;
-		case ERHIRasterizerCullMode::Front:
-			OpenGL3::Enable( GL_CULL_FACE );
-			OpenGL3::CullFace( GL_FRONT );
-			break;
-		case ERHIRasterizerCullMode::Back:
-			OpenGL3::Enable( GL_CULL_FACE );
-			OpenGL3::CullFace( GL_BACK );
-			break;
-		default: ASSERT( false, "Invalid cull mode in Graphics Pipeline State!" ); break;
+			const RHIRasterizerState& rasterizerState = desc.RasterizerState;
+
+			if ( rasterizerState.CullMode == ERHICullMode::None )
+			{
+				OpenGL1::Disable( GL_CULL_FACE );
+			}
+			else
+			{
+				OpenGL3::Enable( GL_CULL_FACE );
+				OpenGL3::CullFace( rasterizerState.CullMode == ERHICullMode::Front ? GL_FRONT : GL_BACK );
+			}
+
+			OpenGL3::PolygonMode( GL_FRONT_AND_BACK, 
+				  rasterizerState.FillMode == ERHIFillMode::Solid ? GL_FILL        // Solid mode
+				: rasterizerState.FillMode == ERHIFillMode::Wireframe ? GL_LINE    // Wireframe mode
+				: GL_POINT );                                                      // Point mode
+
+			OpenGL3::FrontFace( rasterizerState.Clockwise ? GL_CW : GL_CCW );
+
+			if ( rasterizerState.DepthClipEnabled )
+				OpenGL1::Enable( GL_DEPTH_CLAMP );
+			else
+				OpenGL1::Disable( GL_DEPTH_CLAMP );
+
+			if ( rasterizerState.ScissorEnabled )
+				OpenGL1::Enable( GL_SCISSOR_TEST );
+			else
+				OpenGL1::Disable( GL_SCISSOR_TEST );
+
+			if ( rasterizerState.AnitaliasedLinesEnabled )
+				OpenGL1::Enable( GL_LINE_SMOOTH );
+			else
+				OpenGL1::Disable( GL_LINE_SMOOTH );
+
+			if ( rasterizerState.DepthBias != 0 && rasterizerState.SlopeScaledDepthBias != 0.0f )
+			{
+				OpenGL3::Enable( GL_POLYGON_OFFSET_FILL );
+				OpenGL3::PolygonOffset( rasterizerState.SlopeScaledDepthBias, Cast<float>( rasterizerState.DepthBias ) );
+			}
+			else
+			{
+				OpenGL3::Disable( GL_POLYGON_OFFSET_FILL );
+			}
 		}
-		switch ( rasterizerState.FillMode )
+
+		// Bind the shader program
 		{
-		case ERHIRasterizerFillMode::Point:
-			OpenGL3::PolygonMode( GL_FRONT_AND_BACK, GL_POINT );
-			break;
-		case ERHIRasterizerFillMode::Solid:
-			OpenGL3::PolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-			break;
-		case ERHIRasterizerFillMode::Wireframe:
-			OpenGL3::PolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-			break;
-		default: ASSERT( false, "Invalid fill mode in Graphics Pipeline State!" ); break;
+			OpenGL2::UseProgram( a_GraphicsPipelineState.GetShaderProgramID() );
 		}
-		OpenGL3::FrontFace( rasterizerState.Clockwise ? GL_CW : GL_CCW );
-
-
-		// Bind the shader program last to avoid unnecessary state changes
-		OpenGL2::UseProgram( a_GraphicsPipelineState.GetShaderProgramID() );
 	}
 
 	void RHICommandList_OpenGLImpl::BindFramebuffer( const RHIFramebuffer& a_Framebuffer )
@@ -932,14 +1008,14 @@ namespace Tridium::OpenGL {
 		for ( uint32_t i = 0; i < RHIConstants::MaxColorTargets; ++i )
 		{
 			const RHIBlendState& blendState = a_Data.PSO->Desc().BlendState;
-			if ( blendState.IsEnabled )
+			if ( blendState.Enabled )
 			{
 				OpenGL3::Enablei( GL_BLEND, i );
 				OpenGL4::BlendFuncSeparatei( i, 
-					OpenGL::Translate( blendState.SrcFactorColor ),
-					OpenGL::Translate( blendState.DstFactorColor ),
-					OpenGL::Translate( blendState.SrcFactorAlpha ),
-					OpenGL::Translate( blendState.DstFactorAlpha ) );
+					OpenGL::Translate( blendState.SrcColor ),
+					OpenGL::Translate( blendState.DstColor ),
+					OpenGL::Translate( blendState.SrcAlpha ),
+					OpenGL::Translate( blendState.DstAlpha ) );
 				OpenGL4::BlendEquationi( i, OpenGL::Translate( blendState.BlendEquation ) );
 			}
 			else
@@ -963,7 +1039,7 @@ namespace Tridium::OpenGL {
 
 		// Set stencil state
 		const RHIStencilState& stencilState = a_Data.PSO->Desc().StencilState;
-		if ( stencilState.IsEnabled )
+		if ( stencilState.Enabled )
 		{
 			OpenGL3::Enable( GL_STENCIL_TEST );
 			TODO( "Set the stencil state" );
@@ -981,14 +1057,14 @@ namespace Tridium::OpenGL {
 		const RHIRasterizerState& rasterizerState = a_Data.PSO->Desc().RasterizerState;
 		switch ( rasterizerState.CullMode )
 		{
-		case ERHIRasterizerCullMode::None:
+		case ERHICullMode::None:
 			OpenGL3::Disable( GL_CULL_FACE );
 			break;
-		case ERHIRasterizerCullMode::Front:
+		case ERHICullMode::Front:
 			OpenGL3::Enable( GL_CULL_FACE );
 			OpenGL3::CullFace( GL_FRONT );
 			break;
-		case ERHIRasterizerCullMode::Back:
+		case ERHICullMode::Back:
 			OpenGL3::Enable( GL_CULL_FACE );
 			OpenGL3::CullFace( GL_BACK );
 			break;
@@ -996,13 +1072,13 @@ namespace Tridium::OpenGL {
 		}
 		switch ( rasterizerState.FillMode )
 		{
-		case ERHIRasterizerFillMode::Point:
+		case ERHIFillMode::Point:
 			OpenGL3::PolygonMode( GL_FRONT_AND_BACK, GL_POINT );
 			break;
-		case ERHIRasterizerFillMode::Solid:
+		case ERHIFillMode::Solid:
 			OpenGL3::PolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 			break;
-		case ERHIRasterizerFillMode::Wireframe:
+		case ERHIFillMode::Wireframe:
 			OpenGL3::PolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 			break;
 		default: ASSERT( false, "Invalid fill mode in Graphics Pipeline State!" ); break;

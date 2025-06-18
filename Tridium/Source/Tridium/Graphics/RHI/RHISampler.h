@@ -17,7 +17,7 @@ namespace Tridium {
 		ERHISamplerAddressMode AddressW = ERHISamplerAddressMode::Repeat;
 		float MipLODBias = 0.0f;
 		uint32_t MaxAnisotropy = 1;
-		ERHISamplerComparison ComparisonFunc = ERHISamplerComparison::Never;
+		ERHIComparison ComparisonFunc = ERHIComparison::Never;
 		Color BorderColor = Color::Black();
 		float MinLOD = 0.0f;
 		float MaxLOD = FLT_MAX;
@@ -29,7 +29,7 @@ namespace Tridium {
 		constexpr auto& SetAddressW( ERHISamplerAddressMode a_Address ) { AddressW = a_Address; return *this; }
 		constexpr auto& SetMipLODBias( float a_Bias ) { MipLODBias = a_Bias; return *this; }
 		constexpr auto& SetMaxAnisotropy( uint32_t a_Anisotropy ) { MaxAnisotropy = a_Anisotropy; return *this; }
-		constexpr auto& SetComparisonFunc( ERHISamplerComparison a_Comparison ) { ComparisonFunc = a_Comparison; return *this; }
+		constexpr auto& SetComparisonFunc( ERHIComparison a_Comparison ) { ComparisonFunc = a_Comparison; return *this; }
 		constexpr auto& SetBorderColor( const Color& a_Color ) { BorderColor = a_Color; return *this; }
 		constexpr auto& SetMinLOD( float a_LOD ) { MinLOD = a_LOD; return *this; }
 		constexpr auto& SetMaxLOD( float a_LOD ) { MaxLOD = a_LOD; return *this; }

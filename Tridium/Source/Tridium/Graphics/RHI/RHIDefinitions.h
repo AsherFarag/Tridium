@@ -768,7 +768,6 @@ namespace Tridium {
 
 	//===========================
 	// RHI Comparison Functions
-	//===========================
 	enum class ERHIComparison : uint8_t
 	{
 		Never,         // False
@@ -779,6 +778,7 @@ namespace Tridium {
 		NotEqual,	   // !=
 		GreaterEqual,  // >=
 		Always,		   // True
+
 		COUNT,
 		NUM_BITS = 3,
 	};
@@ -786,60 +786,56 @@ namespace Tridium {
 
 
 
-	//=================================
-	// RHI Sampler Comparison Function
-	//=================================
-	using ERHISamplerComparison = ERHIComparison;
-
-
-
 	//===========================
-	// RHI Rasterizer Fill Mode
-	//===========================
-	enum class ERHIRasterizerFillMode : uint8_t
+	// RHI Fill Mode
+	//  Defines how polygons are filled during rasterization.
+	enum class ERHIFillMode : uint8_t
 	{
 		Point,
 		Wireframe,
 		Solid,
+
 		COUNT,
 		NUM_BITS = 2,
 	};
-	RHI_ENUM_SIZE_ASSERT( ERHIRasterizerFillMode );
+	RHI_ENUM_SIZE_ASSERT( ERHIFillMode );
 
 
 
 	//===========================
-	// RHI Rasterizer Cull Mode
-	//===========================
-	enum class ERHIRasterizerCullMode : uint8_t
+	// RHI Cull Mode
+	//  Defines how polygons are culled during rasterization.
+	enum class ERHICullMode : uint8_t
 	{
 		None,
 		Front,
 		Back,
+
 		COUNT,
 		NUM_BITS = 2,
 	};
-	RHI_ENUM_SIZE_ASSERT( ERHIRasterizerCullMode );
+	RHI_ENUM_SIZE_ASSERT( ERHICullMode );
 
 
 
 	//===========================
-	// RHI Rasterizer Depth Clip Mode
-	//===========================
-	enum class ERHIRasterizerDepthClipMode : uint8_t
+	// RHI Depth Clip Mode
+	//  Defines how depth clipping is handled during rasterization.
+	enum class ERHIDepthClipMode : uint8_t
 	{
 		Clip,
 		Clamp,
+
 		COUNT,
 		NUM_BITS = 1,
 	};
-	RHI_ENUM_SIZE_ASSERT( ERHIRasterizerDepthClipMode );
+	RHI_ENUM_SIZE_ASSERT( ERHIDepthClipMode );
 
 
 
 	//===========================
 	// RHI Stencil Operation
-	//===========================
+	//  Defines how stencil values are modified during stencil testing.
 	enum class ERHIStencilOp : uint8_t
 	{
 		Keep,
@@ -848,6 +844,7 @@ namespace Tridium {
 		Invert,
 		Increment,
 		Decrement,
+
 		COUNT,
 		NUM_BITS = 3,
 	};
@@ -856,23 +853,9 @@ namespace Tridium {
 
 
 	//===========================
-	// RHI Depth Operation
-	//===========================
-	enum class ERHIDepthOp : uint8_t
-	{
-		Keep,
-		Replace,
-		COUNT,
-		NUM_BITS = 2,
-	};
-	RHI_ENUM_SIZE_ASSERT( ERHIDepthOp );
-
-
-
-	//===========================
-	// RHI Blend Operation
-	//===========================
-	enum class ERHIBlendOp : uint8_t
+	// RHI Blend Factor
+	//  Defines how colors are blended during rendering.
+	enum class ERHIBlendFactor : uint8_t
 	{
 		Zero,
 		One,
@@ -885,46 +868,79 @@ namespace Tridium {
 		DstAlpha,
 		OneMinusDstAlpha,
 		SrcAlphaSaturate,
+
 		COUNT,
 		NUM_BITS = 4,
 	};
-	RHI_ENUM_SIZE_ASSERT( ERHIBlendOp );
+	RHI_ENUM_SIZE_ASSERT( ERHIBlendFactor );
 
 
 
 	//===========================
-	// RHI Blend Equation
-	//===========================
-	enum class ERHIBlendEq : uint8_t
+	// RHI Blend Operation
+	//  Defines how colors are combined during blending.
+	enum class ERHIBlendOp : uint8_t
 	{
 		Add,
 		Subtract,
 		ReverseSubtract,
 		Min,
 		Max,
+
 		COUNT,
 		NUM_BITS = 3,
 	};
-	RHI_ENUM_SIZE_ASSERT( ERHIBlendEq );
+	RHI_ENUM_SIZE_ASSERT( ERHIBlendOp );
 
 
 
 	//===========================
-	// Color Write Mask
-	//===========================
-	enum class EColorWriteMask : uint8_t
+	// RHI Color Mask
+	//  Defines which color channels are written to.
+	enum class ERHIColorMask : uint8_t
 	{
-		Red = 0x01,
+		None  = 0x00,
+		Red   = 0x01,
 		Green = 0x02,
-		Blue = 0x04,
+		Blue  = 0x04,
 		Alpha = 0x08,
 
-		None = 0x00,
-		RG = Red | Green,
-		RGB = Red | Green | Blue,
+		RG   = Red | Green,
+		RGB  = Red | Green | Blue,
 		RGBA = Red | Green | Blue | Alpha,
-		BA = Blue | Alpha,
 	};
+
+
+
+	//===========================
+	// RHI Logic Operation
+	//  Specifies a logical operation that is applied to the source and destination colors.
+	enum class ERHILogicOp : uint8_t
+	{
+		// 's' represents the source color (the color being written),
+		// 'd' represents the destination color (the color already in the render target).
+
+		Clear = 0,       //    0
+		Set,			 //    1
+		Copy,			 //    s
+		CopyInverted,	 //   ~s
+		NoOp,			 //    d
+		Invert,			 //   ~d
+		And,			 //   s&d
+		Nand,			 // ~(s&d)
+		Or,				 //   s|d
+		Nor,			 // ~(s|d)
+		Xor,			 //   s^d
+		Eqv,			 // ~(s^d)
+		AndReverse,		 //  s&~d
+		AndInverted,	 //  ~s&d
+		OrReverse,		 //  s|~d
+		OrInverted,		 //  ~s|d
+
+		COUNT,
+		NUM_BITS = 4,
+	};
+	RHI_ENUM_SIZE_ASSERT( ERHILogicOp );
 
 
 

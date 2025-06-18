@@ -71,6 +71,9 @@ namespace Tridium::D3D12 {
 	void RHICommandList_D3D12Impl::WaitUntilCompleted()
 	{
 		GetD3D12RHI()->GetCommandContext( m_Desc.QueueType ).Wait( FenceValue() );
+
+		TODO( "Is there a better way to clear state?" );
+		m_ReferencedResources.Clear();
 	}
 
 	
@@ -93,6 +96,9 @@ namespace Tridium::D3D12 {
 			ASSERT( false, "Failed to reset command list!" );
 			return false;
 		}
+
+		TODO( "Is there a better way to clear state?" );
+		m_ReferencedResources.Clear();
 
 		return true;
 	}

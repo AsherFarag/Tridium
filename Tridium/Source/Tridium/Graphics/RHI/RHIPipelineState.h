@@ -9,68 +9,155 @@ namespace Tridium {
 
 	//========================
 	// RHI Depth State
-	//========================
+	//  Describes the depth state for the graphics pipeline.
 	struct RHIDepthState
 	{
-		bool IsEnabled = true;
-		ERHIDepthOp DepthOp = ERHIDepthOp::Replace;
+		// Enable or disable depth testing.
+		bool DepthTestEnabled = true;
+		// Enable or disable writing to the depth buffer.
+		bool DepthWriteEnabled = true;
+		// A comparison function used to compare the depth of the incoming pixel/fragment against the depth buffer.
 		ERHIComparison Comparison = ERHIComparison::Less;
+
+		constexpr auto& SetDepthTestEnabled( bool a_Enabled ) { DepthTestEnabled = a_Enabled; return *this; }
+		constexpr auto& SetDepthWriteEnabled( bool a_Enabled ) { DepthWriteEnabled = a_Enabled; return *this; }
+		constexpr auto& SetComparison( ERHIComparison a_Comparison ) { Comparison = a_Comparison; return *this; }
 	};
 
 
 
 	//========================
 	// RHI Stencil State
-	//========================
+	//  Describes the stencil state for the graphics pipeline.
 	struct RHIStencilState
 	{
-		bool IsEnabled = false;
-		ERHIComparison Comparison = ERHIComparison::Never;
-		ERHIStencilOp Fail = ERHIStencilOp::Keep;
-		ERHIStencilOp DepthFail = ERHIStencilOp::Keep;
-		ERHIStencilOp Pass = ERHIStencilOp::Keep;
-		uint8_t StencilReadMask = 0;
-		uint8_t StencilWriteMask = 0;
+		struct StencilOpDesc
+		{
+			// The operation to perform when the stencil test fails.
+			ERHIStencilOp StencilFailOp = ERHIStencilOp::Keep;
+			// The operation to perform when the stencil test passes but the depth test fails.
+			ERHIStencilOp DepthFailOp = ERHIStencilOp::Keep;
+			// The operation to perform when both the stencil and depth tests pass.
+			ERHIStencilOp PassOp = ERHIStencilOp::Keep;
+			// A comparison function used to compare the stencil value of the incoming pixel/fragment against the stencil buffer.
+			ERHIComparison Comparison = ERHIComparison::Always;
+
+			constexpr auto& SetStencilFailOp( ERHIStencilOp a_Op ) { StencilFailOp = a_Op; return *this; }
+			constexpr auto& SetDepthFailOp( ERHIStencilOp a_Op ) { DepthFailOp = a_Op; return *this; }
+			constexpr auto& SetPassOp( ERHIStencilOp a_Op ) { PassOp = a_Op; return *this; }
+			constexpr auto& SetComparison( ERHIComparison a_Comparison ) { Comparison = a_Comparison; return *this; }
+		};
+
+		// Enable or disable stencil testing.
+		bool Enabled = false;
+		// Identifies which bits of the stencil buffer to read.
+		uint8_t ReadMask = uint8_t( ~0u );
+		// Identifies which bits of the stencil buffer to write.
+		uint8_t WriteMask = uint8_t( ~0u );
+		// Specifies the reference value used in stencil comparisons. The stencil test compares the reference value against the stencil buffer value.
+		uint8_t RefValue = 0u;
+		// The operations to perform for the front-facing polygons.
+		StencilOpDesc FrontFace{};
+		// The operations to perform for the back-facing polygons.
+		StencilOpDesc BackFace{};
+
+		constexpr auto& SetEnabled( bool a_Enabled ) { Enabled = a_Enabled; return *this; }
+		constexpr auto& SetReadMask( uint8_t a_Mask ) { ReadMask = a_Mask; return *this; }
+		constexpr auto& SetWriteMask( uint8_t a_Mask ) { WriteMask = a_Mask; return *this; }
+		constexpr auto& SetRefValue( uint8_t a_Value ) { RefValue = a_Value; return *this; }
+		constexpr auto& SetFrontFace( const StencilOpDesc& a_Op ) { FrontFace = a_Op; return *this; }
+		constexpr auto& SetBackFace( const StencilOpDesc& a_Op ) { BackFace = a_Op; return *this; }
 	};
 
 
 
 	//========================
 	// RHI Blend State
-	//========================
+	//  Describes the blending state for the graphics pipeline.
 	struct RHIBlendState
 	{
-		bool IsEnabled = false;
-		ERHIBlendOp SrcFactorColor = ERHIBlendOp::SrcAlpha;
-		ERHIBlendOp DstFactorColor = ERHIBlendOp::OneMinusSrcAlpha;
-		ERHIBlendOp SrcFactorAlpha = ERHIBlendOp::SrcAlpha;
-		ERHIBlendOp DstFactorAlpha = ERHIBlendOp::DstAlpha;
-		ERHIBlendEq BlendEquation = ERHIBlendEq::Add;
+		struct RenderTarget
+		{
+			// Enable or disable blending for this render target.
+			bool BlendEnabled = false;
+			// Enable or disable a logical operation for blending.
+			bool LogicOpEnabled = false;
+			// Specifies the blend factor for RGB value output from the pixel shader.
+			ERHIBlendFactor SrcColor = ERHIBlendFactor::One;
+			// Specifies the blend factor for RGB value output from the render target.
+			ERHIBlendFactor DstColor = ERHIBlendFactor::Zero;
+			// Specifies the blend factor for alpha value output from the pixel shader.
+			ERHIBlendFactor SrcAlpha = ERHIBlendFactor::One;
+			// Specifies the blend factor for alpha value output from the render target.
+			ERHIBlendFactor DstAlpha = ERHIBlendFactor::Zero;
+			// Defines how to combine the source and destination RGB values after applying the blend factors.
+			ERHIBlendOp BlendOpColor = ERHIBlendOp::Add;
+			// Defines how to combine the source and destination alpha values after applying the blend factors.
+			ERHIBlendOp BlendOpAlpha = ERHIBlendOp::Add;
+			// Specifies the logical operation to perform when blending is enabled.
+			ERHILogicOp LogicOp = ERHILogicOp::NoOp;
+			// Specifies which color channels to write to the render target.
+			ERHIColorMask ColorWriteMask = ERHIColorMask::RGBA;
+
+			constexpr auto& SetBlendEnabled( bool a_Enabled ) { BlendEnabled = a_Enabled; return *this; }
+			constexpr auto& SetLogicOpEnabled( bool a_Enabled ) { LogicOpEnabled = a_Enabled; return *this; }
+			constexpr auto& SetSrcColor( ERHIBlendFactor a_Factor ) { SrcColor = a_Factor; return *this; }
+			constexpr auto& SetDstColor( ERHIBlendFactor a_Factor ) { DstColor = a_Factor; return *this; }
+			constexpr auto& SetSrcAlpha( ERHIBlendFactor a_Factor ) { SrcAlpha = a_Factor; return *this; }
+			constexpr auto& SetDstAlpha( ERHIBlendFactor a_Factor ) { DstAlpha = a_Factor; return *this; }
+			constexpr auto& SetBlendOpColor( ERHIBlendOp a_Op ) { BlendOpColor = a_Op; return *this; }
+			constexpr auto& SetBlendOpAlpha( ERHIBlendOp a_Op ) { BlendOpAlpha = a_Op; return *this; }
+			constexpr auto& SetLogicOp( ERHILogicOp a_Op ) { LogicOp = a_Op; return *this; }
+			constexpr auto& SetColorWriteMask( ERHIColorMask a_Mask ) { ColorWriteMask = a_Mask; return *this; }
+		};
+
+		// Enable alpha-to-coverage for MSAA
+		bool AlphaToCoverageEnabled = false;
+		// If true, the blend state is independent for each render target.
+		// If false, the blend state is shared across all render targets.
+		bool IndependentBlendEnabled = false;
+		// The blend states for each render target.
+		FixedArray<RenderTarget, RHIConstants::MaxColorTargets> RenderTargets{};
+
+		constexpr auto& SetAlphaToCoverageEnabled( bool a_Enabled ) { AlphaToCoverageEnabled = a_Enabled; return *this; }
+		constexpr auto& SetIndependentBlendEnabled( bool a_Enabled ) { IndependentBlendEnabled = a_Enabled; return *this; }
+		constexpr auto& SetRenderTarget( size_t a_Index, const RenderTarget& a_State ) { RenderTargets.At( a_Index ) = a_State; return *this; }
 	};
 
 
 
 	//========================
 	// RHI Rasterizer State
-	//========================
+	//  Describes the rasterization state for the graphics pipeline.
 	struct RHIRasterizerState
 	{
-		bool Conservative = true;
+		// The culling mode to use for polygons.
+		ERHICullMode CullMode = ERHICullMode::Back;
+		// The fill mode to use for polygons.
+		ERHIFillMode FillMode = ERHIFillMode::Solid;
+		// If true, a polygon will be considered front-facing if its vertices are clockwise
+		// and back-facing if counter-clockwise.
+		// If false, the opposite is true.
 		bool Clockwise = true;
-		ERHIRasterizerCullMode CullMode = ERHIRasterizerCullMode::Back;
-		ERHIRasterizerFillMode FillMode = ERHIRasterizerFillMode::Solid;
+		// Enable or disable clipping against the near and far clip planes.
+		bool DepthClipEnabled = true;
+		// Enable or disable scissor testing.
+		bool ScissorEnabled = false;
+		// Enable or disable antialiased lines.
+		bool AnitaliasedLinesEnabled = false;
+		// A default value added to the depth of each pixel.
+		int32_t DepthBias = 0;
+		// A multiplier that scales the given pixel's slope before adding to the pixel's depth.
+		float SlopeScaledDepthBias = 0.0f;
+
+		constexpr auto& SetCullMode( ERHICullMode a_Mode ) { CullMode = a_Mode; return *this; }
+		constexpr auto& SetFillMode( ERHIFillMode a_Mode ) { FillMode = a_Mode; return *this; }
+		constexpr auto& SetClockwise( bool a_Clockwise ) { Clockwise = a_Clockwise; return *this; }
+		constexpr auto& SetDepthClipEnabled( bool a_Enabled ) { DepthClipEnabled = a_Enabled; return *this; }
+		constexpr auto& SetScissorEnabled( bool a_Enabled ) { ScissorEnabled = a_Enabled; return *this; }
+		constexpr auto& SetAnitaliasedLinesEnabled( bool a_Enabled ) { AnitaliasedLinesEnabled = a_Enabled; return *this; }
+		constexpr auto& SetDepthBias( int32_t a_Bias ) { DepthBias = a_Bias; return *this; }
 	};
-
-
-
-	//=======================================================================
-	// Common Blend States
-	namespace RHIBlendStates
-	{
-		constexpr RHIBlendState Opaque =      { false, ERHIBlendOp::One,      ERHIBlendOp::One,              ERHIBlendOp::One,      ERHIBlendOp::One,      ERHIBlendEq::Add };
-		constexpr RHIBlendState Transparent = { true,  ERHIBlendOp::SrcAlpha, ERHIBlendOp::OneMinusSrcAlpha, ERHIBlendOp::SrcAlpha, ERHIBlendOp::DstAlpha, ERHIBlendEq::Add };
-		constexpr RHIBlendState Additive =    { true,  ERHIBlendOp::SrcAlpha, ERHIBlendOp::One,              ERHIBlendOp::SrcAlpha, ERHIBlendOp::DstAlpha, ERHIBlendEq::Add };
-	} // namespace RHIBlendStates
 
 
 
@@ -84,6 +171,7 @@ namespace Tridium {
 	struct RHIGraphicsPipelineStateDesc
 	{
 		using ResourceType = class IRHIGraphicsPipelineState;
+		String Name{};
 		ERHITopology Topology = ERHITopology::Unknown;
 		RHIVertexLayout VertexLayout{};
 		InlineArray<RHIBindingLayoutRef, RHIConstants::MaxBindingLayouts> BindingLayouts{};
@@ -94,15 +182,12 @@ namespace Tridium {
 		RHIShaderModuleRef GeometryShader{};
 		RHIShaderModuleRef PixelShader{};
 
-
-		RHIBlendState BlendState = RHIBlendStates::Opaque;
+		RHIBlendState BlendState{};
 		RHIDepthState DepthState{};
 		RHIStencilState StencilState{};
 		RHIRasterizerState RasterizerState{};
 
 		RHIFramebufferInfo FramebufferInfo{};
-
-		String Name{};
 
 		IRHIShaderModule* GetShader( ERHIShaderType a_Type ) const
 		{
@@ -118,6 +203,21 @@ namespace Tridium {
 			RHI_DEV_CHECK( false, "Attempting to retrieve an invalid shader type from a GraphicsPipelineState" );
 			return nullptr;
 		}
+
+		auto& SetName( StringView a_Name ) { Name = a_Name; return *this; }
+		auto& SetTopology( ERHITopology a_Topology ) { Topology = a_Topology; return *this; }
+		auto& SetVertexLayout( const RHIVertexLayout& a_VertexLayout ) { VertexLayout = a_VertexLayout; return *this; }
+		auto& AddBindingLayout( RHIBindingLayoutRef a_BindingLayout ) { BindingLayouts.EmplaceBack( std::move( a_BindingLayout ) ); return *this; }
+		auto& SetVertexShader( RHIShaderModuleRef a_VertexShader ) { VertexShader = std::move( a_VertexShader ); return *this; }
+		auto& SetHullShader( RHIShaderModuleRef a_HullShader ) { HullShader = std::move( a_HullShader ); return *this; }
+		auto& SetDomainShader( RHIShaderModuleRef a_DomainShader ) { DomainShader = std::move( a_DomainShader ); return *this; }
+		auto& SetGeometryShader( RHIShaderModuleRef a_GeometryShader ) { GeometryShader = std::move( a_GeometryShader ); return *this; }
+		auto& SetPixelShader( RHIShaderModuleRef a_PixelShader ) { PixelShader = std::move( a_PixelShader ); return *this; }
+		auto& SetBlendState( const RHIBlendState& a_BlendState ) { BlendState = a_BlendState; return *this; }
+		auto& SetDepthState( const RHIDepthState& a_DepthState ) { DepthState = a_DepthState; return *this; }
+		auto& SetStencilState( const RHIStencilState& a_StencilState ) { StencilState = a_StencilState; return *this; }
+		auto& SetRasterizerState( const RHIRasterizerState& a_RasterizerState ) { RasterizerState = a_RasterizerState; return *this; }
+		auto& SetFramebufferInfo( const RHIFramebufferInfo& a_FramebufferInfo ) { FramebufferInfo = a_FramebufferInfo; return *this; }
 	};
 
 	//==============================================

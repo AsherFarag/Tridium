@@ -87,25 +87,25 @@ namespace Tridium {
 		//////////////////////////////////////////////////////////////////////////
 
 		template<>
-		struct To<ERHIBlendOp>
+		struct To<ERHIBlendFactor>
 		{
 			using FromType = D3D12_BLEND;
-			static constexpr ERHIBlendOp From( D3D12_BLEND a_Factor )
+			static constexpr ERHIBlendFactor From( D3D12_BLEND a_Factor )
 			{
 				switch ( a_Factor )
 				{
-				case D3D12_BLEND_ZERO:            return ERHIBlendOp::Zero;
-				case D3D12_BLEND_ONE:             return ERHIBlendOp::One;
-				case D3D12_BLEND_SRC_COLOR:       return ERHIBlendOp::SrcColor;
-				case D3D12_BLEND_INV_SRC_COLOR:   return ERHIBlendOp::OneMinusSrcColor;
-				case D3D12_BLEND_SRC_ALPHA:       return ERHIBlendOp::SrcAlpha;
-				case D3D12_BLEND_INV_SRC_ALPHA:   return ERHIBlendOp::OneMinusSrcAlpha;
-				case D3D12_BLEND_DEST_COLOR:      return ERHIBlendOp::DstColor;
-				case D3D12_BLEND_INV_DEST_COLOR:  return ERHIBlendOp::OneMinusDstColor;
-				case D3D12_BLEND_DEST_ALPHA:      return ERHIBlendOp::DstAlpha;
-				case D3D12_BLEND_INV_DEST_ALPHA:  return ERHIBlendOp::OneMinusDstAlpha;
-				case D3D12_BLEND_SRC_ALPHA_SAT:   return ERHIBlendOp::SrcAlphaSaturate;
-				default:                          return ERHIBlendOp::Zero;
+				case D3D12_BLEND_ZERO:            return ERHIBlendFactor::Zero;
+				case D3D12_BLEND_ONE:             return ERHIBlendFactor::One;
+				case D3D12_BLEND_SRC_COLOR:       return ERHIBlendFactor::SrcColor;
+				case D3D12_BLEND_INV_SRC_COLOR:   return ERHIBlendFactor::OneMinusSrcColor;
+				case D3D12_BLEND_SRC_ALPHA:       return ERHIBlendFactor::SrcAlpha;
+				case D3D12_BLEND_INV_SRC_ALPHA:   return ERHIBlendFactor::OneMinusSrcAlpha;
+				case D3D12_BLEND_DEST_COLOR:      return ERHIBlendFactor::DstColor;
+				case D3D12_BLEND_INV_DEST_COLOR:  return ERHIBlendFactor::OneMinusDstColor;
+				case D3D12_BLEND_DEST_ALPHA:      return ERHIBlendFactor::DstAlpha;
+				case D3D12_BLEND_INV_DEST_ALPHA:  return ERHIBlendFactor::OneMinusDstAlpha;
+				case D3D12_BLEND_SRC_ALPHA_SAT:   return ERHIBlendFactor::SrcAlphaSaturate;
+				default:                          return ERHIBlendFactor::Zero;
 				}
 			}
 		};
@@ -113,22 +113,22 @@ namespace Tridium {
 		template<>
 		struct To<D3D12_BLEND>
 		{
-			using FromType = ERHIBlendOp;
-			static constexpr D3D12_BLEND From( ERHIBlendOp a_Factor )
+			using FromType = ERHIBlendFactor;
+			static constexpr D3D12_BLEND From( ERHIBlendFactor a_Factor )
 			{
 				switch ( a_Factor )
 				{
-				case ERHIBlendOp::Zero:              return D3D12_BLEND_ZERO;
-				case ERHIBlendOp::One:               return D3D12_BLEND_ONE;
-				case ERHIBlendOp::SrcColor:         return D3D12_BLEND_SRC_COLOR;
-				case ERHIBlendOp::OneMinusSrcColor: return D3D12_BLEND_INV_SRC_COLOR;
-				case ERHIBlendOp::SrcAlpha:          return D3D12_BLEND_SRC_ALPHA;
-				case ERHIBlendOp::OneMinusSrcAlpha:  return D3D12_BLEND_INV_SRC_ALPHA;
-				case ERHIBlendOp::DstColor:         return D3D12_BLEND_DEST_COLOR;
-				case ERHIBlendOp::OneMinusDstColor: return D3D12_BLEND_INV_DEST_COLOR;
-				case ERHIBlendOp::DstAlpha:          return D3D12_BLEND_DEST_ALPHA;
-				case ERHIBlendOp::OneMinusDstAlpha:  return D3D12_BLEND_INV_DEST_ALPHA;
-				case ERHIBlendOp::SrcAlphaSaturate:  return D3D12_BLEND_SRC_ALPHA_SAT;
+				case ERHIBlendFactor::Zero:              return D3D12_BLEND_ZERO;
+				case ERHIBlendFactor::One:               return D3D12_BLEND_ONE;
+				case ERHIBlendFactor::SrcColor:         return D3D12_BLEND_SRC_COLOR;
+				case ERHIBlendFactor::OneMinusSrcColor: return D3D12_BLEND_INV_SRC_COLOR;
+				case ERHIBlendFactor::SrcAlpha:          return D3D12_BLEND_SRC_ALPHA;
+				case ERHIBlendFactor::OneMinusSrcAlpha:  return D3D12_BLEND_INV_SRC_ALPHA;
+				case ERHIBlendFactor::DstColor:         return D3D12_BLEND_DEST_COLOR;
+				case ERHIBlendFactor::OneMinusDstColor: return D3D12_BLEND_INV_DEST_COLOR;
+				case ERHIBlendFactor::DstAlpha:          return D3D12_BLEND_DEST_ALPHA;
+				case ERHIBlendFactor::OneMinusDstAlpha:  return D3D12_BLEND_INV_DEST_ALPHA;
+				case ERHIBlendFactor::SrcAlphaSaturate:  return D3D12_BLEND_SRC_ALPHA_SAT;
 				default:                             return D3D12_BLEND_ZERO;
 				}
 			}
@@ -139,19 +139,19 @@ namespace Tridium {
 		//////////////////////////////////////////////////////////////////////////
 
 		template<>
-		struct To<ERHIBlendEq>
+		struct To<ERHIBlendOp>
 		{
 			using FromType = D3D12_BLEND_OP;
-			static constexpr ERHIBlendEq From( D3D12_BLEND_OP a_Eq )
+			static constexpr ERHIBlendOp From( D3D12_BLEND_OP a_Eq )
 			{
 				switch ( a_Eq )
 				{
-				case D3D12_BLEND_OP_ADD:            return ERHIBlendEq::Add;
-				case D3D12_BLEND_OP_SUBTRACT:       return ERHIBlendEq::Subtract;
-				case D3D12_BLEND_OP_REV_SUBTRACT:   return ERHIBlendEq::ReverseSubtract;
-				case D3D12_BLEND_OP_MIN:            return ERHIBlendEq::Min;
-				case D3D12_BLEND_OP_MAX:            return ERHIBlendEq::Max;
-				default:                            return ERHIBlendEq::Add;
+				case D3D12_BLEND_OP_ADD:            return ERHIBlendOp::Add;
+				case D3D12_BLEND_OP_SUBTRACT:       return ERHIBlendOp::Subtract;
+				case D3D12_BLEND_OP_REV_SUBTRACT:   return ERHIBlendOp::ReverseSubtract;
+				case D3D12_BLEND_OP_MIN:            return ERHIBlendOp::Min;
+				case D3D12_BLEND_OP_MAX:            return ERHIBlendOp::Max;
+				default:                            return ERHIBlendOp::Add;
 				}
 			}
 		};
@@ -159,16 +159,16 @@ namespace Tridium {
 		template<>
 		struct To<D3D12_BLEND_OP>
 		{
-			using FromType = ERHIBlendEq;
-			static constexpr D3D12_BLEND_OP From( ERHIBlendEq a_Eq )
+			using FromType = ERHIBlendOp;
+			static constexpr D3D12_BLEND_OP From( ERHIBlendOp a_Eq )
 			{
 				switch ( a_Eq )
 				{
-				case ERHIBlendEq::Add:             return D3D12_BLEND_OP_ADD;
-				case ERHIBlendEq::Subtract:        return D3D12_BLEND_OP_SUBTRACT;
-				case ERHIBlendEq::ReverseSubtract: return D3D12_BLEND_OP_REV_SUBTRACT;
-				case ERHIBlendEq::Min:             return D3D12_BLEND_OP_MIN;
-				case ERHIBlendEq::Max:             return D3D12_BLEND_OP_MAX;
+				case ERHIBlendOp::Add:             return D3D12_BLEND_OP_ADD;
+				case ERHIBlendOp::Subtract:        return D3D12_BLEND_OP_SUBTRACT;
+				case ERHIBlendOp::ReverseSubtract: return D3D12_BLEND_OP_REV_SUBTRACT;
+				case ERHIBlendOp::Min:             return D3D12_BLEND_OP_MIN;
+				case ERHIBlendOp::Max:             return D3D12_BLEND_OP_MAX;
 				default:                           return D3D12_BLEND_OP_ADD;
 				}
 			}
@@ -857,6 +857,70 @@ namespace Tridium {
 				case ERHICommandQueueType::Compute:  return D3D12_COMMAND_LIST_TYPE_COMPUTE;
 				case ERHICommandQueueType::Copy:     return D3D12_COMMAND_LIST_TYPE_COPY;
 				default:                             return D3D12_COMMAND_LIST_TYPE_DIRECT;
+				}
+			}
+		};
+
+		//////////////////////////////////////////////////////////////////////////////
+		// RHI LOGIC OPERATION - D3D12 LOGIC OPERATION
+		//////////////////////////////////////////////////////////////////////////////
+
+		template<>
+		struct To<ERHILogicOp>
+		{
+			using FromType = D3D12_LOGIC_OP;
+			static constexpr ERHILogicOp From( D3D12_LOGIC_OP a_Op )
+			{
+				switch ( a_Op )
+				{
+					using enum ERHILogicOp;
+					case D3D12_LOGIC_OP_CLEAR:         return Clear;
+					case D3D12_LOGIC_OP_SET:           return Set;
+					case D3D12_LOGIC_OP_COPY:          return Copy;
+					case D3D12_LOGIC_OP_COPY_INVERTED: return CopyInverted;
+					case D3D12_LOGIC_OP_NOOP:          return NoOp;
+					case D3D12_LOGIC_OP_INVERT:		   return Invert;
+					case D3D12_LOGIC_OP_AND:		   return And;
+					case D3D12_LOGIC_OP_NAND:		   return Nand;
+					case D3D12_LOGIC_OP_OR:			   return Or;
+					case D3D12_LOGIC_OP_NOR:		   return Nor;
+					case D3D12_LOGIC_OP_XOR:		   return Xor;
+					case D3D12_LOGIC_OP_EQUIV:		   return Eqv;
+					case D3D12_LOGIC_OP_AND_REVERSE:   return AndReverse;
+					case D3D12_LOGIC_OP_AND_INVERTED:  return AndInverted;
+					case D3D12_LOGIC_OP_OR_REVERSE:	   return OrReverse;
+					case D3D12_LOGIC_OP_OR_INVERTED:   return OrInverted;
+					default:                           return NoOp;
+				}
+			}
+		};
+
+		template<>
+		struct To<D3D12_LOGIC_OP>
+		{
+			using FromType = ERHILogicOp;
+			static constexpr D3D12_LOGIC_OP From( ERHILogicOp a_Op )
+			{
+				switch ( a_Op )
+				{
+					using enum ERHILogicOp;
+					case Clear:         return D3D12_LOGIC_OP_CLEAR;
+					case Set:           return D3D12_LOGIC_OP_SET;
+					case Copy:          return D3D12_LOGIC_OP_COPY;
+					case CopyInverted:  return D3D12_LOGIC_OP_COPY_INVERTED;
+					case NoOp:          return D3D12_LOGIC_OP_NOOP;
+					case Invert:        return D3D12_LOGIC_OP_INVERT;
+					case And:           return D3D12_LOGIC_OP_AND;
+					case Nand:          return D3D12_LOGIC_OP_NAND;
+					case Or:            return D3D12_LOGIC_OP_OR;
+					case Nor:           return D3D12_LOGIC_OP_NOR;
+					case Xor:           return D3D12_LOGIC_OP_XOR;
+					case Eqv:           return D3D12_LOGIC_OP_EQUIV;
+					case AndReverse:    return D3D12_LOGIC_OP_AND_REVERSE;
+					case AndInverted:   return D3D12_LOGIC_OP_AND_INVERTED;
+					case OrReverse:     return D3D12_LOGIC_OP_OR_REVERSE;
+					case OrInverted:    return D3D12_LOGIC_OP_OR_INVERTED;
+					default:            return D3D12_LOGIC_OP_NOOP;
 				}
 			}
 		};

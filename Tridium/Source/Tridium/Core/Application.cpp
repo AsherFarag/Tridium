@@ -120,7 +120,7 @@ namespace Tridium {
 		m_Window->SetEventCallback( [this]( const Event& a_Event ) { this->EnqueueEvent( a_Event ); } );
 
 		RHIConfig config{};
-		config.RHIType = ERHInterfaceType::OpenGL;
+		config.RHIType = ERHInterfaceType::DirectX12;
 		config.UseDebug = true;
 		bool initSuccess = RHI::Initialise( config );
 		LOG( LogCategory::RHI, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), initSuccess );
@@ -442,8 +442,11 @@ float4 PSMain( VSOutput input ) : SV_Target
 			psd.FramebufferInfo = fbInfo;
 			psd.VertexLayout = layout;
 			psd.BindingLayouts.EmplaceBack( sbl );
-			psd.RasterizerState.CullMode = ERHIRasterizerCullMode::None;
-			psd.DepthState.IsEnabled = true;
+			psd.RasterizerState.CullMode = ERHICullMode::None;
+			psd.RasterizerState.AnitaliasedLinesEnabled = false;
+			psd.RasterizerState.FillMode = ERHIFillMode::Wireframe;
+			psd.DepthState.DepthTestEnabled = true;
+			psd.DepthState.DepthWriteEnabled = true;
 			psd.Name = "My pipeline state";
 			RHIGraphicsPipelineStateRef pso = RHI::CreateGraphicsPipelineState( psd );
 

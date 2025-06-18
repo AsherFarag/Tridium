@@ -11,19 +11,43 @@ namespace Tridium::D3D12 {
 			: D3D12_SHADER_BYTECODE();
 	}
 
+	D3D12_RENDER_TARGET_BLEND_DESC GetRenderTargetBlendDesc( const RHIBlendState::RenderTarget& a_RenderTarget )
+	{
+		D3D12_RENDER_TARGET_BLEND_DESC desc{};
+		desc.BlendEnable = a_RenderTarget.BlendEnabled;
+		desc.LogicOpEnable = a_RenderTarget.LogicOpEnabled;
+		desc.SrcBlend = Translate( a_RenderTarget.SrcColor );
+		desc.DestBlend = Translate( a_RenderTarget.DstColor );
+		desc.BlendOp = Translate( a_RenderTarget.BlendOpColor );
+		desc.SrcBlendAlpha = Translate( a_RenderTarget.SrcAlpha );
+		desc.DestBlendAlpha = Translate( a_RenderTarget.DstAlpha );
+		desc.BlendOpAlpha = Translate( a_RenderTarget.BlendOpAlpha );
+		desc.LogicOp = Translate( a_RenderTarget.LogicOp );
+
+		desc.RenderTargetWriteMask = 0;
+		desc.RenderTargetWriteMask |= EnumFlags( a_RenderTarget.ColorWriteMask ).HasFlag( ERHIColorMask::Red ) ? D3D12_COLOR_WRITE_ENABLE_RED : 0;
+		desc.RenderTargetWriteMask |= EnumFlags( a_RenderTarget.ColorWriteMask ).HasFlag( ERHIColorMask::Green ) ? D3D12_COLOR_WRITE_ENABLE_GREEN : 0;
+		desc.RenderTargetWriteMask |= EnumFlags( a_RenderTarget.ColorWriteMask ).HasFlag( ERHIColorMask::Blue ) ? D3D12_COLOR_WRITE_ENABLE_BLUE : 0;
+		desc.RenderTargetWriteMask |= EnumFlags( a_RenderTarget.ColorWriteMask ).HasFlag( ERHIColorMask::Alpha ) ? D3D12_COLOR_WRITE_ENABLE_ALPHA : 0;
+
+		return desc;
+	}
+
 	D3D12_BLEND_DESC GetBlendDesc( const RHIBlendState& a_BlendState )
 	{
 		D3D12_BLEND_DESC desc = {};
-		desc.AlphaToCoverageEnable = false;
-		desc.IndependentBlendEnable = false;
-		desc.RenderTarget[0].BlendEnable = a_BlendState.IsEnabled;
-		desc.RenderTarget[0].SrcBlend = D3D12::Translate( a_BlendState.SrcFactorColor );
-		desc.RenderTarget[0].DestBlend = D3D12::Translate( a_BlendState.DstFactorColor );
-		desc.RenderTarget[0].BlendOp = D3D12::Translate( a_BlendState.BlendEquation );
-		desc.RenderTarget[0].SrcBlendAlpha = D3D12::Translate( a_BlendState.SrcFactorAlpha );
-		desc.RenderTarget[0].DestBlendAlpha = D3D12::Translate( a_BlendState.DstFactorAlpha );
-		desc.RenderTarget[0].BlendOpAlpha = D3D12::Translate( a_BlendState.BlendEquation );
-		desc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+		desc.AlphaToCoverageEnable = a_BlendState.AlphaToCoverageEnabled;
+		desc.IndependentBlendEnable = a_BlendState.IndependentBlendEnabled;
+		if ( desc.IndependentBlendEnable )
+		{
+			for ( size_t i = 0; i < a_BlendState.RenderTargets.MaxSize(); ++i )
+				desc.RenderTarget[i] = GetRenderTargetBlendDesc( a_BlendState.RenderTargets[i] );
+		}
+		else
+		{
+			desc.RenderTarget[0] = GetRenderTargetBlendDesc( a_BlendState.RenderTargets[0] );
+		}
+
 		return desc;
 	}
 
@@ -32,14 +56,14 @@ namespace Tridium::D3D12 {
 		D3D12_RASTERIZER_DESC desc{};
 
 		// Set the fill mode
-		desc.FillMode = a_PSD.RasterizerState.FillMode == ERHIRasterizerFillMode::Wireframe
+		desc.FillMode = a_PSD.RasterizerState.FillMode == ERHIFillMode::Wireframe
 			? D3D12_FILL_MODE_WIREFRAME
 			: D3D12_FILL_MODE_SOLID;
 
 		// Set the cull mode
 		switch ( a_PSD.RasterizerState.CullMode )
 		{
-			using enum ERHIRasterizerCullMode;
+			using enum ERHICullMode;
 		case Front: desc.CullMode = D3D12_CULL_MODE_FRONT; break;
 		case Back:  desc.CullMode = D3D12_CULL_MODE_BACK;  break;
 		case None:  desc.CullMode = D3D12_CULL_MODE_NONE;  break;
@@ -48,14 +72,14 @@ namespace Tridium::D3D12 {
 		desc.FrontCounterClockwise = a_PSD.RasterizerState.Clockwise;
 
 		// Set depth values
-		desc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
+		desc.DepthBias = a_PSD.RasterizerState.DepthBias;
 		desc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
-		desc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
-		desc.DepthClipEnable = FALSE;
+		desc.SlopeScaledDepthBias = a_PSD.RasterizerState.SlopeScaledDepthBias;
+		desc.DepthClipEnable = a_PSD.RasterizerState.DepthClipEnabled;
 
 		// Set the multisampling values
 		desc.MultisampleEnable = FALSE;
-		desc.AntialiasedLineEnable = FALSE;
+		desc.AntialiasedLineEnable = a_PSD.RasterizerState.AnitaliasedLinesEnabled;
 		desc.ForcedSampleCount = 0;
 
 		return desc;
@@ -63,20 +87,21 @@ namespace Tridium::D3D12 {
 
 	D3D12_DEPTH_STENCIL_DESC GetDepthStencilDesc( const RHIGraphicsPipelineStateDesc& a_PSD )
 	{
-		D3D12_DEPTH_STENCIL_DESC desc = {};
-		desc.DepthEnable = a_PSD.DepthState.IsEnabled;
-		TODO( "Depth write mask" );
-		desc.DepthWriteMask = a_PSD.DepthState.IsEnabled ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
-
-		desc.DepthFunc = D3D12::Translate( a_PSD.DepthState.Comparison );
-		desc.StencilEnable = a_PSD.StencilState.IsEnabled;
-		desc.StencilReadMask = a_PSD.StencilState.StencilReadMask;
-		desc.StencilWriteMask = a_PSD.StencilState.StencilWriteMask;
-		desc.FrontFace.StencilFailOp = D3D12::Translate( a_PSD.StencilState.Fail );
-		desc.FrontFace.StencilDepthFailOp = D3D12::Translate( a_PSD.StencilState.DepthFail );
-		desc.FrontFace.StencilPassOp = D3D12::Translate( a_PSD.StencilState.Pass );
-		desc.FrontFace.StencilFunc = D3D12::Translate( a_PSD.StencilState.Comparison );
-		desc.BackFace = desc.FrontFace;
+		D3D12_DEPTH_STENCIL_DESC desc{};
+		desc.DepthEnable      = a_PSD.DepthState.DepthTestEnabled;
+		desc.DepthWriteMask   = a_PSD.DepthState.DepthWriteEnabled ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
+		desc.DepthFunc        = Translate( a_PSD.DepthState.Comparison );
+		desc.StencilEnable    = a_PSD.StencilState.Enabled;
+		desc.StencilReadMask  = a_PSD.StencilState.ReadMask;
+		desc.StencilWriteMask = a_PSD.StencilState.WriteMask;
+		desc.FrontFace.StencilFailOp      = Translate( a_PSD.StencilState.FrontFace.StencilFailOp );
+		desc.FrontFace.StencilDepthFailOp = Translate( a_PSD.StencilState.FrontFace.DepthFailOp );
+		desc.FrontFace.StencilPassOp      = Translate( a_PSD.StencilState.FrontFace.PassOp );
+		desc.FrontFace.StencilFunc        = Translate( a_PSD.StencilState.FrontFace.Comparison );
+		desc.BackFace.StencilFailOp       = Translate( a_PSD.StencilState.BackFace.StencilFailOp );
+		desc.BackFace.StencilDepthFailOp  = Translate( a_PSD.StencilState.BackFace.DepthFailOp );
+		desc.BackFace.StencilPassOp       = Translate( a_PSD.StencilState.BackFace.PassOp );
+		desc.BackFace.StencilFunc         = Translate( a_PSD.StencilState.BackFace.Comparison );
 		return desc;
 	}
 
@@ -101,7 +126,7 @@ namespace Tridium::D3D12 {
 			VertexLayout.EmplaceBack( D3D12_INPUT_ELEMENT_DESC{
 				.SemanticName = vertexElementNames[i].c_str(),
 				.SemanticIndex = 0,
-				.Format = D3D12::Translate( element.Type ),
+				.Format = Translate( element.Type ),
 				.InputSlot = 0,
 				.AlignedByteOffset = Cast<UINT>( element.Offset ),
 				.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
@@ -139,7 +164,7 @@ namespace Tridium::D3D12 {
 
 		// Set the depth stencil state
 		psd.DepthStencilState = GetDepthStencilDesc( a_Desc );
-		psd.DSVFormat = D3D12::Translate( a_Desc.FramebufferInfo.DepthStencilFormat );
+		psd.DSVFormat = Translate( a_Desc.FramebufferInfo.DepthStencilFormat );
 
 		switch ( a_Desc.Topology )
 		{
@@ -153,8 +178,8 @@ namespace Tridium::D3D12 {
 
 		psd.NumRenderTargets = a_Desc.FramebufferInfo.ColorFormats.Size();
 		for ( size_t i = 0; i < a_Desc.FramebufferInfo.ColorFormats.Size(); ++i )
-			psd.RTVFormats[i] = D3D12::Translate( a_Desc.FramebufferInfo.ColorFormats[i] );
-		psd.DSVFormat = D3D12::Translate( a_Desc.FramebufferInfo.DepthStencilFormat );
+			psd.RTVFormats[i] = Translate( a_Desc.FramebufferInfo.ColorFormats[i] );
+		psd.DSVFormat = Translate( a_Desc.FramebufferInfo.DepthStencilFormat );
 		psd.SampleDesc.Count = 1;
 		psd.SampleDesc.Quality = 0;
 		psd.NodeMask = 0;

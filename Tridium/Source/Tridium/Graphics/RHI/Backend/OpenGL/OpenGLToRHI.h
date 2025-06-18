@@ -65,11 +65,11 @@ namespace Tridium::OpenGL {
 		}
 	}
 
-	inline constexpr GLint Translate( ERHIBlendOp a_Factor )
+	inline constexpr GLint Translate( ERHIBlendFactor a_Factor )
 	{
 		switch ( a_Factor )
 		{
-			using enum ERHIBlendOp;
+			using enum ERHIBlendFactor;
 			case Zero: return GL_ZERO;
 			case One: return GL_ONE;
 			case SrcColor: return GL_SRC_COLOR;
@@ -85,28 +85,17 @@ namespace Tridium::OpenGL {
 		}
 	}
 
-	inline constexpr GLint Translate( ERHIBlendEq a_Equation )
+	inline constexpr GLint Translate( ERHIBlendOp a_Equation )
 	{
 		switch ( a_Equation )
 		{
-			using enum ERHIBlendEq;
+			using enum ERHIBlendOp;
 			case Add: return GL_FUNC_ADD;
 			case Subtract: return GL_FUNC_SUBTRACT;
 			case ReverseSubtract: return GL_FUNC_REVERSE_SUBTRACT;
 			case Min: return GL_MIN;
 			case Max: return GL_MAX;
 			default: return GL_FUNC_ADD;
-		}
-	}
-
-	inline constexpr GLint Translate( ERHIDepthOp a_DepthOp )
-	{
-		switch ( a_DepthOp )
-		{
-			using enum ERHIDepthOp;
-			case Keep: return GL_KEEP;
-			case Replace: return GL_REPLACE;
-			default: ASSERT( false, "Invalid depth operation" ); return GL_KEEP;
 		}
 	}
 
@@ -156,9 +145,9 @@ namespace Tridium::OpenGL {
 
 	inline constexpr GLenum Translate( ERHIShaderVisibility a_ShaderVisibility )
 	{
+		using enum ERHIShaderVisibility;
 		switch ( a_ShaderVisibility )
 		{
-		using enum ERHIShaderVisibility;
 		case Vertex:      return GL_VERTEX_SHADER_BIT;
 		case Hull:        return GL_TESS_CONTROL_SHADER_BIT;
 		case Domain:      return GL_TESS_EVALUATION_SHADER_BIT;
@@ -171,9 +160,9 @@ namespace Tridium::OpenGL {
 
 	inline constexpr GLenum Translate( ERHIShaderType a_Type )
 	{
+		using enum ERHIShaderType;
 		switch ( a_Type )
 		{
-			using enum ERHIShaderType;
 		case Vertex:   return GL_VERTEX_SHADER;
 		case Geometry: return GL_GEOMETRY_SHADER;
 		case Hull:     return GL_TESS_CONTROL_SHADER;
@@ -186,9 +175,9 @@ namespace Tridium::OpenGL {
 
 	inline constexpr GLenum Translate( ERHITopology a_Topology )
 	{
+		using enum ERHITopology;
 		switch ( a_Topology )
 		{
-			using enum ERHITopology;
 		case Point:     return GL_POINTS;
 		case Line:      return GL_LINES;
 		case LineStrip: return GL_LINE_STRIP;
@@ -200,13 +189,41 @@ namespace Tridium::OpenGL {
 
 	inline constexpr GLenum Translate( ERHIUsage a_Usage )
 	{
+		using enum ERHIUsage;
 		switch ( a_Usage )
 		{
-			using enum ERHIUsage;
 		case Default: return GL_STATIC_DRAW;
 		case Static:  return GL_STATIC_DRAW;
 		case Dynamic: return GL_DYNAMIC_DRAW;
 		default:      return GL_STATIC_DRAW;
+		}
+	}
+
+	inline constexpr GLenum Translate( ERHILogicOp a_Op )
+	{
+		switch ( a_Op )
+		{
+			using enum ERHILogicOp;
+			switch ( a_Op )
+			{
+				case Clear:         return GL_CLEAR;
+				case Set:           return GL_SET;
+				case Copy:          return GL_COPY;
+				case CopyInverted:  return GL_COPY_INVERTED;
+				case NoOp:          return GL_NOOP;
+				case Invert:        return GL_INVERT;
+				case And:           return GL_AND;
+				case Nand:          return GL_NAND;
+				case Or:            return GL_OR;
+				case Nor:           return GL_NOR;
+				case Xor:           return GL_XOR;
+				case Eqv:           return GL_EQUIV;
+				case AndReverse:    return GL_AND_REVERSE;
+				case AndInverted:   return GL_AND_INVERTED;
+				case OrReverse:     return GL_OR_REVERSE;
+				case OrInverted:    return GL_OR_INVERTED;
+				default:            return GL_NOOP;
+			}
 		}
 	}
 
