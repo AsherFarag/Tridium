@@ -146,7 +146,7 @@ namespace Tridium::OpenGL {
 
 	bool RHIGraphicsPipelineState_OpenGLImpl::ApplyVertexLayoutToVAO( GLuint a_VAO )
 	{
-		GLState::BindVertexArray( a_VAO ); // Ensure the VAO is bound
+		OpenGL3::BindVertexArray( a_VAO );
 
 		// Bind the vertex layout
 		for ( uint32_t i = 0; i < Desc().VertexLayout.Elements.Size(); ++i )

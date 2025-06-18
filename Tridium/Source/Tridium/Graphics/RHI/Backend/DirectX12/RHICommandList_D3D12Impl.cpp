@@ -256,9 +256,9 @@ namespace Tridium::D3D12 {
 		{
 			BindFramebuffer( a_GraphicsState.Framebuffer );
 			for ( const auto& attachment : a_GraphicsState.Framebuffer.ColorAttachments )
-				m_ReferencedResources.EmplaceBack( attachment.Texture->SharedFromThis() );
+				m_ReferencedResources.EmplaceBack( attachment.Texture->Shared() );
 			if ( a_GraphicsState.Framebuffer.DepthStencilAttachment )
-				m_ReferencedResources.EmplaceBack( a_GraphicsState.Framebuffer.DepthStencilAttachment.Texture->SharedFromThis() );
+				m_ReferencedResources.EmplaceBack( a_GraphicsState.Framebuffer.DepthStencilAttachment.Texture->Shared() );
 		}
 
 		BindGraphicsBindings( a_GraphicsState.BindingSets, bindingsUpdateMask, pso->RootSig );

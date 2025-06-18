@@ -120,7 +120,7 @@ namespace Tridium {
 		m_Window->SetEventCallback( [this]( const Event& a_Event ) { this->EnqueueEvent( a_Event ); } );
 
 		RHIConfig config{};
-		config.RHIType = ERHInterfaceType::DirectX12;
+		config.RHIType = ERHInterfaceType::OpenGL;
 		config.UseDebug = true;
 		bool initSuccess = RHI::Initialise( config );
 		LOG( LogCategory::RHI, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), initSuccess );
@@ -389,13 +389,11 @@ float4 PSMain( VSOutput input ) : SV_Target
 	float3 lightDir = normalize( constants.LightData.Position - input.worldPos );
 	float3 viewDir = normalize( float3( 0.0f, 0.0f, -1.0f ) - input.worldPos );
 	float3 reflectDir = reflect( -lightDir, normal );
-	float3 ambient = 0.1f * constants.LightData.Colour.rgb;
+	float3 ambient = 0.1f * constants.LightData.Colour.rgb + 0.2f * Texture.Sample( TextureSampler, input.uv ).rgb;
 	float3 diffuse = max( dot( normal, lightDir ), 0.0f ) * constants.LightData.Colour.rgb;
 	float3 specular = 1000.0f * pow( max( dot( viewDir, reflectDir ), 0.0f ), 32.0f ) * constants.LightData.Colour.rgb;
 	float3 color = ambient + diffuse + specular;
 	color *= constants.LightData.Intensity;
-	//color = Sample( Texture, input.uv ).rgb;
-	color = Texture.Sample( TextureSampler, input.uv ).rgb;
 	return float4( color, 1.0f );
 }
 )";

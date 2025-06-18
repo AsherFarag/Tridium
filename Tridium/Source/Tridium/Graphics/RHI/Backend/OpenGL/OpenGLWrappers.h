@@ -159,4 +159,26 @@ namespace Tridium::OpenGL {
 	};
 	using GLUBOWrapper = GLObjWrapper<GLUniformBufferFactory>;
 
+	class GLFramebufferFactory
+	{
+	public:
+		static GLuint Create()
+		{
+			GLuint handle = 0;
+			OpenGL3::GenFramebuffers( 1, &handle );
+			return handle;
+		}
+
+		static void Delete( GLuint a_Handle )
+		{
+			OpenGL3::DeleteFramebuffers( 1, &a_Handle );
+		}
+
+		static constexpr GLenum Type()
+		{
+			return GL_FRAMEBUFFER;
+		}
+	};
+	using GLFramebufferWrapper = GLObjWrapper<GLFramebufferFactory>;
+
 }

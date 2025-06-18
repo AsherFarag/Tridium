@@ -63,12 +63,17 @@ namespace Tridium::OpenGL {
 		}
 		LOG( LogCategory::RHI, Info, "Released {0} resources", numResources );
 
-		GLState::ClearState();
 		return true;
 	}
 
 	bool DynamicRHI_OpenGLImpl::ExecuteCommandList( RHICommandListRef a_CommandList )
 	{
+		if ( !a_CommandList )
+			return false;
+
+		auto* commandList = a_CommandList->As<RHICommandList_OpenGLImpl>();
+		commandList->Flush();
+
 		return true;
 	}
 

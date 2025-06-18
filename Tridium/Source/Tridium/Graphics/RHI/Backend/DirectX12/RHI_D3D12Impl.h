@@ -746,6 +746,7 @@ namespace Tridium::D3D12 {
 
 		bool IsCompleted() const override;
 		void WaitUntilCompleted() override;
+		bool IsImmediate() const override { return false; } // Immediate command lists are not supported in D3D12.
 
 		bool Open() override;
 		bool Close() override;

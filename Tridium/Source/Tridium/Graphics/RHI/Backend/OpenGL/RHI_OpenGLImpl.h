@@ -17,7 +17,6 @@
 
 #include "OpenGL4.h"
 #include "OpenGLToRHI.h"
-#include "OpenGLState.h"
 #include "OpenGLWrappers.h"
 
 
@@ -201,8 +200,9 @@ namespace Tridium::OpenGL {
 		virtual const void* NativePtr() const { return TextureObj.NativePtr(); }
 		virtual bool Valid() const override { return TextureObj.Valid(); }
 
-		OpenGL::GLTextureWrapper TextureObj{};
+		GLTextureWrapper TextureObj{};
 		GLTextureFormat GLFormat{};
+		GLenum GLTarget = GL_NONE;
 	};
 
 	//======================================================================
@@ -414,12 +414,13 @@ namespace Tridium::OpenGL {
 		RHICommandList_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType & a_Desc );
 		~RHICommandList_OpenGLImpl() override { Release(); }
 
-		virtual bool Release() override { return true; }
-		virtual bool Valid() const override { return true; }
-		virtual const void* NativePtr() const override { return nullptr; }
+		bool Release() override;
+		bool Valid() const override { return m_InlinedConstantsUBO.Valid(); }
+		const void* NativePtr() const override { return nullptr; }
 
-		virtual bool IsCompleted() const override { return true; }
-		virtual void WaitUntilCompleted() override {}
+		bool IsCompleted() const override { return true; }
+		void WaitUntilCompleted() override {}
+		bool IsImmediate() const override { return Desc().EnableImmediateExecution; }
 
 		bool Open() override;
 		bool Close() override;
@@ -444,11 +445,163 @@ namespace Tridium::OpenGL {
 		void PopDebugGroup() override;
 		void InsertDebugMarker( StringView a_Name ) override;
 
+		// OpenGL-specific functions
+		// Used by DynamicRHI_OpenGLImpl to the command list
+		void Flush();
+
 	private:
+		bool m_IsOpen = false;
 		GLUBOWrapper m_InlinedConstantsUBO{};
-		Array<RHIObjectRef> m_ReferencedResources{};
+		GLFramebufferWrapper m_FramebufferObj{};
+		Array<RHIObjectRef> m_ReferencedObjects{};
+
 		RHIGraphicsState m_CurrentGraphicsState{};
 		bool m_GraphicsStateValid = false;
+		RHIComputeState m_CurrentComputeState{};
+		bool m_ComputeStateValid = false;
+
+		// Buffer to queue commands for execution
+		// This is so OpenGL can have deferred execution of commands.
+		// Is not used if the RHICommandList is immediate.
+		struct CommandBuffer
+		{
+			struct UpdateBuffer
+			{
+				RHIBufferRef Buffer;
+				const void* Data;
+				size_t DataSizeBytes;
+				size_t DstOffsetBytes;
+			};
+
+			struct CopyBuffer
+			{
+				RHIBufferRef DstBuffer;
+				size_t DstOffsetBytes;
+				RHIBufferRef SrcBuffer;
+				RHIBufferRange SrcRange;
+			};
+
+			struct UpdateTexture
+			{
+				RHITextureRef Texture;
+				RHITextureSlice DstSlice;
+				RHITextureSubresourceData Data;
+			};
+
+			struct CopyTexture
+			{
+				RHITextureRef DstTexture;
+				RHITextureSlice DstSlice;
+				RHITextureRef SrcTexture;
+				RHITextureSlice SrcSlice;
+			};
+
+			struct SetInlinedConstants
+			{
+				FixedArray<uint8_t, RHIConstants::MaxInlinedConstantsSize> Data;
+				uint32_t DstOffsetBytes;
+				uint32_t SizeBytes;
+			};
+
+			struct SetGraphicsState
+			{
+				RHIGraphicsState GraphicsState;
+			};
+
+			struct ClearRenderTargets
+			{
+				ERHIClearFlags Flags;
+				Color ClearColor;
+				float DepthValue;
+				uint8_t StencilValue;
+				int32_t ColorAttachmentIndex;
+			};
+
+			struct SetViewportState
+			{
+				RHIViewportState Viewports;
+			};
+
+			struct Draw
+			{
+				RHIDrawArgs DrawArgs;
+			};
+
+			struct PushDebugGroup
+			{
+				StringView Name;
+			};
+
+			struct PopDebugGroup
+			{
+			};
+
+			struct InsertDebugMarker
+			{
+				StringView Name;
+			};
+
+			using Command = Variant<
+				UpdateBuffer,
+				CopyBuffer,
+				UpdateTexture,
+				CopyTexture,
+				SetInlinedConstants,
+				SetGraphicsState,
+				ClearRenderTargets,
+				SetViewportState,
+				Draw,
+				PushDebugGroup,
+				PopDebugGroup,
+				InsertDebugMarker
+			>;
+
+			// Matches the index into the Command variant
+			enum class CommandType
+			{
+				UpdateBuffer = 0,
+				CopyBuffer,
+				UpdateTexture,
+				CopyTexture,
+				SetInlinedConstants,
+				SetGraphicsState,
+				ClearRenderTargets,
+				SetViewportState,
+				Draw,
+				PushDebugGroup,
+				PopDebugGroup,
+				InsertDebugMarker
+			};
+
+			Array<Command> Commands{};
+
+			void Clear() { Commands.Clear(); }
+		};
+
+		struct Deferred
+		{
+			CommandBuffer CommandBuffer{};
+		} m_Deferred{};
+
+	private:
+		void BindGraphicsPipelineState( const RHIGraphicsPipelineState_OpenGLImpl& a_GraphicsPipelineState );
+		void BindFramebuffer( const RHIFramebuffer& a_Framebuffer );
+		void BindGraphicsBindings( const InlineArray<const IRHIBindingSet*, RHIConstants::MaxBindingLayouts>& a_BindingSets );
+
+		void FlushCommandBuffer();
+		// Command Implementations
+		void UpdateBuffer_Impl( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes );
+		void CopyBuffer_Impl( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange );
+		void UpdateTexture_Impl( IRHITexture& a_Texture, const RHITextureSlice& a_DstSlice, RHITextureSubresourceData a_Data );
+		void CopyTexture_Impl( IRHITexture& a_DstTexture, const RHITextureSlice& a_DstSlice, IRHITexture& a_SrcTexture, const RHITextureSlice& a_SrcSlice );
+		void SetInlinedConstants_Impl( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes = 0 );
+		void SetGraphicsState_Impl( const RHIGraphicsState& a_GraphicsState );
+		void ClearRenderTargets_Impl( ERHIClearFlags a_Flags, Color a_ClearColor, float a_DepthValue = 1.0f, uint8_t a_StencilValue = 0u, int32_t a_ColorAttachmentIndex = -1 );
+		void SetViewportState_Impl( const RHIViewportState& a_Viewports );
+		void Draw_Impl( const RHIDrawArgs& a_DrawArgs );
+		void PushDebugGroup_Impl( StringView a_Name );
+		void PopDebugGroup_Impl();
+		void InsertDebugMarker_Impl( StringView a_Name );
 	};
 
 	//======================================================================

@@ -21,16 +21,16 @@ namespace Tridium::OpenGL {
 		// Vertex buffer
 		if ( EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::VertexBuffer ) )
 		{
-			GLState::BindVertexBuffer( BufferObj );
+			OpenGL1::BindBuffer( GL_ARRAY_BUFFER, BufferObj );
 			OpenGL1::BufferData( GL_ARRAY_BUFFER, a_Desc.Size, a_Data.data(), Translate( a_Desc.Usage ) );
-			GLState::BindVertexBuffer( 0 );
+			OpenGL1::BindBuffer( GL_ARRAY_BUFFER, 0 );
 		}
 		// Index buffer
 		else if ( EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::IndexBuffer ) )
 		{
-			GLState::BindIndexBuffer( BufferObj );
+			OpenGL1::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, BufferObj );
 			OpenGL1::BufferData( GL_ELEMENT_ARRAY_BUFFER, a_Desc.Size, a_Data.data(), Translate( a_Desc.Usage ) );
-			GLState::BindIndexBuffer( 0 );
+			OpenGL1::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 		}
 		else if ( EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::ConstantBuffer ) )
 		{

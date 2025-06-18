@@ -7,7 +7,8 @@ namespace Tridium::OpenGL {
     {
 		if ( Window )
         {
-			GLState::BindFBO( 0 );
+			// Clear the bound framebuffer
+			OpenGL3::BindFramebuffer( GL_FRAMEBUFFER, 0 );
 
 			// Render the framebuffer to the screen
 			{
@@ -15,13 +16,13 @@ namespace Tridium::OpenGL {
 				OpenGL1::ClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
 				OpenGL1::Clear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
 
-				GLState::BindProgram( m_Framebuffer.ShaderID );
+				OpenGL2::UseProgram( m_Framebuffer.ShaderID );
 
 				OpenGL4::BindTextureUnit( 0, *m_Framebuffer.BackBufferTexture->NativePtrAs<GLuint>() );
 
-				GLState::BindVertexArray( m_Framebuffer.ScreenQuad.VAO );
+				OpenGL3::BindVertexArray( m_Framebuffer.ScreenQuad.VAO );
 				OpenGL3::DrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr );
-				GLState::BindVertexArray( 0 );
+				OpenGL3::BindVertexArray( 0 );
 			}
 
             glfwSwapBuffers( Window );

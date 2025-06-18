@@ -102,6 +102,14 @@ namespace Tridium {
         void SetAutomaticResourceStateTransitionEnabled( bool a_Enabled ) { m_AutomaticResourceStateTransitionEnabled = a_Enabled; }
         bool IsAutomaticResourceStateTransitionEnabled() const { return m_AutomaticResourceStateTransitionEnabled; }
 
+		// Returns if this command list is an immediate mode.
+		// Immediate mode command lists execute commands the moment they are recorded,
+		// matching the behavior of OpenGL.
+		// NOTE: Only one immediate command list can be active at a time.
+		// NOTE: Immediate command lists are not supported in all RHI backends.
+		//       Supported backends include OpenGL and DirectX11.
+		virtual bool IsImmediate() const = 0;
+
         // Opens the command list, preparing it for recording commands.
 		// Returns false if failed to open the command list.
         virtual bool Open() = 0;
@@ -166,6 +174,8 @@ namespace Tridium {
         virtual void SetInlinedConstants( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM )
         {
             RHI_ADD_DEBUG_CMD_INFO( "SetInlinedConstants" );
+            RHI_DEV_CHECK( a_SizeBytes + a_DstOffsetBytes <= RHIConstants::MaxInlinedConstantsSize, 
+				"Inlined constants size exceeds the maximum allowed size of {} bytes.", RHIConstants::MaxInlinedConstantsSize );
         }
 
 		// Template overload for SetInlinedConstants that automatically converts a POD type to a byte array.

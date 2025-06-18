@@ -142,6 +142,7 @@ namespace Tridium {
 			LOG( LogCategory::RHI, Error, "Failed to execute command list!" );
 			return false;
 		}
+
 		a_CommandList->SetPendingExecution( true );
 		return true;
 	}

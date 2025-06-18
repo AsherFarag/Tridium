@@ -30,19 +30,20 @@ namespace Tridium::OpenGL {
 		{
 			case ERHITextureDimension::Texture1D:
 			{
-				OpenGL1::BindTexture( GL_TEXTURE_1D, TextureObj );
+				GLTarget = GL_TEXTURE_1D;
+				OpenGL1::BindTexture( GLTarget, TextureObj );
 				NOT_IMPLEMENTED;
 				break;
 			}
 			case ERHITextureDimension::Texture2D:
 			{
-				OpenGL1::BindTexture( GL_TEXTURE_2D, TextureObj );
-
 				if ( m_Desc.Samples > 1 )
 				{
+					GLTarget = GL_TEXTURE_2D_MULTISAMPLE;
+					OpenGL1::BindTexture( GLTarget, TextureObj );
 					TODO( "Check if multisampling is supported!" );
 					// Create a multisampled texture
-					OpenGL3::TexImage2DMultisample( GL_TEXTURE_2D_MULTISAMPLE,
+					OpenGL3::TexImage2DMultisample( GLTarget,
 						m_Desc.Samples, GLFormat.InternalFormat,
 						a_Desc.Width, a_Desc.Height, GL_TRUE
 					);
@@ -51,7 +52,9 @@ namespace Tridium::OpenGL {
 				}
 				else
 				{
-					OpenGL4::TexStorage2D( GL_TEXTURE_2D,
+					GLTarget = GL_TEXTURE_2D;
+					OpenGL1::BindTexture( GLTarget, TextureObj );
+					OpenGL4::TexStorage2D( GLTarget,
 						m_Desc.Mips, GLFormat.InternalFormat,
 						a_Desc.Width, a_Desc.Height
 					);
@@ -70,7 +73,7 @@ namespace Tridium::OpenGL {
 							0, Math::Max( m_Desc.Height >> mip, 1u )
 						};
 
-						OpenGL1::TexSubImage2D( GL_TEXTURE_2D, mip,
+						OpenGL1::TexSubImage2D( GLTarget, mip,
 							dstBox.MinX, dstBox.MinY,
 							dstBox.Width(), dstBox.Height(),
 							GLFormat.Format, GLFormat.Type,
@@ -82,7 +85,8 @@ namespace Tridium::OpenGL {
 			}
 			case ERHITextureDimension::Texture3D:
 			{
-				OpenGL1::BindTexture( GL_TEXTURE_3D, TextureObj );
+				GLTarget = GL_TEXTURE_3D;
+				OpenGL1::BindTexture( GLTarget, TextureObj );
 				NOT_IMPLEMENTED;
 				break;
 			}

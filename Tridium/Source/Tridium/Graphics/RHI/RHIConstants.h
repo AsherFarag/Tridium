@@ -10,5 +10,5 @@ namespace Tridium::RHIConstants {
 	static constexpr uint32_t MaxTextureBindings      = 32u;           // Maximum number of textures that can be bound to a shader stage.
 	static constexpr uint32_t MaxColorTargets         = 8u;            // Maximum number of color targets that can be bound to the output merger stage.
 	static constexpr uint32_t MaxFrameBuffers         = 2u;            // Maximum number of frame buffers that can be used in a swap chain.
-	static constexpr uint32_t MaxInlinedConstantsSize = 128u;          // Maximum number of bytes that can be stored as an inlined constant.
+	static constexpr uint32_t MaxInlinedConstantsSize = 256u;          // Maximum number of bytes that can be stored as an inlined constant (updated).
 }
