@@ -88,13 +88,6 @@ namespace Tridium::OpenGL {
 		return fence;
 	}
 
-	RHISamplerRef DynamicRHI_OpenGLImpl::CreateSampler( const RHISamplerDesc& a_Desc )
-	{
- 		RHISamplerRef sampler = IRHIObject::Create<RHISampler_OpenGLImpl>( this, a_Desc );
-		RegisterRHIResource( *sampler );
-		return sampler;
-	}
-
 	RHITextureRef DynamicRHI_OpenGLImpl::CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
 	{
  		RHITextureRef texture = IRHIObject::Create<RHITexture_OpenGLImpl>( this, a_Desc, a_SubResourcesData );

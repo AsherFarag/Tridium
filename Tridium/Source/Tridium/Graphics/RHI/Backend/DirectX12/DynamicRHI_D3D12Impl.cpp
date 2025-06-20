@@ -259,13 +259,6 @@ namespace Tridium::D3D12 {
 		return fence;
 	}
 
-	RHISamplerRef DynamicRHI_D3D12Impl::CreateSampler( const RHISamplerDesc& a_Desc )
-	{
-		RHISamplerRef sampler = IRHIObject::Create<RHISampler_D3D12Impl>( this, a_Desc );
-		RegisterRHIResource( *sampler.get() );
-		return sampler;
-	}
-
 	RHITextureRef DynamicRHI_D3D12Impl::CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
 	{
 		RHITextureRef texture = IRHIObject::Create<RHITexture_D3D12Impl>( this, a_Desc, a_SubResourcesData );

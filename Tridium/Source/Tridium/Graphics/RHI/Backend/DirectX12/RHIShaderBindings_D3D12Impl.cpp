@@ -76,56 +76,64 @@ namespace Tridium::D3D12 {
             else if ( !AreBindingsCompatible( binding.Type(), currentType )
                 || binding.Slot != currentSlot + 1 )
             {
-                if ( binding.Type() == ERHIBindingType::Sampler )
+                D3D12_DESCRIPTOR_RANGE1& range = DescriptorRangesRenderResources.EmplaceBack();
+                switch ( binding.Type() )
                 {
-                    D3D12_DESCRIPTOR_RANGE1& range = DescriptorRangesSamplers.EmplaceBack();
-                    range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-                    range.NumDescriptors = 1;
-                    range.BaseShaderRegister = binding.Slot;
-                    range.RegisterSpace = a_Desc.RegisterSpace;
-                    range.OffsetInDescriptorsFromTableStart = DescriptorTableSizeSamplers++;
-                    range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
-                }
-                else
+                    // SRV
+                case ERHIBindingType::StructuredBuffer:
+                case ERHIBindingType::Texture:
                 {
-                    D3D12_DESCRIPTOR_RANGE1& range = DescriptorRangesRenderResources.EmplaceBack();
-                    switch ( binding.Type() )
-                    {
-                        // SRV
-                        case ERHIBindingType::StructuredBuffer:
-                        case ERHIBindingType::Texture:
-                        {
-                            range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-                            break;
-                        }
-                        // UAV
-                        case ERHIBindingType::StorageBuffer:
-                        case ERHIBindingType::StorageTexture:
-                        {
-                            range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-                            break;
-                        }
-                        // CBV
-                        case ERHIBindingType::ConstantBuffer:
-                        {
-                            range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-                            break;
-                        }
-                        default:
-                        {
-                            RHI_DEV_CHECK( false, "Invalid binding type '{}'", ToString( binding.Type() ) );
-                            continue;
-                        }
-                    }
+                    range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 
-                    range.NumDescriptors = 1;
-                    range.BaseShaderRegister = binding.Slot;
-                    range.RegisterSpace = a_Desc.RegisterSpace;
-                    range.OffsetInDescriptorsFromTableStart = DescriptorTableSizeRenderResources++;
-                    range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE;
-
-                    RenderResourceBindingLayouts.PushBack( binding );
+                    // We combine samplers and textures into a single binding
+					// So we need to create a sampler range if this is a texture binding
+                    D3D12_DESCRIPTOR_RANGE1& samplerRange = DescriptorRangesSamplers.EmplaceBack();
+                    samplerRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+                    samplerRange.NumDescriptors = 1;
+                    samplerRange.BaseShaderRegister = binding.Slot;
+                    samplerRange.RegisterSpace = a_Desc.RegisterSpace;
+                    samplerRange.OffsetInDescriptorsFromTableStart = DescriptorTableSizeSamplers++;
+                    samplerRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
+                    break;
                 }
+                // UAV
+                case ERHIBindingType::StorageBuffer:
+                case ERHIBindingType::StorageTexture:
+                {
+                    range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+
+					// We combine samplers and textures into a single binding
+					// So we need to create a sampler range if this is a texture binding
+                    D3D12_DESCRIPTOR_RANGE1& samplerRange = DescriptorRangesSamplers.EmplaceBack();
+                    samplerRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+                    samplerRange.NumDescriptors = 1;
+                    samplerRange.BaseShaderRegister = binding.Slot;
+                    samplerRange.RegisterSpace = a_Desc.RegisterSpace;
+                    samplerRange.OffsetInDescriptorsFromTableStart = DescriptorTableSizeSamplers++;
+                    samplerRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
+
+                    break;
+                }
+                // CBV
+                case ERHIBindingType::ConstantBuffer:
+                {
+                    range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+                    break;
+                }
+                default:
+                {
+                    RHI_DEV_CHECK( false, "Invalid binding type '{}'", ToString( binding.Type() ) );
+                    continue;
+                }
+                }
+
+                range.NumDescriptors = 1;
+                range.BaseShaderRegister = binding.Slot;
+                range.RegisterSpace = a_Desc.RegisterSpace;
+                range.OffsetInDescriptorsFromTableStart = DescriptorTableSizeRenderResources++;
+                range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE;
+
+                RenderResourceBindingLayouts.PushBack( binding );
 
                 currentSlot = binding.Slot;
                 currentType = binding.Type();
@@ -133,21 +141,21 @@ namespace Tridium::D3D12 {
             // Extend the current range
             else
             {
-                if ( binding.Type() == ERHIBindingType::Sampler )
+				// If the binding is a texture, we also need to extend the sampler range
+                if ( binding.Type() == ERHIBindingType::Texture
+                    || binding.Type() == ERHIBindingType::StorageTexture )
                 {
                     ASSERT( !DescriptorRangesSamplers.Empty() );
                     D3D12_DESCRIPTOR_RANGE1& range = DescriptorRangesSamplers.EmplaceBack();
                     range.NumDescriptors += 1;
                     DescriptorTableSizeSamplers++;
                 }
-                else
-                {
-                    ASSERT( !DescriptorRangesRenderResources.Empty() );
-                    D3D12_DESCRIPTOR_RANGE1& range = DescriptorRangesRenderResources.EmplaceBack();
-                    range.NumDescriptors += 1;
-                    DescriptorTableSizeRenderResources++;
-                    RenderResourceBindingLayouts.PushBack( binding );
-                }
+
+                ASSERT( !DescriptorRangesRenderResources.Empty() );
+                D3D12_DESCRIPTOR_RANGE1& range = DescriptorRangesRenderResources.EmplaceBack();
+                range.NumDescriptors += 1;
+                DescriptorTableSizeRenderResources++;
+                RenderResourceBindingLayouts.PushBack( binding );
 
                 currentSlot = binding.Slot;
             }
@@ -255,14 +263,21 @@ namespace Tridium::D3D12 {
 
                     for ( const auto& binding : a_Desc.Bindings )
                     {
-                        if ( binding.Type == ERHIBindingType::Sampler && binding.Slot == slot )
+						if ( (binding.Type == ERHIBindingType::Texture || binding.Type == ERHIBindingType::StorageTexture)
+                            && binding.Slot == slot )
                         {
-							RHI_DEV_CHECK( binding.Resource->Device() == Device(), "Binding resource device mismatch" );
+                            if ( binding.Resource || binding.Sampler.Valid() )
+                            {
+                                RHISampler sampler = binding.Sampler.Valid()
+                                    ? binding.Sampler.Unpack()
+									: binding.Resource->As<IRHITexture>()->Desc().DefaultSampler;
 
-                            Device()->GetD3D12Device5()->CreateSampler(
-                                &binding.Resource->As<RHISampler_D3D12Impl>()->SamplerDesc,
-                                handle
-							);
+								D3D12_SAMPLER_DESC d3d12Sampler = Translate<D3D12_SAMPLER_DESC, RHISampler>( sampler );
+                                Device()->GetD3D12Device()->CreateSampler(
+                                    &d3d12Sampler,
+                                    handle
+                                );
+                            }
 
                             found = true;
                             break;

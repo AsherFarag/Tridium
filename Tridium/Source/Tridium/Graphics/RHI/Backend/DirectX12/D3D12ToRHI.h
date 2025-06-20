@@ -13,29 +13,23 @@ namespace Tridium {
 		struct To;
 
 		template<typename _From>
-		constexpr auto Translate( _From a_From )
+		constexpr auto Translate( const _From& a_From )
 		{
 			using ToType = To<_From>::FromType;
 			return To<ToType>::From(a_From);
 		}
 
 		template<typename _From>
-		constexpr auto Translate( EnumFlags<_From> a_From )
+		constexpr auto Translate( const EnumFlags<_From>& a_From )
 		{
 			using ToType = To<_From>::FromType;
 			return To<ToType>::From( a_From );
 		}
 
 		template<typename _To, typename _From>
-		constexpr _To Translate( _From a_From )
+		constexpr _To Translate( const _From& a_From )
 		{
 			return To<_To>::From( a_From );
-		}
-
-		template<typename _To, typename _From>
-		constexpr EnumFlags<_To> Translate( EnumFlags<_From> a_From )
-		{
-			return To<_To>::From( Cast<_From>( a_From ) );
 		}
 
 		//////////////////////////////////////////////////////////////////////////
@@ -617,104 +611,73 @@ namespace Tridium {
 		// RHI SAMPLER FILTER - D3D12 FILTER
 		//////////////////////////////////////////////////////////////////////////
 
-		constexpr D3D12_FILTER Translate( ERHISamplerFilter a_Min, ERHISamplerFilter a_Mag, ERHISamplerFilter a_Mip )
+		template<>
+		struct To<D3D12_FILTER>
 		{
-			using enum ERHISamplerFilter;
-			switch ( a_Min )
+			using FromType = ERHISamplerFilter;
+			static constexpr D3D12_FILTER From( ERHISamplerFilter a_Filter )
 			{
-			case Unknown:
-			{
-				RHI_DEV_CHECK( false, "Unknown sampler filter type." );
-				break;
-			}
-			case Point:
-			{
-				if ( a_Mag == Point )
+				using enum ERHISamplerFilter;
+				switch ( a_Filter )
 				{
-					if ( a_Mip == Point )
-						return D3D12_FILTER_MIN_MAG_MIP_POINT;
-					else if ( a_Mip == Linear )
-						return D3D12_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+				case MinMagMipPoint:						return D3D12_FILTER_MIN_MAG_MIP_POINT;
+				case MinMagPointMipLinear:					return D3D12_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+				case MinPointMagLinearMipPoint:				return D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT;
+				case MinPointMagMipLinear:					return D3D12_FILTER_MIN_POINT_MAG_MIP_LINEAR;
+				case MinLinearMagMipPoint:					return D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT;
+				case MinLinearMagPointMipLinear:			return D3D12_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
+				case MinMagLinearMipPoint:					return D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+				case MinMagMipLinear:						return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+				case Anisotropic:							return D3D12_FILTER_ANISOTROPIC;
+				case ComparisonMinMagMipPoint:				return D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT;
+				case ComparisonMinMagPointMipLinear:		return D3D12_FILTER_COMPARISON_MIN_MAG_POINT_MIP_LINEAR;
+				case ComparisonMinPointMagLinearMipPoint:	return D3D12_FILTER_COMPARISON_MIN_POINT_MAG_LINEAR_MIP_POINT;
+				case ComparisonMinPointMagMipLinear:		return D3D12_FILTER_COMPARISON_MIN_POINT_MAG_MIP_LINEAR;
+				case ComparisonMinLinearMagMipPoint:		return D3D12_FILTER_COMPARISON_MIN_LINEAR_MAG_MIP_POINT;
+				case ComparisonMinLinearMagPointMipLinear:	return D3D12_FILTER_COMPARISON_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
+				case ComparisonMinMagLinearMipPoint:		return D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+				case ComparisonMinMagMipLinear:				return D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+				case ComparisonAnisotropic:					return D3D12_FILTER_COMPARISON_ANISOTROPIC;
 				}
-				else if ( a_Mag == Linear )
-				{
-					if ( a_Mip == Point )
-						return D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT;
-					else if ( a_Mip == Linear )
-						return D3D12_FILTER_MIN_POINT_MAG_MIP_LINEAR;
-				}
-				break;
-			}
-			case Linear:
-			{
-				if ( a_Mag == Point )
-				{
-					if ( a_Mip == Point )
-						return D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT;
-					else if ( a_Mip == Linear )
-						return D3D12_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
-				}
-				else if ( a_Mag == Linear )
-				{
-					if ( a_Mip == Point )
-						return D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-					else if ( a_Mip == Linear )
-						return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-				}
-			}
-			case Anisotropic:
-			{
-				RHI_DEV_CHECK( a_Mag == Anisotropic && a_Mip == Anisotropic,
-					"All filters must be set to Anisotropic for anisotropic filtering." );
-				return D3D12_FILTER_ANISOTROPIC;
-			}
-			case ComparisonPoint:
-			{
-				if ( a_Mag == ComparisonPoint )
-				{
-					if ( a_Mip == ComparisonPoint )
-						return D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT;
-					else if ( a_Mip == ComparisonLinear )
-						return D3D12_FILTER_COMPARISON_MIN_MAG_POINT_MIP_LINEAR;
-				}
-				else if ( a_Mag == ComparisonLinear )
-				{
-					if ( a_Mip == ComparisonPoint )
-						return D3D12_FILTER_COMPARISON_MIN_POINT_MAG_LINEAR_MIP_POINT;
-					else if ( a_Mip == ComparisonLinear )
-						return D3D12_FILTER_COMPARISON_MIN_POINT_MAG_MIP_LINEAR;
-				}
-				break;
-			}
-			case ComparisonLinear:
-			{
-				if ( a_Mag == ComparisonPoint )
-				{
-					if ( a_Mip == ComparisonPoint )
-						return D3D12_FILTER_COMPARISON_MIN_LINEAR_MAG_MIP_POINT;
-					else if ( a_Mip == ComparisonLinear )
-						return D3D12_FILTER_COMPARISON_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
-				}
-				else if ( a_Mag == ComparisonLinear )
-				{
-					if ( a_Mip == ComparisonPoint )
-						return D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
-					else if ( a_Mip == ComparisonLinear )
-						return D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
-				}
-			}
-			case ComparisonAnisotropic:
-			{
-				RHI_DEV_CHECK( a_Mag == ComparisonAnisotropic && a_Mip == ComparisonAnisotropic,
-					"All filters must be set to Anisotropic for anisotropic filtering." );
-				return D3D12_FILTER_COMPARISON_ANISOTROPIC;
-			}
-			}
 
-			RHI_DEV_CHECK( false, "Invalid sampler filter combination. Min - '{}', Mag - '{}', Mip - '{}'.",
-				ToString( a_Min ), ToString( a_Mag ), ToString( a_Mip ) );
-			return D3D12_FILTER_MIN_MAG_MIP_POINT; // Default fallback
-		}
+				RHI_DEV_CHECK( false, "Unknown sampler filter type." );
+				return D3D12_FILTER_MIN_MAG_MIP_POINT; // Default fallback
+			}
+		};
+
+		template<>
+		struct To<ERHISamplerFilter>
+		{
+			using FromType = D3D12_FILTER;
+			static constexpr ERHISamplerFilter From( D3D12_FILTER a_Filter )
+			{
+				using enum ERHISamplerFilter;
+				switch ( a_Filter )
+				{
+				case D3D12_FILTER_MIN_MAG_MIP_POINT:							return MinMagMipPoint;
+				case D3D12_FILTER_MIN_MAG_POINT_MIP_LINEAR:						return MinMagPointMipLinear;
+				case D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT:				return MinPointMagLinearMipPoint;
+				case D3D12_FILTER_MIN_POINT_MAG_MIP_LINEAR:						return MinPointMagMipLinear;
+				case D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT:						return MinLinearMagMipPoint;
+				case D3D12_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR:				return MinLinearMagPointMipLinear;
+				case D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT:						return MinMagLinearMipPoint;
+				case D3D12_FILTER_MIN_MAG_MIP_LINEAR:							return MinMagMipLinear;
+				case D3D12_FILTER_ANISOTROPIC:									return Anisotropic;
+				case D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT:					return ComparisonMinMagMipPoint;
+				case D3D12_FILTER_COMPARISON_MIN_MAG_POINT_MIP_LINEAR:			return ComparisonMinMagPointMipLinear;
+				case D3D12_FILTER_COMPARISON_MIN_POINT_MAG_LINEAR_MIP_POINT:	return ComparisonMinPointMagLinearMipPoint;
+				case D3D12_FILTER_COMPARISON_MIN_POINT_MAG_MIP_LINEAR:			return ComparisonMinPointMagMipLinear;
+				case D3D12_FILTER_COMPARISON_MIN_LINEAR_MAG_MIP_POINT:			return ComparisonMinLinearMagMipPoint;
+				case D3D12_FILTER_COMPARISON_MIN_LINEAR_MAG_POINT_MIP_LINEAR:   return ComparisonMinLinearMagPointMipLinear;
+				case D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT:		    return ComparisonMinMagLinearMipPoint;
+				case D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR:				return ComparisonMinMagMipLinear;
+				case D3D12_FILTER_COMPARISON_ANISOTROPIC:					    return ComparisonAnisotropic;
+				}
+
+				RHI_DEV_CHECK( false, "Unknown sampler filter type." );
+				return Unknown; // Default fallback
+			}
+		};
 
 		//////////////////////////////////////////////////////////////////////////
 		// RHI SAMPLER ADDRESS MODE - D3D12 TEXTURE ADDRESS MODE
@@ -755,6 +718,56 @@ namespace Tridium {
 				return D3D12_TEXTURE_ADDRESS_MODE_WRAP; // Default fallback
 			}
 		};
+
+		//////////////////////////////////////////////////////////////////////////
+		// RHI SAMPLER
+		//////////////////////////////////////////////////////////////////////////
+
+		template<>
+		struct To<D3D12_SAMPLER_DESC>
+		{
+			using FromType = RHISampler;
+			static constexpr D3D12_SAMPLER_DESC From( const RHISampler& a_Desc )
+			{
+				D3D12_SAMPLER_DESC desc = {};
+				desc.Filter = To<D3D12_FILTER>::From( a_Desc.Filter );
+				desc.AddressU = To<D3D12_TEXTURE_ADDRESS_MODE>::From( a_Desc.AddressU );
+				desc.AddressV = To<D3D12_TEXTURE_ADDRESS_MODE>::From( a_Desc.AddressV );
+				desc.AddressW = To<D3D12_TEXTURE_ADDRESS_MODE>::From( a_Desc.AddressW );
+				desc.MaxAnisotropy = a_Desc.MaxAnisotropy;
+				desc.ComparisonFunc = To<D3D12_COMPARISON_FUNC>::From( a_Desc.ComparisonFunc );
+				desc.MipLODBias = a_Desc.MipLODBias;
+				desc.BorderColor[0] = a_Desc.BorderColor[0];
+				desc.BorderColor[1] = a_Desc.BorderColor[1];
+				desc.BorderColor[2] = a_Desc.BorderColor[2];
+				desc.BorderColor[3] = a_Desc.BorderColor[3];
+				desc.MinLOD = a_Desc.MinLOD;
+				desc.MaxLOD = a_Desc.MaxLOD;
+				return desc;
+			}
+		};
+
+		template<>
+		struct To<D3D12_STATIC_SAMPLER_DESC>
+		{
+			using FromType = RHISampler;
+			static constexpr D3D12_STATIC_SAMPLER_DESC From( const RHISampler& a_Desc )
+			{
+				D3D12_STATIC_SAMPLER_DESC desc = {};
+				desc.Filter = To<D3D12_FILTER>::From( a_Desc.Filter );
+				desc.AddressU = To<D3D12_TEXTURE_ADDRESS_MODE>::From( a_Desc.AddressU );
+				desc.AddressV = To<D3D12_TEXTURE_ADDRESS_MODE>::From( a_Desc.AddressV );
+				desc.AddressW = To<D3D12_TEXTURE_ADDRESS_MODE>::From( a_Desc.AddressW );
+				desc.MaxAnisotropy = a_Desc.MaxAnisotropy;
+				desc.ComparisonFunc = To<D3D12_COMPARISON_FUNC>::From( a_Desc.ComparisonFunc );
+				desc.MipLODBias = a_Desc.MipLODBias;
+				desc.BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
+				desc.MinLOD = a_Desc.MinLOD;
+				desc.MaxLOD = a_Desc.MaxLOD;
+				return desc;
+			}
+		};
+
 
 		//////////////////////////////////////////////////////////////////////////
 		// RHI DESCRIPTOR HEAP TYPE - D3D12 DESCRIPTOR HEAP TYPE

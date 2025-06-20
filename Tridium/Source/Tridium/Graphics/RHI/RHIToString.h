@@ -210,7 +210,6 @@ namespace Tridium {
 	{
 		switch ( a_Type )
 		{
-		case ERHIObjectType::Sampler:               return "Sampler";
 		case ERHIObjectType::Texture:               return "Texture";
 		case ERHIObjectType::ShaderModule:          return "ShaderModule";
 		case ERHIObjectType::Buffer:                return "Buffer";
@@ -230,7 +229,6 @@ namespace Tridium {
 	{
 		switch ( Hashing::Hash( ReinterpretCast<const uint8_t*>( a_String.data() ), a_String.size() ) )
 		{
-		case "Sampler"_H:               return Detail::AssignEnumValue( ERHIObjectType::Sampler, o_Value );
 		case "Texture"_H:               return Detail::AssignEnumValue( ERHIObjectType::Texture, o_Value );
 		case "ShaderModule"_H:          return Detail::AssignEnumValue( ERHIObjectType::ShaderModule, o_Value );
 		case "Buffer"_H:                return Detail::AssignEnumValue( ERHIObjectType::Buffer, o_Value );
@@ -332,15 +330,29 @@ namespace Tridium {
 
 	static constexpr StringView ToString( ERHISamplerFilter a_Filter )
 	{
+		using enum ERHISamplerFilter;
 		switch ( a_Filter )
 		{
-		case ERHISamplerFilter::Point:                 return "Nearest";
-		case ERHISamplerFilter::Linear:                return "Linear";
-		case ERHISamplerFilter::Anisotropic:           return "Anisotropic";
-		case ERHISamplerFilter::ComparisonPoint:       return "ComparisonNearest";
-		case ERHISamplerFilter::ComparisonLinear:      return "ComparisonLinear";
-		case ERHISamplerFilter::ComparisonAnisotropic: return "ComparisonAnisotropic";
-		default:                                       return "<INVALID>";
+		case Unknown:                           	return "Unknown";
+		case MinMagMipPoint:						return "MinMagMipPoint";
+		case MinMagPointMipLinear:					return "MinMagPointMipLinear";
+		case MinPointMagLinearMipPoint:				return "MinPointMagLinearMipPoint";
+		case MinPointMagMipLinear:					return "MinPointMagMipLinear";
+		case MinLinearMagMipPoint:					return "MinLinearMagMipPoint";
+		case MinLinearMagPointMipLinear:			return "MinLinearMagPointMipLinear";
+		case MinMagLinearMipPoint:					return "MinMagLinearMipPoint";
+		case MinMagMipLinear:						return "MinMagMipLinear";
+		case Anisotropic:							return "Anisotropic";
+		case ComparisonMinMagMipPoint:				return "ComparisonMinMagMipPoint";
+		case ComparisonMinMagPointMipLinear:		return "ComparisonMinMagPointMipLinear";
+		case ComparisonMinPointMagLinearMipPoint:	return "ComparisonMinPointMagLinearMipPoint";
+		case ComparisonMinPointMagMipLinear:		return "ComparisonMinPointMagMipLinear";
+		case ComparisonMinLinearMagMipPoint:		return "ComparisonMinLinearMagMipPoint";
+		case ComparisonMinLinearMagPointMipLinear:	return "ComparisonMinLinearMagPointMipLinear";
+		case ComparisonMinMagLinearMipPoint:		return "ComparisonMinMagLinearMipPoint";
+		case ComparisonMinMagMipLinear:				return "ComparisonMinMagMipLinear";
+		case ComparisonAnisotropic:                 return "ComparisonAnisotropic";
+		default:                                    return "<INVALID>";
 		}
 	}
 }

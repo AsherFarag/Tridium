@@ -35,7 +35,6 @@ namespace Tridium {
 
 		//=====================================================
 		// Resource creation
-		virtual RHISamplerRef CreateSampler( const RHISamplerDesc& a_Desc ) = 0;
 		virtual RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) = 0;
 		virtual RHIBufferRef CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data ) = 0;
 		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc ) = 0;

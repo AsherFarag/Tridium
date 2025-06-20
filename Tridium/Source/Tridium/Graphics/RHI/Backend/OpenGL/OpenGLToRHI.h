@@ -116,58 +116,124 @@ namespace Tridium::OpenGL {
 		}
 	}
 
-	inline GLenum Translate( ERHISamplerFilter a_Filter, GLenum& o_GLFilter, bool& o_IsComparison, bool& o_IsAnisotropic )
+	inline GLenum Translate( ERHISamplerFilter a_Filter, GLenum& o_MinFilter, GLenum& o_MagFilter, GLenum& o_MipFilter, bool& o_IsComparison, bool& o_IsAnisotropic )
 	{
+		// Default to false
+		o_IsComparison = false;
+		o_IsAnisotropic = false;
+
+		using enum ERHISamplerFilter;
 		switch ( a_Filter )
 		{
-		case ERHISamplerFilter::Unknown:
+		case Unknown:
 			RHI_DEV_CHECK( false, "Unknown sampler filter type!" );
-			o_IsAnisotropic = false;
-			o_IsComparison = false;
-			o_GLFilter = GL_NEAREST;
+			o_MinFilter = o_MagFilter = o_MipFilter = GL_NEAREST;
 			break;
 
-		case ERHISamplerFilter::Point:
-			o_IsAnisotropic = false;
-			o_IsComparison = false;
-			o_GLFilter = GL_NEAREST;
+		case MinMagMipPoint:
+			o_MinFilter = o_MagFilter = o_MipFilter = GL_NEAREST;
 			break;
 
-		case ERHISamplerFilter::Linear:
-			o_IsAnisotropic = false;
-			o_IsComparison = false;
-			o_GLFilter = GL_LINEAR;
+		case MinMagPointMipLinear:
+			o_MinFilter = o_MagFilter = GL_NEAREST;
+			o_MipFilter = GL_LINEAR;
 			break;
 
-		case ERHISamplerFilter::Anisotropic:
+		case MinPointMagLinearMipPoint:
+			o_MinFilter = GL_NEAREST;
+			o_MagFilter = GL_LINEAR;
+			o_MipFilter = GL_NEAREST;
+			break;
+
+		case MinPointMagMipLinear:
+			o_MinFilter = GL_NEAREST;
+			o_MagFilter = o_MipFilter = GL_LINEAR;
+			break;
+
+		case MinLinearMagMipPoint:
+			o_MinFilter = GL_LINEAR;
+			o_MagFilter = o_MipFilter = GL_NEAREST;
+			break;
+
+		case MinLinearMagPointMipLinear:
+			o_MinFilter = GL_LINEAR;
+			o_MagFilter = GL_NEAREST;
+			o_MipFilter = GL_LINEAR;
+			break;
+
+		case MinMagLinearMipPoint:
+			o_MinFilter = o_MagFilter = GL_LINEAR;
+			o_MipFilter = GL_NEAREST;
+			break;
+
+		case MinMagMipLinear:
+			o_MinFilter = o_MagFilter = o_MipFilter = GL_LINEAR;
+			break;
+
+		case Anisotropic:
+			o_MinFilter = o_MagFilter = o_MipFilter = GL_LINEAR;
 			o_IsAnisotropic = true;
-			o_IsComparison = false;
-			o_GLFilter = GL_LINEAR;
 			break;
 
-		case ERHISamplerFilter::ComparisonPoint:
-			o_IsAnisotropic = false;
+			// = Comparison Filters =
+
+		case ComparisonMinMagMipPoint:
+			o_MinFilter = o_MagFilter = o_MipFilter = GL_NEAREST;
 			o_IsComparison = true;
-			o_GLFilter = GL_NEAREST;
 			break;
 
-		case ERHISamplerFilter::ComparisonLinear:
-			o_IsAnisotropic = false;
+		case ComparisonMinMagPointMipLinear:
+			o_MinFilter = o_MagFilter = GL_NEAREST;
+			o_MipFilter = GL_LINEAR;
 			o_IsComparison = true;
-			o_GLFilter = GL_LINEAR;
 			break;
 
-		case ERHISamplerFilter::ComparisonAnisotropic:
+		case ComparisonMinPointMagLinearMipPoint:
+			o_MinFilter = GL_NEAREST;
+			o_MagFilter = GL_LINEAR;
+			o_MipFilter = GL_NEAREST;
+			o_IsComparison = true;
+			break;
+
+		case ComparisonMinPointMagMipLinear:
+			o_MinFilter = GL_NEAREST;
+			o_MagFilter = o_MipFilter = GL_LINEAR;
+			o_IsComparison = true;
+			break;
+
+		case ComparisonMinLinearMagMipPoint:
+			o_MinFilter = GL_LINEAR;
+			o_MagFilter = o_MipFilter = GL_NEAREST;
+			o_IsComparison = true;
+			break;
+
+		case ComparisonMinLinearMagPointMipLinear:
+			o_MinFilter = GL_LINEAR;
+			o_MagFilter = GL_NEAREST;
+			o_MipFilter = GL_LINEAR;
+			o_IsComparison = true;
+			break;
+
+		case ComparisonMinMagLinearMipPoint:
+			o_MinFilter = o_MagFilter = GL_LINEAR;
+			o_MipFilter = GL_NEAREST;
+			o_IsComparison = true;
+			break;	
+
+		case ComparisonMinMagMipLinear:
+			o_MinFilter = o_MagFilter = o_MipFilter = GL_LINEAR;
+			o_IsComparison = true;
+			break;
+
+		case ComparisonAnisotropic:
+			o_MinFilter = o_MagFilter = o_MipFilter = GL_LINEAR;
 			o_IsAnisotropic = true;
 			o_IsComparison = true;
-			o_GLFilter = GL_LINEAR;
 			break;
 
 		default:
 			RHI_DEV_CHECK( false, "Unknown sampler filter type!" );
-			o_IsAnisotropic = false;
-			o_IsComparison = false;
-			o_GLFilter = GL_NEAREST;
+			o_MinFilter = o_MagFilter = o_MipFilter = GL_NEAREST;
 			break;
 		}
 	}

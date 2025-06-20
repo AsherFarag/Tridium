@@ -585,26 +585,6 @@ namespace Tridium::D3D12 {
 		D3D12::ManagedResource ManagedBuffer{};
 	};
 
-	//==================================================================
-	// SAMPLER IMPLEMENTATION
-	//==================================================================
-
-	class RHISampler_D3D12Impl : public IRHISampler
-	{
-	public:
-		RHI_OBJECT_IMPLEMENTATION_BODY( RHISampler_D3D12Impl, D3D12, ERHInterfaceType::DirectX12 )
-		RHISampler_D3D12Impl( IDynamicRHI* a_Device, const DescriptorType & a_Desc );
-		~RHISampler_D3D12Impl() override { Release(); }
-
-		bool Release() override { SamplerDesc = {}; return true; }
-		bool Valid() const override { return true; }
-		const void* NativePtr() const override { return nullptr; }
-
-		D3D12_STATIC_SAMPLER_DESC GetStaticSamplerDesc( uint32_t a_ShaderRegister, ERHIShaderVisibility a_ShaderVisibility = ERHIShaderVisibility::All ) const;
-
-		D3D12_SAMPLER_DESC SamplerDesc{};
-	};
-
 	//======================================================================
 	// BINDING LAYOUT IMPLEMENTATION
 	//=======================================================================
@@ -827,7 +807,6 @@ namespace Tridium::D3D12 {
 		//=====================================================
 		// Resource creation
 		virtual RHIFenceRef CreateFence( const RHIFenceDesc& a_Desc ) override;
-		virtual RHISamplerRef CreateSampler( const RHISamplerDesc& a_Desc ) override;
 		virtual RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) override;
 		virtual RHIBufferRef CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data ) override;
 		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc ) override;

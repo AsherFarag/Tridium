@@ -42,7 +42,6 @@ namespace Tridium {
 		//===========================
 		// Resource creation
 		[[nodiscard]] RHIFenceRef CreateFence( const RHIFenceDesc& a_Desc );
-		[[nodiscard]] RHISamplerRef CreateSampler( const RHISamplerDesc& a_Desc );
 		[[nodiscard]] RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData = {} );
 		[[nodiscard]] RHIBufferRef CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data = {} );
 		[[nodiscard]] RHICommandListRef CreateCommandList( const RHICommandListDesc& a_Desc );

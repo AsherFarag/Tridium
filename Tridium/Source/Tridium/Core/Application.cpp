@@ -120,7 +120,7 @@ namespace Tridium {
 		m_Window->SetEventCallback( [this]( const Event& a_Event ) { this->EnqueueEvent( a_Event ); } );
 
 		RHIConfig config{};
-		config.RHIType = ERHInterfaceType::OpenGL;
+		config.RHIType = ERHInterfaceType::DirectX12;
 		config.UseDebug = true;
 		bool initSuccess = RHI::Initialise( config );
 		LOG( LogCategory::RHI, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), initSuccess );
@@ -188,31 +188,25 @@ namespace Tridium {
 			testImgSubresData.Data = testImgData;
 			testImgSubresData.RowStride = 64 * 4; // 4 bytes per pixel
 
+			// - Create a sampler -
+			RHISampler sampler;
+			sampler.AddressU = ERHISamplerAddressMode::Clamp;
+			sampler.AddressV = ERHISamplerAddressMode::Clamp;
+			sampler.AddressW = ERHISamplerAddressMode::Clamp;
 
 			// - Create a texture -
-			RHITextureDesc texDesc;
-			texDesc.Width = 64;
-			texDesc.Height = 64;
-			texDesc.Format = ERHIFormat::RGBA8_UNORM;
-			texDesc.Name = "My texture";
-			texDesc.Dimension = ERHITextureDimension::Texture2D;
+			auto texDesc = RHITextureDesc{}.SetWidth( 64 )
+				.SetHeight( 64 )
+				.SetFormat( ERHIFormat::RGBA8_UNORM )
+				.SetDimension( ERHITextureDimension::Texture2D )
+				.SetDefaultSampler( sampler )
+				.SetName( "My texture" );
 			auto texAsset = T::Texture::Create( testImgData, texDesc );
 			texAsset->ClearPixelData();
 			T::AssetMetadata texAssetMetadata = T::AssetMetadata::From( *texAsset );
 			texAssetMetadata.Name = texDesc.Name;
 			T::AssetDatabase::RegisterAsset( texAsset.get(), std::move( texAssetMetadata ) );
 			RHITextureRef tex = texAsset->IRHITexture();
-
-			// - Create a sampler -
-			RHISamplerDesc samplerDesc;
-			samplerDesc.AddressU = ERHISamplerAddressMode::Clamp;
-			samplerDesc.AddressV = ERHISamplerAddressMode::Clamp;
-			samplerDesc.AddressW = ERHISamplerAddressMode::Clamp;
-			samplerDesc.Name = "My sampler";
-			RHISamplerRef sampler = RHI::CreateSampler( samplerDesc );
-
-			// Set the sampler of the texture ( Optional if not supporting OpenGL )
-			tex->Sampler = sampler;
 
 			struct Vertex
 			{
@@ -426,7 +420,6 @@ float4 PSMain( VSOutput input ) : SV_Target
 			sblDesc.AddBinding( "constants"_H ).AsConstantBuffer( 1 );
 			//sblDesc.AddBinding( "Texture"_H ).AsCombinedSampler( 0 );
 			sblDesc.AddBinding( "Texture"_H ).AsTexture( 0 );
-			//sblDesc.AddBinding( "TextureSampler"_H ).AsSampler( 0 );
 			RHIBindingLayoutRef sbl = RHI::CreateBindingLayout( sblDesc );
 
 			RHIFramebufferInfo fbInfo{};
@@ -529,9 +522,13 @@ float4 PSMain( VSOutput input ) : SV_Target
 
 					RHIBindingSetDesc bindingSetDesc{ sbl };
 					//bindingSetDesc.AddCombinedSampler( "Texture"_H, *tex );
-					bindingSetDesc.AddConstantBuffer( "constants"_H, *constantsBuffer );
-					bindingSetDesc.AddTexture( "Texture"_H, *tex );
-					//bindingSetDesc.AddSampler( "TextureSampler"_H, *sampler );
+					bindingSetDesc.AddConstantBuffer( "constants"_H, constantsBuffer.get() );
+					auto sampler = RHISampler{}.SetAddressU( ERHISamplerAddressMode::Border )
+						.SetAddressV( ERHISamplerAddressMode::Border )
+						.SetAddressW( ERHISamplerAddressMode::Border )
+						.SetFilter( ERHISamplerFilter::Anisotropic )
+						.SetBorderColor( Color(1.0f) );
+					bindingSetDesc.AddTexture( "Texture"_H, tex.get(), &sampler );
 					RHIBindingSetRef bindingSet = RHI::CreateBindingSet( bindingSetDesc );
 
 					graphicsState.PipelineState = pso.get();

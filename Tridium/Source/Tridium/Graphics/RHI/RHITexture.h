@@ -250,10 +250,6 @@ namespace Tridium {
 		}
 
 		virtual ~IRHITexture() = default;
-
-		// The sampler associated with the texture that will be used when bound to a shader.
-		// Note: Only required if RHI_SUPPORT_COMBINED_SAMPLERS is true.
-		RHISamplerRef Sampler = nullptr;
 	};
 
 	//==========================================================================================

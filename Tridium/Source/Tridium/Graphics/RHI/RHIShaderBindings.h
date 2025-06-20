@@ -31,14 +31,7 @@ namespace Tridium {
 
 		// A read/write texture.
 		StorageTexture,   // (DX12: UAV) / (Vulkan: Storage Image)
-
-		// A sampler state object.
-		Sampler,          // (DX12: Sampler) / (Vulkan: Sampler)
-
-		// A combined image-sampler object. ( Required for OpenGL )
-		CombinedSampler,  // (DX12: SRV + Sampler manually combined) / (Vulkan: Combined Image Sampler)
 	};
-
 
 	//=========================================================
 	// ERHIBindingType
@@ -55,8 +48,6 @@ namespace Tridium {
 		case ERHIBindingType::StorageBuffer:    return "StorageBuffer";   
 		case ERHIBindingType::Texture:          return "Texture";         
 		case ERHIBindingType::StorageTexture:   return "StorageTexture";  
-		case ERHIBindingType::Sampler:          return "Sampler";
-		case ERHIBindingType::CombinedSampler:  return "CombinedSampler";
 		default:                                return "<INVALID>";
 		}
 	}
@@ -126,8 +117,6 @@ namespace Tridium {
 		RHI_SHADER_BINDING_INITIALIZER( StorageBuffer );
 		RHI_SHADER_BINDING_INITIALIZER( Texture );
 		RHI_SHADER_BINDING_INITIALIZER( StorageTexture );
-		RHI_SHADER_BINDING_INITIALIZER( Sampler );
-		RHI_SHADER_BINDING_INITIALIZER( CombinedSampler );
 
 		constexpr RHIShaderBinding& AsInlinedConstants( const uint32_t a_Slot, const uint16_t a_Size )
 		{
@@ -287,17 +276,16 @@ namespace Tridium {
 	//  Represents a single shader binding in a set.
 	struct RHIBindingSetItem
 	{
-		IRHIObject* Resource;
+		IRHIResource* Resource;
 		uint32_t Slot;
 		ERHIBindingType Type;
-		ERHIFormat Format; // Optional format for the binding, used for textures and buffers.
+		ERHIFormat Format;
 		union
 		{
-			ERHIBufferType BufferType; // Optional buffer type for the binding, used for buffers.
-			ERHITextureDimension TextureDimension; // Optional texture dimension for the binding, used for textures.
+			ERHITextureDimension TextureDimension;
+			ERHIBufferType BufferType;
 		};
-		uint8_t Unused[1]; // Unused padding that is initialized to zero.
-
+		RHIPackedSampler Sampler;
 		union
 		{
 			RHITextureSubresourceSet Subresources; // Valid only for textures.
@@ -307,13 +295,7 @@ namespace Tridium {
 
 		bool operator==( const RHIBindingSetItem& a_Other ) const
 		{
-			return Resource == a_Other.Resource
-				&& Slot == a_Other.Slot
-				&& Type == a_Other.Type
-				&& Format == a_Other.Format
-				&& BufferType == a_Other.BufferType
-				&& RawData[0] == a_Other.RawData[0]
-				&& RawData[1] == a_Other.RawData[1];
+			return std::memcmp( this, &a_Other, sizeof( RHIBindingSetItem ) ) == 0;
 		}
 
 		bool operator!=( const RHIBindingSetItem& a_Other ) const
@@ -332,14 +314,14 @@ namespace Tridium {
 			item.Slot = a_Slot;
 			item.Type = ERHIBindingType::Unknown;
 			item.Format = ERHIFormat::Unknown;
-			item.BufferType = ERHIBufferType::Unknown;
-			item.RawData[0] = 0;
-			item.RawData[1] = 0;
-			item.Unused[0] = 0;
+			item.TextureDimension = ERHITextureDimension::Unknown;
+			item.Sampler = RHIPackedSampler{};
+			item.RawData[0] = 0; item.RawData[1] = 0;
 			return item;
 		}
 	};
-	static_assert(sizeof( RHIBindingSetItem ) == 32, "RHIBindingSetItem size is not 32 bytes");
+	static_assert(sizeof( RHIBindingSetItem ) == 48,
+		"RHIBindingSetItem size is not 48 bytes");
 	using RHIBindingSetItemArray = InlineArray<RHIBindingSetItem, RHIConstants::MaxShaderBindings>;
 
 	//==============================================
@@ -347,7 +329,8 @@ namespace Tridium {
 	struct RHIBindingSetDesc
 	{
 		using ResourceType = class IRHIBindingSet;
-		RHIBindingSetItemArray Bindings{};
+		InlineArray<RHIBindingSetItem, RHIConstants::MaxShaderBindings> Bindings{};
+		InlineArray<RHISampler, RHIConstants::MaxShaderBindings> Samplers{}; // Samplers bound to the binding set.
 		RHIBindingLayoutRef Layout{}; // The layout that this binding set is based on.
 		String Name{};
 
@@ -362,11 +345,11 @@ namespace Tridium {
 		}
 
 		RHIBindingSetDesc& AddConstantBuffer(
-			uint32_t a_Slot, IRHIBuffer& a_Buffer,
+			uint32_t a_Slot, IRHIBuffer* a_Buffer,
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
 		{
 			RHIBindingSetItem& item = Bindings.EmplaceBack( RHIBindingSetItem::None() );
-			item.Resource = &a_Buffer;
+			item.Resource = a_Buffer;
 			item.Slot = a_Slot;
 			item.Type = ERHIBindingType::ConstantBuffer;
 			item.Range = a_Range;
@@ -374,27 +357,27 @@ namespace Tridium {
 		}
 
 		RHIBindingSetDesc& AddStructuredBuffer(
-			uint32_t a_Slot, IRHIBuffer& a_Buffer,
+			uint32_t a_Slot, IRHIBuffer* a_Buffer,
 			ERHIBufferType a_BufferType = ERHIBufferType::Unknown,
 			ERHIFormat a_Format = ERHIFormat::Unknown,
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
 		{
 			RHIBindingSetItem& item = Bindings.EmplaceBack( RHIBindingSetItem::None() );
-			item.Resource = &a_Buffer;
+			item.Resource = a_Buffer;
 			item.Slot = a_Slot;
 			item.Type = ERHIBindingType::StructuredBuffer;
 			item.Range = a_Range;
-			item.BufferType = a_BufferType == ERHIBufferType::Unknown ? a_Buffer.Desc().Type : a_BufferType;
+			item.BufferType = a_BufferType == ERHIBufferType::Unknown && a_Buffer ? a_Buffer->Desc().Type : a_BufferType;
 			item.Format = a_Format;
 			return *this;
 		}
 
 		RHIBindingSetDesc& AddStorageBuffer(
-			uint32_t a_Slot, IRHIBuffer& a_Buffer,
+			uint32_t a_Slot, IRHIBuffer* a_Buffer,
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
 		{
 			RHIBindingSetItem& item = Bindings.EmplaceBack( RHIBindingSetItem::None() );
-			item.Resource = &a_Buffer;
+			item.Resource = a_Buffer;
 			item.Slot = a_Slot;
 			item.Type = ERHIBindingType::StorageBuffer;
 			item.Range = a_Range;
@@ -402,52 +385,34 @@ namespace Tridium {
 		}
 
 		RHIBindingSetDesc& AddTexture(
-			uint32_t a_Slot, IRHITexture& a_Texture,
+			uint32_t a_Slot, IRHITexture* a_Texture, RHISampler* a_Sampler = nullptr,
 			ERHIFormat a_Format = ERHIFormat::Unknown,
 			ERHITextureDimension a_TextureDimension = ERHITextureDimension::Unknown,
 			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All() )
 		{
 			RHIBindingSetItem& item = Bindings.EmplaceBack( RHIBindingSetItem::None() );
-			item.Resource = &a_Texture;
+			item.Resource = a_Texture;
 			item.Slot = a_Slot;
 			item.Type = ERHIBindingType::Texture;
 			item.Subresources = a_Subresources;
 			item.Format = a_Format;
-			item.TextureDimension = a_TextureDimension == ERHITextureDimension::Unknown ? a_Texture.Desc().Dimension : a_TextureDimension;
+			item.TextureDimension = a_TextureDimension == ERHITextureDimension::Unknown && a_Texture ? a_Texture->Desc().Dimension : a_TextureDimension;
+			if ( a_Sampler )
+				item.Sampler = RHIPackedSampler::Pack( *a_Sampler );
 			return *this;
 		}
 
 		RHIBindingSetDesc& AddStorageTexture(
-			uint32_t a_Slot, IRHITexture& a_Texture,
+			uint32_t a_Slot, IRHITexture* a_Texture, RHISampler* a_Sampler = nullptr,
 			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All() )
 		{
 			RHIBindingSetItem& item = Bindings.EmplaceBack( RHIBindingSetItem::None() );
-			item.Resource = &a_Texture;
+			item.Resource = a_Texture;
 			item.Slot = a_Slot;
 			item.Type = ERHIBindingType::StorageTexture;
 			item.Subresources = a_Subresources;
-			return *this;
-		}
-
-		RHIBindingSetDesc& AddSampler(
-			uint32_t a_Slot, IRHISampler& a_Sampler )
-		{
-			RHIBindingSetItem& item = Bindings.EmplaceBack( RHIBindingSetItem::None() );
-			item.Resource = &a_Sampler;
-			item.Slot = a_Slot;
-			item.Type = ERHIBindingType::Sampler;
-			return *this;
-		}
-
-		RHIBindingSetDesc& AddCombinedSampler(
-			uint32_t a_Slot, IRHITexture& a_Texture,
-			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All() )
-		{
-			RHIBindingSetItem& item = Bindings.EmplaceBack( RHIBindingSetItem::None() );
-			item.Resource = &a_Texture;
-			item.Slot = a_Slot;
-			item.Type = ERHIBindingType::CombinedSampler;
-			item.Subresources = a_Subresources;
+			if ( a_Sampler )
+				item.Sampler = RHIPackedSampler::Pack( *a_Sampler );
 			return *this;
 		}
 
@@ -457,7 +422,7 @@ namespace Tridium {
 		//===========================================
 
 		RHIBindingSetDesc& AddConstantBuffer(
-			HashedString a_Name, IRHIBuffer& a_Buffer,
+			HashedString a_Name, IRHIBuffer* a_Buffer,
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
@@ -467,7 +432,7 @@ namespace Tridium {
 		}
 
 		RHIBindingSetDesc& AddStructuredBuffer(
-			HashedString a_Name, IRHIBuffer& a_Buffer,
+			HashedString a_Name, IRHIBuffer* a_Buffer,
 			ERHIBufferType a_BufferType = ERHIBufferType::Unknown,
 			ERHIFormat a_Format = ERHIFormat::Unknown,
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
@@ -479,7 +444,7 @@ namespace Tridium {
 		}
 
 		RHIBindingSetDesc& AddStorageBuffer(
-			HashedString a_Name, IRHIBuffer& a_Buffer,
+			HashedString a_Name, IRHIBuffer* a_Buffer,
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
@@ -489,7 +454,8 @@ namespace Tridium {
 		}
 
 		RHIBindingSetDesc& AddTexture(
-			HashedString a_Name, IRHITexture& a_Texture,
+			HashedString a_Name, IRHITexture* a_Texture,
+			RHISampler* a_Sampler = nullptr,
 			ERHIFormat a_Format = ERHIFormat::Unknown,
 			ERHITextureDimension a_TextureDimension = ERHITextureDimension::Unknown,
 			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All() )
@@ -497,36 +463,18 @@ namespace Tridium {
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
 			auto binding = Layout->Desc().GetBindingFromName( a_Name );
 			ValidateBinding( binding, ERHIBindingType::Texture );
-			return AddTexture( binding.Slot, a_Texture, a_Format, a_TextureDimension, a_Subresources );
+			return AddTexture( binding.Slot, a_Texture, a_Sampler, a_Format, a_TextureDimension, a_Subresources );
 		}
 
 		RHIBindingSetDesc& AddStorageTexture(
-			HashedString a_Name, IRHITexture& a_Texture,
+			HashedString a_Name, IRHITexture* a_Texture,
+			RHISampler* a_Sampler = nullptr,
 			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All() )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
 			auto binding = Layout->Desc().GetBindingFromName( a_Name );
 			ValidateBinding( binding, ERHIBindingType::StorageTexture );
-			return AddStorageTexture( binding.Slot, a_Texture, a_Subresources );
-		}
-
-		RHIBindingSetDesc& AddSampler(
-			HashedString a_Name, IRHISampler& a_Sampler )
-		{
-			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
-			auto binding = Layout->Desc().GetBindingFromName( a_Name );
-			ValidateBinding( binding, ERHIBindingType::Sampler );
-			return AddSampler( binding.Slot, a_Sampler );
-		}
-
-		RHIBindingSetDesc& AddCombinedSampler(
-			HashedString a_Name, IRHITexture& a_Texture,
-			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All() )
-		{
-			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
-			auto binding = Layout->Desc().GetBindingFromName( a_Name );
-			ValidateBinding( binding, ERHIBindingType::CombinedSampler );
-			return AddCombinedSampler( binding.Slot, a_Texture, a_Subresources );
+			return AddStorageTexture( binding.Slot, a_Texture, a_Sampler, a_Subresources );
 		}
 
 		bool operator==( const RHIBindingSetDesc& a_Other ) const
@@ -575,8 +523,7 @@ namespace Tridium {
 				if ( binding.Resource != nullptr )
 				{
 					RHI_DEV_CHECK( binding.Resource->Type() == ERHIObjectType::Texture
-						|| binding.Resource->Type() == ERHIObjectType::Buffer
-						|| binding.Resource->Type() == ERHIObjectType::Sampler,
+						|| binding.Resource->Type() == ERHIObjectType::Buffer,
 						std::format( "Invalid resource type '{}' in shader binding set '{}'", ToString( binding.Resource->Type() ), a_Desc.Name ) );
 
 					m_ResourceHandles.EmplaceBack( std::move( binding.Resource->Shared() ) );

@@ -8,7 +8,6 @@ namespace Tridium {
 
 	class IRHIObject;
 	class IRHIResource;
-	class IRHISampler;
 	class IRHITexture;
 	class IRHIShaderModule;
 	class IRHIBuffer;
@@ -23,7 +22,6 @@ namespace Tridium {
 
 	struct RHIObjectDesc;
 	struct RHIResourceDesc;
-	struct RHISamplerDesc;
 	struct RHITextureDesc;
 	struct RHIShaderModuleDesc;
 	struct RHIBufferDesc;
@@ -38,7 +36,6 @@ namespace Tridium {
 
 	using RHIObjectRef                    = SharedPtr<IRHIObject>;
 	using RHIResourceRef                  = SharedPtr<IRHIResource>;
-	using RHISamplerRef                   = SharedPtr<IRHISampler>;
 	using RHITextureRef                   = SharedPtr<IRHITexture>;
 	using RHIShaderModuleRef              = SharedPtr<IRHIShaderModule>;
 	using RHIBufferRef		              = SharedPtr<IRHIBuffer>;
@@ -54,7 +51,6 @@ namespace Tridium {
 
 	using RHIObjectWeakRef                = WeakPtr<IRHIObject>;
 	using RHIResourceWeakRef              = WeakPtr<IRHIResource>;                 
-	using RHISamplerWeakRef               = WeakPtr<IRHISampler>;
 	using RHITextureWeakRef               = WeakPtr<IRHITexture>;
 	using RHIShaderModuleWeakRef          = WeakPtr<IRHIShaderModule>;
 	using RHIBufferWeakRef	              = WeakPtr<IRHIBuffer>;

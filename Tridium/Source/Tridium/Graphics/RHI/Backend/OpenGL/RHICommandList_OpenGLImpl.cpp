@@ -614,10 +614,6 @@ namespace Tridium::OpenGL {
 				case ERHIBindingType::StorageTexture:
 					isTextureBinding = true;
 					break;
-				case ERHIBindingType::Sampler:
-					break;
-				case ERHIBindingType::CombinedSampler:
-					break;
 
 				#if RHI_DEBUG_ENABLED
 				default:
@@ -646,11 +642,12 @@ namespace Tridium::OpenGL {
 					if ( auto* texture = binding.Resource->As<RHITexture_OpenGLImpl>() )
 					{
 						OpenGL4::BindTextureUnit( uniform.BindingPoint, texture->TextureObj );
+						TODO( "Handle texture subresources and samplers better" );
 						TODO( "Handle subresources and samplers better" );
-						if ( texture->Sampler )
-							OpenGL4::BindSampler( uniform.BindingPoint, texture->Sampler->As<RHISampler_OpenGLImpl>()->GetGLHandle() );
-						else
-							OpenGL4::BindSampler( uniform.BindingPoint, 0 ); // Unbind sampler if not set
+						//if ( texture->Sampler )
+						//	OpenGL4::BindSampler( uniform.BindingPoint, texture->Sampler->As<RHISampler_OpenGLImpl>()->GetGLHandle() );
+						//else
+						//	OpenGL4::BindSampler( uniform.BindingPoint, 0 ); // Unbind sampler if not set
 					}
 					else
 					{

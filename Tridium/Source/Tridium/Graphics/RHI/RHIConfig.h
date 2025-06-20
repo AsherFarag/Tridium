@@ -39,8 +39,3 @@
 // These requirements can have a performance impact on the RHI even if OpenGL is not used.
 // If you do not plan to use OpenGL, you can disable it here.
 #define RHI_SUPPORT_OPENGL RHI_ENABLE_BACKEND_OPENGL
-
-// RHI SUPPORT COMBINED SAMPLERS
-// OpenGL requires that samplers and textures are combined into a single binding.
-// This can cause systems to miss out on potential optimizations if support is required.
-#define RHI_SUPPORT_COMBINED_SAMPLERS RHI_SUPPORT_OPENGL

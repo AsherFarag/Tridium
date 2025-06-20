@@ -66,8 +66,8 @@ namespace Tridium::Math {
 	}
 
 	// Returns the minimum of two values.
-	template<Concepts::Arithmetic _GenT, Concepts::Arithmetic _GenU>
-	constexpr inline auto Min( const _GenT& a_A, const _GenU& a_B ) { return glm::min( a_A, a_B ); }
+	template<Concepts::Arithmetic _Gen>
+	constexpr inline auto Min( const _Gen& a_A, const _Gen& a_B ) { return glm::min( a_A, a_B ); }
 
 	// Returns the minimum of two vectors.
 	template<size_t _Count, Concepts::Arithmetic _Gen>
@@ -78,8 +78,8 @@ namespace Tridium::Math {
 	}
 
 	// Returns the maximum of two values.
-	template<Concepts::Arithmetic _GenT, Concepts::Arithmetic _GenU>
-	constexpr inline auto Max( const _GenT& a_A, const _GenU& a_B ) { return glm::max( a_A, a_B ); }
+	template<Concepts::Arithmetic _Gen>
+	constexpr inline auto Max( const _Gen& a_A, const _Gen& a_B ) { return glm::max( a_A, a_B ); }
 
 	// Returns the maximum of two vectors.
 	template<size_t _Count, Concepts::Arithmetic _Gen>

@@ -47,7 +47,6 @@ namespace Tridium {
 	//  The type of object that can be created with the RHI device.
 	enum class ERHIObjectType : uint8_t
 	{
-        Sampler,
         Texture,
         ShaderModule,
         Buffer,
@@ -741,18 +740,43 @@ namespace Tridium {
 
 	//===========================
 	// Sampler Filter
+	//  Specifies the filtering method for Minification(Min), Magnification(Mag), and Mipmapping(Mip).
+	//  The following filter types are supported:
+	//		- Point: Nearest neighbor filtering.
+	//		- Linear: Bilinear filtering.
+	//		- Anisotropic: Anisotropic filtering.
+	//  If a filter is marked as "Comparison", it will use a function to compare new sampled data against existing sampled data.
+	//  This enum matches D3D12_FILTER.
 	enum class ERHISamplerFilter : uint8_t
 	{
 		Unknown = 0,
-		Point,                 // Nearest, no interpolation
-		Linear,			       // Linear interpolation
-		Anisotropic,           // Anisotropic filtering, no interpolation
-		ComparisonPoint,       // Nearest with comparison, no interpolation
-		ComparisonLinear,      // Linear with comparison, no interpolation
-		ComparisonAnisotropic, // Anisotropic with comparison, no interpolation
+
+		// Regular
+
+		MinMagMipPoint,
+		MinMagPointMipLinear,
+		MinPointMagLinearMipPoint,
+		MinPointMagMipLinear,
+		MinLinearMagMipPoint,
+		MinLinearMagPointMipLinear,
+		MinMagLinearMipPoint,
+		MinMagMipLinear,
+		Anisotropic,
+
+		// Comparison
+
+		ComparisonMinMagMipPoint,
+		ComparisonMinMagPointMipLinear,
+		ComparisonMinPointMagLinearMipPoint,
+		ComparisonMinPointMagMipLinear,
+		ComparisonMinLinearMagMipPoint,
+		ComparisonMinLinearMagPointMipLinear,
+		ComparisonMinMagLinearMipPoint,
+		ComparisonMinMagMipLinear,
+		ComparisonAnisotropic,
 
 		COUNT,
-		NUM_BITS = 3,
+		NUM_BITS = 5,
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHISamplerFilter );
 

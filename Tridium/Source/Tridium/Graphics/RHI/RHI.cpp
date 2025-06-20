@@ -207,12 +207,6 @@ namespace Tridium {
 		return s_DynamicRHI->CreateFence( a_Desc );
 	}
 
-	RHISamplerRef RHI::CreateSampler( const RHISamplerDesc& a_Desc )
-	{
-		CHECK( s_DynamicRHI );
-		return s_DynamicRHI->CreateSampler( a_Desc );
-	}
-
 	RHITextureRef RHI::CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
 	{
 		CHECK( s_DynamicRHI );
