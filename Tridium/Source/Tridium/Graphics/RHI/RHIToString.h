@@ -219,7 +219,6 @@ namespace Tridium {
 		case ERHIObjectType::GraphicsPipelineState: return "GraphicsPipelineState";
 		case ERHIObjectType::ComputePipelineState:  return "ComputePipelineState";
 		case ERHIObjectType::CommandList:           return "CommandList";
-		case ERHIObjectType::CommandAllocator:      return "CommandAllocator";
 		case ERHIObjectType::SwapChain:             return "SwapChain";
 		case ERHIObjectType::Fence:                 return "Fence";
 		case ERHIObjectType::Unknown:               return "Unknown";
@@ -240,7 +239,6 @@ namespace Tridium {
 		case "GraphicsPipelineState"_H: return Detail::AssignEnumValue( ERHIObjectType::GraphicsPipelineState, o_Value );
 		case "ComputePipelineState"_H:  return Detail::AssignEnumValue( ERHIObjectType::ComputePipelineState, o_Value );
 		case "CommandList"_H:           return Detail::AssignEnumValue( ERHIObjectType::CommandList, o_Value );
-		case "CommandAllocator"_H:      return Detail::AssignEnumValue( ERHIObjectType::CommandAllocator, o_Value );
 		case "SwapChain"_H:             return Detail::AssignEnumValue( ERHIObjectType::SwapChain, o_Value );
 		case "Fence"_H:                 return Detail::AssignEnumValue( ERHIObjectType::Fence, o_Value );
 		}
@@ -305,7 +303,7 @@ namespace Tridium {
 	// ERHIUsage
 	//=========================================================
 
-	static String ToString( ERHIUsage a_Usage )
+	static StringView ToString( ERHIUsage a_Usage )
 	{
 		switch ( a_Usage )
 		{
@@ -327,4 +325,22 @@ namespace Tridium {
 		return false;
 	}
 
+
+	//=========================================================
+	// ERHISamplerFilter
+	//=========================================================
+
+	static constexpr StringView ToString( ERHISamplerFilter a_Filter )
+	{
+		switch ( a_Filter )
+		{
+		case ERHISamplerFilter::Point:                 return "Nearest";
+		case ERHISamplerFilter::Linear:                return "Linear";
+		case ERHISamplerFilter::Anisotropic:           return "Anisotropic";
+		case ERHISamplerFilter::ComparisonPoint:       return "ComparisonNearest";
+		case ERHISamplerFilter::ComparisonLinear:      return "ComparisonLinear";
+		case ERHISamplerFilter::ComparisonAnisotropic: return "ComparisonAnisotropic";
+		default:                                       return "<INVALID>";
+		}
+	}
 }

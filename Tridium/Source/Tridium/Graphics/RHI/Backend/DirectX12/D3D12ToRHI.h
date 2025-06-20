@@ -617,40 +617,104 @@ namespace Tridium {
 		// RHI SAMPLER FILTER - D3D12 FILTER
 		//////////////////////////////////////////////////////////////////////////
 
-		template<>
-		struct To<ERHISamplerFilter>
+		constexpr D3D12_FILTER Translate( ERHISamplerFilter a_Min, ERHISamplerFilter a_Mag, ERHISamplerFilter a_Mip )
 		{
-			using FromType = D3D12_FILTER;
-			static constexpr ERHISamplerFilter From( D3D12_FILTER a_Filter )
+			using enum ERHISamplerFilter;
+			switch ( a_Min )
 			{
-				switch ( a_Filter )
+			case Unknown:
+			{
+				RHI_DEV_CHECK( false, "Unknown sampler filter type." );
+				break;
+			}
+			case Point:
+			{
+				if ( a_Mag == Point )
 				{
-				case D3D12_FILTER_MIN_MAG_MIP_POINT:        return ERHISamplerFilter::Point;
-				case D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT: return ERHISamplerFilter::Bilinear;
-				case D3D12_FILTER_MIN_MAG_MIP_LINEAR:       return ERHISamplerFilter::Trilinear;
-				case D3D12_FILTER_ANISOTROPIC:              return ERHISamplerFilter::AnisotropicLinear;
-				default:                                    return ERHISamplerFilter::Point;
+					if ( a_Mip == Point )
+						return D3D12_FILTER_MIN_MAG_MIP_POINT;
+					else if ( a_Mip == Linear )
+						return D3D12_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+				}
+				else if ( a_Mag == Linear )
+				{
+					if ( a_Mip == Point )
+						return D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT;
+					else if ( a_Mip == Linear )
+						return D3D12_FILTER_MIN_POINT_MAG_MIP_LINEAR;
+				}
+				break;
+			}
+			case Linear:
+			{
+				if ( a_Mag == Point )
+				{
+					if ( a_Mip == Point )
+						return D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT;
+					else if ( a_Mip == Linear )
+						return D3D12_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
+				}
+				else if ( a_Mag == Linear )
+				{
+					if ( a_Mip == Point )
+						return D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+					else if ( a_Mip == Linear )
+						return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 				}
 			}
-		};
+			case Anisotropic:
+			{
+				RHI_DEV_CHECK( a_Mag == Anisotropic && a_Mip == Anisotropic,
+					"All filters must be set to Anisotropic for anisotropic filtering." );
+				return D3D12_FILTER_ANISOTROPIC;
+			}
+			case ComparisonPoint:
+			{
+				if ( a_Mag == ComparisonPoint )
+				{
+					if ( a_Mip == ComparisonPoint )
+						return D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT;
+					else if ( a_Mip == ComparisonLinear )
+						return D3D12_FILTER_COMPARISON_MIN_MAG_POINT_MIP_LINEAR;
+				}
+				else if ( a_Mag == ComparisonLinear )
+				{
+					if ( a_Mip == ComparisonPoint )
+						return D3D12_FILTER_COMPARISON_MIN_POINT_MAG_LINEAR_MIP_POINT;
+					else if ( a_Mip == ComparisonLinear )
+						return D3D12_FILTER_COMPARISON_MIN_POINT_MAG_MIP_LINEAR;
+				}
+				break;
+			}
+			case ComparisonLinear:
+			{
+				if ( a_Mag == ComparisonPoint )
+				{
+					if ( a_Mip == ComparisonPoint )
+						return D3D12_FILTER_COMPARISON_MIN_LINEAR_MAG_MIP_POINT;
+					else if ( a_Mip == ComparisonLinear )
+						return D3D12_FILTER_COMPARISON_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
+				}
+				else if ( a_Mag == ComparisonLinear )
+				{
+					if ( a_Mip == ComparisonPoint )
+						return D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+					else if ( a_Mip == ComparisonLinear )
+						return D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+				}
+			}
+			case ComparisonAnisotropic:
+			{
+				RHI_DEV_CHECK( a_Mag == ComparisonAnisotropic && a_Mip == ComparisonAnisotropic,
+					"All filters must be set to Anisotropic for anisotropic filtering." );
+				return D3D12_FILTER_COMPARISON_ANISOTROPIC;
+			}
+			}
 
-		template<>
-		struct To<D3D12_FILTER>
-		{
-			using FromType = ERHISamplerFilter;
-			static constexpr D3D12_FILTER From( ERHISamplerFilter a_Filter )
-			{
-				switch ( a_Filter )
-				{
-				case ERHISamplerFilter::Point:             return D3D12_FILTER_MIN_MAG_MIP_POINT;
-				case ERHISamplerFilter::Bilinear:          return D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-				case ERHISamplerFilter::Trilinear:         return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-				case ERHISamplerFilter::AnisotropicPoint:  return D3D12_FILTER_ANISOTROPIC;
-				case ERHISamplerFilter::AnisotropicLinear: return D3D12_FILTER_ANISOTROPIC;
-				default:                                   return D3D12_FILTER_MIN_MAG_MIP_POINT;
-				}
-			}
-		};
+			RHI_DEV_CHECK( false, "Invalid sampler filter combination. Min - '{}', Mag - '{}', Mip - '{}'.",
+				ToString( a_Min ), ToString( a_Mag ), ToString( a_Mip ) );
+			return D3D12_FILTER_MIN_MAG_MIP_POINT; // Default fallback
+		}
 
 		//////////////////////////////////////////////////////////////////////////
 		// RHI SAMPLER ADDRESS MODE - D3D12 TEXTURE ADDRESS MODE
@@ -685,8 +749,10 @@ namespace Tridium {
 				case ERHISamplerAddressMode::Mirror:  return D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
 				case ERHISamplerAddressMode::Clamp:   return D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 				case ERHISamplerAddressMode::Border:  return D3D12_TEXTURE_ADDRESS_MODE_BORDER;
-				default:                              return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 				}
+
+				RHI_DEV_CHECK( false, "Invalid sampler address mode" );
+				return D3D12_TEXTURE_ADDRESS_MODE_WRAP; // Default fallback
 			}
 		};
 

@@ -263,8 +263,8 @@ namespace Tridium::OpenGL {
 			: IRHISampler( a_Device, a_Desc )
 		{
 			OpenGL3::GenSamplers( 1, &m_SamplerID );
-			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_MIN_FILTER, Translate( a_Desc.Filter ) );
-			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_MAG_FILTER, Translate( a_Desc.Filter ) );
+			//OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_MIN_FILTER, Translate( a_Desc.Filter ) );
+			//OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_MAG_FILTER, Translate( a_Desc.Filter ) );
 			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_WRAP_S, Translate( a_Desc.AddressU ) );
 			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_WRAP_T, Translate( a_Desc.AddressV ) );
 			OpenGL3::SamplerParameteri( m_SamplerID, GL_TEXTURE_WRAP_R, Translate( a_Desc.AddressW ) );
@@ -307,6 +307,8 @@ namespace Tridium::OpenGL {
 		bool Release() override { return true; }
 		bool Valid() const override { return true; }
 		const void* NativePtr() const override { return nullptr; }
+
+
 	};
 
 	//======================================================================
@@ -350,6 +352,25 @@ namespace Tridium::OpenGL {
 	// GRAPHICS PIPELINE STATE IMPLEMENTATION
 	//======================================================================
 
+	using UniformLocation = GLint;
+	constexpr UniformLocation c_InvalidUniformLocation = -1;
+
+	struct Uniform
+	{
+		UniformLocation BindingPoint = c_InvalidUniformLocation;
+		UniformLocation BlockIndex = c_InvalidUniformLocation; // Valid only if IsBlock is true
+		GLenum Type = GL_NONE; // OpenGL type (e.g., GL_FLOAT, GL_INT, etc.)
+		bool IsBlock = false; // Indicates if this uniform is a block (UBO) or a regular uniform
+	};
+
+	struct UniformLayout
+	{
+		FixedArray<UnorderedMap<uint32_t, Uniform>, RHIConstants::MaxBindingLayouts> Layouts;
+		Uniform InlinedConstants; // Special uniform for inlined constants UBO
+
+		void SetLayout( uint32_t a_LayoutIndex, const IRHIBindingLayout& a_Layout, GLuint a_ShaderProgramID );
+	};
+
 	class RHIGraphicsPipelineState_OpenGLImpl : public IRHIGraphicsPipelineState
 	{
 	public:
@@ -363,8 +384,10 @@ namespace Tridium::OpenGL {
 
 		GLuint GetShaderProgramID() const { return m_ShaderProgramID; }
 		GLuint GetVAO() const { return m_VAO; }
-		bool ApplyVertexLayoutToVAO( GLuint a_VAO );
+		bool ApplyVertexLayoutToVAO( GLuint a_VAO ) const;
 		GLint TryGetUniformLocation( hash_t a_NameHash ) const;
+
+		UniformLayout UniformLayout{};
 
 	private:
 		GLuint m_ShaderProgramID = 0;
@@ -586,7 +609,7 @@ namespace Tridium::OpenGL {
 	private:
 		void BindGraphicsPipelineState( const RHIGraphicsPipelineState_OpenGLImpl& a_GraphicsPipelineState );
 		void BindFramebuffer( const RHIFramebuffer& a_Framebuffer );
-		void BindGraphicsBindings( const InlineArray<const IRHIBindingSet*, RHIConstants::MaxBindingLayouts>& a_BindingSets );
+		void BindGraphicsBindings( const RHIGraphicsState& a_GraphicsState );
 
 		void FlushCommandBuffer();
 		// Command Implementations

@@ -116,17 +116,59 @@ namespace Tridium::OpenGL {
 		}
 	}
 
-	inline constexpr GLenum Translate( ERHISamplerFilter a_Filter )
+	inline GLenum Translate( ERHISamplerFilter a_Filter, GLenum& o_GLFilter, bool& o_IsComparison, bool& o_IsAnisotropic )
 	{
 		switch ( a_Filter )
 		{
-		using enum ERHISamplerFilter;
-		case Point:               return GL_NEAREST;
-		case Bilinear:            return GL_LINEAR;
-		case Trilinear:           return GL_LINEAR_MIPMAP_LINEAR;
-		case AnisotropicPoint:    return GL_NEAREST;
-		case AnisotropicLinear:   return GL_LINEAR;
-		default:                  return GL_NEAREST;
+		case ERHISamplerFilter::Unknown:
+			RHI_DEV_CHECK( false, "Unknown sampler filter type!" );
+			o_IsAnisotropic = false;
+			o_IsComparison = false;
+			o_GLFilter = GL_NEAREST;
+			break;
+
+		case ERHISamplerFilter::Point:
+			o_IsAnisotropic = false;
+			o_IsComparison = false;
+			o_GLFilter = GL_NEAREST;
+			break;
+
+		case ERHISamplerFilter::Linear:
+			o_IsAnisotropic = false;
+			o_IsComparison = false;
+			o_GLFilter = GL_LINEAR;
+			break;
+
+		case ERHISamplerFilter::Anisotropic:
+			o_IsAnisotropic = true;
+			o_IsComparison = false;
+			o_GLFilter = GL_LINEAR;
+			break;
+
+		case ERHISamplerFilter::ComparisonPoint:
+			o_IsAnisotropic = false;
+			o_IsComparison = true;
+			o_GLFilter = GL_NEAREST;
+			break;
+
+		case ERHISamplerFilter::ComparisonLinear:
+			o_IsAnisotropic = false;
+			o_IsComparison = true;
+			o_GLFilter = GL_LINEAR;
+			break;
+
+		case ERHISamplerFilter::ComparisonAnisotropic:
+			o_IsAnisotropic = true;
+			o_IsComparison = true;
+			o_GLFilter = GL_LINEAR;
+			break;
+
+		default:
+			RHI_DEV_CHECK( false, "Unknown sampler filter type!" );
+			o_IsAnisotropic = false;
+			o_IsComparison = false;
+			o_GLFilter = GL_NEAREST;
+			break;
 		}
 	}
 

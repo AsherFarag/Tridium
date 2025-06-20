@@ -25,14 +25,45 @@ namespace Tridium::Debug {
 
 		#define _ASSERT_MSG_FORMAT_WRAPPER( _Type ) \
 			_Type " Failed: '{}', Where: Line - " TOSTRING( __LINE__ ) ", File - " TRIDIUM_FILE ", Function - " TRIDIUM_FUNCTION
-		
-		#define _DO_ONCE_WRAPPER( _Condition, _AssertMacro, _HasDoneStorage ) \
-			([]( bool a_Condition ) { \
-				_HasDoneStorage bool s_HasDone = false; if (!s_HasDone) { _AssertMacro; s_HasDone |= !a_Condition; } return a_Condition; \
-			}( _Condition ))
 	}
 
+// Performs an action once, regardless of how many times it is called.
+#define DO_ONCE( _Logic ) \
+	do { \
+		static bool s_HasDone = [] { \
+			_Logic; \
+			return true; \
+		}(); \
+	} while ( false )
 
+// Performs an action only once per thread, regardless of how many times it is called.
+#define DO_ONCE_PER_THREAD( _Logic ) \
+	do { \
+		static thread_local bool s_HasDone = [] { \
+			_Logic; \
+			return true; \
+		}(); \
+	} while ( false )
+
+// Will perform the logic if the condition is true, and will never perform it again.
+#define DO_ONCE_IF( _Condition, _Logic ) \
+	do { \
+		static bool s_HasDone = false; \
+		if ( !s_HasDone && _Condition ) { \
+			s_HasDone = true; \
+			_Logic; \
+		} \
+	} while ( false )
+
+// Will perform the logic if the condition is true, and will never perform it again.
+#define DO_ONCE_PER_THREAD_IF( _Condition, _Logic ) \
+	do { \
+		static thread_local bool s_HasDone = false; \
+		if ( !s_HasDone && _Condition ) { \
+			s_HasDone = true; \
+			_Logic; \
+		} \
+	} while ( false )
 
 #if CONFIG_PLATFORM_WINDOWS
 	#define DEBUG_BREAK() __debugbreak()
@@ -75,11 +106,17 @@ namespace Tridium::Debug {
 
 	// Same as CHECK, but will only check once among all threads.
 	#define CHECK_ONCE(_Condition, ...) \
-		_DO_ONCE_WRAPPER( _Condition, CHECK(_Condition, __VA_ARGS__), static )
+		{ \
+		  const bool condition = Cast<bool>(_Condition); \
+		  DO_ONCE_IF( condition, CHECK(condition, __VA_ARGS__) ); \
+		}
 
-	// Same as CHECK, but will only check once among per thread.
+	// Same as CHECK, but will only check once per thread.
 	#define CHECK_ONCE_PER_THREAD(_Condition, ...) \
-		_DO_ONCE_WRAPPER( _Condition, CHECK(_Condition, __VA_ARGS__), thread_local )
+		{ \
+		  const bool condition = Cast<bool>(_Condition); \
+		  DO_ONCE_PER_THREAD_IF( condition, CHECK(condition, __VA_ARGS__) ); \
+		}
 
 #else
 	#define CHECK(_Condition, ...) (::Tridium::Cast<bool>(_Condition))
@@ -141,11 +178,17 @@ namespace Tridium::Debug {
 
 	// Same as ASSERT, but will only assert once among all threads.
 	#define ASSERT_ONCE(_Condition, ...) \
-		_DO_ONCE_WRAPPER( _Condition, ASSERT(_Condition, __VA_ARGS__), static )
+		{ \
+		  const bool condition = Cast<bool>(_Condition); \
+		  DO_ONCE_IF( condition, ASSERT(condition, __VA_ARGS__) ) \
+		}
 
-	// Same as ASSERT, but will only assert once among per thread.
+	// Same as ASSERT, but will only assert once per thread.
 	#define ASSERT_ONCE_PER_THREAD(_Condition, ...) \
-		_DO_ONCE_WRAPPER( _Condition, ASSERT(_Condition, __VA_ARGS__), thread_local )
+		{ \
+		  const bool condition = Cast<bool>(_Condition); \
+		  DO_ONCE_PER_THREAD_IF( condition, ASSERT(condition, __VA_ARGS__) ) \
+		}
 
 
 #else

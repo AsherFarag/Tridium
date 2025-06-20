@@ -56,7 +56,6 @@ namespace Tridium {
         GraphicsPipelineState,
 		ComputePipelineState,
         CommandList,
-        CommandAllocator,
 		SwapChain,
 		Fence,
         COUNT,
@@ -356,6 +355,16 @@ namespace Tridium {
 		constexpr bool Valid() const noexcept
 		{
 			return Size != 0 && Offset + Size <= ~0u;
+		}
+
+		constexpr bool Empty() const noexcept
+		{
+			return Size == 0;
+		}
+
+		constexpr bool IsEntireBuffer( size_t a_BufferSize = RHIBufferRange::EntireBuffer().Size ) const noexcept
+		{
+			return Offset == 0 && Size == a_BufferSize;
 		}
 
 		static constexpr RHIBufferRange EntireBuffer() noexcept
@@ -732,14 +741,16 @@ namespace Tridium {
 
 	//===========================
 	// Sampler Filter
-	//===========================
 	enum class ERHISamplerFilter : uint8_t
 	{
-		Point,               // Nearest, no interpolation
-		Bilinear,			 // Linear interpolation
-		Trilinear, 		     // Linear interpolation with mipmapping
-		AnisotropicPoint,    // Anisotropic filtering, no interpolation
-		AnisotropicLinear,   // Anisotropic filtering with linear interpolation
+		Unknown = 0,
+		Point,                 // Nearest, no interpolation
+		Linear,			       // Linear interpolation
+		Anisotropic,           // Anisotropic filtering, no interpolation
+		ComparisonPoint,       // Nearest with comparison, no interpolation
+		ComparisonLinear,      // Linear with comparison, no interpolation
+		ComparisonAnisotropic, // Anisotropic with comparison, no interpolation
+
 		COUNT,
 		NUM_BITS = 3,
 	};
@@ -752,6 +763,7 @@ namespace Tridium {
 	//===========================
 	enum class ERHISamplerAddressMode : uint8_t
 	{
+		Unknown = 0,
 		Repeat,
 		Mirror,
 		Clamp,
@@ -760,7 +772,7 @@ namespace Tridium {
 		Border,
 
 		COUNT,
-		NUM_BITS = 2,
+		NUM_BITS = 3,
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHISamplerAddressMode );
 

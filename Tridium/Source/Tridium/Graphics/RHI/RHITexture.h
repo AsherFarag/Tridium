@@ -1,5 +1,6 @@
 #pragma once
 #include "RHIResource.h"
+#include "RHISampler.h"
 
 namespace Tridium {
 
@@ -132,6 +133,7 @@ namespace Tridium {
 		ERHIBindFlags BindFlags = ERHIBindFlags::None;
 		ERHIUsage Usage = ERHIUsage::Default;
 		ERHICpuAccess CpuAccess = ERHICpuAccess::None;
+		RHISampler DefaultSampler{}; // Sampler that is used if no sampler is specified in the shader.
 		String Name{};
 
 		constexpr RHITextureDesc() = default;
@@ -147,6 +149,7 @@ namespace Tridium {
 			ERHIBindFlags a_BindFlags = RHITextureDesc{}.BindFlags,
 			ERHIUsage a_Usage = RHITextureDesc{}.Usage,
 			ERHICpuAccess a_CpuAccess = RHITextureDesc{}.CpuAccess,
+			RHISampler a_DefaultSampler = RHITextureDesc{}.DefaultSampler,
 			Optional<RHIClearValue> a_ClearValue = RHITextureDesc{}.ClearValue )
 			: Name( a_Name )
 			, Dimension( a_Dimension )
@@ -159,6 +162,7 @@ namespace Tridium {
 			, BindFlags( a_BindFlags )
 			, Usage( a_Usage )
 			, CpuAccess( a_CpuAccess )
+			, DefaultSampler( a_DefaultSampler )
 			, ClearValue( a_ClearValue )
 		{}
 
@@ -206,6 +210,7 @@ namespace Tridium {
 		constexpr auto& SetBindFlags( ERHIBindFlags a_BindFlags ) { BindFlags = a_BindFlags; return *this; }
 		constexpr auto& SetUsage( ERHIUsage a_Usage ) { Usage = a_Usage; return *this; }
 		constexpr auto& SetCpuAccess( ERHICpuAccess a_CpuAccess ) { CpuAccess = a_CpuAccess; return *this; }
+		constexpr auto& SetDefaultSampler( const RHISampler& a_Sampler ) { DefaultSampler = a_Sampler; return *this; }
 		constexpr auto& SetClearValue( RHIClearValue a_ClearValue ) { ClearValue.emplace( a_ClearValue ); return *this; }
 		          auto& SetName( StringView a_Name ) { Name = a_Name; return *this; }
 	};

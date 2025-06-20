@@ -596,15 +596,13 @@ namespace Tridium::D3D12 {
 		RHISampler_D3D12Impl( IDynamicRHI* a_Device, const DescriptorType & a_Desc );
 		~RHISampler_D3D12Impl() override { Release(); }
 
-		bool Release() override { SamplerHeap.Reset(); SamplerHandle = {}; SamplerDesc = {}; return true; }
-		bool Valid() const override { return SamplerHeap != nullptr; }
-		const void* NativePtr() const override { return SamplerHeap.Get(); }
+		bool Release() override { SamplerDesc = {}; return true; }
+		bool Valid() const override { return true; }
+		const void* NativePtr() const override { return nullptr; }
 
 		D3D12_STATIC_SAMPLER_DESC GetStaticSamplerDesc( uint32_t a_ShaderRegister, ERHIShaderVisibility a_ShaderVisibility = ERHIShaderVisibility::All ) const;
 
 		D3D12_SAMPLER_DESC SamplerDesc{};
-		ComPtr<ID3D12DescriptorHeap> SamplerHeap;
-		D3D12_GPU_DESCRIPTOR_HANDLE SamplerHandle = {};
 	};
 
 	//======================================================================

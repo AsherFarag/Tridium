@@ -15,6 +15,15 @@ namespace Tridium::OpenGL {
 		glslCompiler.set_common_options( options );
 		glslCompiler.build_combined_image_samplers();
 
+		spirv_cross::ShaderResources shaderResources = glslCompiler.get_shader_resources();
+		for ( const auto& resource : shaderResources.uniform_buffers )
+		{
+			TODO( "We are setting the interface name of the block as I cant use the instance name for shader bindings. Hack" );
+			glslCompiler.set_name( resource.base_type_id,
+				glslCompiler.get_block_fallback_name( resource.id ) 
+			);
+		}
+
 		// Textures and samplers are combined in GLSL, so we need to keep track of them and set the correct names
 		auto combinedSamplers = glslCompiler.get_combined_image_samplers();
 		UnorderedSet<spirv_cross::VariableID> seenImageIDs;

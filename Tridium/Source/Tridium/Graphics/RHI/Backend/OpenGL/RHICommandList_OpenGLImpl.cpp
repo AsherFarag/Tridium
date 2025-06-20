@@ -171,7 +171,8 @@ namespace Tridium::OpenGL {
 		{
 			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::SetInlinedConstants{ 
 				.Data = Span<const uint8_t>( Cast<const uint8_t*>( a_Data ), a_SizeBytes ), 
-				.DstOffsetBytes = a_DstOffsetBytes 
+				.DstOffsetBytes = a_DstOffsetBytes,
+				.SizeBytes = a_SizeBytes
 			} );
 		}
 	}
@@ -334,7 +335,6 @@ namespace Tridium::OpenGL {
 	void RHICommandList_OpenGLImpl::BindGraphicsPipelineState( const RHIGraphicsPipelineState_OpenGLImpl& a_GraphicsPipelineState )
 	{
 		const RHIGraphicsPipelineStateDesc& desc = a_GraphicsPipelineState.Desc();
-		OpenGL3::BindVertexArray( a_GraphicsPipelineState.GetVAO() );
 
 		// Topology
 		// We don't need to set the topology explicitly in OpenGL, as it is determined by the draw call.
@@ -559,8 +559,107 @@ namespace Tridium::OpenGL {
 			OpenGL3::DrawBuffer( GL_NONE ); // No color attachments, disable draw buffers
 	}
 
-	void RHICommandList_OpenGLImpl::BindGraphicsBindings( const InlineArray<const IRHIBindingSet*, RHIConstants::MaxBindingLayouts>& a_BindingSets )
+	void RHICommandList_OpenGLImpl::BindGraphicsBindings( const RHIGraphicsState& a_GraphicsState )
 	{
+		RHI_DEV_CHECK( a_GraphicsState.PipelineState, "Graphics state must have a valid pipeline state!" );
+
+		const UniformLayout& uniformLayout = a_GraphicsState.PipelineState->As<RHIGraphicsPipelineState_OpenGLImpl>()->UniformLayout;
+		for ( uint32_t bindingSetIndex = 0; bindingSetIndex < a_GraphicsState.BindingSets.Size(); ++bindingSetIndex )
+		{
+			const auto* bindingSet = Cast<const RHIBindingSet_OpenGLImpl*>( a_GraphicsState.BindingSets[bindingSetIndex] );
+			if ( bindingSet == nullptr )
+				continue;
+
+			const IRHIBindingLayout* bindingLayout = bindingSet->Desc().Layout.get();
+			const RHIBindingSetItemArray& bindings = bindingSet->Desc().Bindings;
+			RHI_DEV_CHECK( bindingLayout, "Binding set {0} has no layout!", bindingSetIndex );
+
+			for ( const RHIBindingSetItem& binding : bindings )
+			{
+				auto uniformIt = uniformLayout.Layouts[bindingSetIndex].find( binding.Slot );
+				if ( uniformIt == uniformLayout.Layouts[bindingSetIndex].end() )
+					continue;
+
+				const Uniform& uniform = uniformIt->second;
+				GLint bindingPoint = uniform.BindingPoint;
+
+				if ( bindingPoint < 0 )
+				{
+					LOG( LogCategory::Debug, Warn, "Binding point for binding set {0}, slot {1} is invalid ({2})! Skipping binding.", 
+						bindingSetIndex, binding.Slot, bindingPoint );
+					continue; // Invalid binding point, skip this binding
+				}
+
+				bool isBufferBinding = false;
+				bool isTextureBinding = false;
+				GLenum bufferTarget = 0;
+
+				switch ( binding.Type )
+				{
+				case ERHIBindingType::Unknown: break;
+				case ERHIBindingType::InlinedConstants: break;
+				case ERHIBindingType::ConstantBuffer: 
+					isBufferBinding = true;
+					bufferTarget = GL_UNIFORM_BUFFER;
+					break;
+				case ERHIBindingType::StructuredBuffer:
+					isBufferBinding = true;
+					bufferTarget = GL_SHADER_STORAGE_BUFFER;
+					break;
+				case ERHIBindingType::StorageBuffer:
+					isBufferBinding = true;
+					bufferTarget = GL_ARRAY_BUFFER;
+					break;
+				case ERHIBindingType::Texture:
+				case ERHIBindingType::StorageTexture:
+					isTextureBinding = true;
+					break;
+				case ERHIBindingType::Sampler:
+					break;
+				case ERHIBindingType::CombinedSampler:
+					break;
+
+				#if RHI_DEBUG_ENABLED
+				default:
+					RHI_DEV_CHECK( false, "Unknown binding type {0} for binding set {1}, binding {2}!",
+						ToString( binding.Type ), bindingSetIndex, binding.Slot );
+					break;
+				#endif // RHI_DEBUG_ENABLED
+				}
+
+				if ( isBufferBinding )
+				{
+					if ( auto* buffer = binding.Resource->As<RHIBuffer_OpenGLImpl>() )
+					{
+						if ( binding.Range.IsEntireBuffer() )
+							OpenGL3::BindBufferBase( bufferTarget, bindingPoint, buffer->BufferObj );
+						else
+							OpenGL3::BindBufferRange( bufferTarget, bindingPoint, buffer->BufferObj, binding.Range.Offset, binding.Range.Size );
+					}
+					else
+					{
+						OpenGL3::BindBufferBase( bufferTarget, bindingPoint, 0 );
+					}
+				}
+				else if ( isTextureBinding )
+				{
+					if ( auto* texture = binding.Resource->As<RHITexture_OpenGLImpl>() )
+					{
+						OpenGL4::BindTextureUnit( uniform.BindingPoint, texture->TextureObj );
+						TODO( "Handle subresources and samplers better" );
+						if ( texture->Sampler )
+							OpenGL4::BindSampler( uniform.BindingPoint, texture->Sampler->As<RHISampler_OpenGLImpl>()->GetGLHandle() );
+						else
+							OpenGL4::BindSampler( uniform.BindingPoint, 0 ); // Unbind sampler if not set
+					}
+					else
+					{
+						OpenGL4::BindTextureUnit( uniform.BindingPoint, 0 ); // Unbind texture
+						OpenGL4::BindSampler( uniform.BindingPoint, 0 ); // Unbind sampler
+					}
+				}
+			}
+		}
 	}
 
 	//
@@ -601,12 +700,26 @@ namespace Tridium::OpenGL {
 	{
 		RHI_DEV_CHECK( m_GraphicsStateValid || m_ComputeStateValid, "Cannot set inlined constants without a valid graphics or compute state!" );
 
+		uint32_t bindingPoint = RHIShaderBinding::InvalidSlot;
+		if ( m_GraphicsStateValid )
+		{
+			bindingPoint = m_CurrentGraphicsState.PipelineState->As<RHIGraphicsPipelineState_OpenGLImpl>()->UniformLayout.InlinedConstants.BindingPoint;
+		}
+		else if ( m_ComputeStateValid )
+		{
+			NOT_IMPLEMENTED;
+		}
+
+		if ( bindingPoint == RHIShaderBinding::InvalidSlot )
+		{
+			RHI_DEV_CHECK( false, "Inlined constants uniform location is invalid!" );
+			return;
+		}
+
 		OpenGL1::BindBuffer( GL_UNIFORM_BUFFER, m_InlinedConstantsUBO );
 		OpenGL1::BufferSubData( GL_UNIFORM_BUFFER, a_DstOffsetBytes, a_SizeBytes, a_Data );
 		OpenGL1::BindBuffer( GL_UNIFORM_BUFFER, 0 );
-		TODO( "Location is always 0, will this always be true?" );
-		constexpr GLuint location = 0;
-		OpenGL3::BindBufferBase( GL_UNIFORM_BUFFER, location, m_InlinedConstantsUBO );
+		OpenGL4::BindBufferBase( GL_UNIFORM_BUFFER, bindingPoint, m_InlinedConstantsUBO );
 	}
 
 	void RHICommandList_OpenGLImpl::SetGraphicsState_Impl( const RHIGraphicsState& a_GraphicsState )
@@ -625,12 +738,9 @@ namespace Tridium::OpenGL {
 		if ( updateFramebuffer )
 			BindFramebuffer( a_GraphicsState.Framebuffer );
 
-		// Bind Graphics Bindings
-		{
-			InlineArray<const IRHIBindingSet*, RHIConstants::MaxBindingLayouts> bindingSets;
-			for ( IRHIBindingSet* const bindingSet : a_GraphicsState.BindingSets ) { bindingSets.EmplaceBack( bindingSet ); }
-			BindGraphicsBindings( bindingSets );
-		}
+		BindGraphicsBindings( a_GraphicsState );
+
+		OpenGL3::BindVertexArray( pso->GetVAO() );
 
 		if ( updateIndexBuffer )
 		{
@@ -649,6 +759,8 @@ namespace Tridium::OpenGL {
 			else
 				OpenGL1::BindBuffer( GL_ARRAY_BUFFER, 0 );
 		}
+
+		pso->ApplyVertexLayoutToVAO( pso->GetVAO() );
 
 		m_CurrentGraphicsState = a_GraphicsState;
 		m_GraphicsStateValid = true;
@@ -827,7 +939,7 @@ namespace Tridium::OpenGL {
 			case SetInlinedConstants:
 			{
 				const auto& cmd = std::get<CommandBuffer::SetInlinedConstants>( cmdVariant );
-				SetInlinedConstants_Impl( cmd.Data.Data(), cmd.Data.Size(), cmd.DstOffsetBytes );
+				SetInlinedConstants_Impl( cmd.Data.Data(), cmd.SizeBytes, cmd.DstOffsetBytes);
 				break;
 			}
 			case SetGraphicsState:

@@ -120,7 +120,7 @@ namespace Tridium {
 		m_Window->SetEventCallback( [this]( const Event& a_Event ) { this->EnqueueEvent( a_Event ); } );
 
 		RHIConfig config{};
-		config.RHIType = ERHInterfaceType::DirectX12;
+		config.RHIType = ERHInterfaceType::OpenGL;
 		config.UseDebug = true;
 		bool initSuccess = RHI::Initialise( config );
 		LOG( LogCategory::RHI, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), initSuccess );
@@ -205,7 +205,6 @@ namespace Tridium {
 
 			// - Create a sampler -
 			RHISamplerDesc samplerDesc;
-			samplerDesc.Filter = ERHISamplerFilter::Bilinear;
 			samplerDesc.AddressU = ERHISamplerAddressMode::Clamp;
 			samplerDesc.AddressV = ERHISamplerAddressMode::Clamp;
 			samplerDesc.AddressW = ERHISamplerAddressMode::Clamp;
@@ -427,7 +426,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 			sblDesc.AddBinding( "constants"_H ).AsConstantBuffer( 1 );
 			//sblDesc.AddBinding( "Texture"_H ).AsCombinedSampler( 0 );
 			sblDesc.AddBinding( "Texture"_H ).AsTexture( 0 );
-			sblDesc.AddBinding( "TextureSampler"_H ).AsSampler( 0 );
+			//sblDesc.AddBinding( "TextureSampler"_H ).AsSampler( 0 );
 			RHIBindingLayoutRef sbl = RHI::CreateBindingLayout( sblDesc );
 
 			RHIFramebufferInfo fbInfo{};
@@ -444,7 +443,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 			psd.BindingLayouts.EmplaceBack( sbl );
 			psd.RasterizerState.CullMode = ERHICullMode::None;
 			psd.RasterizerState.AnitaliasedLinesEnabled = false;
-			psd.RasterizerState.FillMode = ERHIFillMode::Wireframe;
+			//psd.RasterizerState.FillMode = ERHIFillMode::Wireframe;
 			psd.DepthState.DepthTestEnabled = true;
 			psd.DepthState.DepthWriteEnabled = true;
 			psd.Name = "My pipeline state";
@@ -532,7 +531,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 					//bindingSetDesc.AddCombinedSampler( "Texture"_H, *tex );
 					bindingSetDesc.AddConstantBuffer( "constants"_H, *constantsBuffer );
 					bindingSetDesc.AddTexture( "Texture"_H, *tex );
-					bindingSetDesc.AddSampler( "TextureSampler"_H, *sampler );
+					//bindingSetDesc.AddSampler( "TextureSampler"_H, *sampler );
 					RHIBindingSetRef bindingSet = RHI::CreateBindingSet( bindingSetDesc );
 
 					graphicsState.PipelineState = pso.get();

@@ -31,6 +31,16 @@ namespace Tridium::OpenGL {
 			// Link the program
 			OpenGL4::LinkProgram( m_ShaderProgramID );
 
+			// Build the uniform layout
+			{
+				for ( uint32_t i = 0; i < a_Desc.BindingLayouts.Size(); ++i )
+				{
+					const auto& layout = a_Desc.BindingLayouts[i];
+					if ( layout )
+						UniformLayout.SetLayout( i, *layout, m_ShaderProgramID );
+				}
+			}
+
 		#if RHI_DEBUG_ENABLED
 			// Check for linking errors
 			GLint success;
@@ -68,58 +78,6 @@ namespace Tridium::OpenGL {
 		{
 			OpenGL3::GenVertexArrays( 1, &m_VAO );
 		}
-
-		// Collect the uniform locations
-		{
-			//m_UnifromLocations.clear();
-			//for ( const RHIShaderBinding& binding : a_Desc.BindingLayout->Desc().Bindings )
-			//{
-			//	const auto InitUniform = [&]( StringView a_Name )
-			//		{
-			//			GLint location = OpenGL4::GetUniformLocation( m_ShaderProgramID, a_Name.data() );
-			//			if ( location < 0 )
-			//			{
-			//				LOG( LogCategory::RHI, Error, "Uniform '{0}' not found in shader while committing PSO '{1}'", a_Name, a_Desc.Name );
-			//			}
-			//			else
-			//			{
-			//				m_UnifromLocations[binding.NameHash] = location;
-			//			}
-			//		};
-
-			//	if ( binding.Type() == ERHIBindingType::Sampler )
-			//	{
-			//		// OpenGL combines samplers and textures into a single binding
-			//		m_UnifromLocations[binding.NameHash] = -1;
-			//	}
-			//	else
-			//	{
-			//		InitUniform( m_Desc.BindingLayout->Desc().GetBindingName( binding.NameHash ) );
-			//	}
-			//}
-		}
-
-		// Collect combined samplers
-		{
-			TODO( "the hell is this" );
-			m_CombinedSamplers.clear();
-			static constexpr auto CollectCombinedSamplers = +[]( const RHIShaderModuleRef& a_Shader, UnorderedMap<StringView, Array<StringView>>& a_CombinedSamplers )
-				{
-					if ( a_Shader )
-					{
-						RHIShaderModule_OpenGLImpl* shader = a_Shader->As<RHIShaderModule_OpenGLImpl>();
-						//for ( const auto& [texName, samplerNames] : shader->GetCombinedSamplers() )
-						//{
-						//	Array<StringView>& samplers = a_CombinedSamplers[texName];
-						//	samplers.Reserve( samplers.Size() + samplerNames.size() );
-						//	//for ( const StringView& sampler : samplerNames )
-						//	//{
-						//	//	samplers.PushBack( sampler );
-						//	//}
-						//}
-					}
-				};
-		}
     }
 
 	bool RHIGraphicsPipelineState_OpenGLImpl::Release()
@@ -144,7 +102,7 @@ namespace Tridium::OpenGL {
 		return m_ShaderProgramID != 0;
 	}
 
-	bool RHIGraphicsPipelineState_OpenGLImpl::ApplyVertexLayoutToVAO( GLuint a_VAO )
+	bool RHIGraphicsPipelineState_OpenGLImpl::ApplyVertexLayoutToVAO( GLuint a_VAO ) const
 	{
 		OpenGL3::BindVertexArray( a_VAO );
 

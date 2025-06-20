@@ -6,36 +6,20 @@ namespace Tridium::D3D12 {
 	RHISampler_D3D12Impl::RHISampler_D3D12Impl( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
 		: IRHISampler( a_Device, a_Desc )
 	{
-		// Create the sampler heap
-		D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};
-		heapDesc.NumDescriptors = 1;
-		heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
-		heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-		if ( !ASSERT( SUCCEEDED( GetD3D12RHI()->GetD3D12Device()->CreateDescriptorHeap( &heapDesc, IID_PPV_ARGS( SamplerHeap.GetAddressOf() ) ) ),
-			"Failed to create sampler heap!" ) )
-		{
-			return;
-		}
-
-		// Get the handle
-		SamplerHandle = SamplerHeap->GetGPUDescriptorHandleForHeapStart();
-
 		// Create the sampler
-		SamplerDesc.Filter = D3D12::Translate( a_Desc.Filter );
-		SamplerDesc.AddressU = D3D12::Translate( a_Desc.AddressU );
-		SamplerDesc.AddressV = D3D12::Translate( a_Desc.AddressV );
-		SamplerDesc.AddressW = D3D12::Translate( a_Desc.AddressW );
+		SamplerDesc.Filter = Translate( a_Desc.MinFilter, a_Desc.MagFilter, a_Desc.MipFilter );
+		SamplerDesc.AddressU = Translate( a_Desc.AddressU );
+		SamplerDesc.AddressV = Translate( a_Desc.AddressV );
+		SamplerDesc.AddressW = Translate( a_Desc.AddressW );
 		SamplerDesc.MipLODBias = a_Desc.MipLODBias;
 		SamplerDesc.MaxAnisotropy = a_Desc.MaxAnisotropy;
-		SamplerDesc.ComparisonFunc = D3D12::Translate( a_Desc.ComparisonFunc );
-		SamplerDesc.BorderColor[0] = a_Desc.BorderColor.r;
-		SamplerDesc.BorderColor[1] = a_Desc.BorderColor.g;
-		SamplerDesc.BorderColor[2] = a_Desc.BorderColor.b;
-		SamplerDesc.BorderColor[3] = a_Desc.BorderColor.a;
+		SamplerDesc.ComparisonFunc = Translate( a_Desc.ComparisonFunc );
+		SamplerDesc.BorderColor[0] = a_Desc.BorderColor[0];
+		SamplerDesc.BorderColor[1] = a_Desc.BorderColor[1];
+		SamplerDesc.BorderColor[2] = a_Desc.BorderColor[2];
+		SamplerDesc.BorderColor[3] = a_Desc.BorderColor[3];
 		SamplerDesc.MinLOD = a_Desc.MinLOD;
 		SamplerDesc.MaxLOD = a_Desc.MaxLOD;
-
-		GetD3D12RHI()->GetD3D12Device()->CreateSampler( &SamplerDesc, SamplerHeap->GetCPUDescriptorHandleForHeapStart() );
 	}
 
 	D3D12_STATIC_SAMPLER_DESC RHISampler_D3D12Impl::GetStaticSamplerDesc( uint32_t a_ShaderRegister, ERHIShaderVisibility a_ShaderVisibility ) const
@@ -53,7 +37,7 @@ namespace Tridium::D3D12 {
 		StaticSamplerDesc.MaxLOD = SamplerDesc.MaxLOD;
 		StaticSamplerDesc.ShaderRegister = a_ShaderRegister;
 		StaticSamplerDesc.RegisterSpace = 0;
-		StaticSamplerDesc.ShaderVisibility = D3D12::Translate( a_ShaderVisibility );
+		StaticSamplerDesc.ShaderVisibility = Translate( a_ShaderVisibility );
 		return StaticSamplerDesc;
 	}
 

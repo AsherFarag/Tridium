@@ -259,7 +259,7 @@ namespace Tridium::D3D12 {
                         {
 							RHI_DEV_CHECK( binding.Resource->Device() == Device(), "Binding resource device mismatch" );
 
-                            Device()->GetD3D12Device()->CreateSampler(
+                            Device()->GetD3D12Device5()->CreateSampler(
                                 &binding.Resource->As<RHISampler_D3D12Impl>()->SamplerDesc,
                                 handle
 							);

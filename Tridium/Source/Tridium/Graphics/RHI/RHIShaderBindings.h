@@ -73,7 +73,7 @@ namespace Tridium {
 	//  Describes a singular resource binding in a shader binding layout.
 	struct RHIShaderBinding
 	{
-		static constexpr uint16_t InvalidSlot = ~0u;
+		static constexpr uint32_t InvalidSlot = ~0u;
 
 		uint32_t Slot : 16; // Register index in the shader.
 		uint32_t Size : 8;  // Size in bytes of the binding.
