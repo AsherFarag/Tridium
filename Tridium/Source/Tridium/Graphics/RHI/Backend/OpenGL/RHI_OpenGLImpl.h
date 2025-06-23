@@ -12,7 +12,6 @@
 #include <Tridium/Graphics/RHI/RHIShaderBindings.h>
 #include <Tridium/Graphics/RHI/RHISwapChain.h>
 #include <Tridium/Graphics/RHI/RHIDescriptorAllocator.h>
-#include <Tridium/Graphics/RHI/RHIFence.h>
 #include <Tridium/Graphics/RHI/RHIStateTracker.h>
 
 #include "OpenGL4.h"
@@ -224,34 +223,6 @@ namespace Tridium::OpenGL {
 	};
 
 	//======================================================================
-	// FENCE IMPLEMENTATION
-	//======================================================================
-
-	class RHIFence_OpenGLImpl : public IRHIFence
-	{
-	public:
-		RHI_OBJECT_IMPLEMENTATION_BODY( RHIFence_OpenGLImpl, OpenGL, ERHInterfaceType::OpenGL );
-		RHIFence_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType & a_Desc );
-		~RHIFence_OpenGLImpl() override { Release(); }
-
-		bool Release() override;
-		bool Valid() const override;
-		const void* NativePtr() const override;
-
-		uint64_t GetCompletedValue() override;
-		void Signal( uint64_t a_Value ) override;
-		void Wait( uint64_t a_Value ) override;
-
-		void AddPendingFence( uint64_t a_Value, GLsync a_Fence )
-		{
-			m_PendingFences.emplace_back( a_Value, a_Fence );
-		}
-
-	private:
-		std::deque<Pair<uint64_t, GLsync>> m_PendingFences;
-	};
-
-	//======================================================================
 	// BINDING LAYOUT IMPLEMENTATION
 	//======================================================================
 
@@ -399,8 +370,6 @@ namespace Tridium::OpenGL {
 		bool Valid() const override { return m_InlinedConstantsUBO.Valid(); }
 		const void* NativePtr() const override { return nullptr; }
 
-		bool IsCompleted() const override { return true; }
-		void WaitUntilCompleted() override {}
 		bool IsImmediate() const override { return Desc().EnableImmediateExecution; }
 
 		bool Open() override;
@@ -441,9 +410,11 @@ namespace Tridium::OpenGL {
 		RHIComputeState m_CurrentComputeState{};
 		bool m_ComputeStateValid = false;
 
-		// Buffer to queue commands for execution
-		// This is so OpenGL can have deferred execution of commands.
-		// Is not used if the RHICommandList is immediate.
+		//=======================================================================
+		// Command Buffer
+		//  Buffer to queue commands for execution
+		//  This is so OpenGL can have deferred execution of commands.
+		//  Is not used if the RHICommandList is immediate.
 		struct CommandBuffer
 		{
 			struct UpdateBuffer
@@ -589,47 +560,61 @@ namespace Tridium::OpenGL {
 	// DYNAMIC RHI IMPLEMENTATION
 	//======================================================================
 
+	struct GLResourceCache
+	{
+		UnorderedMap<RHISampler, GLSamplerWrapper> Samplers;
+		UnorderedMap<RHISampler, GLSamplerWrapper> DepthSamplers;
+
+		GLuint GetOrCreateSampler( const RHISampler& a_Sampler, bool a_IsDepth );
+	};
+
 	class DynamicRHI_OpenGLImpl final : public IDynamicRHI
 	{
 	public:
 		//==============================================
 		// Core RHI functions
-		// Initialise the RHI with the given configuration.
-		virtual bool Init( const RHIConfig& a_Config ) override;
-		// Shutdown the RHI.
-		virtual bool Shutdown() override;
-		// Execute the given command list.
-		virtual bool ExecuteCommandList( RHICommandListRef a_CommandList ) override;
-		// Returns the type of the Dynamically bound RHI.
-		virtual ERHInterfaceType GetRHIType() const override { return ERHInterfaceType::OpenGL; }
-		// Returns the static RHI type.
+		bool Init( const RHIConfig& a_Config ) override;
+		bool Shutdown() override;
+		RHIFenceValue ExecuteCommandLists( Span<IRHICommandList* const> a_CommandLists, ERHICommandQueueType a_QueueType ) override;
+		bool WaitForIdle() override;
+		void WaitForFence( ERHICommandQueueType a_QueueType, RHIFenceValue a_FenceValue ) override;
+		void CollectGarbage() override;
+		ERHInterfaceType GetRHIType() const override { return ERHInterfaceType::OpenGL; }
 		static constexpr ERHInterfaceType GetStaticRHIType() { return ERHInterfaceType::OpenGL; }
 		//==============================================
 
 		//=====================================================
 		// Resource creation
-		virtual RHIFenceRef CreateFence( const RHIFenceDesc& a_Desc ) override;
-		virtual RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) override;
-		virtual RHIBufferRef CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data ) override;
-		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc ) override;
-		virtual RHICommandListRef CreateCommandList( const RHICommandListDesc& a_Desc ) override;
-		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDesc& a_Desc ) override;
-		virtual RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc ) override;
-		virtual RHIBindingSetRef CreateBindingSet( const RHIBindingSetDesc& a_Desc ) override;
-		virtual RHISwapChainRef CreateSwapChain( const RHISwapChainDesc& a_Desc ) override;
+		RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) override;
+		RHIBufferRef CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data ) override;
+		RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc ) override;
+		RHICommandListRef CreateCommandList( const RHICommandListDesc& a_Desc ) override;
+		RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDesc& a_Desc ) override;
+		RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc ) override;
+		RHIBindingSetRef CreateBindingSet( const RHIBindingSetDesc& a_Desc ) override;
+		RHISwapChainRef CreateSwapChain( const RHISwapChainDesc& a_Desc ) override;
 		//=====================================================
 
 		//=====================================================
 		// Miscellaneous
-		virtual GPUInfo GetGPUInfo() const override;
+		IRHISwapChain* GetSwapChain() const override { return m_SwapChain.get(); }
+		GPUInfo GetGPUInfo() const override;
 		//=====================================================
 
 	#if RHI_DEBUG_ENABLED
-
 		// Dump debug information about the RHI into the console.
-		virtual void DumpDebug() override;
-
+		void DumpDebug() override;
 	#endif // RHI_DEBUG_ENABLED
+
+		//======================================================
+		// OpenGL-specific functions
+
+		auto& ResourceCache() { return m_ResourceCache; }
+		const auto& ResourceCache() const { return m_ResourceCache; }
+
+	private:
+		RHISwapChainRef m_SwapChain{};
+		GLResourceCache m_ResourceCache;
 	};
 
 	inline DynamicRHI_OpenGLImpl* GetOpenGLRHI()

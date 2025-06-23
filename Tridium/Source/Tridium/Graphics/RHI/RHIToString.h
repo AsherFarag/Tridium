@@ -219,7 +219,6 @@ namespace Tridium {
 		case ERHIObjectType::ComputePipelineState:  return "ComputePipelineState";
 		case ERHIObjectType::CommandList:           return "CommandList";
 		case ERHIObjectType::SwapChain:             return "SwapChain";
-		case ERHIObjectType::Fence:                 return "Fence";
 		case ERHIObjectType::Unknown:               return "Unknown";
 		default:                                      return "<INVALID>";
 		}
@@ -238,7 +237,6 @@ namespace Tridium {
 		case "ComputePipelineState"_H:  return Detail::AssignEnumValue( ERHIObjectType::ComputePipelineState, o_Value );
 		case "CommandList"_H:           return Detail::AssignEnumValue( ERHIObjectType::CommandList, o_Value );
 		case "SwapChain"_H:             return Detail::AssignEnumValue( ERHIObjectType::SwapChain, o_Value );
-		case "Fence"_H:                 return Detail::AssignEnumValue( ERHIObjectType::Fence, o_Value );
 		}
 
 		return false;

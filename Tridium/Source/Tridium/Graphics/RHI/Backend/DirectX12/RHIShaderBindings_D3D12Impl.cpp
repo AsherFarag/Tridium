@@ -250,7 +250,7 @@ namespace Tridium::D3D12 {
 			SamplerHeap = Device()->GetDescriptorHeapManager().AllocateHeap(
                 ERHIDescriptorHeapType::Sampler,
 				layout->DescriptorTableSizeSamplers,
-                EDescriptorHeapFlags::GPUVisible
+                EDescriptorHeapFlags::GPUVisible | EDescriptorHeapFlags::Poolable
             );
 
             for ( const auto& range : layout->DescriptorRangesSamplers )
@@ -303,7 +303,7 @@ namespace Tridium::D3D12 {
             RenderResourceHeap = Device()->GetDescriptorHeapManager().AllocateHeap(
                 ERHIDescriptorHeapType::RenderResource,
                 layout->DescriptorTableSizeRenderResources,
-                EDescriptorHeapFlags::GPUVisible
+                EDescriptorHeapFlags::GPUVisible | EDescriptorHeapFlags::Poolable
             );
 
             for ( const auto& range : layout->DescriptorRangesRenderResources )
@@ -327,7 +327,7 @@ namespace Tridium::D3D12 {
 
 								D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = buffer->CreateSRVDesc( binding.BufferType, binding.Range, binding.Format );
                                 Device()->GetD3D12Device()->CreateShaderResourceView(
-                                    buffer->ManagedBuffer.Resource,
+									buffer->ManagedBuffer.Resource(),
                                     &srvDesc,
                                     handle
                                 );
@@ -359,7 +359,7 @@ namespace Tridium::D3D12 {
                             resource = texture;
                             D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = texture->CreateSRVDesc( binding.Format, binding.TextureDimension, binding.Subresources );
                             Device()->GetD3D12Device()->CreateShaderResourceView(
-                                texture->Texture.Resource,
+                                texture->Texture.Resource(),
                                 &srvDesc,
                                 handle
 							);

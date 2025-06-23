@@ -181,4 +181,27 @@ namespace Tridium::OpenGL {
 	};
 	using GLFramebufferWrapper = GLObjWrapper<GLFramebufferFactory>;
 
+	class GLSamplerFactory
+	{
+	public:
+		static GLuint Create()
+		{
+			GLuint handle = 0;
+			OpenGL3::GenSamplers( 1, &handle );
+			return handle;
+		}
+
+		static void Delete( GLuint a_Handle )
+		{
+			OpenGL3::DeleteSamplers( 1, &a_Handle );
+		}
+
+		static constexpr GLenum Type()
+		{
+			return GL_SAMPLER;
+		}
+	};
+	using GLSamplerWrapper = GLObjWrapper<GLSamplerFactory>;
+
+
 }

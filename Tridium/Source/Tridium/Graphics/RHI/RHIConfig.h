@@ -2,7 +2,7 @@
 #include <Tridium/Core/Config.h>
 
 #if CONFIG_DEBUG
-	#define RHI_DEBUG_ENABLED 1
+	#define RHI_DEBUG_ENABLED 0
 	#define RHI_DEBUG_OP( x ) x
 	#define IF_RHI_DEBUG_ELSE( _DebugTrue, _DebugFalse ) _DebugTrue
 #else

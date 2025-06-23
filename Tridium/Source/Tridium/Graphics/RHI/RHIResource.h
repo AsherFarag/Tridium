@@ -16,9 +16,7 @@ namespace Tridium {
 	class IRHIGraphicsPipelineState;
 	class IRHIComputePipelineState;
 	class IRHICommandList;
-	class IRHICommandAllocator;
 	class IRHISwapChain;
-	class IRHIFence;
 
 	struct RHIObjectDesc;
 	struct RHIResourceDesc;
@@ -30,9 +28,7 @@ namespace Tridium {
 	struct RHIGraphicsPipelineStateDesc;
 	struct RHIComputePipelineStateDesc;
 	struct RHICommandListDesc;
-	struct RHICommandAllocatorDesc;
 	struct RHISwapChainDesc;
-	struct RHIFenceDesc;
 
 	using RHIObjectRef                    = SharedPtr<IRHIObject>;
 	using RHIResourceRef                  = SharedPtr<IRHIResource>;
@@ -44,10 +40,7 @@ namespace Tridium {
 	using RHIGraphicsPipelineStateRef     = SharedPtr<IRHIGraphicsPipelineState>;
 	using RHIComputePipelineStateRef      = SharedPtr<IRHIComputePipelineState>;
 	using RHICommandListRef               = SharedPtr<IRHICommandList>;
-	using RHICommandAllocatorRef          = SharedPtr<IRHICommandAllocator>;
 	using RHISwapChainRef                 = SharedPtr<IRHISwapChain>;
-	using RHIFenceRef                     = SharedPtr<IRHIFence>;
-	using RHIObjectRef                    = SharedPtr<IRHIObject>;
 
 	using RHIObjectWeakRef                = WeakPtr<IRHIObject>;
 	using RHIResourceWeakRef              = WeakPtr<IRHIResource>;                 
@@ -59,9 +52,7 @@ namespace Tridium {
 	using RHIGraphicsPipelineStateWeakRef = WeakPtr<IRHIGraphicsPipelineState>;
 	using RHIComputePipelineStateWeakRef  = WeakPtr<IRHIComputePipelineState>;
 	using RHICommandListWeakRef           = WeakPtr<IRHICommandList>;
-	using RHICommandAllocatorWeakRef      = WeakPtr<IRHICommandAllocator>;
 	using RHISwapChainWeakRef             = WeakPtr<IRHISwapChain>;
-	using RHIFenceWeakRef                 = WeakPtr<IRHIFence>;
 	// ===================
 
 	namespace Concepts {
@@ -160,7 +151,7 @@ namespace Tridium {
 
 	protected:
 		IRHIObject( IDynamicRHI* a_Device ) : m_Device( a_Device ) { RHI_DEV_CHECK( a_Device != nullptr, "RHI device cannot be null!" ); }
-		virtual ~IRHIObject() = default;
+		virtual ~IRHIObject();
 
 	private:
 		IDynamicRHI* m_Device = nullptr; // Pointer to the RHI device that owns this object.

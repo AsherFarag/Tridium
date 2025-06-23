@@ -9,7 +9,6 @@
 #include "RHICommandList.h"
 #include "RHIShaderBindings.h"
 #include "RHISwapChain.h"
-#include "RHIFence.h"
 
 namespace Tridium {
 
@@ -17,31 +16,32 @@ namespace Tridium {
 
 		//===========================
 		// Core RHI functions
-		
 		// Initialise the RHI with the given configuration.
 		bool Initialise( const RHIConfig& a_Config );
 		// Shutdown the RHI.
 		bool Shutdown();
 		// Present the current frame to the screen using the swap chain.
 		bool Present();
-		// Execute the given command list on the GPU.
-		bool ExecuteCommandList( const RHICommandListRef& a_CommandList );
-
-		// Wait for the frame fence to complete.
-		void FrameFenceWait();
+		// Executes the given command lists and returns a fence value that can be used to wait for the commands to complete.
+		RHIFenceValue ExecuteCommandLists( Span<IRHICommandList* const> a_CommandLists, ERHICommandQueueType a_QueueType );
+		// Waits for the RHI to finish processing all commands and become idle.
+		bool WaitForIdle();
+		// Waits until the specified fence value is reached on the given command queue type.
+		void WaitForFence( ERHICommandQueueType a_QueueType, RHIFenceValue a_FenceValue );
+		// Runs garbage collection and cleans up references to RHI resources that are no longer in use by command lists.
+		void CollectGarbage();
 		//===========================
 
 		//===========================
 		// RHI Query and Functions
-		uint32_t FrameIndex();
-		RHIFeatureInfo GetFeatureInfo( ERHIFeature a_Feature );
-		ERHIFeatureSupport GetFeatureSupport( ERHIFeature a_Feature );
-		bool IsFeatureSupported( ERHIFeature a_Feature );
+		[[nodiscard]] inline IRHISwapChain* GetSwapChain() { RHI_DEV_CHECK( s_DynamicRHI, "Null RHI" ); return s_DynamicRHI->GetSwapChain(); }
+		[[nodiscard]] RHIFeatureInfo GetFeatureInfo( ERHIFeature a_Feature );
+		[[nodiscard]] ERHIFeatureSupport GetFeatureSupport( ERHIFeature a_Feature );
+		[[nodiscard]] bool IsFeatureSupported( ERHIFeature a_Feature );
 		//===========================
 
 		//===========================
 		// Resource creation
-		[[nodiscard]] RHIFenceRef CreateFence( const RHIFenceDesc& a_Desc );
 		[[nodiscard]] RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData = {} );
 		[[nodiscard]] RHIBufferRef CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data = {} );
 		[[nodiscard]] RHICommandListRef CreateCommandList( const RHICommandListDesc& a_Desc );
@@ -57,6 +57,13 @@ namespace Tridium {
 		{
 			return CreateTexture( a_Desc, Span<RHITextureSubresourceData>{ &a_SubResourcesData, 1 } );
 		}
+
+		// Executes the given command lists and returns a fence value that can be used to wait for the commands to complete.
+		inline RHIFenceValue ExecuteCommandLists( IRHICommandList* const* a_CommandLists, size_t a_Count, ERHICommandQueueType a_QueueType )
+		{
+			return ExecuteCommandLists( Span<IRHICommandList* const>{ a_CommandLists, a_Count }, a_QueueType );
+		}
+
 		//===========================
 	}
 

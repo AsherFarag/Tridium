@@ -14,7 +14,7 @@ namespace Tridium {
 		void PushFront( const T& a_Value ) { m_Elements.push_front( a_Value ); }
 		void PopFront() { m_Elements.pop_front(); }
 		void Clear() { m_Elements.clear(); }
-		bool IsEmpty() const { return m_Elements.empty(); }
+		bool Empty() const { return m_Elements.empty(); }
 		size_t Size() const { return m_Elements.size(); }
 		T& Front() { return m_Elements.front(); }
 		const T& Front() const { return m_Elements.front(); }
@@ -23,6 +23,18 @@ namespace Tridium {
 
 		auto Begin() { return m_Elements.begin(); }
 		auto End() { return m_Elements.end(); }
+
+		template<typename... _Args>
+		T& EmplaceBack( _Args&&... a_Args )
+		{
+			return m_Elements.emplace_back( std::forward<_Args>( a_Args )... );
+		}
+
+		template<typename... _Args>
+		T& EmplaceFront( _Args&&... a_Args )
+		{
+			return m_Elements.emplace_front( std::forward<_Args>( a_Args )... );
+		}
 
 		auto begin() { return m_Elements.begin(); }
 		auto end() { return m_Elements.end(); }

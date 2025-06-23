@@ -935,7 +935,7 @@ namespace Tridium {
 				case ERHICommandQueueType::Graphics: return D3D12_COMMAND_LIST_TYPE_DIRECT;
 				case ERHICommandQueueType::Compute:  return D3D12_COMMAND_LIST_TYPE_COMPUTE;
 				case ERHICommandQueueType::Copy:     return D3D12_COMMAND_LIST_TYPE_COPY;
-				default:                             return D3D12_COMMAND_LIST_TYPE_DIRECT;
+				default:                             return D3D12_COMMAND_LIST_TYPE_NONE;
 				}
 			}
 		};

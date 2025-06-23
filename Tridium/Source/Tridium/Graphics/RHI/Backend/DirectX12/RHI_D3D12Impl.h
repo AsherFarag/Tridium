@@ -1,5 +1,6 @@
 #pragma once
 #include <Tridium/Utils/Log.h>
+#include <Tridium/Containers/Deque.h>
 #include <Tridium/Graphics/RHI/RHI.h>
 #include <Tridium/Graphics/RHI/RHICommon.h>
 #include <Tridium/Graphics/RHI/DynamicRHI.h>
@@ -12,7 +13,6 @@
 #include <Tridium/Graphics/RHI/RHIShaderBindings.h>
 #include <Tridium/Graphics/RHI/RHISwapChain.h>
 #include <Tridium/Graphics/RHI/RHIDescriptorAllocator.h>
-#include <Tridium/Graphics/RHI/RHIFence.h>
 #include <Tridium/Graphics/RHI/RHIStateTracker.h>
 
 #include "D3D12.h"
@@ -32,7 +32,7 @@ DECLARE_LOG_CATEGORY( DirectX );
 		} \
 	} while ( false )
 #else
-	#define D3D12_SET_DEBUG_NAME( _Object, _Name )
+#define D3D12_SET_DEBUG_NAME( _Object, _Name, _DefaultName ) do {} while ( false )
 #endif // RHI_USE_DEBUG_NAMES
 
 namespace Tridium::D3D12 {
@@ -112,9 +112,6 @@ namespace Tridium::D3D12 {
 		return refCount;
 	}
 
-	TODO( "Implement this or remove it" );
-	struct DeferredDeleteObject {};
-
 	//======================================================================
 	// Device Child
 	//  A base class for an object that is owned by a D3D12 device.
@@ -123,12 +120,15 @@ namespace Tridium::D3D12 {
 	public:
 		NON_COPYABLE( DeviceChild );
 		DeviceChild() = delete;
+
 		DeviceChild( ID3D12Device* a_ParentDevice )
-			: m_ParentDevice( a_ParentDevice ) {
-		}
+			: m_ParentDevice( a_ParentDevice )
+		{}
+
 		DeviceChild( DeviceChild&& other ) noexcept
-			: m_ParentDevice( std::move( other.m_ParentDevice ) ) {
-		}
+			: m_ParentDevice( std::exchange( other.m_ParentDevice, nullptr ) ) 
+		{}
+
 		DeviceChild& operator=( DeviceChild&& other ) noexcept
 		{
 			if ( this != &other )
@@ -137,7 +137,9 @@ namespace Tridium::D3D12 {
 			}
 			return *this;
 		}
-		virtual ~DeviceChild() {}
+
+		virtual ~DeviceChild() = default;
+
 		ID3D12Device* ParentDevice() const { return m_ParentDevice; }
 
 	private:
@@ -179,22 +181,22 @@ namespace Tridium::D3D12 {
 	struct ManagedResource
 	{
 		ComPtr<D3D12MA::Allocation> Allocation{};
-		ID3D12Resource* Resource = nullptr;
 
 		~ManagedResource()
 		{
 			Release();
 		}
 
-		bool Valid() const { return Allocation && Resource; }
+		bool Valid() const { return Allocation; }
+		
+		ID3D12Resource* Resource() const { return Valid() ? Allocation->GetResource() : nullptr; }
+		ID3D12Resource** ResourceAddress() { return Valid() ? Allocation->GetResourceAddress() : nullptr; }
 
 		void Release()
 		{
-			Allocation.Reset();
-			if ( Resource )
+			if ( Valid() )
 			{
-				Resource->Release();
-				Resource = nullptr;
+				Allocation.Reset();
 			}
 		}
 
@@ -216,57 +218,66 @@ namespace Tridium::D3D12 {
 	};
 
 	//======================================================================
-	// D3D12 Command Context
-	//  Owns and manages the command queue, command allocator, command list and fence.
-	struct CommandContext
+	// Command Queue
+	//  A wrapper around a D3D12 command queue and its associated fence.
+	//  In a Dynamic RHI context, 3 Command Queues are created:
+	//  - Graphics Command Queue
+	//  - Compute Command Queue
+	//  - Copy Command Queue
+	//  Each command queue has its own fence to track the completion of submitted commands.
+	struct CommandQueue
 	{
 		ComPtr<ID3D12CommandQueue> CmdQueue = nullptr;
-		ComPtr<ID3D12CommandAllocator> CmdAllocator = nullptr;
-		ComPtr<ID3D12GraphicsCommandList> CmdList = nullptr;
+		ComPtr<ID3D12Fence> Fence = nullptr;
+		RHIFenceValue LastSubmittedValue = 0;
+		RHIFenceValue LastCompletedValue = 0;
+		Deque<UniquePtr<class CommandContext>> CmdContextsInFlight{};
 
-		ComPtr<ID3D12Fence1> Fence = nullptr;
-		HANDLE FenceEvent = nullptr;
-		uint64_t FenceValue = 0;
+		RHIFenceValue UpdateLastCompletedValue()
+		{
+			if ( LastCompletedValue < LastSubmittedValue )
+				LastCompletedValue = Fence->GetCompletedValue();
+			return LastCompletedValue;
+		}
+
+		CommandQueue( ID3D12Device& a_D3D12Device, ID3D12CommandQueue* a_D3D12CmdQueue )
+			: CmdQueue( a_D3D12CmdQueue )
+		{
+			ENSURE( a_D3D12CmdQueue, "Command queue cannot be null" );
+			a_D3D12Device.CreateFence( 0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS( Fence.GetAddressOf() ) );
+		}
+
+		~CommandQueue()
+		{
+			CmdContextsInFlight.clear();
+			CmdQueue.Reset();
+			Fence.Reset();
+		}
+	};
+
+	//======================================================================
+	// Command Context
+	//  Represents a command list instance. 
+	//  Contains strong references to all the resources that are used by the command list.
+	struct CommandContext
+	{
+		ERHICommandQueueType QueueType = ERHICommandQueueType::Graphics;
+		ComPtr<ID3D12CommandAllocator> CmdAllocator = nullptr;
+		ComPtr<ID3D12CommandList> CmdList = nullptr;
+		ComPtr<ID3D12Fence> Fence = nullptr;
+		RHIFenceValue SubmittedValue = 0;
+
+		Array<RHIObjectRef> ReferencedResources{};
+		Array<SharedPtr<class DescriptorHeap>> DescriptorHeaps{};
+
 
 		~CommandContext()
 		{
-			if ( CmdList ) CmdList.Reset();
-			if ( CmdAllocator ) CmdAllocator->Reset();
-			if ( CmdQueue ) CmdQueue->Signal( Fence.Get(), FenceValue );
-			if ( FenceEvent ) CloseHandle( FenceEvent );
-
-			// Set the resources to null so they are not released again
-			TODO( "Hacky fix for D3D12 Shutdown" );
-			CmdQueue = nullptr;
-			CmdAllocator = nullptr;
-			CmdList = nullptr;
-			Fence = nullptr;
-			FenceEvent = nullptr;
-			FenceValue = 0;
-		}
-
-		[[nodiscard]] bool IsFenceComplete( uint64_t a_FenceValue ) const
-		{
-			return CmdQueue && (Fence->GetCompletedValue() >= a_FenceValue);
-		}
-
-		[[nodiscard]] uint64_t Signal()
-		{
-			if ( CmdQueue )
-			{
-				CmdQueue->Signal( Fence.Get(), ++FenceValue );
-				return FenceValue;
-			}
-			return 0;
-		}
-
-		void Wait( uint64_t a_FenceValue )
-		{
-			if ( Fence->GetCompletedValue() < a_FenceValue )
-			{
-				Fence->SetEventOnCompletion( a_FenceValue, FenceEvent );
-				WaitForSingleObject( FenceEvent, INFINITE );
-			}
+			ReferencedResources.Clear();
+			DescriptorHeaps.Clear();
+			CmdList.Reset();
+			CmdAllocator.Reset();
+			Fence.Reset();
 		}
 	};
 
@@ -322,7 +333,7 @@ namespace Tridium::D3D12 {
 
 			void* mappedData = nullptr;
 			D3D12_RANGE range = { 0, 0 };
-			m_UploadBuffer.Resource->Map( 0, &range, &mappedData );
+			m_UploadBuffer.Resource()->Map(0, &range, &mappedData);
 
 			return ReinterpretCast<uint8_t*>(mappedData) + o_Offset;
 		}
@@ -332,7 +343,7 @@ namespace Tridium::D3D12 {
 			m_CurrentOffset = 0;
 		}
 
-		ID3D12Resource* GetResource() const { return m_UploadBuffer.Resource; }
+		ID3D12Resource* GetResource() const { return m_UploadBuffer.Resource(); }
 
 	private:
 		ManagedResource m_UploadBuffer{};
@@ -452,8 +463,6 @@ namespace Tridium::D3D12 {
 		// Allocate a descriptor heap from the global heap pool.
 		DescriptorHeapRef AllocateHeap( ERHIDescriptorHeapType a_Type, uint32_t a_NumDescriptors, EDescriptorHeapFlags a_Flags, StringView a_DebugName = StringView{} );
 
-		// Frees the given heap after a frame/s has completed.
-		void DeferredFreeHeap( DescriptorHeapRef&& a_Heap );
 		// Frees the given heap immediately.
 		void ImmediateFreeHeap( DescriptorHeapRef&& a_Heap );
 
@@ -510,30 +519,6 @@ namespace Tridium::D3D12 {
 #pragma region D3D12 RHI IMPLEMENTATIONS
 
 	//======================================================================
-	// FENCE IMPLEMENTATION
-	//=======================================================================
-
-	class RHIFence_D3D12Impl : public IRHIFence
-	{
-	public:
-		RHI_OBJECT_IMPLEMENTATION_BODY( RHIFence_D3D12Impl, D3D12, ERHInterfaceType::DirectX12 );
-		RHIFence_D3D12Impl( IDynamicRHI* a_Device, const DescriptorType& a_Desc );
-		virtual ~RHIFence_D3D12Impl();
-
-		bool Release() override;
-		bool Valid() const override;
-		const void* NativePtr() const override;
-
-		uint64_t GetCompletedValue() override;
-		void Signal( uint64_t a_Value ) override;
-		void Wait( uint64_t a_Value ) override;
-
-	private:
-		ComPtr<ID3D12Fence> m_Fence = nullptr;
-		HANDLE m_FenceEvent = nullptr;
-	};
-
-	//======================================================================
 	// TEXTURE IMPLEMENTATION
 	//=======================================================================
 
@@ -545,7 +530,7 @@ namespace Tridium::D3D12 {
 		~RHITexture_D3D12Impl() override { Release(); }
 
 		virtual bool Release() override;
-		virtual const void* NativePtr() const override { return Texture.Resource; }
+		virtual const void* NativePtr() const override { return Texture.Resource(); }
 		virtual bool Valid() const override { return Texture.Valid(); }
 
 		// D3D12 specific functions
@@ -575,14 +560,14 @@ namespace Tridium::D3D12 {
 
 		virtual bool Release() override { ManagedBuffer.Release(); return true; }
 		virtual bool Valid() const override { return ManagedBuffer.Valid(); }
-		virtual const void* NativePtr() const override { return ManagedBuffer.Resource; }
+		virtual const void* NativePtr() const override { return ManagedBuffer.Resource(); }
 
 		// D3D12 specific functions
 		D3D12_RESOURCE_DESC GetD3D12ResourceDesc() const;
 		D3D12_SHADER_RESOURCE_VIEW_DESC CreateSRVDesc( ERHIBufferType a_Type, RHIBufferRange a_Range = RHIBufferRange::EntireBuffer(), ERHIFormat a_Format = ERHIFormat::Unknown) const;
 		D3D12_CONSTANT_BUFFER_VIEW_DESC CreateCBVDesc( RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() ) const;
 
-		D3D12::ManagedResource ManagedBuffer{};
+		ManagedResource ManagedBuffer{};
 	};
 
 	//======================================================================
@@ -718,12 +703,10 @@ namespace Tridium::D3D12 {
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHICommandList_D3D12Impl, D3D12, ERHInterfaceType::DirectX12 );
 		RHICommandList_D3D12Impl( IDynamicRHI* a_Device, const RHICommandListDesc& a_Desc );
 		~RHICommandList_D3D12Impl() override { Release(); }
-		bool Release() override;
-		bool Valid() const override { return CommandList != nullptr; }
-		const void* NativePtr() const override { return CommandList.Get(); }
 
-		bool IsCompleted() const override;
-		void WaitUntilCompleted() override;
+		bool Release() override;
+		bool Valid() const override { return true; }
+		const void* NativePtr() const override { return GetD3D12CmdList(); }
 		bool IsImmediate() const override { return false; } // Immediate command lists are not supported in D3D12.
 
 		bool Open() override;
@@ -749,22 +732,27 @@ namespace Tridium::D3D12 {
 		void PopDebugGroup() override;
 		void InsertDebugMarker( StringView a_Name ) override;
 
-		ID3D12GraphicsCommandList* GraphicsCommandList() const
-		{
-			RHI_DEV_CHECK( m_Desc.QueueType == ERHICommandQueueType::Graphics, "Command list is not a graphics command list!" );
-			return Cast<ID3D12GraphicsCommandList*>(CommandList.Get());
-		}
+		// = D3D12 Specific =
 
-		ComPtr<ID3D12CommandList> CommandList{};
-		IRHIBindingLayout* CurrentSBL = nullptr;
+		ID3D12CommandList* GetD3D12CmdList() const { return m_ActiveCmdList ? m_ActiveCmdList->CmdList.Get() : nullptr; }
+		UniquePtr<CommandContext> ReleaseCmdContext( CommandQueue& a_CmdQueue );
 
 	private:
+		//======================================================================
+		// Command List
+		//  A simple wrapper around a D3D12 command list and its associated command allocator.
+		//  A pool of these command lists are created per RHICommandList_D3D12Impl instance.
+		struct CommandList
+		{
+			ComPtr<ID3D12CommandAllocator> CmdAllocator = nullptr;
+			ComPtr<ID3D12GraphicsCommandList> CmdList = nullptr;
+			RHIFenceValue LastSubmittedValue = 0;
+		};
+
+		CommandQueue* m_CmdQueue = nullptr;
 		RHIResourceStateTracker m_ResourceStateTracker{};
 		Array<D3D12_RESOURCE_BARRIER> m_D3D12Barriers{};
-		uint64_t m_FenceValue = 0;
 
-		Array<RHIObjectRef> m_ReferencedResources{};
-		Array<SharedPtr<DescriptorHeap>> m_DescriptorHeaps{};
 		DescriptorHeap* m_RTVHeap = nullptr;
 		DescriptorHeap* m_DSVHeap = nullptr;
 		DescriptorHeap* m_SRVUAVHeap = nullptr;
@@ -772,6 +760,10 @@ namespace Tridium::D3D12 {
 
 		bool m_GraphicsStateValid = false; // Whether the graphics state has been set.
 		RHIGraphicsState m_CurrentGraphicsState{}; // Current graphics state for the command list.
+
+		Deque<UniquePtr<CommandList>> m_CmdListPool{};
+		UniquePtr<CommandList> m_ActiveCmdList{}; // The currently active command list that is being recorded to.
+		UniquePtr<CommandContext> m_CmdContext{}; // The current command context that is being used to record commands.
 
 	private:
 		void CommitBarriers();
@@ -792,21 +784,18 @@ namespace Tridium::D3D12 {
 	public:
 		//==============================================
 		// Core RHI functions
-		// Initialise the RHI with the given configuration.
-		virtual bool Init( const RHIConfig& a_Config ) override;
-		// Shutdown the RHI.
-		virtual bool Shutdown() override;
-		// Execute the given command list.
-		virtual bool ExecuteCommandList( RHICommandListRef a_CommandList ) override;
-		// Returns the type of the Dynamically bound RHI.
-		virtual ERHInterfaceType GetRHIType() const override { return ERHInterfaceType::DirectX12; }
-		// Returns the static RHI type.
+		bool Init( const RHIConfig& a_Config ) override;
+		bool Shutdown() override;
+		RHIFenceValue ExecuteCommandLists( Span<IRHICommandList* const> a_CommandLists, ERHICommandQueueType a_QueueType ) override;
+		bool WaitForIdle() override;
+		void WaitForFence( ERHICommandQueueType a_QueueType, RHIFenceValue a_FenceValue ) override;
+		void CollectGarbage() override;
+		ERHInterfaceType GetRHIType() const override { return ERHInterfaceType::DirectX12; }
 		static constexpr ERHInterfaceType GetStaticRHIType() { return ERHInterfaceType::DirectX12; }
 		//==============================================
 
 		//=====================================================
 		// Resource creation
-		virtual RHIFenceRef CreateFence( const RHIFenceDesc& a_Desc ) override;
 		virtual RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) override;
 		virtual RHIBufferRef CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data ) override;
 		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc ) override;
@@ -819,6 +808,7 @@ namespace Tridium::D3D12 {
 
 		//=====================================================
 		// Miscellaneous
+		IRHISwapChain* GetSwapChain() const override { return m_SwapChain.get(); }
 		virtual GPUInfo GetGPUInfo() const override;
 		//=====================================================
 
@@ -826,24 +816,21 @@ namespace Tridium::D3D12 {
 		// D3D12 Specific
 		//====================================================
 
-		auto& GetCommandContext( ERHICommandQueueType a_Type )
+		CommandQueue* GetCommandQueue( ERHICommandQueueType a_Type ) const
 		{
-			ASSERT( a_Type < ERHICommandQueueType::COUNT, "Invalid command queue type!" );
-			return m_CmdContexts[Cast<size_t>( a_Type )];
+			RHI_DEV_CHECK( a_Type < ERHICommandQueueType::COUNT, "Invalid command queue type!" );
+			return m_CmdQueues.At( Cast<size_t>( a_Type ) ).get();
 		}
 
-		const auto& GetCommandContext( ERHICommandQueueType a_Type ) const
-		{
-			ASSERT( a_Type < ERHICommandQueueType::COUNT, "Invalid command queue type!" );
-			return m_CmdContexts[Cast<size_t>( a_Type )];
-		}
-
+		auto* GetResourceInitCommandList() { return m_ResourceInitCmdList->As<RHICommandList_D3D12Impl>(); }
 		const auto& GetDXGIFactory() const { return m_DXGIFactory; }
 		const auto& GetDXGIAdapter() const { return m_DXGIAdapter; }
 		const auto& GetAllocator() const { return m_Allocator; }
 		const auto& GetUploadBuffer() const { return m_UploadBuffer; }
 		auto& GetUploadBuffer() { return m_UploadBuffer; }
-		size_t GetNextCommandListIndex() { return m_NextCommandListIndex; }
+
+		D3D12::DescriptorHeapManager& GetDescriptorHeapManager() { return m_DescriptorHeapManager; }
+		const D3D12::DescriptorHeapManager& GetDescriptorHeapManager() const { return m_DescriptorHeapManager; }
 
 		bool SupportsDeviceVersion( uint32_t a_Version ) const { return m_MaxD3D12DeviceVersion >= a_Version; }
 		ID3D12Device* GetD3D12Device() const { return m_Device.Get(); }
@@ -863,32 +850,25 @@ namespace Tridium::D3D12 {
 
 	#undef GET_D3D12_DEVICE
 
-		D3D12::DescriptorHeapManager& GetDescriptorHeapManager() { return m_DescriptorHeapManager; }
-		const D3D12::DescriptorHeapManager& GetDescriptorHeapManager() const { return m_DescriptorHeapManager; }
-
-		template<typename T>
-		void DeferredDelete( const T& a_Object )
-		{
-			LOG( LogCategory::DirectX, Debug, "Deferred delete object." );
-			m_ObjectsToDelete.EmplaceBack();
-		}
-
 		//====================================================
 
 	private:
+		ComPtr<ID3D12Device> m_Device = nullptr;
 		ComPtr<IDXGIAdapter> m_DXGIAdapter = nullptr;
 		ComPtr<IDXGIFactory> m_DXGIFactory = nullptr;
-		ComPtr<ID3D12Device> m_Device = nullptr;
 		ComPtr<D3D12MA::Allocator> m_Allocator = nullptr;
 		DescriptorHeapManager m_DescriptorHeapManager{};
+		RHISwapChainRef m_SwapChain = nullptr;
 
 		uint32_t m_MaxD3D12DeviceVersion = 0;
 
-		size_t m_NextCommandListIndex = 0;
-		Array<DeferredDeleteObject> m_ObjectsToDelete{};
-		UploadBuffer m_UploadBuffer{};
-		FixedArray<CommandContext, size_t( ERHICommandQueueType::COUNT )> m_CmdContexts{};
 		UnorderedMap<hash64_t, WeakPtr<RootSignature>> m_RootSignatureCache{};
+
+		UploadBuffer m_UploadBuffer{};
+		RHICommandListRef m_ResourceInitCmdList = nullptr;
+		FixedArray<UniquePtr<CommandQueue>, size_t( ERHICommandQueueType::COUNT )> m_CmdQueues{};
+		HANDLE m_FenceEvent = nullptr;
+		Array<ID3D12CommandList*> m_CmdListsToExecute{};
 
 		//=====================================================
 

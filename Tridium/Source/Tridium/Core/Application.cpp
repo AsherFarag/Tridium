@@ -122,6 +122,13 @@ namespace Tridium {
 		RHIConfig config{};
 		config.RHIType = ERHInterfaceType::DirectX12;
 		config.UseDebug = true;
+		config.SwapChainDesc = RHISwapChainDesc{}.SetWidth( 1280 )
+			.SetHeight( 720 )
+			.SetBufferCount( 2 )
+			.SetFormat( ERHIFormat::RGBA8_UNORM )
+			.SetFlags( ERHISwapChainFlags::UseVSync )
+			.SetName( "Main SwapChain" );
+
 		bool initSuccess = RHI::Initialise( config );
 		LOG( LogCategory::RHI, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), initSuccess );
 
@@ -462,7 +469,10 @@ float4 PSMain( VSOutput input ) : SV_Target
 			const Color clearColor = Color{ 0.2f, 0.35f, 0.5f, 1.0f };
 			int f{};
 
-			while ( time < 5.0 )
+			//while ( time < 5.0 )
+
+			int bb = 0;
+			while ( true )
 			{
 #if 1
 				++f;
@@ -527,7 +537,9 @@ float4 PSMain( VSOutput input ) : SV_Target
 						.SetAddressV( ERHISamplerAddressMode::Border )
 						.SetAddressW( ERHISamplerAddressMode::Border )
 						.SetFilter( ERHISamplerFilter::Anisotropic )
-						.SetBorderColor( Color(1.0f) );
+						.SetMaxAnisotropy( 16 )
+						.SetBorderColor( Color( 1,1,0, 1.0f ) );
+
 					bindingSetDesc.AddTexture( "Texture"_H, tex.get(), &sampler );
 					RHIBindingSetRef bindingSet = RHI::CreateBindingSet( bindingSetDesc );
 
@@ -584,8 +596,12 @@ float4 PSMain( VSOutput input ) : SV_Target
 
 					cmdList->Close();
 
-					RHI::ExecuteCommandList( cmdList );
-					cmdList->WaitUntilCompleted();
+
+					IRHICommandList* cmdListPtr = cmdList.get();
+					RHI::ExecuteCommandLists( &cmdListPtr, 1, ERHICommandQueueType::Graphics );
+					RHI::WaitForIdle();
+
+					RHI::CollectGarbage();
 				}
 #endif
 				RHI::Present();
@@ -723,10 +739,10 @@ float4 PSMain( VSOutput input ) : SV_Target
 
 	bool Application::OnWindowResized( const WindowResizeEvent& a_Event )
 	{
-		if ( !RHI::GetSwapChain() )
+		if ( !RHI::GetDynamicRHI()->GetSwapChain() )
 			return false;
 
-		RHI::GetSwapChain()->Resize( a_Event.Width, a_Event.Height );
+		RHI::GetDynamicRHI()->GetSwapChain()->Resize( a_Event.Width, a_Event.Height );
 		return true;
 	}
 

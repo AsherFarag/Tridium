@@ -49,12 +49,10 @@ namespace Tridium::D3D12 {
 			return;
 		}
 
-		D3D12_SET_DEBUG_NAME( Texture.Resource, m_Desc.Name, L"Unnamed Texture" );
+		D3D12_SET_DEBUG_NAME( Texture.Resource(), m_Desc.Name, L"Unnamed Texture");
 
 		if ( initData )
 		{
-			CommandContext& copyCmdCtx = GetD3D12RHI()->GetCommandContext( ERHICommandQueueType::Copy );
-
 			UINT64 uploadBufferSize = 0;
 			UINT numSubresources = Cast<UINT>( a_SubResourcesData.size() );
 
@@ -66,7 +64,7 @@ namespace Tridium::D3D12 {
 			numRows.Resize( numSubresources );
 			rowSizeInBytes.Resize( numSubresources );
 
-			GetD3D12RHI()->GetD3D12Device()->GetCopyableFootprints(
+			Device()->GetD3D12Device()->GetCopyableFootprints(
 				&d3d12Desc, 0, numSubresources, 0,
 				layouts.Data(), numRows.Data(), rowSizeInBytes.Data(), &uploadBufferSize
 			);
@@ -101,38 +99,24 @@ namespace Tridium::D3D12 {
 				d3d12SubResData[i].SlicePitch = Cast<LONG_PTR>( a_SubResourcesData[i].DepthStride );
 			}
 
-			// Ensure the copy command list is reset
-			TODO( "Should we be doing this, this way?" );
-			if ( FAILED( copyCmdCtx.CmdAllocator->Reset() ) )
-			{
-				ASSERT( false, "Failed to reset command allocator" );
-				return;
-			}
-			if ( FAILED( copyCmdCtx.CmdList->Reset( copyCmdCtx.CmdAllocator.Get(), nullptr ) ) )
-			{
-				ASSERT( false, "Failed to reset command list" );
-				return;
-			}
+			auto* cmdList = Device()->GetResourceInitCommandList();
+			cmdList->Open();
 
 			UpdateSubresources(
-				copyCmdCtx.CmdList.Get(),
-				Texture.Resource,
-				uploadBuffer.Resource,
+				Cast<ID3D12GraphicsCommandList*>( cmdList->GetD3D12CmdList() ),
+				Texture.Resource(),
+				uploadBuffer.Resource(),
 				0, 0,
 				numSubresources,
 				d3d12SubResData.Data()
 			);
 
-			// Execute the copy command list
-			if ( FAILED( copyCmdCtx.CmdList->Close() ) )
-			{
-				ASSERT( false, "Failed to close command list" );
-				return;
-			}
+			cmdList->Close();
 
-			ID3D12CommandList* cmdLists[] = { copyCmdCtx.CmdList.Get() };
-			copyCmdCtx.CmdQueue->ExecuteCommandLists( 1, cmdLists );
-			copyCmdCtx.Wait( copyCmdCtx.Signal() );
+			IRHICommandList* cmdListPtr = cmdList;
+			RHIFenceValue fence = Device()->ExecuteCommandLists( Span{ &cmdListPtr, 1 }, ERHICommandQueueType::Copy );
+			Device()->WaitForIdle();
+			//Device()->WaitForFence( ERHICommandQueueType::Copy, fence );
 		}
 	}
 
@@ -376,7 +360,7 @@ namespace Tridium::D3D12 {
 		uint32_t a_DstMipLevel, uint32_t a_DstArraySlice, Box a_DstRegion )
 	{
 		D3D12_TEXTURE_COPY_LOCATION dstLocation = {};
-		dstLocation.pResource = this->Texture.Resource;
+		dstLocation.pResource = this->Texture.Resource();
 		dstLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 		dstLocation.SubresourceIndex = CalcSubresource(
 			a_DstRegion.MinZ, a_DstRegion.MinY, a_DstRegion.MinX,
@@ -384,7 +368,7 @@ namespace Tridium::D3D12 {
 		);
 
 		D3D12_TEXTURE_COPY_LOCATION srcLocation = {};
-		srcLocation.pResource = a_SrcTexture.Texture.Resource;
+		srcLocation.pResource = a_SrcTexture.Texture.Resource();
 		srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 		srcLocation.SubresourceIndex = CalcSubresource(
 			a_SrcRegion.MinZ, a_SrcRegion.MinY, a_SrcRegion.MinX,

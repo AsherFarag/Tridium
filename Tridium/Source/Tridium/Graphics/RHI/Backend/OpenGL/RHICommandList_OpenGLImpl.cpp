@@ -2,12 +2,7 @@
 #include "RHI_OpenGLImpl.h"
 
 #undef RHI_DEBUG_CMD_PARAM
-
-#if RHI_DEBUG_ENABLE_CMD_RECORDING
-	#define RHI_DEBUG_SRC_LOC_PARAM const SourceLocation& RHI_DEBUG_SRC_LOC
-#else
-	#define RHI_DEBUG_CMD_PARAM
-#endif // RHI_DEBUG_ENABLE_CMD_RECORDING
+#define RHI_DEBUG_SRC_LOC_PARAM const SourceLocation& RHI_DEBUG_SRC_LOC
 
 namespace Tridium::OpenGL {
 
@@ -306,28 +301,9 @@ namespace Tridium::OpenGL {
 	void RHICommandList_OpenGLImpl::Flush()
 	{
 		if ( !IsImmediate() )
-		{
 			FlushCommandBuffer();
 
-			// Now clear the OpenGL state
-			//OpenGL3::BindVertexArray( 0 );
-			//OpenGL3::BindFramebuffer( GL_FRAMEBUFFER, 0 );
-			//OpenGL1::BindBuffer( GL_UNIFORM_BUFFER, 0 );
-			//for ( uint32_t i = 0; i < RHIConstants::MaxColorTargets; ++i )
-			//{
-			//	OpenGL3::Disablei( GL_BLEND, i );
-			//	OpenGL4::BlendFuncSeparatei( i, GL_ONE, GL_ZERO, GL_ONE, GL_ZERO );
-			//	OpenGL4::BlendEquationi( i, GL_FUNC_ADD );
-			//}
-
-			//OpenGL3::Disable( GL_DEPTH_TEST );
-			//OpenGL3::Disable( GL_STENCIL_TEST );
-			//OpenGL3::Disable( GL_CULL_FACE );
-			//OpenGL3::PolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-			//OpenGL3::FrontFace( GL_CCW );
-
-			//OpenGL2::UseProgram( 0 );
-		}
+		OpenGL1::Flush();
 
 		m_ReferencedObjects.Clear();
 	}
@@ -642,12 +618,15 @@ namespace Tridium::OpenGL {
 					if ( auto* texture = binding.Resource->As<RHITexture_OpenGLImpl>() )
 					{
 						OpenGL4::BindTextureUnit( uniform.BindingPoint, texture->TextureObj );
-						TODO( "Handle texture subresources and samplers better" );
-						TODO( "Handle subresources and samplers better" );
-						//if ( texture->Sampler )
-						//	OpenGL4::BindSampler( uniform.BindingPoint, texture->Sampler->As<RHISampler_OpenGLImpl>()->GetGLHandle() );
-						//else
-						//	OpenGL4::BindSampler( uniform.BindingPoint, 0 ); // Unbind sampler if not set
+						TODO( "Handle texture subresources better" );
+
+						RHISampler sampler = texture->Desc().DefaultSampler;
+						if ( binding.Sampler.Valid() )
+							sampler = binding.Sampler.Unpack();
+
+						const bool isDepth = GetRHIFormatInfo( binding.Format ).HasDepth;
+						GLuint glSampler = Device()->ResourceCache().GetOrCreateSampler( sampler, isDepth );
+						OpenGL4::BindSampler( uniform.BindingPoint, glSampler );
 					}
 					else
 					{

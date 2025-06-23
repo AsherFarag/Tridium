@@ -42,14 +42,14 @@ namespace Tridium {
 		constexpr StringView GetRHIName( ERHInterfaceType a_API );
 
 		// Are we in debug mode?
+		#if RHI_DEBUG_ENABLED
+		bool IsDebug();
+		#else
 		inline bool IsDebug()
 		{
-		#if RHI_DEBUG_ENABLED
-			return s_RHIGlobals.Config.UseDebug;
-		#else
 			return false;
-		#endif
 		}
+		#endif
 
 		// Can samplers be used as separate objects?
 		inline bool SupportsSeparateSamplers()

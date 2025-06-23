@@ -2,7 +2,6 @@
 
 #define BIT(x) (1 << x)
 
-#define Stringize( x ) #x
 #define STRINGIFY( x ) #x
 #define TOSTRING( x ) STRINGIFY( x )
 #define WRAP( m, x ) m(x)
@@ -22,11 +21,6 @@
 #define SELECT_MACRO_10(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, x, ...) x
 
 #pragma endregion
-
-#define MIN(x, y) (x > y ? y : x)
-#define MAX(x, y) (x > y ? x : y)
-#define CLAMP(min, max, val) (val < min ? min : (val > max ? max : val))
-
 
 #define TRIDIUM_NODISCARD [[nodiscard]]
 
@@ -52,6 +46,14 @@
 	#define TRIDIUM_PRETTY_FUNCTION __FUNCSIG__
 	#define TRIDIUM_PRETTY_FUNCTION_PREFIX '<'
 	#define TRIDIUM_PRETTY_FUNCTION_SUFFIX '>'
+#endif
+
+#ifdef _MSC_VER
+	#define PACKED_STRUCT(_Declaration) __pragma(pack(push, 1)) _Declaration
+	#define PACKED_STRUCT_END __pragma(pack(pop))
+#else
+	#define PACKED_STRUCT(_Declaration) _Declaration __attribute((packed))
+	#define PACKED_STRUCT_END
 #endif
 
 #define $LINE WRAP( Stringize, __LINE__ )

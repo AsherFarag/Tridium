@@ -18,6 +18,8 @@ namespace Tridium::OpenGL {
 
 	bool DynamicRHI_OpenGLImpl::Init( const RHIConfig& a_Config )
 	{
+		m_Config = a_Config;
+
 		int status = gladLoadGLLoader( (GLADloadproc)glfwGetProcAddress );
 		if ( status == 0 )
 		{
@@ -45,11 +47,20 @@ namespace Tridium::OpenGL {
 		OpenGL1::BlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 		OpenGL1::Enable( GL_TEXTURE_CUBE_MAP_SEAMLESS );
 
+		// Init Swap Chain
+		m_SwapChain = CreateSwapChain( a_Config.SwapChainDesc );
+
 		return true;
 	}
 
 	bool DynamicRHI_OpenGLImpl::Shutdown()
 	{
+		if ( m_SwapChain )
+		{
+			m_SwapChain->Release();
+			m_SwapChain.reset();
+		}
+
 		// Release all resources
 		LOG( LogCategory::RHI, Info, "Releasing all registered resources...", m_RegisteredResources.size() );
 		size_t numResources = 0;
@@ -66,81 +77,91 @@ namespace Tridium::OpenGL {
 		return true;
 	}
 
-	bool DynamicRHI_OpenGLImpl::ExecuteCommandList( RHICommandListRef a_CommandList )
+	RHIFenceValue DynamicRHI_OpenGLImpl::ExecuteCommandLists( Span<IRHICommandList* const> a_CommandLists, ERHICommandQueueType a_QueueType )
 	{
-		if ( !a_CommandList )
-			return false;
+		for ( IRHICommandList* cmdList : a_CommandLists )
+		{
+			RHI_DEV_CHECK( cmdList && cmdList->Desc().QueueType == a_QueueType, "Invalid command list type!" );
+			cmdList->As<RHICommandList_OpenGLImpl>()->Flush();
+		}
 
-		auto* commandList = a_CommandList->As<RHICommandList_OpenGLImpl>();
-		commandList->Flush();
+		return 0;
+	}
 
+	bool DynamicRHI_OpenGLImpl::WaitForIdle()
+	{
+		// OpenGL does not have a concept of command queues or fences, so we can just flush the OpenGL context
+		OpenGL1::Finish();
 		return true;
+	}
+
+	void DynamicRHI_OpenGLImpl::WaitForFence( ERHICommandQueueType a_QueueType, RHIFenceValue a_FenceValue )
+	{
+		// OpenGL does not have a concept of command queues or fences, so we can just flush the OpenGL context
+		OpenGL1::Finish();
+	}
+
+	void DynamicRHI_OpenGLImpl::CollectGarbage()
+	{
 	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// RESOURCE CREATION
 	//////////////////////////////////////////////////////////////////////////
 
-	RHIFenceRef DynamicRHI_OpenGLImpl::CreateFence( const RHIFenceDesc& a_Desc )
-	{
-		RHIFenceRef fence = IRHIObject::Create<RHIFence_OpenGLImpl>( this, a_Desc );
-		RegisterRHIResource( *fence );
-		return fence;
-	}
-
 	RHITextureRef DynamicRHI_OpenGLImpl::CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
 	{
  		RHITextureRef texture = IRHIObject::Create<RHITexture_OpenGLImpl>( this, a_Desc, a_SubResourcesData );
-		RegisterRHIResource( *texture );
+		RegisterRHIObject( *texture );
 		return texture;
 	}
 
 	RHIBufferRef DynamicRHI_OpenGLImpl::CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data )
 	{
  		RHIBufferRef buffer = IRHIObject::Create<RHIBuffer_OpenGLImpl>( this, a_Desc, a_Data );
-		RegisterRHIResource( *buffer );
+		RegisterRHIObject( *buffer );
 		return buffer;
 	}
 
 	RHIGraphicsPipelineStateRef DynamicRHI_OpenGLImpl::CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc )
 	{
  		RHIGraphicsPipelineStateRef pso = IRHIObject::Create<RHIGraphicsPipelineState_OpenGLImpl>( this, a_Desc );
-		RegisterRHIResource( *pso );
+		RegisterRHIObject( *pso );
 		return pso;
 	}
 
 	RHICommandListRef DynamicRHI_OpenGLImpl::CreateCommandList( const RHICommandListDesc& a_Desc )
 	{
 		RHICommandListRef commandList = IRHIObject::Create<RHICommandList_OpenGLImpl>( this, a_Desc );
-		RegisterRHIResource( *commandList );
+		RegisterRHIObject( *commandList );
 		return commandList;
 	}
 
 	RHIShaderModuleRef DynamicRHI_OpenGLImpl::CreateShaderModule( const RHIShaderModuleDesc& a_Desc )
 	{
 		RHIShaderModuleRef shaderModule = IRHIObject::Create<RHIShaderModule_OpenGLImpl>( this, a_Desc );
-		RegisterRHIResource( *shaderModule );
+		RegisterRHIObject( *shaderModule );
 		return shaderModule;
 	}
 
 	RHIBindingLayoutRef DynamicRHI_OpenGLImpl::CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc )
 	{
 		RHIBindingLayoutRef bindingLayout = IRHIObject::Create<RHIBindingLayout_OpenGLImpl>( this, a_Desc );
-		RegisterRHIResource( *bindingLayout );
+		RegisterRHIObject( *bindingLayout );
 		return bindingLayout;
 	}
 
 	RHIBindingSetRef DynamicRHI_OpenGLImpl::CreateBindingSet( const RHIBindingSetDesc& a_Desc )
 	{
 		RHIBindingSetRef bindingSet = IRHIObject::Create<RHIBindingSet_OpenGLImpl>( this, a_Desc );
-		RegisterRHIResource( *bindingSet );
+		RegisterRHIObject( *bindingSet );
 		return bindingSet;
 	}
 
 	RHISwapChainRef DynamicRHI_OpenGLImpl::CreateSwapChain( const RHISwapChainDesc& a_Desc )
 	{
  		RHISwapChainRef swapChain = IRHIObject::Create<RHISwapChain_OpenGLImpl>( this, a_Desc );
-		RegisterRHIResource( *swapChain );
+		RegisterRHIObject( *swapChain );
 		return swapChain;
 	}
 

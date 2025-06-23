@@ -42,10 +42,17 @@ namespace Tridium::D3D12 {
 
 	DescriptorHeap::~DescriptorHeap()
 	{
-		if ( IsPoolable() )
+		if ( IsSuballocation() )
 		{
+			LOG( LogCategory::RHI, Debug, "DescriptorHeap - Returning heap to pool: Type: {0}, NumDescriptors: {1}",
+				RHIDescriptorHeapTypeToString( m_Type ), m_NumDescriptors );
 			// Return the heap to the pool.
 			GetD3D12RHI()->GetDescriptorHeapManager().AddHeapToPool( std::move( m_Heap ), m_Type, m_NumDescriptors, m_Flags );
+		}
+		else
+		{
+			LOG( LogCategory::RHI, Debug, "DescriptorHeap - Destroying heap: Type: {0}, NumDescriptors: {1}",
+				RHIDescriptorHeapTypeToString( m_Type ), m_NumDescriptors );
 		}
 	}
 
@@ -106,18 +113,12 @@ namespace Tridium::D3D12 {
 			}
 
 			TODO( "Handle if the global heap is full." );
-			ASSERT( false, "Global heap is full!" );
+			ENSURE( false, "Global heap is full!" );
 			return nullptr;
 		}
 
 		// Since we could not find a global heap to use, create a new independent heap
 		return AllocateIndependentHeap( a_Type, a_NumDescriptors, a_Flags, a_DebugName );
-	}
-
-	void DescriptorHeapManager::DeferredFreeHeap( DescriptorHeapRef&& a_Heap )
-	{
-
-		GetD3D12RHI()->DeferredDelete( std::move( a_Heap ) );
 	}
 
 	void DescriptorHeapManager::ImmediateFreeHeap( DescriptorHeapRef&& a_Heap )

@@ -74,28 +74,16 @@ namespace Tridium {
         String Name{};
 
         constexpr auto& SetQueueType( ERHICommandQueueType a_QueueType ) { QueueType = a_QueueType; return *this; }
-        constexpr auto& SetName( StringView a_Name ) { Name = a_Name; return *this; }
+		constexpr auto& SetEnableImmediateExecution( bool a_Enable ) { EnableImmediateExecution = a_Enable; return *this; }
+                  auto& SetName( StringView a_Name ) { Name = a_Name; return *this; }
     };
 
     class IRHICommandList : public IRHIObject
     {
         RHI_OBJECT_INTERFACE_BODY( CommandList );
 
-        IRHICommandList( IDynamicRHI* a_Device, const RHICommandListDesc& a_Desc ) : IRHIObject( a_Device ), m_Desc( a_Desc ) {}
-        virtual bool IsCompleted() const = 0;
-        virtual void WaitUntilCompleted() = 0;
-
-        // Has the command list been submitted for execution?
-        bool IsPendingExecution() const { return m_PendingExecution; }
-        // Get the pending fence value for the command list.
-        uint64_t FenceValue() const { return m_FenceValue; }
-
-        // Set if the command list is pending execution.
-        // WARNING: Avoid using this unless you know what you're doing, as this is meant for internal use only.
-        void SetPendingExecution( bool a_PendingExecution ) { m_PendingExecution = a_PendingExecution; }
-        // Set the fence value for the command list.
-        // WARNING: Avoid using this unless you know what you're doing, as this is meant for internal use only.
-        void SetFenceValue( uint64_t a_FenceValue ) { m_FenceValue = a_FenceValue; }
+        IRHICommandList( IDynamicRHI* a_Device, const RHICommandListDesc& a_Desc ) 
+            : IRHIObject( a_Device ), m_Desc( a_Desc ) {}
 
         // If true, the command list will automatically validate and transition resource states when necessary.
         // If false, the resources are expected to be in the correct state before the command list is executed.
@@ -245,9 +233,6 @@ namespace Tridium {
 
     protected:
         bool m_AutomaticResourceStateTransitionEnabled = true; // Automatically transition resource states when necessary
-
-        uint64_t m_FenceValue = 0;
-        bool m_PendingExecution = false;
 
     #if RHI_DEBUG_ENABLE_CMD_RECORDING
         struct CmdDebugInfo

@@ -521,6 +521,22 @@ so it calls `%Release()` on the resource when destroyed.
 class D3D12MA_API Allocation : public IUnknownImpl
 {
 public:
+    /* <TRIDIUM> */
+
+    /** \brief Returns the address to D3D12 resource associated with this object.
+
+    Calling this method doesn't increment resource's reference counter.
+    */
+    ID3D12Resource** GetResourceAddress() { return &m_Resource; }
+
+    /** \brief Returns the address to D3D12 resource associated with this object.
+
+    Calling this method doesn't increment resource's reference counter.
+    */
+    ID3D12Resource* const* GetResourceAddress() const { return &m_Resource; }
+
+    /* </TRIDIUM> */
+
     /** \brief Returns offset in bytes from the start of memory heap.
 
     You usually don't need to use this offset. If you create a buffer or a texture together with the allocation using function

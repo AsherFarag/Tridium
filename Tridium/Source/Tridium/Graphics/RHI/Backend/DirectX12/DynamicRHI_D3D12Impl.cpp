@@ -21,6 +21,8 @@ namespace Tridium::D3D12 {
 
     bool DynamicRHI_D3D12Impl::Init( const RHIConfig& a_Config )
     {
+		m_Config = a_Config;
+
 	#if RHI_DEBUG_ENABLED
 		if ( a_Config.UseDebug )
 		{
@@ -43,6 +45,8 @@ namespace Tridium::D3D12 {
 			m_DXGIDebug->EnableLeakTrackingForThread();
 		}
 	#endif
+
+		m_CmdListsToExecute.Reserve( 64 );
 
 		// Create the DXGIFactory
         if ( FAILED( CreateDXGIFactory2( 0, IID_PPV_ARGS( m_DXGIFactory.GetAddressOf() ) ) ) )
@@ -83,12 +87,13 @@ namespace Tridium::D3D12 {
 		// Initialise GPU Info
 		GPUInfo gpuInfo{};
 
+		// Create fence event
+		m_FenceEvent = CreateEvent( nullptr, FALSE, FALSE, nullptr );
+
 		// Set up Command Contexts
-		for ( size_t i = 0; i < m_CmdContexts.Size(); ++i )
+		for ( size_t i = 0; i < m_CmdQueues.Size(); ++i )
 		{
 			// Set up the command context and set the command queue type
-			CommandContext& cmdCtx = m_CmdContexts[i];
-
 			ERHICommandQueueType cmdQueueType = Cast<ERHICommandQueueType>( i );
 			D3D12_COMMAND_LIST_TYPE d3d12CmdListType;
 			switch ( cmdQueueType )
@@ -100,6 +105,7 @@ namespace Tridium::D3D12 {
 			}
 
 			// Create the command queue
+			ComPtr<ID3D12CommandQueue> cmdQueue = nullptr;
 			{
 				D3D12_COMMAND_QUEUE_DESC cmdQueueDesc{};
 				cmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_HIGH;
@@ -107,40 +113,20 @@ namespace Tridium::D3D12 {
 				cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 				cmdQueueDesc.Type = d3d12CmdListType;
 
-				if ( FAILED( m_Device->CreateCommandQueue( &cmdQueueDesc, IID_PPV_ARGS( cmdCtx.CmdQueue.GetAddressOf() ) ) ) )
-				{
+				if ( FAILED( m_Device->CreateCommandQueue( &cmdQueueDesc, IID_PPV_ARGS( cmdQueue.GetAddressOf() ) ) ) )
 					return false;
+
+				WStringView cmdQueueName{};
+				switch ( d3d12CmdListType )
+				{
+				case D3D12_COMMAND_LIST_TYPE_DIRECT:  cmdQueueName = L"Graphics Command Queue"; break;
+				case D3D12_COMMAND_LIST_TYPE_COMPUTE: cmdQueueName = L"Compute Command Queue"; break;
+				case D3D12_COMMAND_LIST_TYPE_COPY:    cmdQueueName = L"Copy Command Queue"; break;
 				}
-			}
 
-			// Create the command allocator
-			if ( FAILED( m_Device->CreateCommandAllocator( d3d12CmdListType, IID_PPV_ARGS( cmdCtx.CmdAllocator.GetAddressOf() ) ) ) )
-			{
-				return false;
+				cmdQueue->SetName( cmdQueueName.data() );
 			}
-
-			// Create the command list
-			if ( FAILED( GetD3D12Device4()->CreateCommandList1( 0, d3d12CmdListType, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS( cmdCtx.CmdList.GetAddressOf() ) ) ) )
-			{
-				return false;
-			}
-
-			// Create the fence
-			cmdCtx.FenceValue = 0;
-			cmdCtx.FenceEvent = CreateEvent( nullptr, FALSE, FALSE, nullptr );
-			if ( cmdCtx.FenceEvent == nullptr )
-			{
-				return false;
-			}
-			if ( FAILED( m_Device->CreateFence( cmdCtx.FenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS( cmdCtx.Fence.GetAddressOf() ) ) ) )
-			{
-				return false;
-			}
-
-			TODO( "Temp" );
-			cmdCtx.CmdQueue->SetName( L"CmdCtx-RHICommandQueue" );
-			cmdCtx.CmdAllocator->SetName( L"CmdCtx-RHICommandAllocator" );
-			cmdCtx.Fence->SetName( L"CmdCtx-RHICommandFence" );
+			m_CmdQueues[i] = MakeUnique<CommandQueue>( *m_Device.Get(), cmdQueue.Get() );
 		}
 
 		// Create the Memory Allocator
@@ -156,9 +142,6 @@ namespace Tridium::D3D12 {
 			.pAllocationCallbacks = nullptr,
 			.pAdapter = m_DXGIAdapter.Get()
 		};
-		allocatorDesc.pDevice = m_Device.Get();
-		allocatorDesc.pAdapter = m_DXGIAdapter.Get();
-		allocatorDesc.PreferredBlockSize = 0;
 		if ( FAILED( D3D12MA::CreateAllocator( &allocatorDesc, m_Allocator.GetAddressOf() ) ) )
 		{
 			return false;
@@ -174,23 +157,39 @@ namespace Tridium::D3D12 {
 			return false;
 		}
 
+		// Create resource initializer command list
+		{
+			auto resourceInitCmdListDesc = RHICommandListDesc{}
+				.SetQueueType( ERHICommandQueueType::Copy )
+				.SetEnableImmediateExecution( false )
+				.SetName( "ResourceInitCmdList" );
+
+			m_ResourceInitCmdList = CreateCommandList( resourceInitCmdListDesc );
+		}
+
+		// Create the swap chain
+		m_SwapChain = CreateSwapChain( a_Config.SwapChainDesc );
 
         return true;
     }
 
 	bool DynamicRHI_D3D12Impl::Shutdown()
 	{
-		for ( auto& cmdCtx : m_CmdContexts )
-		{
-			cmdCtx.Wait( cmdCtx.Signal() );
-			cmdCtx.~CommandContext();
-		}
-		
-		TODO( "Temp fix " );
-		s_RHIGlobals = {};
+		WaitForIdle();
 
-		m_UploadBuffer.Release();
-		m_DescriptorHeapManager.Shutdown();
+		if ( m_SwapChain )
+		{
+			//m_SwapChain->Release();
+		}
+
+		CollectGarbage();
+
+		for ( auto& cmdQueue : m_CmdQueues )
+		{
+			cmdQueue.reset();
+		}
+
+		//DumpDebug();
 
 		// Release all resources
 		LOG( LogCategory::RHI, Info, "Releasing all registered resources...", m_RegisteredResources.size() );
@@ -200,10 +199,21 @@ namespace Tridium::D3D12 {
 			if ( RHIObjectRef resource = resourceWeakRef.lock() )
 			{
 				numResources++;
-				resource->Release();
+				//resource->Release();
 			}
 		}
 		LOG( LogCategory::RHI, Info, "Released {0} resources", numResources );
+
+		m_UploadBuffer.Release();
+		m_DescriptorHeapManager.Shutdown();
+
+		if ( m_FenceEvent )
+		{
+			CloseHandle( m_FenceEvent );
+			m_FenceEvent = nullptr;
+		}
+
+		//DumpDebug();
 
 		if ( ULONG refCount = ForceDeleteIUnknown( m_Allocator.GetAddressOf() ) )
 		{
@@ -239,37 +249,100 @@ namespace Tridium::D3D12 {
 		return true;
 	}
 
-    bool DynamicRHI_D3D12Impl::ExecuteCommandList( RHICommandListRef a_CommandList )
-    {
-		RHICommandList_D3D12Impl* cmdList = a_CommandList->As<RHICommandList_D3D12Impl>();
-		auto& cmdCtx = GetCommandContext( a_CommandList->Desc().QueueType );
-		cmdCtx.CmdQueue->ExecuteCommandLists( 1, cmdList->CommandList.GetAddressOf() );
-		a_CommandList->SetFenceValue( cmdCtx.Signal() );
+	RHIFenceValue DynamicRHI_D3D12Impl::ExecuteCommandLists( Span<IRHICommandList* const> a_CommandLists, ERHICommandQueueType a_QueueType )
+	{
+		m_CmdListsToExecute.Resize( a_CommandLists.size() );
+		for ( size_t i = 0; i < a_CommandLists.size(); ++i )
+			m_CmdListsToExecute[i] = a_CommandLists[i]->As<RHICommandList_D3D12Impl>()->GetD3D12CmdList();
+
+		CommandQueue* cmdQueue = GetCommandQueue( a_QueueType );
+		RHI_DEV_CHECK( cmdQueue, "Invalid command queue type!" );
+
+		cmdQueue->CmdQueue->ExecuteCommandLists( Cast<UINT>( a_CommandLists.size() ), m_CmdListsToExecute.Data() );
+		cmdQueue->LastSubmittedValue++;
+		cmdQueue->CmdQueue->Signal( cmdQueue->Fence.Get(), cmdQueue->LastSubmittedValue );
+
+		for ( size_t i = 0; i < a_CommandLists.size(); ++i )
+		{
+			UniquePtr<CommandContext> cmdCtx = a_CommandLists[i]->As<RHICommandList_D3D12Impl>()->ReleaseCmdContext( *cmdQueue );
+			cmdQueue->CmdContextsInFlight.emplace_front( std::move( cmdCtx ) );
+		}
+
+		if ( FAILED( m_Device->GetDeviceRemovedReason() ) )
+			LOG( LogCategory::RHI, Error, "Device removed!" );
+
+		return cmdQueue->LastSubmittedValue;
+	}
+
+	bool DynamicRHI_D3D12Impl::WaitForIdle()
+	{
+		for ( const auto& queue : m_CmdQueues )
+		{
+			if ( queue == nullptr )
+				continue;
+
+			// Test if the fence has been reached
+			if ( queue->UpdateLastCompletedValue() < queue->LastSubmittedValue )
+			{
+				// If it's not, wait for it to finish using an event
+				ResetEvent( m_FenceEvent );
+				queue->Fence->SetEventOnCompletion( queue->LastSubmittedValue, m_FenceEvent );
+				WaitForSingleObject( m_FenceEvent, INFINITE );
+			}
+		}
+
 		return true;
-    }
+	}
+
+	void DynamicRHI_D3D12Impl::WaitForFence( ERHICommandQueueType a_QueueType, RHIFenceValue a_FenceValue )
+	{
+		CommandQueue* queue = GetCommandQueue( a_QueueType );
+		RHI_DEV_CHECK( queue, "Invalid command queue type!" );
+		RHI_DEV_CHECK( a_FenceValue <= queue->LastSubmittedValue, "Invalid fence value!" );
+
+		// Test if the fence has been reached
+		if ( queue->UpdateLastCompletedValue() < a_FenceValue )
+		{
+			// If it's not, wait for it to finish using an event
+			ResetEvent( m_FenceEvent );
+			queue->Fence->SetEventOnCompletion( a_FenceValue, m_FenceEvent );
+			WaitForSingleObject( m_FenceEvent, INFINITE );
+		}
+	}
+
+	void DynamicRHI_D3D12Impl::CollectGarbage()
+	{
+		// Iterate through each command queue and remove completed command contexts
+		for ( const UniquePtr<CommandQueue>& queue : m_CmdQueues )
+		{
+			if ( queue == nullptr )
+				continue;
+
+			queue->UpdateLastCompletedValue();
+
+			while ( !queue->CmdContextsInFlight.empty() 
+				  && queue->CmdContextsInFlight.back()->SubmittedValue <= queue->LastSubmittedValue )
+			{
+				queue->CmdContextsInFlight.pop_back();
+			}
+		}
+	}
 
     //////////////////////////////////////////////////////////////////////////
 	// RESOURCE CREATION
 	//////////////////////////////////////////////////////////////////////////
 
-	RHIFenceRef DynamicRHI_D3D12Impl::CreateFence( const RHIFenceDesc& a_Desc )
-	{
-		RHIFenceRef fence = IRHIObject::Create<RHIFence_D3D12Impl>( this, a_Desc );
-		RegisterRHIResource( *fence.get() );
-		return fence;
-	}
-
 	RHITextureRef DynamicRHI_D3D12Impl::CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
 	{
 		RHITextureRef texture = IRHIObject::Create<RHITexture_D3D12Impl>( this, a_Desc, a_SubResourcesData );
-		RegisterRHIResource( *texture.get() );
+		RegisterRHIObject( *texture.get() );
 		return texture;
 	}
 
 	RHIBufferRef DynamicRHI_D3D12Impl::CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data )
 	{
 		RHIBufferRef buffer = IRHIObject::Create<RHIBuffer_D3D12Impl>( this, a_Desc, a_Data );
-		RegisterRHIResource( *buffer.get() );
+		RegisterRHIObject( *buffer.get() );
 		return buffer;
 	}
 
@@ -277,42 +350,42 @@ namespace Tridium::D3D12 {
 	{
 		SharedPtr<RootSignature> rootSig = GetRootSignature( a_Desc.BindingLayouts, a_Desc.VertexLayout.Valid() );
  		RHIGraphicsPipelineStateRef pso = IRHIObject::Create<RHIGraphicsPipelineState_D3D12Impl>( this, a_Desc, rootSig );
-		RegisterRHIResource( *pso.get() );
+		RegisterRHIObject( *pso.get() );
 		return pso;
 	}
 
 	RHICommandListRef DynamicRHI_D3D12Impl::CreateCommandList( const RHICommandListDesc& a_Desc )
 	{
  		RHICommandListRef cmdList = IRHIObject::Create<RHICommandList_D3D12Impl>( this, a_Desc );
-		RegisterRHIResource( *cmdList.get() );
+		RegisterRHIObject( *cmdList.get() );
 		return cmdList;
 	}
 
 	RHIShaderModuleRef DynamicRHI_D3D12Impl::CreateShaderModule( const RHIShaderModuleDesc& a_Desc )
 	{
 		RHIShaderModuleRef shaderModule = IRHIObject::Create<RHIShaderModule_D3D12Impl>( this, a_Desc );
-		RegisterRHIResource( *shaderModule.get() );
+		RegisterRHIObject( *shaderModule.get() );
 		return shaderModule;
 	}
 
 	RHIBindingLayoutRef DynamicRHI_D3D12Impl::CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc )
 	{
 		RHIBindingLayoutRef bindingLayout = IRHIObject::Create<RHIBindingLayout_D3D12Impl>( this, a_Desc );
-		RegisterRHIResource( *bindingLayout.get() );
+		RegisterRHIObject( *bindingLayout.get() );
 		return bindingLayout;
 	}
 
 	RHIBindingSetRef DynamicRHI_D3D12Impl::CreateBindingSet( const RHIBindingSetDesc& a_Desc )
 	{
 		RHIBindingSetRef bindingSet = IRHIObject::Create<RHIBindingSet_D3D12Impl>( this, a_Desc );
-		RegisterRHIResource( *bindingSet.get() );
+		RegisterRHIObject( *bindingSet.get() );
 		return bindingSet;
 	}
 
 	RHISwapChainRef DynamicRHI_D3D12Impl::CreateSwapChain( const RHISwapChainDesc& a_Desc )
 	{
 		RHISwapChainRef swapChain = IRHIObject::Create<RHISwapChain_D3D12Impl>( this, a_Desc );
-		RegisterRHIResource( *swapChain.get() );
+		RegisterRHIObject( *swapChain.get() );
 		return swapChain;
 	}
 

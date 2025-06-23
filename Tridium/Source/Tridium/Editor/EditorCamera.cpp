@@ -17,7 +17,7 @@ namespace Tridium {
 
 		if ( m_IsMoving ) {
 			m_TimeMoving += Time::DeltaTime();
-			m_TimeMoving = MIN( m_TimeMoving, m_MaxTimeMoving );
+			m_TimeMoving = Math::Min( m_TimeMoving, m_MaxTimeMoving );
 
 			m_TimeMovingSpeedMultiplier = 1.0f + ( m_MaxTimeMovingSpeedMultiplier - 1.0f ) * ( m_TimeMoving / m_MaxTimeMoving );
 		}
@@ -129,7 +129,7 @@ namespace Tridium {
 		if ( m_LerpData.IsLerping )
 		{
 			m_LerpData.CurrLerpTime += Time::DeltaTime();
-			m_LerpData.CurrLerpTime = MIN( m_LerpData.LerpTime, m_LerpData.CurrLerpTime );
+			m_LerpData.CurrLerpTime = Math::Min( m_LerpData.LerpTime, m_LerpData.CurrLerpTime );
 			Position = Position + ( m_LerpData.LerpToPos - Position ) * ( m_LerpData.CurrLerpTime / m_LerpData.LerpTime );
 
 			if ( m_LerpData.CurrLerpTime == m_LerpData.LerpTime )

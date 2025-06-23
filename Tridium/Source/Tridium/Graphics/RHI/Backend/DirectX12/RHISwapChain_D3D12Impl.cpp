@@ -15,12 +15,11 @@ namespace Tridium::D3D12 {
 	RHISwapChain_D3D12Impl::RHISwapChain_D3D12Impl( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
 		: IRHISwapChain( a_Device, a_Desc )
 	{
-		DynamicRHI_D3D12Impl* rhi = GetD3D12RHI();
-
+		HRESULT hr = S_OK;
 		HWND hWnd = glfwGetWin32Window( glfwGetCurrentContext() );
-		if ( !ASSERT( hWnd != NULL,
-			"Failed to get window handle while creating IRHISwapChain" ) )
+		if ( !hWnd )
 		{
+			ASSERT( false, "Failed to get window handle while creating IRHISwapChain" );
 			return;
 		}
 
@@ -52,27 +51,29 @@ namespace Tridium::D3D12 {
 		DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsDesc{};
 		fsDesc.Windowed = true;
 
-		auto& directCmdCtx = rhi->GetCommandContext( ERHICommandQueueType::Graphics );
-
 		// Create the swap chain
 		ComPtr<IDXGISwapChain1> swapChain;
 		ComPtr<IDXGIFactory4> dxgiFactory;
-		if ( !ASSERT( SUCCEEDED( rhi->GetDXGIFactory()->QueryInterface( dxgiFactory.GetAddressOf() ) ),
-			"Failed to get DXGI factory!" ) )
+		hr = Device()->GetDXGIFactory()->QueryInterface( IID_PPV_ARGS( dxgiFactory.GetAddressOf() ) );
+		if ( FAILED( hr ) )
 		{
+			ASSERT( false, "Failed to query DXGI factory interface!" );
 			return;
 		}
 
-		if ( !ASSERT(
-			SUCCEEDED( dxgiFactory->CreateSwapChainForHwnd( directCmdCtx.CmdQueue.Get(), hWnd, &swapChainDesc, &fsDesc, nullptr, &swapChain ) ),
-			"Failed to create swap chain!" ) )
+
+		CommandQueue* cmdQueue = Device()->GetCommandQueue( ERHICommandQueueType::Graphics );
+		hr = dxgiFactory->CreateSwapChainForHwnd( cmdQueue->CmdQueue.Get(), hWnd, &swapChainDesc, &fsDesc, nullptr, &swapChain );
+		if ( FAILED( hr ) )
 		{
+			ASSERT( false, "Failed to create swap chain!" );
 			return;
 		}
 
-		if ( !ASSERT( SUCCEEDED( swapChain->QueryInterface( SwapChain.GetAddressOf() ) ),
-			"Failed to query swap chain interface!" ) )
+		hr = swapChain->QueryInterface( SwapChain.GetAddressOf() );
+		if ( FAILED( hr ) )
 		{
+			ASSERT( false, "Failed to query swap chain interface!" );
 			return;
 		}
 
@@ -87,13 +88,8 @@ namespace Tridium::D3D12 {
 		if ( !SwapChain )
 			return false;
 
-		if ( GetBackBuffer()->State() != ERHIResourceStates::Present )
-		{
-			TODO( "We should not be stalling the GPU here!" );
-			// We need to transition the back buffer to present
-			auto& cmdCtx = GetD3D12RHI()->GetCommandContext( ERHICommandQueueType::Graphics );
-			cmdCtx.Wait( cmdCtx.Signal() );
-		}
+		RHI_DEV_CHECK( GetBackBuffer()->State() == ERHIResourceStates::Present,
+			"Back buffer state is not 'Present'! - You should be setting a resource barrier to transition it to Present state before presenting!" );
 
 		SwapChain->Present( 1, 0 );
 
@@ -134,10 +130,6 @@ namespace Tridium::D3D12 {
 
 	bool RHISwapChain_D3D12Impl::ResizeBuffers()
 	{
-		// Wait for the GPU to finish
-		auto& cmdCtx = GetD3D12RHI()->GetCommandContext( ERHICommandQueueType::Graphics );
-		cmdCtx.Wait( cmdCtx.Signal() );
-
 		ReleaseBuffers();
 
 		// Resize the swap chain
@@ -191,7 +183,7 @@ namespace Tridium::D3D12 {
 			}
 
 			RHITexture_D3D12Impl* tex = RTVs[i]->As<RHITexture_D3D12Impl>();
-			if ( FAILED( SwapChain->GetBuffer( i, IID_PPV_ARGS( &tex->Texture.Resource ) ) ) )
+			if ( FAILED( SwapChain->GetBuffer( i, IID_PPV_ARGS( tex->Texture.ResourceAddress() ) ) ) )
 			{
 				ASSERT( false, "Failed to get back buffer!" );
 				return false;
@@ -203,17 +195,10 @@ namespace Tridium::D3D12 {
 
 	bool RHISwapChain_D3D12Impl::Release()
 	{
-		SwapChain.Reset();
-		for ( auto& rtv : RTVs )
+		ReleaseBuffers();
+		if ( SwapChain )
 		{
-			ASSERT( rtv.use_count() == 1, "RTV owned by the swap chain is still in use - You should not be keeping a reference to the back buffer!" );
-			TODO( "Hack as for some reason the ID3D12Resource's have one extra ref. Figure this out." );
-			if ( ID3D12Resource* resource = rtv->As<RHITexture_D3D12Impl>()->Texture.Allocation->GetResource() )
-			{
-				resource->Release();
-			}
-			rtv->Release();
-			rtv = nullptr;
+			SwapChain.Reset();
 		}
 		return true;
 	}

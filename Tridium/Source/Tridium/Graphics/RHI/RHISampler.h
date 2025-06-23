@@ -1,5 +1,5 @@
 #pragma once
-#include "RHIResource.h"
+#include "RHICommon.h"
 
 namespace Tridium {
 
@@ -8,7 +8,7 @@ namespace Tridium {
 	//  A sampler represents a texture sampling state and is used to sample textures in shaders.
 	//=======================================================
 
-	enum ERHISamplerFlags : uint32_t
+	enum ERHISamplerFlags : uint16_t
 	{
 		None = 0,
 		// If set, the range of the texture coordinates are not normalized to [0, 1]
@@ -37,11 +37,11 @@ namespace Tridium {
 		uint8_t MaxAnisotropy = 1u;
 		// Function used to compare sampled data against existing sampled data, only used if a comparison filter is used.
 		ERHIComparison ComparisonFunc = ERHIComparison::Never;
-		// Offset from the calculated mipmap level. Sample Level = Calculated Mip Level + MipLODBias.
-		float MipLODBias = 0.0f;
 		// Extra flags to specify specific sampler behavior.
 		ERHISamplerFlags Flags = ERHISamplerFlags::None;
-		// Border color used when the address mode is set to Border.
+		// Offset from the calculated mipmap level. Sample Level = Calculated Mip Level + MipLODBias.
+		float MipLODBias = 0.0f;
+		// Border color used when the address mode is set to Border. NOTE: This color is packed into 4 16-bit unsigned integers (0-65535).
 		Color BorderColor = Color::White();
 		// Clamps the minimum mipmap level that can be sampled. Must be less than or equal to MaxLOD.
 		float MinLOD = 0.0f;
@@ -53,7 +53,7 @@ namespace Tridium {
 		constexpr auto& SetAddressV( ERHISamplerAddressMode a_Address ) { AddressV = a_Address; return *this; }
 		constexpr auto& SetAddressW( ERHISamplerAddressMode a_Address ) { AddressW = a_Address; return *this; }
 		constexpr auto& SetMipLODBias( float a_Bias ) { MipLODBias = a_Bias; return *this; }
-		constexpr auto& SetMaxAnisotropy( uint32_t a_Anisotropy ) { MaxAnisotropy = a_Anisotropy; return *this; }
+		constexpr auto& SetMaxAnisotropy( uint8_t a_Anisotropy ) { MaxAnisotropy = Math::Clamp<uint8_t>( a_Anisotropy, 1u, 16u ); return *this; }
 		constexpr auto& SetComparisonFunc( ERHIComparison a_Comparison ) { ComparisonFunc = a_Comparison; return *this; }
 		constexpr auto& SetFlags( ERHISamplerFlags a_Flags ) { Flags = a_Flags; return *this; }
 		constexpr auto& SetFlag( ERHISamplerFlags a_Flag, bool a_Enabled = true ) { Flags = EnumFlags( Flags ).SetFlag( a_Flag, a_Enabled ); return *this; }
@@ -84,8 +84,7 @@ namespace Tridium {
 		}
 	};
 
-	#pragma pack(push, 1)
-	struct RHIPackedSampler
+	PACKED_STRUCT( struct RHIPackedSampler )
 	{
 		constexpr RHIPackedSampler() { m_Flags.IsValid = 0; }
 		constexpr bool Valid() const { return m_Flags.IsValid != 0; }
@@ -125,6 +124,7 @@ namespace Tridium {
 
 			return unpacked;
 		}
+
 		static constexpr RHIPackedSampler Pack( const RHISampler& a_Sampler )
 		{
 			RHIPackedSampler packed{};
@@ -143,13 +143,13 @@ namespace Tridium {
 			packed.m_MaxLOD16 = Cast<uint16_t>( a_Sampler.MaxLOD * 16.0f );
 
 			for ( int i = 0; i < 4; ++i )
-				packed.m_BorderColor[i] = Cast<int16_t>( a_Sampler.BorderColor[i] * 65535.0f ); // Convert float [0, 1] to int16 [0, 65535]
+				packed.m_BorderColor[i] = Cast<uint16_t>( Math::Clamp( a_Sampler.BorderColor[i], 0.0f, 1.0f ) * 65535.0f ); // Convert float [0, 1] to int16 [0, 65535]
 
 			return packed;
 		}
 
 	private:
-		struct PackedFlags
+		PACKED_STRUCT( struct PackedFlags )
 		{
 			static_assert(ERHISamplerFlags::NUM_BITS <= 1, "ERHISamplerFlags must fit into 1 bit");
 			uint8_t Filter : int( ERHISamplerFilter::NUM_BITS );    // ERHISamplerFilter
@@ -162,14 +162,14 @@ namespace Tridium {
 
 			uint8_t ComparisonFunc : 3;                             // ERHIComparison
 			uint8_t IsValid : 1;                                    // bool - Is this sampler valid?
-		} m_Flags;
+		} PACKED_STRUCT_END m_Flags;
 
 		int16_t m_MipLODBias16;
 		uint16_t m_MinLOD16;
 		uint16_t m_MaxLOD16;
-		int16_t m_BorderColor[4]; // RGBA border color, stored as 16-bit integers
+		uint16_t m_BorderColor[4]; // RGBA border color, stored as 16-bit unsigned integers
 	};
-	#pragma pack(pop) // Restore the previous packing alignment
+	PACKED_STRUCT_END
 	static_assert(sizeof( RHIPackedSampler ) <= 18, "RHIPackedSampler must be 18 bytes in size for memory efficiency");
 
 } // namespace Tridium

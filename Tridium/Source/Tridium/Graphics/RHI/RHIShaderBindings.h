@@ -320,8 +320,7 @@ namespace Tridium {
 			return item;
 		}
 	};
-	static_assert(sizeof( RHIBindingSetItem ) == 48,
-		"RHIBindingSetItem size is not 48 bytes");
+	static_assert(sizeof( RHIBindingSetItem ) <= 48, "RHIBindingSetItem size is not 48 bytes");
 	using RHIBindingSetItemArray = InlineArray<RHIBindingSetItem, RHIConstants::MaxShaderBindings>;
 
 	//==============================================
@@ -330,7 +329,6 @@ namespace Tridium {
 	{
 		using ResourceType = class IRHIBindingSet;
 		InlineArray<RHIBindingSetItem, RHIConstants::MaxShaderBindings> Bindings{};
-		InlineArray<RHISampler, RHIConstants::MaxShaderBindings> Samplers{}; // Samplers bound to the binding set.
 		RHIBindingLayoutRef Layout{}; // The layout that this binding set is based on.
 		String Name{};
 

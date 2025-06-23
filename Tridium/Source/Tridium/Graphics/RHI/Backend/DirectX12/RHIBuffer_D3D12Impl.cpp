@@ -24,13 +24,12 @@ namespace Tridium::D3D12 {
 			return;
 		}
 
-		D3D12_SET_DEBUG_NAME( ManagedBuffer.Resource, m_Desc.Name, L"Unnamed Buffer" );
+		D3D12_SET_DEBUG_NAME( ManagedBuffer.Resource(), m_Desc.Name, L"Unnamed Buffer");
 
 		if ( a_Data.size() > 0 )
 		{
 			SetState( ERHIResourceStates::CopyDest );
 			m_Desc.Size = a_Data.size();
-			CommandContext& copyCmdCtx = GetD3D12RHI()->GetCommandContext( ERHICommandQueueType::Copy );
 
 			// Create the upload buffer
 			D3D12::ManagedResource uploadBuffer{};
@@ -56,36 +55,21 @@ namespace Tridium::D3D12 {
 			// Copy data to upload buffer
 			char* uploadBufferAddress;
 			D3D12_RANGE uploadRange = { 0, m_Desc.Size };
-			uploadBuffer.Resource->Map( 0, &uploadRange, (void**)&uploadBufferAddress );
+			uploadBuffer.Resource()->Map(0, &uploadRange, (void**)&uploadBufferAddress);
 			memcpy( uploadBufferAddress, a_Data.data(), a_Data.size() );
-			uploadBuffer.Resource->Unmap( 0, &uploadRange );
+			uploadBuffer.Resource()->Unmap(0, &uploadRange);
 
-			// Ensure the copy command list is reset
-			TODO( "Should we be doing this, this way?" );
-			if ( FAILED( copyCmdCtx.CmdAllocator->Reset() ) )
-			{
-				ASSERT( false, "Failed to reset command allocator" );
-				return;
-			}
-			if ( FAILED( copyCmdCtx.CmdList->Reset( copyCmdCtx.CmdAllocator.Get(), nullptr ) ) )
-			{
-				ASSERT( false, "Failed to reset command list" );
-				return;
-			}
+			auto* cmdList = Device()->GetResourceInitCommandList();
+			cmdList->Open();
+			Cast<ID3D12GraphicsCommandList*>( cmdList->GetD3D12CmdList() )->CopyBufferRegion( 
+				ManagedBuffer.Resource(), 0, uploadBuffer.Resource(), 0, m_Desc.Size
+			);
+			cmdList->Close();
 
-			// Copy data to buffer
-			copyCmdCtx.CmdList->CopyBufferRegion( ManagedBuffer.Resource, 0, uploadBuffer.Resource, 0, m_Desc.Size );
-
-			// Execute the copy command list
-			if ( FAILED( copyCmdCtx.CmdList->Close() ) )
-			{
-				ASSERT( false, "Failed to close command list" );
-				return;
-			}
-
-			ID3D12CommandList* cmdLists[] = { copyCmdCtx.CmdList.Get() };
-			copyCmdCtx.CmdQueue->ExecuteCommandLists( 1, cmdLists );
-			copyCmdCtx.Wait( copyCmdCtx.Signal() );
+			IRHICommandList* cmdListPtr = cmdList;
+			RHIFenceValue fence = Device()->ExecuteCommandLists( Span{ &cmdListPtr, 1 }, ERHICommandQueueType::Copy );
+			Device()->WaitForIdle();
+			//Device()->WaitForFence( ERHICommandQueueType::Copy, fence );
 		}
 	}
 
@@ -160,7 +144,7 @@ namespace Tridium::D3D12 {
 		a_Range.Size = Math::Min( a_Range.Size, m_Desc.Size - a_Range.Offset );
 
 		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc{};
-		cbvDesc.BufferLocation = ManagedBuffer.Resource->GetGPUVirtualAddress() + a_Range.Offset;
+		cbvDesc.BufferLocation = ManagedBuffer.Resource()->GetGPUVirtualAddress() + a_Range.Offset;
 		cbvDesc.SizeInBytes = AlignUp( a_Range.Size, size_t( D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT ) );
 
 		return cbvDesc;

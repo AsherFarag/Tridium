@@ -116,7 +116,7 @@ namespace Tridium::OpenGL {
 		}
 	}
 
-	inline GLenum Translate( ERHISamplerFilter a_Filter, GLenum& o_MinFilter, GLenum& o_MagFilter, GLenum& o_MipFilter, bool& o_IsComparison, bool& o_IsAnisotropic )
+	inline void Translate( ERHISamplerFilter a_Filter, GLenum& o_MinFilter, GLenum& o_MagFilter, GLenum& o_MipFilter, bool& o_IsComparison, bool& o_IsAnisotropic )
 	{
 		// Default to false
 		o_IsComparison = false;

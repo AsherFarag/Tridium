@@ -13,6 +13,13 @@ namespace Tridium {
 
 	IDynamicRHI* s_DynamicRHI = nullptr;
 
+#if RHI_DEBUG_ENABLED
+	bool RHI::IsDebug()
+	{
+		return s_DynamicRHI ? s_DynamicRHI->Config().UseDebug : false;
+	}
+#endif // RHI_DEBUG_ENABLED
+
 	//////////////////////////////////////////////////////////////////////////
 	// RHI CORE FUNCTIONS
 	//////////////////////////////////////////////////////////////////////////
@@ -51,45 +58,12 @@ namespace Tridium {
 		ScopeGuard shutdownGuard( [] { delete s_DynamicRHI; s_DynamicRHI = nullptr; } );
 
 		if ( s_DynamicRHI->Init( a_Config ) == false )
-		{
-			// Failed to initialise the rendering API
-			return false;
-		}
+			return false; // Failed to initialise the rendering API
 
 		s_RHIGlobals.IsRHIInitialised = true;
-		s_RHIGlobals.Config = a_Config;
 		TODO( "Set up proper Multithreading query" );
 		s_RHIGlobals.SupportsMultithreading = a_Config.SingleThreaded == false;
 		s_RHIGlobals.GPUInfo = s_DynamicRHI->GetGPUInfo();
-		
-		if ( a_Config.CreateSwapChain )
-		{
-			RHISwapChainDesc desc;
-			desc.Width = 1280;
-			desc.Height = 720;
-			desc.BufferCount = 2;
-			desc.Format = ERHIFormat::RGBA8_UNORM;
-			desc.Flags = ERHISwapChainFlags::UseVSync;
-			desc.Name = "RHI SwapChain";
-			s_RHIGlobals.SwapChain = RHI::CreateSwapChain( desc );
-			if ( s_RHIGlobals.SwapChain == nullptr )
-			{
-				// Failed to create the swap chain
-				return false;
-			}
-		}
-
-		// Create the frame fence
-		s_RHIGlobals.Fence = RHI::CreateFence( RHIFenceDesc{} );
-		// Set the initial frame index
-		s_RHIGlobals.FrameIndex = 0;
-		// And initialise the fence values
-		s_RHIGlobals.FrameFenceValue = 0;
-		//s_RHIGlobals.FrameFenceValues.Fill( 0, a_Config.MaxFramesInFlight );
-		//for ( uint64_t& fenceValue : s_RHIGlobals.FrameFenceValues )
-		//{
-		//	fenceValue = 0;
-		//}
 
 		shutdownGuard.Dismiss();
 		return true;
@@ -97,12 +71,10 @@ namespace Tridium {
 
 	bool RHI::Shutdown()
 	{
-		if ( s_DynamicRHI == nullptr )
-		{
-			return false;
-		}
+		RHI_DEV_CHECK( s_DynamicRHI, "RHI is not initialised!" );
 
-		// Shutdown the rendering API
+		RHIShaderLibrary::Singleton::Destroy();
+
 		bool success = s_DynamicRHI->Shutdown();
 
 		s_RHIGlobals = {};
@@ -114,11 +86,9 @@ namespace Tridium {
 
 	bool RHI::Present()
 	{
-		RHISwapChainRef swapChain = RHI::GetSwapChain();
+		IRHISwapChain* swapChain = s_DynamicRHI->GetSwapChain();
 		if ( swapChain == nullptr )
-		{
 			return false;
-		}
 
 		bool success = swapChain->Present();
 		if ( success )
@@ -130,35 +100,28 @@ namespace Tridium {
 		return success;
 	}
 
-	bool RHI::ExecuteCommandList( const RHICommandListRef& a_CommandList )
+	RHIFenceValue RHI::ExecuteCommandLists( Span<IRHICommandList* const> a_CommandLists, ERHICommandQueueType a_QueueType )
 	{
-		if ( !ASSERT( s_RHIGlobals.IsRHIInitialised, "RHI has not been initialised!" ) )
-		{
-			return false;
-		}
-
-		if ( !s_DynamicRHI->ExecuteCommandList( a_CommandList ) )
-		{
-			LOG( LogCategory::RHI, Error, "Failed to execute command list!" );
-			return false;
-		}
-
-		a_CommandList->SetPendingExecution( true );
-		return true;
+		RHI_DEV_CHECK( s_DynamicRHI, "RHI is not initialised!" );
+		return s_DynamicRHI->ExecuteCommandLists( a_CommandLists, a_QueueType );
 	}
 
-	void RHI::FrameFenceWait()
+	bool RHI::WaitForIdle()
 	{
-		const RHIFenceRef& fence = RHI::GetGlobalFence();
-		if ( fence )
-		{
-			fence->Wait( ++s_RHIGlobals.FrameFenceValue );
-		}
+		RHI_DEV_CHECK( s_DynamicRHI, "RHI is not initialised!" );
+		return s_DynamicRHI->WaitForIdle();
 	}
 
-	uint32_t RHI::FrameIndex()
+	void RHI::WaitForFence( ERHICommandQueueType a_QueueType, RHIFenceValue a_FenceValue )
 	{
-		return s_RHIGlobals.FrameIndex;
+		RHI_DEV_CHECK( s_DynamicRHI, "RHI is not initialised!" );
+		s_DynamicRHI->WaitForFence( a_QueueType, a_FenceValue );
+	}
+
+	void RHI::CollectGarbage()
+	{
+		RHI_DEV_CHECK( s_DynamicRHI, "RHI is not initialised!" );
+		s_DynamicRHI->CollectGarbage();
 	}
 
 	RHIFeatureInfo RHI::GetFeatureInfo( ERHIFeature a_Feature )
@@ -200,12 +163,6 @@ namespace Tridium {
 	//////////////////////////////////////////////////////////////////////////
 	// RESOURCE CREATION
 	//////////////////////////////////////////////////////////////////////////
-
-	RHIFenceRef RHI::CreateFence( const RHIFenceDesc& a_Desc )
-	{
-		CHECK( s_DynamicRHI );
-		return s_DynamicRHI->CreateFence( a_Desc );
-	}
 
 	RHITextureRef RHI::CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
 	{

@@ -56,33 +56,8 @@ namespace Tridium {
 		ComputePipelineState,
         CommandList,
 		SwapChain,
-		Fence,
         COUNT,
 		Unknown = 0xFF,
-	};
-
-
-
-	//===========================
-	// RHI Configuration
-	struct RHIConfig
-	{
-		// The RHI backend to use.
-		ERHInterfaceType RHIType = ERHInterfaceType::Null;
-
-		// Enables debug features for the RHI.
-		// NOTE: This option does nothing if RHI_DEBUG_ENABLED is false.
-		bool UseDebug = false;
-
-		// If true, the RHI will automatically create a swap chain.
-		// Set this to false if you want to create a swap chain manually.
-		bool CreateSwapChain = true;
-
-		// Force single-threaded rendering.
-		bool SingleThreaded = false;
-
-		// This specifies how many frames the CPU can prepare while the GPU is rendering.
-		uint32_t MaxFramesInFlight = RHIConstants::MaxFrameBuffers;
 	};
 
 
@@ -254,8 +229,6 @@ namespace Tridium {
 		}
 	};
 
-
-
 	//====================================
 	// GPU Info
 	//  Static information about the GPU that is created on RHI initialisation.
@@ -266,6 +239,20 @@ namespace Tridium {
 		String DriverVersion{};
 		size_t VRAMBytes = 0; // Total available VRAM in bytes. NOTE: This is not always available on all platforms.
 		RHIDeviceFeatures DeviceFeatures{};
+
+		struct
+		{
+			struct SamplerProperties
+			{
+				TODO( "Set this to false" );
+				bool BorderSamplingModeSupported = true;
+				TODO( "Set this to 1" );
+				uint8_t MaxAnisotropy = 16; // Maximum anisotropy supported by the sampler.
+				TODO( "Set this to false" );
+				bool LODBiasSupported = true; // Whether the sampler supports LOD bias.
+			} Sampler;
+		} Properties;
+
 	};
 
 
@@ -983,39 +970,8 @@ namespace Tridium {
 	//==========================================================
 	// RHI Fence Value
 	//  A monotonically increasing value associated with fence signaling.
-	constexpr uint64_t InvalidRHIFenceValue = ~0ull;
+	using RHIFenceValue = uint64_t;
 	//==========================================================
-
-
-
-	//==========================================================
-	// RHI Fence Type
-	//==========================================================
-	enum class ERHIFenceType : uint8_t
-	{
-		// Used for:
-		// - signaling the fence from the GPU
-		// - waiting for the fence on the CPU
-		CPUWaitOnly = 0,
-
-		// Used for:
-		// - signaling the fence from the GPU
-		// - waiting for the fence on the GPU and CPU
-		General = 1,
-	};
-
-
-
-	//==========================================================
-	// RHI Fence State
-	//  The state of a fence.
-	//==========================================================
-	enum class ERHIFenceState : uint8_t
-	{
-		Pending,  // The fence has not been signaled yet.
-		Complete, // The fence has been signaled.
-		Unknown   // The state of the fence is unknown.
-	};
 
 
 
