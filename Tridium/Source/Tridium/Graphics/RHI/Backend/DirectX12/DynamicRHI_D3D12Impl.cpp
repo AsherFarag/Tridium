@@ -175,16 +175,6 @@ namespace Tridium::D3D12 {
 
 	bool DynamicRHI_D3D12Impl::Shutdown()
 	{
-		// Shutdown order
-		// 1. Wait for all command queues to finish
-		// 2. Release all RHI resources
-		// 3. Release upload buffer
-		// 4. Shutdown descriptor heap manager
-		// 5. Destroy D3D12MA allocator
-		// 6. Release SwapChain
-		// 7. Release command queues
-		// 8. Release D3D12 device, DXGI adapter and factory
-
 		WaitForIdle();
 
 		m_DescriptorHeapManager.Shutdown();
