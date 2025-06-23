@@ -92,6 +92,10 @@ namespace Tridium::D3D12 {
 			"Back buffer state is not 'Present'! - You should be setting a resource barrier to transition it to Present state before presenting!" );
 
 		SwapChain->Present( 1, 0 );
+		CommandQueue* cmdQueue = Device()->GetCommandQueue( ERHICommandQueueType::Graphics );
+		cmdQueue->CmdQueue->Signal( cmdQueue->Fence.Get(), ++cmdQueue->LastSubmittedValue );
+		m_LastPresentedValue = cmdQueue->LastSubmittedValue;
+
 
 		if ( m_ShouldResize && !ResizeBuffers() )
 		{
@@ -153,9 +157,11 @@ namespace Tridium::D3D12 {
 	{
 		for ( uint32_t i = 0; i < RTVs.Size(); i++ )
 		{
-			ASSERT( RTVs[i].use_count() == 1, "RTV owned by the swap chain is still in use - You should not be keeping a reference to the back buffer!" );
-			RTVs[i]->Release();
-			RTVs[i] = nullptr;
+			if ( RTVs[i] != nullptr )
+			{
+				RHI_DEV_CHECK( RTVs[i].use_count() == 1, "RTV owned by the swap chain is still in use - You should not be keeping a reference to the back buffer!" );
+				RTVs[i] = nullptr;
+			}
 		}
 	}
 
@@ -172,21 +178,29 @@ namespace Tridium::D3D12 {
 
 		for ( uint32_t i = 0; i < RTVs.Size(); i++ )
 		{
-			RHITextureDesc desc = rtvDesc;
-		#if RHI_DEBUG_ENABLED
-			desc.Name = std::format( "{} RTV[{}]", Desc().Name, i );
-		#endif
-
-			if ( !RTVs[i] )
+			if ( RTVs[i] == nullptr )
 			{
+				RHITextureDesc desc = rtvDesc;
+				RHI_DEBUG_OP( desc.Name = std::format( "{} RTV[{}]", Desc().Name, i ) );
 				RTVs[i] = RHI::CreateTexture( desc );
 			}
 
-			RHITexture_D3D12Impl* tex = RTVs[i]->As<RHITexture_D3D12Impl>();
-			if ( FAILED( SwapChain->GetBuffer( i, IID_PPV_ARGS( tex->Texture.ResourceAddress() ) ) ) )
+			TODO( "This" );
 			{
-				ASSERT( false, "Failed to get back buffer!" );
-				return false;
+				// Extreme jankiness here. RHI::CreateTexture creates a D3D12MA with its own resource.
+				// We don't need that resource. So we get the swap chain buffer and set it as the resource for the texture.
+				// And GetBuffer() increments the ref and so does SetResource(), so we need to release it once.
+
+				RHITexture_D3D12Impl* tex = RTVs[i]->As<RHITexture_D3D12Impl>();
+				ID3D12Resource* resource = nullptr;
+				if ( FAILED( SwapChain->GetBuffer( i, IID_PPV_ARGS( &resource ) ) ) )
+				{
+					ASSERT( false, "Failed to get back buffer!" );
+					return false;
+				}
+				resource->Release();
+				resource->SetName( L"SwapChainBackBuffer" );
+				tex->Texture.Allocation->SetResource( resource );
 			}
 		}
 
@@ -195,11 +209,20 @@ namespace Tridium::D3D12 {
 
 	bool RHISwapChain_D3D12Impl::Release()
 	{
-		ReleaseBuffers();
-		if ( SwapChain )
+		Device()->WaitForFence( ERHICommandQueueType::Graphics, m_LastPresentedValue );
+
+		for ( uint32_t i = 0; i < RTVs.Size(); i++ )
 		{
-			SwapChain.Reset();
+			if ( RTVs[i] != nullptr )
+			{
+				RHI_DEV_CHECK( RTVs[i].use_count() == 1, "RTV owned by the swap chain is still in use - You should not be keeping a reference to the back buffer!" );
+				RTVs[i] = nullptr;
+			}
 		}
+
+		if ( SwapChain )
+			SwapChain.Reset();
+
 		return true;
 	}
 

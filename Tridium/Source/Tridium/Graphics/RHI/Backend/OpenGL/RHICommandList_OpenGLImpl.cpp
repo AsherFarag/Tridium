@@ -41,6 +41,8 @@ namespace Tridium::OpenGL {
 
 	bool RHICommandList_OpenGLImpl::Close()
 	{
+		RHI_DEBUG_OP( m_DebugCommands.Clear() );
+
 		if ( !m_IsOpen )
 		{
 			RHI_DEV_CHECK( m_IsOpen, "Command list is not open!" );

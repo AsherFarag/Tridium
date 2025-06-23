@@ -34,6 +34,12 @@ namespace Tridium {
         IRHIBuffer* VertexBuffer = nullptr;
         IRHIBuffer* IndexBuffer = nullptr;
         InlineArray<IRHIBindingSet*, RHIConstants::MaxBindingLayouts> BindingSets{};
+
+        auto& SetPipelineState( IRHIGraphicsPipelineState* a_PipelineState ) { PipelineState = a_PipelineState; return *this; }
+		auto& SetFramebuffer( const RHIFramebuffer& a_Framebuffer ) { Framebuffer = a_Framebuffer; return *this; }
+        auto& SetVertexBuffer( IRHIBuffer* a_VertexBuffer ) { VertexBuffer = a_VertexBuffer; return *this; }
+        auto& SetIndexBuffer( IRHIBuffer* a_IndexBuffer ) { IndexBuffer = a_IndexBuffer; return *this; }
+        auto& AddBindingSet( IRHIBindingSet* a_BindingSet ) { BindingSets.PushBack( a_BindingSet ); return *this; }
     };
 
     struct RHIComputeState

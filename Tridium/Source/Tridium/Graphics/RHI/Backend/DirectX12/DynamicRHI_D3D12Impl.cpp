@@ -44,7 +44,7 @@ namespace Tridium::D3D12 {
 
 			m_DXGIDebug->EnableLeakTrackingForThread();
 		}
-	#endif
+	#endif // RHI_DEBUG_ENABLED
 
 		m_CmdListsToExecute.Reserve( 64 );
 
@@ -175,23 +175,26 @@ namespace Tridium::D3D12 {
 
 	bool DynamicRHI_D3D12Impl::Shutdown()
 	{
+		// Shutdown order
+		// 1. Wait for all command queues to finish
+		// 2. Release all RHI resources
+		// 3. Release upload buffer
+		// 4. Shutdown descriptor heap manager
+		// 5. Destroy D3D12MA allocator
+		// 6. Release SwapChain
+		// 7. Release command queues
+		// 8. Release D3D12 device, DXGI adapter and factory
+
 		WaitForIdle();
+
+		m_DescriptorHeapManager.Shutdown();
 
 		if ( m_SwapChain )
 		{
-			//m_SwapChain->Release();
+			m_SwapChain->Release();
+			m_SwapChain.reset();
 		}
 
-		CollectGarbage();
-
-		for ( auto& cmdQueue : m_CmdQueues )
-		{
-			cmdQueue.reset();
-		}
-
-		//DumpDebug();
-
-		// Release all resources
 		LOG( LogCategory::RHI, Info, "Releasing all registered resources...", m_RegisteredResources.size() );
 		size_t numResources = 0;
 		for ( const auto& [hash, resourceWeakRef] : m_RegisteredResources )
@@ -199,13 +202,18 @@ namespace Tridium::D3D12 {
 			if ( RHIObjectRef resource = resourceWeakRef.lock() )
 			{
 				numResources++;
-				//resource->Release();
+				resource->Release();
 			}
 		}
 		LOG( LogCategory::RHI, Info, "Released {0} resources", numResources );
 
 		m_UploadBuffer.Release();
-		m_DescriptorHeapManager.Shutdown();
+		m_Allocator.Reset();
+
+		for ( auto& cmdQueue : m_CmdQueues )
+		{
+			cmdQueue.reset();
+		}
 
 		if ( m_FenceEvent )
 		{
@@ -213,38 +221,18 @@ namespace Tridium::D3D12 {
 			m_FenceEvent = nullptr;
 		}
 
-		//DumpDebug();
-
-		if ( ULONG refCount = ForceDeleteIUnknown( m_Allocator.GetAddressOf() ) )
-		{
-			LOG( LogCategory::DirectX, Warn, "D3D12MA allocator still has {0} references! - Destroying the allocator anyway", refCount );
-		}
-
-		if ( ULONG refCount = ForceDeleteIUnknown( m_DXGIAdapter.GetAddressOf() ) )
-		{
-			LOG( LogCategory::DirectX, Warn, "DXGIAdapter still has {0} references! - Destroying the adapter anyway", refCount );
-		}
-
-		if ( ULONG refCount = ForceDeleteIUnknown( m_DXGIFactory.GetAddressOf() ) )
-		{
-			LOG( LogCategory::DirectX, Warn, "DXGIFactory still has {0} references! - Destroying the factory anyway", refCount );
-		}
-
 		if ( ULONG refCount = ForceDeleteIUnknown( m_Device.GetAddressOf() ) )
 		{
 			LOG( LogCategory::DirectX, Warn, "D3D12 device still has {0} references! - Destroying the device anyway", refCount );
 		}
 
-    #if RHI_DEBUG_ENABLED
+		m_DXGIAdapter.Reset();
+		m_DXGIFactory.Reset();
 
-		if ( ULONG refCount = ForceDeleteIUnknown( m_D3D12Debug.GetAddressOf() ) )
-		{
-			LOG( LogCategory::DirectX, Warn, "D3D12 debug interface still has {0} references! - Destroying the debug interface anyway", refCount );
-		}
-
+#if RHI_DEBUG_ENABLED
 		DumpDebug();
 		m_DXGIDebug.Reset();
-    #endif
+#endif
 
 		return true;
 	}
@@ -486,7 +474,7 @@ namespace Tridium::D3D12 {
         {
             OutputDebugStringW( L"DirectX12 Debug Dump:\n" );
             m_DXGIDebug->ReportLiveObjects(
-                DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS( DXGI_DEBUG_RLO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL )
+                DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL
             );
 			OutputDebugStringW( L"End of DirectX12 Debug Dump\n" );
         }

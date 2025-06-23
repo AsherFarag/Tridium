@@ -422,7 +422,7 @@ namespace Tridium::D3D12 {
 		{
 			args.EmplaceBack( L"-Zi" );
 		}
-		#endif
+		#endif // RHI_DEBUG_ENABLED
 
 		// Disable validation
 		if ( a_Input.Flags.HasFlag( ERHIShaderCompilerFlags::DisableValidation ) )

@@ -472,7 +472,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 			//while ( time < 5.0 )
 
 			int bb = 0;
-			while ( true )
+			while ( bb++ < 100 )
 			{
 #if 1
 				++f;
@@ -544,10 +544,11 @@ float4 PSMain( VSOutput input ) : SV_Target
 					RHIBindingSetRef bindingSet = RHI::CreateBindingSet( bindingSetDesc );
 
 					graphicsState.PipelineState = pso.get();
-					graphicsState.Framebuffer.ColorAttachments = InitList{ RHIFramebuffer::Attachment{ rt.get() } };
-					graphicsState.Framebuffer.DepthStencilAttachment.Texture = depthTex.get();
-					graphicsState.BindingSets = { bindingSet.get() };
+					graphicsState.AddBindingSet( bindingSet.get() );
 					graphicsState.VertexBuffer = cubeVBO.get();
+					graphicsState.Framebuffer
+						.AddColorAttachment( rt.get() )
+						.SetDepthStencilAttachment( depthTex.get() );
 
 					cmdList->SetGraphicsState( graphicsState );
 
@@ -605,6 +606,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 				}
 #endif
 				RHI::Present();
+				RHI::WaitForIdle();
 			}
 		}
 

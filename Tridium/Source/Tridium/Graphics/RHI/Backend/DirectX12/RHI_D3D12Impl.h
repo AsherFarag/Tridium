@@ -543,7 +543,7 @@ namespace Tridium::D3D12 {
 			uint32_t a_DstMipLevel, uint32_t a_DstArraySlice, Box a_DstRegion
 		);
 
-		D3D12::ManagedResource Texture{};
+		ManagedResource Texture{};
 	};
 
 	//======================================================================
@@ -684,6 +684,7 @@ namespace Tridium::D3D12 {
 		InlineArray<RHITextureRef, RHIConstants::MaxColorTargets> RTVs;
 
 	private:
+		RHIFenceValue m_LastPresentedValue = 0;
 		uint32_t m_Width = 0;
 		uint32_t m_Height = 0;
 		bool m_ShouldResize = false;
@@ -883,7 +884,7 @@ namespace Tridium::D3D12 {
 	private:
 		ComPtr<ID3D12Debug> m_D3D12Debug = nullptr;
 		ComPtr<IDXGIDebug1> m_DXGIDebug = nullptr;
-	#endif
+	#endif // RHI_DEBUG_ENABLED
 	};
 
 #pragma endregion

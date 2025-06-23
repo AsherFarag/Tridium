@@ -12,7 +12,7 @@
 #if RHI_DEBUG_ENABLED
 	#include <d3d12sdklayers.h>
 	#include <dxgidebug.h>
-#endif
+#endif // RHI_DEBUG_ENABLED
 
 #include <type_traits>
 

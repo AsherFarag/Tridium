@@ -100,6 +100,19 @@ namespace Tridium {
 					return false;
 			}
 		}
+
+		auto& AddColorAttachment( IRHITexture* a_Texture, bool a_ReadOnly = false )
+		{
+			RHI_DEV_CHECK( ColorAttachments.Size() < ColorAttachments.MaxSize(), "Maximum number of color attachments exceeded!" );
+			ColorAttachments.PushBack( Attachment{ a_Texture, a_ReadOnly } );
+			return *this;
+		}
+
+		auto& SetDepthStencilAttachment( IRHITexture* a_Texture, bool a_ReadOnly = false )
+		{
+			DepthStencilAttachment = Attachment{ a_Texture, a_ReadOnly };
+			return *this;
+		}
 	};
 
 	namespace RHIConstants {

@@ -125,6 +125,8 @@ namespace Tridium::D3D12 {
 
 	bool RHICommandList_D3D12Impl::Close()
 	{
+		RHI_DEBUG_OP( m_DebugCommands.Clear() );
+
 		CommitBarriers();
 
 		if ( FAILED( m_ActiveCmdList->CmdList->Close() ) )
