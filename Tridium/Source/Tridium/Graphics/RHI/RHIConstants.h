@@ -8,6 +8,6 @@ namespace Tridium::RHIConstants {
 	static constexpr uint32_t MaxShaderBindings       = 64u; 
 	static constexpr uint32_t MaxTextureBindings      = 32u; 
 	static constexpr uint32_t MaxColorTargets         = 8u;  
-	static constexpr uint32_t MaxFrameBuffers         = 2u;  
+	static constexpr uint32_t MaxFramesInFlight       = 2u;  
 	static constexpr uint32_t MaxInlinedConstantsSize = 128u; // D3D12 allows 256 bytes, but Vulkan only guarantees 128 bytes.
 }

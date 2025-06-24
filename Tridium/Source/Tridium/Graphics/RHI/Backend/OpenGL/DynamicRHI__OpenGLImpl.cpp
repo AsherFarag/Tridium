@@ -62,9 +62,9 @@ namespace Tridium::OpenGL {
 		}
 
 		// Release all resources
-		LOG( LogCategory::RHI, Info, "Releasing all registered resources...", m_RegisteredResources.size() );
+		LOG( LogCategory::RHI, Info, "Releasing all registered resources...", m_RegisteredRHIObjects.size() );
 		size_t numResources = 0;
-		for ( const auto& [hash, resourceWeakRef] : m_RegisteredResources )
+		for ( const auto& [hash, resourceWeakRef] : m_RegisteredRHIObjects )
 		{
 			if ( RHIObjectRef resource = resourceWeakRef.lock() )
 			{
@@ -75,6 +75,15 @@ namespace Tridium::OpenGL {
 		LOG( LogCategory::RHI, Info, "Released {0} resources", numResources );
 
 		return true;
+	}
+
+	void DynamicRHI_OpenGLImpl::BeginFrame()
+	{
+		m_FrameIndex = (m_FrameIndex + 1) % m_Config.MaxFramesInFlight;
+	}
+
+	void DynamicRHI_OpenGLImpl::EndFrame()
+	{
 	}
 
 	RHIFenceValue DynamicRHI_OpenGLImpl::ExecuteCommandLists( Span<IRHICommandList* const> a_CommandLists, ERHICommandQueueType a_QueueType )
@@ -259,13 +268,13 @@ namespace Tridium::OpenGL {
 					{
 						// GLSL 4.3 is equivalent to D3D Shader Model 5.0
 						// From: https://www.khronos.org/opengl/wiki/Detecting_the_Shader_Model
-						gpuInfo.DeviceFeatures.HighestShaderModel = ERHIShaderModel::SM_5_0;
+						gpuInfo.DeviceFeatures.Shader.HighestShaderModel = ERHIShaderModel::SM_5_0;
 						break;
 					}
 					default:
 					{
 						TODO( "Add some better version checking here" );
-						gpuInfo.DeviceFeatures.HighestShaderModel = ERHIShaderModel::SM_6_0;
+						gpuInfo.DeviceFeatures.Shader.HighestShaderModel = ERHIShaderModel::SM_6_0;
 						break;
 					}
 					}
@@ -275,18 +284,18 @@ namespace Tridium::OpenGL {
 				{
 					// Default to the minimum shader model
 					LOG( LogCategory::RHI, Error, "Unknown shader model version in '{0}', setting Highest Shader Model to SM_5_0", versionStr );
-					gpuInfo.DeviceFeatures.HighestShaderModel = ERHIShaderModel::SM_5_0;
+					gpuInfo.DeviceFeatures.Shader.HighestShaderModel = ERHIShaderModel::SM_5_0;
 					break;
 				}
 				}
 
 				LOG( LogCategory::RHI, Info, 
 					"OpenGL Shader Model '{0}.{1}', setting Highest Shader Model to 'ERHIShaderModel::{2}'",
-					majorVersion, minorVersion, ToString( gpuInfo.DeviceFeatures.HighestShaderModel ) );
+					majorVersion, minorVersion, ToString( gpuInfo.DeviceFeatures.Shader.HighestShaderModel ) );
 			}
 			else
 			{
-				gpuInfo.DeviceFeatures.HighestShaderModel = ERHIShaderModel::SM_5_0;
+				gpuInfo.DeviceFeatures.Shader.HighestShaderModel = ERHIShaderModel::SM_5_0;
 				LOG( LogCategory::RHI, Error, "Failed to parse shader model version: '{0}', setting Highest Shader Model to SM_5_0", versionStr );
 			}
 
@@ -304,17 +313,11 @@ namespace Tridium::OpenGL {
 					return false;
 				};
 
-		#define InitFeature( _Feature, _Support ) \
-			gpuInfo.DeviceFeatures.Features[Cast<uint8_t>( _Feature )].SetSupport( ( _Support ) ? ERHIFeatureSupport::Supported : ERHIFeatureSupport::Unsupported )
-
-			using enum ERHIFeature;
-			InitFeature( ComputeShaders, SupportsFeature( "GL_ARB_compute_shader" ) );
-			InitFeature( MeshShaders, SupportsFeature( "GL_NV_mesh_shader" ) );
-			InitFeature( Tesselation, SupportsFeature( "GL_ARB_tessellation_shader" ) );
-			InitFeature( RayTracing, SupportsFeature( "GL_NV_ray_tracing" ) );
-			InitFeature( BindlessResources, SupportsFeature( "GL_ARB_bindless_texture" ) );
-
-		#undef InitFeature
+			gpuInfo.DeviceFeatures.Shader.ComputeShadersSupported = SupportsFeature( "GL_ARB_compute_shader" );
+			gpuInfo.DeviceFeatures.Shader.MeshShadersSupported = SupportsFeature( "GL_NV_mesh_shader" );
+			gpuInfo.DeviceFeatures.Shader.TesselationSupported = SupportsFeature( "GL_ARB_tessellation_shader" );
+			gpuInfo.DeviceFeatures.Shader.RayTracingSupported = SupportsFeature( "GL_NV_ray_tracing" );
+			gpuInfo.DeviceFeatures.Shader.BindlessResourcesSupported = SupportsFeature( "GL_ARB_bindless_texture" );
 		}
 
 		return gpuInfo;

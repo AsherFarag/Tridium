@@ -42,17 +42,10 @@ namespace Tridium::D3D12 {
 
 	DescriptorHeap::~DescriptorHeap()
 	{
-		if ( IsSuballocation() )
+		if ( IsPoolable() )
 		{
-			LOG( LogCategory::RHI, Debug, "DescriptorHeap - Returning heap to pool: Type: {0}, NumDescriptors: {1}",
-				RHIDescriptorHeapTypeToString( m_Type ), m_NumDescriptors );
 			// Return the heap to the pool.
 			GetD3D12RHI()->GetDescriptorHeapManager().AddHeapToPool( std::move( m_Heap ), m_Type, m_NumDescriptors, m_Flags );
-		}
-		else
-		{
-			LOG( LogCategory::RHI, Debug, "DescriptorHeap - Destroying heap: Type: {0}, NumDescriptors: {1}",
-				RHIDescriptorHeapTypeToString( m_Type ), m_NumDescriptors );
 		}
 	}
 

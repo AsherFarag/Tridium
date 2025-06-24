@@ -2,7 +2,6 @@
 #include "RHIConfig.h"
 #include "RHIDefinitions.h"
 #include "RHIToString.h"
-#include "RHIGlobals.h"
 #include "RHIConstants.h"
 #include <Tridium/Graphics/Color.h>
 #include <Tridium/Core/Config.h>
@@ -60,11 +59,6 @@ namespace Tridium {
 			}
 
 			return true;
-		}
-
-		inline bool SupportsMultithreading()
-		{
-			return s_RHIGlobals.SupportsMultithreading;
 		}
 
 		inline ERHITextureAlignment GetTextureAlignment()

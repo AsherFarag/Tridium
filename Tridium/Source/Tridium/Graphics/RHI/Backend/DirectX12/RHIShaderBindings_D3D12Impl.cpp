@@ -1,6 +1,5 @@
 #include "tripch.h"
 #include "RHI_D3D12Impl.h"
-#include "D3D12RootSig.h"
 
 namespace Tridium::D3D12 {
 
@@ -250,7 +249,7 @@ namespace Tridium::D3D12 {
 			SamplerHeap = Device()->GetDescriptorHeapManager().AllocateHeap(
                 ERHIDescriptorHeapType::Sampler,
 				layout->DescriptorTableSizeSamplers,
-                EDescriptorHeapFlags::GPUVisible | EDescriptorHeapFlags::Poolable
+                EDescriptorHeapFlags::GPUVisible
             );
 
             for ( const auto& range : layout->DescriptorRangesSamplers )
@@ -303,7 +302,7 @@ namespace Tridium::D3D12 {
             RenderResourceHeap = Device()->GetDescriptorHeapManager().AllocateHeap(
                 ERHIDescriptorHeapType::RenderResource,
                 layout->DescriptorTableSizeRenderResources,
-                EDescriptorHeapFlags::GPUVisible | EDescriptorHeapFlags::Poolable
+                EDescriptorHeapFlags::GPUVisible
             );
 
             for ( const auto& range : layout->DescriptorRangesRenderResources )

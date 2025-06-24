@@ -114,9 +114,8 @@ namespace Tridium::D3D12 {
 			cmdList->Close();
 
 			IRHICommandList* cmdListPtr = cmdList;
-			RHIFenceValue fence = Device()->ExecuteCommandLists( Span{ &cmdListPtr, 1 }, ERHICommandQueueType::Copy );
-			Device()->WaitForIdle();
-			//Device()->WaitForFence( ERHICommandQueueType::Copy, fence );
+			const RHIFenceValue fence = Device()->ExecuteCommandLists( Span{ &cmdListPtr, 1 }, ERHICommandQueueType::Copy );
+			Device()->WaitForFence( ERHICommandQueueType::Copy, fence );
 		}
 	}
 

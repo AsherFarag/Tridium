@@ -132,10 +132,11 @@ namespace Tridium {
 		bool initSuccess = RHI::Initialise( config );
 		LOG( LogCategory::RHI, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), initSuccess );
 
-		LOG( LogCategory::RHI, Info, "RHI Vendor {0}", ToString( Cast<EGPUVendorID>( s_RHIGlobals.GPUInfo.VendorID ) ) );
-		LOG( LogCategory::RHI, Info, "RHI Device {0}", s_RHIGlobals.GPUInfo.DeviceName );
-		LOG( LogCategory::RHI, Info, "RHI Driver {0}", s_RHIGlobals.GPUInfo.DriverVersion );
-		LOG( LogCategory::RHI, Info, "RHI VRAM {0} MB", s_RHIGlobals.GPUInfo.VRAMBytes / 1024 / 1024 );
+		GPUInfo gpuInfo = RHI::GetDynamicRHI()->GetGPUInfo();
+		LOG( LogCategory::RHI, Info, "RHI Vendor {0}", ToString( Cast<EGPUVendorID>( gpuInfo.VendorID ) ) );
+		LOG( LogCategory::RHI, Info, "RHI Device {0}", gpuInfo.DeviceName );
+		LOG( LogCategory::RHI, Info, "RHI Driver {0}", gpuInfo.DriverVersion );
+		LOG( LogCategory::RHI, Info, "RHI VRAM {0} MB", gpuInfo.VRAMBytes / 1024 / 1024 );
 
 		// TEMP!
 #if 1
@@ -479,6 +480,9 @@ float4 PSMain( VSOutput input ) : SV_Target
 				m_Window->OnUpdate();
 				FlushEventQueue();
 				time = glfwGetTime();
+
+				RHI::BeginFrame();
+
 				{
 					cmdList->Open();
 					RHIGraphicsState graphicsState{};
@@ -607,6 +611,8 @@ float4 PSMain( VSOutput input ) : SV_Target
 #endif
 				RHI::Present();
 				RHI::WaitForIdle();
+
+				RHI::EndFrame();
 			}
 		}
 

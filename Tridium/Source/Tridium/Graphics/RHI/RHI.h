@@ -20,6 +20,10 @@ namespace Tridium {
 		bool Initialise( const RHIConfig& a_Config );
 		// Shutdown the RHI.
 		bool Shutdown();
+		// Begins a new frame, incrementing the frame index.
+		void BeginFrame();
+		// Ends the current frame.
+		void EndFrame();
 		// Present the current frame to the screen using the swap chain.
 		bool Present();
 		// Executes the given command lists and returns a fence value that can be used to wait for the commands to complete.
@@ -34,10 +38,12 @@ namespace Tridium {
 
 		//===========================
 		// RHI Query and Functions
+		[[nodiscard]] inline uint32_t MaxFramesInFlight() { RHI_DEV_CHECK( s_DynamicRHI, "Null RHI" ); return s_DynamicRHI->MaxFramesInFlight(); }
+		[[nodiscard]] inline uint32_t FrameIndex() { RHI_DEV_CHECK( s_DynamicRHI, "Null RHI" ); return s_DynamicRHI->FrameIndex(); }
+		[[nodiscard]] inline const RHIConfig& Config() { RHI_DEV_CHECK( s_DynamicRHI, "Null RHI" ); return s_DynamicRHI->Config(); }
+		[[nodiscard]] inline ERHInterfaceType GetRHIType() { RHI_DEV_CHECK( s_DynamicRHI, "Null RHI" ); return s_DynamicRHI->GetRHIType(); }
 		[[nodiscard]] inline IRHISwapChain* GetSwapChain() { RHI_DEV_CHECK( s_DynamicRHI, "Null RHI" ); return s_DynamicRHI->GetSwapChain(); }
-		[[nodiscard]] RHIFeatureInfo GetFeatureInfo( ERHIFeature a_Feature );
-		[[nodiscard]] ERHIFeatureSupport GetFeatureSupport( ERHIFeature a_Feature );
-		[[nodiscard]] bool IsFeatureSupported( ERHIFeature a_Feature );
+		[[nodiscard]] inline GPUInfo GetGPUInfo() { RHI_DEV_CHECK( s_DynamicRHI, "Null RHI" ); return s_DynamicRHI->GetGPUInfo(); }
 		//===========================
 
 		//===========================

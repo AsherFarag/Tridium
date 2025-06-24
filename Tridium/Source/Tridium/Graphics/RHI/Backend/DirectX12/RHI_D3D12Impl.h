@@ -233,11 +233,27 @@ namespace Tridium::D3D12 {
 		RHIFenceValue LastCompletedValue = 0;
 		Deque<UniquePtr<class CommandContext>> CmdContextsInFlight{};
 
+		RHIFenceValue Signal()
+		{
+			CmdQueue->Signal( Fence.Get(), ++LastSubmittedValue );
+			return LastSubmittedValue;
+		}
+
 		RHIFenceValue UpdateLastCompletedValue()
 		{
 			if ( LastCompletedValue < LastSubmittedValue )
 				LastCompletedValue = Fence->GetCompletedValue();
 			return LastCompletedValue;
+		}
+
+		void WaitForFence( HANDLE a_FenceEvent, RHIFenceValue a_FenceValue )
+		{
+			if ( UpdateLastCompletedValue() < a_FenceValue )
+			{
+				ResetEvent( a_FenceEvent );
+				Fence->SetEventOnCompletion( a_FenceValue, a_FenceEvent );
+				WaitForSingleObject( a_FenceEvent, INFINITE );
+			}
 		}
 
 		CommandQueue( ID3D12Device& a_D3D12Device, ID3D12CommandQueue* a_D3D12CmdQueue )
@@ -787,6 +803,8 @@ namespace Tridium::D3D12 {
 		// Core RHI functions
 		bool Init( const RHIConfig& a_Config ) override;
 		bool Shutdown() override;
+		void BeginFrame() override;
+		void EndFrame() override;
 		RHIFenceValue ExecuteCommandLists( Span<IRHICommandList* const> a_CommandLists, ERHICommandQueueType a_QueueType ) override;
 		bool WaitForIdle() override;
 		void WaitForFence( ERHICommandQueueType a_QueueType, RHIFenceValue a_FenceValue ) override;

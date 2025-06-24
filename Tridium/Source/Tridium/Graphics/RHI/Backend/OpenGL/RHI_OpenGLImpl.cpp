@@ -18,7 +18,7 @@ namespace Tridium::OpenGL {
 				return it->second;
 		}
 
-		const auto samplerProps = GetOpenGLRHI()->GetGPUInfo().Properties.Sampler;
+		const auto samplerProps = GetOpenGLRHI()->GetGPUInfo().DeviceFeatures.Sampler;
 
 		GLSamplerWrapper& sampler = a_IsDepth ? DepthSamplers[a_Sampler] : Samplers[a_Sampler];
 		sampler.Create();

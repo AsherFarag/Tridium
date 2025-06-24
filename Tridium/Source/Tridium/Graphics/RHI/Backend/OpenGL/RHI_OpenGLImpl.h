@@ -575,6 +575,8 @@ namespace Tridium::OpenGL {
 		// Core RHI functions
 		bool Init( const RHIConfig& a_Config ) override;
 		bool Shutdown() override;
+		void BeginFrame() override;
+		void EndFrame() override;
 		RHIFenceValue ExecuteCommandLists( Span<IRHICommandList* const> a_CommandLists, ERHICommandQueueType a_QueueType ) override;
 		bool WaitForIdle() override;
 		void WaitForFence( ERHICommandQueueType a_QueueType, RHIFenceValue a_FenceValue ) override;

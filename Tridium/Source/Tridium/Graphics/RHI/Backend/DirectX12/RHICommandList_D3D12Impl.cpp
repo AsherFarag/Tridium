@@ -519,7 +519,7 @@ namespace Tridium::D3D12 {
 		m_RTVHeap = AllocateHeap(
 			ERHIDescriptorHeapType::RenderTarget,
 			a_Framebuffer.ColorAttachments.Size(),
-			EDescriptorHeapFlags::Poolable,
+			EDescriptorHeapFlags::None,
 			"RTV Heap"
 		).get();
 		ASSERT( m_RTVHeap, "Failed to allocate RTV heap!" );
@@ -546,7 +546,7 @@ namespace Tridium::D3D12 {
 			m_DSVHeap = AllocateHeap(
 				ERHIDescriptorHeapType::DepthStencil,
 				1,
-				EDescriptorHeapFlags::Poolable,
+				EDescriptorHeapFlags::None,
 				"DSV Heap" 
 			).get();
 			ASSERT( m_DSVHeap, "Failed to allocate DSV heap!" );

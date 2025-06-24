@@ -7,6 +7,5 @@ namespace Tridium {
 	IRHIObject::~IRHIObject()
 	{
 		Device()->UnregisterRHIObject( *this );
-		LOG( LogCategory::Debug, Debug, "RHI Object '{}' destroyed" );
 	}
 }

@@ -148,61 +148,6 @@ namespace Tridium {
 	}
 
 	//=========================================================
-	// ERHIFeatureSupport
-	//=========================================================
-	
-	static constexpr StringView ToString( ERHIFeatureSupport a_Support )
-	{
-		switch ( a_Support )
-		{
-		case ERHIFeatureSupport::Unsupported: return "Unsupported";
-		case ERHIFeatureSupport::Supported:   return "Supported";
-		//case ERHIFeatureSupport::Optional:    return "Optional";
-		default:                              return "<INVALID>";
-		}
-	}
-
-	static constexpr bool FromString( StringView a_String, ERHIFeatureSupport& o_Value )
-	{
-		switch ( Hashing::Hash( ReinterpretCast<const uint8_t*>( a_String.data() ), a_String.size() ) )
-		{
-		case "Unsupported"_H: return Detail::AssignEnumValue( ERHIFeatureSupport::Unsupported, o_Value );
-		case "Supported"_H:   return Detail::AssignEnumValue( ERHIFeatureSupport::Supported, o_Value );
-		}
-		return false;
-	}
-
-	//=========================================================
-	// ERHIFeature
-	//=========================================================
-
-	static constexpr StringView ToString( ERHIFeature a_Feature )
-	{
-		switch ( a_Feature )
-		{
-		case ERHIFeature::ComputeShaders:    return "ComputeShaders";
-		case ERHIFeature::MeshShaders:       return "MeshShaders";
-		case ERHIFeature::Tesselation:       return "Tesselation";
-		case ERHIFeature::RayTracing:        return "RayTracing";
-		case ERHIFeature::BindlessResources: return "BindlessResources";
-		default:                             return "<INVALID>";
-		}
-	}
-
-	static constexpr bool FromString( StringView a_String, ERHIFeature& o_Value )
-	{
-		switch ( Hashing::Hash( ReinterpretCast<const uint8_t*>( a_String.data() ), a_String.size() ) )
-		{
-		case "ComputeShaders"_H:    return Detail::AssignEnumValue( ERHIFeature::ComputeShaders, o_Value );
-		case "MeshShaders"_H:   return Detail::AssignEnumValue( ERHIFeature::MeshShaders, o_Value );
-		case "Tesselation"_H:       return Detail::AssignEnumValue( ERHIFeature::Tesselation, o_Value );
-		case "RayTracing"_H:        return Detail::AssignEnumValue( ERHIFeature::RayTracing, o_Value );
-		case "BindlessResources"_H: return Detail::AssignEnumValue( ERHIFeature::BindlessResources, o_Value );
-		}
-		return false;
-	}
-
-	//=========================================================
 	// ERHIObjectType
 	//==========================================================
 

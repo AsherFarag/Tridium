@@ -108,40 +108,6 @@ namespace Tridium {
 
 
 
-	//===========================
-	// RHI Feature Support
-	enum class ERHIFeatureSupport : uint8_t
-	{
-		// The RHI feature is completely unavailable at runtime.
-		Unsupported,
-
-		//// The RHI feature can be available at runtime based on hardware or driver.
-		//RuntimeDependent,
-
-		//// The RHI feature is guaranteed to be available at runtime.
-		//RuntimeGuaranteed,
-
-		TODO( "Do we only need these two?" )
-		Supported
-	};
-
-
-
-	//======================================================================
-	// RHI Feature
-	enum class ERHIFeature : uint32_t
-	{
-		ComputeShaders,
-		MeshShaders,
-		Tesselation,
-		RayTracing,
-		BindlessResources,
-		COUNT,
-		Invalid = ~0u
-	};
-
-
-
 	//=======================================================
 	// RHI Shader Format
 	enum class ERHIShaderFormat : uint8_t
@@ -159,6 +125,8 @@ namespace Tridium {
 		NUM_BITS = 3,
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHIShaderFormat );
+
+
 
 	//=======================================================
 	// RHI Shader Model
@@ -183,50 +151,33 @@ namespace Tridium {
 
 
 	//======================================================================
-	// RHI Feature Info
-	//  Describes a specific feature supported by the RHI device.
-	struct RHIFeatureInfo
-	{
-		ERHIFeature Feature() const { return m_Feature; }
-		StringView Name() const { return m_Name; }
-		ERHIFeatureSupport Support() const { return m_Support; }
-
-		void SetSupport( ERHIFeatureSupport a_Support ) { m_Support = a_Support; }
-		RHIFeatureInfo() = default;
-		RHIFeatureInfo( ERHIFeature a_Feature, StringView a_Name, ERHIFeatureSupport a_Support = ERHIFeatureSupport::Unsupported )
-			: m_Feature( a_Feature ), m_Name( a_Name ), m_Support( a_Support ) {}
-	private:
-		ERHIFeature m_Feature = ERHIFeature::Invalid;
-		StringView m_Name{ "Unknown" };
-		ERHIFeatureSupport m_Support = ERHIFeatureSupport::Unsupported;
-	};
-
-
-
-	//======================================================================
 	// RHI Device Features
 	//  Describes the features supported by the RHI device.
 	struct RHIDeviceFeatures
 	{
-		FixedArray<RHIFeatureInfo, uint8_t( ERHIFeature::COUNT )> Features{};
-		ERHIShaderModel HighestShaderModel = ERHIShaderModel::Unknown;
+		// Will be set to false if specified in the RHI config.
+		// Otherwise, it will be true if the RHI supports multithreading.
+		bool Multithreading = false;
 
-		const RHIFeatureInfo& GetFeatureInfo( ERHIFeature a_Feature ) const
+		struct ShaderFeatures
 		{
-			RHI_DEV_CHECK( uint8_t( a_Feature ) < uint8_t( ERHIFeature::COUNT ), "Invalid feature requested!" );
-			return Features[Cast<uint8_t>(a_Feature)];
-		}
+			ERHIShaderModel HighestShaderModel = ERHIShaderModel::Unknown;
+			bool ComputeShadersSupported = false;
+			bool MeshShadersSupported = false;
+			bool TesselationSupported = false;
+			bool RayTracingSupported = false;
+			bool BindlessResourcesSupported = false;
+		} Shader{};
 
-		RHIDeviceFeatures()
+		struct SamplerFeatures
 		{
-	#define DEFINE_FEATURE( _Feature ) Features[Cast<uint8_t>( ERHIFeature::_Feature )] = { ERHIFeature::_Feature, #_Feature, ERHIFeatureSupport::Unsupported };
-			DEFINE_FEATURE( ComputeShaders );
-			DEFINE_FEATURE( MeshShaders );
-			DEFINE_FEATURE( Tesselation );
-			DEFINE_FEATURE( RayTracing );
-			DEFINE_FEATURE( BindlessResources );
-	#undef DEFINE_FEATURE
-		}
+			TODO( "Set this to false" );
+			bool BorderSamplingModeSupported = true;
+			TODO( "Set this to 1" );
+			uint8_t MaxAnisotropy = 16; // Maximum anisotropy supported by the sampler.
+			TODO( "Set this to false" );
+			bool LODBiasSupported = true; // Whether the sampler supports LOD bias.
+		} Sampler{};
 	};
 
 	//====================================
@@ -239,20 +190,6 @@ namespace Tridium {
 		String DriverVersion{};
 		size_t VRAMBytes = 0; // Total available VRAM in bytes. NOTE: This is not always available on all platforms.
 		RHIDeviceFeatures DeviceFeatures{};
-
-		struct
-		{
-			struct SamplerProperties
-			{
-				TODO( "Set this to false" );
-				bool BorderSamplingModeSupported = true;
-				TODO( "Set this to 1" );
-				uint8_t MaxAnisotropy = 16; // Maximum anisotropy supported by the sampler.
-				TODO( "Set this to false" );
-				bool LODBiasSupported = true; // Whether the sampler supports LOD bias.
-			} Sampler;
-		} Properties;
-
 	};
 
 

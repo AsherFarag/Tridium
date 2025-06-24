@@ -85,7 +85,7 @@ namespace Tridium::D3D12 {
 		}
 
 		// Initialise GPU Info
-		GPUInfo gpuInfo{};
+		TODO( "Cache GPU info" );
 
 		// Create fence event
 		m_FenceEvent = CreateEvent( nullptr, FALSE, FALSE, nullptr );
@@ -134,7 +134,7 @@ namespace Tridium::D3D12 {
 		int allocatorFlags = D3D12MA::ALLOCATOR_FLAG_NONE;
 		allocatorFlags |= ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED;
 		allocatorFlags |= ALLOCATOR_FLAG_MSAA_TEXTURES_ALWAYS_COMMITTED;
-		allocatorFlags |= !RHI::SupportsMultithreading() ? ALLOCATOR_FLAG_SINGLETHREADED : ALLOCATOR_FLAG_NONE;
+		allocatorFlags |= !GetGPUInfo().DeviceFeatures.Multithreading ? ALLOCATOR_FLAG_SINGLETHREADED : ALLOCATOR_FLAG_NONE;
 		D3D12MA::ALLOCATOR_DESC  allocatorDesc = {
 			.Flags = D3D12MA::ALLOCATOR_FLAGS( allocatorFlags ),
 			.pDevice = m_Device.Get(),
@@ -179,15 +179,9 @@ namespace Tridium::D3D12 {
 
 		m_DescriptorHeapManager.Shutdown();
 
-		if ( m_SwapChain )
-		{
-			m_SwapChain->Release();
-			m_SwapChain.reset();
-		}
-
-		LOG( LogCategory::RHI, Info, "Releasing all registered resources...", m_RegisteredResources.size() );
+		LOG( LogCategory::RHI, Info, "Releasing all registered resources...", m_RegisteredRHIObjects.size() );
 		size_t numResources = 0;
-		for ( const auto& [hash, resourceWeakRef] : m_RegisteredResources )
+		for ( const auto& [hash, resourceWeakRef] : m_RegisteredRHIObjects )
 		{
 			if ( RHIObjectRef resource = resourceWeakRef.lock() )
 			{
@@ -227,6 +221,15 @@ namespace Tridium::D3D12 {
 		return true;
 	}
 
+	void DynamicRHI_D3D12Impl::BeginFrame()
+	{
+		m_FrameIndex = (m_FrameIndex + 1) % m_Config.MaxFramesInFlight;
+	}
+
+	void DynamicRHI_D3D12Impl::EndFrame()
+	{
+	}
+
 	RHIFenceValue DynamicRHI_D3D12Impl::ExecuteCommandLists( Span<IRHICommandList* const> a_CommandLists, ERHICommandQueueType a_QueueType )
 	{
 		m_CmdListsToExecute.Resize( a_CommandLists.size() );
@@ -237,8 +240,7 @@ namespace Tridium::D3D12 {
 		RHI_DEV_CHECK( cmdQueue, "Invalid command queue type!" );
 
 		cmdQueue->CmdQueue->ExecuteCommandLists( Cast<UINT>( a_CommandLists.size() ), m_CmdListsToExecute.Data() );
-		cmdQueue->LastSubmittedValue++;
-		cmdQueue->CmdQueue->Signal( cmdQueue->Fence.Get(), cmdQueue->LastSubmittedValue );
+		cmdQueue->Signal();
 
 		for ( size_t i = 0; i < a_CommandLists.size(); ++i )
 		{
@@ -259,14 +261,7 @@ namespace Tridium::D3D12 {
 			if ( queue == nullptr )
 				continue;
 
-			// Test if the fence has been reached
-			if ( queue->UpdateLastCompletedValue() < queue->LastSubmittedValue )
-			{
-				// If it's not, wait for it to finish using an event
-				ResetEvent( m_FenceEvent );
-				queue->Fence->SetEventOnCompletion( queue->LastSubmittedValue, m_FenceEvent );
-				WaitForSingleObject( m_FenceEvent, INFINITE );
-			}
+			queue->WaitForFence( m_FenceEvent, queue->LastSubmittedValue );
 		}
 
 		return true;
@@ -278,14 +273,7 @@ namespace Tridium::D3D12 {
 		RHI_DEV_CHECK( queue, "Invalid command queue type!" );
 		RHI_DEV_CHECK( a_FenceValue <= queue->LastSubmittedValue, "Invalid fence value!" );
 
-		// Test if the fence has been reached
-		if ( queue->UpdateLastCompletedValue() < a_FenceValue )
-		{
-			// If it's not, wait for it to finish using an event
-			ResetEvent( m_FenceEvent );
-			queue->Fence->SetEventOnCompletion( a_FenceValue, m_FenceEvent );
-			WaitForSingleObject( m_FenceEvent, INFINITE );
-		}
+		queue->WaitForFence( m_FenceEvent, a_FenceValue );
 	}
 
 	void DynamicRHI_D3D12Impl::CollectGarbage()
@@ -380,47 +368,44 @@ namespace Tridium::D3D12 {
 			gpuInfo.VRAMBytes = desc.DedicatedVideoMemory;
 		}
 
+		RHIDeviceFeatures& deviceFeatures = gpuInfo.DeviceFeatures;
+
+		deviceFeatures.Multithreading = m_Config.SingleThreaded ? false : true;
+
+		// = Shader Features =
 		
+		auto& shaderFeatures = deviceFeatures.Shader;
+
 		D3D_SHADER_MODEL highestShaderModel = D3D_SHADER_MODEL::D3D_SHADER_MODEL_6_0;
 		if ( D3D12_FEATURE_DATA_SHADER_MODEL shaderModel{}; 
 			SUCCEEDED( m_Device->CheckFeatureSupport( D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof( shaderModel ) ) ) )
 		{
 			highestShaderModel = shaderModel.HighestShaderModel;
-			gpuInfo.DeviceFeatures.HighestShaderModel = Translate( highestShaderModel );
+			shaderFeatures.HighestShaderModel = Translate( highestShaderModel );
 		}
 
-		// Check for feature support
-
-		auto InitFeature = [&gpuInfo]( ERHIFeature a_Feature, bool a_Support )
-			{
-				gpuInfo.DeviceFeatures.Features[Cast<uint32_t>( a_Feature )].SetSupport( a_Support ? ERHIFeatureSupport::Supported : ERHIFeatureSupport::Unsupported );
-			};
-
-		// Compute shaders are always supported in D3D12
-		InitFeature( ERHIFeature::ComputeShaders, highestShaderModel >= D3D_SHADER_MODEL::D3D_SHADER_MODEL_5_1 );
-
+		shaderFeatures.ComputeShadersSupported = highestShaderModel >= D3D_SHADER_MODEL_5_1;
 		
 		if ( D3D12_FEATURE_DATA_D3D12_OPTIONS options{};
 			SUCCEEDED( m_Device->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof( options ) ) ) )
 		{
 			// From: https://microsoft.github.io/DirectX-Specs/d3d/HLSL_SM_6_6_DynamicResources.html
-			InitFeature( ERHIFeature::BindlessResources, 
+			shaderFeatures.BindlessResourcesSupported = 
 				highestShaderModel >= D3D_SHADER_MODEL::D3D_SHADER_MODEL_6_6
-				&& options.ResourceBindingTier >= D3D12_RESOURCE_BINDING_TIER_3 );
+				&& options.ResourceBindingTier >= D3D12_RESOURCE_BINDING_TIER_3;
 		}
 
 		if ( D3D12_FEATURE_DATA_D3D12_OPTIONS5 options{}; 
 			SUCCEEDED( m_Device->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS5, &options, sizeof( options ) ) ) )
 		{
-			InitFeature( ERHIFeature::RayTracing, options.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED );
+			shaderFeatures.RayTracingSupported = options.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
 		}
 
 		if ( D3D12_FEATURE_DATA_D3D12_OPTIONS7 options{};
 			SUCCEEDED( m_Device->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS7, &options, sizeof( options ) ) ) )
 		{
-			InitFeature( ERHIFeature::MeshShaders, options.MeshShaderTier != D3D12_MESH_SHADER_TIER_NOT_SUPPORTED );
+			shaderFeatures.MeshShadersSupported = options.MeshShaderTier != D3D12_MESH_SHADER_TIER_NOT_SUPPORTED;
 		}
-		
 
 		return gpuInfo;
 	}

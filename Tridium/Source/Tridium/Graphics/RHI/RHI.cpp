@@ -26,7 +26,7 @@ namespace Tridium {
 
 	bool RHI::Initialise( const RHIConfig& a_Config )
 	{
-		if ( !ASSERT( !s_RHIGlobals.IsRHIInitialised, "RHI has already been previously initialised!" ) )
+		if ( !ASSERT( s_DynamicRHI == nullptr, "RHI has already been previously initialised!" ) )
 		{
 			return false;
 		}
@@ -60,11 +60,6 @@ namespace Tridium {
 		if ( s_DynamicRHI->Init( a_Config ) == false )
 			return false; // Failed to initialise the rendering API
 
-		s_RHIGlobals.IsRHIInitialised = true;
-		TODO( "Set up proper Multithreading query" );
-		s_RHIGlobals.SupportsMultithreading = a_Config.SingleThreaded == false;
-		s_RHIGlobals.GPUInfo = s_DynamicRHI->GetGPUInfo();
-
 		shutdownGuard.Dismiss();
 		return true;
 	}
@@ -77,11 +72,21 @@ namespace Tridium {
 
 		bool success = s_DynamicRHI->Shutdown();
 
-		s_RHIGlobals = {};
-
 		delete s_DynamicRHI;
 		s_DynamicRHI = nullptr;
 		return success;
+	}
+
+	void RHI::BeginFrame()
+	{
+		RHI_DEV_CHECK( s_DynamicRHI, "RHI is not initialised!" );
+		s_DynamicRHI->BeginFrame();
+	}
+
+	void RHI::EndFrame()
+	{
+		RHI_DEV_CHECK( s_DynamicRHI, "RHI is not initialised!" );
+		s_DynamicRHI->EndFrame();
 	}
 
 	bool RHI::Present()
@@ -90,14 +95,7 @@ namespace Tridium {
 		if ( swapChain == nullptr )
 			return false;
 
-		bool success = swapChain->Present();
-		if ( success )
-		{
-			++s_RHIGlobals.FrameIndex;
-			s_RHIGlobals.FrameIndex %= RHIConstants::MaxFrameBuffers;
-		}
-
-		return success;
+		return swapChain->Present();
 	}
 
 	RHIFenceValue RHI::ExecuteCommandLists( Span<IRHICommandList* const> a_CommandLists, ERHICommandQueueType a_QueueType )
@@ -124,21 +122,6 @@ namespace Tridium {
 		s_DynamicRHI->CollectGarbage();
 	}
 
-	RHIFeatureInfo RHI::GetFeatureInfo( ERHIFeature a_Feature )
-	{
-		return s_RHIGlobals.GPUInfo.DeviceFeatures.GetFeatureInfo( a_Feature );
-	}
-
-	ERHIFeatureSupport RHI::GetFeatureSupport( ERHIFeature a_Feature )
-	{
-		return RHI::GetFeatureInfo( a_Feature ).Support();
-	}
-
-	bool RHI::IsFeatureSupported( ERHIFeature a_Feature )
-	{
-		return RHI::GetFeatureSupport( a_Feature ) == ERHIFeatureSupport::Supported;
-	}
-
 	StringView RHI::GetRHIName()
 	{
 		if ( s_DynamicRHI == nullptr )
@@ -147,17 +130,6 @@ namespace Tridium {
 		}
 
 		return RHI::GetRHIName( s_DynamicRHI->GetRHIType() );
-	}
-
-	ERHInterfaceType RHI::GetRHIType()
-	{
-		if ( s_DynamicRHI == nullptr )
-		{
-			CHECK( false );
-			return ERHInterfaceType::Null;
-		}
-
-		return s_DynamicRHI->GetRHIType();
 	}
 
 	//////////////////////////////////////////////////////////////////////////

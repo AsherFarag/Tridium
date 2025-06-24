@@ -163,11 +163,11 @@ namespace Tridium {
 	class IRHIResource : public IRHIObject
 	{
 	public:
-		// Returns the internal state of the buffer.
+		// Returns the internal state of the resource.
 		ERHIResourceStates State() const { return m_State; }
 
-		// Sets the internal state of the buffer.
-		// NOTE: This does not perform a state transition. This only sets the internal state of the buffer.
+		// Sets the internal state of the resource.
+		// NOTE: This does not perform a state transition. This only sets the internal state of the resource.
 		//       Should only be used if manual state transitions have been completed and you want to return state management to the RHI.
 		void SetState( ERHIResourceStates a_State ) { m_State = a_State; }
 
@@ -181,7 +181,6 @@ namespace Tridium {
 	//==========================================================
 	// RHI Resource barrier
 	//  Describes a state transition for an RHI resource.
-	//  Can be used for manual state transitions for RHI resources via RHI::TransitionResourceStates.
 	struct RHIResourceBarrier
 	{
 		IRHIResource* Resource = nullptr;
@@ -190,8 +189,6 @@ namespace Tridium {
 	};
 
 } // namespace Tridium
-
-#define DECLARE_RHI_OBJECT_IMPLEMENTATION( _C, P) class _C : public P
 
 // Helper macro for defining the body of a base RHI resource type.
 // _RHIResourceType: The type of the resource. E.g. _RHIResourceType = Texture.

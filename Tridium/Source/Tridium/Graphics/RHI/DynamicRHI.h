@@ -1,18 +1,18 @@
 #pragma once
 #include "RHIDefinitions.h"
-#include "RHIGlobals.h"
 #include "RHIResource.h"
 #include "RHISwapChain.h"
 
 namespace Tridium {
 
-	//==============================================
+	//================================
 	// Forward declarations
 	struct RHITextureSubresourceData;
-	//==============================================
+	//================================
 
 	//===========================
 	// RHI Configuration
+	//  Contains the configuration that is used to initialise the RHI.
 	struct RHIConfig
 	{
 		// The RHI backend to use.
@@ -29,7 +29,7 @@ namespace Tridium {
 		bool SingleThreaded = false;
 
 		// This specifies how many frames the CPU can prepare while the GPU is rendering.
-		uint32_t MaxFramesInFlight = RHIConstants::MaxFrameBuffers;
+		uint32_t MaxFramesInFlight = RHIConstants::MaxFramesInFlight;
 
 		constexpr auto& SetRHIType( ERHInterfaceType a_Type ) { RHIType = a_Type; return *this; }
 		constexpr auto& SetUseDebug( bool a_UseDebug ) { UseDebug = a_UseDebug; return *this; }
@@ -53,6 +53,10 @@ namespace Tridium {
 		virtual bool Init( const RHIConfig& a_Config ) = 0;
 		// Shutdown the RHI.
 		virtual bool Shutdown() = 0;
+		// Begins a new frame, incrementing the frame index.
+		virtual void BeginFrame() = 0;
+		// Ends the current frame.
+		virtual void EndFrame() = 0;
 		// Executes the given command lists and returns a fence value that can be used to wait for the commands to complete.
 		virtual RHIFenceValue ExecuteCommandLists( Span<IRHICommandList* const> a_CommandLists, ERHICommandQueueType a_QueueType ) = 0;
 		// Waits for the RHI to finish processing all commands and become idle.
@@ -81,44 +85,52 @@ namespace Tridium {
 
 		//=====================================================
 		// Miscellaneous
+		// Returns the maximum number of frames in flight, specified in the RHI configuration.
+		uint32_t MaxFramesInFlight() const { return m_Config.MaxFramesInFlight; }
+		// Returns the current frame index.
+		uint32_t FrameIndex() const { return m_FrameIndex; }
+		// Returns the configuration used to initialise the RHI.
 		const auto& Config() const { return m_Config; }
+		// Returns the swap chain associated with the RHI.
 		virtual IRHISwapChain* GetSwapChain() const = 0;
+		// Returns information about the GPU.
 		virtual GPUInfo GetGPUInfo() const = 0;
-		const auto& RegisteredResources() const { return m_RegisteredResources; }
-
-		virtual void RegisterRHIObject( IRHIObject& a_Resource ) 
-		{ 
-			m_RegisteredResources.emplace( std::hash<IRHIObject*>()( &a_Resource ), a_Resource.Weak() );
-		}
-
-		virtual bool UnregisterRHIObject( IRHIObject& a_Resource ) 
-		{
-			if ( auto it = m_RegisteredResources.find( std::hash<IRHIObject*>()( &a_Resource ) ); it != m_RegisteredResources.end() )
-			{
-				m_RegisteredResources.erase( it );
-				return true;
-			}
-			return false;
-		}
+		// Returns all currently registered RHI objects.
+		const auto& RegisteredRHIObjects() const { return m_RegisteredRHIObjects; }
+		// Registers an RHI object with the RHI.
+		virtual void RegisterRHIObject( IRHIObject& a_Resource );
+		// Unregisters an RHI object from the RHI, if it was registered.
+		virtual bool UnregisterRHIObject( IRHIObject& a_Resource );
 		//=====================================================
 
 
-		#if RHI_DEBUG_ENABLED
+	#if RHI_DEBUG_ENABLED
 
 		// Dump debug information about the RHI into the console.
 		virtual void DumpDebug() {}
 
-		#endif // RHI_DEBUG_ENABLED
+	#endif // RHI_DEBUG_ENABLED
 
 	protected:
 		RHIConfig m_Config{}; // Configuration used to initialise the RHI
-		UnorderedMap<size_t, RHIObjectWeakRef> m_RegisteredResources{}; // Resources registered with the RHI
+		UnorderedMap<size_t, RHIObjectWeakRef> m_RegisteredRHIObjects{}; // Resources registered with the RHI
+		uint32_t m_FrameIndex = 0; // Current frame index, used for frame-specific operations
 	};
+	//========================================================
 
-	namespace Concepts {
-		template<typename T>
-		concept IsDynamicRHI = std::is_base_of_v<IDynamicRHI, T>;
+	inline void IDynamicRHI::RegisterRHIObject( IRHIObject& a_Resource )
+	{
+		m_RegisteredRHIObjects.emplace( std::hash<IRHIObject*>()(&a_Resource), a_Resource.Weak() );
 	}
 
+	inline bool IDynamicRHI::UnregisterRHIObject( IRHIObject& a_Resource )
+	{
+		if ( auto it = m_RegisteredRHIObjects.find( std::hash<IRHIObject*>()(&a_Resource) ); it != m_RegisteredRHIObjects.end() )
+		{
+			m_RegisteredRHIObjects.erase( it );
+			return true;
+		}
+		return false;
+	}
 
 } // namespace Tridium

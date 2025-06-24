@@ -93,8 +93,7 @@ namespace Tridium::D3D12 {
 
 		SwapChain->Present( 1, 0 );
 		CommandQueue* cmdQueue = Device()->GetCommandQueue( ERHICommandQueueType::Graphics );
-		cmdQueue->CmdQueue->Signal( cmdQueue->Fence.Get(), ++cmdQueue->LastSubmittedValue );
-		m_LastPresentedValue = cmdQueue->LastSubmittedValue;
+		m_LastPresentedValue = cmdQueue->Signal();
 
 
 		if ( m_ShouldResize && !ResizeBuffers() )
@@ -209,19 +208,22 @@ namespace Tridium::D3D12 {
 
 	bool RHISwapChain_D3D12Impl::Release()
 	{
-		Device()->WaitForFence( ERHICommandQueueType::Graphics, m_LastPresentedValue );
-
-		for ( uint32_t i = 0; i < RTVs.Size(); i++ )
+		if ( Valid() )
 		{
-			if ( RTVs[i] != nullptr )
-			{
-				RHI_DEV_CHECK( RTVs[i].use_count() == 1, "RTV owned by the swap chain is still in use - You should not be keeping a reference to the back buffer!" );
-				RTVs[i] = nullptr;
-			}
-		}
+			Device()->WaitForFence( ERHICommandQueueType::Graphics, m_LastPresentedValue );
 
-		if ( SwapChain )
+			for ( uint32_t i = 0; i < RTVs.Size(); i++ )
+			{
+				if ( RTVs[i] != nullptr )
+				{
+					RHI_DEV_CHECK( RTVs[i].use_count() == 1,
+						"RTV owned by the swap chain is still in use - You should not be keeping a reference to the back buffer!" );
+					RTVs[i] = nullptr;
+				}
+			}
+
 			SwapChain.Reset();
+		}
 
 		return true;
 	}
