@@ -473,7 +473,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 			//while ( time < 5.0 )
 
 			int bb = 0;
-			while ( bb++ < 100 )
+			while ( true )
 			{
 #if 1
 				++f;
@@ -519,7 +519,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 
 					Constants constants{};
 					Light light;
-					light.Colour = CycleRGB( time, 1.0f );
+					light.Colour = Color( 1, 0, 0, 1 );
 					light.Position = Vector3( 0.0f, 0.0f, 2.0f );
 					light.Intensity = 1;
 					constants.LightData = light;
@@ -581,19 +581,14 @@ float4 PSMain( VSOutput input ) : SV_Target
 					RHIDrawArgs drawArgs{};
 					drawArgs.BaseVertex = 0;
 					drawArgs.VertexCount = sizeof( cubeVerts ) / sizeof( Vertex );
-
-					cmdList->Draw( drawArgs );
-
-					inlinedConstants.Model = Math::Translate( -pos );
-					inlinedConstants.PVM = projection * view * inlinedConstants.Model;
-					cmdList->SetInlinedConstants( inlinedConstants );
-
 					cmdList->Draw( drawArgs );
 
 					inlinedConstants.Model = Math::Translate( Vector3( 0.5 * -pos.X, -pos.Y, -pos.X + pos.Z ) );
 					inlinedConstants.PVM = projection * view * inlinedConstants.Model;
 					cmdList->SetInlinedConstants( inlinedConstants );
 
+					constants.LightData.Colour = Color( 0, 1, 0, 1 );
+					cmdList->UpdateBuffer( *constantsBuffer, ReinterpretCast<const void*>( &constants ), sizeof( constants ) );
 					cmdList->Draw( drawArgs );
 
 					cmdList->ResourceBarrier( *rt, ERHIResourceStates::Present );
@@ -610,7 +605,6 @@ float4 PSMain( VSOutput input ) : SV_Target
 				}
 #endif
 				RHI::Present();
-				RHI::WaitForIdle();
 
 				RHI::EndFrame();
 			}

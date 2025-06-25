@@ -102,7 +102,20 @@ namespace Tridium::D3D12 {
 			uint32_t offset = 0;
 			if ( globalHeap.Allocate( a_NumDescriptors, offset ) )
 			{
-				return MakeShared<DescriptorHeap>( *( globalHeap.Heap() ), offset, a_NumDescriptors );
+				const auto deleter = [this]( DescriptorHeap* a_Heap )
+					{
+						for ( auto& globalHeap : m_GlobalHeaps )
+						{
+							if ( globalHeap.IsHeapAChild( *a_Heap ) )
+							{
+								globalHeap.Free( a_Heap->Offset(), a_Heap->NumDescriptors() );
+								return;
+							}
+						}
+
+						delete a_Heap;
+					};
+				return SharedPtr<DescriptorHeap>( new DescriptorHeap( *( globalHeap.Heap() ), offset, a_NumDescriptors ), deleter );
 			}
 
 			TODO( "Handle if the global heap is full." );

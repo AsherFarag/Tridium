@@ -162,10 +162,95 @@ namespace Tridium::D3D12 {
 
 	void RHICommandList_D3D12Impl::UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes, RHI_DEBUG_SRC_LOC_PARAM ) 
 	{
+		RHIBuffer_D3D12Impl* buffer = a_Buffer.As<RHIBuffer_D3D12Impl>();
+
+		// Create the upload buffer
+		ComPtr<ID3D12Resource> uploadBuffer;
+		{
+			D3D12MA::Allocator* allocator = Device()->GetAllocator().Get();
+
+			D3D12_RESOURCE_DESC uploadBufferDesc = {};
+			uploadBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+			uploadBufferDesc.Width = a_DataSizeBytes;
+			uploadBufferDesc.Height = 1;
+			uploadBufferDesc.DepthOrArraySize = 1;
+			uploadBufferDesc.MipLevels = 1;
+			uploadBufferDesc.Format = DXGI_FORMAT_UNKNOWN;
+			uploadBufferDesc.SampleDesc.Count = 1;
+			uploadBufferDesc.SampleDesc.Quality = 0;
+			uploadBufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+			uploadBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+			D3D12MA::ALLOCATION_DESC allocDesc{};
+			allocDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+
+			ComPtr<D3D12MA::Allocation> uploadBufferAlloc;
+			HRESULT hr = allocator->CreateResource(
+				&allocDesc,
+				&uploadBufferDesc,
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr,
+				uploadBufferAlloc.GetAddressOf(),
+				IID_PPV_ARGS( uploadBuffer.GetAddressOf() )
+			);
+
+			if ( FAILED( hr ) )
+			{
+				ASSERT( false, "Failed to create upload buffer resource!" );
+				return;
+			}
+
+			m_CmdContext->ReferencedUnknowns.EmplaceBack( std::move( uploadBufferAlloc ) );
+		}
+
+		// Copy data to upload buffer
+		char* uploadBufferAddress;
+		const auto uploadRange = D3D12_RANGE{ .Begin = 0, .End = a_DataSizeBytes };
+		uploadBuffer->Map( 0, &uploadRange, (void**)&uploadBufferAddress );
+		std::memcpy( uploadBufferAddress, a_Data, a_DataSizeBytes );
+		uploadBuffer->Unmap( 0, &uploadRange );
+
+
+		const ERHIResourceStates prevState = a_Buffer.State();
+		if ( IsAutomaticResourceStateTransitionEnabled() )
+			m_ResourceStateTracker.RequireBufferState( a_Buffer, ERHIResourceStates::CopyDest );
+
+		CommitBarriers();
+
+		m_ActiveCmdList->CmdList->CopyBufferRegion(
+			buffer->ManagedBuffer.Resource(),
+			a_DstOffsetBytes,
+			uploadBuffer.Get(),
+			0,
+			a_DataSizeBytes
+		);
+
+		if ( IsAutomaticResourceStateTransitionEnabled() )
+			m_ResourceStateTracker.RequireBufferState( a_Buffer, prevState );
+
+		CommitBarriers();
 	}
 
 	void RHICommandList_D3D12Impl::CopyBuffer( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange, RHI_DEBUG_SRC_LOC_PARAM ) 
 	{
+		IRHICommandList::CopyBuffer( a_DstBuffer, a_DstOffsetBytes, a_SrcBuffer, a_SrcRange, RHI_DEBUG_SRC_LOC );
+
+		// Set Resource States for resources referenced by the graphics state
+		if ( IsAutomaticResourceStateTransitionEnabled() )
+		{
+			m_ResourceStateTracker.RequireBufferState( a_DstBuffer, ERHIResourceStates::CopyDest );
+			m_ResourceStateTracker.RequireBufferState( a_SrcBuffer, ERHIResourceStates::CopySource );
+		}
+
+		CommitBarriers();
+
+		m_ActiveCmdList->CmdList->CopyBufferRegion(
+			a_DstBuffer.As<RHIBuffer_D3D12Impl>()->ManagedBuffer.Resource(),
+			a_DstOffsetBytes,
+			a_SrcBuffer.As<RHIBuffer_D3D12Impl>()->ManagedBuffer.Resource(),
+			a_SrcRange.Offset,
+			a_SrcRange.Size
+		);
 	}
 
 	void RHICommandList_D3D12Impl::UpdateTexture( IRHITexture& a_Texture, const RHITextureSlice& a_DstSlice, RHITextureSubresourceData a_Data, RHI_DEBUG_SRC_LOC_PARAM ) 
@@ -444,6 +529,8 @@ namespace Tridium::D3D12 {
 		RHI_DEV_CHECK( !a_DrawArgs.IsIndexed() || m_CurrentGraphicsState.IndexBuffer,
 			"Cannot draw indexed without a valid index buffer!" );
 
+		CommitBarriers();
+
 		if ( a_DrawArgs.IsIndexed() )
 		{
 			m_ActiveCmdList->CmdList->DrawIndexedInstanced( 
@@ -610,6 +697,40 @@ namespace Tridium::D3D12 {
 						rootParamOffset + bindingLayout->RootParamRenderResources,
 						bindingSet->RenderResourceHeap->GetGPUHandle( 0 )
 					);
+				}
+			}
+
+			// Set resource states for the bindings
+			for ( const RHIBindingSetItem& binding : bindingSet->Desc().Bindings )
+			{
+				switch ( binding.Type )
+				{
+				case ERHIBindingType::InlinedConstants:
+					break;
+				case ERHIBindingType::ConstantBuffer:
+					m_ResourceStateTracker.RequireBufferState(
+						*binding.Resource->As<IRHIBuffer>(),
+						ERHIResourceStates::ConstantBuffer );
+					break;
+				case ERHIBindingType::StructuredBuffer:
+					break;
+				case ERHIBindingType::StorageBuffer:
+					m_ResourceStateTracker.RequireBufferState(
+						*binding.Resource->As<IRHIBuffer>(),
+						ERHIResourceStates::UnorderedAccess );
+					break;
+				case ERHIBindingType::Texture:
+					m_ResourceStateTracker.RequireTextureState(
+						*binding.Resource->As<IRHITexture>(),
+						ERHIResourceStates::ShaderResource );
+					break;
+				case ERHIBindingType::StorageTexture:
+					m_ResourceStateTracker.RequireTextureState(
+						*binding.Resource->As<IRHITexture>(),
+						ERHIResourceStates::UnorderedAccess );
+					break;
+				default:
+					break;
 				}
 			}
 		}

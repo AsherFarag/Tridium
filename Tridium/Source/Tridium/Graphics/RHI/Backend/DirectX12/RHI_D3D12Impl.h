@@ -285,12 +285,13 @@ namespace Tridium::D3D12 {
 
 		Array<RHIObjectRef> ReferencedResources{};
 		Array<SharedPtr<class DescriptorHeap>> DescriptorHeaps{};
-
+		Array<ComPtr<IUnknown>> ReferencedUnknowns{};
 
 		~CommandContext()
 		{
 			ReferencedResources.Clear();
 			DescriptorHeaps.Clear();
+			ReferencedUnknowns.Clear();
 			CmdList.Reset();
 			CmdAllocator.Reset();
 			Fence.Reset();
