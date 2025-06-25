@@ -244,7 +244,7 @@ namespace Tridium::D3D12 {
 
 		for ( size_t i = 0; i < a_CommandLists.size(); ++i )
 		{
-			UniquePtr<CommandContext> cmdCtx = a_CommandLists[i]->As<RHICommandList_D3D12Impl>()->ReleaseCmdContext( *cmdQueue );
+			CommandContext cmdCtx = a_CommandLists[i]->As<RHICommandList_D3D12Impl>()->ReleaseCmdContext( *cmdQueue );
 			cmdQueue->CmdContextsInFlight.emplace_front( std::move( cmdCtx ) );
 		}
 
@@ -287,7 +287,7 @@ namespace Tridium::D3D12 {
 			queue->UpdateLastCompletedValue();
 
 			while ( !queue->CmdContextsInFlight.empty() 
-				  && queue->CmdContextsInFlight.back()->SubmittedValue <= queue->LastSubmittedValue )
+				  && queue->CmdContextsInFlight.back().SubmittedValue <= queue->LastSubmittedValue )
 			{
 				queue->CmdContextsInFlight.pop_back();
 			}

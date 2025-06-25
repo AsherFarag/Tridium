@@ -139,12 +139,22 @@ namespace Tridium {
         virtual void UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM )
         { 
             RHI_ADD_DEBUG_CMD_INFO( "UpdateBuffer", {}, RHI_DEBUG_RES_INFO( a_Buffer ) );
+            RHI_DEV_CHECK( a_Data != nullptr && a_DataSizeBytes > 0,
+                "Attempting to update a buffer with no data!" );
+            RHI_DEV_CHECK( a_DstOffsetBytes + a_DataSizeBytes <= a_Buffer.Desc().Size,
+                "Attempting to update a buffer beyond its size! Buffer size: {}, Update size: {}, Offset: {}", a_Buffer.Desc().Size, a_DataSizeBytes, a_DstOffsetBytes );
         }
 
         // Copies 'a_SizeBytes' bytes from 'a_SrcBuffer' at 'a_SrcOffsetBytes' to 'a_DstBuffer' at 'a_DstOffsetBytes'.
         virtual void CopyBuffer( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange, RHI_DEBUG_SRC_LOC_PARAM ) 
         { 
             RHI_ADD_DEBUG_CMD_INFO( "CopyBuffer", {}, RHI_DEBUG_RES_INFO( a_DstBuffer ), RHI_DEBUG_RES_INFO( a_SrcBuffer ) );
+            RHI_DEV_CHECK( a_SrcRange.Size > 0 || a_SrcBuffer.Desc().Size == 0,
+                "Source buffer is empty or invalid!" );
+            RHI_DEV_CHECK( a_DstBuffer.Desc().Size > 0,
+                "Destination buffer is invalid!" );
+            RHI_DEV_CHECK( a_SrcRange.Offset + a_SrcRange.Size <= a_SrcBuffer.Desc().Size,
+                "Source buffer range is out of bounds! Buffer size: {}, Range: [{}, {}]", a_SrcBuffer.Desc().Size, a_SrcRange.Offset, a_SrcRange.Offset + a_SrcRange.Size );
         }
 
         // Writes 'a_Data' from CPU memory into the GPU texture 'a_Texture' at the specified mip level and array slice.

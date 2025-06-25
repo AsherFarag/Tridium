@@ -60,10 +60,10 @@ namespace Tridium {
 		uint32_t maxFPS = 0;
 
 	#if !IS_EDITOR
-		if ( m_ActiveScene )
-		{
-			m_ActiveScene->OnBeginPlay();
-		}
+		//if ( m_ActiveScene )
+		//{
+		//	m_ActiveScene->OnBeginPlay();
+		//}
 	#endif // IS_EDITOR
 
 		while ( m_Running )
@@ -101,10 +101,10 @@ namespace Tridium {
 		}
 
 	#if !IS_EDITOR
-		if ( m_ActiveScene )
-		{
-			m_ActiveScene->OnEndPlay();
-		}
+		//if ( m_ActiveScene )
+		//{
+		//	m_ActiveScene->OnEndPlay();
+		//}
 	#endif // IS_EDITOR
 
 		Shutdown();
@@ -120,7 +120,7 @@ namespace Tridium {
 		m_Window->SetEventCallback( [this]( const Event& a_Event ) { this->EnqueueEvent( a_Event ); } );
 
 		RHIConfig config{};
-		config.RHIType = ERHInterfaceType::DirectX12;
+		config.RHIType = ERHInterfaceType::OpenGL;
 		config.UseDebug = true;
 		config.SwapChainDesc = RHISwapChainDesc{}.SetWidth( 1280 )
 			.SetHeight( 720 )
@@ -640,7 +640,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 
 		Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled );
 
-		m_ActiveScene->OnUpdate();
+		//m_ActiveScene->OnUpdate();
 
 	#endif // IS_EDITOR
 
@@ -652,32 +652,32 @@ float4 PSMain( VSOutput input ) : SV_Target
 
 	#if !IS_EDITOR
 
-		if ( !m_ActiveScene->GetMainCamera() )
-		{
-			auto view = m_ActiveScene->GetECS().View<CameraComponent>();
-			if ( !view.empty() )
-				m_ActiveScene->SetMainCamera( view.begin()[0] );
-		}
+		//if ( !m_ActiveScene->GetMainCamera() )
+		//{
+		//	auto view = m_ActiveScene->GetECS().View<CameraComponent>();
+		//	if ( !view.empty() )
+		//		m_ActiveScene->SetMainCamera( view.begin()[0] );
+		//}
 
-		if ( m_ActiveScene->GetMainCamera() )
-		{
-			// Render the scene with the main camera
-			Vector3 cameraPos = m_ActiveScene->GetMainCamera()->GetGameObject().GetTransform().Position;
-			m_ActiveScene->GetSceneRenderer().Render(
-				m_GameViewport.GetFramebuffer(),
-				m_ActiveScene->GetMainCamera()->SceneCamera,
-				m_ActiveScene->GetMainCamera()->GetView(),
-				cameraPos );
-		}
-		else
-		{
-			// If no camera is found, render the scene with a default camera
-			m_ActiveScene->GetSceneRenderer().Render(
-				m_GameViewport.GetFramebuffer(),
-				Camera(),
-				Matrix4( 1.0f ),
-				Vector3( 0.0 ) );
-		}
+		//if ( m_ActiveScene->GetMainCamera() )
+		//{
+		//	// Render the scene with the main camera
+		//	Vector3 cameraPos = m_ActiveScene->GetMainCamera()->GetGameObject().GetTransform().Position;
+		//	m_ActiveScene->GetSceneRenderer().Render(
+		//		m_GameViewport.GetFramebuffer(),
+		//		m_ActiveScene->GetMainCamera()->SceneCamera,
+		//		m_ActiveScene->GetMainCamera()->GetView(),
+		//		cameraPos );
+		//}
+		//else
+		//{
+		//	// If no camera is found, render the scene with a default camera
+		//	m_ActiveScene->GetSceneRenderer().Render(
+		//		m_GameViewport.GetFramebuffer(),
+		//		Camera(),
+		//		Matrix4( 1.0f ),
+		//		Vector3( 0.0 ) );
+		//}
 
 		m_GameViewport.Resize( m_Window->GetWidth(), m_Window->GetHeight() );
 		m_GameViewport.RenderToWindow();
@@ -713,7 +713,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 	#if IS_EDITOR
 		Editor::GetEditorLayer()->OnEndScene();
 	#else
-		Get().m_Running = false;
+		//Get().m_Running = false;
 	#endif // IS_EDITOR
 	}
 	

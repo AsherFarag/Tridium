@@ -218,6 +218,33 @@ namespace Tridium::D3D12 {
 	};
 
 	//======================================================================
+	// Command Context
+	//  Represents a command list instance. 
+	//  Contains strong references to all the resources that are used by the command list.
+	struct CommandContext
+	{
+		ERHICommandQueueType QueueType = ERHICommandQueueType::Graphics;
+		ComPtr<ID3D12CommandAllocator> CmdAllocator = nullptr;
+		ComPtr<ID3D12CommandList> CmdList = nullptr;
+		ComPtr<ID3D12Fence> Fence = nullptr;
+		RHIFenceValue SubmittedValue = 0;
+
+		Array<RHIObjectRef> ReferencedResources{};
+		Array<SharedPtr<class DescriptorHeap>> DescriptorHeaps{};
+		Array<ComPtr<IUnknown>> ReferencedUnknowns{};
+
+		~CommandContext()
+		{
+			ReferencedResources.Clear();
+			DescriptorHeaps.Clear();
+			ReferencedUnknowns.Clear();
+			CmdList.Reset();
+			CmdAllocator.Reset();
+			Fence.Reset();
+		}
+	};
+
+	//======================================================================
 	// Command Queue
 	//  A wrapper around a D3D12 command queue and its associated fence.
 	//  In a Dynamic RHI context, 3 Command Queues are created:
@@ -231,7 +258,7 @@ namespace Tridium::D3D12 {
 		ComPtr<ID3D12Fence> Fence = nullptr;
 		RHIFenceValue LastSubmittedValue = 0;
 		RHIFenceValue LastCompletedValue = 0;
-		Deque<UniquePtr<class CommandContext>> CmdContextsInFlight{};
+		Deque<CommandContext> CmdContextsInFlight{};
 
 		RHIFenceValue Signal()
 		{
@@ -267,33 +294,6 @@ namespace Tridium::D3D12 {
 		{
 			CmdContextsInFlight.clear();
 			CmdQueue.Reset();
-			Fence.Reset();
-		}
-	};
-
-	//======================================================================
-	// Command Context
-	//  Represents a command list instance. 
-	//  Contains strong references to all the resources that are used by the command list.
-	struct CommandContext
-	{
-		ERHICommandQueueType QueueType = ERHICommandQueueType::Graphics;
-		ComPtr<ID3D12CommandAllocator> CmdAllocator = nullptr;
-		ComPtr<ID3D12CommandList> CmdList = nullptr;
-		ComPtr<ID3D12Fence> Fence = nullptr;
-		RHIFenceValue SubmittedValue = 0;
-
-		Array<RHIObjectRef> ReferencedResources{};
-		Array<SharedPtr<class DescriptorHeap>> DescriptorHeaps{};
-		Array<ComPtr<IUnknown>> ReferencedUnknowns{};
-
-		~CommandContext()
-		{
-			ReferencedResources.Clear();
-			DescriptorHeaps.Clear();
-			ReferencedUnknowns.Clear();
-			CmdList.Reset();
-			CmdAllocator.Reset();
 			Fence.Reset();
 		}
 	};
@@ -752,8 +752,8 @@ namespace Tridium::D3D12 {
 
 		// = D3D12 Specific =
 
-		ID3D12CommandList* GetD3D12CmdList() const { return m_ActiveCmdList ? m_ActiveCmdList->CmdList.Get() : nullptr; }
-		UniquePtr<CommandContext> ReleaseCmdContext( CommandQueue& a_CmdQueue );
+		ID3D12CommandList* GetD3D12CmdList() const { return m_ActiveCmdList.CmdList.Get(); }
+		CommandContext ReleaseCmdContext( CommandQueue& a_CmdQueue );
 
 	private:
 		//======================================================================
@@ -765,6 +765,8 @@ namespace Tridium::D3D12 {
 			ComPtr<ID3D12CommandAllocator> CmdAllocator = nullptr;
 			ComPtr<ID3D12GraphicsCommandList> CmdList = nullptr;
 			RHIFenceValue LastSubmittedValue = 0;
+
+			bool Valid() const { return CmdList != nullptr && CmdAllocator != nullptr; }
 		};
 
 		CommandQueue* m_CmdQueue = nullptr;
@@ -779,9 +781,9 @@ namespace Tridium::D3D12 {
 		bool m_GraphicsStateValid = false; // Whether the graphics state has been set.
 		RHIGraphicsState m_CurrentGraphicsState{}; // Current graphics state for the command list.
 
-		Deque<UniquePtr<CommandList>> m_CmdListPool{};
-		UniquePtr<CommandList> m_ActiveCmdList{}; // The currently active command list that is being recorded to.
-		UniquePtr<CommandContext> m_CmdContext{}; // The current command context that is being used to record commands.
+		Deque<CommandList> m_CmdListPool{};
+		CommandList m_ActiveCmdList{}; // The currently active command list that is being recorded to.
+		CommandContext m_CmdContext{}; // The current command context that is being used to record commands.
 
 	private:
 		void CommitBarriers();

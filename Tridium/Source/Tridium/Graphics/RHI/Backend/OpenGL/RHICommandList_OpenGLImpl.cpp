@@ -67,10 +67,6 @@ namespace Tridium::OpenGL {
 	void RHICommandList_OpenGLImpl::UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes, RHI_DEBUG_SRC_LOC_PARAM )
 	{
 		IRHICommandList::UpdateBuffer( a_Buffer, a_Data, a_DataSizeBytes, a_DstOffsetBytes, RHI_DEBUG_SRC_LOC );
-		RHI_DEV_CHECK( a_DataSizeBytes == 0 || a_Data == nullptr, "Attempting to update a buffer with no data!" );
-		RHI_DEV_CHECK( a_DstOffsetBytes + a_DataSizeBytes > a_Buffer.Desc().Size,
-			"Attempting to update a buffer beyond its size! Buffer size: {}, Update size: {}, Offset: {}", a_Buffer.Desc().Size, a_DataSizeBytes, a_DstOffsetBytes );
-
 		m_ReferencedObjects.EmplaceBack( a_Buffer.SharedFromThis() );
 
 		if ( IsImmediate() )
@@ -91,10 +87,6 @@ namespace Tridium::OpenGL {
 	void RHICommandList_OpenGLImpl::CopyBuffer( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange, RHI_DEBUG_SRC_LOC_PARAM )
 	{
 		IRHICommandList::CopyBuffer( a_DstBuffer, a_DstOffsetBytes, a_SrcBuffer, a_SrcRange, RHI_DEBUG_SRC_LOC );
-		RHI_DEV_CHECK( a_SrcRange.Size == 0 || a_SrcBuffer.Desc().Size == 0, "Source buffer is empty or invalid!" );
-		RHI_DEV_CHECK( a_DstBuffer.Desc().Size == 0, "Destination buffer is invalid!" );
-		RHI_DEV_CHECK( a_SrcRange.Offset + a_SrcRange.Size <= a_SrcBuffer.Desc().Size, 
-			"Source buffer range is out of bounds! Buffer size: {}, Range: [{}, {}]", a_SrcBuffer.Desc().Size, a_SrcRange.Offset, a_SrcRange.Offset + a_SrcRange.Size );
 
 		m_ReferencedObjects.EmplaceBack( a_DstBuffer.SharedFromThis() );
 		m_ReferencedObjects.EmplaceBack( a_SrcBuffer.SharedFromThis() );

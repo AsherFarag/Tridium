@@ -117,7 +117,7 @@ namespace Tridium::T {
 		static Expected<void, String> Init();
 		static Expected<void, String> Shutdown();
 
-		friend AssetDatabase::Editor;
+		friend struct Editor;
 		friend Application;
 	};
 }

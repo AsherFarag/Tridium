@@ -95,11 +95,8 @@ namespace Tridium::D3D12 {
 		CommandQueue* cmdQueue = Device()->GetCommandQueue( ERHICommandQueueType::Graphics );
 		m_LastPresentedValue = cmdQueue->Signal();
 
-
 		if ( m_ShouldResize && !ResizeBuffers() )
-		{
 			return false;
-		}
 
 		return true;
 	}
@@ -133,6 +130,7 @@ namespace Tridium::D3D12 {
 
 	bool RHISwapChain_D3D12Impl::ResizeBuffers()
 	{
+		RHI::WaitForFence( ERHICommandQueueType::Graphics, m_LastPresentedValue );
 		ReleaseBuffers();
 
 		// Resize the swap chain
