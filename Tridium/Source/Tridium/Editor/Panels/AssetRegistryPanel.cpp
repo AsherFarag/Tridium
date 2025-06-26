@@ -1,7 +1,7 @@
 #include "tripch.h"
 #if IS_EDITOR
 #include "AssetRegistryPanel.h"
-#include <Tridium/Asset/EditorAssetManager.h>
+#include <Tridium/oldAsset/EditorAssetManager.h>
 
 namespace Tridium {
 

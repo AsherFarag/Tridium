@@ -2,14 +2,14 @@
 #if IS_EDITOR
 #include "PropertyDrawers.h"
 #include "Editor.h"
-#include <Tridium/Asset/EditorAssetManager.h>
+#include <Tridium/oldAsset/EditorAssetManager.h>
 
-#include <Tridium/Graphics/Rendering/Texture.h>
+#include <Tridium/Graphics/oldRendering/Texture.h>
 
 #include <Tridium/ECS/GameObject.h>
 #include <Tridium/ECS/Components/Types.h>
 
-#include <Tridium/Graphics/Rendering/Framebuffer.h>
+#include <Tridium/Graphics/oldRendering/Framebuffer.h>
 
 namespace Tridium::Editor {
 

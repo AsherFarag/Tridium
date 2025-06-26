@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/Asset/Asset.h>
+#include <Tridium/oldAsset/Asset.h>
 #include "ScriptProperty.h"
 #include "sol/sol.hpp"
 

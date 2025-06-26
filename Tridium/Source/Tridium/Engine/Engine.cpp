@@ -3,9 +3,9 @@
 #include <Tridium/Core/Application.h>
 #include <Tridium/Debug/DebugDrawer.h>
 
-#include <Tridium/Asset/AssetManager.h>
-#include <Tridium/Asset/EditorAssetManager.h>
-#include <Tridium/Asset/RuntimeAssetManager.h>
+#include <Tridium/oldAsset/AssetManager.h>
+#include <Tridium/oldAsset/EditorAssetManager.h>
+#include <Tridium/oldAsset/RuntimeAssetManager.h>
 
 #include <Tridium/Editor/Editor.h>
 #include <Tridium/ImGui/ImGuiLayer.h>

@@ -1,13 +1,13 @@
 #include "tripch.h"
 #include "ScriptEngine.h"
 
-#include "Tridium/Asset/AssetManager.h"
+#include "Tridium/oldAsset/AssetManager.h"
 #include <Tridium/ECS/Components/Types.h>
 
 #include <any>
 
 // TEMP!
-#include <Tridium/Asset/EditorAssetManager.h>
+#include <Tridium/oldAsset/EditorAssetManager.h>
 #include <fstream>
 
 namespace Tridium {

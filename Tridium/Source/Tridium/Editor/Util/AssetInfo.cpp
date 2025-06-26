@@ -2,7 +2,7 @@
 #ifdef IS_EDITOR
 #include "AssetInfo.h"
 #include <Tridium/Engine/Engine.h>
-#include <Tridium/Asset/Loaders/TextureLoader.h>
+#include <Tridium/oldAsset/Loaders/TextureLoader.h>
 
 namespace Tridium {
 

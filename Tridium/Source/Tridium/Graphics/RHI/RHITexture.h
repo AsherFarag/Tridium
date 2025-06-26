@@ -131,53 +131,36 @@ namespace Tridium {
 	struct RHITextureDesc
 	{
 		using ResourceType = class IRHITexture;
+		// The dimension of the texture.
 		ERHITextureDimension Dimension = ERHITextureDimension::Unknown;
-		uint32_t Width = 1;     
-		uint32_t Height = 1;
-		union
-		{
-			uint32_t Depth = 1; // Number of depth slices in a 3D texture.
-			uint32_t ArraySize; // Number of array slices in a 1D or 2D texture array.
-		};
-		uint32_t Mips = 1; // Number of mip levels in the texture. NOTE: If set to 0, it will be the maximum number of mips for the texture size.
-		uint32_t Samples = 1; // Number of samples. Only 2D and 2D array textures can be multisampled.
-		Optional<RHIClearValue> ClearValue{};
+		// Width of the texture. Valid for all texture dimensions.
+		uint32_t Width = 0;
+		// Height of the texture. Valid for 2D, 2D array, and cubemap textures.
+		uint32_t Height = 0;
+		// Depth or array size of the texture. Valid for 3D textures and array textures.
+		uint32_t DepthOrArraySize = 1;
+		// Number of mip levels in the texture. NOTE: If set to 0, it will be the maximum number of mips for the texture size.
+		uint32_t Mips = 1;
+		// Number of samples. Only 2D and 2D array textures can be multisampled.
+		uint32_t Samples = 1;
+		// Optimised clear value for the Render target/ Depth stencil texture. NOTE: 'UseClearValue' must be true for this to be used.
+		RHIClearValue ClearValue{};
+		// Indicates if 'ClearValue' should be used when the texture is created.
+		bool UseClearValue = false;
+		// The data format of each texel in the texture.
 		ERHIFormat Format = ERHIFormat::Unknown;
+		// Specifies how the texture can be bound in the pipeline.
 		ERHIBindFlags BindFlags = ERHIBindFlags::None;
+		// Specifies how often the texture will be modified.
 		ERHIUsage Usage = ERHIUsage::Default;
+		// Specifies how the texture can be accessed by the CPU.
 		ERHICpuAccess CpuAccess = ERHICpuAccess::None;
-		RHISampler DefaultSampler{}; // Sampler that is used if no sampler is specified in the shader.
+		// Initial state of the texture when created. This is used to optimise the creation of the texture.
+		ERHIResourceStates InitialState = ERHIResourceStates::Common;
+		// Default sampler to use when sampling this texture in shaders.
+		RHISampler DefaultSampler{};
+		// Debug name for the texture.
 		String Name{};
-
-		constexpr RHITextureDesc() = default;
-		constexpr RHITextureDesc( 
-			StringView a_Name,
-			ERHITextureDimension a_Dimension,
-			uint32_t a_Width,
-			uint32_t a_Height,
-			uint32_t a_Depth,
-			ERHIFormat a_Format,
-			uint32_t a_Mips = RHITextureDesc{}.Mips,
-			uint32_t a_Samples = RHITextureDesc{}.Samples,
-			ERHIBindFlags a_BindFlags = RHITextureDesc{}.BindFlags,
-			ERHIUsage a_Usage = RHITextureDesc{}.Usage,
-			ERHICpuAccess a_CpuAccess = RHITextureDesc{}.CpuAccess,
-			RHISampler a_DefaultSampler = RHITextureDesc{}.DefaultSampler,
-			Optional<RHIClearValue> a_ClearValue = RHITextureDesc{}.ClearValue )
-			: Name( a_Name )
-			, Dimension( a_Dimension )
-			, Width( a_Width )
-			, Height( a_Height )
-			, Depth( a_Depth )
-			, Format( a_Format )
-			, Mips( a_Mips )
-			, Samples( a_Samples )
-			, BindFlags( a_BindFlags )
-			, Usage( a_Usage )
-			, CpuAccess( a_CpuAccess )
-			, DefaultSampler( a_DefaultSampler )
-			, ClearValue( a_ClearValue )
-		{}
 
 		constexpr bool IsArray() const
 		{
@@ -215,8 +198,8 @@ namespace Tridium {
 		constexpr auto& SetDimension( ERHITextureDimension a_Dimension ) { Dimension = a_Dimension; return *this; }
 		constexpr auto& SetWidth( uint32_t a_Width ) { Width = a_Width; return *this; }
 		constexpr auto& SetHeight( uint32_t a_Height ) { Height = a_Height; return *this; }
-		constexpr auto& SetDepth( uint32_t a_Depth ) { Depth = a_Depth; return *this; }
-		constexpr auto& SetArraySize( uint32_t a_ArraySize ) { ArraySize = a_ArraySize; return *this; }
+		constexpr auto& SetDepth( uint32_t a_Depth ) { DepthOrArraySize = a_Depth; return *this; }
+		constexpr auto& SetArraySize( uint32_t a_ArraySize ) { DepthOrArraySize = a_ArraySize; return *this; }
 		constexpr auto& SetFormat( ERHIFormat a_Format ) { Format = a_Format; return *this; }
 		constexpr auto& SetMips( uint32_t a_Mips ) { Mips = a_Mips; return *this; }
 		constexpr auto& SetSamples( uint32_t a_Samples ) { Samples = a_Samples; return *this; }
@@ -224,7 +207,9 @@ namespace Tridium {
 		constexpr auto& SetUsage( ERHIUsage a_Usage ) { Usage = a_Usage; return *this; }
 		constexpr auto& SetCpuAccess( ERHICpuAccess a_CpuAccess ) { CpuAccess = a_CpuAccess; return *this; }
 		constexpr auto& SetDefaultSampler( const RHISampler& a_Sampler ) { DefaultSampler = a_Sampler; return *this; }
-		constexpr auto& SetClearValue( RHIClearValue a_ClearValue ) { ClearValue.emplace( a_ClearValue ); return *this; }
+		constexpr auto& SetInitialState( ERHIResourceStates a_State ) { InitialState = a_State; return *this; }
+		constexpr auto& SetClearValue( RHIClearValue a_ClearValue ) { ClearValue = a_ClearValue; return *this; }
+		constexpr auto& SetUseClearValue( bool a_UseClearValue ) { UseClearValue = a_UseClearValue; return *this; }
 		          auto& SetName( StringView a_Name ) { Name = a_Name; return *this; }
 	};
 
@@ -232,7 +217,7 @@ namespace Tridium {
 	{
 		RHI_OBJECT_INTERFACE_BODY( Texture );
 
-		IRHITexture( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
+		IRHITexture( IDynamicRHI* a_Device, const RHITextureDesc& a_Desc )
 			: IRHIResource( a_Device ), m_Desc( a_Desc )
 		{
 			RHI_DEV_CHECK( !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::VertexBuffer )
@@ -241,24 +226,27 @@ namespace Tridium {
 						&& !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::IndirectArgument ),
 				std::format( "Texture '{}' cannot be created with bind flags '{}'", a_Desc.Name, ToString( a_Desc.BindFlags ) ) );
 
+			RHI_DEV_CHECK( !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::DepthStencil )
+				|| GetRHIFormatInfo( a_Desc.Format ).HasDepth 
+				|| GetRHIFormatInfo( a_Desc.Format ).HasStencil,
+				"Texture '{}' cannot be created with bind flag 'DepthStencil' and format '{}'",
+				a_Desc.Name, GetRHIFormatInfo( a_Desc.Format ).Name );
+
+			RHI_DEV_WARN( !a_Desc.UseClearValue 
+				|| EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::RenderTarget )
+				|| EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::DepthStencil ),
+				"Clear value will not be used for texture '{}' as it is not a render target or depth stencil texture", a_Desc.Name );
+
 			if ( m_Desc.Mips == RHIConstants::AllMipLevels )
 			{
 				if ( m_Desc.Is1D() )
-				{
 					m_Desc.Mips = CalculateMipLevelCount( m_Desc.Width );
-				}
 				else if ( m_Desc.Is2D() )
-				{
 					m_Desc.Mips = CalculateMipLevelCount( m_Desc.Width, m_Desc.Height );
-				}
 				else if ( m_Desc.Is3D() )
-				{
-					m_Desc.Mips = CalculateMipLevelCount( m_Desc.Width, m_Desc.Height, m_Desc.Depth );
-				}
+					m_Desc.Mips = CalculateMipLevelCount( m_Desc.Width, m_Desc.Height, m_Desc.DepthOrArraySize );
 				else
-				{
 					ASSERT( false, "Invalid texture dimension" );
-				}
 			}
 		}
 
@@ -297,7 +285,7 @@ namespace Tridium {
 		constexpr bool IsEntireTexture( const RHITextureDesc& a_Desc ) const
 		{
 			return BaseMipLevel == 0 && NumMipLevels == a_Desc.Mips
-				&& BaseArraySlice == 0 && NumArraySlices == ( a_Desc.IsArray() ? a_Desc.ArraySize : 1 );
+				&& BaseArraySlice == 0 && NumArraySlices == ( a_Desc.IsArray() ? a_Desc.DepthOrArraySize : 1 );
 		}
 
 		constexpr RHITextureSubresourceSet Resolve( const RHITextureDesc& a_Desc, bool a_SingleMipLevel )
@@ -321,7 +309,7 @@ namespace Tridium {
 			case ERHITextureDimension::TextureCube:
 			case ERHITextureDimension::TextureCubeArray:
 			{
-				int lastArraySlice = Math::Min( BaseArraySlice + NumArraySlices, a_Desc.ArraySize );
+				int lastArraySlice = Math::Min( BaseArraySlice + NumArraySlices, a_Desc.DepthOrArraySize );
 				result.NumArraySlices = uint32_t( Math::Max( 0u, lastArraySlice - BaseArraySlice ) );
 				break;
 			}

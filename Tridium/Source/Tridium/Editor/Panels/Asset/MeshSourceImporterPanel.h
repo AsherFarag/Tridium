@@ -1,8 +1,8 @@
 #pragma once
 #if IS_EDITOR
 #include <Tridium/Core/Layer.h>
-#include <Tridium/Graphics/Rendering/Mesh.h>
-#include <Tridium/Asset/AssetMetaData.h>
+#include <Tridium/Graphics/oldRendering/Mesh.h>
+#include <Tridium/oldAsset/AssetMetaData.h>
 
 namespace Tridium {
 

@@ -1,7 +1,7 @@
 #include "tripch.h"
 #if IS_EDITOR
 #include "AssetImporter.h"
-#include <Tridium/Asset/EditorAssetManager.h>
+#include <Tridium/oldAsset/EditorAssetManager.h>
 #include <Tridium/Editor/Panels/Asset/MeshSourceImporterPanel.h>
 #include <Tridium/Core/Application.h>
 

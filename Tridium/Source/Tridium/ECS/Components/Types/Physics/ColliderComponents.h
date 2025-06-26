@@ -1,6 +1,6 @@
 #pragma once
 #include <Tridium/ECS/Components/Component.h>
-#include <Tridium/Asset/Asset.h>
+#include <Tridium/oldAsset/Asset.h>
 
 namespace Tridium {
 

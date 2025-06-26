@@ -1,6 +1,6 @@
 #include "tripch.h"
 #include "OpenGLRenderingAPI.h"
-#include <Tridium/Graphics/Rendering/Mesh.h>
+#include <Tridium/Graphics/oldRendering/Mesh.h>
 
 #include "glad/glad.h"
 #include "OpenGLRenderingAPI.h"

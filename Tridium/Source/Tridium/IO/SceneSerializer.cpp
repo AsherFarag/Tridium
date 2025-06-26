@@ -4,13 +4,13 @@
 
 #include "SerializationUtil.h"
 
-#include "Tridium/Asset/AssetManager.h"
+#include "Tridium/oldAsset/AssetManager.h"
 #include <Tridium/ECS/GameObject.h>
 #include <Tridium/ECS/Components/Types.h>
-#include <Tridium/Graphics/Rendering/Texture.h>
-#include <Tridium/Graphics/Rendering/Material.h>
-#include <Tridium/Graphics/Rendering/Mesh.h>
-#include <Tridium/Graphics/Rendering/EnvironmentMap.h>
+#include <Tridium/Graphics/oldRendering/Texture.h>
+#include <Tridium/Graphics/oldRendering/Material.h>
+#include <Tridium/Graphics/oldRendering/Mesh.h>
+#include <Tridium/Graphics/oldRendering/EnvironmentMap.h>
 
 #include <fstream>
 

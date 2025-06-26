@@ -2,8 +2,8 @@
 #include "DebugDrawer.h"
 
 #if !CONFIG_SHIPPING
-#include <Tridium/Graphics/Rendering/VertexArray.h>
-#include <Tridium/Graphics/Rendering/Shader.h>
+#include <Tridium/Graphics/oldRendering/VertexArray.h>
+#include <Tridium/Graphics/oldRendering/Shader.h>
 
 // TEMP!
 #include <glad/glad.h>

@@ -10,7 +10,7 @@ namespace Tridium::OpenGL {
 			"Static textures must be initialized with data!" );
 
 
-		if ( a_Desc.Dimension != ERHITextureDimension::Texture2D || a_Desc.Depth != 1 || a_Desc.Mips != 1 )
+		if ( a_Desc.Dimension != ERHITextureDimension::Texture2D || a_Desc.DepthOrArraySize != 1 || a_Desc.Mips != 1 )
 		{
 			TODO( "Only 2D textures are supported!" );
 			return;

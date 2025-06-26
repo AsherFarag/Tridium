@@ -47,19 +47,10 @@ namespace Tridium::D3D12 {
 		// Commit the resource barriers
 		for ( const auto& barrier : m_ResourceStateTracker.ResourceBarriers )
 		{
-			const D3D12_RESOURCE_STATES before = D3D12::Translate( barrier.Before );
-			const D3D12_RESOURCE_STATES after = D3D12::Translate( barrier.After );
-			if ( before == after )
-			{
+			if ( barrier.Before == barrier.After )
 				continue;
-			}
 
-			auto& d3d12Barrier = m_D3D12Barriers.EmplaceBack();
-			d3d12Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-			d3d12Barrier.Transition.pResource = barrier.Resource->NativePtrAs<ID3D12Resource>();
-			d3d12Barrier.Transition.StateBefore = before;
-			d3d12Barrier.Transition.StateAfter = after;
-			d3d12Barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+			m_D3D12Barriers.EmplaceBack( Translate( barrier ) );
 		}
 
 		if ( m_D3D12Barriers.Size() > 0 )
@@ -442,9 +433,9 @@ namespace Tridium::D3D12 {
 		m_GraphicsStateValid = true;
 	}
 
-	void RHICommandList_D3D12Impl::ClearRenderTargets( ERHIClearFlags a_Flags, Color a_ClearColor, float a_DepthValue, uint8_t a_StencilValue, int32_t a_ColorAttachmentIndex, RHI_DEBUG_SRC_LOC_PARAM ) 
+	void RHICommandList_D3D12Impl::ClearRenderTargets( ERHIClearFlags a_Flags, RHIClearValue a_ClearValue, int32_t a_ColorAttachmentIndex, RHI_DEBUG_SRC_LOC_PARAM )
 	{
-		IRHICommandList::ClearRenderTargets( a_Flags, a_ClearColor, a_DepthValue, a_StencilValue, a_ColorAttachmentIndex, RHI_DEBUG_SRC_LOC );
+		IRHICommandList::ClearRenderTargets( a_Flags, a_ClearValue, a_ColorAttachmentIndex, RHI_DEBUG_SRC_LOC );
 		RHI_DEV_CHECK( m_GraphicsStateValid, "Graphics state is not valid for clearing render targets!" );
 
 		if ( EnumFlags( a_Flags ).HasFlag( ERHIClearFlags::Color ) )
@@ -454,8 +445,9 @@ namespace Tridium::D3D12 {
 				// Clear all color attachments
 				for ( size_t i = 0; i < m_CurrentGraphicsState.Framebuffer.ColorAttachments.Size(); ++i )
 				{
+					auto& colorAttachment = m_CurrentGraphicsState.Framebuffer.ColorAttachments[i];
 					D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_RTVHeap->GetCPUHandle( i );
-					m_ActiveCmdList.CmdList->ClearRenderTargetView( rtvHandle, &a_ClearColor[0], 0, nullptr);
+					m_ActiveCmdList.CmdList->ClearRenderTargetView( rtvHandle, &a_ClearValue.Color[0], 0, nullptr);
 				}
 			}
 			else
@@ -465,7 +457,7 @@ namespace Tridium::D3D12 {
 					"Invalid color attachment index '{0}' for clearing render targets!", a_ColorAttachmentIndex );
 
 				D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_RTVHeap->GetCPUHandle( a_ColorAttachmentIndex );
-				m_ActiveCmdList.CmdList->ClearRenderTargetView( rtvHandle, &a_ClearColor[0], 0, nullptr );
+				m_ActiveCmdList.CmdList->ClearRenderTargetView( rtvHandle, &a_ClearValue.Color[0], 0, nullptr );
 			}
 		}
 
@@ -480,8 +472,8 @@ namespace Tridium::D3D12 {
 				m_ActiveCmdList.CmdList->ClearDepthStencilView(
 					m_DSVHeap->GetCPUHandle( 0 ),
 					clearFlags,
-					a_DepthValue,
-					a_StencilValue,
+					a_ClearValue.Depth,
+					a_ClearValue.Stencil,
 					0, nullptr
 				);
 			}

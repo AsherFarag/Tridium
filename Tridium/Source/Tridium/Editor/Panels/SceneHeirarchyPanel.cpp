@@ -12,7 +12,7 @@
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Core/Application.h>
 #include <Tridium/ECS/Components/Types.h>
-#include <Tridium/Graphics/Rendering/Texture.h>
+#include <Tridium/Graphics/oldRendering/Texture.h>
 
 namespace Tridium {
 

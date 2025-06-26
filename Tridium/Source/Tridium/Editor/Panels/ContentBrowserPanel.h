@@ -2,8 +2,8 @@
 #if IS_EDITOR
 
 #include "Panel.h"
-#include <Tridium/Graphics/Rendering/Texture.h>
-#include <Tridium/Asset/AssetType.h>
+#include <Tridium/Graphics/oldRendering/Texture.h>
+#include <Tridium/oldAsset/AssetType.h>
 
 namespace Tridium {
 

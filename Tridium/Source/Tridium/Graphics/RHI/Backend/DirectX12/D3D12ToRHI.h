@@ -392,56 +392,56 @@ namespace Tridium {
 					// 8-bit Unsigned-Normalized
 					case ERHIFormat::R8_UNORM:          return DXGI_FORMAT_R8_UNORM;
 					case ERHIFormat::RG8_UNORM:         return DXGI_FORMAT_R8G8_UNORM;
-					case ERHIFormat::RGB8_UNORM:        return DXGI_FORMAT_UNKNOWN; // DXGI does not support RGB8_UNORM directly
+					//case ERHIFormat::RGB8_UNORM:        return DXGI_FORMAT_UNKNOWN; // DXGI does not support RGB8_UNORM directly
 					case ERHIFormat::RGBA8_UNORM:       return DXGI_FORMAT_R8G8B8A8_UNORM;
 
 					// 8-bit Float (not natively supported in DXGI)
-					case ERHIFormat::R8_FLOAT:          return DXGI_FORMAT_UNKNOWN;
-					case ERHIFormat::RG8_FLOAT:         return DXGI_FORMAT_UNKNOWN;
-					case ERHIFormat::RGB8_FLOAT:        return DXGI_FORMAT_UNKNOWN;
-					case ERHIFormat::RGBA8_FLOAT:       return DXGI_FORMAT_UNKNOWN;
+					//case ERHIFormat::R8_FLOAT:          return DXGI_FORMAT_UNKNOWN;
+					//case ERHIFormat::RG8_FLOAT:         return DXGI_FORMAT_UNKNOWN;
+					//case ERHIFormat::RGB8_FLOAT:        return DXGI_FORMAT_UNKNOWN;
+					//case ERHIFormat::RGBA8_FLOAT:       return DXGI_FORMAT_UNKNOWN;
 
 					// 8-bit Signed-Integer
 					case ERHIFormat::R8_SINT:           return DXGI_FORMAT_R8_SINT;
 					case ERHIFormat::RG8_SINT:          return DXGI_FORMAT_R8G8_SINT;
-					case ERHIFormat::RGB8_SINT:         return DXGI_FORMAT_UNKNOWN;
+					//case ERHIFormat::RGB8_SINT:         return DXGI_FORMAT_UNKNOWN;
 					case ERHIFormat::RGBA8_SINT:        return DXGI_FORMAT_R8G8B8A8_SINT;
 
 					// 8-bit Unsigned-Integer
 					case ERHIFormat::R8_UINT:           return DXGI_FORMAT_R8_UINT;
 					case ERHIFormat::RG8_UINT:          return DXGI_FORMAT_R8G8_UINT;
-					case ERHIFormat::RGB8_UINT:         return DXGI_FORMAT_UNKNOWN;
+					//case ERHIFormat::RGB8_UINT:         return DXGI_FORMAT_UNKNOWN;
 					case ERHIFormat::RGBA8_UINT:        return DXGI_FORMAT_R8G8B8A8_UINT;
 
 					// 16-bit Unsigned-Normalized
 					case ERHIFormat::R16_UNORM:         return DXGI_FORMAT_R16_UNORM;
 					case ERHIFormat::RG16_UNORM:        return DXGI_FORMAT_R16G16_UNORM;
-					case ERHIFormat::RGB16_UNORM:       return DXGI_FORMAT_UNKNOWN;
+					//case ERHIFormat::RGB16_UNORM:       return DXGI_FORMAT_UNKNOWN;
 					case ERHIFormat::RGBA16_UNORM:      return DXGI_FORMAT_R16G16B16A16_UNORM;
 
 					// 16-bit Float
 					case ERHIFormat::R16_FLOAT:         return DXGI_FORMAT_R16_FLOAT;
 					case ERHIFormat::RG16_FLOAT:        return DXGI_FORMAT_R16G16_FLOAT;
-					case ERHIFormat::RGB16_FLOAT:       return DXGI_FORMAT_UNKNOWN;
+					//case ERHIFormat::RGB16_FLOAT:       return DXGI_FORMAT_UNKNOWN;
 					case ERHIFormat::RGBA16_FLOAT:      return DXGI_FORMAT_R16G16B16A16_FLOAT;
 
 					// 16-bit Signed-Integer
 					case ERHIFormat::R16_SINT:          return DXGI_FORMAT_R16_SINT;
 					case ERHIFormat::RG16_SINT:         return DXGI_FORMAT_R16G16_SINT;
-					case ERHIFormat::RGB16_SINT:        return DXGI_FORMAT_UNKNOWN;
+					//case ERHIFormat::RGB16_SINT:        return DXGI_FORMAT_UNKNOWN;
 					case ERHIFormat::RGBA16_SINT:       return DXGI_FORMAT_R16G16B16A16_SINT;
 
 					// 16-bit Unsigned-Integer
 					case ERHIFormat::R16_UINT:          return DXGI_FORMAT_R16_UINT;
 					case ERHIFormat::RG16_UINT:         return DXGI_FORMAT_R16G16_UINT;
-					case ERHIFormat::RGB16_UINT:        return DXGI_FORMAT_UNKNOWN;
+					//case ERHIFormat::RGB16_UINT:        return DXGI_FORMAT_UNKNOWN;
 					case ERHIFormat::RGBA16_UINT:       return DXGI_FORMAT_R16G16B16A16_UINT;
 
 					// 32-bit Unsigned-Normalized (DXGI doesn't support *_UNORM for 32-bit)
-					case ERHIFormat::R32_UNORM:         return DXGI_FORMAT_UNKNOWN;
-					case ERHIFormat::RG32_UNORM:        return DXGI_FORMAT_UNKNOWN;
-					case ERHIFormat::RGB32_UNORM:       return DXGI_FORMAT_UNKNOWN;
-					case ERHIFormat::RGBA32_UNORM:      return DXGI_FORMAT_UNKNOWN;
+					//case ERHIFormat::R32_UNORM:         return DXGI_FORMAT_UNKNOWN;
+					//case ERHIFormat::RG32_UNORM:        return DXGI_FORMAT_UNKNOWN;
+					//case ERHIFormat::RGB32_UNORM:       return DXGI_FORMAT_UNKNOWN;
+					//case ERHIFormat::RGBA32_UNORM:      return DXGI_FORMAT_UNKNOWN;
 
 					// 32-bit Float
 					case ERHIFormat::R32_FLOAT:         return DXGI_FORMAT_R32_FLOAT;

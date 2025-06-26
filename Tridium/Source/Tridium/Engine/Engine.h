@@ -5,7 +5,7 @@
 #include <Tridium/Utils/Singleton.h>
 #include <Tridium/Project/Project.h>
 #include <Tridium/Scene/SceneManager.h>
-#include <Tridium/Asset/AssetManagerBase.h>
+#include <Tridium/oldAsset/AssetManagerBase.h>
 
 // Engine Modules
 #include "EngineModule.h"

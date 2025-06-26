@@ -1,11 +1,11 @@
 #include <Tridium.h>
 #include <Tridium/IO/SceneSerializer.h>
-#include <Tridium/Asset/AssetManager.h>
-#include <Tridium/Asset/EditorAssetManager.h>
+#include <Tridium/oldAsset/AssetManager.h>
+#include <Tridium/oldAsset/EditorAssetManager.h>
 #include <Tridium/Editor/Panels/Asset/MeshSourceImporterPanel.h>
-#include <Tridium/Graphics/Rendering/SceneRenderer.h>
-#include <Tridium/Asset/AssetFactoryOld.h>
-#include <Tridium/Asset/Loaders/TextureLoader.h> 
+#include <Tridium/Graphics/oldRendering/SceneRenderer.h>
+#include <Tridium/oldAsset/AssetFactoryOld.h>
+#include <Tridium/oldAsset/Loaders/TextureLoader.h> 
 #include <Tridium/Reflection/Reflection.h>
 
 #include <Tridium/Editor/Commands/CommandManager.h>

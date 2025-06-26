@@ -6,8 +6,8 @@
 #include "JoltDebugRenderer.h"
 
 #include <Tridium/ECS/Components/Types.h>
-#include <Tridium/Asset/AssetManager.h>
-#include <Tridium/Graphics/Rendering/Mesh.h>
+#include <Tridium/oldAsset/AssetManager.h>
+#include <Tridium/Graphics/oldRendering/Mesh.h>
 #include <Tridium/Physics/PhysicsLayer.h>
 
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>

@@ -5,7 +5,7 @@
 
 #include <Platform/OpenGL/OpenGLContext.h>
 
-#include <Tridium/Graphics/Rendering/RenderCommand.h>
+#include <Tridium/Graphics/oldRendering/RenderCommand.h>
 
 // TEMP?
 #include "stb_image.h"

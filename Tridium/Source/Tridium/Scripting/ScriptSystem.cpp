@@ -2,13 +2,13 @@
 #include "ScriptSystem.h"
 #include "ScriptEngine.h"
 #include <Tridium/Scene/Scene.h>
-#include <Tridium/Asset/AssetManager.h>
+#include <Tridium/oldAsset/AssetManager.h>
 
 #include <Tridium/ECS/Components/Types.h>
 
 //TEMP
-#include <Tridium/Asset/EditorAssetManager.h>
-#include <Tridium/Asset/Loaders/LuaScriptLoader.h>
+#include <Tridium/oldAsset/EditorAssetManager.h>
+#include <Tridium/oldAsset/Loaders/LuaScriptLoader.h>
 
 namespace Tridium {
 

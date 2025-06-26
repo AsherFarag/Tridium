@@ -2,10 +2,10 @@
 #if IS_EDITOR
 #include "ContentBrowserPanel.h"
 
-#include <Tridium/Graphics/Rendering/Material.h>
-#include <Tridium/Asset/Loaders/TextureLoader.h>
+#include <Tridium/Graphics/oldRendering/Material.h>
+#include <Tridium/oldAsset/Loaders/TextureLoader.h>
 #include <Tridium/Core/Application.h>
-#include <Tridium/Asset/EditorAssetManager.h>
+#include <Tridium/oldAsset/EditorAssetManager.h>
 
 #include <Tridium/IO/FilePath.h>
 #include <Tridium/Editor/Editor.h>

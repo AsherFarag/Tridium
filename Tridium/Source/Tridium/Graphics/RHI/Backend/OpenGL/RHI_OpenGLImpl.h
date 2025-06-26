@@ -387,7 +387,7 @@ namespace Tridium::OpenGL {
 		void SetInlinedConstants( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM ) override;
 
 		void SetGraphicsState( const RHIGraphicsState& a_GraphicsState, RHI_DEBUG_SRC_LOC_PARAM ) override;
-		void ClearRenderTargets( ERHIClearFlags a_Flags, Color a_ClearColor, float a_DepthValue = 1.0f, uint8_t a_StencilValue = 0u, int32_t a_ColorAttachmentIndex = -1, RHI_DEBUG_SRC_LOC_PARAM ) override;
+		void ClearRenderTargets( ERHIClearFlags a_Flags, RHIClearValue a_ClearValue, int32_t a_ColorAttachmentIndex = -1, RHI_DEBUG_SRC_LOC_PARAM ) override;
 		void SetViewportState( const RHIViewportState& a_Viewports, RHI_DEBUG_SRC_LOC_PARAM ) override;
 		void Draw( const RHIDrawArgs& a_DrawArgs, RHI_DEBUG_SRC_LOC_PARAM ) override;
 
@@ -463,9 +463,7 @@ namespace Tridium::OpenGL {
 			struct ClearRenderTargets
 			{
 				ERHIClearFlags Flags;
-				Color ClearColor;
-				float DepthValue;
-				uint8_t StencilValue;
+				RHIClearValue ClearValue;
 				int32_t ColorAttachmentIndex;
 			};
 
@@ -548,7 +546,7 @@ namespace Tridium::OpenGL {
 		void CopyTexture_Impl( IRHITexture& a_DstTexture, const RHITextureSlice& a_DstSlice, IRHITexture& a_SrcTexture, const RHITextureSlice& a_SrcSlice );
 		void SetInlinedConstants_Impl( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes = 0 );
 		void SetGraphicsState_Impl( const RHIGraphicsState& a_GraphicsState );
-		void ClearRenderTargets_Impl( ERHIClearFlags a_Flags, Color a_ClearColor, float a_DepthValue = 1.0f, uint8_t a_StencilValue = 0u, int32_t a_ColorAttachmentIndex = -1 );
+		void ClearRenderTargets_Impl( ERHIClearFlags a_Flags, RHIClearValue a_ClearValue, int32_t a_ColorAttachmentIndex = -1 );
 		void SetViewportState_Impl( const RHIViewportState& a_Viewports );
 		void Draw_Impl( const RHIDrawArgs& a_DrawArgs );
 		void PushDebugGroup_Impl( StringView a_Name );

@@ -5,14 +5,14 @@
 
 
 
-#include <Tridium/Asset/AssetManager.h>
+#include <Tridium/oldAsset/AssetManager.h>
 #include "Util/AssetInfo.h"
 
 // Assets
-#include <Tridium/Graphics/Rendering/Mesh.h>
-#include <Tridium/Graphics/Rendering/Texture.h>
-#include <Tridium/Graphics/Rendering/Shader.h>
-#include <Tridium/Graphics/Rendering/Material.h>
+#include <Tridium/Graphics/oldRendering/Mesh.h>
+#include <Tridium/Graphics/oldRendering/Texture.h>
+#include <Tridium/Graphics/oldRendering/Shader.h>
+#include <Tridium/Graphics/oldRendering/Material.h>
 
 // Panels
 #include "Panels/EditorPreferencesPanel.h"

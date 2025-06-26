@@ -83,13 +83,13 @@ namespace Tridium::OpenGL {
 	bool Framebuffer::Init( const RHISwapChainDesc& a_Desc )
 	{
 		// Create the back buffer texture
-		const auto texDesc = RHITextureDesc(
-			"BackBuffer",
-			ERHITextureDimension::Texture2D,
-			a_Desc.Width, a_Desc.Height, 1,
-			a_Desc.Format
-		).SetBindFlags( ERHIBindFlags::RenderTarget | ERHIBindFlags::ShaderResource )
-		.SetUsage( ERHIUsage::Dynamic );
+		const auto texDesc = RHITextureDesc{}
+			.SetName( "BackBuffer" )
+			.SetDimension( ERHITextureDimension::Texture2D )
+			.SetWidth( a_Desc.Width ).SetHeight( a_Desc.Height ).SetDepth( 1 )
+			.SetFormat( a_Desc.Format )
+			.SetBindFlags( ERHIBindFlags::RenderTarget | ERHIBindFlags::ShaderResource )
+			.SetUsage( ERHIUsage::Dynamic );
 
 		BackBufferTexture = RHI::CreateTexture( texDesc );
 		if ( !BackBufferTexture )

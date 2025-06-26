@@ -15,6 +15,16 @@
 // Define the log category for the RHI.
 DECLARE_LOG_CATEGORY( RHI );
 
+#ifndef RHI_ENABLE_DEV_WARNINGS
+	#define RHI_ENABLE_DEV_WARNINGS RHI_DEBUG_ENABLED
+#endif
+
+#if RHI_ENABLE_DEV_WARNINGS
+	#define RHI_DEV_WARN( _Condition, ... ) ASSERT( _Condition, "RHI Dev Error - {}", __VA_ARGS__ )
+#else
+	#define RHI_DEV_WARN( _Condition, ... ) do {} while ( false )
+#endif // RHI_ENABLE_DEV_WARNINGS
+
 #ifndef RHI_ENABLE_DEV_CHECKS
 	#define RHI_ENABLE_DEV_CHECKS RHI_DEBUG_ENABLED
 #endif
@@ -390,18 +400,15 @@ namespace Tridium {
 
 	//===========================
 	// RHI Clear Value
-	union RHIClearValue
+	struct RHIClearValue
 	{
-		constexpr explicit RHIClearValue() noexcept : Color( 0.0f, 0.0f, 0.0f, 1.0f ) {}
-		constexpr explicit RHIClearValue( const Color& a_Color ) noexcept : Color( a_Color ) {}
-		constexpr explicit RHIClearValue( float a_Depth, uint8_t a_Stencil ) noexcept : Depth( a_Depth ), Stencil( a_Stencil ) {}
+		Color Color = Color::Black();
+		float Depth = 1.0f;
+		uint8_t Stencil = 0;
 
-		Color Color;
-		struct
-		{
-			float Depth;
-			uint8_t Stencil;
-		};
+		constexpr auto& SetColor( const ::Tridium::Color& a_Color ) noexcept { Color = a_Color; return *this; }
+		constexpr auto& SetDepth( float a_Depth ) noexcept { Depth = a_Depth; return *this; }
+		constexpr auto& SetStencil( uint8_t a_Stencil ) noexcept { Stencil = a_Stencil; return *this; }
 	};
 
 
@@ -957,56 +964,56 @@ namespace Tridium {
 		// 8-bit Unsigned-Normalized
 		R8_UNORM,        // DXGI_FORMAT_R8_UNORM / GL_R8 / VK_FORMAT_R8_UNORM
 		RG8_UNORM,       // DXGI_FORMAT_R8G8_UNORM / GL_RG8 / VK_FORMAT_R8G8_UNORM
-		RGB8_UNORM,      // DXGI_FORMAT_R8G8B8_UNORM / GL_RGB8 / VK_FORMAT_R8G8B8_UNORM
+		//RGB8_UNORM,      // DXGI_FORMAT_UNKNOWN / GL_RGB8 / VK_FORMAT_R8G8B8_UNORM
 		RGBA8_UNORM,     // DXGI_FORMAT_R8G8B8A8_UNORM / GL_RGBA8 / VK_FORMAT_R8G8B8A8_UNORM
 
 		// 8-bit Float	
-		R8_FLOAT,        // DXGI_FORMAT_R8_FLOAT / GL_R8F / VK_FORMAT_R8_SFLOAT
-		RG8_FLOAT,       // DXGI_FORMAT_R8G8_FLOAT / GL_RG8F / VK_FORMAT_R8G8_SFLOAT
-		RGB8_FLOAT,      // DXGI_FORMAT_R8G8B8_FLOAT / GL_RGB8F / VK_FORMAT_R8G8B8_SFLOAT
-		RGBA8_FLOAT,     // DXGI_FORMAT_R8G8B8A8_FLOAT / GL_RGBA8F / VK_FORMAT_R8G8B8A8_SFLOAT
+		//R8_FLOAT,        // DXGI_FORMAT_UNKNOWN / GL_R8F / VK_FORMAT_R8_SFLOAT
+		//RG8_FLOAT,       // DXGI_FORMAT_UNKNOWN / GL_RG8F / VK_FORMAT_R8G8_SFLOAT
+		//RGB8_FLOAT,      // DXGI_FORMAT_UNKNOWN / GL_RGB8F / VK_FORMAT_R8G8B8_SFLOAT
+		//RGBA8_FLOAT,     // DXGI_FORMAT_UNKNOWN / GL_RGBA8F / VK_FORMAT_R8G8B8A8_SFLOAT
 
 		// 8-bit Signed-Integer
 		R8_SINT,         // DXGI_FORMAT_R8_SINT / GL_R8I / VK_FORMAT_R8_SINT
 		RG8_SINT,        // DXGI_FORMAT_R8G8_SINT / GL_RG8I / VK_FORMAT_R8G8_SINT
-		RGB8_SINT,       // DXGI_FORMAT_R8G8B8_SINT / GL_RGB8I / VK_FORMAT_R8G8B8_SINT
+		//RGB8_SINT,       // DXGI_FORMAT_UNKNOWN / GL_RGB8I / VK_FORMAT_R8G8B8_SINT
 		RGBA8_SINT,      // DXGI_FORMAT_R8G8B8A8_SINT / GL_RGBA8I / VK_FORMAT_R8G8B8A8_SINT
 
 		// 8-bit Unsigned-Integer
 		R8_UINT,         // DXGI_FORMAT_R8_UINT / GL_R8UI / VK_FORMAT_R8_UINT
 		RG8_UINT,        // DXGI_FORMAT_R8G8_UINT / GL_RG8UI / VK_FORMAT_R8G8_UINT
-		RGB8_UINT,       // DXGI_FORMAT_R8G8B8_UINT / GL_RGB8UI / VK_FORMAT_R8G8B8_UINT
+		//RGB8_UINT,       // DXGI_FORMAT_UNKNOWN / GL_RGB8UI / VK_FORMAT_R8G8B8_UINT
 		RGBA8_UINT,      // DXGI_FORMAT_R8G8B8A8_UINT / GL_RGBA8UI / VK_FORMAT_R8G8B8A8_UINT
 
 		// 16-bit Unsigned-Normalized
 		R16_UNORM,       // DXGI_FORMAT_R16_UNORM / GL_R16 / VK_FORMAT_R16_UNORM
 		RG16_UNORM,      // DXGI_FORMAT_R16G16_UNORM / GL_RG16 / VK_FORMAT_R16G16_UNORM
-		RGB16_UNORM,     // DXGI_FORMAT_R16G16B16_UNORM / GL_RGB16 / VK_FORMAT_R16G16B16_UNORM
+		//RGB16_UNORM,     // DXGI_FORMAT_UNKNOWN / GL_RGB16 / VK_FORMAT_R16G16B16_UNORM
 		RGBA16_UNORM,    // DXGI_FORMAT_R16G16B16A16_UNORM / GL_RGBA16 / VK_FORMAT_R16G16B16A16_UNORM
 
 		// 16-bit Float
 		R16_FLOAT,       // DXGI_FORMAT_R16_FLOAT / GL_R16F / VK_FORMAT_R16_SFLOAT
 		RG16_FLOAT,      // DXGI_FORMAT_R16G16_FLOAT / GL_RG16F / VK_FORMAT_R16G16_SFLOAT
-		RGB16_FLOAT,     // DXGI_FORMAT_R16G16B16_FLOAT / GL_RGB16F / VK_FORMAT_R16G16B16_SFLOAT
+		//RGB16_FLOAT,     // DXGI_FORMAT_UNKNOWN / GL_RGB16F / VK_FORMAT_R16G16B16_SFLOAT
 		RGBA16_FLOAT,    // DXGI_FORMAT_R16G16B16A16_FLOAT / GL_RGBA16F / VK_FORMAT_R16G16B16A16_SFLOAT
 
 		// 16-bit Signed-Integer
 		R16_SINT,        // DXGI_FORMAT_R16_SINT / GL_R16I / VK_FORMAT_R16_SINT
 		RG16_SINT,       // DXGI_FORMAT_R16G16_SINT / GL_RG16I / VK_FORMAT_R16G16_SINT
-		RGB16_SINT,      // DXGI_FORMAT_R16G16B16_SINT / GL_RGB16I / VK_FORMAT_R16G16B16_SINT
+		//RGB16_SINT,      // DXGI_FORMAT_UNKNOWN / GL_RGB16I / VK_FORMAT_R16G16B16_SINT
 		RGBA16_SINT,     // DXGI_FORMAT_R16G16B16A16_SINT / GL_RGBA16I / VK_FORMAT_R16G16B16A16_SINT
 
 		// 16-bit Unsigned-Integer
 		R16_UINT,        // DXGI_FORMAT_R16_UINT / GL_R16UI / VK_FORMAT_R16_UINT
 		RG16_UINT,       // DXGI_FORMAT_R16G16_UINT / GL_RG16UI / VK_FORMAT_R16G16_UINT
-		RGB16_UINT,      // DXGI_FORMAT_R16G16B16_UINT / GL_RGB16UI / VK_FORMAT_R16G16B16_UINT
+		//RGB16_UINT,      // DXGI_FORMAT_UNKNOWN / GL_RGB16UI / VK_FORMAT_R16G16B16_UINT
 		RGBA16_UINT,     // DXGI_FORMAT_R16G16B16A16_UINT / GL_RGBA16UI / VK_FORMAT_R16G16B16A16_UINT
 
 		// 32-bit Unsigned-Normalized
-		R32_UNORM,       // DXGI_FORMAT_R32_UNORM / GL_R32 / VK_FORMAT_R32_UINT
-		RG32_UNORM,      // DXGI_FORMAT_R32G32_UNORM / GL_RG32 / VK_FORMAT_R32G32_UINT
-		RGB32_UNORM,     // DXGI_FORMAT_R32G32B32_UNORM / GL_RGB32 / VK_FORMAT_R32G32B32_UINT
-		RGBA32_UNORM,    // DXGI_FORMAT_R32G32B32A32_UNORM / GL_RGBA32 / VK_FORMAT_R32G32B32A32_UINT
+		//R32_UNORM,       // DXGI_FORMAT_UNKNOWN / GL_R32 / VK_FORMAT_R32_UINT
+		//RG32_UNORM,      // DXGI_FORMAT_UNKNOWN / GL_RG32 / VK_FORMAT_R32G32_UINT
+		//RGB32_UNORM,     // DXGI_FORMAT_UNKNOWN / GL_RGB32 / VK_FORMAT_R32G32B32_UINT
+		//RGBA32_UNORM,    // DXGI_FORMAT_UNKNOWN / GL_RGBA32 / VK_FORMAT_R32G32B32A32_UINT
 
 		// 32-bit Float
 		R32_FLOAT,      // DXGI_FORMAT_R32_FLOAT / GL_R32F / VK_FORMAT_R32_SFLOAT
@@ -1042,7 +1049,7 @@ namespace Tridium {
 		BC7_UNORM,     // DXGI_FORMAT_BC7_UNORM / GL_COMPRESSED_RGBA_BPTC_UNORM_ARB / VK_FORMAT_BC7_UNORM_BLOCK
 
 		COUNT,
-		NUM_BITS = 7,
+		NUM_BITS = 6,
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHIFormat );
 
@@ -1084,7 +1091,7 @@ namespace Tridium {
 		constexpr uint32_t Bytes() const noexcept { return BytesPerBlock * Blocks; }
 		constexpr Color ConvertToColor( Span<const uint8_t> a_Data ) const noexcept 
 		{
-			static_assert(size_t( ERHIFormat::COUNT ) == 58);
+			static_assert(size_t( ERHIFormat::COUNT ) == 43);
 			const int bytesPerChannel = Bytes() / ((int)HasRed + (int)HasGreen + (int)HasBlue + (int)HasAlpha);
 			Color color{};
 			uint32_t offset = 0;
@@ -1200,56 +1207,56 @@ namespace Tridium {
 				// 8-bit Unsigned-Normalized	  	       		       				 									  
 				{ "R8_UNORM",      R8_UNORM,              Normalized,     1,      1,  true,     false,   false,   false,   false,    false,   false,   false },
 				{ "RG8_UNORM",     RG8_UNORM,             Normalized,     2,      1,  true,     true,    false,   false,   false,    false,   false,   false },
-				{ "RGB8_UNORM",    RGB8_UNORM,            Normalized,     3,      1,  true,     true,    true,    false,   false,    false,   false,   false },
+				//{ "RGB8_UNORM",    RGB8_UNORM,            Normalized,     3,      1,  true,     true,    true,    false,   false,    false,   false,   false },
 				{ "RGBA8_UNORM",   RGBA8_UNORM,           Normalized,     4,      1,  true,     true,    true,    true,    false,    false,   false,   false },
 
 				// 8-bit Float					          
-				{ "R8_FLOAT",      R8_FLOAT,              Float,          1,      1,  true,     false,   false,   false,   false,    false,   false,   false },
-				{ "RG8_FLOAT",     RG8_FLOAT,             Float,          2,      1,  true,     true,    false,   false,   false,    false,   false,   false },
-				{ "RGB8_FLOAT",    RGB8_FLOAT,            Float,          3,      1,  true,     true,    true,    false,   false,    false,   false,   false },
-				{ "RGBA8_FLOAT",   RGBA8_FLOAT,           Float,          4,      1,  true,     true,    true,    true,    false,    false,   false,   false },
+				//{ "R8_FLOAT",      R8_FLOAT,              Float,          1,      1,  true,     false,   false,   false,   false,    false,   false,   false },
+				//{ "RG8_FLOAT",     RG8_FLOAT,             Float,          2,      1,  true,     true,    false,   false,   false,    false,   false,   false },
+				//{ "RGB8_FLOAT",    RGB8_FLOAT,            Float,          3,      1,  true,     true,    true,    false,   false,    false,   false,   false },
+				//{ "RGBA8_FLOAT",   RGBA8_FLOAT,           Float,          4,      1,  true,     true,    true,    true,    false,    false,   false,   false },
 
 				// 8-bit Signed-Integer			          
 				{ "R8_SINT",       R8_SINT,               Int,            1,      1,  true,     false,   false,   false,   false,    false,   true,    false },
 				{ "RG8_SINT",      RG8_SINT,              Int,            2,      1,  true,     true,    false,   false,   false,    false,   true,    false },
-				{ "RGB8_SINT",     RGB8_SINT,             Int,            3,      1,  true,     true,    true,    false,   false,    false,   true,    false },
+				//{ "RGB8_SINT",     RGB8_SINT,             Int,            3,      1,  true,     true,    true,    false,   false,    false,   true,    false },
 				{ "RGBA8_SINT",    RGBA8_SINT,            Int,            4,      1,  true,     true,    true,    true,    false,    false,   true,    false },
 
 				// 8-bit Unsigned-Integer		          
 				{ "R8_UINT",       R8_UINT,               Int,            1,      1,  true,     false,   false,   false,   false,    false,   false,   false },
 				{ "RG8_UINT",      RG8_UINT,              Int,            2,      1,  true,     true,    false,   false,   false,    false,   false,   false },
-				{ "RGB8_UINT",     RGB8_UINT,             Int,            3,      1,  true,     true,    true,    false,   false,    false,   false,   false },
+				//{ "RGB8_UINT",     RGB8_UINT,             Int,            3,      1,  true,     true,    true,    false,   false,    false,   false,   false },
 				{ "RGBA8_UINT",    RGBA8_UINT,            Int,            4,      1,  true,     true,    true,    true,    false,    false,   false,   false },
 
 				// 16-bit Unsigned-Normalized	          
 				{ "R16_UNORM",     R16_UNORM,             Normalized,     2,      1,  true,     false,   false,   false,   false,    false,   false,   false },
 				{ "RG16_UNORM",    RG16_UNORM,            Normalized,     4,      1,  true,     true,    false,   false,   false,    false,   false,   false },
-				{ "RGB16_UNORM",   RGB16_UNORM,           Normalized,     6,      1,  true,     true,    true,    false,   false,    false,   false,   false },
+				//{ "RGB16_UNORM",   RGB16_UNORM,           Normalized,     6,      1,  true,     true,    true,    false,   false,    false,   false,   false },
 				{ "RGBA16_UNORM",  RGBA16_UNORM,          Normalized,     8,      1,  true,     true,    true,    true,    false,    false,   false,   false },
 
 				// 16-bit Float					          
 				{ "R16_FLOAT",     R16_FLOAT,             Float,          2,      1,  true,     false,   false,   false,   false,    false,   false,   false },
 				{ "RG16_FLOAT",    RG16_FLOAT,            Float,          4,      1,  true,     true,    false,   false,   false,    false,   false,   false },
-				{ "RGB16_FLOAT",   RGB16_FLOAT,           Float,          6,      1,  true,     true,    true,    false,   false,    false,   false,   false },
+				//{ "RGB16_FLOAT",   RGB16_FLOAT,           Float,          6,      1,  true,     true,    true,    false,   false,    false,   false,   false },
 				{ "RGBA16_FLOAT",  RGBA16_FLOAT,          Float,          8,      1,  true,     true,    true,    true,    false,    false,   false,   false },
 
 				// 16-bit Signed-Integer		          
 				{ "R16_SINT",      R16_SINT,              Int,            2,      1,  true,     false,   false,   false,   false,    false,   true,    false },
 				{ "RG16_SINT",     RG16_SINT,             Int,            4,      1,  true,     true,    false,   false,   false,    false,   true,    false },
-				{ "RGB16_SINT",    RGB16_SINT,            Int,            6,      1,  true,     true,    true,    false,   false,    false,   true,    false },
+				//{ "RGB16_SINT",    RGB16_SINT,            Int,            6,      1,  true,     true,    true,    false,   false,    false,   true,    false },
 				{ "RGBA16_SINT",   RGBA16_SINT,           Int,            8,      1,  true,     true,    true,    true,    false,    false,   true,    false },
 
 				// 16-bit Unsigned-Integer		          
 				{ "R16_UINT",      R16_UINT,              Int,            2,      1,  true,     false,   false,   false,   false,    false,   false,   false },
 				{ "RG16_UINT",     RG16_UINT,             Int,            4,      1,  true,     true,    false,   false,   false,    false,   false,   false },
-				{ "RGB16_UINT",    RGB16_UINT,            Int,            6,      1,  true,     true,    true,    false,   false,    false,   false,   false },
+				//{ "RGB16_UINT",    RGB16_UINT,            Int,            6,      1,  true,     true,    true,    false,   false,    false,   false,   false },
 				{ "RGBA16_UINT",   RGBA16_UINT,           Int,            8,      1,  true,     true,    true,    true,    false,    false,   false,   false },
 
 				// 32-bit Unsigned-Normalized	          
-				{ "R32_UNORM",     R32_UNORM,             Normalized,     4,      1,  true,     false,   false,   false,   false,    false,   false,   false },
-				{ "RG32_UNORM",    RG32_UNORM,            Normalized,     8,      1,  true,     true,    false,   false,   false,    false,   false,   false },
-				{ "RGB32_UNORM",   RGB32_UNORM,           Normalized,    12,      1,  true,     true,    true,    false,   false,    false,   false,   false },
-				{ "RGBA32_UNORM",  RGBA32_UNORM,          Normalized,    16,      1,  true,     true,    true,    true,    false,    false,   false,   false },
+				//{ "R32_UNORM",     R32_UNORM,             Normalized,     4,      1,  true,     false,   false,   false,   false,    false,   false,   false },
+				//{ "RG32_UNORM",    RG32_UNORM,            Normalized,     8,      1,  true,     true,    false,   false,   false,    false,   false,   false },
+				//{ "RGB32_UNORM",   RGB32_UNORM,           Normalized,    12,      1,  true,     true,    true,    false,   false,    false,   false,   false },
+				//{ "RGBA32_UNORM",  RGBA32_UNORM,          Normalized,    16,      1,  true,     true,    true,    true,    false,    false,   false,   false },
 
 				// 32-bit Float					          
 				{ "R32_FLOAT",     R32_FLOAT,             Float,          4,      1,  true,     false,   false,   false,   false,    false,   false,   false },
@@ -1365,7 +1372,7 @@ namespace Tridium {
 		// Halfs
 		inline constexpr ERHIFormat Half1 = ERHIFormat::R16_FLOAT;
 		inline constexpr ERHIFormat Half2 = ERHIFormat::RG16_FLOAT;
-		inline constexpr ERHIFormat Half3 = ERHIFormat::RGB16_FLOAT;
+		//inline constexpr ERHIFormat Half3 = ERHIFormat::RGB16_FLOAT;
 		inline constexpr ERHIFormat Half4 = ERHIFormat::RGBA16_FLOAT;
 		// Floats
 		inline constexpr ERHIFormat Float1 = ERHIFormat::R32_FLOAT;
@@ -1375,12 +1382,12 @@ namespace Tridium {
 		// Short Integers
 		inline constexpr ERHIFormat Short1 = ERHIFormat::R16_SINT;
 		inline constexpr ERHIFormat Short2 = ERHIFormat::RG16_SINT;
-		inline constexpr ERHIFormat Short3 = ERHIFormat::RGB16_SINT;
+		//inline constexpr ERHIFormat Short3 = ERHIFormat::RGB16_SINT;
 		inline constexpr ERHIFormat Short4 = ERHIFormat::RGBA16_SINT;
 		// Unsigned Short Integers
 		inline constexpr ERHIFormat UShort1 = ERHIFormat::R16_UINT;
 		inline constexpr ERHIFormat UShort2 = ERHIFormat::RG16_UINT;
-		inline constexpr ERHIFormat UShort3 = ERHIFormat::RGB16_UINT;
+		//inline constexpr ERHIFormat UShort3 = ERHIFormat::RGB16_UINT;
 		inline constexpr ERHIFormat UShort4 = ERHIFormat::RGBA16_UINT;
 		// Integers
 		inline constexpr ERHIFormat Int1 = ERHIFormat::R32_SINT;

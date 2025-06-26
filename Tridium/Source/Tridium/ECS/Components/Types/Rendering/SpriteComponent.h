@@ -1,6 +1,6 @@
 #pragma once
 #include <Tridium/ECS/Components/Component.h>
-#include <Tridium/Graphics/Rendering/Texture.h>
+#include <Tridium/Graphics/oldRendering/Texture.h>
 
 namespace Tridium {
 

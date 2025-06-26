@@ -4,9 +4,9 @@
 #include "SceneSettingsPanel.h"
 #include <Tridium/Editor/Editor.h>
 #include <Tridium/Editor/PropertyDrawers.h>
-#include <Tridium/Graphics/Rendering/EnvironmentMap.h>
-#include <Tridium/Asset/EditorAssetManager.h>
-#include <Tridium/Graphics/Rendering/FrameBuffer.h>
+#include <Tridium/Graphics/oldRendering/EnvironmentMap.h>
+#include <Tridium/oldAsset/EditorAssetManager.h>
+#include <Tridium/Graphics/oldRendering/FrameBuffer.h>
 
 namespace Tridium {
 

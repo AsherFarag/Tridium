@@ -15,8 +15,12 @@ namespace Tridium::D3D12 {
 			&a_AllocDesc, &a_ResourceDesc,
 			a_InitialState, a_ClearValue,
 			&Allocation, IID_PPV_ARGS( &resource ) );
-		ULONG ref = resource->Release();
-		ASSERT( ref == 1 );
+
+		if ( resource )
+		{
+			ULONG ref = resource->Release();
+			ASSERT( ref == 1 );
+		}
 
 		return SUCCEEDED( hr );
 	}

@@ -1,6 +1,6 @@
 #pragma once
 #include <Tridium/ECS/Components/NativeScriptComponent.h>
-#include <Tridium/Graphics/Rendering/Lights.h>
+#include <Tridium/Graphics/oldRendering/Lights.h>
 
 namespace Tridium {
 

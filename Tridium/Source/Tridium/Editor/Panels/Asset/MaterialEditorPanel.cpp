@@ -1,9 +1,9 @@
 #include "tripch.h"
 #if IS_EDITOR
 #include "MaterialEditorPanel.h"
-#include <Tridium/Asset/AssetManager.h>
-#include <Tridium/Graphics/Rendering/Texture.h>
-#include <Tridium/Asset/EditorAssetManager.h>
+#include <Tridium/oldAsset/AssetManager.h>
+#include <Tridium/Graphics/oldRendering/Texture.h>
+#include <Tridium/oldAsset/EditorAssetManager.h>
 #include <Tridium/Editor/PropertyDrawers.h>
 #include <Tridium/Editor/EditorUtil.h>
 

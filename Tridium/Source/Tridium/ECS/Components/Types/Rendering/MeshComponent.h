@@ -1,7 +1,7 @@
 #pragma once
 #include <Tridium/ECS/Components/NativeScriptComponent.h>
-#include <Tridium/Graphics/Rendering/Material.h>
-#include <Tridium/Graphics/Rendering/Mesh.h>
+#include <Tridium/Graphics/oldRendering/Material.h>
+#include <Tridium/Graphics/oldRendering/Mesh.h>
 
 namespace Tridium {
 

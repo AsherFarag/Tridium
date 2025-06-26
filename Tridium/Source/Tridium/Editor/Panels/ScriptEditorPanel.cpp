@@ -4,7 +4,7 @@
 #include <Tridium/Core/Application.h>
 #include <Tridium/Editor/EditorUtil.h>
 #include <Tridium/Reflection/Reflection.h>
-#include <Tridium/Asset/EditorAssetManager.h>
+#include <Tridium/oldAsset/EditorAssetManager.h>
 
 #include <fstream>
 #include <sstream>

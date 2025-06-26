@@ -11,7 +11,7 @@ namespace Tridium {
 		for ( const auto& barrier : a_Barriers )
 		{
 			RHI_DEV_CHECK( barrier.Resource, "Resource must not be null" );
-			ResourceBarriers.EmplaceBack() = barrier;
+			ResourceBarriers.EmplaceBack( barrier );
 			barrier.Resource->SetState( barrier.After );
 		}
 	}
@@ -30,10 +30,7 @@ namespace Tridium {
 	void RHIResourceStateTracker::RequireBufferState( IRHIBuffer& a_Buffer, ERHIResourceStates a_NewState )
 	{
 		if ( a_Buffer.Desc().CpuAccess != ERHICpuAccess::None )
-		{
-			// CPU access buffers can not change state.
-			return;
-		}
+			return; // CPU access buffers can not change state.
 
 		const ERHIResourceStates currentState = a_Buffer.State();
 		const bool isTransitionNeeded = currentState != a_NewState;

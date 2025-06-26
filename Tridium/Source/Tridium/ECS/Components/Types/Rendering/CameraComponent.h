@@ -1,6 +1,6 @@
 #pragma once
 #include <Tridium/ECS/Components/Component.h>
-#include <Tridium/Graphics/Rendering/Camera.h>
+#include <Tridium/Graphics/oldRendering/Camera.h>
 
 namespace Tridium {
 

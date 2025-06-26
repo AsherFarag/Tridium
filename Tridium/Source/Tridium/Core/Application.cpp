@@ -12,15 +12,15 @@
 #include <Tridium/ImGui/ImGuiLayer.h>
 
 // TEMP ?
-#include <Tridium/Graphics/Rendering/GameViewport.h>
-#include <Tridium/Graphics/Rendering/RenderCommand.h>
+#include <Tridium/Graphics/oldRendering/GameViewport.h>
+#include <Tridium/Graphics/oldRendering/RenderCommand.h>
 #include <Tridium/Graphics/RHI/RHI.h>
 #include <Tridium/Graphics/RHI/RHIShaderCompiler.h>
 #include <Tridium/Math/MathConstants.h>
 #include <GLFW/glfw3.h>
 #include <Tridium/Reflection/FieldReflection.h>
-#include <Tridium/NewAsset/AssetDatabase.h>
-#include <Tridium/NewAsset/TextureAsset.h>
+#include <Tridium/Asset/AssetDatabase.h>
+#include <Tridium/Asset/TextureAsset.h>
 
 namespace Tridium {
 
@@ -120,7 +120,7 @@ namespace Tridium {
 		m_Window->SetEventCallback( [this]( const Event& a_Event ) { this->EnqueueEvent( a_Event ); } );
 
 		RHIConfig config{};
-		config.RHIType = ERHInterfaceType::OpenGL;
+		config.RHIType = ERHInterfaceType::DirectX12;
 		config.UseDebug = true;
 		config.SwapChainDesc = RHISwapChainDesc{}.SetWidth( 1280 )
 			.SetHeight( 720 )
@@ -209,12 +209,39 @@ namespace Tridium {
 				.SetDimension( ERHITextureDimension::Texture2D )
 				.SetDefaultSampler( sampler )
 				.SetName( "My texture" );
-			auto texAsset = T::Texture::Create( testImgData, texDesc );
-			texAsset->ClearPixelData();
-			T::AssetMetadata texAssetMetadata = T::AssetMetadata::From( *texAsset );
-			texAssetMetadata.Name = texDesc.Name;
-			T::AssetDatabase::RegisterAsset( texAsset.get(), std::move( texAssetMetadata ) );
-			RHITextureRef tex = texAsset->IRHITexture();
+			//auto texAsset = T::Texture::Create( testImgData, texDesc );
+			//texAsset->ClearPixelData();
+			//T::AssetMetadata texAssetMetadata = T::AssetMetadata::From( *texAsset );
+			//texAssetMetadata.Name = texDesc.Name;
+			//T::AssetDatabase::RegisterAsset( texAsset.get(), std::move( texAssetMetadata ) );
+			RHITextureSubresourceData subresourceData;
+			subresourceData.Data = testImgData;
+			subresourceData.RowStride = 64 * 4; // 4 bytes per pixel
+			subresourceData.DepthStride = 0; // Not a 3D texture, so depth stride is not used
+
+			RHITextureRef tex = RHI::CreateTexture( texDesc, testImgSubresData );
+
+			RHITextureRef lionTexRHI = nullptr;
+			{
+				auto lionTexEx = T::Texture::Load( "6772804448157695701.jpg" );
+				if ( lionTexEx.IsError() )
+				{
+					LOG( LogCategory::Asset, Error, "Failed to load lion texture: {0}", lionTexEx.Error() );
+					return false;
+				}
+				auto lionTex = lionTexEx.Value();
+				RHITextureDesc lionTexDesc = RHITextureDesc{}
+					.SetWidth( lionTex->Width() )
+					.SetHeight( lionTex->Height() )
+					.SetFormat( lionTex->Format() )
+					.SetDimension( lionTex->Dimension() )
+					.SetName( "Lion Texture" );
+				RHITextureSubresourceData lionTexSubresData;
+				lionTexSubresData.Data = lionTex->PixelData().Data();
+				lionTexSubresData.RowStride = lionTex->Width() * GetRHIFormatInfo( lionTex->Format() ).Bytes();
+				lionTexSubresData.DepthStride = 0; // Not a 3D texture, so depth stride is not used
+				lionTexRHI = RHI::CreateTexture( lionTexDesc, lionTexSubresData );
+			}
 
 			struct Vertex
 			{
@@ -426,7 +453,6 @@ float4 PSMain( VSOutput input ) : SV_Target
 			sblDesc.Visibility = ERHIShaderVisibility::All;
 			sblDesc.AddBinding( "inlinedConstants"_H ).AsInlinedConstants( 0, 128 );
 			sblDesc.AddBinding( "constants"_H ).AsConstantBuffer( 1 );
-			//sblDesc.AddBinding( "Texture"_H ).AsCombinedSampler( 0 );
 			sblDesc.AddBinding( "Texture"_H ).AsTexture( 0 );
 			RHIBindingLayoutRef sbl = RHI::CreateBindingLayout( sblDesc );
 
@@ -457,8 +483,8 @@ float4 PSMain( VSOutput input ) : SV_Target
 			depthDesc.Format = ERHIFormat::D32_FLOAT;
 			depthDesc.Name = "My depth buffer";
 			depthDesc.BindFlags = ERHIBindFlags::DepthStencil;
-			depthDesc.ClearValue.emplace( 1.0f, 0 );
 			depthDesc.Dimension = ERHITextureDimension::Texture2D;
+			depthDesc.UseClearValue = true;
 			RHITextureRef depthTex = RHI::CreateTexture( depthDesc );
 
 			RHICommandListDesc cmdListDesc;
@@ -468,6 +494,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 			// Temp
 			float time = 0.0f;
 			const Color clearColor = Color{ 0.2f, 0.35f, 0.5f, 1.0f };
+			const RHIClearValue clearValue{ clearColor };
 			int f{};
 
 			//while ( time < 5.0 )
@@ -544,7 +571,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 						.SetMaxAnisotropy( 16 )
 						.SetBorderColor( Color( 1,1,0, 1.0f ) );
 
-					bindingSetDesc.AddTexture( "Texture"_H, tex.get(), &sampler );
+					bindingSetDesc.AddTexture( "Texture"_H, lionTexRHI.get(), &sampler );
 					RHIBindingSetRef bindingSet = RHI::CreateBindingSet( bindingSetDesc );
 
 					graphicsState.PipelineState = pso.get();
@@ -556,7 +583,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 
 					cmdList->SetGraphicsState( graphicsState );
 
-					cmdList->ClearRenderTargets( ERHIClearFlags::ColorDepth, clearColor );
+					cmdList->ClearRenderTargets( ERHIClearFlags::All, clearValue );
 
 					// Set the viewport
 					RHIViewportState viewportState{};
@@ -576,12 +603,18 @@ float4 PSMain( VSOutput input ) : SV_Target
 					inlinedConstants.PVM = projection * view * model;
 					inlinedConstants.Model = model;
 
+					cmdList->PushDebugGroup( "Draw Cube 1" );
+					cmdList->InsertDebugMarker( "Debug Marker" );
 					cmdList->SetInlinedConstants( inlinedConstants );
 
 					RHIDrawArgs drawArgs{};
 					drawArgs.BaseVertex = 0;
 					drawArgs.VertexCount = sizeof( cubeVerts ) / sizeof( Vertex );
 					cmdList->Draw( drawArgs );
+
+					cmdList->PopDebugGroup();
+
+					cmdList->PushDebugGroup( "Draw Cube 2" );
 
 					inlinedConstants.Model = Math::Translate( Vector3( 0.5 * -pos.X, -pos.Y, -pos.X + pos.Z ) );
 					inlinedConstants.PVM = projection * view * inlinedConstants.Model;
@@ -590,6 +623,8 @@ float4 PSMain( VSOutput input ) : SV_Target
 					constants.LightData.Colour = Color( 0, 1, 0, 1 );
 					cmdList->UpdateBuffer( *constantsBuffer, ReinterpretCast<const void*>( &constants ), sizeof( constants ) );
 					cmdList->Draw( drawArgs );
+
+					cmdList->PopDebugGroup();
 
 					cmdList->ResourceBarrier( *rt, ERHIResourceStates::Present );
 					cmdList->ResourceBarrier( *depthTex, ERHIResourceStates::Present );

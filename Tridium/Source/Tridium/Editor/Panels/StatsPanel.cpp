@@ -7,7 +7,7 @@
 #include <Tridium/Core/Application.h>
 #include <Tridium/Scene/SceneManager.h>
 #include <Tridium/Scene/Scene.h>
-#include <Tridium/Graphics/Rendering/SceneRenderer.h>
+#include <Tridium/Graphics/oldRendering/SceneRenderer.h>
 
 #define STAT_UNIT "%.3f ms"
 

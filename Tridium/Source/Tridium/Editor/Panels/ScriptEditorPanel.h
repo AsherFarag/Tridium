@@ -2,8 +2,8 @@
 #if IS_EDITOR
 #include "Panel.h"
 #include "ImTextEdit/TextEditor.h"
-#include <Tridium/Asset/AssetType.h>
-#include <Tridium/Asset/Asset.h>
+#include <Tridium/oldAsset/AssetType.h>
+#include <Tridium/oldAsset/Asset.h>
 
 
 namespace Tridium {

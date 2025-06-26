@@ -1,7 +1,7 @@
 #include "tripch.h"
 #include "MeshComponent.h"
 #include <Tridium/Reflection/Reflection.h>
-#include <Tridium/Graphics/Rendering/Mesh.h>
+#include <Tridium/Graphics/oldRendering/Mesh.h>
 
 namespace Tridium {
 

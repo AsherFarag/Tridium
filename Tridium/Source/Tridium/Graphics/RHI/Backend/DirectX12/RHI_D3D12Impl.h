@@ -60,6 +60,17 @@ namespace Tridium::D3D12 {
 		return (a_Size + a_Alignment - 1 ) & ~( a_Alignment - 1 );
 	}
 
+	inline D3D12_RESOURCE_BARRIER Translate( RHIResourceBarrier a_Barrier )
+	{
+		D3D12_RESOURCE_BARRIER barrier{};
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barrier.Transition.pResource = a_Barrier.Resource->NativePtrAs<ID3D12Resource>();
+		barrier.Transition.StateBefore = Translate( a_Barrier.Before );
+		barrier.Transition.StateAfter = Translate( a_Barrier.After );
+		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		return barrier;
+	}
+
 	//=====================================================================
 	// Descriptor Heap Flags
 	//  Bitmask flags describing the properties of a descriptor heap.
@@ -742,7 +753,7 @@ namespace Tridium::D3D12 {
 		void SetInlinedConstants( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM ) override;
 
 		void SetGraphicsState( const RHIGraphicsState& a_GraphicsState, RHI_DEBUG_SRC_LOC_PARAM ) override;
-		void ClearRenderTargets( ERHIClearFlags a_Flags, Color a_ClearColor, float a_DepthValue = 1.0f, uint8_t a_StencilValue = 0u, int32_t a_ColorAttachmentIndex = -1, RHI_DEBUG_SRC_LOC_PARAM ) override;
+		void ClearRenderTargets( ERHIClearFlags a_Flags, RHIClearValue a_ClearValue, int32_t a_ColorAttachmentIndex = -1, RHI_DEBUG_SRC_LOC_PARAM ) override;
 		void SetViewportState( const RHIViewportState& a_Viewports, RHI_DEBUG_SRC_LOC_PARAM ) override;
 		void Draw( const RHIDrawArgs& a_DrawArgs, RHI_DEBUG_SRC_LOC_PARAM ) override;
 
@@ -752,7 +763,7 @@ namespace Tridium::D3D12 {
 
 		// = D3D12 Specific =
 
-		ID3D12CommandList* GetD3D12CmdList() const { return m_ActiveCmdList.CmdList.Get(); }
+		ID3D12GraphicsCommandList* GetD3D12CmdList() const { return m_ActiveCmdList.CmdList.Get(); }
 		CommandContext ReleaseCmdContext( CommandQueue& a_CmdQueue );
 
 	private:

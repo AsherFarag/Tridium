@@ -9,12 +9,13 @@ namespace Tridium {
 	class IRHIBuffer;
 	struct RHIFramebuffer;
 
+	TODO( "Remove state tracking from the resource itself maybe?" );
+
 	//=========================================================
 	// RHI Resource State Tracker
 	//  Responsible for tracking and managing the state of RHI resources
 	//  using resource barriers.
 	//  Utility class for RHI implementations.
-	//=========================================================
 	struct RHIResourceStateTracker
 	{
 		Array<RHIResourceBarrier> ResourceBarriers;

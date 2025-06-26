@@ -2,7 +2,7 @@
 #ifdef IS_EDITOR
 #include <Tridium/Utils/Singleton.h>
 #include <Tridium/Math/Math.h>
-#include <Tridium/Asset/AssetType.h>
+#include <Tridium/oldAsset/AssetType.h>
 #include <Tridium/Core/Memory.h>
 #include <Tridium/Containers/Containers.h>
 

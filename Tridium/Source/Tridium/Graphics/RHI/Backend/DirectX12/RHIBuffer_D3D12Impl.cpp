@@ -8,68 +8,88 @@ namespace Tridium::D3D12 {
 		m_Desc.Size = Math::Max( a_Desc.Size, a_Data.size_bytes() );
 		if ( m_Desc.Size == 0 )
 		{
-			ASSERT( false, "Buffer size is 0!" );
+			RHI_DEV_CHECK( false, "Buffer size is 0!" );
 			return;
 		}
 
-		// Initial state for buffers must always be Common, according to the D3D12 spec.
-		SetState( ERHIResourceStates::Common );
+		SetState( a_Desc.InitialState );
 
-		D3D12_RESOURCE_DESC d3d12Desc = GetD3D12ResourceDesc();
+		D3D12_HEAP_FLAGS heapFlags = D3D12_HEAP_FLAG_NONE;
+		D3D12_RESOURCE_STATES initialState = D3D12_RESOURCE_STATE_COMMON;
+
+		const D3D12_RESOURCE_DESC d3d12Desc = GetD3D12ResourceDesc();
+		D3D12MA::ALLOCATION_DESC allocDesc{};
+		
+		switch ( m_Desc.CpuAccess )
+		{
+		case ERHICpuAccess::None:
+			allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+			initialState = D3D12_RESOURCE_STATE_COMMON;
+			break;
+		case ERHICpuAccess::Read:
+			allocDesc.HeapType = D3D12_HEAP_TYPE_READBACK;
+			initialState = D3D12_RESOURCE_STATE_COPY_DEST;
+			break;
+		default:
+		case ERHICpuAccess::Write:
+			allocDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+			initialState = D3D12_RESOURCE_STATE_GENERIC_READ;
+			break;
+		}
 
 		// Create the texture
-		if ( !ManagedBuffer.Commit( d3d12Desc, D3D12::Translate( State() ) ) )
+		if ( !ManagedBuffer.Commit( d3d12Desc, allocDesc, initialState ) )
 		{
-			ASSERT( false, "Failed to create D3D12 buffer" );
+			ASSERT( false, "Failed to allocate D3D12 buffer" );
 			return;
 		}
 
 		D3D12_SET_DEBUG_NAME( ManagedBuffer.Resource(), m_Desc.Name, L"Unnamed Buffer");
 
-		if ( a_Data.size() > 0 )
+		if ( a_Data.size() == 0 )
+			return; // No data to upload
+
+		// Create the upload buffer
+		D3D12::ManagedResource uploadBuffer{};
+		allocDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+		D3D12_RESOURCE_DESC uploadBufferDesc = {};
+		uploadBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+		uploadBufferDesc.Width = m_Desc.Size;
+		uploadBufferDesc.Height = 1;
+		uploadBufferDesc.DepthOrArraySize = 1;
+		uploadBufferDesc.MipLevels = 1;
+		uploadBufferDesc.Format = DXGI_FORMAT_UNKNOWN;
+		uploadBufferDesc.SampleDesc.Count = 1;
+		uploadBufferDesc.SampleDesc.Quality = 0;
+		uploadBufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+		uploadBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+		if ( !uploadBuffer.Commit( uploadBufferDesc, allocDesc, D3D12_RESOURCE_STATE_GENERIC_READ ) )
 		{
-			SetState( ERHIResourceStates::CopyDest );
-			m_Desc.Size = a_Data.size();
-
-			// Create the upload buffer
-			D3D12::ManagedResource uploadBuffer{};
-			D3D12MA::ALLOCATION_DESC allocDesc = {};
-			allocDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
-			D3D12_RESOURCE_DESC uploadBufferDesc = {};
-			uploadBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-			uploadBufferDesc.Width = m_Desc.Size;
-			uploadBufferDesc.Height = 1;
-			uploadBufferDesc.DepthOrArraySize = 1;
-			uploadBufferDesc.MipLevels = 1;
-			uploadBufferDesc.Format = DXGI_FORMAT_UNKNOWN;
-			uploadBufferDesc.SampleDesc.Count = 1;
-			uploadBufferDesc.SampleDesc.Quality = 0;
-			uploadBufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-			uploadBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-			if ( !uploadBuffer.Commit( uploadBufferDesc, allocDesc, D3D12_RESOURCE_STATE_GENERIC_READ ) )
-			{
-				ASSERT( false, "Failed to create D3D12 upload buffer" );
-				return;
-			}
-
-			// Copy data to upload buffer
-			char* uploadBufferAddress;
-			D3D12_RANGE uploadRange = { 0, m_Desc.Size };
-			uploadBuffer.Resource()->Map(0, &uploadRange, (void**)&uploadBufferAddress);
-			memcpy( uploadBufferAddress, a_Data.data(), a_Data.size() );
-			uploadBuffer.Resource()->Unmap(0, &uploadRange);
-
-			auto* cmdList = Device()->GetResourceInitCommandList();
-			cmdList->Open();
-			Cast<ID3D12GraphicsCommandList*>( cmdList->GetD3D12CmdList() )->CopyBufferRegion( 
-				ManagedBuffer.Resource(), 0, uploadBuffer.Resource(), 0, m_Desc.Size
-			);
-			cmdList->Close();
-
-			IRHICommandList* cmdListPtr = cmdList;
-			const RHIFenceValue fence = Device()->ExecuteCommandLists( Span{ &cmdListPtr, 1 }, ERHICommandQueueType::Copy );
-			Device()->WaitForFence( ERHICommandQueueType::Copy, fence );
+			ASSERT( false, "Failed to create D3D12 upload buffer" );
+			return;
 		}
+
+		// Copy data to upload buffer
+		char* uploadBufferAddress;
+		D3D12_RANGE uploadRange = { 0, m_Desc.Size };
+		uploadBuffer.Resource()->Map( 0, &uploadRange, (void**)&uploadBufferAddress );
+		memcpy( uploadBufferAddress, a_Data.data(), a_Data.size() );
+		uploadBuffer.Resource()->Unmap( 0, &uploadRange );
+
+		const auto beforeBarrier = Translate( RHIResourceBarrier{ this, ERHIResourceStates::Common, ERHIResourceStates::CopyDest } );
+		const auto afterBarrier = Translate( RHIResourceBarrier{ this, ERHIResourceStates::CopyDest, a_Desc.InitialState } );
+
+		auto* cmdList = Device()->GetResourceInitCommandList();
+		cmdList->Open();
+		cmdList->GetD3D12CmdList()->ResourceBarrier( 1, &beforeBarrier );
+		cmdList->GetD3D12CmdList()->CopyBufferRegion( ManagedBuffer.Resource(), 0, uploadBuffer.Resource(), 0, m_Desc.Size );
+		cmdList->GetD3D12CmdList()->ResourceBarrier( 1, &afterBarrier );
+		cmdList->Close();
+
+		IRHICommandList* cmdListPtr = cmdList;
+		const RHIFenceValue fence = Device()->ExecuteCommandLists( Span{ &cmdListPtr, 1 }, ERHICommandQueueType::Copy );
+		Device()->WaitForFence( ERHICommandQueueType::Copy, fence );
 	}
 
 	D3D12_RESOURCE_DESC RHIBuffer_D3D12Impl::GetD3D12ResourceDesc() const

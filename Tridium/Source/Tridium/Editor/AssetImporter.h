@@ -1,7 +1,7 @@
 #pragma once
 #if IS_EDITOR
-#include <Tridium/Graphics/Rendering/Texture.h>
-#include <Tridium/Asset/AssetType.h>
+#include <Tridium/Graphics/oldRendering/Texture.h>
+#include <Tridium/oldAsset/AssetType.h>
 #include <Tridium/IO/FilePath.h>
 
 namespace Tridium {

@@ -4,7 +4,7 @@
 #include "GameViewportPanel.h"
 #include <Tridium/ECS/Components/Types/Rendering/CameraComponent.h>
 #include <Tridium/Editor/Editor.h>
-#include <Tridium/Graphics/Rendering/SceneRenderer.h>
+#include <Tridium/Graphics/oldRendering/SceneRenderer.h>
 #include <Tridium/ECS/Components/Types.h>
 #include <Tridium/Scene/SceneManager.h>
 

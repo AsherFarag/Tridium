@@ -19,7 +19,7 @@ namespace Tridium::OpenGL {
 			{
 			case RHIVertexElementFormats::Half1: return { GL_HALF_FLOAT, 1, 2 };
 			case RHIVertexElementFormats::Half2: return { GL_HALF_FLOAT, 2, 2 };
-			case RHIVertexElementFormats::Half3: return { GL_HALF_FLOAT, 3, 2 };
+			//case RHIVertexElementFormats::Half3: return { GL_HALF_FLOAT, 3, 2 };
 			case RHIVertexElementFormats::Half4: return { GL_HALF_FLOAT, 4, 2 };
 			case RHIVertexElementFormats::Float1: return { GL_FLOAT, 1, 4 };
 			case RHIVertexElementFormats::Float2: return { GL_FLOAT, 2, 4 };
@@ -27,11 +27,11 @@ namespace Tridium::OpenGL {
 			case RHIVertexElementFormats::Float4: return { GL_FLOAT, 4, 4 };
 			case RHIVertexElementFormats::Short1: return { GL_SHORT, 1, 2 };
 			case RHIVertexElementFormats::Short2: return { GL_SHORT, 2, 2 };
-			case RHIVertexElementFormats::Short3: return { GL_SHORT, 3, 2 };
+			//case RHIVertexElementFormats::Short3: return { GL_SHORT, 3, 2 };
 			case RHIVertexElementFormats::Short4: return { GL_SHORT, 4, 2 };
 			case RHIVertexElementFormats::UShort1: return { GL_UNSIGNED_SHORT, 1, 2 };
 			case RHIVertexElementFormats::UShort2: return { GL_UNSIGNED_SHORT, 2, 2 };
-			case RHIVertexElementFormats::UShort3: return { GL_UNSIGNED_SHORT, 3, 2 };
+			//case RHIVertexElementFormats::UShort3: return { GL_UNSIGNED_SHORT, 3, 2 };
 			case RHIVertexElementFormats::UShort4: return { GL_UNSIGNED_SHORT, 4, 2 };
 			case RHIVertexElementFormats::Int1: return { GL_INT, 1, 4 };
 			case RHIVertexElementFormats::Int2: return { GL_INT, 2, 4 };

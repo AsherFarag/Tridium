@@ -27,8 +27,8 @@
 #include "Panels/ProfilerPanel.h"
 
 #include <Tridium/IO/SceneSerializer.h>
-#include <Tridium/Asset/Loaders/TextureLoader.h>
-#include <Tridium/Asset/EditorAssetManager.h>
+#include <Tridium/oldAsset/Loaders/TextureLoader.h>
+#include <Tridium/oldAsset/EditorAssetManager.h>
 
 #include <fstream>
 #include <Tridium/IO/Serializer.h>

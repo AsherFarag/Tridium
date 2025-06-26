@@ -1,9 +1,9 @@
 #pragma once
 #include <Tridium/ECS/ECS.h>
 #include <Tridium/ECS/EntityTicker.h>
-#include <Tridium/Asset/Asset.h>
-#include <Tridium/Graphics/Rendering/Lights.h>
-#include <Tridium/Graphics/Rendering/SceneRenderer.h>
+#include <Tridium/oldAsset/Asset.h>
+#include <Tridium/Graphics/oldRendering/Lights.h>
+#include <Tridium/Graphics/oldRendering/SceneRenderer.h>
 #include <Tridium/Physics/PhysicsScene.h>
 #include "SceneEnvironment.h"
 #include "SceneSystem.h"

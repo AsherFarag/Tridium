@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/Graphics/Rendering/VertexArray.h>
+#include <Tridium/Graphics/oldRendering/VertexArray.h>
 
 namespace Tridium {
 

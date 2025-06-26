@@ -6,44 +6,42 @@ namespace Tridium::D3D12 {
 	RHITexture_D3D12Impl::RHITexture_D3D12Impl( IDynamicRHI* a_Device, const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
 		: IRHITexture( a_Device, a_Desc )
 	{
-		const bool initData = a_SubResourcesData.size() > 0;
-		ERHIResourceStates initialState = initData ? ERHIResourceStates::CopyDest : ERHIResourceStates::Common;
-		SetState( initialState );
-
 		const RHIFormatInfo& formatInfo = GetRHIFormatInfo( a_Desc.Format );
-		const bool isDepthTarget = formatInfo.HasDepth || formatInfo.HasStencil;
 
 		const size_t width = a_Desc.Width;
 		const size_t height = a_Desc.Height;
-		const size_t depth = a_Desc.Depth;
+		const size_t depth = a_Desc.DepthOrArraySize;
 		const size_t stride = width * formatInfo.BytesPerBlock;
 		const size_t imgSize = height * stride;
 
 		D3D12_RESOURCE_DESC d3d12Desc = GetD3D12ResourceDesc();
 
 		// Configure the clear value
-		D3D12_CLEAR_VALUE clearValue = {};
-		D3D12_CLEAR_VALUE* clearValuePtr = nullptr;
-		if ( a_Desc.ClearValue.has_value() )
+		D3D12_CLEAR_VALUE clearValue{};
+		bool useClearValue = a_Desc.UseClearValue;
+		if ( useClearValue )
 		{
-			clearValuePtr = &clearValue;
-			clearValue.Format = D3D12::Translate( a_Desc.Format );
-			if ( isDepthTarget )
+			clearValue.Format = Translate( a_Desc.Format );
+			if ( EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::RenderTarget ) )
 			{
-				clearValue.DepthStencil.Depth = a_Desc.ClearValue->Depth;
-				clearValue.DepthStencil.Stencil = a_Desc.ClearValue->Stencil;
+				clearValue.Color[0] = a_Desc.ClearValue.Color[0];
+				clearValue.Color[1] = a_Desc.ClearValue.Color[1];
+				clearValue.Color[2] = a_Desc.ClearValue.Color[2];
+				clearValue.Color[3] = a_Desc.ClearValue.Color[3];
+			}
+			else if ( EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::DepthStencil ) )
+			{
+				clearValue.DepthStencil.Depth = a_Desc.ClearValue.Depth;
+				clearValue.DepthStencil.Stencil = a_Desc.ClearValue.Stencil;
 			}
 			else
 			{
-				clearValue.Color[0] = a_Desc.ClearValue->Color[0];
-				clearValue.Color[1] = a_Desc.ClearValue->Color[1];
-				clearValue.Color[2] = a_Desc.ClearValue->Color[2];
-				clearValue.Color[3] = a_Desc.ClearValue->Color[3];
+				useClearValue = false; // Clear value is not applicable for this texture type
 			}
 		}
 
 		// Create the texture
-		if ( !Texture.Commit( d3d12Desc, D3D12::Translate( initialState ), clearValuePtr ) )
+		if ( !Texture.Commit( d3d12Desc, Translate( a_Desc.InitialState ), useClearValue ? &clearValue : nullptr ) )
 		{
 			ASSERT( false, "Failed to create D3D12 texture" );
 			return;
@@ -51,72 +49,75 @@ namespace Tridium::D3D12 {
 
 		D3D12_SET_DEBUG_NAME( Texture.Resource(), m_Desc.Name, L"Unnamed Texture");
 
-		if ( initData )
+		if ( a_SubResourcesData.empty() )
+			return; // No data to upload
+
+		UINT64 uploadBufferSize = 0;
+		UINT numSubresources = Cast<UINT>( a_SubResourcesData.size() );
+
+		Array<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> layouts;
+		Array<UINT> numRows;
+		Array<UINT64> rowSizeInBytes;
+
+		layouts.Resize( numSubresources );
+		numRows.Resize( numSubresources );
+		rowSizeInBytes.Resize( numSubresources );
+
+		Device()->GetD3D12Device()->GetCopyableFootprints(
+			&d3d12Desc, 0, numSubresources, 0,
+			layouts.Data(), numRows.Data(), rowSizeInBytes.Data(), &uploadBufferSize
+		);
+
+		// Create the upload buffer
+		D3D12::ManagedResource uploadBuffer{};
+		D3D12MA::ALLOCATION_DESC allocDesc = {};
+		allocDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+		D3D12_RESOURCE_DESC uploadBufferDesc = {};
+		uploadBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+		uploadBufferDesc.Width = imgSize * depth;
+		uploadBufferDesc.Height = 1;
+		uploadBufferDesc.DepthOrArraySize = 1;
+		uploadBufferDesc.MipLevels = 1;
+		uploadBufferDesc.Format = DXGI_FORMAT_UNKNOWN;
+		uploadBufferDesc.SampleDesc.Count = 1;
+		uploadBufferDesc.SampleDesc.Quality = 0;
+		uploadBufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+		uploadBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+		if ( !uploadBuffer.Commit( uploadBufferDesc, allocDesc, D3D12_RESOURCE_STATE_GENERIC_READ ) )
 		{
-			UINT64 uploadBufferSize = 0;
-			UINT numSubresources = Cast<UINT>( a_SubResourcesData.size() );
-
-			Array<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> layouts;
-			Array<UINT> numRows;
-			Array<UINT64> rowSizeInBytes;
-
-			layouts.Resize( numSubresources );
-			numRows.Resize( numSubresources );
-			rowSizeInBytes.Resize( numSubresources );
-
-			Device()->GetD3D12Device()->GetCopyableFootprints(
-				&d3d12Desc, 0, numSubresources, 0,
-				layouts.Data(), numRows.Data(), rowSizeInBytes.Data(), &uploadBufferSize
-			);
-
-			// Create the upload buffer
-			D3D12::ManagedResource uploadBuffer{};
-			D3D12MA::ALLOCATION_DESC allocDesc = {};
-			allocDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
-			D3D12_RESOURCE_DESC uploadBufferDesc = {};
-			uploadBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-			uploadBufferDesc.Width = imgSize * depth;
-			uploadBufferDesc.Height = 1;
-			uploadBufferDesc.DepthOrArraySize = 1;
-			uploadBufferDesc.MipLevels = 1;
-			uploadBufferDesc.Format = DXGI_FORMAT_UNKNOWN;
-			uploadBufferDesc.SampleDesc.Count = 1;
-			uploadBufferDesc.SampleDesc.Quality = 0;
-			uploadBufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-			uploadBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-			if ( !uploadBuffer.Commit( uploadBufferDesc, allocDesc, D3D12_RESOURCE_STATE_GENERIC_READ ) )
-			{
-				ASSERT( false, "Failed to create D3D12 upload buffer" );
-				return;
-			}
-
-			Array<D3D12_SUBRESOURCE_DATA> d3d12SubResData{};
-			d3d12SubResData.Resize( numSubresources );
-			for ( UINT i = 0; i < numSubresources; ++i )
-			{
-				d3d12SubResData[i].pData = a_SubResourcesData[i].Data;
-				d3d12SubResData[i].RowPitch = Cast<LONG_PTR>( a_SubResourcesData[i].RowStride );
-				d3d12SubResData[i].SlicePitch = Cast<LONG_PTR>( a_SubResourcesData[i].DepthStride );
-			}
-
-			auto* cmdList = Device()->GetResourceInitCommandList();
-			cmdList->Open();
-
-			UpdateSubresources(
-				Cast<ID3D12GraphicsCommandList*>( cmdList->GetD3D12CmdList() ),
-				Texture.Resource(),
-				uploadBuffer.Resource(),
-				0, 0,
-				numSubresources,
-				d3d12SubResData.Data()
-			);
-
-			cmdList->Close();
-
-			IRHICommandList* cmdListPtr = cmdList;
-			const RHIFenceValue fence = Device()->ExecuteCommandLists( Span{ &cmdListPtr, 1 }, ERHICommandQueueType::Copy );
-			Device()->WaitForFence( ERHICommandQueueType::Copy, fence );
+			ASSERT( false, "Failed to create D3D12 upload buffer" );
+			return;
 		}
+
+		Array<D3D12_SUBRESOURCE_DATA> d3d12SubResData{};
+		d3d12SubResData.Resize( numSubresources );
+		for ( UINT i = 0; i < numSubresources; ++i )
+		{
+			d3d12SubResData[i].pData = a_SubResourcesData[i].Data;
+			d3d12SubResData[i].RowPitch = Cast<LONG_PTR>( a_SubResourcesData[i].RowStride );
+			d3d12SubResData[i].SlicePitch = Cast<LONG_PTR>( a_SubResourcesData[i].DepthStride );
+		}
+
+		const auto beforeBarrier = Translate( RHIResourceBarrier{ this, ERHIResourceStates::Common, ERHIResourceStates::CopyDest } );
+		const auto afterBarrier = Translate( RHIResourceBarrier{ this, ERHIResourceStates::CopyDest, a_Desc.InitialState } );
+
+		auto* cmdList = Device()->GetResourceInitCommandList();
+		cmdList->Open();
+		cmdList->GetD3D12CmdList()->ResourceBarrier( 1, &beforeBarrier );
+		UpdateSubresources(
+			cmdList->GetD3D12CmdList(),
+			Texture.Resource(),
+			uploadBuffer.Resource(),
+			0, 0,
+			numSubresources,
+			d3d12SubResData.Data()
+		);
+		cmdList->GetD3D12CmdList()->ResourceBarrier( 1, &afterBarrier );
+		cmdList->Close();
+
+		IRHICommandList* cmdListPtr = cmdList;
+		const RHIFenceValue fence = Device()->ExecuteCommandLists( Span{ &cmdListPtr, 1 }, ERHICommandQueueType::Copy );
+		Device()->WaitForFence( ERHICommandQueueType::Copy, fence );
 	}
 
 	bool RHITexture_D3D12Impl::Release()
@@ -138,7 +139,7 @@ namespace Tridium::D3D12 {
 		desc.SampleDesc.Quality = 0;
 
 		if ( m_Desc.IsArray() || m_Desc.Is3D() )
-			desc.DepthOrArraySize = m_Desc.Depth;
+			desc.DepthOrArraySize = m_Desc.DepthOrArraySize;
 		else
 			desc.DepthOrArraySize = 1;
 
@@ -314,14 +315,14 @@ namespace Tridium::D3D12 {
 			return false;
 		}
 
-		if ( a_Width == m_Desc.Width && a_Height == m_Desc.Height && a_Depth == m_Desc.Depth )
+		if ( a_Width == m_Desc.Width && a_Height == m_Desc.Height && a_Depth == m_Desc.DepthOrArraySize )
 		{
 			return true;
 		}
 
 		m_Desc.Width = a_Width;
 		m_Desc.Height = a_Height;
-		m_Desc.Depth = a_Depth;
+		m_Desc.DepthOrArraySize = a_Depth;
 
 		Release();
 
@@ -363,7 +364,7 @@ namespace Tridium::D3D12 {
 		dstLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 		dstLocation.SubresourceIndex = CalcSubresource(
 			a_DstRegion.MinZ, a_DstRegion.MinY, a_DstRegion.MinX,
-			m_Desc.Mips, m_Desc.Depth
+			m_Desc.Mips, m_Desc.DepthOrArraySize
 		);
 
 		D3D12_TEXTURE_COPY_LOCATION srcLocation = {};
@@ -371,14 +372,14 @@ namespace Tridium::D3D12 {
 		srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 		srcLocation.SubresourceIndex = CalcSubresource(
 			a_SrcRegion.MinZ, a_SrcRegion.MinY, a_SrcRegion.MinX,
-			a_SrcTexture.Desc().Mips, a_SrcTexture.Desc().Depth 
+			a_SrcTexture.Desc().Mips, a_SrcTexture.Desc().DepthOrArraySize
 		);
 
 		// Valid if the regions are valid and can fit in their respective textures
 		if ( a_SrcRegion.MinX < 0 || a_SrcRegion.MinY < 0 || a_SrcRegion.MinZ < 0 ||
 			a_SrcRegion.MaxX > a_SrcTexture.Desc().Width ||
 			a_SrcRegion.MaxY > a_SrcTexture.Desc().Height ||
-			a_SrcRegion.MaxZ > a_SrcTexture.Desc().Depth )
+			a_SrcRegion.MaxZ > a_SrcTexture.Desc().DepthOrArraySize )
 		{
 			RHI_DEV_CHECK( false, "Source region is invalid!" );
 			return false;
@@ -387,7 +388,7 @@ namespace Tridium::D3D12 {
 		if ( a_DstRegion.MinX < 0 || a_DstRegion.MinY < 0 || a_DstRegion.MinZ < 0 ||
 			a_DstRegion.MaxX > m_Desc.Width ||
 			a_DstRegion.MaxY > m_Desc.Height ||
-			a_DstRegion.MaxZ > m_Desc.Depth )
+			a_DstRegion.MaxZ > m_Desc.DepthOrArraySize )
 		{
 			RHI_DEV_CHECK( false, "Destination region is invalid!" );
 			return false;

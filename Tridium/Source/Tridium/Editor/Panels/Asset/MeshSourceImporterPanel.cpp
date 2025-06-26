@@ -1,11 +1,11 @@
 #include "tripch.h"
 #if IS_EDITOR
 #include "MeshSourceImporterPanel.h"
-#include <Tridium/Graphics/Rendering/Mesh.h>
-#include <Tridium/Asset/Loaders/AssimpImporter.h>
+#include <Tridium/Graphics/oldRendering/Mesh.h>
+#include <Tridium/oldAsset/Loaders/AssimpImporter.h>
 #include <Tridium/Core/Application.h>
-#include <Tridium/Asset/AssetFactoryOld.h>
-#include <Tridium/Asset/EditorAssetManager.h>
+#include <Tridium/oldAsset/AssetFactoryOld.h>
+#include <Tridium/oldAsset/EditorAssetManager.h>
 #include <Tridium/ImGui/ImGui.h>
 
 namespace Tridium {

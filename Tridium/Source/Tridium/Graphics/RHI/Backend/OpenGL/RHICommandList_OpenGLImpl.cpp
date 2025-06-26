@@ -203,20 +203,18 @@ namespace Tridium::OpenGL {
 		}
 	}
 
-	void RHICommandList_OpenGLImpl::ClearRenderTargets( ERHIClearFlags a_Flags, Color a_ClearColor, float a_DepthValue, uint8_t a_StencilValue, int32_t a_ColorAttachmentIndex, RHI_DEBUG_SRC_LOC_PARAM )
+	void RHICommandList_OpenGLImpl::ClearRenderTargets( ERHIClearFlags a_Flags, RHIClearValue a_ClearValue, int32_t a_ColorAttachmentIndex, RHI_DEBUG_SRC_LOC_PARAM )
 	{
-		IRHICommandList::ClearRenderTargets( a_Flags, a_ClearColor, a_DepthValue, a_StencilValue, a_ColorAttachmentIndex, RHI_DEBUG_SRC_LOC );
+		IRHICommandList::ClearRenderTargets( a_Flags, a_ClearValue, a_ColorAttachmentIndex, RHI_DEBUG_SRC_LOC );
 		if ( IsImmediate() )
 		{
-			ClearRenderTargets_Impl( a_Flags, a_ClearColor, a_DepthValue, a_StencilValue, a_ColorAttachmentIndex );
+			ClearRenderTargets_Impl( a_Flags, a_ClearValue, a_ColorAttachmentIndex );
 		}
 		else
 		{
 			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::ClearRenderTargets{ 
 				.Flags = a_Flags, 
-				.ClearColor = a_ClearColor, 
-				.DepthValue = a_DepthValue, 
-				.StencilValue = a_StencilValue, 
+				.ClearValue = a_ClearValue,
 				.ColorAttachmentIndex = a_ColorAttachmentIndex 
 			} );
 		}
@@ -736,7 +734,7 @@ namespace Tridium::OpenGL {
 		m_GraphicsStateValid = true;
 	}
 
-	void RHICommandList_OpenGLImpl::ClearRenderTargets_Impl( ERHIClearFlags a_Flags, Color a_ClearColor, float a_DepthValue, uint8_t a_StencilValue, int32_t a_ColorAttachmentIndex )
+	void RHICommandList_OpenGLImpl::ClearRenderTargets_Impl( ERHIClearFlags a_Flags, RHIClearValue a_ClearValue, int32_t a_ColorAttachmentIndex )
 	{
 		RHI_DEV_CHECK( m_GraphicsStateValid, "Cannot clear render targets without a valid graphics state!" );
 
@@ -744,24 +742,24 @@ namespace Tridium::OpenGL {
 		{
 			if ( a_ColorAttachmentIndex >= 0 && a_ColorAttachmentIndex < RHIConstants::MaxColorTargets )
 			{
-				OpenGL3::ClearBufferfv( GL_COLOR, a_ColorAttachmentIndex, &a_ClearColor[0] );
+				OpenGL3::ClearBufferfv( GL_COLOR, a_ColorAttachmentIndex, &a_ClearValue.Color[0] );
 			}
 			else
 			{
-				OpenGL3::ClearColor( a_ClearColor[0], a_ClearColor[1], a_ClearColor[2], a_ClearColor[3] );
+				OpenGL3::ClearColor( a_ClearValue.Color[0], a_ClearValue.Color[1], a_ClearValue.Color[2], a_ClearValue.Color[3] );
 				OpenGL3::Clear( GL_COLOR_BUFFER_BIT );
 			}
 		}
 
 		if ( EnumFlags( a_Flags ).HasFlag( ERHIClearFlags::Depth ) )
 		{
-			OpenGL4::ClearDepthf( a_DepthValue );
+			OpenGL4::ClearDepthf( a_ClearValue.Depth );
 			OpenGL3::Clear( GL_DEPTH_BUFFER_BIT );
 		}
 
 		if ( EnumFlags( a_Flags ).HasFlag( ERHIClearFlags::Stencil ) )
 		{
-			OpenGL3::ClearStencil( a_StencilValue );
+			OpenGL3::ClearStencil( a_ClearValue.Stencil );
 			OpenGL3::Clear( GL_STENCIL_BUFFER_BIT );
 		}
 	}
@@ -921,7 +919,7 @@ namespace Tridium::OpenGL {
 			case ClearRenderTargets:
 			{
 				const auto& cmd = std::get<CommandBuffer::ClearRenderTargets>( cmdVariant );
-				ClearRenderTargets_Impl( cmd.Flags, cmd.ClearColor, cmd.DepthValue, cmd.StencilValue, cmd.ColorAttachmentIndex );
+				ClearRenderTargets_Impl( cmd.Flags, cmd.ClearValue, cmd.ColorAttachmentIndex );
 				break;
 			}
 			case SetViewportState:

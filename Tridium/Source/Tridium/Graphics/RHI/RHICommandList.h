@@ -139,6 +139,8 @@ namespace Tridium {
         virtual void UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM )
         { 
             RHI_ADD_DEBUG_CMD_INFO( "UpdateBuffer", {}, RHI_DEBUG_RES_INFO( a_Buffer ) );
+            RHI_DEV_CHECK( a_Buffer.Desc().Usage != ERHIUsage::Static,
+				"Cannot update an immutable buffer! Buffer: {}", a_Buffer.Desc().Name );
             RHI_DEV_CHECK( a_Data != nullptr && a_DataSizeBytes > 0,
                 "Attempting to update a buffer with no data!" );
             RHI_DEV_CHECK( a_DstOffsetBytes + a_DataSizeBytes <= a_Buffer.Desc().Size,
@@ -149,6 +151,8 @@ namespace Tridium {
         virtual void CopyBuffer( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange, RHI_DEBUG_SRC_LOC_PARAM ) 
         { 
             RHI_ADD_DEBUG_CMD_INFO( "CopyBuffer", {}, RHI_DEBUG_RES_INFO( a_DstBuffer ), RHI_DEBUG_RES_INFO( a_SrcBuffer ) );
+            RHI_DEV_CHECK( a_DstBuffer.Desc().Usage != ERHIUsage::Static,
+                "Cannot write into an immutable buffer! Buffer: {}", a_DstBuffer.Desc().Name );
             RHI_DEV_CHECK( a_SrcRange.Size > 0 || a_SrcBuffer.Desc().Size == 0,
                 "Source buffer is empty or invalid!" );
             RHI_DEV_CHECK( a_DstBuffer.Desc().Size > 0,
@@ -161,6 +165,8 @@ namespace Tridium {
         virtual void UpdateTexture( IRHITexture& a_Texture, const RHITextureSlice& a_DstSlice, RHITextureSubresourceData a_Data, RHI_DEBUG_SRC_LOC_PARAM )
         {
             RHI_ADD_DEBUG_CMD_INFO( "UpdateTexture", {}, RHI_DEBUG_RES_INFO( a_Texture ) );
+			RHI_DEV_CHECK( a_Texture.Desc().Usage != ERHIUsage::Static,
+				"Cannot update an immutable texture! Texture: {}", a_Texture.Desc().Name );
         }
 
 		// Copies a region from 'a_SrcTexture' to 'a_DstTexture' using the specified source and destination slices.
@@ -168,6 +174,8 @@ namespace Tridium {
                                   IRHITexture& a_SrcTexture, const RHITextureSlice& a_SrcSlice, RHI_DEBUG_SRC_LOC_PARAM )
         {
             RHI_ADD_DEBUG_CMD_INFO( "CopyTexture", {}, RHI_DEBUG_RES_INFO( a_DstTexture ), RHI_DEBUG_RES_INFO( a_SrcTexture ) );
+            RHI_DEV_CHECK( a_DstTexture.Desc().Usage != ERHIUsage::Static,
+				"Cannot write into an immutable texture! Texture: {}", a_DstTexture.Desc().Name );
         }
 
 		// Writes 'a_Data' into the inlined constants block at 'a_DstOffsetBytes' offset.
@@ -201,7 +209,7 @@ namespace Tridium {
 
 		// Clears the render targets bound in the current graphics state.
 		// a_ColorAttachmentIndex specifies which color attachment to clear, or -1 to clear all color attachments.
-		virtual void ClearRenderTargets( ERHIClearFlags a_Flags, Color a_ClearColor, float a_DepthValue = 1.0f, uint8_t a_StencilValue = 0u, int32_t a_ColorAttachmentIndex = -1, RHI_DEBUG_SRC_LOC_PARAM )
+		virtual void ClearRenderTargets( ERHIClearFlags a_Flags, RHIClearValue a_ClearValue, int32_t a_ColorAttachmentIndex = -1, RHI_DEBUG_SRC_LOC_PARAM )
         {
             RHI_ADD_DEBUG_CMD_INFO( "ClearRenderTargets" );
 			RHI_DEV_CHECK( Desc().QueueType == ERHICommandQueueType::Graphics, "ClearRenderTargets can only be called on graphics command lists." );
