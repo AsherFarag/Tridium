@@ -205,6 +205,8 @@ namespace Tridium::D3D12 {
 			m_FenceEvent = nullptr;
 		}
 
+		RHI_DEBUG_OP( DumpDebug() );
+
 		if ( ULONG refCount = ForceDeleteIUnknown( m_Device.GetAddressOf() ) )
 		{
 			LOG( LogCategory::DirectX, Warn, "D3D12 device still has {0} references! - Destroying the device anyway", refCount );

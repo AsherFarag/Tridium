@@ -10,7 +10,7 @@ namespace Tridium {
 		REFLECT(AssetMetaData);
 
 		AssetHandle Handle;
-		EAssetType AssetType;
+		EAssetTypeOld AssetType;
 		FilePath Path;
 		std::string Name;
 		bool IsAssetLoaded = false;

@@ -123,7 +123,7 @@ namespace Tridium {
 
 
 		template<typename T>
-		std::array<T*, 6> CalculateCubeMap( SharedPtr<Texture> a_Texture, uint32_t a_Resolution, bool a_FilterLinear )
+		std::array<T*, 6> CalculateCubeMap( SharedPtr<TextureOld> a_Texture, uint32_t a_Resolution, bool a_FilterLinear )
 		{
 			struct Vec3 { float x, y, z; };
 			std::array<std::array<Vec3, 3>, 6> startRightUp = { { // for each face, contains the 3d starting point (corresponding to left bottom pixel), right direction, and up direction in 3d space, correponding to pixel x,y coordinates of each face		{{-1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
@@ -258,7 +258,7 @@ namespace Tridium {
 	// Texture
 	//////////////////////////////////////////////////////////////////////////
 
-	OpenGLTextureOld::OpenGLTextureOld( const TextureSpecification& a_Specification, void* a_TextureData )
+	OpenGLTextureOld::OpenGLTextureOld( const TextureSpecificationOld& a_Specification, void* a_TextureData )
 		: m_Specification( a_Specification ), m_Width( m_Specification.Width ), m_Height( m_Specification.Height )
 	{
 		m_DataFormat = Util::TridiumDataFormatToGLDataFormat( m_Specification.TextureFormat );
@@ -344,7 +344,7 @@ namespace Tridium {
 	// CubeMap
 	//////////////////////////////////////////////////////////////////////////
 
-	OpenGLCubeMap::OpenGLCubeMap( const TextureSpecification& a_Specification, SharedPtr<Texture> a_Texture )
+	OpenGLCubeMap::OpenGLCubeMap( const TextureSpecificationOld& a_Specification, SharedPtr<TextureOld> a_Texture )
 		: m_Specification( a_Specification ), m_Width( m_Specification.Width ), m_Height( m_Specification.Height )
 	{
 		m_DataFormat = Util::TridiumDataFormatToGLDataFormat( m_Specification.TextureFormat );
@@ -373,7 +373,7 @@ namespace Tridium {
 		GenerateMipMaps();
 	}
 
-	OpenGLCubeMap::OpenGLCubeMap( const TextureSpecification& a_Specification, const std::array<float*, 6>& a_CubeMapData )
+	OpenGLCubeMap::OpenGLCubeMap( const TextureSpecificationOld& a_Specification, const std::array<float*, 6>& a_CubeMapData )
 		: m_Specification( a_Specification ), m_Width( m_Specification.Width ), m_Height( m_Specification.Height )
 	{
 		m_DataFormat = Util::TridiumDataFormatToGLDataFormat( m_Specification.TextureFormat );
@@ -423,7 +423,7 @@ namespace Tridium {
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, Util::TridiumTextureWrapToGLTextureWrap( a_Wrap ) );
 	}
 
-	void OpenGLCubeMap::SetData( SharedPtr<Texture> a_Texture, uint32_t a_Size )
+	void OpenGLCubeMap::SetData( SharedPtr<TextureOld> a_Texture, uint32_t a_Size )
 	{
 		SetData( Util::CalculateCubeMap<float>( a_Texture, a_Size, false) , a_Size );
 	}

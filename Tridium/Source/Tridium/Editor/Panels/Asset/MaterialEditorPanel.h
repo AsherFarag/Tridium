@@ -2,7 +2,7 @@
 #if IS_EDITOR
 
 #include <Tridium/Editor/Panels/Panel.h>
-#include <Tridium/Graphics/oldRendering/Material.h>
+#include <Tridium/Asset/MaterialAsset.h>
 
 namespace Tridium {
 
@@ -10,16 +10,16 @@ namespace Tridium {
     {
     public:
 		MaterialEditorPanel();
-        MaterialEditorPanel( const MaterialHandle& a_Material );
+        MaterialEditorPanel( AssetID a_Material );
 
         virtual void OnImGuiDraw() override;
         virtual bool OnKeyPressed( const KeyPressedEvent& e ) override;
 
-        void SetMaterial( MaterialHandle a_Material );
-		MaterialHandle GetMaterial() const { return m_Material; }
+        void SetMaterial( AssetID a_Material );
+        AssetID GetMaterial() const { return m_Material; }
 
     private:
-        MaterialHandle m_Material;
+        AssetID m_Material;
         bool m_Modified = false;
     };
 

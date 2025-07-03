@@ -27,7 +27,7 @@ namespace Tridium {
 	void SetImGuizmoColors()
 	{
 		ImGuizmo::GetStyle() = ImGuizmo::Style();
-		EditorStyle::Pallete& pal = Editor::GetPallete();
+		EditorStyle::Pallete& pal = Editor::GetStyle().Colors;
 
 		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::DIRECTION_X] = pal.Red;
 		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::DIRECTION_Y] = pal.Green;
@@ -50,6 +50,7 @@ namespace Tridium {
 		m_OnGameObjectSelectedHandle = Editor::Events::OnGameObjectSelected.Add<&EditorViewportPanel::SetSelectedGameObject>( this );
 
 		// Set up ID Selection
+		if ( 0 )
 		{
 			FramebufferSpecification FBOspecification;
 			FBOspecification.Attachments = { EFramebufferTextureFormat::RGBA16F, EFramebufferTextureFormat::Depth };
@@ -138,7 +139,7 @@ namespace Tridium {
 				{
 					if ( m_SelectedGameObject )
 					{
-						EditorApplication::Get()->GetPayloadManager().SetPayload( "GameObject", m_SelectedGameObject );
+						Editor::GetPayloadManager().SetPayload( "GameObject", m_SelectedGameObject );
 					}
 				}
 				return true;
@@ -147,7 +148,7 @@ namespace Tridium {
 			{
 				if ( Input::IsKeyPressed( EInputKey::LeftControl ) )
 				{
-					EditorPayload* payload = EditorApplication::Get()->GetPayloadManager().GetPayload( "GameObject" );
+					EditorPayload* payload = Editor::GetPayloadManager().GetPayload( "GameObject" );
 					if ( payload && !payload->IsEmpty() )
 					{
 						GameObject go = payload->As<GameObject>();
@@ -191,46 +192,49 @@ namespace Tridium {
 			Vector2 viewportBoundsMin = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.x + viewportOffset.x };
 			Vector2 viewportBoundsMax = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.x + viewportOffset.x };
 
-			// Update the viewport size
-			m_ViewportSize = regionAvail;
-			m_EditorCamera->SetViewportSize( regionAvail.X, regionAvail.X );
-			m_FBO->Resize( regionAvail.X, regionAvail.X );
-
-			SceneManager::GetActiveScene()->GetSceneRenderer().Render(m_FBO, *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position);
-
-			// Draw Debug Lines
+			if ( 0 )
 			{
-				m_FBO->Bind();
-				Debug::DebugDrawer::Get()->Draw( m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix() );
-				m_FBO->Unbind();
-			}
+				// Update the viewport size
+				m_ViewportSize = regionAvail;
+				m_EditorCamera->SetViewportSize( regionAvail.X, regionAvail.X );
+				m_FBO->Resize( regionAvail.X, regionAvail.X );
 
-			RenderSelectionOutline();
+				SceneManager::GetActiveScene()->GetSceneRenderer().Render( m_FBO, *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position );
 
-			// Draw the Editor Camera ViewPort
-			ImGui::Image( (ImTextureID)m_FBO->GetColorAttachmentID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
+				// Draw Debug Lines
+				{
+					m_FBO->Bind();
+					Debug::DebugDrawer::Get()->Draw( m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix() );
+					m_FBO->Unbind();
+				}
 
-			DragDropTarget();
+				RenderSelectionOutline();
 
-			DrawManipulationGizmos( viewportBoundsMin, viewportBoundsMax );
+				// Draw the Editor Camera ViewPort
+				ImGui::Image( ( ImTextureID )m_FBO->GetColorAttachmentID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
 
-			if ( m_IsHovered && ImGui::IsItemClicked() && !ImGuizmo::IsUsingAny() )
-			{
-				m_IDFBO->Resize( regionAvail.X, regionAvail.X );
+				DragDropTarget();
 
-				auto [mx, my] = ImGui::GetMousePos();
-				mx -= viewportBoundsMin.X;
-				my -= viewportBoundsMin.X;
-				my = m_ViewportSize.X - my;
-				int mouseX = (int)mx;
-				int mouseY = (int)my;
+				DrawManipulationGizmos( viewportBoundsMin, viewportBoundsMax );
 
-				m_IDFBO->Bind();
-				RenderGameObjectIDs();
-				int goID = m_FBO->ReadPixel( 0, mouseX, mouseY );
-				m_IDFBO->Unbind();
+				if ( m_IsHovered && ImGui::IsItemClicked() && !ImGuizmo::IsUsingAny() )
+				{
+					m_IDFBO->Resize( regionAvail.X, regionAvail.X );
 
-				Editor::Events::OnGameObjectSelected.Broadcast( Cast<EntityID>( goID ) );
+					auto [mx, my] = ImGui::GetMousePos();
+					mx -= viewportBoundsMin.X;
+					my -= viewportBoundsMin.X;
+					my = m_ViewportSize.X - my;
+					int mouseX = ( int )mx;
+					int mouseY = ( int )my;
+
+					m_IDFBO->Bind();
+					RenderGameObjectIDs();
+					int goID = m_FBO->ReadPixel( 0, mouseX, mouseY );
+					m_IDFBO->Unbind();
+
+					Editor::Events::OnGameObjectSelected.Broadcast( Cast<EntityID>( goID ) );
+				}
 			}
 		}
 
@@ -256,7 +260,7 @@ namespace Tridium {
 
 		switch ( assetMetaData.AssetType )
 		{
-		case EAssetType::Scene:
+		case EAssetTypeOld::Scene:
 		{
 			if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( assetHandle ) )
 			{
@@ -266,7 +270,7 @@ namespace Tridium {
 			}
 			break;
 		}
-		case EAssetType::StaticMesh:
+		case EAssetTypeOld::StaticMesh:
 		{
 			if ( SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( assetHandle ) )
 			{

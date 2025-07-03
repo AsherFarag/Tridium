@@ -127,10 +127,10 @@ namespace Tridium {
 	}
 
 
-	OpenGLEnvironmentMap::OpenGLEnvironmentMap( const SharedPtr<Texture>& a_EquirectangularTexture )
+	OpenGLEnvironmentMap::OpenGLEnvironmentMap( const SharedPtr<TextureOld>& a_EquirectangularTexture )
 	{
 		const uint32_t CubeMapSize = 1024;
-		TextureSpecification cubeMapSpecification =
+		TextureSpecificationOld cubeMapSpecification =
 		{
 			.Width = CubeMapSize,
 			.Height = CubeMapSize,
@@ -148,7 +148,7 @@ namespace Tridium {
 
 		// Diffuse convolution
 		{
-			TextureSpecification irradianceMapSpecification =
+			TextureSpecificationOld irradianceMapSpecification =
 			{
 				.Width = 32,
 				.Height = 32,
@@ -168,7 +168,7 @@ namespace Tridium {
 
 		// Specular convolution
 		{
-			TextureSpecification radianceMapSpecification =
+			TextureSpecificationOld radianceMapSpecification =
 			{
 				.Width = CubeMapSize,
 				.Height = CubeMapSize,

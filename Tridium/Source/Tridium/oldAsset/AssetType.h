@@ -4,7 +4,7 @@
 
 namespace Tridium {
 
-	enum class EAssetType : uint8_t
+	enum class EAssetTypeOld : uint8_t
 	{
 		None = 0,
 		Scene,
@@ -21,11 +21,11 @@ namespace Tridium {
 
 	namespace Internal {
 
-		template <EAssetType _AssetType>
+		template <EAssetTypeOld _AssetType>
 		class TypedAssetHandle : public AssetHandle
 		{
 		public:
-			static constexpr EAssetType AssetType = _AssetType;
+			static constexpr EAssetTypeOld AssetType = _AssetType;
 
 			TypedAssetHandle() = default;
 			TypedAssetHandle( const AssetHandle& a_Handle ) : AssetHandle( a_Handle ) {}
@@ -79,52 +79,52 @@ namespace Tridium {
 		};
 	}
 
-	using SceneHandle = Internal::TypedAssetHandle<EAssetType::Scene>;
-	using MaterialHandle = Internal::TypedAssetHandle<EAssetType::Material>;
-	using MeshSourceHandle = Internal::TypedAssetHandle<EAssetType::MeshSource>;
-	using StaticMeshHandle = Internal::TypedAssetHandle<EAssetType::StaticMesh>;
-	using ShaderHandle = Internal::TypedAssetHandle<EAssetType::Shader>;
-	using TextureHandle = Internal::TypedAssetHandle<EAssetType::Texture>;
-	using CubeMapHandle = Internal::TypedAssetHandle<EAssetType::CubeMap>;
-	using LuaScriptHandle = Internal::TypedAssetHandle<EAssetType::LuaScript>;
+	using SceneHandle = Internal::TypedAssetHandle<EAssetTypeOld::Scene>;
+	using MaterialHandle = Internal::TypedAssetHandle<EAssetTypeOld::Material>;
+	using MeshSourceHandle = Internal::TypedAssetHandle<EAssetTypeOld::MeshSource>;
+	using StaticMeshHandle = Internal::TypedAssetHandle<EAssetTypeOld::StaticMesh>;
+	using ShaderHandle = Internal::TypedAssetHandle<EAssetTypeOld::Shader>;
+	using TextureHandle = Internal::TypedAssetHandle<EAssetTypeOld::Texture>;
+	using CubeMapHandle = Internal::TypedAssetHandle<EAssetTypeOld::CubeMap>;
+	using LuaScriptHandle = Internal::TypedAssetHandle<EAssetTypeOld::LuaScript>;
 
-	static const char* AssetTypeToString( EAssetType a_Type )
+	static const char* AssetTypeToString( EAssetTypeOld a_Type )
 	{
 		switch ( a_Type )
 		{
-		case EAssetType::Scene: return "Scene";
-		case EAssetType::Material: return "Material";
-		case EAssetType::MeshSource: return "MeshSource";
-		case EAssetType::StaticMesh: return "Mesh";
-		case EAssetType::Shader: return "Shader";
-		case EAssetType::Texture: return "Texture";
-		case EAssetType::CubeMap: return "CubeMap";
-		case EAssetType::LuaScript: return "LuaScript";
+		case EAssetTypeOld::Scene: return "Scene";
+		case EAssetTypeOld::Material: return "Material";
+		case EAssetTypeOld::MeshSource: return "MeshSource";
+		case EAssetTypeOld::StaticMesh: return "Mesh";
+		case EAssetTypeOld::Shader: return "Shader";
+		case EAssetTypeOld::Texture: return "Texture";
+		case EAssetTypeOld::CubeMap: return "CubeMap";
+		case EAssetTypeOld::LuaScript: return "LuaScript";
 		}
 
 		return "None";
 	}
 
-	static EAssetType AssetTypeFromString( const char* a_Type )
+	static EAssetTypeOld AssetTypeFromString( const char* a_Type )
 	{
-		if ( strcmp( a_Type, "Scene" ) == 0 ) return EAssetType::Scene;
-		if ( strcmp( a_Type, "Material" ) == 0 ) return EAssetType::Material;
-		if ( strcmp( a_Type, "MeshSource" ) == 0 ) return EAssetType::MeshSource;
-		if ( strcmp( a_Type, "Mesh" ) == 0 ) return EAssetType::StaticMesh;
-		if ( strcmp( a_Type, "Shader" ) == 0 ) return EAssetType::Shader;
-		if ( strcmp( a_Type, "Texture" ) == 0 ) return EAssetType::Texture;
-		if ( strcmp( a_Type, "CubeMap" ) == 0 ) return EAssetType::CubeMap;
-		if ( strcmp( a_Type, "LuaScript" ) == 0 ) return EAssetType::LuaScript;
+		if ( strcmp( a_Type, "Scene" ) == 0 ) return EAssetTypeOld::Scene;
+		if ( strcmp( a_Type, "Material" ) == 0 ) return EAssetTypeOld::Material;
+		if ( strcmp( a_Type, "MeshSource" ) == 0 ) return EAssetTypeOld::MeshSource;
+		if ( strcmp( a_Type, "Mesh" ) == 0 ) return EAssetTypeOld::StaticMesh;
+		if ( strcmp( a_Type, "Shader" ) == 0 ) return EAssetTypeOld::Shader;
+		if ( strcmp( a_Type, "Texture" ) == 0 ) return EAssetTypeOld::Texture;
+		if ( strcmp( a_Type, "CubeMap" ) == 0 ) return EAssetTypeOld::CubeMap;
+		if ( strcmp( a_Type, "LuaScript" ) == 0 ) return EAssetTypeOld::LuaScript;
 
-		return EAssetType::None;
+		return EAssetTypeOld::None;
 	}
 
-	EAssetType GetAssetTypeFromFileExtension( const std::string& a_Extension );
+	EAssetTypeOld GetAssetTypeFromFileExtension( const std::string& a_Extension );
 }
 
 namespace std {
 
-	template <Tridium::EAssetType _AssetType>
+	template <Tridium::EAssetTypeOld _AssetType>
 	struct hash<Tridium::Internal::TypedAssetHandle<_AssetType>>
 	{
 		size_t operator()( const Tridium::Internal::TypedAssetHandle<_AssetType>& a_Handle ) const

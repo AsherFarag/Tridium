@@ -296,7 +296,7 @@ namespace Tridium {
 						AssetMetaData metaData =
 						{
 								AssetHandle::Create(),
-								EAssetType::Scene,
+								EAssetTypeOld::Scene,
 								path,
 								FilePath( path ).GetFilenameWithoutExtension(),
 								true
@@ -336,7 +336,7 @@ namespace Tridium {
 								AssetMetaData metaData =
 								{
 									SceneManager::GetActiveScene()->GetHandle(),
-									EAssetType::Scene,
+									EAssetTypeOld::Scene,
 									path,
 									FilePath( path ).GetFilenameWithoutExtension(),
 									true
@@ -428,9 +428,9 @@ namespace Tridium {
 	{
 		FilePath iconFolder( Engine::Get()->GetEngineAssetsDirectory() / "Editor/Icons" );
 
-		PlayButtonIcon = TextureLoader::LoadTexture( iconFolder / "PlayButton.png" );
-		StopButtonIcon = TextureLoader::LoadTexture( iconFolder / "StopButton.png" );
-		PauseButtonIcon = TextureLoader::LoadTexture( iconFolder / "PauseButton.png" );
+		//PlayButtonIcon = TextureLoader::LoadTexture( iconFolder / "PlayButton.png" );
+		//StopButtonIcon = TextureLoader::LoadTexture( iconFolder / "StopButton.png" );
+		//PauseButtonIcon = TextureLoader::LoadTexture( iconFolder / "PauseButton.png" );
 	}
 
 	void UIToolBar::OnImGuiDraw()
@@ -468,7 +468,7 @@ namespace Tridium {
 			ImGui::ScopedStyleVar padding( ImGuiStyleVar_FramePadding, buttonPadding );
 			if ( hasPlayButton )
 			{
-				ImGui::ScopedStyleCol buttonCol( ImGuiCol_Text, ImVec4( Editor::GetPallete().Green ) );
+				ImGui::ScopedStyleCol buttonCol( ImGuiCol_Text, ImVec4( Editor::GetStyle().Colors.Green ) );
 				if ( ImGui::IconButton( TE_ICON_PLAY ) )
 				{
 					if ( scene->IsPaused() )
@@ -490,7 +490,7 @@ namespace Tridium {
 
 			if ( hasStopButton )
 			{
-				ImGui::ScopedStyleCol buttonCol( ImGuiCol_Text, ImVec4( Editor::GetPallete().Red ) );
+				ImGui::ScopedStyleCol buttonCol( ImGuiCol_Text, ImVec4( Editor::GetStyle().Colors.Red ) );
 				if ( ImGui::IconButton( TE_ICON_STOP ) )
 				{
 					editor->OnEndScene();

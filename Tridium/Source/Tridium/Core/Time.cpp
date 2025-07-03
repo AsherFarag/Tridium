@@ -10,7 +10,9 @@ namespace Tridium {
 
 	void Time::Update()
 	{
-		s_Time = glfwGetTime();
+		const double currentTime = glfwGetTime();
+		s_DeltaTime = currentTime - s_Time;
+		s_Time = currentTime;
 	}
 
 } // namespace Tridium

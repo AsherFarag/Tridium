@@ -14,18 +14,18 @@
 
 namespace Tridium {
 
-	std::unordered_map<EAssetType, SharedPtr<IAssetLoaderOld>> AssetFactoryOld::s_AssetFactories;
+	std::unordered_map<EAssetTypeOld, SharedPtr<IAssetLoaderOld>> AssetFactoryOld::s_AssetFactories;
 
 	void AssetFactoryOld::Init()
 	{
-		s_AssetFactories[EAssetType::Scene] = MakeShared<SceneLoader>();
-		s_AssetFactories[EAssetType::Texture] = MakeShared<TextureLoader>();
-		s_AssetFactories[EAssetType::CubeMap] = MakeShared<CubeMapLoader>();
-		s_AssetFactories[EAssetType::Shader] = MakeShared<ShaderLoader>();
-		s_AssetFactories[EAssetType::Material] = MakeShared<MaterialLoader>();
-		s_AssetFactories[EAssetType::MeshSource] = MakeShared<MeshSourceLoader>();
-		s_AssetFactories[EAssetType::StaticMesh] = MakeShared<StaticMeshLoader>();
-		s_AssetFactories[EAssetType::LuaScript] = MakeShared<LuaScriptLoader>();
+		s_AssetFactories[EAssetTypeOld::Scene] = MakeShared<SceneLoader>();
+		s_AssetFactories[EAssetTypeOld::Texture] = MakeShared<TextureLoader>();
+		s_AssetFactories[EAssetTypeOld::CubeMap] = MakeShared<CubeMapLoader>();
+		s_AssetFactories[EAssetTypeOld::Shader] = MakeShared<ShaderLoader>();
+		s_AssetFactories[EAssetTypeOld::Material] = MakeShared<MaterialLoader>();
+		s_AssetFactories[EAssetTypeOld::MeshSource] = MakeShared<MeshSourceLoader>();
+		s_AssetFactories[EAssetTypeOld::StaticMesh] = MakeShared<StaticMeshLoader>();
+		s_AssetFactories[EAssetTypeOld::LuaScript] = MakeShared<LuaScriptLoader>();
 	}
 
 	void AssetFactoryOld::SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
@@ -58,7 +58,7 @@ namespace Tridium {
 		return nullptr;
 	}
 
-	SharedPtr<IAssetLoaderOld> AssetFactoryOld::GetAssetLoader( EAssetType a_Type )
+	SharedPtr<IAssetLoaderOld> AssetFactoryOld::GetAssetLoader( EAssetTypeOld a_Type )
 	{
 		auto it = s_AssetFactories.find( a_Type );
 		if ( it != s_AssetFactories.end() )

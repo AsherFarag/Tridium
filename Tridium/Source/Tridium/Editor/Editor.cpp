@@ -3,7 +3,7 @@
 #include "Editor.h"
 #include "EditorStyle.h"
 
-
+#include <Tridium/ImGui/ImGuiLayer.h>
 
 #include <Tridium/oldAsset/AssetManager.h>
 #include "Util/AssetInfo.h"
@@ -23,28 +23,31 @@
 #include "Panels/GameViewportPanel.h"
 #include "Panels/Asset/MaterialEditorPanel.h"
 
-namespace Tridium::Editor {
+namespace Tridium {
 
-    bool Internal::Init( EditorConfig a_Config )
-    {
-		EditorApplication::Singleton::Construct();
-        if ( !EditorApplication::Get()->Init( a_Config ) )
-		{
-			EditorApplication::Singleton::Destroy();
-			return false;
-		}
+	//=======================================================================================
+	// Editor Events
+	MulticastDelegate<void, GameObject> Editor::Events::OnGameObjectSelected{};
 
-		TODO( "Load Editor Preferences" );
-		// Set the editor style.
-		GetStyle().SetTheme( EditorStyle::ETheme::Midnight );
-
-		return true;
-    }
-
-	void Internal::Shutdown()
+	Editor::Editor( CmdLineArgs a_CmdLine )
+		: Application( std::move( a_CmdLine ) )
 	{
-		EditorApplication::Get()->Shutdown();
-		EditorApplication::Singleton::Destroy();
+		m_EditorLayer = PushOverlay<EditorLayer>();
+
+		// Set Window title and icon
+		m_Window->SetTitle( "Tridium Editor" );
+		m_Window->SetIcon( ( Engine::Get()->GetEngineAssetsDirectory() / "Editor/Icons/EngineIcon.png" ).ToString() );
+
+		m_Style.SetTheme( EditorStyle::ETheme::Midnight );
+	}
+
+	Editor::~Editor()
+	{
+		s_Instance = nullptr;
+	}
+
+	void Editor::OnUpdate()
+	{
 	}
 
 }

@@ -3,7 +3,7 @@
 #include <Tridium/Core/GUID.h>
 #include <Tridium/Core/Enum.h>
 
-namespace Tridium::T {
+namespace Tridium {
 
 	using AssetID = GUID; // Alias for asset ID, using GUID for unique identification
 

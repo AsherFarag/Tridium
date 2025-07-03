@@ -5,7 +5,6 @@
 #include <Tridium/Core/CommandLine.h>
 #include <Tridium/Events/Event.h>
 #include <Tridium/Scene/Scene.h>
-#include <Tridium/Graphics/oldRendering/GameViewport.h>
 
 #include <Tridium/Utils/Singleton.h>
 
@@ -13,6 +12,8 @@ namespace Tridium {
 
 	// Forward Declarations
 	class AssetManagerBase;
+	class Engine;
+	class ImGuiLayer;
 
 	struct FrameInfo
 	{
@@ -21,69 +22,84 @@ namespace Tridium {
 		uint32_t MaxFPS = 0u;
 	};
 
-
-	TODO( "Make this description actually true" );
 	//==============================================
 	// Application
 	//  The core system that manages interactions between the engine and the OS.
 	//  It is responsible for initializing the engine, creating the window, 
 	//  and running the engine loop.
-	//==============================================
-	class Application final
+	class Application
 	{
 	public:
-		Application( CmdLineArgs a_ProjectPath );
-		~Application();
+		static Application* Get() { ASSERT( s_Instance ); return s_Instance; }
 
-		static Application* Get() { return s_Instance; }
-
-		// The starting point of the application.
-		// This handles the initialization, game loop and shutdown stage of the engine.
-		void Run();
-
-		// Stops the application loop and enters the shutdown stage.
-		void Quit();
+		static void RequestExit() { Get()->m_Running = false; }
 
 		//================================================================
 		// Event Handling
-		void EnqueueEvent( const Event& a_Event ) { m_EventQueue.emplace( a_Event ); }
+		static void EnqueueEvent( const Event& a_Event ) { Get()->m_EventQueue.emplace( a_Event ); }
 		//================================================================
 
 		//================================================================
 		// Layer Stack
-		void PushLayer( Layer* a_Layer ) { m_LayerStack.PushLayer( a_Layer ); }
-		void PushOverlay( Layer* a_Overlay ) { m_LayerStack.PushOverlay( a_Overlay ); }
-		void PopLayer( Layer* a_Layer, bool a_Destroy = false ) { m_LayerStack.PopLayer( a_Layer, a_Destroy ); }
-		void PopOverlay( Layer* a_Overlay, bool a_Destroy = false ) { m_LayerStack.PopOverlay( a_Overlay, a_Destroy ); }
+		template<Concepts::Derived<Layer> _Layer, typename... _Args>
+		static _Layer* PushLayer( _Args&&... a_Args );
+		template<Concepts::Derived<Layer> _Layer, typename... _Args>
+		static _Layer* PushOverlay( _Args&&... a_Args );
+		static void PopLayer( Layer* a_Layer, bool a_Destroy = true ) { Get()->m_LayerStack.PopLayer( a_Layer, a_Destroy ); }
+		static void PopOverlay( Layer* a_Overlay, bool a_Destroy = true ) { Get()->m_LayerStack.PopOverlay( a_Overlay, a_Destroy ); }
 		//================================================================
 
-		const CmdLineArgs& GetCommandLineArgs() const { return m_CommandLineArgs; }
-		Window& GetWindow() { return *m_Window; }
-		uint32_t GetFPS() const { return m_PrevFrameInfo.FPS; }
-		double GetFrameTime() const { return 1000.0 / m_PrevFrameInfo.FPS; }
-		const FrameInfo& GetFrameInfo() const { return m_PrevFrameInfo; }
+		static const CmdLineArgs& GetCommandLineArgs() { return Get()->m_CommandLineArgs; }
+		static Window& GetWindow() { return *Get()->m_Window; }
+		static uint32_t GetFPS() { return Get()->m_PrevFrameInfo.FPS; }
+		static double GetFrameTime() { return 1000.0 / Get()->m_PrevFrameInfo.FPS; }
+		static const FrameInfo& GetFrameInfo() { return Get()->m_PrevFrameInfo; }
 
-	private:
+	public:
+		Application( CmdLineArgs a_ProjectPath );
+		~Application();
+
+		// The starting point of the application.
+		// This handles the initialization, game loop and shutdown stage of the engine.
+		virtual void Run();
+
+	protected:
 		bool              m_Running = false;
 		CmdLineArgs       m_CommandLineArgs{};
 		UniquePtr<Window> m_Window = nullptr;
 		LayerStack        m_LayerStack{};
-		GameViewport      m_GameViewport{};
 		FrameInfo         m_PrevFrameInfo{};
 		uint32_t          m_MaxFPS = 144u;
 		Queue<Event>      m_EventQueue;
+		UniquePtr<Engine> m_Engine = nullptr;
 
-	private:
+	protected:
 		bool OnWindowResized( const WindowResizeEvent& a_Event );
 		bool OnWindowClosed( const WindowCloseEvent& a_Event );
 
-		bool Init();
-		void Update();
-		void Shutdown();
+		virtual void OnUpdate();
 
 		void FlushEventQueue();
 
 		static Application* s_Instance;
 	};
+
+	template<Concepts::Derived<Layer> _Layer, typename ..._Args>
+	inline _Layer* Application::PushLayer( _Args && ...a_Args )
+	{
+		_Layer* layer = new _Layer( std::forward<_Args>( a_Args )... );
+		Get()->m_LayerStack.PushLayer( layer );
+		return layer;
+	}
+
+	template<Concepts::Derived<Layer> _Layer, typename... _Args>
+	inline _Layer* Application::PushOverlay( _Args&&... a_Args )
+	{
+		_Layer* layer = new _Layer( std::forward<_Args>( a_Args )... );
+		Get()->m_LayerStack.PushOverlay( layer );
+		return layer;
+	}
+
+
 }
 

@@ -4,7 +4,7 @@
 
 namespace Tridium {
 
-	class Texture;
+	class TextureOld;
 
 	class SpriteComponent : public Component
 	{

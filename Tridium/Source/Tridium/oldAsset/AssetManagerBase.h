@@ -28,7 +28,7 @@ namespace Tridium {
 		virtual bool AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset ) = 0;
 		virtual bool HasAsset( AssetHandle a_Handle ) = 0;
 		virtual void RemoveAsset( AssetHandle a_Handle ) = 0;
-		virtual EAssetType GetAssetType( AssetHandle a_Handle ) = 0;
+		virtual EAssetTypeOld GetAssetType( AssetHandle a_Handle ) = 0;
 		virtual bool IsMemoryAsset( AssetHandle a_Handle ) = 0;
 		virtual void RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) = 0;
 		virtual void UnregisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) = 0;

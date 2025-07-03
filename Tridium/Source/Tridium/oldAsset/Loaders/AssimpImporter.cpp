@@ -211,7 +211,7 @@ namespace Tridium {
 
 	TextureHandle AssimpImporter::ExtractTexture( void* a_AssimpScene, void* a_AssimpMaterial, int a_AssimpTextureType )
 	{
-		SharedPtr<TextureLoader> textureLoader = SharedPtrCast<TextureLoader>( AssetFactoryOld::GetAssetLoader( EAssetType::Texture ) );
+		SharedPtr<TextureLoader> textureLoader = SharedPtrCast<TextureLoader>( AssetFactoryOld::GetAssetLoader( EAssetTypeOld::Texture ) );
 		aiScene* aiScn = Cast<aiScene*>( a_AssimpScene );
 		aiMaterial* aiMat = Cast<aiMaterial*>( a_AssimpMaterial );
 		aiTextureType aiTexType = Cast<aiTextureType>( a_AssimpTextureType );
@@ -224,11 +224,11 @@ namespace Tridium {
 
 		if ( auto aiEmbeddedTexture = aiScn->GetEmbeddedTexture( aiTexturePath.C_Str() ) )
 		{
-			TextureSpecification spec;
+			TextureSpecificationOld spec;
 			spec.TextureFormat = ETextureFormat::RGBA32F;
 			spec.Width = aiEmbeddedTexture->mWidth;
 			spec.Height = aiEmbeddedTexture->mHeight;
-			AssetManager::AddMemoryOnlyAsset( texHandle, SharedPtr<Texture>( Texture::Create( spec, aiEmbeddedTexture->pcData ) ) );
+			AssetManager::AddMemoryOnlyAsset( texHandle, SharedPtr<TextureOld>( TextureOld::Create( spec, aiEmbeddedTexture->pcData ) ) );
 			return texHandle;
 		}
 		else
@@ -241,7 +241,7 @@ namespace Tridium {
 			if ( !texturePath.Exists() )
 				return TextureHandle::InvalidID;
 
-			if ( SharedPtr<Texture> texture = textureLoader->LoadTexture( texturePath ) )
+			if ( SharedPtr<TextureOld> texture = textureLoader->LoadTexture( texturePath ) )
 			{
 				AssetManager::AddMemoryOnlyAsset( texHandle, texture );
 				return texHandle;

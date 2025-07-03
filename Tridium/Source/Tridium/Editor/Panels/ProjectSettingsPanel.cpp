@@ -22,7 +22,7 @@ namespace Tridium {
 		}
 
 		m_Modified |= ImGui::InputText( "Project Name", &m_ProjectConfig.Name );
-		m_Modified |= Editor::DrawProperty( "Start Scene", m_ProjectConfig.StartScene, EDrawPropertyFlags::Editable );
+		m_Modified |= ToolUI::DrawProperty( "Start Scene", m_ProjectConfig.StartScene, EDrawPropertyFlags::Editable );
 
 		ImGui::Separator();
 

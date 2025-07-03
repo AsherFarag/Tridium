@@ -8,7 +8,10 @@
 #include <Tridium/oldAsset/RuntimeAssetManager.h>
 
 #include <Tridium/Editor/Editor.h>
-#include <Tridium/ImGui/ImGuiLayer.h>
+
+#include <Tridium/Graphics/Renderer/RendererModule.h>
+#include <Tridium/Physics/PhysicsModule.h>
+#include <Tridium/Scripting/ScriptModule.h>
 
 // Temp ?
 #include <Tridium/IO/ProjectSerializer.h>
@@ -16,12 +19,19 @@
 
 namespace Tridium {
 
+	Engine* Engine::s_Instance = nullptr;
+
 	//////////////////////////////////////////////////////////////////////////
 	// HELPER FUNCTIONS
 	//////////////////////////////////////////////////////////////////////////
 
 	AssetManagerBase* CreateAssetManager()
 	{
+		if ( false )
+		{
+			( void )RendererModule::Print();
+		}
+
 		#if WITH_EDITOR
 			return new EditorAssetManager();
 		#else
@@ -40,13 +50,11 @@ namespace Tridium {
 
 	IEngineModule* Engine::GetModule( hash_t a_TypeHash )
 	{
-		auto it = m_EngineModules.find( a_TypeHash );
-		if ( it != m_EngineModules.end() )
-			return it->second.second.get();
+		auto it = Get()->m_EngineModules.find( a_TypeHash );
+		if ( it != Get()->m_EngineModules.end() )
+			return it->second.get();
 		return nullptr;
 	}
-
-
 
 	//////////////////////////////////////////////////////////////////////////
 	//
@@ -57,71 +65,6 @@ namespace Tridium {
 	//////////////////////////////////////////////////////////////////////////
 	// Engine Initialization
 	//////////////////////////////////////////////////////////////////////////
-
-	bool Engine::Init( const EngineConfig& a_Config )
-	{
-		m_Config = a_Config;
-
-		// Create Modules
-		{
-			for ( auto&& [key, moduleInfo] : EngineModuleFactory::ModuleTypes() )
-			{
-				m_EngineModules[key] = { moduleInfo, moduleInfo.Create() };
-			}
-		}
-
-		// 0. Initialize Project
-		if ( !InitProject() )
-		{
-			LOG( LogCategory::Engine, Error, "Engine::Init: Failed to initialize project" );
-		}
-
-		// 1. Initialize Pre-Engine-Init Modules
-		if ( !InitModules( EEngineInitStage::PreEngineInit ) )
-		{
-			LOG( LogCategory::Engine, Error, "Engine::Init: Failed to initialize engine modules" );
-			return false;
-		}
-
-		// 2. Initialize Asset Manager
-		m_AssetManager.reset( CreateAssetManager() );
-		if ( !m_AssetManager )
-		{
-			return ASSERT( false, "Engine::Init: Failed to create Asset Manager" );
-		}
-		m_AssetManager->Init();
-
-		// 3. Initialize Scene Manager
-		SceneManager::Singleton::Construct();
-
-		// 4. Initialize Post-Engine-Init Modules
-		if ( !InitModules( EEngineInitStage::PostEngineInit ) )
-		{
-			return ASSERT( false, "Engine::Init: Failed to initialize engine modules" );
-		}
-
-		m_ImGuiLayer = new ImGuiLayer();
-		Application::Get()->PushOverlay( m_ImGuiLayer );
-
-		#if WITH_EDITOR
-		{
-			EditorConfig editorConfig;
-			Editor::Internal::Init( std::move( editorConfig ) );
-		}
-		#endif // WITH_EDITOR
-
-		// 5. Initialize Game Instance
-		m_GameInstance.reset( CreateGameInstance() );
-		m_GameInstance->Init();
-
-		// 6. Init Scene
-		if ( !InitScene() )
-		{
-			return ASSERT( false, "Engine::Init: Failed to initialize scene" );
-		}
-
-		return true;
-	}
 
 	bool Engine::InitProject()
 	{
@@ -169,47 +112,9 @@ namespace Tridium {
 		return true;
 	}
 
-	bool Engine::InitModules( EEngineInitStage a_InitStage )
-	{
-		for ( auto&& [key, modulePair] : m_EngineModules )
-		{
-			auto& [moduleInfo, engineModule] = modulePair;
-			if ( moduleInfo.InitStage != a_InitStage )
-				continue;
-			Optional<EngineModuleError> error = engineModule->Init();
-			if ( !error )
-			{
-				LOG( LogCategory::Engine, Info, "Initialized module: {0}", moduleInfo.Name );
-				continue;
-			}
-
-			switch ( error->Level )
-			{
-				case EngineModuleError::FatalError:
-				{
-					LOG( LogCategory::Engine, Error, "Engine::InitModules: Fatal error initializing module: {0} - Msg: '{1}'", moduleInfo.Name, error->Message.c_str() );
-					TODO( "Handle fatal error" );
-					return false;
-				}
-				case EngineModuleError::Error:
-				{
-					LOG( LogCategory::Engine, Error, "Engine::InitModules: Error initializing module: {0} - Msg: '{1}'", moduleInfo.Name, error->Message.c_str() );
-					continue;
-				}
-				default:
-				{
-					ASSERT( false, "Unknown error level" );
-					break;
-				}
-			}
-		}
-
-		// Modules initialized successfully
-		return true;
-	}
-
 	bool Engine::InitScene()
 	{
+		if ( false )
 		{
 			LOG( LogCategory::Engine, Info, "Loading start scene" );
 			if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( m_ActiveProject.Config.StartScene ) )
@@ -226,70 +131,131 @@ namespace Tridium {
 		return true;
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-	// Engine Shutdown
-	//////////////////////////////////////////////////////////////////////////
-
-	void Engine::Shutdown()
+	Array<IEngineModule*> Engine::GetInitOrderedModules()
 	{
-		// 5. Shutdown Game Instance
-		m_GameInstance->Shutdown();
+		Array<IEngineModule*> result;
+		result.Reserve( m_EngineModules.size() );
 
-		// 4. Shutdown Post-Engine-Init Modules
-		ShutdownModules( EEngineInitStage::PostEngineInit );
-
-		// 3. Shutdown Scene Manager
-		SceneManager::Singleton::Destroy();
-
-		// 2. Shutdown Asset Manager
-		m_AssetManager->Shutdown();
-
-		// 1. Shutdown Pre-Engine-Init Modules
-		ShutdownModules( EEngineInitStage::PreEngineInit );
-
-		#if WITH_EDITOR
-		Editor::Internal::Shutdown();
-		#endif // WITH_EDITOR
-	}
-
-	bool Engine::ShutdownModules( EEngineInitStage a_Stage )
-	{
-		for ( auto&& [key, modulePair] : m_EngineModules )
+		struct PrereqNode
 		{
-			auto& [moduleInfo, module] = modulePair;
-			if ( moduleInfo.InitStage != a_Stage )
-				continue;
+			IEngineModule* Module;
+			Array< PrereqNode* > Dependents;
+		};
 
-			Optional<EngineModuleError> error = module->Shutdown();
-			if ( !error )
+		Map<HashedString, PrereqNode> prereqMap;
+		Queue<PrereqNode*> queue;
+
+		for ( const auto& [hash, module] : m_EngineModules )
+		{
+			const EngineModuleInfo moduleInfo = module->GetModuleInfo();
+			PrereqNode& node = prereqMap[ moduleInfo.Name ];
+			node.Module = module.get();
+
+			if ( moduleInfo.Dependencies.empty() )
 			{
-				LOG( LogCategory::Engine, Info, "Engine::ShutdownModules: Shutdown module: {0}", moduleInfo.Name );
-				continue;
+				queue.push( &node );
 			}
-
-			switch ( error->Level )
+			else
 			{
-				case EngineModuleError::FatalError:
+				for ( const HashedString& dependency : moduleInfo.Dependencies )
 				{
-					LOG( LogCategory::Engine, Error, "Engine::ShutdownModules: Fatal error shutting down module: {0} - Msg: '{1}'", moduleInfo.Name, error->Message.c_str() );
-					TODO( "Handle fatal error" );
-					return false;
-				}
-				case EngineModuleError::Error:
-				{
-					LOG( LogCategory::Engine, Error, "Engine::ShutdownModules: Error shutting down module: {0} - Msg: '{1}'", moduleInfo.Name, error->Message.c_str() );
-					break;
-				}
-				default:
-				{
-					ASSERT( false, "Unknown error level" );
-					break;
+					prereqMap[ dependency ].Dependents.PushBack( &node );
 				}
 			}
 		}
 
-		// Modules shutdown successfully
-		return true;
+		UnorderedSet<hash_t> visited;
+		while ( !queue.empty() )
+		{
+			PrereqNode* node = queue.front();
+			queue.pop();
+
+			const hash_t nodeHash = node->Module->GetModuleInfo().Name.Hash();
+			if ( visited.contains( nodeHash ) )
+				continue;
+
+			visited.emplace( nodeHash );
+			result.PushBack( node->Module );
+
+			for ( PrereqNode* dependent : node->Dependents )
+			{
+				queue.push( dependent );
+			}
+		}
+
+		return result;
+	}
+
+	UniquePtr<Engine> Engine::Create( const EngineConfig& a_Config )
+	{
+		ENSURE( !s_Instance, "An Engine instance already exists!" );
+		return UniquePtr<Engine>( new Engine( a_Config ) );
+	}
+
+	Engine::Engine( const EngineConfig& a_Config )
+	{
+		s_Instance = this;
+		m_Config = a_Config;
+
+		// Create Modules
+		for ( const auto& [key, moduleInfo] : EngineModuleFactory::ModuleTypes() )
+		{
+			m_EngineModules[ key ] = moduleInfo.Create();
+		}
+
+		// Initialize Project
+		if ( !InitProject() )
+		{
+			LOG( LogCategory::Engine, Error, "Engine::Init: Failed to initialize project" );
+		}
+
+		// Initialize Modules
+		for ( IEngineModule* module : GetInitOrderedModules() )
+		{
+			LOG( LogCategory::Engine, Info, "Initializing module: {0}", module->GetModuleInfo().Name.String() );
+			module->Init();
+		}
+
+		// Initialize Asset Database
+		if ( auto error = AssetDatabase::Init(); error.IsError() )
+		{
+			LOG( LogCategory::Engine, Error, "Engine::Init: Failed to initialize Asset Database: {0}", error.Error() );
+			TODO( "Handle fatal error" );
+		}
+
+		// Initialize Scene Manager
+		SceneManager::Singleton::Construct();
+
+		// Initialize Game Instance
+		m_GameInstance.reset( CreateGameInstance() );
+		m_GameInstance->Init();
+
+		// Init Scene
+		if ( !InitScene() )
+		{
+			ENSURE( false, "Engine::Init: Failed to initialize scene" );
+		}
+	}
+
+	Engine::~Engine()
+	{
+		// Shutdown Game Instance
+		m_GameInstance->Shutdown();
+
+		// Shutdown Scene Manager
+		SceneManager::Singleton::Destroy();
+
+		// Shutdown Modules
+		{
+			Array<IEngineModule*> initOrderedModules = GetInitOrderedModules();
+			for ( auto it = initOrderedModules.RBegin(); it != initOrderedModules.REnd(); ++it )
+			{
+				LOG( LogCategory::Engine, Info, "Shutting down module: {0}", ( *it )->GetModuleInfo().Name.String());
+				( *it )->Shutdown();
+			}
+		}
+
+		s_Instance = nullptr;
 	}
 
 	//////////////////////////////////////////////////////////////////////////

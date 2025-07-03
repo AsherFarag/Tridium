@@ -324,7 +324,7 @@ namespace Tridium {
 		{
 			ImGui::Separator();
 
-			ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Text, ImVec4( Editor::GetPallete().Red ) );
+			ImGui::PushStyleColor( ImGuiCol_::ImGuiCol_Text, ImVec4( Editor::GetStyle().Colors.Red ) );
 			if ( ImGui::MenuItem( " - Remove All - " ) ) scene->Clear();
 			ImGui::PopStyleColor();
 		}

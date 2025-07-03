@@ -14,7 +14,7 @@ namespace Tridium {
 		static void SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset );
 		static SharedPtr<Asset> LoadAsset( const AssetMetaData& a_MetaData );
 
-		static SharedPtr<IAssetLoaderOld> GetAssetLoader( EAssetType a_Type );
+		static SharedPtr<IAssetLoaderOld> GetAssetLoader( EAssetTypeOld a_Type );
 
 		template<typename T>
 		static SharedPtr<IAssetLoaderOld> GetAssetLoader()
@@ -24,7 +24,7 @@ namespace Tridium {
 		}
 
 	private:
-		static std::unordered_map<EAssetType, SharedPtr<IAssetLoaderOld>> s_AssetFactories;
+		static std::unordered_map<EAssetTypeOld, SharedPtr<IAssetLoaderOld>> s_AssetFactories;
 	};
 
 }

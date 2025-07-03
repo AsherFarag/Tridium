@@ -89,7 +89,7 @@ namespace Tridium {
 		AssetMetaData meshSourceMetaData =
 		{
 			AssetHandle::Create(),
-			EAssetType::MeshSource,
+			EAssetTypeOld::MeshSource,
 			m_Path,
 			m_Path.GetFilename().ToString(),
 			true
@@ -103,7 +103,7 @@ namespace Tridium {
 
 		AssetMetaData metaData;
 		metaData.Handle = AssetHandle::Create();
-		metaData.AssetType = EAssetType::StaticMesh;
+		metaData.AssetType = EAssetTypeOld::StaticMesh;
 		metaData.Path = m_Path.GetParentPath();
 		metaData.Path.Append( meshSourceMetaData.Name + ".tmesh" );
 		metaData.Name = meshSourceMetaData.Name;
@@ -143,7 +143,7 @@ namespace Tridium {
 
 		//	AssetMetaData metaData;
 		//	metaData.Handle = AssetHandle::Create();
-		//	metaData.AssetType = EAssetType::StaticMesh;
+		//	metaData.AssetType = EAssetTypeOld::StaticMesh;
 		//	metaData.Path = m_Path.GetParentPath();
 		//	metaData.Path.Append( m_MeshSource->m_MeshNodes[i].Name + ".tmesh" );
 		//	metaData.Name = m_MeshSource->m_MeshNodes[i].Name;

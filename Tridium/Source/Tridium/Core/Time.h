@@ -20,7 +20,6 @@ namespace Tridium {
 
 	class Time
 	{
-		friend class Application;
 	public:
 		// Returns the time since this application was first executed.
 		static double Now() { return s_Time; }
@@ -29,7 +28,6 @@ namespace Tridium {
 		static Timestep GetTimestep() { return s_TimeStep; }
 		static void SetTimestep(Timestep a_NewTimestep ) { s_TimeStep = a_NewTimestep; }
 
-	private:
 		static void Update();
 
 	private:

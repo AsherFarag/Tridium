@@ -51,10 +51,24 @@ namespace Tridium {
 		constexpr FixedArray() = default;
 		constexpr FixedArray( const FixedArray& a_Other ) = default;
 		constexpr FixedArray( FixedArray&& a_Other ) = default;
-		constexpr FixedArray( InitList<T> a_InitList ) { TRIDIUM_ARRAY_ASSERT( a_InitList.size() <= MaxSize(), "Initializer list is too large" ); Fill( a_InitList ); }
+		constexpr FixedArray( InitList<T> a_InitList ) { TRIDIUM_ARRAY_ASSERT( a_InitList.Size() <= MaxSize(), "Initializer list is too large" ); Fill( a_InitList ); }
 		constexpr FixedArray( Span<const T> a_InitList ) { TRIDIUM_ARRAY_ASSERT( a_InitList.size() <= MaxSize(), "Initializer list is too large" ); Fill( a_InitList ); }
 		constexpr FixedArray& operator=( const FixedArray& a_Other ) = default;
 		constexpr FixedArray& operator=( FixedArray&& a_Other ) = default;
+
+		constexpr FixedArray& operator=( InitList<T> a_InitializerList )
+		{
+			TRIDIUM_ARRAY_ASSERT( a_InitializerList.size() <= MaxSize(), "Initializer list is too large" );
+			Fill( a_InitializerList );
+			return *this;
+		}
+
+		constexpr FixedArray& operator=( Span<const T> a_Data )
+		{
+			TRIDIUM_ARRAY_ASSERT( a_Data.size() <= MaxSize(), "Initializer list is too large" );
+			Fill( a_Data );
+			return *this;
+		}
 
 		constexpr operator Span<T>() { return Span<T>( m_Data.data(), _Size ); }
 		constexpr operator Span<const T>() const { return Span<const T>( m_Data.data(), _Size ); }
@@ -522,6 +536,10 @@ namespace Tridium {
 	private:
 		std::vector<T> m_Data;
 	};
+
+	//TODO( "Implement me!" );
+	template<typename _Elem, size_t _InPlaceCapacity>
+	using SmallArray = Array<_Elem>;
 
 	// standard begin/end/rbegin/rend for FixedArray
 	template<typename T, size_t _Size>

@@ -86,7 +86,7 @@ namespace Tridium {
 		if ( ImGui::TreeNode( "Environment" ) )
 		{
 
-			if ( Editor::DrawProperty( "Environment Map", scene->GetSceneEnvironment().HDRI.EnvironmentMapHandle, EDrawPropertyFlags::Editable ) )
+			if ( ToolUI::DrawProperty( "Environment Map", scene->GetSceneEnvironment().HDRI.EnvironmentMapHandle, EDrawPropertyFlags::Editable ) )
 			{
 				auto assetManager = AssetManager::Get<EditorAssetManager>();
 				auto textureMetaData = assetManager->GetAssetMetaData( scene->GetSceneEnvironment().HDRI.EnvironmentMapHandle );
@@ -98,7 +98,7 @@ namespace Tridium {
 			ImGui::SliderFloat( "Gamma", &scene->GetSceneEnvironment().HDRI.Gamma, 0.0f, 10.0f );
 			ImGui::SliderFloat( "Blur", &scene->GetSceneEnvironment().HDRI.Blur, 0.0f, 1.0f );
 			ImGui::SliderFloat( "Intensity", &scene->GetSceneEnvironment().HDRI.Intensity, 0.0f, 10.0f );
-			Editor::DrawProperty( "Rotation", scene->GetSceneEnvironment().HDRI.RotationEular, EDrawPropertyFlags::Editable );
+			ToolUI::DrawProperty( "Rotation", scene->GetSceneEnvironment().HDRI.RotationEular, EDrawPropertyFlags::Editable );
 
 			ImGui::TreePop();
 		}

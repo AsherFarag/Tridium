@@ -17,7 +17,7 @@ namespace Tridium {
 		FBOspecification.Attachments = { EFramebufferTextureFormat::RGBA16F, EFramebufferTextureFormat::Depth };
 		FBOspecification.Width = 1280;
 		FBOspecification.Height = 720;
-		m_FBO = Framebuffer::Create( FBOspecification );
+		//m_FBO = Framebuffer::Create( FBOspecification );
 	}
 
 	void GameViewportPanel::OnImGuiDraw()
@@ -58,6 +58,8 @@ namespace Tridium {
 
 	std::optional< std::tuple<Camera&, Matrix4, Vector3> > GameViewportPanel::GetSceneCamera() const
 	{
+		if ( SceneManager::GetActiveScene() == nullptr )
+			return {};
 		CameraComponent* camera = SceneManager::GetActiveScene()->GetMainCamera();
 		if ( !camera )
 			return {};

@@ -32,11 +32,11 @@ namespace Tridium {
 			{
 				ImVec4 fpsNumberColor;
 				if ( Application::Get()->GetFPS() < 30 )
-					fpsNumberColor = Editor::GetPallete().Red;
+					fpsNumberColor = Editor::GetStyle().Colors.Red;
 				else if ( Application::Get()->GetFPS() < 60 )
-					fpsNumberColor = Editor::GetPallete().Yellow;
+					fpsNumberColor = Editor::GetStyle().Colors.Yellow;
 				else
-					fpsNumberColor = Editor::GetPallete().Green;
+					fpsNumberColor = Editor::GetStyle().Colors.Green;
 
 				ImGui::Text( "FPS: " );
 				ImGui::SameLine();

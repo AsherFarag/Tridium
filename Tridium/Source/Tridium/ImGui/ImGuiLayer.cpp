@@ -1,17 +1,15 @@
 #include "tripch.h"
 #include "ImGuiLayer.h"
-#include "Tridium/Input/Input.h"
-
+#include "ImGuiModule.h"
 #include <Tridium/Core/Application.h>
 #include <Tridium/Engine/Engine.h>
+#include <Tridium/Input/Input.h>
 
-#include "imgui.h"
-#include "backends/imgui_impl_opengl3.cpp"
-#include "backends/imgui_impl_glfw.cpp"
+#include <GLFW/glfw3.h>
 
 namespace Tridium {
 
-	void AddIconsToFont()
+	static void AddIconsToFont()
 	{
 		const float iconFontSize = s_FontSize * 2.0f / 3.0f;
 
@@ -39,55 +37,26 @@ namespace Tridium {
 
 	void ImGuiLayer::OnAttach()
 	{
-		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO();
-		// - Set up flags -
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-
-		// - Set Style -
-		ImGui::StyleColorsDark();
-		ImGuiStyle& style = ImGui::GetStyle();
-		if ( io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable )
-		{
-			style.WindowRounding = 4.f;
-			style.FrameRounding = 2.f;
-			style.Colors[ ImGuiCol_WindowBg ].w = 1.f;
-		}
-
 		// - Set Default Font -
 		ImGui::GetLightFont();
 		AddIconsToFont();
-		io.FontDefault = ImGui::GetRegularFont();
+		ImGui::GetIO().FontDefault = ImGui::GetRegularFont();
 		AddIconsToFont();
 		ImGui::GetBoldFont();
 		AddIconsToFont();
 		ImGui::GetExtraBoldFont();
 		AddIconsToFont();
-
-		GLFWwindow* window = Cast<GLFWwindow*>( Application::Get()->GetWindow().GetNativeWindow() );
-
-		// Set up Platform/Render bindings
-		TODO( "Make this API specific!" );
-		ImGui_ImplGlfw_InitForOpenGL( window, true );
-		ImGui_ImplOpenGL3_Init( "#version 410" );
 	}
 
 	void ImGuiLayer::OnDetach()
 	{
-		TODO( "Make this API specific!" );
-		ImGui_ImplOpenGL3_Shutdown();
-		ImGui_ImplGlfw_Shutdown();
-		ImGui::DestroyContext();
+
 	}
 
 	void ImGuiLayer::Begin()
 	{
-		TODO( "Make this API specific!" );
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
+		ImGuiModule::GetRendererBackend()->NewFrame();
+		ImGuiModule::GetPlatformBackend()->NewFrame();
 		ImGui::NewFrame();
 	}
 
@@ -97,18 +66,27 @@ namespace Tridium {
 		ImGuiIO& io = ImGui::GetIO();
 		io.DisplaySize = ImVec2( Application::Get()->GetWindow().GetWidth(), Application::Get()->GetWindow().GetHeight() );
 
-		// Rendering
+
 		ImGui::Render();
-		TODO( "Make this API specific!" );
-		ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
+
+		IRHISwapChain* swapChain = RHI::GetSwapChain();
+		if ( !swapChain )
+		{
+			ENSURE( false, "Swap chain is null!" );
+			return;
+		}
+
+		// Set up the command list for rendering ImGui
+
+		ImGuiModule::GetRendererBackend()->RenderDrawData( ImGui::GetDrawData(), ImGuiModule::GetCommandList(), swapChain->GetBackBuffer());
 
 		if ( io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable )
 		{
-			GLFWwindow* backup_current_context = glfwGetCurrentContext();
-			TODO( "Make this API specific!" );
+			GLFWwindow* backUpCurrentContext = glfwGetCurrentContext();
+			//m_PlatformBackend->RestoreCallbacks();
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
-			glfwMakeContextCurrent( backup_current_context );
+			glfwMakeContextCurrent( backUpCurrentContext );
 		}
 	}
 

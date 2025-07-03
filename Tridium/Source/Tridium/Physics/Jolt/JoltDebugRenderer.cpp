@@ -18,6 +18,8 @@ namespace Tridium {
 
     JoltDebugRenderer::JoltDebugRenderer()
     {
+		return;
+
 		JPH::DebugRenderer::Initialize();
 
 		// Create shader
@@ -94,12 +96,18 @@ namespace Tridium {
 
 	JoltDebugRenderer::~JoltDebugRenderer()
 	{
+		return;
+
 		glDeleteBuffers( 1, &m_LineVBO );
 		glDeleteVertexArrays( 1, &m_LineVAO );
 	}
 
     void JoltDebugRenderer::Render( const Matrix4& a_ViewProjection )
     {
+		Clear();
+		NextFrame();
+		return;
+
 		if ( m_Lines.empty() )
 			return;
 

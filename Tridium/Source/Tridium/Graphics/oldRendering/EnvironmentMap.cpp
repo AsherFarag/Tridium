@@ -7,7 +7,7 @@
 
 namespace Tridium {
 
-	SharedPtr<EnvironmentMap> EnvironmentMap::Create( const SharedPtr<Texture>& a_EquirectangularTexture )
+	SharedPtr<EnvironmentMap> EnvironmentMap::Create( const SharedPtr<TextureOld>& a_EquirectangularTexture )
     {
 		switch ( RendererAPI::GetAPI() )
 		{
@@ -38,7 +38,7 @@ namespace Tridium {
 			return nullptr;
 		}
 
-		TextureSpecification textureSpecification =
+		TextureSpecificationOld textureSpecification =
 		{
 			.Width = Cast<uint32_t>( width ),
 			.Height = Cast<uint32_t>( height ),
@@ -47,7 +47,7 @@ namespace Tridium {
 			.GenerateMips = false,
 		};
 
-		SharedPtr<Texture> equirectangularTexture( Texture::Create( textureSpecification, data ) );
+		SharedPtr<TextureOld> equirectangularTexture( TextureOld::Create( textureSpecification, data ) );
 		return Create( equirectangularTexture );
 	}
 

@@ -18,7 +18,7 @@ namespace Tridium {
 		Editable,
 	};
 
-	namespace Editor {
+	namespace ToolUI {
 
 		namespace Internal {
 			struct ScopedDisable

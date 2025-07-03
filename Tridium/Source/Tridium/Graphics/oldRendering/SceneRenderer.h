@@ -14,11 +14,9 @@ namespace Tridium {
 	class Scene;
 	struct SceneEnvironment;
 	class VertexArray;
-	class Texture;
+	class TextureOld;
 	class MeshSource;
 	class SubMesh;
-
-	namespace Editor { class SceneRendererPanel; }
 	// -------------------
 
 	struct DrawCall
@@ -108,10 +106,10 @@ namespace Tridium {
 		SharedPtr<Material> m_DefaultMaterial;
 		SharedPtr<Shader> m_SkyboxShader;
 		SharedPtr<MeshSource> m_CubeMesh;
-		SharedPtr<Texture> m_BrdfLUT;
-		SharedPtr<Texture> m_WhiteTexture;
-		SharedPtr<Texture> m_BlackTexture;
-		SharedPtr<Texture> m_NormalTexture;
+		SharedPtr<TextureOld> m_BrdfLUT;
+		SharedPtr<TextureOld> m_WhiteTexture;
+		SharedPtr<TextureOld> m_BlackTexture;
+		SharedPtr<TextureOld> m_NormalTexture;
 		// ---------------
 
 		// Debug assets

@@ -4,7 +4,6 @@
 #include "RHITexture.h"
 #include "RHIVertexLayout.h"
 #include "RHIPipelineState.h"
-#include "ShaderLibrary.h"
 #include "RHIBuffer.h"
 #include "RHICommandList.h"
 #include "RHIShaderBindings.h"

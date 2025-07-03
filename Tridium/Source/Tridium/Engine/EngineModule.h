@@ -1,99 +1,82 @@
 #pragma once
-#include "EngineInitialization.h"
-#include <Tridium/Containers/Containers.h>
 #include <Tridium/Core/Hash.h>
 #include <Tridium/Core/Assert.h>
+#include <Tridium/Core/Enum.h>
+#include <Tridium/Containers/Containers.h>
 #include <Tridium/Utils/Singleton.h>
 #include <Tridium/Utils/Concepts.h>
-#include <Tridium/Core/Enum.h>
+#include <Tridium/Utils/Macro.h>
 
 namespace Tridium {
 
 	//================================================================
+	// Used to declare and define an engine module.
+	//  _Name: Name of the module class. (e.g. 'class _Name' )
+	//  _Category: Category of the module. (e.g. EEngineModuleCategory::Server | EEngineModuleCategory::Client)
+	//  __VA_ARGS__: Optional dependencies of the module. (e.g. "RendererModule", "ScriptModule" )
+	#define DEFINE_ENGINE_MODULE( _Name, _Category, ... ) \
+		static_assert( ValidateEngineModuleCategory( ( _Category ) ), "Invalid engine module category!" ); \
+		class _Name; \
+		namespace __Hidden { extern volatile ::Tridium::Detail::EngineModuleInitializer<_Name> s_##_Name##Initializer; EXPAND( ALWAYS_EXISTS( s_##_Name##Initializer ) ); } \
+		class _Name : public ::Tridium::Detail::EngineModule<_Name, ::Tridium::Detail::StaticEngineModuleInfo<_Name, _Category __VA_OPT__(,) __VA_ARGS__ >>
+
+	//================================================================
+	// Should be used in the implementation file of the module.
+	// Registers the module with the engine module factory.
+	// Use this macro if you want to register the module with the engine.
+	#define REGISTER_ENGINE_MODULE( _ModuleType ) \
+			volatile ::Tridium::Detail::EngineModuleInitializer<_ModuleType> __Hidden::s_##_ModuleType##Initializer{};
+
+	//================================================================
 	// Engine Module Category
-	enum class  EEngineModuleCategory : uint32_t
+	//  Defines which application types the module will be created for.
+	enum class  EEngineModuleCategory : uint8_t
 	{
-		Generic = 0,
-		Core = 1 << 0,
-		Physics = 1 << 0,
-		Audio = 1 << 1,
-		Graphics = 1 << 2,
-		Scripting = 1 << 3,
-		Networking = 1 << 4,
-		Platform = 1 << 5,
-		Tools = 1 << 6,
-		Editor = 1 << 7,
-		Gameplay = 1 << 8,
+		Unknown = 0,
+		Server = 1 << 0,
+		Client = 1 << 1,
+		Editor = 1 << 2, // NOTE: A module with this flag can ONLY exist in the Editor application.
 	};
 	ENUM_ENABLE_BITMASK_OPERATORS( EEngineModuleCategory );
-	//================================================================
-
-
 
 	//================================================================
-	// Engine Module Error
-	struct EngineModuleError
+	// Validates the engine module category.
+	inline constexpr bool ValidateEngineModuleCategory( EEngineModuleCategory a_Category )
 	{
-		enum ELevel
-		{
-			Error,
-			FatalError
-		};
+		if ( EnumFlags( a_Category ).HasFlag( EEngineModuleCategory::Editor ) )
+			return Cast<uint8_t>( a_Category ) == Cast<uint8_t>( EEngineModuleCategory::Editor ); // If a Module is marked as Editor, it can only be used in the Editor application.
 
-		ELevel Level;
-		String Message;
-
-		EngineModuleError( ELevel a_Level, const String& a_Message = "" )
-			: Level( a_Level ), Message( a_Message ) {
-		}
+		return true;
 	};
+
 	//================================================================
-
-
+	// Engine Module Info
+	struct EngineModuleInfo
+	{
+		HashedString Name{};
+		EEngineModuleCategory Category = EEngineModuleCategory::Unknown;
+		Span<const HashedString> Dependencies{};
+	};
 
 	//================================================================
 	// Engine Module
 	//  Base interface for engine modules.
 	//  Engine modules are used to extend the engine with custom functionality.
 	//  Modules can be globally accessed through the Engine class.
-	//  Modules are initialized and shutdown in a specific order defined by the InitStage.
+	//  Modules are initialized after all their dependencies have been initialized
+	//  and are shut down before their dependencies are shut down.
 	//  An engine module can be registered with the REGISTER_ENGINE_MODULE macro.
 	class IEngineModule
 	{
 	public:
-		virtual Optional<EngineModuleError> Init() { return {}; }
-		virtual Optional<EngineModuleError> Shutdown() { return {}; }
+		virtual EngineModuleInfo GetModuleInfo() const = 0;
+
+	protected:
+		//=================================================================
+		friend class Engine;
+		virtual void Init() {}
+		virtual void Shutdown() {}
 	};
-	//================================================================
-
-
-
-	//================================================================
-	// Concepts
-	namespace Concepts {
-		template<typename T>
-		concept IsValidEngineModule = Concepts::IsBaseOf<IEngineModule, T>;
-	}
-	//================================================================
-
-
-
-	//================================================================
-	// Engine Module Info
-	//  Contains meta data about an engine module.
-	struct EngineModuleInfo
-	{
-		using CreateModuleFunc = UniquePtr<IEngineModule>( * )( );
-
-		CreateModuleFunc Create;
-		EEngineInitStage InitStage;
-		const char* Name;
-		EEngineModuleCategory Category;
-		hash_t Hash;
-	};
-	//================================================================
-
-
 
 	//================================================================
 	// Engine Module Factory
@@ -102,75 +85,102 @@ namespace Tridium {
 	class EngineModuleFactory : public ISingleton<EngineModuleFactory, /* _ExplicitSetup */ false>
 	{
 	public:
-		// Registers a module type with the engine module factory.
-		// This can then be used by the engine to create and manage the module.
-		template<typename T> requires Concepts::IsValidEngineModule<T>
-		static void RegisterModule( const char* a_Name, EEngineInitStage a_InitStage, EEngineModuleCategory a_Category )
+		using ModuleCreateFunc = UniquePtr<IEngineModule>( * )( );
+
+		struct RegisteredModule
 		{
-			static constexpr hash_t hash = Hashing::TypeHash<T>();
+			EngineModuleInfo Info;
+			ModuleCreateFunc Create;
+		};
 
-			// Ensure the module has not already been registered.
-			if ( !ASSERT( Get()->m_ModuleTypes.find( hash ) == Get()->m_ModuleTypes.end(), "Module already registered" ) )
-				return;
-
-			EngineModuleInfo info;
-			info.InitStage = a_InitStage;
-			info.Name = a_Name;
-			info.Category = a_Category;
-			info.Hash = hash;
-
-			info.Create = +[]() -> UniquePtr<IEngineModule> { return MakeUnique<T>(); };
-
-			Get()->m_ModuleTypes[hash] = info;
-		}
-
-		// Returns a list of all registered module types.
+		// Returns all registered module types.
 		static const auto& ModuleTypes() { return Get()->m_ModuleTypes; }
 
-		// Retrieves the module info for the specified hash.
-		static EngineModuleInfo GetModuleInfo( hash_t a_Hash )
+		// Registers a module type with the engine module factory.
+		// This can then be used by the engine to create and manage the module.
+		template<Concepts::Derived<IEngineModule> T>
+		static void RegisterModule()
 		{
-			auto it = Get()->m_ModuleTypes.find( a_Hash );
-			if ( it != Get()->m_ModuleTypes.end() )
-				return it->second;
+			// Ensure the module has not already been registered.
+			if ( !ASSERT( Get()->m_ModuleTypes.find( Hashing::TypeHash<T>() ) == Get()->m_ModuleTypes.end(), "Module already registered" ) )
+				return;
 
-			return {};
-		}
+			RegisteredModule module;
+			module.Info = T::StaticModuleInfo();
+			module.Create = +[]() -> UniquePtr<IEngineModule> 
+			{
+				UniquePtr<IEngineModule> instance = MakeUnique<T>();
+				T::Singleton::BindExisting( Cast<T*>( instance.get() ) );
+				return instance;
+			};
 
-		// Retrieves the module info for the specified type.
-		template<typename T> requires Concepts::IsValidEngineModule<T>
-		static EngineModuleInfo GetModuleInfo()
-		{
-			static constexpr hash_t hash = Hashing::TypeHash<T>();
-			return GetModuleInfo( hash );
+			Get()->m_ModuleTypes[ Hashing::TypeHash<T>() ] = module;
 		}
 
 	private:
-		virtual void OnSingletonConstructed() override { RegisterCoreModules(); }
+		virtual void OnSingletonConstructed() override {}
 
-		// These will be the first modules to be registered.
-		void RegisterCoreModules();
-
-		// Using an ordered map to ensure modules are initialized in the same order they were registered.
-		Map<hash_t, EngineModuleInfo> m_ModuleTypes;
+		UnorderedMap<hash_t, RegisteredModule> m_ModuleTypes;
 	};
-	//===================================
 
-
-
-	template<typename _ModuleType> requires Concepts::IsValidEngineModule<_ModuleType>
-	struct EngineModuleInitializer
-	{
-		EngineModuleInitializer( const char* a_Name, EEngineInitStage a_InitStage )
+	namespace Detail {
+		//================================================================
+		// Static Engine Module Info
+		//  Helper for creating engine module info.
+		template<typename T, EEngineModuleCategory _Category, StringLiteral... _Dependencies>
+		struct StaticEngineModuleInfo
 		{
-			EngineModuleFactory::RegisterModule<_ModuleType>( a_Name, a_InitStage );
-		}
-	};
+			static constexpr HashedString Name = GetStrippedTypeName<T>();
+			static constexpr EEngineModuleCategory Category = _Category;
+			static constexpr FixedArray<HashedString, sizeof...( _Dependencies )> Dependencies{ InitList{ HashedString( _Dependencies )... } };
+			static constexpr bool HasDependencies = true;
+		};
 
-	// Should be used in the implementation file of the module.
-	// Registers the module with the engine module factory.
-	// Use this macro if you want to register the module with the engine.
-#define REGISTER_ENGINE_MODULE( _ModuleType, _InitStage, _Category ) \
-	static EngineModuleInitializer<ModuleType> s_##ModuleType##Initializer = EngineModuleInitializer<ModuleType>( #_ModuleType, _InitStage, _Category )
+		//================================================================
+		// Static Engine Module Info
+		//  Helper for creating engine module info with no dependencies.
+		template<typename T, EEngineModuleCategory _Category>
+		struct StaticEngineModuleInfo<T, _Category>
+		{
+			static constexpr HashedString Name = GetStrippedTypeName<T>();
+			static constexpr EEngineModuleCategory Category = _Category;
+			static constexpr bool HasDependencies = false;
+		};
+
+		//================================================================
+		// Engine Module Template
+		template<typename T, typename _ModuleInfo>
+		class EngineModule : public IEngineModule, public ISingleton<T, true, false>
+		{
+		public:
+			static consteval EngineModuleInfo StaticModuleInfo()
+			{
+				EngineModuleInfo info;
+				info.Name = _ModuleInfo::Name;
+				info.Category = _ModuleInfo::Category;
+				if constexpr ( _ModuleInfo::HasDependencies )
+					info.Dependencies = _ModuleInfo::Dependencies;
+
+				return info;
+			}
+
+			EngineModuleInfo GetModuleInfo() const override final
+			{
+				return StaticModuleInfo();
+			}
+		};
+
+		//================================================================
+		// Engine Module Initializer
+		//  Used to automatically register a module type with the engine module factory.
+		template<typename T>
+		struct EngineModuleInitializer
+		{
+			EngineModuleInitializer()
+			{
+				EngineModuleFactory::RegisterModule<T>();
+			}
+		};
+	}
 
 } // namespace Tridium

@@ -174,7 +174,7 @@ namespace Tridium {
 		}
 	}
 
-	EAssetType EditorAssetManager::GetAssetType( AssetHandle a_Handle )
+	EAssetTypeOld EditorAssetManager::GetAssetType( AssetHandle a_Handle )
 	{
 		if ( auto memAsset = GetMemoryOnlyAsset( a_Handle ) )
 			return memAsset->AssetType();
@@ -183,7 +183,7 @@ namespace Tridium {
 		if ( metaData.IsValid() )
 			return metaData.AssetType;
 
-		return EAssetType::None;
+		return EAssetTypeOld::None;
 	}
 
 	bool EditorAssetManager::IsMemoryAsset( AssetHandle a_Handle )
@@ -280,8 +280,8 @@ namespace Tridium {
 			return AssetHandle::InvalidID;
 		}
 
-		EAssetType assetType = GetAssetTypeFromFileExtension( a_Path.GetExtension().ToString() );
-		if ( assetType == EAssetType::None )
+		EAssetTypeOld assetType = GetAssetTypeFromFileExtension( a_Path.GetExtension().ToString() );
+		if ( assetType == EAssetTypeOld::None )
 		{
 			LOG( LogCategory::Asset, Error, "Failed to import asset: {0}, unsupported file extension", a_Path.ToString() );
 			return AssetHandle::InvalidID;

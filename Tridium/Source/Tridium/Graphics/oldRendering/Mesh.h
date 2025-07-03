@@ -9,8 +9,6 @@ namespace Tridium {
 	class VertexBuffer;
 	class IndexBuffer;
 	class MeshCollider;
-
-	namespace Editor { class MeshSourceImporterPanel; } 
 }
 
 namespace Tridium {

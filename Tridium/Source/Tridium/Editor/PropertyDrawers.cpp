@@ -11,7 +11,7 @@
 
 #include <Tridium/Graphics/oldRendering/Framebuffer.h>
 
-namespace Tridium::Editor {
+namespace Tridium::ToolUI {
 
 #define IS_DISABLED(Flags) Internal::ScopedDisable _DISABLED_{ Flags == EDrawPropertyFlags::ReadOnly }
 
@@ -429,7 +429,7 @@ namespace Tridium::Editor {
 	// AssetHandle
 	//////////////////////////////////////////////////////////////////////////
 
-	template <EAssetType _AssetType>
+	template <EAssetTypeOld _AssetType>
 	bool _DrawAssetHandleProperty( const char* a_Name, AssetHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
 		AssetMetaData assetMetaData = EditorAssetManager::Get()->GetAssetMetaData(a_Value);
@@ -570,49 +570,49 @@ namespace Tridium::Editor {
 	template<>
 	bool DrawProperty( const char* a_Name, SceneHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
-		return _DrawAssetHandleProperty<EAssetType::Scene>( a_Name, a_Value, a_Flags );
+		return _DrawAssetHandleProperty<EAssetTypeOld::Scene>( a_Name, a_Value, a_Flags );
 	}
 
 	template<>
 	bool DrawProperty( const char* a_Name, MaterialHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
-		return _DrawAssetHandleProperty<EAssetType::Material>( a_Name, a_Value, a_Flags );
+		return _DrawAssetHandleProperty<EAssetTypeOld::Material>( a_Name, a_Value, a_Flags );
 	}
 
 	template<>
 	bool DrawProperty( const char* a_Name, MeshSourceHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
-		return _DrawAssetHandleProperty<EAssetType::MeshSource>( a_Name, a_Value, a_Flags );
+		return _DrawAssetHandleProperty<EAssetTypeOld::MeshSource>( a_Name, a_Value, a_Flags );
 	}
 
 	template<>
 	bool DrawProperty( const char* a_Name, StaticMeshHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
-		return _DrawAssetHandleProperty<EAssetType::StaticMesh>( a_Name, a_Value, a_Flags );
+		return _DrawAssetHandleProperty<EAssetTypeOld::StaticMesh>( a_Name, a_Value, a_Flags );
 	}
 
 	template<>
 	bool DrawProperty( const char* a_Name, ShaderHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
-		return _DrawAssetHandleProperty<EAssetType::Shader>( a_Name, a_Value, a_Flags );
+		return _DrawAssetHandleProperty<EAssetTypeOld::Shader>( a_Name, a_Value, a_Flags );
 	}
 
 	template<>
 	bool DrawProperty( const char* a_Name, TextureHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
-		return _DrawAssetHandleProperty<EAssetType::Texture>( a_Name, a_Value, a_Flags );
+		return _DrawAssetHandleProperty<EAssetTypeOld::Texture>( a_Name, a_Value, a_Flags );
 	}
 
 	template<>
 	bool DrawProperty( const char* a_Name, CubeMapHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
-		return _DrawAssetHandleProperty<EAssetType::CubeMap>( a_Name, a_Value, a_Flags );
+		return _DrawAssetHandleProperty<EAssetTypeOld::CubeMap>( a_Name, a_Value, a_Flags );
 	}
 
 	template<>
 	bool DrawProperty( const char* a_Name, LuaScriptHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
-		return _DrawAssetHandleProperty<EAssetType::LuaScript>( a_Name, a_Value, a_Flags );
+		return _DrawAssetHandleProperty<EAssetTypeOld::LuaScript>( a_Name, a_Value, a_Flags );
 	}
 
 	template<>

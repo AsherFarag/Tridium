@@ -35,6 +35,40 @@ DECLARE_LOG_CATEGORY( OpenGL );
 
 namespace Tridium::OpenGL {
 
+	struct ScopedTextureBinding
+	{
+		GLenum Target;
+		GLint PreviousHandle;
+
+		ScopedTextureBinding( GLenum a_Target, GLuint a_Handle )
+			: Target( a_Target )
+		{
+			GLenum bindingTarget = 0;
+			switch ( Target )
+			{
+			case GL_TEXTURE_1D: bindingTarget = GL_TEXTURE_BINDING_1D; break;
+			case GL_TEXTURE_2D: bindingTarget = GL_TEXTURE_BINDING_2D; break;
+			case GL_TEXTURE_3D: bindingTarget = GL_TEXTURE_BINDING_3D; break;
+			case GL_TEXTURE_2D_MULTISAMPLE: bindingTarget = GL_TEXTURE_BINDING_2D_MULTISAMPLE; break;
+			case GL_TEXTURE_CUBE_MAP: bindingTarget = GL_TEXTURE_BINDING_CUBE_MAP; break;
+			case GL_TEXTURE_1D_ARRAY: bindingTarget = GL_TEXTURE_BINDING_1D_ARRAY; break;
+			case GL_TEXTURE_2D_ARRAY: bindingTarget = GL_TEXTURE_BINDING_2D_ARRAY; break;
+			case GL_TEXTURE_CUBE_MAP_ARRAY: bindingTarget = GL_TEXTURE_BINDING_CUBE_MAP_ARRAY; break;
+			case GL_TEXTURE_BUFFER: bindingTarget = GL_TEXTURE_BINDING_BUFFER; break;
+			case GL_TEXTURE_RECTANGLE: bindingTarget = GL_TEXTURE_BINDING_RECTANGLE; break;
+			default: ASSERT( false, "Unsupported texture target for binding: {0}", Target ); break;
+			}
+
+			OpenGL1::GetIntegerv( bindingTarget, &PreviousHandle );
+			OpenGL1::BindTexture( Target, a_Handle );
+		}
+
+		~ScopedTextureBinding()
+		{
+			OpenGL1::BindTexture( Target, PreviousHandle );
+		}
+	};;
+
 	//=====================================================================
 	// OpenGL Texture Format
 	//  Wrapper that holds OpenGL texture format information for a given RHI format
@@ -400,7 +434,6 @@ namespace Tridium::OpenGL {
 		void Flush();
 
 	private:
-		bool m_IsOpen = false;
 		GLUBOWrapper m_InlinedConstantsUBO{};
 		GLFramebufferWrapper m_FramebufferObj{};
 		Array<RHIObjectRef> m_ReferencedObjects{};

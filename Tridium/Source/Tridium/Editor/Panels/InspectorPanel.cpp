@@ -454,7 +454,7 @@ namespace Tridium {
 			ImGui::Separator();
 
 			{
-				ImGui::ScopedStyleCol redText( ImGuiCol_Text, ImVec4( Editor::GetPallete().Red ) );
+				ImGui::ScopedStyleCol redText( ImGuiCol_Text, ImVec4( Editor::GetStyle().Colors.Red ) );
 				if ( ImGui::MenuItem( TE_ICON_TRASH_CAN " Delete" ) )
 				{
 					Editor::GetCommandManager().Execute( Commands::GameObjectDestroyed{ SceneManager::GetActiveSceneWeak(), InspectedGameObject } );
@@ -507,7 +507,7 @@ namespace Tridium {
 						ImGui::TableNextColumn();
 
 						ImGui::PushID( "p" );
-						Editor::DrawProperty( "", tc->Position, EDrawPropertyFlags::Editable );
+						ToolUI::DrawProperty( "", tc->Position, EDrawPropertyFlags::Editable );
 						ImGui::PopID();
 					}
 
@@ -522,7 +522,7 @@ namespace Tridium {
 						ImGui::TableNextColumn();
 
 						ImGui::PushID( "r" );
-						Editor::DrawProperty( "", tc->Rotation, EDrawPropertyFlags::Editable );
+						ToolUI::DrawProperty( "", tc->Rotation, EDrawPropertyFlags::Editable );
 						ImGui::PopID();
 					}
 
@@ -569,7 +569,7 @@ namespace Tridium {
 							const Vector3 oldScale = scale;
 
 							ImGui::PushID( "s" );
-							if ( Editor::DrawProperty( "", scale, EDrawPropertyFlags::Editable ) )
+							if ( ToolUI::DrawProperty( "", scale, EDrawPropertyFlags::Editable ) )
 							{
 								if ( useScaleLock )
 								{
@@ -694,7 +694,7 @@ namespace Tridium {
 
 					// Draw remove component button
 					{
-						ImGui::ScopedStyleCol redText( ImGuiCol_Text, ImVec4( Editor::GetPallete().Red ) );
+						ImGui::ScopedStyleCol redText( ImGuiCol_Text, ImVec4( Editor::GetStyle().Colors.Red ) );
 						if ( ImGui::MenuItem( TE_ICON_TRASH_CAN " Remove Component" ) )
 						{
 							auto removeFromGameObjectFunc = metaType.GetMetaAttribute<Refl::Props::RemoveFromGameObjectProp::Type>( Refl::Props::RemoveFromGameObjectProp::ID );

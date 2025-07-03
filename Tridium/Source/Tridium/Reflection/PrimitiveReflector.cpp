@@ -26,15 +26,15 @@ namespace Tridium::Refl::Internal {
 		{
 			// Const cast the pointer if it is a const pointer
 			if ( a_Handle.allow_cast<const T*>( ) )
-				return ::Tridium::Editor::DrawProperty( a_Name, *ConstCast<T*>( a_Handle.cast<const T*>() ), drawFlags );
+				return ::Tridium::ToolUI::DrawProperty( a_Name, *ConstCast<T*>( a_Handle.cast<const T*>() ), drawFlags );
 			else
-				return ::Tridium::Editor::DrawProperty( a_Name, *a_Handle.cast<T*>(), drawFlags );
+				return ::Tridium::ToolUI::DrawProperty( a_Name, *a_Handle.cast<T*>(), drawFlags );
 		}
 		else
 		{
 			if ( a_Handle.policy() != entt::any_policy::cref )
 			{
-				return ::Tridium::Editor::DrawProperty( a_Name, a_Handle.cast<T&>(), drawFlags );
+				return ::Tridium::ToolUI::DrawProperty( a_Name, a_Handle.cast<T&>(), drawFlags );
 			}
 		}
 
@@ -85,7 +85,9 @@ namespace Tridium::Refl::Internal {
 		factory.prop( Props::ClassFlagsProp::ID, EClassFlags::Scriptable );
 		factory.prop( Props::TextSerializeProp::ID, +[]( IO::Archive& a_Archive, const MetaAny& a_Data ) { SerializePrimitive<_Vector>( a_Archive, a_Data ); } );
 		factory.prop( Props::TextDeserializeProp::ID, +[]( const YAML::Node& a_Node, MetaAny& a_Data ) { DeserializePrimitive<_Vector>( a_Node, a_Data ); } );
+#if IS_EDITOR
 		factory.prop( Props::DrawPropertyProp::ID, +[]( const char* a_Name, MetaAny& a_Handle, EPropertyFlags a_Flags ) { return DrawBasicType<_Vector>( a_Name, a_Handle, a_Flags ); } );
+#endif
 		factory.prop( Props::RegisterScriptableProp::ID, +[]( ScriptEngine& a_ScriptEngine ) { Scriptable<_Vector>::RegisterType( a_ScriptEngine ); } );
 		return factory;
 	}
@@ -177,7 +179,9 @@ namespace Tridium::Refl::Internal {
 					.prop( Props::ClassFlagsProp::ID, EClassFlags::Scriptable )
 					.prop( Props::TextSerializeProp::ID, +[]( IO::Archive& a_Archive, const MetaAny& a_Data ) { SerializePrimitive<Rotator>( a_Archive, a_Data ); } )
 					.prop( Props::TextDeserializeProp::ID, +[]( const YAML::Node& a_Node, MetaAny& a_Data ) { DeserializePrimitive<Rotator>( a_Node, a_Data ); } )
+				#if IS_EDITOR
 					.prop( Props::DrawPropertyProp::ID, +[]( const char* a_Name, MetaAny& a_Handle, EPropertyFlags a_Flags ) { return DrawBasicType<Rotator>( a_Name, a_Handle, a_Flags ); } )
+				#endif
 					.prop( Props::RegisterScriptableProp::ID, +[]( ScriptEngine& a_ScriptEngine ) { Scriptable<Rotator>::RegisterType( a_ScriptEngine ); } )
 					.data<&Rotator::Euler>( "Euler"_hs, EPropertyFlags::ScriptReadWrite, "Euler", {} )
 					.data<&Rotator::Quat>( "Quat"_hs, EPropertyFlags::ScriptReadWrite, "Quat", {} );
@@ -193,7 +197,9 @@ namespace Tridium::Refl::Internal {
 					.prop( Props::ClassFlagsProp::ID, EClassFlags::Scriptable )
 					.prop( Props::TextSerializeProp::ID, +[]( IO::Archive& a_Archive, const MetaAny& a_Data ) { SerializePrimitive<GameObject>( a_Archive, a_Data ); } )
 					.prop( Props::TextDeserializeProp::ID, +[]( const YAML::Node& a_Node, MetaAny& a_Data ) { DeserializePrimitive<GameObject>( a_Node, a_Data ); } )
+#if IS_EDITOR
 					.prop( Props::DrawPropertyProp::ID, +[]( const char* a_Name, MetaAny& a_Handle, EPropertyFlags a_Flags ) { return DrawBasicType<GameObject>( a_Name, a_Handle, a_Flags ); } )
+#endif // IS_EDITOR
 					.prop( Props::RegisterScriptableProp::ID, +[]( ScriptEngine& a_ScriptEngine ) { Scriptable<GameObject>::RegisterType( a_ScriptEngine ); } );
 			}
 

@@ -55,12 +55,56 @@ namespace Tridium {
 		uint32_t OffsetY = 0;
 		uint32_t OffsetZ = 0;
 
-		uint32_t Width = ~0;
-		uint32_t Height = ~0;
-		uint32_t Depth = ~0;
+		uint32_t Width = ~0u;
+		uint32_t Height = ~0u;
+		uint32_t Depth = ~0u;
 
 		uint32_t MipLevel = 0;
 		uint32_t ArraySlice = 0;
+
+		constexpr RHITextureSlice Resolve( const RHITextureDesc& a_TextureDesc ) const;
+
+		constexpr bool operator==( const RHITextureSlice& a_Other ) const
+		{
+			return OffsetX == a_Other.OffsetX &&
+				OffsetY == a_Other.OffsetY &&
+				OffsetZ == a_Other.OffsetZ &&
+				Width == a_Other.Width &&
+				Height == a_Other.Height &&
+				Depth == a_Other.Depth &&
+				MipLevel == a_Other.MipLevel &&
+				ArraySlice == a_Other.ArraySlice;
+		}
+
+		static constexpr RHITextureSlice EntireTexture()
+		{
+			return RHITextureSlice{ 0, 0, 0, ~0u, ~0u, ~0u, 0, 0 };
+		}
+
+		constexpr auto& SetOffsetX( uint32_t a_OffsetX ) { OffsetX = a_OffsetX; return *this; }
+		constexpr auto& SetOffsetY( uint32_t a_OffsetY ) { OffsetY = a_OffsetY; return *this; }
+		constexpr auto& SetOffsetZ( uint32_t a_OffsetZ ) { OffsetZ = a_OffsetZ; return *this; }
+		constexpr auto& SetWidth( uint32_t a_Width ) { Width = a_Width; return *this; }
+		constexpr auto& SetHeight( uint32_t a_Height ) { Height = a_Height; return *this; }
+		constexpr auto& SetDepth( uint32_t a_Depth ) { Depth = a_Depth; return *this; }
+		constexpr auto& SetMipLevel( uint32_t a_MipLevel ) { MipLevel = a_MipLevel; return *this; }
+		constexpr auto& SetArraySlice( uint32_t a_ArraySlice ) { ArraySlice = a_ArraySlice; return *this; }
+
+		constexpr auto& SetOffset( uint32_t a_OffsetX, uint32_t a_OffsetY = 0, uint32_t a_OffsetZ = 0 )
+		{
+			OffsetX = a_OffsetX;
+			OffsetY = a_OffsetY;
+			OffsetZ = a_OffsetZ;
+			return *this;
+		}
+
+		constexpr auto& SetSize( uint32_t a_Width, uint32_t a_Height = 1, uint32_t a_Depth = 1 )
+		{
+			Width = a_Width;
+			Height = a_Height;
+			Depth = a_Depth;
+			return *this;
+		}
 	};
 
 	struct RHIFramebuffer
@@ -99,6 +143,8 @@ namespace Tridium {
 				if ( ColorAttachments[i] != a_Other.ColorAttachments[i] )
 					return false;
 			}
+
+			return true;
 		}
 
 		auto& AddColorAttachment( IRHITexture* a_Texture, bool a_ReadOnly = false )
@@ -327,5 +373,19 @@ namespace Tridium {
 			return RHITextureSubresourceSet{ 0, RHIConstants::AllMipLevels, 0, RHIConstants::AllArraySlices };
 		}
 	};
+
+	inline constexpr RHITextureSlice RHITextureSlice::Resolve( const RHITextureDesc& a_TextureDesc ) const
+	{
+		RHITextureSlice result = *this;
+		result.Width = Width == ~0u ? a_TextureDesc.Width - OffsetX : Width;
+		result.Height = Height == ~0u ? a_TextureDesc.Height - OffsetY : Height;
+		result.Depth = Depth == ~0u ? a_TextureDesc.DepthOrArraySize - OffsetZ : Depth;
+		result.OffsetX = Math::Min( OffsetX, a_TextureDesc.Width );
+		result.OffsetY = Math::Min( OffsetY, a_TextureDesc.Height );
+		result.OffsetZ = Math::Min( OffsetZ, a_TextureDesc.DepthOrArraySize );
+		result.MipLevel = MipLevel < a_TextureDesc.Mips ? MipLevel : 0;
+		result.ArraySlice = ArraySlice < a_TextureDesc.DepthOrArraySize ? ArraySlice : 0;
+		return result;
+	}
 
 } // namespace Tridium

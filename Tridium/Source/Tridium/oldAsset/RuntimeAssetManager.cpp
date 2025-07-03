@@ -29,9 +29,9 @@ namespace Tridium {
 	void RuntimeAssetManager::RemoveAsset( AssetHandle a_Handle )
 	{
 	}
-	EAssetType RuntimeAssetManager::GetAssetType( AssetHandle a_Handle )
+	EAssetTypeOld RuntimeAssetManager::GetAssetType( AssetHandle a_Handle )
 	{
-		return EAssetType();
+		return EAssetTypeOld();
 	}
 	bool RuntimeAssetManager::IsMemoryAsset( AssetHandle a_Handle )
 	{

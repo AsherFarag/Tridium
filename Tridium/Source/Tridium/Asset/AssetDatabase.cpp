@@ -2,7 +2,9 @@
 #include "AssetDatabase.h"
 #include <Tridium/IO/FileIO.h>
 
-namespace Tridium::T {
+namespace Tridium {
+
+	using namespace T;
 
 	AssetDatabase* AssetDatabase::s_Instance = nullptr;
 
@@ -148,7 +150,7 @@ namespace Tridium::T {
 		return it != Get()->m_Assets.end();
 	}
 
-	bool AssetDatabase::RegisterAsset( IAsset* a_Asset, const AssetMetadata& a_Metadata )
+	bool AssetDatabase::RegisterAsset( const SharedPtr<IAsset>& a_Asset, const AssetMetadata& a_Metadata )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 		if ( a_Asset == nullptr )
@@ -161,7 +163,7 @@ namespace Tridium::T {
 		AssetMetadata metadata = a_Metadata;
 		metadata.ID = assetID;
 		metadata.Type = a_Asset->Type();
-		Get()->m_Assets[assetID] = { std::move( metadata ), a_Asset->shared_from_this() };
+		Get()->m_Assets[assetID] = { std::move( metadata ), a_Asset };
 		return true;
 	}
 

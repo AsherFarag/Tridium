@@ -93,7 +93,6 @@ namespace Tridium {
 		constexpr size_t FieldCountV = FieldCount<T, 0, AggregateInitializibleWithNArgs<T, 0>>::value;
 
 
-#define CONCAT(a, b) a##b
 #define GENERATE_VAR(n) CONCAT(t, n)
 #define STRUCT_BIND_START auto [
 #define STRUCT_BIND_PTR_START auto& [

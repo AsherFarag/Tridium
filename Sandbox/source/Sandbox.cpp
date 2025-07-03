@@ -354,7 +354,7 @@ class SandboxGameInstance : public Tridium::GameInstance
 {
 	virtual void Init() override
 	{
-		Application::Get()->PushLayer( new SandboxLayer() );
+		//Application::Get()->PushLayer( new SandboxLayer() );
 	}
 };
 

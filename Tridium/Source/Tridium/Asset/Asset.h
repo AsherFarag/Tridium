@@ -5,9 +5,7 @@
 #include <Tridium/Utils/Concepts.h>
 #include <Tridium/Containers/String.h>
 
-namespace Tridium::T {
-
-
+namespace Tridium {
 
 	//==============================
 	// Asset interface

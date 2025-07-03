@@ -74,7 +74,7 @@ namespace Tridium {
 		}
 
 		const auto& metaData = EditorAssetManager::Get()->GetAssetMetaData( a_Handle );
-		if ( !metaData.IsValid() || metaData.AssetType != EAssetType::LuaScript )
+		if ( !metaData.IsValid() || metaData.AssetType != EAssetTypeOld::LuaScript )
 		{
 			ASSERT( false, "Failed to retrieve Asset Meta Data" );
 			return;

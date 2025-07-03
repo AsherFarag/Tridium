@@ -3,7 +3,7 @@
 #include <Tridium/Graphics/RHI/RHITexture.h>
 #include <Tridium/Core/Core.h>
 
-namespace Tridium::T {
+namespace Tridium {
 
 	struct TextureSpecification
 	{

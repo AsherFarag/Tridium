@@ -40,7 +40,7 @@ namespace Tridium {
 		LinearMipmapLinear,
 	};
 
-	struct TextureSpecification
+	struct TextureSpecificationOld
 	{
 		uint32_t Width = 1u;
 		uint32_t Height = 1u;
@@ -54,16 +54,16 @@ namespace Tridium {
 		ETextureWrap WrapR = ETextureWrap::Repeat;
 	};
 
-	class Texture : public Asset
+	class TextureOld : public Asset
 	{
 	public:
 		ASSET_CLASS_TYPE( Texture )
-		virtual ~Texture() = default;
+		virtual ~TextureOld() = default;
 
-		static Texture* Create( const TextureSpecification& a_Specification );
-		static Texture* Create( const TextureSpecification& a_Specification, void* a_TextureData );
+		static TextureOld* Create( const TextureSpecificationOld& a_Specification );
+		static TextureOld* Create( const TextureSpecificationOld& a_Specification, void* a_TextureData );
 
-		virtual const TextureSpecification& GetSpecification() const = 0;
+		virtual const TextureSpecificationOld& GetSpecification() const = 0;
 
 		virtual void SetMinFilter( ETextureFilter a_Filter ) = 0;
 		virtual void SetMagFilter( ETextureFilter a_Filter ) = 0;
@@ -83,7 +83,7 @@ namespace Tridium {
 		virtual void Bind( uint32_t slot = 0 ) const = 0;
 		virtual void Unbind( uint32_t slot = 0 ) const = 0;
 
-		virtual bool operator==( const Texture& other ) const = 0;
+		virtual bool operator==( const TextureOld& other ) const = 0;
 	};
 
 	class CubeMap : public Asset
@@ -92,11 +92,11 @@ namespace Tridium {
 		ASSET_CLASS_TYPE( CubeMap )
 		virtual ~CubeMap() = default;
 
-		static CubeMap* Create( const TextureSpecification& a_Specification ) { return Create( a_Specification, nullptr ); }
-		static CubeMap* Create( const TextureSpecification& a_Specification, const SharedPtr<Texture>& a_Texture );
-		static CubeMap* Create( const TextureSpecification& a_Specification, const std::array<float*, 6>& a_CubeMapData );
+		static CubeMap* Create( const TextureSpecificationOld& a_Specification ) { return Create( a_Specification, nullptr ); }
+		static CubeMap* Create( const TextureSpecificationOld& a_Specification, const SharedPtr<TextureOld>& a_Texture );
+		static CubeMap* Create( const TextureSpecificationOld& a_Specification, const std::array<float*, 6>& a_CubeMapData );
 
-		virtual const TextureSpecification& GetSpecification() const = 0;
+		virtual const TextureSpecificationOld& GetSpecification() const = 0;
 
 		virtual void SetMinFilter( ETextureFilter a_Filter ) = 0;
 		virtual void SetMagFilter( ETextureFilter a_Filter ) = 0;
@@ -111,7 +111,7 @@ namespace Tridium {
 		virtual void GenerateMipMaps() = 0;
 		uint32_t GetMaxMipLevels() const { return (uint32_t)std::floor( std::log2( std::max( GetWidth(), GetHeight() ) ) ); }
 
-		virtual void SetData( SharedPtr<Texture> a_Texture, uint32_t a_Size ) = 0;
+		virtual void SetData( SharedPtr<TextureOld> a_Texture, uint32_t a_Size ) = 0;
 		virtual void SetData( const std::array<float*, 6>& a_CubeMapData, uint32_t a_Size ) = 0;
 		virtual void SetMipLevel( uint32_t a_MipLevel ) = 0;
 

@@ -9,7 +9,7 @@
 
 namespace Tridium {
 
-	Texture* Texture::Create( const TextureSpecification& a_Specification )
+	TextureOld* TextureOld::Create( const TextureSpecificationOld& a_Specification )
 	{
 		switch ( RendererAPI::GetAPI() )
 		{
@@ -22,7 +22,7 @@ namespace Tridium {
 		return nullptr;
 	}
 
-	Texture* Texture::Create( const TextureSpecification& a_Specification, void* a_TextureData )
+	TextureOld* TextureOld::Create( const TextureSpecificationOld& a_Specification, void* a_TextureData )
 	{
 		switch ( RendererAPI::GetAPI() )
 		{
@@ -35,7 +35,7 @@ namespace Tridium {
 		return nullptr;
 	}
 
-	CubeMap* CubeMap::Create( const TextureSpecification& a_Specification, const SharedPtr<Texture>& a_Texture )
+	CubeMap* CubeMap::Create( const TextureSpecificationOld& a_Specification, const SharedPtr<TextureOld>& a_Texture )
 	{
 		switch ( RendererAPI::GetAPI() )
 		{
@@ -47,7 +47,7 @@ namespace Tridium {
 		return nullptr;
 	}
 
-	CubeMap* CubeMap::Create( const TextureSpecification& a_Specification, const std::array<float*, 6>& a_CubeMapData )
+	CubeMap* CubeMap::Create( const TextureSpecificationOld& a_Specification, const std::array<float*, 6>& a_CubeMapData )
 	{
 		switch ( RendererAPI::GetAPI() )
 		{
@@ -69,7 +69,7 @@ namespace Tridium {
 
 	AssetHandle TextureFactory::GetWhiteTexture()
 	{
-		static SharedPtr<Texture> s_WhiteTexture = TextureLoader::LoadTexture( Engine::Get()->GetEngineAssetsDirectory() / "Textures/White.tga" );
+		static SharedPtr<TextureOld> s_WhiteTexture = TextureLoader::LoadTexture( Engine::Get()->GetEngineAssetsDirectory() / "Textures/White.tga" );
 		static AssetHandle s_WhiteTextureHandle = ( s_WhiteTexture->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_WhiteTexture->GetHandle() );
 		static bool s_TextureInitialized = AssetManager::AddMemoryOnlyAsset( s_WhiteTextureHandle, s_WhiteTexture );
 
@@ -78,7 +78,7 @@ namespace Tridium {
 
 	AssetHandle TextureFactory::GetBlackTexture()
 	{
-		static SharedPtr<Texture> s_BlackTexture = TextureLoader::LoadTexture( Engine::Get()->GetEngineAssetsDirectory() / "Textures/Black.tga" );
+		static SharedPtr<TextureOld> s_BlackTexture = TextureLoader::LoadTexture( Engine::Get()->GetEngineAssetsDirectory() / "Textures/Black.tga" );
 		static AssetHandle s_BlackTextureHandle = ( s_BlackTexture->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_BlackTexture->GetHandle() );
 		static bool s_TextureInitialized = AssetManager::AddMemoryOnlyAsset( s_BlackTextureHandle, s_BlackTexture );
 
@@ -87,7 +87,7 @@ namespace Tridium {
 
 	AssetHandle TextureFactory::GetNormalTexture()
 	{
-		static SharedPtr<Texture> s_NormalTexture = TextureLoader::LoadTexture( Engine::Get()->GetEngineAssetsDirectory() / "Textures/Normal.tga" );
+		static SharedPtr<TextureOld> s_NormalTexture = TextureLoader::LoadTexture( Engine::Get()->GetEngineAssetsDirectory() / "Textures/Normal.tga" );
 		static AssetHandle s_NormalTextureHandle = ( s_NormalTexture->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_NormalTexture->GetHandle() );
 		static bool s_TextureInitialized = AssetManager::AddMemoryOnlyAsset( s_NormalTextureHandle, s_NormalTexture );
 

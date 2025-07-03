@@ -1,13 +1,11 @@
 #pragma once
 #include "imgui.h"
-#include "imgui_internal.h"
-#include "ImGuiHelpers.h"	
+#include "imgui_internal.h"	
+#include "IconsFontAwesome6.h"
 
 #define TE_PAYLOAD_CONTENT_BROWSER_ITEM "ContentBrowserItem"
 #define TE_PAYLOAD_ASSET_HANDLE "AssetHandle"
 #define TE_PAYLOAD_GAME_OBJECT "GameObject"
-
-#include "IconsFontAwesome6.h"
 
 namespace Tridium {
 
@@ -21,6 +19,22 @@ static ImVec4 operator*( const ImVec4& a_Color, float a_Value )
 }
 
 namespace ImGui {
+
+	template<typename _Func>
+	struct FunctionScope
+	{
+		FunctionScope( const _Func& a_Function )
+			: Function( a_Function )
+		{
+		}
+
+		~FunctionScope()
+		{
+			Function();
+		}
+
+		_Func Function;
+	};
 
 	ImFont* GetLightFont();
 	ImFont* GetRegularFont();

@@ -6,8 +6,8 @@
 
 namespace Tridium {
 
-#define ASSET_CLASS_TYPE(type) static constexpr EAssetType StaticType() { return EAssetType::type; }\
-							   virtual EAssetType AssetType() const { return StaticType(); }\
+#define ASSET_CLASS_TYPE(type) static constexpr EAssetTypeOld StaticType() { return EAssetTypeOld::type; }\
+							   virtual EAssetTypeOld AssetType() const { return StaticType(); }\
 
 	class Asset : public std::enable_shared_from_this<Asset>
     {

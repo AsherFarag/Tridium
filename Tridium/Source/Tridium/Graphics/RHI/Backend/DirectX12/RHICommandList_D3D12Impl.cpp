@@ -63,6 +63,8 @@ namespace Tridium::D3D12 {
 
 	bool RHICommandList_D3D12Impl::Open() 
 	{
+		IRHICommandList::Open();
+
 		RHIFenceValue completedValue = m_CmdQueue->UpdateLastCompletedValue();
 
 		// Set the active command list to an unused one from the pool or create a new one.
@@ -115,7 +117,7 @@ namespace Tridium::D3D12 {
 
 	bool RHICommandList_D3D12Impl::Close()
 	{
-		RHI_DEBUG_OP( m_DebugCommands.Clear() );
+		IRHICommandList::Close();
 
 		CommitBarriers();
 
@@ -254,10 +256,157 @@ namespace Tridium::D3D12 {
 
 	void RHICommandList_D3D12Impl::UpdateTexture( IRHITexture& a_Texture, const RHITextureSlice& a_DstSlice, RHITextureSubresourceData a_Data, RHI_DEBUG_SRC_LOC_PARAM ) 
 	{
+		IRHICommandList::UpdateTexture( a_Texture, a_DstSlice, a_Data, RHI_DEBUG_SRC_LOC );
+		TODO( "Handle different texture sizes" );
+		RHI_DEV_CHECK( a_Data.Data != nullptr, "No data provided for texture update!" );
+
+		if ( IsAutomaticResourceStateTransitionEnabled() )
+			m_ResourceStateTracker.RequireTextureState( a_Texture, ERHIResourceStates::CopyDest );
+
+		CommitBarriers();
+
+		D3D12_RESOURCE_DESC textureDesc = a_Texture.NativePtrAs<ID3D12Resource>()->GetDesc();
+		UINT64 requiredSize = 0;
+		D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint = {};
+		UINT numRows = 0;
+		UINT64 rowSizeInBytes = 0;
+		UINT64 totalBytes = 0;
+
+		GetD3D12RHI()->GetD3D12Device()->GetCopyableFootprints(
+			&textureDesc,
+			a_DstSlice.MipLevel,
+			1,
+			0,
+			&footprint,
+			&numRows,
+			&rowSizeInBytes,
+			&requiredSize
+		);
+
+		// Create an upload buffer
+		ComPtr<ID3D12Resource> uploadBuffer;
+		{
+			D3D12MA::Allocator* allocator = Device()->GetAllocator().Get();
+
+			D3D12_RESOURCE_DESC uploadBufferDesc = {};
+			uploadBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+			uploadBufferDesc.Width = requiredSize;
+			uploadBufferDesc.Height = 1;
+			uploadBufferDesc.DepthOrArraySize = 1;
+			uploadBufferDesc.MipLevels = 1;
+			uploadBufferDesc.Format = DXGI_FORMAT_UNKNOWN;
+			uploadBufferDesc.SampleDesc.Count = 1;
+			uploadBufferDesc.SampleDesc.Quality = 0;
+			uploadBufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+			uploadBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+			D3D12MA::ALLOCATION_DESC allocDesc{};
+			allocDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+
+			ComPtr<D3D12MA::Allocation> uploadBufferAlloc;
+			HRESULT hr = allocator->CreateResource(
+				&allocDesc,
+				&uploadBufferDesc,
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr,
+				uploadBufferAlloc.GetAddressOf(),
+				IID_PPV_ARGS( uploadBuffer.GetAddressOf() )
+			);
+
+			if ( FAILED( hr ) )
+			{
+				ASSERT( false, "Failed to create upload buffer resource!" );
+				return;
+			}
+
+			m_CmdContext.ReferencedUnknowns.EmplaceBack( std::move( uploadBufferAlloc ) );
+		}
+
+		// Copy data to upload buffer
+		{
+			char* uploadBufferAddress = nullptr;
+			D3D12_RANGE mapRange = { 0, Cast<SIZE_T>( requiredSize ) };
+			uploadBuffer->Map( 0, &mapRange, ReinterpretCast<void**>( &uploadBufferAddress ) );
+
+			const uint8_t* srcData = Cast<const uint8_t*>( a_Data.Data );
+			uint8_t* dstData = ReinterpretCast<uint8_t*>( uploadBufferAddress );
+			// We copy row by row, slice by slice here because the GPU layout may be different from the CPU layout
+			for ( uint32_t z = 0; z < footprint.Footprint.Depth; ++z )
+			{
+				for ( uint32_t y = 0; y < numRows; ++y )
+				{
+					std::memcpy(
+						dstData + z * footprint.Footprint.RowPitch * numRows + y * footprint.Footprint.RowPitch,
+						srcData + z * a_Data.DepthStride + y * a_Data.RowStride,
+						Math::Min<size_t>( a_Data.RowStride, footprint.Footprint.RowPitch )
+					);
+				}
+			}
+
+			uploadBuffer->Unmap(0, nullptr);
+		}
+
+		// Setup copy locations
+		D3D12_TEXTURE_COPY_LOCATION dstLocation{};
+		dstLocation.pResource = a_Texture.NativePtrAs<ID3D12Resource>();
+		dstLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+		dstLocation.SubresourceIndex = CalcSubresource( a_DstSlice.MipLevel, a_DstSlice.ArraySlice, 0, textureDesc.MipLevels, textureDesc.DepthOrArraySize );
+
+		D3D12_TEXTURE_COPY_LOCATION srcLocation{};
+		srcLocation.pResource = uploadBuffer.Get();
+		srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+		srcLocation.PlacedFootprint = footprint;
+
+		// Perform the copy
+		m_ActiveCmdList.CmdList->CopyTextureRegion(
+			&dstLocation,
+			a_DstSlice.OffsetX,
+			a_DstSlice.OffsetY,
+			a_DstSlice.OffsetZ,
+			&srcLocation,
+			nullptr // use full source footprint
+		);
 	}
 
 	void RHICommandList_D3D12Impl::CopyTexture( IRHITexture& a_DstTexture, const RHITextureSlice& a_DstSlice, IRHITexture& a_SrcTexture, const RHITextureSlice& a_SrcSlice, RHI_DEBUG_SRC_LOC_PARAM ) 
 	{
+		IRHICommandList::CopyTexture( a_DstTexture, a_DstSlice, a_SrcTexture, a_SrcSlice, RHI_DEBUG_SRC_LOC );
+
+		const auto dstSlice = a_DstSlice.Resolve( a_DstTexture.Desc() );
+		const auto srcSlice = a_SrcSlice.Resolve( a_SrcTexture.Desc() );
+
+		D3D12_TEXTURE_COPY_LOCATION dstLocation{};
+		dstLocation.pResource = a_DstTexture.NativePtrAs<ID3D12Resource>();
+		dstLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+		dstLocation.SubresourceIndex = CalcSubresource(
+			dstSlice.MipLevel, dstSlice.ArraySlice, 0,
+			a_DstTexture.Desc().Mips, a_DstTexture.Desc().DepthOrArraySize
+		);
+
+		D3D12_TEXTURE_COPY_LOCATION srcLocation{};
+		srcLocation.pResource = a_SrcTexture.NativePtrAs<ID3D12Resource>();
+		srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+		srcLocation.SubresourceIndex = CalcSubresource(
+			srcSlice.MipLevel, srcSlice.ArraySlice, 0,
+			a_SrcTexture.Desc().Mips, a_SrcTexture.Desc().DepthOrArraySize
+		);
+
+		D3D12_BOX srcBox{};
+		srcBox.left = srcSlice.OffsetX;
+		srcBox.top = srcSlice.OffsetY;
+		srcBox.front = srcSlice.OffsetZ;
+		srcBox.right = srcSlice.OffsetX + srcSlice.Width;
+		srcBox.bottom = srcSlice.OffsetY + srcSlice.Height;
+		srcBox.back = srcSlice.OffsetZ + srcSlice.Depth;
+
+		m_ActiveCmdList.CmdList->CopyTextureRegion(
+			&dstLocation,
+			dstSlice.OffsetX,
+			dstSlice.OffsetY,
+			dstSlice.OffsetZ,
+			&srcLocation,
+			&srcBox
+		);
 	}
 
 	void RHICommandList_D3D12Impl::SetInlinedConstants( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes, RHI_DEBUG_SRC_LOC_PARAM ) 

@@ -7,6 +7,7 @@
 #include "InitList.h"
 #include "List.h"
 #include "Map.h"
+#include "UnorderedMap.h"
 #include "Optional.h"
 #include "Set.h"
 #include "Span.h"

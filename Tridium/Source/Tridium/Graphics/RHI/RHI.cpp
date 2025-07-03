@@ -68,8 +68,6 @@ namespace Tridium {
 	{
 		RHI_DEV_CHECK( s_DynamicRHI, "RHI is not initialised!" );
 
-		RHIShaderLibrary::Singleton::Destroy();
-
 		bool success = s_DynamicRHI->Shutdown();
 
 		delete s_DynamicRHI;

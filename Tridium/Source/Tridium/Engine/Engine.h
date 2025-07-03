@@ -6,6 +6,7 @@
 #include <Tridium/Project/Project.h>
 #include <Tridium/Scene/SceneManager.h>
 #include <Tridium/oldAsset/AssetManagerBase.h>
+#include <Tridium/Asset/AssetDatabase.h>
 
 // Engine Modules
 #include "EngineModule.h"
@@ -29,58 +30,52 @@ namespace Tridium {
 	// Engine
 	//  This class serves as the layer above the Application class and is the core of the engine.
 	//  It is responsible for initialization and shutdown of the engine and its modules.
-	class Engine final : public ISingleton<Engine>
+	class Engine final
 	{
 	public:
-		Project& GetActiveProject() { return m_ActiveProject; }
-		const EngineConfig& GetConfig() const { return m_Config; }
-		const FilePath& GetEngineAssetsDirectory() const { return GetConfig().EngineAssetsDirectory; }
-		AssetManagerBase* GetAssetManager() { return m_AssetManager.get(); }
+		using ModuleStorage = UnorderedMap<hash64_t, UniquePtr<IEngineModule>>;
 
-		void SetConfig( const EngineConfig& a_Config ) { m_Config = a_Config; }
+		static Engine* Get() { return s_Instance; }
+		static Project& GetActiveProject() { return Get()->m_ActiveProject; }
+		static const EngineConfig& GetConfig() { return Get()->m_Config; }
+		static void SetConfig( const EngineConfig& a_Config ) { Get()->m_Config = a_Config; }
+		static const FilePath& GetEngineAssetsDirectory() { return GetConfig().EngineAssetsDirectory; }
 
-		//================================================================
-		// Engine Modules
-		using ModuleStorage = UnorderedMap< hash_t, Pair< EngineModuleInfo, UniquePtr<IEngineModule> > >;
+		//=========================================================================
 		// Get a module by its type hash. E.g. Hashing::TypeHash<MyModule>()
 		// Returns nullptr if the module does not exist.
-		IEngineModule* GetModule( hash_t a_TypeHash );
-		// Get a module by its type.
-		template<typename T> requires Concepts::IsValidEngineModule<T>
-		T* GetModule();
-		//================================================================
+		static IEngineModule* GetModule( hash_t a_TypeHash );
+
+		//=========================================================================
+		// Get an engine module by its type.
+		template<Concepts::Derived<IEngineModule> T>
+		static T* GetModule();
 
 	private:
 		EngineConfig				m_Config;
 		Project                     m_ActiveProject;
 		ModuleStorage               m_EngineModules;
-		UniquePtr<AssetManagerBase> m_AssetManager;
 		UniquePtr<GameInstance>     m_GameInstance;
-		ImGuiLayer*                 m_ImGuiLayer = nullptr;
 
 	protected:
-		//////////////////////////////////////////////////////////////////////////
-		// Engine Functions to be called by the Application class
-		//////////////////////////////////////////////////////////////////////////
+		//================================================================
+		friend class Application;
+		friend class Editor;
+		static Engine* s_Instance;
+
+		static UniquePtr<Engine> Create( const EngineConfig& a_Config );
 
 		//============================
 		// Engine Initialization
-		bool Init( const EngineConfig& a_Config );
 		bool InitProject();
-		bool InitModules( EEngineInitStage a_InitStage );
 		bool InitScene();
 		//============================
 
-		//============================
-		// Engine Shutdown
-		void Shutdown();
-		// Modules are shutdown in reverse order of initialization
-		bool ShutdownModules( EEngineInitStage a_ShutdownStage );
-		//============================
+		Array<IEngineModule*> GetInitOrderedModules();
 
-		//////////////////////////////////////////////////////////////////////////
-
-		friend class Application;
+	public:
+		Engine( const EngineConfig& a_Config );
+		~Engine();
 	};
 
 
@@ -89,7 +84,7 @@ namespace Tridium {
 	// Inline Definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	template<typename T> requires Concepts::IsValidEngineModule<T>
+	template<Concepts::Derived<IEngineModule> T>
 	inline T* Engine::GetModule()
 	{
 		constexpr hash_t hash = Hashing::TypeHash<T>();

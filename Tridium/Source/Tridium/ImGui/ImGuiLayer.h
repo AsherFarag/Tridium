@@ -20,11 +20,10 @@ namespace Tridium {
 		void End();
 
 	private:
+		float m_Time = 0.f;
+
 		// Helper function that converts Tridiums Key Codes to ImGui's Key Codes
 		ImGuiKey TridiumToImGuiKey( EInputKey key );
-
-	private:
-		float m_Time = 0.f;
 	};
 
 }

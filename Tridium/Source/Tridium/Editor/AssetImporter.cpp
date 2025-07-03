@@ -9,33 +9,33 @@ namespace Tridium {
     AssetHandle AssetImporter::ImportAsset( const FilePath& a_FilePath )
     {
         FilePath absolutePath = EditorAssetManager::Get()->GetAbsolutePath( a_FilePath );
-		EAssetType assetType = GetAssetTypeFromFileExtension( absolutePath.GetExtension().ToString() );
+		EAssetTypeOld assetType = GetAssetTypeFromFileExtension( absolutePath.GetExtension().ToString() );
         switch ( assetType )
         {
-        case EAssetType::Scene:
+        case EAssetTypeOld::Scene:
 			EditorAssetManager::Get()->ImportAsset( absolutePath );
             break;
-        case EAssetType::Material:
+        case EAssetTypeOld::Material:
             EditorAssetManager::Get()->ImportAsset( absolutePath );
             break;
-        case EAssetType::MeshSource:
+        case EAssetTypeOld::MeshSource:
         {
-            Application::Get()->PushOverlay( new MeshSourceImporterPanel( absolutePath ) );
+            Application::Get()->PushOverlay<MeshSourceImporterPanel>( absolutePath );
             break;
         }
-        case EAssetType::StaticMesh:
+        case EAssetTypeOld::StaticMesh:
             EditorAssetManager::Get()->ImportAsset( absolutePath );
             break;
-        case EAssetType::Shader:
+        case EAssetTypeOld::Shader:
             EditorAssetManager::Get()->ImportAsset( absolutePath );
             break;
-        case EAssetType::Texture:
+        case EAssetTypeOld::Texture:
             EditorAssetManager::Get()->ImportAsset( absolutePath );
             break;
-        case EAssetType::CubeMap:
+        case EAssetTypeOld::CubeMap:
             EditorAssetManager::Get()->ImportAsset( absolutePath );
             break;
-        case EAssetType::LuaScript:
+        case EAssetTypeOld::LuaScript:
             EditorAssetManager::Get()->ImportAsset( absolutePath );
             break;
         }

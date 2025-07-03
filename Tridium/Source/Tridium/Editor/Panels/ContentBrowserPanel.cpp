@@ -22,7 +22,7 @@
 
 namespace Tridium {
 
-	std::unordered_map<EFileType, SharedPtr<Texture>> ContentItemIcons::s_FileTypeIcons = std::unordered_map<EFileType, SharedPtr<Texture>>();
+	UnorderedMap<EFileType, SharedPtr<Texture>> ContentItemIcons::s_FileTypeIcons = UnorderedMap<EFileType, SharedPtr<Texture>>();
 	SharedPtr<Texture> ContentItemIcons::s_UnimportedAssetIcon = nullptr;
 
 	const char* FileTypeToString( EFileType a_Type )
@@ -48,27 +48,28 @@ namespace Tridium {
 	ContentBrowserPanel::ContentBrowserPanel() : Panel( TE_ICON_FOLDER " Content Browser" )
 	{
 		FilePath iconFolder( Engine::Get()->GetEngineAssetsDirectory() / "Editor/Icons" );
-		SharedPtr<Texture> defaultIcon = TextureLoader::LoadTexture( iconFolder / "file.png" );
+		SharedPtr<Texture> defaultIcon = Texture::Load( ( iconFolder / "file.png" ).ToString().c_str() ).Value();
 		ContentItemIcons::s_FileTypeIcons = {
 			{ EFileType::None,       defaultIcon },
-			{ EFileType::Folder,     TextureLoader::LoadTexture( iconFolder / "folder.png" ) },
-			{ EFileType::Scene,      TextureLoader::LoadTexture( iconFolder / "tridium-scene.png" ) },
+			{ EFileType::Folder,     Texture::Load( ( iconFolder / "folder.png" ).ToString().c_str() ).Value() },
+			{ EFileType::Scene,      Texture::Load( ( iconFolder / "tridium-scene.png" ).ToString().c_str() ).Value() },
 			{ EFileType::Material,   defaultIcon },
 			{ EFileType::MeshSource, defaultIcon },
 			{ EFileType::StaticMesh, defaultIcon },
 			{ EFileType::Shader,     defaultIcon },
-			{ EFileType::Texture,    TextureLoader::LoadTexture( iconFolder / "file-media.png" ) },
-			{ EFileType::CubeMap,    TextureLoader::LoadTexture( iconFolder / "file-media.png" ) },
-			{ EFileType::LuaScript,	     TextureLoader::LoadTexture( iconFolder / "file-code.png" ) },
+			{ EFileType::Texture,    Texture::Load( ( iconFolder / "file-media.png" ).ToString().c_str() ).Value() },
+			{ EFileType::CubeMap,    Texture::Load( ( iconFolder / "file-media.png" ).ToString().c_str() ).Value() },
+			{ EFileType::LuaScript,	 Texture::Load( ( iconFolder / "file-code.png" ).ToString().c_str() ).Value() },
 		};
 
-		ContentItemIcons::s_UnimportedAssetIcon = TextureLoader::LoadTexture( iconFolder / "file-unimported.png" );
+		ContentItemIcons::s_UnimportedAssetIcon = Texture::Load( ( iconFolder / "file-unimported.png" ).ToString().c_str() ).Value();
 	}
 
 	void ContentBrowserPanel::OnImGuiDraw()
 	{
-		if ( !ImGui::Begin( m_Name.c_str(), &m_Open ) )
+		if ( true )
 		{
+			ImGui::Begin( m_Name.c_str(), &m_Open );
 			ImGui::End();
 
 			if ( !m_Open )
@@ -119,7 +120,7 @@ namespace Tridium {
 
 	void ContentBrowserPanel::ReconstructDirectoryStack()
 	{
-		m_DirectoryStack.clear();
+		m_DirectoryStack.Clear();
 
 		FilePath parentFolderPaths = m_CurrentDirectory;
 		const FilePath assetDirectory = Engine::Get()->GetActiveProject().GetAssetDirectory();
@@ -134,11 +135,11 @@ namespace Tridium {
 			if ( parentFolderPaths == assetDirectory )
 				break;
 
-			m_DirectoryStack.push_front( parentFolderPaths.GetFilename().ToString() );
+			m_DirectoryStack.EmplaceFront( parentFolderPaths.GetFilename().ToString() );
 			parentFolderPaths = parentFolderPaths.GetParentPath();
 		}
 
-		m_DirectoryStack.push_front( Engine::Get()->GetActiveProject().Config.Editor.AssetDirectory.GetFilename().ToString() );
+		m_DirectoryStack.EmplaceFront( Engine::Get()->GetActiveProject().Config.Editor.AssetDirectory.GetFilename().ToString() );
 	}
 
 	void ContentBrowserPanel::ReconstructFolderHierarchy()
@@ -152,7 +153,7 @@ namespace Tridium {
 		for ( auto& directoryEntry : IO::DirectoryIterator( a_Directory ) )
 		{
 			FilePath filePath = directoryEntry.path();
-			std::string fileName = filePath.GetFilename().ToString();
+			String fileName = filePath.GetFilename().ToString();
 
 			EFileType type = EFileType::Folder;
 			if ( !directoryEntry.is_directory() )
@@ -178,7 +179,7 @@ namespace Tridium {
 			}
 
 			// Add the file to the folder heirarchy
-			ContentItem& item = m_FolderHeirarchy[a_Directory].emplace_back(
+			ContentItem& item = m_FolderHeirarchy[a_Directory].EmplaceBack(
 				*this,
 				type,
 				fileName,
@@ -199,7 +200,7 @@ namespace Tridium {
 		{
 			// Add some padding to the top of the window
 			ImGui::SetCursorPosY( ImGui::GetCursorPosY() + 2.0f );
-			const std::string& rootFolderName = m_DirectoryStack.front();
+			const String& rootFolderName = m_DirectoryStack.Front();
 			if ( ImGui::TreeNodeEx( ( TE_ICON_FOLDER " " + rootFolderName ).c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_Framed) )
 			{
 				RecurseDrawFolderHierarchy( Engine::Get()->GetActiveProject().GetAssetDirectory() );
@@ -346,19 +347,19 @@ namespace Tridium {
 			ImGui::ScopedStyleVar frame( ImGuiStyleVar_FrameBorderSize, 0.f );
 			ImGui::ScopedStyleCol buttonCol( ImGuiCol_Button, ImVec4() );
 			uint32_t i = 0;
-			for ( const std::string& folder : m_DirectoryStack )
+			for ( const String& folder : m_DirectoryStack )
 			{
 				ImGui::ScopedID id( i );
 				if ( ImGui::SmallButton( folder.c_str() ) )
 				{
-					for ( uint32_t j = m_DirectoryStack.size() - 1; j > i; --j )
+					for ( uint32_t j = m_DirectoryStack.Size() - 1; j > i; --j )
 						m_CurrentDirectory = m_CurrentDirectory.GetParentPath();
 
 					OpenFolder( m_CurrentDirectory );
 					break;
 				}
 
-				if ( i < m_DirectoryStack.size() - 1 )
+				if ( i < m_DirectoryStack.Size() - 1 )
 				{
 					ImGui::SameLine();
 					ImGui::Text( ">" );
@@ -395,14 +396,14 @@ namespace Tridium {
 				{
 					if ( ImGui::MenuItem( "Material" ) )
 					{
-						Util::OpenNewFileDialog( "Material", "m_NewMaterial.tmat", [&](const std::string& a_FilePath)
+						Util::OpenNewFileDialog( "Material", "m_NewMaterial.tmat", [&](const String& a_FilePath)
 							{
 								SharedPtr<Material> material = MakeShared<Material>();
 
 								AssetMetaData metaData =
 								{
 									.Handle = AssetHandle::Create(),
-									.AssetType = EAssetType::Material,
+									.AssetType = EAssetTypeOld::Material,
 									.Path = m_CurrentDirectory / a_FilePath,
 									.Name = a_FilePath,
 									.IsAssetLoaded = true,
@@ -415,7 +416,7 @@ namespace Tridium {
 
 					if ( ImGui::MenuItem( "Script" ) )
 					{
-						Util::OpenNewFileDialog( "Script", "m_NewScript.lua", [&]( const std::string& a_FilePath )
+						Util::OpenNewFileDialog( "Script", "m_NewScript.lua", [&]( const String& a_FilePath )
 							{
 								std::ofstream file( ( m_CurrentDirectory / a_FilePath ).ToString() );
 								file.close();
@@ -506,7 +507,7 @@ namespace Tridium {
 		// Delete Option
 		{
 			ImGui::Separator();
-			ImGui::ScopedStyleCol textColor( ImGuiCol_Text, ImVec4( Editor::GetPallete().Red ) );
+			ImGui::ScopedStyleCol textColor( ImGuiCol_Text, ImVec4( Editor::GetStyle().Colors.Red ) );
 			if ( ImGui::MenuItem( "Delete" ) )
 			{
 				FilePath filePath = m_CurrentDirectory / a_Item.Name;
@@ -634,36 +635,38 @@ namespace Tridium {
 
 	bool ContentItem::OnImGuiDraw( float a_Size ) const 
 	{
-		SharedPtr<Texture> icon = nullptr;
-		if ( IsImported || !IsAsset() )
-			icon = ContentItemIcons::s_FileTypeIcons[Type];
-		else // Must be an Unimported Asset
-			icon = ContentItemIcons::s_UnimportedAssetIcon;
+		return false; TODO( "ContentItem::OnImGuiDraw" );
 
-		const AssetTypeInfo& typeInfo = AssetTypeManager::GetAssetTypeInfo( Cast<EAssetType>( Type ) );
-		ImVec4 color = ImVec4( typeInfo.Color.X, typeInfo.Color.Y, typeInfo.Color.Z, typeInfo.Color.W );
+		//SharedPtr<Texture> icon = nullptr;
+		//if ( IsImported || !IsAsset() )
+		//	icon = ContentItemIcons::s_FileTypeIcons[Type];
+		//else // Must be an Unimported Asset
+		//	icon = ContentItemIcons::s_UnimportedAssetIcon;
 
-		RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), color, a_Size );
-		// If the item is double clicked, open it
-		const bool wasOpened = ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left );
+		//const AssetTypeInfo& typeInfo = AssetTypeManager::GetAssetTypeInfo( Cast<EAssetTypeOld>( Type ) );
+		//ImVec4 color = ImVec4( typeInfo.Color.X, typeInfo.Color.Y, typeInfo.Color.Z, typeInfo.Color.W );
 
-		if ( ImGui::BeginItemTooltip() )
-		{
-			ImGui::Text( Name.c_str() );
-			ImGui::EndTooltip();
-		}
+		//RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), color, a_Size );
+		//// If the item is double clicked, open it
+		//const bool wasOpened = ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Left );
 
-		if ( ImGui::BeginDragDropSource() )
-		{
-			std::string filePath = ( Owner.GetDirectory() / Name ).ToString();
-			ImGui::SetDragDropPayload( TE_PAYLOAD_ASSET_HANDLE, &Handle, sizeof( AssetHandle ) );
+		//if ( ImGui::BeginItemTooltip() )
+		//{
+		//	ImGui::Text( Name.c_str() );
+		//	ImGui::EndTooltip();
+		//}
 
-			RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), color, a_Size );
+		//if ( ImGui::BeginDragDropSource() )
+		//{
+		//	String filePath = ( Owner.GetDirectory() / Name ).ToString();
+		//	ImGui::SetDragDropPayload( TE_PAYLOAD_ASSET_HANDLE, &Handle, sizeof( AssetHandle ) );
 
-			ImGui::EndDragDropSource();
-		}
+		//	RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), color, a_Size );
 
-		return wasOpened;
+		//	ImGui::EndDragDropSource();
+		//}
+
+		//return wasOpened;
 	}
 }
 

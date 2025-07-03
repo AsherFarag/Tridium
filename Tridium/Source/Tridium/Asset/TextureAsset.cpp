@@ -6,7 +6,7 @@
 #include <stb_image.h>
 #undef STB_IMAGE_IMPLEMENTATION
 
-namespace Tridium::T {
+namespace Tridium {
 
 	SharedPtr<Texture> Texture::Create( Array<uint8_t>&& a_Data, TextureSpecification a_Spec )
 	{
@@ -128,7 +128,9 @@ namespace Tridium::T {
 		TODO( "Make Array be able to take in a raw pointer and size and own that instead of copying" );
 		const size_t texDataSize = width * height * channels * (isHDR ? sizeof( float ) : sizeof( uint8_t ));
 		Span<uint8_t> texData{ data, texDataSize };
-		return Create( texData, texSpec );
+		SharedPtr<Texture> textureAsset = Create( texData, texSpec );
+		textureAsset->m_AssetFlags.RemoveFlag( EAssetFlags::MemoryOnly ); // Ensure it's not memory-only
+		return textureAsset;
 	}
 
 }

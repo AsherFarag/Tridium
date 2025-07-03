@@ -26,9 +26,9 @@ namespace Tridium {
 			m_DefaultShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/PBR-Shadows.glsl" );
 			m_SkyboxShader.reset( Shader::Create() );
 			m_SkyboxShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/EnvironmentMap/SkyBox.glsl" );
-			m_WhiteTexture = AssetManager::GetAsset<Texture>( TextureFactory::GetWhiteTexture() );
-			m_BlackTexture = AssetManager::GetAsset<Texture>( TextureFactory::GetBlackTexture() );
-			m_NormalTexture = AssetManager::GetAsset<Texture>( TextureFactory::GetNormalTexture() );
+			m_WhiteTexture = AssetManager::GetAsset<TextureOld>( TextureFactory::GetWhiteTexture() );
+			m_BlackTexture = AssetManager::GetAsset<TextureOld>( TextureFactory::GetBlackTexture() );
+			m_NormalTexture = AssetManager::GetAsset<TextureOld>( TextureFactory::GetNormalTexture() );
 			m_DefaultMaterial = MakeShared<Material>();
 			m_DefaultMaterial->MetallicIntensity = 0.0f;
 			m_DefaultMaterial->RoughnessIntensity = 1.0f;
@@ -40,7 +40,7 @@ namespace Tridium {
 
 
 			// Load BRDF LUT
-			TextureSpecification spec;
+			TextureSpecificationOld spec;
 			spec.WrapS = ETextureWrap::ClampToEdge;
 			spec.WrapT = ETextureWrap::ClampToEdge;
 			spec.WrapR = ETextureWrap::ClampToEdge;
@@ -622,44 +622,44 @@ namespace Tridium {
 
 				// Bind Textures
 				uint32_t textureSlot = 0;
-				auto albedoTexture = AssetManager::GetAsset<Texture>( material->AlbedoTexture );
+				auto albedoTexture = AssetManager::GetAsset<TextureOld>( material->AlbedoTexture );
 				if ( !albedoTexture ) albedoTexture = m_WhiteTexture;
 				albedoTexture->Bind( textureSlot );
 				shader->SetInt( "u_AlbedoTexture", textureSlot );
 
 				textureSlot++;
-				auto metallicTexture = AssetManager::GetAsset<Texture>( material->MetallicTexture );
+				auto metallicTexture = AssetManager::GetAsset<TextureOld>( material->MetallicTexture );
 				if ( !metallicTexture ) metallicTexture = m_WhiteTexture;
 				metallicTexture->Bind( textureSlot );
 				shader->SetInt( "u_MetallicTexture", textureSlot );
 
 				textureSlot++;
-				auto roughnessTexture = AssetManager::GetAsset<Texture>( material->RoughnessTexture );
+				auto roughnessTexture = AssetManager::GetAsset<TextureOld>( material->RoughnessTexture );
 				if ( !roughnessTexture ) roughnessTexture = m_WhiteTexture;
 				roughnessTexture->Bind( textureSlot );
 				shader->SetInt( "u_RoughnessTexture", textureSlot );
 
 				textureSlot++;
-				auto normalTexture = AssetManager::GetAsset<Texture>( material->NormalTexture );
+				auto normalTexture = AssetManager::GetAsset<TextureOld>( material->NormalTexture );
 				if ( !normalTexture ) normalTexture = m_NormalTexture;
 				normalTexture->Bind( textureSlot );
 				shader->SetInt( "u_NormalTexture", textureSlot );
 
 				textureSlot++;
 				TODO( "Should we be setting the opacity texture to the albedo if there isn't an opacity texture?" );
-				auto opacityTexture = AssetManager::GetAsset<Texture>( material->OpacityTexture );
+				auto opacityTexture = AssetManager::GetAsset<TextureOld>( material->OpacityTexture );
 				if ( !opacityTexture ) opacityTexture = albedoTexture;
 				opacityTexture->Bind( textureSlot );
 				shader->SetInt( "u_OpacityTexture", textureSlot );
 
 				textureSlot++;
-				auto emissiveTexture = AssetManager::GetAsset<Texture>( material->EmissiveTexture );
+				auto emissiveTexture = AssetManager::GetAsset<TextureOld>( material->EmissiveTexture );
 				if ( !emissiveTexture ) emissiveTexture = m_BlackTexture;
 				emissiveTexture->Bind( textureSlot );
 				shader->SetInt( "u_EmissiveTexture", textureSlot );
 
 				textureSlot++;
-				auto aoTexture = AssetManager::GetAsset<Texture>( material->AOTexture );
+				auto aoTexture = AssetManager::GetAsset<TextureOld>( material->AOTexture );
 				if ( !aoTexture ) aoTexture = m_WhiteTexture;
 				aoTexture->Bind( textureSlot );
 				shader->SetInt( "u_AOTexture", textureSlot );
@@ -994,44 +994,44 @@ namespace Tridium {
 
 				// Bind Textures
 				uint32_t textureSlot = 2 + MAX_DIRECTIONAL_LIGHTS;
-				auto albedoTexture = AssetManager::GetAsset<Texture>( material->AlbedoTexture );
+				auto albedoTexture = AssetManager::GetAsset<TextureOld>( material->AlbedoTexture );
 				if ( !albedoTexture ) albedoTexture = m_WhiteTexture;
 				albedoTexture->Bind( textureSlot );
 				shader->SetInt( "u_AlbedoTexture", textureSlot );
 
 				textureSlot++;
-				auto metallicTexture = AssetManager::GetAsset<Texture>( material->MetallicTexture );
+				auto metallicTexture = AssetManager::GetAsset<TextureOld>( material->MetallicTexture );
 				if ( !metallicTexture ) metallicTexture = m_WhiteTexture;
 				metallicTexture->Bind( textureSlot );
 				shader->SetInt( "u_MetallicTexture", textureSlot );
 
 				textureSlot++;
-				auto roughnessTexture = AssetManager::GetAsset<Texture>( material->RoughnessTexture );
+				auto roughnessTexture = AssetManager::GetAsset<TextureOld>( material->RoughnessTexture );
 				if ( !roughnessTexture ) roughnessTexture = m_WhiteTexture;
 				roughnessTexture->Bind( textureSlot );
 				shader->SetInt( "u_RoughnessTexture", textureSlot );
 
 				textureSlot++;
-				auto normalTexture = AssetManager::GetAsset<Texture>( material->NormalTexture );
+				auto normalTexture = AssetManager::GetAsset<TextureOld>( material->NormalTexture );
 				if ( !normalTexture ) normalTexture = m_NormalTexture;
 				normalTexture->Bind( textureSlot );
 				shader->SetInt( "u_NormalTexture", textureSlot );
 
 				textureSlot++;
 				TODO( "Should we be setting the opacity texture to the albedo if there isn't an opacity texture?" );
-				auto opacityTexture = AssetManager::GetAsset<Texture>( material->OpacityTexture );
+				auto opacityTexture = AssetManager::GetAsset<TextureOld>( material->OpacityTexture );
 				if ( !opacityTexture ) opacityTexture = albedoTexture;
 				opacityTexture->Bind( textureSlot );
 				shader->SetInt( "u_OpacityTexture", textureSlot );
 
 				textureSlot++;
-				auto emissiveTexture = AssetManager::GetAsset<Texture>( material->EmissiveTexture );
+				auto emissiveTexture = AssetManager::GetAsset<TextureOld>( material->EmissiveTexture );
 				if ( !emissiveTexture ) emissiveTexture = m_BlackTexture;
 				emissiveTexture->Bind( textureSlot );
 				shader->SetInt( "u_EmissiveTexture", textureSlot );
 
 				textureSlot++;
-				auto aoTexture = AssetManager::GetAsset<Texture>( material->AOTexture );
+				auto aoTexture = AssetManager::GetAsset<TextureOld>( material->AOTexture );
 				if ( !aoTexture ) aoTexture = m_WhiteTexture;
 				aoTexture->Bind( textureSlot );
 				shader->SetInt( "u_AOTexture", textureSlot );

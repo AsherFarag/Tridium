@@ -2,8 +2,7 @@
 #if IS_EDITOR
 
 #include "Panel.h"
-#include <Tridium/Graphics/oldRendering/Texture.h>
-#include <Tridium/oldAsset/AssetType.h>
+#include <Tridium/Asset/TextureAsset.h>
 
 namespace Tridium {
 
@@ -28,7 +27,7 @@ namespace Tridium {
 	class ContentItemIcons final
 	{
 	public:
-		static std::unordered_map<EFileType, SharedPtr<Texture>> s_FileTypeIcons;
+		static UnorderedMap<EFileType, SharedPtr<Texture>> s_FileTypeIcons;
 		static SharedPtr<Texture> s_UnimportedAssetIcon;
 	};
 
@@ -38,7 +37,7 @@ namespace Tridium {
 		EFileType Type;
 		String Name;
 		FilePath Path;
-		AssetHandle Handle{AssetHandle::InvalidID };
+		AssetID Handle = AssetID::InvalidID;
 		bool IsImported = false;
 		// True if this item is a folder and contains no other folders.
 		bool IsLeaf = false;
@@ -53,7 +52,7 @@ namespace Tridium {
 	{
 	public:
 		using Directory = FilePath;
-		using FolderHeirarchy = std::unordered_map<Directory, std::vector<ContentItem>>;
+		using FolderHeirarchy = UnorderedMap<Directory, Array<ContentItem>>;
 
 		ContentBrowserPanel();
 		virtual ~ContentBrowserPanel() = default;
@@ -79,9 +78,9 @@ namespace Tridium {
 
 	private:
 		FilePath m_CurrentDirectory;
-		std::string m_DirectoryInputBuffer;
-		std::string m_ContentSearchFilter;
-		std::list<std::string> m_DirectoryStack;
+		String m_DirectoryInputBuffer;
+		String m_ContentSearchFilter;
+		List<String> m_DirectoryStack;
 		FolderHeirarchy m_FolderHeirarchy;
 
 		float m_ContentThumbnailSize = 1.0f;

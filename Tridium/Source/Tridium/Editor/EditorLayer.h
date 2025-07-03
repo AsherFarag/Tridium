@@ -27,11 +27,11 @@ namespace Tridium {
 
 	struct UIToolBar
 	{
-		SharedPtr<Texture> PlayButtonIcon;
-		SharedPtr<Texture> PauseButtonIcon;
-		SharedPtr<Texture> StopButtonIcon;
-		SharedPtr<Texture> StepOnceButtonIcon;
-		SharedPtr<Texture> SimulateButtonIcon;
+		SharedPtr<TextureOld> PlayButtonIcon;
+		SharedPtr<TextureOld> PauseButtonIcon;
+		SharedPtr<TextureOld> StopButtonIcon;
+		SharedPtr<TextureOld> StepOnceButtonIcon;
+		SharedPtr<TextureOld> SimulateButtonIcon;
 
 		UIToolBar();
 		void OnImGuiDraw();

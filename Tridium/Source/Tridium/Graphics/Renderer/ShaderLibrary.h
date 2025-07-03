@@ -1,6 +1,6 @@
 #pragma once
-#include "RHIShader.h"
-#include "RHIShaderCompiler.h"
+#include <Tridium/Graphics/RHI/RHIShader.h>
+#include <Tridium/Graphics/RHI/RHIShaderCompiler.h>
 #include <Tridium/Utils/Singleton.h>
 
 namespace Tridium {
@@ -11,17 +11,17 @@ namespace Tridium {
 	struct CachedShader
 	{
 		String Name;
-		RHIShaderModuleRef Shader;
 		String Source;
+		RHIShaderModuleRef Shader;
 	};
 	//=======================================================
 
 
 
 	//=======================================================
-	// RHI Shader Library
+	// Shader Library
 	//  Caches shader modules and provides a way to load and find them.
-	class RHIShaderLibrary : public ISingleton<RHIShaderLibrary, /* _ExplicitSetup */ false>
+	class ShaderLibrary : public ISingleton<ShaderLibrary, /*Explicit Setup*/ true, /*Is Owning*/ false>
 	{
 	public:
 		// Load a shader module from a file and add it to the library with the given name.
@@ -73,7 +73,7 @@ namespace Tridium {
 			CachedShader cachedShader;
 			cachedShader.Name = a_Name.empty() ? GenerateUniqueName() : a_Name.data();
 			cachedShader.Shader = a_Shader;
-			cachedShader.Source = a_Source;
+			cachedShader.Source = std::move( a_Source );
 			return AddShader( std::move( cachedShader ) );
 		}
 
@@ -83,18 +83,15 @@ namespace Tridium {
 		// Unnamed shaders are named "Unnamed_X" where X is the next ID.
 		uint32_t m_NextShaderID = 0;
 
-	private:
 		String GenerateUniqueName()
 		{
-			String name = "Unnamed_" + std::to_string( m_NextShaderID++ );
-			if ( HasShader( Hashing::HashString( name.c_str() ) ) )
-			{
-				return GenerateUniqueName();
-			}
+			String name = std::format( "Unnamed_{}", m_NextShaderID++ );
+			if ( HasShader( Hashing::HashString( name ) ) ) [[unlikely]]
+				return GenerateUniqueName(); // Name exists
 
 			return name;
 		}
-
 	};
+	//=======================================================
 
-}
+} // namespace Tridium

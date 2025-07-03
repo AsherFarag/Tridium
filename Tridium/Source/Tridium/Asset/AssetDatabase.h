@@ -4,9 +4,6 @@
 #include <Tridium/Core/Core.h>
 #include <Tridium/Common/TimeStamp.h>
 
-// TEMP!!
-namespace Tridium { class Application; }
-
 namespace Tridium::T {
 
 	enum class EAssetImporterType
@@ -45,6 +42,10 @@ namespace Tridium::T {
 		static AssetMetadata From( IAsset& a_Asset ) { return { .ID = a_Asset.ID(), .Type = a_Asset.Type() }; }
 	};
 
+}
+
+namespace Tridium {
+
 	//==============================================================================
 	// Asset Database
 	//  This class is responsible for
@@ -59,7 +60,7 @@ namespace Tridium::T {
 		// Retrieves the asset path from an AssetID.
 		static StringView GetAssetPathFromID( AssetID a_AssetID );
 		// Retrieves the AssetMetadata for a given AssetID.
-		static const AssetMetadata* GetAssetMetadata( AssetID a_AssetID );
+		static const T::AssetMetadata* GetAssetMetadata( AssetID a_AssetID );
 
 		// Retrieves an asset by its AssetID if it exists and is loaded.
 		static IAsset* GetAsset( AssetID a_AssetID );
@@ -78,7 +79,7 @@ namespace Tridium::T {
 		static T* GetOrLoadAsset( AssetID a_AssetID ) { return DynamicCast<T*>( GetOrLoadAsset( a_AssetID ) ); }
 
 		// Registers an asset to the database.
-		static bool RegisterAsset( IAsset* a_Asset, const AssetMetadata& a_Metadata );
+		static bool RegisterAsset( const SharedPtr<IAsset>& a_Asset, const T::AssetMetadata& a_Metadata );
 		// Unregisters an asset from the database.
 		static bool UnregisterAsset( AssetID a_AssetID );
 		// Registers 'a_Dependency' as a dependency of 'a_Dependant' asset into the database.
@@ -99,15 +100,15 @@ namespace Tridium::T {
 		};
 	#endif
 
-		// Utility Functions
+		// = Utility Functions =
 
 		// Returns the name of the asset, if the asset is not named or does not exist, returns '<UNKNOWN>'.
 		static StringView GetAssetName( AssetID a_AssetID );
 
 	private:
 		UnorderedMap<String, AssetID, TransparentStringHash, std::equal_to<>> m_AssetPathMap;
-		UnorderedMap<AssetID, Pair<AssetMetadata, SharedPtr<IAsset>>> m_Assets;
-		AssetFactory m_AssetFactory;
+		UnorderedMap<AssetID, Pair<T::AssetMetadata, SharedPtr<IAsset>>> m_Assets;
+		T::AssetFactory m_AssetFactory;
 
 	private:
 		AssetDatabase() = default;
@@ -118,6 +119,7 @@ namespace Tridium::T {
 		static Expected<void, String> Shutdown();
 
 		friend struct Editor;
-		friend Application;
+		friend class Engine;
 	};
-}
+
+} // namespace Tridium

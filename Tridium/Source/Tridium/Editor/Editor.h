@@ -1,30 +1,50 @@
 #pragma once
 #if IS_EDITOR
-#include "EditorApplication.h"
+#include "EditorConfig.h"
+#include "EditorLayer.h"
+#include "EditorPayload.h"
+#include "EditorStyle.h"
+#include <Tridium/Core/Application.h>
+#include <Tridium/Core/Delegate.h>
+#include "Commands/CommandManager.h"
 
 namespace Tridium {
 
-	//=================================================================================================
-	// Editor Namespace
-	//  A namespace for editor specific functions and utilities
-	namespace Editor {
+	// Forward Declarations
+	class GameObject;
 
-		inline EditorPayloadManager& GetPayloadManager() { return EditorApplication::Get()->GetPayloadManager(); }
-		inline EditorLayer* GetEditorLayer() { return EditorApplication::Get() ? EditorApplication::Get()->GetEditorLayer() : nullptr; }
-		inline CommandManager& GetCommandManager() { return EditorApplication::Get()->GetCommandManager(); }
+	//===========================================================================================
+	// Editor
+	//  The global editor class
+	class Editor final : public Application
+	{
+	public:
+		//=======================================================================================
+		// Global editor events that can be subscribed and invoked from anywhere in the editor.
+		struct Events
+		{
+			static MulticastDelegate<void, GameObject> OnGameObjectSelected;
+		};
 
-		// Get the editor style
-		inline EditorStyle& GetStyle() { return EditorApplication::Get()->GetStyle(); }
+		static Editor* Get() { return Cast<Editor*>( s_Instance ); }
+		static EditorPayloadManager& GetPayloadManager() { return Get()->m_PayloadManager; }
+		static EditorLayer* GetEditorLayer() { return Get()->m_EditorLayer; }
+		static EditorStyle& GetStyle() { return Get()->m_Style; }
+		static CommandManager& GetCommandManager() { return Get()->m_CommandManager; }
 
-		// Get the color palette of the current editor style
-		inline EditorStyle::Pallete& GetPallete() { return GetStyle().Colors; }
-	}
-	//=================================================================================================
+	private:
+		EditorLayer* m_EditorLayer;
+		EditorPayloadManager m_PayloadManager;
+		EditorStyle m_Style;
+		CommandManager m_CommandManager;
 
-	namespace Editor::Internal {
-		bool Init( EditorConfig a_Config );
-		void Shutdown();
-	}
+	public:
+		Editor( CmdLineArgs a_CmdLine );
+		~Editor();
+
+		void OnUpdate() override;
+	};
+
 };
 
 #endif // IS_EDITOR

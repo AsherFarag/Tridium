@@ -1,7 +1,7 @@
 #include "tripch.h"
-#include "RHI.h"
 #include "ShaderLibrary.h"
-#include "ShaderPreprocessor.h"
+#include <Tridium/Graphics/RHI/ShaderPreprocessor.h>
+#include <Tridium/Graphics/RHI/RHI.h>
 #include <Tridium/IO/FileIO.h>
 
 namespace Tridium {
@@ -13,9 +13,8 @@ namespace Tridium {
 
 		// We only need the first letter of the suffix as the second letter is always 'S' for shader
 		char shaderSuffix[2] = { a_FileName[a_FileName.size() - 2], a_FileName[a_FileName.size() - 1] };
-		char shaderType = std::tolower( shaderSuffix[0]);
 
-		switch ( shaderSuffix[0] )
+		switch ( std::tolower( shaderSuffix[0] ) )
 		{
 			case 'v': return ERHIShaderType::Vertex;
 			case 'h': return ERHIShaderType::Hull;
@@ -29,8 +28,18 @@ namespace Tridium {
 		return ERHIShaderType::Unknown;
 	}
 
-	RHIShaderModuleRef RHIShaderLibrary::LoadShaderFromFile( const FilePath& a_Path, StringView a_Name, ERHIShaderType a_Type )
+	RHIShaderModuleRef ShaderLibrary::LoadShaderFromFile( const FilePath& a_Path, StringView a_Name, ERHIShaderType a_Type )
     {
+		hash_t nameHash = a_Name.empty()
+			? Hashing::HashString( a_Path.GetFilenameWithoutExtension().c_str() )
+			: Hashing::HashString( a_Name.data() );
+
+		if ( RHIShaderModuleRef ref = FindShader( nameHash ) )
+		{
+			LOG( LogCategory::RHI, Warn, "Shader '{0}' already loaded: {1}", ref->Desc().Name.data(), a_Path.ToString() );
+			return ref;
+		}
+
 		// Read the source code from the file
 		String source = IO::ReadFile( a_Path.ToString() );
 		if ( source.empty() )
@@ -52,36 +61,25 @@ namespace Tridium {
 		if ( a_Name.empty() )
 		{
 			// If no name is provided, use the file name
-			return LoadShader( StringView( source ), StringView( a_Path.GetFilenameWithoutExtension() ), a_Type );
+			return LoadShader( StringView( source ), a_Path.GetFilenameWithoutExtension(), a_Type );
 		}
 
 		// Load the shader with the provided name
 		return LoadShader( StringView( source ), a_Name, a_Type );
     }
 
-	RHIShaderModuleRef RHIShaderLibrary::LoadShader( StringView a_Source, StringView a_Name, ERHIShaderType a_Type )
+	RHIShaderModuleRef ShaderLibrary::LoadShader( StringView a_Source, StringView a_Name, ERHIShaderType a_Type )
 	{
+		hash_t nameHash = Hashing::HashString( a_Name.data() );
+		if ( RHIShaderModuleRef ref = FindShader( nameHash ) )
+		{
+			LOG( LogCategory::RHI, Warn, "Shader '{0}' already loaded", a_Name.data() );
+			return ref;
+		}
+
 		CachedShader cachedShader;
-		if ( a_Name.empty() )
-		{
-			// If no name is provided, use an unnamed shader
-			cachedShader.Name = GenerateUniqueName();
-		}
-		else
-		{
-			cachedShader.Name = a_Name;
-		}
-
+		cachedShader.Name = a_Name.empty() ? GenerateUniqueName() : String( a_Name );
 		cachedShader.Source = a_Source;
-
-		// Preprocess the shader source to get the shader type
-		//ShaderPreprocessor preprocessor;
-		//PreprocessedShader preprocShader = preprocessor.Process( cachedShader.Source );
-		//if ( !preprocShader.Error.empty() )
-		//{
-		//	LOG( LogCategory::Rendering, Error, "Failed to preprocess shader '{0}' - Error: {1}", cachedShader.Name, preprocShader.Error );
-		//	return nullptr;
-		//}
 
 		// Construct the shader compiler input
 		ShaderCompilerInput input;
@@ -115,7 +113,7 @@ namespace Tridium {
 		cachedShader.Shader = shader;
 
 		// Add the shader to the library
-		m_CachedShaders[Hashing::HashString( cachedShader.Name.c_str() )] = std::move( cachedShader );
+		m_CachedShaders[Hashing::HashString( cachedShader.Name )] = std::move( cachedShader );
 		return shader;
 	}
 

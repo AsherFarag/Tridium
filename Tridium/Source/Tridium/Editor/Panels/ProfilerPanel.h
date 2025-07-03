@@ -1,4 +1,5 @@
 #pragma once
+#if IS_EDITOR
 #include "Panel.h"
 #include <Tridium/Debug/Profiler/Profiler.h>
 #include <Tridium/Containers/Optional.h>
@@ -67,3 +68,5 @@ namespace Tridium {
 	};
 
 }
+
+#endif // IS_EDITOR

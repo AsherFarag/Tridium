@@ -1,6 +1,6 @@
 #pragma once
 #include <stack>
-#include "Array.h"
+#include <vector>
 
 namespace Tridium {
 

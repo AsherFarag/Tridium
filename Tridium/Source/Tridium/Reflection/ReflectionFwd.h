@@ -12,7 +12,7 @@ namespace entt {
 	struct meta_data;
 	struct meta_func;
 	struct meta_prop;
-	struct meta_any;
+	class  meta_any;
 	struct meta_handle;
 
 }

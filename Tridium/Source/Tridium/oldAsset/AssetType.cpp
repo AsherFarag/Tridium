@@ -3,34 +3,34 @@
 
 namespace Tridium {
 
-    EAssetType GetAssetTypeFromFileExtension( const std::string& a_Extension )
+    EAssetTypeOld GetAssetTypeFromFileExtension( const std::string& a_Extension )
     {
-		static const std::unordered_map<std::string, EAssetType> s_Extensions =
+		static const std::unordered_map<std::string, EAssetTypeOld> s_Extensions =
 		{
 			// Tridium
-			{ ".tscene", EAssetType::Scene },
-			{ ".tmat", EAssetType::Material },
-			{ ".tmesh", EAssetType::StaticMesh },
+			{ ".tscene", EAssetTypeOld::Scene },
+			{ ".tmat", EAssetTypeOld::Material },
+			{ ".tmesh", EAssetTypeOld::StaticMesh },
 
 			// Mesh Sources
-			{ ".obj", EAssetType::MeshSource },
-			{ ".fbx", EAssetType::MeshSource },
-			{ ".gltf", EAssetType::MeshSource },
+			{ ".obj", EAssetTypeOld::MeshSource },
+			{ ".fbx", EAssetTypeOld::MeshSource },
+			{ ".gltf", EAssetTypeOld::MeshSource },
 
 			// Rendering
-			{ ".glsl", EAssetType::Shader },
+			{ ".glsl", EAssetTypeOld::Shader },
 
 			// Textures
-			{ ".jpg", EAssetType::Texture },
-			{ ".png", EAssetType::Texture },
-			{ ".tga", EAssetType::Texture },
-			{ ".jpeg", EAssetType::Texture },
+			{ ".jpg", EAssetTypeOld::Texture },
+			{ ".png", EAssetTypeOld::Texture },
+			{ ".tga", EAssetTypeOld::Texture },
+			{ ".jpeg", EAssetTypeOld::Texture },
 
 			// Cube Maps
-			{ ".hdr", EAssetType::CubeMap },
+			{ ".hdr", EAssetTypeOld::CubeMap },
 
 			// Lua
-			{ ".lua", EAssetType::LuaScript },
+			{ ".lua", EAssetTypeOld::LuaScript },
 		};
 
 		if ( auto it = s_Extensions.find( Util::ToLower( StringView{ a_Extension } ) ); it != s_Extensions.end() )
@@ -38,7 +38,7 @@ namespace Tridium {
 			return it->second;
 		}
 
-		return EAssetType::None;
+		return EAssetTypeOld::None;
     }
 
 }

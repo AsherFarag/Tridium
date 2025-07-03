@@ -9,9 +9,8 @@
 	#include <Tridium/Editor/Editor.h>
 #endif // IS_EDITOR
 
-#include <Tridium/ImGui/ImGuiLayer.h>
-
 // TEMP ?
+#include <Tridium/ImGui/ImGuiModule.h>
 #include <Tridium/Graphics/oldRendering/GameViewport.h>
 #include <Tridium/Graphics/oldRendering/RenderCommand.h>
 #include <Tridium/Graphics/RHI/RHI.h>
@@ -21,6 +20,7 @@
 #include <Tridium/Reflection/FieldReflection.h>
 #include <Tridium/Asset/AssetDatabase.h>
 #include <Tridium/Asset/TextureAsset.h>
+#include <Tridium/Graphics/Renderer/RendererModule.h>
 
 namespace Tridium {
 
@@ -28,10 +28,23 @@ namespace Tridium {
 
 	///////////////////////////////////////////////////////////////////////////////////////////
 
-	Application::Application( CmdLineArgs a_ProjectPath )
+	Application::Application( CmdLineArgs a_CmdLine )
 	{
+		ENSURE( !s_Instance, "An Application instance already exists!" );
+
 		s_Instance = this;
-		m_CommandLineArgs = std::move( a_ProjectPath );
+		m_CommandLineArgs = std::move( a_CmdLine );
+
+		// Initialise the Window
+		WindowProps props;
+		props.Width = 1280;
+		props.Height = 720;
+		m_Window = Window::Create( props );
+		m_Window->SetEventCallback( [ this ]( const Event& a_Event ) { this->EnqueueEvent( a_Event ); } );
+
+		// Initialise the Engine
+		EngineConfig engineConfig;
+		m_Engine = Engine::Create( engineConfig );
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////
@@ -44,35 +57,19 @@ namespace Tridium {
 	
 	void Application::Run()
 	{
-		if ( !Init() )
-		{
-			LOG( LogCategory::Application, Fatal, "Failed to initialise the application" );
-			return;
-		}
-
 		m_Running = true;
-
-		m_GameViewport.Init( m_Window->GetWidth(), m_Window->GetHeight() );
 
 		uint32_t frameCounter = 0;
 		double fpsInterval = 0.0;
 		uint32_t minFPS = 0xFFFFFFFF;
 		uint32_t maxFPS = 0;
 
-	#if !IS_EDITOR
-		//if ( m_ActiveScene )
-		//{
-		//	m_ActiveScene->OnBeginPlay();
-		//}
-	#endif // IS_EDITOR
-
 		while ( m_Running )
 		{
 			PROFILE_FRAME();
-			// Update Time
+
 			const double lastFrameTime = Time::Now();
-			Time::Update(); // 	s_Time = glfwGetTime();
-			Time::s_DeltaTime = Time::Now() - lastFrameTime;
+			Time::Update();
 
 			// Update FPS
 			++frameCounter;
@@ -91,55 +88,94 @@ namespace Tridium {
 				maxFPS = 0;
 			}
 
-			// Update Loop
-			if ( !m_Window->IsMinimized() )
+			FlushEventQueue();
+
+			OnUpdate();
+
+			// Layers =============================================================================================
+
+			TODO( " Temp solution for setting backbuffer to Present state after imgui is done" );
+			RHI::GetSwapChain()->GetBackBuffer()->SetState( ERHIResourceStates::Present );
+
+			for ( const auto& layer : m_LayerStack )
+				layer->OnUpdate();
+
+			// - Tool UI -
+			if ( ImGuiModule::Get() )
 			{
-				Update();
+				ImGuiModule::GetImGuiLayer()->Begin();
+
+				for ( int i = 0; i < m_LayerStack.NumLayers(); i++ )
+					m_LayerStack[ i ]->OnImGuiDraw();
+
+				ImGuiModule::GetImGuiLayer()->End();
 			}
+			// ---------
+
+			// ====================================================================================================
+
+			RHI::Present();
+			RHI::WaitForIdle();
 
 			m_Window->OnUpdate();
 		}
 
-	#if !IS_EDITOR
-		//if ( m_ActiveScene )
-		//{
-		//	m_ActiveScene->OnEndPlay();
-		//}
-	#endif // IS_EDITOR
-
-		Shutdown();
+		m_Engine.reset();
 	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////
+	void Application::OnUpdate()
+	{
+
+	}
+	
+	///////////////////////////////////////////////////////////////////////////////////////////
+	void Application::FlushEventQueue()
+	{
+		while ( !m_EventQueue.empty() )
+		{
+			Event& event = m_EventQueue.front();
+
+			EventDispatcher dispatcher( event );
+			dispatcher.Dispatch<WindowCloseEvent>( [this]( const WindowCloseEvent& a_Event ) -> bool { return OnWindowClosed( a_Event ); } );
+			dispatcher.Dispatch<WindowResizeEvent>( [this]( const WindowResizeEvent& a_Event ) -> bool { return OnWindowResized( a_Event ); } );
+			for ( auto it = m_LayerStack.end(); it != m_LayerStack.begin(); )
+			{
+				if ( event.Handled )
+					break;
+
+				(*--it)->OnEvent( event );
+			}
+
+			m_EventQueue.pop();
+		}
+	}
+
+	bool Application::OnWindowResized( const WindowResizeEvent& a_Event )
+	{
+		if ( !RHI::GetDynamicRHI()->GetSwapChain() )
+			return false;
+
+		RHI::GetDynamicRHI()->GetSwapChain()->Resize( a_Event.Width, a_Event.Height );
+		return true;
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////
+	bool Application::OnWindowClosed( const WindowCloseEvent& a_Event )
+	{
+		m_Running = false;
+		return true;
+	}
+
+#if 0
 
 	bool Application::Init()
 	{
-		// Initialise the Window
-		WindowProps props;
-		props.Width = 1280;
-		props.Height = 720;
-		m_Window = Window::Create( props );
-		m_Window->SetEventCallback( [this]( const Event& a_Event ) { this->EnqueueEvent( a_Event ); } );
-
-		RHIConfig config{};
-		config.RHIType = ERHInterfaceType::DirectX12;
-		config.UseDebug = true;
-		config.SwapChainDesc = RHISwapChainDesc{}.SetWidth( 1280 )
-			.SetHeight( 720 )
-			.SetBufferCount( 2 )
-			.SetFormat( ERHIFormat::RGBA8_UNORM )
-			.SetFlags( ERHISwapChainFlags::UseVSync )
-			.SetName( "Main SwapChain" );
-
-		bool initSuccess = RHI::Initialise( config );
-		LOG( LogCategory::RHI, Info, "'{0}' - RHI: Initialised = {1}", RHI::GetRHIName( config.RHIType ), initSuccess );
-
-		GPUInfo gpuInfo = RHI::GetDynamicRHI()->GetGPUInfo();
-		LOG( LogCategory::RHI, Info, "RHI Vendor {0}", ToString( Cast<EGPUVendorID>( gpuInfo.VendorID ) ) );
-		LOG( LogCategory::RHI, Info, "RHI Device {0}", gpuInfo.DeviceName );
-		LOG( LogCategory::RHI, Info, "RHI Driver {0}", gpuInfo.DriverVersion );
-		LOG( LogCategory::RHI, Info, "RHI VRAM {0} MB", gpuInfo.VRAMBytes / 1024 / 1024 );
-
 		// TEMP!
 #if 1
+		UniquePtr<IEngineModule> rendererModule = MakeUnique<RendererModule>();
+		auto bleh = rendererModule->Init();
+
 		{
 			if ( auto error = T::AssetDatabase::Init(); error.IsError() )
 			{
@@ -152,7 +188,7 @@ namespace Tridium {
 			}
 
 
-			uint8_t testImgData[64 * 64 * 4];
+			uint8_t testImgData[ 64 * 64 * 4 ];
 			//for ( size_t y = 0; y < 64; y++ )
 			//{
 			//	for ( size_t x = 0; x < 64; x++ )
@@ -170,24 +206,24 @@ namespace Tridium {
 				{
 					if ( y < 64 / 3 )
 					{
-						testImgData[( y * 64 + x ) * 4 + 0] = 255;
-						testImgData[( y * 64 + x ) * 4 + 1] = 0;
-						testImgData[( y * 64 + x ) * 4 + 2] = 0;
-						testImgData[( y * 64 + x ) * 4 + 3] = 255;
+						testImgData[ ( y * 64 + x ) * 4 + 0 ] = 255;
+						testImgData[ ( y * 64 + x ) * 4 + 1 ] = 0;
+						testImgData[ ( y * 64 + x ) * 4 + 2 ] = 0;
+						testImgData[ ( y * 64 + x ) * 4 + 3 ] = 255;
 					}
 					else if ( y < 64 / 3 * 2 )
 					{
-						testImgData[( y * 64 + x ) * 4 + 0] = 0;
-						testImgData[( y * 64 + x ) * 4 + 1] = 255;
-						testImgData[( y * 64 + x ) * 4 + 2] = 0;
-						testImgData[( y * 64 + x ) * 4 + 3] = 255;
+						testImgData[ ( y * 64 + x ) * 4 + 0 ] = 0;
+						testImgData[ ( y * 64 + x ) * 4 + 1 ] = 255;
+						testImgData[ ( y * 64 + x ) * 4 + 2 ] = 0;
+						testImgData[ ( y * 64 + x ) * 4 + 3 ] = 255;
 					}
 					else
 					{
-						testImgData[( y * 64 + x ) * 4 + 0] = 0;
-						testImgData[( y * 64 + x ) * 4 + 1] = 0;
-						testImgData[( y * 64 + x ) * 4 + 2] = 255;
-						testImgData[( y * 64 + x ) * 4 + 3] = 255;
+						testImgData[ ( y * 64 + x ) * 4 + 0 ] = 0;
+						testImgData[ ( y * 64 + x ) * 4 + 1 ] = 0;
+						testImgData[ ( y * 64 + x ) * 4 + 2 ] = 255;
+						testImgData[ ( y * 64 + x ) * 4 + 3 ] = 255;
 					}
 				}
 			}
@@ -209,7 +245,7 @@ namespace Tridium {
 				.SetDimension( ERHITextureDimension::Texture2D )
 				.SetDefaultSampler( sampler )
 				.SetName( "My texture" );
-			//auto texAsset = T::Texture::Create( testImgData, texDesc );
+			//auto texAsset = Texture::Create( testImgData, texDesc );
 			//texAsset->ClearPixelData();
 			//T::AssetMetadata texAssetMetadata = T::AssetMetadata::From( *texAsset );
 			//texAssetMetadata.Name = texDesc.Name;
@@ -221,26 +257,37 @@ namespace Tridium {
 
 			RHITextureRef tex = RHI::CreateTexture( texDesc, testImgSubresData );
 
-			RHITextureRef lionTexRHI = nullptr;
+			AssetID lionTexID;
 			{
-				auto lionTexEx = T::Texture::Load( "6772804448157695701.jpg" );
+				auto lionTexEx = Texture::Load( "6772804448157695701.jpg" );
 				if ( lionTexEx.IsError() )
 				{
 					LOG( LogCategory::Asset, Error, "Failed to load lion texture: {0}", lionTexEx.Error() );
 					return false;
 				}
-				auto lionTex = lionTexEx.Value();
+
+				SharedPtr<Texture> lionTex = lionTexEx.Value();
+				T::AssetDatabase::RegisterAsset( lionTex, T::AssetMetadata::From( *lionTex ) );
+				lionTexID = lionTex->ID();
+
 				RHITextureDesc lionTexDesc = RHITextureDesc{}
 					.SetWidth( lionTex->Width() )
 					.SetHeight( lionTex->Height() )
 					.SetFormat( lionTex->Format() )
 					.SetDimension( lionTex->Dimension() )
 					.SetName( "Lion Texture" );
+
 				RHITextureSubresourceData lionTexSubresData;
 				lionTexSubresData.Data = lionTex->PixelData().Data();
 				lionTexSubresData.RowStride = lionTex->Width() * GetRHIFormatInfo( lionTex->Format() ).Bytes();
 				lionTexSubresData.DepthStride = 0; // Not a 3D texture, so depth stride is not used
-				lionTexRHI = RHI::CreateTexture( lionTexDesc, lionTexSubresData );
+				RHITextureRef lionTexRHI = RHI::CreateTexture( lionTexDesc, lionTexSubresData );
+
+				RenderResourceTexture lionTexResource;
+				lionTexResource.AssetID = lionTex->ID();
+				lionTexResource.Texture = lionTexRHI;
+
+				RenderResourceManager::Get()->AddTexture( lionTexResource );
 			}
 
 			struct Vertex
@@ -315,7 +362,7 @@ namespace Tridium {
 			cubeVBODesc.BindFlags = ERHIBindFlags::VertexBuffer;
 			cubeVBODesc.Size = sizeof( cubeVerts );
 			//cubeVBODesc.Stride = sizeof( Vertex );
-			RHIBufferRef cubeVBO = RHI::CreateBuffer( cubeVBODesc, Span<uint8_t>{ reinterpret_cast<uint8_t*>( cubeVerts ), sizeof( cubeVerts ) } );
+			RHIBufferRef cubeVBO = RHI::CreateBuffer( cubeVBODesc, Span<uint8_t>{ reinterpret_cast< uint8_t* >( cubeVerts ), sizeof( cubeVerts ) } );
 
 
 
@@ -422,6 +469,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 	float3 specular = 1000.0f * pow( max( dot( viewDir, reflectDir ), 0.0f ), 32.0f ) * constants.LightData.Colour.rgb;
 	float3 color = ambient + diffuse + specular;
 	color *= constants.LightData.Intensity;
+	//color = Texture.Sample( TextureSampler, input.uv ).rgb;
 	return float4( color, 1.0f );
 }
 )";
@@ -444,8 +492,8 @@ float4 PSMain( VSOutput input ) : SV_Target
 				Light LightData;
 			};
 
-			RHIShaderModuleRef vertShader = ShaderLibrary::LoadShader( vertCode, "My vert shader", ERHIShaderType::Vertex );
-			RHIShaderModuleRef pixelShader = ShaderLibrary::LoadShader( pixelCode, "My pixel shader", ERHIShaderType::Pixel );
+			RHIShaderModuleRef vertShader = ShaderLibrary::Get()->LoadShader( vertCode, "My vert shader", ERHIShaderType::Vertex );
+			RHIShaderModuleRef pixelShader = ShaderLibrary::Get()->LoadShader( pixelCode, "My pixel shader", ERHIShaderType::Pixel );
 
 			// Create Shader Binding Layout
 			RHIBindingLayoutDesc sblDesc;
@@ -457,7 +505,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 			RHIBindingLayoutRef sbl = RHI::CreateBindingLayout( sblDesc );
 
 			RHIFramebufferInfo fbInfo{};
-			fbInfo.SetColorFormats( { ERHIFormat::RGBA8_UNORM }  );
+			fbInfo.SetColorFormats( { ERHIFormat::RGBA8_UNORM } );
 			fbInfo.SetDepthStencilFormat( ERHIFormat::D32_FLOAT );
 
 			// - Create pipeline state -
@@ -497,6 +545,17 @@ float4 PSMain( VSOutput input ) : SV_Target
 			const RHIClearValue clearValue{ clearColor };
 			int f{};
 
+			cmdList->Open();
+			auto dstSlice = RHITextureSlice{}.SetOffset( 30, 30 ).SetSize( 200, 200 );
+			auto srcSlice = RHITextureSlice::EntireTexture().SetSize( 34, 34 );
+			cmdList->CopyTexture(
+				*RenderResourceManager::Get()->GetTexture( lionTexID ).Texture, dstSlice,
+				*tex, srcSlice
+			);
+			cmdList->Close();
+			IRHICommandList* cmdListPtr = cmdList.get();
+			RHI::ExecuteCommandLists( &cmdListPtr, 1, ERHICommandQueueType::Graphics );
+
 			//while ( time < 5.0 )
 
 			int bb = 0;
@@ -512,6 +571,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 
 				{
 					cmdList->Open();
+
 					RHIGraphicsState graphicsState{};
 
 					RHITextureRef rt = RHI::GetSwapChain()->GetBackBuffer();
@@ -536,12 +596,11 @@ float4 PSMain( VSOutput input ) : SV_Target
 						depthTex = RHI::CreateTexture( newDepthDesc );
 					}
 
-					constexpr auto CycleRGB = +[]( float a_Time, float a_Speed = 1.0f )
-						{
-							float r = (Math::Sin( a_Speed * a_Time ) + 1.0f) / 2.0f;
-							float g = (Math::Sin( a_Speed * a_Time + 2.0f * Math::PI() / 3.0f ) + 1.0f) / 2.0f;
-							float b = (Math::Sin( a_Speed * a_Time + 4.0f * Math::PI() / 3.0f ) + 1.0f) / 2.0f;
-							return Color( r, g, b, 1.0f );
+					constexpr auto CycleRGB = +[]( float a_Time, float a_Speed = 1.0f ) {
+						float r = ( Math::Sin( a_Speed * a_Time ) + 1.0f ) / 2.0f;
+						float g = ( Math::Sin( a_Speed * a_Time + 2.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
+						float b = ( Math::Sin( a_Speed * a_Time + 4.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
+						return Color( r, g, b, 1.0f );
 						};
 
 					Constants constants{};
@@ -569,9 +628,9 @@ float4 PSMain( VSOutput input ) : SV_Target
 						.SetAddressW( ERHISamplerAddressMode::Border )
 						.SetFilter( ERHISamplerFilter::Anisotropic )
 						.SetMaxAnisotropy( 16 )
-						.SetBorderColor( Color( 1,1,0, 1.0f ) );
+						.SetBorderColor( Color( 1, 1, 0, 1.0f ) );
 
-					bindingSetDesc.AddTexture( "Texture"_H, lionTexRHI.get(), &sampler );
+					bindingSetDesc.AddTexture( "Texture"_H, RenderResourceManager::Get()->GetTexture( lionTexID ).Texture.get(), &sampler );
 					RHIBindingSetRef bindingSet = RHI::CreateBindingSet( bindingSetDesc );
 
 					graphicsState.PipelineState = pso.get();
@@ -596,7 +655,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 					pos.X = Math::Cos( time ) * 2.0f;
 					float4x4 model = Math::Translate( pos );
 					float4x4 view = Math::LookAt( Vector3( 0.0f, 0.0f, -2.0f ), Vector3( 0.0f, 0.0f, 0.0f ), Vector3( 0.0f, 1.0f, 0.0f ) );
-					float4x4 projection = Math::Perspective( Math::Radians( 90.0f ), (float)width / (float)height, 0.1f, 100.0f );
+					float4x4 projection = Math::Perspective( Math::Radians( 90.0f ), ( float )width / ( float )height, 0.1f, 100.0f );
 
 					// Construct the inlined constants ( random struct thats casted to an array of bytes )
 					InlinedConstants inlinedConstants;
@@ -645,156 +704,15 @@ float4 PSMain( VSOutput input ) : SV_Target
 			}
 		}
 
-		RHI::Shutdown();
+		rendererModule->Shutdown();
 
 		return false;
 
 #endif
 
-		// Initialise the Engine
-		EngineConfig engineConfig;
-		Engine::Singleton::Construct();
-		if ( !Engine::Get()->Init( std::move( engineConfig ) ) )
-		{
-			return false;
-		}
-
 		return true;
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////
-	void Application::Update()
-	{
-		PROFILE_FUNCTION( ProfilerCategory::Application );
-
-		FlushEventQueue();
-
-		// Update Loop ========================================================================================
-
-	#if !IS_EDITOR
-
-		Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled );
-
-		//m_ActiveScene->OnUpdate();
-
-	#endif // IS_EDITOR
-
-		// ====================================================================================================
-
-
-
-		// Render Loop ========================================================================================
-
-	#if !IS_EDITOR
-
-		//if ( !m_ActiveScene->GetMainCamera() )
-		//{
-		//	auto view = m_ActiveScene->GetECS().View<CameraComponent>();
-		//	if ( !view.empty() )
-		//		m_ActiveScene->SetMainCamera( view.begin()[0] );
-		//}
-
-		//if ( m_ActiveScene->GetMainCamera() )
-		//{
-		//	// Render the scene with the main camera
-		//	Vector3 cameraPos = m_ActiveScene->GetMainCamera()->GetGameObject().GetTransform().Position;
-		//	m_ActiveScene->GetSceneRenderer().Render(
-		//		m_GameViewport.GetFramebuffer(),
-		//		m_ActiveScene->GetMainCamera()->SceneCamera,
-		//		m_ActiveScene->GetMainCamera()->GetView(),
-		//		cameraPos );
-		//}
-		//else
-		//{
-		//	// If no camera is found, render the scene with a default camera
-		//	m_ActiveScene->GetSceneRenderer().Render(
-		//		m_GameViewport.GetFramebuffer(),
-		//		Camera(),
-		//		Matrix4( 1.0f ),
-		//		Vector3( 0.0 ) );
-		//}
-
-		m_GameViewport.Resize( m_Window->GetWidth(), m_Window->GetHeight() );
-		m_GameViewport.RenderToWindow();
-
-	#endif // !IS_EDITOR
-
-
-		// ====================================================================================================
-
-
-
-		// Layers =============================================================================================
-
-		for ( const auto& layer : m_LayerStack )
-			layer->OnUpdate();
-
-		// - ImGui -
-		ImGuiLayer* imGuiLayer = Engine::Get()->m_ImGuiLayer;
-		imGuiLayer->Begin();
-
-		for ( int i = 0; i < m_LayerStack.NumLayers(); i++ )
-			m_LayerStack[i]->OnImGuiDraw();
-
-		imGuiLayer->End();
-		// ---------
-
-		// ====================================================================================================
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////
-	void Application::Quit()
-	{
-	#if IS_EDITOR
-		Editor::GetEditorLayer()->OnEndScene();
-	#else
-		//Get().m_Running = false;
-	#endif // IS_EDITOR
-	}
-	
-	///////////////////////////////////////////////////////////////////////////////////////////
-	void Application::FlushEventQueue()
-	{
-		while ( !m_EventQueue.empty() )
-		{
-			Event& event = m_EventQueue.front();
-
-			EventDispatcher dispatcher( event );
-			dispatcher.Dispatch<WindowCloseEvent>( [this]( const WindowCloseEvent& a_Event ) -> bool { return OnWindowClosed( a_Event ); } );
-			dispatcher.Dispatch<WindowResizeEvent>( [this]( const WindowResizeEvent& a_Event ) -> bool { return OnWindowResized( a_Event ); } );
-			for ( auto it = m_LayerStack.end(); it != m_LayerStack.begin(); )
-			{
-				if ( event.Handled )
-					break;
-
-				(*--it)->OnEvent( event );
-			}
-
-			m_EventQueue.pop();
-		}
-	}
-
-	bool Application::OnWindowResized( const WindowResizeEvent& a_Event )
-	{
-		if ( !RHI::GetDynamicRHI()->GetSwapChain() )
-			return false;
-
-		RHI::GetDynamicRHI()->GetSwapChain()->Resize( a_Event.Width, a_Event.Height );
-		return true;
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////
-	bool Application::OnWindowClosed( const WindowCloseEvent& a_Event )
-	{
-		m_Running = false;
-		return true;
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////
-	void Application::Shutdown()
-	{
-		Engine::Get()->Shutdown();
-		Engine::Singleton::Destroy();
-	}
+#endif
 
 } // namespace Tridium

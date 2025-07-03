@@ -1,4 +1,5 @@
 #include "tripch.h"
+#if IS_EDITOR
 #include "ProfilerPanel.h"
 #include <Tridium/ImGui/IconsFontAwesome6.h>
 #include <Tridium/Core/Application.h>
@@ -385,7 +386,7 @@ namespace Tridium {
 						// If this result is selected, draw a border around it
 						if ( m_SelectedResult && m_SelectedResult.value() == result )
 						{
-							ImGui::GetWindowDrawList()->AddRect( resultRect.Min, resultRect.Max, Editor::GetPallete().Orange, 0.0f, 0, 3.0f );
+							ImGui::GetWindowDrawList()->AddRect( resultRect.Min, resultRect.Max, Editor::GetStyle().Colors.Orange, 0.0f, 0, 3.0f );
 						}
 
 
@@ -435,3 +436,5 @@ namespace Tridium {
 	}
 
 } // namespace Tridium
+
+#endif

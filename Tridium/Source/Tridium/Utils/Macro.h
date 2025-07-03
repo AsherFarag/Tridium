@@ -8,6 +8,9 @@
 #define PRAGMA(p) _Pragma(#p)
 #define EXPAND(x) x
 
+#define CONCAT_IMPL(a, b) a##b
+#define CONCAT(a, b) CONCAT_IMPL(a, b)
+
 #pragma region Selectors
 
 #define SELECT_MACRO_2(_1, _2, x, ...) x
@@ -21,6 +24,19 @@
 #define SELECT_MACRO_10(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, x, ...) x
 
 #pragma endregion
+
+// Internal helpers
+#define _HAS_ARGS(...) _HAS_ARGS_IMPL(__VA_ARGS__, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)
+#define _HAS_ARGS_IMPL(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,N,...) N
+
+#define _COMMA_IF_ARGS_IMPL_1(...) , __VA_ARGS__
+#define _COMMA_IF_ARGS_IMPL_0(...)
+
+#define _COMMA_IF_ARGS_SELECT(N) _COMMA_IF_ARGS_IMPL_##N
+#define _COMMA_IF_ARGS_IMPL(N, ...) _COMMA_IF_ARGS_SELECT(N)(__VA_ARGS__)
+
+// Public macro
+#define COMMA_IF_ARGS(...) EXPAND(_COMMA_IF_ARGS_IMPL(_HAS_ARGS(__VA_ARGS__), __VA_ARGS__))
 
 #define TRIDIUM_NODISCARD [[nodiscard]]
 
@@ -61,3 +77,19 @@
 // For some reason, in MSVC, __LINE__ is not a constant expression.
 // This is a workaround to make it a constant expression.
 #define _USABLE_LINE_ TRIDIUM_LINE
+
+#if defined(_MSC_VER)
+	#define FORCE_USE __declspec(selectany)
+#elif defined(__GNUC__)
+	#define FORCE_USE __attribute__((used))
+#else
+	#define FORCE_USE
+#endif
+
+#if defined(_MSC_VER)
+	#define DLL_EXPORT __declspec(dllexport)
+#else
+	#define DLL_EXPORT
+#endif
+
+#define ALWAYS_EXISTS( _Variable ) DLL_EXPORT [[maybe_unused]] inline auto& CONCAT( __ForceExist_, _Variable )() { return _Variable; }

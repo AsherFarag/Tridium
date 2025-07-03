@@ -7,7 +7,7 @@ namespace Tridium {
 	class EnvironmentMap
 	{
 	public:
-		static SharedPtr<EnvironmentMap> Create( const SharedPtr<Texture>& a_EquirectangularTexture );
+		static SharedPtr<EnvironmentMap> Create( const SharedPtr<TextureOld>& a_EquirectangularTexture );
 		static SharedPtr<EnvironmentMap> Create( const FilePath& a_Path );
 		static SharedPtr<EnvironmentMap> Create( AssetHandle a_Handle );
 

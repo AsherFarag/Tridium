@@ -6,15 +6,15 @@
 
 namespace Tridium {
 
-	class OpenGLTextureOld : public Texture
+	class OpenGLTextureOld : public TextureOld
 	{
 	public:
-		OpenGLTextureOld( const TextureSpecification& a_Specification, void* a_TextureData = nullptr );
+		OpenGLTextureOld( const TextureSpecificationOld& a_Specification, void* a_TextureData = nullptr );
 		virtual ~OpenGLTextureOld();
 
-		virtual bool operator==( const Texture& other ) const override { return m_RendererID == other.GetRendererID(); }
+		virtual bool operator==( const TextureOld& other ) const override { return m_RendererID == other.GetRendererID(); }
 
-		virtual const TextureSpecification& GetSpecification() const override { return m_Specification; }
+		virtual const TextureSpecificationOld& GetSpecification() const override { return m_Specification; }
 
 		virtual void SetMinFilter( ETextureFilter a_Filter ) override;
 		virtual void SetMagFilter( ETextureFilter a_Filter ) override;
@@ -34,7 +34,7 @@ namespace Tridium {
 		virtual void Unbind( uint32_t slot = 0 ) const override;
 
 	private:
-		TextureSpecification m_Specification;
+		TextureSpecificationOld m_Specification;
 
 		void* m_LocalData;
 		uint32_t m_Width, m_Height, m_Depth;
@@ -45,13 +45,13 @@ namespace Tridium {
 	class OpenGLCubeMap : public CubeMap
 	{
 	public:
-		OpenGLCubeMap( const TextureSpecification& a_Specification, SharedPtr<Texture> a_Texture = nullptr );
-		OpenGLCubeMap( const TextureSpecification& a_Specification, const std::array<float*, 6>& a_CubeMapData );
+		OpenGLCubeMap( const TextureSpecificationOld& a_Specification, SharedPtr<TextureOld> a_Texture = nullptr );
+		OpenGLCubeMap( const TextureSpecificationOld& a_Specification, const std::array<float*, 6>& a_CubeMapData );
 		virtual ~OpenGLCubeMap();
 
 		virtual bool operator==( const CubeMap& other ) const override { return m_RendererID == other.GetRendererID(); }
 
-		virtual const TextureSpecification& GetSpecification() const override { return m_Specification; }
+		virtual const TextureSpecificationOld& GetSpecification() const override { return m_Specification; }
 
 		virtual void SetMinFilter( ETextureFilter a_Filter ) override;
 		virtual void SetMagFilter( ETextureFilter a_Filter ) override;
@@ -64,7 +64,7 @@ namespace Tridium {
 		virtual uint32_t GetDepth() const override { return m_Depth; }
 		virtual uint32_t GetRendererID() const override { return m_RendererID; }
 
-		virtual void SetData( SharedPtr<Texture> a_Texture, uint32_t a_Size ) override;
+		virtual void SetData( SharedPtr<TextureOld> a_Texture, uint32_t a_Size ) override;
 		virtual void SetData( const std::array<float*, 6>& a_CubeMapData, uint32_t a_Size ) override;
 		virtual void GenerateMipMaps() override;
 		virtual void SetMipLevel( uint32_t a_Level ) override;
@@ -73,7 +73,7 @@ namespace Tridium {
 		virtual void Unbind( uint32_t slot = 0 ) const override;
 
 	private:
-		TextureSpecification m_Specification;
+		TextureSpecificationOld m_Specification;
 
 		uint32_t m_Width, m_Height, m_Depth;
 		uint32_t m_RendererID;

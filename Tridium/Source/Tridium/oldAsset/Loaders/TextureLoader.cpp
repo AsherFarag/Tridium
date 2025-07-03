@@ -5,7 +5,7 @@
 #include <assimp/Bitmap.h>
 
 namespace Tridium {
-	SharedPtr<Texture> TextureLoader::LoadTexture( TextureSpecification a_Specification, const FilePath& a_FilePath )
+	SharedPtr<TextureOld> TextureLoader::LoadTexture( TextureSpecificationOld a_Specification, const FilePath& a_FilePath )
 	{
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load( 1 );
@@ -33,14 +33,14 @@ namespace Tridium {
 				break;
 			}
 
-			Texture* tex = Texture::Create( a_Specification );
+			TextureOld* tex = TextureOld::Create( a_Specification );
 			tex->SetData( data, width * height * channels );
 
 			std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double> time = end - start;
 			LOG( LogCategory::Debug, Info, "Loaded HDR texture in {0} seconds", time.count() );
 
-			return SharedPtr<Texture>( tex );
+			return SharedPtr<TextureOld>( tex );
 		}
 		else
 		{
@@ -72,7 +72,7 @@ namespace Tridium {
 				break;
 			}
 
-			Texture* tex = Texture::Create( a_Specification );
+			TextureOld* tex = TextureOld::Create( a_Specification );
 			tex->SetData( data, width * height * channels );
 
 			std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
@@ -81,7 +81,7 @@ namespace Tridium {
 
 			//stbi_image_free( data );
 
-			return SharedPtr<Texture>( tex );
+			return SharedPtr<TextureOld>( tex );
 		}
 	}
 
@@ -91,7 +91,7 @@ namespace Tridium {
 
 	SharedPtr<Asset> TextureLoader::LoadAsset( const AssetMetaData& a_MetaData )
 	{
-        TextureSpecification specification;
+        TextureSpecificationOld specification;
 		LOG( LogCategory::Debug, Debug, "Loading texture: {0}", a_MetaData.Path.ToString() );
 
         int width, height, channels;
@@ -119,7 +119,7 @@ namespace Tridium {
 				break;
 			}
 
-			Texture* tex = Texture::Create( specification );
+			TextureOld* tex = TextureOld::Create( specification );
 			tex->SetData( data, width * height * channels );
 
 			std::chrono::time_point<std::chrono::high_resolution_clock> end = std::chrono::high_resolution_clock::now();
@@ -158,7 +158,7 @@ namespace Tridium {
 					break;
 				}
 
-			Texture* tex = Texture::Create( specification );
+			TextureOld* tex = TextureOld::Create( specification );
 			tex->SetData( data, width * height * channels );
 
 			std::chrono::time_point<std::chrono::high_resolution_clock> end = std::chrono::high_resolution_clock::now();
@@ -187,7 +187,7 @@ namespace Tridium {
 		if ( !data )
 			return nullptr;
 
-		TextureSpecification specification;
+		TextureSpecificationOld specification;
 		specification.Width = Cast<uint32_t>( width );
 		specification.Height = Cast<uint32_t>( height );
 		switch ( channels )
@@ -203,11 +203,11 @@ namespace Tridium {
 			break;
 		}
 
-		SharedPtr<Texture> tex( Texture::Create( specification ) );
+		SharedPtr<TextureOld> tex( TextureOld::Create( specification ) );
 		tex->SetData( data, width * height * channels );
 
 		constexpr int SIZE = 1024 * 2;
-		TextureSpecification spec;
+		TextureSpecificationOld spec;
 		spec.Width = SIZE;
 		spec.Height = SIZE;
 		spec.TextureFormat = ETextureFormat::RGB32F;

@@ -6,7 +6,7 @@ namespace Tridium {
     class OpenGLEnvironmentMap : public EnvironmentMap
     {
 	public:
-		OpenGLEnvironmentMap( const SharedPtr<Texture>& a_EquirectangularTexture );
+		OpenGLEnvironmentMap( const SharedPtr<TextureOld>& a_EquirectangularTexture );
 
     protected:
 		void PerformDiffuseConvolution( SharedPtr<CubeMap> a_EnvironmentCubeMap );

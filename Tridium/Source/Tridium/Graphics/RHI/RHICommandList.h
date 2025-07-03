@@ -96,6 +96,10 @@ namespace Tridium {
         void SetAutomaticResourceStateTransitionEnabled( bool a_Enabled ) { m_AutomaticResourceStateTransitionEnabled = a_Enabled; }
         bool IsAutomaticResourceStateTransitionEnabled() const { return m_AutomaticResourceStateTransitionEnabled; }
 
+		// Returns true if 'Open()' has been called and the command list is ready for recording commands.
+		// Returns false if the command list is not open or has been closed via 'Close()'.
+        bool IsOpen() const { return m_IsOpen; }
+
 		// Returns if this command list is an immediate mode.
 		// Immediate mode command lists execute commands the moment they are recorded,
 		// matching the behavior of OpenGL.
@@ -106,10 +110,23 @@ namespace Tridium {
 
         // Opens the command list, preparing it for recording commands.
 		// Returns false if failed to open the command list.
-        virtual bool Open() = 0;
+        virtual bool Open() 
+        {
+			RHI_DEV_CHECK( !IsOpen(), "Attempting to open a command list that is already open!" );
+            m_IsOpen = true;
+            return true;
+		}
+
         // Prepares the command list for execution. To execute the command list, call RHI::ExecuteCommandLists(...).
 		// Returns false if failed to close the command list.
-        virtual bool Close() = 0;
+        virtual bool Close() 
+		{
+			RHI_DEV_CHECK( IsOpen(), "Attempting to close a command list that is not open!" );
+            RHI_DEBUG_OP( m_DebugCommands.Clear() );
+			m_IsOpen = false;
+			return true;
+		}
+
 		// Resets the command list to its initial state and clears all owning references to resources.
 		virtual void ClearState() = 0;
 
@@ -119,6 +136,7 @@ namespace Tridium {
         virtual void ResourceBarriers( Span<const RHIResourceBarrier> a_Barriers, RHI_DEBUG_SRC_LOC_PARAM )
         {
             RHI_ADD_DEBUG_CMD_INFO( "ResourceBarrier" );
+			RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
 		}
 
 		// Adds a single resource barrier to the command list.
@@ -126,6 +144,7 @@ namespace Tridium {
         void ResourceBarrier( const RHIResourceBarrier& a_Barrier, RHI_DEBUG_SRC_LOC_PARAM )
         {
             ResourceBarriers( Span{ &a_Barrier, 1 }, RHI_DEBUG_SRC_LOC );
+            RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
         }
 
 		// Adds a resource barrier to transition the state of 'a_Resource' from its current state to 'a_NewState'.
@@ -133,12 +152,14 @@ namespace Tridium {
         void ResourceBarrier( IRHIResource& a_Resource, ERHIResourceStates a_NewState, RHI_DEBUG_SRC_LOC_PARAM )
         {
             ResourceBarrier( { &a_Resource, a_Resource.State(), a_NewState }, RHI_DEBUG_SRC_LOC );
+            RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
 		}
 
         // Writes 'a_Data' from CPU memory into the GPU buffer 'a_Buffer' at the specified 'a_OffsetBytes' offset.
         virtual void UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM )
         { 
             RHI_ADD_DEBUG_CMD_INFO( "UpdateBuffer", {}, RHI_DEBUG_RES_INFO( a_Buffer ) );
+            RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
             RHI_DEV_CHECK( a_Buffer.Desc().Usage != ERHIUsage::Static,
 				"Cannot update an immutable buffer! Buffer: {}", a_Buffer.Desc().Name );
             RHI_DEV_CHECK( a_Data != nullptr && a_DataSizeBytes > 0,
@@ -151,6 +172,7 @@ namespace Tridium {
         virtual void CopyBuffer( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange, RHI_DEBUG_SRC_LOC_PARAM ) 
         { 
             RHI_ADD_DEBUG_CMD_INFO( "CopyBuffer", {}, RHI_DEBUG_RES_INFO( a_DstBuffer ), RHI_DEBUG_RES_INFO( a_SrcBuffer ) );
+            RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
             RHI_DEV_CHECK( a_DstBuffer.Desc().Usage != ERHIUsage::Static,
                 "Cannot write into an immutable buffer! Buffer: {}", a_DstBuffer.Desc().Name );
             RHI_DEV_CHECK( a_SrcRange.Size > 0 || a_SrcBuffer.Desc().Size == 0,
@@ -165,6 +187,7 @@ namespace Tridium {
         virtual void UpdateTexture( IRHITexture& a_Texture, const RHITextureSlice& a_DstSlice, RHITextureSubresourceData a_Data, RHI_DEBUG_SRC_LOC_PARAM )
         {
             RHI_ADD_DEBUG_CMD_INFO( "UpdateTexture", {}, RHI_DEBUG_RES_INFO( a_Texture ) );
+            RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
 			RHI_DEV_CHECK( a_Texture.Desc().Usage != ERHIUsage::Static,
 				"Cannot update an immutable texture! Texture: {}", a_Texture.Desc().Name );
         }
@@ -174,8 +197,22 @@ namespace Tridium {
                                   IRHITexture& a_SrcTexture, const RHITextureSlice& a_SrcSlice, RHI_DEBUG_SRC_LOC_PARAM )
         {
             RHI_ADD_DEBUG_CMD_INFO( "CopyTexture", {}, RHI_DEBUG_RES_INFO( a_DstTexture ), RHI_DEBUG_RES_INFO( a_SrcTexture ) );
+            RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
+
             RHI_DEV_CHECK( a_DstTexture.Desc().Usage != ERHIUsage::Static,
 				"Cannot write into an immutable texture! Texture: {}", a_DstTexture.Desc().Name );
+
+            RHI_DEV_CHECK(
+                a_SrcSlice.OffsetX <= a_SrcTexture.Desc().Width &&
+                a_SrcSlice.OffsetY <= a_SrcTexture.Desc().Height &&
+                a_SrcSlice.OffsetZ <= a_SrcTexture.Desc().DepthOrArraySize,
+                "Source region is invalid!" );
+
+            RHI_DEV_CHECK(
+                a_DstSlice.OffsetX <= a_DstTexture.Desc().Width &&
+                a_DstSlice.OffsetY <= a_DstTexture.Desc().Height &&
+                a_DstSlice.OffsetZ <= a_DstTexture.Desc().DepthOrArraySize,
+                "Destination region is invalid!" );
         }
 
 		// Writes 'a_Data' into the inlined constants block at 'a_DstOffsetBytes' offset.
@@ -186,6 +223,7 @@ namespace Tridium {
         virtual void SetInlinedConstants( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM )
         {
             RHI_ADD_DEBUG_CMD_INFO( "SetInlinedConstants" );
+            RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
             RHI_DEV_CHECK( a_SizeBytes + a_DstOffsetBytes <= RHIConstants::MaxInlinedConstantsSize, 
 				"Inlined constants size exceeds the maximum allowed size of {} bytes.", RHIConstants::MaxInlinedConstantsSize );
         }
@@ -203,6 +241,7 @@ namespace Tridium {
         virtual void SetGraphicsState( const RHIGraphicsState& a_GraphicsState, RHI_DEBUG_SRC_LOC_PARAM ) 
         {
             RHI_ADD_DEBUG_CMD_INFO( "SetGraphicsState", {}, RHI_DEBUG_RES_INFO( (*a_GraphicsState.PipelineState) ) );
+            RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
 			RHI_DEV_CHECK( Desc().QueueType == ERHICommandQueueType::Graphics, "SetGraphicsState can only be called on graphics command lists." );
 			RHI_DEV_CHECK( a_GraphicsState.PipelineState, "Graphics pipeline state must be valid." );
         }
@@ -212,6 +251,7 @@ namespace Tridium {
 		virtual void ClearRenderTargets( ERHIClearFlags a_Flags, RHIClearValue a_ClearValue, int32_t a_ColorAttachmentIndex = -1, RHI_DEBUG_SRC_LOC_PARAM )
         {
             RHI_ADD_DEBUG_CMD_INFO( "ClearRenderTargets" );
+            RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
 			RHI_DEV_CHECK( Desc().QueueType == ERHICommandQueueType::Graphics, "ClearRenderTargets can only be called on graphics command lists." );
         }
 
@@ -222,6 +262,7 @@ namespace Tridium {
         virtual void SetViewportState( const RHIViewportState& a_Viewports, RHI_DEBUG_SRC_LOC_PARAM )
         {
             RHI_ADD_DEBUG_CMD_INFO( "SetViewportState" );
+            RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
 		}
 
 		// Draws primitives using the currently set graphics pipeline state.
@@ -229,6 +270,7 @@ namespace Tridium {
         virtual void Draw( const RHIDrawArgs& a_DrawArgs, RHI_DEBUG_SRC_LOC_PARAM )
         {
             RHI_ADD_DEBUG_CMD_INFO( "Draw" );
+            RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
 			RHI_DEV_CHECK( Desc().QueueType == ERHICommandQueueType::Graphics, "Draw can only be called on graphics command lists." );
 			RHI_DEV_CHECK( a_DrawArgs.VertexCount > 0, "Vertex count must be greater than zero." );
 			RHI_DEV_CHECK( a_DrawArgs.InstanceCount > 0, "Instance count must be greater than zero." );
@@ -239,17 +281,26 @@ namespace Tridium {
 		// NOTE: Debug Groups can be nested.
 		// - OpenGL: Maps to glPushDebugGroup.
         // - DX12: Maps to PIXBeginEvent.
-        virtual void PushDebugGroup( StringView a_Name ) = 0;
+        virtual void PushDebugGroup( StringView a_Name )
+        {
+            RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
+        }
 
 		// Places a debug marker declaring the end of a group of commands.
 		// - OpenGL: Maps to glPopDebugGroup.
 		// - DX12: Maps to PIXEndEvent.
-		virtual void PopDebugGroup() = 0;
+        virtual void PopDebugGroup()
+        {
+            RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
+        }
 
         // This inserts a debug message into the command stream.
         // - OpenGL: Maps to glDebugMessageInsert.
         // - DX12: Maps to PIXSetMarker.
-		virtual void InsertDebugMarker( StringView a_Name ) = 0;
+        virtual void InsertDebugMarker( StringView a_Name )
+        {
+            RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
+        }
 
     #if RHI_DEBUG_ENABLE_CMD_RECORDING
         const auto& DebugCommands() const { return m_DebugCommands; }
@@ -257,6 +308,7 @@ namespace Tridium {
 
     protected:
         bool m_AutomaticResourceStateTransitionEnabled = true; // Automatically transition resource states when necessary
+		bool m_IsOpen = false; // True if Open() has been called, false if Close() has been called.
 
     #if RHI_DEBUG_ENABLE_CMD_RECORDING
         struct CmdDebugInfo

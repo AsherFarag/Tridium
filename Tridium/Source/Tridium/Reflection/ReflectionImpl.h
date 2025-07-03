@@ -290,6 +290,12 @@ struct ::Tridium::Refl::Internal::Reflector<Class> \
 // BEGIN REFLECT ENUM MACROS
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#if IS_EDITOR
+	#define _DRAW_ENUM_PROP( Enum ) factory.prop( Props::DrawPropertyProp::ID, _DRAW_ENUM_FUNC(Enum) );
+#else
+	#define _DRAW_ENUM_PROP( Enum )
+#endif
+
 #define _BEGIN_REFLECT_ENUM( Enum ) \
 template<> \
 struct ::Tridium::Refl::Internal::Reflector<Enum> \
@@ -304,7 +310,7 @@ struct ::Tridium::Refl::Internal::Reflector<Enum> \
 		factory.type( Hash( #Enum ) ); \
 		factory.prop( Props::ClassFlagsProp::ID, EClassFlags::ECF_None ); \
 		factory.prop( Props::CleanClassNameProp::ID, #Enum ); \
-		factory.prop( Props::DrawPropertyProp::ID, _DRAW_ENUM_FUNC(Enum) ); \
+		_DRAW_ENUM_PROP( Enum ) \
 		factory.prop(Props::TextSerializeProp::ID,                                     \
               +[](::Tridium::IO::Archive& a_Archive, const MetaAny& a_Data)            \
               {                                                                        \
@@ -344,7 +350,7 @@ struct ::Tridium::Refl::Internal::Reflector<Enum> \
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define _END_REFLECT_ENUM( Enum ) \
-     	factory.prop( ::Tridium::Refl::Props::DrawPropertyProp::ID, _DRAW_ENUM_FUNC(Enum) ); \
+     	_DRAW_ENUM_PROP(Enum); \
 	} \
 	inline static std::unordered_map<Enum, std::string> s_EnumToString; \
  }; static volatile ::Tridium::Refl::Internal::Reflector<Enum> ___StaticInitializer_##Enum;
