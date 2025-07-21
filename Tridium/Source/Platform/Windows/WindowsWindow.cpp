@@ -125,7 +125,10 @@ namespace Tridium {
 
 		TODO( "Make anti-aliasing a setting!" );
 		glfwWindowHint( GLFW_SAMPLES, 8 );
-
+#if IS_EDITOR
+		//glfwWindowHint( GLFW_DECORATED, GLFW_FALSE );
+		//glfwWindowHint( GLFW_RESIZABLE, GLFW_TRUE );
+#endif
 		m_Window = glfwCreateWindow( (int)props.Width, (int)props.Height, props.Title.c_str(), nullptr, nullptr );
 		MakeContextCurrent( this );
 

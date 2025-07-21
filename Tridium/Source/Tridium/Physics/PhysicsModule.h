@@ -8,7 +8,7 @@ namespace Tridium {
 	// Physics Module
 	//  Handles the initialization and shutdown of the physics engine.
 	//  Created as a core engine module and registered with the engine module factory.
-	DEFINE_ENGINE_MODULE( PhysicsModule, EEngineModuleCategory::Server | EEngineModuleCategory::Client, "ScriptModule", "RendererModule" )
+	DEFINE_ENGINE_MODULE( PhysicsModule, EEngineModuleCategory::Server | EEngineModuleCategory::Client )
 	{
 	public:
 		PhysicsEngine& GetPhysicsEngine() { return *m_PhysicsEngine; }

@@ -28,6 +28,12 @@ namespace Tridium {
 
 	///////////////////////////////////////////////////////////////////////////////////////////
 
+	void Application::RequestExit( EAppExitCode a_ExitCode )
+	{
+		Get()->m_ExitCode = a_ExitCode;
+		Get()->m_Running = false;
+	}
+
 	Application::Application( CmdLineArgs a_CmdLine )
 	{
 		ENSURE( !s_Instance, "An Application instance already exists!" );
@@ -55,7 +61,7 @@ namespace Tridium {
 
 
 	
-	void Application::Run()
+	EAppExitCode Application::Run()
 	{
 		m_Running = true;
 
@@ -121,6 +127,7 @@ namespace Tridium {
 		}
 
 		m_Engine.reset();
+		return m_ExitCode;
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////

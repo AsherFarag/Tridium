@@ -565,12 +565,6 @@ namespace Tridium::D3D12 {
 		[[nodiscard]] D3D12_RESOURCE_DESC GetD3D12ResourceDesc() const;
 		[[nodiscard]] D3D12_SHADER_RESOURCE_VIEW_DESC CreateSRVDesc( ERHIFormat a_Format, ERHITextureDimension a_Dimension, RHITextureSubresourceSet a_Subresources );
 
-		bool CopyTexture(
-			ID3D12GraphicsCommandList & a_CmdList, RHITexture_D3D12Impl & a_SrcTexture,
-			uint32_t a_SrcMipLevel, uint32_t a_SrcArraySlice, Box a_SrcRegion,
-			uint32_t a_DstMipLevel, uint32_t a_DstArraySlice, Box a_DstRegion
-		);
-
 		ManagedResource Texture{};
 	};
 

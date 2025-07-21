@@ -22,6 +22,12 @@ namespace Tridium {
 		uint32_t MaxFPS = 0u;
 	};
 
+	enum class EAppExitCode
+	{
+		Success = 0,
+		Failure = 1,
+	};
+
 	//==============================================
 	// Application
 	//  The core system that manages interactions between the engine and the OS.
@@ -32,7 +38,7 @@ namespace Tridium {
 	public:
 		static Application* Get() { ASSERT( s_Instance ); return s_Instance; }
 
-		static void RequestExit() { Get()->m_Running = false; }
+		static void RequestExit( EAppExitCode a_ExitCode );
 
 		//================================================================
 		// Event Handling
@@ -61,10 +67,11 @@ namespace Tridium {
 
 		// The starting point of the application.
 		// This handles the initialization, game loop and shutdown stage of the engine.
-		virtual void Run();
+		virtual EAppExitCode Run();
 
 	protected:
 		bool              m_Running = false;
+		EAppExitCode      m_ExitCode = EAppExitCode::Success;
 		CmdLineArgs       m_CommandLineArgs{};
 		UniquePtr<Window> m_Window = nullptr;
 		LayerStack        m_LayerStack{};
