@@ -13,6 +13,10 @@ project "Tridium"
 
 	buildoptions { "/bigobj", "/Zc:preprocessor" }
 
+	-- Enable Multiprocessor Compilation for Visual Studio
+	filter "action:vs*"
+        flags { "MultiProcessorCompile" }
+
 	dependson 
 	{ 
 		"assimp",

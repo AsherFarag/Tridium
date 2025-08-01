@@ -10,6 +10,10 @@ project "Sandbox"
 	targetdir ("Bin/%{prj.name}/" .. outputdir)
 	objdir ("Bin-Int/%{prj.name}/" .. outputdir)
 
+	-- Enable Multiprocessor Compilation for Visual Studio
+	filter "action:vs*"
+        flags { "MultiProcessorCompile" }
+
 	files
 	{
 		"Source/**.h",
