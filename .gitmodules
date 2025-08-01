@@ -23,3 +23,6 @@
 [submodule "Tridium/Dependencies/assimp"]
 	path = Tridium/Dependencies/assimp
 	url = https://github.com/AsherFarag/assimp.git
+[submodule "Tridium/Dependencies/SPIRV-Cross"]
+	path = Tridium/Dependencies/SPIRV-Cross
+	url = https://github.com/AsherFarag/SPIRV-Cross
