@@ -16,4 +16,5 @@ def ValidateVulkanSDK():
     print("Vulkan SDK is valid.")
     return True
 
-ValidateVulkanSDK()
+if __name__ == "__main__":
+    ValidateVulkanSDK()

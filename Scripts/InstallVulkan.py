@@ -41,4 +41,5 @@ def InstallVulkanSDK():
     return True
 
 
-InstallVulkanSDK()
+if __name__ == "__main__":
+    InstallVulkanSDK()
