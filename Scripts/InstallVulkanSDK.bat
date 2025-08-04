@@ -9,7 +9,7 @@ if errorlevel 1 (
 )
 
 :: Run your Python script
-python InstallVulkanSDK.py
+python InstallVulkan.py
 
 endlocal
 pause

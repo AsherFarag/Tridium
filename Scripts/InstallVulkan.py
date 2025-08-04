@@ -3,9 +3,9 @@ from pathlib import Path
 
 import Utils
 
-VulkanInstallVersion = '1.3.216.0'
+VulkanInstallVersion = '1.4.321.1'
 VulkanSDKInstallerURL = f'https://sdk.lunarg.com/sdk/download/{VulkanInstallVersion}/windows/vulkansdk-windows-X64-{VulkanInstallVersion}.exe'
-VulkanSDKLocalPath = 'Tridium/Dependencies/VulkanSDK'
+VulkanSDKLocalPath = '../Tridium/Dependencies/VulkanSDK'
 VulkanSDKExePath = f'{VulkanSDKLocalPath}/VulkanSDK.exe'
 
 def InstallVulkanSDK():

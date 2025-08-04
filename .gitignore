@@ -2,6 +2,7 @@
 .vs/
 Bin/
 Bin-Int/
+__pycache__/
 
 # Files
 *.sln
