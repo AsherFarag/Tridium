@@ -9,8 +9,6 @@ A 3D game engine featuring an Editor, Physics, ECS, C++ Runtime-Reflection, Seri
 ```bash
 git clone -b RHI --single-branch https://github.com/AsherFarag/Tridium.git
 cd Tridium
-git submodule init
-git submodule update --init --recursive
-GenerateProjects
+Setup
 ```
 This will create a Visual Studio 2022 solution you can run.
