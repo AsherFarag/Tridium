@@ -22,7 +22,7 @@
 #define RHI_ENABLE_BACKEND_DIRECTX11 0
 #define RHI_ENABLE_BACKEND_DIRECTX12 1
 #define RHI_ENABLE_BACKEND_OPENGL 1
-#define RHI_ENABLE_BACKEND_VULKAN 0
+#define RHI_ENABLE_BACKEND_VULKAN 1
 #define RHI_ENABLE_BACKEND_METAL 0
 //=====================================================================
 

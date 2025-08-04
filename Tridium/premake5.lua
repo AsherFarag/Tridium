@@ -17,6 +17,11 @@ project "Tridium"
 	filter "action:vs*"
         flags { "MultiProcessorCompile" }
 
+	local vulkan_sdk = os.getenv("VULKAN_SDK")
+	if not vulkan_sdk then
+	    error("VULKAN_SDK environment variable not set. Please install the Vulkan SDK.")
+	end
+		
 	dependson 
 	{ 
 		"assimp",
@@ -64,7 +69,10 @@ project "Tridium"
 		"%{IncludeDir.refl}",
 		"%{IncludeDir.JoltPhysics}",
 		"Dependencies/SPIRV-Cross",
-		"Dependencies/HdriToCubemap"
+		"Dependencies/HdriToCubemap",
+
+		-- Vulkan SDK
+		vulkan_sdk .. "/Include",
 	}
 
 	libdirs
@@ -77,6 +85,7 @@ project "Tridium"
 		"Dependencies/assimp/bin/" .. outputdir .. "/assimp",
 		"Dependencies/JoltPhysics/bin/" .. outputdir .. "/JoltPhysics",
 		"Dependencies/SPIRV-Cross/bin/SPIRV-Cross/" .. outputdir,
+		vulkan_sdk .. "/Lib",
 	}
 
 	links
@@ -95,7 +104,9 @@ project "Tridium"
 		-- DirectX 12
 		"d3d12.lib",
 		"dxgi.lib",
-		"dxguid.lib"
+		"dxguid.lib",
+		-- Vulkan
+		"vulkan-1"
 	}
 
 	defines

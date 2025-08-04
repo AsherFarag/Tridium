@@ -9,6 +9,10 @@
 	#include "Backend/OpenGL/RHI_OpenGLImpl.h"
 #endif
 
+#if RHI_ENABLE_BACKEND_VULKAN
+	#include "Backend/Vulkan/RHI_VulkanImpl.h"
+#endif // RHI_ENABLE_BACKEND_VULKAN
+
 namespace Tridium {
 
 	IDynamicRHI* s_DynamicRHI = nullptr;
@@ -47,6 +51,13 @@ namespace Tridium {
 				break;
 			}
 		#endif
+		#if RHI_ENABLE_BACKEND_VULKAN
+			case ERHInterfaceType::Vulkan:
+			{
+				s_DynamicRHI = new Vulkan::DynamicRHI_VulkanImpl();
+				break;
+			}
+		#endif // RHI_ENABLE_BACKEND_VULKAN
 			default:
 			{
 				// Unsupported RHI type
