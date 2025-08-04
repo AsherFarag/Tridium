@@ -23,8 +23,10 @@ int main( int argc, char** argv )
 		cmdLineArgs.Args.EmplaceBack( argv[i] );
 	}
 
+#if 0
 	RHITest();
 	return 0;
+#endif
 
 #if IS_EDITOR
 	Editor app( std::move( cmdLineArgs ) );
