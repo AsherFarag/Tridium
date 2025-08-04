@@ -6,13 +6,13 @@ def DownloadFile(url, filepath):
     with open(filepath, 'wb') as f:
         print('Waiting for response...')
         response = requests.get(url, stream=True)
-        total = response.headers.get('content-length')
+        total = int(response.headers.get('content-length'))
         print('Downloading...')
-        if total is None:
+        if total is None or total < 0:
+            print("File size is unknown or invalid. Downloading without progress indication.")
             f.write(response.content)
         else:
             downloaded = 0
-            total = int(total)
             startTime = time.time()
             for data in response.iter_content(chunk_size=max(int(total/1000), 1024*1024)):
                 downloaded += len(data)
