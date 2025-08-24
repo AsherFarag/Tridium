@@ -246,6 +246,16 @@ namespace Tridium {
 			RHI_DEV_CHECK( a_GraphicsState.PipelineState, "Graphics pipeline state must be valid." );
         }
 
+        virtual void SetBindingSet( IRHIBindingSet& a_BindingSet, uint32_t a_LayoutIndex = 0, RHI_DEBUG_SRC_LOC_PARAM )
+        {
+            RHI_ADD_DEBUG_CMD_INFO( "SetBindingSet", {}, RHI_DEBUG_RES_INFO( a_BindingSet ) );
+			RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
+			RHI_DEV_CHECK( Desc().QueueType == ERHICommandQueueType::Graphics, "SetBindingSet can only be called on graphics command lists." );
+			RHI_DEV_CHECK( a_BindingSet.Valid(), "Binding set is not valid!" );
+
+            TODO( "Implement for OpenGL" );
+		}
+
 		// Clears the render targets bound in the current graphics state.
 		// a_ColorAttachmentIndex specifies which color attachment to clear, or -1 to clear all color attachments.
 		virtual void ClearRenderTargets( ERHIClearFlags a_Flags, RHIClearValue a_ClearValue, int32_t a_ColorAttachmentIndex = -1, RHI_DEBUG_SRC_LOC_PARAM )
@@ -320,7 +330,7 @@ namespace Tridium {
             };
 
             StringView CmdName; // Name of the command
-            std::source_location CallLocation; // Location where the command was called from
+            SourceLocation CallLocation; // Location where the command was called from
 			String Message; // Custom message for the command, if any
             InlineArray<ResourceInfo, 2> Resources; // Resources used by the command
         };

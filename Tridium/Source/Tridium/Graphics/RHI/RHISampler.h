@@ -18,7 +18,7 @@ namespace Tridium {
 
 		NUM_BITS = 1,
 	};
-	ENUM_ENABLE_BITMASK_OPERATORS( ERHISamplerFlags );
+	DEFINE_ENUM_BITMASK_OPERATORS( ERHISamplerFlags );
 
 	//=======================================================
 	// RHI Sampler

@@ -11,20 +11,20 @@ namespace Tridium {
 	// ========================================================================
 	struct ProfileDescription
 	{
-		const char* Name; // Name of the profile.
-		const char* Signature; // Optional signature of the profile. E.g. "void Function(int, float)"
-		const char* File;
+		StringView Name; // Name of the profile.
+		StringView Signature; // Optional signature of the profile. E.g. "void Function(int, float)"
+		StringView File;
 		uint32_t Line;
 		ProfilerFilter::Filter Filter;
 		ProfilerColor Color;
 		size_t ID;
 
-		constexpr ProfileDescription( const char* a_Name, const char* a_File, uint32_t a_Line, ProfilerFilter::Filter a_Filter, ProfilerColor a_Color )
-			: ProfileDescription( a_Name, nullptr, a_File, a_Line, a_Filter, a_Color )
+		constexpr ProfileDescription( StringView a_Name, StringView a_File, uint32_t a_Line, ProfilerFilter::Filter a_Filter, ProfilerColor a_Color )
+			: ProfileDescription( a_Name, {}, a_File, a_Line, a_Filter, a_Color )
 		{
 		}
 
-		constexpr ProfileDescription( const char* a_Name, const char* a_Signature, const char* a_File, uint32_t a_Line, ProfilerFilter::Filter a_Filter, ProfilerColor a_Color )
+		constexpr ProfileDescription( StringView a_Name, StringView a_Signature, StringView a_File, uint32_t a_Line, ProfilerFilter::Filter a_Filter, ProfilerColor a_Color )
 			: Name( a_Name )
 			, Signature(a_Signature)
 			, File( a_File )

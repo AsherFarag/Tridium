@@ -22,6 +22,7 @@ namespace Tridium {
 
 	void GameViewportPanel::OnImGuiDraw()
 	{
+#if 0
 		auto sceneCameraInfo = GetSceneCamera();
 		if ( !sceneCameraInfo )
 			return;
@@ -36,7 +37,7 @@ namespace Tridium {
 			// Update the viewport size
 			m_ViewportSize = regionAvail;
 			camera.SetViewportSize( regionAvail.X, regionAvail.Y );
-			m_FBO->Resize( regionAvail.X, regionAvail.Y );
+			//m_FBO->Resize( regionAvail.X, regionAvail.Y );
 
 			SceneManager::GetActiveScene()->GetSceneRenderer().Render( m_FBO, camera, view, position );
 
@@ -54,6 +55,8 @@ namespace Tridium {
 		m_IsFocused = ImGui::IsWindowFocused();
 
 		ImGui::End();
+
+#endif
 	}
 
 	std::optional< std::tuple<Camera&, Matrix4, Vector3> > GameViewportPanel::GetSceneCamera() const

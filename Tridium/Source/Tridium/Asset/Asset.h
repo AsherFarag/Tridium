@@ -1,5 +1,5 @@
 #pragma once
-#include "AssetDefinitions.h"
+#include <Tridium/Asset/AssetDefinitions.h>
 #include <Tridium/Core/Hash.h>
 #include <Tridium/Core/Memory.h>
 #include <Tridium/Utils/Concepts.h>

@@ -3,7 +3,7 @@
 #include "Panel.h"
 #include <Tridium/Debug/Profiler/Profiler.h>
 #include <Tridium/Containers/Optional.h>
-#include <Tridium/Core/Delegate.h>
+#include <Tridium/Common/Function.h>
 
 namespace Tridium {
 

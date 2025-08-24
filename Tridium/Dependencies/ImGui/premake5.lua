@@ -3,9 +3,6 @@ project "ImGui"
 	language "C++"
     staticruntime "on"
 
-	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-
 	files
 	{
 		"imconfig.h",

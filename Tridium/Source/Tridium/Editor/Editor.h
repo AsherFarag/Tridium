@@ -5,7 +5,7 @@
 #include "EditorPayload.h"
 #include "EditorStyle.h"
 #include <Tridium/Core/Application.h>
-#include <Tridium/Core/Delegate.h>
+#include <Tridium/Common/Function.h>
 #include "Commands/CommandManager.h"
 
 namespace Tridium {
@@ -23,7 +23,7 @@ namespace Tridium {
 		// Global editor events that can be subscribed and invoked from anywhere in the editor.
 		struct Events
 		{
-			static MulticastDelegate<void, GameObject> OnGameObjectSelected;
+			static MulticastDelegate<void( GameObject )> OnGameObjectSelected;
 		};
 
 		static Editor* Get() { return Cast<Editor*>( s_Instance ); }

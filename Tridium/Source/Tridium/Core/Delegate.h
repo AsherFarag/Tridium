@@ -4,6 +4,8 @@
 #include <Tridium/Utils/TypeTraits.h>
 #include <unordered_map>
 
+#if 0
+
 namespace Tridium {
 
 	// NOTE:
@@ -307,3 +309,5 @@ namespace Tridium {
 	};
 
 } // namespace Tridium
+
+#endif // 0

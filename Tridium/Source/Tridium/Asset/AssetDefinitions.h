@@ -15,7 +15,7 @@ namespace Tridium {
 		None = 0,
 		MemoryOnly = 1 << 1, // The asset is only stored in memory, not on disk. This is set by the AssetDatabase.
 	};
-	ENUM_ENABLE_BITMASK_OPERATORS( EAssetFlags );
+	DEFINE_ENUM_BITMASK_OPERATORS( EAssetFlags );
 
 	//==============================
 	// Asset types

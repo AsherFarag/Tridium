@@ -19,7 +19,7 @@ namespace Tridium {
 
 		Default = None
 	};
-	ENUM_ENABLE_BITMASK_OPERATORS( ERHIShaderCompilerFlags );
+	DEFINE_ENUM_BITMASK_OPERATORS( ERHIShaderCompilerFlags );
 
 
 

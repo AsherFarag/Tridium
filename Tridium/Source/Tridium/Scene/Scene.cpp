@@ -264,12 +264,12 @@ namespace Tridium {
 		m_ECS.DestroyEntity( entt::entity( a_GameObject.m_ID ) );
 	}
 
-	GameObject Scene::InstantiateGameObject( const std::string& a_Name )
+	GameObject Scene::InstantiateGameObject( const String& a_Name )
 	{
 		return InstantiateGameObject( GUID::Create(), a_Name );
 	}
 
-	GameObject Scene::InstantiateGameObject( GUID a_GUID, const std::string& a_Name )
+	GameObject Scene::InstantiateGameObject( GUID a_GUID, const String& a_Name )
 	{
 		auto go = GameObject( m_ECS.CreateEntity() );
 		AddComponentToGameObject<GUIDComponent>( go, a_GUID );
@@ -406,7 +406,7 @@ namespace Tridium {
 		return !a_GameObject.GetFlags().HasFlag( EGameObjectFlags::PendingKill );
 	}
 
-	GameObject Scene::FindGameObjectByTag( const std::string& a_Tag ) const
+	GameObject Scene::FindGameObjectByTag( const String& a_Tag ) const
 	{
 		auto view = GetECS().View<TagComponent>();
 		for ( auto&& [ entity, tagComponent ] : view.each() )
@@ -418,7 +418,7 @@ namespace Tridium {
 		return GameObject{};
 	}
 
-	std::vector<GameObject> Scene::FindAllGameObjectsByTag( const std::string& a_Tag ) const
+	std::vector<GameObject> Scene::FindAllGameObjectsByTag( const String& a_Tag ) const
 	{
 		std::vector<GameObject> gameObjects;
 		// Reserve an arbitrary amount of space for the vector

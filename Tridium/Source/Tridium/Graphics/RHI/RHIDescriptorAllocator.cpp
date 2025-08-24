@@ -86,7 +86,7 @@ namespace Tridium {
 
 	void RHIDescriptorAllocator::Free( RHIDescriptorHandle a_Handle )
 	{
-		if ( !a_Handle.Valid() )
+		if ( a_Handle.Valid() )
 		{
 			Free( a_Handle.Index, 1u );
 		}
@@ -99,44 +99,44 @@ namespace Tridium {
 		uint32_t newFirst = a_BaseIndex;
 		uint32_t newLast = a_BaseIndex + a_Count - 1;
 
-		// Use binary search (lower_bound) to find the first range that is >= newFirst
 		auto it = std::lower_bound(
 			m_Ranges.Begin(), m_Ranges.End(), newFirst,
-			[]( const RHIDescriptorAllocatorRange& range, uint32_t value ) {
-				return range.Last < value; // True if range is completely before the value
+			[]( const RHIDescriptorAllocatorRange& range, uint32_t value )
+			{
+				return range.Last < value;
 			} );
 
-		// If found, check for possible merging
-		if ( it != m_Ranges.End() )
+		// Try merge with previous range
+		if ( it != m_Ranges.Begin() )
 		{
-			RHIDescriptorAllocatorRange& range = *it;
-
-			// Merge with existing range (left-side)
-			if ( newLast + 1 == range.First )
+			auto prevIt = std::prev( it );
+			if ( prevIt->Last + 1 >= newFirst ) // overlap or adjacent
 			{
-				range.First = newFirst;
-				return;
-			}
+				prevIt->Last = std::max( prevIt->Last, newLast );
 
-			// Merge with existing range (right-side)
-			if ( newFirst == range.Last + 1 )
-			{
-				range.Last = newLast;
-
-				// Check if it merges with the next range
-				auto nextIt = std::next( it );
-				if ( nextIt != m_Ranges.End() && range.Last + 1 == nextIt->First )
+				// Also check if it now merges with the next range
+				if ( it != m_Ranges.End() && prevIt->Last + 1 >= it->First )
 				{
-					range.Last = nextIt->Last;
-					m_Ranges.Erase( nextIt ); // Merge with next range
+					prevIt->Last = std::max( prevIt->Last, it->Last );
+					m_Ranges.Erase( it );
 				}
+
 				return;
 			}
 		}
 
-		// Insert the new free range at the correct position found by lower_bound
+		// Try merge with current range
+		if ( it != m_Ranges.End() && newLast + 1 >= it->First )
+		{
+			it->First = std::min( it->First, newFirst );
+			it->Last = std::max( it->Last, newLast );
+			return;
+		}
+
+		// Otherwise insert as a new free block
 		m_Ranges.Insert( it, RHIDescriptorAllocatorRange( newFirst, newLast ) );
 	}
+
 
 
 	//////////////////////////////////////////////////////////////////////////

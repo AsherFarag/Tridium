@@ -250,6 +250,11 @@ namespace Tridium::D3D12 {
 			rootSigDesc.Desc_1_1.NumParameters = Cast<UINT>(rootParams.Size());
 			rootSigDesc.Desc_1_1.pParameters = rootParams.Data();
 		}
+		else
+		{
+			rootSigDesc.Desc_1_1.NumParameters = 0;
+			rootSigDesc.Desc_1_1.pParameters = nullptr;
+		}
 
 		ComPtr<ID3DBlob> rootSigBlob;
 		ComPtr<ID3DBlob> errorBlob;

@@ -1,8 +1,9 @@
 #pragma once
-#include "RHIConfig.h"
-#include "RHIDefinitions.h"
-#include "RHIToString.h"
-#include "RHIConstants.h"
+#include <Tridium/Graphics/RHI/RHIConfig.h>
+#include <Tridium/Graphics/RHI/RHIDefinitions.h>
+#include <Tridium/Graphics/RHI/RHIToString.h>
+#include <Tridium/Graphics/RHI/RHIConstants.h>
+#include <Tridium/Graphics/RHI/RHIForward.h>
 #include <Tridium/Graphics/Color.h>
 #include <Tridium/Core/Config.h>
 #include <Tridium/Core/Memory.h>
@@ -15,9 +16,6 @@
 #include <Shaders/ShaderInterop.h>
 
 namespace Tridium {
-
-	// Forward declarations
-	class IDynamicRHI;
 
 	//==============================================
 	// The global dynamic RHI instance.

@@ -1,0 +1,1477 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Dependencies">
+      <UniqueIdentifier>{6C01343A-5864-C3DE-01EA-FB94ED2B8F61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\HdriToCubemap">
+      <UniqueIdentifier>{E280E873-CE90-9444-374A-F962237983DD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui">
+      <UniqueIdentifier>{96D70AF8-82BB-CB4D-EB1B-C6A0D71EB6CF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\backends">
+      <UniqueIdentifier>{803AF3CE-EC47-21B5-752E-1DA0E13AED6B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples">
+      <UniqueIdentifier>{040EB479-701B-E25F-F901-DE4A650EAE16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_allegro5">
+      <UniqueIdentifier>{19266897-0539-68F0-AE22-45DD9A14053E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_android_opengl3">
+      <UniqueIdentifier>{D69571B7-42A7-195E-CBF8-AB9D3709A397}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_emscripten_wgpu">
+      <UniqueIdentifier>{BAB71732-26C9-BFD8-AF1A-52181B2B4912}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_glfw_opengl2">
+      <UniqueIdentifier>{A4BFFEB7-9068-66E7-B9FE-8166A5068128}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_glfw_opengl3">
+      <UniqueIdentifier>{A5BFFEB7-9168-66E7-BAFE-8166A6068128}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_glfw_vulkan">
+      <UniqueIdentifier>{3EF93DF7-AA34-9EBA-B329-1B4A1FE422EB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_glfw_wgpu">
+      <UniqueIdentifier>{F0DDE89A-5C4E-EB13-256D-659C919C2315}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_glut_opengl2">
+      <UniqueIdentifier>{90ED2797-7C96-8FC6-A52C-AB459134AA07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_null">
+      <UniqueIdentifier>{D990315E-C50D-25A1-EE8A-25B5DA66C134}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_sdl2_directx11">
+      <UniqueIdentifier>{2722BD8E-13B6-B236-7C7A-0CEB682DED28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_sdl2_opengl2">
+      <UniqueIdentifier>{A967368B-9510-9EBA-BEA6-B939AAAEB8FB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_sdl2_opengl3">
+      <UniqueIdentifier>{AA67368B-9610-9EBA-BFA6-B939ABAEB8FB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_sdl2_sdlrenderer2">
+      <UniqueIdentifier>{7EF5AD79-EA11-A06A-B3E9-0CD81FC5092C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_sdl2_vulkan">
+      <UniqueIdentifier>{A3346E24-0F70-CEE7-1865-4B77841F5318}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_sdl3_opengl3">
+      <UniqueIdentifier>{ABD8B2FF-9781-1A2F-C017-36AEAC1F3570}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_sdl3_sdlrenderer3">
+      <UniqueIdentifier>{202FEEB4-8C4B-E0A5-5523-4D13C1FE4967}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_sdl_directx11">
+      <UniqueIdentifier>{55D7F6FD-C19D-531A-0AF9-E17C76FEC17E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_sdl_opengl2">
+      <UniqueIdentifier>{57F9846C-C334-E52F-CC29-62BF38E46960}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_sdl_opengl3">
+      <UniqueIdentifier>{58F9846C-C434-E52F-CD29-62BF39E46960}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_sdl_sdlrenderer">
+      <UniqueIdentifier>{7A345AE2-E645-0289-6F97-94C8DBA78BC2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_sdl_vulkan">
+      <UniqueIdentifier>{91483A0C-7DC6-8AA5-66BE-483D52DBCCCD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_win32_directx10">
+      <UniqueIdentifier>{C40E5DBD-3020-0564-B971-97A325828E9D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_win32_directx11">
+      <UniqueIdentifier>{C50E5DBD-3120-0564-BA71-97A326828E9D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_win32_directx12">
+      <UniqueIdentifier>{C60E5DBD-3220-0564-BB71-97A327828E9D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_win32_directx9">
+      <UniqueIdentifier>{1C8CEBBF-0820-E167-71E4-3A1C5D971B5A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\example_win32_opengl3">
+      <UniqueIdentifier>{C89416C1-345B-73DD-7DB6-0140E9BBE141}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\libs">
+      <UniqueIdentifier>{DDF4505F-C945-3CA1-F2A9-2A63DE59CF0A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\libs\emscripten">
+      <UniqueIdentifier>{C6608409-32C6-1790-BB9E-B96827030DFF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\libs\glfw">
+      <UniqueIdentifier>{BC5A1AA3-281F-1993-F184-495D5D08B5C8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\libs\glfw\include">
+      <UniqueIdentifier>{2F7EC462-9BEE-C6DB-640D-4164D03CFFDC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\libs\glfw\include\GLFW">
+      <UniqueIdentifier>{CE6E6018-BA02-56C0-23C7-AF740F7A90B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\examples\libs\usynergy">
+      <UniqueIdentifier>{B2225B3C-1E3D-BEDD-675F-CE71D3B8E5E4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\misc">
+      <UniqueIdentifier>{3118DF74-9D4F-270C-A659-8B2F12104E05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\misc\cpp">
+      <UniqueIdentifier>{83423D82-EF4F-6B68-7836-6753E442371F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\misc\debuggers">
+      <UniqueIdentifier>{D8761A94-44E5-6F13-8DCE-2A13F97B65AF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\misc\fonts">
+      <UniqueIdentifier>{4AB3CD06-B6CB-B430-7F78-44CAEB4F49CA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\misc\freetype">
+      <UniqueIdentifier>{04DEE0E2-F02E-CC24-1993-BAE605435F8E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGui\misc\single_file">
+      <UniqueIdentifier>{A1B22DEB-0D6C-9895-96CB-B26F02844E05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGuizmo">
+      <UniqueIdentifier>{4CCD03EA-B839-BFE4-812D-5742ED58E14C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGuizmo\example">
+      <UniqueIdentifier>{276B4656-9383-2D80-5C30-BD19C807C219}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImGuizmo\vcpkg-example">
+      <UniqueIdentifier>{8F096DB0-FBC2-D75A-8422-F234F0DA8DCA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImTextEdit">
+      <UniqueIdentifier>{1C125BCC-8849-A363-9153-0787FD09CA5C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\ImTextEdit\ImTextEdit">
+      <UniqueIdentifier>{CC544835-B890-4B9F-21A3-63960DFEF3B9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics">
+      <UniqueIdentifier>{D70A5389-C32F-A209-EC7A-8799D8FEA027}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt">
+      <UniqueIdentifier>{7F63CBA1-EB7B-B2CB-B428-426520004765}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\AABBTree">
+      <UniqueIdentifier>{A4C87077-901A-4867-7939-8577652A6150}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\AABBTree\NodeCodec">
+      <UniqueIdentifier>{1708290F-03B1-903E-2C47-ACBD184FAB7F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\AABBTree\TriangleCodec">
+      <UniqueIdentifier>{67916C9C-53D0-1618-FC52-F349E870CC82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\Core">
+      <UniqueIdentifier>{378F1993-23CB-1CFD-8CDD-34F47838C517}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\Geometry">
+      <UniqueIdentifier>{BAEF3740-A641-0F30-8F60-4C407B512819}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\Math">
+      <UniqueIdentifier>{B8CF1E93-A40B-22FD-0D1E-3AF4F978CA17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\ObjectStream">
+      <UniqueIdentifier>{51D83B94-3D40-0262-A6AB-16789232194E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\Physics">
+      <UniqueIdentifier>{F175EA8F-5D3A-E97F-26A0-194A922385B5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\Physics\Body">
+      <UniqueIdentifier>{CE6A5F33-BAD2-2501-233E-3A170FC53CED}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\Physics\Character">
+      <UniqueIdentifier>{0DB59858-79F0-F81B-82E5-75ABEE9F7D4C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\Physics\Collision">
+      <UniqueIdentifier>{4C8CC00F-B8C7-20D3-C1BC-9D622D77A503}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\Physics\Collision\BroadPhase">
+      <UniqueIdentifier>{D455BC47-C015-4DEC-2933-35F7151260FE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\Physics\Collision\Shape">
+      <UniqueIdentifier>{8CAFFE06-F8CB-F0F7-C1A3-5D652D7F5AB9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\Physics\Constraints">
+      <UniqueIdentifier>{38F8B1AC-A4BE-0EC9-ED19-9D2B591F7D2D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\Physics\Constraints\ConstraintPart">
+      <UniqueIdentifier>{23EBFC30-0FEC-90AB-38B4-FD2F24140766}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\Physics\Ragdoll">
+      <UniqueIdentifier>{655FB854-D1CF-BACD-9AEE-3456061EF3CE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\Physics\SoftBody">
+      <UniqueIdentifier>{0A32690C-F6AF-B9A5-DFA7-773DCBC4FBCD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\Physics\Vehicle">
+      <UniqueIdentifier>{40980A92-AC08-0D0B-7527-8793E156450C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\Renderer">
+      <UniqueIdentifier>{05061464-F157-EB53-DA76-2864C667043D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\Skeleton">
+      <UniqueIdentifier>{93A7C509-7FF9-9CF9-6818-DA095409B6E2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\TriangleGrouper">
+      <UniqueIdentifier>{48FD41F6-B46D-446F-7D8C-BEF7E9BB7C70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\JoltPhysics\Jolt\TriangleSplitter">
+      <UniqueIdentifier>{7BF7CC2F-6775-1DC9-506D-DB603C8A5FF1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\SPIRV-Cross">
+      <UniqueIdentifier>{8691F7AE-72B6-462F-9B01-2CBF8785454D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\SPIRV-Cross\build">
+      <UniqueIdentifier>{45EA6D48-3110-38AF-1A56-BD7A061B5D7B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\SPIRV-Cross\build\CMakeFiles">
+      <UniqueIdentifier>{684AC7E5-D464-2A87-1D87-3A1B89E0518E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\SPIRV-Cross\build\CMakeFiles\3.27.2">
+      <UniqueIdentifier>{2187735E-0D30-DB8D-36C6-F60C22CEF5CE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\SPIRV-Cross\build\CMakeFiles\3.27.2\CompilerIdC">
+      <UniqueIdentifier>{7B83792C-67EE-3938-100A-9F9DFC53FD1A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\SPIRV-Cross\build\CMakeFiles\3.27.2\CompilerIdCXX">
+      <UniqueIdentifier>{EB59E830-D72F-6F2E-C0D9-8981AC4EA2CF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\SPIRV-Cross\cmake">
+      <UniqueIdentifier>{967D7B48-82A3-45AF-6BE9-CA7A57AE6A7B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\SPIRV-Cross\include">
+      <UniqueIdentifier>{F9DEA825-E52F-9467-0E94-8229FA4327D1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\SPIRV-Cross\include\spirv_cross">
+      <UniqueIdentifier>{C54AD685-B15D-D6DE-5A47-B3CB4639732C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\SPIRV-Cross\samples">
+      <UniqueIdentifier>{CA2ED309-B67F-BE4B-DFE3-AC0DCB9351B5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\SPIRV-Cross\samples\cpp">
+      <UniqueIdentifier>{9CFD1C0A-88E4-DE01-3135-451F1DFB5768}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\SPIRV-Cross\tests-other">
+      <UniqueIdentifier>{F73EAAA3-E325-6C9B-8C76-D2B8783CE501}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp">
+      <UniqueIdentifier>{081BE631-747C-C33F-FDE9-09F2694AFAFE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\code">
+      <UniqueIdentifier>{B2EE2263-9E13-72E3-C75E-5773B3E27001}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\code\Importer">
+      <UniqueIdentifier>{F3CC2C41-5F3B-82C0-A824-3DC014D2775C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\code\Importer\IFC">
+      <UniqueIdentifier>{1414FB73-80D8-F963-493E-2A2EB5C19599}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\code\res">
+      <UniqueIdentifier>{EBAF9A03-D76A-8AAF-8022-03FA6CBCD43F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib">
+      <UniqueIdentifier>{08EB84AB-74F8-B291-FDDE-AE7C69EB7E48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\Open3DGC">
+      <UniqueIdentifier>{0A8AB29F-F670-7497-9FC1-DAB48B87EDFD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\clipper">
+      <UniqueIdentifier>{268C97F7-9245-02A2-1BA5-1C7C875DB811}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\irrXML">
+      <UniqueIdentifier>{B5F0AAFE-A12C-AE68-0A3F-C65FF6995683}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\openddlparser">
+      <UniqueIdentifier>{AA7C588E-1697-BB2F-5FB9-CBC3CB12E336}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\openddlparser\code">
+      <UniqueIdentifier>{94A51D15-8023-6EAE-691B-2C465538B0D6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\openddlparser\include">
+      <UniqueIdentifier>{1DAE4402-8974-A11E-D2CF-2F813ED50F83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\openddlparser\include\openddlparser">
+      <UniqueIdentifier>{7F80CD14-EB13-2FC3-F4FA-9E79600DC68A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\poly2tri">
+      <UniqueIdentifier>{BC2D50D8-A814-12D0-5165-78ED3D2B8B36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\poly2tri\poly2tri">
+      <UniqueIdentifier>{F0BA532A-5C2B-56A3-254A-D02B91798EA4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\poly2tri\poly2tri\common">
+      <UniqueIdentifier>{482E4C52-346D-F6CD-DDEF-D2FFC90DAC38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\poly2tri\poly2tri\sweep">
+      <UniqueIdentifier>{A3A256CD-0FB4-FE73-9805-91B3041688AD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\rapidjson">
+      <UniqueIdentifier>{C1DECEF1-2DA3-CDE1-F608-FEAB628C6917}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\rapidjson\include">
+      <UniqueIdentifier>{34372B96-A0A7-2D0F-69C6-A797D5F56510}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\rapidjson\include\rapidjson">
+      <UniqueIdentifier>{ED51B355-5939-9E4B-6227-A0C7CE8D410E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\rapidjson\include\rapidjson\error">
+      <UniqueIdentifier>{06E7DC75-72AF-AAF9-3B40-B30BA7C7DA34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\rapidjson\include\rapidjson\internal">
+      <UniqueIdentifier>{D96E20F8-C56F-B472-EE37-21F7DA972A2D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\rapidjson\include\rapidjson\msinttypes">
+      <UniqueIdentifier>{9C2BAC6B-8817-44DB-F18D-032EDD98E40B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\unzip">
+      <UniqueIdentifier>{2D2041D2-998E-9651-E277-51514E258CED}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\utf8cpp">
+      <UniqueIdentifier>{21E28373-8D9B-EE1D-16FB-08F882B3A48D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\utf8cpp\source">
+      <UniqueIdentifier>{2135DBCA-0D9D-A198-7608-B6AE628FB884}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\utf8cpp\source\utf8">
+      <UniqueIdentifier>{9734B3BD-0370-1381-0C65-9010781F98B1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\zip">
+      <UniqueIdentifier>{CA09AF6A-36ED-BDAA-3FF0-EBE6AB5284FB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\zip\src">
+      <UniqueIdentifier>{E19C6EDB-4D56-D985-D6B5-F35F426E8FF5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\zip\test">
+      <UniqueIdentifier>{99904249-8577-0441-2EC8-6A5E1A8E7DA7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\zlib">
+      <UniqueIdentifier>{484F90C0-34A0-7B02-5D04-6AC449B40E6C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\zlib\contrib">
+      <UniqueIdentifier>{485F3FAA-34DC-32ED-5D59-33014935CF80}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\zlib\contrib\blast">
+      <UniqueIdentifier>{0D713815-F9EE-88AE-E2E6-4646CE03CBD6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\zlib\contrib\infback9">
+      <UniqueIdentifier>{1EB06402-8A76-C11E-D3D1-4F813FD72F83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\zlib\contrib\inflate86">
+      <UniqueIdentifier>{28835766-1417-4D0E-7DDB-A6C2698E8700}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\zlib\contrib\iostream">
+      <UniqueIdentifier>{FB0F016F-67D6-5D8B-B031-ECED1C37CCEF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\zlib\contrib\iostream2">
+      <UniqueIdentifier>{8D0F234F-79A3-18F7-E267-72ABCE1A53E9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\zlib\contrib\iostream3">
+      <UniqueIdentifier>{8E0F234F-7AA3-18F7-E367-72ABCF1A53E9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\zlib\contrib\masmx64">
+      <UniqueIdentifier>{A74C737B-93F5-DAAA-BC8B-F629A893F5EB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\zlib\contrib\minizip">
+      <UniqueIdentifier>{F7F4BF8D-E39D-27BD-0C34-433CF83B42FE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\zlib\contrib\puff">
+      <UniqueIdentifier>{A815382F-1486-3AA8-DDA4-B43049D472A9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\zlib\contrib\testzlib">
+      <UniqueIdentifier>{E8571394-541E-70B0-9D79-FE12097FDE14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\contrib\zlib\contrib\untgz">
+      <UniqueIdentifier>{AFAA9116-9B28-E2AF-8420-A047703D24D8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\include">
+      <UniqueIdentifier>{7BCA4176-E7D7-6F5C-70BE-6B47DCCA3B13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\include\assimp">
+      <UniqueIdentifier>{373D5345-2379-56AF-8C8B-6EA678E6FEC9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\include\assimp\Compiler">
+      <UniqueIdentifier>{814A89F4-EDAF-1C7B-7688-BE53E2EC11EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\include\assimp\port">
+      <UniqueIdentifier>{0BE9BE5F-7778-804A-8074-6162EC82BB56}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\assimp\include\assimp\port\AndroidJNI">
+      <UniqueIdentifier>{7CF65313-688A-49BB-D14E-A36FBD0184AD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\entt">
+      <UniqueIdentifier>{368A550F-A2A0-53A5-EB17-DFC6576D242D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\entt\include">
+      <UniqueIdentifier>{A9870C36-154A-40C0-5EFA-CE4CCAFB189E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glad">
+      <UniqueIdentifier>{F397560F-5FAE-54A5-A825-E0C6147B252D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glad\include">
+      <UniqueIdentifier>{6602AAF8-D2C4-DD82-1B75-6C0F8776B660}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glad\include\KHR">
+      <UniqueIdentifier>{DAD32B69-46EC-1293-0F99-A22C7B70A72C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glad\include\glad">
+      <UniqueIdentifier>{2D45B68E-196B-80F5-02B1-05C1EE75A5C1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glad\src">
+      <UniqueIdentifier>{8A171388-F683-CE82-BF77-66E02BA3F0EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glfw">
+      <UniqueIdentifier>{AB98560F-17AF-54A5-6026-E0C6CC7B252D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glfw\deps">
+      <UniqueIdentifier>{A6CDA237-92C7-CB89-7B34-629A67CD31F6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glfw\deps\glad">
+      <UniqueIdentifier>{6D183005-D925-5EEB-620C-5AD6CE182AA2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glfw\deps\mingw">
+      <UniqueIdentifier>{174C9EAB-0307-8E57-ACBE-06A29858D8E7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glfw\examples">
+      <UniqueIdentifier>{B9D6A641-A5E6-5212-0EA0-B730FACE41AB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glfw\include">
+      <UniqueIdentifier>{1E3B1BB2-8AFD-4E3C-D3AD-DDC83FAF271A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glfw\include\GLFW">
+      <UniqueIdentifier>{1D99CD24-09BF-978B-F204-1D57DEC9BC57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glfw\src">
+      <UniqueIdentifier>{42B41495-AE20-D08F-7714-68EDE33FF2F7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glfw\tests">
+      <UniqueIdentifier>{CD171E2D-394F-66C4-4259-CAE7AE0F8DBD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glm">
+      <UniqueIdentifier>{BB610A4E-A75A-29A0-D08C-0E25BCE408AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glm\glm">
+      <UniqueIdentifier>{8A51A62B-76E0-2FF5-1FFF-43F00B6D409B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glm\glm\detail">
+      <UniqueIdentifier>{0CEA5717-78F7-85FD-01DE-81E86DEA51B4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glm\glm\ext">
+      <UniqueIdentifier>{EA894352-D6AE-92D2-FFF9-7762EB7D91F0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glm\glm\gtc">
+      <UniqueIdentifier>{D7914352-C3B6-92D2-EC01-7862D88591F0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glm\glm\gtx">
+      <UniqueIdentifier>{EC914352-D8B6-92D2-0102-7862ED8591F0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glm\glm\simd">
+      <UniqueIdentifier>{2634BC9A-92F6-EF24-DBA6-7EB147A8C802}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glm\test">
+      <UniqueIdentifier>{2A8777A0-96F3-329B-5FE7-CAF8CB125503}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glm\test\bug">
+      <UniqueIdentifier>{5782F691-C344-2A1C-0CF5-B8A878F602FA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glm\test\cmake">
+      <UniqueIdentifier>{3A1EAEE9-A62B-DCCF-2F12-D8BA9B1EA886}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glm\test\core">
+      <UniqueIdentifier>{E241C7D0-CE51-73A1-370B-D8BF233A623A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glm\test\ext">
+      <UniqueIdentifier>{8A8FF691-F651-2A1C-3F02-B9A8AB0303FA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glm\test\gtc">
+      <UniqueIdentifier>{7797F691-E359-2A1C-2C0A-B9A8980B03FA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glm\test\gtx">
+      <UniqueIdentifier>{8C97F691-F859-2A1C-410A-B9A8AD0B03FA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glm\test\perf">
+      <UniqueIdentifier>{4638CED0-3248-7AA1-9B01-DFBF8730693A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\glm\util">
+      <UniqueIdentifier>{085278A0-74BE-339B-3DB2-CBF8A9DD5503}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\lua">
+      <UniqueIdentifier>{1D780A4E-0971-29A0-32A3-0E251EFB08AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\lua\x64">
+      <UniqueIdentifier>{0E0AAFC0-FA98-388A-A3B7-4C858F254930}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\lua\x64\include">
+      <UniqueIdentifier>{815F7435-6D1A-64E1-16D2-DC2B026CAE71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\refl">
+      <UniqueIdentifier>{04835C0F-7099-5AA5-B910-E6C625662B2D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\refl\Include">
+      <UniqueIdentifier>{57D66686-C398-9A10-0C49-299D784A73EE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2">
+      <UniqueIdentifier>{7B3A5D0F-E750-5BA5-30C8-E6C69C1D2C2D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples">
+      <UniqueIdentifier>{89824896-7592-F466-DE4B-5985CA7AE3FF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\customization">
+      <UniqueIdentifier>{9179C31A-7DF6-B65D-A673-B771924F53F1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\customization\include">
+      <UniqueIdentifier>{04A235F4-F04A-9D23-19E1-B8A205E9B764}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\customization\include\zm">
+      <UniqueIdentifier>{9A6BEDDC-067D-9583-8FCE-27C3FBDE1EBD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\customization\source">
+      <UniqueIdentifier>{910E9826-FD49-F8E9-063F-757972F97C1A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\interop">
+      <UniqueIdentifier>{99E1FFE1-851D-034C-EE2F-1B43DA8AAB66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\interop\LuaBridge">
+      <UniqueIdentifier>{F7A37DF6-E3B6-7D4F-8CA0-5A3C78921A9D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\interop\LuaBridge\source">
+      <UniqueIdentifier>{37CA393C-A3DB-E1E2-2C2D-7422983D6B1C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\interop\kaguya">
+      <UniqueIdentifier>{CAE32FFF-36FE-92A0-7F20-A334EB79BAA7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\interop\kaguya\source">
+      <UniqueIdentifier>{AA9E5136-9647-B965-BFDD-D4E4ABE5D3A6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\interop\luwra">
+      <UniqueIdentifier>{F3EDB98B-DF6A-ADCE-08E8-ADE2F4C34962}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\interop\luwra\source">
+      <UniqueIdentifier>{B380776C-1FBC-D72F-28B1-54BF946B5C60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\interop\tolua">
+      <UniqueIdentifier>{4D39478C-39B6-3ACF-6233-3BE34E0FD762}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\interop\tolua\source">
+      <UniqueIdentifier>{CD42E704-397E-47C8-4273-C457AE2DCCF8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\require_dll_example">
+      <UniqueIdentifier>{9BEB2084-8769-711D-7061-2FB55C7EB345}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\require_dll_example\include">
+      <UniqueIdentifier>{0E7EC161-FA27-F770-E3F8-FE8BCF41975F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\require_dll_example\include\my_object">
+      <UniqueIdentifier>{39AE45D0-25AF-D94A-4E77-46CF3AD74F05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\require_dll_example\source">
+      <UniqueIdentifier>{5B91B350-C7AD-A541-9085-12AFFC600F03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\source">
+      <UniqueIdentifier>{8950EAC8-F5BE-3F48-3EA8-FA47AA5535E4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\source\docs">
+      <UniqueIdentifier>{2149FACA-0D9B-D1BA-F6B9-0ECBE2AAEAA3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\source\tutorials">
+      <UniqueIdentifier>{9FC1AF39-0B27-43C0-94FF-E4980064382F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\source\tutorials\quick_n_dirty">
+      <UniqueIdentifier>{431BFD23-AF8D-3F40-F821-75C464D30939}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\examples\source\wip">
+      <UniqueIdentifier>{083B5DDF-74FF-5BCF-3D65-8C99A9E8F704}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\include">
+      <UniqueIdentifier>{EEAC4E40-5A6F-82CA-A31F-11570F215BA8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\include\sol">
+      <UniqueIdentifier>{AB31B3F0-174A-9A1A-E0F6-29B44CCE2EB4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\include\sol\compatibility">
+      <UniqueIdentifier>{947EB573-00E4-48FA-89BC-EAD2F5203E69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\include\sol\detail">
+      <UniqueIdentifier>{0D3BA545-F921-673D-A272-CD5A8E38E0A3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\include\sol\stack">
+      <UniqueIdentifier>{3043BF31-9CFC-29DC-255C-44B69114E04B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\include\sol\stack\detail">
+      <UniqueIdentifier>{F2C4877E-DE2C-4E4C-4798-6262331F6538}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\include\sol\utility">
+      <UniqueIdentifier>{0E032739-7AC7-2529-432D-56F3AFB0C15E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests">
+      <UniqueIdentifier>{9DD52A85-090D-731C-1217-D73F7ECD9915}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\config_tests">
+      <UniqueIdentifier>{B46C571F-A053-1917-49A4-7F34356A927D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\config_tests\function_pointers">
+      <UniqueIdentifier>{7CE68B8A-6890-C199-5161-C9B43DAA6188}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\config_tests\function_pointers\source">
+      <UniqueIdentifier>{1C659DAB-882D-6B2F-51BE-7341BD459B6A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\config_tests\integer_value_fits">
+      <UniqueIdentifier>{02CFF3FE-6EB6-DEF4-77A4-E070E30A82B7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\config_tests\integer_value_fits\source">
+      <UniqueIdentifier>{E2BA8599-CE90-0C97-B73A-27EAA3AF3F38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\container_exhaustive">
+      <UniqueIdentifier>{54824F06-4095-4F5F-E97E-2C4CD570ECAC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\container_exhaustive\source">
+      <UniqueIdentifier>{F43D7021-604F-18C8-E9A0-AA0755B1A101}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\coroutines">
+      <UniqueIdentifier>{B7A41776-A3E0-1AE0-0CF3-32D7F84DC3FA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\coroutines\source">
+      <UniqueIdentifier>{F772F31B-638D-56BD-ACAF-665118097EC4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\enum">
+      <UniqueIdentifier>{21A5FD9B-0D60-ED47-B617-6692A2B137D8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\enum\source">
+      <UniqueIdentifier>{21985BB6-8D51-C660-16B1-E03A82697CD0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\environment">
+      <UniqueIdentifier>{4148E395-AD01-4E40-3661-681AA21904B0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\environment\source">
+      <UniqueIdentifier>{4177666F-2DDF-2C3D-964A-415382D14329}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\exceptions">
+      <UniqueIdentifier>{8E2141B1-7A5D-441B-E36F-5C12CFCAEC35}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\exceptions\source">
+      <UniqueIdentifier>{EE37635D-5A52-C6FE-A374-D6920FCEED05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\inclusion">
+      <UniqueIdentifier>{8067D140-ECD5-26C0-35BF-E1BFA16C1C5C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\inclusion\source">
+      <UniqueIdentifier>{A0198FDF-8C96-8222-B513-8336A1EF1EB6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\inclusion\source\compatibility">
+      <UniqueIdentifier>{49AF357D-3559-6B8C-1E2A-73A70A730B7B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\inclusion\source\detail">
+      <UniqueIdentifier>{62FD3712-CE38-98D5-D72D-156543E81C06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\inclusion\source\stack">
+      <UniqueIdentifier>{E58E2811-D10C-79AA-BA04-3742A621BBD2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\inclusion\source\stack\detail">
+      <UniqueIdentifier>{0733BA21-734F-AC12-3C27-1980A80216D4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\inclusion\source\utility">
+      <UniqueIdentifier>{03101298-EFB8-79C7-184F-954604579408}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\lua_lifetime">
+      <UniqueIdentifier>{1C322802-0819-EAF9-B169-50179D2F6360}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\lua_lifetime\source">
+      <UniqueIdentifier>{BC5C3CEE-28C2-CF74-B19A-714D1DFFC4E3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\numerics">
+      <UniqueIdentifier>{D2B8CB54-BE09-B796-E76D-A558D31D4A00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\numerics\source">
+      <UniqueIdentifier>{B27ABAF7-1E0A-7CE2-2706-5DFA9314B7EE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\regression_tests">
+      <UniqueIdentifier>{3F38F066-2BB5-E3A9-5432-E4BD400E803D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\regression_tests\1011">
+      <UniqueIdentifier>{91683674-FDD8-38ED-C6F7-B275322771EE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\regression_tests\1011\source">
+      <UniqueIdentifier>{911D88A1-7D5C-321D-26DF-0E4F12FDE787}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\regression_tests\simple">
+      <UniqueIdentifier>{18C090F9-84FB-F0BC-8DF0-6D4CF9AA75ED}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\regression_tests\simple\source">
+      <UniqueIdentifier>{38D7B153-2481-E762-0D52-EF7DF99A8751}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\run_time">
+      <UniqueIdentifier>{EFBBBC07-DB0C-A849-0471-960BF0203BB3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\run_time\source">
+      <UniqueIdentifier>{2F3B7F5A-9BCA-4045-A4C6-215D10D57B51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\utility">
+      <UniqueIdentifier>{007934AE-6C5C-43EE-755F-712AE1C1093F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\sol2\tests\utility\source">
+      <UniqueIdentifier>{207B9F7F-0CCD-766F-F5EB-B37FE1DC8F58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\spdlog">
+      <UniqueIdentifier>{2480A45B-90E1-8169-194F-C81B85AFB828}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\spdlog\bench">
+      <UniqueIdentifier>{7325FEEC-DFE7-3177-2898-C00394990A55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\spdlog\example">
+      <UniqueIdentifier>{FF757837-6B83-A61D-F469-A208607672D4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\spdlog\include">
+      <UniqueIdentifier>{978B3154-0399-5F3A-8C7F-5B25F88B2BF1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\spdlog\include\spdlog">
+      <UniqueIdentifier>{EF8BD1E2-DBC7-D44C-44DA-EC4330357D67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\spdlog\include\spdlog\cfg">
+      <UniqueIdentifier>{EE639FC7-DAB5-76B7-C3D4-B3C7AFC58FA0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\spdlog\include\spdlog\details">
+      <UniqueIdentifier>{64FB32DB-5063-F9A8-B9CE-0DBFA5551095}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\spdlog\include\spdlog\fmt">
+      <UniqueIdentifier>{A5719FC7-91C3-76B7-7AE2-B3C766D38FA0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\spdlog\include\spdlog\fmt\bundled">
+      <UniqueIdentifier>{926581E9-7EE3-D182-67DB-8F1A53F813AB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\spdlog\include\spdlog\sinks">
+      <UniqueIdentifier>{A6702B2E-92ED-1E71-BB6A-1F85A746BB04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\spdlog\src">
+      <UniqueIdentifier>{3BB08B9C-A7E7-D333-B0F1-37571CA8FA2C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\spdlog\tests">
+      <UniqueIdentifier>{06F643EE-72B8-7778-BB68-0605276A5056}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\stbi">
+      <UniqueIdentifier>{AD4E5D0F-1965-5BA5-62DC-E6C6CE312C2D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\stbi\include">
+      <UniqueIdentifier>{20D370B9-8C95-A443-D545-33D041477D21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp">
+      <UniqueIdentifier>{9EC180F2-0A2E-3CED-D321-D44A3F4D5E55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\include">
+      <UniqueIdentifier>{11A70C23-7DBF-F34C-466C-83E6B24388E6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\include\yaml-cpp">
+      <UniqueIdentifier>{E390B2B8-CFE2-89A8-B801-C7B8A4F2A291}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\include\yaml-cpp\contrib">
+      <UniqueIdentifier>{E30B6BC4-CF89-BB5D-B881-79F5A49EFD85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\include\yaml-cpp\node">
+      <UniqueIdentifier>{984DE0F3-04B3-737A-8D8B-1553F9EF68E9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\include\yaml-cpp\node\detail">
+      <UniqueIdentifier>{5A0A98FE-469E-8DA6-AF62-E75A9B15C898}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\src">
+      <UniqueIdentifier>{B51E40E2-21E1-736C-6A91-02F9D6924C4A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\src\contrib">
+      <UniqueIdentifier>{B54B4A43-21BA-9FC2-6AA3-5AC2D650955E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test">
+      <UniqueIdentifier>{ED4C442A-D95C-F0FA-4216-55192E45DF93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test\cmake">
+      <UniqueIdentifier>{3DEAD6CF-293B-C211-529F-B0D33E4F557B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test\gtest-1.11.0">
+      <UniqueIdentifier>{AFA4404E-1B34-0239-2430-E350903E3D45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test\gtest-1.11.0\googlemock">
+      <UniqueIdentifier>{A5DC314F-9170-27F7-FA34-81ABE6E761E9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test\gtest-1.11.0\googlemock\include">
+      <UniqueIdentifier>{18D90FF0-0499-A094-6DB6-889F5995B3A6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test\gtest-1.11.0\googlemock\include\gmock">
+      <UniqueIdentifier>{38476C49-2448-00C4-4D10-6D483970767E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test\gtest-1.11.0\googlemock\include\gmock\internal">
+      <UniqueIdentifier>{8488D5E6-F052-A741-3959-A666A562681C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test\gtest-1.11.0\googlemock\include\gmock\internal\custom">
+      <UniqueIdentifier>{6E68A421-5AC1-14A5-83BB-F63E6F73BAA2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test\gtest-1.11.0\googlemock\test">
+      <UniqueIdentifier>{54643229-C04B-1D1F-C939-1F9B35A0C0E1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test\gtest-1.11.0\googletest">
+      <UniqueIdentifier>{DB8A354F-C71E-2BF7-30E3-84AB1C9665E9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test\gtest-1.11.0\googletest\include">
+      <UniqueIdentifier>{4E5D216A-3A1D-B20E-A33A-9A198F19C520}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test\gtest-1.11.0\googletest\include\gtest">
+      <UniqueIdentifier>{244A5D90-104B-F10A-3913-5E8F257367C5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test\gtest-1.11.0\googletest\include\gtest\internal">
+      <UniqueIdentifier>{F094C65B-5C5F-98B6-A565-97DB116F5991}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test\gtest-1.11.0\googletest\include\gtest\internal\custom">
+      <UniqueIdentifier>{5AC3353F-461C-A6C2-6F16-885C5BCE4BC0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test\gtest-1.11.0\googletest\samples">
+      <UniqueIdentifier>{1FAD4B4E-0B6D-DCF2-748A-C4FD6069EF04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test\gtest-1.11.0\googletest\src">
+      <UniqueIdentifier>{723E81B2-5EE8-B6C1-47B9-BEDC330257B0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test\gtest-1.11.0\googletest\test">
+      <UniqueIdentifier>{4A64A902-B64B-94F8-BF39-96742BA037BB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test\integration">
+      <UniqueIdentifier>{E05D64D6-CCAF-3BC6-B5CE-78D6A1BF54AF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\test\node">
+      <UniqueIdentifier>{E21F3BA9-4E03-4AE9-5706-7825C368103A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\yaml-cpp\util">
+      <UniqueIdentifier>{CB17452A-B727-F1FA-20E1-55190C10E093}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{56EB95D1-428D-C0A7-2B48-D4FB178947F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{6A48A913-D6D3-16D8-DFE4-99CC4BEF72D8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\OpenGL">
+      <UniqueIdentifier>{5E160775-4A10-30C7-337D-C6D71F169633}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Platform\Windows">
+      <UniqueIdentifier>{A4BC056E-10F4-4D05-19FE-B12885B474FE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium">
+      <UniqueIdentifier>{A3AEE1A7-8F7C-D5AD-7810-46D4647DB112}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Asset">
+      <UniqueIdentifier>{7291BCD7-5E20-46A1-073F-5A9CF3AC5647}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Common">
+      <UniqueIdentifier>{7B86ADD3-E7F2-68CE-B0E6-002C1C128B36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Containers">
+      <UniqueIdentifier>{4825074A-B4E7-3AD4-FD97-C960699913B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Core">
+      <UniqueIdentifier>{DB70D01D-47D2-AD2B-D03F-F4DD3CA0E4EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Debug">
+      <UniqueIdentifier>{59E7EAD7-4576-74A1-EE94-889CDA028547}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Debug\Profiler">
+      <UniqueIdentifier>{CB5C03D9-3775-EA02-0022-7A9C6CF97E9C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\ECS">
+      <UniqueIdentifier>{6D3CA908-5920-6A5E-C280-64B1AE8354E0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\ECS\Components">
+      <UniqueIdentifier>{6263B7EB-CE7B-9E15-9728-2EAF030033AF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\ECS\Components\Types">
+      <UniqueIdentifier>{86A8174A-F261-82F4-7BC1-9CCEE7793864}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\ECS\Components\Types\Common">
+      <UniqueIdentifier>{FE22B1CE-EA8A-779C-53F6-8BB23F7D8E88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\ECS\Components\Types\Physics">
+      <UniqueIdentifier>{F8D1127E-6437-A604-ED0F-48DD59749B73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\ECS\Components\Types\Rendering">
+      <UniqueIdentifier>{53514400-BFC1-4679-88E0-C001F40F7F7A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Editor">
+      <UniqueIdentifier>{79B68ED7-E522-4AD2-AE16-E22F1A426C3A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Editor\Commands">
+      <UniqueIdentifier>{DAA93B42-C6CF-05A9-AF15-8B749BDA2A75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Editor\Panels">
+      <UniqueIdentifier>{ABC4EA67-977F-DA13-4037-535E2CD124A4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Editor\Panels\Asset">
+      <UniqueIdentifier>{7A0D90A3-6649-930D-CF5B-AB04BBB63B28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Editor\PopUps">
+      <UniqueIdentifier>{EFF0E868-DBAB-D814-8463-515F70FD22A5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Editor\Util">
+      <UniqueIdentifier>{66C1F368-52D1-9F39-BB8A-0458A7B98ED2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Engine">
+      <UniqueIdentifier>{C86342D8-34D0-FDD2-FDC3-953069EF1F3B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Events">
+      <UniqueIdentifier>{2725D2D8-9391-8DD3-5C85-2531C8B0AF3B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\GameFramework">
+      <UniqueIdentifier>{1AEF87F1-06AA-779D-AF61-F0E79BFBC12D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Graphics">
+      <UniqueIdentifier>{439E53F1-AFD5-9B88-B8DF-FFAB2496C281}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Graphics\RHI">
+      <UniqueIdentifier>{F533CA92-6141-F878-EA27-F4635634C42F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Graphics\RHI\Backend">
+      <UniqueIdentifier>{AC5F7F24-1819-EACE-A178-04A90D31A03E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Graphics\RHI\Backend\DirectX12">
+      <UniqueIdentifier>{718813E1-DDF8-155A-A617-90E212474E5B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Graphics\RHI\Backend\DirectX12\ThirdParty">
+      <UniqueIdentifier>{8B98D753-776D-1F07-A01C-5F038C502D1E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Graphics\RHI\Backend\OpenGL">
+      <UniqueIdentifier>{602F364C-4C97-FC19-B502-1130A1891306}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Graphics\RHI\Backend\Vulkan">
+      <UniqueIdentifier>{AC93E85C-98FB-AE2A-0167-C340EDEDC516}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Graphics\Renderer">
+      <UniqueIdentifier>{499D9429-35EE-7F6B-5E52-6E2D4A0213D5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Graphics\oldRendering">
+      <UniqueIdentifier>{6FFBCB92-5BE2-8D8A-0433-F4A7F0F806F1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Graphics\oldRendering\RenderPass">
+      <UniqueIdentifier>{35A05D7A-A1DB-BD3D-AAD0-3ACD168B426E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\IO">
+      <UniqueIdentifier>{6A210508-D637-039E-1FAF-8EBF8B04D425}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\IO\Backend">
+      <UniqueIdentifier>{21F236A5-8DB4-6A2F-D664-F9BB4266430D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\IO\Backend\Windows">
+      <UniqueIdentifier>{5B2D21A8-C79B-7627-1085-31277C326CC3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\ImGui">
+      <UniqueIdentifier>{0D5249D8-F9E0-D2A1-A2FF-E69C8E6DE347}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\ImGui\Backends">
+      <UniqueIdentifier>{B7CEC936-23E7-B060-EC93-40FA586B45FA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Input">
+      <UniqueIdentifier>{E28C4AD8-CE1B-D4A1-773A-E89C63A8E447}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Math">
+      <UniqueIdentifier>{5CB1D51D-C812-B32B-5180-F9DDBDE0E9EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Physics">
+      <UniqueIdentifier>{15A59B22-019F-C474-EA0B-5B85D6A42AE1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Physics\Jolt">
+      <UniqueIdentifier>{7D142413-E921-52F9-7208-4EE4DE141EB0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Project">
+      <UniqueIdentifier>{E9453539-D53F-5E8B-BEAC-F49BAA45C4F7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Reflection">
+      <UniqueIdentifier>{7D19D438-E9DB-07C3-328C-964F9E8DE0A0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Scene">
+      <UniqueIdentifier>{004AF9D8-ECD8-82A2-95F7-969D81659348}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Scripting">
+      <UniqueIdentifier>{650BA2C6-5130-F146-7A7B-D6D666FFEF64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\Utils">
+      <UniqueIdentifier>{43DE26D9-2F6D-B0A2-D88B-C49DC4F9C048}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\oldAsset">
+      <UniqueIdentifier>{11A27211-7DD9-BAA8-86E3-1ECCF299E1A1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tridium\oldAsset\Loaders">
+      <UniqueIdentifier>{0ABB9823-769E-A763-7FA1-D59FEB036EB4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Platform\OpenGL\OpenGLBuffer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Platform\OpenGL\OpenGLContext.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Platform\OpenGL\OpenGLEnvironmentMap.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Platform\OpenGL\OpenGLFrameBuffer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Platform\OpenGL\OpenGLRenderingAPI.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Platform\OpenGL\OpenGLShaderOld.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Platform\OpenGL\OpenGLTextureOld.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Platform\OpenGL\OpenGLVertexArray.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Platform\Windows\WindowsInput.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Platform\Windows\WindowsWindow.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Asset\AssetDatabase.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Asset\AssetFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Asset\MeshAsset.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Asset\TextureAsset.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Common\TimeStamp.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Application.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Assert.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\GUID.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Hash.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Layer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\LayerStack.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Main.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Time.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Debug\Profiler\Instrumentor.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Debug\Profiler\ProfileSessionSerializer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Debug\DebugDrawer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Common\CameraControllerComponent.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Common\CharacterControllerComponent.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Common\GUIDComponent.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Common\LuaScriptComponent.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Common\TagComponent.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Common\TransformComponent.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Physics\ColliderComponents.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Physics\RigidBodyComponent.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Rendering\CameraComponent.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Rendering\LightComponents.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Rendering\MeshComponent.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Rendering\SpriteComponent.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Component.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\CoreComponents.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\NativeScriptComponent.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\GameObject.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\Asset\MaterialEditorPanel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\Asset\MeshSourceImporterPanel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\AssetRegistryPanel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\ContentBrowserPanel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\EditorPreferencesPanel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\EditorViewportPanel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\GameViewportPanel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\InspectorPanel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\Panel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\ProfilerPanel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\ProjectSettingsPanel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\SceneHeirarchyPanel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\SceneSettingsPanel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\ScriptEditorPanel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\StatsPanel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\ViewportPanel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Util\AssetInfo.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\AssetImporter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Editor.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\EditorCamera.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\EditorDocumentation.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\EditorIcons.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\EditorLayer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\EditorStyle.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\EditorUtil.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\PropertyDrawers.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Engine\Engine.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Engine\EngineModule.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\Buffer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\Camera.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\DrawList.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\EnvironmentMap.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\FrameBuffer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\GameViewport.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\GBuffer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\Material.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\Mesh.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\RenderCommand.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\Renderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\RenderingAPI.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\RenderingContext.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\SceneRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\Shader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\Texture.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\VertexArray.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\Renderer\RendererModule.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\Renderer\RenderGraph.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\Renderer\SceneRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\Renderer\ShaderLibrary.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\DirectX12\ThirdParty\D3D12MemAlloc.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\DirectX12\D3D12Util.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\DirectX12\DXCompiler.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\DirectX12\DynamicRHI_D3D12Impl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\DirectX12\RHIBuffer_D3D12Impl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\DirectX12\RHICommandList_D3D12Impl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\DirectX12\RHIDescriptorAllocator_D3D12Impl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\DirectX12\RHIPipelineState_D3D12Impl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\DirectX12\RHIShader_D3D12Impl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\DirectX12\RHIShaderBindings_D3D12Impl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\DirectX12\RHISwapChain_D3D12Impl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\DirectX12\RHITexture_D3D12Impl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\OpenGL\DynamicRHI__OpenGLImpl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\OpenGL\RHI_OpenGLImpl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\OpenGL\RHIBuffer_OpenGLImpl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\OpenGL\RHICommandList_OpenGLImpl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\OpenGL\RHIPipelineState_OpenGLImpl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\OpenGL\RHIShader_OpenGLImpl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\OpenGL\RHIShaderBindings_OpenGLImpl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\OpenGL\RHISwapChain_OpenGLImpl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\OpenGL\RHITexture_OpenGLImpl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\Vulkan\DynamicRHI_VulkanImpl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\Vulkan\RHI_VulkanImpl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHI.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIDescriptorAllocator.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIResource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIShaderCompiler.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIStateTracker.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\Backends\ImGuiBackend_GLFW.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\Backends\ImGuiBackend_RHI.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\Backends\ImGuiBackend_Win32.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\ImGui.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\imgui_stdlib.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\ImGuiBackend.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\ImGuiBuild.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\ImGuiLayer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\ImGuiModule.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\IO\Backend\Windows\FileIO.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\IO\FileManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\IO\ProjectSerializer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\IO\SceneSerializer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\IO\SerializationUtil.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\IO\TextSerializer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\Loaders\AssimpImporter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\Loaders\LuaScriptLoader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\Loaders\MaterialLoader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\Loaders\MeshLoader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\Loaders\SceneLoader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\Loaders\ShaderLoader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\Loaders\TextureLoader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\AssetFactoryOld.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\AssetManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\AssetMetaData.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\AssetType.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\EditorAssetManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\RuntimeAssetManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\Jolt\JoltColliders.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\Jolt\JoltDebugRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\Jolt\JoltPhysicsEngine.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\Jolt\JoltPhysicsScene.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\Colliders.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\PhysicsEngine.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\PhysicsFilter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\PhysicsLayer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\PhysicsModule.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\PhysicsScene.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\RayCast.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Project\Project.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Reflection\EditorReflection.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Reflection\PrimitiveReflector.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Reflection\Reflection.ixx" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Reflection\ReflectionImpl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Scene\Scene.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Scene\Scene.ixx" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Scene\SceneManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Scripting\Script.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Scripting\Scriptables.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Scripting\ScriptEngine.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Scripting\ScriptModule.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Scripting\ScriptSystem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Utils\Log.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\tripch.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Platform\OpenGL\OpenGLBuffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Platform\OpenGL\OpenGLContext.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Platform\OpenGL\OpenGLEnvironmentMap.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Platform\OpenGL\OpenGLFrameBuffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Platform\OpenGL\OpenGLRenderingAPI.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Platform\OpenGL\OpenGLShaderOld.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Platform\OpenGL\OpenGLTextureOld.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Platform\OpenGL\OpenGLVertexArray.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Platform\Windows\WindowsInput.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Platform\Windows\WindowsWindow.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Asset\Asset.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Asset\AssetDatabase.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Asset\AssetDefinitions.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Asset\AssetFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Asset\MaterialAsset.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Asset\MeshAsset.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Asset\TextureAsset.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Common\Function.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Common\TimeStamp.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\Any.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\Array.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\BidirectionalMap.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\BitSet.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\Containers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\Deque.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\Expected.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\InitList.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\List.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\Map.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\Optional.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\Queue.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\Set.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\Span.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\Stack.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\String.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\Tuple.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\TypeMap.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\UnorderedMap.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Containers\Variant.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Application.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Assert.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Cast.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\CommandLine.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Config.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Core.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Delegate.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Enum.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Error.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\ForEachStructMember.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\GUID.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Hash.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Layer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\LayerStack.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Memory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Platform.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Time.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Types.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Version.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Core\Window.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Debug\Profiler\Instrumentor.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Debug\Profiler\Profiler.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Debug\Profiler\ProfilerCategory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Debug\Profiler\ProfilerTask.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Debug\Profiler\ProfilerTimer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Debug\Profiler\ProfileSessionSerializer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Debug\DebugDrawer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Debug\SourceLocation.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Common\CameraControllerComponent.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Common\CharacterControllerComponent.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Common\GUIDComponent.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Common\LuaScriptComponent.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Common\TagComponent.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Common\TransformComponent.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Physics\ColliderComponents.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Physics\RigidBodyComponent.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Rendering\CameraComponent.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Rendering\LightComponents.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Rendering\MeshComponent.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types\Rendering\SpriteComponent.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Component.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\CoreComponents.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\NativeScriptComponent.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\Components\Types.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\ECS.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\EntityTicker.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\GameObject.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Commands\AbstractCommandManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Commands\CommandManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Commands\Commands.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\Asset\MaterialEditorPanel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\Asset\MeshSourceImporterPanel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\AssetRegistryPanel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\ContentBrowserPanel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\EditorPreferencesPanel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\EditorViewportPanel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\GameViewportPanel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\InspectorPanel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\Panel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\ProfilerPanel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\ProjectSettingsPanel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\SceneHeirarchyPanel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\SceneSettingsPanel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\ScriptEditorPanel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\StatsPanel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Panels\ViewportPanel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\PopUps\PopUpModal.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Util\AssetInfo.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\AssetImporter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\Editor.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\EditorCamera.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\EditorConfig.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\EditorDocumentation.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\EditorIcons.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\EditorLayer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\EditorPanelManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\EditorPayload.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\EditorResources.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\EditorStyle.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\EditorUtil.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Editor\PropertyDrawers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Engine\Engine.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Engine\EngineConfig.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Engine\EngineModule.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Events\Event.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\GameFramework\GameInstance.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\RenderPass\RenderPass.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\Buffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\Camera.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\DrawList.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\EnvironmentMap.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\FrameBuffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\GameViewport.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\GBuffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\Lights.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\Material.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\Mesh.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\Pipeline.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\RenderCommand.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\Renderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\RenderGraph.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\RenderingAPI.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\RenderingContext.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\SceneRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\Shader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\Texture.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\oldRendering\VertexArray.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\Renderer\RendererModule.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\Renderer\RenderGraph.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\Renderer\RenderResource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\Renderer\RenderResourceManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\Renderer\SceneRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\Renderer\ShaderLibrary.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\DirectX12\ThirdParty\D3D12MemAlloc.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\DirectX12\ThirdParty\d3dx12.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\DirectX12\D3D12.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\DirectX12\D3D12ToRHI.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\DirectX12\DXCompiler.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\DirectX12\RHI_D3D12Impl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\OpenGL\OpenGL1.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\OpenGL\OpenGL2.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\OpenGL\OpenGL3.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\OpenGL\OpenGL4.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\OpenGL\OpenGLToRHI.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\OpenGL\OpenGLUtil.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\OpenGL\OpenGLWrappers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\OpenGL\RHI_OpenGLImpl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\Backend\Vulkan\RHI_VulkanImpl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\DynamicRHI.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHI.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIBuffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHICommandAllocator.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHICommandList.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHICommon.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIConfig.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIConstants.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIDefinitions.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIDescriptorAllocator.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIForward.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIPipelineState.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIResource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHISampler.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIShader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIShaderBindings.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIShaderCompiler.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIStateTracker.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHISwapChain.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHITexture.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIToString.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIUtil.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\RHI\RHIVertexLayout.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\Color.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\Backends\ImGuiBackend_Dx12.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\Backends\ImGuiBackend_GLFW.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\Backends\ImGuiBackend_OpenGL.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\Backends\ImGuiBackend_RHI.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\Backends\ImGuiBackend_Win32.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\IconsFontAwesome6.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\ImGui.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\imgui_stdlib.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\ImGuiBackend.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\ImGuiLayer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\ImGui\ImGuiModule.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Input\Input.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\IO\Archive.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\IO\FileIO.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\IO\FileManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\IO\FilePath.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\IO\ProjectSerializer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\IO\SceneSerializer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\IO\Serializable.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\IO\SerializationUtil.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\IO\Serializer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\IO\TextSerializer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Math\AABB.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Math\Frustum.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Math\Math.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Math\MathConstants.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Math\Matrix.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Math\Quaternion.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Math\Rotator.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Math\Vector.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\Loaders\AssetLoader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\Loaders\AssimpImporter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\Loaders\LuaScriptLoader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\Loaders\MaterialLoader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\Loaders\MeshLoader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\Loaders\SceneLoader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\Loaders\ShaderLoader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\Loaders\TextureLoader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\Asset.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\AssetFactoryOld.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\AssetManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\AssetManagerBase.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\AssetMetaData.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\AssetRegistry.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\AssetStorageIterator.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\AssetType.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\EditorAssetManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\ImportSettings.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\oldAsset\RuntimeAssetManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\Jolt\JoltCharacter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\Jolt\JoltColliders.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\Jolt\JoltDebugRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\Jolt\JoltPhysicsEngine.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\Jolt\JoltPhysicsFilter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\Jolt\JoltPhysicsScene.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\Jolt\JoltUtil.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\Colliders.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\MotionType.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\Physics.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\PhysicsAPI.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\PhysicsBody.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\PhysicsBodyProxy.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\PhysicsCharacter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\PhysicsEngine.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\PhysicsFilter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\PhysicsLayer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\PhysicsModule.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\PhysicsScene.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\PhysicsShape.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Physics\RayCast.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Project\Project.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Project\ProjectConfig.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Reflection\EditorReflection.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Reflection\FieldReflection.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Reflection\MetaFlags.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Reflection\MetaTypes.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Reflection\PrimitiveReflector.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Reflection\Reflect.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Reflection\Reflection.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Reflection\ReflectionFwd.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Reflection\ReflectionImpl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Reflection\ReflectorInitializer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Reflection\ReflProps.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Scene\Scene.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Scene\SceneEnvironment.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Scene\SceneEvent.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Scene\SceneManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Scene\SceneSystem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Scene\SceneTick.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Scripting\Script.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Scripting\Scriptables.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Scripting\ScriptEngine.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Scripting\ScriptModule.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Scripting\ScriptProperty.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Scripting\ScriptSystem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Utils\AggregateToTuple.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Utils\Concepts.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Utils\Factory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Utils\FunctionTraits.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Utils\Log.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Utils\Macro.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Utils\MapMacro.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Utils\ScopeGuard.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Utils\Singleton.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Utils\StaticInitializer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Utils\StringUtils.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Utils\Todo.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Utils\TypeTraits.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\tripch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Source\Tridium\ECS\GameObject.inl" />
+    <None Include="$(MSBuildThisFileDirectory)Source\Tridium\Scene\Scene.inl" />
+  </ItemGroup>
+</Project>

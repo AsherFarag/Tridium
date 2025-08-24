@@ -51,8 +51,17 @@ namespace Tridium {
 		constexpr FixedArray() = default;
 		constexpr FixedArray( const FixedArray& a_Other ) = default;
 		constexpr FixedArray( FixedArray&& a_Other ) = default;
-		constexpr FixedArray( InitList<T> a_InitList ) { TRIDIUM_ARRAY_ASSERT( a_InitList.Size() <= MaxSize(), "Initializer list is too large" ); Fill( a_InitList ); }
+		constexpr FixedArray( InitList<T> a_InitList ) { TRIDIUM_ARRAY_ASSERT( a_InitList.size() <= MaxSize(), "Initializer list is too large" ); Fill( a_InitList ); }
 		constexpr FixedArray( Span<const T> a_InitList ) { TRIDIUM_ARRAY_ASSERT( a_InitList.size() <= MaxSize(), "Initializer list is too large" ); Fill( a_InitList ); }
+
+		template<typename... _Elems>
+		constexpr FixedArray( _Elems&&... a_Elems )
+		{
+			static_assert( sizeof...( _Elems ) <= _Size, "Too many elements for FixedArray" );
+			TRIDIUM_ARRAY_ASSERT( sizeof...( _Elems ) <= MaxSize(), "Initializer list is too large" );
+			Fill( { std::forward<_Elems>( a_Elems )... } );
+		}
+
 		constexpr FixedArray& operator=( const FixedArray& a_Other ) = default;
 		constexpr FixedArray& operator=( FixedArray&& a_Other ) = default;
 
@@ -106,9 +115,10 @@ namespace Tridium {
 		constexpr void Fill( const T& a_Value ) { m_Data.fill( a_Value ); }
 		constexpr void Fill( InitList<T> a_InitializerList )
 		{
-			for ( size_t i = 0; i < a_InitializerList.Size() && i < MaxSize(); ++i )
+			auto it = a_InitializerList.begin();
+			for ( size_t i = 0; i < a_InitializerList.size() && i < MaxSize(); ++i )
 			{
-				m_Data[i] = a_InitializerList[i];
+				m_Data[ i ] = *( it++ );
 			}
 		}
 
@@ -215,7 +225,7 @@ namespace Tridium {
 			: m_Size( 0 ), m_Dummy( false )
 		{
 			ConstexprInit();
-			TRIDIUM_ARRAY_ASSERT( a_List.Size() <= MaxSize(), "Initializer list is too large" );
+			TRIDIUM_ARRAY_ASSERT( a_List.size() <= MaxSize(), "Initializer list is too large" );
 			Fill( a_List );
 		}
 
@@ -233,8 +243,7 @@ namespace Tridium {
 		// Copy Assignment
 		// NOTE: a_Other can be of any size and this array will attempt to copy as many elements as possible.
 		//		 This also clears the current array.
-		template<size_t _OtherSize>
-		constexpr InlineArray& operator=( const InlineArray<_Value, _OtherSize>& a_Other ) 
+		constexpr InlineArray& operator=( const InlineArray& a_Other ) 
 		{
 			if ( this != &a_Other )
 			{
@@ -267,7 +276,7 @@ namespace Tridium {
 		// Copy Assignment from InitList
 		constexpr InlineArray& operator=( InitList<_Value> a_List )
 		{
-			TRIDIUM_ARRAY_ASSERT( a_List.Size() <= MaxSize(), "Initializer list is too large" );
+			TRIDIUM_ARRAY_ASSERT( a_List.size() <= MaxSize(), "Initializer list is too large" );
 			Fill( a_List );
 			return *this;
 		}
@@ -339,8 +348,8 @@ namespace Tridium {
 		constexpr void Fill( InitList<_Value> a_InitList )
 		{
 			Clear();
-			for ( size_t i = 0; i < std::min( a_InitList.Size(), MaxSize() ); ++i )
-				EmplaceBack( a_InitList[i] );
+			for ( const _Value& value : a_InitList )
+				PushBack( value );
 		}
 
 		constexpr void Clear() 

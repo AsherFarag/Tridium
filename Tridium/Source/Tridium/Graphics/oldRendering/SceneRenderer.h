@@ -58,10 +58,10 @@ namespace Tridium {
 		uint32_t CulledDrawCalls = 0u;
 	};
 
-	class SceneRenderer
+	class OldSceneRenderer
 	{
 	public:
-		SceneRenderer( Scene& a_Scene );
+		OldSceneRenderer( Scene& a_Scene );
 
 		void Render( const SharedPtr<Framebuffer>& a_RenderTarget, const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition );
 

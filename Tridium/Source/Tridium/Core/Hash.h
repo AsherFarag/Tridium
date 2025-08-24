@@ -61,6 +61,13 @@ namespace Tridium {
 		constexpr BasicHashedString( const BasicHashedString& a_Other )
 			: m_String( a_Other.m_String ), m_Hash( a_Other.m_Hash ) {}
 
+		constexpr BasicHashedString& operator=( BasicStringView<_Char> a_String )
+		{
+			m_String = a_String;
+			m_Hash = Helper( a_String.data(), a_String.size() );
+			return *this;
+		}
+
 		constexpr BasicHashedString& operator=( const BasicHashedString& a_Other )
 		{
 			m_String = a_Other.m_String;
@@ -207,3 +214,16 @@ namespace Tridium {
 	} // namespace Hashing
 
 } // namespace Tridium
+
+namespace std {
+
+	template<typename _Char>
+	struct hash<Tridium::BasicHashedString<_Char>>
+	{
+		[[nodiscard]] constexpr size_t operator()( const Tridium::BasicHashedString<_Char>& a_HashedString ) const noexcept
+		{
+			return hash<decltype( a_HashedString.Hash() )>{}( a_HashedString.Hash() );
+		}
+	};
+
+}

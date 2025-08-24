@@ -317,7 +317,7 @@ namespace Tridium {
 			float sectorStep = ( 2 * glm::pi<float>() ) / a_Slices;
 			float sectorAngle;  // radian
 			unitCircleVertices.reserve( a_Slices + 1 );
-			for ( int i = 0; i <= a_Slices; ++i )
+			for ( uint32_t i = 0; i <= a_Slices; ++i )
 			{
 				sectorAngle = i * sectorStep;
 				unitCircleVertices.emplace_back( cosf( sectorAngle ), 0.0f, sinf( sectorAngle ) ); // X-Z circle
@@ -335,7 +335,7 @@ namespace Tridium {
 
 			// Rotate normal per sector angle
 			normals.reserve( a_Slices );
-			for ( int i = 0; i <= a_Slices; ++i )
+			for ( uint32_t i = 0; i <= a_Slices; ++i )
 			{
 				sectorAngle = i * sectorStep;
 				normals.emplace_back( cos( sectorAngle ) * x0, y0, sin( sectorAngle ) * x0 );
@@ -351,13 +351,13 @@ namespace Tridium {
 		float radius;
 
 		// Generate vertices along the Y-axis for cylinder sides
-		for ( int i = 0; i <= a_Stacks; ++i )
+		for ( uint32_t i = 0; i <= a_Stacks; ++i )
 		{
 			float y = -( a_Height * 0.5f ) + (float)i / a_Stacks * a_Height; // vertex position along Y
 			radius = a_BaseRadius + (float)i / a_Stacks * ( a_TopRadius - a_BaseRadius ); // lerp radius
 			float t = 1.0f - (float)i / a_Stacks; // top-to-bottom
 
-			for ( int j = 0; j <= a_Slices; ++j )
+			for ( uint32_t j = 0; j <= a_Slices; ++j )
 			{
 				Vector3& u = unitCircleVertices[j];
 
@@ -369,7 +369,7 @@ namespace Tridium {
 		}
 
 		// Index base vertices
-		uint32_t baseVertexIndex = vertices.size();
+		uint32_t baseVertexIndex = (uint32_t)vertices.size();
 
 		// Base of cylinder
 		float y = -a_Height * 0.5f;
@@ -380,7 +380,7 @@ namespace Tridium {
 			vertex.UV = Vector2( 0.5f, 0.5f );
 		}
 
-		for ( int i = 0; i < a_Slices; ++i )
+		for ( uint32_t i = 0; i < a_Slices; ++i )
 		{
 			Vector3& u = unitCircleVertices[i];
 
@@ -390,7 +390,7 @@ namespace Tridium {
 			vertex.UV = { -u.X * 0.5f + 0.5f, -u.Z * 0.5f + 0.5f }; // flip horizontal
 		}
 
-		uint32_t topVertexIndex = vertices.size();
+		uint32_t topVertexIndex = (uint32_t)vertices.size();
 
 		// Top of cylinder
 		y = a_Height * 0.5f;
@@ -401,7 +401,7 @@ namespace Tridium {
 			vertex.UV = Vector2( 0.5f, 0.5f );
 		}
 
-		for ( int i = 0; i < a_Slices; ++i )
+		for ( uint32_t i = 0; i < a_Slices; ++i )
 		{
 			Vector3& u = unitCircleVertices[i];
 
@@ -413,12 +413,12 @@ namespace Tridium {
 
 		// put indices for sides
 		uint32_t k1, k2;
-		for ( int i = 0; i < a_Stacks; ++i )
+		for ( uint32_t i = 0; i < a_Stacks; ++i )
 		{
 			k1 = i * ( a_Slices + 1 );     // beginning of current stack
 			k2 = k1 + a_Slices + 1;      // beginning of next stack
 
-			for ( int j = 0; j < a_Slices; ++j, ++k1, ++k2 )
+			for ( uint32_t j = 0; j < a_Slices; ++j, ++k1, ++k2 )
 			{
 				// Invert the winding order
 				indices.push_back( k1 );
@@ -432,7 +432,7 @@ namespace Tridium {
 		}
 
 		// put indices for base
-		for ( int i = 0, k = baseVertexIndex + 1; i < a_Slices; ++i, ++k )
+		for ( uint32_t i = 0, k = baseVertexIndex + 1; i < a_Slices; ++i, ++k )
 		{
 			if ( i < ( a_Slices - 1 ) )
 			{
@@ -449,7 +449,7 @@ namespace Tridium {
 		}
 
 		// put indices for top
-		for ( int i = 0, k = topVertexIndex + 1; i < a_Slices; ++i, ++k )
+		for ( uint32_t i = 0, k = topVertexIndex + 1; i < a_Slices; ++i, ++k )
 		{
 			if ( i < ( a_Slices - 1 ) )
 			{

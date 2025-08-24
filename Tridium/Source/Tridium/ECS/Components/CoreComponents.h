@@ -20,7 +20,7 @@ namespace Tridium {
 		// The GameObject is enabled if it is both active and visible.
 		Enabled = Active | Visible,
 	};
-	ENUM_ENABLE_BITMASK_OPERATORS( EGameObjectFlags );
+	DEFINE_ENUM_BITMASK_OPERATORS( EGameObjectFlags );
 	//================================================================
 
 	class GameObjectFlagsComponent : public Component

@@ -394,7 +394,7 @@ namespace Tridium {
 		ColorStencil = Color | Stencil,
 		All          = Color | Depth | Stencil,
 	};
-	ENUM_ENABLE_BITMASK_OPERATORS( ERHIClearFlags );
+	DEFINE_ENUM_BITMASK_OPERATORS( ERHIClearFlags );
 
 
 
@@ -452,7 +452,7 @@ namespace Tridium {
 		_MIN = VertexBuffer,
 		_MAX = IndirectArgument
 	};
-	ENUM_ENABLE_BITMASK_OPERATORS( ERHIBindFlags );
+	DEFINE_ENUM_BITMASK_OPERATORS( ERHIBindFlags );
 
 
 
@@ -534,7 +534,7 @@ namespace Tridium {
 		IndexBuffer = 1 << 11,      // INDEX_BUFFER                                         | n/a                               | INDEX_READ_BIT
 		ConstantBuffer = 1 << 12,   // VERTEX_AND_CONSTANT_BUFFER                           | n/a                               | CONSTANT_BUFFER_READ_BIT
 	};
-	ENUM_ENABLE_BITMASK_OPERATORS( ERHIResourceStates );
+	DEFINE_ENUM_BITMASK_OPERATORS( ERHIResourceStates );
 	//=====================================================================
 
 

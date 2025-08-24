@@ -3,10 +3,7 @@ project "JoltPhysics"
    language "C++"
    cppdialect "C++17"
    staticruntime "On"
-
-   targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-   objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-
+   
    files
    {
       "./Jolt/**.h",

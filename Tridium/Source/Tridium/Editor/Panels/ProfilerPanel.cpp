@@ -165,13 +165,15 @@ namespace Tridium {
 				ImGui::TableSetupColumn( "Variable", ImGuiTableColumnFlags_WidthFixed, 200 );
 				ImGui::TableSetupColumn( "Value", ImGuiTableColumnFlags_WidthStretch );
 
+				const ProfileDescription* description = m_SelectedResult->Description;
+
 				// Name
 				{
 					ImGui::TableNextRow();
 					ImGui::TableSetColumnIndex( 0 );
 					ImGui::TextUnformatted( "Name" );
 					ImGui::TableSetColumnIndex( 1 );
-					ImGui::TextUnformatted( m_SelectedResult->Description->Name );
+					ImGui::TextUnformatted( description->Name.data(), description->Name.data() + description->Name.size() );
 				}
 
 				// Filter
@@ -180,7 +182,7 @@ namespace Tridium {
 					ImGui::TableSetColumnIndex( 0 );
 					ImGui::TextUnformatted( "Filter" );
 					ImGui::TableSetColumnIndex( 1 );
-					ImGui::TextUnformatted( m_SelectedResult->Description->Filter.Name );
+					ImGui::TextUnformatted( description->Filter.Name );
 
 					// Draw the filter color as a square
 					const ImVec2 squareSize = { ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight() };
@@ -191,13 +193,13 @@ namespace Tridium {
 				}
 
 				// Signature
-				if ( m_SelectedResult->Description->Signature )
+				if ( !description->Signature.empty() )
 				{
 					ImGui::TableNextRow();
 					ImGui::TableSetColumnIndex( 0 );
 					ImGui::TextUnformatted( "Signature" );
 					ImGui::TableSetColumnIndex( 1 );
-					ImGui::TextUnformatted( m_SelectedResult->Description->Signature );
+					ImGui::TextUnformatted( description->Signature.data(), description->Signature.data() + description->Signature.size() );
 				}
 
 				// Duration
@@ -242,7 +244,7 @@ namespace Tridium {
 					ImGui::TableSetColumnIndex( 0 );
 					ImGui::TextUnformatted( "File" );
 					ImGui::TableSetColumnIndex( 1 );
-					ImGui::TextUnformatted( m_SelectedResult->Description->File );
+					ImGui::TextUnformatted( description->File.data(), description->File.data() + description->File.size() );
 				}
 
 				// Line
@@ -251,7 +253,7 @@ namespace Tridium {
 					ImGui::TableSetColumnIndex( 0 );
 					ImGui::TextUnformatted( "Line" );
 					ImGui::TableSetColumnIndex( 1 );
-					ImGui::Text( "%d", m_SelectedResult->Description->Line );
+					ImGui::Text( "%d", description->Line );
 				}
 
 				ImGui::EndTable();
@@ -336,10 +338,10 @@ namespace Tridium {
 						textToDisplay = "";
 						break;
 					case Name:
-						textToDisplay = result.Description->Name;
+						textToDisplay = result.Description->Name.data();
 						break;
 					case Signature:
-						textToDisplay = result.Description->Signature ? result.Description->Signature : result.Description->Name;
+						textToDisplay = !result.Description->Signature.empty() ? result.Description->Signature.data() : result.Description->Name.data();
 						break;
 					case Filter:
 						textToDisplay = result.Description->Filter.Name;

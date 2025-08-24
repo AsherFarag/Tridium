@@ -488,8 +488,8 @@ float4 PSMain( VSOutput input ) : SV_Target
 				graphicsState.AddBindingSet( bindingSet.get() );
 				graphicsState.VertexBuffer = cubeVBO.get();
 				graphicsState.Framebuffer
-					.AddColorAttachment( rt.get() )
-					.SetDepthStencilAttachment( depthTex.get() );
+					.AddColorAttachment( rt )
+					.SetDepthStencilAttachment( depthTex );
 
 				cmdList->SetGraphicsState( graphicsState );
 

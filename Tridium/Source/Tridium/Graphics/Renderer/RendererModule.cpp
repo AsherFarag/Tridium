@@ -4,6 +4,9 @@
 
 namespace Tridium {
 
+	REGISTER_TICK_GROUP( BeginRender );
+    REGISTER_TICK_GROUP( EndRender, "BeginRender"_H );
+
 	REGISTER_ENGINE_MODULE( RendererModule );
 
     void RendererModule::Print()

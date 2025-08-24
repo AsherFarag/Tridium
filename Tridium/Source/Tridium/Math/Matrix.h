@@ -4,8 +4,9 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/matrix.hpp>
 #undef GLM_ENABLE_EXPERIMENTAL
+
 #include <Tridium/Utils/Concepts.h>
-#include "Vector.h"
+#include <Tridium/Math/Vector.h>
 
 namespace Tridium {
 

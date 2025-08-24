@@ -1,10 +1,14 @@
 #pragma once
-#include "RenderResourceManager.h"
-#include "ShaderLibrary.h"
-#include <Tridium/Graphics/RHI/DynamicRHI.h>
+#include <Tridium/Core/Application.h>
 #include <Tridium/Engine/EngineModule.h>
+#include <Tridium/Graphics/Renderer/RenderResourceManager.h>
+#include <Tridium/Graphics/Renderer/ShaderLibrary.h>
+#include <Tridium/Graphics/RHI/DynamicRHI.h>
 
 namespace Tridium {
+
+	DEFINE_TICK_GROUP( BeginRender );
+	DEFINE_TICK_GROUP( EndRender );
 
 	DEFINE_ENGINE_MODULE( RendererModule, EEngineModuleCategory::Server | EEngineModuleCategory::Client )
 	{

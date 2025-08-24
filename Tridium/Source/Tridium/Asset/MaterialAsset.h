@@ -7,10 +7,30 @@ namespace Tridium::T {
 	// Forward declarations
 	class Texture;
 
-	class MaterialAsset : public IAsset
+	//=================================================================================================
+	// Material Flags: Defines various properties of a material that effect how it is rendered.
+	//=================================================================================================
+	enum class EMaterialFlags : uint32_t
+	{
+		None = 0,
+		// The material is rendered on both sides of the polygons. Aka, it does not cull back faces.
+		TwoSided = 1 << 0,
+		// The material is transparent and should be rendered with alpha blending.
+		Transparent = 1 << 1,
+		// The material does not cast shadows.
+		DisableShadowCasting = 1 << 2,
+	};
+
+	DEFINE_ENUM_BITMASK_OPERATORS( EMaterialFlags );
+
+	//=================================================================================================
+	// Material: A pipeline state and set of textures that define how a mesh is rendered.
+	//=================================================================================================
+	class Material : public IAsset
 	{
 	public:
-		static SharedPtr<MaterialAsset> Create() { return MakeShared<EnableMakeShared<MaterialAsset>>(); }
+
+		static SharedPtr<Material> Create() { return MakeShared<EnableMakeShared<Material>>(); }
 		static constexpr EAssetType StaticType() { return EAssetType::Material; }
 		EAssetType Type() const override { return StaticType(); }
 		bool Valid() const override { return true; }
@@ -39,7 +59,14 @@ namespace Tridium::T {
 		void SetRoughnessIntensity( float a_Intensity ) { m_RoughnessIntensity = a_Intensity; }
 		void SetEmissiveIntensity( float a_Intensity ) { m_EmissiveIntensity = a_Intensity; }
 
+		auto Flags() const { return m_Flags; }
+		void SetFlags( const EMaterialFlags a_Flags ) { m_Flags = a_Flags; }
+
+		bool Transparent() const { return m_Flags.HasFlag( EMaterialFlags::Transparent ); }
+		bool CastsShadows() const { return !m_Flags.HasFlag( EMaterialFlags::DisableShadowCasting ); }
+
 	protected:
+
 		SharedPtr<Texture> m_AlbedoMap;
 		SharedPtr<Texture> m_NormalMap;
 		SharedPtr<Texture> m_MetallicMap;
@@ -52,6 +79,8 @@ namespace Tridium::T {
 		float m_MetallicIntensity = 1.0f;
 		float m_RoughnessIntensity = 1.0f;
 		float m_EmissiveIntensity = 1.0f;
+		EnumFlags<EMaterialFlags> m_Flags{ EMaterialFlags::None };
+
 	};
 
-}
+} // namespace Tridium

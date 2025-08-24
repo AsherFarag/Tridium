@@ -59,7 +59,7 @@ namespace Tridium {
 		// If not visible, this component will not be rendered.
 		Visible = 1 << 2,
 	};
-	ENUM_ENABLE_BITMASK_OPERATORS( EComponentFlags );
+	DEFINE_ENUM_BITMASK_OPERATORS( EComponentFlags );
 	//================================================================
 
 } // namespace Tridium

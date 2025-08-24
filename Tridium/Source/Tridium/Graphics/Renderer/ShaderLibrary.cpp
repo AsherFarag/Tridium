@@ -1,6 +1,5 @@
 #include "tripch.h"
 #include "ShaderLibrary.h"
-#include <Tridium/Graphics/RHI/ShaderPreprocessor.h>
 #include <Tridium/Graphics/RHI/RHI.h>
 #include <Tridium/IO/FileIO.h>
 

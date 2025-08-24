@@ -1,26 +1,27 @@
 #include "tripch.h"
+
 #if IS_EDITOR
 #include "EditorViewportPanel.h"
-
+#include <Tridium/Debug/DebugDrawer.h>
 #include <Tridium/ECS/GameObject.h>
-
+#include <Tridium/ECS/Components/Types.h>
 #include <Tridium/Editor/Editor.h>
 #include <Tridium/Editor/EditorUtil.h>
 #include <Tridium/Editor/EditorCamera.h>
 #include <Tridium/Editor/EditorStyle.h>
-
-#include <Tridium/ECS/Components/Types.h>
+#include <Tridium/Graphics/RHI/RHI.h>
 #include <Tridium/Scene/Scene.h>
-#include <Tridium/Graphics/oldRendering/SceneRenderer.h>
-#include <Tridium/oldAsset/EditorAssetManager.h>
 
-#include <Tridium/Debug/DebugDrawer.h>
+#include <ImGuizmo.h>
 
 // TEMP ?
+#include <Tridium/Graphics/oldRendering/SceneRenderer.h>
+#include <Tridium/oldAsset/EditorAssetManager.h>
 #include "Tridium/oldAsset/AssetManager.h"
 #include <Tridium/Graphics/oldRendering/RenderCommand.h>
 #include <Tridium/Graphics/oldRendering/VertexArray.h>
 #include <Tridium/Graphics/oldRendering/Shader.h>
+#include <Tridium/Graphics/Renderer/SceneRenderer.h>
 
 namespace Tridium {
 
@@ -52,16 +53,11 @@ namespace Tridium {
 		// Set up ID Selection
 		if ( 0 )
 		{
-			FramebufferSpecification FBOspecification;
-			FBOspecification.Attachments = { EFramebufferTextureFormat::RGBA16F, EFramebufferTextureFormat::Depth };
-			FBOspecification.Width = 1280;
-			FBOspecification.Height = 720;
-			m_FBO = Framebuffer::Create( FBOspecification );
 
-			FBOspecification.Attachments = { EFramebufferTextureFormat::RED_INT, EFramebufferTextureFormat::Depth };
-			m_IDFBO = Framebuffer::Create( FBOspecification );
+			//FBOspecification.Attachments = { EFramebufferTextureFormat::RED_INT, EFramebufferTextureFormat::Depth };
+			//m_IDFBO = Framebuffer::Create( FBOspecification );
 
-			std::string idVert =
+			String idVert =
 				R"(
 			#version 420
 
@@ -80,7 +76,7 @@ namespace Tridium {
 		)";
 
 
-			std::string idFrag =
+			String idFrag =
 				R"(
 			#version 420 core
 			
@@ -127,7 +123,7 @@ namespace Tridium {
 			case EInputKey::T:
 			{
 				if ( Input::IsKeyPressed( EInputKey::LeftControl ) )
-					m_GizmoState = EGizmoState::Universal_Scale;
+					m_GizmoState = EGizmoState::UniversalScale;
 				else
 					m_GizmoState = EGizmoState::Scale;
 
@@ -185,57 +181,113 @@ namespace Tridium {
 			if ( ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right) )
 				ImGui::SetWindowFocus();
 
-			Vector2 regionAvail = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().x };
-			auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
-			auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
-			auto viewportOffset = ImGui::GetWindowPos();
-			Vector2 viewportBoundsMin = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.x + viewportOffset.x };
-			Vector2 viewportBoundsMax = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.x + viewportOffset.x };
+			const Vector2 regionAvail = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
+			const auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
+			const auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+			const auto viewportOffset = ImGui::GetWindowPos();
+			const Vector2 viewportBoundsMin = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+			const Vector2 viewportBoundsMax = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
-			if ( 0 )
+			// Update the viewport size
+			m_ViewportSize = regionAvail;
+			m_EditorCamera->SetViewportSize( regionAvail.X, regionAvail.X );
+
+			const auto& colorTarget = m_FBO.ColorAttachments[ 0 ].Texture;
+			if ( m_ViewportSize.X != colorTarget->Desc().Width || m_ViewportSize.Y != colorTarget->Desc().Height )
 			{
-				// Update the viewport size
-				m_ViewportSize = regionAvail;
-				m_EditorCamera->SetViewportSize( regionAvail.X, regionAvail.X );
-				m_FBO->Resize( regionAvail.X, regionAvail.X );
+				const auto colorAttachmentDesc = RHITextureDesc{}
+					.SetFormat( ERHIFormat::RGBA8_UNORM )
+					.SetDimension( ERHITextureDimension::Texture2D )
+					.SetWidth( ( uint32_t )m_ViewportSize.X )
+					.SetHeight( ( uint32_t )m_ViewportSize.Y )
+					.SetDefaultSampler( RHISampler{}
+						.SetFilter( ERHISamplerFilter::MinMagMipLinear )
+						.SetAddressU( ERHISamplerAddressMode::Clamp )
+						.SetAddressV( ERHISamplerAddressMode::Clamp )
+						.SetAddressW( ERHISamplerAddressMode::Clamp ) )
+					.SetName( "Viewport Color Attachment 1" );
 
-				SceneManager::GetActiveScene()->GetSceneRenderer().Render( m_FBO, *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position );
+				static Array<uint8_t> whiteTexData;
+				whiteTexData.Resize( colorAttachmentDesc.Width * colorAttachmentDesc.Height * 4 );
+				std::memset( whiteTexData.Data(), 255, whiteTexData.Size() ); // Fill with white color (RGBA)
 
-				// Draw Debug Lines
-				{
-					m_FBO->Bind();
-					Debug::DebugDrawer::Get()->Draw( m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix() );
-					m_FBO->Unbind();
-				}
+				auto data = RHITextureSubresourceData{
+					.Data = whiteTexData.Data(),
+					.RowStride = colorAttachmentDesc.Width * sizeof( uint32_t ) * 4, // 4 channels (RGBA)
+					.DepthStride = 0
+				};
 
-				RenderSelectionOutline();
-
-				// Draw the Editor Camera ViewPort
-				ImGui::Image( ( ImTextureID )m_FBO->GetColorAttachmentID(), ImGui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 } );
-
-				DragDropTarget();
-
-				DrawManipulationGizmos( viewportBoundsMin, viewportBoundsMax );
-
-				if ( m_IsHovered && ImGui::IsItemClicked() && !ImGuizmo::IsUsingAny() )
-				{
-					m_IDFBO->Resize( regionAvail.X, regionAvail.X );
-
-					auto [mx, my] = ImGui::GetMousePos();
-					mx -= viewportBoundsMin.X;
-					my -= viewportBoundsMin.X;
-					my = m_ViewportSize.X - my;
-					int mouseX = ( int )mx;
-					int mouseY = ( int )my;
-
-					m_IDFBO->Bind();
-					RenderGameObjectIDs();
-					int goID = m_FBO->ReadPixel( 0, mouseX, mouseY );
-					m_IDFBO->Unbind();
-
-					Editor::Events::OnGameObjectSelected.Broadcast( Cast<EntityID>( goID ) );
-				}
+				m_FBO.ColorAttachments[ 0 ].Texture = RHI::CreateTexture( colorAttachmentDesc, data );
 			}
+
+			// Render image
+			{
+				auto cmdDesc = RHICommandListDesc{}
+					.SetQueueType( ERHICommandQueueType::Graphics )
+					.SetName( "EditorViewportPanel" );
+
+				RHICommandListRef cmdList = RHI::CreateCommandList( cmdDesc );
+				cmdList->Open();
+				{
+					auto slice = RHITextureSlice{}
+						.SetSize( 64, 64 ) // Assuming we want to fill a 64x64 texture
+						.SetMipLevel( 0 );
+
+					// Tex format is in RGBA 8 uint format, so we need to fill it with red color
+					static uint8_t redTexData[ 4 * 64 * 64 ];
+					if ( static bool once = false; !once )
+					{
+						for ( size_t i = 0; i < sizeof( redTexData ); i += 4 )
+						{
+							redTexData[ i ] = 255;     // R
+							redTexData[ i + 1 ] = 0;   // G
+							redTexData[ i + 2 ] = 0;   // B
+							redTexData[ i + 3 ] = 255; // A
+						}
+
+						once = true;
+					}
+
+
+
+					RHITextureSubresourceData subresourceData = RHITextureSubresourceData{
+						.Data = redTexData,
+						.RowStride = 64 * sizeof( uint32_t ), // 64x64 pixels, 4 channels (RGBA)
+						.DepthStride = 0
+					};
+
+					// Update the texture with the red data
+					cmdList->PushDebugGroup( "Editor Viewport Panel" );
+					cmdList->UpdateTexture( *colorTarget, slice, subresourceData );
+					cmdList->ResourceBarrier( RHIResourceBarrier{ colorTarget.get(), ERHIResourceStates::CopyDest, ERHIResourceStates::ShaderResource});
+					cmdList->PopDebugGroup();
+				}
+				cmdList->Close();
+
+				IRHICommandList* cmdListPtr = cmdList.get();
+				RHIFenceValue fence = RHI::ExecuteCommandLists( { &cmdListPtr, 1 }, ERHICommandQueueType::Graphics );
+
+				// Wait for the command list to finish executing
+				RHI::WaitForFence( ERHICommandQueueType::Graphics, fence );
+			}
+
+			// Draw the Editor Camera ViewPort
+			//ImTextureID textureID = ( ImTextureID )( *colorTarget->NativePtrAs<uint32_t>() );
+			//ImGui::Image( textureID, ImGui::GetContentRegionAvail() );
+
+			{
+				static SceneRenderer renderer( nullptr );
+				renderer.SetViewportSize( ( uint32_t )m_ViewportSize.X, ( uint32_t )m_ViewportSize.Y );
+				renderer.Open( *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position );
+				renderer.Close();
+
+				ImTextureID textureID = ( ImTextureID )( *renderer.GetOutputTexture()->NativePtrAs<uint32_t>() );
+				//ImGui::Image( textureID, ImGui::GetContentRegionAvail() );
+			}
+
+			//DragDropTarget();
+
+			//DrawManipulationGizmos( viewportBoundsMin, viewportBoundsMax );
 		}
 
 		m_IsHovered = ImGui::IsWindowHovered();
@@ -316,10 +368,24 @@ namespace Tridium {
 			if ( m_GizmoState == EGizmoState::Rotate )
 				snapVals = Vector3( 45.0f );
 
+			// Convert the Gizmo operation to ImGuizmo operation
+			ImGuizmo::OPERATION gizmoOperation;
+			switch ( m_GizmoState )
+			{
+				case EGizmoState::Translate: gizmoOperation = ImGuizmo::TRANSLATE; break;
+				case EGizmoState::Rotate: gizmoOperation = ImGuizmo::ROTATE; break;
+				case EGizmoState::Scale: gizmoOperation = ImGuizmo::SCALE; break;
+				case EGizmoState::UniversalScale: gizmoOperation = ImGuizmo::SCALEU; break;
+				default: gizmoOperation = ( ImGuizmo::OPERATION )0; break;
+			}
+
 			// Create a Manipulation Gizmo that allows the user to easily modify the Game-Object's transform
-			ImGuizmo::Manipulate( &camView[0][0], &camProjection[0][0],
-				(ImGuizmo::OPERATION)m_GizmoState, ImGuizmo::LOCAL,
-				&goWorldTransform[0][0], nullptr, shouldSnap ? &snapVals[0] : nullptr );
+			ImGuizmo::Manipulate(
+				&camView[0][0], &camProjection[0][0],
+				gizmoOperation, ImGuizmo::LOCAL,
+				&goWorldTransform[0][0], nullptr,
+				shouldSnap ? &snapVals[0] : nullptr 
+			);
 
 			ImGuizmo::ViewManipulate( &camView[0][0], 8.0f, { viewportBoundsMax.X - 75, viewportBoundsMin.X }, { 75, 75 }, 0x10101010 );
 
@@ -393,6 +459,7 @@ namespace Tridium {
 
 	void EditorViewportPanel::RenderSelectionOutline()
 	{
+	#if 0
 		if ( !m_FBO || !m_SelectedGameObject.IsValid() )
 			return;
 
@@ -439,6 +506,8 @@ namespace Tridium {
 		m_FBO->Unbind();
 
 		RenderCommand::SetPolygonMode( EFaces::FrontAndBack, EPolygonMode::Fill );
+
+	#endif
 	}
 }
 

@@ -644,13 +644,14 @@ namespace Tridium::OpenGL {
 	{
 		auto* texture = a_Texture.As<RHITexture_OpenGLImpl>();
 		const auto& desc = texture->Desc();
+		RHITextureSlice dstSlice = a_DstSlice.Resolve( desc );
 		if ( desc.Is1D() )
 		{
 			ScopedTextureBinding textureBinding( GL_TEXTURE_1D, texture->TextureObj );
 			OpenGL1::TexSubImage1D(
-				GL_TEXTURE_1D, a_DstSlice.MipLevel,
-				a_DstSlice.OffsetX,
-				a_DstSlice.Width,
+				GL_TEXTURE_1D, dstSlice.MipLevel,
+				dstSlice.OffsetX,
+				dstSlice.Width,
 				texture->GLFormat.Format, texture->GLFormat.Type,
 				a_Data.Data );
 		}
@@ -658,9 +659,9 @@ namespace Tridium::OpenGL {
 		{
 			ScopedTextureBinding textureBinding( GL_TEXTURE_2D, texture->TextureObj );
 			OpenGL1::TexSubImage2D( 
-				GL_TEXTURE_2D, a_DstSlice.MipLevel,
-				a_DstSlice.OffsetX, a_DstSlice.OffsetY,
-				a_DstSlice.Width, a_DstSlice.Height,
+				GL_TEXTURE_2D, dstSlice.MipLevel,
+				dstSlice.OffsetX, dstSlice.OffsetY,
+				dstSlice.Width, dstSlice.Height,
 				texture->GLFormat.Format, texture->GLFormat.Type,
 				a_Data.Data );
 		}
@@ -668,9 +669,9 @@ namespace Tridium::OpenGL {
 		{
 			ScopedTextureBinding textureBinding( GL_TEXTURE_3D, texture->TextureObj );
 			OpenGL1::TexSubImage3D(
-				GL_TEXTURE_3D, a_DstSlice.MipLevel,
-				a_DstSlice.OffsetX, a_DstSlice.OffsetY, a_DstSlice.OffsetZ,
-				a_DstSlice.Width, a_DstSlice.Height, a_DstSlice.Depth,
+				GL_TEXTURE_3D, dstSlice.MipLevel,
+				dstSlice.OffsetX, dstSlice.OffsetY, dstSlice.OffsetZ,
+				dstSlice.Width, dstSlice.Height, dstSlice.Depth,
 				texture->GLFormat.Format, texture->GLFormat.Type,
 				a_Data.Data );
 		}
@@ -680,11 +681,11 @@ namespace Tridium::OpenGL {
 			ScopedTextureBinding textureBinding( GL_TEXTURE_CUBE_MAP, texture->TextureObj );
 			for ( uint32_t face = 0; face < 6; ++face )
 			{
-				const uint8_t* pixels = dataPtr + face * a_Data.RowStride * a_DstSlice.Height;
+				const uint8_t* pixels = dataPtr + face * a_Data.RowStride * dstSlice.Height;
 				OpenGL1::TexSubImage2D(
-					GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, a_DstSlice.MipLevel,
-					a_DstSlice.OffsetX, a_DstSlice.OffsetY,
-					a_DstSlice.Width, a_DstSlice.Height,
+					GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, dstSlice.MipLevel,
+					dstSlice.OffsetX, dstSlice.OffsetY,
+					dstSlice.Width, dstSlice.Height,
 					texture->GLFormat.Format, texture->GLFormat.Type,
 					pixels );
 			}

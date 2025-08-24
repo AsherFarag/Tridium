@@ -1,12 +1,11 @@
 #pragma once
-#include "Asset.h"
-#include <Tridium/Graphics/RHI/RHIBuffer.h>
+#include <Tridium/Asset/Asset.h>
 #include <Tridium/Core/Core.h>
 
 namespace Tridium::T {
 
 	// Forward declarations
-	class MaterialAsset;
+	class Material;
 
 	struct Vertex
 	{
@@ -67,17 +66,13 @@ namespace Tridium::T {
 		const auto& SubMeshes() const { return m_SubMeshes; }
 		const auto& Materials() const { return m_Materials; }
 		const auto& BoundingBox() const { return m_BoundingBox; }
-		const auto& RHIVertexBuffer() const { return m_RHIVertexBuffer; }
-		const auto& RHIIndexBuffer() const { return m_RHIIndexBuffer; }
 
 	private:
 		Array<Vertex> m_Vertices{};
 		Array<uint32_t> m_Indices{};
 		Array<SubMesh> m_SubMeshes{};
-		Array<SharedPtr<MaterialAsset>> m_Materials{};
+		Array<SharedPtr<Material>> m_Materials{};
 		AABB m_BoundingBox{};
-		RHIBufferRef m_RHIVertexBuffer; // GPU buffer for vertices
-		RHIBufferRef m_RHIIndexBuffer;  // GPU buffer for indices
 
 		void UpdateBoundingBox();
 	};
@@ -88,7 +83,7 @@ namespace Tridium::T {
 		struct MeshChunk
 		{
 			uint32_t SubMeshIndex = 0; // Index of the submesh in the source mesh
-			SharedPtr<MaterialAsset> OverrideMaterial; // Optional override material for this submesh
+			SharedPtr<Material> OverrideMaterial; // Optional override material for this submesh
 		};
 
 		static SharedPtr<StaticMesh> Create() { return MakeShared<EnableMakeShared<StaticMesh>>(); }
@@ -98,7 +93,7 @@ namespace Tridium::T {
 		bool Valid() const override { return m_SourceMesh != nullptr && !m_MeshChunks.Empty(); }
 
 		const auto& SourceMesh() const { return m_SourceMesh; }
-		const auto& MeshChunks() const { return m_MeshChunks; }
+		const auto& SubMeshes() const { return m_MeshChunks; }
 		AABB BoundingBox() const { return m_BoundingBox; }
 		void Update( SharedPtr<MeshSource> a_SourceMesh, Span<const MeshChunk> a_MeshChunks );
 

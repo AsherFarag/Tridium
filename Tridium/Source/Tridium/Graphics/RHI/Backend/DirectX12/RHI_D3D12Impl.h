@@ -82,7 +82,7 @@ namespace Tridium::D3D12 {
 		// The heap is poolable.
 		Poolable = 1 << 1,
 	};
-	ENUM_ENABLE_BITMASK_OPERATORS( EDescriptorHeapFlags );
+	DEFINE_ENUM_BITMASK_OPERATORS( EDescriptorHeapFlags );
 
 	inline D3D12_DESCRIPTOR_HEAP_FLAGS Translate( EDescriptorHeapFlags a_Flags )
 	{
@@ -98,7 +98,7 @@ namespace Tridium::D3D12 {
 		uint32_t InlinedConstantsSize = 0; // Size of the inlined constants in bytes
 		RootParameterIndex RootParamInlinedConstants = c_InvalidRootParameterIndex;
 
-		bool Valid() const { return D3D12Signature && Layouts.Size(); }
+		bool Valid() const { return D3D12Signature.Get() != nullptr; }
 		static RootSignature Build( Span<const RHIBindingLayoutRef> a_Layouts, bool a_AllowInputLayout, bool a_IsLocal, Span<const D3D12_ROOT_PARAMETER1> a_CustomParams = {} );
 	};
 
@@ -747,6 +747,7 @@ namespace Tridium::D3D12 {
 		void SetInlinedConstants( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM ) override;
 
 		void SetGraphicsState( const RHIGraphicsState& a_GraphicsState, RHI_DEBUG_SRC_LOC_PARAM ) override;
+		void SetBindingSet( IRHIBindingSet& a_BindingSet, uint32_t a_LayoutIndex = 0, RHI_DEBUG_SRC_LOC_PARAM ) override;
 		void ClearRenderTargets( ERHIClearFlags a_Flags, RHIClearValue a_ClearValue, int32_t a_ColorAttachmentIndex = -1, RHI_DEBUG_SRC_LOC_PARAM ) override;
 		void SetViewportState( const RHIViewportState& a_Viewports, RHI_DEBUG_SRC_LOC_PARAM ) override;
 		void Draw( const RHIDrawArgs& a_DrawArgs, RHI_DEBUG_SRC_LOC_PARAM ) override;

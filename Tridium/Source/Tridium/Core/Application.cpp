@@ -24,7 +24,11 @@
 
 namespace Tridium {
 
-	Application* Application::s_Instance = nullptr;
+	REGISTER_TICK_GROUP( BeginTick );
+	REGISTER_TICK_GROUP( EndTick );
+
+	decltype( Application::s_Instance ) Application::s_Instance = nullptr;
+	decltype( Application::s_TickCallback ) Application::s_TickCallback{};
 
 	///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -70,6 +74,8 @@ namespace Tridium {
 		uint32_t minFPS = 0xFFFFFFFF;
 		uint32_t maxFPS = 0;
 
+		SetUpTickGroups();
+
 		while ( m_Running )
 		{
 			PROFILE_FRAME();
@@ -96,7 +102,8 @@ namespace Tridium {
 
 			FlushEventQueue();
 
-			OnUpdate();
+			// Invoke the tick groups
+			s_TickCallback.Broadcast();
 
 			// Layers =============================================================================================
 
@@ -122,6 +129,7 @@ namespace Tridium {
 
 			RHI::Present();
 			RHI::WaitForIdle();
+			RHI::CollectGarbage();
 
 			m_Window->OnUpdate();
 		}
@@ -133,7 +141,11 @@ namespace Tridium {
 	///////////////////////////////////////////////////////////////////////////////////////////
 	void Application::OnUpdate()
 	{
+	#if !WITH_EDITOR
 
+
+
+	#endif
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////
@@ -158,6 +170,80 @@ namespace Tridium {
 		}
 	}
 
+	void Application::SetUpTickGroups()
+	{
+		s_TickCallback.Clear();
+
+		struct TickGroupNode
+		{
+			bool Registered = false;
+			HashedString Name;
+			Array< TickGroupNode* > Dependents;
+		};
+
+		Map< HashedString, TickGroupNode > tickGroupNodes;
+		Queue< TickGroupNode* > queue;
+
+		// Add in BeginTick
+		for ( const auto& tickFn : GetTickGroups()[ TickGroups::BeginTick ].Callbacks )
+		{
+			s_TickCallback.Add( tickFn );
+		}
+
+		for ( const auto& [name, tickGroup] : GetTickGroups() )
+		{
+			if ( name == TickGroups::BeginTick || name == TickGroups::EndTick )
+			{
+				continue;
+			}
+
+			TickGroupNode& node = tickGroupNodes[ name ];
+
+			node.Registered = true;
+			node.Name = name;
+
+			for ( const HashedString& Prereq : tickGroup.Prerequisites )
+			{
+				TickGroupNode& PrereqNode = tickGroupNodes[ Prereq ];
+
+				PrereqNode.Registered = false;
+				PrereqNode.Dependents.EmplaceBack( &node );
+			}
+
+			// If there are no prereqs, add to queue.
+			// We want tick groups with no prerequisites to fire first.
+			if ( tickGroup.Prerequisites.Empty() )
+			{
+				queue.push( &node );
+			}
+		}
+
+		while ( !queue.empty() )
+		{
+			TickGroupNode* node = queue.front();
+			queue.pop();
+
+			// We want to add to the delegate in the order of the tick groups.
+			const auto it = GetTickGroups().find( node->Name );
+
+			for ( const auto& tickFn : it->second.Callbacks )
+			{
+				s_TickCallback.Add( tickFn );
+			}
+
+			for ( TickGroupNode* Dependent : node->Dependents )
+			{
+				queue.push( Dependent );
+			}
+		}
+
+		// Add in EndTick
+		for ( const auto& tickFn : GetTickGroups()[ TickGroups::EndTick ].Callbacks )
+		{
+			s_TickCallback.Add( tickFn );
+		}
+	}
+
 	bool Application::OnWindowResized( const WindowResizeEvent& a_Event )
 	{
 		if ( !RHI::GetDynamicRHI()->GetSwapChain() )
@@ -172,6 +258,12 @@ namespace Tridium {
 	{
 		m_Running = false;
 		return true;
+	}
+
+	UnorderedMap<HashedString, Application::TickGroup>& Application::GetTickGroups()
+	{
+		static UnorderedMap<HashedString, TickGroup> s_TickGroups{};
+		return s_TickGroups;
 	}
 
 #if 0

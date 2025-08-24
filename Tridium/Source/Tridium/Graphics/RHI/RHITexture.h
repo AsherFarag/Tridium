@@ -107,60 +107,6 @@ namespace Tridium {
 		}
 	};
 
-	struct RHIFramebuffer
-	{
-		struct Attachment
-		{
-			IRHITexture* Texture = nullptr;
-			bool ReadOnly = false;
-
-			operator bool() const { return Texture != nullptr; }
-
-			bool operator==( const Attachment& a_Other ) const
-			{
-				return Texture == a_Other.Texture && ReadOnly == a_Other.ReadOnly;
-			}
-
-			bool operator!=( const Attachment& a_Other ) const
-			{
-				return !operator==( a_Other );
-			}
-		};
-
-		InlineArray<Attachment, RHIConstants::MaxColorTargets> ColorAttachments{};
-		Attachment DepthStencilAttachment{};
-
-		bool operator==( const RHIFramebuffer& a_Other ) const
-		{
-			if ( DepthStencilAttachment != a_Other.DepthStencilAttachment )
-				return false;
-
-			if ( ColorAttachments.Size() != a_Other.ColorAttachments.Size() )
-				return false;
-
-			for ( size_t i = 0; i < ColorAttachments.Size(); ++i )
-			{
-				if ( ColorAttachments[i] != a_Other.ColorAttachments[i] )
-					return false;
-			}
-
-			return true;
-		}
-
-		auto& AddColorAttachment( IRHITexture* a_Texture, bool a_ReadOnly = false )
-		{
-			RHI_DEV_CHECK( ColorAttachments.Size() < ColorAttachments.MaxSize(), "Maximum number of color attachments exceeded!" );
-			ColorAttachments.PushBack( Attachment{ a_Texture, a_ReadOnly } );
-			return *this;
-		}
-
-		auto& SetDepthStencilAttachment( IRHITexture* a_Texture, bool a_ReadOnly = false )
-		{
-			DepthStencilAttachment = Attachment{ a_Texture, a_ReadOnly };
-			return *this;
-		}
-	};
-
 	namespace RHIConstants {
 		static constexpr uint32_t AllMipLevels = ~0u;
 		static constexpr uint32_t AllArraySlices = ~0u;
@@ -272,11 +218,14 @@ namespace Tridium {
 						&& !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::IndirectArgument ),
 				std::format( "Texture '{}' cannot be created with bind flags '{}'", a_Desc.Name, ToString( a_Desc.BindFlags ) ) );
 
-			RHI_DEV_CHECK( !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::DepthStencil )
-				|| GetRHIFormatInfo( a_Desc.Format ).HasDepth 
-				|| GetRHIFormatInfo( a_Desc.Format ).HasStencil,
-				"Texture '{}' cannot be created with bind flag 'DepthStencil' and format '{}'",
-				a_Desc.Name, GetRHIFormatInfo( a_Desc.Format ).Name );
+			RHI_DEV_CHECK( m_Desc.Format != ERHIFormat::Unknown,
+						   "Texture '{}' cannot be created with unknown format", a_Desc.Name );
+
+			//RHI_DEV_CHECK( !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::DepthStencil )
+			//	|| GetRHIFormatInfo( a_Desc.Format ).HasDepth 
+			//	|| GetRHIFormatInfo( a_Desc.Format ).HasStencil,
+			//	"Texture '{}' cannot be created with bind flag 'DepthStencil' and format '{}'",
+			//	a_Desc.Name, GetRHIFormatInfo( a_Desc.Format ).Name );
 
 			RHI_DEV_WARN( !a_Desc.UseClearValue 
 				|| EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::RenderTarget )
@@ -371,6 +320,69 @@ namespace Tridium {
 		static constexpr RHITextureSubresourceSet All() noexcept
 		{
 			return RHITextureSubresourceSet{ 0, RHIConstants::AllMipLevels, 0, RHIConstants::AllArraySlices };
+		}
+	};
+
+
+	struct RHIFramebuffer
+	{
+		struct Attachment
+		{
+			RHITextureRef Texture = nullptr;
+			bool ReadOnly = false;
+
+			operator bool() const { return Texture != nullptr; }
+
+			bool operator==( const Attachment& a_Other ) const
+			{
+				return Texture == a_Other.Texture && ReadOnly == a_Other.ReadOnly;
+			}
+		};
+
+		InlineArray<Attachment, RHIConstants::MaxColorTargets> ColorAttachments{};
+		Attachment DepthStencilAttachment{};
+
+		bool Valid() const
+		{
+			return !ColorAttachments.Empty() || ( bool )DepthStencilAttachment;
+		}
+
+		auto& AddColorAttachment( RHITextureRef a_Texture, bool a_ReadOnly = false )
+		{
+			RHI_DEV_CHECK( ColorAttachments.Size() < ColorAttachments.MaxSize(),
+						   "Maximum number of color attachments exceeded!" );
+
+			ColorAttachments.PushBack( Attachment{ a_Texture, a_ReadOnly } );
+
+			return *this;
+		}
+
+		auto& SetDepthStencilAttachment( RHITextureRef a_Texture, bool a_ReadOnly = false )
+		{
+			DepthStencilAttachment = Attachment{ a_Texture, a_ReadOnly };
+			return *this;
+		}
+
+		operator bool() const
+		{
+			return Valid();
+		}
+
+		bool operator==( const RHIFramebuffer& a_Other ) const
+		{
+			if ( DepthStencilAttachment != a_Other.DepthStencilAttachment )
+				return false;
+
+			if ( ColorAttachments.Size() != a_Other.ColorAttachments.Size() )
+				return false;
+
+			for ( size_t i = 0; i < ColorAttachments.Size(); ++i )
+			{
+				if ( ColorAttachments[ i ] != a_Other.ColorAttachments[ i ] )
+					return false;
+			}
+
+			return true;
 		}
 	};
 

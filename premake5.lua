@@ -1,10 +1,14 @@
 include "Dependencies.lua"
-workspace "Tridium"
-	architecture "x64"
-	startproject "Sandbox"
 
-	configurations
-	{
+outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
+workspace "Tridium"
+	startproject "TridiumApp"
+	platforms { "Windows" }
+	targetdir ("Bin/%{prj.name}/" .. outputdir)
+	objdir ("Bin-Int/%{prj.name}/" .. outputdir)
+
+	configurations {
 		"Debug-Editor",
 		"Release-Editor",
 		"Debug",
@@ -12,7 +16,8 @@ workspace "Tridium"
 		"Shipping"
 	}
 
-outputdir = "%{cfg.buildcfg}/%{cfg.system}-%{cfg.architecture}"
+	filter "platforms:windows"
+		architecture "x64"
 
 include "Tridium"
 include "Sandbox"

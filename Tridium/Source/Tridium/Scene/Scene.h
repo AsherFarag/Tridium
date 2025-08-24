@@ -40,8 +40,8 @@ namespace Tridium {
 		// Called when the scene is destroyed
 		void OnEndPlay();
 
-		const std::string& GetName() const { return m_Name; }
-		void SetName( const std::string& a_Name ) { m_Name = a_Name; }
+		const String& GetName() const { return m_Name; }
+		void SetName( const String& a_Name ) { m_Name = a_Name; }
 
 		const SceneState& GetState() const { return m_State; }
 		void SetPaused( bool a_NewPaused ) { m_State.IsPaused = a_NewPaused; }
@@ -55,7 +55,7 @@ namespace Tridium {
 
 		SceneEnvironment& GetSceneEnvironment() { return m_SceneEnvironment; }
 		const SceneEnvironment& GetSceneEnvironment() const { return m_SceneEnvironment; }
-		SceneRenderer& GetSceneRenderer() { return m_SceneRenderer; }
+		OldSceneRenderer& GetSceneRenderer() { return m_SceneRenderer; }
 
 		//////////////////////////////////////////////////////////////////////////
 		// Scene Systems
@@ -95,13 +95,13 @@ namespace Tridium {
 		void AddEntityTicker( _Args&&... a_Args );
 
 		void DestroyGameObject( GameObject a_GameObject );
-		GameObject InstantiateGameObject( const std::string& a_Name = "GameObject" );
-		GameObject InstantiateGameObject( GUID a_GUID, const std::string& a_Name = "GameObject" );
+		GameObject InstantiateGameObject( const String& a_Name = "GameObject" );
+		GameObject InstantiateGameObject( GUID a_GUID, const String& a_Name = "GameObject" );
 		GameObject InstantiateGameObjectFrom( GameObject a_Source );
 		void CopyGameObject( GameObject a_Destination, GameObject a_Source );
 		bool IsGameObjectValid( GameObject a_GameObject ) const;
-		GameObject FindGameObjectByTag( const std::string& a_Tag ) const;
-		std::vector<GameObject> FindAllGameObjectsByTag( const std::string& a_Tag ) const;
+		GameObject FindGameObjectByTag( const String& a_Tag ) const;
+		std::vector<GameObject> FindAllGameObjectsByTag( const String& a_Tag ) const;
 
 		template <typename T, typename... Args>
 		T& AddComponentToGameObject( GameObject a_GameObject, Args&&... args );
@@ -158,10 +158,10 @@ namespace Tridium {
 
 		EntityID m_MainCamera;
 
-		SceneRenderer m_SceneRenderer;
+		OldSceneRenderer m_SceneRenderer;
 		SharedPtr<PhysicsScene> m_PhysicsScene;
 
-		friend SceneRenderer;
+		friend OldSceneRenderer;
 		friend class GameObject;
 	};
 }

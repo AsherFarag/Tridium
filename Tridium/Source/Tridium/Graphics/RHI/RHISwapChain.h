@@ -11,7 +11,7 @@ namespace Tridium {
 
 		Default = UseVSync
 	};
-	ENUM_ENABLE_BITMASK_OPERATORS( ERHISwapChainFlags );
+	DEFINE_ENUM_BITMASK_OPERATORS( ERHISwapChainFlags );
 
 	enum class ERHIScaleMode : uint8_t
 	{

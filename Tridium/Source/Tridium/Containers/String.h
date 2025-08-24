@@ -108,4 +108,14 @@ namespace Tridium {
 		Detail::CharPtrHash
 	>;
 
+	struct TransparentStringEqual
+	{
+		using is_transparent = void;
+
+		bool operator()( const StringView& a_First, const StringView& a_Second ) const noexcept
+		{
+			return a_First == a_Second;
+		}
+	};
+
 } // namespace Tridium

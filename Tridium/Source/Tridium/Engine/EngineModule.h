@@ -37,7 +37,7 @@ namespace Tridium {
 		Client = 1 << 1,
 		Editor = 1 << 2, // NOTE: A module with this flag can ONLY exist in the Editor application.
 	};
-	ENUM_ENABLE_BITMASK_OPERATORS( EEngineModuleCategory );
+	DEFINE_ENUM_BITMASK_OPERATORS( EEngineModuleCategory );
 
 	//================================================================
 	// Validates the engine module category.
@@ -132,7 +132,7 @@ namespace Tridium {
 		{
 			static constexpr HashedString Name = GetStrippedTypeName<T>();
 			static constexpr EEngineModuleCategory Category = _Category;
-			static constexpr FixedArray<HashedString, sizeof...( _Dependencies )> Dependencies{ InitList{ HashedString( _Dependencies )... } };
+			static constexpr FixedArray<HashedString, sizeof...( _Dependencies )> Dependencies{ HashedString( _Dependencies )... };
 			static constexpr bool HasDependencies = true;
 		};
 

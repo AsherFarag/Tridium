@@ -35,8 +35,6 @@ namespace Tridium {
 	template<typename>
 	class Delegate;
 
-
-
 	//==============================================================
 	// Invoker
 	//	A lightweight object that can call a method with minimal overhead.
@@ -146,16 +144,16 @@ namespace Tridium {
 		constexpr void Bind( _InstanceType& a_Instance ) noexcept
 		{
 			m_Instance = &a_Instance;
-			if constexpr ( std::is_invocable_r_v<ReturnType, decltype(_Function), _InstanceType*, _Args...> )
+			if constexpr ( std::is_invocable_r_v<ReturnType, decltype( _Function ), _InstanceType*, _Args...> )
 			{
 				m_Function = []( const void* a_Instance, _Args... a_Args ) -> ReturnType
-					{
-						return (Cast<_InstanceType*>(ConstCast<void*>(a_Instance))->*_Function)(a_Args...);
-					};
+				{
+					return ( Cast<_InstanceType*>( ConstCast<void*>( a_Instance ) )->*_Function )( a_Args... );
+				};
 			}
 			else
 			{
-				static_assert(std::_Always_false, "Unknown function type.");
+				static_assert( std::_Always_false, "Unknown function type." );
 			}
 		}
 
@@ -213,85 +211,196 @@ namespace Tridium {
 
 
 
-	//==============================================================
-	// Delegate
-	//  A more powerful version of Invoker that can store and own data.
-	//  This is useful as a safer and more flexible alternative to Invoker.
-	//  However, it has a higher overhead than invoker and may do heap allocations.
-	//  Equivalent to std::function.
-	//  WARNING: Unbind must be called if delegate does not own the data and the data is destroyed.
-	template<typename _Return, typename... _Args>
+	template <typename _Return, typename... _Args>
 	class Delegate<_Return( _Args... )>
 	{
 	public:
+		using SignatureType = _Return( _Args... );
+		using FunctionType = _Return( * )( _Args... );
 		using ReturnType = _Return;
-		using FunctionSignature = ReturnType( _Args... );
 
 		Delegate() = default;
+		Delegate( std::nullptr_t ) noexcept {}
 
-		// Construct from any callable
-		template<typename _Callable>
-		Delegate( _Callable&& a_Callable )
-			: m_Function( std::forward<_Callable>( a_Callable ) )
+		Delegate( const Delegate& a_Other ) { CopyFrom( a_Other ); }
+		Delegate( Delegate&& a_Other ) noexcept { MoveFrom( std::move( a_Other ) ); }
+
+		Delegate& operator=( const Delegate& a_Other )
 		{
-		}
-
-		// Copy/move constructors and assignment
-		Delegate( const Delegate& ) = default;
-		Delegate( Delegate&& ) = default;
-		Delegate& operator=( const Delegate& ) = default;
-		Delegate& operator=( Delegate&& ) = default;
-
-		// Assign from callable
-		template<typename _Callable>
-		Delegate& operator=( _Callable&& a_Callable )
-		{
-			m_Function = std::forward<_Callable>( a_Callable );
+			if ( this != &a_Other )
+			{
+				Unbind();
+				CopyFrom( a_Other );
+			}
 			return *this;
 		}
 
-		template<typename _Callable>
-		void Bind( _Callable&& a_Callable )
+		Delegate& operator=( Delegate&& a_Other ) noexcept
 		{
-			m_Function = std::forward<_Callable>( a_Callable );
+			if ( this != &a_Other )
+			{
+				Unbind();
+				MoveFrom( std::move( a_Other ) );
+			}
+			return *this;
 		}
 
-		// Unbind the current callable
+		~Delegate() { Unbind(); }
+
+		//=======================================================================
 		void Unbind()
 		{
-			m_Function = nullptr;
+			if ( IsOwning() && m_Deleter )
+			{
+				m_Deleter( m_Object );
+			}
+			m_Object = nullptr;
+			m_Invoker = nullptr;
+			m_Deleter = nullptr;
+			m_Cloner = nullptr;
 		}
 
-		ReturnType Invoke( _Args... a_Args ) const
+		//=======================================================================
+		// General callable (lambda, functor, function pointer)
+		template <typename _Callable>
+			requires std::is_invocable_r_v<ReturnType, _Callable, _Args...>
+		void Bind( _Callable&& a_Callable )
 		{
-			ASSERT( m_Function != nullptr, "Attempting to invoke an unbound function." );
-			return m_Function( std::forward<_Args>( a_Args )... );
+			using FnType = std::decay_t<_Callable>;
+			Unbind();
+
+			m_Object = new FnType( std::forward<_Callable>( a_Callable ) );
+
+			m_Invoker = []( void* a_Obj, _Args... a_Args ) -> ReturnType
+			{
+				return ( *static_cast< FnType* >( a_Obj ) )( std::forward<_Args>( a_Args )... );
+			};
+
+			m_Deleter = []( void* a_Obj )
+			{
+				delete static_cast< FnType* >( a_Obj );
+			};
+
+			m_Cloner = []( void* a_Obj ) -> void*
+			{
+				return new FnType( *static_cast< FnType* >( a_Obj ) );
+			};
 		}
 
-		bool Valid() const
+		//=======================================================================
+		// Bind free/static function
+		template <FunctionType Func>
+		void Bind()
 		{
-			return Cast<bool>(m_Function);
+			Unbind();
+			m_Invoker = []( void*, _Args... a_Args ) -> ReturnType
+			{
+				return Func( std::forward<_Args>( a_Args )... );
+			};
 		}
 
-		void Reset()
+		//=======================================================================
+		// Bind non-const member function
+		template <auto Method, typename T>
+		void Bind( T* a_Instance )
 		{
-			m_Function = nullptr;
+			using MethodType = decltype( Method );
+			static_assert( std::is_member_function_pointer_v<MethodType>,
+						   "Expected member function pointer." );
+			Unbind();
+
+			m_Object = a_Instance;
+			m_Invoker = []( void* a_Obj, _Args... a_Args ) -> ReturnType
+			{
+				return ( static_cast< T* >( a_Obj )->*Method )( std::forward<_Args>( a_Args )... );
+			};
 		}
 
-		ReturnType operator()( _Args... a_Args ) const
+		// Bind const member function
+		template <auto Method, typename T>
+		void Bind( const T* a_Instance )
+		{
+			using MethodType = decltype( Method );
+			static_assert( std::is_member_function_pointer_v<MethodType>,
+						   "Expected member function pointer." );
+			Unbind();
+
+			m_Object = const_cast< T* >( a_Instance );
+			m_Invoker = []( void* a_Obj, _Args... a_Args ) -> ReturnType
+			{
+				return ( static_cast< const T* >( a_Obj )->*Method )( std::forward<_Args>( a_Args )... );
+			};
+		}
+
+		//=======================================================================
+		bool Valid() const { return m_Invoker != nullptr; }
+		bool IsOwning() const { return m_Object != nullptr && m_Deleter != nullptr; }
+
+		//=======================================================================
+		_Return Invoke( _Args... a_Args ) const
+		{
+			return m_Invoker( m_Object, std::forward<_Args>( a_Args )... );
+		}
+
+		_Return InvokeSafe( _Args... a_Args ) const
+			requires std::is_void_v<_Return> || std::is_default_constructible_v<_Return>
+		{
+			if ( !Valid() )
+			{
+				if constexpr ( std::is_void_v<_Return> )
+					return;
+				else
+					return _Return{};
+			}
+			return Invoke( std::forward<_Args>( a_Args )... );
+		}
+
+		_Return operator()( _Args... a_Args ) const
 		{
 			return Invoke( std::forward<_Args>( a_Args )... );
 		}
 
-		operator bool() const
+		constexpr operator bool() const
 		{
 			return Valid();
 		}
 
-	private:
-		std::function<FunctionSignature> m_Function;
-	};
+	protected:
+		void CopyFrom( const Delegate& a_Other )
+		{
+			if ( a_Other.Valid() )
+			{
+				m_Object = a_Other.m_Cloner ? a_Other.m_Cloner( a_Other.m_Object ) : a_Other.m_Object;
+				m_Invoker = a_Other.m_Invoker;
+				m_Deleter = a_Other.m_Deleter;
+				m_Cloner = a_Other.m_Cloner;
+			}
+		}
 
+		void MoveFrom( Delegate&& a_Other )
+		{
+			m_Object = a_Other.m_Object;
+			m_Invoker = a_Other.m_Invoker;
+			m_Deleter = a_Other.m_Deleter;
+			m_Cloner = a_Other.m_Cloner;
+
+			a_Other.m_Object = nullptr;
+			a_Other.m_Invoker = nullptr;
+			a_Other.m_Deleter = nullptr;
+			a_Other.m_Cloner = nullptr;
+		}
+
+	protected:
+		void* m_Object = nullptr;
+
+		using Invoker = ReturnType( * )( void*, _Args... );
+		using Deleter = void( * )( void* );
+		using Cloner = void* ( * )( void* );
+
+		Invoker m_Invoker = nullptr;
+		Deleter m_Deleter = nullptr;
+		Cloner  m_Cloner = nullptr;
+	};
 
 
 	// Handle to an invokable object in the BasicMulticast class.
@@ -309,12 +418,20 @@ namespace Tridium {
 
 		static constexpr DelegateHandle c_InvalidHandle = std::numeric_limits<DelegateHandle>::max();
 
+		template<auto _Func, typename T>
+		DelegateHandle Add( T* a_Object )
+		{
+			InvokableType invokable;
+			invokable.Bind<_Func>( a_Object );
+			return Add( std::move( invokable ) );
+		}
+
 		// Will register the invokable and return a handle to it that can be used to remove it later (if needed).
 		DelegateHandle Add( const InvokableType& a_Invokable )
 		{
-			const DelegateHandle handle = m_NextHandle++;
+			const DelegateHandle handle = NextHandle();
 
-			m_HandleToIndex[handle] = m_Invokables.Size();
+			m_HandleToIndex[ handle ] = m_Invokables.Size();
 			m_Invokables.EmplaceBack( a_Invokable );
 			m_Handles.EmplaceBack( handle );
 
@@ -324,7 +441,7 @@ namespace Tridium {
 		// Will register the invokable and return a handle to it that can be used to remove it later (if needed).
 		DelegateHandle Add( InvokableType&& a_Invokable )
 		{
-			const DelegateHandle handle = m_NextHandle++;
+			const DelegateHandle handle = NextHandle();
 
 			m_HandleToIndex[handle] = m_Invokables.Size();
 			m_Invokables.EmplaceBack( std::move( a_Invokable ) );
@@ -362,7 +479,6 @@ namespace Tridium {
 			m_Invokables.Clear();
 			m_Handles.Clear();
 			m_HandleToIndex.clear();
-			m_NextHandle = 0;
 		}
 
 		// Returns the number of invokables.
@@ -430,6 +546,11 @@ namespace Tridium {
 		Array<DelegateHandle> m_Handles{};
 		UnorderedMap<DelegateHandle, size_t> m_HandleToIndex{};
 		DelegateHandle m_NextHandle = 0;
+
+		DelegateHandle NextHandle()
+		{
+			return m_NextHandle++;
+		}
 	};
 
 

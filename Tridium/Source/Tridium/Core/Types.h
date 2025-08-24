@@ -29,5 +29,7 @@ namespace Tridium {
     using hash_t = uint32_t;
 	using hash64_t = uint64_t;
 
+	using nullptr_t = decltype( nullptr );
+
     using Byte = uint8_t;
 }

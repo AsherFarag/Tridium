@@ -14,7 +14,7 @@
 
 namespace Tridium {
 
-	SceneRenderer::SceneRenderer( Scene& a_Scene )
+	OldSceneRenderer::OldSceneRenderer( Scene& a_Scene )
 		: m_Scene( a_Scene ), m_SceneEnvironment( a_Scene.GetSceneEnvironment() )
 	{
 		Clear();
@@ -110,7 +110,7 @@ namespace Tridium {
 		}
 	}
 
-	void SceneRenderer::Render( const SharedPtr<Framebuffer>& a_FBO, const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition )
+	void OldSceneRenderer::Render( const SharedPtr<Framebuffer>& a_FBO, const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition )
 	{
 		PROFILE_FUNCTION( ProfilerCategory::Rendering );
 		// Reset per frame data
@@ -173,7 +173,7 @@ namespace Tridium {
 		EndScene();
 	}
 
-	void SceneRenderer::BeginScene( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition )
+	void OldSceneRenderer::BeginScene( const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition )
 	{
 		PROFILE_FUNCTION( ProfilerCategory::Rendering );
 
@@ -402,7 +402,7 @@ namespace Tridium {
 		}
 	}
 
-	void SceneRenderer::EndScene()
+	void OldSceneRenderer::EndScene()
 	{
 		PROFILE_FUNCTION( ProfilerCategory::Rendering );
 
@@ -410,7 +410,7 @@ namespace Tridium {
 		m_RenderTarget.reset();
 	}
 
-	void SceneRenderer::Clear()
+	void OldSceneRenderer::Clear()
 	{
 		PROFILE_FUNCTION( ProfilerCategory::Rendering );
 
@@ -433,7 +433,7 @@ namespace Tridium {
 	// Shadows
 	//////////////////////////////////////////////////////////////////////////
 
-	void SceneRenderer::GenerateShadowMaps()
+	void OldSceneRenderer::GenerateShadowMaps()
 	{
 		PROFILE_FUNCTION( ProfilerCategory::Rendering );
 
@@ -489,7 +489,7 @@ namespace Tridium {
 				{
 					for ( uint32_t i = 0; i < 6; i++ )
 					{
-						const std::string uniformName = "u_LightSpaceMatrices[" + std::to_string( i ) + "]";
+						const String uniformName = "u_LightSpaceMatrices[" + std::to_string( i ) + "]";
 						m_ShadowCubeMapShader->SetMatrix4( uniformName.c_str(), pointLight.LightSpaceMatrices[i] );
 					}
 
@@ -557,7 +557,7 @@ namespace Tridium {
 	// Deferred Rendering
 	//////////////////////////////////////////////////////////////////////////
 
-	void SceneRenderer::DeferredRenderPass()
+	void OldSceneRenderer::DeferredRenderPass()
 	{
 		PROFILE_FUNCTION( ProfilerCategory::Rendering );
 
@@ -603,7 +603,7 @@ namespace Tridium {
 		m_RenderTarget->Unbind();
 	}
 
-	void SceneRenderer::DeferredGBufferPass()
+	void OldSceneRenderer::DeferredGBufferPass()
 	{
 		RenderCommand::SetDepthTest( true );
 		RenderCommand::SetCullMode( ECullMode::Back );
@@ -698,7 +698,7 @@ namespace Tridium {
 
 	}
 
-	void SceneRenderer::DeferredLightingPass()
+	void OldSceneRenderer::DeferredLightingPass()
 	{
 		PROFILE_FUNCTION( ProfilerCategory::Rendering );
 
@@ -821,7 +821,7 @@ namespace Tridium {
 				for ( uint32_t i = 0; i < m_LightEnvironment.NumDirectionalLights; ++i )
 				{
 					DirectionalLight& directionalLight = m_LightEnvironment.DirectionalLights[i];
-					std::string uniformName = "u_DirectionalLights[" + std::to_string( i ) + "].";
+					String uniformName = "u_DirectionalLights[" + std::to_string( i ) + "].";
 					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Direction" ).c_str(), directionalLight.Direction );
 					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Color" ).c_str(), directionalLight.Color );
 					m_DeferredData.LightingShader->SetFloat( ( uniformName + "Intensity" ).c_str(), directionalLight.Intensity );
@@ -833,7 +833,7 @@ namespace Tridium {
 				for ( uint32_t i = 0; i < m_LightEnvironment.NumPointLights; i++ )
 				{
 					PointLight& pointLight = m_LightEnvironment.PointLights[i];
-					std::string uniformName = "u_PointLights[" + std::to_string( i ) + "].";
+					String uniformName = "u_PointLights[" + std::to_string( i ) + "].";
 					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Position" ).c_str(), pointLight.Position );
 					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Color" ).c_str(), pointLight.Color );
 					m_DeferredData.LightingShader->SetFloat( ( uniformName + "Intensity" ).c_str(), pointLight.Intensity );
@@ -846,7 +846,7 @@ namespace Tridium {
 				for ( uint32_t i = 0; i < m_LightEnvironment.NumSpotLights; ++i )
 				{
 					SpotLight& spotLight = m_LightEnvironment.SpotLights[i];
-					std::string uniformName = "u_SpotLights[" + std::to_string( i ) + "].";
+					String uniformName = "u_SpotLights[" + std::to_string( i ) + "].";
 					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Position" ).c_str(), spotLight.Position );
 					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Direction" ).c_str(), spotLight.Direction );
 					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Color" ).c_str(), spotLight.Color );
@@ -877,7 +877,7 @@ namespace Tridium {
 	// Forward Rendering
 	//////////////////////////////////////////////////////////////////////////
 
-	void SceneRenderer::ForwardRenderPass()
+	void OldSceneRenderer::ForwardRenderPass()
 	{
 		m_RenderTarget->Bind();
 		RenderCommand::Clear();
@@ -894,7 +894,7 @@ namespace Tridium {
 		m_RenderTarget->Unbind();
 	}
 
-	void SceneRenderer::ForwardGeometryPass()
+	void OldSceneRenderer::ForwardGeometryPass()
 	{
 		RenderCommand::SetDepthTest( true );
 		RenderCommand::SetCullMode( ECullMode::Back );
@@ -911,7 +911,7 @@ namespace Tridium {
 				for ( uint32_t i = 0; i < MAX_POINT_LIGHTS; i++ )
 				{
 					PointLight& pointLight = m_LightEnvironment.PointLights[i];
-					std::string index = std::to_string( i );
+					String index = std::to_string( i );
 					shader->SetFloat3( ( "u_PointLights[" + index + "].Position" ).c_str(), pointLight.Position );
 					shader->SetFloat3( ( "u_PointLights[" + index + "].Color" ).c_str(), pointLight.Color );
 					shader->SetFloat( ( "u_PointLights[" + index + "].Intensity" ).c_str(), pointLight.Intensity );
@@ -923,7 +923,7 @@ namespace Tridium {
 				for ( uint32_t i = 0; i < MAX_SPOT_LIGHTS; ++i )
 				{
 					SpotLight& spotLight = m_LightEnvironment.SpotLights[i];
-					std::string index = std::to_string( i );
+					String index = std::to_string( i );
 					shader->SetFloat3( ( "u_SpotLights[" + index + "].Position" ).c_str(), spotLight.Position );
 					shader->SetFloat3( ( "u_SpotLights[" + index + "].Direction" ).c_str(), spotLight.Direction );
 					shader->SetFloat3( ( "u_SpotLights[" + index + "].Color" ).c_str(), spotLight.Color );
@@ -938,7 +938,7 @@ namespace Tridium {
 				for ( uint32_t i = 0; i < MAX_DIRECTIONAL_LIGHTS; ++i )
 				{
 					DirectionalLight& directionalLight = m_LightEnvironment.DirectionalLights[i];
-					std::string index = std::to_string( i );
+					String index = std::to_string( i );
 					shader->SetFloat3( ( "u_DirectionalLights[" + index + "].Direction" ).c_str(), directionalLight.Direction );
 					shader->SetFloat3( ( "u_DirectionalLights[" + index + "].Color" ).c_str(), directionalLight.Color );
 					shader->SetFloat( ( "u_DirectionalLights[" + index + "].Intensity" ).c_str(), directionalLight.Intensity );
@@ -1084,7 +1084,7 @@ namespace Tridium {
 	// Skybox
 	//////////////////////////////////////////////////////////////////////////
 
-	void SceneRenderer::RenderSkybox()
+	void OldSceneRenderer::RenderSkybox()
 	{
 		PROFILE_FUNCTION( ProfilerCategory::Rendering );
 
@@ -1125,7 +1125,7 @@ namespace Tridium {
 	// Post Processing
 	//////////////////////////////////////////////////////////////////////////
 
-	void SceneRenderer::PostProcessPass()
+	void OldSceneRenderer::PostProcessPass()
 	{
 		PROFILE_FUNCTION( ProfilerCategory::Rendering );
 
@@ -1145,7 +1145,7 @@ namespace Tridium {
 		}
 	}
 
-	void SceneRenderer::DebugRenderColliders()
+	void OldSceneRenderer::DebugRenderColliders()
 	{
 		PROFILE_FUNCTION( ProfilerCategory::Rendering );
 
@@ -1158,7 +1158,7 @@ namespace Tridium {
 	#endif
 	}
 
-	void SceneRenderer::DrawCall( const SharedPtr<VertexArray>& a_VAO )
+	void OldSceneRenderer::DrawCall( const SharedPtr<VertexArray>& a_VAO )
 	{
 		m_RenderStats.NumDrawCalls++;
 		RenderCommand::DrawIndexed( a_VAO );

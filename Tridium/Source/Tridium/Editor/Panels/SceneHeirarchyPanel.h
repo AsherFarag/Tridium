@@ -3,7 +3,7 @@
 
 #include "Panel.h"
 #include <Tridium/ECS/GameObject.h>
-#include <Tridium/Core/Delegate.h>
+#include <Tridium/Common/Function.h>
 
 namespace Tridium { class Scene; }
 

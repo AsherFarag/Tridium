@@ -1,23 +1,20 @@
 #pragma once
 #if IS_EDITOR
-#include "ViewportPanel.h"
+#include <Tridium/Editor/Panels/ViewportPanel.h>
 #include <Tridium/ECS/GameObject.h>
-#include <Tridium/Core/Delegate.h>
+#include <Tridium/Common/Function.h>
 
 namespace Tridium {
+
 	class Shader;
-}
-
-namespace Tridium {
-	
 	class EditorCamera;
 
 	enum class EGizmoState
 	{
-		Translate = ImGuizmo::TRANSLATE,
-		Rotate = ImGuizmo::ROTATE,
-		Scale = ImGuizmo::SCALE,
-		Universal_Scale = ImGuizmo::SCALEU
+		Translate = 0,
+		Rotate,
+		Scale,
+		UniversalScale
 	};
 
 	class EditorViewportPanel : public ViewportPanel

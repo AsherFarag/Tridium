@@ -30,7 +30,7 @@ namespace Tridium {
 		Mouse          = 1 << 3,
 		MouseButton    = 1 << 4
 	};
-	ENUM_ENABLE_BITMASK_OPERATORS( EEventCategory )
+	DEFINE_ENUM_BITMASK_OPERATORS( EEventCategory )
 
 #define EVENT_BODY( _Name, _Type, _Category ) \
 		static constexpr EEventType Type = _Type; \

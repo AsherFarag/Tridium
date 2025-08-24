@@ -2,7 +2,7 @@
 #include <type_traits>
 #include <Tridium/Core/Cast.h>
 
-#define ENUM_ENABLE_BITMASK_OPERATORS(EnumType) \
+#define DEFINE_ENUM_BITMASK_OPERATORS(EnumType) \
     inline constexpr EnumType operator|(EnumType lhs, EnumType rhs) { \
         return Cast<EnumType>( \
             Cast<std::underlying_type_t<EnumType>>(lhs) | \
