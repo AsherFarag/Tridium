@@ -55,7 +55,7 @@ namespace Tridium {
 		// Constructs a vertex layout from an aggregate type.
 		// All fields of the aggregate type must be of a supported RHIFormat/RHITensor type.
 		template<Concepts::Aggregate T>
-		static consteval RHIVertexLayout From()
+		static constexpr RHIVertexLayout From()
 		{
 			RHIVertexLayout layout{};
 

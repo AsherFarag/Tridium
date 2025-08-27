@@ -137,6 +137,7 @@ namespace Tridium::OpenGL {
 			}
 		)";
 
+#if WITH_EDITOR
 		static const GLchar* fragmentShaderSource = R"(
 			#version 330 core
 			layout(location = 0) out vec4 color;
@@ -147,6 +148,19 @@ namespace Tridium::OpenGL {
 				color = vec4( texture(u_Texture, v_TexCoord).rgb, 1.0 );
 			}
 		)";
+#else
+		static const GLchar* fragmentShaderSource = R"(
+			#version 330 core
+			layout(location = 0) out vec4 color;
+			in vec2 v_TexCoord;
+			uniform sampler2D u_Texture;
+			void main()
+			{
+				vec2 flippedTexCoord = vec2(v_TexCoord.x, 1.0 - v_TexCoord.y);
+				color = vec4( texture(u_Texture, flippedTexCoord).rgb, 1.0 );
+			}
+		)";
+#endif
 
 		ShaderID = OpenGL3::CreateProgram();
 		uint32_t vertexShader = OpenGL3::CreateShader( GL_VERTEX_SHADER );

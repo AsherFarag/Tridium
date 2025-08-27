@@ -44,6 +44,10 @@ namespace Tridium {
 		size_t RowStride = 0;
 		// The stride of a slice of data in the texture, in bytes. For 3D textures.
 		size_t DepthStride = 0;
+
+		constexpr auto& SetData( const void* a_Data ) { Data = a_Data; return *this; }
+		constexpr auto& SetRowStride( size_t a_RowStride ) { RowStride = a_RowStride; return *this; }
+		constexpr auto& SetDepthStride( size_t a_DepthStride ) { DepthStride = a_DepthStride; return *this; }
 	};
 
 	//==========================================================================================

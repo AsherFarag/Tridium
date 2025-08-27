@@ -98,7 +98,7 @@ namespace Tridium::D3D12 {
 			d3d12SubResData[i].SlicePitch = Cast<LONG_PTR>( a_SubResourcesData[i].DepthStride );
 		}
 
-		const auto beforeBarrier = Translate( RHIResourceBarrier{ this, ERHIResourceStates::Common, ERHIResourceStates::CopyDest } );
+		const auto beforeBarrier = Translate( RHIResourceBarrier{ this, a_Desc.InitialState, ERHIResourceStates::CopyDest } );
 		const auto afterBarrier = Translate( RHIResourceBarrier{ this, ERHIResourceStates::CopyDest, a_Desc.InitialState } );
 
 		auto* cmdList = Device()->GetResourceInitCommandList();

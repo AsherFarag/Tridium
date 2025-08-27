@@ -353,9 +353,9 @@ float4 PSMain( VSOutput input ) : SV_Target
 		RHIBindingLayoutDesc sblDesc;
 		sblDesc.Name = "My shader binding layout";
 		sblDesc.Visibility = ERHIShaderVisibility::All;
-		sblDesc.AddBinding( "inlinedConstants"_H ).AsInlinedConstants( 0, 128 );
-		sblDesc.AddBinding( "constants"_H ).AsConstantBuffer( 1 );
-		sblDesc.AddBinding( "Texture"_H ).AsTexture( 0 );
+		sblDesc.AddBinding( "inlinedConstants"_H, RHIShaderBinding{}.AsInlinedConstants( 0, 128 ) );
+		sblDesc.AddBinding( "constants"_H, RHIShaderBinding{}.AsConstantBuffer( 1 ) );
+		sblDesc.AddBinding( "Texture"_H, RHIShaderBinding{}.AsTexture( 0 ) );
 		RHIBindingLayoutRef sbl = RHI::CreateBindingLayout( sblDesc );
 
 		RHIFramebufferInfo fbInfo{};

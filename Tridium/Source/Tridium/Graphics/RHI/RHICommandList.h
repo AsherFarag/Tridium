@@ -240,10 +240,10 @@ namespace Tridium {
 		// NOTE: This must be called before any draw commands.
         virtual void SetGraphicsState( const RHIGraphicsState& a_GraphicsState, RHI_DEBUG_SRC_LOC_PARAM ) 
         {
+            RHI_DEV_CHECK( a_GraphicsState.PipelineState, "Graphics pipeline state must be valid." );
             RHI_ADD_DEBUG_CMD_INFO( "SetGraphicsState", {}, RHI_DEBUG_RES_INFO( (*a_GraphicsState.PipelineState) ) );
             RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
 			RHI_DEV_CHECK( Desc().QueueType == ERHICommandQueueType::Graphics, "SetGraphicsState can only be called on graphics command lists." );
-			RHI_DEV_CHECK( a_GraphicsState.PipelineState, "Graphics pipeline state must be valid." );
         }
 
         virtual void SetBindingSet( IRHIBindingSet& a_BindingSet, uint32_t a_LayoutIndex = 0, RHI_DEBUG_SRC_LOC_PARAM )
@@ -282,7 +282,7 @@ namespace Tridium {
             RHI_ADD_DEBUG_CMD_INFO( "Draw" );
             RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
 			RHI_DEV_CHECK( Desc().QueueType == ERHICommandQueueType::Graphics, "Draw can only be called on graphics command lists." );
-			RHI_DEV_CHECK( a_DrawArgs.VertexCount > 0, "Vertex count must be greater than zero." );
+			RHI_DEV_CHECK( a_DrawArgs.VertexCount || a_DrawArgs.IndexCount, "VertexCount or IndexCount must be greater than zero." );
 			RHI_DEV_CHECK( a_DrawArgs.InstanceCount > 0, "Instance count must be greater than zero." );
 		}
 

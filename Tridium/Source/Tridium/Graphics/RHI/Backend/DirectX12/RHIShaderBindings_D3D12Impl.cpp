@@ -287,7 +287,7 @@ namespace Tridium::D3D12 {
                     {
                         // Create a default sampler if no binding was found for this slot
 						TODO( "Create a Default RHI Sampler to use here instead of D3D12 default sampler" );
-                        const D3D12_SAMPLER_DESC samplerDesc{};
+						const D3D12_SAMPLER_DESC samplerDesc = Translate<D3D12_SAMPLER_DESC, RHISampler>( RHISampler{} );
                         Device()->GetD3D12Device()->CreateSampler(
                             &samplerDesc,
                             handle

@@ -281,8 +281,8 @@ namespace Tridium {
 				renderer.Open( *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position );
 				renderer.Close();
 
-				ImTextureID textureID = ( ImTextureID )( *renderer.GetOutputTexture()->NativePtrAs<uint32_t>() );
-				//ImGui::Image( textureID, ImGui::GetContentRegionAvail() );
+				ImTextureID textureID = ( ImTextureID )( renderer.GetOutputTexture().get() );
+				ImGui::Image( textureID, ImGui::GetContentRegionAvail() );
 			}
 
 			//DragDropTarget();

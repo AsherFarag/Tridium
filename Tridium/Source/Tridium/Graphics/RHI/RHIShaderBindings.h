@@ -169,7 +169,7 @@ namespace Tridium {
 		constexpr auto& SetName( StringView a_Name ) { Name = a_Name; return *this; }
 
 		// Users should only use this function to add bindings, as the BindingMap needs to be updated.
-		[[nodiscard]] RHIShaderBinding& AddBinding( HashedString a_Name, uint32_t a_InputIndex = 0 )
+		auto& AddBinding( const HashedString& a_Name, RHIShaderBinding a_Binding, uint32_t a_InputIndex = 0 )
 		{
 			if ( a_InputIndex == 0 && Bindings.Size() > 0 )
 			{
@@ -184,8 +184,9 @@ namespace Tridium {
 			RHI_DEV_CHECK( BindingMap.find( a_Name ) == BindingMap.end(), "Binding with name hash already exists" );
 			BindingMap[a_Name] = Pair{ a_InputIndex, a_Name.String() };
 
-			Bindings[a_InputIndex].NameHash = a_Name;
-			return Bindings[a_InputIndex];
+			Bindings[ a_InputIndex ] = a_Binding;
+			Bindings[ a_InputIndex ].NameHash = a_Name;
+			return *this;
 		}
 
 		// Users should only use this function to remove bindings, as the BindingMap needs to be updated.
@@ -336,13 +337,25 @@ namespace Tridium {
 		RHIBindingSetDesc( const RHIBindingLayoutRef& a_Layout )
 			: Layout( a_Layout ) {}
 
-		RHIBindingSetDesc& AddBinding( const RHIBindingSetItem& a_Binding )
+		auto& SetName ( String a_Name )
+		{
+			Name = std::move( a_Name );
+			return *this;
+		}
+
+		auto& SetLayout( const RHIBindingLayoutRef& a_Layout )
+		{
+			Layout = a_Layout;
+			return *this;
+		}
+
+		auto& AddBinding( const RHIBindingSetItem& a_Binding )
 		{
 			Bindings.PushBack( a_Binding );
 			return *this;
 		}
 
-		RHIBindingSetDesc& AddConstantBuffer(
+		auto& AddConstantBuffer(
 			uint32_t a_Slot, IRHIBuffer* a_Buffer,
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
 		{
@@ -354,7 +367,7 @@ namespace Tridium {
 			return *this;
 		}
 
-		RHIBindingSetDesc& AddStructuredBuffer(
+		auto& AddStructuredBuffer(
 			uint32_t a_Slot, IRHIBuffer* a_Buffer,
 			ERHIBufferType a_BufferType = ERHIBufferType::Unknown,
 			ERHIFormat a_Format = ERHIFormat::Unknown,
@@ -370,7 +383,7 @@ namespace Tridium {
 			return *this;
 		}
 
-		RHIBindingSetDesc& AddStorageBuffer(
+		auto& AddStorageBuffer(
 			uint32_t a_Slot, IRHIBuffer* a_Buffer,
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
 		{
@@ -382,8 +395,8 @@ namespace Tridium {
 			return *this;
 		}
 
-		RHIBindingSetDesc& AddTexture(
-			uint32_t a_Slot, IRHITexture* a_Texture, RHISampler* a_Sampler = nullptr,
+		auto& AddTexture(
+			uint32_t a_Slot, IRHITexture* a_Texture, const RHISampler* a_Sampler = nullptr,
 			ERHIFormat a_Format = ERHIFormat::Unknown,
 			ERHITextureDimension a_TextureDimension = ERHITextureDimension::Unknown,
 			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All() )
@@ -400,7 +413,7 @@ namespace Tridium {
 			return *this;
 		}
 
-		RHIBindingSetDesc& AddStorageTexture(
+		auto& AddStorageTexture(
 			uint32_t a_Slot, IRHITexture* a_Texture, RHISampler* a_Sampler = nullptr,
 			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All() )
 		{
@@ -419,7 +432,7 @@ namespace Tridium {
 		// These functions are only available if the layout is set.
 		//===========================================
 
-		RHIBindingSetDesc& AddConstantBuffer(
+		auto& AddConstantBuffer(
 			HashedString a_Name, IRHIBuffer* a_Buffer,
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
 		{
@@ -429,7 +442,7 @@ namespace Tridium {
 			return AddConstantBuffer( binding.Slot, a_Buffer, a_Range );
 		}
 
-		RHIBindingSetDesc& AddStructuredBuffer(
+		auto& AddStructuredBuffer(
 			HashedString a_Name, IRHIBuffer* a_Buffer,
 			ERHIBufferType a_BufferType = ERHIBufferType::Unknown,
 			ERHIFormat a_Format = ERHIFormat::Unknown,
@@ -441,7 +454,7 @@ namespace Tridium {
 			return AddStructuredBuffer( binding.Slot, a_Buffer, a_BufferType, a_Format, a_Range );
 		}
 
-		RHIBindingSetDesc& AddStorageBuffer(
+		auto& AddStorageBuffer(
 			HashedString a_Name, IRHIBuffer* a_Buffer,
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
 		{
@@ -451,7 +464,7 @@ namespace Tridium {
 			return AddStorageBuffer( binding.Slot, a_Buffer, a_Range );
 		}
 
-		RHIBindingSetDesc& AddTexture(
+		auto& AddTexture(
 			HashedString a_Name, IRHITexture* a_Texture,
 			RHISampler* a_Sampler = nullptr,
 			ERHIFormat a_Format = ERHIFormat::Unknown,
@@ -464,7 +477,7 @@ namespace Tridium {
 			return AddTexture( binding.Slot, a_Texture, a_Sampler, a_Format, a_TextureDimension, a_Subresources );
 		}
 
-		RHIBindingSetDesc& AddStorageTexture(
+		auto& AddStorageTexture(
 			HashedString a_Name, IRHITexture* a_Texture,
 			RHISampler* a_Sampler = nullptr,
 			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All() )

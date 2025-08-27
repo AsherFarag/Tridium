@@ -34,7 +34,12 @@ namespace Tridium {
 				.SetClearValue( RHIClearValue{}.SetColor( Color::Blue() ) )
 				.SetUseClearValue( true )
 				.SetName( "SceneRenderer Output Texture" );
+
+#if !WITH_EDITOR
+			m_OutputTexture = RHI::GetSwapChain()->GetBackBuffer();
+#else
 			m_OutputTexture = RHI::CreateTexture( outputTextureDesc );
+#endif
 		}
 	}
 
@@ -56,7 +61,6 @@ namespace Tridium {
 		m_CameraData.Camera = a_Camera;
 		m_CameraData.View = a_View;
 		m_CameraData.Position = a_CameraPosition;
-
 		if ( m_Viewport.NeedsResize )
 		{
 			m_Viewport.NeedsResize = false; // Reset resize flag
@@ -437,7 +441,7 @@ float4 PSMain( PSInput input ) : SV_Target
 					RHIBindingLayoutDesc sblDesc;
 					sblDesc.Name = "My shader binding layout";
 					sblDesc.Visibility = ERHIShaderVisibility::All;
-					sblDesc.AddBinding( "Texture"_H ).AsTexture( 0 );
+					sblDesc.AddBinding( "Texture"_H, RHIShaderBinding{}.AsTexture( 0 ) );
 					static RHIBindingLayoutRef sbl = RHI::CreateBindingLayout( sblDesc );
 
 					RHIGraphicsPipelineStateDesc psd{};
@@ -507,6 +511,7 @@ float4 PSMain( PSInput input ) : SV_Target
 			{
 				m_RenderGraph.Execute( *m_CommandList );
 			}
+			m_CommandList->ResourceBarrier( *m_OutputTexture, ERHIResourceStates::Present );
 			m_CommandList->PopDebugGroup();
 			m_CommandList->Close();
 

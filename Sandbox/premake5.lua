@@ -31,12 +31,6 @@ tridium_app_dependencies = {
 	"HdriToCubemap",
 }
 
-local function add_lib_dirs()
-	for _, libpath in ipairs(os.matchdirs("../Bin/**/")) do
-		libdirs { libpath }
-	end
-end
-
 project "TridiumApp"
 	kind "ConsoleApp"
 	language "C++"
@@ -111,7 +105,12 @@ project "TridiumApp"
 	}
 
 	-- TEMP
-	add_lib_dirs()
+	print("Adding library directories for configuration: " .. outputdir)
+    for _, libpath in ipairs(os.matchdirs("../Bin/*")) do
+		print( libpath )
+        libdirs { libpath .. "/" .. outputdir }
+    end
+
 	files
 	{
 		"../Tridium/Dependencies/glm/glm/**.inl",

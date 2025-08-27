@@ -2,6 +2,7 @@
 #include "ImGuiModule.h"
 #include <Tridium/Core/Application.h>
 #include <Tridium/Engine/Engine.h>
+#include <Tridium/ImGui/Backends/ImGuiBackend_RHI.h>
 
 namespace Tridium {
 
@@ -51,22 +52,18 @@ namespace Tridium {
 		}
 
 		m_PlatformBackend = IPlatformImGuiInterface::Create( platform, renderer );
-		m_RendererBackend = IRendererImGuiInterface::Create( renderer );
-		if ( !m_PlatformBackend || !m_RendererBackend )
-		{
-			ENSURE( false, "Failed to create ImGui backend interfaces!" );
-		}
 
 		ENSURE( m_PlatformBackend->Init( Application::Get()->GetWindow().GetNativeWindow(), true, renderer ),
 				"Failed to initialize ImGui platform backend!" );
 
-		ENSURE( m_RendererBackend->Init( RHI::GetDynamicRHI() ),
+		ENSURE( ImGui_ImplRHI_Init( RHI::GetDynamicRHI() ),
 				"Failed to initialize ImGui renderer backend!" );
 
 		const auto cmdListDesc = RHICommandListDesc{}
 			.SetEnableImmediateExecution( false )
 			.SetQueueType( ERHICommandQueueType::Graphics )
 			.SetName( "ImGui Layer Command List" );
+
 		m_CmdList = RHI::CreateCommandList( cmdListDesc );
 
 		m_ImGuiLayer = Application::PushOverlay<ImGuiLayer>();
@@ -77,11 +74,10 @@ namespace Tridium {
 		Application::PopOverlay( m_ImGuiLayer );
 		m_ImGuiLayer = nullptr;
 
-		m_PlatformBackend->Shutdown(); 
-		m_RendererBackend->Shutdown();
+		m_PlatformBackend->Shutdown();
+		ImGui_ImplRHI_Shutdown();
 
 		m_PlatformBackend.reset();
-		m_RendererBackend.reset();
 
 		m_CmdList = nullptr;
 

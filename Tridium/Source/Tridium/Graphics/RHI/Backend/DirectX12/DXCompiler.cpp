@@ -397,7 +397,7 @@ namespace Tridium::D3D12 {
 				// Pixel and Compute don't support invert-y
 				if ( a_Input.ShaderType != ERHIShaderType::Pixel && a_Input.ShaderType != ERHIShaderType::Compute )
 				{
-					//args.EmplaceBack( L"-fvk-invert-y" ); // Make vulkan and opengl have the same coordinate system as D3D (Y-up)
+					args.EmplaceBack( L"-fvk-invert-y" ); // Make vulkan and opengl have the same coordinate system as D3D (Y-up)
 				}
 
 				args.EmplaceBack( L"-fvk-t-shift" ); args.EmplaceBack( L"1000" ); args.EmplaceBack( L"0" );

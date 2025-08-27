@@ -21,6 +21,7 @@
 #include <Tridium/Asset/AssetDatabase.h>
 #include <Tridium/Asset/TextureAsset.h>
 #include <Tridium/Graphics/Renderer/RendererModule.h>
+#include <Tridium/Graphics/Renderer/SceneRenderer.h>
 
 namespace Tridium {
 
@@ -107,9 +108,6 @@ namespace Tridium {
 
 			// Layers =============================================================================================
 
-			TODO( " Temp solution for setting backbuffer to Present state after imgui is done" );
-			RHI::GetSwapChain()->GetBackBuffer()->SetState( ERHIResourceStates::Present );
-
 			for ( const auto& layer : m_LayerStack )
 				layer->OnUpdate();
 
@@ -127,9 +125,18 @@ namespace Tridium {
 
 			// ====================================================================================================
 
-			RHI::Present();
+			TODO( " Temp solution for setting backbuffer to Present state after imgui is done" );
+			RHI::GetSwapChain()->GetBackBuffer()->SetState( ERHIResourceStates::Present );
+
+			static SceneRenderer sceneRenderer{ nullptr };
+			sceneRenderer.SetViewportSize( m_Window->GetWidth(), m_Window->GetHeight() );
+			sceneRenderer.Open( {}, {}, {} );
+			sceneRenderer.Close();
+
 			RHI::WaitForIdle();
 			RHI::CollectGarbage();
+
+			RHI::Present();
 
 			m_Window->OnUpdate();
 		}

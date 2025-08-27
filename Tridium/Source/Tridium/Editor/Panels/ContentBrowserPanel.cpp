@@ -47,6 +47,8 @@ namespace Tridium {
 
 	ContentBrowserPanel::ContentBrowserPanel() : Panel( TE_ICON_FOLDER " Content Browser" )
 	{
+		return;
+
 		FilePath iconFolder( Engine::Get()->GetEngineAssetsDirectory() / "Editor/Icons" );
 		SharedPtr<Texture> defaultIcon = Texture::Load( ( iconFolder / "file.png" ).ToString().c_str() ).Value();
 		ContentItemIcons::s_FileTypeIcons = {

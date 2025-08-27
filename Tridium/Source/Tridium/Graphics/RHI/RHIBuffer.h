@@ -50,6 +50,7 @@ namespace Tridium {
 		constexpr auto& SetUsage( ERHIUsage a_Usage ) { Usage = a_Usage; return *this; }
 		constexpr auto& SetCpuAccess( ERHICpuAccess a_CpuAccess ) { CpuAccess = a_CpuAccess; return *this; }
 		constexpr auto& SetType( ERHIBufferType a_Type ) { Type = a_Type; return *this; }
+		constexpr auto& SetFormat( ERHIFormat a_Format ) { Format = a_Format; return *this; }
 		constexpr auto& SetStride( uint32_t a_Stride ) { Stride = a_Stride; return *this; }
 		constexpr auto& SetInitialState( ERHIResourceStates a_State ) { InitialState = a_State; return *this; }
 		constexpr auto& SetName( StringView a_Name ) { Name = a_Name; return *this; }

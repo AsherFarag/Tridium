@@ -1,8 +1,9 @@
 #include "tripch.h"
-#include "ImGuiLayer.h"
-#include "ImGuiModule.h"
 #include <Tridium/Core/Application.h>
 #include <Tridium/Engine/Engine.h>
+#include <Tridium/ImGui/ImGuiLayer.h>
+#include <Tridium/ImGui/ImGuiModule.h>
+#include <Tridium/ImGui/Backends/ImGuiBackend_RHI.h>
 #include <Tridium/Input/Input.h>
 
 #include <GLFW/glfw3.h>
@@ -55,7 +56,7 @@ namespace Tridium {
 
 	void ImGuiLayer::Begin()
 	{
-		ImGuiModule::GetRendererBackend()->NewFrame();
+		ImGui_ImplRHI_NewFrame();
 		ImGuiModule::GetPlatformBackend()->NewFrame();
 		ImGui::NewFrame();
 	}
@@ -78,7 +79,7 @@ namespace Tridium {
 
 		// Set up the command list for rendering ImGui
 
-		ImGuiModule::GetRendererBackend()->RenderDrawData( ImGui::GetDrawData(), ImGuiModule::GetCommandList(), swapChain->GetBackBuffer());
+		ImGui_ImplRHI_RenderDrawData( ImGui::GetDrawData(), RHI::GetDynamicRHI(), swapChain->GetBackBuffer() );
 
 		if ( io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable )
 		{
