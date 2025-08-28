@@ -6,7 +6,7 @@ namespace Tridium::D3D12 {
 	RHITexture_D3D12Impl::RHITexture_D3D12Impl( IDynamicRHI* a_Device, const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
 		: IRHITexture( a_Device, a_Desc )
 	{
-		const RHIFormatInfo& formatInfo = GetRHIFormatInfo( a_Desc.Format );
+		const RHIFormatInfo formatInfo = GetRHIFormatInfo( a_Desc.Format );
 
 		const size_t width = a_Desc.Width;
 		const size_t height = a_Desc.Height;
