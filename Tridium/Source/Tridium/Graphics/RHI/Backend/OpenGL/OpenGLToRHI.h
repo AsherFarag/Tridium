@@ -309,29 +309,26 @@ namespace Tridium::OpenGL {
 
 	inline constexpr GLenum Translate( ERHILogicOp a_Op )
 	{
+		using enum ERHILogicOp;
 		switch ( a_Op )
 		{
-			using enum ERHILogicOp;
-			switch ( a_Op )
-			{
-				case Clear:         return GL_CLEAR;
-				case Set:           return GL_SET;
-				case Copy:          return GL_COPY;
-				case CopyInverted:  return GL_COPY_INVERTED;
-				case NoOp:          return GL_NOOP;
-				case Invert:        return GL_INVERT;
-				case And:           return GL_AND;
-				case Nand:          return GL_NAND;
-				case Or:            return GL_OR;
-				case Nor:           return GL_NOR;
-				case Xor:           return GL_XOR;
-				case Eqv:           return GL_EQUIV;
-				case AndReverse:    return GL_AND_REVERSE;
-				case AndInverted:   return GL_AND_INVERTED;
-				case OrReverse:     return GL_OR_REVERSE;
-				case OrInverted:    return GL_OR_INVERTED;
-				default:            return GL_NOOP;
-			}
+			case Clear:         return GL_CLEAR;
+			case Set:           return GL_SET;
+			case Copy:          return GL_COPY;
+			case CopyInverted:  return GL_COPY_INVERTED;
+			case NoOp:          return GL_NOOP;
+			case Invert:        return GL_INVERT;
+			case And:           return GL_AND;
+			case Nand:          return GL_NAND;
+			case Or:            return GL_OR;
+			case Nor:           return GL_NOR;
+			case Xor:           return GL_XOR;
+			case Eqv:           return GL_EQUIV;
+			case AndReverse:    return GL_AND_REVERSE;
+			case AndInverted:   return GL_AND_INVERTED;
+			case OrReverse:     return GL_OR_REVERSE;
+			case OrInverted:    return GL_OR_INVERTED;
+			default:            return GL_NOOP;
 		}
 	}
 

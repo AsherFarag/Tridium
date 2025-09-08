@@ -83,11 +83,9 @@ namespace Tridium {
 
 		if ( io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable )
 		{
-			GLFWwindow* backUpCurrentContext = glfwGetCurrentContext();
 			//m_PlatformBackend->RestoreCallbacks();
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
-			glfwMakeContextCurrent( backUpCurrentContext );
 		}
 	}
 

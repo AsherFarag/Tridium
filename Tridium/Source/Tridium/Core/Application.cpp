@@ -115,10 +115,10 @@ namespace Tridium {
 			if ( ImGuiModule::Get() )
 			{
 				ImGuiModule::GetImGuiLayer()->Begin();
-
+			
 				for ( int i = 0; i < m_LayerStack.NumLayers(); i++ )
 					m_LayerStack[ i ]->OnImGuiDraw();
-
+			
 				ImGuiModule::GetImGuiLayer()->End();
 			}
 			// ---------
@@ -127,11 +127,6 @@ namespace Tridium {
 
 			TODO( " Temp solution for setting backbuffer to Present state after imgui is done" );
 			RHI::GetSwapChain()->GetBackBuffer()->SetState( ERHIResourceStates::Present );
-
-			static SceneRenderer sceneRenderer{ nullptr };
-			sceneRenderer.SetViewportSize( m_Window->GetWidth(), m_Window->GetHeight() );
-			sceneRenderer.Open( {}, {}, {} );
-			sceneRenderer.Close();
 
 			RHI::WaitForIdle();
 			RHI::CollectGarbage();

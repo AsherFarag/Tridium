@@ -19,7 +19,7 @@ namespace Tridium {
 		// Initialise the Dynamic RHI
         {
             RHIConfig config{};
-            config.RHIType = ERHInterfaceType::DirectX12;
+            config.RHIType = ERHInterfaceType::OpenGL;
             config.UseDebug = true;
             config.SwapChainDesc = RHISwapChainDesc{}
                 .SetWidth( 1280 )

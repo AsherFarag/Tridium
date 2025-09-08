@@ -181,11 +181,11 @@ namespace Tridium {
 				Bindings.Resize( a_InputIndex + 1 );
 			}
 
-			RHI_DEV_CHECK( BindingMap.find( a_Name ) == BindingMap.end(), "Binding with name hash already exists" );
-			BindingMap[a_Name] = Pair{ a_InputIndex, a_Name.String() };
+			RHI_DEV_CHECK( BindingMap.find( a_Name.Hash() ) == BindingMap.end(), "Binding with name hash already exists" );
+			BindingMap[ a_Name.Hash() ] = Pair{ a_InputIndex, a_Name.String() };
 
 			Bindings[ a_InputIndex ] = a_Binding;
-			Bindings[ a_InputIndex ].NameHash = a_Name;
+			Bindings[ a_InputIndex ].NameHash = a_Name.Hash();
 			return *this;
 		}
 
@@ -195,7 +195,7 @@ namespace Tridium {
 			if ( Bindings.Empty() )
 				return;
 
-			auto it = BindingMap.find( a_Name );
+			auto it = BindingMap.find( a_Name.Hash() );
 			if ( it == BindingMap.end() )
 				return;
 
@@ -437,7 +437,7 @@ namespace Tridium {
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
-			auto binding = Layout->Desc().GetBindingFromName( a_Name );
+			auto binding = Layout->Desc().GetBindingFromName( a_Name.Hash() );
 			ValidateBinding( binding, ERHIBindingType::ConstantBuffer );
 			return AddConstantBuffer( binding.Slot, a_Buffer, a_Range );
 		}
@@ -449,7 +449,7 @@ namespace Tridium {
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
-			auto binding = Layout->Desc().GetBindingFromName( a_Name );
+			auto binding = Layout->Desc().GetBindingFromName( a_Name.Hash() );
 			ValidateBinding( binding, ERHIBindingType::StructuredBuffer );
 			return AddStructuredBuffer( binding.Slot, a_Buffer, a_BufferType, a_Format, a_Range );
 		}
@@ -459,20 +459,20 @@ namespace Tridium {
 			RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
-			auto binding = Layout->Desc().GetBindingFromName( a_Name );
+			auto binding = Layout->Desc().GetBindingFromName( a_Name.Hash() );
 			ValidateBinding( binding, ERHIBindingType::StorageBuffer );
 			return AddStorageBuffer( binding.Slot, a_Buffer, a_Range );
 		}
 
 		auto& AddTexture(
 			HashedString a_Name, IRHITexture* a_Texture,
-			RHISampler* a_Sampler = nullptr,
+			const RHISampler* a_Sampler = nullptr,
 			ERHIFormat a_Format = ERHIFormat::Unknown,
 			ERHITextureDimension a_TextureDimension = ERHITextureDimension::Unknown,
 			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All() )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
-			auto binding = Layout->Desc().GetBindingFromName( a_Name );
+			auto binding = Layout->Desc().GetBindingFromName( a_Name.Hash() );
 			ValidateBinding( binding, ERHIBindingType::Texture );
 			return AddTexture( binding.Slot, a_Texture, a_Sampler, a_Format, a_TextureDimension, a_Subresources );
 		}
@@ -483,7 +483,7 @@ namespace Tridium {
 			RHITextureSubresourceSet a_Subresources = RHITextureSubresourceSet::All() )
 		{
 			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
-			auto binding = Layout->Desc().GetBindingFromName( a_Name );
+			auto binding = Layout->Desc().GetBindingFromName( a_Name.Hash() );
 			ValidateBinding( binding, ERHIBindingType::StorageTexture );
 			return AddStorageTexture( binding.Slot, a_Texture, a_Sampler, a_Subresources );
 		}

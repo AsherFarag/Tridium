@@ -13,29 +13,34 @@ namespace Tridium::OpenGL {
 			return;
 		}
 
-		if ( a_Data.size() == 0 )
-		{
-			return;
-		}
-
 		// Vertex buffer
 		if ( EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::VertexBuffer ) )
 		{
 			OpenGL1::BindBuffer( GL_ARRAY_BUFFER, BufferObj );
-			OpenGL1::BufferData( GL_ARRAY_BUFFER, a_Desc.Size, a_Data.data(), Translate( a_Desc.Usage ) );
+			OpenGL1::BufferData( GL_ARRAY_BUFFER,
+								 a_Desc.Size,
+								 a_Data.size() ? a_Data.data() : nullptr,
+								 Translate( a_Desc.Usage ) );
 			OpenGL1::BindBuffer( GL_ARRAY_BUFFER, 0 );
 		}
 		// Index buffer
 		else if ( EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::IndexBuffer ) )
 		{
 			OpenGL1::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, BufferObj );
-			OpenGL1::BufferData( GL_ELEMENT_ARRAY_BUFFER, a_Desc.Size, a_Data.data(), Translate( a_Desc.Usage ) );
+			OpenGL1::BufferData( GL_ELEMENT_ARRAY_BUFFER,
+								 a_Desc.Size,
+								 a_Data.size() ? a_Data.data() : nullptr,
+								 Translate( a_Desc.Usage ) );
 			OpenGL1::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 		}
+		// Constant buffer
 		else if ( EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::ConstantBuffer ) )
 		{
 			OpenGL3::BindBufferBase( GL_UNIFORM_BUFFER, 0, BufferObj );
-			OpenGL1::BufferData( GL_UNIFORM_BUFFER, a_Desc.Size, a_Data.data(), Translate( a_Desc.Usage ) );
+			OpenGL1::BufferData( GL_UNIFORM_BUFFER,
+								 a_Desc.Size,
+								 a_Data.size() ? a_Data.data() : nullptr,
+								 Translate( a_Desc.Usage ) );
 			OpenGL3::BindBufferBase( GL_UNIFORM_BUFFER, 0, 0 );
 		}
 		else

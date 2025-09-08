@@ -37,7 +37,7 @@ namespace Tridium {
     {
        float2 pos : POSITION;
        float2 uv  : TEXCOORD0;
-       uint col  : COLOR0;
+       float4 col  : COLOR0;
     };
 
     struct PS_INPUT
@@ -52,25 +52,25 @@ namespace Tridium {
       PS_INPUT output;
       output.pos = mul(inlinedConstants.PVM, float4(input.pos.xy, 0.0f, 1.0f));
       output.uv  = input.uv;
-      output.col = float4((input.col & 0xFF) / 255.0, ((input.col >> 8) & 0xFF) / 255.0, ((input.col >> 16) & 0xFF) / 255.0, ((input.col >> 24) & 0xFF) / 255.0);
+      output.col = input.col;
       return output;
     } )";
 
-    static const char* s_ImGuiPixelShader =
-        "struct PS_INPUT\
-    {\
-      float4 pos : SV_POSITION;\
-      float4 col : COLOR0;\
-      float2 uv  : TEXCOORD0;\
-    };\
-    SamplerState sampler0 : register(s0);\
-    Texture2D texture0 : register(t0);\
-    \
-    float4 PSMain(PS_INPUT input) : SV_Target\
-    {\
-      float4 out_col = input.col * texture0.Sample(sampler0, input.uv); \
-      return out_col; \
-    }";
+    static const char* s_ImGuiPixelShader = R"(
+    #include "Globals.hlsli"
+
+    struct PS_INPUT
+    {
+      float4 pos : SV_POSITION;
+      float4 col : COLOR0;
+      float2 uv  : TEXCOORD0;
+    };
+    COMBINED_SAMPLER( Texture, Texture2D, 0 );
+    
+    float4 PSMain(PS_INPUT input) : SV_Target
+    {
+      return input.col * SampleTexture( Texture, input.uv );
+    } )";
 
     // RHI data
     struct ImGui_ImplRHI_Data
@@ -212,6 +212,9 @@ namespace Tridium {
         {
             return false;
 		}
+
+        if ( a_DrawData->TotalVtxCount == 0 || a_DrawData->TotalIdxCount == 0 )
+			return true;
 
 		static Array<ImDrawVert> s_VertexBufferData; s_VertexBufferData.Resize( a_DrawData->TotalVtxCount );
 		static Array<ImDrawIdx> s_IndexBufferData; s_IndexBufferData.Resize( a_DrawData->TotalIdxCount );
@@ -478,7 +481,7 @@ namespace Tridium {
         {
 			Vector2 Position;
 			Vector2 TEXCOORD;
-			uint32_t Color;
+			Vector<4, uint8_t> Color;
         };
 
         const auto psoDesc = RHIGraphicsPipelineStateDesc{}

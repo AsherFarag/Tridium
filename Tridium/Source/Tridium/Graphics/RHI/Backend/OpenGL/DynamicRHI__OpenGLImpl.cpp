@@ -34,8 +34,8 @@ namespace Tridium::OpenGL {
 			OpenGL4::Enable( GL_DEBUG_OUTPUT );
 			OpenGL4::Enable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
 			OpenGL4::DebugMessageCallback( DebugCallback, nullptr );
-			// Disable Detailed info logs
-			OpenGL4::DebugMessageControl( GL_DONT_CARE, GL_DEBUG_TYPE_OTHER, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE );
+			// All messages
+			OpenGL4::DebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE );
 		}
 	#endif
 
