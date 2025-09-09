@@ -35,9 +35,11 @@ namespace Tridium::GLFW {
             default:
             {
                 ENSURE( false, "Unknown ImGui renderer!" );
-                break;
+                return false;
             }
         }
+
+        return true;
     }
 
     void PlatformImGuiInterface_GLFW::Shutdown()

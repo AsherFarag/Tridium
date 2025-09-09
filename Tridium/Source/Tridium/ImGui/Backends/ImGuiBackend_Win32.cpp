@@ -37,7 +37,6 @@ namespace Tridium::Win32{
                 //}
 
 				return ImGui_ImplGlfw_InitForOther( Window, a_InstallCallbacks );
-                break;
             }
             default:
             {
@@ -45,6 +44,8 @@ namespace Tridium::Win32{
                 break;
             }
         }
+
+        return false;
     }
 
     void PlatformImGuiInterface_Win32::Shutdown()

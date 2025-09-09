@@ -424,11 +424,6 @@ namespace Tridium::OpenGL {
 			else
 				OpenGL1::Disable( GL_DEPTH_CLAMP );
 
-			if ( rasterizerState.ScissorEnabled )
-				OpenGL1::Enable( GL_SCISSOR_TEST );
-			else
-				OpenGL1::Disable( GL_SCISSOR_TEST );
-
 			if ( rasterizerState.AnitaliasedLinesEnabled )
 				OpenGL1::Enable( GL_LINE_SMOOTH );
 			else
@@ -863,22 +858,30 @@ namespace Tridium::OpenGL {
 	void RHICommandList_OpenGLImpl::SetViewportState_Impl( const RHIViewportState& a_ViewportState )
 	{
 		RHI_DEV_CHECK( m_GraphicsStateValid, "Cannot set viewport state without a valid graphics state!" );
-		// Viewports
+
+		// Set viewports
 		for ( uint32_t i = 0; i < a_ViewportState.Viewports.Size(); ++i )
 		{
 			const RHIViewport& vp = a_ViewportState.Viewports[i];
 			OpenGL4::ViewportIndexedf( i, vp.X, vp.Y, vp.Width, vp.Height );
 		}
 
-		// Scissors
-		for ( uint32_t i = 0; i < a_ViewportState.Scissors.Size(); ++i )
+		// Set scissors (if any)
+		const bool scissorsEnabled = !a_ViewportState.Scissors.Empty();
+		if ( scissorsEnabled )
 		{
-			const RHIScissorRect& scissor = a_ViewportState.Scissors[i];
-			const GLint left = scissor.Left;
-			const GLint bottom = scissor.Bottom;
-			const GLsizei width = scissor.Right - scissor.Left;
-			const GLsizei height = scissor.Bottom - scissor.Top; TODO( "This works for now but is shonky" );
-			OpenGL4::ScissorIndexed( i, left, bottom, width, height );
+			OpenGL1::Enable( GL_SCISSOR_TEST );
+
+			for ( uint32_t i = 0; i < a_ViewportState.Scissors.Size(); ++i )
+			{
+				const RHIScissorRect& scissor = a_ViewportState.Scissors[ i ];
+				// We already flip the Y coordinate in the shader, so no need to do it here.
+				OpenGL4::ScissorIndexed( i, scissor.Left, scissor.Top, scissor.Width(), scissor.Height() );
+			}
+		}
+		else
+		{
+			OpenGL1::Disable( GL_SCISSOR_TEST );
 		}
 	}
 

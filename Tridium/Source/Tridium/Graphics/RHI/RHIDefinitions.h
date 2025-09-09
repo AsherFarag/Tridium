@@ -229,6 +229,9 @@ namespace Tridium {
 		uint16_t Right  = 0;
 		uint16_t Bottom = 0;
 
+		constexpr uint16_t Width() const noexcept { return Right - Left; }
+		constexpr uint16_t Height() const noexcept { return Bottom - Top; }
+
 		static constexpr RHIScissorRect From( const RHIViewport& a_Viewport ) noexcept
 		{
 			return RHIScissorRect{ .Left   = uint16_t( Math::Ceil( a_Viewport.X ) ),

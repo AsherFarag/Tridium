@@ -141,8 +141,6 @@ namespace Tridium {
 		bool Clockwise = true;
 		// Enable or disable clipping against the near and far clip planes.
 		bool DepthClipEnabled = true;
-		// Enable or disable scissor testing.
-		bool ScissorEnabled = false;
 		// Enable or disable antialiased lines.
 		bool AnitaliasedLinesEnabled = false;
 		// A default value added to the depth of each pixel.
@@ -154,9 +152,9 @@ namespace Tridium {
 		constexpr auto& SetFillMode( ERHIFillMode a_Mode ) { FillMode = a_Mode; return *this; }
 		constexpr auto& SetClockwise( bool a_Clockwise ) { Clockwise = a_Clockwise; return *this; }
 		constexpr auto& SetDepthClipEnabled( bool a_Enabled ) { DepthClipEnabled = a_Enabled; return *this; }
-		constexpr auto& SetScissorEnabled( bool a_Enabled ) { ScissorEnabled = a_Enabled; return *this; }
 		constexpr auto& SetAnitaliasedLinesEnabled( bool a_Enabled ) { AnitaliasedLinesEnabled = a_Enabled; return *this; }
 		constexpr auto& SetDepthBias( int32_t a_Bias ) { DepthBias = a_Bias; return *this; }
+		constexpr auto& SetSlopeScaledDepthBias( float a_Bias ) { SlopeScaledDepthBias = a_Bias; return *this; }
 	};
 
 

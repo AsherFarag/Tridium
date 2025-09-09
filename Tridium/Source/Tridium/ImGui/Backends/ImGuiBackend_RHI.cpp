@@ -97,7 +97,7 @@ namespace Tridium {
                 .SetAddressW( ERHISamplerAddressMode::Repeat )
                 .SetMipLODBias( 0.0f )
                 .SetMaxAnisotropy( 0 )
-                .SetComparisonFunc( ERHIComparison::Always )
+                .SetComparisonFunc( ERHIComparison::Never )
                 .SetBorderColor( Color::Black() )
                 .SetMinLOD( 0.0f )
                 .SetMaxLOD( 0.0f );
@@ -239,22 +239,17 @@ namespace Tridium {
 
     void ImGui_ImplRHI_RenderDrawData( ImDrawData* a_DrawData, IDynamicRHI* a_RHI, RHITextureRef a_RenderTarget )
     {
-        const float rsx = 1.0f;
-        const float rsy = 1.0f;
-        const ImVec2 render_scale{
-            ( rsx == 1.0f ) ? a_DrawData->FramebufferScale.x : 1.0f,
-            ( rsy == 1.0f ) ? a_DrawData->FramebufferScale.y : 1.0f
-        };
+        const ImVec2 renderScale{ a_DrawData->FramebufferScale.x, a_DrawData->FramebufferScale.y };
 
         // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
-        int fb_width = ( int )( a_DrawData->DisplaySize.x * render_scale.x );
-        int fb_height = ( int )( a_DrawData->DisplaySize.y * render_scale.y );
-        if ( fb_width == 0 || fb_height == 0 )
+        const int fbWidth = ( int )( a_DrawData->DisplaySize.x * renderScale.x );
+        const int fbHeight = ( int )( a_DrawData->DisplaySize.y * renderScale.y );
+        if ( fbWidth == 0 || fbHeight == 0 )
             return;
 
         // Will project scissor/clipping rectangles into framebuffer space
-        ImVec2 clip_off = a_DrawData->DisplayPos;         // (0,0) unless using multi-viewports
-        ImVec2 clip_scale = render_scale;
+        ImVec2 clipOff = a_DrawData->DisplayPos;         // (0,0) unless using multi-viewports
+        ImVec2 clipScale = renderScale;
 
         // Render command lists
         ImGui_ImplRHI_SetupRenderState( a_RHI );
@@ -320,20 +315,20 @@ namespace Tridium {
                 else
                 {
                     // Project scissor/clipping rectangles into framebuffer space
-                    ImVec2 clip_min( ( pcmd->ClipRect.x - clip_off.x ) * clip_scale.x, ( pcmd->ClipRect.y - clip_off.y ) * clip_scale.y );
-                    ImVec2 clip_max( ( pcmd->ClipRect.z - clip_off.x ) * clip_scale.x, ( pcmd->ClipRect.w - clip_off.y ) * clip_scale.y );
+                    ImVec2 clip_min( ( pcmd->ClipRect.x - clipOff.x ) * clipScale.x, ( pcmd->ClipRect.y - clipOff.y ) * clipScale.y );
+                    ImVec2 clip_max( ( pcmd->ClipRect.z - clipOff.x ) * clipScale.x, ( pcmd->ClipRect.w - clipOff.y ) * clipScale.y );
                     if ( clip_min.x < 0.0f ) { clip_min.x = 0.0f; }
                     if ( clip_min.y < 0.0f ) { clip_min.y = 0.0f; }
-                    if ( clip_max.x > ( float )fb_width ) { clip_max.x = ( float )fb_width; }
-                    if ( clip_max.y > ( float )fb_height ) { clip_max.y = ( float )fb_height; }
+                    if ( clip_max.x > ( float )fbWidth ) { clip_max.x = ( float )fbWidth; }
+                    if ( clip_max.y > ( float )fbHeight ) { clip_max.y = ( float )fbHeight; }
                     if ( clip_max.x <= clip_min.x || clip_max.y <= clip_min.y )
                         continue;
 
                     const auto vpState = RHIViewportState{}
                         .AddViewport( RHIViewport{
                             .X = 0.0f, .Y = 0.0f,
-                            .Width = ( float )fb_width,
-                            .Height = ( float )fb_height,
+                            .Width = ( float )fbWidth,
+                            .Height = ( float )fbHeight,
                             .MinDepth = 0.0f, .MaxDepth = 1.0f
                         } )
                         .AddScissor( RHIScissorRect{
