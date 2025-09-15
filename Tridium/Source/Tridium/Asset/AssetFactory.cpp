@@ -1,30 +1,41 @@
 #include "tripch.h"
 #include "AssetFactory.h"
+#include <Tridium/Asset/AssetImporter.h>
 
-namespace Tridium::T {
+namespace Tridium {
 
-	Array<CreateAssetLoader> AssetFactory::s_AssetLoaderInitializers;
+	decltype( AssetFactory::s_AssetTypes ) AssetFactory::s_AssetTypes;
+	decltype( AssetFactory::s_AssetLoaders ) AssetFactory::s_AssetLoaders;
 
-	class TextureLoader : public IAssetLoader
+#if WITH_EDITOR
+
+	decltype( AssetFactory::s_AssetImporters ) AssetFactory::s_AssetImporters;
+	decltype( AssetFactory::s_ExtensionToImporterMap ) AssetFactory::s_ExtensionToImporterMap;
+
+	bool AssetFactory::RegisterImporter( HashedString a_TypeHash, UniquePtr<IAssetImporter> a_Importer )
 	{
-		// Inherited via IAssetLoader
-		EAssetType GetAssetType() const override
+		if ( s_AssetImporters.contains( a_TypeHash.Hash() ) )
 		{
-			return EAssetType();
+			ASSERT( false, "Asset Importer of type '{}' is already registered!", a_TypeHash.String() );
+			return false;
 		}
-		SharedPtr<IAsset> CreateAsset( AssetID a_ID, EAssetFlags a_Flags ) override
-		{
-			return SharedPtr<IAsset>();
-		}
-		Expected<void, String> Save( const SharedPtr<IAsset>& a_Asset, const AssetMetadata& a_Metadata ) override
-		{
-			return Expected<void, String>();
-		}
-		Expected<void, String> Load( SharedPtr<IAsset> a_Asset, const AssetMetadata& a_Metadata ) override
-		{
-			return Expected<void, String>();
-		}
-	};
 
-	REGISTER_ASSET_LOADER( TextureLoader );
-}
+		for ( const StringView& ext : a_Importer->SupportedExtensions() )
+		{
+			if ( s_ExtensionToImporterMap.contains( ext ) )
+			{
+				ASSERT( false, "File extension '{}' is already registered to another importer!", ext );
+				continue;
+			}
+
+			s_ExtensionToImporterMap[ ext ] = a_Importer.get();
+		}
+
+		s_AssetImporters[ a_TypeHash.Hash() ] = std::move( a_Importer );
+
+		return true;
+	}
+
+#endif
+
+} // namespace Tridium

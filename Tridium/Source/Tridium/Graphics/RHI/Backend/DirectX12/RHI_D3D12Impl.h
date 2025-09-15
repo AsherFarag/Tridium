@@ -659,7 +659,7 @@ namespace Tridium::D3D12 {
 		bool Valid() const override;
 		const void* NativePtr() const override;
 
-		Array<Byte> Bytecode;
+		Array<byte_t> Bytecode;
 	};
 
 	//======================================================================

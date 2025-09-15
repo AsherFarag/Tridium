@@ -5,14 +5,14 @@
 namespace Tridium {
 	class FilePath;
 	class IAssetLoaderOld;
-	struct AssetMetaData;
+	struct OldAssetMetaData;
 
 	class AssetFactoryOld
 	{
 	public:
 		static void Init();
-		static void SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset );
-		static SharedPtr<Asset> LoadAsset( const AssetMetaData& a_MetaData );
+		static void SaveAsset( const OldAssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset );
+		static SharedPtr<Asset> LoadAsset( const OldAssetMetaData& a_MetaData );
 
 		static SharedPtr<IAssetLoaderOld> GetAssetLoader( EAssetTypeOld a_Type );
 

@@ -45,7 +45,7 @@ namespace Tridium {
 		if ( asset = GetMemoryOnlyAsset( a_Handle ) )
 			return asset;
 
-		const AssetMetaData& metaData = GetAssetMetaData( a_Handle );
+		const OldAssetMetaData& metaData = GetAssetMetaData( a_Handle );
 		// Failed to get meta data
 		if ( !metaData.IsValid() )
 		{
@@ -74,7 +74,7 @@ namespace Tridium {
 		}
 
 		// Load the asset
-		AssetMetaData newMetaData =
+		OldAssetMetaData newMetaData =
 		{
 			.Handle = metaData.Handle,
 			.AssetType = metaData.AssetType,
@@ -105,7 +105,7 @@ namespace Tridium {
 
 	SharedPtr<Asset> EditorAssetManager::GetAsset( const FilePath& a_Path )
 	{
-		const AssetMetaData& metaData = GetAssetMetaData( a_Path );
+		const OldAssetMetaData& metaData = GetAssetMetaData( a_Path );
 		if ( !metaData.IsValid() )
 			return nullptr;
 
@@ -210,16 +210,16 @@ namespace Tridium {
 	// Editor Only
 	//////////////////////////////////////////////////////////////////////////
 
-	const AssetMetaData& EditorAssetManager::GetAssetMetaData( AssetHandle a_Handle ) const
+	const OldAssetMetaData& EditorAssetManager::GetAssetMetaData( AssetHandle a_Handle ) const
 	{
 		if ( auto it = m_AssetRegistry.AssetMetaData.find( a_Handle ); it != m_AssetRegistry.AssetMetaData.end() )
 			return it->second;
 
-		return AssetMetaData::s_InvalidMetaData;
+		return OldAssetMetaData::s_InvalidMetaData;
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	const AssetMetaData& EditorAssetManager::GetAssetMetaData( const FilePath& a_Path ) const
+	const OldAssetMetaData& EditorAssetManager::GetAssetMetaData( const FilePath& a_Path ) const
 	{
 		TODO( "Incredibly inefficient, fix this" );
 		const FilePath& path = GetAbsolutePath( a_Path );
@@ -229,11 +229,11 @@ namespace Tridium {
 				return metaData;
 		}
 
-		return AssetMetaData::s_InvalidMetaData;
+		return OldAssetMetaData::s_InvalidMetaData;
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	void EditorAssetManager::SetAssetMetaData( const AssetMetaData& a_MetaData )
+	void EditorAssetManager::SetAssetMetaData( const OldAssetMetaData& a_MetaData )
 	{
 		m_AssetRegistry.AssetMetaData[a_MetaData.Handle] = a_MetaData;
 	}
@@ -241,7 +241,7 @@ namespace Tridium {
 	//////////////////////////////////////////////////////////////////////////
 	bool EditorAssetManager::SaveAsset( AssetHandle a_Handle )
 	{
-		const AssetMetaData& metaData = GetAssetMetaData( a_Handle );
+		const OldAssetMetaData& metaData = GetAssetMetaData( a_Handle );
 		if ( !metaData.IsValid() )
 		{
 			LOG( LogCategory::Asset, Error, "Failed to save asset: {0}, meta data not found", a_Handle.ID() );
@@ -288,7 +288,7 @@ namespace Tridium {
 		}
 
 		// Create new asset meta data
-		AssetMetaData metaData;
+		OldAssetMetaData metaData;
 		metaData.Handle = AssetHandle::Create();
 		metaData.AssetType = assetType;
 		metaData.Path = a_Path;
@@ -301,7 +301,7 @@ namespace Tridium {
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	bool EditorAssetManager::CreateAsset( const AssetMetaData& a_MetaData, SharedPtr<Asset> a_Asset )
+	bool EditorAssetManager::CreateAsset( const OldAssetMetaData& a_MetaData, SharedPtr<Asset> a_Asset )
 	{
 		if ( m_AssetRegistry.AssetMetaData.find( a_MetaData.Handle ) != m_AssetRegistry.AssetMetaData.end() )
 		{
@@ -411,7 +411,7 @@ namespace Tridium {
 		{
 			for ( const auto& asset : assetMetaData )
 			{
-				AssetMetaData metaData;
+				OldAssetMetaData metaData;
 				metaData.Path = asset["Path"].as<std::string>();
 
 				// Strip absolute path if it is inside the content directory

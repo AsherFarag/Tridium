@@ -10,11 +10,15 @@ namespace Tridium {
         class FilePath : private fs::path
         {
         public:
+
+			using StringType = fs::path::string_type;
+
             using fs::path::path;
             FilePath( const fs::path& a_Path ) : fs::path( a_Path ) {}
 
             operator const fs::path& ( ) const { return *this; }
             operator fs::path& ( ) { return *this; }
+
 
             FilePath operator+( const std::string& suffix ) const {
                 return ToString() + suffix;
@@ -61,6 +65,8 @@ namespace Tridium {
             //      E.g. "MyFolder/MyFile.txt"
 			WString ToWString() const { return generic_wstring(); }
 
+			const StringType& Native() const { return fs::path::native(); }
+
             void Append( const String& a_String ) { append( a_String ); }
 
             void ReplaceExtension( const String& a_Extension ) { replace_extension( a_Extension ); }
@@ -104,6 +110,9 @@ namespace Tridium {
             static FilePath CurrentPath() { return fs::current_path(); }
 
             static FilePath FromPath( const fs::path& a_Path ) { return FilePath( a_Path ); }
+
+            static FilePath UniquePath( StringView a_Pattern = "%%%%%" );
+
         };
 
         class DirectoryEntry : public fs::directory_entry

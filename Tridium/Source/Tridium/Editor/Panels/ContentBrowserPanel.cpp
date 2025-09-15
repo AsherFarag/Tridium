@@ -11,7 +11,6 @@
 #include <Tridium/Editor/Editor.h>
 #include <Tridium/Editor/AssetImporter.h>
 #include <Tridium/Editor/EditorUtil.h>
-#include <Tridium/Editor/Util/AssetInfo.h>
 #include <Tridium/Editor/EditorStyle.h>
 #include "ScriptEditorPanel.h"
 #include "Asset/MaterialEditorPanel.h"
@@ -161,7 +160,7 @@ namespace Tridium {
 			if ( !directoryEntry.is_directory() )
 				type = Cast<EFileType>( GetAssetTypeFromFileExtension( directoryEntry.path().extension().string() ) );
 
-			AssetMetaData metaData = EditorAssetManager::Get()->GetAssetMetaData( filePath );
+			OldAssetMetaData metaData = EditorAssetManager::Get()->GetAssetMetaData( filePath );
 
 			bool isImported = metaData.IsValid();
 			AssetHandle handle = metaData.Handle;
@@ -400,9 +399,9 @@ namespace Tridium {
 					{
 						Util::OpenNewFileDialog( "Material", "m_NewMaterial.tmat", [&](const String& a_FilePath)
 							{
-								SharedPtr<Material> material = MakeShared<Material>();
+								SharedPtr<OldMaterial> material = MakeShared<OldMaterial>();
 
-								AssetMetaData metaData =
+								OldAssetMetaData metaData =
 								{
 									.Handle = AssetHandle::Create(),
 									.AssetType = EAssetTypeOld::Material,
@@ -548,7 +547,7 @@ namespace Tridium {
 			}
 			case EFileType::Material:
 			{
-				SharedPtr<Material> material = AssetManager::GetAsset<Material>( a_Item.Handle );
+				SharedPtr<OldMaterial> material = AssetManager::GetAsset<OldMaterial>( a_Item.Handle );
 				if ( material )
 				{
 					Editor::GetEditorLayer()->GetOrEmplacePanel<MaterialEditorPanel>()->SetMaterial( a_Item.Handle );

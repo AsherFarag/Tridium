@@ -3,11 +3,11 @@
 
 namespace Tridium {
 
-	class Material : public Asset
+	class OldMaterial : public Asset
 	{
 	public:
-		Material() = default;
-		virtual ~Material() = default;
+		OldMaterial() = default;
+		virtual ~OldMaterial() = default;
 
 		// - Shader
 		//   The shader used by the material

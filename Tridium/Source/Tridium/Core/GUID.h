@@ -31,8 +31,8 @@ namespace Tridium {
 		using Type = T;
 		static constexpr T InvalidID = 0;
 
-		UID() : m_ID( InvalidID ) {}
-		UID( T a_ID ) : m_ID( a_ID ) {}
+		constexpr UID() : m_ID( InvalidID ) {}
+		constexpr UID( T a_ID ) : m_ID( a_ID ) {}
 
 		static UID Create()
 		{
@@ -40,8 +40,8 @@ namespace Tridium {
 			return id == InvalidID ? Create() : UID( id );
 		}
 
-		T ID() const { return m_ID; }
-		bool IsValid() const { return m_ID != InvalidID; }
+		constexpr T ID() const { return m_ID; }
+		constexpr bool IsValid() const { return m_ID != InvalidID; }
 
 		constexpr operator T() const { return m_ID; }
 		constexpr UID& operator=( const T& a_ID ) { m_ID = a_ID; return *this; }

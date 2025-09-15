@@ -1,91 +1,153 @@
 #pragma once
-#include "Asset.h"
-#include <Tridium/Core/Core.h>
+#include <Tridium/Asset/AssetDefinitions.h>
+#include <Tridium/Core/Config.h>
+#include <Tridium/Core/Types.h>
+#include <Tridium/Core/Hash.h>
 
-namespace Tridium::T {
+namespace Tridium {
 
-	// Forward declarations
-	struct AssetMetadata;
+	class IAsset;
 	class IAssetLoader;
+	class IAssetImporter;
 
-	using CreateAssetLoader = UniquePtr<IAssetLoader>(*)();
-
-#define REGISTER_ASSET_LOADER( _Loader ) \
-	namespace { \
-		static struct StaticInitializer_##_Loader { \
-			StaticInitializer_##_Loader() { \
-				::Tridium::T::AssetFactory::s_AssetLoaderInitializers.PushBack( []() -> ::Tridium::UniquePtr<IAssetLoader> { \
-					return ::Tridium::MakeUnique<_Loader>(); \
-					} ); \
-			} \
-		} s_StaticInitializer_##_Loader; \
-	}
-
-	class IAssetLoader
-	{
-	public:
-		virtual ~IAssetLoader() = default;
-		virtual EAssetType GetAssetType() const = 0;
-		virtual SharedPtr<IAsset> CreateAsset( AssetID a_ID, EAssetFlags a_Flags ) = 0;
-
-		// Load and Save an Asset to/from a file.
-
-		virtual Expected<void, String> Save( const SharedPtr<IAsset>& a_Asset, const AssetMetadata& a_Metadata ) = 0;
-		virtual Expected<void, String> Load( SharedPtr<IAsset> a_Asset, const AssetMetadata& a_Metadata ) = 0;
-	};
-
-	template<Concepts::Derived<IAssetLoader> T>
-	class AssetLoader : IAssetLoader
-	{
-	public:
-		using AssetType = T;
-		virtual ~AssetLoader() = default;
-		[[nodiscard]] EAssetType GetAssetType() const override { return AssetType::Type; }
-		[[nodiscard]] virtual SharedPtr<IAsset> CreateAsset( AssetID a_ID, EAssetFlags a_Flags ) override { return MakeShared<AssetType>( a_ID, a_Flags ); }
-	};
-
+	//=================================================================================================
+	// Asset Factory: Global factory storing all asset importers and loaders.
+	//=================================================================================================
 	class AssetFactory
 	{
 	public:
-		static Array<CreateAssetLoader> s_AssetLoaderInitializers;
 
-		AssetFactory()
+		//=============================================================================================
+		NON_COPYABLE_OR_MOVABLE( AssetFactory );
+
+		//=============================================================================================
+		// Attempts to retrieve the AssetTypeInfo for a given asset type ID.
+		static const AssetTypeInfo& GetAssetTypeInfo( const AssetTypeID a_TypeID )
 		{
-			ASSERT( !s_AssetLoaderInitializers.Empty(),
-				"No asset loaders are registered - are you attempting to statically initialize the AssetFactory?" );
-			for ( CreateAssetLoader initializer : s_AssetLoaderInitializers )
+			static const AssetTypeInfo s_InvalidTypeInfo{ .ID = InvalidAssetTypeID, .Name = "<UNKNOWN>" };
+			auto it = s_AssetTypes.find( a_TypeID );
+			return it != s_AssetTypes.end() ? it->second : s_InvalidTypeInfo;
+		}
+
+		//=============================================================================================
+		// Gets the AssetTypeInfo for the asset type T.
+		template<Concepts::Derived<IAsset> T>
+		static const AssetTypeInfo* GetAssetTypeInfo()
+		{
+			static const AssetTypeInfo* s_CachedTypeInfo = GetAssetTypeInfo( Hashing::TypeHash<T>().Hash() );
+			ASSERT( s_CachedTypeInfo, "Asset Type Info for type '{}' is not registered!", GetTypeName<T>() );
+			return s_CachedTypeInfo;
+		}
+
+		//=============================================================================================
+		// Registers an asset type T with the given AssetTypeInfo.
+		// If 'a_Override' is true, it will overwrite any existing registration.
+		template<Concepts::Derived<IAsset> T>
+		static bool RegisterAssetType( AssetTypeInfo a_TypeInfo, bool a_Override = false )
+		{
+			constexpr AssetTypeID typeID = Hashing::TypeHash<T>().Hash();
+
+			ASSERT( a_TypeInfo.ID == InvalidAssetTypeID || a_TypeInfo.ID == typeID,
+					"AssetTypeInfo ID does not match the type hash for type '{}'.", GetTypeName<T>() );
+
+			if ( !a_Override && s_AssetTypes.contains( typeID ) )
 			{
-				UniquePtr<IAssetLoader> loader = initializer();
-				if ( loader )
-				{
-					EAssetType assetType = loader->GetAssetType();
-					RegisterLoader( assetType, std::move( loader ) );
-				}
+				return false;
 			}
+
+			a_TypeInfo.ID = typeID; // Ensure the ID matches the type hash
+			s_AssetTypes[ typeID ] = std::move( a_TypeInfo );
+
+			return true;
 		}
 
-		void RegisterLoader( EAssetType a_Type, UniquePtr<IAssetLoader> a_Loader )
-		{
-			m_Loaders[Cast<size_t>(a_Type)] = std::move( a_Loader );
+
+		//=============================================================================================
+		// Attempts to retrieve a registered asset loader by its ID.
+		static IAssetLoader* GetLoader( const AssetTypeID a_LoaderID ) 
+		{ 
+			auto it = s_AssetLoaders.find( a_LoaderID );
+			return it != s_AssetLoaders.end() ? it->second.get() : nullptr; 
 		}
 
-		void UnregisterLoader( EAssetType a_Type )
+		//=============================================================================================
+		// Gets the registered asset loader of type T.
+		template<Concepts::Derived<IAssetLoader> T>
+		static T* GetLoader()
 		{
-			m_Loaders[Cast<size_t>(a_Type)] = nullptr;
-		}
-		
-		bool HasLoader( EAssetType a_Type ) const
-		{
-			return m_Loaders[Cast<size_t>(a_Type)] != nullptr;
+			static T* s_CachedLoader = DynamicCast<T*>( GetLoader( Hashing::TypeHash<T>().Hash() ) );
+			ASSERT( s_CachedLoader, "Asset Loader of type '{}' is not registered!", GetTypeName<T>() );
+			return s_CachedLoader;
 		}
 
-		IAssetLoader* GetLoader( EAssetType a_Type ) const
+		//=============================================================================================
+		// Registers an asset loader of type T. Returns true if registration was successful.
+		template<Concepts::Derived<IAssetLoader> T>
+		static bool RegisterLoader( const AssetTypeID a_LoaderID )
 		{
-			return m_Loaders[Cast<size_t>(a_Type)].get();
+			if ( s_AssetLoaders.contains( a_LoaderID ) )
+			{
+				ASSERT( false, "Asset Loader of type '{}' is already registered!", GetTypeName<T>() );
+				return false;
+			}
+
+			s_AssetLoaders[a_LoaderID] = MakeUnique<T>();
+
+			return true;
 		}
+
+	#if WITH_EDITOR
+
+		//=============================================================================================
+		// Attempts to retrieve a registered asset importer by a file extension it supports.
+		static IAssetImporter* GetImporter( const StringView a_FileExtension )
+		{
+			const size_t strippedPrefix = a_FileExtension.find_first_not_of( '.' );
+			const StringView removedDot = strippedPrefix != StringView::npos ? a_FileExtension.substr( strippedPrefix ) : a_FileExtension;
+			auto it = s_ExtensionToImporterMap.find( removedDot );
+			return it != s_ExtensionToImporterMap.end() ? it->second : nullptr;
+		}
+
+		//=============================================================================================
+		// Gets the registered asset importer of type T.
+		template<Concepts::Derived<IAssetImporter> T>
+		static T* GetImporter()
+		{
+			static T* s_CachedImporter = DynamicCast<T*>( GetImporter( T::StaticImporterID() ) );
+			ASSERT( s_CachedImporter, "Asset Importer of type '{}' is not registered!", GetTypeName<T>() );
+			return s_CachedImporter;
+		}
+
+		//=============================================================================================
+		// Registers an asset importer of type T. Returns true if registration was successful.
+		template<Concepts::Derived<IAssetImporter> T>
+		static bool RegisterImporter()
+		{
+			return RegisterImporter( Hashing::TypeHash<T>(), MakeUnique<T>() );
+		}
+
+	#endif
 
 	private:
-		FixedArray<UniquePtr<IAssetLoader>, (size_t)EAssetType::COUNT> m_Loaders;
+
+		//=============================================================================================
+		static UnorderedMap<AssetTypeID, AssetTypeInfo> s_AssetTypes;
+		static UnorderedMap<AssetTypeID, SharedPtr<IAssetLoader>> s_AssetLoaders;
+		
+	#if WITH_EDITOR
+
+		//=============================================================================================
+		static UnorderedMap<AssetTypeID, SharedPtr<IAssetImporter>> s_AssetImporters;
+
+		//=============================================================================================
+		// Map of file extensions to their corresponding asset importers. E.g. "png" -> TextureImporter
+		// Multiple extensions can map to the same importer.
+		static UnorderedMap<StringView, IAssetImporter*> s_ExtensionToImporterMap;
+
+		static bool RegisterImporter( HashedString a_TypeHash, UniquePtr<IAssetImporter> a_Importer );
+
+	#endif
+
 	};
 
 } // namespace Tridium

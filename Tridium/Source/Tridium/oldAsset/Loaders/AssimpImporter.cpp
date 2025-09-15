@@ -91,7 +91,7 @@ namespace Tridium {
 		for ( uint32_t i = 0; i < a_Node->mNumMeshes; i++ )
 		{
 			uint32_t submeshIndex = a_Node->mMeshes[i];
-			SubMesh submesh = ProcessSubMesh( a_MeshSource, a_Scene, a_Scene->mMeshes[submeshIndex] );
+			OldSubMesh submesh = ProcessSubMesh( a_MeshSource, a_Scene, a_Scene->mMeshes[submeshIndex] );
 			submesh.Name = a_Node->mName.C_Str();
 			submesh.Transform = transform;
 			submesh.LocalTransform = localTransform;
@@ -108,19 +108,19 @@ namespace Tridium {
 		}
 	}
 
-	SubMesh AssimpImporter::ProcessSubMesh( SharedPtr<MeshSource>& a_MeshSource, const void* a_AssimpScene, void* a_AssimpMesh )
+	OldSubMesh AssimpImporter::ProcessSubMesh( SharedPtr<MeshSource>& a_MeshSource, const void* a_AssimpScene, void* a_AssimpMesh )
 	{
 		const aiScene* a_Scene = Cast<const aiScene*>( a_AssimpScene );
 		const aiMesh* a_Mesh = Cast<aiMesh*>( a_AssimpMesh );
 
-		SubMesh submesh;
+		OldSubMesh submesh;
 
 		submesh.MaterialIndex = a_Mesh->mMaterialIndex;
 
 		// Process Vertices
 		for ( uint32_t i = 0; i < a_Mesh->mNumVertices; ++i )
 		{
-			Vertex& vertex = submesh.Vertices.emplace_back();
+			OldVertex& vertex = submesh.Vertices.emplace_back();
 			vertex.Position = { a_Mesh->mVertices[i].x, a_Mesh->mVertices[i].y, a_Mesh->mVertices[i].z };
 			vertex.Normal = { a_Mesh->mNormals[i].x, a_Mesh->mNormals[i].y, a_Mesh->mNormals[i].z };
 
@@ -163,7 +163,7 @@ namespace Tridium {
 			{ EShaderDataType::Float2, "a_UV" },
 		};
 
-		submesh.VBO = VertexBuffer::Create( (float*)( submesh.Vertices.data() ), (uint32_t)( submesh.Vertices.size() * sizeof( Vertex ) ) );
+		submesh.VBO = VertexBuffer::Create( (float*)( submesh.Vertices.data() ), (uint32_t)( submesh.Vertices.size() * sizeof( OldVertex ) ) );
 		submesh.VBO->SetLayout( layout );
 		submesh.VAO->AddVertexBuffer( submesh.VBO );
 
@@ -185,7 +185,7 @@ namespace Tridium {
 		{
 			aiMaterial* aiMat = a_Scene->mMaterials[i];
 
-			auto material = MakeShared<Material>();
+			auto material = MakeShared<OldMaterial>();
 
 			// Albedo
 			material->AlbedoTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_DIFFUSE );

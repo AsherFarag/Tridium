@@ -47,14 +47,18 @@ namespace Tridium::D3D12 {
 		// Commit the resource barriers
 		for ( const auto& barrier : m_ResourceStateTracker.ResourceBarriers )
 		{
-			if ( barrier.Before == barrier.After )
-				continue;
-
 			m_D3D12Barriers.EmplaceBack( Translate( barrier ) );
+
+			if ( m_D3D12Barriers.Back().Transition.StateBefore == m_D3D12Barriers.Back().Transition.StateAfter )
+			{
+				m_D3D12Barriers.PopBack();
+			}
 		}
 
 		if ( m_D3D12Barriers.Size() > 0 )
+		{
 			m_ActiveCmdList.CmdList->ResourceBarrier( m_D3D12Barriers.Size(), m_D3D12Barriers.Data() );
+		}
 
 		m_ResourceStateTracker.ResourceBarriers.Clear();
 	}

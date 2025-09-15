@@ -432,7 +432,7 @@ namespace Tridium::ToolUI {
 	template <EAssetTypeOld _AssetType>
 	bool _DrawAssetHandleProperty( const char* a_Name, AssetHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
-		AssetMetaData assetMetaData = EditorAssetManager::Get()->GetAssetMetaData(a_Value);
+		OldAssetMetaData assetMetaData = EditorAssetManager::Get()->GetAssetMetaData(a_Value);
 		const char* assetName = "None";
 		if ( assetMetaData.IsValid() )
 			assetName = assetMetaData.Name.c_str();
@@ -449,7 +449,7 @@ namespace Tridium::ToolUI {
 			if ( payload )
 			{
 				AssetHandle assetHandle( *(AssetHandle*)payload->Data );
-				const AssetMetaData& assetMetaData = EditorAssetManager::Get()->GetAssetMetaData( assetHandle );
+				const OldAssetMetaData& assetMetaData = EditorAssetManager::Get()->GetAssetMetaData( assetHandle );
 				if ( assetMetaData.IsValid() && assetMetaData.AssetType == _AssetType )
 				{
 					a_Value = assetHandle;
@@ -503,7 +503,7 @@ namespace Tridium::ToolUI {
 	template<>
 	bool DrawProperty( const char* a_Name, AssetHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
-		AssetMetaData assetMetaData = EditorAssetManager::Get()->GetAssetMetaData( a_Value );
+		OldAssetMetaData assetMetaData = EditorAssetManager::Get()->GetAssetMetaData( a_Value );
 		const char* assetName = "None";
 		if ( assetMetaData.IsValid() )
 			assetName = assetMetaData.Name.c_str();
@@ -521,7 +521,7 @@ namespace Tridium::ToolUI {
 			if ( payload )
 			{
 				AssetHandle assetHandle( *(AssetHandle*)payload->Data );
-				const AssetMetaData& assetMetaData = EditorAssetManager::Get()->GetAssetMetaData( assetHandle );
+				const OldAssetMetaData& assetMetaData = EditorAssetManager::Get()->GetAssetMetaData( assetHandle );
 				if ( assetMetaData.IsValid() )
 				{
 					a_Value = assetHandle;

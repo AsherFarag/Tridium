@@ -26,7 +26,7 @@ namespace Tridium {
 
 
 	template<typename T>
-	consteval StringView GetTypeName() noexcept
+	constexpr StringView GetTypeName() noexcept
 	{
 	#if defined(__GNUC__) || defined(__clang__)
 		constexpr auto detectorName = get_function_name<TypeNameDetector>();

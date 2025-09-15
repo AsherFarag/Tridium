@@ -122,7 +122,7 @@ namespace Tridium {
 		{
 			if ( entry.is_regular_file() && (a_Filter.empty() || entry.path().extension() == a_Filter) )
 			{
-				files.PushBack( entry.path().string() );
+				files.EmplaceBack( entry.path().string() );
 			}
 		}
 		return files;
@@ -145,4 +145,4 @@ namespace Tridium {
 
 } // namespace Tridium
 
-#endif
+#endif // CONFIG_PLATFORM_WINDOWS

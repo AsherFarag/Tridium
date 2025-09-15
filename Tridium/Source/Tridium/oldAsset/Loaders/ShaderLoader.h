@@ -9,8 +9,8 @@ namespace Tridium {
 	public:
 
 		// Inherited via IAssetLoaderOld
-		void SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset ) override;
-		SharedPtr<Asset> LoadAsset( const AssetMetaData& a_MetaData ) override;
+		void SaveAsset( const OldAssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset ) override;
+		SharedPtr<Asset> LoadAsset( const OldAssetMetaData& a_MetaData ) override;
 	};
 
 }

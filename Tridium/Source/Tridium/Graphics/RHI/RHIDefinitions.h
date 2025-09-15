@@ -1555,7 +1555,7 @@ namespace Tridium {
 	template<> constexpr ERHIFormat GetRHIFormatFromType<Vector3>()            { return ERHIFormat::RGB32_FLOAT; }
 	template<> constexpr ERHIFormat GetRHIFormatFromType<Vector4>()            { return ERHIFormat::RGBA32_FLOAT; }
 	template<> constexpr ERHIFormat GetRHIFormatFromType<Color>()              { return ERHIFormat::RGBA8_UNORM; }
-	template<> constexpr ERHIFormat GetRHIFormatFromType<TVector4<Byte>>()     { return ERHIFormat::RGBA8_UNORM; }
+	template<> constexpr ERHIFormat GetRHIFormatFromType<TVector4<byte_t>>()     { return ERHIFormat::RGBA8_UNORM; }
 	template<> constexpr ERHIFormat GetRHIFormatFromType<TVector2<int16_t>>()  { return ERHIFormat::RG16_SINT; }
 	template<> constexpr ERHIFormat GetRHIFormatFromType<TVector4<int16_t>>()  { return ERHIFormat::RGBA16_SINT; }
 	template<> constexpr ERHIFormat GetRHIFormatFromType<TVector2<uint16_t>>() { return ERHIFormat::RG16_UINT; }

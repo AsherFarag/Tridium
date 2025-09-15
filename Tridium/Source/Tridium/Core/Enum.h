@@ -301,7 +301,14 @@ namespace Tridium {
 		}
 
 		template<typename T>
-		constexpr EnumFlags SetFlag( T Flag, bool a_Set )
+		constexpr EnumFlags& SetFlag( T Flag )
+		{
+			Value |= Cast<EnumType>( Flag );
+			return *this;
+		}
+
+		template<typename T>
+		constexpr EnumFlags& SetFlag( T Flag, bool a_Set )
 		{
 			if ( a_Set )
 			{

@@ -1,6 +1,6 @@
 #pragma once
 
-//====================================
+//=================================================================================================
 // Platform Configuration
 #define CONFIG_PLATFORM_WINDOWS      1
 #define CONFIG_PLATFORM_LINUX        0
@@ -8,7 +8,7 @@
 #define CONFIG_PLATFORM_XBOX         0
 #define CONFIG_PLATFORM_IOS		     0
 #define CONFIG_PLATFORM_ANDROID      0
-//====================================
+//=================================================================================================
 
 #ifdef TE_SHIPPING
 	#define CONFIG_SHIPPING 1
@@ -41,3 +41,9 @@
 #else
 	#define WITH_EDITOR 0
 #endif // CONFIG_USE_EDITOR
+
+//=================================================================================================
+// Asset System Configuration
+#define USE_ASSET_IMPORTERS ( WITH_EDITOR )
+#define USE_ASSET_BUNDLE 0 //( !WITH_EDITOR )
+//=================================================================================================

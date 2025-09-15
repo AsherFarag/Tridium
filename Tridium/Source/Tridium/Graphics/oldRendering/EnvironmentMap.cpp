@@ -55,7 +55,7 @@ namespace Tridium {
 	{
 		TODO( "Editor only!" );
 		auto assetManager = AssetManager::Get<EditorAssetManager>();
-		const AssetMetaData& metaData = assetManager->GetAssetMetaData( a_Handle );
+		const OldAssetMetaData& metaData = assetManager->GetAssetMetaData( a_Handle );
 		if ( metaData.IsValid() )
 		{
 			FilePath path = assetManager->GetAbsolutePath( metaData.Path );

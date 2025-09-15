@@ -1,17 +1,5 @@
 #pragma once
 
-#define NON_COPYABLE( Type )\
-    Type( const Type& ) = delete;\
-    Type& operator=( const Type& ) = delete;
-
-#define NON_MOVABLE( Type )\
-    Type( Type&& ) = delete;\
-    Type& operator=( Type&& ) = delete;
-
-#define NON_COPYABLE_OR_MOVABLE( Type )\
-    NON_COPYABLE( Type )\
-    NON_MOVABLE( Type )
-
 namespace Tridium {
 
     using int8_t   = signed char;
@@ -31,5 +19,19 @@ namespace Tridium {
 
 	using nullptr_t = decltype( nullptr );
 
-    using Byte = uint8_t;
+    using byte_t = uint8_t;
+
+
+    #define NON_COPYABLE( Type )\
+        Type( const Type& ) = delete;\
+        Type& operator=( const Type& ) = delete;
+    
+    #define NON_MOVABLE( Type )\
+        Type( Type&& ) = delete;\
+        Type& operator=( Type&& ) = delete;
+    
+    #define NON_COPYABLE_OR_MOVABLE( Type )\
+        NON_COPYABLE( Type )\
+        NON_MOVABLE( Type )
+
 }

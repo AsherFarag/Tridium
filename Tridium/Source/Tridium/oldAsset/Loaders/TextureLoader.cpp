@@ -85,11 +85,11 @@ namespace Tridium {
 		}
 	}
 
-	void TextureLoader::SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
+	void TextureLoader::SaveAsset( const OldAssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
 	{
 	}
 
-	SharedPtr<Asset> TextureLoader::LoadAsset( const AssetMetaData& a_MetaData )
+	SharedPtr<Asset> TextureLoader::LoadAsset( const OldAssetMetaData& a_MetaData )
 	{
         TextureSpecificationOld specification;
 		LOG( LogCategory::Debug, Debug, "Loading texture: {0}", a_MetaData.Path.ToString() );
@@ -171,11 +171,11 @@ namespace Tridium {
 		}
 	}
 
-    void CubeMapLoader::SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
+    void CubeMapLoader::SaveAsset( const OldAssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
     {
     }
 
-    SharedPtr<Asset> CubeMapLoader::LoadAsset( const AssetMetaData& a_MetaData )
+    SharedPtr<Asset> CubeMapLoader::LoadAsset( const OldAssetMetaData& a_MetaData )
     {
 		if ( !stbi_is_hdr( a_MetaData.Path.ToString().c_str() ) )
 			return nullptr;

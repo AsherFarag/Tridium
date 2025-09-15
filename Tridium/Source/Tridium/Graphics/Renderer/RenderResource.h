@@ -6,12 +6,12 @@
 namespace Tridium {
 
 	using RenderResourceID = uint32_t;
-	constexpr RenderResourceID c_InvalidRenderResourceID = ~0u;
+	constexpr RenderResourceID InvalidRenderResourceID = ~0u;
 
-	//=======================================
-	// Render Resource
-	//  A 'RenderResource' represents the link between an Asset and the RHI resources that are used to render it.
-	//  An Asset can have multiple RenderResources, each being differentiated by a 'VariantID'.
+	//=================================================================================================
+	// Render Resource: Represents the link between an Asset and the RHI resources that are used to render it.
+	// An Asset can have multiple RenderResources, each being differentiated by a 'VariantID'.
+	//=================================================================================================
 	struct RenderResource
 	{
 		// Since an asset can have multiple RenderResources, this unique ID corresponds to a variant of the Asset.
@@ -21,15 +21,15 @@ namespace Tridium {
 		// NOTE: The Asset owns the RenderResource.
 		AssetID AssetID = AssetID::InvalidID;
 
-		bool Valid() const { return VariantID != c_InvalidRenderResourceID && AssetID != AssetID::InvalidID; }
+		virtual bool Valid() const { return VariantID != InvalidRenderResourceID && AssetID != AssetID::InvalidID; }
 	};
 
-	struct RenderResourceMeshSource : RenderResource
+	struct RenderResourceStaticMesh : RenderResource
 	{
 		RHIBufferRef VertexBuffer{};
 		RHIBufferRef IndexBuffer{};
 
-		bool Valid() const { return RenderResource::Valid() && VertexBuffer != nullptr; }
+		bool Valid() const override { return RenderResource::Valid() && VertexBuffer != nullptr; }
 	};
 
 	struct RenderResourceMaterial : RenderResource
@@ -37,13 +37,13 @@ namespace Tridium {
 		RHIGraphicsPipelineStateRef PipelineState{};
 		RHIBindingSetRef BindingSet{};
 
-		bool Valid() const { return RenderResource::Valid() && PipelineState != nullptr && BindingSet != nullptr; }
+		bool Valid() const override { return RenderResource::Valid() && PipelineState != nullptr && BindingSet != nullptr; }
 	};
 
 	struct RenderResourceTexture : RenderResource
 	{
 		RHITextureRef Texture{};
 
-		bool Valid() const { return RenderResource::Valid() && Texture != nullptr; }
+		bool Valid() const override { return RenderResource::Valid() && Texture != nullptr; }
 	};
 }

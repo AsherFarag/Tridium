@@ -1,11 +1,9 @@
 #pragma once
-#include "Asset.h"
+#include <Tridium/Asset/Asset.h>
+#include <Tridium/Asset/TextureAsset.h>
 #include <Tridium/Graphics/Color.h>
 
-namespace Tridium::T {
-
-	// Forward declarations
-	class Texture;
+namespace Tridium {
 
 	//=================================================================================================
 	// Material Flags: Defines various properties of a material that effect how it is rendered.
@@ -20,19 +18,16 @@ namespace Tridium::T {
 		// The material does not cast shadows.
 		DisableShadowCasting = 1 << 2,
 	};
-
 	DEFINE_ENUM_BITMASK_OPERATORS( EMaterialFlags );
 
 	//=================================================================================================
 	// Material: A pipeline state and set of textures that define how a mesh is rendered.
 	//=================================================================================================
-	class Material : public IAsset
+	DEFINE_ASSET_TYPE( Material )
 	{
 	public:
 
-		static SharedPtr<Material> Create() { return MakeShared<EnableMakeShared<Material>>(); }
-		static constexpr EAssetType StaticType() { return EAssetType::Material; }
-		EAssetType Type() const override { return StaticType(); }
+		//=============================================================================================
 		bool Valid() const override { return true; }
 
 		const auto& AlbedoMap() const { return m_AlbedoMap; }
@@ -47,13 +42,13 @@ namespace Tridium::T {
 		float RoughnessIntensity() const { return m_RoughnessIntensity; }
 		float EmissiveIntensity() const { return m_EmissiveIntensity; }
 
-		void SetAlbedoMap( SharedPtr<Texture> a_Texture ) { m_AlbedoMap = std::move( a_Texture ); }
-		void SetNormalMap( SharedPtr<Texture> a_Texture ) { m_NormalMap = std::move( a_Texture ); }
-		void SetMetallicMap( SharedPtr<Texture> a_Texture ) { m_MetallicMap = std::move( a_Texture ); }
-		void SetRoughnessMap( SharedPtr<Texture> a_Texture ) { m_RoughnessMap = std::move( a_Texture ); }
-		void SetEmissiveMap( SharedPtr<Texture> a_Texture ) { m_EmissiveMap = std::move( a_Texture ); }
-		void SetAmbientOcclusionMap( SharedPtr<Texture> a_Texture ) { m_AmbientOcclusionMap = std::move( a_Texture ); }
-		void SetOpacityMap( SharedPtr<Texture> a_Texture ) { m_OpacityMap = std::move( a_Texture ); }
+		void SetAlbedoMap( AssetRef<Texture> a_Texture ) { m_AlbedoMap = std::move( a_Texture ); }
+		void SetNormalMap( AssetRef<Texture> a_Texture ) { m_NormalMap = std::move( a_Texture ); }
+		void SetMetallicMap( AssetRef<Texture> a_Texture ) { m_MetallicMap = std::move( a_Texture ); }
+		void SetRoughnessMap( AssetRef<Texture> a_Texture ) { m_RoughnessMap = std::move( a_Texture ); }
+		void SetEmissiveMap( AssetRef<Texture> a_Texture ) { m_EmissiveMap = std::move( a_Texture ); }
+		void SetAmbientOcclusionMap( AssetRef<Texture> a_Texture ) { m_AmbientOcclusionMap = std::move( a_Texture ); }
+		void SetOpacityMap( AssetRef<Texture> a_Texture ) { m_OpacityMap = std::move( a_Texture ); }
 		void SetAlbedoColor( Color a_Color ) { m_AlbedoColor = a_Color; }
 		void SetMetallicIntensity( float a_Intensity ) { m_MetallicIntensity = a_Intensity; }
 		void SetRoughnessIntensity( float a_Intensity ) { m_RoughnessIntensity = a_Intensity; }
@@ -67,13 +62,14 @@ namespace Tridium::T {
 
 	protected:
 
-		SharedPtr<Texture> m_AlbedoMap;
-		SharedPtr<Texture> m_NormalMap;
-		SharedPtr<Texture> m_MetallicMap;
-		SharedPtr<Texture> m_RoughnessMap;
-		SharedPtr<Texture> m_EmissiveMap;
-		SharedPtr<Texture> m_AmbientOcclusionMap;
-		SharedPtr<Texture> m_OpacityMap;
+		//=============================================================================================
+		AssetRef<Texture> m_AlbedoMap;
+		AssetRef<Texture> m_NormalMap;
+		AssetRef<Texture> m_MetallicMap;
+		AssetRef<Texture> m_RoughnessMap;
+		AssetRef<Texture> m_EmissiveMap;
+		AssetRef<Texture> m_AmbientOcclusionMap;
+		AssetRef<Texture> m_OpacityMap;
 
 		Color m_AlbedoColor = Color::White();
 		float m_MetallicIntensity = 1.0f;

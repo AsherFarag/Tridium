@@ -14,14 +14,14 @@ namespace Tridium {
 	// SubMesh
 	/////////////////////////////////////////////////////////////////////////////////////////
 
-	void SubMesh::GenerateMeshCollider()
+	void OldSubMesh::GenerateMeshCollider()
 	{
 		std::vector<Vector3> vertices;
 		std::vector<uint32_t> indices;
 		vertices.reserve( Vertices.size() );
 		indices.reserve( Indices.size() );
 
-		for ( const Vertex& vertex : Vertices )
+		for ( const OldVertex& vertex : Vertices )
 			vertices.push_back( vertex.Position );
 
 		for ( uint32_t index : Indices )
@@ -34,11 +34,11 @@ namespace Tridium {
 	// MeshSource
 	/////////////////////////////////////////////////////////////////////////////////////////
 
-	MeshSource::MeshSource( const std::vector<Vertex>& a_Vertices, const std::vector<uint32_t>& a_Indices, const Matrix4& a_Transform )
+	MeshSource::MeshSource( const std::vector<OldVertex>& a_Vertices, const std::vector<uint32_t>& a_Indices, const Matrix4& a_Transform )
 	{
 		m_Handle = AssetHandle::Create();
 
-		SubMesh& submesh = m_SubMeshes.emplace_back();
+		OldSubMesh& submesh = m_SubMeshes.emplace_back();
 		submesh.Vertices = a_Vertices;
 		submesh.Indices = a_Indices;
 		submesh.Transform = a_Transform;
@@ -54,7 +54,7 @@ namespace Tridium {
 			{ EShaderDataType::Float2, "a_UV" }
 		};
 
-		submesh.VBO = VertexBuffer::Create( (float*)( submesh.Vertices.data() ), (uint32_t)( submesh.Vertices.size() * sizeof( Vertex ) ) );
+		submesh.VBO = VertexBuffer::Create( (float*)( submesh.Vertices.data() ), (uint32_t)( submesh.Vertices.size() * sizeof( OldVertex ) ) );
 		submesh.VBO->SetLayout( layout );
 		submesh.VAO->AddVertexBuffer( submesh.VBO );
 
@@ -62,7 +62,7 @@ namespace Tridium {
 		submesh.VAO->SetIndexBuffer( submesh.IBO );
 
 		// Calculate bounding box
-		for ( const Vertex& vertex : a_Vertices )
+		for ( const OldVertex& vertex : a_Vertices )
 			m_BoundingBox.Expand( vertex.Position );
 	}
 
@@ -70,7 +70,7 @@ namespace Tridium {
 	// StaticMesh
 	/////////////////////////////////////////////////////////////////////////////////////////
 
-	StaticMesh::StaticMesh( MeshSourceHandle a_MeshSource )
+	OldStaticMesh::OldStaticMesh( MeshSourceHandle a_MeshSource )
 		: m_MeshSource( a_MeshSource )
 	{
 		m_Handle = AssetHandle::Create();
@@ -88,7 +88,7 @@ namespace Tridium {
 		}
 	}
 
-	StaticMesh::StaticMesh( MeshSourceHandle a_MeshSource, const std::vector<uint32_t>& a_SubMeshes )
+	OldStaticMesh::OldStaticMesh( MeshSourceHandle a_MeshSource, const std::vector<uint32_t>& a_SubMeshes )
 		: m_MeshSource( a_MeshSource )
 	{
 		m_Handle = AssetHandle::Create();
@@ -101,7 +101,7 @@ namespace Tridium {
 				for ( uint32_t subMeshIndex : a_SubMeshes )
 				{
 					// We need to convert the bounding box to world space
-					const SubMesh& subMesh = meshSourceRef->GetSubMesh( subMeshIndex );
+					const OldSubMesh& subMesh = meshSourceRef->GetSubMesh( subMeshIndex );
 					AABB subMeshBounds = subMesh.BoundingBox;
 					subMeshBounds.Transform( subMesh.Transform );
 					m_BoundingBox.Expand( subMeshBounds );
@@ -121,12 +121,12 @@ namespace Tridium {
 		}
 	}
 
-	void StaticMesh::SetSubMeshes( const std::vector<uint32_t>& a_SubMeshes )
+	void OldStaticMesh::SetSubMeshes( const std::vector<uint32_t>& a_SubMeshes )
 	{
 		m_SubMeshes = a_SubMeshes;
 	}
 
-	void StaticMesh::SetSubMeshes( SharedPtr<MeshSource> a_MeshSource )
+	void OldStaticMesh::SetSubMeshes( SharedPtr<MeshSource> a_MeshSource )
 	{
 		const auto& submeshes = a_MeshSource->GetSubMeshes();
 		m_SubMeshes.resize( submeshes.size() );
@@ -153,7 +153,7 @@ namespace Tridium {
 	{
 		Vector2 size = a_Size / 2.0f;
 
-		std::vector<Vertex> vertices;
+		std::vector<OldVertex> vertices;
 		vertices.resize( 4 );
 		vertices[0].Position = { -size.X, -size.Y, 0.0f };
 		vertices[1].Position = { -size.X,  size.Y, 0.0f };
@@ -176,7 +176,7 @@ namespace Tridium {
     {
 		Vector3 size = a_Size / 2.0f;
 
-		std::vector<Vertex> vertices( 24 );  // 4 vertices per face, 6 faces
+		std::vector<OldVertex> vertices( 24 );  // 4 vertices per face, 6 faces
 
 		// Front face
 		vertices[0].Position = { -size.X, -size.Y, size.Z };
@@ -258,7 +258,7 @@ namespace Tridium {
 
 	SharedPtr<MeshSource> MeshFactory::CreateSphere( float a_Radius, uint32_t a_Stacks, uint32_t a_Slices )
 	{
-		std::vector<Vertex> vertices;
+		std::vector<OldVertex> vertices;
 		std::vector<uint32_t> indices;
 
 		// Create vertices
@@ -277,7 +277,7 @@ namespace Tridium {
 				float y = cosf( phi );
 				float z = sinf( theta ) * sinf( phi );
 
-				Vertex vertex;
+				OldVertex vertex;
 				vertex.Position = { -x * a_Radius, -y * a_Radius, -z * a_Radius };
 				vertex.Normal = { -x, -y, -z };
 				vertex.UV = { U, V };
@@ -342,7 +342,7 @@ namespace Tridium {
 			}
 		}
 
-		std::vector<Vertex> vertices;
+		std::vector<OldVertex> vertices;
 		std::vector<uint32_t> indices;
 
 		vertices.reserve( ( a_Stacks + 1 ) * ( a_Slices + 1 ) );
@@ -361,7 +361,7 @@ namespace Tridium {
 			{
 				Vector3& u = unitCircleVertices[j];
 
-				Vertex& vertex = vertices.emplace_back();
+				OldVertex& vertex = vertices.emplace_back();
 				vertex.Position = { u.X * radius, y, u.Z * radius }; // X-Y-Z format
 				vertex.Normal = normals[j];
 				vertex.UV = { (float)j / a_Slices, t };
@@ -374,7 +374,7 @@ namespace Tridium {
 		// Base of cylinder
 		float y = -a_Height * 0.5f;
 		{
-			Vertex& vertex = vertices.emplace_back();
+			OldVertex& vertex = vertices.emplace_back();
 			vertex.Position = Vector3( 0.0f, y, 0.0f );
 			vertex.Normal = Vector3( 0.0f, -1.0f, 0.0f );
 			vertex.UV = Vector2( 0.5f, 0.5f );
@@ -384,7 +384,7 @@ namespace Tridium {
 		{
 			Vector3& u = unitCircleVertices[i];
 
-			Vertex& vertex = vertices.emplace_back();
+			OldVertex& vertex = vertices.emplace_back();
 			vertex.Position = { u.X * a_BaseRadius, y, u.Z * a_BaseRadius };
 			vertex.Normal = { 0.0f, -1.0f, 0.0f };
 			vertex.UV = { -u.X * 0.5f + 0.5f, -u.Z * 0.5f + 0.5f }; // flip horizontal
@@ -395,7 +395,7 @@ namespace Tridium {
 		// Top of cylinder
 		y = a_Height * 0.5f;
 		{
-			Vertex& vertex = vertices.emplace_back();
+			OldVertex& vertex = vertices.emplace_back();
 			vertex.Position = Vector3( 0.0f, y, 0.0f );
 			vertex.Normal = Vector3( 0.0f, 1.0f, 0.0f );
 			vertex.UV = Vector2( 0.5f, 0.5f );
@@ -405,7 +405,7 @@ namespace Tridium {
 		{
 			Vector3& u = unitCircleVertices[i];
 
-			Vertex& vertex = vertices.emplace_back();
+			OldVertex& vertex = vertices.emplace_back();
 			vertex.Position = { u.X * a_TopRadius, y, u.Z * a_TopRadius };
 			vertex.Normal = { 0.0f, 1.0f, 0.0f };
 			vertex.UV = { u.X * 0.5f + 0.5f, -u.Z * 0.5f + 0.5f };
@@ -473,7 +473,7 @@ namespace Tridium {
 
 	SharedPtr<MeshSource> MeshFactory::CreateCapsule( float a_Radius, float a_Height, uint32_t a_Stacks, uint32_t a_Slices, uint32_t a_SphereStacks, uint32_t a_SphereSlices )
 	{
-		std::vector<Vertex> vertices;
+		std::vector<OldVertex> vertices;
 		std::vector<uint32_t> indices;
 
 		vertices.reserve( ( a_Stacks + 1 ) * ( a_Slices + 1 ) + ( a_SphereStacks + 1 ) * ( a_SphereSlices + 1 ) * 2 );
@@ -494,7 +494,7 @@ namespace Tridium {
 				float y = sinf( phi );
 				float z = sinf( theta ) * sinf( phi );
 
-				Vertex vertex;
+				OldVertex vertex;
 				vertex.Position = { x * a_Radius, halfHeight + cosf( phi ) * a_Radius, z * a_Radius };
 				vertex.Normal = { x, cosf( phi ), z };
 				vertex.UV = { U, V * 0.5f };
@@ -514,7 +514,7 @@ namespace Tridium {
 				float x = cosf( theta );
 				float z = sinf( theta );
 
-				Vertex vertex;
+				OldVertex vertex;
 				vertex.Position = { x * a_Radius, y, z * a_Radius };
 				vertex.Normal = { x, 0.0f, z };
 				vertex.UV = { U, 0.5f + V * 0.5f };
@@ -535,7 +535,7 @@ namespace Tridium {
 				float y = sinf( phi );
 				float z = sinf( theta ) * sinf( phi );
 
-				Vertex vertex;
+				OldVertex vertex;
 				vertex.Position = { x * a_Radius, -halfHeight + cosf( phi ) * a_Radius, z * a_Radius };
 				vertex.Normal = { x, cosf( phi ), z };
 				vertex.UV = { U, 0.5f + V * 0.5f };
@@ -604,7 +604,7 @@ namespace Tridium {
 
 	SharedPtr<MeshSource> MeshFactory::CreateTorus( float a_Radius, float a_Radius2, uint32_t a_Stacks, uint32_t a_Slices )
 	{
-		std::vector<Vertex> vertices;
+		std::vector<OldVertex> vertices;
 		std::vector<uint32_t> indices;
 
 		// Create Vertices
@@ -627,7 +627,7 @@ namespace Tridium {
 				float y = ( a_Radius + a_Radius2 * cosf( theta ) ) * sinf( phi );
 				float z = a_Radius2 * sinf( theta );
 
-				Vertex vertex;
+				OldVertex vertex;
 				vertex.Position = { x, y, z };
 
 				// Calculate the normal as the vector from the center of the ring to the vertex
@@ -669,7 +669,7 @@ namespace Tridium {
 		static AssetHandle s_QuadSourceHandle = AssetHandle::Create();
 		static bool s_QuadSourceInit = AssetManager::AddMemoryOnlyAsset( s_QuadSourceHandle, s_QuadSource );
 
-		static SharedPtr<StaticMesh> s_StaticMesh = MakeShared<StaticMesh>( s_QuadSourceHandle );
+		static SharedPtr<OldStaticMesh> s_StaticMesh = MakeShared<OldStaticMesh>( s_QuadSourceHandle );
 		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
@@ -682,7 +682,7 @@ namespace Tridium {
 		static AssetHandle s_CubeSourceHandle = AssetHandle::Create();
 		static bool s_CubeSourceInit = AssetManager::AddMemoryOnlyAsset( s_CubeSourceHandle, s_CubeSource );
 
-		static SharedPtr<StaticMesh> s_StaticMesh = MakeShared<StaticMesh>( s_CubeSourceHandle );
+		static SharedPtr<OldStaticMesh> s_StaticMesh = MakeShared<OldStaticMesh>( s_CubeSourceHandle );
 		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
@@ -695,7 +695,7 @@ namespace Tridium {
 		static AssetHandle s_SphereSourceHandle = AssetHandle::Create();
 		static bool s_SphereSourceInit = AssetManager::AddMemoryOnlyAsset( s_SphereSourceHandle, s_SphereSource );
 
-		static SharedPtr<StaticMesh> s_StaticMesh = MakeShared<StaticMesh>( s_SphereSourceHandle );
+		static SharedPtr<OldStaticMesh> s_StaticMesh = MakeShared<OldStaticMesh>( s_SphereSourceHandle );
 		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
@@ -708,7 +708,7 @@ namespace Tridium {
 		static AssetHandle s_CylinderSourceHandle = AssetHandle::Create();
 		static bool s_CylinderSourceInit = AssetManager::AddMemoryOnlyAsset( s_CylinderSourceHandle, s_CylinderSource );
 
-		static SharedPtr<StaticMesh> s_StaticMesh = MakeShared<StaticMesh>( s_CylinderSourceHandle );
+		static SharedPtr<OldStaticMesh> s_StaticMesh = MakeShared<OldStaticMesh>( s_CylinderSourceHandle );
 		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
@@ -721,7 +721,7 @@ namespace Tridium {
 		static AssetHandle s_CapsuleSourceHandle = AssetHandle::Create();
 		static bool s_CapsuleSourceInit = AssetManager::AddMemoryOnlyAsset( s_CapsuleSourceHandle, s_CapsuleSource );
 
-		static SharedPtr<StaticMesh> s_StaticMesh = MakeShared<StaticMesh>( s_CapsuleSourceHandle );
+		static SharedPtr<OldStaticMesh> s_StaticMesh = MakeShared<OldStaticMesh>( s_CapsuleSourceHandle );
 		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
@@ -734,7 +734,7 @@ namespace Tridium {
 		static AssetHandle s_ConeSourceHandle = AssetHandle::Create();
 		static bool s_ConeSourceInit = AssetManager::AddMemoryOnlyAsset( s_ConeSourceHandle, s_ConeSource );
 
-		static SharedPtr<StaticMesh> s_StaticMesh = MakeShared<StaticMesh>( s_ConeSourceHandle );
+		static SharedPtr<OldStaticMesh> s_StaticMesh = MakeShared<OldStaticMesh>( s_ConeSourceHandle );
 		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
@@ -747,20 +747,20 @@ namespace Tridium {
 		static AssetHandle s_TorusSourceHandle = AssetHandle::Create();
 		static bool s_TorusSourceInit = AssetManager::AddMemoryOnlyAsset( s_TorusSourceHandle, s_TorusSource );
 
-		static SharedPtr<StaticMesh> s_StaticMesh = MakeShared<StaticMesh>( s_TorusSourceHandle );
+		static SharedPtr<OldStaticMesh> s_StaticMesh = MakeShared<OldStaticMesh>( s_TorusSourceHandle );
 		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
 		return s_StaticMeshHandle;
 	}
 
-	void CalculateTangents( std::vector<Vertex>& a_Vertices, const std::vector<uint32_t>& a_Indices )
+	void CalculateTangents( std::vector<OldVertex>& a_Vertices, const std::vector<uint32_t>& a_Indices )
 	{
 		for ( size_t i = 0; i < a_Indices.size(); i += 3 ) {
 			// Get the vertices of the triangle
-			Vertex& v0 = a_Vertices[a_Indices[i]];
-			Vertex& v1 = a_Vertices[a_Indices[i + 1]];
-			Vertex& v2 = a_Vertices[a_Indices[i + 2]];
+			OldVertex& v0 = a_Vertices[a_Indices[i]];
+			OldVertex& v1 = a_Vertices[a_Indices[i + 1]];
+			OldVertex& v2 = a_Vertices[a_Indices[i + 2]];
 
 			// Positions
 			Vector3 p0 = v0.Position;

@@ -11,7 +11,7 @@ namespace Tridium {
 
 		static SharedPtr<TextureOld> LoadTexture( const FilePath& a_FilePath )
 		{
-			AssetMetaData metaData;
+			OldAssetMetaData metaData;
 			metaData.AssetType = EAssetTypeOld::Texture;
 			metaData.Path = a_FilePath;
 
@@ -20,8 +20,8 @@ namespace Tridium {
 		}
 
 		// Inherited via IAssetLoaderOld
-		void SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset ) override;
-		SharedPtr<Asset> LoadAsset( const AssetMetaData& a_MetaData ) override;
+		void SaveAsset( const OldAssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset ) override;
+		SharedPtr<Asset> LoadAsset( const OldAssetMetaData& a_MetaData ) override;
 	};
 
 	class CubeMapLoader : public IAssetLoaderOld
@@ -29,7 +29,7 @@ namespace Tridium {
 	public:
 		static SharedPtr<TextureOld> LoadCubeMap( const FilePath& a_FilePath )
 		{
-			AssetMetaData metaData;
+			OldAssetMetaData metaData;
 			metaData.AssetType = EAssetTypeOld::CubeMap;
 			metaData.Path = a_FilePath;
 
@@ -38,8 +38,8 @@ namespace Tridium {
 		}
 
 		// Inherited via IAssetLoaderOld
-		void SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset ) override;
-		SharedPtr<Asset> LoadAsset( const AssetMetaData& a_MetaData ) override;
+		void SaveAsset( const OldAssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset ) override;
+		SharedPtr<Asset> LoadAsset( const OldAssetMetaData& a_MetaData ) override;
 	};
 
 }

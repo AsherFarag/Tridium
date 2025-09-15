@@ -5,36 +5,39 @@
 
 namespace Tridium {
 
-	//===========================================================
-	// Render Resource Manager
-	//  Stores the render resources in a map which can be accessed by AssetID and VariantID.
+	//=================================================================================================
+	// Render Resource Manager:
+	// Stores the render resources in a map which can be accessed by AssetID and VariantID.
+	//=================================================================================================
 	class RenderResourceManager : public ISingleton<RenderResourceManager, /*Explicit Setup*/ true, /*Is Owning*/ false>
 	{
 	public:
+
+		//=============================================================================================
 		template<Concepts::Derived<RenderResource> T>
 		using ResourceVariants = SmallArray<T, 8>;
 
 		template<Concepts::Derived<RenderResource> T>
 		using ResourceMap = UnorderedMap<AssetID, ResourceVariants<T>>;
 
-		// = Mesh Sources =
+		//=============================================================================================
 
-		RenderResourceMeshSource GetMeshSource( AssetID a_AssetID, RenderResourceID a_VariantID = 0 )
+		RenderResourceStaticMesh GetStaticMesh( AssetID a_AssetID, RenderResourceID a_VariantID = 0 )
 		{
-			return GetResource( m_MeshSources, a_AssetID, a_VariantID );
+			return GetResource( m_StaticMeshes, a_AssetID, a_VariantID );
 		}
 
-		bool AddMeshSource( const RenderResourceMeshSource& a_MeshSource, bool a_ForceReplace = false )
+		bool AddStaticMesh( const RenderResourceStaticMesh& a_StaticMesh, bool a_ForceReplace = false )
 		{
-			return AddResource( m_MeshSources, a_MeshSource, a_ForceReplace );
+			return AddResource( m_StaticMeshes, a_StaticMesh, a_ForceReplace );
 		}
 
-		bool RemoveMeshSource( AssetID a_AssetID, RenderResourceID a_VariantID = c_InvalidRenderResourceID )
+		bool RemoveStaticMesh( AssetID a_AssetID, RenderResourceID a_VariantID = InvalidRenderResourceID )
 		{
-			return RemoveResource( m_MeshSources, a_AssetID, a_VariantID );
+			return RemoveResource( m_StaticMeshes, a_AssetID, a_VariantID );
 		}
 
-		// = Materials =
+		//=============================================================================================
 
 		RenderResourceMaterial GetMaterial( AssetID a_AssetID, RenderResourceID a_VariantID = 0 )
 		{
@@ -46,12 +49,12 @@ namespace Tridium {
 			return AddResource( m_Materials, a_Material, a_ForceReplace );
 		}
 
-		bool RemoveMaterial( AssetID a_AssetID, RenderResourceID a_VariantID = c_InvalidRenderResourceID )
+		bool RemoveMaterial( AssetID a_AssetID, RenderResourceID a_VariantID = InvalidRenderResourceID )
 		{
 			return RemoveResource( m_Materials, a_AssetID, a_VariantID );
 		}
 
-		// = Textures =
+		//=============================================================================================
 
 		RenderResourceTexture GetTexture( AssetID a_AssetID, RenderResourceID a_VariantID = 0 )
 		{
@@ -63,23 +66,24 @@ namespace Tridium {
 			return AddResource( m_Textures, a_Texture, a_ForceReplace );
 		}
 
-		bool RemoveTexture( AssetID a_AssetID, RenderResourceID a_VariantID = c_InvalidRenderResourceID )
+		bool RemoveTexture( AssetID a_AssetID, RenderResourceID a_VariantID = InvalidRenderResourceID )
 		{
 			return RemoveResource( m_Textures, a_AssetID, a_VariantID );
 		}
 
-		// = Utility Functions =
-
+		//=============================================================================================
 		// Clears all resources in the manager.
 		void Clear()
 		{
-			m_MeshSources.clear();
+			m_StaticMeshes.clear();
 			m_Materials.clear();
 			m_Textures.clear();
 		}
 
 	private:
-		ResourceMap<RenderResourceMeshSource> m_MeshSources{};
+
+		//=============================================================================================
+		ResourceMap<RenderResourceStaticMesh> m_StaticMeshes{};
 		ResourceMap<RenderResourceMaterial> m_Materials{};
 		ResourceMap<RenderResourceTexture> m_Textures{};
 
@@ -135,7 +139,7 @@ namespace Tridium {
 			if ( variantsIt == a_ResourceMap.end() )
 				return false; // No resources for the asset.
 
-			if ( a_VariantID == c_InvalidRenderResourceID )
+			if ( a_VariantID == InvalidRenderResourceID )
 			{
 				// Remove all variants
 				a_ResourceMap.erase( variantsIt );

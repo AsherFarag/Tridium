@@ -119,7 +119,7 @@ namespace Tridium {
 		EditorAssetManager* assetManager = EditorAssetManager::Get();
 		for ( SharedPtr<ScriptAsset> script : AssetManager::GetAssetsOfType<ScriptAsset>() )
 		{
-			const AssetMetaData& assetData = assetManager->GetAssetMetaData( script->GetHandle() );
+			const OldAssetMetaData& assetData = assetManager->GetAssetMetaData( script->GetHandle() );
 			if ( assetData.IsValid() )
 			{
 				std::string path = assetManager->GetAbsolutePath( assetData.Path ).ToString();

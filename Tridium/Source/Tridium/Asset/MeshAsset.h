@@ -2,11 +2,17 @@
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/Core/Core.h>
 
-namespace Tridium::T {
+namespace Tridium {
 
-	// Forward declarations
-	class Material;
+	TODO( "I don't like the idea of static meshes being forced to use this vertex format."
+		  "Eventually, meshes should just store a void* to their vertex data and a vertex layout describing it."
+		  "This also requires the model importer to be able to convert to arbitrary vertex formats." );
 
+	static constexpr uint32_t InvalidMaterialIndex = ( uint32_t )-1;
+
+	//=================================================================================================
+	// Vertex: The default vertex format used by MeshSource assets.
+	//=================================================================================================
 	struct Vertex
 	{
 		Vector3 Position;
@@ -15,9 +21,9 @@ namespace Tridium::T {
 		Vector2 TexCoord;
 	};
 
-	//====================================
-	// SubMesh
-	//  Represents a single drawable part of a mesh source asset.
+	//=================================================================================================
+	// SubMesh: Represents a single drawable part of a mesh source asset.
+	//=================================================================================================
 	struct SubMesh
 	{
 		size_t BaseVertexIndex = 0;     
@@ -25,7 +31,7 @@ namespace Tridium::T {
 		size_t BaseIndex = 0;           
 		size_t IndexCount = 0;          
 		uint32_t MaterialIndex = 0;     
-		Matrix4 WorldTransform{ 1.0f }; // Relative to the root of the mesh
+		Matrix4 Transform{ 1.0f };
 		AABB BoundingBox{};             
 		String Name{};                  
 
@@ -52,55 +58,49 @@ namespace Tridium::T {
 		}
 	};
 
-	class MeshSource : public IAsset
+	//=================================================================================================
+	// Static Mesh Asset
+	//=================================================================================================
+	DEFINE_ASSET_TYPE( StaticMesh )
 	{
 	public:
-		static SharedPtr<MeshSource> Create() { return MakeShared<EnableMakeShared<MeshSource>>(); }
-		static SharedPtr<MeshSource> Create( Span<Vertex> a_Vertices, Span<uint32_t> a_Indices, const Matrix4& a_ModelTransform = Matrix4( 1.0f ) );
-		static constexpr EAssetType StaticType() { return EAssetType::MeshSource; }
-		EAssetType Type() const override { return StaticType(); }
-		bool Valid() const override { return !m_SubMeshes.Empty(); }
 
-		const auto& Vertices() const { return m_Vertices; }
-		const auto& Indices() const { return m_Indices; }
+		struct LOD
+		{
+			Array<Vertex> Vertices{};
+			Array<uint32_t> Indices{};
+		};
+
+		bool Valid() const override { return !m_SubMeshes.Empty() && !m_Materials.Empty(); }
+
+		const auto& LODs() const { return m_LODs; }
 		const auto& SubMeshes() const { return m_SubMeshes; }
 		const auto& Materials() const { return m_Materials; }
 		const auto& BoundingBox() const { return m_BoundingBox; }
 
-	private:
-		Array<Vertex> m_Vertices{};
-		Array<uint32_t> m_Indices{};
-		Array<SubMesh> m_SubMeshes{};
-		Array<SharedPtr<Material>> m_Materials{};
-		AABB m_BoundingBox{};
-
-		void UpdateBoundingBox();
-	};
-
-	class StaticMesh : public IAsset
-	{
-	public:
-		struct MeshChunk
+		AssetRef<class Material> GetMaterial( uint32_t a_Index ) const
 		{
-			uint32_t SubMeshIndex = 0; // Index of the submesh in the source mesh
-			SharedPtr<Material> OverrideMaterial; // Optional override material for this submesh
-		};
+			if ( a_Index >= m_Materials.Size() )
+			{
+				return nullptr;
+			}
 
-		static SharedPtr<StaticMesh> Create() { return MakeShared<EnableMakeShared<StaticMesh>>(); }
-		static SharedPtr<StaticMesh> Create( SharedPtr<MeshSource> a_SourceMesh, Span<const MeshChunk> a_MeshChunks );
-		static constexpr EAssetType StaticType() { return EAssetType::StaticMesh; }
-		EAssetType Type() const override { return StaticType(); }
-		bool Valid() const override { return m_SourceMesh != nullptr && !m_MeshChunks.Empty(); }
+			return m_Materials[ a_Index ];
+		}
 
-		const auto& SourceMesh() const { return m_SourceMesh; }
-		const auto& SubMeshes() const { return m_MeshChunks; }
-		AABB BoundingBox() const { return m_BoundingBox; }
-		void Update( SharedPtr<MeshSource> a_SourceMesh, Span<const MeshChunk> a_MeshChunks );
+		AssetRef<class Material> GetMaterial( const SubMesh& a_SubMesh ) const
+		{
+			return GetMaterial( a_SubMesh.MaterialIndex );
+		}
 
-	private:
-		SharedPtr<MeshSource> m_SourceMesh;
-		Array<MeshChunk> m_MeshChunks;
-		AABB m_BoundingBox; 
+	protected:
+
+		//=============================================================================================
+		TODO( "LODs will need their own submeshes eventually." );
+		Array<LOD> m_LODs{};
+		Array<SubMesh> m_SubMeshes{};
+		Array<AssetRef<class Material>> m_Materials{};
+		AABB m_BoundingBox{};
 
 		void UpdateBoundingBox();
 	};

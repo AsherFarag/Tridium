@@ -28,7 +28,7 @@ namespace Tridium {
 		s_AssetFactories[EAssetTypeOld::LuaScript] = MakeShared<LuaScriptLoader>();
 	}
 
-	void AssetFactoryOld::SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
+	void AssetFactoryOld::SaveAsset( const OldAssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
 	{
 		auto it = s_AssetFactories.find( a_MetaData.AssetType );
 		if ( it != s_AssetFactories.end() )
@@ -41,7 +41,7 @@ namespace Tridium {
 		}
 	}
 
-	SharedPtr<Asset> AssetFactoryOld::LoadAsset( const AssetMetaData& a_MetaData )
+	SharedPtr<Asset> AssetFactoryOld::LoadAsset( const OldAssetMetaData& a_MetaData )
 	{
 		PROFILE_FUNCTION( ProfilerCategory::AssetStreaming );
 		auto it = s_AssetFactories.find( a_MetaData.AssetType );

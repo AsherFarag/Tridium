@@ -29,7 +29,7 @@ namespace Tridium {
 			m_WhiteTexture = AssetManager::GetAsset<TextureOld>( TextureFactory::GetWhiteTexture() );
 			m_BlackTexture = AssetManager::GetAsset<TextureOld>( TextureFactory::GetBlackTexture() );
 			m_NormalTexture = AssetManager::GetAsset<TextureOld>( TextureFactory::GetNormalTexture() );
-			m_DefaultMaterial = MakeShared<Material>();
+			m_DefaultMaterial = MakeShared<OldMaterial>();
 			m_DefaultMaterial->MetallicIntensity = 0.0f;
 			m_DefaultMaterial->RoughnessIntensity = 1.0f;
 			m_DefaultMaterial->EmissiveIntensity = 0.0f;
@@ -378,7 +378,7 @@ namespace Tridium {
 					//	- If the mesh is in the camera's view frustum, add it to the draw list
 					{
 						// Get the mesh bounds
-						SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( meshComponent.Mesh );
+						SharedPtr<OldStaticMesh> mesh = AssetManager::GetAsset<OldStaticMesh>( meshComponent.Mesh );
 						if ( !mesh )
 							return;
 
@@ -612,7 +612,7 @@ namespace Tridium {
 		m_DeferredData.GBufferShader->Bind();
 		MaterialHandle lastMaterial = MaterialHandle::InvalidID;
 
-		auto bindMaterial = [&]( SharedPtr<Material>& material, SharedPtr<Shader>& shader )
+		auto bindMaterial = [&]( SharedPtr<OldMaterial>& material, SharedPtr<Shader>& shader )
 			{
 				// Bind Material Properties
 				shader->SetFloat3( "u_AlbedoColor", material->AlbedoColor );
@@ -674,7 +674,7 @@ namespace Tridium {
 			if ( lastMaterial != key.Material )
 			{
 				lastMaterial = key.Material;
-				SharedPtr<Material> mat = AssetManager::GetAsset<Material>( key.Material );
+				SharedPtr<OldMaterial> mat = AssetManager::GetAsset<OldMaterial>( key.Material );
 				if ( !mat )
 				{
 					mat = m_DefaultMaterial;
@@ -903,7 +903,7 @@ namespace Tridium {
 		ShaderHandle lastShader = -1;
 		MaterialHandle lastMaterial = -1;
 		SharedPtr<Shader> shader = m_DefaultShader;
-		SharedPtr<Material> material = m_DefaultMaterial;
+		SharedPtr<OldMaterial> material = m_DefaultMaterial;
 
 		const auto bindShaderUniforms = [this, &shader, &material]()
 			{

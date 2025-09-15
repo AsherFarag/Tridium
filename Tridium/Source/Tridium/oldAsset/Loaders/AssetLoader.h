@@ -10,8 +10,8 @@ namespace Tridium {
 	class IAssetLoaderOld
 	{
 	public:
-		virtual void SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset ) = 0;
-		virtual SharedPtr<Asset> LoadAsset( const AssetMetaData& a_MetaData ) = 0;
+		virtual void SaveAsset( const OldAssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset ) = 0;
+		virtual SharedPtr<Asset> LoadAsset( const OldAssetMetaData& a_MetaData ) = 0;
 	};
 
 }

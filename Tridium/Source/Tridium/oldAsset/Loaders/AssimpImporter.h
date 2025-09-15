@@ -15,7 +15,7 @@ namespace Tridium {
 
 	private:
 		void ProcessNode( SharedPtr<MeshSource>& a_MeshSource, const void* a_AssimpScene, void* a_AssimpNode, const Matrix4& a_ParentTransform );
-		SubMesh ProcessSubMesh( SharedPtr<MeshSource>& a_MeshSource, const void* a_AssimpScene, void* a_AssimpMesh );
+		OldSubMesh ProcessSubMesh( SharedPtr<MeshSource>& a_MeshSource, const void* a_AssimpScene, void* a_AssimpMesh );
 		void ExtractMaterials( void* a_AssimpScene, SharedPtr<MeshSource>& a_MeshSource );
 		TextureHandle ExtractTexture( void* a_AssimpScene, void* a_AssimpMaterial, int a_AssimpTextureType );
 

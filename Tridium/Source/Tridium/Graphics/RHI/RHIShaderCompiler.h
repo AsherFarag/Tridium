@@ -66,7 +66,7 @@ namespace Tridium {
 		// If the ShaderType from the compiler-input is set to Unknown, this will be the type the compiler was able to determine.
 		// Otherwise, this will be the same as the input type.
 		ERHIShaderType ShaderType = ERHIShaderType::Unknown;
-		Array<Byte> ByteCode{};
+		Array<byte_t> ByteCode{};
 	};
 
 

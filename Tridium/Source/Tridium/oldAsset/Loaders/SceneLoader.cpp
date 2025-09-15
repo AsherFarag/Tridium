@@ -7,7 +7,7 @@
 
 namespace Tridium {
 
-    void SceneLoader::SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
+    void SceneLoader::SaveAsset( const OldAssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
     {
 		YAML::Emitter out;
 		IO::SerializeToText( out, *( SharedPtrCast<Scene>( a_Asset ) ) );
@@ -18,7 +18,7 @@ namespace Tridium {
 		file.close();
     }
 
-    SharedPtr<Asset> SceneLoader::LoadAsset( const AssetMetaData& a_MetaData )
+    SharedPtr<Asset> SceneLoader::LoadAsset( const OldAssetMetaData& a_MetaData )
     {
         std::string path = AssetManager::Get<EditorAssetManager>()->GetAbsolutePath( a_MetaData.Path ).ToString();
 		YAML::Node data;

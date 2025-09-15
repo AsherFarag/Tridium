@@ -13,4 +13,7 @@
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Asset\Importers\ModelImporter.cpp" />
+  </ItemGroup>
 </Project>

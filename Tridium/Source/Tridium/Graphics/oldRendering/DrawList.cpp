@@ -23,7 +23,7 @@ namespace Tridium {
 
 	void DrawList::AddCommand( DrawPass a_DrawPassFlags, StaticMeshHandle a_Mesh, const std::vector<MaterialHandle>& a_OverrideMaterials, const Matrix4& a_Transform )
 	{
-		SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( a_Mesh );
+		SharedPtr<OldStaticMesh> mesh = AssetManager::GetAsset<OldStaticMesh>( a_Mesh );
 		if ( !mesh )
 			return;
 
@@ -34,7 +34,7 @@ namespace Tridium {
 		// For each submesh in the static mesh
 		for ( uint32_t subMeshIndex : mesh->GetSubMeshes() )
 		{
-			const SubMesh& subMesh = meshSource->GetSubMesh( subMeshIndex );
+			const OldSubMesh& subMesh = meshSource->GetSubMesh( subMeshIndex );
 
 			// Get the material that will be used, either from the override list or the mesh source
 			MaterialHandle material = MaterialHandle::InvalidID;

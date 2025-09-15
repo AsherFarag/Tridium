@@ -1,6 +1,5 @@
 #include "tripch.h"
 #include "MaterialLoader.h"
-#include <Tridium/IO/Serializer.h>
 #include <yaml-cpp/yaml.h>
 #include <Tridium/IO/SerializationUtil.h>
 #include <fstream>
@@ -9,9 +8,9 @@
 
 namespace Tridium {
 
-	void MaterialLoader::SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
+	void MaterialLoader::SaveAsset( const OldAssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
 	{
-		SharedPtr<Material> material = SharedPtrCast<Material>(a_Asset);
+		SharedPtr<OldMaterial> material = SharedPtrCast<OldMaterial>(a_Asset);
 		TE_CORE_ASSERT( material );
 
 		TODO( "Should we be adding dependencies here?" );
@@ -46,7 +45,7 @@ namespace Tridium {
 		file << out.c_str();
 	}
 
-	SharedPtr<Asset> MaterialLoader::LoadAsset( const AssetMetaData& a_MetaData )
+	SharedPtr<Asset> MaterialLoader::LoadAsset( const OldAssetMetaData& a_MetaData )
 	{
 		YAML::Node data;
 		try
@@ -64,7 +63,7 @@ namespace Tridium {
 			material->prop = propNode.as<type>(); \
 		} \
 
-		SharedPtr<Material> material = MakeShared<Material>();
+		SharedPtr<OldMaterial> material = MakeShared<OldMaterial>();
 		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, Shader );
 		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, AlbedoTexture );
 		LOAD_MATERIAL_PROPERTY( Vector3, AlbedoColor );

@@ -16,7 +16,7 @@ namespace Tridium {
 	class VertexArray;
 	class TextureOld;
 	class MeshSource;
-	class SubMesh;
+	class OldSubMesh;
 	// -------------------
 
 	struct DrawCall
@@ -103,7 +103,7 @@ namespace Tridium {
 
 		// Default assets
 		SharedPtr<Shader> m_DefaultShader;
-		SharedPtr<Material> m_DefaultMaterial;
+		SharedPtr<OldMaterial> m_DefaultMaterial;
 		SharedPtr<Shader> m_SkyboxShader;
 		SharedPtr<MeshSource> m_CubeMesh;
 		SharedPtr<TextureOld> m_BrdfLUT;

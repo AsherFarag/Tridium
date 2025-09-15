@@ -5,43 +5,79 @@
 
 namespace Tridium {
 
-	using AssetID = GUID; // Alias for asset ID, using GUID for unique identification
+	//=================================================================================================
+	// Asset ID: Unique identifier for an asset. Generated when the asset is created/imported.
+	// Can be used to look up the asset in the AssetDatabase.
+	//=================================================================================================
+	using AssetID = GUID;
+	inline constexpr AssetID InvalidAssetID = AssetID::InvalidID;
 
-	//==============================
-	// Asset flags
-	//  Bit flags for indicating the state of an asset.
+	//=================================================================================================
+	// Asset Type ID: Hash of the asset type (e.g., Tridium::Texture, Tridium::Material, etc.)
+	// used to identify the type of asset and find the appropriate asset loader.
+	//=================================================================================================
+	using AssetTypeID = hash_t;
+	inline constexpr AssetTypeID InvalidAssetTypeID = 0;
+
+	//=================================================================================================
+	// Asset Importer ID: Hash of the asset importer class (e.g., Tridium::FBXImporter)
+	//=================================================================================================
+	using AssetImporterID = hash_t;
+	inline constexpr AssetImporterID InvalidAssetImporterID = 0;
+
+	//=================================================================================================
+	// Asset flags: Bit flags for indicating the state of an asset.
+	//=================================================================================================
 	enum class EAssetFlags : uint32_t
 	{
 		None = 0,
-		MemoryOnly = 1 << 1, // The asset is only stored in memory, not on disk. This is set by the AssetDatabase.
+		LoadedFromDisk = 1 << 0, // The asset was loaded from disk and is not memory-only.
+		Persistent = 1 << 2,     // The asset should never be unloaded from memory.
 	};
 	DEFINE_ENUM_BITMASK_OPERATORS( EAssetFlags );
 
-	//==============================
-	// Asset types
-	//  Enum of all asset types.
-	enum class EAssetType : uint8_t
-	{
-		Unknown = 0,
-		Texture,
-		Material,
-		MeshSource,
-		StaticMesh,
-		Sound,
-		Scene,
-		Script,
-		Animation,
-		Font,
-		COUNT
-	};
-
+	//=================================================================================================
+	// Asset Load Policy: Describes how and when an asset should be loaded.
+	//=================================================================================================
 	enum class EAssetLoadPolicy
 	{
 		Default = 0,      // When the asset is requested, it will load either immediately or asynchronously based on the request.
 		ImmediateOnly,    // When the asset is requested, it will always load immediately on the main thread.
 		AsyncOnly,        // When the asset is requested, it will always load asynchronously.
-		ImmediateOnStart, // When the asset is requested, it will load immediately on the main thread during the startup phase.
-		AsyncOnStart,     // When the asset is requested, it will load asynchronously during the startup phase.
+		ImmediateOnStart, // It will load immediately on the main thread during the startup phase.
+		AsyncOnStart,     // It will load asynchronously during the startup phase.
+	};
+
+	//=================================================================================================
+	// Asset Type Info: Metadata about an asset type, mostly used for editor display purposes.
+	//=================================================================================================
+	struct AssetTypeInfo
+	{
+		AssetTypeID ID = InvalidAssetTypeID;
+		String Name{};
+		Color Color{ 1.0f, 1.0f, 1.0f, 1.0f };
+		StringView Icon{};
+	};
+
+	//=================================================================================================
+	// Asset Header Flags: Special flags for the asset header.
+	//=================================================================================================
+	enum class EAssetHeaderFlags : uint32_t
+	{
+		None = 0,
+		Compressed = 1 << 0, // The asset data is compressed.
+		Encrypted = 1 << 1,  // The asset data is encrypted.
+	};
+
+	//=================================================================================================
+	// Asset Header: Metadata about an asset stored at the beginning of the asset file.
+	//=================================================================================================
+	struct AssetHeader
+	{
+		VersionID Version = UnknownVersionID;
+		EAssetHeaderFlags Flags = EAssetHeaderFlags::None;
+		AssetTypeID AssetType = InvalidAssetTypeID;
+		size_t DataByteSize = 0;
 	};
 
 } // namespace Tridium

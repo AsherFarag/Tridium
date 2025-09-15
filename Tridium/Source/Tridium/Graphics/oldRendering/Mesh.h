@@ -13,7 +13,7 @@ namespace Tridium {
 
 namespace Tridium {
 
-	struct Vertex
+	struct OldVertex
 	{
 		Vector3 Position;
 		Vector3 Normal;
@@ -22,12 +22,12 @@ namespace Tridium {
 		Vector2 UV;
 	};
 
-	struct SubMesh
+	struct OldSubMesh
 	{
 		SharedPtr<VertexArray> VAO;
 		SharedPtr<VertexBuffer> VBO;
 		SharedPtr<IndexBuffer> IBO;
-		std::vector<Vertex> Vertices;
+		std::vector<OldVertex> Vertices;
 		std::vector<uint32_t> Indices;
 		uint32_t MaterialIndex;
 		Matrix4 Transform{ 1.0f };
@@ -38,7 +38,7 @@ namespace Tridium {
 		void GenerateMeshCollider();
 	};
 
-	void CalculateTangents( std::vector<Vertex>& a_Vertices, const std::vector<uint32_t>& a_Indices );
+	void CalculateTangents( std::vector<OldVertex>& a_Vertices, const std::vector<uint32_t>& a_Indices );
 
 	// - Mesh Source -
 	// A mesh source is a collection of assets such as meshes, materials, textures, animations and skeletons,
@@ -48,17 +48,17 @@ namespace Tridium {
 	public:
 		ASSET_CLASS_TYPE( MeshSource );
 		MeshSource() = default;
-		MeshSource( const std::vector<Vertex>& a_Vertices, const std::vector<uint32_t>& a_Indices, const Matrix4& a_Transform );
+		MeshSource( const std::vector<OldVertex>& a_Vertices, const std::vector<uint32_t>& a_Indices, const Matrix4& a_Transform );
 		virtual ~MeshSource() = default;
 
-		const SubMesh& GetSubMesh( uint32_t a_Index ) const { return m_SubMeshes[a_Index]; }
-		std::vector<SubMesh>& GetSubMeshes() { return m_SubMeshes; }
-		const std::vector<SubMesh>& GetSubMeshes() const { return m_SubMeshes; }
+		const OldSubMesh& GetSubMesh( uint32_t a_Index ) const { return m_SubMeshes[a_Index]; }
+		std::vector<OldSubMesh>& GetSubMeshes() { return m_SubMeshes; }
+		const std::vector<OldSubMesh>& GetSubMeshes() const { return m_SubMeshes; }
 		const std::vector<MaterialHandle>& GetMaterials() const { return m_Materials; }
 		const AABB& GetBoundingBox() const { return m_BoundingBox; }
 
 	private:
-		std::vector<SubMesh> m_SubMeshes;
+		std::vector<OldSubMesh> m_SubMeshes;
 		std::vector<MaterialHandle> m_Materials;
 		AABB m_BoundingBox;
 
@@ -69,13 +69,19 @@ namespace Tridium {
 	// - Static Mesh -
 	// A static mesh is an unanimated mesh that is not deformed by bones or other deformations.
 	// It can still be composed of multiple sub-meshes and materials.
-	class StaticMesh final : public Asset
+	class OldStaticMesh final : public Asset
 	{
 	public:
-		ASSET_CLASS_TYPE( StaticMesh );
-		StaticMesh( MeshSourceHandle a_MeshSource );
-		StaticMesh( MeshSourceHandle a_MeshSource, const std::vector<uint32_t>& a_SubMeshes );
-		virtual ~StaticMesh() = default;
+		static constexpr EAssetTypeOld StaticType()
+		{
+			return EAssetTypeOld::StaticMesh;
+		} virtual EAssetTypeOld AssetType() const
+		{
+			return StaticType();
+		};
+		OldStaticMesh( MeshSourceHandle a_MeshSource );
+		OldStaticMesh( MeshSourceHandle a_MeshSource, const std::vector<uint32_t>& a_SubMeshes );
+		virtual ~OldStaticMesh() = default;
 
 		void SetMeshSource( MeshSourceHandle a_MeshSource ) { m_MeshSource = a_MeshSource; }
 		MeshSourceHandle GetMeshSource() const { return m_MeshSource; }

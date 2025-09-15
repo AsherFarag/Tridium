@@ -7,7 +7,7 @@
 
 namespace Tridium {
 
-	class SubMesh;
+	class OldSubMesh;
 
 	class RendererAPI
 	{

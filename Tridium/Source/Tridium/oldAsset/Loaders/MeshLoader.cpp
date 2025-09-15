@@ -10,7 +10,7 @@
 
 namespace Tridium {
 
-	SharedPtr<Asset> MeshSourceLoader::LoadAsset( const AssetMetaData& a_MetaData )
+	SharedPtr<Asset> MeshSourceLoader::LoadAsset( const OldAssetMetaData& a_MetaData )
 	{
 		AssimpImporter importer( a_MetaData.Path );
 		SharedPtr<MeshSource> meshSource = importer.ImportMeshSource();
@@ -21,9 +21,9 @@ namespace Tridium {
 		return SharedPtrCast<Asset>( meshSource );
 	}
 
-	void StaticMeshLoader::SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
+	void StaticMeshLoader::SaveAsset( const OldAssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
 	{
-		SharedPtr<StaticMesh> staticMesh = SharedPtrCast<StaticMesh>( a_Asset );
+		SharedPtr<OldStaticMesh> staticMesh = SharedPtrCast<OldStaticMesh>( a_Asset );
 		TE_CORE_ASSERT( staticMesh );
 
 		YAML::Emitter out;
@@ -50,7 +50,7 @@ namespace Tridium {
 		file.close();
 	}
 
-	SharedPtr<Asset> StaticMeshLoader::LoadAsset( const AssetMetaData& a_MetaData )
+	SharedPtr<Asset> StaticMeshLoader::LoadAsset( const OldAssetMetaData& a_MetaData )
 	{
 		YAML::Node node;
 		try
@@ -85,7 +85,7 @@ namespace Tridium {
 			return nullptr;
 		}
 
-		SharedPtr<StaticMesh> staticMesh = MakeShared<StaticMesh>( meshSourceHandle, subMeshes );
+		SharedPtr<OldStaticMesh> staticMesh = MakeShared<OldStaticMesh>( meshSourceHandle, subMeshes );
 		for ( const auto& material : materials )
 			staticMesh->GetMaterials().push_back( MaterialHandle( material ) );
 

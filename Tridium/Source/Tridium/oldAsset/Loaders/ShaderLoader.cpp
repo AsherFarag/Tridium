@@ -5,12 +5,12 @@
 
 namespace Tridium {
 
-    void ShaderLoader::SaveAsset( const AssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
+    void ShaderLoader::SaveAsset( const OldAssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
     {
 		NOT_IMPLEMENTED;
     }
 
-    SharedPtr<Asset> ShaderLoader::LoadAsset( const AssetMetaData& a_MetaData )
+    SharedPtr<Asset> ShaderLoader::LoadAsset( const OldAssetMetaData& a_MetaData )
     {
         SharedPtr<Shader> shader;
         shader.reset( Shader::Create() );

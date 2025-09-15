@@ -4,15 +4,15 @@
 
 namespace Tridium {
 
-	BEGIN_REFLECT( AssetMetaData )
+	BEGIN_REFLECT( OldAssetMetaData )
 		PROPERTY( Handle )
 		PROPERTY( AssetType )
 		PROPERTY( Path )
 		PROPERTY( Name )
 		PROPERTY( IsAssetLoaded )
-	END_REFLECT( AssetMetaData )
+	END_REFLECT( OldAssetMetaData )
 
-	const AssetMetaData AssetMetaData::s_InvalidMetaData = 
+	const OldAssetMetaData OldAssetMetaData::s_InvalidMetaData = 
 	{ 
 		AssetHandle::InvalidID,
 		EAssetTypeOld::None,

@@ -22,6 +22,9 @@
 #include <Tridium/Asset/TextureAsset.h>
 #include <Tridium/Graphics/Renderer/RendererModule.h>
 #include <Tridium/Graphics/Renderer/SceneRenderer.h>
+#include <Tridium/IO/FileStream.h>
+#include <Tridium/Asset/Importers/ModelImporter.h>
+#include <Tridium/IO/FileIO.h>
 
 namespace Tridium {
 
@@ -56,6 +59,17 @@ namespace Tridium {
 		// Initialise the Engine
 		EngineConfig engineConfig;
 		m_Engine = Engine::Create( engineConfig );
+
+		//TEMP
+		const FilePath assetFilePath = "TestProject/Content/Sponza/glTF/Sponza.gltf";
+		auto modelImporter = AssetFactory::GetImporter( assetFilePath.GetExtension().ToString() );
+		if ( modelImporter )
+		{
+			AssetImportContext context;
+			context.m_AssetPath = assetFilePath;
+			modelImporter->OnImport( context );
+			int i = 0;
+		}
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////

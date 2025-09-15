@@ -5,9 +5,9 @@
 
 namespace Tridium {
 
-	struct AssetMetaData
+	struct OldAssetMetaData
 	{
-		REFLECT(AssetMetaData);
+		REFLECT(OldAssetMetaData);
 
 		AssetHandle Handle;
 		EAssetTypeOld AssetType;
@@ -15,7 +15,7 @@ namespace Tridium {
 		std::string Name;
 		bool IsAssetLoaded = false;
 
-		static const AssetMetaData s_InvalidMetaData;
+		static const OldAssetMetaData s_InvalidMetaData;
 
 		bool IsValid() const { return Handle.IsValid(); }
 	};

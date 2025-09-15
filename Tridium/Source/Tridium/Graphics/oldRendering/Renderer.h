@@ -5,6 +5,6 @@
 namespace Tridium {
 
 	class Camera;
-	class Material;
+	class OldMaterial;
 
 }

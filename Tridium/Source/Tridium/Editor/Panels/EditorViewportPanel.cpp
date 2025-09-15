@@ -229,7 +229,7 @@ namespace Tridium {
 
 		AssetHandle assetHandle( *(AssetHandle*)payload->Data );
 
-		const AssetMetaData& assetMetaData = EditorAssetManager::Get()->GetAssetMetaData( assetHandle );
+		const OldAssetMetaData& assetMetaData = EditorAssetManager::Get()->GetAssetMetaData( assetHandle );
 
 		switch ( assetMetaData.AssetType )
 		{
@@ -245,7 +245,7 @@ namespace Tridium {
 		}
 		case EAssetTypeOld::StaticMesh:
 		{
-			if ( SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( assetHandle ) )
+			if ( SharedPtr<OldStaticMesh> mesh = AssetManager::GetAsset<OldStaticMesh>( assetHandle ) )
 			{
 				GameObject go = SceneManager::GetActiveScene()->InstantiateGameObject();
 				go.AddComponent<StaticMeshComponent>().Mesh = mesh->GetHandle();
@@ -352,7 +352,7 @@ namespace Tridium {
 				if ( !meshComponent.Mesh.IsValid() )
 					return;
 
-				SharedPtr<StaticMesh> mesh = AssetManager::GetAsset<StaticMesh>( meshComponent.Mesh );
+				SharedPtr<OldStaticMesh> mesh = AssetManager::GetAsset<OldStaticMesh>( meshComponent.Mesh );
 				if ( !mesh )
 					return;
 
@@ -363,7 +363,7 @@ namespace Tridium {
 				m_GameObjectIDShader->SetInt( "uID", Cast<uint32_t>( go ) );
 				for ( uint32_t subMeshIndex : mesh->GetSubMeshes() )
 				{
-					const SubMesh& subMesh = meshSource->GetSubMeshes()[subMeshIndex];
+					const OldSubMesh& subMesh = meshSource->GetSubMeshes()[subMeshIndex];
 					if ( const SharedPtr<VertexArray>& vao = subMesh.VAO )
 					{
 						m_GameObjectIDShader->SetMatrix4( "uPVM", pvm * transform.GetWorldTransform() * subMesh.Transform );

@@ -29,9 +29,9 @@ namespace Tridium {
 		// - Editor -
 		static auto Get() { return AssetManager::Get<EditorAssetManager>(); }
 
-		const AssetMetaData& GetAssetMetaData( AssetHandle a_Handle ) const;
-		const AssetMetaData& GetAssetMetaData( const FilePath& a_Path ) const;
-		void SetAssetMetaData( const AssetMetaData& a_MetaData );
+		const OldAssetMetaData& GetAssetMetaData( AssetHandle a_Handle ) const;
+		const OldAssetMetaData& GetAssetMetaData( const FilePath& a_Path ) const;
+		void SetAssetMetaData( const OldAssetMetaData& a_MetaData );
 
 		const AssetStorageType& GetLoadedAssets() const { return m_LoadedAssets; }
 		const AssetStorageType& GetMemoryAssets() const { return m_MemoryAssets; }
@@ -39,12 +39,12 @@ namespace Tridium {
 
 		bool SaveAsset( AssetHandle a_Handle );
 		AssetHandle ImportAsset( const FilePath& a_Path );
-		bool CreateAsset( const AssetMetaData& a_MetaData, SharedPtr<Asset> a_Asset );
+		bool CreateAsset( const OldAssetMetaData& a_MetaData, SharedPtr<Asset> a_Asset );
 
 		template<typename T>
 		SharedPtr<T> CreateAsset( const FilePath& a_Path )
 		{
-			AssetMetaData metaData
+			OldAssetMetaData metaData
 			{
 				.Handle = AssetHandle::Create(),
 				.AssetType = T::StaticType(),

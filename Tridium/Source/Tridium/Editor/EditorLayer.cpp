@@ -31,7 +31,6 @@
 #include <Tridium/oldAsset/EditorAssetManager.h>
 
 #include <fstream>
-#include <Tridium/IO/Serializer.h>
 
 namespace Tridium {
 
@@ -293,7 +292,7 @@ namespace Tridium {
 					[this]( const std::string& path )
 					{
 						auto assetManager = AssetManager::Get<EditorAssetManager>();
-						AssetMetaData metaData =
+						OldAssetMetaData metaData =
 						{
 								AssetHandle::Create(),
 								EAssetTypeOld::Scene,
@@ -317,7 +316,7 @@ namespace Tridium {
 					[this](const std::string& path) 
 					{
 						auto assetManager = AssetManager::Get<EditorAssetManager>();
-						const AssetMetaData& sceneMetaData = assetManager->GetAssetMetaData( path );
+						const OldAssetMetaData& sceneMetaData = assetManager->GetAssetMetaData( path );
 						if ( auto scene = AssetManager::GetAsset<Scene>( sceneMetaData.Handle ) )
 							SceneManager::SetActiveScene( scene.get() );
 					});
@@ -333,7 +332,7 @@ namespace Tridium {
 							[this]( const std::string& path )
 							{
 								auto assetManager = AssetManager::Get<EditorAssetManager>();
-								AssetMetaData metaData =
+								OldAssetMetaData metaData =
 								{
 									SceneManager::GetActiveScene()->GetHandle(),
 									EAssetTypeOld::Scene,

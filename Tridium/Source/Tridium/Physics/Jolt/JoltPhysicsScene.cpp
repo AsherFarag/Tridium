@@ -295,13 +295,13 @@ namespace Tridium {
 			// Mesh Collider
 			if ( auto* mc = m_Scene->TryGetComponentFromGameObject<MeshColliderComponent>( a_GameObject ) )
 			{
-				if ( auto staticMesh = AssetManager::GetAsset<StaticMesh>( mc->GetMesh() ) )
+				if ( auto staticMesh = AssetManager::GetAsset<OldStaticMesh>( mc->GetMesh() ) )
 				{
 					if ( auto meshSource = AssetManager::GetAsset<MeshSource>( staticMesh->GetMeshSource() ) )
 					{
 						for ( uint32_t subMeshIndex : staticMesh->GetSubMeshes() )
 						{
-							const SubMesh& subMesh = meshSource->GetSubMesh( subMeshIndex );
+							const OldSubMesh& subMesh = meshSource->GetSubMesh( subMeshIndex );
 							SharedPtr<JoltMeshCollider> meshCollider = SharedPtrCast<JoltMeshCollider>( subMesh.Collider );
 							if ( !meshCollider || !meshCollider->IsValid() )
 								continue;

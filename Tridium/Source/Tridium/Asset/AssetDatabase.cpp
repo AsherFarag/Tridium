@@ -1,14 +1,15 @@
 #include "tripch.h"
 #include "AssetDatabase.h"
+#include <Tridium/Asset/AssetLoader.h>
+#include <Tridium/Asset/AssetImporter.h>
+#include <Tridium/Asset/AssetFactory.h>
 #include <Tridium/IO/FileIO.h>
 
 namespace Tridium {
 
-	using namespace T;
-
 	AssetDatabase* AssetDatabase::s_Instance = nullptr;
 
-	inline constexpr StringView NameIfNotNull( StringView a_Name )
+	static constexpr StringView NameIfNotNull( StringView a_Name )
 	{
 		return a_Name.empty() ? "<UNNAMED>" : a_Name;
 	}
@@ -18,6 +19,7 @@ namespace Tridium {
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
 		auto assetID = Get()->m_AssetPathMap.find( a_Path );
+
 		if (assetID == Get()->m_AssetPathMap.end())
 			return AssetID::InvalidID;
 
@@ -27,10 +29,12 @@ namespace Tridium {
 	StringView AssetDatabase::GetAssetPathFromID( AssetID a_AssetID )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
+
 		if ( !a_AssetID.IsValid() )
 			return {};
 
 		auto it = Get()->m_Assets.find( a_AssetID );
+
 		if ( it == Get()->m_Assets.end() )
 			return {};
 
@@ -70,58 +74,74 @@ namespace Tridium {
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
-		auto it = Get()->m_Assets.find( a_AssetID );
-		if ( it == Get()->m_Assets.end() )
-			return nullptr; // Asset does not exist
+		auto assetIt = Get()->m_Assets.find( a_AssetID );
 
-		IAsset* assetPtr = it->second.second.get();
-		if ( assetPtr )
-			return assetPtr; // Asset is already loaded
-
-		// The asset exists but is not loaded, attempt to load it
-
-	#if WITH_EDITOR
-
-		AssetMetadata& metadata = it->second.first;
-		IAssetLoader* loader = Get()->m_AssetFactory.GetLoader( metadata.Type );
-		if ( !loader )
+		if ( assetIt == Get()->m_Assets.end() )
 		{
-			LOG( LogCategory::Asset, Error, "No loader found for asset type '{0}' while loading asset '{1}'",
-				ToString( metadata.Type ), NameIfNotNull( metadata.Name ) );
+			// Asset does not exist
 			return nullptr;
 		}
 
-		SharedPtr<IAsset> asset{};
+		SharedPtr<IAsset>& asset = assetIt->second.second;
+		if ( asset )
+		{
+			// Asset is already loaded
+			return asset.get();
+		}
 
-		// Load the asset depending on its load policy
+		// The asset exists but is not loaded, attempt to load it.
+		AssetMetadata& metadata = assetIt->second.first;
+		IAssetLoader* loader = AssetFactory::GetLoader( metadata.Type );
+
+		if ( loader == nullptr )
+		{
+			LOG( LogCategory::Asset, Error, "No loader found for asset type '{}' while loading asset '{}'",
+				 AssetFactory::GetAssetTypeInfo( metadata.Type ).Name, NameIfNotNull( metadata.Name ) );
+
+			return nullptr;
+		}
+
+		// Create the asset
+		asset = loader->Create();
+		asset->m_AssetID = metadata.ID;
+		asset->m_AssetFlags.SetFlag( EAssetFlags::LoadedFromDisk );
+
+		// We need to fill the load data for the asset loader.
+		// If we use asset bundles, we can load the data from there.
+		// Otherwise, 
+		AssetLoadData loadData{};
+
+	#if USE_ASSET_BUNDLE
+
+		NOT_IMPLEMENTED;
+
+	#else
+
+		// Get the raw asset data from disk
 		switch ( metadata.LoadPolicy )
 		{
-		case EAssetLoadPolicy::Default:
-		{
-			asset = loader->CreateAsset( metadata.ID, EAssetFlags::None );
-			asset->m_AssetFlags.RemoveFlag( EAssetFlags::MemoryOnly ); // Ensure it's not memory-only
-
-			Expected<void, String> loadResult = loader->Load( asset, metadata );
-			if ( loadResult.IsError() )
+			case EAssetLoadPolicy::Default:
 			{
-				LOG( LogCategory::Asset, Error, "Failed to load asset '{0}' from path '{1}': {2}",
-					NameIfNotNull( metadata.Name ), metadata.Path, loadResult.Error() );
+				break;
+			}
+			default:
+			{
+				NOT_IMPLEMENTED;
 				return nullptr;
 			}
 		}
-		break;
-		default:
-			NOT_IMPLEMENTED;
+
+	#endif // USE_ASSET_BUNDLE
+
+		Expected<void, String> loadResult = loader->Load( loadData, *asset );
+		if ( loadResult.IsError() )
+		{
+			LOG( LogCategory::Asset, Error, "Failed to load asset '{}' from path '{}': {}",
+				 NameIfNotNull( metadata.Name ), metadata.Path, loadResult.Error());
 			return nullptr;
 		}
 
-		assetPtr = asset.get();
-		it->second.second = std::move( asset ); // Store the loaded asset
-		return assetPtr;
-
-	#else
-		NOT_IMPLEMENTED;
-	#endif
+		return asset.get();
 	}
 
 	bool AssetDatabase::IsAssetLoaded( AssetID a_AssetID )
@@ -150,7 +170,7 @@ namespace Tridium {
 		return it != Get()->m_Assets.end();
 	}
 
-	bool AssetDatabase::RegisterAsset( const SharedPtr<IAsset>& a_Asset, const AssetMetadata& a_Metadata )
+	bool AssetDatabase::RegisterAsset( SharedPtr<IAsset> a_Asset, AssetMetadata a_Metadata )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 		if ( a_Asset == nullptr )
@@ -163,7 +183,7 @@ namespace Tridium {
 		AssetMetadata metadata = a_Metadata;
 		metadata.ID = assetID;
 		metadata.Type = a_Asset->Type();
-		Get()->m_Assets[assetID] = { std::move( metadata ), a_Asset };
+		Get()->m_Assets[ assetID ] = { std::move( metadata ), std::move( a_Asset ) };
 		return true;
 	}
 
@@ -203,14 +223,14 @@ namespace Tridium {
 
 #if WITH_EDITOR
 
-	AssetID AssetDatabase::Editor::ImportAsset( StringView a_Path )
+	AssetID AssetDatabase::ImportAsset( StringView a_Path )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 		NOT_IMPLEMENTED;
 		return AssetID{};
 	}
 
-	bool AssetDatabase::Editor::CreateAsset( IAsset* a_Asset, StringView a_Path )
+	bool AssetDatabase::CreateAsset( IAsset* a_Asset, StringView a_Path )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 		if (a_Asset == nullptr || a_Path.empty())
@@ -223,7 +243,7 @@ namespace Tridium {
 		return false;
 	}
 
-	bool AssetDatabase::Editor::DeleteAsset( AssetID a_AssetID )
+	bool AssetDatabase::DeleteAsset( AssetID a_AssetID )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 		
@@ -255,7 +275,7 @@ namespace Tridium {
 		if ( metadata && !metadata->Name.empty() )
 			return metadata->Name;
 
-		return "<UNNAMED>";
+		return {};
 	}
 
 	Expected<void, String> AssetDatabase::Init()

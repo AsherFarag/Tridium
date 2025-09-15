@@ -39,7 +39,7 @@ namespace Tridium {
 	public:
 
 		//=============================================================================================
-		SceneRenderer( SharedPtr<Scene> a_Scene, const SceneRendererOptions& a_Options = SceneRendererOptions() );
+		SceneRenderer( AssetRef<Scene> a_Scene, const SceneRendererOptions& a_Options = SceneRendererOptions() );
 		SceneRenderer( const SceneRenderer& a_Other ) = delete;
 		SceneRenderer( SceneRenderer&& a_Other ) = default;
 		SceneRenderer& operator=( const SceneRenderer& a_Other ) = delete;
@@ -62,14 +62,14 @@ namespace Tridium {
 		//=============================================================================================
 		// Submits a static mesh for rendering. 
 		// SceneRenderer must be open.
-		void SubmitStaticMesh( SharedPtr<T::StaticMesh> a_StaticMesh, const Matrix4& a_Transform );
+		void SubmitStaticMesh( AssetRef<StaticMesh> a_StaticMesh, const Matrix4& a_Transform );
 
 		//=============================================================================================
 		RHITextureRef GetOutputTexture() const;
 
 		//=============================================================================================
 		// Sets the scene to be rendered. Cannot be called while the renderer is open.
-		void SetScene( SharedPtr<Scene> a_Scene );
+		void SetScene( AssetRef<Scene> a_Scene );
 
 		//=============================================================================================
 		// Sets the viewport size for rendering. Does not update during rendering.
@@ -85,8 +85,8 @@ namespace Tridium {
 		//=============================================================================================
 		struct MeshKey
 		{
-			AssetID MeshAsset = AssetID::InvalidID;
-			AssetID MaterialAsset = AssetID::InvalidID;
+			AssetID MeshAsset = InvalidAssetID;
+			AssetID MaterialAsset = InvalidAssetID;
 			uint32_t SubMeshIndex = 0; // Index of the submesh in the source mesh
 
 			auto operator<=>( const MeshKey& a_Other ) const = default;
@@ -95,7 +95,7 @@ namespace Tridium {
 		//=============================================================================================
 		struct StaticMeshDrawCall
 		{
-			SharedPtr<T::StaticMesh> StaticMesh;                  // The static mesh to render
+			AssetRef<StaticMesh> StaticMesh;                      // The static mesh to render
 			SmallArray<Matrix4x3<float>, 8> InstanceTransforms;   // Transforms for each instance of the static mesh
 			uint32_t InstanceCount = 0;                           // Number of instances to render
 		};
@@ -112,7 +112,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		// The scene being rendered.
-		SharedPtr<Scene> m_Scene;
+		AssetRef<Scene> m_Scene;
 
 		//=============================================================================================
 		// Viewport settings for the renderer.

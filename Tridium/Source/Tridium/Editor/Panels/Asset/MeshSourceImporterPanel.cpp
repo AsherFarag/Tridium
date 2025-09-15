@@ -86,7 +86,7 @@ namespace Tridium {
 	void MeshSourceImporterPanel::ImportMeshes()
 	{
 		auto assetManager = AssetManager::Get<EditorAssetManager>();
-		AssetMetaData meshSourceMetaData =
+		OldAssetMetaData meshSourceMetaData =
 		{
 			AssetHandle::Create(),
 			EAssetTypeOld::MeshSource,
@@ -99,9 +99,9 @@ namespace Tridium {
 		assetManager->CreateAsset( meshSourceMetaData, m_MeshSource );
 
 		//// Create a single static mesh for the mesh source
-		SharedPtr<StaticMesh> mesh = MakeShared<StaticMesh>( m_MeshSource->GetHandle() );
+		SharedPtr<OldStaticMesh> mesh = MakeShared<OldStaticMesh>( m_MeshSource->GetHandle() );
 
-		AssetMetaData metaData;
+		OldAssetMetaData metaData;
 		metaData.Handle = AssetHandle::Create();
 		metaData.AssetType = EAssetTypeOld::StaticMesh;
 		metaData.Path = m_Path.GetParentPath();
