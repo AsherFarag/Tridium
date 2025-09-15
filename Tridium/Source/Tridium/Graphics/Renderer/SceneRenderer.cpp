@@ -176,7 +176,10 @@ namespace Tridium {
 
 		// Build the render graph
 		{
+			m_RenderGraph.AddPass( "Geometry Pass - StaticMesh", ERHICommandQueueType::Graphics, [ & ]( RenderPassBuilder& builder )
+			{
 
+			} );
 		}
 
 		m_RenderGraph.Compile();

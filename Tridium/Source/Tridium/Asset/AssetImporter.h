@@ -54,6 +54,10 @@ namespace Tridium {
 		// but do not prevent the asset from being imported successfully.
 		void LogWarning( String a_Message ) { m_Warnings.EmplaceBack( std::move( a_Message ) ); }
 
+		//=============================================================================================
+		// Logs a non-fatal warning message that occurred during the import process.
+		// These warnings should be a performance or quality concern that the user should be aware of,
+		// but do not prevent the asset from being imported successfully.
 		template<typename... _Args>
 		inline void LogWarning( StringView a_Fmt, const _Args&... a_Args )
 		{
@@ -83,7 +87,7 @@ namespace Tridium {
 		//=============================================================================================
 		// Creates a new asset that will be serialized into its own file.
 		template<Concepts::Derived<IAsset> T>
-		AssetRef<T> CreateAsset( String a_Name, String a_Path )
+		AssetRef<T> CreateAsset( String a_Name, String a_Path, String a_SourceAssetPath = {} )
 		{
 			// When an importer creates an asset, we don't immediately register it with the AssetDatabase.
 			// This is done so we can wait until the entire import process is complete and all assets are created.
@@ -97,7 +101,7 @@ namespace Tridium {
 				.Path = std::move( a_Path ),
 				.Editor
 				{ 
-					.SourceFilePath = m_AssetPath.ToString(),
+					.SourceFilePath = a_SourceAssetPath.empty() ? m_AssetPath.ToString() : a_SourceAssetPath,
 					.CreationTime = TimeStamp::Now(),
 					.LastModifiedTime = TimeStamp::Now()
 				}
@@ -116,6 +120,30 @@ namespace Tridium {
 			m_CreatedAssets.EmplaceBack( std::move( metaData ), asset );
 
 			return asset;
+		}
+
+		//=============================================================================================
+		// Registers a dependency between two assets.
+		bool RegisterDependency( AssetID a_Dependent, AssetID a_Dependency )
+		{
+			if ( !a_Dependent.IsValid() || !a_Dependency.IsValid() )
+			{
+				ASSERT( false, "Invalid AssetID provided when registering dependency." );
+				return false;
+			}
+
+			// Find the created asset that matches the dependent AssetID
+			for ( auto& [meta, asset] : m_CreatedAssets )
+			{
+				if ( meta.ID == a_Dependent )
+				{
+					meta.Dependencies.insert( a_Dependency );
+					return true;
+				}
+			}
+
+			ASSERT( false, "Dependent asset with ID '{}' not found among created assets.", a_Dependent );
+			return false;
 		}
 
 	public:

@@ -209,6 +209,7 @@ namespace Tridium {
 			size_t textureWidth = 0;
 			size_t textureHeight = 0;
 			bool isHDR = false;
+			bool isEmbedded = false;
 
 			// Is the texture embedded in the model file?
 			if ( const aiTexture* aiTexEmbedded = a_Scene->GetEmbeddedTexture( path.C_Str() ) )
@@ -217,6 +218,8 @@ namespace Tridium {
 				textureName = FilePath( aiTexEmbedded->mFilename.C_Str() ).GetFilenameWithoutExtension();
 				textureData.Resize( aiTexEmbedded->mWidth * ( aiTexEmbedded->mHeight == 0 ? 1 : aiTexEmbedded->mHeight ) );
 				memcpy( textureData.Data(), aiTexEmbedded->pcData, textureData.Size() );
+
+				isEmbedded = true;
 			}
 			// Or is it an external texture file?
 			else
@@ -294,7 +297,11 @@ namespace Tridium {
 
 				const FilePath assetPath = a_Context.DestinationPath() / assetFileName;
 
-				textureRef = loadedTextures[ path ] = a_Context.CreateAsset<Texture>( std::move( textureName ), assetPath.ToString() );
+				textureRef = loadedTextures[ path ] = a_Context.CreateAsset<Texture>(
+					std::move( textureName ),
+					assetPath.ToString(),
+					!isEmbedded ? ( a_Context.AssetPath().GetParentPath() / FilePath( path.C_Str() ) ).ToString() : String{}
+				);
 			}
 
 			TextureAccessor* texture = Cast<TextureAccessor*>( textureRef.get() );
@@ -431,6 +438,15 @@ namespace Tridium {
 
 				material->SetFlags( matFlags );
 			}
+
+			// Register the dependencies for the material to its textures
+			if ( material->AlbedoMap() ) a_Context.RegisterDependency( material->ID(), material->AlbedoMap()->ID() );
+			if ( material->NormalMap() ) a_Context.RegisterDependency( material->ID(), material->NormalMap()->ID() );
+			if ( material->MetallicMap() ) a_Context.RegisterDependency( material->ID(), material->MetallicMap()->ID() );
+			if ( material->RoughnessMap() ) a_Context.RegisterDependency( material->ID(), material->RoughnessMap()->ID() );
+			if ( material->EmissiveMap() ) a_Context.RegisterDependency( material->ID(), material->EmissiveMap()->ID() );
+			if ( material->AmbientOcclusionMap() ) a_Context.RegisterDependency( material->ID(), material->AmbientOcclusionMap()->ID() );
+			if ( material->OpacityMap() ) a_Context.RegisterDependency( material->ID(), material->OpacityMap()->ID() );
 		}
 	}
 
@@ -481,6 +497,8 @@ namespace Tridium {
 			const uint32_t newIndex = staticMesh->m_Materials.Size();
 			staticMesh->m_Materials.PushBack( m_Materials[ a_OriginalIndex ] );
 			remapMaterialIndices[ a_OriginalIndex ] = newIndex;
+
+			a_Context.RegisterDependency( staticMesh->ID(), m_Materials[a_OriginalIndex]->ID() );
 
 			return newIndex;
 		};

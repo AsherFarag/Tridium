@@ -64,12 +64,23 @@ namespace Tridium {
 }
 
 namespace std {
+
 	template<typename T>
 	struct hash<Tridium::UID<T>>
 	{
 		std::size_t operator()( const Tridium::UID<T>& a_ID ) const
 		{
 			return std::hash<T>()( a_ID.ID() );
+		}
+	};
+
+	// Format support
+	template<typename T>
+	struct formatter<Tridium::UID<T>> : formatter<T>
+	{
+		auto format( const Tridium::UID<T>& a_ID, format_context& ctx ) const
+		{
+			return formatter<T>::format( a_ID.ID(), ctx );
 		}
 	};
 }
