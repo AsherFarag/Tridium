@@ -27,11 +27,6 @@ namespace Tridium {
 
 	AssetManagerBase* CreateAssetManager()
 	{
-		if ( false )
-		{
-			( void )RendererModule::Print();
-		}
-
 		#if WITH_EDITOR
 			return new EditorAssetManager();
 		#else

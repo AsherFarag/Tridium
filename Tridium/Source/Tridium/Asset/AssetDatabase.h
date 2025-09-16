@@ -1,7 +1,7 @@
 #pragma once
 #include <Tridium/Asset/Asset.h>
-#include <Tridium/Asset/AssetFactory.h>
 #include <Tridium/Common/TimeStamp.h>
+#include <Tridium/Containers/UnorderedSet.h>
 #include <Tridium/Core/Core.h>
 
 namespace Tridium {

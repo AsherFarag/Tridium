@@ -6,7 +6,6 @@
 #include <Tridium/Common/Function.h>
 #include <Tridium/Events/Event.h>
 #include <Tridium/Scene/Scene.h>
-#include <Tridium/Utils/Singleton.h>
 #include <Tridium/Utils/StaticInitializer.h>
 
 namespace Tridium {

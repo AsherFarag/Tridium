@@ -39,6 +39,8 @@ int main( int argc, char** argv )
 	return 0;
 }
 
+#if 0
+
 #include <Tridium/Graphics/RHI/RHI.h>
 #include <Tridium/Graphics/Renderer/ShaderLibrary.h>
 #include <Tridium/Graphics/Renderer/RenderResourceManager.h>
@@ -559,5 +561,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 
 #endif
 }
+
+#endif
 
 #endif // TE_PLATFORM_WINDOWS

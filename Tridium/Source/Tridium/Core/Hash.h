@@ -6,6 +6,9 @@
 
 namespace Tridium {
 
+	//TODO( "Implement name" );
+	using name_t = hash64_t;
+
 	namespace HashAlgorithms {
 		TRIDIUM_NODISCARD constexpr hash_t fnv1a( const char* a_String, hash_t a_Hash = 2166136261U )
 		{
@@ -142,6 +145,20 @@ namespace Tridium {
 		{
 			a_Seed ^= std::hash<T>{}( a_Value ) + 0x9e3779b9 + ( a_Seed << 6 ) + ( a_Seed >> 2 );
 			return a_Seed;
+		}
+
+		template <typename T>
+		inline void HashCombineHelper( hash64_t& o_Seed, const T& a_Value )
+		{
+			o_Seed = HashCombine( o_Seed, a_Value );
+		}
+
+		template<typename... T>
+		hash64_t HashCombine( const T&... a_Args )
+		{
+			hash64_t seed = 0;
+			( HashCombineHelper( seed, a_Args ), ... );
+			return seed;
 		}
 
 		template <typename T>

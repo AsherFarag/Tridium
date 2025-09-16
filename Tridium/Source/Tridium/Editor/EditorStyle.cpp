@@ -82,7 +82,7 @@ namespace Tridium {
 			colors[ImGuiCol_TabDimmedSelectedOverline] = transparentColor;
 
 			colors[ImGuiCol_DockingPreview] = checkMarkColor;
-			colors[ImGuiCol_DockingEmptyBg] = ImVec4( 1.00f, 0.00f, 0.00f, 1.00f );
+			colors[ImGuiCol_DockingEmptyBg] = frameBgColor;
 
 			colors[ImGuiCol_PlotLines] = ImVec4( 1.00f, 0.00f, 0.00f, 1.00f );
 			colors[ImGuiCol_PlotLinesHovered] = ImVec4( 1.00f, 0.00f, 0.00f, 1.00f );

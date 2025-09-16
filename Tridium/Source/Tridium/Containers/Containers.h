@@ -8,6 +8,7 @@
 #include "List.h"
 #include "Map.h"
 #include "UnorderedMap.h"
+#include "UnorderedSet.h"
 #include "Optional.h"
 #include "Set.h"
 #include "Span.h"

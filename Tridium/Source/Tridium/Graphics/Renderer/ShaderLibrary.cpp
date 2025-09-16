@@ -1,119 +1,121 @@
 #include "tripch.h"
 #include "ShaderLibrary.h"
 #include <Tridium/Graphics/RHI/RHI.h>
-#include <Tridium/IO/FileIO.h>
+#include <Tridium/Graphics/RHI/RHIShaderCompiler.h>
 
 namespace Tridium {
 
-	ERHIShaderType GetShaderTypeFromFileName( StringView a_FileName )
+	//=============================================================================================
+	static UnorderedMap<name_t, ShaderFamily> s_ShaderFamilies;
+	static UnorderedMap<hash64_t, ShaderFamilyVariant> s_ShaderVariants;
+
+	bool ShaderLibrary::RegisterFamily( ShaderFamily&& a_Family )
 	{
-		if ( a_FileName.size() < 2 )
-			return ERHIShaderType::Unknown;
+		name_t familyNameHash = Hashing::HashString( a_Family.Name );
 
-		// We only need the first letter of the suffix as the second letter is always 'S' for shader
-		char shaderSuffix[2] = { a_FileName[a_FileName.size() - 2], a_FileName[a_FileName.size() - 1] };
-
-		switch ( std::tolower( shaderSuffix[0] ) )
+		if ( s_ShaderFamilies.find( familyNameHash ) != s_ShaderFamilies.end() )
 		{
-			case 'v': return ERHIShaderType::Vertex;
-			case 'h': return ERHIShaderType::Hull;
-			case 'd': return ERHIShaderType::Domain;
-			case 'g': return ERHIShaderType::Geometry;
-			case 'p': return ERHIShaderType::Pixel;
-			case 'c': return ERHIShaderType::Compute;
+			LOG( LogCategory::Rendering, Warn, "Shader family '{0}' is already registered", a_Family.Name );
+			return false;
 		}
 
-		ASSERT( false, "Unknown shader type suffix '{0}' while loading shader '{1}'", shaderSuffix, a_FileName );
-		return ERHIShaderType::Unknown;
+		s_ShaderFamilies[familyNameHash] = std::move( a_Family );
+
+		return true;
 	}
 
-	RHIShaderModuleRef ShaderLibrary::LoadShaderFromFile( const FilePath& a_Path, StringView a_Name, ERHIShaderType a_Type )
-    {
-		hash_t nameHash = a_Name.empty()
-			? Hashing::HashString( a_Path.GetFilenameWithoutExtension().c_str() )
-			: Hashing::HashString( a_Name.data() );
+	const ShaderFamily* ShaderLibrary::GetFamily( name_t a_FamilyName )
+	{
+		auto it = s_ShaderFamilies.find( a_FamilyName );
 
-		if ( RHIShaderModuleRef ref = FindShader( nameHash ) )
+		if ( it != s_ShaderFamilies.end() )
 		{
-			LOG( LogCategory::RHI, Warn, "Shader '{0}' already loaded: {1}", ref->Desc().Name.data(), a_Path.ToString() );
-			return ref;
+			return &it->second;
 		}
 
-		// Read the source code from the file
-		String source = IO::ReadFile( a_Path.ToString() );
-		if ( source.empty() )
+		return nullptr;
+	}
+
+	const ShaderFamilyVariant* ShaderLibrary::GetOrCreateVariant( name_t a_FamilyName, const ShaderSwitchSet& a_Switches )
+	{
+		const ShaderFamily* family = GetFamily( a_FamilyName );
+
+		if ( !family )
 		{
-			LOG( LogCategory::Rendering, Error, "Failed to load shader from file '{0}'", a_Path.ToString() );
 			return nullptr;
 		}
 
-		if ( a_Type == ERHIShaderType::Unknown )
+		// Compute the hash for the variant based on the family name and switches
+		const hash64_t variantHash = Hashing::HashCombine( a_FamilyName, a_Switches.Hash() );
+
+		// Check if the variant already exists
+		auto it = s_ShaderVariants.find( variantHash );
+		if ( it != s_ShaderVariants.end() )
 		{
-			// Determine the shader type from the file name
-			a_Type = GetShaderTypeFromFileName( a_Path.GetFilenameWithoutExtension() );
-			if ( a_Type == ERHIShaderType::Unknown )
+			return &it->second;
+		}
+
+		// Variant does not exist, create it
+		ShaderFamilyVariant variant;
+		variant.Switches = a_Switches;
+
+		// Compile shaders for each stage
+		for ( size_t i = 0; i < (size_t)ERHIShaderType::COUNT; ++i )
+		{
+			StringView source = family->ShaderSources[i];
+
+			if ( source.empty() )
+				continue; // No source for this stage
+
+			// Construct the shader compiler input
+			ShaderCompilerInput input;
+			input.Source = source;
+			input.ShaderType = (ERHIShaderType)i;
+			input.Format = RHI::GetShaderFormat();
+
+			auto output = RHIShaderCompiler::Compile( input );
+
+			if ( output.IsError() )
 			{
+				LOG( LogCategory::Rendering, Error, "Failed to compile shader '{}' - Error: {}", family->Name, output.Error() );
+				return nullptr;
+			}
+
+			RHIShaderModuleDesc desc;
+			desc.Name = std::format( "{}_{}", family->Name, (size_t)input.ShaderType );
+			desc.Type = input.ShaderType;
+			desc.Bytecode = output.Value().ByteCode;
+			desc.Source = input.Source;
+
+			// Create the shader module
+			variant.ShaderStages[i] = RHI::CreateShaderModule( desc );
+
+			if ( !variant.ShaderStages[i] || !variant.ShaderStages[i]->Valid() )
+			{
+				LOG( LogCategory::Rendering, Error, "Failed to create shader module '{}'", family->Name );
 				return nullptr;
 			}
 		}
 
-		if ( a_Name.empty() )
+		if ( !variant.Valid() )
 		{
-			// If no name is provided, use the file name
-			return LoadShader( StringView( source ), a_Path.GetFilenameWithoutExtension(), a_Type );
+			LOG( LogCategory::Rendering, Error, "No valid shader stages compiled for variant of family '{}'", family->Name );
+			return nullptr;
 		}
 
-		// Load the shader with the provided name
-		return LoadShader( StringView( source ), a_Name, a_Type );
-    }
+		// Store the variant
+		return &( s_ShaderVariants[variantHash] = std::move( variant ) );
+	}
 
-	RHIShaderModuleRef ShaderLibrary::LoadShader( StringView a_Source, StringView a_Name, ERHIShaderType a_Type )
+	bool ShaderLibrary::Init()
 	{
-		hash_t nameHash = Hashing::HashString( a_Name.data() );
-		if ( RHIShaderModuleRef ref = FindShader( nameHash ) )
-		{
-			LOG( LogCategory::RHI, Warn, "Shader '{0}' already loaded", a_Name.data() );
-			return ref;
-		}
+		return true;
+	}
 
-		CachedShader cachedShader;
-		cachedShader.Name = a_Name.empty() ? GenerateUniqueName() : String( a_Name );
-		cachedShader.Source = a_Source;
-
-		// Construct the shader compiler input
-		ShaderCompilerInput input;
-		input.Source = cachedShader.Source;
-		input.ShaderType = a_Type;
-		// Get the shader format from the RHI
-		input.Format = RHI::GetShaderFormat();
-
-		// Compile the shader
-		auto output = RHIShaderCompiler::Compile( input );
-		if ( output.IsError() )
-		{
-			LOG( LogCategory::Rendering, Error, "Failed to compile shader '{0}' - Error: {1}", cachedShader.Name, output.Error() );
-			return nullptr;
-		}
-
-		// Construct the shader module descriptor
-		RHIShaderModuleDesc desc;
-		desc.Name = cachedShader.Name;
-		desc.Type = input.ShaderType;
-		desc.Bytecode = output.Value().ByteCode;
-		desc.Source = cachedShader.Source;
-
-		// Create the shader module
-		RHIShaderModuleRef shader = RHI::CreateShaderModule( desc );
-		if ( !shader )
-		{
-			LOG( LogCategory::Rendering, Error, "Failed to create shader module '{0}'", cachedShader.Name );
-			return nullptr;
-		}
-		cachedShader.Shader = shader;
-
-		// Add the shader to the library
-		m_CachedShaders[Hashing::HashString( cachedShader.Name )] = std::move( cachedShader );
-		return shader;
+	void ShaderLibrary::Shutdown()
+	{
+		s_ShaderFamilies.clear();
+		s_ShaderVariants.clear();
 	}
 
 } // namespace Tridium

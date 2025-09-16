@@ -6,7 +6,6 @@
 #include <Tridium/ImGui/ImGuiLayer.h>
 
 #include <Tridium/oldAsset/AssetManager.h>
-#include "Util/AssetInfo.h"
 
 // Assets
 #include <Tridium/Graphics/oldRendering/Mesh.h>

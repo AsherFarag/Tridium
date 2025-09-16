@@ -12,8 +12,7 @@
 #pragma clang diagnostic ignored "-Wsign-conversion"    // warning: implicit conversion changes signedness
 #endif
 
-#include <Tridium/Graphics/Renderer/RendererModule.h>
-#include <Tridium/Graphics/Renderer/ShaderLibrary.h>
+#include <Tridium/Graphics/RHI/RHIShaderCompiler.h>
 #include <Tridium/Graphics/RHI/RHI.h>
 
 namespace Tridium {
@@ -366,7 +365,7 @@ namespace Tridium {
     }
 
     // Called by Init/NewFrame/Shutdown
-    bool ImGui_ImplRHI_CreateFontsTexture()
+    static bool ImGui_ImplRHI_CreateFontsTexture()
     {
         ImGuiIO& io = ImGui::GetIO();
         ImGui_ImplRHI_Data* bd = ImGui_ImplRHI_GetBackendData();
@@ -458,14 +457,22 @@ namespace Tridium {
 		}
 
 		// Create the shaders
-		RHIShaderModuleRef vertexShader = ShaderLibrary::Get()->LoadShader(s_ImGuiVertShader, "ImGui Vertex Shader", ERHIShaderType::Vertex);
+		auto vertexShaderOutput = RHIShaderCompiler::Compile( ShaderCompilerInput{ .Source = s_ImGuiVertShader, .ShaderType = ERHIShaderType::Vertex, .Format = RHI::GetShaderFormat() } );
+		if ( vertexShaderOutput.IsError() )
+        {
+            LOG( LogCategory::Editor, Error, "Failed to compile vertex shader for ImGui backend! Error: %s", vertexShaderOutput.Error().c_str() );
+            return false;
+		}
+
+		RHIShaderModuleRef vertexShader = RHI::CreateShaderModule( RHIShaderModuleDesc{}.SetName( "ImGui Vertex Shader" ).SetType( ERHIShaderType::Vertex ).SetBytecode( vertexShaderOutput.Value().ByteCode ).SetSource( s_ImGuiVertShader ) );
         if ( vertexShader == nullptr || !vertexShader->Valid() )
         {
             LOG( LogCategory::Editor, Error, "Failed to create vertex shader for ImGui backend!" );
             return false;
 		}
 
-		RHIShaderModuleRef pixelShader = ShaderLibrary::Get()->LoadShader( s_ImGuiPixelShader, "ImGui Pixel Shader", ERHIShaderType::Pixel );
+		auto pixelShaderOutput = RHIShaderCompiler::Compile( ShaderCompilerInput{ .Source = s_ImGuiPixelShader, .ShaderType = ERHIShaderType::Pixel, .Format = RHI::GetShaderFormat() } );
+		RHIShaderModuleRef pixelShader = RHI::CreateShaderModule( RHIShaderModuleDesc{}.SetName( "ImGui Pixel Shader" ).SetType( ERHIShaderType::Pixel ).SetBytecode( pixelShaderOutput.Value().ByteCode ).SetSource( s_ImGuiPixelShader ) );
         if ( pixelShader == nullptr || !pixelShader->Valid() )
         {
             LOG( LogCategory::Editor, Error, "Failed to create pixel shader for ImGui backend!" );
@@ -512,7 +519,8 @@ namespace Tridium {
                                               .SetBlendOpAlpha( ERHIBlendOp::Add )
                                               .SetLogicOp( ERHILogicOp::NoOp )
                                               .SetColorWriteMask( ERHIColorMask::RGBA )
-                            ) );
+                            )
+            );
 
         bd->PipelineState = bd->DynamicRHI->CreateGraphicsPipelineState( psoDesc );
 

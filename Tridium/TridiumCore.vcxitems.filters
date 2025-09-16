@@ -993,6 +993,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Tridium\Asset\Importers\ModelImporter.cpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\Renderer\PipelineStateCache.h" />
   </ItemGroup>
 </Project>

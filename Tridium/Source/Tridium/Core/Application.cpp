@@ -1,8 +1,6 @@
 #include "tripch.h"
 #include "Application.h"
 #include <Tridium/Engine/Engine.h>
-#include <Tridium/IO/FileManager.h>
-#include <Tridium/Debug/Profiler/ProfileSessionSerializer.h>
 
 // TEMP!
 #if IS_EDITOR
@@ -11,20 +9,10 @@
 
 // TEMP ?
 #include <Tridium/ImGui/ImGuiModule.h>
-#include <Tridium/Graphics/oldRendering/GameViewport.h>
-#include <Tridium/Graphics/oldRendering/RenderCommand.h>
 #include <Tridium/Graphics/RHI/RHI.h>
-#include <Tridium/Graphics/RHI/RHIShaderCompiler.h>
-#include <Tridium/Math/MathConstants.h>
-#include <GLFW/glfw3.h>
 #include <Tridium/Reflection/FieldReflection.h>
 #include <Tridium/Asset/AssetDatabase.h>
-#include <Tridium/Asset/TextureAsset.h>
-#include <Tridium/Graphics/Renderer/RendererModule.h>
-#include <Tridium/Graphics/Renderer/SceneRenderer.h>
-#include <Tridium/IO/FileStream.h>
 #include <Tridium/Asset/Importers/ModelImporter.h>
-#include <Tridium/IO/FileIO.h>
 
 namespace Tridium {
 

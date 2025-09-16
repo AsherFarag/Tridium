@@ -4,10 +4,8 @@
 #if USE_ASSET_IMPORTERS
 
 #include <Tridium/Asset/AssetDefinitions.h>
-#include <Tridium/Asset/AssetFactory.h>
 #include <Tridium/Asset/AssetDatabase.h>
-#include <Tridium/Containers/Expected.h>
-#include <Tridium/Containers/InitList.h>
+#include <Tridium/Asset/AssetFactory.h>
 #include <Tridium/Core/Version.h>
 #include <Tridium/IO/FilePath.h>
 #include <Tridium/Utils/StaticInitializer.h>
