@@ -47,17 +47,6 @@ namespace Tridium {
 		// Initialise the Engine
 		EngineConfig engineConfig;
 		m_Engine = Engine::Create( engineConfig );
-
-		//TEMP
-		const FilePath assetFilePath = "TestProject/Content/Sponza/glTF/Sponza.gltf";
-		auto modelImporter = AssetFactory::GetImporter( assetFilePath.GetExtension().ToString() );
-		if ( modelImporter )
-		{
-			AssetImportContext context;
-			context.m_AssetPath = assetFilePath;
-			modelImporter->OnImport( context );
-			int i = 0;
-		}
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////
@@ -105,6 +94,8 @@ namespace Tridium {
 
 			FlushEventQueue();
 
+			RHI::BeginFrame();
+
 			// Invoke the tick groups
 			s_TickCallback.Broadcast();
 
@@ -127,8 +118,7 @@ namespace Tridium {
 
 			// ====================================================================================================
 
-			TODO( " Temp solution for setting backbuffer to Present state after imgui is done" );
-			RHI::GetSwapChain()->GetBackBuffer()->SetState( ERHIResourceStates::Present );
+			RHI::EndFrame();
 
 			RHI::WaitForIdle();
 			RHI::CollectGarbage();

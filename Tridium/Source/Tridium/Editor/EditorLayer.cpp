@@ -26,6 +26,8 @@
 #include "Panels/StatsPanel.h"
 #include "Panels/ProfilerPanel.h"
 
+// TEMP
+#include <Tridium/Graphics/RHI/RHI.h>
 #include <Tridium/IO/SceneSerializer.h>
 #include <Tridium/oldAsset/Loaders/TextureLoader.h>
 #include <Tridium/oldAsset/EditorAssetManager.h>
@@ -33,6 +35,49 @@
 #include <fstream>
 
 namespace Tridium {
+
+	//TEMP!!
+	class RHIInfoPanel : public ViewportPanel
+	{
+	public:
+		RHIInfoPanel() : ViewportPanel( "RHI Info##RHIInfoPanel" ) {}
+		virtual ~RHIInfoPanel() = default;
+
+		virtual void OnImGuiDraw() override
+		{
+			if ( ImGui::Begin( m_Name.c_str() ) )
+			{
+				const auto gpuInfo = RHI::GetGPUInfo();
+				const auto& stats = RHI::GetRHIStats();
+				ImGui::Text( "API: %s", RHI::GetRHIName().data() );
+				ImGui::Separator();
+				ImGui::Text( "Device Name: %s", gpuInfo.DeviceName.c_str() );
+				ImGui::Text( "Vendor: %s", ToString( (EGPUVendorID)gpuInfo.VendorID ).data() );
+				ImGui::Text( "Driver Version: %s", gpuInfo.DriverVersion.c_str() );
+				ImGui::Text( "VRAM: %.2f MB", gpuInfo.VRAMBytes / ( 1024.0f * 1024.0f ) );
+				ImGui::Separator();
+				ImGui::Text( "Frame: %llu", stats.Frame );
+				ImGui::Text( "Num RHI Objects: %u", stats.NumRHIObjects );
+				ImGui::Text( "RHI Objects Created This Frame: %llu", stats.NumRHIObjectsCreatedThisFrame );
+
+				if ( !stats.HeapStats.Empty() && ImGui::TreeNode( "Descriptor Heaps" ) )
+				{
+					for ( const auto& heapStat : stats.HeapStats )
+					{
+						ImGui::Separator();
+						ImGui::BulletText( "Descriptor Heap Type: %s", ToString( heapStat.Type ).data() );
+						ImGui::BulletText( "Num Allocated Descriptors: %u", heapStat.NumAllocatedDescriptors );
+						ImGui::BulletText( "Num Allocations: %u", heapStat.NumAllocations );
+						ImGui::BulletText( "Heap Size: %.2f MB", heapStat.HeapSizeInBytes / ( 1024.0f * 1024.0f ) );
+					}
+
+					ImGui::TreePop();
+				}
+
+			}
+			ImGui::End();
+		}
+	};
 
 	EditorLayer::EditorLayer()
 		: Layer( "EditorLayer")
@@ -53,6 +98,7 @@ namespace Tridium {
 		m_GameViewportPanel = m_PanelStack.PushPanel<GameViewportPanel>();
 		m_EditorViewportPanel = m_PanelStack.PushPanel<EditorViewportPanel>( m_EditorCamera );
 		m_PanelStack.PushPanel<StatsPanel>();
+		m_PanelStack.PushPanel<RHIInfoPanel>();
 	}
 
 	void EditorLayer::OnDetach()

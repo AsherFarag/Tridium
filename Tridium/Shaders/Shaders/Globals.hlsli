@@ -1,4 +1,6 @@
-#pragma once
+#ifndef GLOBALS_HLSLI
+#define GLOBALS_HLSLI
+
 #include "Platform.hlsli"
 #include "Platform/DirectX12/RootSig.hlsli"
 #include "ShaderInterop.h"
@@ -17,3 +19,5 @@ SamplerState StaticTrilinearClampedSampler   : register(s5, space1000);
 #define GetStaticSampler( _Filter, _WrapMode ) Static##_Filter##_WrapMode##Sampler
 
 #endif // PLATFORM_SUPPORTS_STATIC_SAMPLERS
+
+#endif // GLOBALS_HLSLI

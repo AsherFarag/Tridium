@@ -3,6 +3,7 @@
 #include <Tridium/Asset/MaterialAsset.h>
 #include <Tridium/Graphics/RHI/RHIForward.h>
 #include <Tridium/Graphics/Renderer/RenderGraph.h>
+#include <Tridium/Graphics/Renderer/RenderResource.h>
 #include <Tridium/Math/Matrix.h>
 #include <Tridium/Scene/Scene.h>
 
@@ -95,9 +96,15 @@ namespace Tridium {
 		//=============================================================================================
 		struct StaticMeshDrawCall
 		{
-			AssetRef<StaticMesh> StaticMesh;                      // The static mesh to render
-			SmallArray<Matrix4x3<float>, 8> InstanceTransforms;   // Transforms for each instance of the static mesh
-			uint32_t InstanceCount = 0;                           // Number of instances to render
+			RHIBufferRef VertexBuffer; 
+			RHIBufferRef IndexBuffer;
+			RHIBufferRange VertexBufferRange;
+			RHIBufferRange IndexBufferRange;
+			RHIGraphicsPipelineStateRef PipelineState;
+			RHIBindingSetRef BindingSet;
+			SmallArray<Matrix4x3<float>, 8> InstanceTransforms;
+
+			bool Empty() const { return InstanceTransforms.Empty(); }
 		};
 
 		using StaticDrawList = Map<MeshKey, StaticMeshDrawCall>;
@@ -133,6 +140,7 @@ namespace Tridium {
 		struct
 		{
 			Camera Camera;               // The camera used for rendering
+			Matrix4 Projection;          // Projection matrix for the camera
 			Matrix4 View;                // View matrix for the camera
 			Vector3 Position;            // Position of the camera in world space
 		} m_CameraData;

@@ -40,6 +40,17 @@ namespace Tridium {
         auto& SetVertexBuffer( IRHIBuffer* a_VertexBuffer ) { VertexBuffer = a_VertexBuffer; return *this; }
         auto& SetIndexBuffer( IRHIBuffer* a_IndexBuffer ) { IndexBuffer = a_IndexBuffer; return *this; }
         auto& AddBindingSet( IRHIBindingSet* a_BindingSet ) { BindingSets.PushBack( a_BindingSet ); return *this; }
+        auto& SetBindingSet( size_t a_Index, IRHIBindingSet* a_BindingSet )
+        {
+            if ( a_Index >= BindingSets.Size() )
+            {
+                BindingSets.Resize( a_Index + 1 );
+            }
+
+            BindingSets[a_Index] = a_BindingSet;
+
+            return *this;
+        }
     };
 
     struct RHIComputeState
@@ -237,13 +248,16 @@ namespace Tridium {
 		}
 
 		// Sets the graphics pipeline state for subsequent draw commands.
+		// a_ClearViewportState: If true, the viewport and scissor state will be cleared when setting the graphics state.
+		// If false, the viewport and scissor state will be preserved.
 		// NOTE: This must be called before any draw commands.
-        virtual void SetGraphicsState( const RHIGraphicsState& a_GraphicsState, RHI_DEBUG_SRC_LOC_PARAM ) 
+        virtual void SetGraphicsState( const RHIGraphicsState& a_GraphicsState, bool a_ClearViewportState = true, RHI_DEBUG_SRC_LOC_PARAM ) 
         {
             RHI_DEV_CHECK( a_GraphicsState.PipelineState, "Graphics pipeline state must be valid." );
             RHI_ADD_DEBUG_CMD_INFO( "SetGraphicsState", {}, RHI_DEBUG_RES_INFO( (*a_GraphicsState.PipelineState) ) );
             RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
 			RHI_DEV_CHECK( Desc().QueueType == ERHICommandQueueType::Graphics, "SetGraphicsState can only be called on graphics command lists." );
+			RHI_DEV_CHECK( a_GraphicsState.Framebuffer.Valid(), "Framebuffer must be valid." );
         }
 
         virtual void SetBindingSet( IRHIBindingSet& a_BindingSet, uint32_t a_LayoutIndex = 0, RHI_DEBUG_SRC_LOC_PARAM )

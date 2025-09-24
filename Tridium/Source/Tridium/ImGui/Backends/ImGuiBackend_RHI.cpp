@@ -22,6 +22,8 @@ namespace Tridium {
         Matrix4 ProjectionMatrix;
 	};
 
+	static constexpr size_t c_MaxCachedBindingSets = 1;
+
     static const char* s_ImGuiVertShader = R"(
     #include "Globals.hlsli"
 
@@ -163,6 +165,12 @@ namespace Tridium {
 
         if ( !bd->FontTexture )
             ImGui_ImplRHI_CreateDeviceObjects();
+
+		// Clear binding sets cache every frame to avoid keeping stale references to textures
+        if ( bd->BindingSetsCache.size() > c_MaxCachedBindingSets )
+        {
+            bd->BindingSetsCache.clear();
+        }
     }
 
 	static bool ImGui_ImplRHI_ReallocateBuffer( RHIBufferRef& a_Buffer, size_t a_ReqSize, size_t a_ReallocSize, bool a_IsIndexBuffer )
@@ -456,14 +464,23 @@ namespace Tridium {
             return false;
 		}
 
-		// Create the shaders
-		auto vertexShaderOutput = RHIShaderCompiler::Compile( ShaderCompilerInput{ .Source = s_ImGuiVertShader, .ShaderType = ERHIShaderType::Vertex, .Format = RHI::GetShaderFormat() } );
+		// Compile vertex shader
+        const ShaderCompilerInput vertexCompilerInput
+        {
+            .Source = s_ImGuiVertShader,
+            .ShaderType = ERHIShaderType::Vertex,
+            .Format = RHI::GetShaderFormat(),
+            .Flags = ERHIShaderCompilerFlags::RowMajor
+		};
+		auto vertexShaderOutput = RHIShaderCompiler::Compile( vertexCompilerInput );
+
 		if ( vertexShaderOutput.IsError() )
         {
             LOG( LogCategory::Editor, Error, "Failed to compile vertex shader for ImGui backend! Error: %s", vertexShaderOutput.Error().c_str() );
             return false;
 		}
 
+		// Vertex shader
 		RHIShaderModuleRef vertexShader = RHI::CreateShaderModule( RHIShaderModuleDesc{}.SetName( "ImGui Vertex Shader" ).SetType( ERHIShaderType::Vertex ).SetBytecode( vertexShaderOutput.Value().ByteCode ).SetSource( s_ImGuiVertShader ) );
         if ( vertexShader == nullptr || !vertexShader->Valid() )
         {
@@ -471,7 +488,24 @@ namespace Tridium {
             return false;
 		}
 
-		auto pixelShaderOutput = RHIShaderCompiler::Compile( ShaderCompilerInput{ .Source = s_ImGuiPixelShader, .ShaderType = ERHIShaderType::Pixel, .Format = RHI::GetShaderFormat() } );
+		// Compile pixel shader
+        const ShaderCompilerInput pixelCompilerInput
+        {
+            .Source = s_ImGuiPixelShader,
+            .ShaderType = ERHIShaderType::Pixel,
+            .Format = RHI::GetShaderFormat(),
+            .Flags = ERHIShaderCompilerFlags::RowMajor
+        };
+
+		auto pixelShaderOutput = RHIShaderCompiler::Compile( pixelCompilerInput );
+
+        if ( pixelShaderOutput.IsError() )
+        {
+            LOG( LogCategory::Editor, Error, "Failed to compile pixel shader for ImGui backend! Error: %s", pixelShaderOutput.Error().c_str() );
+            return false;
+        }
+
+		// Pixel shader
 		RHIShaderModuleRef pixelShader = RHI::CreateShaderModule( RHIShaderModuleDesc{}.SetName( "ImGui Pixel Shader" ).SetType( ERHIShaderType::Pixel ).SetBytecode( pixelShaderOutput.Value().ByteCode ).SetSource( s_ImGuiPixelShader ) );
         if ( pixelShader == nullptr || !pixelShader->Valid() )
         {

@@ -335,6 +335,13 @@ namespace Tridium::Math {
 		return glm::inverse( a_Matrix );
 	}
 
+	// Transposes a matrix.
+	template<size_t _CountX, size_t _CountY, typename _Gen>
+	constexpr inline Matrix<_CountX, _CountY, _Gen> Transpose( const Matrix<_CountX, _CountY, _Gen>& a_Matrix )
+	{
+		return glm::transpose( a_Matrix );
+	}
+
 	// Creates a matrix from a quaternion.
 	template<Concepts::Arithmetic _Gen>
 	inline Matrix4x4<_Gen> ToMat4( const TQuaternion<_Gen>& a_Quat )

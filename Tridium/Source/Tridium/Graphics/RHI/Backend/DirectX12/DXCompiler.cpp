@@ -1,11 +1,14 @@
 #include "tripch.h"
 #include <Tridium/Core/Platform.h>
-#include "DXCompiler.h"
-#include "D3D12.h"
+#include <Tridium/Engine/Engine.h>
+#include <Tridium/Graphics/RHI/Backend/DirectX12/RHI_D3D12Impl.h>
+#include <Tridium/Graphics/RHI/Backend/DirectX12/DXCompiler.h>
+#include <Tridium/Graphics/RHI/Backend/DirectX12/D3D12.h>
+
 #include <dxcapi.h>  // DXC Compiler API
 #include <d3d12shader.h>  // D3D12 Shader Reflection
-#include <Tridium/Engine/Engine.h>
-#include "RHI_D3D12Impl.h"
+#include <spirv_cross.hpp>
+#include <spirv_glsl.hpp>
 
 #pragma comment(lib, "dxcompiler.lib")
 
@@ -77,7 +80,17 @@ namespace Tridium::D3D12 {
 	Expected<Pair<ERHIShaderType, StringView>, String> GetShaderTypeAndEntryPoint( const ShaderCompilerInput& a_Input );
 	WStringView GetShaderModelFlag( ERHIShaderType a_Type, ERHIShaderModel a_Model );
 	Expected<Array<WString>, String> CreateCompilerArguments( const ShaderCompilerInput& a_Input, ERHIShaderType a_ShaderType, StringView a_EntryPoint );
-	void GetReflectionData( const ComPtr<IDxcBlob>& a_ReflectionBlob, ShaderCompilerOutput& a_Output );
+	Expected<void, String> SpirVPostProcess( const ShaderCompilerInput& a_Input, ShaderCompilerOutput& a_Output );
+
+	static bool IsHLSLFormat( ERHIShaderFormat a_Format )
+	{
+		return a_Format == ERHIShaderFormat::HLSL6 || a_Format == ERHIShaderFormat::HLSL6_XBOX;
+	}
+
+	static bool IsSPIRVFormat( ERHIShaderFormat a_Format )
+	{
+		return a_Format == ERHIShaderFormat::SPIRV || a_Format == ERHIShaderFormat::SPIRV_OpenGL;
+	}
 
     Expected<ShaderCompilerOutput, String> DXCompiler::Compile( const ShaderCompilerInput& a_Input )
     {
@@ -178,13 +191,79 @@ namespace Tridium::D3D12 {
 		}
 
 		ShaderCompilerOutput output;
-
 		// Copy the shader blob to the output.
 		output.ByteCode.Resize( shaderBlob->GetBufferSize() );
 		std::memcpy( output.ByteCode.Data(), shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize() );
 
-		// Get the shader type.
+		// Get reflection data from the DXIL if requested and if the format is HLSL.
+		if ( a_Input.GenerateReflectionData && IsHLSLFormat( a_Input.Format ) )
+		{
+			ComPtr<IDxcBlob> reflectionBlob;
+			ComPtr<ID3D12ShaderReflection> shaderReflection;
 
+			if ( SUCCEEDED( dxcResult->GetOutput( DXC_OUT_REFLECTION, IID_PPV_ARGS( &reflectionBlob ), nullptr ) ) )
+			{
+				DxcBuffer reflectionData;
+				reflectionData.Ptr = reflectionBlob->GetBufferPointer();
+				reflectionData.Size = reflectionBlob->GetBufferSize();
+				reflectionData.Encoding = 0;
+
+				// Create the shader reflection.
+				dxcUtils->CreateReflection( &reflectionData, IID_PPV_ARGS( &shaderReflection ) );
+
+				D3D12_SHADER_DESC desc{};
+				shaderReflection->GetDesc( &desc );
+
+				// Collect the shader bindings
+				output.Reflection.Bindings.Reserve( desc.BoundResources );
+				for ( UINT i = 0; i < desc.BoundResources; i++ )
+				{
+					D3D12_SHADER_INPUT_BIND_DESC bindDesc{};
+					shaderReflection->GetResourceBindingDesc( i, &bindDesc );
+
+					ShaderReflectionBinding& binding = output.Reflection.Bindings.EmplaceBack();
+					binding.Name = bindDesc.Name;
+					binding.Slot = bindDesc.BindPoint;
+					binding.Space = bindDesc.Space;
+					binding.Count = bindDesc.BindCount;
+
+					// Get the size of the binding.
+					if ( bindDesc.Type == D3D_SIT_CBUFFER )
+					{
+						if ( ID3D12ShaderReflectionConstantBuffer* constantBuffer = shaderReflection->GetConstantBufferByName( bindDesc.Name ) )
+						{
+							D3D12_SHADER_BUFFER_DESC bufferDesc{};
+							if ( SUCCEEDED( constantBuffer->GetDesc( &bufferDesc ) ) )
+							{
+								binding.Size = bufferDesc.Size;
+							}
+						}
+					}
+
+					switch ( bindDesc.Type )
+					{
+						case D3D_SIT_CBUFFER:           binding.Type = ShaderReflectionBinding::ConstantBuffer; break;
+						case D3D_SIT_TEXTURE:           binding.Type = ShaderReflectionBinding::Texture; break;
+						case D3D_SIT_SAMPLER:           binding.Type = ShaderReflectionBinding::Sampler; break;
+						case D3D_SIT_UAV_RWTYPED:
+						case D3D_SIT_UAV_RWSTRUCTURED:
+						case D3D_SIT_UAV_RWBYTEADDRESS: binding.Type = ShaderReflectionBinding::StorageBuffer; break;
+						case D3D_SIT_STRUCTURED:
+						case D3D_SIT_BYTEADDRESS:       binding.Type = ShaderReflectionBinding::StructuredBuffer; break;
+						default: ASSERT( false );       binding.Type = ShaderReflectionBinding::Unknown; break;
+					}
+				}
+			}
+		}
+
+		if ( IsSPIRVFormat( a_Input.Format ) )
+		{
+			auto result = SpirVPostProcess( a_Input, output );
+			if ( result.IsError() )
+			{
+				return Unexpected( std::format( "Failed to post-process SPIR-V because '{}'", result.Error() ) );
+			}
+		}
 
 		return output;
     }
@@ -431,17 +510,14 @@ namespace Tridium::D3D12 {
 		}
 
 		// Pack matrices in column-major or row-major order.
-		if ( a_Input.Flags.HasFlag( ERHIShaderCompilerFlags::RowMajor ) 
-			|| a_Input.Format == ERHIShaderFormat::HLSL6
-			|| a_Input.Format == ERHIShaderFormat::HLSL6_XBOX )
+		if ( a_Input.Flags.HasFlag( ERHIShaderCompilerFlags::RowMajor ) )
 		{
 			args.EmplaceBack( L"-Zpr" );
 		}
 		// Default is column-major
 		else
 		{
-			//args.EmplaceBack( L"-Zpc" );
-			args.EmplaceBack( L"-Zpr" );
+			args.EmplaceBack( L"-Zpc" );
 		}
 
 		////////////////////////////////////////
@@ -492,59 +568,104 @@ namespace Tridium::D3D12 {
 		return args;
 	}
 
-	void GetReflectionData( const ComPtr<IDxcBlob>& a_ReflectionBlob, ShaderCompilerOutput& a_Output )
+	Expected<void, String> SpirVPostProcess( const ShaderCompilerInput& a_Input, ShaderCompilerOutput& a_Output )
 	{
-		ComPtr<IDxcContainerReflection> reflection;
-		ComPtr<ID3D12ShaderReflection> shaderReflection;
-		uint32_t shaderIndex = 0;
-
-		// Get the reflection interface.
-		if ( FAILED( DxcCreateInstance( CLSID_DxcContainerReflection, IID_PPV_ARGS( reflection.GetAddressOf() ) ) ) )
+		if ( a_Input.Format == ERHIShaderFormat::SPIRV_OpenGL )
 		{
-			LOG( LogCategory::DirectX, Error, "Failed to create DXC Container Reflection" );
-			return;
-		}
+			// Create GLSL from the SPIR-V bytecode using SPIRV-Cross
+			spirv_cross::CompilerGLSL glslCompiler( ReinterpretCast<const uint32_t*>( a_Output.ByteCode.Data() ), a_Output.ByteCode.Size() / sizeof( uint32_t ) );
+			spirv_cross::CompilerGLSL::Options options;
+			options.version = 450;
+			options.es = false;
+			glslCompiler.set_common_options( options );
 
-		// Load the compiled shader.
-		if ( FAILED( reflection->Load( a_ReflectionBlob.Get() ) ) )
-		{
-			LOG( LogCategory::DirectX, Error, "Failed to load reflection data" );
-			return;
-		}
+			// OpenGL doesn't support separate textures and samplers, so we need to combine them.
+			glslCompiler.build_combined_image_samplers();
 
-		// Find the shader reflection in the container.
-		if ( FAILED( reflection->FindFirstPartKind( DXC_PART_DXIL, &shaderIndex ) ) )
-		{
-			LOG( LogCategory::DirectX, Error, "Failed to find shader reflection" );
-			return;
-		}
-
-		// Get the reflection interface.
-		if ( FAILED( reflection->GetPartReflection( shaderIndex, IID_PPV_ARGS( shaderReflection.GetAddressOf() ) ) ) )
-		{
-			LOG( LogCategory::DirectX, Error, "Failed to get shader reflection" );
-			return;
-		}
-
-		// Get the shader description.
-		D3D12_SHADER_DESC shaderDesc;
-		if ( FAILED( shaderReflection->GetDesc( &shaderDesc ) ) )
-		{
-			LOG( LogCategory::DirectX, Error, "Failed to get shader description" );
-			return;
-		}
-
-		// Get the input parameters.
-		for ( uint32_t i = 0; i < shaderDesc.InputParameters; ++i )
-		{
-			D3D12_SIGNATURE_PARAMETER_DESC paramDesc;
-			if ( FAILED( shaderReflection->GetInputParameterDesc( i, &paramDesc ) ) )
+			spirv_cross::ShaderResources shaderResources = glslCompiler.get_shader_resources();
+			for ( const auto& resource : shaderResources.uniform_buffers )
 			{
-				LOG( LogCategory::DirectX, Error, "Failed to get input parameter description" );
-				return;
+				TODO( "We are setting the interface name of the block as I cant use the instance name for shader bindings. Hack" );
+				//glslCompiler.set_name( resource.base_type_id,
+				//	glslCompiler.get_block_fallback_name( resource.id ) 
+				//);
 			}
-			LOG( LogCategory::DirectX, Debug, "Input parameter: {0}", paramDesc.SemanticName );
+
+			// Textures and samplers are combined in GLSL, so we need to keep track of them and set the correct names
+			auto combinedSamplers = glslCompiler.get_combined_image_samplers();
+			UnorderedSet<spirv_cross::VariableID> seenImageIDs;
+			seenImageIDs.reserve( combinedSamplers.size() );
+			for ( auto& sampler : combinedSamplers )
+			{
+				if ( seenImageIDs.contains( sampler.image_id ) )
+				{
+					return Unexpected( "Textures bound to multiple samplers are not supported - Use COMBINED_SAMPLER() in HLSL code." );
+				}
+
+				seenImageIDs.insert( sampler.image_id );
+				const String& texName = glslCompiler.get_name( sampler.image_id );
+				// Set the name of the combined sampler to the texture name.
+				// This is helpful for setting Texture Shader Inputs via the RHICommandList_OpenGLImpl.
+				glslCompiler.set_name( sampler.combined_id, texName );
+			}
+
+			// Get the reflection data if requested.
+			if ( a_Input.GenerateReflectionData )
+			{
+				a_Output.Reflection.Bindings.Reserve( shaderResources.uniform_buffers.size()
+					+ shaderResources.storage_buffers.size()
+					+ shaderResources.sampled_images.size() );
+
+				// Uniform buffers -> Constant Buffers
+				for ( const auto& resource : shaderResources.uniform_buffers )
+				{
+					ShaderReflectionBinding& binding = a_Output.Reflection.Bindings.EmplaceBack();
+					binding.Name = glslCompiler.get_name( resource.id );
+					binding.Slot = glslCompiler.get_decoration( resource.id, spv::DecorationBinding );
+					binding.Space = glslCompiler.get_decoration( resource.id, spv::DecorationDescriptorSet );
+					binding.Count = 1;
+					binding.Type = ShaderReflectionBinding::ConstantBuffer;
+					binding.Size = glslCompiler.get_declared_struct_size( glslCompiler.get_type( resource.base_type_id ) );
+				}
+
+				// Storage buffers -> Structured Buffers
+				for ( const auto& resource : shaderResources.storage_buffers )
+				{
+					ShaderReflectionBinding& binding = a_Output.Reflection.Bindings.EmplaceBack();
+					binding.Name = glslCompiler.get_name( resource.id );
+					binding.Slot = glslCompiler.get_decoration( resource.id, spv::DecorationBinding );
+					binding.Space = glslCompiler.get_decoration( resource.id, spv::DecorationDescriptorSet );
+					binding.Count = 1;
+					binding.Type = ShaderReflectionBinding::StorageBuffer;
+					binding.Size = 0; // Size is unknown for storage buffers.
+				}
+
+				// Sampled images -> Combined Samplers
+				for ( const auto& resource : shaderResources.sampled_images )
+				{
+					ShaderReflectionBinding& binding = a_Output.Reflection.Bindings.EmplaceBack();
+					binding.Name = glslCompiler.get_name( resource.id );
+					binding.Slot = glslCompiler.get_decoration( resource.id, spv::DecorationBinding );
+					binding.Space = glslCompiler.get_decoration( resource.id, spv::DecorationDescriptorSet );
+					binding.Count = 1;
+					binding.Type = ShaderReflectionBinding::Texture;
+					binding.Size = 0; // Size is unknown for textures.
+				}
+
+			}
+
+			String glsl = glslCompiler.compile();
+			TODO( "First we copy the dxblob into ByteCode, then we copy into spirv cross, then we compile into a string and then copy back into ByteCode. We can optimize this" );
+			a_Output.ByteCode.Resize( glsl.size() );
+			std::memcpy( a_Output.ByteCode.Data(), glsl.data(), glsl.size() );
 		}
+		else // Vulkan Spir-V
+		{
+			TODO( "Vulkan SPIR-V" );
+			NOT_IMPLEMENTED;
+		}
+	
+		return {};
 	}
 
 }

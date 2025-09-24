@@ -2,6 +2,7 @@
 #include "RendererModule.h"
 #include <Tridium/Graphics/RHI/RHI.h>
 #include <Tridium/Graphics/Renderer/ShaderLibrary.h>
+#include <Tridium/Graphics/Renderer/RenderResourceManager.h>
 
 namespace Tridium {
 
@@ -33,20 +34,14 @@ namespace Tridium {
 
         m_DynamicRHI = RHI::GetDynamicRHI();
 
-        // Set up Render Resource Manager Singleton
-        RenderResourceManager::Singleton::BindExisting( &m_RenderResourceManager );
-
-		// Initialize the Shader Library
+        RenderResourceManager::Init();
 		ShaderLibrary::Init();
     }
 
     void RendererModule::Shutdown()
     {
-		// Shutdown the Shader Library
         ShaderLibrary::Shutdown();
-
-        // Shutdown the Render Resource Manager
-        RenderResourceManager::Singleton::Release();
+		RenderResourceManager::Shutdown();
 
         // Shutdown the Dynamic RHI
         if ( !ASSERT( RHI::Shutdown(), "Failed to shutdown the RHI" ) )

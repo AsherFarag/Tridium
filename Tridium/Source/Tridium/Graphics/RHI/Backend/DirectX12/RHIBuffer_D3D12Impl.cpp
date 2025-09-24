@@ -12,6 +12,18 @@ namespace Tridium::D3D12 {
 			return;
 		}
 
+		if ( m_Desc.IsConstantBuffer() )
+		{
+			// Constant buffers must be 256-byte aligned.
+			// See: https://learn.microsoft.com/en-us/windows/win32/direct3d12/constant-buffers-and-structured-buffers-in-direct3d-12
+			// > "When creating a constant buffer view (CBV), the size in bytes must be a multiple of 256."
+			// > "This is because the hardware can only access constant buffer data at 256-byte boundaries."
+			// > "For example, if you have a structure that is 300 bytes, you must allocate 512 bytes for the constant buffer."
+			// > "The first 300 bytes will contain your data, and the remaining 212 bytes will be unused padding."
+			// > "This ensures that the constant buffer is properly aligned for the hardware to access it."
+			m_Desc.Size = AlignUp( m_Desc.Size, size_t( D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT ) );
+		}
+
 		SetState( a_Desc.InitialState );
 
 		D3D12_HEAP_FLAGS heapFlags = D3D12_HEAP_FLAG_NONE;
@@ -77,8 +89,29 @@ namespace Tridium::D3D12 {
 		memcpy( uploadBufferAddress, a_Data.data(), a_Data.size() );
 		uploadBuffer.Resource()->Unmap( 0, &uploadRange );
 
-		const auto beforeBarrier = Translate( RHIResourceBarrier{ this, ERHIResourceStates::Common, ERHIResourceStates::CopyDest } );
-		const auto afterBarrier = Translate( RHIResourceBarrier{ this, ERHIResourceStates::CopyDest, a_Desc.InitialState } );
+		const auto beforeBarrier = D3D12_RESOURCE_BARRIER{
+			.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
+			.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE,
+			.Transition = D3D12_RESOURCE_TRANSITION_BARRIER{
+				.pResource = ManagedBuffer.Resource(),
+				.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+				.StateBefore = initialState,
+				.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST
+			}
+		};
+
+		const auto afterBarrier = D3D12_RESOURCE_BARRIER{
+			.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
+			.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE,
+			.Transition = D3D12_RESOURCE_TRANSITION_BARRIER{
+				.pResource = ManagedBuffer.Resource(),
+				.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+				.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST,
+				.StateAfter = Translate( a_Desc.InitialState )
+			}
+		};
+
+		TODO( "Handle CPU Write buffers as they suck and are upload heaps " );
 
 		auto* cmdList = Device()->GetResourceInitCommandList();
 		cmdList->Open();
@@ -88,8 +121,8 @@ namespace Tridium::D3D12 {
 		cmdList->Close();
 
 		IRHICommandList* cmdListPtr = cmdList;
-		const RHIFenceValue fence = Device()->ExecuteCommandLists( Span{ &cmdListPtr, 1 }, ERHICommandQueueType::Copy );
-		Device()->WaitForFence( ERHICommandQueueType::Copy, fence );
+		const RHIFenceValue fence = Device()->ExecuteCommandLists( Span{ &cmdListPtr, 1 }, cmdListPtr->Desc().QueueType );
+		Device()->WaitForFence( cmdListPtr->Desc().QueueType, fence );
 	}
 
 	D3D12_RESOURCE_DESC RHIBuffer_D3D12Impl::GetD3D12ResourceDesc() const

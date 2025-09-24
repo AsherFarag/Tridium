@@ -7,7 +7,7 @@ namespace Tridium {
 
 	//=============================================================================================
 	static UnorderedMap<name_t, ShaderFamily> s_ShaderFamilies;
-	static UnorderedMap<hash64_t, ShaderFamilyVariant> s_ShaderVariants;
+	static UnorderedMap<hash64_t, SharedPtr<ShaderFamilyVariant>> s_ShaderVariants;
 
 	bool ShaderLibrary::RegisterFamily( ShaderFamily&& a_Family )
 	{
@@ -36,13 +36,16 @@ namespace Tridium {
 		return nullptr;
 	}
 
-	const ShaderFamilyVariant* ShaderLibrary::GetOrCreateVariant( name_t a_FamilyName, const ShaderSwitchSet& a_Switches )
+	const SharedPtr<ShaderFamilyVariant>& ShaderLibrary::GetOrCreateVariant( name_t a_FamilyName, const ShaderSwitchSet& a_Switches )
 	{
+		// Return a null shared pointer reference
+		static const SharedPtr<ShaderFamilyVariant> s_NullVariant = nullptr;
+
 		const ShaderFamily* family = GetFamily( a_FamilyName );
 
 		if ( !family )
 		{
-			return nullptr;
+			return s_NullVariant;
 		}
 
 		// Compute the hash for the variant based on the family name and switches
@@ -52,7 +55,7 @@ namespace Tridium {
 		auto it = s_ShaderVariants.find( variantHash );
 		if ( it != s_ShaderVariants.end() )
 		{
-			return &it->second;
+			return it->second;
 		}
 
 		// Variant does not exist, create it
@@ -60,25 +63,34 @@ namespace Tridium {
 		variant.Switches = a_Switches;
 
 		// Compile shaders for each stage
+		RHIBindingLayoutDesc layoutDesc;
+		layoutDesc.SetName( family->Name );
 		for ( size_t i = 0; i < (size_t)ERHIShaderType::COUNT; ++i )
 		{
-			StringView source = family->ShaderSources[i];
+			const StringView& source = family->ShaderSources[i];
 
 			if ( source.empty() )
+			{
 				continue; // No source for this stage
+			}
 
 			// Construct the shader compiler input
 			ShaderCompilerInput input;
 			input.Source = source;
 			input.ShaderType = (ERHIShaderType)i;
 			input.Format = RHI::GetShaderFormat();
+			input.GenerateReflectionData = true; // We want reflection data to create binding layouts
+			for ( const auto& switchName : a_Switches.Switches )
+			{
+				input.Defines.emplace( switchName, "1" );
+			}
 
 			auto output = RHIShaderCompiler::Compile( input );
 
 			if ( output.IsError() )
 			{
 				LOG( LogCategory::Rendering, Error, "Failed to compile shader '{}' - Error: {}", family->Name, output.Error() );
-				return nullptr;
+				return s_NullVariant;
 			}
 
 			RHIShaderModuleDesc desc;
@@ -93,18 +105,23 @@ namespace Tridium {
 			if ( !variant.ShaderStages[i] || !variant.ShaderStages[i]->Valid() )
 			{
 				LOG( LogCategory::Rendering, Error, "Failed to create shader module '{}'", family->Name );
-				return nullptr;
+				return s_NullVariant;
 			}
+
+			// Create a binding layout from reflection data and append it to the overall layout
+			layoutDesc.Append( RHI::BuildLayoutFromShader( desc.Name, output.Value().Reflection ) );
 		}
+
+		variant.BindingLayout = RHI::CreateBindingLayout( layoutDesc );
 
 		if ( !variant.Valid() )
 		{
 			LOG( LogCategory::Rendering, Error, "No valid shader stages compiled for variant of family '{}'", family->Name );
-			return nullptr;
+			return s_NullVariant;
 		}
 
 		// Store the variant
-		return &( s_ShaderVariants[variantHash] = std::move( variant ) );
+		return s_ShaderVariants[variantHash] = MakeShared<ShaderFamilyVariant>( std::move( variant ) );
 	}
 
 	bool ShaderLibrary::Init()

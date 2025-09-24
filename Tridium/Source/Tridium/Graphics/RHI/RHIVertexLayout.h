@@ -76,3 +76,27 @@ namespace Tridium {
 	};
 
 } // namespace Tridium
+
+namespace std {
+
+	template<>
+	struct hash<Tridium::RHIVertexLayout>
+	{
+		size_t operator()( const Tridium::RHIVertexLayout& a_Layout ) const
+		{
+			using namespace Tridium;
+			using Hashing::HashCombine;
+			size_t seed = 0;
+
+			seed = HashCombine( seed, a_Layout.Stride );
+
+			for ( const auto& element : a_Layout.Elements )
+			{
+				seed = HashCombine( seed, element.Name, element.Type, element.Offset );
+			}
+
+			return seed;
+		}
+	};
+
+} // namespace std

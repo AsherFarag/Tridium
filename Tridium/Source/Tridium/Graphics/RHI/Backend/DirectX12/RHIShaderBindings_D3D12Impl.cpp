@@ -69,7 +69,7 @@ namespace Tridium::D3D12 {
                 InlinedConstantsSize = binding.Size;
                 rootConstants.Num32BitValues = NumDWORDsFromBytes( binding.Size );
                 rootConstants.ShaderRegister = binding.Slot;
-                rootConstants.RegisterSpace = a_Desc.RegisterSpace;
+                rootConstants.RegisterSpace = INLINED_CONSTANTS_SPACE;
             }
             // Do we need to start a new range?
             else if ( !AreBindingsCompatible( binding.Type(), currentType )
@@ -78,8 +78,11 @@ namespace Tridium::D3D12 {
                 D3D12_DESCRIPTOR_RANGE1& range = DescriptorRangesRenderResources.EmplaceBack();
                 switch ( binding.Type() )
                 {
-                    // SRV
                 case ERHIBindingType::StructuredBuffer:
+                {
+                    range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+                    break;
+                }
                 case ERHIBindingType::Texture:
                 {
                     range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -95,8 +98,11 @@ namespace Tridium::D3D12 {
                     samplerRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
                     break;
                 }
-                // UAV
                 case ERHIBindingType::StorageBuffer:
+                {
+                    range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+					break;
+                }
                 case ERHIBindingType::StorageTexture:
                 {
                     range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
@@ -145,13 +151,13 @@ namespace Tridium::D3D12 {
                     || binding.Type() == ERHIBindingType::StorageTexture )
                 {
                     ASSERT( !DescriptorRangesSamplers.Empty() );
-                    D3D12_DESCRIPTOR_RANGE1& range = DescriptorRangesSamplers.EmplaceBack();
+                    D3D12_DESCRIPTOR_RANGE1& range = DescriptorRangesSamplers.Back();
                     range.NumDescriptors += 1;
                     DescriptorTableSizeSamplers++;
                 }
 
                 ASSERT( !DescriptorRangesRenderResources.Empty() );
-                D3D12_DESCRIPTOR_RANGE1& range = DescriptorRangesRenderResources.EmplaceBack();
+                D3D12_DESCRIPTOR_RANGE1& range = DescriptorRangesRenderResources.Back();
                 range.NumDescriptors += 1;
                 DescriptorTableSizeRenderResources++;
                 RenderResourceBindingLayouts.PushBack( binding );
@@ -221,25 +227,6 @@ namespace Tridium::D3D12 {
 		: IRHIBindingSet( a_Device, a_Desc )
     {
 		RHI_DEV_CHECK( a_Desc.Layout, "Binding set must have a valid layout" );
-
-    #if 0
-        // Validate the binding layout
-        for ( uint32_t i = 0; i < a_Desc.Bindings.Size(); ++i )
-        {
-            const auto& bindingSetItem = a_Desc.Bindings[i];
-			const auto& bindingLayoutItem = a_Desc.Layout->Desc().Bindings[i];
-            if ( bindingLayoutItem.Type() == ERHIBindingType::InlinedConstants )
-				continue; // Inlined constants are not stored in the binding set
-
-            RHI_DEV_CHECK( bindingSetItem.Type == bindingLayoutItem.Type(),
-                "Binding type mismatch at index {}: expected {}, got {}",
-                i, ToString( bindingLayoutItem.Type() ), ToString( bindingSetItem.Type ) );
-
-            RHI_DEV_CHECK( bindingSetItem.Slot == bindingLayoutItem.Slot,
-                "Binding slot mismatch at index {}: expected {}, got {}",
-                i, bindingLayoutItem.Slot, bindingSetItem.Slot );
-		}
-    #endif
 
 		// Create Descriptor Heaps for Samplers and Render Resources
 
@@ -356,7 +343,7 @@ namespace Tridium::D3D12 {
                         {
 							auto* texture = binding.Resource->As<RHITexture_D3D12Impl>();
                             resource = texture;
-                            D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = texture->CreateSRVDesc( binding.Format, binding.TextureDimension, binding.Subresources );
+							D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = texture->CreateSRVDesc( binding.Format, binding.TextureDimension, binding.Subresources.Resolve( texture->Desc(), false ) );
                             Device()->GetD3D12Device()->CreateShaderResourceView(
                                 texture->Texture.Resource(),
                                 &srvDesc,
@@ -393,7 +380,7 @@ namespace Tridium::D3D12 {
                         {
                             D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
                             srvDesc.Format = DXGI_FORMAT_R32_UINT;
-                            srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+							srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; TODO( "This should depend on the binding type" );
                             srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
                             Device()->GetD3D12Device()->CreateShaderResourceView(
                                 nullptr, // Null resource for empty SRV

@@ -441,6 +441,7 @@ namespace Tridium::D3D12 {
 	class DescriptorManager : public RHIHeapDescriptorAllocator, public DeviceChild
 	{
 	public:
+
 		DescriptorManager() = delete;
 		DescriptorManager( ID3D12Device* a_Device, DescriptorHeapRef&& a_Heap )
 			: RHIHeapDescriptorAllocator( a_Heap->Type(), a_Heap->NumDescriptors() )
@@ -469,7 +470,10 @@ namespace Tridium::D3D12 {
 		}
 
 	private:
+
+		friend class DynamicRHI_D3D12Impl;
 		DescriptorHeapRef m_Heap;
+
 	};
 
 	struct DescriptorHeapManagerDesc
@@ -746,7 +750,7 @@ namespace Tridium::D3D12 {
 
 		void SetInlinedConstants( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM ) override;
 
-		void SetGraphicsState( const RHIGraphicsState& a_GraphicsState, RHI_DEBUG_SRC_LOC_PARAM ) override;
+		void SetGraphicsState( const RHIGraphicsState& a_GraphicsState, bool a_ClearViewportState, RHI_DEBUG_SRC_LOC_PARAM ) override;
 		void SetBindingSet( IRHIBindingSet& a_BindingSet, uint32_t a_LayoutIndex = 0, RHI_DEBUG_SRC_LOC_PARAM ) override;
 		void ClearRenderTargets( ERHIClearFlags a_Flags, RHIClearValue a_ClearValue, int32_t a_ColorAttachmentIndex = -1, RHI_DEBUG_SRC_LOC_PARAM ) override;
 		void SetViewportState( const RHIViewportState& a_Viewports, RHI_DEBUG_SRC_LOC_PARAM ) override;
@@ -786,6 +790,7 @@ namespace Tridium::D3D12 {
 
 		bool m_GraphicsStateValid = false; // Whether the graphics state has been set.
 		RHIGraphicsState m_CurrentGraphicsState{}; // Current graphics state for the command list.
+		RHIViewportState m_ViewportState{}; // Current viewport state for the command list.
 
 		Deque<CommandList> m_CmdListPool{};
 		CommandList m_ActiveCmdList{}; // The currently active command list that is being recorded to.
@@ -824,20 +829,21 @@ namespace Tridium::D3D12 {
 
 		//=====================================================
 		// Resource creation
-		virtual RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) override;
-		virtual RHIBufferRef CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data ) override;
-		virtual RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc ) override;
-		virtual RHICommandListRef CreateCommandList( const RHICommandListDesc& a_Desc ) override;
-		virtual RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDesc& a_Desc ) override;
-		virtual RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc ) override;
-		virtual RHIBindingSetRef CreateBindingSet( const RHIBindingSetDesc& a_Desc ) override;
-		virtual RHISwapChainRef CreateSwapChain( const RHISwapChainDesc& a_Desc ) override;
+		RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) override;
+		RHIBufferRef CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data ) override;
+		RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc ) override;
+		RHICommandListRef CreateCommandList( const RHICommandListDesc& a_Desc ) override;
+		RHIShaderModuleRef CreateShaderModule( const RHIShaderModuleDesc& a_Desc ) override;
+		RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc ) override;
+		RHIBindingSetRef CreateBindingSet( const RHIBindingSetDesc& a_Desc ) override;
+		RHISwapChainRef CreateSwapChain( const RHISwapChainDesc& a_Desc ) override;
 		//=====================================================
 
 		//=====================================================
 		// Miscellaneous
 		IRHISwapChain* GetSwapChain() const override { return m_SwapChain.get(); }
-		virtual GPUInfo GetGPUInfo() const override;
+		GPUInfo GetGPUInfo() const override;
+		bool QueryRHIStats( RHIStats& o_Stats ) const override;
 		//=====================================================
 
 		//====================================================

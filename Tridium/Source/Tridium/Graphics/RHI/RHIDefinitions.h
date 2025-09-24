@@ -956,6 +956,35 @@ namespace Tridium {
 
 
 
+	//==============================================
+	// RHI Binding Type
+	//  Describes the type of shader resource bound to a shader stage.
+	//  Maps to concepts in D3D12 Root Signatures and Vulkan Descriptor Sets.
+	enum class ERHIBindingType : uint8_t
+	{
+		Unknown = 0,
+
+		// Inlined scalar/vector constants embedded directly into the root signature or push constant block.
+		InlinedConstants, // (DX12: Root Constants) / (Vulkan: Push Constants)
+
+		// A constant buffer resource (Uniform Buffer in Vulkan).
+		ConstantBuffer,   // (DX12: CBV) / (Vulkan: Uniform Buffer)
+
+		// A read-only structured or raw buffer.
+		StructuredBuffer, // (DX12: SRV) / (Vulkan: Storage Buffer w/ read-only access)
+
+		// A read/write structured or raw buffer.
+		StorageBuffer,    // (DX12: UAV) / (Vulkan: Storage Buffer)
+
+		// A read-only texture.
+		Texture,          // (DX12: SRV) / (Vulkan: Sampled Image)
+
+		// A read/write texture.
+		StorageTexture,   // (DX12: UAV) / (Vulkan: Storage Image)
+	};
+
+
+
 	//==========================================================
 	// RHI Format
 	//  Describes the format of each pixel/element in a texture or buffer.

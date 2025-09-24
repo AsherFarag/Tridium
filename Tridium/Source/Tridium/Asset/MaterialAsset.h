@@ -5,6 +5,13 @@
 
 namespace Tridium {
 
+	namespace DefaultShaderFamilies 
+	{
+		inline constexpr StringView Unlit = "Unlit";
+		inline constexpr StringView Lit = "Lit";
+		inline constexpr StringView Toon = "Toon";
+	}
+
 	//=================================================================================================
 	// Material Flags: Defines various properties of a material that effect how it is rendered.
 	//=================================================================================================
@@ -30,6 +37,11 @@ namespace Tridium {
 		//=============================================================================================
 		bool Valid() const override { return true; }
 
+		auto Flags() const { return m_Flags; }
+		void SetFlags( const EMaterialFlags a_Flags ) { m_Flags = a_Flags; }
+		const auto& ShaderFamily() const { return m_ShaderFamily; }
+		void SetShaderFamily( String a_Family ) { m_ShaderFamily = std::move( a_Family ); }
+
 		const auto& AlbedoMap() const { return m_AlbedoMap; }
 		const auto& NormalMap() const { return m_NormalMap; }
 		const auto& MetallicMap() const { return m_MetallicMap; }
@@ -54,15 +66,17 @@ namespace Tridium {
 		void SetRoughnessIntensity( float a_Intensity ) { m_RoughnessIntensity = a_Intensity; }
 		void SetEmissiveIntensity( float a_Intensity ) { m_EmissiveIntensity = a_Intensity; }
 
-		auto Flags() const { return m_Flags; }
-		void SetFlags( const EMaterialFlags a_Flags ) { m_Flags = a_Flags; }
-
 		bool Transparent() const { return m_Flags.HasFlag( EMaterialFlags::Transparent ); }
 		bool CastsShadows() const { return !m_Flags.HasFlag( EMaterialFlags::DisableShadowCasting ); }
 
 	protected:
 
 		//=============================================================================================
+		String m_ShaderFamily;
+		EnumFlags<EMaterialFlags> m_Flags{ EMaterialFlags::None };
+
+		//=============================================================================================
+		// Material Properties
 		AssetRef<Texture> m_AlbedoMap;
 		AssetRef<Texture> m_NormalMap;
 		AssetRef<Texture> m_MetallicMap;
@@ -75,7 +89,6 @@ namespace Tridium {
 		float m_MetallicIntensity = 1.0f;
 		float m_RoughnessIntensity = 1.0f;
 		float m_EmissiveIntensity = 1.0f;
-		EnumFlags<EMaterialFlags> m_Flags{ EMaterialFlags::None };
 
 	};
 

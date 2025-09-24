@@ -23,7 +23,7 @@ namespace Tridium {
 		//=============================================================================================
 		// Get or create a shader family variant based on the provided switches.
 		// Returns nullptr if the family does not exist or if the variant could not be created.
-		static const ShaderFamilyVariant* GetOrCreateVariant( name_t a_FamilyName, const ShaderSwitchSet& a_Switches );
+		static const SharedPtr<ShaderFamilyVariant>& GetOrCreateVariant( name_t a_FamilyName, const ShaderSwitchSet& a_Switches );
 
 	private:
 

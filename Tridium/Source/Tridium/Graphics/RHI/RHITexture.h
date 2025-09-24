@@ -4,9 +4,6 @@
 
 namespace Tridium {
 
-	// Forward declarations
-	using RHISamplerRef = SharedPtr<class IRHISampler>;
-
 	inline constexpr uint32_t CalculateMipLevelCount( const uint32_t a_Width )
 	{
 		if ( a_Width == 0 )
@@ -236,7 +233,7 @@ namespace Tridium {
 				|| EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::DepthStencil ),
 				"Clear value will not be used for texture '{}' as it is not a render target or depth stencil texture", a_Desc.Name );
 
-			if ( m_Desc.Mips == RHIConstants::AllMipLevels )
+			if ( m_Desc.Mips == 0 )
 			{
 				if ( m_Desc.Is1D() )
 					m_Desc.Mips = CalculateMipLevelCount( m_Desc.Width );
@@ -287,7 +284,7 @@ namespace Tridium {
 				&& BaseArraySlice == 0 && NumArraySlices == ( a_Desc.IsArray() ? a_Desc.DepthOrArraySize : 1 );
 		}
 
-		constexpr RHITextureSubresourceSet Resolve( const RHITextureDesc& a_Desc, bool a_SingleMipLevel )
+		constexpr RHITextureSubresourceSet Resolve( const RHITextureDesc& a_Desc, bool a_SingleMipLevel ) const
 		{
 			RHITextureSubresourceSet result = *this;
 
@@ -354,7 +351,10 @@ namespace Tridium {
 		auto& AddColorAttachment( RHITextureRef a_Texture, bool a_ReadOnly = false )
 		{
 			RHI_DEV_CHECK( ColorAttachments.Size() < ColorAttachments.MaxSize(),
-						   "Maximum number of color attachments exceeded!" );
+				"Maximum number of color attachments exceeded!" );
+
+			RHI_DEV_CHECK( a_Texture, 
+				"Color attachment texture is null!" );
 
 			ColorAttachments.PushBack( Attachment{ a_Texture, a_ReadOnly } );
 
@@ -363,7 +363,11 @@ namespace Tridium {
 
 		auto& SetDepthStencilAttachment( RHITextureRef a_Texture, bool a_ReadOnly = false )
 		{
+			RHI_DEV_CHECK( a_Texture, 
+				"Depth stencil attachment texture is null!" );
+
 			DepthStencilAttachment = Attachment{ a_Texture, a_ReadOnly };
+
 			return *this;
 		}
 

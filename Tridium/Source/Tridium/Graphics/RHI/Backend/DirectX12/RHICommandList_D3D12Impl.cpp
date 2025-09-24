@@ -8,6 +8,42 @@
 
 namespace Tridium::D3D12 {
 
+	static void SetViewportAndScissors( ID3D12GraphicsCommandList* a_CmdList, const RHIViewportState& a_Viewports )
+	{
+		// Set viewports
+		{
+			D3D12_VIEWPORT viewports[RHIConstants::MaxViewports];
+			for ( size_t i = 0; i < a_Viewports.Viewports.Size(); ++i )
+			{
+				const auto& viewport = a_Viewports.Viewports[i];
+				viewports[i] = D3D12_VIEWPORT{
+					.TopLeftX = viewport.X,
+					.TopLeftY = viewport.Y,
+					.Width = viewport.Width,
+					.Height = viewport.Height,
+					.MinDepth = viewport.MinDepth,
+					.MaxDepth = viewport.MaxDepth
+				};
+			}
+			a_CmdList->RSSetViewports( a_Viewports.Viewports.Size(), viewports );
+		}
+		// Set scissor rectangles
+		{
+			D3D12_RECT scissors[RHIConstants::MaxViewports];
+			for ( size_t i = 0; i < a_Viewports.Scissors.Size(); ++i )
+			{
+				const auto& scissor = a_Viewports.Scissors[i];
+				scissors[i] = D3D12_RECT{
+					.left = scissor.Left,
+					.top = scissor.Top,
+					.right = scissor.Right,
+					.bottom = scissor.Bottom
+				};
+			}
+			a_CmdList->RSSetScissorRects( a_Viewports.Scissors.Size(), scissors );
+		}
+	}
+
 	RHICommandList_D3D12Impl::RHICommandList_D3D12Impl( IDynamicRHI* a_Device, const RHICommandListDesc& a_Desc )
 		: IRHICommandList( a_Device, a_Desc )
 	{
@@ -451,9 +487,9 @@ namespace Tridium::D3D12 {
 		}
 	}
 
-	void RHICommandList_D3D12Impl::SetGraphicsState( const RHIGraphicsState& a_GraphicsState, RHI_DEBUG_SRC_LOC_PARAM ) 
+	void RHICommandList_D3D12Impl::SetGraphicsState( const RHIGraphicsState& a_GraphicsState, bool a_ClearViewportState, RHI_DEBUG_SRC_LOC_PARAM )
 	{
-		IRHICommandList::SetGraphicsState( a_GraphicsState, RHI_DEBUG_SRC_LOC );
+		IRHICommandList::SetGraphicsState( a_GraphicsState, a_ClearViewportState, RHI_DEBUG_SRC_LOC );
 
 		auto* pso = a_GraphicsState.PipelineState->As<RHIGraphicsPipelineState_D3D12Impl>();
 		RHI_DEV_CHECK( pso, "Invalid graphics pipeline state!" );
@@ -526,6 +562,12 @@ namespace Tridium::D3D12 {
 				m_CmdContext.ReferencedResources.EmplaceBack( attachment.Texture->Shared() );
 			if ( a_GraphicsState.Framebuffer.DepthStencilAttachment )
 				m_CmdContext.ReferencedResources.EmplaceBack( a_GraphicsState.Framebuffer.DepthStencilAttachment.Texture->Shared() );
+
+			// Setting the framebuffer clears the viewport state, so we need to re-apply it if needed
+			if ( !a_ClearViewportState )
+			{
+				SetViewportAndScissors( m_ActiveCmdList.CmdList.Get(), m_ViewportState );
+			}
 		}
 
 		BindGraphicsBindings( a_GraphicsState.BindingSets, bindingsUpdateMask, pso->RootSig );
@@ -603,7 +645,7 @@ namespace Tridium::D3D12 {
 		m_CmdContext.ReferencedResources.EmplaceBack( bindingSet->Shared() );
 
 		TODO( "We dont need to validate and update the entire graphics state here, just the binding set" );
-		SetGraphicsState( m_CurrentGraphicsState, RHI_DEBUG_SRC_LOC );
+		SetGraphicsState( m_CurrentGraphicsState, false, RHI_DEBUG_SRC_LOC );
 	}
 
 	void RHICommandList_D3D12Impl::ClearRenderTargets( ERHIClearFlags a_Flags, RHIClearValue a_ClearValue, int32_t a_ColorAttachmentIndex, RHI_DEBUG_SRC_LOC_PARAM )
@@ -658,40 +700,8 @@ namespace Tridium::D3D12 {
 		IRHICommandList::SetViewportState( a_Viewports, RHI_DEBUG_SRC_LOC );
 		RHI_DEV_CHECK( m_GraphicsStateValid, "Graphics state is not valid for setting viewports!" );
 
-		// Set viewports
-		{
-			D3D12_VIEWPORT viewports[RHIConstants::MaxViewports];
-			for ( size_t i = 0; i < a_Viewports.Viewports.Size(); ++i )
-			{
-				const auto& viewport = a_Viewports.Viewports[i];
-				viewports[i] = D3D12_VIEWPORT{
-					.TopLeftX = viewport.X,
-					.TopLeftY = viewport.Y,
-					.Width = viewport.Width,
-					.Height = viewport.Height,
-					.MinDepth = viewport.MinDepth,
-					.MaxDepth = viewport.MaxDepth
-				};
-			}
-
-			m_ActiveCmdList.CmdList->RSSetViewports( a_Viewports.Viewports.Size(), viewports );
-		}
-
-		// Set scissor rectangles
-		{
-			D3D12_RECT scissors[RHIConstants::MaxViewports];
-			for ( size_t i = 0; i < a_Viewports.Scissors.Size(); ++i )
-			{
-				const auto& scissor = a_Viewports.Scissors[i];
-				scissors[i] = D3D12_RECT{ 
-					.left = scissor.Left,
-					.top = scissor.Top,
-					.right = scissor.Right,
-					.bottom = scissor.Bottom
-				};
-			}
-			m_ActiveCmdList.CmdList->RSSetScissorRects( a_Viewports.Scissors.Size(), scissors );
-		}
+		m_ViewportState = a_Viewports;
+		SetViewportAndScissors( m_ActiveCmdList.CmdList.Get(), m_ViewportState );
 	}
 
 	void RHICommandList_D3D12Impl::Draw( const RHIDrawArgs& a_DrawArgs, RHI_DEBUG_SRC_LOC_PARAM ) 

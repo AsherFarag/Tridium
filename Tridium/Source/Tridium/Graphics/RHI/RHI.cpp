@@ -16,6 +16,7 @@
 namespace Tridium {
 
 	IDynamicRHI* s_DynamicRHI = nullptr;
+	static RHIStats s_LastFrameStats{};
 
 #if RHI_DEBUG_ENABLED
 	bool RHI::IsDebug()
@@ -96,6 +97,11 @@ namespace Tridium {
 	{
 		RHI_DEV_CHECK( s_DynamicRHI, "RHI is not initialised!" );
 		s_DynamicRHI->EndFrame();
+		if ( s_DynamicRHI->QueryRHIStats( s_LastFrameStats ) == false )
+		{
+			LOG( LogCategory::RHI, Warn, "Failed to query RHI stats!" );
+			s_LastFrameStats.Reset();
+		}
 	}
 
 	bool RHI::Present()
@@ -139,6 +145,11 @@ namespace Tridium {
 		}
 
 		return RHI::GetRHIName( s_DynamicRHI->GetRHIType() );
+	}
+
+	const RHIStats& RHI::GetRHIStats()
+	{
+		return s_LastFrameStats;
 	}
 
 	//////////////////////////////////////////////////////////////////////////

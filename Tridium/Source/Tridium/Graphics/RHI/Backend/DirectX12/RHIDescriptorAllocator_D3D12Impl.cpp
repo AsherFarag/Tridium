@@ -160,7 +160,7 @@ namespace Tridium::D3D12 {
 		m_Device = a_Device;
 
 		m_GlobalHeaps = Array<DescriptorManager>(); // ( m_GlobalHeaps was not initialized properly )
-		m_GlobalHeaps.Reserve( 2 );
+		m_GlobalHeaps.Reserve( 8 );
 
 		if ( a_Desc.NumGlobalResourceDescriptors > 0 )
 		{

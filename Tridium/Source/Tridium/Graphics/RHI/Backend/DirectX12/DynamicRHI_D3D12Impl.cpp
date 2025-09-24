@@ -160,7 +160,7 @@ namespace Tridium::D3D12 {
 		// Create resource initializer command list
 		{
 			auto resourceInitCmdListDesc = RHICommandListDesc{}
-				.SetQueueType( ERHICommandQueueType::Copy )
+				.SetQueueType( ERHICommandQueueType::Graphics )
 				.SetEnableImmediateExecution( false )
 				.SetName( "ResourceInitCmdList" );
 
@@ -225,11 +225,12 @@ namespace Tridium::D3D12 {
 
 	void DynamicRHI_D3D12Impl::BeginFrame()
 	{
-		m_FrameIndex = (m_FrameIndex + 1) % m_Config.MaxFramesInFlight;
+		IDynamicRHI::BeginFrame();
 	}
 
 	void DynamicRHI_D3D12Impl::EndFrame()
 	{
+		IDynamicRHI::EndFrame();
 	}
 
 	RHIFenceValue DynamicRHI_D3D12Impl::ExecuteCommandLists( Span<IRHICommandList* const> a_CommandLists, ERHICommandQueueType a_QueueType )
@@ -410,6 +411,25 @@ namespace Tridium::D3D12 {
 		}
 
 		return gpuInfo;
+	}
+
+	bool DynamicRHI_D3D12Impl::QueryRHIStats( RHIStats& o_Stats ) const
+	{
+		if ( !IDynamicRHI::QueryRHIStats( o_Stats ) )
+		{
+			return false;
+		}
+
+		for ( const auto& heap : m_DescriptorHeapManager.m_GlobalHeaps )
+		{
+			auto& heapStats = o_Stats.HeapStats.EmplaceBack();
+			heapStats.Type = heap.Type();
+			heapStats.NumAllocatedDescriptors = heap.Capacity();
+			heapStats.NumAllocations = heap.Used();
+			heapStats.HeapSizeInBytes = heap.Heap() ? heap.Heap()->SizeInBytes() : 0;
+		}
+
+		return true;
 	}
 
 	SharedPtr<RootSignature> DynamicRHI_D3D12Impl::GetRootSignature( Span<const RHIBindingLayoutRef> a_BindingLayouts, bool a_AllowInputLayout )

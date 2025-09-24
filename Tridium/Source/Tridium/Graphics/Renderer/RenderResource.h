@@ -1,6 +1,8 @@
 #pragma once
 #include <Tridium/Asset/AssetDefinitions.h>
+#include <Tridium/Graphics/Renderer/ShaderFamily.h>
 #include <Tridium/Graphics/RHI/RHIResource.h>
+#include <Tridium/Graphics/RHI/RHIPipelineState.h>
 #include <Tridium/Graphics/RHI/RHIBuffer.h>
 
 namespace Tridium {
@@ -28,16 +30,24 @@ namespace Tridium {
 	{
 		RHIBufferRef VertexBuffer{};
 		RHIBufferRef IndexBuffer{};
+		RHIVertexLayout VertexLayout{};
 
 		bool Valid() const override { return RenderResource::Valid() && VertexBuffer != nullptr; }
 	};
 
 	struct RenderResourceMaterial : RenderResource
 	{
-		RHIGraphicsPipelineStateRef PipelineState{};
 		RHIBindingSetRef BindingSet{};
+		struct PipelineSettings
+		{
+			SharedPtr<ShaderFamilyVariant> ShaderVariant{};
+			ERHITopology Topology = ERHITopology::Triangle;
+			RHIRasterizerState RasterizerState{};
+			RHIDepthState DepthState{};
+			RHIBlendState::RenderTarget BlendState{};
+		} Pipeline{};
 
-		bool Valid() const override { return RenderResource::Valid() && PipelineState != nullptr && BindingSet != nullptr; }
+		bool Valid() const override { return RenderResource::Valid() && Pipeline.ShaderVariant != nullptr && BindingSet != nullptr; }
 	};
 
 	struct RenderResourceTexture : RenderResource

@@ -196,10 +196,8 @@ namespace Tridium {
 				case ERHIShaderType::Domain:     return DomainShader.get();
 				case ERHIShaderType::Geometry:   return GeometryShader.get();
 				case ERHIShaderType::Pixel:      return PixelShader.get();
+				default:                         return nullptr;
 			}
-
-			RHI_DEV_CHECK( false, "Attempting to retrieve an invalid shader type from a GraphicsPipelineState" );
-			return nullptr;
 		}
 
 		auto& SetName( StringView a_Name ) { Name = a_Name; return *this; }
@@ -216,6 +214,19 @@ namespace Tridium {
 		auto& SetStencilState( const RHIStencilState& a_StencilState ) { StencilState = a_StencilState; return *this; }
 		auto& SetRasterizerState( const RHIRasterizerState& a_RasterizerState ) { RasterizerState = a_RasterizerState; return *this; }
 		auto& SetFramebufferInfo( const RHIFramebufferInfo& a_FramebufferInfo ) { FramebufferInfo = a_FramebufferInfo; return *this; }
+		auto& SetShader( ERHIShaderType a_Type, RHIShaderModuleRef a_Shader )
+		{
+			switch ( a_Type )
+			{
+				case ERHIShaderType::Vertex:     VertexShader = std::move( a_Shader ); break;
+				case ERHIShaderType::Hull:       HullShader = std::move( a_Shader ); break;
+				case ERHIShaderType::Domain:     DomainShader = std::move( a_Shader ); break;
+				case ERHIShaderType::Geometry:   GeometryShader = std::move( a_Shader ); break;
+				case ERHIShaderType::Pixel:      PixelShader = std::move( a_Shader ); break;
+				default:                         break;
+			}
+			return *this;
+		}
 	};
 
 	//==============================================
@@ -230,3 +241,162 @@ namespace Tridium {
 	};
 
 } // namespace Tridium
+
+namespace std {
+
+	template<>
+	struct hash<Tridium::RHIDepthState>
+	{
+		size_t operator()( const Tridium::RHIDepthState& a_State ) const
+		{
+			using namespace Tridium;
+			using Hashing::HashCombine;
+
+			size_t seed = 0;
+
+			seed = HashCombine( seed, a_State.DepthTestEnabled );
+			seed = HashCombine( seed, a_State.DepthWriteEnabled );
+			seed = HashCombine( seed, a_State.Comparison );
+
+			return seed;
+		}
+	};
+
+	template<>
+	struct hash<Tridium::RHIStencilState>
+	{
+		size_t operator()( const Tridium::RHIStencilState& a_State ) const
+		{
+			using namespace Tridium;
+			using Hashing::HashCombine;
+
+			size_t seed = 0;
+
+			seed = HashCombine( seed, a_State.Enabled );
+			seed = HashCombine( seed, a_State.ReadMask );
+			seed = HashCombine( seed, a_State.WriteMask );
+			seed = HashCombine( seed, a_State.RefValue );
+			seed = HashCombine( seed, a_State.FrontFace.StencilFailOp );
+			seed = HashCombine( seed, a_State.FrontFace.DepthFailOp );
+			seed = HashCombine( seed, a_State.FrontFace.PassOp );
+			seed = HashCombine( seed, a_State.FrontFace.Comparison );
+			seed = HashCombine( seed, a_State.BackFace.StencilFailOp );
+			seed = HashCombine( seed, a_State.BackFace.DepthFailOp );
+			seed = HashCombine( seed, a_State.BackFace.PassOp );
+			seed = HashCombine( seed, a_State.BackFace.Comparison );
+
+			return seed;
+		}
+	};
+
+	template<>
+	struct hash<Tridium::RHIBlendState>
+	{
+		size_t operator()( const Tridium::RHIBlendState& a_State ) const
+		{
+			using namespace Tridium;
+			using Hashing::HashCombine;
+
+			size_t seed = 0;
+
+			seed = HashCombine( seed, a_State.AlphaToCoverageEnabled );
+			seed = HashCombine( seed, a_State.IndependentBlendEnabled );
+
+			for ( const auto& rt : a_State.RenderTargets )
+			{
+				seed = HashCombine( seed, rt.BlendEnabled );
+				seed = HashCombine( seed, rt.LogicOpEnabled );
+				seed = HashCombine( seed, rt.SrcColor );
+				seed = HashCombine( seed, rt.DstColor );
+				seed = HashCombine( seed, rt.SrcAlpha );
+				seed = HashCombine( seed, rt.DstAlpha );
+				seed = HashCombine( seed, rt.BlendOpColor );
+				seed = HashCombine( seed, rt.BlendOpAlpha );
+				seed = HashCombine( seed, rt.LogicOp );
+				seed = HashCombine( seed, rt.ColorWriteMask );
+			}
+
+			return seed;
+		}
+	};
+
+	template<>
+	struct hash<Tridium::RHIRasterizerState>
+	{
+		size_t operator()( const Tridium::RHIRasterizerState& a_State ) const
+		{
+			using namespace Tridium;
+			using Hashing::HashCombine;
+
+			size_t seed = 0;
+
+			seed = HashCombine( seed, a_State.CullMode );
+			seed = HashCombine( seed, a_State.FillMode );
+			seed = HashCombine( seed, a_State.Clockwise );
+			seed = HashCombine( seed, a_State.DepthClipEnabled );
+			seed = HashCombine( seed, a_State.AnitaliasedLinesEnabled );
+			seed = HashCombine( seed, a_State.DepthBias );
+			seed = HashCombine( seed, a_State.SlopeScaledDepthBias );
+
+			return seed;
+		}
+	};
+
+	template<>
+	struct hash<Tridium::RHIFramebufferInfo>
+	{
+		size_t operator()( const Tridium::RHIFramebufferInfo& a_Info ) const
+		{
+			using namespace Tridium;
+			using Hashing::HashCombine;
+
+			size_t seed = 0;
+
+			for ( const auto& format : a_Info.ColorFormats )
+			{
+				seed = HashCombine( seed, format );
+			}
+
+			seed = HashCombine( seed, a_Info.DepthStencilFormat );
+			seed = HashCombine( seed, a_Info.SampleCount );
+			seed = HashCombine( seed, a_Info.SampleQuality );
+
+			return seed;
+		}
+	};
+
+	template<>
+	struct hash<Tridium::RHIGraphicsPipelineStateDesc>
+	{
+		size_t operator()( const Tridium::RHIGraphicsPipelineStateDesc& a_Desc ) const
+		{
+			using namespace Tridium;
+			using Hashing::HashCombine;
+
+			size_t seed = 0;
+
+			seed = HashCombine( seed, a_Desc.Topology );
+			seed = HashCombine( seed, a_Desc.VertexLayout );
+
+			for ( const auto& layout : a_Desc.BindingLayouts )
+			{
+				seed = HashCombine( seed, layout.get() ); // Hash the pointer value
+			}
+
+			for ( ERHIShaderType type = ERHIShaderType::Vertex; type < ERHIShaderType::COUNT; type = ERHIShaderType( uint8_t( type ) + 1 ) )
+			{
+				auto* shader = a_Desc.GetShader( type );
+				seed = HashCombine( seed, shader ); // Hash the pointer of the shader module
+			}
+
+			seed = HashCombine( seed, a_Desc.BlendState );
+			seed = HashCombine( seed, a_Desc.DepthState );
+			seed = HashCombine( seed, a_Desc.StencilState );
+			seed = HashCombine( seed, a_Desc.RasterizerState );
+			seed = HashCombine( seed, a_Desc.FramebufferInfo );
+
+			return seed;
+		}
+	};
+
+} // namespace std

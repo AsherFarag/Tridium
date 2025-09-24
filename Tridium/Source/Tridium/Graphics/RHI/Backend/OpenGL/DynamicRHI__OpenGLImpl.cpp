@@ -79,11 +79,12 @@ namespace Tridium::OpenGL {
 
 	void DynamicRHI_OpenGLImpl::BeginFrame()
 	{
-		m_FrameIndex = (m_FrameIndex + 1) % m_Config.MaxFramesInFlight;
+		IDynamicRHI::BeginFrame();
 	}
 
 	void DynamicRHI_OpenGLImpl::EndFrame()
 	{
+		IDynamicRHI::EndFrame();
 	}
 
 	RHIFenceValue DynamicRHI_OpenGLImpl::ExecuteCommandLists( Span<IRHICommandList* const> a_CommandLists, ERHICommandQueueType a_QueueType )
@@ -321,6 +322,16 @@ namespace Tridium::OpenGL {
 		}
 
 		return gpuInfo;
+	}
+
+	bool DynamicRHI_OpenGLImpl::QueryRHIStats( RHIStats& o_Stats ) const
+	{
+		if ( !IDynamicRHI::QueryRHIStats( o_Stats ) )
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 	//////////////////////////////////////////////////////////////////////////

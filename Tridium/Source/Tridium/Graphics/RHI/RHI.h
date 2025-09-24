@@ -13,7 +13,7 @@ namespace Tridium {
 
 	namespace RHI {
 
-		//===========================
+		//=================================================================================================
 		// Core RHI functions
 		// Initialise the RHI with the given configuration.
 		bool Initialise( const RHIConfig& a_Config );
@@ -33,9 +33,9 @@ namespace Tridium {
 		void WaitForFence( ERHICommandQueueType a_QueueType, RHIFenceValue a_FenceValue );
 		// Runs garbage collection and cleans up references to RHI resources that are no longer in use by command lists.
 		void CollectGarbage();
-		//===========================
+		//=================================================================================================
 
-		//===========================
+		//=================================================================================================
 		// RHI Query and Functions
 		[[nodiscard]] inline uint32_t MaxFramesInFlight() { RHI_DEV_CHECK( s_DynamicRHI, "Null RHI" ); return s_DynamicRHI->MaxFramesInFlight(); }
 		[[nodiscard]] inline uint32_t FrameIndex() { RHI_DEV_CHECK( s_DynamicRHI, "Null RHI" ); return s_DynamicRHI->FrameIndex(); }
@@ -43,9 +43,13 @@ namespace Tridium {
 		[[nodiscard]] inline ERHInterfaceType GetRHIType() { RHI_DEV_CHECK( s_DynamicRHI, "Null RHI" ); return s_DynamicRHI->GetRHIType(); }
 		[[nodiscard]] inline IRHISwapChain* GetSwapChain() { RHI_DEV_CHECK( s_DynamicRHI, "Null RHI" ); return s_DynamicRHI->GetSwapChain(); }
 		[[nodiscard]] inline GPUInfo GetGPUInfo() { RHI_DEV_CHECK( s_DynamicRHI, "Null RHI" ); return s_DynamicRHI->GetGPUInfo(); }
-		//===========================
+		[[nodiscard]] inline bool QueryRHIStats( RHIStats& a_OutStats ) { RHI_DEV_CHECK( s_DynamicRHI, "Null RHI" ); return s_DynamicRHI->QueryRHIStats( a_OutStats ); }
+		// Get the RHI statistics for the previous frame.
+		// This will be the stats for the last RHI::EndFrame() call.
+		[[nodiscard]] const RHIStats& GetRHIStats();
+		//=================================================================================================
 
-		//===========================
+		//=================================================================================================
 		// Resource creation
 		[[nodiscard]] RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData = {} );
 		[[nodiscard]] RHIBufferRef CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data = {} );
@@ -55,6 +59,7 @@ namespace Tridium {
 		[[nodiscard]] RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc );
 		[[nodiscard]] RHIBindingSetRef CreateBindingSet( const RHIBindingSetDesc& a_Desc );
 		[[nodiscard]] RHIGraphicsPipelineStateRef CreateGraphicsPipelineState( const RHIGraphicsPipelineStateDesc& a_Desc );
+		//=================================================================================================
 
 		// Wrappers
 
@@ -69,7 +74,6 @@ namespace Tridium {
 			return ExecuteCommandLists( Span<IRHICommandList* const>{ a_CommandLists, a_Count }, a_QueueType );
 		}
 
-		//===========================
-	}
+	} // namespace RHI
 
-}
+} // namespace Tridium

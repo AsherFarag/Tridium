@@ -1,8 +1,12 @@
-#pragma once
+#ifndef SHADERINTEROP_HLSLI
+#define SHADERINTEROP_HLSLI
 
 #ifdef __cplusplus
+
 #include <Tridium/Math/Math.h>
 #include <Tridium/IO/FilePath.h>
+
+#define INLINED_CONSTANTS_SPACE 9999
 
 namespace Tridium {
 
@@ -29,6 +33,8 @@ namespace Tridium {
 
 #else
 
+#define INLINED_CONSTANTS_SPACE space9999
+
 #define CONCAT_DETAIL(x, y) x##y
 #define CONCAT(x, y) CONCATENATE_DETAIL(x, y)
 
@@ -36,10 +42,12 @@ namespace Tridium {
 
 #if defined( __PSSL__ )
 	// Defined elsewhere
+#elif defined( __spirv_opengl__ )
+	#define INLINED_CONSTANTS( _Name, _Type ) ConstantBuffer< _Type > _Name## : register( b0, INLINED_CONSTANTS_SPACE )
 #elif defined( __spirv__ )
-	#define INLINED_CONSTANTS( _Name, _Type ) ConstantBuffer< _Type > _Name : register( b0 )
+	#define INLINED_CONSTANTS( _Name, _Type ) ConstantBuffer< _Type > _Name : register( b0, INLINED_CONSTANTS_SPACE )
 #else
-	#define INLINED_CONSTANTS( _Name, _Type ) ConstantBuffer< _Type > _Name : register( b0 )
+	#define INLINED_CONSTANTS( _Name, _Type ) ConstantBuffer< _Type > _Name : register( b0, INLINED_CONSTANTS_SPACE )
 #endif
 
 #define COMBINED_SAMPLER( _Name, _Type, _Slot ) \
@@ -52,3 +60,5 @@ namespace Tridium {
 #define SampleTexture( _Texture, _UV ) _Texture.Sample( GetCombinedSampler( _Texture ), _UV )
 
 #endif // __cplusplus
+
+#endif // SHADERINTEROP_HLSLI

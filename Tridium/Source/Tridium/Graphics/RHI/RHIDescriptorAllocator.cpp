@@ -14,6 +14,7 @@ namespace Tridium {
 		{
 			m_Ranges = std::move( a_Other.m_Ranges );
 			m_Capacity = a_Other.m_Capacity;
+			m_Used = a_Other.m_Used;
 		}
 		return *this;
 	}
@@ -28,6 +29,7 @@ namespace Tridium {
 	{
 		m_Ranges.Clear();
 		m_Capacity = 0u;
+		m_Used = 0u;
 	}
 
 	RHIDescriptorHandle RHIDescriptorAllocator::Allocate( ERHIDescriptorHeapType a_Type )
@@ -81,6 +83,9 @@ namespace Tridium {
 			range.First += a_Count;
 		}
 
+		// Update used count
+		m_Used += a_Count;
+
 		return true;
 	}
 
@@ -95,6 +100,9 @@ namespace Tridium {
 	void RHIDescriptorAllocator::Free( uint32_t a_BaseIndex, uint32_t a_Count )
 	{
 		std::lock_guard<std::mutex> lock( m_Mutex );
+
+		// Update used count
+		m_Used -= a_Count;
 
 		uint32_t newFirst = a_BaseIndex;
 		uint32_t newLast = a_BaseIndex + a_Count - 1;

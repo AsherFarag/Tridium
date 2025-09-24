@@ -54,10 +54,12 @@ namespace Tridium {
 		void Free( uint32_t a_BaseIndex, uint32_t a_Count );
 
 		uint32_t Capacity() const { return m_Capacity; }
+		uint32_t Used() const { return m_Used; }
 
 	private:
 		Array<RHIDescriptorAllocatorRange> m_Ranges{};
 		uint32_t m_Capacity = 0u;
+		uint32_t m_Used = 0u;
 		std::mutex m_Mutex{};
 	};
 

@@ -1,67 +1,29 @@
 #pragma once
-#include "RHIResource.h"
-#include "RHISampler.h"
-#include "RHIBuffer.h"
-#include "RHITexture.h"
+#include <Tridium/Graphics/RHI/RHIResource.h>
+#include <Tridium/Graphics/RHI/RHISampler.h>
+#include <Tridium/Graphics/RHI/RHIBuffer.h>
+#include <Tridium/Graphics/RHI/RHITexture.h>
 
 namespace Tridium {
 
-	//==============================================
-	// RHI Binding Type
-	//  Describes the type of shader resource bound to a shader stage.
-	//  Maps to concepts in D3D12 Root Signatures and Vulkan Descriptor Sets.
-	enum class ERHIBindingType : uint8_t
-	{
-		Unknown = 0,
+	struct ShaderReflectionData;
 
-		// Inlined scalar/vector constants embedded directly into the root signature or push constant block.
-		InlinedConstants, // (DX12: Root Constants) / (Vulkan: Push Constants)
+	namespace RHI {
 
-		// A constant buffer resource (Uniform Buffer in Vulkan).
-		ConstantBuffer,   // (DX12: CBV) / (Vulkan: Uniform Buffer)
+		extern RHIBindingLayoutDesc BuildLayoutFromShader( String a_Name, const ShaderReflectionData& a_ShaderReflection );
 
-		// A read-only structured or raw buffer.
-		StructuredBuffer, // (DX12: SRV) / (Vulkan: Storage Buffer w/ read-only access)
+	} // namespace RHI
 
-		// A read/write structured or raw buffer.
-		StorageBuffer,    // (DX12: UAV) / (Vulkan: Storage Buffer)
-
-		// A read-only texture.
-		Texture,          // (DX12: SRV) / (Vulkan: Sampled Image)
-
-		// A read/write texture.
-		StorageTexture,   // (DX12: UAV) / (Vulkan: Storage Image)
-	};
-
-	//=========================================================
-	// ERHIBindingType
-	//=========================================================
-
-	static constexpr StringView ToString( ERHIBindingType a_Type )
-	{
-		switch ( a_Type )
-		{
-		case ERHIBindingType::Unknown:          return "Unknown";
-		case ERHIBindingType::InlinedConstants: return "InlinedConstants";
-		case ERHIBindingType::ConstantBuffer:   return "ConstantBuffer";  
-		case ERHIBindingType::StructuredBuffer: return "StructuredBuffer";
-		case ERHIBindingType::StorageBuffer:    return "StorageBuffer";   
-		case ERHIBindingType::Texture:          return "Texture";         
-		case ERHIBindingType::StorageTexture:   return "StorageTexture";  
-		default:                                return "<INVALID>";
-		}
-	}
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////
+	//=================================================================================================
 	// RHI Shader Binding Layouts
-	//  An immutable layout that describes what resources can be bound to what slot, in a shader.
-	//  NOTE: Shader Binding Layouts only describe the layout of the bindings and do not handle the binding of resources.
-	//        That is handled by the RHIShaderBindingSet.
-	/////////////////////////////////////////////////////////////////////////////////////////////////
+	// An immutable layout that describes what resources can be bound to what slot, in a shader.
+	// NOTE: Shader Binding Layouts only describe the layout of the bindings and do not handle the binding of resources.
+	// That is handled by the RHIShaderBindingSet.
+	//=================================================================================================
 
-	//==============================================
-	// RHI Shader Binding
-	//  Describes a singular resource binding in a shader binding layout.
+	//=================================================================================================
+	// RHI Shader Binding: Describes a singular resource binding in a shader binding layout.
+	//=================================================================================================
 	struct RHIShaderBinding
 	{
 		static constexpr uint32_t InvalidSlot = ~0u;
@@ -154,8 +116,9 @@ namespace Tridium {
 
 	using RHIShaderBindingArray = InlineArray<RHIShaderBinding, RHIConstants::MaxShaderBindings>;
 
-	//==============================================
-	// RHI Shader Binding Layout Descriptor
+	//=================================================================================================
+	// RHI Binding Layout Descriptor:
+	//=================================================================================================
 	struct RHIBindingLayoutDesc
 	{
 		using ResourceType = class IRHIBindingLayout;
@@ -165,9 +128,11 @@ namespace Tridium {
 		UnorderedMap<hash_t, Pair<uint32_t, String>> BindingMap{}; // Maps a hashed binding name to the index and string name of an item in the Bindings array.
 		String Name{};
 
+		//=============================================================================================
 		constexpr auto& SetVisibility( ERHIShaderVisibility a_Visibility ) { Visibility = a_Visibility; return *this; }
 		constexpr auto& SetName( StringView a_Name ) { Name = a_Name; return *this; }
 
+		//=============================================================================================
 		// Users should only use this function to add bindings, as the BindingMap needs to be updated.
 		auto& AddBinding( const HashedString& a_Name, RHIShaderBinding a_Binding, uint32_t a_InputIndex = 0 )
 		{
@@ -189,6 +154,7 @@ namespace Tridium {
 			return *this;
 		}
 
+		//=============================================================================================
 		// Users should only use this function to remove bindings, as the BindingMap needs to be updated.
 		void RemoveBinding( HashedString a_Name )
 		{
@@ -220,6 +186,7 @@ namespace Tridium {
 			BindingMap.erase( it );
 		}
 
+		//=============================================================================================
 		// Get the index of a binding in the layout. 
 		// Returns -1 if the binding does not exist.
 		[[nodiscard]] int32_t GetBindingIndex( hash_t a_Name ) const
@@ -232,6 +199,7 @@ namespace Tridium {
 			return -1;
 		}
 
+		//=============================================================================================
 		// Get the binding at the specified index.
 		// Returns an invalid binding if the index is out of range.
 		[[nodiscard]] RHIShaderBinding GetBindingFromName( hash_t a_Name ) const
@@ -241,6 +209,7 @@ namespace Tridium {
 			return index >= 0 ? Bindings[index] : RHIShaderBinding::Invalid();
 		}
 
+		//=============================================================================================
 		// Returns the string name of the binding from the given name hash.
 		[[nodiscard]] StringView GetBindingName( hash_t a_Name ) const
 		{
@@ -251,11 +220,21 @@ namespace Tridium {
 			}
 			return StringView{};
 		}
-	};
-	//==============================================
 
-	//==============================================
-	// RHI Shader Binding Layout Interface
+		//=============================================================================================
+		// Appends the bindings from another layout descriptor into this one.
+		void Append( const RHIBindingLayoutDesc& a_Other )
+		{
+			for ( const auto& [nameHash, pair] : a_Other.BindingMap )
+			{
+				AddBinding( HashedString{ pair.second }, a_Other.Bindings[pair.first] );
+			}
+		}
+	};
+
+	//=================================================================================================
+	// RHI Binding Layout Interface
+	//=================================================================================================
 	class IRHIBindingLayout : public IRHIObject
 	{
 		RHI_OBJECT_INTERFACE_BODY( BindingLayout )
@@ -263,30 +242,25 @@ namespace Tridium {
 			: IRHIObject( a_Device ), m_Desc( a_Desc ) {}
 		virtual ~IRHIBindingLayout() = default;
 	};
-	//==============================================
 
-
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	// RHI Shader Binding Sets
-	//  A set of shader bindings that can be bound to a command list.
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-
-	//==============================================
-	// RHI Binding Set Item
-	//  Represents a single shader binding in a set.
+	//=================================================================================================
+	// RHI Binding Set Item: Represents a single shader binding in a set.
+	//=================================================================================================
 	struct RHIBindingSetItem
 	{
 		IRHIResource* Resource;
 		uint32_t Slot;
 		ERHIBindingType Type;
 		ERHIFormat Format;
+
 		union
 		{
 			ERHITextureDimension TextureDimension;
 			ERHIBufferType BufferType;
 		};
+
 		RHIPackedSampler Sampler;
+
 		union
 		{
 			RHITextureSubresourceSet Subresources; // Valid only for textures.
@@ -324,8 +298,9 @@ namespace Tridium {
 	static_assert(sizeof( RHIBindingSetItem ) <= 48, "RHIBindingSetItem size is not 48 bytes");
 	using RHIBindingSetItemArray = InlineArray<RHIBindingSetItem, RHIConstants::MaxShaderBindings>;
 
-	//==============================================
-	// RHI Shader Binding Set Descriptor
+	//=================================================================================================
+	// RHI Shader Binding Set: A set of shader bindings that can be bound to a command list.
+	//=================================================================================================
 	struct RHIBindingSetDesc
 	{
 		using ResourceType = class IRHIBindingSet;
@@ -545,6 +520,5 @@ namespace Tridium {
 	protected:
 		Array<RHIObjectRef> m_ResourceHandles{};
 	};
-	
 
 } // namespace Tridium

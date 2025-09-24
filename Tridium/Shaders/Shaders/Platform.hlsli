@@ -1,3 +1,6 @@
-#pragma once
+#ifndef PLATFORM_HLSLI
+#define PLATFORM_HLSLI
 
 #define PLATFORM_SUPPORTS_STATIC_SAMPLERS 1
+
+#endif // PLATFORM_HLSLI

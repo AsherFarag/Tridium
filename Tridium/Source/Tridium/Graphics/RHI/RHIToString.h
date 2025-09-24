@@ -298,4 +298,39 @@ namespace Tridium {
 		default:                                    return "<INVALID>";
 		}
 	}
+
+	//=========================================================
+	// ERHIBindingType
+	//=========================================================
+
+	static constexpr StringView ToString( ERHIBindingType a_Type )
+	{
+		switch ( a_Type )
+		{
+		case ERHIBindingType::Unknown:          return "Unknown";
+		case ERHIBindingType::InlinedConstants: return "InlinedConstants";
+		case ERHIBindingType::ConstantBuffer:   return "ConstantBuffer";
+		case ERHIBindingType::StructuredBuffer: return "StructuredBuffer";
+		case ERHIBindingType::StorageBuffer:    return "StorageBuffer";
+		case ERHIBindingType::Texture:          return "Texture";
+		case ERHIBindingType::StorageTexture:   return "StorageTexture";
+		default:                                return "<INVALID>";
+		}
+	}
+
+	//=========================================================
+	// ERHIDescriptorHeapType
+	//=========================================================
+
+	static constexpr StringView ToString( ERHIDescriptorHeapType a_Type )
+	{
+		switch ( a_Type )
+		{
+			case ERHIDescriptorHeapType::Sampler:         return "Sampler";
+			case ERHIDescriptorHeapType::RenderResource:  return "RenderResource";
+			case ERHIDescriptorHeapType::RenderTarget:    return "RenderTarget";
+			case ERHIDescriptorHeapType::DepthStencil:    return "DepthStencil";
+			default:                                      return "<INVALID>";
+		}
+	}
 }

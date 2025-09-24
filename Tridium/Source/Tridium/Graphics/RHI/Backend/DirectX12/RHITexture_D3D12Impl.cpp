@@ -3,6 +3,81 @@
 
 namespace Tridium::D3D12 {
 
+	struct ImageLevel
+	{
+		Array<uint8_t> Data;
+		size_t Width = 0;
+		size_t Height = 0;
+		size_t Depth = 0;
+		size_t BytesPerPixel = 0;
+	};
+
+	static ImageLevel GenerateNextMip(
+		Span<const uint8_t> a_Data,
+		size_t a_Width, size_t a_Height, size_t a_Depth,
+		size_t a_BytesPerPixel )
+	{
+			// Next mip dimensions
+		const size_t dstWidth = std::max<size_t>( 1, a_Width / 2 );
+		const size_t dstHeight = std::max<size_t>( 1, a_Height / 2 );
+		const size_t dstDepth = std::max<size_t>( 1, a_Depth / 2 );
+
+		ImageLevel dst{};
+		dst.Width = dstWidth;
+		dst.Height = dstHeight;
+		dst.Depth = dstDepth;
+		dst.BytesPerPixel = a_BytesPerPixel;
+		dst.Data.Resize( dstWidth * dstHeight * dstDepth * a_BytesPerPixel );
+
+		const size_t srcRowStride = a_Width * a_BytesPerPixel;
+		const size_t srcSliceStride = srcRowStride * a_Height;
+
+		const size_t dstRowStride = dstWidth * a_BytesPerPixel;
+		const size_t dstSliceStride = dstRowStride * dstHeight;
+
+		for ( size_t z = 0; z < dstDepth; ++z )
+		{
+			for ( size_t y = 0; y < dstHeight; ++y )
+			{
+				for ( size_t x = 0; x < dstWidth; ++x )
+				{
+					uint64_t accum[4] = {}; // up to 4 channels, extend if needed
+					const size_t samples = 8; // 2x2x2 box filter for 3D, 2D if depth=1
+
+					size_t actualSamples = 0;
+
+					for ( size_t dz = 0; dz < 2 && ( z * 2 + dz ) < a_Depth; ++dz )
+					{
+						for ( size_t yy = 0; yy < 2 && ( y * 2 + yy ) < a_Height; ++yy )
+						{
+							for ( size_t xx = 0; xx < 2 && ( x * 2 + xx ) < a_Width; ++xx )
+							{
+								const uint8_t* src = a_Data.data() +
+									( ( z * 2 + dz ) * srcSliceStride ) +
+									( ( y * 2 + yy ) * srcRowStride ) +
+									( ( x * 2 + xx ) * a_BytesPerPixel );
+
+								for ( size_t c = 0; c < a_BytesPerPixel; ++c )
+									accum[c] += src[c];
+
+								actualSamples++;
+							}
+						}
+					}
+
+					// Write averaged pixel
+					uint8_t* dstPixel = dst.Data.Data() +
+						( z * dstSliceStride + y * dstRowStride + x * a_BytesPerPixel );
+
+					for ( size_t c = 0; c < a_BytesPerPixel; ++c )
+						dstPixel[c] = static_cast<uint8_t>( accum[c] / actualSamples );
+				}
+			}
+		}
+
+		return dst;
+	}
+
 	RHITexture_D3D12Impl::RHITexture_D3D12Impl( IDynamicRHI* a_Device, const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData )
 		: IRHITexture( a_Device, a_Desc )
 	{
@@ -50,10 +125,12 @@ namespace Tridium::D3D12 {
 		D3D12_SET_DEBUG_NAME( Texture.Resource(), m_Desc.Name, L"Unnamed Texture");
 
 		if ( a_SubResourcesData.empty() )
+		{
 			return; // No data to upload
+		}
 
 		UINT64 uploadBufferSize = 0;
-		UINT numSubresources = Cast<UINT>( a_SubResourcesData.size() );
+		UINT numSubresources = m_Desc.Mips * ( m_Desc.IsArray() ? m_Desc.DepthOrArraySize : 1 );
 
 		Array<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> layouts;
 		Array<UINT> numRows;
@@ -74,7 +151,7 @@ namespace Tridium::D3D12 {
 		allocDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
 		D3D12_RESOURCE_DESC uploadBufferDesc = {};
 		uploadBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-		uploadBufferDesc.Width = imgSize * depth;
+		uploadBufferDesc.Width = uploadBufferSize;
 		uploadBufferDesc.Height = 1;
 		uploadBufferDesc.DepthOrArraySize = 1;
 		uploadBufferDesc.MipLevels = 1;
@@ -87,6 +164,33 @@ namespace Tridium::D3D12 {
 		{
 			ASSERT( false, "Failed to create D3D12 upload buffer" );
 			return;
+		}
+
+		Array<RHITextureSubresourceData> mipChain;
+		Array<ImageLevel> imageMips;
+		if ( a_SubResourcesData.size() == 1 )
+		{
+			mipChain.Reserve( m_Desc.Mips );
+			mipChain.EmplaceBack( a_SubResourcesData[0] );
+			auto lastMip = a_SubResourcesData[0];
+			for ( uint32_t mip = 1; mip < m_Desc.Mips; ++mip )
+			{
+				const ImageLevel& nextMip = imageMips.EmplaceBack( GenerateNextMip(
+					Span{ static_cast<const uint8_t*>( lastMip.Data ), lastMip.DepthStride },
+					std::max<size_t>( 1, width >> ( mip - 1 ) ),
+					std::max<size_t>( 1, height >> ( mip - 1 ) ),
+					std::max<size_t>( 1, depth >> ( mip - 1 ) ),
+					formatInfo.BytesPerBlock ) );
+
+				RHITextureSubresourceData nextMipData{};
+				nextMipData.Data = nextMip.Data.Data();
+				nextMipData.RowStride = nextMip.Width * formatInfo.BytesPerBlock;
+				nextMipData.DepthStride = nextMipData.RowStride * nextMip.Height;
+				mipChain.EmplaceBack( nextMipData );
+				lastMip = nextMipData;
+			}
+
+			a_SubResourcesData = mipChain;
 		}
 
 		Array<D3D12_SUBRESOURCE_DATA> d3d12SubResData{};
@@ -116,8 +220,8 @@ namespace Tridium::D3D12 {
 		cmdList->Close();
 
 		IRHICommandList* cmdListPtr = cmdList;
-		const RHIFenceValue fence = Device()->ExecuteCommandLists( Span{ &cmdListPtr, 1 }, ERHICommandQueueType::Copy );
-		Device()->WaitForFence( ERHICommandQueueType::Copy, fence );
+		const RHIFenceValue fence = Device()->ExecuteCommandLists( Span{ &cmdListPtr, 1 }, cmdListPtr->Desc().QueueType );
+		Device()->WaitForFence( cmdListPtr->Desc().QueueType, fence );
 	}
 
 	bool RHITexture_D3D12Impl::Release()

@@ -22,6 +22,11 @@
 #include <Tridium/Graphics/oldRendering/VertexArray.h>
 #include <Tridium/Graphics/oldRendering/Shader.h>
 #include <Tridium/Graphics/Renderer/SceneRenderer.h>
+#include <Tridium/ImGui/ImGuiModule.h>
+#include <Tridium/Graphics/RHI/RHI.h>
+#include <Tridium/Reflection/FieldReflection.h>
+#include <Tridium/Asset/AssetDatabase.h>
+#include <Tridium/Asset/Importers/ModelImporter.h>
 
 namespace Tridium {
 
@@ -190,16 +195,38 @@ namespace Tridium {
 
 			// Update the viewport size
 			m_ViewportSize = regionAvail;
-			m_EditorCamera->SetViewportSize( regionAvail.X, regionAvail.X );
+			m_EditorCamera->SetViewportSize( m_ViewportSize.X, m_ViewportSize.Y );
+			m_EditorCamera->OnUpdate();
 
 			// Draw the Editor Camera ViewPort
 			//ImTextureID textureID = ( ImTextureID )( *colorTarget->NativePtrAs<uint32_t>() );
 			//ImGui::Image( textureID, ImGui::GetContentRegionAvail() );
 
 			{
+				//TEMP
+				const FilePath assetFilePath = "TestProject/Content/Sponza/glTF/Sponza.gltf";
+				auto modelImporter = AssetFactory::GetImporter( assetFilePath.GetExtension().ToString() );
+				static bool imported = false;
+				static AssetRef<StaticMesh> importedAsset;
+				if ( modelImporter && !imported )
+				{
+					imported = true;
+					std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
+					AssetImportContext context;
+					context.m_AssetPath = assetFilePath;
+					modelImporter->OnImport( context );
+					auto endTime = std::chrono::high_resolution_clock::now();
+					std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>( endTime - startTime );
+					LOG( LogCategory::Debug, Info, "Import took {} seconds", duration.count() );
+					importedAsset = SharedPtrCast<StaticMesh>( context.m_CreatedAssets.Back().second );
+				}
+
 				static SceneRenderer renderer( nullptr );
+
+
 				renderer.SetViewportSize( ( uint32_t )m_ViewportSize.X, ( uint32_t )m_ViewportSize.Y );
 				renderer.Open( *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position );
+				renderer.SubmitStaticMesh( importedAsset, Matrix4( 1.0f ) );
 				renderer.Close();
 
 				ImTextureID textureID = ( ImTextureID )( renderer.GetOutputTexture().get() );

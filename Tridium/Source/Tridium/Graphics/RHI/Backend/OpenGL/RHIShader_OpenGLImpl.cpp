@@ -1,58 +1,21 @@
 #include "tripch.h"
 #include "RHI_OpenGLImpl.h"
-#include "spirv_glsl.hpp"
-
 namespace Tridium::OpenGL {
 
 	RHIShaderModule_OpenGLImpl::RHIShaderModule_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType& a_Desc )
 		: IRHIShaderModule( a_Device, a_Desc )
 	{
-		// Create GLSL from the SPIR-V bytecode using SPIRV-Cross
-		spirv_cross::CompilerGLSL glslCompiler( ReinterpretCast<const uint32_t*>( a_Desc.Bytecode.data() ), a_Desc.Bytecode.size_bytes() / sizeof( uint32_t ) );
-		spirv_cross::CompilerGLSL::Options options;
-		options.version = 450;
-		options.es = false;
-		glslCompiler.set_common_options( options );
-		glslCompiler.build_combined_image_samplers();
 
-		spirv_cross::ShaderResources shaderResources = glslCompiler.get_shader_resources();
-		for ( const auto& resource : shaderResources.uniform_buffers )
-		{
-			TODO( "We are setting the interface name of the block as I cant use the instance name for shader bindings. Hack" );
-			glslCompiler.set_name( resource.base_type_id,
-				glslCompiler.get_block_fallback_name( resource.id ) 
-			);
-		}
-
-		// Textures and samplers are combined in GLSL, so we need to keep track of them and set the correct names
-		auto combinedSamplers = glslCompiler.get_combined_image_samplers();
-		UnorderedSet<spirv_cross::VariableID> seenImageIDs;
-		seenImageIDs.reserve( combinedSamplers.size() );
-		for ( auto& sampler : combinedSamplers )
-		{
-			if ( seenImageIDs.contains( sampler.image_id ) )
-			{
-				ASSERT( false, "Textures used with multiple samplers are not supported!" );
-				continue;
-			}
-
-			seenImageIDs.insert( sampler.image_id );
-			const String& texName = glslCompiler.get_name( sampler.image_id );
-			// Set the name of the combined sampler to the texture name.
-			// This is helpful for setting Texture Shader Inputs via the RHICommandList_OpenGLImpl.
-			glslCompiler.set_name( sampler.combined_id, texName );
-		}
-
-		String glsl = glslCompiler.compile();
 
 		// Create the shader and compile the GLSL source
 		m_ShaderID = OpenGL2::CreateShader( Translate( a_Desc.Type ) );
-		const char* source = glsl.c_str();
-		OpenGL2::ShaderSource( m_ShaderID, 1, &source, nullptr );
+		const GLchar* glslSource = ReinterpretCast<const GLchar*>( a_Desc.Bytecode.data() );
+		const GLsizei glslLength = Cast<GLsizei>( a_Desc.Bytecode.size_bytes() );
+		OpenGL2::ShaderSource( m_ShaderID, 1, &glslSource, &glslLength );
 		OpenGL2::CompileShader( m_ShaderID );
 
 	#if RHI_DEBUG_ENABLED
-		std::cout << "RHIShaderModule_OpenGLImpl::Commit: Compiling shader '\n" << glsl << "'" << std::endl;
+		std::cout << "RHIShaderModule_OpenGLImpl::Commit: Compiling shader '\n" << StringView( glslSource, glslLength ) << "'" << std::endl;
 
 		// Check for compilation errors
 		GLint success = 0;

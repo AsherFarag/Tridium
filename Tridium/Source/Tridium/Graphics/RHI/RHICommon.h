@@ -33,7 +33,7 @@ namespace Tridium {
 		ERHInterfaceType GetRHIType();
 
 		// Get the global dynamically bound RHI.
-		static IDynamicRHI* GetDynamicRHI() { return s_DynamicRHI; }
+		inline IDynamicRHI* GetDynamicRHI() { return s_DynamicRHI; }
 
 		// Get the name of the given RHI type.
 		constexpr StringView GetRHIName( ERHInterfaceType a_API );

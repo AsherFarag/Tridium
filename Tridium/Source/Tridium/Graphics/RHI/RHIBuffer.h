@@ -53,7 +53,7 @@ namespace Tridium {
 		constexpr auto& SetFormat( ERHIFormat a_Format ) { Format = a_Format; return *this; }
 		constexpr auto& SetStride( uint32_t a_Stride ) { Stride = a_Stride; return *this; }
 		constexpr auto& SetInitialState( ERHIResourceStates a_State ) { InitialState = a_State; return *this; }
-		constexpr auto& SetName( StringView a_Name ) { Name = a_Name; return *this; }
+		constexpr auto& SetName( String a_Name ) { Name = std::move( a_Name ); return *this; }
 	};
 
 	class IRHIBuffer : public IRHIResource

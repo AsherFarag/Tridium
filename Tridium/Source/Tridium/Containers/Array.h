@@ -508,6 +508,7 @@ namespace Tridium {
 		const T* Data() const { return m_Data.data(); }
 
 		size_t Size() const { return m_Data.size(); }
+		size_t SizeBytes() const { return m_Data.size() * sizeof( T ); }
 		size_t MaxSize() const { return m_Data.max_size(); }
 		size_t Capacity() const { return m_Data.capacity(); }
 		bool Empty() const { return m_Data.empty(); }

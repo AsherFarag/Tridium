@@ -63,7 +63,7 @@ namespace Tridium {
 		}
 
 		int forwardMag = Input::IsKeyPressed( EInputKey::W ) - Input::IsKeyPressed( EInputKey::S );
-		MoveForward( forwardMag, speed );
+		MoveForward( -forwardMag, speed );
 		int sidewaysMag = Input::IsKeyPressed( EInputKey::D ) - Input::IsKeyPressed( EInputKey::A );
 		MoveSideways( sidewaysMag, speed );
 

@@ -208,12 +208,14 @@ namespace Tridium {
 			Array<byte_t> textureData;
 			size_t textureWidth = 0;
 			size_t textureHeight = 0;
-			bool isHDR = false;
+			ERHIFormat textureFormat = ERHIFormat::Unknown;
 			bool isEmbedded = false;
 
 			// Is the texture embedded in the model file?
 			if ( const aiTexture* aiTexEmbedded = a_Scene->GetEmbeddedTexture( path.C_Str() ) )
 			{
+				TODO( "We can't just mem copy. We need to decode the texture data based on the format hint." );
+				NOT_IMPLEMENTED;
 				// We can just copy the raw data from Assimp
 				textureName = FilePath( aiTexEmbedded->mFilename.C_Str() ).GetFilenameWithoutExtension();
 				textureData.Resize( aiTexEmbedded->mWidth * ( aiTexEmbedded->mHeight == 0 ? 1 : aiTexEmbedded->mHeight ) );
@@ -225,7 +227,10 @@ namespace Tridium {
 			else
 			{
 				// We need to load the texture from file using stb_image
+				// A texture is either HDR (float) or standard (uint8_t)
+				// Which must be loaded differently.
 
+				// We assume the texture path is relative to the model file
 				const FilePath texturePath = a_Context.AssetPath().GetParentPath() / FilePath( path.C_Str() );
 				textureName = texturePath.GetFilenameWithoutExtension();
 
@@ -233,11 +238,12 @@ namespace Tridium {
 				{
 					String texturePathStr = texturePath.ToString();
 
-					// Check if it's an HDR texture
-					isHDR = stbi_is_hdr( texturePathStr.c_str() );
-					if ( isHDR )
+					// Get info about the texture
+					int width, height, channels;
+					stbi_info( texturePathStr.c_str(), &width, &height, &channels );
+
+					if ( stbi_is_hdr( texturePathStr.c_str() ) )
 					{
-						int width, height, channels;
 						float* data = stbi_loadf( texturePath.ToString().c_str(), &width, &height, &channels, 0 );
 
 						if ( !data )
@@ -248,8 +254,16 @@ namespace Tridium {
 
 						textureWidth = Cast<size_t>( width );
 						textureHeight = Cast<size_t>( height );
-						const size_t dataSize = textureWidth * textureHeight * channels * sizeof( float );
+						switch ( channels )
+						{
+							case 1: textureFormat = ERHIFormat::R32_FLOAT; break;
+							case 2: textureFormat = ERHIFormat::RG32_FLOAT; break;
+							case 3: textureFormat = ERHIFormat::RGB32_FLOAT; break;
+							case 4: textureFormat = ERHIFormat::RGBA32_FLOAT; break;
+							default: ASSERT( false, "Unsupported number of channels in HDR texture: {}", channels ); return nullptr;
+						}
 
+						const size_t dataSize = textureWidth * textureHeight * channels * sizeof( float );
 						textureData.Resize( dataSize );
 						memcpy( textureData.Data(), data, dataSize );
 
@@ -258,8 +272,10 @@ namespace Tridium {
 					// Otherwise, assume it's a standard 8-bit texture
 					else
 					{
-						int width, height, channels;
-						uint8_t* data = stbi_load( texturePath.ToString().c_str(), &width, &height, &channels, 0 );
+						// We don't support 3-channel textures, so we convert them to 4-channel
+						const int desiredChannels = channels == 3 ? 4 : channels;
+						channels = desiredChannels;
+						uint8_t* data = stbi_load( texturePath.ToString().c_str(), &width, &height, nullptr, desiredChannels );
 
 						if ( !data )
 						{
@@ -269,8 +285,15 @@ namespace Tridium {
 
 						textureWidth = Cast<size_t>( width );
 						textureHeight = Cast<size_t>( height );
-						const size_t dataSize = textureWidth * textureHeight * channels * sizeof( uint8_t );
+						switch ( channels )
+						{
+							case 1: textureFormat = ERHIFormat::R8_UNORM; break;
+							case 2: textureFormat = ERHIFormat::RG8_UNORM; break;
+							case 4: textureFormat = ERHIFormat::RGBA8_UNORM; break;
+							default: ASSERT( false, "Unsupported number of channels in texture: {}", channels ); return nullptr;
+						}
 
+						const size_t dataSize = textureWidth * textureHeight * channels * sizeof( uint8_t );
 						textureData.Resize( dataSize );
 						memcpy( textureData.Data(), data, dataSize );
 
@@ -312,7 +335,7 @@ namespace Tridium {
 			texture->m_Height = Cast<uint32_t>( textureHeight );
 			texture->m_DepthOrArraySize = 1;
 			texture->m_Dimension = ERHITextureDimension::Texture2D;
-			texture->m_Format = isHDR ? ERHIFormat::RGBA32_FLOAT : ERHIFormat::RGBA8_UNORM;
+			texture->m_Format = textureFormat;
 
 			return textureRef;
 		};
@@ -434,7 +457,35 @@ namespace Tridium {
 				}
 
 				// Shading Mode
-				TODO( "Assimp exposes lighting models like fresnal, we should take advantage of that" );
+				if ( int32_t shadingModel = 0; aiMat->Get( AI_MATKEY_SHADING_MODEL, shadingModel ) == aiReturn_SUCCESS )
+				{
+					switch (shadingModel )
+					{
+						case aiShadingMode_NoShading:
+						case aiShadingMode_Flat:
+							material->SetShaderFamily( String{ DefaultShaderFamilies::Unlit } );
+							break;
+						case aiShadingMode_Gouraud:
+						case aiShadingMode_Phong:
+						case aiShadingMode_Blinn:
+							material->SetShaderFamily( String{ DefaultShaderFamilies::Lit } );
+							break;
+						case aiShadingMode_Toon:
+							material->SetShaderFamily( String{ DefaultShaderFamilies::Toon } );
+							break;
+						case aiShadingMode_OrenNayar:
+						case aiShadingMode_Minnaert:
+						case aiShadingMode_CookTorrance:
+						default:
+							material->SetShaderFamily( String{ DefaultShaderFamilies::Lit } );
+							break;
+					}
+				}
+				else
+				{
+					// Default to Lit shader if no shading model is specified
+					material->SetShaderFamily( String{ DefaultShaderFamilies::Lit } );
+				}
 
 				material->SetFlags( matFlags );
 			}

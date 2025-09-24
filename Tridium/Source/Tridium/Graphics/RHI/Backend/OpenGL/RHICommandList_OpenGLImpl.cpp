@@ -153,9 +153,9 @@ namespace Tridium::OpenGL {
 		}
 	}
 
-	void RHICommandList_OpenGLImpl::SetGraphicsState( const RHIGraphicsState& a_GraphicsState, RHI_DEBUG_SRC_LOC_PARAM ) 
+	void RHICommandList_OpenGLImpl::SetGraphicsState( const RHIGraphicsState& a_GraphicsState, bool a_ClearViewportState, RHI_DEBUG_SRC_LOC_PARAM )
 	{
-		IRHICommandList::SetGraphicsState( a_GraphicsState, RHI_DEBUG_SRC_LOC );
+		IRHICommandList::SetGraphicsState( a_GraphicsState, a_ClearViewportState, RHI_DEBUG_SRC_LOC );
 
 		m_ReferencedObjects.EmplaceBack( a_GraphicsState.PipelineState->Shared() );
 
@@ -164,6 +164,7 @@ namespace Tridium::OpenGL {
 			if ( attachment.Texture )
 				m_ReferencedObjects.EmplaceBack( attachment.Texture->Shared() );
 		}
+
 		if ( a_GraphicsState.Framebuffer.DepthStencilAttachment.Texture )
 			m_ReferencedObjects.EmplaceBack( a_GraphicsState.Framebuffer.DepthStencilAttachment.Texture->Shared() );
 
@@ -180,13 +181,14 @@ namespace Tridium::OpenGL {
 
 		if ( IsImmediate() )
 		{
-			SetGraphicsState_Impl( a_GraphicsState );
+			SetGraphicsState_Impl( a_GraphicsState, a_ClearViewportState );
 		}
 		else
 		{
 			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::SetGraphicsState{ 
-				.GraphicsState = a_GraphicsState
-				} );
+				.GraphicsState = a_GraphicsState,
+				.ClearViewportState = a_ClearViewportState
+			} );
 		}
 	}
 
@@ -781,7 +783,7 @@ namespace Tridium::OpenGL {
 		OpenGL4::BindBufferBase( GL_UNIFORM_BUFFER, bindingPoint, m_InlinedConstantsUBO );
 	}
 
-	void RHICommandList_OpenGLImpl::SetGraphicsState_Impl( const RHIGraphicsState& a_GraphicsState )
+	void RHICommandList_OpenGLImpl::SetGraphicsState_Impl( const RHIGraphicsState& a_GraphicsState, bool a_ClearViewportState )
 	{
 		auto* pso = a_GraphicsState.PipelineState->As<RHIGraphicsPipelineState_OpenGLImpl>();
 		RHI_DEV_CHECK( pso, "Invalid graphics pipeline state!" );
@@ -792,10 +794,23 @@ namespace Tridium::OpenGL {
 		const bool updateVertexBuffer = !m_GraphicsStateValid || m_CurrentGraphicsState.VertexBuffer != a_GraphicsState.VertexBuffer;
 
 		if ( updatePipelineState )
+		{
 			BindGraphicsPipelineState( *pso );
+		}
 
 		if ( updateFramebuffer )
+		{
 			BindFramebuffer( a_GraphicsState.Framebuffer );
+		}
+
+		if ( a_ClearViewportState )
+		{
+			OpenGL1::Viewport( 0, 0, 0, 0 );
+		}
+		else
+		{
+			SetViewportState_Impl( m_ViewportState );
+		}
 
 		BindGraphicsBindings( a_GraphicsState );
 
@@ -858,6 +873,8 @@ namespace Tridium::OpenGL {
 	void RHICommandList_OpenGLImpl::SetViewportState_Impl( const RHIViewportState& a_ViewportState )
 	{
 		RHI_DEV_CHECK( m_GraphicsStateValid, "Cannot set viewport state without a valid graphics state!" );
+
+		m_ViewportState = a_ViewportState;
 
 		// Set viewports
 		for ( uint32_t i = 0; i < a_ViewportState.Viewports.Size(); ++i )
@@ -1012,7 +1029,7 @@ namespace Tridium::OpenGL {
 			case SetGraphicsState:
 			{
 				const auto& cmd = std::get<CommandBuffer::SetGraphicsState>( cmdVariant );
-				SetGraphicsState_Impl( cmd.GraphicsState );
+				SetGraphicsState_Impl( cmd.GraphicsState, cmd.ClearViewportState );
 				break;
 			}
 			case ClearRenderTargets:

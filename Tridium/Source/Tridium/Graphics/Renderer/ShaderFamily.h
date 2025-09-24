@@ -4,6 +4,7 @@
 #include <Tridium/Containers/UnorderedSet.h>
 #include <Tridium/Graphics/RHI/RHIDefinitions.h>
 #include <Tridium/Graphics/RHI/RHIShader.h>
+#include <Tridium/Graphics/RHI/RHIPipelineState.h>
 
 namespace Tridium {
 
@@ -85,7 +86,7 @@ namespace Tridium {
 		RHIShaderModuleRef ShaderStages[(size_t)ERHIShaderType::COUNT];
 
 		//=============================================================================================
-		// The input layout used by this variant.
+		// The binding layout that this shader family variant uses.
 		RHIBindingLayoutRef BindingLayout;
 
 		//=============================================================================================
@@ -101,6 +102,20 @@ namespace Tridium {
 			}
 
 			return false;
+		}
+
+		//=============================================================================================
+		void Apply( RHIGraphicsPipelineStateDesc& a_PipelineDesc ) const
+		{
+			for ( size_t i = 0; i < (size_t)ERHIShaderType::COUNT; ++i )
+			{
+				if ( ShaderStages[i] && ShaderStages[i]->Valid() )
+				{
+					a_PipelineDesc.SetShader( (ERHIShaderType)i, ShaderStages[i] );
+				}
+			}
+
+			a_PipelineDesc.AddBindingLayout( BindingLayout );
 		}
 
 	};

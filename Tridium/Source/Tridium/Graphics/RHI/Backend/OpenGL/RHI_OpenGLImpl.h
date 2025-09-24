@@ -420,7 +420,7 @@ namespace Tridium::OpenGL {
 
 		void SetInlinedConstants( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM ) override;
 
-		void SetGraphicsState( const RHIGraphicsState& a_GraphicsState, RHI_DEBUG_SRC_LOC_PARAM ) override;
+		void SetGraphicsState( const RHIGraphicsState& a_GraphicsState, bool a_ClearViewportState, RHI_DEBUG_SRC_LOC_PARAM ) override;
 		void ClearRenderTargets( ERHIClearFlags a_Flags, RHIClearValue a_ClearValue, int32_t a_ColorAttachmentIndex = -1, RHI_DEBUG_SRC_LOC_PARAM ) override;
 		void SetViewportState( const RHIViewportState& a_Viewports, RHI_DEBUG_SRC_LOC_PARAM ) override;
 		void Draw( const RHIDrawArgs& a_DrawArgs, RHI_DEBUG_SRC_LOC_PARAM ) override;
@@ -440,6 +440,7 @@ namespace Tridium::OpenGL {
 
 		RHIGraphicsState m_CurrentGraphicsState{};
 		bool m_GraphicsStateValid = false;
+		RHIViewportState m_ViewportState{};
 		RHIComputeState m_CurrentComputeState{};
 		bool m_ComputeStateValid = false;
 
@@ -491,6 +492,7 @@ namespace Tridium::OpenGL {
 			struct SetGraphicsState
 			{
 				RHIGraphicsState GraphicsState;
+				bool ClearViewportState;
 			};
 
 			struct ClearRenderTargets
@@ -572,13 +574,14 @@ namespace Tridium::OpenGL {
 		void BindGraphicsBindings( const RHIGraphicsState& a_GraphicsState );
 
 		void FlushCommandBuffer();
+
 		// Command Implementations
 		void UpdateBuffer_Impl( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes );
 		void CopyBuffer_Impl( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange );
 		void UpdateTexture_Impl( IRHITexture& a_Texture, const RHITextureSlice& a_DstSlice, RHITextureSubresourceData a_Data );
 		void CopyTexture_Impl( IRHITexture& a_DstTexture, const RHITextureSlice& a_DstSlice, IRHITexture& a_SrcTexture, const RHITextureSlice& a_SrcSlice );
 		void SetInlinedConstants_Impl( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes = 0 );
-		void SetGraphicsState_Impl( const RHIGraphicsState& a_GraphicsState );
+		void SetGraphicsState_Impl( const RHIGraphicsState& a_GraphicsState, bool a_ClearViewportState );
 		void ClearRenderTargets_Impl( ERHIClearFlags a_Flags, RHIClearValue a_ClearValue, int32_t a_ColorAttachmentIndex = -1 );
 		void SetViewportState_Impl( const RHIViewportState& a_Viewports );
 		void Draw_Impl( const RHIDrawArgs& a_DrawArgs );
@@ -632,6 +635,7 @@ namespace Tridium::OpenGL {
 		// Miscellaneous
 		IRHISwapChain* GetSwapChain() const override { return m_SwapChain.get(); }
 		GPUInfo GetGPUInfo() const override;
+		bool QueryRHIStats( RHIStats& o_Stats ) const override;
 		//=====================================================
 
 	#if RHI_DEBUG_ENABLED
