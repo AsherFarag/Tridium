@@ -21,6 +21,14 @@ namespace Tridium {
 	static ResourceMap<RenderResourceMaterial> s_Materials;
 	static ResourceMap<RenderResourceTexture> s_Textures;
 
+
+	//=============================================================================================
+	// Common default textures used for rendering.
+	// These are 1x1 textures with solid colors or normals.
+	static RHITextureRef s_WhiteTex2D;
+	static RHITextureRef s_BlackTex2D;
+	static RHITextureRef s_NormalTex2D;
+
 	template<Concepts::Derived<RenderResource> T>
 	static auto GetResourceIterator( ResourceVariants<T>& a_Variants, RenderResourceID a_VariantID )
 	{
@@ -105,6 +113,25 @@ namespace Tridium {
 
     bool RenderResourceManager::Init()
     {
+		// Create default resources
+		{
+			auto texDesc = RHITextureDesc{}
+				.SetDimension( ERHITextureDimension::Texture2D )
+				.SetWidth( 1 )
+				.SetHeight( 1 )
+				.SetFormat( ERHIFormat::RGBA8_UNORM )
+				.SetBindFlags( ERHIBindFlags::ShaderResource )
+				.SetUsage( ERHIUsage::Static );
+
+			constexpr uint8_t blackPixel[4] = { 0, 0, 0, 1 };
+			constexpr uint8_t whitePixel[4] = { 255, 255, 255, 1 };
+			constexpr uint8_t normalPixel[4] = { 128, 128, 255, 1 };
+
+			s_WhiteTex2D = RHI::CreateTexture( texDesc.SetName( "Default White Texture2D" ), { RHITextureSubresourceData{}.SetData( whitePixel ).SetRowStride( 4 ) } );
+			s_BlackTex2D = RHI::CreateTexture( texDesc.SetName( "Default Black Texture2D" ), { RHITextureSubresourceData{}.SetData( blackPixel ).SetRowStride( 4 ) } );
+			s_NormalTex2D = RHI::CreateTexture( texDesc.SetName( "Default Normal Texture2D" ), { RHITextureSubresourceData{}.SetData( normalPixel ).SetRowStride( 4 ) } );
+		}
+
         return true;
     }
 
@@ -113,6 +140,10 @@ namespace Tridium {
         s_StaticMeshes.clear();
         s_Materials.clear();
 		s_Textures.clear();
+
+		s_WhiteTex2D = nullptr;
+		s_BlackTex2D = nullptr;
+		s_NormalTex2D = nullptr;
     }
 
 	RenderResourceStaticMesh RenderResourceManager::GetStaticMesh( AssetID a_AssetID, RenderResourceID a_VariantID )
@@ -309,22 +340,26 @@ namespace Tridium {
 				.SetLayout( bindingLayout )
 				.AddConstantBuffer( "u_MaterialProps"_H, materialBuffer.get() );
 
-			const auto AddTextureBinding = [&]( const HashedString a_Name, const AssetRef<Texture>& a_Texture )
+			const auto AddTextureBinding = [&]( const HashedString a_Name, const AssetRef<Texture>& a_Texture, const RHITextureRef& a_DefaultTexture = {} )
 			{
 				if ( a_Texture )
 				{
 					RenderResourceTexture textureResource = GetOrCreateTexture( a_Texture );
 					bindingSetDesc.AddTexture( a_Name, textureResource.Texture.get() );
 				}
+				else if ( a_DefaultTexture != nullptr )
+				{
+					bindingSetDesc.AddTexture( a_Name, a_DefaultTexture.get() );
+				}
 			};
 
 			// Add texture bindings
-			AddTextureBinding( "AlbedoMap"_H, a_Asset->AlbedoMap() );
-			AddTextureBinding( "NormalMap"_H, a_Asset->NormalMap() );
-			AddTextureBinding( "MetallicMap"_H, a_Asset->MetallicMap() );
-			AddTextureBinding( "RoughnessMap"_H, a_Asset->RoughnessMap() );
-			AddTextureBinding( "EmissiveMap"_H, a_Asset->EmissiveMap() );
-			AddTextureBinding( "AmbientOcclusionMap"_H, a_Asset->AmbientOcclusionMap() );
+			AddTextureBinding( "AlbedoMap"_H, a_Asset->AlbedoMap(), s_WhiteTex2D );
+			AddTextureBinding( "NormalMap"_H, a_Asset->NormalMap(), s_NormalTex2D );
+			AddTextureBinding( "MetallicMap"_H, a_Asset->MetallicMap(), s_BlackTex2D );
+			AddTextureBinding( "RoughnessMap"_H, a_Asset->RoughnessMap(), s_WhiteTex2D );
+			AddTextureBinding( "EmissiveMap"_H, a_Asset->EmissiveMap(), s_BlackTex2D );
+			AddTextureBinding( "AmbientOcclusionMap"_H, a_Asset->AmbientOcclusionMap(), s_WhiteTex2D );
 			//AddTextureBinding( "OpacityTexture"_H, a_Asset->OpacityMap() );
 
 			newResource.BindingSet = RHI::CreateBindingSet( bindingSetDesc );
@@ -417,6 +452,21 @@ namespace Tridium {
 	bool RenderResourceManager::RemoveTexture( AssetID a_AssetID, RenderResourceID a_VariantID )
 	{
 		return RemoveResource( s_Textures, a_AssetID, a_VariantID );
+	}
+
+	const RHITextureRef& RenderResourceManager::GetWhiteTexture2D()
+	{
+		return s_WhiteTex2D;
+	}
+
+	const RHITextureRef& RenderResourceManager::GetBlackTexture2D()
+	{
+		return s_BlackTex2D;
+	}
+
+	const RHITextureRef& RenderResourceManager::GetNormalTexture2D()
+	{
+		return s_NormalTex2D;
 	}
 	
 

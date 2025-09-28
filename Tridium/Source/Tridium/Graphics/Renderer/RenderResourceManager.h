@@ -6,8 +6,8 @@
 namespace Tridium {
 
 	//=================================================================================================
-	// Render Resource Manager:
-	// Stores the render resources in a map which can be accessed by AssetID and VariantID.
+	// Render Resource Manager: 
+	// Manages common render resources and the link between Assets and their RenderResources.
 	//=================================================================================================
 	class RenderResourceManager
 	{
@@ -30,6 +30,11 @@ namespace Tridium {
 		static RenderResourceTexture GetOrCreateTexture( const AssetRef<class Texture>& a_Asset, RenderResourceID a_VariantID = 0 );
 		static bool AddTexture( const RenderResourceTexture& a_Texture, bool a_ForceReplace = false );
 		static bool RemoveTexture( AssetID a_AssetID, RenderResourceID a_VariantID = InvalidRenderResourceID );
+
+		//=============================================================================================
+		static const RHITextureRef& GetWhiteTexture2D();
+		static const RHITextureRef& GetBlackTexture2D();
+		static const RHITextureRef& GetNormalTexture2D();
 
 	private:
 

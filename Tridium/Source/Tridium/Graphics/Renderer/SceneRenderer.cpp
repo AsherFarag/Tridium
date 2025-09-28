@@ -1,10 +1,12 @@
 ﻿#include "tripch.h"
 #include "SceneRenderer.h"
+#include <Tridium/Math/Random.h>
 #include <Tridium/Graphics/RHI/RHI.h>
 #include <Tridium/Graphics/Renderer/PipelineStateCache.h>
 #include <Tridium/Graphics/Renderer/RenderResourceManager.h>
 #include <Tridium/Graphics/Renderer/ShaderLibrary.h>
-#include <Tridium/Shaders/GBuffer_ShaderInterop.h>
+#include <Tridium/Shaders/Families/GBuffer_ShaderInterop.h>
+#include <Tridium/Shaders/Families/LitDefault_ShaderInterop.h>
 
 namespace Tridium {
 
@@ -444,6 +446,44 @@ namespace Tridium {
 				// Declare resource usage
 				a_Builder.Write( outputID, ERHIResourceStates::RenderTarget );
 
+				// Random lights for testing
+				static Array<PointLight> s_PointLights = []() -> Array<PointLight>
+				{
+					Array<PointLight> lights;
+					lights.Reserve( 32 );
+
+					for ( int i = 0; i < 32; i++ )
+					{
+						PointLight light;
+						light.Position = Vector3{
+							Math::Random::Range( -10.0f, 10.0f ),
+							Math::Random::Range( 0.0f, 5.0f ),
+							Math::Random::Range( -10.0f, 10.0f )
+						};
+						light.Radiance = Vector3{
+							Math::Random::Range( 0.0f, 1.0f ),
+							Math::Random::Range( 0.0f, 1.0f ),
+							Math::Random::Range( 0.0f, 1.0f )
+						};
+						light.Intensity = Math::Random::Range( 1.0f, 2.5f );
+						light.Radius = Math::Random::Range( 5.0f, 15.0f );
+						lights.PushBack( light );
+					}
+
+					return lights;
+				}( );
+
+				// Create structured buffer for point lights
+				RHIBufferDesc pointLightBufferDesc = RHIBufferDesc{}
+					.SetName( "SceneRenderer Point Light Buffer" )
+					.SetType( ERHIBufferType::Structured )
+					.SetUsage( ERHIUsage::Dynamic )
+					.SetBindFlags( ERHIBindFlags::ShaderResource )
+					.SetSize( sizeof( PointLight ) * s_PointLights.Size() )
+					.SetStride( sizeof( PointLight ) );
+
+				const auto pointLightBuffer = RHI::CreateBuffer( pointLightBufferDesc, AsBytes( Span{ s_PointLights.Data(), s_PointLights.Size() } ) );
+
 				a_Builder.Execute( [=]( IRHICommandList& a_CommandList, RenderGraph& a_Graph )
 				{
 					PROFILE_SCOPE( "RenderPass: Lighting Pass", ProfilerCategory::Rendering );
@@ -460,7 +500,8 @@ namespace Tridium {
 						.AddTexture( "AlbedoMap"_H, albedoTex.get() )
 						.AddTexture( "NormalMap"_H, normalTex.get() )
 						.AddTexture( "MetalRoughAOMap"_H, metalRoughAOTex.get() )
-						.AddTexture( "EmissionMap"_H, emissionTex.get() );
+						.AddTexture( "EmissionMap"_H, emissionTex.get() )
+						.AddStructuredBuffer( "PointLights"_H, pointLightBuffer.get() );
 
 					const auto bindingSet = RHI::CreateBindingSet( bindingSetDesc );
 
@@ -481,6 +522,12 @@ namespace Tridium {
 					);
 
 					a_CommandList.ClearRenderTargets( ERHIClearFlags::Color, RHIClearValue{} );
+
+					InlinedConstants_LitDefault constants;
+					constants.CameraPosition = m_CameraData.Position;
+					constants.NumPointLights = Cast<uint32_t>( s_PointLights.Size() );
+					a_CommandList.SetInlinedConstants( constants );
+
 					a_CommandList.Draw( RHIDrawArgs{}.SetVertexCount( 4 ).SetIndexCount( 6 ) );
 
 				} );

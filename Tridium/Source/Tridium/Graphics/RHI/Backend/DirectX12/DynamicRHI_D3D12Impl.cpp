@@ -207,9 +207,10 @@ namespace Tridium::D3D12 {
 
 		RHI_DEBUG_OP( DumpDebug() );
 
-		if ( ULONG refCount = ForceDeleteIUnknown( m_Device.GetAddressOf() ) )
+
+		if ( ULONG refCount = m_Device.Reset() )
 		{
-			LOG( LogCategory::DirectX, Warn, "D3D12 device still has {0} references! - Destroying the device anyway", refCount );
+			LOG( LogCategory::DirectX, Warn, "D3D12 Device was not released properly! Ref count: {0}", refCount );
 		}
 
 		m_DXGIAdapter.Reset();

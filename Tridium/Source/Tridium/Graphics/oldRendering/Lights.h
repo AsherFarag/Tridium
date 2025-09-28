@@ -10,7 +10,7 @@ namespace Tridium {
 
 	constexpr uint32_t MAX_POINT_LIGHTS = 4;
 
-	struct PointLight
+	struct OldPointLight
 	{
 		Vector3 Position;
 		Color Color;
@@ -27,7 +27,7 @@ namespace Tridium {
 
 	constexpr uint32_t MAX_SPOT_LIGHTS = 32;
 
-	struct SpotLight
+	struct OldSpotLight
 	{
 		Vector3 Position;
 		Vector3 Direction;
@@ -47,7 +47,7 @@ namespace Tridium {
 
 	constexpr uint32_t MAX_DIRECTIONAL_LIGHTS = 1;
 
-	struct DirectionalLight
+	struct OldDirectionalLight
 	{
 		Vector3 Direction;
 		Color Color;

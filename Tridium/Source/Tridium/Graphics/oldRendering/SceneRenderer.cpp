@@ -225,7 +225,7 @@ namespace Tridium {
 						lightComponent.ShadowMap.reset();
 					}
 
-					DirectionalLight& light = m_LightEnvironment.DirectionalLights[m_LightEnvironment.NumDirectionalLights];
+					OldDirectionalLight& light = m_LightEnvironment.DirectionalLights[m_LightEnvironment.NumDirectionalLights];
 
 					light.Direction = transform.GetForward();
 					light.Color = lightComponent.LightColor;
@@ -284,7 +284,7 @@ namespace Tridium {
 						lightComponent.ShadowMap.reset();
 					}
 
-					PointLight& light = m_LightEnvironment.PointLights[m_LightEnvironment.NumPointLights];
+					OldPointLight& light = m_LightEnvironment.PointLights[m_LightEnvironment.NumPointLights];
 
 					light.Position = transform.GetWorldPosition();
 					light.Color = lightComponent.LightColor;
@@ -336,7 +336,7 @@ namespace Tridium {
 						lightComponent.ShadowMap = Framebuffer::Create( spec );
 					}
 
-					SpotLight& light = m_LightEnvironment.SpotLights[m_LightEnvironment.NumSpotLights];
+					OldSpotLight& light = m_LightEnvironment.SpotLights[m_LightEnvironment.NumSpotLights];
 
 					light.Position = transform.GetWorldPosition();
 					light.Direction = transform.GetForward();
@@ -480,7 +480,7 @@ namespace Tridium {
 		{
 			m_ShadowCubeMapShader->Bind();
 
-			for ( PointLight& pointLight : m_LightEnvironment.PointLights )
+			for ( OldPointLight& pointLight : m_LightEnvironment.PointLights )
 			{
 				if ( !pointLight.CastsShadows )
 					continue;
@@ -734,7 +734,7 @@ namespace Tridium {
 				// Directional Lights
 				for ( uint32_t i = 0; i < m_LightEnvironment.NumDirectionalLights; ++i )
 				{
-					DirectionalLight& directionalLight = m_LightEnvironment.DirectionalLights[i];
+					OldDirectionalLight& directionalLight = m_LightEnvironment.DirectionalLights[i];
 
 					if ( directionalLight.ShadowMap )
 					{
@@ -753,7 +753,7 @@ namespace Tridium {
 				// Point Lights
 				for ( uint32_t i = 0; i < m_LightEnvironment.NumPointLights; i++ )
 				{
-					PointLight& pointLight = m_LightEnvironment.PointLights[i];
+					OldPointLight& pointLight = m_LightEnvironment.PointLights[i];
 
 					if ( pointLight.ShadowMap )
 					{
@@ -772,7 +772,7 @@ namespace Tridium {
 				// Spot Lights
 				for ( uint32_t i = 0; i < m_LightEnvironment.NumSpotLights; ++i )
 				{
-					SpotLight& spotLight = m_LightEnvironment.SpotLights[i];
+					OldSpotLight& spotLight = m_LightEnvironment.SpotLights[i];
 
 					if ( spotLight.ShadowMap )
 					{
@@ -820,7 +820,7 @@ namespace Tridium {
 				m_DeferredData.LightingShader->SetInt( "u_NumDirectionalLights", m_LightEnvironment.NumDirectionalLights );
 				for ( uint32_t i = 0; i < m_LightEnvironment.NumDirectionalLights; ++i )
 				{
-					DirectionalLight& directionalLight = m_LightEnvironment.DirectionalLights[i];
+					OldDirectionalLight& directionalLight = m_LightEnvironment.DirectionalLights[i];
 					String uniformName = "u_DirectionalLights[" + std::to_string( i ) + "].";
 					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Direction" ).c_str(), directionalLight.Direction );
 					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Color" ).c_str(), directionalLight.Color );
@@ -832,7 +832,7 @@ namespace Tridium {
 				m_DeferredData.LightingShader->SetInt( "u_NumPointLights", m_LightEnvironment.NumPointLights );
 				for ( uint32_t i = 0; i < m_LightEnvironment.NumPointLights; i++ )
 				{
-					PointLight& pointLight = m_LightEnvironment.PointLights[i];
+					OldPointLight& pointLight = m_LightEnvironment.PointLights[i];
 					String uniformName = "u_PointLights[" + std::to_string( i ) + "].";
 					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Position" ).c_str(), pointLight.Position );
 					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Color" ).c_str(), pointLight.Color );
@@ -845,7 +845,7 @@ namespace Tridium {
 				m_DeferredData.LightingShader->SetInt( "u_NumSpotLights", m_LightEnvironment.NumSpotLights );
 				for ( uint32_t i = 0; i < m_LightEnvironment.NumSpotLights; ++i )
 				{
-					SpotLight& spotLight = m_LightEnvironment.SpotLights[i];
+					OldSpotLight& spotLight = m_LightEnvironment.SpotLights[i];
 					String uniformName = "u_SpotLights[" + std::to_string( i ) + "].";
 					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Position" ).c_str(), spotLight.Position );
 					m_DeferredData.LightingShader->SetFloat3( ( uniformName + "Direction" ).c_str(), spotLight.Direction );
@@ -910,7 +910,7 @@ namespace Tridium {
 				// Bind Point Lights
 				for ( uint32_t i = 0; i < MAX_POINT_LIGHTS; i++ )
 				{
-					PointLight& pointLight = m_LightEnvironment.PointLights[i];
+					OldPointLight& pointLight = m_LightEnvironment.PointLights[i];
 					String index = std::to_string( i );
 					shader->SetFloat3( ( "u_PointLights[" + index + "].Position" ).c_str(), pointLight.Position );
 					shader->SetFloat3( ( "u_PointLights[" + index + "].Color" ).c_str(), pointLight.Color );
@@ -922,7 +922,7 @@ namespace Tridium {
 				// Bind Spot Lights
 				for ( uint32_t i = 0; i < MAX_SPOT_LIGHTS; ++i )
 				{
-					SpotLight& spotLight = m_LightEnvironment.SpotLights[i];
+					OldSpotLight& spotLight = m_LightEnvironment.SpotLights[i];
 					String index = std::to_string( i );
 					shader->SetFloat3( ( "u_SpotLights[" + index + "].Position" ).c_str(), spotLight.Position );
 					shader->SetFloat3( ( "u_SpotLights[" + index + "].Direction" ).c_str(), spotLight.Direction );
@@ -937,7 +937,7 @@ namespace Tridium {
 				// Bind Directional Lights
 				for ( uint32_t i = 0; i < MAX_DIRECTIONAL_LIGHTS; ++i )
 				{
-					DirectionalLight& directionalLight = m_LightEnvironment.DirectionalLights[i];
+					OldDirectionalLight& directionalLight = m_LightEnvironment.DirectionalLights[i];
 					String index = std::to_string( i );
 					shader->SetFloat3( ( "u_DirectionalLights[" + index + "].Direction" ).c_str(), directionalLight.Direction );
 					shader->SetFloat3( ( "u_DirectionalLights[" + index + "].Color" ).c_str(), directionalLight.Color );

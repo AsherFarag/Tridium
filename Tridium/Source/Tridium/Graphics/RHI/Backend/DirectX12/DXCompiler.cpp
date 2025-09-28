@@ -555,6 +555,9 @@ namespace Tridium::D3D12 {
 		FilePath shaderPath = FilePath::CurrentPath();
 		shaderPath = shaderPath / "../Tridium/Source/Tridium/Shaders";
 		args.EmplaceBack( shaderPath.ToWString() );
+		args.EmplaceBack( L"-I" );
+		TODO( "Temp" );
+		args.EmplaceBack( ( shaderPath / "Families" ).ToWString());
 		for ( const auto& includeDir : a_Input.IncludeDirectories )
 		{
 			args.EmplaceBack( L"-I" );
@@ -569,7 +572,14 @@ namespace Tridium::D3D12 {
 		if ( a_Input.Format == ERHIShaderFormat::SPIRV_OpenGL )
 		{
 			// Create GLSL from the SPIR-V bytecode using SPIRV-Cross
-			spirv_cross::CompilerGLSL glslCompiler( ReinterpretCast<const uint32_t*>( a_Output.ByteCode.Data() ), a_Output.ByteCode.Size() / sizeof( uint32_t ) );
+
+			// We create the compiler on the heap as it's too large for the stack.
+			auto glslCompilerPtr = MakeUnique<spirv_cross::CompilerGLSL>( 
+				ReinterpretCast<const uint32_t*>( a_Output.ByteCode.Data() ),
+				a_Output.ByteCode.Size() / sizeof( uint32_t ) 
+			);
+
+			spirv_cross::CompilerGLSL& glslCompiler = *glslCompilerPtr;
 			spirv_cross::CompilerGLSL::Options options;
 			options.version = 450;
 			options.es = false;

@@ -1,6 +1,5 @@
 #include "tripch.h"
 #include <Tridium/Graphics/Renderer/ShaderLibrary.h>
-#include <Tridium/Shaders/GBuffer_ShaderInterop.h>
 
 namespace Tridium {
 

@@ -28,9 +28,9 @@ namespace Tridium {
 
 	struct LightEnvironment
 	{
-		PointLight PointLights[MAX_POINT_LIGHTS];
-		SpotLight SpotLights[MAX_SPOT_LIGHTS];
-		DirectionalLight DirectionalLights[MAX_DIRECTIONAL_LIGHTS];
+		OldPointLight PointLights[MAX_POINT_LIGHTS];
+		OldSpotLight SpotLights[MAX_SPOT_LIGHTS];
+		OldDirectionalLight DirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 
 		uint32_t NumPointLights = 0u;
 		uint32_t NumSpotLights = 0u;

@@ -8,6 +8,7 @@
 
 #define CPP_ALIGN_TO_HLSL alignas(16)
 #define INLINED_CONSTANTS_SPACE 9999
+#define DEFAULT_VALUE( ... ) = ( __VA_ARGS__ )
 
 namespace Tridium {
 
@@ -34,12 +35,11 @@ using float4x4 = Tridium::Matrix<4, 4, Tridium::float32_t>;
 
 #else
 
+static const float PI = 3.14159265f;
+
 #define CPP_ALIGN_TO_HLSL
-
 #define INLINED_CONSTANTS_SPACE space9999
-
-#define CONCAT_DETAIL(x, y) x##y
-#define CONCAT(x, y) CONCATENATE_DETAIL(x, y)
+#define DEFAULT_VALUE( ... )
 
 #define CONSTANT_BUFFER( _Name, _Type, _Slot ) ConstantBuffer< _Type > _Name : register( b##_Slot )
 
@@ -52,6 +52,8 @@ using float4x4 = Tridium::Matrix<4, 4, Tridium::float32_t>;
 #else
 	#define INLINED_CONSTANTS( _Name, _Type ) ConstantBuffer< _Type > _Name : register( b0, INLINED_CONSTANTS_SPACE )
 #endif
+
+#define STRUCTURED_BUFFER( _Name, _Type, _Slot ) StructuredBuffer< _Type > _Name : register( t##_Slot )
 
 #define COMBINED_SAMPLER( _Name, _Type, _Slot ) \
 	_Type _Name : register( t##_Slot ); \
