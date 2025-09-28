@@ -241,7 +241,7 @@ namespace Tridium {
 
 		// Template overload for SetInlinedConstants that automatically converts a POD type to a byte array.
 		// See SetInlinedConstants( const void*, uint32_t, uint32_t, RHI_DEBUG_SRC_LOC_PARAM ) for details.
-        template<Concepts::Pod T>
+        template<class T>
         void SetInlinedConstants( const T& a_Data, uint32_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM )
         {
             SetInlinedConstants( Cast<const void*>( &a_Data ), sizeof(T), a_DstOffsetBytes, RHI_DEBUG_SRC_LOC);

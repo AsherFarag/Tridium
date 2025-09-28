@@ -27,7 +27,8 @@ namespace Tridium::D3D12 {
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
 		swapChainDesc.Width = m_Width = a_Desc.Width;
 		swapChainDesc.Height = m_Height = a_Desc.Height;
-		swapChainDesc.Format = D3D12::Translate( a_Desc.Format );
+		// Not all drivers support sRGB swap chain formats, so we use UNORM here and handle sRGB in the shader.
+		swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		TODO( "Stereo?" );
 		swapChainDesc.Stereo = false;
 		swapChainDesc.SampleDesc.Count = a_Desc.SampleSettings.Count;

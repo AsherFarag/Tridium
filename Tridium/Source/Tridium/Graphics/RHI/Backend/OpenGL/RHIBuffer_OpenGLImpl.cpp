@@ -36,12 +36,12 @@ namespace Tridium::OpenGL {
 		// Constant buffer
 		else if ( EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::ConstantBuffer ) )
 		{
-			OpenGL3::BindBufferBase( GL_UNIFORM_BUFFER, 0, BufferObj );
-			OpenGL1::BufferData( GL_UNIFORM_BUFFER,
+			OpenGL3::BindBuffer( GL_UNIFORM_BUFFER, BufferObj );
+			OpenGL3::BufferData( GL_UNIFORM_BUFFER,
 								 a_Desc.Size,
 								 a_Data.size() ? a_Data.data() : nullptr,
 								 Translate( a_Desc.Usage ) );
-			OpenGL3::BindBufferBase( GL_UNIFORM_BUFFER, 0, 0 );
+			OpenGL3::BindBuffer( GL_UNIFORM_BUFFER, 0 );
 		}
 		else
 		{

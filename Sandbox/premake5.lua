@@ -3,7 +3,6 @@ include "Dependencies"
 
 tridium_app_folder = "."
 tridium_core_source_folder = "../Tridium/Source"
-tridium_core_shaders_folder = "../Tridium/Shaders"
 tridium_core_dependencies_folder = "../Tridium/Dependencies"
 
 local vulkan_sdk = os.getenv("VULKAN_SDK")
@@ -37,7 +36,7 @@ project "TridiumApp"
 	cppdialect "C++20"
 	staticruntime "on"
 	buildoptions { "/bigobj", "/Zc:preprocessor" }
-	includedirs { tridium_core_source_folder, tridium_core_shaders_folder, tridium_app_folder }
+	includedirs { tridium_core_source_folder, tridium_app_folder }
 	add_dependencies(tridium_core_dependencies_folder, tridium_app_dependencies, true)
 
 	-- TEMP
@@ -54,7 +53,6 @@ project "TridiumApp"
 	-- TEMP
 	includedirs {
 		"Source",
-		"Shaders",
         "%{IncludeDir.spdlog}",
 		"%{IncludeDir.glfw}",
 		"%{IncludeDir.glad}",

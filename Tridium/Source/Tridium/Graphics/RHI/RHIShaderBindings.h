@@ -80,18 +80,18 @@ namespace Tridium {
 		RHI_SHADER_BINDING_INITIALIZER( Texture );
 		RHI_SHADER_BINDING_INITIALIZER( StorageTexture );
 
-		constexpr RHIShaderBinding& AsInlinedConstants( const uint32_t a_Slot, const uint16_t a_Size )
+		constexpr RHIShaderBinding& AsInlinedConstants( const uint16_t a_Size )
 		{
-			Slot = a_Slot;
+			Slot = 0;
 			Size = a_Size;
 			PackedType = Cast<uint32_t>( ERHIBindingType::InlinedConstants );
 			return *this;
 		}
 
-		[[nodiscard]] static constexpr RHIShaderBinding InlinedConstants( const uint32_t a_Slot, const uint16_t a_Size )
+		[[nodiscard]] static constexpr RHIShaderBinding InlinedConstants( const uint16_t a_Size )
 		{
 			RHIShaderBinding binding;
-			binding.Slot = a_Slot;
+			binding.Slot = 0;
 			binding.Size = a_Size;
 			binding.PackedType = Cast<uint32_t>( ERHIBindingType::InlinedConstants );
 			return binding;

@@ -13,7 +13,7 @@
 #include <Tridium/Utils/Concepts.h>
 #include <Tridium/Utils/Todo.h>
 #include <Tridium/Debug/SourceLocation.h>
-#include <Shaders/ShaderInterop.h>
+#include <Tridium/Shaders/ShaderInterop.h>
 
 namespace Tridium {
 

@@ -165,16 +165,11 @@ namespace Tridium::OpenGL {
     {
 		if ( Window )
         {
-			GLint fbo = 0;
-			glGetIntegerv( GL_DRAW_FRAMEBUFFER_BINDING, &fbo );
-			printf( "Present FBO: %d\n", fbo );
-
-			ResetOpenGLState( m_Width, m_Height );
 			// Clear the bound framebuffer
 			OpenGL3::BindFramebuffer( GL_FRAMEBUFFER, 0 );
 
 			glDisable( GL_MULTISAMPLE );  // temporarily disable MSAA
-			glDisable( GL_FRAMEBUFFER_SRGB );
+			//glEnable( GL_FRAMEBUFFER_SRGB );
 
 			// Render the framebuffer to the screen
 			{
@@ -185,7 +180,6 @@ namespace Tridium::OpenGL {
 				
 				// Draw the textured quad onto the screen
 				OpenGL2::UseProgram( m_Framebuffer.ShaderID );
-				static GLuint testTex = MakeTestTexture();
 				glActiveTexture( GL_TEXTURE0 );
 				glBindTexture( GL_TEXTURE_2D, *m_Framebuffer.BackBufferTexture->NativePtrAs<GLuint>() );
 				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
@@ -318,11 +312,12 @@ namespace Tridium::OpenGL {
 			in vec2 v_TexCoord;
 			uniform sampler2D u_Texture;
 
-			out vec4 color;
+			out vec4 o_Color;
 			void main()
 			{
 				vec2 flippedTexCoord = vec2(v_TexCoord.x, 1.0 - v_TexCoord.y);
-				color = vec4( texture(u_Texture, flippedTexCoord).rgb, 1.0 );
+				vec3 color = texture(u_Texture, flippedTexCoord).rgb;
+				o_Color = vec4(color, 1.0);
 			}
 
 

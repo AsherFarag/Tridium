@@ -137,6 +137,10 @@ namespace Tridium {
 		//=============================================================================================
 		// The shader source code for each shader type.
 		StringView ShaderSources[(size_t)ERHIShaderType::COUNT];
+
+		auto& SetName( String a_Name ) { Name = std::move( a_Name ); return *this; }
+		auto& SetDefaultSwitches( const ShaderSwitchSet& a_Switches ) { DefaultSwitches = a_Switches; return *this; }
+		auto& SetShaderSource( ERHIShaderType a_Type, StringView a_Source ) { ShaderSources[(size_t)a_Type] = a_Source; return *this; }
 	};
 
 } // namespace Tridium

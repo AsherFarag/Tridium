@@ -38,7 +38,7 @@ namespace Tridium {
 		uint32_t Height = 0;
 		uint32_t BufferCount = 0;
 		ERHIScaleMode ScaleMode = ERHIScaleMode::None;
-		ERHIFormat Format = ERHIFormat::RGBA8_UNORM;
+		ERHIFormat Format = ERHIFormat::SRGBA8_UNORM;
 		RHISampleSettings SampleSettings{};
 		EnumFlags<ERHISwapChainFlags> Flags = ERHISwapChainFlags::Default;
 		String Name{};

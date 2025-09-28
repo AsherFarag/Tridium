@@ -10,3 +10,8 @@ __pycache__/
 *.vcxproj
 *.vcxproj.filters
 Tridium/Tridium.vcxproj.filters
+*.vcxitems
+*.vcxitems
+*.filters
+Tridium/TridiumCore.vcxitems.filters
+Tridium/TridiumCore.vcxitems

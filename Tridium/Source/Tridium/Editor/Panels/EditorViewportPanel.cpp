@@ -205,6 +205,7 @@ namespace Tridium {
 			{
 				//TEMP
 				const FilePath assetFilePath = "TestProject/Content/Sponza/glTF/Sponza.gltf";
+				//const FilePath assetFilePath = "TestProject/Content/troll/troll/TrollApose_low.fbx";
 				auto modelImporter = AssetFactory::GetImporter( assetFilePath.GetExtension().ToString() );
 				static bool imported = false;
 				static AssetRef<StaticMesh> importedAsset;

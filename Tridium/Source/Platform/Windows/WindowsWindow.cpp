@@ -133,7 +133,7 @@ namespace Tridium {
 		//glfwWindowHint( GLFW_DEPTH_BITS, 24 );
 		//glfwWindowHint( GLFW_STENCIL_BITS, 8 );
 		//glfwWindowHint( GLFW_DOUBLEBUFFER, GLFW_TRUE );
-		//glfwWindowHint( GLFW_SRGB_CAPABLE, GLFW_TRUE ); // optional
+		glfwWindowHint( GLFW_SRGB_CAPABLE, GLFW_TRUE ); // optional
 
 #if IS_EDITOR
 		//glfwWindowHint( GLFW_DECORATED, GLFW_FALSE );

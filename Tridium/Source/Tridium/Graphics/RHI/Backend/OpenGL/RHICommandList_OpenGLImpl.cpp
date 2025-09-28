@@ -516,6 +516,9 @@ namespace Tridium::OpenGL {
 		RHI_DEV_CHECK( a_GraphicsState.PipelineState, "Graphics state must have a valid pipeline state!" );
 
 		const UniformLayout& uniformLayout = a_GraphicsState.PipelineState->As<RHIGraphicsPipelineState_OpenGLImpl>()->UniformLayout;
+		uint32_t textureUnitCounter = 0;
+
+		// Iterate over each binding set in the graphics state
 		for ( uint32_t bindingSetIndex = 0; bindingSetIndex < a_GraphicsState.BindingSets.Size(); ++bindingSetIndex )
 		{
 			const auto* bindingSet = Cast<const RHIBindingSet_OpenGLImpl*>( a_GraphicsState.BindingSets[bindingSetIndex] );
@@ -526,19 +529,24 @@ namespace Tridium::OpenGL {
 			const RHIBindingSetItemArray& bindings = bindingSet->Desc().Bindings;
 			RHI_DEV_CHECK( bindingLayout, "Binding set {0} has no layout!", bindingSetIndex );
 
-			for ( const RHIBindingSetItem& binding : bindings )
+			// Iterate over each binding in the layout and bind the corresponding resource
+			// If a binding is not found in the binding set, bind a null resource
+			for ( const auto& bindingDesc : bindingLayout->Desc().Bindings )
 			{
-				auto uniformIt = uniformLayout.Layouts[bindingSetIndex].find( binding.Slot );
+				// Find the corresponding uniform in the pipeline's uniform layout
+				auto uniformIt = uniformLayout.Layouts[bindingSetIndex].find( bindingDesc.Slot );
 				if ( uniformIt == uniformLayout.Layouts[bindingSetIndex].end() )
+				{
 					continue;
+				}
 
 				const Uniform& uniform = uniformIt->second;
-				GLint bindingPoint = uniform.BindingPoint;
+				const GLint bindingPoint = uniform.BindingPoint;
 
 				if ( bindingPoint < 0 )
 				{
-					LOG( LogCategory::Debug, Warn, "Binding point for binding set {0}, slot {1} is invalid ({2})! Skipping binding.", 
-						bindingSetIndex, binding.Slot, bindingPoint );
+					LOG( LogCategory::Debug, Warn, "Binding point for binding set {0}, slot {1} is invalid ({2})! Skipping binding.",
+						bindingSetIndex, bindingDesc.Slot, bindingPoint );
 					continue; // Invalid binding point, skip this binding
 				}
 
@@ -546,68 +554,102 @@ namespace Tridium::OpenGL {
 				bool isTextureBinding = false;
 				GLenum bufferTarget = 0;
 
-				switch ( binding.Type )
+				switch ( bindingDesc.Type() )
 				{
-				case ERHIBindingType::Unknown: break;
-				case ERHIBindingType::InlinedConstants: break;
-				case ERHIBindingType::ConstantBuffer: 
-					isBufferBinding = true;
-					bufferTarget = GL_UNIFORM_BUFFER;
-					break;
-				case ERHIBindingType::StructuredBuffer:
-					isBufferBinding = true;
-					bufferTarget = GL_SHADER_STORAGE_BUFFER;
-					break;
-				case ERHIBindingType::StorageBuffer:
-					isBufferBinding = true;
-					bufferTarget = GL_ARRAY_BUFFER;
-					break;
-				case ERHIBindingType::Texture:
-				case ERHIBindingType::StorageTexture:
-					isTextureBinding = true;
-					break;
-
-				#if RHI_DEBUG_ENABLED
-				default:
-					RHI_DEV_CHECK( false, "Unknown binding type {0} for binding set {1}, binding {2}!",
-						ToString( binding.Type ), bindingSetIndex, binding.Slot );
-					break;
-				#endif // RHI_DEBUG_ENABLED
+					case ERHIBindingType::Unknown: break;
+					case ERHIBindingType::InlinedConstants: break;
+					case ERHIBindingType::ConstantBuffer:
+						isBufferBinding = true;
+						bufferTarget = GL_UNIFORM_BUFFER;
+						break;
+					case ERHIBindingType::StructuredBuffer:
+						isBufferBinding = true;
+						bufferTarget = GL_SHADER_STORAGE_BUFFER;
+						break;
+					case ERHIBindingType::StorageBuffer:
+						isBufferBinding = true;
+						bufferTarget = GL_ARRAY_BUFFER;
+						break;
+					case ERHIBindingType::Texture:
+					case ERHIBindingType::StorageTexture:
+						isTextureBinding = true;
+						break;
+					default:
+						RHI_DEV_CHECK( false, "Unknown binding type {0} for binding set {1}, binding {2}!",
+							ToString( bindingDesc.Type() ), bindingSetIndex, bindingDesc.Slot );
+						break;
 				}
 
-				if ( isBufferBinding )
+				bool found = false;
+
+				for ( const RHIBindingSetItem& binding : bindings )
 				{
-					if ( auto* buffer = binding.Resource->As<RHIBuffer_OpenGLImpl>() )
+					if ( binding.Slot != bindingDesc.Slot )
 					{
-						if ( binding.Range.IsEntireBuffer() )
-							OpenGL3::BindBufferBase( bufferTarget, bindingPoint, buffer->BufferObj );
-						else
-							OpenGL3::BindBufferRange( bufferTarget, bindingPoint, buffer->BufferObj, binding.Range.Offset, binding.Range.Size );
+						 // Only consider bindings for this slot
+						continue;
 					}
-					else
+
+					if ( isBufferBinding && binding.Type == bindingDesc.Type() )
+					{
+						if ( auto* buffer = binding.Resource->As<RHIBuffer_OpenGLImpl>() )
+						{
+							if ( binding.Range.IsEntireBuffer() )
+							{
+								OpenGL3::BindBufferBase( bufferTarget, bindingPoint, buffer->BufferObj );
+							}
+							else
+							{
+								OpenGL3::BindBufferRange( bufferTarget, bindingPoint, buffer->BufferObj, binding.Range.Offset, binding.Range.Size );
+							}
+
+							found = true;
+							break; // Found the binding for this slot
+						}
+					}
+					else if ( isTextureBinding && binding.Type == bindingDesc.Type() )
+					{
+						GLuint unit = textureUnitCounter++;
+						if ( auto* texture = binding.Resource->As<RHITexture_OpenGLImpl>() )
+						{
+							// Bind texture directly to unit
+							OpenGL4::BindTextureUnit( unit, texture->TextureObj );
+
+							// Choose sampler
+							RHISampler sampler = binding.Sampler.Valid()
+								? binding.Sampler.Unpack()
+								: texture->Desc().DefaultSampler;
+							const bool isDepth = GetRHIFormatInfo( binding.Format ).HasDepth;
+							GLuint glSampler = Device()->ResourceCache().GetOrCreateSampler( sampler, isDepth );
+
+							// Bind sampler to same unit
+							OpenGL4::BindSampler( unit, glSampler );
+							OpenGL2::Uniform1i( bindingPoint, unit );
+
+							found = true;
+							break; // Found the binding for this slot
+						}
+					}
+				}
+
+				// If we didn't find a matching binding, bind a null resource
+				if ( !found )
+				{
+					if ( isBufferBinding )
 					{
 						OpenGL3::BindBufferBase( bufferTarget, bindingPoint, 0 );
 					}
-				}
-				else if ( isTextureBinding )
-				{
-					if ( auto* texture = binding.Resource->As<RHITexture_OpenGLImpl>() )
+					else if ( isTextureBinding )
 					{
-						OpenGL4::BindTextureUnit( uniform.BindingPoint, texture->TextureObj );
-						TODO( "Handle texture subresources better" );
+						// Use null texture
+						GLuint nullTexture = *Device()->ResourceCache().NullTexture2D->NativePtrAs<GLuint>();
+						GLuint unit = textureUnitCounter++;
+						OpenGL4::BindTextureUnit( unit, nullTexture );
 
-						RHISampler sampler = texture->Desc().DefaultSampler;
-						if ( binding.Sampler.Valid() )
-							sampler = binding.Sampler.Unpack();
-
-						const bool isDepth = GetRHIFormatInfo( binding.Format ).HasDepth;
-						GLuint glSampler = Device()->ResourceCache().GetOrCreateSampler( sampler, isDepth );
-						OpenGL4::BindSampler( uniform.BindingPoint, glSampler );
-					}
-					else
-					{
-						OpenGL4::BindTextureUnit( uniform.BindingPoint, 0 ); // Unbind texture
-						OpenGL4::BindSampler( uniform.BindingPoint, 0 ); // Unbind sampler
+						// Use fallback sampler
+						GLuint glSampler = Device()->ResourceCache().GetOrCreateSampler( RHISampler{}, false );
+						OpenGL4::BindSampler( unit, glSampler );
+						OpenGL2::Uniform1i( bindingPoint, unit );
 					}
 				}
 			}
@@ -780,7 +822,7 @@ namespace Tridium::OpenGL {
 		OpenGL1::BindBuffer( GL_UNIFORM_BUFFER, m_InlinedConstantsUBO );
 		OpenGL1::BufferSubData( GL_UNIFORM_BUFFER, a_DstOffsetBytes, a_SizeBytes, a_Data );
 		OpenGL1::BindBuffer( GL_UNIFORM_BUFFER, 0 );
-		OpenGL4::BindBufferBase( GL_UNIFORM_BUFFER, bindingPoint, m_InlinedConstantsUBO );
+		OpenGL3::BindBufferBase( GL_UNIFORM_BUFFER, bindingPoint, m_InlinedConstantsUBO );
 	}
 
 	void RHICommandList_OpenGLImpl::SetGraphicsState_Impl( const RHIGraphicsState& a_GraphicsState, bool a_ClearViewportState )
@@ -806,6 +848,8 @@ namespace Tridium::OpenGL {
 		if ( a_ClearViewportState )
 		{
 			OpenGL1::Viewport( 0, 0, 0, 0 );
+			OpenGL1::Scissor( 0, 0, 0, 0 );
+			m_ViewportState = RHIViewportState{};
 		}
 		else
 		{

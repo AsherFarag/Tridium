@@ -5,12 +5,8 @@ namespace Tridium::OpenGL {
 
 	void UniformLayout::SetLayout( uint32_t a_LayoutIndex, const IRHIBindingLayout& a_Layout, GLuint a_ShaderProgramID )
 	{
-		thread_local GLchar uniformNameBuffer[256];
-		GLsizei length = 0;
-		GLsizei size = 0;
-
-
 		auto& layout = Layouts[a_LayoutIndex];
+
 		for ( uint32_t i = 0; i < a_Layout.Desc().Bindings.Size(); ++i )
 		{
 			const RHIShaderBinding& binding = a_Layout.Desc().Bindings[i];
@@ -27,11 +23,23 @@ namespace Tridium::OpenGL {
 			{
 				// The binding is not a uniform, it might be a block or an array
 				uniform.BlockIndex = OpenGL3::GetUniformBlockIndex( a_ShaderProgramID, name.data() );
+
 				if ( uniform.BlockIndex < 0 )
-					continue; // Not a uniform or block, skip it
+				{
+					// Not a uniform or block, skip it
+					continue;
+				}
 
 				uniform.IsBlock = true;
 				uniform.BindingPoint = binding.Slot;
+
+				if ( binding.Type() == ERHIBindingType::InlinedConstants )
+				{
+					TODO( "Hacky solution as for constant buffers bound to slot 0 that clash with the inlined constants slot 0"
+						  "Just setting to some arbitrary number for now" );
+					uniform.BindingPoint = 16;
+				}
+
 				OpenGL3::UniformBlockBinding( a_ShaderProgramID, uniform.BlockIndex, uniform.BindingPoint ); // Map UBO block index → binding point
 			}
 

@@ -10,9 +10,10 @@ namespace Tridium::OpenGL {
 			"Static textures must be initialized with data!" );
 
 
-		if ( a_Desc.Dimension != ERHITextureDimension::Texture2D || a_Desc.DepthOrArraySize != 1 || a_Desc.Mips != 1 )
+		if ( a_Desc.Dimension != ERHITextureDimension::Texture2D || a_Desc.DepthOrArraySize != 1 )
 		{
 			TODO( "Only 2D textures are supported!" );
+			NOT_IMPLEMENTED;
 			return;
 		}
 
@@ -66,23 +67,35 @@ namespace Tridium::OpenGL {
 
 
 					// Upload the texture data
-					ASSERT( m_Desc.Mips == a_SubResourcesData.size(),
-						"Invalid number of subresources!" );
-
-					for ( uint32_t mip = 0; mip < m_Desc.Mips; ++mip )
+					if ( a_SubResourcesData.size() == 1 && m_Desc.Mips > 1 )
 					{
-						Box dstBox{
-							0, Math::Max( m_Desc.Width >> mip, 1u ),
-							0, Math::Max( m_Desc.Height >> mip, 1u )
-						};
+						// Upload top mip only
+						OpenGL1::TexSubImage2D( GLTarget, 0, 0, 0,
+											   a_Desc.Width, a_Desc.Height,
+											   GLFormat.Format, GLFormat.Type,
+											   a_SubResourcesData[0].Data );
 
-						OpenGL1::TexSubImage2D( GLTarget, mip,
-							dstBox.MinX, dstBox.MinY,
-							dstBox.Width(), dstBox.Height(),
-							GLFormat.Format, GLFormat.Type,
-							a_SubResourcesData[mip].Data
-						);
+						// Generate the remaining mip levels automatically
+						OpenGL3::GenerateMipmap( GLTarget );
 					}
+					else
+					{
+						// Upload all provided mip levels as in your current code
+						for ( uint32_t mip = 0; mip < m_Desc.Mips; ++mip )
+						{
+							Box dstBox{
+								0, Math::Max( m_Desc.Width >> mip, 1u ),
+								0, Math::Max( m_Desc.Height >> mip, 1u )
+							};
+
+							OpenGL1::TexSubImage2D( GLTarget, mip,
+												   dstBox.MinX, dstBox.MinY,
+												   dstBox.Width(), dstBox.Height(),
+												   GLFormat.Format, GLFormat.Type,
+												   a_SubResourcesData[mip].Data );
+						}
+					}
+
 				}
 				break;
 			}

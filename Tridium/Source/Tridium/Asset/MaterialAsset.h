@@ -8,7 +8,7 @@ namespace Tridium {
 	namespace DefaultShaderFamilies 
 	{
 		inline constexpr StringView Unlit = "Unlit";
-		inline constexpr StringView Lit = "Lit";
+		inline constexpr StringView LitDefault = "LitDefault";
 		inline constexpr StringView Toon = "Toon";
 	}
 

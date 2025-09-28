@@ -4,8 +4,15 @@
 #include <Tridium/Graphics/Renderer/PipelineStateCache.h>
 #include <Tridium/Graphics/Renderer/RenderResourceManager.h>
 #include <Tridium/Graphics/Renderer/ShaderLibrary.h>
+#include <Tridium/Shaders/GBuffer_ShaderInterop.h>
 
 namespace Tridium {
+
+	struct ViewportQuadVertex
+	{
+		Vector3 Position;
+		Vector2 TexCoord;
+	};
 
 	SceneRenderer::SceneRenderer( SharedPtr<Scene> a_Scene, const SceneRendererOptions& a_Options )
 		: m_Scene( std::move( a_Scene ) ),
@@ -19,7 +26,7 @@ namespace Tridium {
 		{
 			const auto cmdListDesc = RHICommandListDesc{}
 				.SetQueueType( ERHICommandQueueType::Graphics )
-				.SetEnableImmediateExecution( false )
+				.SetEnableImmediateExecution( true )
 				.SetName( "SceneRenderer Graphics Command List" );
 
 			m_CommandList = RHI::CreateCommandList( cmdListDesc );
@@ -37,12 +44,55 @@ namespace Tridium {
 				.SetUseClearValue( true )
 				.SetName( "SceneRenderer Output Texture" );
 
-#if !WITH_EDITOR
+		#if !WITH_EDITOR
 			m_OutputTexture = RHI::GetSwapChain()->GetBackBuffer();
-#else
+		#else
 			m_OutputTexture = RHI::CreateTexture( outputTextureDesc );
-#endif
+		#endif
 		}
+
+		static constexpr ViewportQuadVertex quadVertices[] = {
+			{ { -1.0f, -1.0f, 0.0f }, { 0.0f, 1.0f } },
+			{ {  1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f } },
+			{ {  1.0f,  1.0f, 0.0f }, { 1.0f, 0.0f } },
+			{ { -1.0f,  1.0f, 0.0f }, { 0.0f, 0.0f } },
+		};
+
+		static constexpr uint16_t quadIndices[] = {
+			0, 1, 2,
+			2, 3, 0
+		};
+
+		auto lightingPassPSODesc = RHIGraphicsPipelineStateDesc{}
+			.SetName( "SceneRenderer Lighting Pass Pipeline State" )
+			.SetVertexLayout( RHIVertexLayout::From<ViewportQuadVertex>() )
+			.SetTopology( ERHITopology::Triangle )
+			.SetFramebufferInfo( RHIFramebufferInfo{}.SetColorFormats( { m_OutputTexture->Desc().Format } ) );
+		ShaderLibrary::GetOrCreateVariant( "LitDefault"_H )->Apply( lightingPassPSODesc );
+
+		m_Passes.LightingPass.PipelineState = PipelineStateCache::GetOrCreatePSO(
+			lightingPassPSODesc
+		);
+
+		m_Passes.LightingPass.QuadVertexBuffer = RHI::CreateBuffer( RHIBufferDesc{}
+			.SetName( "SceneRenderer Fullscreen Quad Vertex Buffer" )
+			.SetSize( sizeof( quadVertices ) )
+			.SetBindFlags( ERHIBindFlags::VertexBuffer )
+			.SetUsage( ERHIUsage::Static )
+			.SetType( ERHIBufferType::Structured )
+			.SetStride( sizeof( ViewportQuadVertex ) ),
+			AsBytes( Span{ quadVertices } )
+		);
+
+		m_Passes.LightingPass.QuadIndexBuffer = RHI::CreateBuffer( RHIBufferDesc{}
+			.SetName( "SceneRenderer Fullscreen Quad Index Buffer" )
+			.SetSize( sizeof( quadIndices ) )
+			.SetBindFlags( ERHIBindFlags::IndexBuffer )
+			.SetUsage( ERHIUsage::Static )
+			.SetType( ERHIBufferType::Formatted )
+			.SetFormat( ERHIFormat::R16_UINT ),
+			AsBytes( Span{ quadIndices } )
+		);
 	}
 
 	SceneRenderer::~SceneRenderer()
@@ -69,10 +119,35 @@ namespace Tridium {
 		{
 			m_Viewport.NeedsResize = false; // Reset resize flag
 
+			const uint32_t texWidth = (uint32_t)( (float)m_Viewport.Width * m_Options.TieringSettings.RenderScale );
+			const uint32_t texHeight = (uint32_t)( (float)m_Viewport.Height * m_Options.TieringSettings.RenderScale );
+
 			m_OutputTexture = RHI::CreateTexture( RHITextureDesc{ m_OutputTexture->Desc() }
-													.SetWidth( m_Viewport.Width )
-													.SetHeight( m_Viewport.Height )
+													.SetWidth( texWidth )
+													.SetHeight( texHeight )
 													.SetName( "SceneRenderer Output Texture" ) );
+
+			// Geometry Pass
+			{
+				auto texDesc = RHITextureDesc{}
+					.SetDimension( ERHITextureDimension::Texture2D )
+					.SetWidth( texWidth )
+					.SetHeight( texHeight )
+					.SetFormat( ERHIFormat::RGBA16_FLOAT )
+					.SetBindFlags( ERHIBindFlags::RenderTarget | ERHIBindFlags::ShaderResource )
+					.SetClearValue( RHIClearValue{} )
+					.SetUseClearValue( true );
+
+				m_Passes.GeometryPass.Position = RHI::CreateTexture( texDesc.SetName( "GBuffer Position" ) );
+				m_Passes.GeometryPass.Albedo = RHI::CreateTexture( texDesc.SetName( "GBuffer Albedo" ) );
+				m_Passes.GeometryPass.Normal = RHI::CreateTexture( texDesc.SetName( "GBuffer Normal" ) );
+				m_Passes.GeometryPass.MetallicRoughnessAO = RHI::CreateTexture( texDesc.SetName( "GBuffer MetallicRoughnessAO" ) );
+				m_Passes.GeometryPass.Emission = RHI::CreateTexture( texDesc.SetName( "GBuffer Emission" ) );
+				m_Passes.GeometryPass.Depth = RHI::CreateTexture( texDesc
+					.SetFormat( ERHIFormat::D32_FLOAT )
+					.SetBindFlags( ERHIBindFlags::DepthStencil | ERHIBindFlags::ShaderResource )
+					.SetName( "GBuffer Depth" ) );
+			}
 
 			TODO( "Handle viewport resize logic here" );
 		}
@@ -225,119 +300,197 @@ namespace Tridium {
 
 		// Build the render graph
 		{
-			m_RenderGraph.AddPass( "Geometry Pass - StaticMesh", ERHICommandQueueType::Graphics, [ & ]( RenderPassBuilder& a_Builder )
+			RenderPassTextureID outputID;
+			m_RenderGraph.AddPass( "Root", ERHICommandQueueType::Graphics, [&](RenderPassBuilder& a_Builder)
 			{
-					auto backBuffer = a_Builder.Import( m_OutputTexture );
-					auto albedo = a_Builder.Create( "Albedo", RHITextureDesc{}
-						.SetDimension( ERHITextureDimension::Texture2D )
-						.SetWidth( m_Viewport.Width )
-						.SetHeight( m_Viewport.Height )
-						.SetFormat( ERHIFormat::RGBA8_UNORM )
-						.SetBindFlags( ERHIBindFlags::RenderTarget )
-						.SetClearValue( RHIClearValue{} )
-						.SetUseClearValue( true )
-						.SetName( "GBuffer Albedo" ) );
+				outputID = a_Builder.Import( "Output", m_OutputTexture);
 
-					auto normal = a_Builder.Create( "Normal", RHITextureDesc{}
-						.SetDimension( ERHITextureDimension::Texture2D )
-						.SetWidth( m_Viewport.Width )
-						.SetHeight( m_Viewport.Height )
-						.SetFormat( ERHIFormat::RGBA8_UNORM )
-						.SetBindFlags( ERHIBindFlags::RenderTarget )
-						.SetClearValue( RHIClearValue{} )
-						.SetUseClearValue( true )
-						.SetName( "GBuffer Normal" ) );
-
-					auto depth = a_Builder.Create( "Depth", RHITextureDesc{}
-						.SetDimension( ERHITextureDimension::Texture2D )
-						.SetWidth( m_Viewport.Width )
-						.SetHeight( m_Viewport.Height )
-						.SetFormat( ERHIFormat::D32_FLOAT )
-						.SetBindFlags( ERHIBindFlags::DepthStencil )
-						.SetClearValue( RHIClearValue{} )
-						.SetUseClearValue( true )
-						.SetName( "GBuffer Depth" ) );
-
-					a_Builder.Write( albedo, ERHIResourceStates::RenderTarget );
-					a_Builder.Write( normal, ERHIResourceStates::RenderTarget );
-					a_Builder.Write( depth, ERHIResourceStates::DepthStencilWrite );
-
-					a_Builder.Execute( [=]( IRHICommandList& a_CommandList, RenderGraph& a_Graph )
-						{
-							PROFILE_SCOPE( "RenderPass: Geometry Pass - StaticMesh", ProfilerCategory::Rendering );
-
-							const RHITextureRef& albedoTex = a_Graph.GetTexture( backBuffer );
-							const RHITextureRef& normalTex = a_Graph.GetTexture( normal );
-							const RHITextureRef& depthTex = a_Graph.GetTexture( depth );
-
-							auto graphicsState = RHIGraphicsState{}
-								.SetFramebuffer( 
-									RHIFramebuffer{}
-									.AddColorAttachment( albedoTex )
-									.AddColorAttachment( normalTex )
-									.SetDepthStencilAttachment( depthTex ) 
-								);
-
-							bool cleared = false;
-							static float time = 0.0f;
-							time += 0.016f;
-							float zPos = Math::Sin( time ) * -10.0f;
-
-							const Matrix4 ProjectionView = m_CameraData.Projection * m_CameraData.View;
-							for ( const auto& [key, draw] : m_StaticDrawLists.Opaque )
-							{
-								graphicsState.SetIndexBuffer( draw.IndexBuffer.get() )
-									.SetVertexBuffer( draw.VertexBuffer.get() )
-									.SetPipelineState( draw.PipelineState.get() )
-									.SetBindingSet( 0, draw.BindingSet.get() );
-
-								a_CommandList.SetGraphicsState( graphicsState );
-								a_CommandList.SetViewportState( RHIViewportState{}
-									.AddViewportAndScissor( RHIViewport{ 0, 0, (float)m_Viewport.Width, (float)m_Viewport.Height } )
-								);
-
-								if ( !cleared )
-								{
-									a_CommandList.ClearRenderTargets( ERHIClearFlags::All, RHIClearValue{} );
-									cleared = true;
-								}
-
-								Matrix4 model = draw.InstanceTransforms.Front();
-								Matrix4 PVM = ProjectionView * model;
-								a_CommandList.SetInlinedConstants( PVM );
-
-								const auto drawArgs = RHIDrawArgs{}
-									.SetBaseVertex( draw.VertexBufferRange.Offset )
-									.SetVertexCount( draw.VertexBufferRange.Size )
-									.SetBaseIndex( draw.VertexBufferRange.Offset )
-									.SetIndexCount( draw.IndexBufferRange.Size )
-									.SetInstanceCount( Cast<uint32_t>( 1 ) );
-
-								a_CommandList.Draw( drawArgs );
-							}
-						} );
-
-			} );
-
-			// Present pass
-			m_RenderGraph.AddPass( "Present Pass", ERHICommandQueueType::Graphics, [ & ]( RenderPassBuilder& a_Builder )
-			{
-				//auto backBuffer = a_Builder.Import( m_OutputTexture );
-				//a_Builder.Read( backBuffer, ERHIResourceStates::Present );
 				a_Builder.Execute( [=]( IRHICommandList& a_CommandList, RenderGraph& a_Graph )
 					{
-						//PROFILE_SCOPE( "RenderPass: Present Pass", ProfilerCategory::Rendering );
-						//const RHITextureRef& backBufferTex = a_Graph.GetTexture( backBuffer );
-						//auto graphicsState = RHIGraphicsState{}
-						//	.SetFramebuffer(
-						//		RHIFramebuffer{}
-						//		.AddColorAttachment( backBufferTex )
-						//	);
-						//a_CommandList.SetGraphicsState( graphicsState );
-						//a_CommandList.SetViewportState( RHIViewportState{}
-						//	.AddViewportAndScissor( RHIViewport{ 0, 0, (float)m_Viewport.Width, (float)m_Viewport.Height } ) );
-						//a_CommandList.ClearRenderTargets( ERHIClearFlags::All, RHIClearValue{}.SetColor( Color::Blue() ) );
+						PROFILE_SCOPE( "RenderPass: Root", ProfilerCategory::Rendering );
 
+						TODO( "Add clearing textures without graphics state" );
+					} );
+			} );
+
+			m_RenderGraph.AddPass( "GBuffer", ERHICommandQueueType::Graphics, [&](RenderPassBuilder& a_Builder)
+			{
+				const auto& gbuffer = m_Passes.GeometryPass;
+
+				// Import GBuffer textures
+				const auto positionID = a_Builder.Import( "Position", gbuffer.Position );
+				const auto albedoID = a_Builder.Import( "Albedo", gbuffer.Albedo );
+				const auto normalID = a_Builder.Import( "Normal", gbuffer.Normal );
+				const auto metalRoughAmbientID = a_Builder.Import( "MetalRoughAO", gbuffer.MetallicRoughnessAO);
+				const auto emissionID = a_Builder.Import( "Emission", gbuffer.Emission );
+				const auto depthID = a_Builder.Import( "Depth", gbuffer.Depth);
+
+				// Declare resource usage
+				a_Builder.Write( positionID, ERHIResourceStates::RenderTarget );
+				a_Builder.Write( albedoID, ERHIResourceStates::RenderTarget );
+				a_Builder.Write( normalID, ERHIResourceStates::RenderTarget );
+				a_Builder.Write( metalRoughAmbientID, ERHIResourceStates::RenderTarget );
+				a_Builder.Write( emissionID, ERHIResourceStates::RenderTarget );
+				a_Builder.Write( depthID, ERHIResourceStates::DepthStencilWrite );
+
+				a_Builder.Execute( [=]( IRHICommandList& a_CommandList, RenderGraph& a_Graph )
+				{
+					PROFILE_SCOPE( "RenderPass: Geometry Pass - StaticMesh", ProfilerCategory::Rendering );
+
+					const auto& positionTex = a_Graph.GetTexture( positionID );
+					const auto& albedoTex = a_Graph.GetTexture( albedoID );
+					const auto& normalTex = a_Graph.GetTexture( normalID );
+					const auto& metalRoughAmbientTex = a_Graph.GetTexture( metalRoughAmbientID );
+					const auto& emissionTex = a_Graph.GetTexture( emissionID );
+					const auto& depthTex = a_Graph.GetTexture( depthID );
+
+					const auto& gbufferShader = ShaderLibrary::GetOrCreateVariant( "GBuffer"_H );
+					ENSURE( gbufferShader != nullptr, "GBuffer shader not found!" );
+
+					auto pipelineStateDesc = RHIGraphicsPipelineStateDesc{}
+						.SetTopology( ERHITopology::Triangle )
+						.SetBlendState( RHIBlendState{} ) // Disable blending
+						.SetDepthState( RHIDepthState{}
+							.SetDepthTestEnabled( true )
+							.SetDepthWriteEnabled( true ) )
+						.SetVertexLayout( RHIVertexLayout::From<Vertex>() )
+						.SetRasterizerState( RHIRasterizerState{} )
+						.SetFramebufferInfo(
+							RHIFramebufferInfo{}
+								.SetColorFormats( { positionTex->Desc().Format, albedoTex->Desc().Format, normalTex->Desc().Format, metalRoughAmbientTex->Desc().Format, emissionTex->Desc().Format } )
+								.SetDepthStencilFormat( depthTex->Desc().Format )
+								.SetSampleCount( 1 )
+						);
+					gbufferShader->Apply( pipelineStateDesc );
+
+					RHIGraphicsPipelineStateRef pipelineState = PipelineStateCache::GetOrCreatePSO( pipelineStateDesc );
+					ENSURE( pipelineState != nullptr, "Failed to create pipeline state for GBuffer pass!" );
+
+					auto graphicsState = RHIGraphicsState{}
+						.SetPipelineState( pipelineState.get() )
+						.SetFramebuffer( RHIFramebuffer{}
+							.AddColorAttachment( positionTex )
+							.AddColorAttachment( albedoTex )
+							.AddColorAttachment( normalTex )
+							.AddColorAttachment( metalRoughAmbientTex )
+							.AddColorAttachment( emissionTex )
+							.SetDepthStencilAttachment( depthTex ) 
+						);
+
+					bool cleared = false;
+
+					const size_t materialBindingSetIndex = 0;
+					const Matrix4 projectionView = m_CameraData.Projection * m_CameraData.View;
+
+					for ( const auto& [key, draw] : m_StaticDrawLists.Opaque )
+					{
+						a_CommandList.SetGraphicsState( graphicsState
+							.SetPipelineState( pipelineState.get() )
+							.SetIndexBuffer( draw.IndexBuffer.get() )
+							.SetVertexBuffer( draw.VertexBuffer.get() )
+							.SetBindingSet( materialBindingSetIndex, draw.BindingSet.get() )
+						);
+
+						a_CommandList.SetViewportState( RHIViewportState{}
+							.AddViewportAndScissor( RHIViewport{ 0, 0, (float)m_Viewport.Width, (float)m_Viewport.Height } )
+						);
+
+						InlinedConstants_GBuffer constants;
+						constants.Model = draw.InstanceTransforms.Back();
+						constants.PVM = projectionView * constants.Model;
+						a_CommandList.SetInlinedConstants( constants );
+
+						if ( !cleared )
+						{
+							a_CommandList.ClearRenderTargets( ERHIClearFlags::All, RHIClearValue{} );
+							cleared = true;
+						}
+
+						a_CommandList.Draw( RHIDrawArgs{}
+							.SetBaseVertex( draw.VertexBufferRange.Offset )
+							.SetVertexCount( draw.VertexBufferRange.Size )
+							.SetBaseIndex( draw.VertexBufferRange.Offset )
+							.SetIndexCount( draw.IndexBufferRange.Size )
+							.SetInstanceCount( Cast<uint32_t>( 1 ) ) 
+						);
+					}
+				} );
+			} );
+
+			m_RenderGraph.AddPass( "Lighting", ERHICommandQueueType::Graphics, [&]( RenderPassBuilder& a_Builder )
+			{
+				RenderPass* gbuffer = a_Builder.GetPass( Passes::GBuffer );
+				ASSERT( gbuffer, "GBuffer pass not found!" );
+
+				// Import GBuffer textures
+				const auto positionID = gbuffer->GetTextureID( "Position" );
+				const auto albedoID = gbuffer->GetTextureID( "Albedo" );
+				const auto normalID = gbuffer->GetTextureID( "Normal" );
+				const auto metalRoughAOID = gbuffer->GetTextureID( "MetalRoughAO" );
+				const auto emissionID = gbuffer->GetTextureID( "Emission" );
+				const auto depthID = gbuffer->GetTextureID( "Depth" );
+
+				// Declare resource usage
+				a_Builder.Read( positionID, ERHIResourceStates::ShaderResource );
+				a_Builder.Read( albedoID, ERHIResourceStates::ShaderResource );
+				a_Builder.Read( normalID, ERHIResourceStates::ShaderResource );
+				a_Builder.Read( metalRoughAOID, ERHIResourceStates::ShaderResource );
+				a_Builder.Read( emissionID, ERHIResourceStates::ShaderResource );
+				a_Builder.Read( depthID, ERHIResourceStates::ShaderResource );
+
+				// Import lighting output
+				const auto lightingOutputID = a_Builder.Import( "Output", m_Passes.LightingPass.Output);
+
+				// Declare resource usage
+				a_Builder.Write( outputID, ERHIResourceStates::RenderTarget );
+
+				a_Builder.Execute( [=]( IRHICommandList& a_CommandList, RenderGraph& a_Graph )
+				{
+					PROFILE_SCOPE( "RenderPass: Lighting Pass", ProfilerCategory::Rendering );
+
+					const auto& positionTex = a_Graph.GetTexture( positionID );
+					const auto& albedoTex = a_Graph.GetTexture( albedoID );
+					const auto& normalTex = a_Graph.GetTexture( normalID );
+					const auto& metalRoughAOTex = a_Graph.GetTexture( metalRoughAOID );
+					const auto& emissionTex = a_Graph.GetTexture( emissionID );
+					const auto& depthTex = a_Graph.GetTexture( depthID );
+
+					auto bindingSetDesc = RHIBindingSetDesc{ m_Passes.LightingPass.PipelineState->Desc().BindingLayouts[0] }
+						.AddTexture( "PositionMap"_H, positionTex.get() )
+						.AddTexture( "AlbedoMap"_H, albedoTex.get() )
+						.AddTexture( "NormalMap"_H, normalTex.get() )
+						.AddTexture( "MetalRoughAOMap"_H, metalRoughAOTex.get() )
+						.AddTexture( "EmissionMap"_H, emissionTex.get() );
+
+					const auto bindingSet = RHI::CreateBindingSet( bindingSetDesc );
+
+					const auto& lightingOutputTex = a_Graph.GetTexture( outputID );
+
+					auto graphicsState = RHIGraphicsState{}
+						.SetPipelineState( m_Passes.LightingPass.PipelineState.get() )
+						.SetVertexBuffer( m_Passes.LightingPass.QuadVertexBuffer.get() )
+						.SetIndexBuffer( m_Passes.LightingPass.QuadIndexBuffer.get() )
+						.SetBindingSet( 0, bindingSet.get() )
+						.SetFramebuffer( RHIFramebuffer{}
+							.AddColorAttachment( lightingOutputTex )
+						);
+
+					a_CommandList.SetGraphicsState( graphicsState );
+					a_CommandList.SetViewportState( RHIViewportState{}
+						.AddViewportAndScissor( RHIViewport{ 0, 0, (float)m_Viewport.Width, (float)m_Viewport.Height } )
+					);
+
+					a_CommandList.ClearRenderTargets( ERHIClearFlags::Color, RHIClearValue{} );
+					a_CommandList.Draw( RHIDrawArgs{}.SetVertexCount( 4 ).SetIndexCount( 6 ) );
+
+				} );
+			} );
+
+			m_RenderGraph.AddPass( "Present", ERHICommandQueueType::Graphics, [ & ]( RenderPassBuilder& a_Builder )
+			{
+				a_Builder.Execute( [=]( IRHICommandList& a_CommandList, RenderGraph& a_Graph )
+					{
+						PROFILE_SCOPE( "RenderPass: Present Pass", ProfilerCategory::Rendering );
 					} );
 			} );
 		}

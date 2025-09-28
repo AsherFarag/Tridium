@@ -50,6 +50,23 @@ namespace Tridium::OpenGL {
 		// Init Swap Chain
 		m_SwapChain = CreateSwapChain( a_Config.SwapChainDesc );
 
+		// Init resource cache
+		{
+			const auto desc = RHITextureDesc{}
+				.SetName( "Null Texture2D" )
+				.SetDimension( ERHITextureDimension::Texture2D )
+				.SetWidth( 1 )
+				.SetHeight( 1 )
+				.SetMips( 1 )
+				.SetFormat( ERHIFormat::RGBA8_UNORM )
+				.SetUsage( ERHIUsage::Static );
+
+			constexpr uint8_t blackPixel[4] = { 0, 0, 0, 1 };
+			m_ResourceCache.NullTexture2D = RHI::CreateTexture( desc, { RHITextureSubresourceData{}.SetData( blackPixel ).SetRowStride( 4 ) } );
+
+			ASSERT( m_ResourceCache.NullTexture2D, "Failed to create fallback null texture!" );
+		}
+
 		return true;
 	}
 
@@ -290,9 +307,9 @@ namespace Tridium::OpenGL {
 				}
 				}
 
-				LOG( LogCategory::RHI, Info, 
+				/*LOG( LogCategory::RHI, Info, 
 					"OpenGL Shader Model '{0}.{1}', setting Highest Shader Model to 'ERHIShaderModel::{2}'",
-					majorVersion, minorVersion, ToString( gpuInfo.DeviceFeatures.Shader.HighestShaderModel ) );
+					majorVersion, minorVersion, ToString( gpuInfo.DeviceFeatures.Shader.HighestShaderModel ) );*/
 			}
 			else
 			{

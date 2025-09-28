@@ -297,7 +297,7 @@ namespace Tridium {
             .SetPipelineState( bd->PipelineState.get() )
 			.SetVertexBuffer( bd->VertexBuffer.get() )
 			.SetIndexBuffer( bd->IndexBuffer.get() )
-			.SetFramebuffer( RHIFramebuffer{} .AddColorAttachment( a_RenderTarget ) );
+			.SetFramebuffer( RHIFramebuffer{}.AddColorAttachment( a_RenderTarget ) );
 
 		graphicsState.BindingSets.Resize( 1 );
 
@@ -453,7 +453,7 @@ namespace Tridium {
         const auto bindingLayoutDesc = RHIBindingLayoutDesc{}
             .SetVisibility( ERHIShaderVisibility::All )
             .SetName( "ImGui Binding Layout" )
-			.AddBinding( "inlinedConstants"_H, RHIShaderBinding{}.AsInlinedConstants( 0, sizeof( InlinedConstants ) ) )
+			.AddBinding( "inlinedConstants"_H, RHIShaderBinding{}.AsInlinedConstants( sizeof( InlinedConstants ) ) )
             .AddBinding( "Texture"_H, RHIShaderBinding{}.AsTexture( 0 ) );
 
         bd->BindingLayout = bd->DynamicRHI->CreateBindingLayout( bindingLayoutDesc );

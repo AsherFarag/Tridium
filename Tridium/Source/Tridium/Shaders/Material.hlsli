@@ -13,10 +13,4 @@ struct MaterialProperties
     float Padding;
 };
 
-#ifndef __cplusplus
-
-CONSTANT_BUFFER(u_MaterialProps, MaterialProperties, 0);
-
-#endif // __cplusplus
-
 #endif // MATERIAL_HLSLI

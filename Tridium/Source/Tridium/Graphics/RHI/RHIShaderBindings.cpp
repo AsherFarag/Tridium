@@ -14,7 +14,7 @@ namespace Tridium {
 
 			if ( binding.Space == INLINED_CONSTANTS_SPACE )
 			{
-				bindingDesc.AsInlinedConstants( binding.Slot, Cast<uint16_t>( binding.Size ) );
+				bindingDesc.AsInlinedConstants( Cast<uint16_t>( binding.Size ) );
 			}
 			else
 			{

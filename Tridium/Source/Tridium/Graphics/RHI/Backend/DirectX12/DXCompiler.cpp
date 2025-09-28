@@ -61,7 +61,6 @@ namespace Tridium::D3D12 {
 				LOG( LogCategory::DirectX, Error, "Failed to create DXC Compiler" );
 				return;
 			}
-
 		}
 	};
 
@@ -479,14 +478,11 @@ namespace Tridium::D3D12 {
 					args.EmplaceBack( L"-fvk-invert-y" ); // Make vulkan and opengl have the same coordinate system as D3D (Y-up)
 				}
 
-				args.EmplaceBack( L"-fvk-t-shift" ); args.EmplaceBack( L"1000" ); args.EmplaceBack( L"0" );
-				args.EmplaceBack( L"-fvk-u-shift" ); args.EmplaceBack( L"2000" ); args.EmplaceBack( L"0" );
-				args.EmplaceBack( L"-fvk-s-shift" ); args.EmplaceBack( L"3000" ); args.EmplaceBack( L"0" );
+				// Shift the registers
+				args.EmplaceBack( L"-fvk-t-shift" ); args.EmplaceBack( TO_LSTRING( RHI_SRV_BINDING_SLOT_OFFSET ) ); args.EmplaceBack( L"0" );
+				args.EmplaceBack( L"-fvk-u-shift" ); args.EmplaceBack( TO_LSTRING( RHI_UAV_BINDING_SLOT_OFFSET ) ); args.EmplaceBack( L"0" );
+				args.EmplaceBack( L"-fvk-s-shift" ); args.EmplaceBack( TO_LSTRING( RHI_SAMPLER_BINDING_SLOT_OFFSET ) ); args.EmplaceBack( L"0" );
 				break;
-			}
-			default:
-			{
-				return Unexpected( "Unsupported shader format" );
 			}
 		}
 
@@ -557,7 +553,7 @@ namespace Tridium::D3D12 {
 		args.EmplaceBack( L"-I" );
 		TODO( "Temp" );
 		FilePath shaderPath = FilePath::CurrentPath();
-		shaderPath = shaderPath / "../Tridium/Shaders/Shaders";
+		shaderPath = shaderPath / "../Tridium/Source/Tridium/Shaders";
 		args.EmplaceBack( shaderPath.ToWString() );
 		for ( const auto& includeDir : a_Input.IncludeDirectories )
 		{
@@ -586,9 +582,9 @@ namespace Tridium::D3D12 {
 			for ( const auto& resource : shaderResources.uniform_buffers )
 			{
 				TODO( "We are setting the interface name of the block as I cant use the instance name for shader bindings. Hack" );
-				//glslCompiler.set_name( resource.base_type_id,
-				//	glslCompiler.get_block_fallback_name( resource.id ) 
-				//);
+				glslCompiler.set_name( resource.base_type_id,
+					glslCompiler.get_block_fallback_name( resource.id ) 
+				);
 			}
 
 			// Textures and samplers are combined in GLSL, so we need to keep track of them and set the correct names
@@ -633,7 +629,7 @@ namespace Tridium::D3D12 {
 				{
 					ShaderReflectionBinding& binding = a_Output.Reflection.Bindings.EmplaceBack();
 					binding.Name = glslCompiler.get_name( resource.id );
-					binding.Slot = glslCompiler.get_decoration( resource.id, spv::DecorationBinding );
+					binding.Slot = glslCompiler.get_decoration( resource.id, spv::DecorationBinding ) - RHI_UAV_BINDING_SLOT_OFFSET;
 					binding.Space = glslCompiler.get_decoration( resource.id, spv::DecorationDescriptorSet );
 					binding.Count = 1;
 					binding.Type = ShaderReflectionBinding::StorageBuffer;
@@ -641,16 +637,22 @@ namespace Tridium::D3D12 {
 				}
 
 				// Sampled images -> Combined Samplers
-				for ( const auto& resource : shaderResources.sampled_images )
+				for ( const auto& c : glslCompiler.get_combined_image_samplers() )
 				{
-					ShaderReflectionBinding& binding = a_Output.Reflection.Bindings.EmplaceBack();
-					binding.Name = glslCompiler.get_name( resource.id );
-					binding.Slot = glslCompiler.get_decoration( resource.id, spv::DecorationBinding );
-					binding.Space = glslCompiler.get_decoration( resource.id, spv::DecorationDescriptorSet );
-					binding.Count = 1;
+					ShaderReflectionBinding binding;
+					binding.Name = glslCompiler.get_name( c.combined_id );
+
+					// Use the original binding from the texture part, not the GLSL output
+					binding.Slot = glslCompiler.get_decoration( c.image_id, spv::DecorationBinding ) - RHI_SRV_BINDING_SLOT_OFFSET;
+					binding.Space = glslCompiler.get_decoration( c.image_id, spv::DecorationDescriptorSet );
+
 					binding.Type = ShaderReflectionBinding::Texture;
-					binding.Size = 0; // Size is unknown for textures.
+					binding.Count = 1;
+					binding.Size = 0;
+
+					a_Output.Reflection.Bindings.EmplaceBack( binding );
 				}
+
 
 			}
 

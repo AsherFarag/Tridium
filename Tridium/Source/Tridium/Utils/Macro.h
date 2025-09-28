@@ -2,14 +2,15 @@
 
 #define BIT(x) (1 << x)
 
+#define CONCAT_IMPL(a, b) a##b
+#define CONCAT(a, b) CONCAT_IMPL(a, b)
+
 #define STRINGIFY( x ) #x
 #define TOSTRING( x ) STRINGIFY( x )
+#define TO_LSTRING( x ) CONCAT(L, TOSTRING( x ) )
 #define WRAP( m, x ) m(x)
 #define PRAGMA(p) _Pragma(#p)
 #define EXPAND(x) x
-
-#define CONCAT_IMPL(a, b) a##b
-#define CONCAT(a, b) CONCAT_IMPL(a, b)
 
 #pragma region Selectors
 

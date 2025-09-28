@@ -598,6 +598,7 @@ namespace Tridium::OpenGL {
 	{
 		UnorderedMap<RHISampler, GLSamplerWrapper> Samplers;
 		UnorderedMap<RHISampler, GLSamplerWrapper> DepthSamplers;
+		RHITextureRef NullTexture2D = nullptr; // 1x1 Black texture
 
 		GLuint GetOrCreateSampler( const RHISampler& a_Sampler, bool a_IsDepth );
 	};

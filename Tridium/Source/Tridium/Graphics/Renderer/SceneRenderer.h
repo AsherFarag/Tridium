@@ -6,6 +6,7 @@
 #include <Tridium/Graphics/Renderer/RenderResource.h>
 #include <Tridium/Math/Matrix.h>
 #include <Tridium/Scene/Scene.h>
+#include <Tridium/Core/Hash.h>
 
 namespace Tridium {
 
@@ -31,6 +32,23 @@ namespace Tridium {
 	};
 
 	//=================================================================================================
+	// Scriptable Render Pass Interface:
+	// Interface for creating custom render passes that can be integrated into the rendering pipeline.
+	//=================================================================================================
+	class IScriptableRenderPass
+	{
+	public:
+
+		//=============================================================================================
+		virtual ~IScriptableRenderPass() = default;
+
+		//=============================================================================================
+		virtual void Setup( RenderGraph& a_RenderGraph ) = 0;
+		virtual void OnResize( uint32_t a_Width, uint32_t a_Height ) = 0;
+
+	};
+
+	//=================================================================================================
 	// Scene Renderer:
 	// This class is responsible for rendering a scene, including all its objects, lights, and cameras.
 	// It handles the rendering pipeline, including setting up shaders, buffers, and rendering commands.
@@ -38,6 +56,14 @@ namespace Tridium {
 	class SceneRenderer
 	{
 	public:
+
+		struct Passes
+		{
+			static constexpr HashedString Root = "Root"_H;
+			static constexpr HashedString GBuffer = "GBuffer"_H;
+			static constexpr HashedString Lighting = "Lighting"_H;
+			static constexpr HashedString Transparent = "Transparent"_H;
+		};
 
 		//=============================================================================================
 		SceneRenderer( AssetRef<Scene> a_Scene, const SceneRendererOptions& a_Options = SceneRendererOptions() );
@@ -144,6 +170,36 @@ namespace Tridium {
 			Matrix4 View;                // View matrix for the camera
 			Vector3 Position;            // Position of the camera in world space
 		} m_CameraData;
+
+		struct
+		{
+			// G-Buffer pass  (Geometry Pass)
+			struct
+			{
+				RHITextureRef Position;            // World space position
+				RHITextureRef Albedo;              // Albedo (diffuse color)
+				RHITextureRef Normal;              // Encodes world space normal
+				RHITextureRef MetallicRoughnessAO; // Metallic in R, Roughness in G, AO in B
+				RHITextureRef Emission;            // Emissive color
+				RHITextureRef Depth;               // Depth buffer
+			} GeometryPass;
+			
+			// Lighting pass (Lighting Pass)
+			struct 
+			{
+				RHIGraphicsPipelineStateRef PipelineState; 
+				RHIBufferRef QuadVertexBuffer; // Vertex buffer for a fullscreen quad
+				RHIBufferRef QuadIndexBuffer;  // Index buffer for a fullscreen quad
+				RHITextureRef Output;
+			} LightingPass;
+
+			// Transparent pass
+			struct
+			{
+				RHITextureRef Color; // Final color output for transparent objects
+			} TransparentPass;
+
+		} m_Passes;
 
 		//=============================================================================================
 		// Draw lists for static meshes for different rendering passes.

@@ -19,7 +19,7 @@ namespace Tridium::D3D12 {
 		if ( resource )
 		{
 			ULONG ref = resource->Release();
-			ASSERT( ref == 1 );
+			CHECK( ref == 1 );
 		}
 
 		return SUCCEEDED( hr );

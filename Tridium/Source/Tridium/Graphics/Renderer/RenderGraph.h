@@ -87,8 +87,8 @@ namespace Tridium {
 		RenderPass* GetPass( const HashedString& a_Name ) const;
 
 		//=============================================================================================
-		RenderPassTextureID Import( const RHITextureRef& a_Resource );
-		RenderPassBufferID Import( const RHIBufferRef& a_Resource );
+		RenderPassTextureID Import( String a_Name, const RHITextureRef& a_Resource );
+		RenderPassBufferID Import( String a_Name, const RHIBufferRef& a_Resource );
 
 		//=============================================================================================
 		// Create transient resources owned by the graph
@@ -276,50 +276,66 @@ namespace Tridium {
 		return nullptr;
 	}
 
-	inline RenderPassTextureID RenderPassBuilder::Import( const RHITextureRef& a_Resource )
+	inline RenderPassTextureID RenderPassBuilder::Import( String a_Name, const RHITextureRef& a_Resource )
 	{
-		return m_Graph.CreateTexture( RHITextureDesc{}, true, a_Resource );
+		const RenderPassTextureID id = m_Graph.CreateTexture( RHITextureDesc{}, true, a_Resource );
+		m_Graph.m_Passes[Cast<size_t>( m_PassID )].Data.m_Textures.emplace( std::move( a_Name ), id );
+		return id;
 	}
 
-	inline RenderPassBufferID RenderPassBuilder::Import( const RHIBufferRef& a_Resource )
+	inline RenderPassBufferID RenderPassBuilder::Import( String a_Name, const RHIBufferRef& a_Resource )
 	{
-		return m_Graph.CreateBuffer( RHIBufferDesc{}, true, a_Resource );
+		const RenderPassBufferID id = m_Graph.CreateBuffer( RHIBufferDesc{}, true, a_Resource );
+		m_Graph.m_Passes[Cast<size_t>( m_PassID )].Data.m_Buffers.emplace( std::move( a_Name ), id );
+		return id;
 	}
 
 	inline RenderPassTextureID RenderPassBuilder::Create( String a_Name, const RHITextureDesc& a_Desc )
 	{
 		const RenderPassTextureID id = m_Graph.CreateTexture( a_Desc, false, RHITextureRef() );
-		m_Graph.m_Passes[ Cast<size_t>( m_PassID ) ].Data.m_Textures[ a_Name ] = id;
+		m_Graph.m_Passes[Cast<size_t>( m_PassID )].Data.m_Textures.emplace( std::move( a_Name ), id );
 		return id;
 	}
 
 	inline RenderPassBufferID RenderPassBuilder::Create( String a_Name, const RHIBufferDesc& a_Desc )
 	{
 		const RenderPassBufferID id = m_Graph.CreateBuffer( a_Desc, false, RHIBufferRef() );
-		m_Graph.m_Passes[ Cast<size_t>( m_PassID ) ].Data.m_Buffers[ a_Name ] = id;
+		m_Graph.m_Passes[Cast<size_t>( m_PassID )].Data.m_Buffers.emplace( std::move( a_Name ), id );
 		return id;
 	}
 
 	inline void RenderPassBuilder::Read( RenderPassTextureID a_Resource, ERHIResourceStates a_Usage )
 	{
+		if ( !ASSERT( a_Resource != RenderPassTextureID::Invalid, "Invalid texture resource ID" ) )
+			return;
+
 		auto& pass = m_Graph.m_Passes[ Cast<size_t>( m_PassID ) ];
 		pass.Reads.EmplaceBack( RenderGraph::ResourceEdge{ m_PassID, Cast<uint32_t>( a_Resource ), ERHIObjectType::Texture, a_Usage, false } );
 	}
 
 	inline void RenderPassBuilder::Write( RenderPassTextureID a_Resource, ERHIResourceStates a_Usage )
 	{
+		if ( !ASSERT( a_Resource != RenderPassTextureID::Invalid, "Invalid texture resource ID" ) )
+			return;
+
 		auto& pass = m_Graph.m_Passes[ Cast<size_t>( m_PassID ) ];
 		pass.Writes.EmplaceBack( RenderGraph::ResourceEdge{ m_PassID, Cast<uint32_t>( a_Resource ), ERHIObjectType::Texture, a_Usage, true } );
 	}
 
 	inline void RenderPassBuilder::Read( RenderPassBufferID a_Resource, ERHIResourceStates a_Usage )
 	{
+		if ( !ASSERT( a_Resource != RenderPassBufferID::Invalid, "Invalid buffer resource ID" ) )
+			return;
+
 		auto& pass = m_Graph.m_Passes[ Cast<size_t>( m_PassID ) ];
 		pass.Reads.EmplaceBack( RenderGraph::ResourceEdge{ m_PassID, Cast<uint32_t>( a_Resource ), ERHIObjectType::Buffer, a_Usage, false } );
 	}
 
 	inline void RenderPassBuilder::Write( RenderPassBufferID a_Resource, ERHIResourceStates a_Usage )
 	{
+		if ( !ASSERT( a_Resource != RenderPassBufferID::Invalid, "Invalid buffer resource ID" ) )
+			return;
+
 		auto& pass = m_Graph.m_Passes[ Cast<size_t>( m_PassID ) ];
 		pass.Writes.EmplaceBack( RenderGraph::ResourceEdge{ m_PassID, Cast<uint32_t>( a_Resource ), ERHIObjectType::Buffer, a_Usage, true } );
 	}

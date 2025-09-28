@@ -468,7 +468,7 @@ namespace Tridium {
 						case aiShadingMode_Gouraud:
 						case aiShadingMode_Phong:
 						case aiShadingMode_Blinn:
-							material->SetShaderFamily( String{ DefaultShaderFamilies::Lit } );
+							material->SetShaderFamily( String{ DefaultShaderFamilies::LitDefault } );
 							break;
 						case aiShadingMode_Toon:
 							material->SetShaderFamily( String{ DefaultShaderFamilies::Toon } );
@@ -477,14 +477,14 @@ namespace Tridium {
 						case aiShadingMode_Minnaert:
 						case aiShadingMode_CookTorrance:
 						default:
-							material->SetShaderFamily( String{ DefaultShaderFamilies::Lit } );
+							material->SetShaderFamily( String{ DefaultShaderFamilies::LitDefault } );
 							break;
 					}
 				}
 				else
 				{
 					// Default to Lit shader if no shading model is specified
-					material->SetShaderFamily( String{ DefaultShaderFamilies::Lit } );
+					material->SetShaderFamily( String{ DefaultShaderFamilies::LitDefault } );
 				}
 
 				material->SetFlags( matFlags );
@@ -593,7 +593,13 @@ namespace Tridium {
 				// Extract Tangent (if present)
 				if ( assimpMesh->HasTangentsAndBitangents() )
 				{
-					vertex.Tangent = { assimpMesh->mTangents[ i ].x, assimpMesh->mTangents[ i ].y, assimpMesh->mTangents[ i ].z };
+					// We calculate the bitangents in the shader, so we only need to store the tangent and its handedness
+					const aiVector3D& tangent = assimpMesh->mTangents[i];
+					const aiVector3D& bitangent = assimpMesh->mBitangents[i];
+					const aiVector3D& normal = assimpMesh->mNormals[i];
+					const float handedness = ( normal ^ tangent ) * bitangent < 0.0f ? -1.0f : 1.0f;
+
+					vertex.Tangent = { tangent.x, tangent.y, tangent.z, handedness };
 				}
 
 				TODO( "Should we support multiple UV channels?" );

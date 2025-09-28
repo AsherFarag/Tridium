@@ -103,71 +103,8 @@ namespace Tridium {
 		return true;
 	}
 
-	static const StringView VS = R"(
-#include "Globals.hlsli"
-
-    struct InlinedConstants
-    {
-        float4x4 PVM;
-    };
-
-    INLINED_CONSTANTS( inlinedConstants, InlinedConstants );
-
-    struct VS_INPUT
-    {
-		float3 Position : POSITION;
-		float3 Normal : NORMAL;
-		float3 Tangent : TANGENT;
-		float2 TexCoord : TEXCOORD0;
-    };
-
-    struct PS_INPUT
-    {
-      float4 pos : SV_POSITION;
-      float4 col : COLOR0;
-      float2 uv  : TEXCOORD0;
-    };
-
-    PS_INPUT VSMain(VS_INPUT input)
-    {
-      PS_INPUT output;
-	  output.pos = mul(inlinedConstants.PVM, float4(input.Position, 1.0f));
-	  output.uv  = input.TexCoord;
-	  output.col = float4(1.0f, 1.0f, 1.0f, 1.0f);
-      return output;
-    }
-
-)";
-
-	static const StringView PS = R"(
-	#include "Globals.hlsli"
-	#include "Material.hlsli"
-
-	struct PS_INPUT
-	{
-	  float4 pos : SV_POSITION;
-	  float4 col : COLOR0;
-	  float2 uv  : TEXCOORD0;
-	};
-
-	COMBINED_SAMPLER( AlbedoMap, Texture2D, 0 );
-	COMBINED_SAMPLER( NormalMap, Texture2D, 1 );
-
-	float4 PSMain(PS_INPUT input) : SV_TARGET0
-	{
-		return SampleTexture( AlbedoMap, input.uv ) * 0.8 + SampleTexture( NormalMap, input.uv ) * u_MaterialProps.AlbedoColor.r;
-	}
-)";
-
-
     bool RenderResourceManager::Init()
     {
-		ShaderFamily defaultLitFamily;
-		defaultLitFamily.Name = DefaultShaderFamilies::Lit;
-		defaultLitFamily.ShaderSources[(size_t)ERHIShaderType::Vertex] = VS;
-		defaultLitFamily.ShaderSources[(size_t)ERHIShaderType::Pixel] = PS;
-		ShaderLibrary::RegisterFamily( std::move( defaultLitFamily ) );
-
         return true;
     }
 
@@ -355,9 +292,21 @@ namespace Tridium {
 				AsBytes( Span<const MaterialProperties>{ &materialProperties, 1 } )
 			);
 
+			const auto bindingLayoutDesc = RHIBindingLayoutDesc{}
+				.AddBinding( "Constants"_H, RHIShaderBinding{}.AsInlinedConstants( 128 ) )
+				.AddBinding( "u_MaterialProps"_H, RHIShaderBinding{}.AsConstantBuffer( 0 ) )
+				.AddBinding( "AlbedoMap"_H, RHIShaderBinding{}.AsTexture( 0 ) )
+				.AddBinding( "NormalMap"_H, RHIShaderBinding{}.AsTexture( 1 ) )
+				.AddBinding( "MetallicMap"_H, RHIShaderBinding{}.AsTexture( 2 ) )
+				.AddBinding( "RoughnessMap"_H, RHIShaderBinding{}.AsTexture( 3 ) )
+				.AddBinding( "EmissiveMap"_H, RHIShaderBinding{}.AsTexture( 4 ) )
+				.AddBinding( "AmbientOcclusionMap"_H, RHIShaderBinding{}.AsTexture( 5 ) );
+
+			const RHIBindingLayoutRef bindingLayout = RHI::CreateBindingLayout( bindingLayoutDesc );
+
 			auto bindingSetDesc = RHIBindingSetDesc{}
 				.SetName( std::format( "Material_{}_BindingSet", a_Asset->ID() ) )
-				.SetLayout( shaderFamily->BindingLayout )
+				.SetLayout( bindingLayout )
 				.AddConstantBuffer( "u_MaterialProps"_H, materialBuffer.get() );
 
 			const auto AddTextureBinding = [&]( const HashedString a_Name, const AssetRef<Texture>& a_Texture )
@@ -371,12 +320,12 @@ namespace Tridium {
 
 			// Add texture bindings
 			AddTextureBinding( "AlbedoMap"_H, a_Asset->AlbedoMap() );
-			//AddTextureBinding( "u_NormalTexture"_H, a_Asset->NormalMap() );
-			//AddTextureBinding( "u_MetallicTexture"_H, a_Asset->MetallicMap() );
-			//AddTextureBinding( "u_RoughnessTexture"_H, a_Asset->RoughnessMap() );
-			//AddTextureBinding( "u_EmissiveTexture"_H, a_Asset->EmissiveMap() );
-			//AddTextureBinding( "u_AmbientOcclusionTexture"_H, a_Asset->AmbientOcclusionMap() );
-			//AddTextureBinding( "u_OpacityTexture"_H, a_Asset->OpacityMap() );
+			AddTextureBinding( "NormalMap"_H, a_Asset->NormalMap() );
+			AddTextureBinding( "MetallicMap"_H, a_Asset->MetallicMap() );
+			AddTextureBinding( "RoughnessMap"_H, a_Asset->RoughnessMap() );
+			AddTextureBinding( "EmissiveMap"_H, a_Asset->EmissiveMap() );
+			AddTextureBinding( "AmbientOcclusionMap"_H, a_Asset->AmbientOcclusionMap() );
+			//AddTextureBinding( "OpacityTexture"_H, a_Asset->OpacityMap() );
 
 			newResource.BindingSet = RHI::CreateBindingSet( bindingSetDesc );
 
