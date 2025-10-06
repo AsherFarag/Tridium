@@ -1,7 +1,7 @@
 #pragma once
 #include <Tridium/Asset/Asset.h>
-#include <Tridium/Graphics/RHI/RHITexture.h>
 #include <Tridium/Core/Core.h>
+#include <Tridium/Graphics/RHI/RHIDefinitions.h>
 
 namespace Tridium {
 
@@ -12,11 +12,11 @@ namespace Tridium {
 	{
 	public:
 
-		//=================================================================================================
+		//=============================================================================================
 		// Attempts to load a texture from the specified file path, returns a error message if it fails.
 		static Expected<AssetRef<Texture>, String> Load( const char* a_FilePath );
 
-		//=================================================================================================
+		//=============================================================================================
 		bool Valid() const override { return !m_PixelData.Empty() && m_Width > 0; }
 
 		const auto& PixelData() const { return m_PixelData; }
@@ -26,21 +26,22 @@ namespace Tridium {
 		ERHITextureDimension Dimension() const { return m_Dimension; }
 		ERHIFormat Format() const { return m_Format; }
 
-		//=================================================================================================
+		//=============================================================================================
 		// Returns the pixel color at the specified coordinates.
 		Optional<Color> TryGetPixel( uint32_t a_X, uint32_t a_Y = 0, uint32_t a_Z = 0 ) const;
 
-		//=================================================================================================
-		// Returns the pixel color at the specified coordinates, Black if out of bounds or the texture is not stored on the CPU.
+		//=============================================================================================
+		// Returns the pixel color at the specified coordinates,
+		// Black if out of bounds or the texture is not stored on the CPU.
 		Color GetPixel( uint32_t a_X, uint32_t a_Y = 0, uint32_t a_Z = 0 ) const { return TryGetPixel( a_X, a_Y, a_Z ).value_or( Color::Black() ); }
 
-		//=================================================================================================
+		//=============================================================================================
 		// Clears the pixel data stored on the CPU, but does not modify the RHI texture.
 		void ClearPixelData() { m_PixelData.Clear(); }
 
 	protected:
 
-		//=================================================================================================
+		//=============================================================================================
 		Array<uint8_t> m_PixelData;
 		uint32_t m_Width = 0;
 		uint32_t m_Height = 0;

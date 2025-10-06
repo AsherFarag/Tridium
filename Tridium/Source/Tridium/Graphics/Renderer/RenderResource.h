@@ -56,4 +56,12 @@ namespace Tridium {
 
 		bool Valid() const override { return RenderResource::Valid() && Texture != nullptr; }
 	};
+
+	struct RenderResourceEnvironmentMap : RenderResource
+	{
+		RHITextureRef RadianceMap{};
+		RHITextureRef IrradianceMap{};
+
+		bool Valid() const override { return RenderResource::Valid() && RadianceMap != nullptr && IrradianceMap != nullptr; }
+	};
 }

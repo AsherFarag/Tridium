@@ -27,12 +27,10 @@ namespace Tridium {
 		return CalculateMipLevelCount( Math::Max( Math::Max( a_Width, a_Height ), a_Depth ) );
 	}
 
-
-	//==========================================================================================
-	// RHI Texture Subresource Data
-	//  A structure that holds the data for a subresource of a texture.
-	//  This is used for updating a texture with new data.
-	//==========================================================================================
+	//=================================================================================================
+	// RHI Texture Subresource Data: 
+	// A structure that holds the data for copying into a subresource of a texture.
+	//=================================================================================================
 	struct RHITextureSubresourceData
 	{
 		// The data, in CPU memory, for the subresource.
@@ -42,14 +40,18 @@ namespace Tridium {
 		// The stride of a slice of data in the texture, in bytes. For 3D textures.
 		size_t DepthStride = 0;
 
+		bool Valid() const { return Data != nullptr && RowStride > 0; }
+		operator bool() const { return Valid(); }
+
 		constexpr auto& SetData( const void* a_Data ) { Data = a_Data; return *this; }
 		constexpr auto& SetRowStride( size_t a_RowStride ) { RowStride = a_RowStride; return *this; }
 		constexpr auto& SetDepthStride( size_t a_DepthStride ) { DepthStride = a_DepthStride; return *this; }
 	};
 
-	//==========================================================================================
-	// RHI Texture Slice
-	//  Describes a region (2D or 3D) of a single mip level and array slice of a texture.
+	//=================================================================================================
+	// RHI Texture Slice:
+	// Describes a region (2D or 3D) of a single mip level and array slice of a texture.
+	//=================================================================================================
 	struct RHITextureSlice
 	{
 		uint32_t OffsetX = 0;
@@ -115,44 +117,70 @@ namespace Tridium {
 
 
 
-	//==========================================================================================
-	// RHI Texture
-	//  A texture resource is a buffer of image data that can be used for rendering.
-	//  Textures can be 1D, 2D, 3D, or cubemaps.
-	//===========================================================================================
-
+	//=================================================================================================
+	// RHI Texture Descriptor: Describes a texture resource.
+	//=================================================================================================
 	struct RHITextureDesc
 	{
 		using ResourceType = class IRHITexture;
+
+		//=============================================================================================
 		// The dimension of the texture.
 		ERHITextureDimension Dimension = ERHITextureDimension::Unknown;
+
+		//=============================================================================================
 		// Width of the texture. Valid for all texture dimensions.
 		uint32_t Width = 0;
+
+		//=============================================================================================
 		// Height of the texture. Valid for 2D, 2D array, and cubemap textures.
 		uint32_t Height = 0;
+
+		//=============================================================================================
 		// Depth or array size of the texture. Valid for 3D textures and array textures.
+		// For Cube textures, this is the number of cubemaps in the array (6 faces per cubemap).
 		uint32_t DepthOrArraySize = 1;
-		// Number of mip levels in the texture. NOTE: If set to 0, it will be the maximum number of mips for the texture size.
+
+		//=============================================================================================
+		// Number of mip levels in the texture.
+		// NOTE: If set to 0, it will be the maximum number of mips for the texture size.
 		uint32_t Mips = 1;
+
+		//=============================================================================================
 		// Number of samples. Only 2D and 2D array textures can be multisampled.
 		uint32_t Samples = 1;
-		// Optimised clear value for the Render target/ Depth stencil texture. NOTE: 'UseClearValue' must be true for this to be used.
+
+		//=============================================================================================
+		// Optimised clear value for the Render target/ Depth stencil texture. 
+		// NOTE: 'UseClearValue' must be true for this to be used.
 		RHIClearValue ClearValue{};
+
+		//=============================================================================================
 		// Indicates if 'ClearValue' should be used when the texture is created.
 		bool UseClearValue = false;
+
+		//=============================================================================================
 		// The data format of each texel in the texture.
 		ERHIFormat Format = ERHIFormat::Unknown;
+
+		//=============================================================================================
 		// Specifies how the texture can be bound in the pipeline.
 		ERHIBindFlags BindFlags = ERHIBindFlags::None;
-		// Specifies how often the texture will be modified.
-		ERHIUsage Usage = ERHIUsage::Default;
-		// Specifies how the texture can be accessed by the CPU.
-		ERHICpuAccess CpuAccess = ERHICpuAccess::None;
-		// Initial state of the texture when created. This is used to optimise the creation of the texture.
-		ERHIResourceStates InitialState = ERHIResourceStates::Common;
+
+		//=============================================================================================
+		// The type of memory heap to allocate the texture from.
+		ERHIHeapType HeapType = ERHIHeapType::Default;
+
+		//=============================================================================================
 		// Default sampler to use when sampling this texture in shaders.
 		RHISampler DefaultSampler{};
-		// Debug name for the texture.
+
+		//=============================================================================================
+		// The initial resource state of the texture when created.
+		ERHIResourceStates InitialState = ERHIResourceStates::Common;
+
+		//=============================================================================================
+		// A human-readable name for the texture, useful for debugging and profiling.
 		String Name{};
 
 		constexpr bool IsArray() const
@@ -197,8 +225,7 @@ namespace Tridium {
 		constexpr auto& SetMips( uint32_t a_Mips ) { Mips = a_Mips; return *this; }
 		constexpr auto& SetSamples( uint32_t a_Samples ) { Samples = a_Samples; return *this; }
 		constexpr auto& SetBindFlags( ERHIBindFlags a_BindFlags ) { BindFlags = a_BindFlags; return *this; }
-		constexpr auto& SetUsage( ERHIUsage a_Usage ) { Usage = a_Usage; return *this; }
-		constexpr auto& SetCpuAccess( ERHICpuAccess a_CpuAccess ) { CpuAccess = a_CpuAccess; return *this; }
+		constexpr auto& SetHeapType( ERHIHeapType a_HeapType ) { HeapType = a_HeapType; return *this; }
 		constexpr auto& SetDefaultSampler( const RHISampler& a_Sampler ) { DefaultSampler = a_Sampler; return *this; }
 		constexpr auto& SetInitialState( ERHIResourceStates a_State ) { InitialState = a_State; return *this; }
 		constexpr auto& SetClearValue( RHIClearValue a_ClearValue ) { ClearValue = a_ClearValue; return *this; }
@@ -206,6 +233,11 @@ namespace Tridium {
 		          auto& SetName( StringView a_Name ) { Name = a_Name; return *this; }
 	};
 
+	//=================================================================================================
+	// RHI Texture Interface: Base interface for all texture types.
+	// A texture resource is a buffer of image data that can be used for rendering.
+	// A texture can be 1D, 2D, 3D, or cubemaps and have multiple mip levels and array slices.
+	//=================================================================================================
 	class IRHITexture : public IRHIResource
 	{
 		RHI_OBJECT_INTERFACE_BODY( Texture );
@@ -213,25 +245,17 @@ namespace Tridium {
 		IRHITexture( IDynamicRHI* a_Device, const RHITextureDesc& a_Desc )
 			: IRHIResource( a_Device ), m_Desc( a_Desc )
 		{
-			RHI_DEV_CHECK( !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::VertexBuffer )
-						&& !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::IndexBuffer )
-						&& !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::ConstantBuffer )
-						&& !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::IndirectArgument ),
-				std::format( "Texture '{}' cannot be created with bind flags '{}'", a_Desc.Name, ToString( a_Desc.BindFlags ) ) );
+			RHI_DEV_CHECK( !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::VertexBuffer ) &&
+						   !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::IndexBuffer ) &&
+						   !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::ConstantBuffer ) &&
+						   !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::IndirectArgument ),
+						   "Texture '{}' cannot be created with bind flags '{}'", a_Desc.Name, ToString( a_Desc.BindFlags ) );
 
 			RHI_DEV_CHECK( m_Desc.Format != ERHIFormat::Unknown,
 						   "Texture '{}' cannot be created with unknown format", a_Desc.Name );
 
-			//RHI_DEV_CHECK( !EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::DepthStencil )
-			//	|| GetRHIFormatInfo( a_Desc.Format ).HasDepth 
-			//	|| GetRHIFormatInfo( a_Desc.Format ).HasStencil,
-			//	"Texture '{}' cannot be created with bind flag 'DepthStencil' and format '{}'",
-			//	a_Desc.Name, GetRHIFormatInfo( a_Desc.Format ).Name );
-
-			RHI_DEV_WARN( !a_Desc.UseClearValue 
-				|| EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::RenderTarget )
-				|| EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::DepthStencil ),
-				"Clear value will not be used for texture '{}' as it is not a render target or depth stencil texture", a_Desc.Name );
+			RHI_DEV_CHECK( m_Desc.HeapType != ERHIHeapType::Staging || m_Desc.BindFlags == ERHIBindFlags::None,
+						   "Texture '{}' cannot be created with staging heap and have bind flags", a_Desc.Name );
 
 			if ( m_Desc.Mips == 0 )
 			{
@@ -247,12 +271,21 @@ namespace Tridium {
 		}
 
 		virtual ~IRHITexture() = default;
+
+		//=============================================================================================
+		// Maps a subresource of the texture for CPU read-only access.
+		// The texture must have been created with ERHIHeapType::Staging.
+		virtual RHITextureSubresourceData MapSubresource( const RHITextureSlice& a_Slice ) = 0;
+
+		//=============================================================================================
+		// Unmaps a previously mapped subresource of the texture.
+		virtual void UnmapSubresource( const RHITextureSlice& a_Slice ) = 0;
+
 	};
 
-	//==========================================================================================
-	// RHI Texture Subresource Set
-	//  Describes a set of subresources in a texture.
-	//==========================================================================================
+	//=================================================================================================
+	// RHI Texture Subresource Set: Describes a set of subresources in a texture.
+	//=================================================================================================
 	struct RHITextureSubresourceSet
 	{
 		uint32_t BaseMipLevel = 0;
@@ -294,8 +327,8 @@ namespace Tridium {
 			}
 			else
 			{
-				int lastMipLevel = Math::Min( BaseMipLevel + NumMipLevels, a_Desc.Mips );
-				result.NumMipLevels = uint32_t( Math::Max( 0u, lastMipLevel - BaseMipLevel ) );
+				uint32_t lastMipLevel = Math::Min( BaseMipLevel + NumMipLevels, a_Desc.Mips );
+				result.NumMipLevels = Math::Max( 0u, lastMipLevel - BaseMipLevel );
 			}
 
 			switch ( a_Desc.Dimension )
@@ -305,8 +338,8 @@ namespace Tridium {
 			case ERHITextureDimension::TextureCube:
 			case ERHITextureDimension::TextureCubeArray:
 			{
-				int lastArraySlice = Math::Min( BaseArraySlice + NumArraySlices, a_Desc.DepthOrArraySize );
-				result.NumArraySlices = uint32_t( Math::Max( 0u, lastArraySlice - BaseArraySlice ) );
+				uint32_t lastArraySlice = Math::Min( BaseArraySlice + NumArraySlices, a_Desc.DepthOrArraySize );
+				result.NumArraySlices = Math::Max( 0u, lastArraySlice - BaseArraySlice );
 				break;
 			}
 			default:
@@ -324,19 +357,22 @@ namespace Tridium {
 		}
 	};
 
-
+	//=================================================================================================
+	// RHI Framebuffer: A framebuffer is a collection of textures that can be used as render targets.
+	//=================================================================================================
 	struct RHIFramebuffer
 	{
 		struct Attachment
 		{
 			RHITextureRef Texture = nullptr;
 			bool ReadOnly = false;
+			RHITextureSlice Slice{};
 
 			operator bool() const { return Texture != nullptr; }
 
 			bool operator==( const Attachment& a_Other ) const
 			{
-				return Texture == a_Other.Texture && ReadOnly == a_Other.ReadOnly;
+				return Texture == a_Other.Texture && ReadOnly == a_Other.ReadOnly && Slice == a_Other.Slice;
 			}
 		};
 
@@ -348,7 +384,7 @@ namespace Tridium {
 			return !ColorAttachments.Empty() || ( bool )DepthStencilAttachment;
 		}
 
-		auto& AddColorAttachment( RHITextureRef a_Texture, bool a_ReadOnly = false )
+		auto& AddColorAttachment( RHITextureRef a_Texture, bool a_ReadOnly = false, RHITextureSlice a_Slice = RHITextureSlice::EntireTexture() )
 		{
 			RHI_DEV_CHECK( ColorAttachments.Size() < ColorAttachments.MaxSize(),
 				"Maximum number of color attachments exceeded!" );
@@ -356,17 +392,17 @@ namespace Tridium {
 			RHI_DEV_CHECK( a_Texture, 
 				"Color attachment texture is null!" );
 
-			ColorAttachments.PushBack( Attachment{ a_Texture, a_ReadOnly } );
+			ColorAttachments.PushBack( Attachment{ a_Texture, a_ReadOnly, a_Slice } );
 
 			return *this;
 		}
 
-		auto& SetDepthStencilAttachment( RHITextureRef a_Texture, bool a_ReadOnly = false )
+		auto& SetDepthStencilAttachment( RHITextureRef a_Texture, bool a_ReadOnly = false, RHITextureSlice a_Slice = RHITextureSlice::EntireTexture() )
 		{
 			RHI_DEV_CHECK( a_Texture, 
 				"Depth stencil attachment texture is null!" );
 
-			DepthStencilAttachment = Attachment{ a_Texture, a_ReadOnly };
+			DepthStencilAttachment = Attachment{ a_Texture, a_ReadOnly, a_Slice };
 
 			return *this;
 		}

@@ -41,7 +41,7 @@ namespace Tridium::Vulkan {
 	class DynamicRHI_VulkanImpl final : public IDynamicRHI
 	{
 	public:
-		//==============================================           
+		//=============================================================================================           
 		// Core RHI function
 		bool Init( const RHIConfig& a_Config ) override;
 		bool Shutdown() override;
@@ -53,9 +53,9 @@ namespace Tridium::Vulkan {
 		void CollectGarbage() override {}
 		ERHInterfaceType GetRHIType() const override { return ERHInterfaceType::DirectX12; }
 		static constexpr ERHInterfaceType GetStaticRHIType() { return ERHInterfaceType::DirectX12; }
-		//==============================================
+		//=============================================================================================
 
-		//=====================================================
+		//=============================================================================================
 		// Resource creation
 		virtual RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) override { return nullptr; }
 		virtual RHIBufferRef CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data ) override {return nullptr;}
@@ -65,13 +65,13 @@ namespace Tridium::Vulkan {
 		virtual RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc ) override {return nullptr;}
 		virtual RHIBindingSetRef CreateBindingSet( const RHIBindingSetDesc& a_Desc ) override {return nullptr;}
 		virtual RHISwapChainRef CreateSwapChain( const RHISwapChainDesc& a_Desc ) override { return nullptr; }
-		//=====================================================
+		//=============================================================================================
 
-		//=====================================================
+		//=============================================================================================
 		// Miscellaneous
 		IRHISwapChain* GetSwapChain() const override { return nullptr; }
 		virtual GPUInfo GetGPUInfo() const override { return {}; }
-		//=====================================================
+		//=============================================================================================
 
 	protected:
 

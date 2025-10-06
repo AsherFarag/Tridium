@@ -86,7 +86,7 @@ namespace Tridium {
 		AssetRef<Texture> m_OpacityMap;
 
 		Color m_AlbedoColor = Color::White();
-		float m_MetallicIntensity = 1.0f;
+		float m_MetallicIntensity = 0.0f;
 		float m_RoughnessIntensity = 1.0f;
 		float m_EmissiveIntensity = 1.0f;
 

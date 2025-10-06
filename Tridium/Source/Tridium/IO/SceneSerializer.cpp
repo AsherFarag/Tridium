@@ -145,7 +145,7 @@ namespace Tridium::IO {
 
 				if ( a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle.IsValid() )
 				{
-					a_Data.GetSceneEnvironment().HDRI.EnvironmentMap = EnvironmentMap::Create( a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle );
+					a_Data.GetSceneEnvironment().HDRI.EnvironmentMap = EnvironmentMapOld::Create( a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle );
 				}
 			}
 		}

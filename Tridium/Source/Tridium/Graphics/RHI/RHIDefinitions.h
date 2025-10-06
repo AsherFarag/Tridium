@@ -7,39 +7,38 @@
 #include <Tridium/Core/Enum.h>
 #include <Tridium/Math/Math.h>
 
-// Helper macro to assert that the enum size is within the bounds of the number of bits.
-// This is undefined at the end of the file.
-#define RHI_ENUM_SIZE_ASSERT( _Enum ) \
-	static_assert( std::underlying_type_t<_Enum>(_Enum::COUNT) <= ( 1 << std::underlying_type_t<_Enum>(_Enum::NUM_BITS) ), #_Enum "::COUNT exceeds NUM_BITS" )
-
-// Define the log category for the RHI.
 DECLARE_LOG_CATEGORY( RHI );
-
-#ifndef RHI_ENABLE_DEV_WARNINGS
-	#define RHI_ENABLE_DEV_WARNINGS RHI_DEBUG_ENABLED
-#endif
-
-#if RHI_ENABLE_DEV_WARNINGS
-	#define RHI_DEV_WARN( _Condition, ... ) ASSERT( _Condition, "RHI Dev Error - {}", __VA_ARGS__ )
-#else
-	#define RHI_DEV_WARN( _Condition, ... ) do {} while ( false )
-#endif // RHI_ENABLE_DEV_WARNINGS
-
-#ifndef RHI_ENABLE_DEV_CHECKS
-	#define RHI_ENABLE_DEV_CHECKS RHI_DEBUG_ENABLED
-#endif
-
-#if RHI_ENABLE_DEV_CHECKS
-	#define RHI_DEV_CHECK( _Condition, ... ) ASSERT( _Condition, "RHI Dev Error - {}", __VA_ARGS__ )
-#else
-	#define RHI_DEV_CHECK( _Condition, ... ) do {} while ( false )
-#endif // RHI_ENABLE_DEV_CHECKS
 
 namespace Tridium {
 
-	//====================================
+	// Helper macro to assert that the enum size is within the bounds of the number of bits.
+	// This is undefined at the end of the file.
+	#define RHI_ENUM_SIZE_ASSERT( _Enum ) \
+		static_assert( std::underlying_type_t<_Enum>(_Enum::COUNT) <= ( 1 << std::underlying_type_t<_Enum>(_Enum::NUM_BITS) ), #_Enum "::COUNT exceeds NUM_BITS" )
+	
+	#ifndef RHI_ENABLE_DEV_WARNINGS
+		#define RHI_ENABLE_DEV_WARNINGS RHI_DEBUG_ENABLED
+	#endif
+	
+	#if RHI_ENABLE_DEV_WARNINGS
+		#define RHI_DEV_WARN( _Condition, ... ) ASSERT( _Condition, "RHI Dev Error - {}", __VA_ARGS__ )
+	#else
+		#define RHI_DEV_WARN( _Condition, ... ) do {} while ( false )
+	#endif // RHI_ENABLE_DEV_WARNINGS
+	
+	#ifndef RHI_ENABLE_DEV_CHECKS
+		#define RHI_ENABLE_DEV_CHECKS RHI_DEBUG_ENABLED
+	#endif
+	
+	#if RHI_ENABLE_DEV_CHECKS
+		#define RHI_DEV_CHECK( _Condition, ... ) ASSERT( _Condition, "RHI Dev Error - {}", __VA_ARGS__ )
+	#else
+		#define RHI_DEV_CHECK( _Condition, ... ) do {} while ( false )
+	#endif // RHI_ENABLE_DEV_CHECKS
+
+	//=================================================================================================
 	// Rendering Hardware Interface Type
-	//====================================
+	//=================================================================================================
 	enum class ERHInterfaceType : uint8_t
 	{
 		Null,
@@ -50,11 +49,9 @@ namespace Tridium {
 		Metal,
 	};
 
-
-
-	//=====================================================================
-	// RHI Object Type
-	//  The type of object that can be created with the RHI device.
+	//=================================================================================================
+	// RHI Object Type: The type of object that can be created with the RHI device.
+	//=================================================================================================
 	enum class ERHIObjectType : uint8_t
 	{
         Texture,
@@ -70,11 +67,9 @@ namespace Tridium {
 		Unknown = 0xFF,
 	};
 
-
-
-	//====================================
+	//=================================================================================================
 	// RHI Vendor
-	//====================================
+	//=================================================================================================
 	enum class EGPUVendorID : uint32_t
 	{
 		// The vendor ID is has not been queried and is currently unknown.
@@ -116,10 +111,9 @@ namespace Tridium {
 		}
 	}
 
-
-
-	//=======================================================
-	// RHI Shader Format
+	//=================================================================================================
+	// RHI Shader Format: The format of shader bytecode.
+	//=================================================================================================
 	enum class ERHIShaderFormat : uint8_t
 	{
 		Unknown = 0,
@@ -136,12 +130,9 @@ namespace Tridium {
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHIShaderFormat );
 
-
-
-	//=======================================================
-	// RHI Shader Model
-	//  The version of the shader model to use.
-	//  The higher the version, the more features are available.
+	//=================================================================================================
+	// RHI Shader Model: The version of the shader model to use.
+	//=================================================================================================
 	enum class ERHIShaderModel
 	{
 		Unknown,
@@ -158,11 +149,9 @@ namespace Tridium {
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHIShaderModel );
 
-
-
-	//======================================================================
-	// RHI Device Features
-	//  Describes the features supported by the RHI device.
+	//=================================================================================================
+	// RHI Device Features: Describes the features supported by the RHI device.
+	//=================================================================================================
 	struct RHIDeviceFeatures
 	{
 		// Will be set to false if specified in the RHI config.
@@ -190,9 +179,9 @@ namespace Tridium {
 		} Sampler{};
 	};
 
-	//====================================
-	// GPU Info
-	//  Static information about the GPU that is created on RHI initialisation.
+	//=================================================================================================
+	// GPU Info: Static information about the GPU that is created on RHI initialisation.
+	//=================================================================================================
 	struct GPUInfo
 	{
 		uint32_t VendorID = Cast<uint32_t>( EGPUVendorID::Invalid );
@@ -202,10 +191,9 @@ namespace Tridium {
 		RHIDeviceFeatures DeviceFeatures{};
 	};
 
-
-
-	//===========================
-	// RHI Viewport
+	//=================================================================================================
+	// RHI Viewport: Defines the area of the render target to draw to.
+	//=================================================================================================
 	struct RHIViewport
 	{
 		float X        = 0.0f; // Top-left corner of the viewport.
@@ -218,10 +206,9 @@ namespace Tridium {
 
 
 
-	//===========================
-	// RHI Scissor Rect
-	//  A rectangle used to clip rendering to a specific area.
-	//  For example, clearing a specific area of the screen.
+	//=================================================================================================
+	// RHI Scissor Rect: A rectangle used to clip rendering to a specific area.
+	//=================================================================================================
 	struct RHIScissorRect
 	{
 		uint16_t Left   = 0;
@@ -241,6 +228,9 @@ namespace Tridium {
 		}
 	};
 
+	//=================================================================================================
+	// RHI Viewport State: Represents a collection of viewports and scissors.
+	//=================================================================================================
 	struct RHIViewportState
 	{
 		InlineArray<RHIViewport, RHIConstants::MaxViewports> Viewports;
@@ -266,9 +256,9 @@ namespace Tridium {
 		}
 	};
 
-	//============================
-	// RHI Buffer Range
-	//  Represents a range of bytes in a buffer.
+	//=================================================================================================
+	// RHI Buffer Range: Represents a range of bytes in a buffer.
+	//=================================================================================================
 	struct RHIBufferRange
 	{
 		size_t Offset = 0; // Offset in bytes from the start of the buffer.
@@ -311,9 +301,9 @@ namespace Tridium {
 
 
 
-	//==========================================================
-	// RHI Buffer Type
-	//  Describes how the buffer is accessed.
+	//=================================================================================================
+	// RHI Buffer Type: Describes how the buffer is accessed and interpreted.
+	//=================================================================================================
 	enum class ERHIBufferType : uint8_t
 	{
 		Unknown = 0,
@@ -329,9 +319,9 @@ namespace Tridium {
 
 
 
-	//============================
-	// Box
-	//  Represents a 3D box in space.
+	//=================================================================================================
+	// Box: Represents a 3D box in space.
+	//=================================================================================================
 	template<typename _Scalar>
 	struct TBox
 	{
@@ -384,9 +374,9 @@ namespace Tridium {
 
 
 
-	//===========================
-	// RHI Clear Flags
-	//  Used to specify which buffers to clear.
+	//=================================================================================================
+	// RHI Clear Flags: Used to specify which buffers to clear.
+	//=================================================================================================
 	enum class ERHIClearFlags : uint8_t
 	{
 		Color        = 1 << 0,
@@ -399,10 +389,9 @@ namespace Tridium {
 	};
 	DEFINE_ENUM_BITMASK_OPERATORS( ERHIClearFlags );
 
-
-
-	//===========================
+	//=================================================================================================
 	// RHI Clear Value
+	//=================================================================================================
 	struct RHIClearValue
 	{
 		Color Color = Color::Black();
@@ -414,11 +403,9 @@ namespace Tridium {
 		constexpr auto& SetStencil( uint8_t a_Stencil ) noexcept { Stencil = a_Stencil; return *this; }
 	};
 
-
-
-	//======================================================================
-	// RHI Bind Flags
-	//  Describes how a resource (buffer or texture) can be used in the pipeline.
+	//=================================================================================================
+	// RHI Bind Flags: Describes how a resource (buffer or texture) can be used in the pipeline.
+	//=================================================================================================
 	enum class ERHIBindFlags : uint8_t
 	{
 		None = 0,
@@ -457,62 +444,60 @@ namespace Tridium {
 	};
 	DEFINE_ENUM_BITMASK_OPERATORS( ERHIBindFlags );
 
-
-
-	//======================================================================
-	// RHI Usage
-	//  Describes how the resource is used and how many times it will be updated.
-	enum class ERHIUsage : uint8_t
+	//=================================================================================================
+	// RHI Heap Type: The type of memory heap to allocate the resource from.
+	// In some backends (e.g. OpenGL), this is treated as a hint and may not be strictly enforced,
+	// though the RHI will always enforce the expected usage.
+	//=================================================================================================
+	enum class ERHIHeapType : uint8_t
 	{
-		// Default Resource
-		// Data can be written to via Write.
-		// Use for resources that are updated less than once per frame.
+		// Default for most resources, the memory is local to the GPU.
+		// Can be used in shaders: True.
 		// Update Scenario: < Once per frame.
+		// GPU: Fastest read/write access.
+		// CPU: No access.
 		// Equivalents:
 		//  - OpenGL: GL_STATIC_DRAW
 		//  - D3D11: D3D11_USAGE_DEFAULT
+		//  - D3D12: D3D12_HEAP_TYPE_DEFAULT
 		Default = 0,
 
-		// Static Resource
-		// Data can only be written during commit.
-		// Use for resources that don't change.
-		// Update Scenario: Never.
-		// Equivalents:
-		//  - OpenGL: GL_STATIC_DRAW
-		//  - D3D11: D3D11_USAGE_IMMUTABLE
-		Static,
-
-		// Dynamic Resource
-		// Data can be written to via Map/Unmap.
-		// Use for resources that can be updated multiple times in a frame.
+		// For resources that are updated frequently by the CPU (e.g., dynamic vertex buffers).
+		// Can be used in shaders: True.
 		// Update Scenario: >= Once per frame.
-		// Note: Textures with this flag should NOT be upated every frame.
+		// GPU: Slower read access.
+		// CPU: Write access.
 		// Equivalents:
 		//  - OpenGL: GL_DYNAMIC_DRAW
 		//  - D3D11: D3D11_USAGE_DYNAMIC
+		//  - D3D12: D3D12_HEAP_TYPE_DEFAULT
 		Dynamic,
+
+		// CPU accessible memory. Used for writing GPU memory into CPU readable memory.
+		// Can be used in shaders: False.
+		// GPU: Slow write access.
+		// CPU: Read access.
+		// Equivalents:
+		//  - OpenGL: GL_DYNAMIC_DRAW
+		//  - D3D11: D3D11_USAGE_STAGING
+		//  - D3D12: D3D12_HEAP_TYPE_READBACK
+		Staging,
+
+		// Immutable memory. Cannot be updated after creation.
+		// Can be used in shaders: True.
+		// Update Scenario: Never after creation.
+		// GPU: Fastest read access.
+		// CPU: No access.
+		// Equivalents:
+		//  - OpenGL: GL_STATIC_DRAW
+		//  - D3D11: D3D11_USAGE_IMMUTABLE
+		//  - D3D12: D3D12_HEAP_TYPE_DEFAULT
+		Immutable
 	};
-	//======================================================================
 
-
-
-	//=====================================================================
-	// RHI CPU Access
-	//  Specifies if and how the CPU can access an RHI resource.
-	enum class ERHICpuAccess : uint8_t
-	{
-		None = 0,		          // Inaccessible to CPU
-		Read = 1 << 0,            // Can be mapped for reading by the CPU
-		Write = 1 << 1,           // Can be mapped for writing by the CPU
-		ReadWrite = Read | Write, // Can be mapped for reading and writing by the CPU
-	};
-	//=====================================================================
-
-
-
-	//=====================================================================
-	// RHI Resource State
-	//  The state of a resource indicating how it is used.
+	//=================================================================================================
+	// RHI Resource State: The state of a resource indicating how it is used.
+	//=================================================================================================
 	enum class ERHIResourceStates : uint16_t
 	{
 		// Common states            // D3D12_RESOURCE_STATE_                                | VK_IMAGE_LAYOUT_                  | VK_ACCESS_            
@@ -538,36 +523,10 @@ namespace Tridium {
 		ConstantBuffer = 1 << 12,   // VERTEX_AND_CONSTANT_BUFFER                           | n/a                               | CONSTANT_BUFFER_READ_BIT
 	};
 	DEFINE_ENUM_BITMASK_OPERATORS( ERHIResourceStates );
-	//=====================================================================
 
-
-
-	//=====================================================================
-	// RHI State Transition Mode
-	//  Specifies how an RHI command should handle the resource state,
-	//  if the command requires a spcific state.
-	enum class ERHIStateTransition : uint8_t
-	{
-		// The resource state is unknown to the RHI. 
-		// All state transitions are expected to be handled outside of the RHI.
-		None = 0,
-
-		// Perform a state transition on the resource to the state required by the RHI command.
-		// NOTE: Automatic state transitions are NOT thread-safe.
-		//       If the resource is used in multiple threads, use 'None' or 'Validate' instead.
-		Transition,
-
-		// Performs no state transitions on the resource, 
-		// but does verify that the resource is in the correct state.
-		Validate,
-	};
-	//=====================================================================
-
-
-
-	//=====================================================================
-	// RHI Descriptor Heap Type
-	//  The type of resource that the allocator is managing.
+	//=================================================================================================
+	// RHI Descriptor Heap Type: The type of resource that the allocator is managing.
+	//=================================================================================================
 	enum class ERHIDescriptorHeapType : uint8_t
 	{
 		Unknown = 0,
@@ -589,11 +548,9 @@ namespace Tridium {
 		}
 	}
 
-
-
-	//=====================================================================
-	// RHI Descriptor Handle
-	//  A handle to a descriptor in a descriptor heap.
+	//=================================================================================================
+	// RHI Descriptor Handle: A handle to a descriptor in a descriptor heap.
+	//=================================================================================================
 	struct RHIDescriptorHandle
 	{
 		const ERHIDescriptorHeapType Type;
@@ -605,11 +562,10 @@ namespace Tridium {
 		explicit constexpr RHIDescriptorHandle() : Type( ERHIDescriptorHeapType::Unknown ), Index( 0xFFFFFFFFu ) {}
 	};
 
-
-
-	//======================================================================
-	// RHI Command Queue Type
-	//  Used to specify the type of command queue a command list will be submitted to.
+	//=================================================================================================
+	// RHI Command Queue Type:
+	// Used to specify the type of command queue a command list will be submitted to.
+	//=================================================================================================
 	enum class ERHICommandQueueType : uint8_t
 	{
 		Graphics,
@@ -618,28 +574,9 @@ namespace Tridium {
 		COUNT
 	};
 
-
-
-	//=====================================================================
-	// ERHIMappingMode
-	//  The mode to use when mapping a resource.
-	//=====================================================================
-	enum class ERHIMappingMode : uint8_t
-	{
-		ReadOnly,
-		WriteOnly,
-		ReadWrite,
-		COUNT,
-		NUM_BITS = 2,
-		Default = ReadWrite,
-	};
-	RHI_ENUM_SIZE_ASSERT( ERHIMappingMode );
-
-
-
-	//===========================
-	// RHI Shader Type
-	//===========================
+	//=================================================================================================
+	// RHI Shader Type: The type of shader stage.
+	//=================================================================================================
 	enum class ERHIShaderType : uint8_t
 	{
 		Unknown = 0,
@@ -656,9 +593,9 @@ namespace Tridium {
 
 
 
-	//=======================================================
-	// RHI Shader Visibility
-	//  Defines the shader stages that a shader binding is visible to.
+	//=================================================================================================
+	// RHI Shader Visibility: Defines the shader stages that a shader binding is visible to.
+	//=================================================================================================
 	enum class ERHIShaderVisibility : uint8_t
 	{
 		Vertex,
@@ -668,19 +605,18 @@ namespace Tridium {
 		Pixel,
 		All
 	};
-	//=======================================================
 
-
-
-	//===========================
-	// Sampler Filter
-	//  Specifies the filtering method for Minification(Min), Magnification(Mag), and Mipmapping(Mip).
-	//  The following filter types are supported:
-	//		- Point: Nearest neighbor filtering.
-	//		- Linear: Bilinear filtering.
-	//		- Anisotropic: Anisotropic filtering.
-	//  If a filter is marked as "Comparison", it will use a function to compare new sampled data against existing sampled data.
-	//  This enum matches D3D12_FILTER.
+	//=================================================================================================
+	// RHI Sampler Filter:
+	// Specifies the filtering method for Minification(Min), Magnification(Mag), and Mipmapping(Mip).
+	// The following filter types are supported:
+	//	- Point: Nearest neighbor filtering.
+	//	- Linear: Bilinear filtering.
+	//	- Anisotropic: Anisotropic filtering.
+	// If a filter is marked as "Comparison",
+	// it will use a function to compare new sampled data against existing sampled data.
+	// This enum matches D3D12_FILTER.
+	//=================================================================================================
 	enum class ERHISamplerFilter : uint8_t
 	{
 		Unknown = 0,
@@ -714,11 +650,9 @@ namespace Tridium {
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHISamplerFilter );
 
-
-
-	//===========================
-	// Sampler Address Mode
-	//===========================
+	//=================================================================================================
+	// Sampler Address Mode: Specifies how texture coordinates outside the [0.0, 1.0] range are handled.
+	//=================================================================================================
 	enum class ERHISamplerAddressMode : uint8_t
 	{
 		Unknown = 0,
@@ -734,10 +668,9 @@ namespace Tridium {
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHISamplerAddressMode );
 
-
-
-	//===========================
-	// RHI Comparison Functions
+	//=================================================================================================
+	// RHI Comparison Functions: Used in depth/stencil tests and sampler comparisons.
+	//=================================================================================================
 	enum class ERHIComparison : uint8_t
 	{
 		Never,         // False
@@ -754,11 +687,9 @@ namespace Tridium {
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHIComparison );
 
-
-
-	//===========================
-	// RHI Fill Mode
-	//  Defines how polygons are filled during rasterization.
+	//=================================================================================================
+	// RHI Fill Mode: Defines how polygons are filled during rasterization.
+	//=================================================================================================
 	enum class ERHIFillMode : uint8_t
 	{
 		Point,
@@ -770,11 +701,9 @@ namespace Tridium {
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHIFillMode );
 
-
-
-	//===========================
-	// RHI Cull Mode
-	//  Defines how polygons are culled during rasterization.
+	//=================================================================================================
+	// RHI Cull Mode: Defines how polygons are culled during rasterization.
+	//=================================================================================================
 	enum class ERHICullMode : uint8_t
 	{
 		None,
@@ -786,11 +715,9 @@ namespace Tridium {
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHICullMode );
 
-
-
-	//===========================
-	// RHI Depth Clip Mode
-	//  Defines how depth clipping is handled during rasterization.
+	//=================================================================================================
+	// RHI Depth Clip Mode: Defines how depth clipping is handled during rasterization.
+	//=================================================================================================
 	enum class ERHIDepthClipMode : uint8_t
 	{
 		Clip,
@@ -801,11 +728,9 @@ namespace Tridium {
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHIDepthClipMode );
 
-
-
-	//===========================
-	// RHI Stencil Operation
-	//  Defines how stencil values are modified during stencil testing.
+	//=================================================================================================
+	// RHI Stencil Operation: Defines how stencil values are modified during stencil testing.
+	//=================================================================================================
 	enum class ERHIStencilOp : uint8_t
 	{
 		Keep,
@@ -820,11 +745,9 @@ namespace Tridium {
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHIStencilOp );
 
-
-
-	//===========================
-	// RHI Blend Factor
-	//  Defines how colors are blended during rendering.
+	//=================================================================================================
+	// RHI Blend Factor: Defines how colors are blended during rendering.
+	//=================================================================================================
 	enum class ERHIBlendFactor : uint8_t
 	{
 		Zero,
@@ -844,11 +767,9 @@ namespace Tridium {
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHIBlendFactor );
 
-
-
-	//===========================
-	// RHI Blend Operation
-	//  Defines how colors are combined during blending.
+	//=================================================================================================
+	// RHI Blend Operation: Defines how colors are combined during blending.
+	//=================================================================================================
 	enum class ERHIBlendOp : uint8_t
 	{
 		Add,
@@ -862,11 +783,9 @@ namespace Tridium {
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHIBlendOp );
 
-
-
-	//===========================
-	// RHI Color Mask
-	//  Defines which color channels are written to.
+	//=================================================================================================
+	// RHI Color Mask: Defines which color channels are written to.
+	//=================================================================================================
 	enum class ERHIColorMask : uint8_t
 	{
 		None  = 0x00,
@@ -882,9 +801,10 @@ namespace Tridium {
 
 
 
-	//===========================
-	// RHI Logic Operation
-	//  Specifies a logical operation that is applied to the source and destination colors.
+	//=================================================================================================
+	// RHI Logic Operation: 
+	// Specifies a logical operation that is applied to the source and destination colors.
+	//=================================================================================================
 	enum class ERHILogicOp : uint8_t
 	{
 		// 's' represents the source color (the color being written),
@@ -912,33 +832,27 @@ namespace Tridium {
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHILogicOp );
 
-
-
-	//==========================================================
-	// RHI Fence Value
-	//  A monotonically increasing value associated with fence signaling.
+	//=================================================================================================
+	// RHI Fence Value: A monotonically increasing value associated with fence signaling.
+	//=================================================================================================
 	using RHIFenceValue = uint64_t;
-	//==========================================================
 
 
 
-	//==========================================================
-	// RHI Texture Alignment
-	//  Each Graphics API can have different defaults for texture alignment.
-	//  For example, DirectX and Metal align their textures from the top-left corner.
-	//  OpenGL and other API's align their textures from the bottom-left corner.
-	//==========================================================
+	//=================================================================================================
+	// RHI Texture Alignment: Each Graphics API can have different defaults for texture alignment.
+	// For example, DirectX and Metal align their textures from the top-left corner.
+	// OpenGL and other API's align their textures from the bottom-left corner.
+	//=================================================================================================
 	enum class ERHITextureAlignment : uint8_t
 	{
 		TopLeft,
 		BottomLeft,
 	};
 
-
-
-	//==========================================================
-	// RHI Texture Dimension
-	//==========================================================
+	//=================================================================================================
+	// RHI Texture Dimension: Describes the dimensionality of a texture resource.
+	//=================================================================================================
 	enum class ERHITextureDimension : uint8_t
 	{
 		Unknown,
@@ -954,12 +868,24 @@ namespace Tridium {
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHITextureDimension );
 
+	//=================================================================================================
+	// RHI Cube Face Order: Defines the order of faces in a cubemap texture.
+	//=================================================================================================
+	enum class ERHICubeFaceOrder : uint8_t
+	{
+		Right = 0,  // +X
+		Left,       // -X
+		Top,        // +Y
+		Bottom,     // -Y
+		Front,      // +Z
+		Back,       // -Z
+		COUNT
+	};
 
-
-	//==============================================
-	// RHI Binding Type
-	//  Describes the type of shader resource bound to a shader stage.
-	//  Maps to concepts in D3D12 Root Signatures and Vulkan Descriptor Sets.
+	//=================================================================================================
+	// RHI Binding Type: Describes the type of shader resource bound to a shader stage.
+	// Maps to concepts in D3D12 Root Signatures and Vulkan Descriptor Sets.
+	//=================================================================================================
 	enum class ERHIBindingType : uint8_t
 	{
 		Unknown = 0,
@@ -970,25 +896,22 @@ namespace Tridium {
 		// A constant buffer resource (Uniform Buffer in Vulkan).
 		ConstantBuffer,   // (DX12: CBV) / (Vulkan: Uniform Buffer)
 
-		// A read-only structured or raw buffer.
-		StructuredBuffer, // (DX12: SRV) / (Vulkan: Storage Buffer w/ read-only access)
-
 		// A read/write structured or raw buffer.
 		StorageBuffer,    // (DX12: UAV) / (Vulkan: Storage Buffer)
 
-		// A read-only texture.
-		Texture,          // (DX12: SRV) / (Vulkan: Sampled Image)
-
 		// A read/write texture.
 		StorageTexture,   // (DX12: UAV) / (Vulkan: Storage Image)
+
+		// A read-only structured or raw buffer.
+		StructuredBuffer, // (DX12: SRV) / (Vulkan: Storage Buffer w/ read-only access)
+
+		// A read-only texture.
+		Texture,          // (DX12: SRV) / (Vulkan: Sampled Image)
 	};
 
-
-
-	//==========================================================
-	// RHI Format
-	//  Describes the format of each pixel/element in a texture or buffer.
-	//==========================================================
+	//=================================================================================================
+	// RHI Format: Describes the format of each pixel/element in a texture or buffer.
+	//=================================================================================================
 	enum class ERHIFormat : uint8_t
 	{
 		Unknown = 0, 
@@ -1085,12 +1008,10 @@ namespace Tridium {
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHIFormat );
 
-
-
-	//==========================================================
-	// RHI Format Kind
-	//  The 'kind' of format each component of the format is.
-	//  E.g. RGBA32I format kind is Int.
+	//=================================================================================================
+	// RHI Format Kind: The 'kind' of format each component of the format is.
+	// E.g. RGBA32I format kind is Int.
+	//=================================================================================================
 	enum class ERHIFormatKind : uint8_t
 	{
 		Int,
@@ -1099,11 +1020,9 @@ namespace Tridium {
 		DepthStencil
 	};
 
-
-
-	//==========================================================
-	// RHI Format Info
-	//  Metadata about an RHI format.
+	//=================================================================================================
+	// RHI Format Info: Metadata about an RHI format.
+	//=================================================================================================
 	struct RHIFormatInfo
 	{
 		StringView Name;
@@ -1124,7 +1043,12 @@ namespace Tridium {
 		constexpr Color ConvertToColor( Span<const uint8_t> a_Data ) const noexcept 
 		{
 			static_assert(size_t( ERHIFormat::COUNT ) == 43);
-			const int bytesPerChannel = Bytes() / ((int)HasRed + (int)HasGreen + (int)HasBlue + (int)HasAlpha);
+
+			const int numChannels = (int)HasRed + (int)HasGreen + (int)HasBlue + (int)HasAlpha;
+			if ( numChannels == 0 )
+				return Color{ 0,0,0,1 }; // depth/stencil not handled here
+
+			const int bytesPerChannel = Bytes() / numChannels;
 			Color color{};
 			uint32_t offset = 0;
 
@@ -1185,34 +1109,33 @@ namespace Tridium {
 					return 0;
 				};
 
-			auto convertChannel = [&]( bool present ) -> float 
-				{
-					if ( !present )
-						return (Kind == ERHIFormatKind::Float || Kind == ERHIFormatKind::Int) ? 0.0f : 1.0f;
+			auto convertChannel = [&]( bool present ) -> float
+			{
+				if ( !present )
+					return ( Kind == ERHIFormatKind::Float || Kind == ERHIFormatKind::Int ) ? 0.0f : 1.0f;
 
-					switch ( Kind ) 
+				switch ( Kind )
+				{
+					case ERHIFormatKind::Float: return readFloat( bytesPerChannel );
+					case ERHIFormatKind::Int:   return (float)readInt( bytesPerChannel );
+					case ERHIFormatKind::Normalized:
 					{
-						case ERHIFormatKind::Float:
+						if ( IsSigned )
 						{
-							return readFloat( bytesPerChannel );
+							int32_t v = readInt( bytesPerChannel );
+							int maxPos = ( 1 << ( ( bytesPerChannel * 8 ) - 1 ) ) - 1;
+							return std::clamp( (float)v / (float)maxPos, -1.0f, 1.0f );
 						}
-						case ERHIFormatKind::Int:
+						else
 						{
-							return Cast<float>( readInt( bytesPerChannel ) );
-						}
-						case ERHIFormatKind::Normalized:
-						{
-							if ( IsSigned )
-								return Cast<float>( readInt( bytesPerChannel ) ) / ((1 << ((bytesPerChannel * 8) - 1)) - 1);
-							else
-								return Cast<float>( readUInt( bytesPerChannel ) ) / ((1 << (bytesPerChannel * 8)) - 1);
-						}
-						default:
-						{
-							return 0.0f;
+							uint32_t v = readUInt( bytesPerChannel );
+							int maxVal = ( 1 << ( bytesPerChannel * 8 ) ) - 1;
+							return (float)v / (float)maxVal;
 						}
 					}
-				};
+					default: return 0.0f;
+				}
+			};
 
 			color.r = convertChannel( HasRed );
 			color.g = convertChannel( HasGreen );
@@ -1222,9 +1145,122 @@ namespace Tridium {
 			return color;
 		}
 
-	};
-	//===========================================================
+		inline void ConvertFromColor( Span<uint8_t> a_Data, const Color& a_Color ) const noexcept
+		{
+			static_assert( size_t( ERHIFormat::COUNT ) == 43 );
 
+			const int numChannels = (int)HasRed + (int)HasGreen + (int)HasBlue + (int)HasAlpha;
+			if ( numChannels == 0 )
+				return; // Depth/stencil only format not handled here
+
+			const int bytesPerChannel = Bytes() / numChannels;
+			uint32_t offset = 0;
+
+			// --- Helpers ---
+			auto writeFloat = [&]( float value, int bytes )
+			{
+				if ( bytes != 4 ) return; // only 32-bit float supported
+				std::memcpy( &a_Data[offset], &value, 4 );
+				offset += 4;
+			};
+
+			auto writeInt = [&]( int32_t value, int bytes )
+			{
+				switch ( bytes )
+				{
+					case 1:
+						a_Data[offset++] = Cast<uint8_t>( value );
+						break;
+					case 2:
+					{
+						int16_t v = Cast<int16_t>( value );
+						std::memcpy( &a_Data[offset], &v, 2 );
+						offset += 2;
+						break;
+					}
+					case 4:
+						std::memcpy( &a_Data[offset], &value, 4 );
+						offset += 4;
+						break;
+				}
+			};
+
+			auto writeUInt = [&]( uint32_t value, int bytes )
+			{
+				switch ( bytes )
+				{
+					case 1:
+						a_Data[offset++] = Cast<uint8_t>( value );
+						break;
+					case 2:
+					{
+						uint16_t v = Cast<uint16_t>( value );
+						std::memcpy( &a_Data[offset], &v, 2 );
+						offset += 2;
+						break;
+					}
+					case 4:
+						std::memcpy( &a_Data[offset], &value, 4 );
+						offset += 4;
+						break;
+				}
+			};
+
+			auto convertChannel = [&]( bool present, float channelValue )
+			{
+				if ( !present ) return;
+
+				switch ( Kind )
+				{
+					case ERHIFormatKind::Float:
+					{
+						writeFloat( channelValue, bytesPerChannel );
+						break;
+					}
+					case ERHIFormatKind::Int:
+					{
+						writeInt( Cast<int32_t>( channelValue ), bytesPerChannel );
+						break;
+					}
+					case ERHIFormatKind::Normalized:
+					{
+						if ( IsSigned )
+						{
+							// clamp [-1, 1]
+							float clamped = std::clamp( channelValue, -1.0f, 1.0f );
+							int maxPos = ( 1 << ( ( bytesPerChannel * 8 ) - 1 ) ) - 1;
+							int minNeg = -( 1 << ( ( bytesPerChannel * 8 ) - 1 ) );
+							int32_t val = ( clamped >= 0.0f )
+								? Cast<int32_t>( clamped * maxPos )
+								: Cast<int32_t>( clamped * -minNeg );
+							writeInt( val, bytesPerChannel );
+						}
+						else
+						{
+							// clamp [0, 1]
+							float clamped = std::clamp( channelValue, 0.0f, 1.0f );
+							uint32_t maxVal = ( 1u << ( bytesPerChannel * 8 ) ) - 1u;
+							uint32_t val = Cast<uint32_t>( clamped * maxVal );
+							writeUInt( val, bytesPerChannel );
+						}
+						break;
+					}
+					default:
+						break;
+				}
+			};
+
+			// --- Write channels in RGBA order ---
+			convertChannel( HasRed, a_Color.r );
+			convertChannel( HasGreen, a_Color.g );
+			convertChannel( HasBlue, a_Color.b );
+			convertChannel( HasAlpha, a_Color.a );
+		}
+
+		constexpr uint32_t NumChannels() const noexcept { return (uint32_t)HasRed + (uint32_t)HasGreen + (uint32_t)HasBlue + (uint32_t)HasAlpha; }
+	};
+
+	//=================================================================================================
 	// Returns the RHIFormatInfo for a given format.
 	static constexpr const RHIFormatInfo& GetRHIFormatInfo( ERHIFormat a_Format )
 	{

@@ -3,15 +3,15 @@
 
 #if USE_ASSET_IMPORTERS
 
+#include <Tridium/Asset/EnvironmentMapAsset.h>
+
 namespace Tridium {
 
-	TODO( "When prefabs are supported, I want this importer to then create a prefab asset that retains the original scene hierarchy." );
-
 	//=============================================================================================
-	// Model Importer: Imports 3D model files (e.g. fbx, obj, gltf) and breaks them down into
-	// multiple asset types (StaticMesh, Material, Texture, Prefab).
+	// Environment Map Importer: Imports equirectangular environment maps (hdr, png, jpg) and
+	// converts them into cubemaps for use in the engine.
 	//=============================================================================================
-	DEFINE_ASSET_IMPORTER( ModelImporter )
+	DEFINE_ASSET_IMPORTER( EnvironmentMapImporter )
 	{
 	public:
 
@@ -19,13 +19,13 @@ namespace Tridium {
 		VersionID Version() const override { return 0; }
 
 		//=============================================================================================
-		Array<StringView> SupportedExtensions() const override { return { "fbx", "obj", "gltf" }; }
+		Array<StringView> SupportedExtensions() const override { return { "hdr"/*, "png", "jpg", "jpeg"*/ }; }
 
 		//=============================================================================================
 		bool OnImport( AssetImportContext& a_Context ) override;
 
 	};
 
-}
+} // namespace Tridium
 
-#endif
+#endif // USE_ASSET_IMPORTERS

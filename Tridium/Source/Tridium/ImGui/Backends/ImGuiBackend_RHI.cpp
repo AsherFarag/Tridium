@@ -180,8 +180,7 @@ namespace Tridium {
             auto desc = RHIBufferDesc{}
 				.SetName( a_IsIndexBuffer ? "ImGui Index Buffer" : "ImGui Vertex Buffer" )
                 .SetSize( a_ReallocSize )
-                .SetUsage( ERHIUsage::Dynamic )
-                .SetCpuAccess( ERHICpuAccess::None ) TODO( "Should be true but im lazy" )
+                .SetHeapType( ERHIHeapType::Dynamic )
 				.SetBindFlags( a_IsIndexBuffer ? ERHIBindFlags::IndexBuffer : ERHIBindFlags::VertexBuffer );
 
             if ( a_IsIndexBuffer )
@@ -392,8 +391,7 @@ namespace Tridium {
             .SetMips( 1 )
             .SetFormat( ERHIFormat::RGBA8_UNORM )
             .SetBindFlags( ERHIBindFlags::ShaderResource )
-            .SetUsage( ERHIUsage::Static )
-            .SetCpuAccess( ERHICpuAccess::None )
+			.SetHeapType( ERHIHeapType::Default )
             .SetName( "ImGuiFontAtlas" );
 
         auto subResource = RHITextureSubresourceData{}
@@ -453,8 +451,8 @@ namespace Tridium {
         const auto bindingLayoutDesc = RHIBindingLayoutDesc{}
             .SetVisibility( ERHIShaderVisibility::All )
             .SetName( "ImGui Binding Layout" )
-			.AddBinding( "inlinedConstants"_H, RHIShaderBinding{}.AsInlinedConstants( sizeof( InlinedConstants ) ) )
-            .AddBinding( "Texture"_H, RHIShaderBinding{}.AsTexture( 0 ) );
+			.AddBinding( "inlinedConstants"_H, RHIShaderBinding::InlinedConstants( sizeof( InlinedConstants ) ) )
+            .AddBinding( "Texture"_H, RHIShaderBinding::Texture( 0, ERHITextureDimension::Texture2D ) );
 
         bd->BindingLayout = bd->DynamicRHI->CreateBindingLayout( bindingLayoutDesc );
 

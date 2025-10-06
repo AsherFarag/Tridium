@@ -32,9 +32,16 @@ namespace Tridium {
 		static bool RemoveTexture( AssetID a_AssetID, RenderResourceID a_VariantID = InvalidRenderResourceID );
 
 		//=============================================================================================
+		static RenderResourceEnvironmentMap GetEnvironmentMap( AssetID a_AssetID, RenderResourceID a_VariantID = 0 );
+		static RenderResourceEnvironmentMap GetOrCreateEnvironmentMap( const AssetRef<class EnvironmentMap>& a_Asset, RenderResourceID a_VariantID = 0 );
+		static bool AddEnvironmentMap( const RenderResourceEnvironmentMap& a_EnvMap, bool a_ForceReplace = false );
+		static bool RemoveEnvironmentMap( AssetID a_AssetID, RenderResourceID a_VariantID = InvalidRenderResourceID );
+
+		//=============================================================================================
 		static const RHITextureRef& GetWhiteTexture2D();
 		static const RHITextureRef& GetBlackTexture2D();
 		static const RHITextureRef& GetNormalTexture2D();
+		static const RHITextureRef& GetBRDFLUTTexture2D();
 
 	private:
 

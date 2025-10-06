@@ -17,7 +17,8 @@ namespace Tridium {
 	{
 		Vector3 Position;
 		Vector3 Normal;
-		Vector4 Tangent;
+		Vector3 Tangent;
+		Vector3 Bitangent;
 		Vector2 TexCoord;
 	};
 

@@ -32,21 +32,21 @@ namespace Tridium::D3D12 {
 		const D3D12_RESOURCE_DESC d3d12Desc = GetD3D12ResourceDesc();
 		D3D12MA::ALLOCATION_DESC allocDesc{};
 		
-		switch ( m_Desc.CpuAccess )
+		switch ( m_Desc.HeapType )
 		{
-		case ERHICpuAccess::None:
-			allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
-			initialState = D3D12_RESOURCE_STATE_COMMON;
-			break;
-		case ERHICpuAccess::Read:
-			allocDesc.HeapType = D3D12_HEAP_TYPE_READBACK;
-			initialState = D3D12_RESOURCE_STATE_COPY_DEST;
-			break;
-		default:
-		case ERHICpuAccess::Write:
-			allocDesc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
-			initialState = D3D12_RESOURCE_STATE_GENERIC_READ;
-			break;
+			case ERHIHeapType::Dynamic: // We just treat dynamic as default for now
+			case ERHIHeapType::Immutable:
+			case ERHIHeapType::Default:
+				allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+				initialState = D3D12_RESOURCE_STATE_COMMON;
+				break;
+			case ERHIHeapType::Staging:
+				allocDesc.HeapType = D3D12_HEAP_TYPE_READBACK;
+				initialState = D3D12_RESOURCE_STATE_COPY_DEST;
+				break;
+			default:
+				RHI_DEV_CHECK( false, "Unsupported heap type for buffer '{}'", m_Desc.Name );
+				return;
 		}
 
 		// Create the texture
@@ -59,7 +59,12 @@ namespace Tridium::D3D12 {
 		D3D12_SET_DEBUG_NAME( ManagedBuffer.Resource(), m_Desc.Name, L"Unnamed Buffer");
 
 		if ( a_Data.size() == 0 )
+		{
 			return; // No data to upload
+		}
+
+		RHI_DEV_CHECK( m_Desc.HeapType != ERHIHeapType::Staging,
+					   "Cannot upload initial data to staging buffer '{}'", m_Desc.Name );
 
 		// Create the upload buffer
 		D3D12::ManagedResource uploadBuffer{};
@@ -123,6 +128,32 @@ namespace Tridium::D3D12 {
 		IRHICommandList* cmdListPtr = cmdList;
 		const RHIFenceValue fence = Device()->ExecuteCommandLists( Span{ &cmdListPtr, 1 }, cmdListPtr->Desc().QueueType );
 		Device()->WaitForFence( cmdListPtr->Desc().QueueType, fence );
+	}
+
+	const void* RHIBuffer_D3D12Impl::Map()
+	{
+		RHI_DEV_CHECK( Desc().HeapType == ERHIHeapType::Staging,
+					   "Buffer '{}' must be created with staging heap to be mappable", Desc().Name );
+
+		D3D12_RANGE range = { 0, Desc().Size };
+		void* mappedBuffer;
+		const HRESULT hr = ManagedBuffer.Resource()->Map( 0, &range, &mappedBuffer );
+
+		if ( FAILED( hr ) )
+		{
+			return nullptr;
+		}
+
+		return mappedBuffer;
+	}
+
+	void RHIBuffer_D3D12Impl::Unmap()
+	{
+		RHI_DEV_CHECK( Desc().HeapType == ERHIHeapType::Staging,
+					   "Buffer '{}' must be created with staging heap to be unmapped", Desc().Name );
+
+		D3D12_RANGE range = { 0, Desc().Size };
+		ManagedBuffer.Resource()->Unmap( 0, &range );
 	}
 
 	D3D12_RESOURCE_DESC RHIBuffer_D3D12Impl::GetD3D12ResourceDesc() const

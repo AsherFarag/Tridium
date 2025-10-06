@@ -13,6 +13,10 @@
 #include <Tridium/Reflection/FieldReflection.h>
 #include <Tridium/Asset/AssetDatabase.h>
 #include <Tridium/Asset/Importers/ModelImporter.h>
+#include <iostream>
+#include <fstream>
+
+#include <stb_image.h>
 
 namespace Tridium {
 

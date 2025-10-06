@@ -169,6 +169,16 @@ namespace Tridium {
 		void ResetFrame();
 
 		//=============================================================================================
+		// Update an imported texture resource to the new resource.
+		// Returns false if the ID is invalid or not an imported resource.
+		bool UpdateTexture( RenderPassTextureID a_ID, const RHITextureRef& a_Resource );
+
+		//=============================================================================================
+		// Update an imported buffer resource to the new resource.
+		// Returns false if the ID is invalid or not an imported resource.
+		bool UpdateBuffer( RenderPassBufferID a_ID, const RHIBufferRef& a_Resource );
+
+		//=============================================================================================
 		const RHITextureRef& GetTexture( const RenderPassTextureID a_ID ) const;
 		const RHIBufferRef& GetBuffer( const RenderPassBufferID a_ID ) const;
 
@@ -351,6 +361,32 @@ namespace Tridium {
 	//=================================================================================================
 	// RenderGraph implementation
 	//=================================================================================================
+
+	inline bool RenderGraph::UpdateTexture( RenderPassTextureID a_ID, const RHITextureRef& a_Resource )
+	{
+		if ( !m_Textures.IsValidIndex( Cast<size_t>( a_ID ) ) )
+			return false;
+
+		TextureNode& node = m_Textures[Cast<size_t>( a_ID )];
+		if ( !node.Imported )
+			return false;
+
+		node.Resource = a_Resource;
+		return true;
+	}
+
+	inline bool RenderGraph::UpdateBuffer( RenderPassBufferID a_ID, const RHIBufferRef& a_Resource )
+	{
+		if ( !m_Buffers.IsValidIndex( Cast<size_t>( a_ID ) ) )
+			return false;
+
+		BufferNode& node = m_Buffers[Cast<size_t>( a_ID )];
+		if ( !node.Imported )
+			return false;
+
+		node.Resource = a_Resource;
+		return true;
+	}
 
 	inline const RHITextureRef& RenderGraph::GetTexture( const RenderPassTextureID a_ID ) const
 	{

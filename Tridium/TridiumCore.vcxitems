@@ -13,7 +13,4 @@
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\Renderer\PipelineStateCache.h" />
-  </ItemGroup>
 </Project>

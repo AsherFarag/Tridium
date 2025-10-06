@@ -550,67 +550,91 @@ namespace Tridium::D3D12 {
 
 #pragma region D3D12 RHI IMPLEMENTATIONS
 
-	//======================================================================
-	// TEXTURE IMPLEMENTATION
-	//=======================================================================
-
+	//=================================================================================================
+	// RHITexture_D3D12Impl
+	//=================================================================================================
 	class RHITexture_D3D12Impl : public IRHITexture
 	{
-		RHI_OBJECT_IMPLEMENTATION_BODY( RHITexture_D3D12Impl, D3D12, ERHInterfaceType::DirectX12 );
+	public:
 
+		//=============================================================================================
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHITexture_D3D12Impl, D3D12, ERHInterfaceType::DirectX12 );
 		RHITexture_D3D12Impl( IDynamicRHI* a_Device, const RHITextureDesc & a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData = {} );
 		~RHITexture_D3D12Impl() override { Release(); }
 
+		//=============================================================================================
 		virtual bool Release() override;
 		virtual const void* NativePtr() const override { return Texture.Resource(); }
 		virtual bool Valid() const override { return Texture.Valid(); }
+		virtual RHITextureSubresourceData MapSubresource( const RHITextureSlice& a_Slice ) override;
+		virtual void UnmapSubresource( const RHITextureSlice& a_Slice ) override;
 
+		//=============================================================================================
 		// D3D12 specific functions
 		[[nodiscard]] D3D12_RESOURCE_DESC GetD3D12ResourceDesc() const;
 		[[nodiscard]] D3D12_SHADER_RESOURCE_VIEW_DESC CreateSRVDesc( ERHIFormat a_Format, ERHITextureDimension a_Dimension, RHITextureSubresourceSet a_Subresources );
+		[[nodiscard]] D3D12_TEXTURE_COPY_LOCATION CreateCopyLocation( const RHITextureSlice& a_Slice ) const;
 
+		//=============================================================================================
 		ManagedResource Texture{};
+
+	protected:
+
+		//=============================================================================================
+		bool CommitAsStagingTexture();
+
+		Array<uint64_t> m_SubresourceOffsets;
+		D3D12_PLACED_SUBRESOURCE_FOOTPRINT m_MappedFootprint;
 	};
 
-	//======================================================================
-	// BUFFER IMPLEMENTATION
-	//=======================================================================
-
+	//=================================================================================================
+	// RHIBuffer_D3D12Impl
+	//=================================================================================================
 	class RHIBuffer_D3D12Impl : public IRHIBuffer
 	{
 	public:
-		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBuffer_D3D12Impl, D3D12, ERHInterfaceType::DirectX12 );
 
+		//=============================================================================================
+		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBuffer_D3D12Impl, D3D12, ERHInterfaceType::DirectX12 );
 		RHIBuffer_D3D12Impl( IDynamicRHI* a_Device, const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data = {} );
 		~RHIBuffer_D3D12Impl() override { Release(); }
 
+		//=============================================================================================
 		virtual bool Release() override { ManagedBuffer.Release(); return true; }
 		virtual bool Valid() const override { return ManagedBuffer.Valid(); }
 		virtual const void* NativePtr() const override { return ManagedBuffer.Resource(); }
+		virtual const void* Map() override;
+		virtual void Unmap() override;
 
+		//=============================================================================================
 		// D3D12 specific functions
 		D3D12_RESOURCE_DESC GetD3D12ResourceDesc() const;
 		D3D12_SHADER_RESOURCE_VIEW_DESC CreateSRVDesc( ERHIBufferType a_Type, RHIBufferRange a_Range = RHIBufferRange::EntireBuffer(), ERHIFormat a_Format = ERHIFormat::Unknown) const;
 		D3D12_CONSTANT_BUFFER_VIEW_DESC CreateCBVDesc( RHIBufferRange a_Range = RHIBufferRange::EntireBuffer() ) const;
 
+		//=============================================================================================
 		ManagedResource ManagedBuffer{};
+
 	};
 
-	//======================================================================
-	// BINDING LAYOUT IMPLEMENTATION
-	//=======================================================================
-
+	//=================================================================================================
+	// RHIBindingLayout_D3D12Impl
+	//=================================================================================================
 	class RHIBindingLayout_D3D12Impl : public IRHIBindingLayout
 	{
 	public:
+
+		//=============================================================================================
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBindingLayout_D3D12Impl, D3D12, ERHInterfaceType::DirectX12 );
 		RHIBindingLayout_D3D12Impl( IDynamicRHI* a_Device, const DescriptorType & a_Desc );
 		virtual ~RHIBindingLayout_D3D12Impl() { Release(); }
 
+		//=============================================================================================
 		bool Release() override;
 		bool Valid() const override;
 		const void* NativePtr() const override;
 
+		//=============================================================================================
 		uint32_t InlinedConstantsSize = 0; // Size of the inlined constants in bytes
 		RootParameterIndex RootParamInlinedConstants = c_InvalidRootParameterIndex;
 		RootParameterIndex RootParamRenderResources = c_InvalidRootParameterIndex;
@@ -621,82 +645,104 @@ namespace Tridium::D3D12 {
 		Array<D3D12_DESCRIPTOR_RANGE1> DescriptorRangesSamplers{};
 		Array<RHIShaderBinding> RenderResourceBindingLayouts{}; // All SRV, UAV, and CBV's in the binding layout.
 		InlineArray<D3D12_ROOT_PARAMETER1, 32> RootParams;
+
+		//=============================================================================================
+		// Offsets into the binding layout for each type of resource.
+		size_t CBVBindingOffset = 0;
+		size_t SRVBindingOffset = 0;
+		size_t UAVBindingOffset = 0;
+
 	};
 
-	//======================================================================
-	// BINDING SET IMPLEMENTATION
-	//=======================================================================
-
+	//=================================================================================================
+	// RHIBindingSet_D3D12Impl
+	//=================================================================================================
 	class RHIBindingSet_D3D12Impl : public IRHIBindingSet
 	{
 	public:
+
+		//=============================================================================================
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBindingSet_D3D12Impl, D3D12, ERHInterfaceType::DirectX12 );
 		RHIBindingSet_D3D12Impl( IDynamicRHI* a_Device, const DescriptorType & a_Desc );
 		~RHIBindingSet_D3D12Impl() override { Release(); }
 
+		//=============================================================================================
 		bool Release() override;
 		bool Valid() const override;
 		const void* NativePtr() const override;
 
+		//=============================================================================================
 		DescriptorIndex DescriptorTableRenderResources = 0;
 		DescriptorIndex DescriptorTableSamplers = 0;
 		RootParameterIndex RootParamRenderResources = 0;
 		RootParameterIndex RootParamSamplers = 0;
 
+		//=============================================================================================
 		Array<RHIObjectRef> Resources{};
 		SharedPtr<DescriptorHeap> RenderResourceHeap{}; // Heap for SRV, UAV, CBV descriptors.
 		SharedPtr<DescriptorHeap> SamplerHeap{}; // Heap for sampler descriptors.
+
 	};
 
-	//======================================================================
-	// SHADER MODULE IMPLEMENTATION
-	//======================================================================
-
+	//=================================================================================================
+	// RHIShaderModule_D3D12Impl
+	//=================================================================================================
 	class RHIShaderModule_D3D12Impl : public IRHIShaderModule
 	{
 	public:
+
+		//=============================================================================================
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIShaderModule_D3D12Impl, D3D12, ERHInterfaceType::DirectX12 )
 		RHIShaderModule_D3D12Impl( IDynamicRHI* a_Device, const DescriptorType & a_Desc );
 		~RHIShaderModule_D3D12Impl() override { Release(); }
 
+		//=============================================================================================
 		bool Release() override;
 		bool Valid() const override;
 		const void* NativePtr() const override;
 
+		//=============================================================================================
 		Array<byte_t> Bytecode;
+
 	};
 
-	//======================================================================
-	// GRAPHICS PIPELINE STATE IMPLEMENTATION
-	//======================================================================
-
+	//=================================================================================================
+	// RHIGraphicsPipelineState_D3D12Impl
+	//=================================================================================================
 	class RHIGraphicsPipelineState_D3D12Impl : public IRHIGraphicsPipelineState
 	{
 	public:
+
+		//=============================================================================================
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIGraphicsPipelineState_D3D12Impl, D3D12, ERHInterfaceType::DirectX12 );
 		RHIGraphicsPipelineState_D3D12Impl( IDynamicRHI* a_Device, const DescriptorType& a_Desc, SharedPtr<RootSignature> a_RootSig );
 		~RHIGraphicsPipelineState_D3D12Impl() override { Release(); }
 
+		//=============================================================================================
 		bool Release() override;
 		bool Valid() const override { return PSO != nullptr && RootSig != nullptr; }
 		const void* NativePtr() const override { return PSO.Get(); }
 
+		//=============================================================================================
 		SharedPtr<RootSignature> RootSig;
 		ComPtr<ID3D12PipelineState> PSO;
 		InlineArray<D3D12_INPUT_ELEMENT_DESC, RHIConstants::MaxVertexAttributes> VertexLayout;
+
 	};
 
-	//======================================================================
-	// SWAPCHAIN IMPLEMENTATION
-	//======================================================================
-
+	//=================================================================================================
+	// RHISwapChain_D3D12Impl
+	//=================================================================================================
 	class RHISwapChain_D3D12Impl : public IRHISwapChain
 	{
 	public:
+
+		//=============================================================================================
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHISwapChain_D3D12Impl, D3D12, ERHInterfaceType::DirectX12 );
 		RHISwapChain_D3D12Impl( IDynamicRHI* a_Device, const DescriptorType & a_Desc );
 		~RHISwapChain_D3D12Impl() override { Release(); }
 
+		//=============================================================================================
 		bool Release() override;
 		bool Valid() const override;
 		const void* NativePtr() const override { return SwapChain.Get(); }
@@ -706,10 +752,13 @@ namespace Tridium::D3D12 {
 		uint32_t GetWidth() const override { return m_Width; }
 		uint32_t GetHeight() const override { return m_Height; }
 
+		//=============================================================================================
 		ComPtr<IDXGISwapChain3> SwapChain;
 		InlineArray<RHITextureRef, RHIConstants::MaxColorTargets> RTVs;
 
 	private:
+
+		//=============================================================================================
 		RHIFenceValue m_LastPresentedValue = 0;
 		uint32_t m_Width = 0;
 		uint32_t m_Height = 0;
@@ -718,19 +767,22 @@ namespace Tridium::D3D12 {
 		bool ResizeBuffers();
 		void ReleaseBuffers();
 		bool GetBackBuffers();
+
 	};
 
-	//======================================================================
-	// COMMAND LIST IMPLEMENTATION
-	//======================================================================
-
+	//=================================================================================================
+	// RHICommandList_D3D12Impl
+	//=================================================================================================
 	class RHICommandList_D3D12Impl : public IRHICommandList
 	{
 	public:
+
+		//=============================================================================================
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHICommandList_D3D12Impl, D3D12, ERHInterfaceType::DirectX12 );
 		RHICommandList_D3D12Impl( IDynamicRHI* a_Device, const RHICommandListDesc& a_Desc );
 		~RHICommandList_D3D12Impl() override { Release(); }
 
+		//=============================================================================================
 		bool Release() override;
 		bool Valid() const override { return true; }
 		const void* NativePtr() const override { return GetD3D12CmdList(); }
@@ -760,13 +812,13 @@ namespace Tridium::D3D12 {
 		void PopDebugGroup() override;
 		void InsertDebugMarker( StringView a_Name ) override;
 
-		// = D3D12 Specific =
-
+		//=============================================================================================
 		ID3D12GraphicsCommandList* GetD3D12CmdList() const { return m_ActiveCmdList.CmdList.Get(); }
 		CommandContext ReleaseCmdContext( CommandQueue& a_CmdQueue );
 
 	private:
-		//======================================================================
+
+		//=============================================================================================
 		// Command List
 		//  A simple wrapper around a D3D12 command list and its associated command allocator.
 		//  A pool of these command lists are created per RHICommandList_D3D12Impl instance.
@@ -796,24 +848,31 @@ namespace Tridium::D3D12 {
 		CommandList m_ActiveCmdList{}; // The currently active command list that is being recorded to.
 		CommandContext m_CmdContext{}; // The current command context that is being used to record commands.
 
+
+		Array<ID3D12DescriptorHeap*> m_ActiveDescriptorHeaps{}; // The currently bound descriptor heaps.
+
 	private:
+
+		//=============================================================================================
 		void CommitBarriers();
 		void BindGraphicsPipelineState( RHIGraphicsPipelineState_D3D12Impl* a_PSO, bool a_UpdateRootSignature );
 		void BindFramebuffer( const RHIFramebuffer& a_Framebuffer );
 		void BindGraphicsBindings( Span<IRHIBindingSet const* const> a_BindingSets, uint32_t a_UpdateMask, const SharedPtr<RootSignature>& a_RootSignature );
 
+		//=============================================================================================
 		// Helper for allocating and registering a descriptor heap to the command list.
 		const SharedPtr<DescriptorHeap>& AllocateHeap( ERHIDescriptorHeapType a_Type, uint32_t a_NumDescriptors, EDescriptorHeapFlags a_Flags, StringView a_DebugName = {} );
+
 	};
 
-	//======================================================================
-	// DYNAMIC RHI IMPLEMENTATION
-	//======================================================================
-
+	//=================================================================================================
+	// DynamicRHI_D3D12Impl
+	//=================================================================================================
 	class DynamicRHI_D3D12Impl final : public IDynamicRHI
 	{
 	public:
-		//==============================================
+
+		//=============================================================================================
 		// Core RHI functions
 		bool Init( const RHIConfig& a_Config ) override;
 		bool Shutdown() override;
@@ -825,9 +884,9 @@ namespace Tridium::D3D12 {
 		void CollectGarbage() override;
 		ERHInterfaceType GetRHIType() const override { return ERHInterfaceType::DirectX12; }
 		static constexpr ERHInterfaceType GetStaticRHIType() { return ERHInterfaceType::DirectX12; }
-		//==============================================
+		//=============================================================================================
 
-		//=====================================================
+		//=============================================================================================
 		// Resource creation
 		RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) override;
 		RHIBufferRef CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data ) override;
@@ -837,18 +896,18 @@ namespace Tridium::D3D12 {
 		RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc ) override;
 		RHIBindingSetRef CreateBindingSet( const RHIBindingSetDesc& a_Desc ) override;
 		RHISwapChainRef CreateSwapChain( const RHISwapChainDesc& a_Desc ) override;
-		//=====================================================
+		//=============================================================================================
 
-		//=====================================================
+		//=============================================================================================
 		// Miscellaneous
 		IRHISwapChain* GetSwapChain() const override { return m_SwapChain.get(); }
 		GPUInfo GetGPUInfo() const override;
 		bool QueryRHIStats( RHIStats& o_Stats ) const override;
-		//=====================================================
+		//=============================================================================================
 
-		//====================================================
+		//=============================================================================================
 		// D3D12 Specific
-		//====================================================
+		//=============================================================================================
 
 		CommandQueue* GetCommandQueue( ERHICommandQueueType a_Type ) const
 		{
@@ -884,9 +943,9 @@ namespace Tridium::D3D12 {
 
 	#undef GET_D3D12_DEVICE
 
-		//====================================================
-
 	private:
+
+		//=============================================================================================
 		ComPtr<ID3D12Device> m_Device = nullptr;
 		ComPtr<IDXGIAdapter> m_DXGIAdapter = nullptr;
 		ComPtr<IDXGIFactory> m_DXGIFactory = nullptr;
@@ -904,9 +963,9 @@ namespace Tridium::D3D12 {
 		HANDLE m_FenceEvent = nullptr;
 		Array<ID3D12CommandList*> m_CmdListsToExecute{};
 
-		//=====================================================
-
 	private:
+
+		//=============================================================================================
 		// Will either find an existing root signature or create a new one.
 		SharedPtr<RootSignature> GetRootSignature( Span<const RHIBindingLayoutRef> a_BindingLayouts, bool a_AllowInputLayout );
 

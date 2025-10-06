@@ -152,6 +152,8 @@ namespace Tridium::D3D12 {
 		m_CmdContext.CmdAllocator = m_ActiveCmdList.CmdAllocator;
 		m_CmdContext.CmdList = m_ActiveCmdList.CmdList;
 
+		D3D12_SET_DEBUG_NAME( m_CmdContext.CmdList, m_Desc.Name, L"Unnamed Command List" );
+
 		return true;
 	}
 
@@ -415,21 +417,16 @@ namespace Tridium::D3D12 {
 		const auto dstSlice = a_DstSlice.Resolve( a_DstTexture.Desc() );
 		const auto srcSlice = a_SrcSlice.Resolve( a_SrcTexture.Desc() );
 
-		D3D12_TEXTURE_COPY_LOCATION dstLocation{};
-		dstLocation.pResource = a_DstTexture.NativePtrAs<ID3D12Resource>();
-		dstLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-		dstLocation.SubresourceIndex = CalcSubresource(
-			dstSlice.MipLevel, dstSlice.ArraySlice, 0,
-			a_DstTexture.Desc().Mips, a_DstTexture.Desc().DepthOrArraySize
-		);
+		// State transitions
+		if ( IsAutomaticResourceStateTransitionEnabled() )
+		{
+			m_ResourceStateTracker.RequireTextureState( a_DstTexture, ERHIResourceStates::CopyDest );
+			m_ResourceStateTracker.RequireTextureState( a_SrcTexture, ERHIResourceStates::CopySource );
+			CommitBarriers();
+		}
 
-		D3D12_TEXTURE_COPY_LOCATION srcLocation{};
-		srcLocation.pResource = a_SrcTexture.NativePtrAs<ID3D12Resource>();
-		srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-		srcLocation.SubresourceIndex = CalcSubresource(
-			srcSlice.MipLevel, srcSlice.ArraySlice, 0,
-			a_SrcTexture.Desc().Mips, a_SrcTexture.Desc().DepthOrArraySize
-		);
+		D3D12_TEXTURE_COPY_LOCATION dstLocation = a_DstTexture.As<RHITexture_D3D12Impl>()->CreateCopyLocation( dstSlice );
+		D3D12_TEXTURE_COPY_LOCATION srcLocation = a_SrcTexture.As<RHITexture_D3D12Impl>()->CreateCopyLocation( srcSlice );
 
 		D3D12_BOX srcBox{};
 		srcBox.left = srcSlice.OffsetX;
@@ -549,6 +546,8 @@ namespace Tridium::D3D12 {
 		if ( bindingsUpdateMask == 0 )
 			bindingsUpdateMask = RHIUtil::ArrayDifferenceMask( m_CurrentGraphicsState.BindingSets, a_GraphicsState.BindingSets );
 
+		m_CurrentGraphicsState = a_GraphicsState;
+
 		if ( updatePipelineState )
 		{
 			BindGraphicsPipelineState( pso, updateRootSig );
@@ -624,7 +623,6 @@ namespace Tridium::D3D12 {
 
 		CommitBarriers();
 
-		m_CurrentGraphicsState = a_GraphicsState;
 		m_GraphicsStateValid = true;
 	}
 
@@ -798,12 +796,76 @@ namespace Tridium::D3D12 {
 		).get();
 		ASSERT( m_RTVHeap, "Failed to allocate RTV heap!" );
 
+		const auto CalculateRenderTargetView = []( const RHITextureDesc& a_Desc, const RHITextureSlice& a_Slice ) -> D3D12_RENDER_TARGET_VIEW_DESC
+		{
+			const auto slice = a_Slice.Resolve( a_Desc );
+			D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+			rtvDesc.Format = D3D12::Translate( a_Desc.Format );
+			switch ( a_Desc.Dimension )
+			{
+				case ERHITextureDimension::Texture2D:
+				{
+					rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+					rtvDesc.Texture2D.MipSlice = slice.MipLevel;
+					rtvDesc.Texture2D.PlaneSlice = 0;
+				}
+				case ERHITextureDimension::TextureCube:
+				{
+					rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
+					rtvDesc.Texture2DArray.MipSlice = slice.MipLevel;
+					rtvDesc.Texture2DArray.FirstArraySlice = slice.ArraySlice;
+					rtvDesc.Texture2DArray.ArraySize = 1; // For cube, we bind one face at a time
+					break;
+				}
+				default:
+				{
+					TODO( "Implement these you idiot" );
+					NOT_IMPLEMENTED;
+					break;
+				}
+			}
+
+			return rtvDesc;
+		};
+
+		const auto CalculateDepthStencilView = []( const RHITextureDesc& a_Desc, const RHITextureSlice& a_Slice ) -> D3D12_DEPTH_STENCIL_VIEW_DESC
+		{
+			const auto slice = a_Slice.Resolve( a_Desc );
+			D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+			dsvDesc.Format = D3D12::Translate( a_Desc.Format );
+			switch ( a_Desc.Dimension )
+			{
+				case ERHITextureDimension::Texture2D:
+				{
+					dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+					dsvDesc.Texture2D.MipSlice = slice.MipLevel;
+					break;
+				}
+				case ERHITextureDimension::TextureCube:
+				{
+					dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
+					dsvDesc.Texture2DArray.MipSlice = slice.MipLevel;
+					dsvDesc.Texture2DArray.FirstArraySlice = slice.ArraySlice;
+					dsvDesc.Texture2DArray.ArraySize = 1; // For cube, we bind one face at a time
+					break;
+				}
+				default:
+				{
+					TODO( "Implement these you idiot" );
+					NOT_IMPLEMENTED;
+					break;
+				}
+			}
+			return dsvDesc;
+		};
+
 		// Create RTVs for color attachments
 		D3D12_CPU_DESCRIPTOR_HANDLE rtvs[RHIConstants::MaxColorTargets];
 		for ( size_t i = 0; i < a_Framebuffer.ColorAttachments.Size(); ++i )
 		{
 			auto* tex = a_Framebuffer.ColorAttachments[i].Texture->As<RHITexture_D3D12Impl>();
-			device->CreateRenderTargetView( tex->Texture.Resource(), nullptr, m_RTVHeap->GetCPUHandle(i));
+			D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = CalculateRenderTargetView( tex->Desc(), a_Framebuffer.ColorAttachments[i].Slice );
+			device->CreateRenderTargetView( tex->Texture.Resource(), &rtvDesc, m_RTVHeap->GetCPUHandle(i));
 			rtvs[i] = m_RTVHeap->GetCPUHandle( i );
 		}
 
@@ -826,6 +888,8 @@ namespace Tridium::D3D12 {
 			ASSERT( m_DSVHeap, "Failed to allocate DSV heap!" );
 
 			auto* depthTex = a_Framebuffer.DepthStencilAttachment.Texture->As<RHITexture_D3D12Impl>();
+			TODO( "Handle texture slices for dsv" );
+			//const auto viewDesc = CalculateDepthStencilView( depthTex->Desc(), a_Framebuffer.DepthStencilAttachment.Slice );
 			device->CreateDepthStencilView( depthTex->Texture.Resource(), nullptr, m_DSVHeap->GetCPUHandle(0));
 			const D3D12_CPU_DESCRIPTOR_HANDLE dsv = m_DSVHeap->GetCPUHandle( 0 );
 			m_ActiveCmdList.CmdList->OMSetRenderTargets( a_Framebuffer.ColorAttachments.Size(), rtvs, false, &dsv );
@@ -845,50 +909,75 @@ namespace Tridium::D3D12 {
 		if ( a_BindingSets.empty() )
 			return;
 
-		{
-			TODO( "Fix this crap - this only supports the first binding set" );
-			auto* bindingSet = a_BindingSets[0]->As<RHIBindingSet_D3D12Impl>();
-			ID3D12DescriptorHeap* heaps[2] = { 
-				bindingSet->RenderResourceHeap ? bindingSet->RenderResourceHeap->Heap() : nullptr,
-				bindingSet->SamplerHeap ? bindingSet->SamplerHeap->Heap() : nullptr 
-			};
-			m_ActiveCmdList.CmdList->SetDescriptorHeaps( 2, heaps );
-		}
+		// We will collect the descriptor heaps pointer array to set on the command list.
+		// Only up to 2 heap types are needed: CBV_SRV_UAV (render resources) and SAMPLER.
+		m_ActiveDescriptorHeaps.Clear();
+		m_ActiveDescriptorHeaps.Reserve( a_BindingSets.size() * 2 );
 
-		if ( a_UpdateMask == 0 )
-			return; // No bindings to update
+		static thread_local UnorderedMap<ID3D12DescriptorHeap*, Pair<RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE>> rootParamsSet;
+		rootParamsSet.clear();
+		rootParamsSet.reserve( a_BindingSets.size() * 2 );
 
+		// Iterate binding sets that will be updated and prepare/copy transient descriptors as necessary
 		for ( size_t i = 0; i < a_BindingSets.size(); ++i )
 		{
 			if ( !a_BindingSets[i] || !a_BindingSets[i]->Valid() )
-				continue; // Skip invalid binding sets
+				continue;
 
-			if ( const bool updateBindingSet = ( a_UpdateMask & ( 1u << i ) ) != 0; !updateBindingSet )
-				continue; // Skip if this binding set does not need to be updated
+			// Check update mask
+			if ( ( a_UpdateMask & ( 1u << i ) ) == 0 )
+				continue;
 
 			const RHIBindingSet_D3D12Impl* bindingSet = a_BindingSets[i]->As<RHIBindingSet_D3D12Impl>();
 			RHIBindingLayout_D3D12Impl* bindingLayout = bindingSet->Desc().Layout->As<RHIBindingLayout_D3D12Impl>();
 			RootParameterIndex rootParamOffset = a_RootSignature->Layouts.At( i ).second;
 
+			// ---------- SAMPLERS ----------
 			if ( bindingSet->SamplerHeap )
 			{
-				// Set the descriptor table for samplers
-				m_ActiveCmdList.CmdList->SetGraphicsRootDescriptorTable(
-					rootParamOffset + bindingLayout->RootParamSamplers,
-					bindingSet->SamplerHeap->GetGPUHandle( 0 )
+				const auto& transient = AllocateHeap(
+					ERHIDescriptorHeapType::Sampler,
+					bindingLayout->DescriptorTableSizeSamplers,
+					EDescriptorHeapFlags::GPUVisible
 				);
+
+				// Copy descriptors: src = bindingSet->SamplerHeap (CPU), dst = transient (GPU-visible)
+				Device()->GetD3D12Device()->CopyDescriptorsSimple(
+					UINT( bindingLayout->DescriptorTableSizeSamplers ),
+					transient->GetCPUHandle( 0 ), // destination CPU handle for GPU-visible heap
+					bindingSet->SamplerHeap->GetCPUHandle( 0 ), // source CPU handle
+					D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER
+				);
+
+				// Set the transient heap and root table
+				m_ActiveDescriptorHeaps.PushBack( transient->Heap() );
+				rootParamsSet[transient->Heap()] = { rootParamOffset + bindingLayout->RootParamSamplers, transient->GetGPUHandle( 0 ) };
 			}
 
+			// ---------- RENDER RESOURCES (CBV/SRV/UAV) ----------
 			if ( bindingSet->RenderResourceHeap )
 			{
-				// Set the descriptor table for render resources (SRVs, UAVs, CBVs)
-				m_ActiveCmdList.CmdList->SetGraphicsRootDescriptorTable(
-					rootParamOffset + bindingLayout->RootParamRenderResources,
-					bindingSet->RenderResourceHeap->GetGPUHandle( 0 )
-				);
+				{
+					// Allocate a transient GPU-visible range for CBV/SRV/UAV descriptors.
+					const auto& transient = AllocateHeap(
+						ERHIDescriptorHeapType::RenderResource,
+						bindingLayout->DescriptorTableSizeRenderResources,
+						EDescriptorHeapFlags::GPUVisible
+					);
+
+					// Copy persistent CPU descriptors into transient GPU-visible heap.
+					Device()->GetD3D12Device()->CopyDescriptorsSimple(
+						UINT( bindingLayout->DescriptorTableSizeRenderResources ),
+						transient->GetCPUHandle( 0 ),
+						bindingSet->RenderResourceHeap->GetCPUHandle( 0 ),
+						D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
+					);
+
+					m_ActiveDescriptorHeaps.PushBack( transient->Heap() );
+					rootParamsSet[transient->Heap()] = { rootParamOffset + bindingLayout->RootParamRenderResources, transient->GetGPUHandle( 0 ) };
+				}
 			}
 
-			// Set resource states for the bindings
 			if ( IsAutomaticResourceStateTransitionEnabled() )
 			{
 				for ( const RHIBindingSetItem& binding : bindingSet->Desc().Bindings )
@@ -924,8 +1013,34 @@ namespace Tridium::D3D12 {
 					}
 				}
 			}
+		} // end for each binding set
+
+		if ( IsAutomaticResourceStateTransitionEnabled() )
+		{
+			CommitBarriers();
+		}
+
+		// Finally, set the descriptor heaps and root tables
+		if ( !m_ActiveDescriptorHeaps.Empty() )
+		{
+			// Set descriptor heaps
+			m_ActiveCmdList.CmdList->SetDescriptorHeaps( UINT( m_ActiveDescriptorHeaps.Size() ), m_ActiveDescriptorHeaps.Data() );
+
+			// Set root descriptor tables
+			for ( const auto& [heap, pair] : rootParamsSet )
+			{
+				const auto it = rootParamsSet.find( heap );
+				if ( it != rootParamsSet.end() )
+				{
+					m_ActiveCmdList.CmdList->SetGraphicsRootDescriptorTable(
+						pair.first,
+						pair.second
+					);
+				}
+			}
 		}
 	}
+
 
 
 	const SharedPtr<DescriptorHeap>& RHICommandList_D3D12Impl::AllocateHeap( ERHIDescriptorHeapType a_Type, uint32_t a_NumDescriptors, EDescriptorHeapFlags a_Flags, StringView a_DebugName )

@@ -59,7 +59,7 @@ namespace Tridium::OpenGL {
 				.SetHeight( 1 )
 				.SetMips( 1 )
 				.SetFormat( ERHIFormat::RGBA8_UNORM )
-				.SetUsage( ERHIUsage::Static );
+				.SetHeapType( ERHIHeapType::Immutable );
 
 			constexpr uint8_t blackPixel[4] = { 0, 0, 0, 1 };
 			m_ResourceCache.NullTexture2D = RHI::CreateTexture( desc, { RHITextureSubresourceData{}.SetData( blackPixel ).SetRowStride( 4 ) } );

@@ -149,6 +149,16 @@ namespace Tridium::D3D12 {
 			argsRaw.PushBack( arg.c_str() );
 		}
 
+		LOG( LogCategory::RHI, Debug, "DXC compile: source bytes = {}, arg count = {}", sourceBuffer.Size, argsRaw.Size());
+		for ( uint32_t i = 0; i < argsRaw.Size(); ++i )
+		{
+			const wchar_t* p = argsRaw[i];
+			size_t len = ( p ? wcslen( p ) : 0 );
+			//LOG( LogCategory::RHI, Debug, "arg[{}] ptr = {:#p}, len = {}", i, p, len );
+		}
+		//LOG( LogCategory::RHI, Debug, std::format( "includeHandler = {:#p}", (void*)includeHandler.Get() ) );
+
+
 		// COMPILE
 		ComPtr<IDxcResult> dxcResult;
 		HRESULT hr = dxcCompiler->Compile(
@@ -250,6 +260,23 @@ namespace Tridium::D3D12 {
 						case D3D_SIT_STRUCTURED:
 						case D3D_SIT_BYTEADDRESS:       binding.Type = ShaderReflectionBinding::StructuredBuffer; break;
 						default: ASSERT( false );       binding.Type = ShaderReflectionBinding::Unknown; break;
+					}
+
+					if ( binding.Type == ShaderReflectionBinding::Texture )
+					{
+						switch ( bindDesc.Dimension )
+						{
+						case D3D_SRV_DIMENSION_TEXTURE1D:          binding.TextureDimension = ERHITextureDimension::Texture1D; break;
+						case D3D_SRV_DIMENSION_TEXTURE1DARRAY:     binding.TextureDimension = ERHITextureDimension::Texture1DArray; break;
+						case D3D_SRV_DIMENSION_TEXTURE2D:          binding.TextureDimension = ERHITextureDimension::Texture2D; break;
+						case D3D_SRV_DIMENSION_TEXTURE2DARRAY:     binding.TextureDimension = ERHITextureDimension::Texture2DArray; break;
+						case D3D_SRV_DIMENSION_TEXTURE2DMS:        binding.TextureDimension = ERHITextureDimension::Texture2D; break;
+						case D3D_SRV_DIMENSION_TEXTURE2DMSARRAY:   binding.TextureDimension = ERHITextureDimension::Texture2DArray; break;
+						case D3D_SRV_DIMENSION_TEXTURE3D:          binding.TextureDimension = ERHITextureDimension::Texture3D; break;
+						case D3D_SRV_DIMENSION_TEXTURECUBE:        binding.TextureDimension = ERHITextureDimension::TextureCube; break;
+						case D3D_SRV_DIMENSION_TEXTURECUBEARRAY:   binding.TextureDimension = ERHITextureDimension::TextureCubeArray; break;
+						default:                                   binding.TextureDimension = ERHITextureDimension::Unknown; break;
+						}
 					}
 				}
 			}
@@ -479,9 +506,9 @@ namespace Tridium::D3D12 {
 				}
 
 				// Shift the registers
-				args.EmplaceBack( L"-fvk-t-shift" ); args.EmplaceBack( TO_LSTRING( RHI_SRV_BINDING_SLOT_OFFSET ) ); args.EmplaceBack( L"0" );
-				args.EmplaceBack( L"-fvk-u-shift" ); args.EmplaceBack( TO_LSTRING( RHI_UAV_BINDING_SLOT_OFFSET ) ); args.EmplaceBack( L"0" );
-				args.EmplaceBack( L"-fvk-s-shift" ); args.EmplaceBack( TO_LSTRING( RHI_SAMPLER_BINDING_SLOT_OFFSET ) ); args.EmplaceBack( L"0" );
+				//args.EmplaceBack( L"-fvk-t-shift" ); args.EmplaceBack( TO_LSTRING( RHI_SRV_BINDING_SLOT_OFFSET ) ); args.EmplaceBack( L"0" );
+				//args.EmplaceBack( L"-fvk-u-shift" ); args.EmplaceBack( TO_LSTRING( RHI_UAV_BINDING_SLOT_OFFSET ) ); args.EmplaceBack( L"0" );
+				//args.EmplaceBack( L"-fvk-s-shift" ); args.EmplaceBack( TO_LSTRING( RHI_SAMPLER_BINDING_SLOT_OFFSET ) ); args.EmplaceBack( L"0" );
 				break;
 			}
 		}
@@ -597,6 +624,14 @@ namespace Tridium::D3D12 {
 				);
 			}
 
+			for ( const auto& resource : shaderResources.storage_buffers )
+			{
+				TODO( "We are setting the interface name of the block as I cant use the instance name for shader bindings. Hack" );
+				glslCompiler.set_name( resource.base_type_id,
+					glslCompiler.get_block_fallback_name( resource.id ) 
+				);
+			}
+
 			// Textures and samplers are combined in GLSL, so we need to keep track of them and set the correct names
 			auto combinedSamplers = glslCompiler.get_combined_image_samplers();
 			UnorderedSet<spirv_cross::VariableID> seenImageIDs;
@@ -634,7 +669,7 @@ namespace Tridium::D3D12 {
 					binding.Size = glslCompiler.get_declared_struct_size( glslCompiler.get_type( resource.base_type_id ) );
 				}
 
-				// Storage buffers -> Structured Buffers
+				// Storage buffers/Structured buffers
 				for ( const auto& resource : shaderResources.storage_buffers )
 				{
 					ShaderReflectionBinding& binding = a_Output.Reflection.Bindings.EmplaceBack();
@@ -642,8 +677,46 @@ namespace Tridium::D3D12 {
 					binding.Slot = glslCompiler.get_decoration( resource.id, spv::DecorationBinding ) - RHI_UAV_BINDING_SLOT_OFFSET;
 					binding.Space = glslCompiler.get_decoration( resource.id, spv::DecorationDescriptorSet );
 					binding.Count = 1;
-					binding.Type = ShaderReflectionBinding::StorageBuffer;
 					binding.Size = 0; // Size is unknown for storage buffers.
+
+					const auto flags = glslCompiler.get_buffer_block_flags( resource.id );
+					const bool readonly = flags.get( spv::DecorationNonWritable );
+					const bool writeonly = flags.get( spv::DecorationNonReadable );
+
+					if ( readonly && !writeonly )
+						binding.Type = ShaderReflectionBinding::StructuredBuffer; // read-only
+					else
+						binding.Type = ShaderReflectionBinding::StorageBuffer;    // read/write
+				}
+
+				const auto ConvertSpirvDimToRHI = []( spv::Dim dim ) -> ERHITextureDimension
+				{
+					switch ( dim )
+					{
+					case spv::Dim1D:        return ERHITextureDimension::Texture1D;
+					case spv::Dim2D:        return ERHITextureDimension::Texture2D;
+					case spv::Dim3D:        return ERHITextureDimension::Texture3D;
+					case spv::DimCube:      return ERHITextureDimension::TextureCube;
+					case spv::DimRect:      return ERHITextureDimension::Texture2D; // No direct equivalent
+					default:                return ERHITextureDimension::Unknown;
+					}
+				};
+
+				for ( const auto& resource : shaderResources.separate_images )
+				{
+					if ( seenImageIDs.contains( resource.id ) )
+					{
+						continue; // Skip textures that are part of combined samplers.
+					}
+
+					ShaderReflectionBinding& binding = a_Output.Reflection.Bindings.EmplaceBack();
+					binding.Name = glslCompiler.get_name( resource.id );
+					binding.Slot = glslCompiler.get_decoration( resource.id, spv::DecorationBinding ) - RHI_SRV_BINDING_SLOT_OFFSET;
+					binding.Space = glslCompiler.get_decoration( resource.id, spv::DecorationDescriptorSet );
+					binding.Count = 1;
+					binding.Type = ShaderReflectionBinding::Texture;
+					binding.Size = 0;
+					binding.TextureDimension = ConvertSpirvDimToRHI( glslCompiler.get_type( resource.type_id ).image.dim );
 				}
 
 				// Sampled images -> Combined Samplers
@@ -659,6 +732,8 @@ namespace Tridium::D3D12 {
 					binding.Type = ShaderReflectionBinding::Texture;
 					binding.Count = 1;
 					binding.Size = 0;
+
+					binding.TextureDimension = ConvertSpirvDimToRHI( glslCompiler.get_type_from_variable( c.image_id ).image.dim );
 
 					a_Output.Reflection.Bindings.EmplaceBack( binding );
 				}

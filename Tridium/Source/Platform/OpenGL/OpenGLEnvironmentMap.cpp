@@ -206,7 +206,7 @@ namespace Tridium {
 
 		RenderCommand::SetCullMode( ECullMode::None );
 		UniquePtr<Shader> irradianceShader( Shader::Create() );
-		irradianceShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/EnvironmentMap/IrradianceConvolution.glsl" );
+		irradianceShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/EnvironmentMapOld/IrradianceConvolution.glsl" );
 
 		irradianceShader->Bind();
 		{
@@ -257,7 +257,7 @@ namespace Tridium {
 		renderBuffer->Bind();
 
 		UniquePtr<Shader> prefilterShader( Shader::Create() );
-		prefilterShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/EnvironmentMap/PreFilter-EnvironmentMap.glsl" );
+		prefilterShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/EnvironmentMapOld/PreFilter-EnvironmentMapOld.glsl" );
 
 		RenderCommand::SetCullMode( ECullMode::None );
 		prefilterShader->Bind();

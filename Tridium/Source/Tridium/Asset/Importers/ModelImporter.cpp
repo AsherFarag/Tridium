@@ -3,6 +3,7 @@
 #if USE_ASSET_IMPORTERS
 
 #include "ModelImporter.h"
+#include <Tridium/Asset/Importers/TextureImporter.h>
 #include <Tridium/Asset/MeshAsset.h>
 #include <Tridium/Asset/MaterialAsset.h>
 #include <Tridium/Asset/TextureAsset.h>
@@ -11,8 +12,6 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/material.h>
-
-#include <stb_image.h>
 
 namespace std {
 	template<>
@@ -206,9 +205,10 @@ namespace Tridium {
 
 			String textureName{};
 			Array<byte_t> textureData;
-			size_t textureWidth = 0;
-			size_t textureHeight = 0;
+			uint32_t textureWidth = 0;
+			uint32_t textureHeight = 0;
 			ERHIFormat textureFormat = ERHIFormat::Unknown;
+			bool isFloat = false;
 			bool isEmbedded = false;
 
 			// Is the texture embedded in the model file?
@@ -226,83 +226,23 @@ namespace Tridium {
 			// Or is it an external texture file?
 			else
 			{
-				// We need to load the texture from file using stb_image
-				// A texture is either HDR (float) or standard (uint8_t)
-				// Which must be loaded differently.
-
 				// We assume the texture path is relative to the model file
 				const FilePath texturePath = a_Context.AssetPath().GetParentPath() / FilePath( path.C_Str() );
 				textureName = texturePath.GetFilenameWithoutExtension();
 
-				if ( texturePath.Exists() && texturePath.IsFile() )
+				auto output = TextureImporter{}.LoadFromFile(
+					texturePath.ToString().c_str(),
+					textureData,
+					textureWidth,
+					textureHeight,
+					textureFormat,
+					isFloat
+				);
+
+				if ( output.IsError() )
 				{
-					String texturePathStr = texturePath.ToString();
-
-					// Get info about the texture
-					int width, height, channels;
-					stbi_info( texturePathStr.c_str(), &width, &height, &channels );
-
-					if ( stbi_is_hdr( texturePathStr.c_str() ) )
-					{
-						float* data = stbi_loadf( texturePath.ToString().c_str(), &width, &height, &channels, 0 );
-
-						if ( !data )
-						{
-							LOG( LogCategory::Asset, Error, "Failed to load HDR texture file '{}': {}", texturePathStr, stbi_failure_reason() );
-							return nullptr;
-						}
-
-						textureWidth = Cast<size_t>( width );
-						textureHeight = Cast<size_t>( height );
-						switch ( channels )
-						{
-							case 1: textureFormat = ERHIFormat::R32_FLOAT; break;
-							case 2: textureFormat = ERHIFormat::RG32_FLOAT; break;
-							case 3: textureFormat = ERHIFormat::RGB32_FLOAT; break;
-							case 4: textureFormat = ERHIFormat::RGBA32_FLOAT; break;
-							default: ASSERT( false, "Unsupported number of channels in HDR texture: {}", channels ); return nullptr;
-						}
-
-						const size_t dataSize = textureWidth * textureHeight * channels * sizeof( float );
-						textureData.Resize( dataSize );
-						memcpy( textureData.Data(), data, dataSize );
-
-						stbi_image_free( data );
-					}
-					// Otherwise, assume it's a standard 8-bit texture
-					else
-					{
-						// We don't support 3-channel textures, so we convert them to 4-channel
-						const int desiredChannels = channels == 3 ? 4 : channels;
-						channels = desiredChannels;
-						uint8_t* data = stbi_load( texturePath.ToString().c_str(), &width, &height, nullptr, desiredChannels );
-
-						if ( !data )
-						{
-							LOG( LogCategory::Asset, Error, "Failed to load texture file '{}': {}", texturePathStr, stbi_failure_reason() );
-							return nullptr;
-						}
-
-						textureWidth = Cast<size_t>( width );
-						textureHeight = Cast<size_t>( height );
-						switch ( channels )
-						{
-							case 1: textureFormat = ERHIFormat::R8_UNORM; break;
-							case 2: textureFormat = ERHIFormat::RG8_UNORM; break;
-							case 4: textureFormat = ERHIFormat::RGBA8_UNORM; break;
-							default: ASSERT( false, "Unsupported number of channels in texture: {}", channels ); return nullptr;
-						}
-
-						const size_t dataSize = textureWidth * textureHeight * channels * sizeof( uint8_t );
-						textureData.Resize( dataSize );
-						memcpy( textureData.Data(), data, dataSize );
-
-						stbi_image_free( data );
-					}
-				}
-				else
-				{
-					LOG( LogCategory::Asset, Error, "Texture file '{}' does not exist.", texturePath.ToString() );
+					// Failed to load texture, log a warning and return null
+					a_Context.LogWarning( "Failed to load texture '{}': {}", texturePath.ToString(), output.Error() );
 					return nullptr;
 				}
 			}
@@ -590,16 +530,14 @@ namespace Tridium {
 					vertex.Normal = { assimpMesh->mNormals[ i ].x, assimpMesh->mNormals[ i ].y, assimpMesh->mNormals[ i ].z };
 				}
 
-				// Extract Tangent (if present)
+				// Extract Tangent and Bitangent (if present)
 				if ( assimpMesh->HasTangentsAndBitangents() )
 				{
-					// We calculate the bitangents in the shader, so we only need to store the tangent and its handedness
 					const aiVector3D& tangent = assimpMesh->mTangents[i];
-					const aiVector3D& bitangent = assimpMesh->mBitangents[i];
-					const aiVector3D& normal = assimpMesh->mNormals[i];
-					const float handedness = ( normal ^ tangent ) * bitangent < 0.0f ? -1.0f : 1.0f;
+					vertex.Tangent = { tangent.x, tangent.y, tangent.z };
 
-					vertex.Tangent = { tangent.x, tangent.y, tangent.z, handedness };
+					const aiVector3D& bitangent = assimpMesh->mBitangents[i];
+					vertex.Bitangent = { bitangent.x, bitangent.y, bitangent.z };
 				}
 
 				TODO( "Should we support multiple UV channels?" );

@@ -3,7 +3,7 @@
 
 namespace Tridium {
 
-    class OpenGLEnvironmentMap : public EnvironmentMap
+    class OpenGLEnvironmentMap : public EnvironmentMapOld
     {
 	public:
 		OpenGLEnvironmentMap( const SharedPtr<TextureOld>& a_EquirectangularTexture );

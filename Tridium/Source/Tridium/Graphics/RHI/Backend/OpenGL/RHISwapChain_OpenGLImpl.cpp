@@ -259,7 +259,7 @@ namespace Tridium::OpenGL {
 			.SetWidth( a_Desc.Width ).SetHeight( a_Desc.Height ).SetDepth( 1 )
 			.SetFormat( a_Desc.Format )
 			.SetBindFlags( ERHIBindFlags::RenderTarget | ERHIBindFlags::ShaderResource )
-			.SetUsage( ERHIUsage::Dynamic );
+			.SetHeapType( ERHIHeapType::Default );
 
 		BackBufferTexture = RHI::CreateTexture( texDesc );
 		if ( !ASSERT( BackBufferTexture, "Failed to create back buffer texture!" ) )

@@ -23,12 +23,12 @@ namespace Tridium {
 		{
 			RenderPass& pass = m_Passes[ Cast<size_t>( passID ) ].Data;
 
-			TODO( "emit pre-pass barriers here using your RHI state tracker" );
 			if ( pass.m_Execute )
 			{
+				a_CommandList.PushDebugGroup( pass.m_Name.c_str() );
 				pass.m_Execute( a_CommandList, *this );
+				a_CommandList.PopDebugGroup();
 			}
-			TODO( "emit post-pass barriers here using your RHI state tracker" );
 		}
 	}
 

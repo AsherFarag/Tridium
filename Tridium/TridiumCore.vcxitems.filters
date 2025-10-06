@@ -992,7 +992,4 @@
       <UniqueIdentifier>{0ABB9823-769E-A763-7FA1-D59FEB036EB4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Source\Tridium\Graphics\Renderer\PipelineStateCache.h" />
-  </ItemGroup>
 </Project>

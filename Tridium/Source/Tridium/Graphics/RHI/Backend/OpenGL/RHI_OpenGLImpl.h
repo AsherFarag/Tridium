@@ -218,41 +218,51 @@ namespace Tridium::OpenGL {
 
 #pragma region OPENGL RHI IMPLEMENTATIONS
 
-	//======================================================================
-	// TEXTURE IMPLEMENTATION
-	//======================================================================
-
+	//=================================================================================================
+	// RHITexture_OpenGLImpl
+	//=================================================================================================
 	class RHITexture_OpenGLImpl : public IRHITexture
 	{
 	public:
+
+		//=============================================================================================
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHITexture_OpenGLImpl, OpenGL, ERHInterfaceType::OpenGL );
 		RHITexture_OpenGLImpl( IDynamicRHI* a_Device, const DescriptorType & a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData );
 		~RHITexture_OpenGLImpl() override { Release(); }
 
+		//=============================================================================================
 		virtual bool Release() override;
 		virtual const void* NativePtr() const { return TextureObj.NativePtr(); }
 		virtual bool Valid() const override { return TextureObj.Valid(); }
+		virtual RHITextureSubresourceData MapSubresource( const RHITextureSlice& a_Slice ) override;
+		virtual void UnmapSubresource( const RHITextureSlice& a_Slice ) override;
 
+		//=============================================================================================
 		GLTextureWrapper TextureObj{};
 		GLTextureFormat GLFormat{};
 		GLenum GLTarget = GL_NONE;
 	};
 
-	//======================================================================
-	// BUFFER IMPLEMENTATION
-	//======================================================================
-
+	//=================================================================================================
+	// RHIBuffer_OpenGLImpl
+	//=================================================================================================
 	class RHIBuffer_OpenGLImpl : public IRHIBuffer
 	{
 	public:
+
+		//=============================================================================================
 		RHI_OBJECT_IMPLEMENTATION_BODY( RHIBuffer_OpenGLImpl, OpenGL, ERHInterfaceType::OpenGL );
 		RHIBuffer_OpenGLImpl( IDynamicRHI* a_Device, const RHIBufferDesc & a_Desc, Span<const uint8_t> a_Data = {} );
 		~RHIBuffer_OpenGLImpl() override { Release(); }
 
+		//=============================================================================================
 		virtual bool Release() override { BufferObj.Release(); return true; }
 		virtual bool Valid() const override { return BufferObj.Valid(); }
 		virtual const void* NativePtr() const override { return BufferObj.NativePtr(); }
+		virtual const void* Map() override;
+		virtual void Unmap() override;
 
+		//=============================================================================================
 		OpenGL::GLBufferWrapper BufferObj{};
 	};
 
@@ -606,7 +616,8 @@ namespace Tridium::OpenGL {
 	class DynamicRHI_OpenGLImpl final : public IDynamicRHI
 	{
 	public:
-		//==============================================
+
+		//=============================================================================================
 		// Core RHI functions
 		bool Init( const RHIConfig& a_Config ) override;
 		bool Shutdown() override;
@@ -618,9 +629,9 @@ namespace Tridium::OpenGL {
 		void CollectGarbage() override;
 		ERHInterfaceType GetRHIType() const override { return ERHInterfaceType::OpenGL; }
 		static constexpr ERHInterfaceType GetStaticRHIType() { return ERHInterfaceType::OpenGL; }
-		//==============================================
+		//=============================================================================================
 
-		//=====================================================
+		//=============================================================================================
 		// Resource creation
 		RHITextureRef CreateTexture( const RHITextureDesc& a_Desc, Span<RHITextureSubresourceData> a_SubResourcesData ) override;
 		RHIBufferRef CreateBuffer( const RHIBufferDesc& a_Desc, Span<const uint8_t> a_Data ) override;
@@ -630,14 +641,14 @@ namespace Tridium::OpenGL {
 		RHIBindingLayoutRef CreateBindingLayout( const RHIBindingLayoutDesc& a_Desc ) override;
 		RHIBindingSetRef CreateBindingSet( const RHIBindingSetDesc& a_Desc ) override;
 		RHISwapChainRef CreateSwapChain( const RHISwapChainDesc& a_Desc ) override;
-		//=====================================================
+		//=============================================================================================
 
-		//=====================================================
+		//=============================================================================================
 		// Miscellaneous
 		IRHISwapChain* GetSwapChain() const override { return m_SwapChain.get(); }
 		GPUInfo GetGPUInfo() const override;
 		bool QueryRHIStats( RHIStats& o_Stats ) const override;
-		//=====================================================
+		//=============================================================================================
 
 	#if RHI_DEBUG_ENABLED
 		// Dump debug information about the RHI into the console.

@@ -1,13 +1,13 @@
 #pragma once
 namespace Tridium {
 
-	class EnvironmentMap;
+	class EnvironmentMapOld;
 
 	struct SceneEnvironment
 	{
 		struct {
 			CubeMapHandle EnvironmentMapHandle;
-			SharedPtr<EnvironmentMap> EnvironmentMap;
+			SharedPtr<EnvironmentMapOld> EnvironmentMap;
 			float Exposure = 1.0f;
 			float Gamma = 2.2f;
 			float Blur = 0.0f;

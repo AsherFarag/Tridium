@@ -7,7 +7,7 @@
 
 namespace Tridium {
 
-	SharedPtr<EnvironmentMap> EnvironmentMap::Create( const SharedPtr<TextureOld>& a_EquirectangularTexture )
+	SharedPtr<EnvironmentMapOld> EnvironmentMapOld::Create( const SharedPtr<TextureOld>& a_EquirectangularTexture )
     {
 		switch ( RendererAPI::GetAPI() )
 		{
@@ -19,12 +19,12 @@ namespace Tridium {
 		return nullptr;
     }
 
-	SharedPtr<EnvironmentMap> EnvironmentMap::Create( const FilePath& a_Path )
+	SharedPtr<EnvironmentMapOld> EnvironmentMapOld::Create( const FilePath& a_Path )
 	{
 		std::string path = a_Path.ToString();
 		if ( !stbi_is_hdr( path.c_str() ) )
 		{
-			LOG( LogCategory::Asset, Error, "[EnvironmentMap::Create] {0} is not HDR!", path );
+			LOG( LogCategory::Asset, Error, "[EnvironmentMapOld::Create] {0} is not HDR!", path );
 			return nullptr;
 		}
 
@@ -34,7 +34,7 @@ namespace Tridium {
 
 		if ( !data )
 		{
-			LOG( LogCategory::Asset, Error, "[EnvironmentMap::Create] Failed to load HDR image: {0}", path );
+			LOG( LogCategory::Asset, Error, "[EnvironmentMapOld::Create] Failed to load HDR image: {0}", path );
 			return nullptr;
 		}
 
@@ -51,7 +51,7 @@ namespace Tridium {
 		return Create( equirectangularTexture );
 	}
 
-	SharedPtr<EnvironmentMap> EnvironmentMap::Create( AssetHandle a_Handle )
+	SharedPtr<EnvironmentMapOld> EnvironmentMapOld::Create( AssetHandle a_Handle )
 	{
 		TODO( "Editor only!" );
 		auto assetManager = AssetManager::Get<EditorAssetManager>();

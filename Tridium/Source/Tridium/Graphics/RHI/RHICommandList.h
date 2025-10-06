@@ -95,6 +95,10 @@ namespace Tridium {
                   auto& SetName( StringView a_Name ) { Name = a_Name; return *this; }
     };
 
+    //=================================================================================================
+	// RHI Command List Interface: Base class for all RHI command list implementations.
+	// Command lists are used to record and submit commands to the GPU.
+    //=================================================================================================
     class IRHICommandList : public IRHIObject
     {
         RHI_OBJECT_INTERFACE_BODY( CommandList );
@@ -102,15 +106,18 @@ namespace Tridium {
         IRHICommandList( IDynamicRHI* a_Device, const RHICommandListDesc& a_Desc ) 
             : IRHIObject( a_Device ), m_Desc( a_Desc ) {}
 
+        //=============================================================================================
         // If true, the command list will automatically validate and transition resource states when necessary.
         // If false, the resources are expected to be in the correct state before the command list is executed.
         void SetAutomaticResourceStateTransitionEnabled( bool a_Enabled ) { m_AutomaticResourceStateTransitionEnabled = a_Enabled; }
         bool IsAutomaticResourceStateTransitionEnabled() const { return m_AutomaticResourceStateTransitionEnabled; }
 
+        //=============================================================================================
 		// Returns true if 'Open()' has been called and the command list is ready for recording commands.
 		// Returns false if the command list is not open or has been closed via 'Close()'.
         bool IsOpen() const { return m_IsOpen; }
 
+        //=============================================================================================
 		// Returns if this command list is an immediate mode.
 		// Immediate mode command lists execute commands the moment they are recorded,
 		// matching the behavior of OpenGL.
@@ -119,6 +126,7 @@ namespace Tridium {
 		//       Supported backends include OpenGL and DirectX11.
 		virtual bool IsImmediate() const = 0;
 
+        //=============================================================================================
         // Opens the command list, preparing it for recording commands.
 		// Returns false if failed to open the command list.
         virtual bool Open() 
@@ -128,6 +136,7 @@ namespace Tridium {
             return true;
 		}
 
+        //=============================================================================================
         // Prepares the command list for execution. To execute the command list, call RHI::ExecuteCommandLists(...).
 		// Returns false if failed to close the command list.
         virtual bool Close() 
@@ -138,9 +147,11 @@ namespace Tridium {
 			return true;
 		}
 
+        //=============================================================================================
 		// Resets the command list to its initial state and clears all owning references to resources.
 		virtual void ClearState() = 0;
 
+        //=============================================================================================
 		// Adds a list of resource barriers to the command list, which are used to synchronize resource states.
 		// - OpenGL: No-op, OpenGL does not require explicit resource barriers.
 		// - DX12: Maps to ID3D12GraphicsCommandList::ResourceBarrier.
@@ -150,6 +161,7 @@ namespace Tridium {
 			RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
 		}
 
+        //=============================================================================================
 		// Adds a single resource barrier to the command list.
 		// - See ResourceBarriers( Span<const RHIResourceBarrier>, RHI_DEBUG_SRC_LOC_PARAM ) for details.
         void ResourceBarrier( const RHIResourceBarrier& a_Barrier, RHI_DEBUG_SRC_LOC_PARAM )
@@ -158,6 +170,7 @@ namespace Tridium {
             RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
         }
 
+        //=============================================================================================
 		// Adds a resource barrier to transition the state of 'a_Resource' from its current state to 'a_NewState'.
 		// - See ResourceBarriers( Span<const RHIResourceBarrier>, RHI_DEBUG_SRC_LOC_PARAM ) for details.
         void ResourceBarrier( IRHIResource& a_Resource, ERHIResourceStates a_NewState, RHI_DEBUG_SRC_LOC_PARAM )
@@ -166,52 +179,86 @@ namespace Tridium {
             RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
 		}
 
+        //=============================================================================================
         // Writes 'a_Data' from CPU memory into the GPU buffer 'a_Buffer' at the specified 'a_OffsetBytes' offset.
         virtual void UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM )
         { 
             RHI_ADD_DEBUG_CMD_INFO( "UpdateBuffer", {}, RHI_DEBUG_RES_INFO( a_Buffer ) );
-            RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
-            RHI_DEV_CHECK( a_Buffer.Desc().Usage != ERHIUsage::Static,
-				"Cannot update an immutable buffer! Buffer: {}", a_Buffer.Desc().Name );
+
+            RHI_DEV_CHECK( IsOpen(),
+                           "Attempting to call a command on a command list that is not open!" );
+
+            RHI_DEV_CHECK( a_Buffer.Desc().HeapType != ERHIHeapType::Staging,
+                           "Cannot update a staging buffer! Buffer: {}", a_Buffer.Desc().Name );
+
+			RHI_DEV_CHECK( a_Buffer.Desc().HeapType != ERHIHeapType::Immutable,
+                           "Cannot write into an immutable buffer! Buffer: {}", a_Buffer.Desc().Name );
+
             RHI_DEV_CHECK( a_Data != nullptr && a_DataSizeBytes > 0,
-                "Attempting to update a buffer with no data!" );
+                           "Attempting to update a buffer with no data!" );
+
             RHI_DEV_CHECK( a_DstOffsetBytes + a_DataSizeBytes <= a_Buffer.Desc().Size,
-                "Attempting to update a buffer beyond its size! Buffer size: {}, Update size: {}, Offset: {}", a_Buffer.Desc().Size, a_DataSizeBytes, a_DstOffsetBytes );
+                           "Attempting to update a buffer beyond its size! Buffer size: {}, Update size: {}, Offset: {}",
+                           a_Buffer.Desc().Size, a_DataSizeBytes, a_DstOffsetBytes );
         }
 
+        //=============================================================================================
         // Copies 'a_SizeBytes' bytes from 'a_SrcBuffer' at 'a_SrcOffsetBytes' to 'a_DstBuffer' at 'a_DstOffsetBytes'.
         virtual void CopyBuffer( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange, RHI_DEBUG_SRC_LOC_PARAM ) 
         { 
             RHI_ADD_DEBUG_CMD_INFO( "CopyBuffer", {}, RHI_DEBUG_RES_INFO( a_DstBuffer ), RHI_DEBUG_RES_INFO( a_SrcBuffer ) );
-            RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
-            RHI_DEV_CHECK( a_DstBuffer.Desc().Usage != ERHIUsage::Static,
-                "Cannot write into an immutable buffer! Buffer: {}", a_DstBuffer.Desc().Name );
+
+            RHI_DEV_CHECK( IsOpen(),
+                           "Attempting to call a command on a command list that is not open!" );
+
+			RHI_DEV_CHECK( a_DstBuffer.Desc().HeapType != ERHIHeapType::Staging,
+						   "Cannot write into a staging buffer! Buffer: {}", a_DstBuffer.Desc().Name );
+
+			RHI_DEV_CHECK( a_SrcBuffer.Desc().HeapType != ERHIHeapType::Staging,
+						   "Cannot read from a staging buffer! Buffer: {}", a_SrcBuffer.Desc().Name );
+
             RHI_DEV_CHECK( a_SrcRange.Size > 0 || a_SrcBuffer.Desc().Size == 0,
-                "Source buffer is empty or invalid!" );
-            RHI_DEV_CHECK( a_DstBuffer.Desc().Size > 0,
-                "Destination buffer is invalid!" );
+                           "Source buffer is empty or invalid!" );
+
+            RHI_DEV_CHECK( a_DstBuffer.Desc().Size > 0, 
+                           "Destination buffer is invalid!" );
+
             RHI_DEV_CHECK( a_SrcRange.Offset + a_SrcRange.Size <= a_SrcBuffer.Desc().Size,
-                "Source buffer range is out of bounds! Buffer size: {}, Range: [{}, {}]", a_SrcBuffer.Desc().Size, a_SrcRange.Offset, a_SrcRange.Offset + a_SrcRange.Size );
+                           "Source buffer range is out of bounds! Buffer size: {}, Range: [{}, {}]",
+                           a_SrcBuffer.Desc().Size, a_SrcRange.Offset, a_SrcRange.Offset + a_SrcRange.Size );
         }
 
+        //=============================================================================================
         // Writes 'a_Data' from CPU memory into the GPU texture 'a_Texture' at the specified mip level and array slice.
         virtual void UpdateTexture( IRHITexture& a_Texture, const RHITextureSlice& a_DstSlice, RHITextureSubresourceData a_Data, RHI_DEBUG_SRC_LOC_PARAM )
         {
             RHI_ADD_DEBUG_CMD_INFO( "UpdateTexture", {}, RHI_DEBUG_RES_INFO( a_Texture ) );
-            RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
-			RHI_DEV_CHECK( a_Texture.Desc().Usage != ERHIUsage::Static,
-				"Cannot update an immutable texture! Texture: {}", a_Texture.Desc().Name );
+
+            RHI_DEV_CHECK( IsOpen(),
+                           "Attempting to call a command on a command list that is not open!" );
+
+			RHI_DEV_CHECK( a_Texture.Desc().HeapType != ERHIHeapType::Staging, 
+						   "Cannot update a staging texture! Texture: {}", a_Texture.Desc().Name );
+
+			RHI_DEV_CHECK( a_Texture.Desc().HeapType != ERHIHeapType::Immutable,
+                           "Cannot write into an immutable texture! Texture: {}", a_Texture.Desc().Name );
+
+            RHI_DEV_CHECK( a_Data.Valid(),
+                           "Attempting to update a texture with no data!" );
         }
 
+        //=============================================================================================
 		// Copies a region from 'a_SrcTexture' to 'a_DstTexture' using the specified source and destination slices.
         virtual void CopyTexture( IRHITexture& a_DstTexture, const RHITextureSlice& a_DstSlice,
                                   IRHITexture& a_SrcTexture, const RHITextureSlice& a_SrcSlice, RHI_DEBUG_SRC_LOC_PARAM )
         {
             RHI_ADD_DEBUG_CMD_INFO( "CopyTexture", {}, RHI_DEBUG_RES_INFO( a_DstTexture ), RHI_DEBUG_RES_INFO( a_SrcTexture ) );
-            RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
 
-            RHI_DEV_CHECK( a_DstTexture.Desc().Usage != ERHIUsage::Static,
-				"Cannot write into an immutable texture! Texture: {}", a_DstTexture.Desc().Name );
+            RHI_DEV_CHECK( IsOpen(),
+                           "Attempting to call a command on a command list that is not open!" );
+
+			RHI_DEV_CHECK( a_SrcTexture.Desc().HeapType != ERHIHeapType::Staging,
+						   "Cannot read from a staging texture! Texture: {}", a_SrcTexture.Desc().Name );
 
             RHI_DEV_CHECK(
                 a_SrcSlice.OffsetX <= a_SrcTexture.Desc().Width &&
@@ -224,6 +271,12 @@ namespace Tridium {
                 a_DstSlice.OffsetY <= a_DstTexture.Desc().Height &&
                 a_DstSlice.OffsetZ <= a_DstTexture.Desc().DepthOrArraySize,
                 "Destination region is invalid!" );
+
+            RHI_DEV_CHECK( a_DstTexture.Desc().Format == a_SrcTexture.Desc().Format,
+                           "Source and destination texture formats do not match! Src: {}, Dst: {}",
+                           ToString( a_SrcTexture.Desc().Format ),
+						   ToString( a_DstTexture.Desc().Format ) 
+            );
         }
 
 		// Writes 'a_Data' into the inlined constants block at 'a_DstOffsetBytes' offset.

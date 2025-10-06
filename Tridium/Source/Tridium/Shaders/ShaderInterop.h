@@ -63,6 +63,7 @@ static const float PI = 3.14159265f;
 
 // Use for sampling combined samplers
 #define SampleTexture( _Texture, _UV ) _Texture.Sample( GetCombinedSampler( _Texture ), _UV )
+#define SampleTextureLod( _Texture, _UV, _Lod ) _Texture.SampleLevel( GetCombinedSampler( _Texture ), _UV, _Lod )
 
 #endif // __cplusplus
 

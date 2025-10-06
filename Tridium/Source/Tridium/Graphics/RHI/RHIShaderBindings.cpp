@@ -14,16 +14,16 @@ namespace Tridium {
 
 			if ( binding.Space == INLINED_CONSTANTS_SPACE )
 			{
-				bindingDesc.AsInlinedConstants( Cast<uint16_t>( binding.Size ) );
+				bindingDesc = RHIShaderBinding::InlinedConstants( Cast<uint16_t>( binding.Size ) );
 			}
 			else
 			{
 				switch ( binding.Type )
 				{
-				case ShaderReflectionBinding::EType::ConstantBuffer: bindingDesc.AsConstantBuffer( binding.Slot ); break;
-				case ShaderReflectionBinding::EType::StructuredBuffer: bindingDesc.AsStructuredBuffer( binding.Slot ); break;
-				case ShaderReflectionBinding::EType::StorageBuffer: bindingDesc.AsStorageBuffer( binding.Slot ); break;
-				case ShaderReflectionBinding::EType::Texture: bindingDesc.AsTexture( binding.Slot ); break;
+				case ShaderReflectionBinding::EType::ConstantBuffer: bindingDesc = RHIShaderBinding::ConstantBuffer( binding.Slot ); break;
+				case ShaderReflectionBinding::EType::StructuredBuffer: bindingDesc = RHIShaderBinding::StructuredBuffer( binding.Slot ); break;
+				case ShaderReflectionBinding::EType::StorageBuffer: bindingDesc = RHIShaderBinding::StorageBuffer( binding.Slot ); break;
+				case ShaderReflectionBinding::EType::Texture: bindingDesc = RHIShaderBinding::Texture( binding.Slot, binding.TextureDimension ); break;
 				case ShaderReflectionBinding::EType::Sampler: continue; // We can safely ignore samplers as they are part of the texture binding in modern APIs.
 				default:
 					LOG( LogCategory::RHI, Warn, "Unknown binding type for resource '{0}'", binding.Name );

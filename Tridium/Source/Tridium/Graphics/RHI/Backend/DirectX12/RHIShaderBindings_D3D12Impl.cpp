@@ -72,12 +72,46 @@ namespace Tridium::D3D12 {
 		} );
 
 		// Now update the binding map to reflect the new indices.
-        for (  size_t i = 0; i < m_Desc.Bindings.Size(); i++ )
         {
-            const RHIShaderBinding& binding = m_Desc.Bindings[i];
-			m_Desc.BindingMap[binding.NameHash].first = uint32_t( i );
-		}
+            ERHIBindingType lastType = ERHIBindingType::Unknown;
+            for ( size_t i = 0; i < m_Desc.Bindings.Size(); i++ )
+            {
+                const RHIShaderBinding& binding = m_Desc.Bindings[i];
+                m_Desc.BindingMap[binding.NameHash].first = uint32_t( i );
 
+                if ( binding.Type() != lastType )
+                {
+                    switch ( binding.Type() )
+                    {
+                    case ERHIBindingType::ConstantBuffer:
+                        CBVBindingOffset = i;
+                        break;
+                    case ERHIBindingType::StructuredBuffer:
+                    case ERHIBindingType::Texture:
+                        if ( lastType != ERHIBindingType::ConstantBuffer )
+                        {
+                            CBVBindingOffset = i;
+                        }
+                        SRVBindingOffset = i;
+                        break;
+                    case ERHIBindingType::StorageBuffer:
+                    case ERHIBindingType::StorageTexture:
+                        if ( lastType != ERHIBindingType::ConstantBuffer
+                            && lastType != ERHIBindingType::StructuredBuffer
+                            && lastType != ERHIBindingType::Texture )
+                        {
+                            CBVBindingOffset = i;
+                            SRVBindingOffset = i;
+                        }
+                        UAVBindingOffset = i;
+                        break;
+                    default:
+                        break;
+                    }
+                    lastType = binding.Type();
+				}
+            }
+        }
 
         uint32_t currentSlot = ~0u;
         ERHIBindingType currentType = ERHIBindingType::Unknown;
@@ -87,8 +121,8 @@ namespace Tridium::D3D12 {
         {
             if ( binding.Type() == ERHIBindingType::InlinedConstants )
             {
-                InlinedConstantsSize = binding.Size;
-                rootConstants.Num32BitValues = NumDWORDsFromBytes( binding.Size );
+                InlinedConstantsSize = binding.InlinedConstantSize();
+                rootConstants.Num32BitValues = NumDWORDsFromBytes( InlinedConstantsSize );
                 rootConstants.ShaderRegister = binding.Slot;
                 rootConstants.RegisterSpace = INLINED_CONSTANTS_SPACE;
             }
@@ -157,7 +191,7 @@ namespace Tridium::D3D12 {
                 range.BaseShaderRegister = binding.Slot;
                 range.RegisterSpace = m_Desc.RegisterSpace;
                 range.OffsetInDescriptorsFromTableStart = DescriptorTableSizeRenderResources++;
-                range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE;
+                range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
 
                 RenderResourceBindingLayouts.PushBack( binding );
 
@@ -257,7 +291,7 @@ namespace Tridium::D3D12 {
 			SamplerHeap = Device()->GetDescriptorHeapManager().AllocateHeap(
                 ERHIDescriptorHeapType::Sampler,
 				layout->DescriptorTableSizeSamplers,
-                EDescriptorHeapFlags::GPUVisible
+                EDescriptorHeapFlags::Poolable
             );
 
             for ( const auto& range : layout->DescriptorRangesSamplers )
@@ -268,7 +302,7 @@ namespace Tridium::D3D12 {
 					D3D12_CPU_DESCRIPTOR_HANDLE handle = SamplerHeap->GetCPUHandle( range.OffsetInDescriptorsFromTableStart + i );
 					bool found = false;
 
-                    for ( const auto& binding : a_Desc.Bindings )
+					for ( const auto& binding : m_Desc.Bindings )
                     {
 						if ( (binding.Type == ERHIBindingType::Texture || binding.Type == ERHIBindingType::StorageTexture)
                             && binding.Slot == slot )
@@ -305,225 +339,142 @@ namespace Tridium::D3D12 {
             }
 		}
 
-        if ( layout->DescriptorTableSizeRenderResources > 0 )
+        if ( layout->DescriptorTableSizeRenderResources <= 0 )
         {
-            RenderResourceHeap = Device()->GetDescriptorHeapManager().AllocateHeap(
-                ERHIDescriptorHeapType::RenderResource,
-                layout->DescriptorTableSizeRenderResources,
-                EDescriptorHeapFlags::GPUVisible
-            );
+			return;
+        }
 
-            for ( const auto& range : layout->DescriptorRangesRenderResources )
+        RenderResourceHeap = Device()->GetDescriptorHeapManager().AllocateHeap(
+            ERHIDescriptorHeapType::RenderResource,
+            layout->DescriptorTableSizeRenderResources,
+            EDescriptorHeapFlags::Poolable
+        );
+
+        for ( const auto& range : layout->DescriptorRangesRenderResources )
+        {
+            for ( uint32_t i = 0; i < range.NumDescriptors; ++i )
             {
-                for ( uint32_t i = 0; i < range.NumDescriptors; ++i )
+                const uint32_t slot = range.BaseShaderRegister + i;
+                D3D12_CPU_DESCRIPTOR_HANDLE handle = RenderResourceHeap->GetCPUHandle( range.OffsetInDescriptorsFromTableStart + i );
+                bool found = false;
+
+                IRHIResource* resource = nullptr;
+
+                for ( const auto& binding : a_Desc.Bindings )
                 {
-                    const uint32_t slot = range.BaseShaderRegister + i;
-                    D3D12_CPU_DESCRIPTOR_HANDLE handle = RenderResourceHeap->GetCPUHandle( range.OffsetInDescriptorsFromTableStart + i );
-                    bool found = false;
-
-                    IRHIResource* resource = nullptr;
-
-                    for ( const auto& binding : a_Desc.Bindings )
+					if ( binding.Slot != slot || !binding.Resource )
                     {
-                        if ( binding.Slot != slot )
+						 // Only consider bindings for this slot that have a resource
+                        continue;
+                    }
+
+                    // Structured buffer SRV
+                    if ( binding.Type == ERHIBindingType::StructuredBuffer && range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV )
+                    {
+                        auto* buffer = binding.Resource->As<RHIBuffer_D3D12Impl>();
+                        resource = buffer;
+
+                        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = buffer->CreateSRVDesc( binding.BufferType, binding.Range, binding.Format );
+                        Device()->GetD3D12Device()->CreateShaderResourceView(
+                            buffer->ManagedBuffer.Resource(),
+                            &srvDesc,
+                            handle
+                        );
+
+                        found = true;
+                        break;
+                    }
+
+                    // Texture SRV
+                    if ( binding.Type == ERHIBindingType::Texture && range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV )
+                    {
+                        auto* texture = binding.Resource->As<RHITexture_D3D12Impl>();
+                        resource = texture;
+                        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = texture->CreateSRVDesc( binding.Format, binding.TextureDimension, binding.Subresources.Resolve( texture->Desc(), false ) );
+                        Device()->GetD3D12Device()->CreateShaderResourceView(
+                            texture->Texture.Resource(),
+                            &srvDesc,
+                            handle
+                        );
+
+                        found = true;
+                        break;
+                    }
+
+                    // Constant buffer CBV
+                    if ( binding.Type == ERHIBindingType::ConstantBuffer && range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_CBV )
+                    {
+                        auto* buffer = binding.Resource->As<RHIBuffer_D3D12Impl>();
+                        resource = buffer;
+                        D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = buffer->CreateCBVDesc( binding.Range );
+                        Device()->GetD3D12Device()->CreateConstantBufferView(
+                            &cbvDesc,
+                            handle
+                        );
+
+                        found = true;
+                        break;
+                    }
+
+                    // Storage buffer UAV
+                    if ( binding.Type == ERHIBindingType::StorageBuffer && range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_UAV )
+                    {
+                        NOT_IMPLEMENTED;
+
+                        found = true;
+                        break;
+                    }
+
+                    // Storage texture UAV
+                    if ( binding.Type == ERHIBindingType::StorageTexture && range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_UAV )
+                    {
+                        NOT_IMPLEMENTED;
+
+                        found = true;
+                        break;
+                    }
+                }
+
+                if ( resource )
+                {
+                    Resources.EmplaceBack( resource->Shared() );
+                }
+
+                if ( !found )
+                {
+                    // Create appropriate NULL view based on range.RangeType (SRV/UAV/CBV)
+                    if ( range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV )
+                    {
+                        const RHIShaderBinding& binding = layout->Desc().Bindings[layout->SRVBindingOffset + slot];
+
+                        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+                        srvDesc.Format = DXGI_FORMAT_R32_UINT;
+                        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+                        if ( binding.Type() == ERHIBindingType::StructuredBuffer )
                         {
-                             // Only consider bindings for this slot
-                            continue;
+                            srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
                         }
-
-                        // Structured buffer SRV
-                        if ( binding.Type == ERHIBindingType::StructuredBuffer && range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV )
+                        else
                         {
-                            if ( binding.Resource )
-                            {
-                                auto* buffer = binding.Resource->As<RHIBuffer_D3D12Impl>();
-                                resource = buffer;
-
-                                D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = buffer->CreateSRVDesc( binding.BufferType, binding.Range, binding.Format );
-                                Device()->GetD3D12Device()->CreateShaderResourceView(
-                                    buffer->ManagedBuffer.Resource(),
-                                    &srvDesc,
-                                    handle
-                                );
-                            }
-                            else
-                            {
-                                // Null SRV for this slot
-                                D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-                                srvDesc.Format = Translate( binding.Format );
-                                srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-                                srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-                                Device()->GetD3D12Device()->CreateShaderResourceView(
-                                    nullptr,
-                                    &srvDesc,
-                                    handle
-                                );
-                            }
-
-                            found = true;
-                            break;
-                        }
-
-                        // Texture SRV
-                        if ( binding.Type == ERHIBindingType::Texture && range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV )
-                        {
-                            if ( binding.Resource )
-                            {
-                                auto* texture = binding.Resource->As<RHITexture_D3D12Impl>();
-                                resource = texture;
-                                D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = texture->CreateSRVDesc( binding.Format, binding.TextureDimension, binding.Subresources.Resolve( texture->Desc(), false ) );
-                                Device()->GetD3D12Device()->CreateShaderResourceView(
-                                    texture->Texture.Resource(),
-                                    &srvDesc,
-                                    handle
-                                );
-                            }
-                            else
-                            {
-                                // Null SRV for texture slot
-                                D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-                                // choose an appropriate null format/dimension for this slot, don't assume texture2D always
-                                srvDesc.Format = DXGI_FORMAT_R32_FLOAT; // or a sensible default
-                                srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-                                srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-                                Device()->GetD3D12Device()->CreateShaderResourceView(
-                                    nullptr,
-                                    &srvDesc,
-                                    handle
-                                );
-                            }
-
-                            found = true;
-                            break;
-                        }
-
-                        // Constant buffer CBV
-                        if ( binding.Type == ERHIBindingType::ConstantBuffer && range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_CBV )
-                        {
-                            if ( binding.Resource )
-                            {
-                                auto* buffer = binding.Resource->As<RHIBuffer_D3D12Impl>();
-                                resource = buffer;
-                                D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = buffer->CreateCBVDesc( binding.Range );
-                                Device()->GetD3D12Device()->CreateConstantBufferView(
-                                    &cbvDesc,
-                                    handle
-                                );
-                            }
-                            else
-                            {
-                                // create a valid NULL CBV descriptor (see notes below)
-                                D3D12_CONSTANT_BUFFER_VIEW_DESC nullCbv = {};
-                                nullCbv.BufferLocation = 0;
-                                nullCbv.SizeInBytes = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT; // 256
-                                Device()->GetD3D12Device()->CreateConstantBufferView(
-                                    &nullCbv,
-                                    handle
-                                );
-                            }
-
-                            found = true;
-                            break;
-                        }
-
-						// Storage buffer UAV
-                        if ( binding.Type == ERHIBindingType::StorageBuffer && range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_UAV )
-                        {
-                            if ( binding.Resource )
-                            {
-								NOT_IMPLEMENTED;
-                                //auto* buffer = binding.Resource->As<RHIBuffer_D3D12Impl>();
-                                //resource = buffer;
-                                //D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = buffer->CreateUAVDesc( binding.BufferType, binding.Range, binding.Format );
-                                //Device()->GetD3D12Device()->CreateUnorderedAccessView(
-                                //    buffer->ManagedBuffer.Resource(),
-                                //    nullptr,
-                                //    &uavDesc,
-                                //    handle
-                                //);
-                            }
-                            else
-                            {
-                                // Null UAV for this slot
-                                D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-                                uavDesc.Format = Translate( binding.Format );
-                                uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-                                Device()->GetD3D12Device()->CreateUnorderedAccessView(
-                                    nullptr,
-                                    nullptr,
-                                    &uavDesc,
-                                    handle
-                                );
-                            }
-                            found = true;
-                            break;
-                        }
-
-						// Storage texture UAV
-                        if ( binding.Type == ERHIBindingType::StorageTexture && range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_UAV )
-                        {
-                            if ( binding.Resource )
-                            {
-								NOT_IMPLEMENTED;
-                                //auto* texture = binding.Resource->As<RHITexture_D3D12Impl>();
-                                //resource = texture;
-                                //D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = texture->CreateUAVDesc( binding.Format, binding.TextureDimension, binding.Subresources.Resolve( texture->Desc(), true ) );
-                                //Device()->GetD3D12Device()->CreateUnorderedAccessView(
-                                //    texture->Texture.Resource(),
-                                //    nullptr,
-                                //    &uavDesc,
-                                //    handle
-                                //);
-                            }
-                            else
-                            {
-                                // Null UAV for texture slot
-                                D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
-                                // choose an appropriate null format/dimension for this slot, don't assume texture2D always
-                                uavDesc.Format = DXGI_FORMAT_R32_FLOAT; // or a sensible default
-                                uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-                                Device()->GetD3D12Device()->CreateUnorderedAccessView(
-                                    nullptr,
-                                    nullptr,
-                                    &uavDesc,
-                                    handle
-                                );
-                            }
-                            found = true;
-                            break;
+							srvDesc.ViewDimension = To<D3D12_SRV_DIMENSION>::From( binding.TextureDimension() );
 						}
-                    }
 
-                    if ( resource )
-                    {
-                        Resources.EmplaceBack( resource->Shared() );
+                        Device()->GetD3D12Device()->CreateShaderResourceView( nullptr, &srvDesc, handle );
                     }
-
-                    if ( !found )
+                    else if ( range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_UAV )
                     {
-                        // Create appropriate NULL view based on range.RangeType (SRV/UAV/CBV)
-                        if ( range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV )
-                        {
-                            D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-                            srvDesc.Format = DXGI_FORMAT_R32_UINT;
-                            srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-                            srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-                            Device()->GetD3D12Device()->CreateShaderResourceView( nullptr, &srvDesc, handle );
-                        }
-                        else if ( range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_UAV )
-                        {
-                            D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
-                            uavDesc.Format = DXGI_FORMAT_R32_UINT;
-                            uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-                            Device()->GetD3D12Device()->CreateUnorderedAccessView( nullptr, nullptr, &uavDesc, handle );
-                        }
-                        else if ( range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_CBV )
-                        {
-                            D3D12_CONSTANT_BUFFER_VIEW_DESC nullCbv = {};
-                            nullCbv.BufferLocation = 0;
-                            nullCbv.SizeInBytes = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
-                            Device()->GetD3D12Device()->CreateConstantBufferView( &nullCbv, handle );
-                        }
+                        D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
+                        uavDesc.Format = DXGI_FORMAT_R32_UINT;
+                        uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+                        Device()->GetD3D12Device()->CreateUnorderedAccessView( nullptr, nullptr, &uavDesc, handle );
+                    }
+                    else if ( range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_CBV )
+                    {
+                        D3D12_CONSTANT_BUFFER_VIEW_DESC nullCbv = {};
+                        nullCbv.BufferLocation = 0;
+                        nullCbv.SizeInBytes = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
+                        Device()->GetD3D12Device()->CreateConstantBufferView( &nullCbv, handle );
                     }
                 }
             }

@@ -48,6 +48,19 @@ namespace Tridium::OpenGL {
 		}
 	};
 
+	inline constexpr GLenum Translate( ERHIHeapType a_Type )
+	{
+		switch ( a_Type )
+		{
+			using enum ERHIHeapType;
+			case Default: return GL_STATIC_DRAW;
+			case Dynamic: return GL_DYNAMIC_DRAW;
+			case Staging: return GL_DYNAMIC_READ;
+			case Immutable: return GL_STATIC_DRAW;
+			default: ASSERT( false, "Invalid heap type" ); return GL_STATIC_DRAW;
+		}
+	}
+
 	inline constexpr GLint Translate( ERHIComparison a_Comparison )
 	{
 		switch ( a_Comparison )
@@ -292,18 +305,6 @@ namespace Tridium::OpenGL {
 		case Triangle:  return GL_TRIANGLES;
 		case TriangleStrip: return GL_TRIANGLE_STRIP;
 		default:        return GL_TRIANGLES;
-		}
-	}
-
-	inline constexpr GLenum Translate( ERHIUsage a_Usage )
-	{
-		using enum ERHIUsage;
-		switch ( a_Usage )
-		{
-		case Default: return GL_STATIC_DRAW;
-		case Static:  return GL_STATIC_DRAW;
-		case Dynamic: return GL_DYNAMIC_DRAW;
-		default:      return GL_STATIC_DRAW;
 		}
 	}
 

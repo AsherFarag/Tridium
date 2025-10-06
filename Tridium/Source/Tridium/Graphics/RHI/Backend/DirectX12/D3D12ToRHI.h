@@ -861,15 +861,18 @@ namespace Tridium {
 		struct To<D3D12_SRV_DIMENSION>
 		{
 			using FromType = ERHITextureDimension;
-			static constexpr D3D12_SRV_DIMENSION From( ERHITextureDimension a_Type, bool a_IsArray )
+			static constexpr D3D12_SRV_DIMENSION From( ERHITextureDimension a_Type )
 			{
 				switch ( a_Type )
 				{
-				case ERHITextureDimension::Texture1D:      return a_IsArray ? D3D12_SRV_DIMENSION_TEXTURE1DARRAY : D3D12_SRV_DIMENSION_TEXTURE1D;
-				case ERHITextureDimension::Texture2D:      return a_IsArray ? D3D12_SRV_DIMENSION_TEXTURE2DARRAY : D3D12_SRV_DIMENSION_TEXTURE2D;
-				case ERHITextureDimension::Texture3D:      return D3D12_SRV_DIMENSION_TEXTURE3D;
-				case ERHITextureDimension::TextureCube:    return a_IsArray ? D3D12_SRV_DIMENSION_TEXTURECUBEARRAY : D3D12_SRV_DIMENSION_TEXTURECUBE;
-				default:                                   return D3D12_SRV_DIMENSION_UNKNOWN;
+					case ERHITextureDimension::Texture1D:        return D3D12_SRV_DIMENSION_TEXTURE1D;
+					case ERHITextureDimension::Texture2D:        return D3D12_SRV_DIMENSION_TEXTURE2D;
+					case ERHITextureDimension::Texture3D:        return D3D12_SRV_DIMENSION_TEXTURE3D;
+					case ERHITextureDimension::TextureCube:      return D3D12_SRV_DIMENSION_TEXTURECUBE;
+					case ERHITextureDimension::Texture1DArray:   return D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
+					case ERHITextureDimension::Texture2DArray:   return D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+					case ERHITextureDimension::TextureCubeArray: return D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
+					default:                                     return D3D12_SRV_DIMENSION_UNKNOWN;
 				}
 			}
 		};

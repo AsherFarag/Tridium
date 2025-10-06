@@ -4,9 +4,9 @@
 namespace Tridium::RHIConstants {
 
 	// Binding slot offsets for Vulkan and OpenGL to avoid overlapping slots.
-	#define RHI_SRV_BINDING_SLOT_OFFSET     1000
-	#define RHI_UAV_BINDING_SLOT_OFFSET     2000
-	#define RHI_SAMPLER_BINDING_SLOT_OFFSET 3000
+	#define RHI_SRV_BINDING_SLOT_OFFSET     0
+	#define RHI_UAV_BINDING_SLOT_OFFSET     0
+	#define RHI_SAMPLER_BINDING_SLOT_OFFSET 0
 
 	static constexpr uint32_t MaxViewports            = 16u; 
 	static constexpr uint32_t MaxVertexAttributes     = 16u; 

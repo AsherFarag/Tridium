@@ -4,12 +4,12 @@
 
 namespace Tridium {
 
-	class EnvironmentMap
+	class EnvironmentMapOld
 	{
 	public:
-		static SharedPtr<EnvironmentMap> Create( const SharedPtr<TextureOld>& a_EquirectangularTexture );
-		static SharedPtr<EnvironmentMap> Create( const FilePath& a_Path );
-		static SharedPtr<EnvironmentMap> Create( AssetHandle a_Handle );
+		static SharedPtr<EnvironmentMapOld> Create( const SharedPtr<TextureOld>& a_EquirectangularTexture );
+		static SharedPtr<EnvironmentMapOld> Create( const FilePath& a_Path );
+		static SharedPtr<EnvironmentMapOld> Create( AssetHandle a_Handle );
 
 		SharedPtr<CubeMap> GetIrradianceMap() const { return m_IrradianceMap; }
 		SharedPtr<CubeMap> GetRadianceMap() const { return m_RadianceMap; }

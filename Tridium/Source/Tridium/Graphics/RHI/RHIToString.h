@@ -241,31 +241,13 @@ namespace Tridium {
 	}
 
 	//=========================================================
-	// ERHIUsage
+	// ERHIFormat
 	//=========================================================
 
-	static StringView ToString( ERHIUsage a_Usage )
+	static constexpr StringView ToString( ERHIFormat a_Format )
 	{
-		switch ( a_Usage )
-		{
-		case ERHIUsage::Default:  return "Default";
-		case ERHIUsage::Static:   return "Static";
-		case ERHIUsage::Dynamic:  return "Dynamic";
-		default:                  return "<INVALID>";
-		}
+		return GetRHIFormatInfo( a_Format ).Name;
 	}
-
-	static constexpr bool FromString( StringView a_Usage, ERHIUsage& o_Value )
-	{
-		switch ( Hashing::Hash( ReinterpretCast<const uint8_t*>( a_Usage.data() ), a_Usage.size() ) )
-		{
-		case "Default"_H:  return Detail::AssignEnumValue( ERHIUsage::Default, o_Value );
-		case "Static"_H:   return Detail::AssignEnumValue( ERHIUsage::Static, o_Value );
-		case "Dynamic"_H:  return Detail::AssignEnumValue( ERHIUsage::Dynamic, o_Value );
-		}
-		return false;
-	}
-
 
 	//=========================================================
 	// ERHISamplerFilter

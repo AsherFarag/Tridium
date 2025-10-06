@@ -11,8 +11,6 @@ namespace Tridium {
 
 	void EditorCamera::OnUpdate()
 	{
-		RecalculateView();
-
 		Lerp();
 
 		if ( m_IsMoving ) {
@@ -31,6 +29,8 @@ namespace Tridium {
 			HandleInput();
 
 		m_LastMousePos = Input::GetMousePosition();
+
+		RecalculateView();
 	}
 
 	void EditorCamera::LerpTo( const Vector3& pos )

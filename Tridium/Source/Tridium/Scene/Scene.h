@@ -16,7 +16,7 @@ namespace Tridium {
 	// Forward Declarations
 	class Camera;
 	class CameraComponent;
-	class EnvironmentMap;
+	class EnvironmentMapOld;
 
 	struct SceneState
 	{

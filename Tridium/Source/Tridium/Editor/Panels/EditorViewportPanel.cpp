@@ -27,6 +27,8 @@
 #include <Tridium/Reflection/FieldReflection.h>
 #include <Tridium/Asset/AssetDatabase.h>
 #include <Tridium/Asset/Importers/ModelImporter.h>
+#include <Tridium/Asset/Importers/EnvironmentMapImporter.h>
+#include <Tridium/Graphics/Renderer/RenderResourceManager.h>
 
 namespace Tridium {
 
@@ -54,52 +56,6 @@ namespace Tridium {
 		: ViewportPanel( "Scene##EditorViewportPanel" ), m_EditorCamera( editorCamera )
 	{
 		m_OnGameObjectSelectedHandle = Editor::Events::OnGameObjectSelected.Add<&EditorViewportPanel::SetSelectedGameObject>( this );
-
-		// Set up ID Selection
-		if ( 0 )
-		{
-
-			//FBOspecification.Attachments = { EFramebufferTextureFormat::RED_INT, EFramebufferTextureFormat::Depth };
-			//m_IDFBO = Framebuffer::Create( FBOspecification );
-
-			String idVert =
-				R"(
-			#version 420
-
-			layout( location = 0 ) in vec3 aPosition;
-
-			uniform int uID;
-			uniform mat4 uPVM;
-
-			flat out int vID;
-
-			void main()
-			{
-				gl_Position = uPVM * vec4( aPosition, 1 );
-				vID = uID;
-			}
-		)";
-
-
-			String idFrag =
-				R"(
-			#version 420 core
-			
-			layout(location = 0) out int oID;
-			
-			flat in int vID;						
-			
-			void main()
-			{
-				oID = vID;
-			}
-		)";
-
-			m_GameObjectIDShader.reset( Shader::Create( idVert, idFrag ) );
-
-			m_OutlineShader.reset( Shader::Create() );
-			m_OutlineShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/Simple.glsl" );
-		}
 	}
 
 	EditorViewportPanel::~EditorViewportPanel()
@@ -179,6 +135,9 @@ namespace Tridium {
 		if ( !m_EditorCamera )
 			return;
 
+
+		static SceneRenderer renderer( nullptr );
+
 		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2( 2.f, 2.f ) );
 
 		if ( ImGui::Begin( m_Name.c_str() ) )
@@ -198,36 +157,51 @@ namespace Tridium {
 			m_EditorCamera->SetViewportSize( m_ViewportSize.X, m_ViewportSize.Y );
 			m_EditorCamera->OnUpdate();
 
-			// Draw the Editor Camera ViewPort
-			//ImTextureID textureID = ( ImTextureID )( *colorTarget->NativePtrAs<uint32_t>() );
-			//ImGui::Image( textureID, ImGui::GetContentRegionAvail() );
-
 			{
+
 				//TEMP
 				const FilePath assetFilePath = "TestProject/Content/Sponza/glTF/Sponza.gltf";
 				//const FilePath assetFilePath = "TestProject/Content/troll/troll/TrollApose_low.fbx";
 				auto modelImporter = AssetFactory::GetImporter( assetFilePath.GetExtension().ToString() );
 				static bool imported = false;
 				static AssetRef<StaticMesh> importedAsset;
+				static AssetRef<StaticMesh> importedAsset2;
 				if ( modelImporter && !imported )
 				{
 					imported = true;
-					std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
-					AssetImportContext context;
-					context.m_AssetPath = assetFilePath;
-					modelImporter->OnImport( context );
-					auto endTime = std::chrono::high_resolution_clock::now();
-					std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>( endTime - startTime );
-					LOG( LogCategory::Debug, Info, "Import took {} seconds", duration.count() );
-					importedAsset = SharedPtrCast<StaticMesh>( context.m_CreatedAssets.Back().second );
-				}
+					{
+						std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
+						AssetImportContext context;
+						context.m_AssetPath = assetFilePath;
+						modelImporter->OnImport( context );
+						auto endTime = std::chrono::high_resolution_clock::now();
+						std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>( endTime - startTime );
+						LOG( LogCategory::Debug, Info, "Import took {} seconds", duration.count() );
+						importedAsset = SharedPtrCast<StaticMesh>( context.m_CreatedAssets.Back().second );
+					}
 
-				static SceneRenderer renderer( nullptr );
+					{
+						const FilePath assetFilePath = "TestProject/Content/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX";
+						std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
+						AssetImportContext context;
+						context.m_AssetPath = assetFilePath;
+						modelImporter->OnImport( context );
+						auto endTime = std::chrono::high_resolution_clock::now();
+						std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>( endTime - startTime );
+						LOG( LogCategory::Debug, Info, "Import took {} seconds", duration.count() );
+						importedAsset2 = SharedPtrCast<StaticMesh>( context.m_CreatedAssets.Back().second );
+					}
+				}
 
 
 				renderer.SetViewportSize( ( uint32_t )m_ViewportSize.X, ( uint32_t )m_ViewportSize.Y );
 				renderer.Open( *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position );
 				renderer.SubmitStaticMesh( importedAsset, Matrix4( 1.0f ) );
+				renderer.SubmitStaticMesh( importedAsset2,
+										   Math::Translate( Vector3( 0.0f, 1.0f, 0.0f ) ) *
+										   Math::Rotate( Matrix4( 1.0f ), 90.0f, Vector3( 0.0f, 1.0f, 0.0f ) ) *
+										   Math::Scale( Vector3( 0.01f ) )
+				);
 				renderer.Close();
 
 				ImTextureID textureID = ( ImTextureID )( renderer.GetOutputTexture().get() );
@@ -242,6 +216,43 @@ namespace Tridium {
 		m_IsHovered = ImGui::IsWindowHovered();
 		m_IsFocused = ImGui::IsWindowFocused();
 		m_EditorCamera->Focused = m_IsFocused && !ImGuizmo::IsUsingAny();
+		ImGui::End();
+
+		ImGui::Begin( "Scene Renderer Debug" );
+		{
+			GBufferPass* pass = renderer.GetRenderPass<GBufferPass>( SceneRenderer::Passes::GBuffer );
+			if ( pass )
+			{
+				ImVec2 size = { (float)pass->GetAlbedoTexture()->Desc().Width, (float)pass->GetAlbedoTexture()->Desc().Height };
+				const ImVec2 maxSize = ImGui::GetContentRegionAvail();
+				if ( size.x > maxSize.x )
+				{
+					float aspect = size.y / size.x;
+					size.x = maxSize.x;
+					size.y = size.x * aspect;
+				}
+
+				if ( size.y > maxSize.y )
+				{
+					float aspect = size.x / size.y;
+					size.y = maxSize.y;
+					size.x = size.y * aspect;
+				}
+
+				ImGui::Text( "GBuffer Pass Textures:" );
+				ImGui::Separator();
+				ImGui::Text( "Position:" );
+				ImGui::Image( (ImTextureID)pass->GetPositionTexture().get(), size );
+				ImGui::Text( "Albedo:" );
+				ImGui::Image( (ImTextureID)pass->GetAlbedoTexture().get(), size );
+				ImGui::Text( "Normal:" );
+				ImGui::Image( (ImTextureID)pass->GetNormalTexture().get(), size );
+				ImGui::Text( "MetallicRoughnessAO:" );
+				ImGui::Image( (ImTextureID)pass->GetMRAOTexture().get(), size );
+				ImGui::Text( "Emission:" );
+				ImGui::Image( (ImTextureID)pass->GetEmissionTexture().get(), size );
+			}
+		}
 		ImGui::End();
 	}
 

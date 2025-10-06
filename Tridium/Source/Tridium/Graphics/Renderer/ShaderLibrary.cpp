@@ -6,29 +6,34 @@
 namespace Tridium {
 
 	//=============================================================================================
-	static UnorderedMap<name_t, ShaderFamily> s_ShaderFamilies;
 	static UnorderedMap<hash64_t, SharedPtr<ShaderFamilyVariant>> s_ShaderVariants;
+
+	static UnorderedMap<name_t, ShaderFamily>& GetShaderFamilies()
+	{
+		static UnorderedMap<name_t, ShaderFamily> s_ShaderFamilies;
+		return s_ShaderFamilies;
+	}
 
 	bool ShaderLibrary::RegisterFamily( ShaderFamily&& a_Family )
 	{
 		name_t familyNameHash = Hashing::HashString( a_Family.Name );
 
-		if ( s_ShaderFamilies.find( familyNameHash ) != s_ShaderFamilies.end() )
+		if ( GetShaderFamilies().find(familyNameHash) != GetShaderFamilies().end() )
 		{
 			LOG( LogCategory::Rendering, Warn, "Shader family '{0}' is already registered", a_Family.Name );
 			return false;
 		}
 
-		s_ShaderFamilies[familyNameHash] = std::move( a_Family );
+		GetShaderFamilies()[familyNameHash] = std::move( a_Family );
 
 		return true;
 	}
 
 	const ShaderFamily* ShaderLibrary::GetFamily( name_t a_FamilyName )
 	{
-		auto it = s_ShaderFamilies.find( a_FamilyName );
+		auto it = GetShaderFamilies().find( a_FamilyName );
 
-		if ( it != s_ShaderFamilies.end() )
+		if ( it != GetShaderFamilies().end() )
 		{
 			return &it->second;
 		}
@@ -131,7 +136,7 @@ namespace Tridium {
 
 	void ShaderLibrary::Shutdown()
 	{
-		s_ShaderFamilies.clear();
+		GetShaderFamilies().clear();
 		s_ShaderVariants.clear();
 	}
 

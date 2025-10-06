@@ -91,7 +91,7 @@ namespace Tridium {
 				auto assetManager = AssetManager::Get<EditorAssetManager>();
 				auto textureMetaData = assetManager->GetAssetMetaData( scene->GetSceneEnvironment().HDRI.EnvironmentMapHandle );
 				if ( textureMetaData.IsValid() )
-					scene->GetSceneEnvironment().HDRI.EnvironmentMap = EnvironmentMap::Create( assetManager->GetAbsolutePath( textureMetaData.Path ) );
+					scene->GetSceneEnvironment().HDRI.EnvironmentMap = EnvironmentMapOld::Create( assetManager->GetAbsolutePath( textureMetaData.Path ) );
 			}
 
 			ImGui::SliderFloat( "Exposure", &scene->GetSceneEnvironment().HDRI.Exposure, 0.0f, 10.0f );

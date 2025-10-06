@@ -58,6 +58,7 @@ namespace Tridium {
 		uint32_t Space = 0;
 		uint32_t Count = 1;
 		uint32_t Size = 0; // Size in bytes. Only valid for constant buffers and inlined constants.
+		ERHITextureDimension TextureDimension = ERHITextureDimension::Unknown; // Only valid for textures
 	};
 
 	//=================================================================================================

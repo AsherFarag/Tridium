@@ -15,6 +15,13 @@ namespace Tridium::OpenGL {
 				? InlinedConstants
 				: layout[binding.Slot];
 
+			if ( binding.Type() == ERHIBindingType::StructuredBuffer )
+			{
+				uniform.BindingPoint = binding.Slot;
+				uniform.IsBlock = false;
+				continue;
+			}
+
 			StringView name = a_Layout.Desc().GetBindingName( binding.NameHash );
 			uniform.BindingPoint = OpenGL3::GetUniformLocation( a_ShaderProgramID, name.data() );
 			uniform.IsBlock = false;

@@ -11,7 +11,7 @@
 
 namespace Tridium {
 
-	using VersionID = uint32_t;
+	using VersionID = int32_t;
 	inline constexpr VersionID UnknownVersionID = ( VersionID )-1;
 
 }

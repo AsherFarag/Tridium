@@ -26,94 +26,161 @@ namespace Tridium {
 	//=================================================================================================
 	struct RHIShaderBinding
 	{
+		//=============================================================================================
 		static constexpr uint32_t InvalidSlot = ~0u;
 
-		uint32_t Slot : 16; // Register index in the shader.
-		uint32_t Size : 8;  // Size in bytes of the binding.
-		uint32_t PackedType : 8; // The ERHIBindingType packed into a uint32_t. Call Type() to get the enum value
-		hash_t NameHash; // Hash of the binding name. NOTE: This is set by the RHIShaderBindingLayout and is not set here.
+		//=============================================================================================
+		// Register index in the shader.
+		uint32_t Slot : 16;
 
-		// Default constructor does not initialize the binding for performance, as RHIShaderBinding are stored in a large fixed size array.
+		//=============================================================================================
+		// Size in bytes for inlined constants, or texture dimension for textures.
+		uint32_t SizeOrDimension : 8;
+
+		//=============================================================================================
+		// The ERHIBindingType packed into a uint32_t. Call Type() to get the enum value
+		uint32_t PackedType : 8;
+
+		//=============================================================================================
+		// Hash of the binding name. NOTE: This is set by the RHIShaderBindingLayout and is not set here.
+		hash_t NameHash;
+
+		//=============================================================================================
+		// Default constructor does not initialize the binding for performance,
+		// as RHIShaderBinding are stored in a large fixed size array.
 		constexpr RHIShaderBinding() {}
 
+		//=============================================================================================
+		// Returns the type of the binding.
 		constexpr ERHIBindingType Type() const
 		{
-			return Cast<ERHIBindingType>(PackedType);
+			return Cast<ERHIBindingType>( PackedType );
 		}
 
+		//=============================================================================================
+		// If this is an inlined constant binding, returns the size in bytes of the inlined constants.
+		constexpr uint16_t InlinedConstantSize() const
+		{
+			if ( Type() == ERHIBindingType::InlinedConstants )
+			{
+				return SizeOrDimension;
+			}
+
+			return 0;
+		}
+
+		//=============================================================================================
+		// If this is a texture or storage texture binding, returns the texture dimension.
+		constexpr ERHITextureDimension TextureDimension() const
+		{
+			if ( Type() == ERHIBindingType::Texture || Type() == ERHIBindingType::StorageTexture )
+			{
+				return Cast<ERHITextureDimension>( SizeOrDimension );
+			}
+
+			return ERHITextureDimension::Unknown;
+		}
+
+		//=============================================================================================
 		constexpr bool Valid() const
 		{
 			return Slot != InvalidSlot && Type() != ERHIBindingType::Unknown;
 		}
 
+		//=============================================================================================
 		constexpr operator bool() const
 		{
 			return Valid();
 		}
 
+		//=============================================================================================
 		constexpr bool operator==( const RHIShaderBinding& a_Other ) const
 		{
-			return Slot == a_Other.Slot && Size == a_Other.Size && Type() == a_Other.Type();
+			return Slot == a_Other.Slot && SizeOrDimension == a_Other.SizeOrDimension && Type() == a_Other.Type();
 		}
 
+		//=============================================================================================
 		constexpr bool operator!=( const RHIShaderBinding& a_Other ) const
 		{
 			return !operator==( a_Other );
 		}
 
-	#define RHI_SHADER_BINDING_INITIALIZER( _Type ) \
-		constexpr RHIShaderBinding& As##_Type( const uint32_t a_Slot ) \
-		{ \
-			Slot = a_Slot; \
-			Size = 0; \
-			PackedType = Cast<uint32_t>( ERHIBindingType::_Type ); \
-			return *this; \
-		} \
-		[[nodiscard]] static constexpr RHIShaderBinding _Type( const uint32_t a_Slot ) \
-		{ \
-			return RHIShaderBinding{}.As##_Type( a_Slot ); \
-		}
-
-		RHI_SHADER_BINDING_INITIALIZER( ConstantBuffer );
-		RHI_SHADER_BINDING_INITIALIZER( StructuredBuffer );
-		RHI_SHADER_BINDING_INITIALIZER( StorageBuffer );
-		RHI_SHADER_BINDING_INITIALIZER( Texture );
-		RHI_SHADER_BINDING_INITIALIZER( StorageTexture );
-
-		constexpr RHIShaderBinding& AsInlinedConstants( const uint16_t a_Size )
-		{
-			Slot = 0;
-			Size = a_Size;
-			PackedType = Cast<uint32_t>( ERHIBindingType::InlinedConstants );
-			return *this;
-		}
-
-		[[nodiscard]] static constexpr RHIShaderBinding InlinedConstants( const uint16_t a_Size )
-		{
-			RHIShaderBinding binding;
-			binding.Slot = 0;
-			binding.Size = a_Size;
-			binding.PackedType = Cast<uint32_t>( ERHIBindingType::InlinedConstants );
-			return binding;
-		}
-
+		//=============================================================================================
 		// This is used for creating an invalid binding.
 		// As the default constructor does not initialize the memory.
 		[[nodiscard]] static constexpr RHIShaderBinding Invalid()
 		{
 			RHIShaderBinding binding;
 			binding.Slot = InvalidSlot;
-			binding.Size = 0;
+			binding.SizeOrDimension = 0;
 			binding.PackedType = Cast<uint32_t>( ERHIBindingType::Unknown );
 			return binding;
 		}
 
-	#undef RHI_SHADER_BINDING_INITIALIZER
+		//=============================================================================================
+		[[nodiscard]] static constexpr RHIShaderBinding InlinedConstants( const uint16_t a_Size )
+		{
+			RHIShaderBinding binding;
+			binding.Slot = 0;
+			binding.SizeOrDimension = a_Size;
+			binding.PackedType = Cast<uint32_t>( ERHIBindingType::InlinedConstants );
+			return binding;
+		}
+
+		//=============================================================================================
+		[[nodiscard]] static constexpr RHIShaderBinding ConstantBuffer( const uint32_t a_Slot )
+		{
+			RHIShaderBinding binding; 
+			binding.Slot = a_Slot;
+			binding.SizeOrDimension = 0;
+			binding.PackedType = Cast<uint32_t>( ERHIBindingType::ConstantBuffer );
+			return binding;
+		};
+
+		//=============================================================================================
+		[[nodiscard]] static constexpr RHIShaderBinding StructuredBuffer( const uint32_t a_Slot )
+		{
+			RHIShaderBinding binding;
+			binding.Slot = a_Slot;
+			binding.SizeOrDimension = 0;
+			binding.PackedType = Cast<uint32_t>( ERHIBindingType::StructuredBuffer ); 
+			return binding;
+		};
+
+		//=============================================================================================
+		[[nodiscard]] static constexpr RHIShaderBinding StorageBuffer( const uint32_t a_Slot )
+		{
+			RHIShaderBinding binding; 
+			binding.Slot = a_Slot;
+			binding.SizeOrDimension = 0;
+			binding.PackedType = Cast<uint32_t>( ERHIBindingType::StorageBuffer );
+			return binding;
+		};
+
+		//=============================================================================================
+		[[nodiscard]] static constexpr RHIShaderBinding Texture( const uint32_t a_Slot, ERHITextureDimension a_Dimension )
+		{
+			RHIShaderBinding binding;
+			binding.Slot = a_Slot;
+			binding.SizeOrDimension = Cast<uint32_t>( a_Dimension );
+			binding.PackedType = Cast<uint32_t>( ERHIBindingType::Texture );
+			return binding;
+		}
+
+		//=============================================================================================
+		[[nodiscard]] static constexpr RHIShaderBinding StorageTexture( const uint32_t a_Slot, ERHITextureDimension a_Dimension )
+		{
+			RHIShaderBinding binding; 
+			binding.Slot = a_Slot;
+			binding.SizeOrDimension = Cast<uint32_t>( a_Dimension );
+			binding.PackedType = Cast<uint32_t>( ERHIBindingType::StorageTexture );
+			return binding;
+		}
+
 	};
-	//==============================================
 
+	//=================================================================================================
 	static_assert( sizeof( RHIShaderBinding ) == 8, "RHIShaderBinding size is not 8 bytes" );
-
 	using RHIShaderBindingArray = InlineArray<RHIShaderBinding, RHIConstants::MaxShaderBindings>;
 
 	//=================================================================================================

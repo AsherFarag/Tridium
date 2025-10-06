@@ -18,6 +18,9 @@ namespace Tridium {
 
 	void RHIResourceStateTracker::RequireTextureState( IRHITexture& a_Texture, ERHIResourceStates a_NewState )
 	{
+		if ( a_Texture.Desc().HeapType == ERHIHeapType::Staging )
+			return; // Staging textures can not change state.
+
 		const ERHIResourceStates currentState = a_Texture.State();
 		const bool isTransitionNeeded = currentState != a_NewState;
 		if ( isTransitionNeeded )
@@ -29,8 +32,8 @@ namespace Tridium {
 
 	void RHIResourceStateTracker::RequireBufferState( IRHIBuffer& a_Buffer, ERHIResourceStates a_NewState )
 	{
-		if ( a_Buffer.Desc().CpuAccess != ERHICpuAccess::None )
-			return; // CPU access buffers can not change state.
+		if ( a_Buffer.Desc().HeapType == ERHIHeapType::Staging )
+			return; // Staging buffers can not change state.
 
 		const ERHIResourceStates currentState = a_Buffer.State();
 		const bool isTransitionNeeded = currentState != a_NewState;

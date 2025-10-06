@@ -13,7 +13,8 @@ namespace Tridium {
     {
 		float3 Position : POSITION;
 		float3 Normal : NORMAL;
-		float4 Tangent : TANGENT;
+		float3 Tangent : TANGENT;
+        float3 Bitangent : BITANGENT;
 		float2 TexCoord : TEXCOORD0;
     };
 
@@ -28,8 +29,8 @@ namespace Tridium {
     PS_INPUT VSMain(VS_INPUT a_Input)
     {
         float3 N = normalize( mul( Constants.Model, float4( a_Input.Normal, 0.0f ) ).xyz );
-        float3 T = normalize( mul( Constants.Model, a_Input.Tangent ).xyz );
-        float3 B = cross(N, T);
+        float3 T = normalize( mul( Constants.Model, float4( a_Input.Tangent, 0.0f ) ).xyz );
+        float3 B = normalize( mul( Constants.Model, float4( a_Input.Bitangent, 0.0f ) ).xyz );
 
         PS_INPUT output;
         output.Position = mul( Constants.PVM, float4( a_Input.Position, 1.0f ) );

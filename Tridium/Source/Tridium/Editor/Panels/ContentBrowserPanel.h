@@ -3,6 +3,7 @@
 
 #include "Panel.h"
 #include <Tridium/Asset/TextureAsset.h>
+#include <Tridium/IO/FilePath.h>
 
 namespace Tridium {
 

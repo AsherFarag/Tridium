@@ -1,10 +1,10 @@
 #include "tripch.h"
 #include "RenderResourceManager.h"
+#include <Tridium/Asset/EnvironmentMapAsset.h>
 #include <Tridium/Asset/MeshAsset.h>
 #include <Tridium/Asset/MaterialAsset.h>
 #include <Tridium/Asset/TextureAsset.h>
 #include <Tridium/Graphics/RHI/RHI.h>
-#include <Tridium/Graphics/Renderer/PipelineStateCache.h>
 #include <Tridium/Graphics/Renderer/ShaderLibrary.h>
 
 namespace Tridium {
@@ -20,14 +20,15 @@ namespace Tridium {
 	static ResourceMap<RenderResourceStaticMesh> s_StaticMeshes;
 	static ResourceMap<RenderResourceMaterial> s_Materials;
 	static ResourceMap<RenderResourceTexture> s_Textures;
+	static ResourceMap<RenderResourceEnvironmentMap> s_EnvironmentMaps;
 
 
 	//=============================================================================================
 	// Common default textures used for rendering.
-	// These are 1x1 textures with solid colors or normals.
 	static RHITextureRef s_WhiteTex2D;
 	static RHITextureRef s_BlackTex2D;
 	static RHITextureRef s_NormalTex2D;
+	static RHITextureRef s_BRDFLUTTex2D;
 
 	template<Concepts::Derived<RenderResource> T>
 	static auto GetResourceIterator( ResourceVariants<T>& a_Variants, RenderResourceID a_VariantID )
@@ -121,7 +122,7 @@ namespace Tridium {
 				.SetHeight( 1 )
 				.SetFormat( ERHIFormat::RGBA8_UNORM )
 				.SetBindFlags( ERHIBindFlags::ShaderResource )
-				.SetUsage( ERHIUsage::Static );
+				.SetHeapType( ERHIHeapType::Immutable );
 
 			constexpr uint8_t blackPixel[4] = { 0, 0, 0, 1 };
 			constexpr uint8_t whitePixel[4] = { 255, 255, 255, 1 };
@@ -130,6 +131,58 @@ namespace Tridium {
 			s_WhiteTex2D = RHI::CreateTexture( texDesc.SetName( "Default White Texture2D" ), { RHITextureSubresourceData{}.SetData( whitePixel ).SetRowStride( 4 ) } );
 			s_BlackTex2D = RHI::CreateTexture( texDesc.SetName( "Default Black Texture2D" ), { RHITextureSubresourceData{}.SetData( blackPixel ).SetRowStride( 4 ) } );
 			s_NormalTex2D = RHI::CreateTexture( texDesc.SetName( "Default Normal Texture2D" ), { RHITextureSubresourceData{}.SetData( normalPixel ).SetRowStride( 4 ) } );
+		}
+
+		// BRDF LUT
+		//{
+		//	auto texDesc = RHITextureDesc{}
+		//		.SetDimension( ERHITextureDimension::Texture2D )
+		//		.SetWidth( BRDF_LUT_WIDTH )
+		//		.SetHeight( BRDF_LUT_HEIGHT )
+		//		.SetFormat( ERHIFormat::RG32_FLOAT )
+		//		.SetBindFlags( ERHIBindFlags::ShaderResource )
+		//		.SetUsage( ERHIUsage::Static )
+		//		.SetName( "BRDF LUT Texture2D" );
+
+		//	s_BRDFLUTTex2D = RHI::CreateTexture( texDesc, RHITextureSubresourceData{}
+		//										 .SetData( BRDF_LUT_DATA )
+		//										 .SetRowStride( BRDF_LUT_WIDTH * BRDF_LUT_CHANNELS * sizeof(float) ) );
+		//}
+
+		// Test environment cubemap
+		{
+		// Create desc
+			RHITextureDesc texDesc = RHITextureDesc{}
+				.SetDimension( ERHITextureDimension::TextureCube )
+				.SetWidth( 1 ).SetHeight( 1 )
+				.SetDepth( 6 ) // array size = 6
+				.SetFormat( ERHIFormat::RGBA8_UNORM )
+				.SetBindFlags( ERHIBindFlags::ShaderResource )
+				.SetHeapType( ERHIHeapType::Immutable )
+				.SetName( "Test Environment Cubemap" );
+
+			// One pixel RGBA per face
+			constexpr uint8_t pixel[4] = { 32, 32, 32, 1 };
+			uint8_t faceData[4];
+			memcpy( faceData, pixel, 4 );
+
+			// Build subresource list: mips * 6 entries
+			Array<RHITextureSubresourceData> subresources;
+			subresources.Resize( texDesc.Mips * 6 );
+
+			for ( UINT mip = 0; mip < texDesc.Mips; ++mip )
+			{
+				for ( UINT face = 0; face < 6; ++face )
+				{
+					auto& sr = subresources[mip * 6 + face];
+					sr.SetData( faceData ); // pointer to one-pixel buffer (same for all faces)
+					sr.SetRowStride( 4 );
+					sr.SetDepthStride( 4 );
+				}
+			}
+
+			static auto texture = RHI::CreateTexture( texDesc, subresources );
+
 		}
 
         return true;
@@ -144,6 +197,7 @@ namespace Tridium {
 		s_WhiteTex2D = nullptr;
 		s_BlackTex2D = nullptr;
 		s_NormalTex2D = nullptr;
+		s_BRDFLUTTex2D = nullptr;
     }
 
 	RenderResourceStaticMesh RenderResourceManager::GetStaticMesh( AssetID a_AssetID, RenderResourceID a_VariantID )
@@ -177,11 +231,10 @@ namespace Tridium {
 			const auto bufferDesc = RHIBufferDesc{}
 				.SetName( std::format( "StaticMesh_{}_IndexBuffer", a_Asset->ID() ) )
 				.SetSize( a_Asset->LODs().Front().Indices.SizeBytes() )
-				.SetUsage( ERHIUsage::Static )
+				.SetHeapType( ERHIHeapType::Default )
 				.SetBindFlags( ERHIBindFlags::IndexBuffer )
 				.SetFormat( ERHIFormat::R32_UINT )
-				.SetType( ERHIBufferType::Formatted )
-				.SetCpuAccess( ERHICpuAccess::None );
+				.SetType( ERHIBufferType::Formatted );
 
 			newResource.IndexBuffer = RHI::CreateBuffer( bufferDesc, AsBytes( Span<const uint32_t>{ a_Asset->LODs().Front().Indices } ) );
 		}
@@ -191,9 +244,8 @@ namespace Tridium {
 			const auto bufferDesc = RHIBufferDesc{}
 				.SetName( std::format( "StaticMesh_{}_VertexBuffer", a_Asset->ID() ) )
 				.SetSize( a_Asset->LODs().Front().Vertices.SizeBytes() )
-				.SetUsage( ERHIUsage::Static )
-				.SetBindFlags( ERHIBindFlags::VertexBuffer )
-				.SetCpuAccess( ERHICpuAccess::None );
+				.SetHeapType( ERHIHeapType::Default )
+				.SetBindFlags( ERHIBindFlags::VertexBuffer );
 
 			newResource.VertexBuffer = RHI::CreateBuffer( bufferDesc, AsBytes( Span<const Vertex>{ a_Asset->LODs().Front().Vertices } ) );
 		}
@@ -314,24 +366,26 @@ namespace Tridium {
 				.EmissiveIntensity = a_Asset->EmissiveIntensity()
 			};
 
+			materialProperties.MetallicIntensity = 1.0f;
+			materialProperties.RoughnessIntensity = 1.0f;
+
 			RHIBufferRef materialBuffer = RHI::CreateBuffer(
 				RHIBufferDesc{}
 					.SetName( std::format( "Material_{}_PropertiesBuffer", a_Asset->ID() ) )
 					.SetSize( sizeof( MaterialProperties ) )
-					.SetUsage( ERHIUsage::Dynamic )
 					.SetBindFlags( ERHIBindFlags::ConstantBuffer ),
 				AsBytes( Span<const MaterialProperties>{ &materialProperties, 1 } )
 			);
 
 			const auto bindingLayoutDesc = RHIBindingLayoutDesc{}
-				.AddBinding( "Constants"_H, RHIShaderBinding{}.AsInlinedConstants( 128 ) )
-				.AddBinding( "u_MaterialProps"_H, RHIShaderBinding{}.AsConstantBuffer( 0 ) )
-				.AddBinding( "AlbedoMap"_H, RHIShaderBinding{}.AsTexture( 0 ) )
-				.AddBinding( "NormalMap"_H, RHIShaderBinding{}.AsTexture( 1 ) )
-				.AddBinding( "MetallicMap"_H, RHIShaderBinding{}.AsTexture( 2 ) )
-				.AddBinding( "RoughnessMap"_H, RHIShaderBinding{}.AsTexture( 3 ) )
-				.AddBinding( "EmissiveMap"_H, RHIShaderBinding{}.AsTexture( 4 ) )
-				.AddBinding( "AmbientOcclusionMap"_H, RHIShaderBinding{}.AsTexture( 5 ) );
+				.AddBinding( "Constants"_H, RHIShaderBinding::InlinedConstants( 128 ) )
+				.AddBinding( "u_MaterialProps"_H, RHIShaderBinding::ConstantBuffer( 0 ) )
+				.AddBinding( "AlbedoMap"_H, RHIShaderBinding::Texture( 0, ERHITextureDimension::Texture2D ) )
+				.AddBinding( "NormalMap"_H, RHIShaderBinding::Texture( 1, ERHITextureDimension::Texture2D ) )
+				.AddBinding( "MetallicMap"_H, RHIShaderBinding::Texture( 2, ERHITextureDimension::Texture2D ) )
+				.AddBinding( "RoughnessMap"_H, RHIShaderBinding::Texture( 3, ERHITextureDimension::Texture2D ) )
+				.AddBinding( "EmissiveMap"_H, RHIShaderBinding::Texture( 4, ERHITextureDimension::Texture2D ) )
+				.AddBinding( "AmbientOcclusionMap"_H, RHIShaderBinding::Texture( 5, ERHITextureDimension::Texture2D ) );
 
 			const RHIBindingLayoutRef bindingLayout = RHI::CreateBindingLayout( bindingLayoutDesc );
 
@@ -356,7 +410,7 @@ namespace Tridium {
 			// Add texture bindings
 			AddTextureBinding( "AlbedoMap"_H, a_Asset->AlbedoMap(), s_WhiteTex2D );
 			AddTextureBinding( "NormalMap"_H, a_Asset->NormalMap(), s_NormalTex2D );
-			AddTextureBinding( "MetallicMap"_H, a_Asset->MetallicMap(), s_BlackTex2D );
+			AddTextureBinding( "MetallicMap"_H, a_Asset->MetallicMap(), s_WhiteTex2D );
 			AddTextureBinding( "RoughnessMap"_H, a_Asset->RoughnessMap(), s_WhiteTex2D );
 			AddTextureBinding( "EmissiveMap"_H, a_Asset->EmissiveMap(), s_BlackTex2D );
 			AddTextureBinding( "AmbientOcclusionMap"_H, a_Asset->AmbientOcclusionMap(), s_WhiteTex2D );
@@ -423,9 +477,8 @@ namespace Tridium {
 				.SetDepth( a_Asset->DepthOrArraySize() )
 				.SetMips( 0 ) TODO( "Support mipmaps" )
 				.SetFormat( a_Asset->Format() )
-				.SetUsage( ERHIUsage::Default )
-				.SetBindFlags( ERHIBindFlags::ShaderResource )
-				.SetCpuAccess( ERHICpuAccess::None );
+				.SetHeapType( ERHIHeapType::Default )
+				.SetBindFlags( ERHIBindFlags::ShaderResource );
 
 			const auto initialData = RHITextureSubresourceData{}
 				.SetData( a_Asset->PixelData().Data() )
@@ -452,6 +505,106 @@ namespace Tridium {
 	bool RenderResourceManager::RemoveTexture( AssetID a_AssetID, RenderResourceID a_VariantID )
 	{
 		return RemoveResource( s_Textures, a_AssetID, a_VariantID );
+	}
+
+	RenderResourceEnvironmentMap RenderResourceManager::GetEnvironmentMap( AssetID a_AssetID, RenderResourceID a_VariantID )
+	{
+		return GetResource( s_EnvironmentMaps, a_AssetID, a_VariantID );
+	}
+
+	RenderResourceEnvironmentMap RenderResourceManager::GetOrCreateEnvironmentMap( const AssetRef<EnvironmentMap>& a_Asset, RenderResourceID a_VariantID )
+	{
+		ASSERT( a_Asset != nullptr, "Cannot get or create an environment map render resource for a null asset." );
+		if ( RenderResourceEnvironmentMap resource = GetEnvironmentMap( a_Asset->ID(), a_VariantID ); resource.Valid() )
+		{
+			// Found a valid resource, return it.
+			return resource;
+		}
+
+		// Create a new resource with the given AssetID and VariantID.
+		RenderResourceEnvironmentMap newResource;
+		newResource.AssetID = a_Asset->ID();
+		newResource.VariantID = a_VariantID;
+		if ( !CanAddResource( s_EnvironmentMaps, newResource ) )
+		{
+			// Failed to add the new resource, return an invalid resource.
+			return {};
+		}
+
+		// Create the RHI textures
+		{
+			{
+				auto textureDesc = RHITextureDesc{}
+					.SetName( std::format( "EnvironmentMap_{}_Radiance", a_Asset->ID() ) )
+					.SetDimension( ERHITextureDimension::TextureCube )
+					.SetWidth( a_Asset->RadianceSize() )
+					.SetHeight( a_Asset->RadianceSize() )
+					.SetArraySize( 6 )
+					.SetMips( Cast<uint32_t>( a_Asset->NumRadianceMips() ) )
+					.SetFormat( a_Asset->Format() )
+					.SetHeapType( ERHIHeapType::Immutable )
+					.SetBindFlags( ERHIBindFlags::ShaderResource );
+
+				Array<RHITextureSubresourceData> subresources;
+				subresources.Reserve( textureDesc.Mips * 6 );
+				for ( uint32_t face = 0; face < 6; ++face )
+				{
+					for ( size_t mip = 0; mip < a_Asset->NumRadianceMips(); ++mip )
+					{
+						const auto& cubeMap = a_Asset->RadianceMipMaps()[mip];
+						auto& sr = subresources.EmplaceBack();
+						sr.SetData( cubeMap.PixelData.Data() + face * cubeMap.FaceStride );
+						sr.SetRowStride( cubeMap.RowStride );
+					}
+				}
+
+				newResource.RadianceMap = RHI::CreateTexture( textureDesc, subresources );
+			}
+
+			ASSERT( newResource.RadianceMap != nullptr, "Failed to create RHI texture for environment map radiance." );
+
+			const auto irradianceDesc = RHITextureDesc{}
+				.SetName( std::format( "EnvironmentMap_{}_Irradiance", a_Asset->ID() ) )
+				.SetDimension( ERHITextureDimension::TextureCube )
+				.SetWidth( a_Asset->IrradianceSize() )
+				.SetHeight( a_Asset->IrradianceSize() )
+				.SetDepth( 6 ) // array size = 6
+				.SetMips( 1 )
+				.SetFormat( a_Asset->Format() )
+				.SetBindFlags( ERHIBindFlags::ShaderResource )
+				.SetHeapType( ERHIHeapType::Immutable );
+
+			const auto& diffuseCubeMap = a_Asset->IrradianceMap();
+
+			if ( diffuseCubeMap.FaceWidth > 0 )
+			{
+				Array<RHITextureSubresourceData> subresources;
+				subresources.Resize( irradianceDesc.Mips * 6 );
+				for ( uint32_t face = 0; face < 6; ++face )
+				{
+					auto& sr = subresources[face];
+					sr.SetData( diffuseCubeMap.PixelData.Data() + face * diffuseCubeMap.FaceStride );
+					sr.SetRowStride( diffuseCubeMap.FaceStride / diffuseCubeMap.FaceWidth );
+				}
+
+				newResource.IrradianceMap = RHI::CreateTexture( irradianceDesc, subresources );
+			}
+
+			ASSERT( newResource.IrradianceMap != nullptr, "Failed to create RHI texture for environment map irradiance." );
+		}
+
+		// Finally, add the new resource to the manager.
+		AddEnvironmentMap( newResource );
+
+		return newResource;
+	}
+
+	bool RenderResourceManager::AddEnvironmentMap( const RenderResourceEnvironmentMap& a_EnvMap, bool a_ForceReplace )
+	{
+		if ( !ASSERT( a_EnvMap.Valid(), "Cannot add an invalid environment map render resource." ) )
+			return false;
+
+		return AddResource( s_EnvironmentMaps, a_EnvMap, a_ForceReplace );
 	}
 
 	const RHITextureRef& RenderResourceManager::GetWhiteTexture2D()

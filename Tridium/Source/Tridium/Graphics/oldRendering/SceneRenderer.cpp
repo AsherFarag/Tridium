@@ -25,7 +25,7 @@ namespace Tridium {
 			m_DefaultShader.reset( Shader::Create() );
 			m_DefaultShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/PBR-Shadows.glsl" );
 			m_SkyboxShader.reset( Shader::Create() );
-			m_SkyboxShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/EnvironmentMap/SkyBox.glsl" );
+			m_SkyboxShader->Compile( Engine::Get()->GetEngineAssetsDirectory() / "Shaders/EnvironmentMapOld/SkyBox.glsl" );
 			m_WhiteTexture = AssetManager::GetAsset<TextureOld>( TextureFactory::GetWhiteTexture() );
 			m_BlackTexture = AssetManager::GetAsset<TextureOld>( TextureFactory::GetBlackTexture() );
 			m_NormalTexture = AssetManager::GetAsset<TextureOld>( TextureFactory::GetNormalTexture() );
