@@ -137,6 +137,7 @@ namespace Tridium {
 		float4x4 View;
 		float4x4 Projection;
 		float Roughness;
+		uint Resolution;
 	};
 
 	struct VS_INPUT
@@ -521,7 +522,7 @@ namespace Tridium {
 			graphicsPSO = PipelineStateCache::GetOrCreatePSO( psoDesc );
 		}
 
-		static RHITextureRef radianceTex;
+		RHITextureRef radianceTex;
 		{
 			const auto radianceDesc = RHITextureDesc{}
 				.SetName( "RadianceConvolution_RadianceTex" )
@@ -541,6 +542,7 @@ namespace Tridium {
 		RHITextureRef stagingTex;
 		{
 			const auto stagingDesc = RHITextureDesc{}
+				.SetName( "RadianceConvolution_StagingTex" )
 				.SetDimension( ERHITextureDimension::TextureCube )
 				.SetWidth( a_OutSize )
 				.SetHeight( a_OutSize )
@@ -791,6 +793,7 @@ namespace Tridium {
 			RHICommandListRef cmdList = RHI::CreateCommandList( RHICommandListDesc{}
 				.SetName( "EnvironmentMapImporter" )
 				.SetQueueType( ERHICommandQueueType::Graphics )
+				.SetEnableImmediateExecution( true )
 			);
 
 			cmdList->Open();
@@ -800,8 +803,7 @@ namespace Tridium {
 
 			auto* cmdListPtr = cmdList.get();
 			const RHIFenceValue fence = RHI::ExecuteCommandLists( &cmdListPtr, 1, ERHICommandQueueType::Graphics );
-			//RHI::WaitForFence( ERHICommandQueueType::Graphics, fence );
-			RHI::WaitForIdle();
+			RHI::WaitForFence( ERHICommandQueueType::Graphics, fence );
 
 			irradianceMap = ExtractIrradianceCubeMap( irradianceTex );
 			radianceMaps = ExtractRadianceCubeMapMips( radianceTex );

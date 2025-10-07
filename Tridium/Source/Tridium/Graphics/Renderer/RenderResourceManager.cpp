@@ -366,9 +366,6 @@ namespace Tridium {
 				.EmissiveIntensity = a_Asset->EmissiveIntensity()
 			};
 
-			materialProperties.MetallicIntensity = 1.0f;
-			materialProperties.RoughnessIntensity = 1.0f;
-
 			RHIBufferRef materialBuffer = RHI::CreateBuffer(
 				RHIBufferDesc{}
 					.SetName( std::format( "Material_{}_PropertiesBuffer", a_Asset->ID() ) )

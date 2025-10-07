@@ -216,6 +216,28 @@ namespace Tridium::OpenGL {
 		}
 	};
 
+
+	struct GLSamplerDesc
+	{
+		GLenum MinFilter = GL_LINEAR;
+		GLenum MagFilter = GL_LINEAR;
+		GLenum AddressU = GL_REPEAT;
+		GLenum AddressV = GL_REPEAT;
+		GLenum AddressW = GL_REPEAT;
+		GLenum ComparisonFunc = GL_NONE;
+		bool IsAnisotropic = false;
+		float MaxAnisotropy = 1.0f;
+		float MipLodBias = 0.0f;
+		float MinLod = -1000.0f;
+		float MaxLod = 1000.0f;
+		GLfloat BorderColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+		static GLSamplerDesc From( const RHISampler& a_Sampler, class DynamicRHI_OpenGLImpl* a_RHI );
+		void ApplyToTexture( GLenum a_Target, GLuint a_Obj );
+		void ApplyToSampler( GLuint a_Obj );
+
+	};
+
 #pragma region OPENGL RHI IMPLEMENTATIONS
 
 	//=================================================================================================
@@ -232,15 +254,27 @@ namespace Tridium::OpenGL {
 
 		//=============================================================================================
 		virtual bool Release() override;
-		virtual const void* NativePtr() const { return TextureObj.NativePtr(); }
-		virtual bool Valid() const override { return TextureObj.Valid(); }
+		virtual const void* NativePtr() const { return &m_GLHandle; }
+		virtual bool Valid() const override { return m_GLHandle != 0; }
 		virtual RHITextureSubresourceData MapSubresource( const RHITextureSlice& a_Slice ) override;
 		virtual void UnmapSubresource( const RHITextureSlice& a_Slice ) override;
 
 		//=============================================================================================
-		GLTextureWrapper TextureObj{};
-		GLTextureFormat GLFormat{};
-		GLenum GLTarget = GL_NONE;
+		GLuint GLHandle() const { return m_GLHandle; }
+		GLenum GLTarget() const { return m_GLTarget; }
+		const GLTextureFormat& GLFormat() const { return m_GLFormat; }
+		size_t GetTotalSizeInBytes() const;
+		RHIBufferRange GetSubresourceRange( const RHITextureSlice& a_Slice ) const;
+
+	protected:
+
+		//=============================================================================================
+		GLuint m_GLHandle;
+		GLTextureFormat m_GLFormat{};
+		GLenum m_GLTarget = GL_NONE;
+
+		bool CommitAsStagingTexture();
+
 	};
 
 	//=================================================================================================

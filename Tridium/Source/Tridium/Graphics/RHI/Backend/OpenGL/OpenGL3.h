@@ -398,9 +398,9 @@ namespace Tridium {
 			glFramebufferTextureLayer( a_Target, a_Attachment, a_Texture, a_Level, a_Layer );
 		}
 
-		static FORCEINLINE void MapBufferRange( GLenum a_Target, GLintptr a_Offset, GLsizeiptr a_Length, GLbitfield a_Access )
+		static FORCEINLINE void* MapBufferRange( GLenum a_Target, GLintptr a_Offset, GLsizeiptr a_Length, GLbitfield a_Access )
 		{
-			glMapBufferRange( a_Target, a_Offset, a_Length, a_Access );
+			return glMapBufferRange( a_Target, a_Offset, a_Length, a_Access );
 		}
 
 		static FORCEINLINE void FlushMappedBufferRange( GLenum a_Target, GLintptr a_Offset, GLsizeiptr a_Length )

@@ -453,18 +453,36 @@ namespace Tridium::OpenGL {
 		m_FramebufferObj.Create();
 		OpenGL3::BindFramebuffer( GL_FRAMEBUFFER, m_FramebufferObj );
 
-		TODO( "Do we want to support this?" );
-		constexpr int mipmapLevelToRenderTo = 0;
-
 		// Bind color attachments
 		for ( size_t i = 0; i < a_Framebuffer.ColorAttachments.Size(); ++i )
 		{
 			const auto& attachment = a_Framebuffer.ColorAttachments[i];
-			if ( attachment.Texture )
+			if ( !attachment.Texture )
 			{
-				const auto* texture = attachment.Texture->As<RHITexture_OpenGLImpl>();
-				const GLenum target = attachment.ReadOnly ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
-				OpenGL3::FramebufferTexture2D( target, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texture->TextureObj, mipmapLevelToRenderTo );
+				continue;
+			}
+
+			const auto* texture = attachment.Texture->As<RHITexture_OpenGLImpl>();
+			const GLenum target = attachment.ReadOnly ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
+			const int mipmapLevelToRenderTo = attachment.Slice.MipLevel;
+			switch ( texture->Desc().Dimension )
+			{
+				case ERHITextureDimension::Texture2D:
+				{
+					OpenGL3::FramebufferTexture2D( target, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texture->GLHandle(), mipmapLevelToRenderTo );
+					break;
+				}
+				case ERHITextureDimension::TextureCube:
+				{
+					const GLenum cubeFaceTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X + attachment.Slice.ArraySlice;
+					OpenGL3::FramebufferTexture2D( target, GL_COLOR_ATTACHMENT0 + i, cubeFaceTarget, texture->GLHandle(), mipmapLevelToRenderTo );
+					break;
+				}
+				default:
+				{
+					ASSERT( false, "Unsupported texture dimension for framebuffer color attachment!" );
+					break;
+				}
 			}
 		}
 
@@ -475,7 +493,8 @@ namespace Tridium::OpenGL {
 			const GLenum attachmentType = GetRHIFormatInfo( a_Framebuffer.DepthStencilAttachment.Texture->Desc().Format ).HasStencil
 				? GL_DEPTH_STENCIL_ATTACHMENT
 				: GL_DEPTH_ATTACHMENT;
-			OpenGL3::FramebufferTexture2D( target, attachmentType, GL_TEXTURE_2D, depthStencilTexture->TextureObj, mipmapLevelToRenderTo );
+			const int mipmapLevelToRenderTo = a_Framebuffer.DepthStencilAttachment.Slice.MipLevel;
+			OpenGL3::FramebufferTexture2D( target, attachmentType, GL_TEXTURE_2D, depthStencilTexture->GLHandle(), mipmapLevelToRenderTo );
 		}
 
 	#if RHI_DEBUG_ENABLED
@@ -613,7 +632,7 @@ namespace Tridium::OpenGL {
 						if ( auto* texture = binding.Resource->As<RHITexture_OpenGLImpl>() )
 						{
 							// Bind texture directly to unit
-							OpenGL4::BindTextureUnit( unit, texture->TextureObj );
+							OpenGL4::BindTextureUnit( unit, texture->GLHandle() );
 
 							// Choose sampler
 							RHISampler sampler = binding.Sampler.Valid()
@@ -686,38 +705,38 @@ namespace Tridium::OpenGL {
 		RHITextureSlice dstSlice = a_DstSlice.Resolve( desc );
 		if ( desc.Is1D() )
 		{
-			ScopedTextureBinding textureBinding( GL_TEXTURE_1D, texture->TextureObj );
+			ScopedTextureBinding textureBinding( GL_TEXTURE_1D, texture->GLHandle() );
 			OpenGL1::TexSubImage1D(
 				GL_TEXTURE_1D, dstSlice.MipLevel,
 				dstSlice.OffsetX,
 				dstSlice.Width,
-				texture->GLFormat.Format, texture->GLFormat.Type,
+				texture->GLFormat().Format, texture->GLFormat().Type,
 				a_Data.Data );
 		}
 		else if ( desc.Is2D() )
 		{
-			ScopedTextureBinding textureBinding( GL_TEXTURE_2D, texture->TextureObj );
+			ScopedTextureBinding textureBinding( GL_TEXTURE_2D, texture->GLHandle() );
 			OpenGL1::TexSubImage2D( 
 				GL_TEXTURE_2D, dstSlice.MipLevel,
 				dstSlice.OffsetX, dstSlice.OffsetY,
 				dstSlice.Width, dstSlice.Height,
-				texture->GLFormat.Format, texture->GLFormat.Type,
+				texture->GLFormat().Format, texture->GLFormat().Type,
 				a_Data.Data );
 		}
 		else if ( desc.Is3D() )
 		{
-			ScopedTextureBinding textureBinding( GL_TEXTURE_3D, texture->TextureObj );
+			ScopedTextureBinding textureBinding( GL_TEXTURE_3D, texture->GLHandle() );
 			OpenGL1::TexSubImage3D(
 				GL_TEXTURE_3D, dstSlice.MipLevel,
 				dstSlice.OffsetX, dstSlice.OffsetY, dstSlice.OffsetZ,
 				dstSlice.Width, dstSlice.Height, dstSlice.Depth,
-				texture->GLFormat.Format, texture->GLFormat.Type,
+				texture->GLFormat().Format, texture->GLFormat().Type,
 				a_Data.Data );
 		}
 		else if ( desc.IsCube() )
 		{
 			const uint8_t* dataPtr = Cast<const uint8_t*>( a_Data.Data );
-			ScopedTextureBinding textureBinding( GL_TEXTURE_CUBE_MAP, texture->TextureObj );
+			ScopedTextureBinding textureBinding( GL_TEXTURE_CUBE_MAP, texture->GLHandle() );
 			for ( uint32_t face = 0; face < 6; ++face )
 			{
 				const uint8_t* pixels = dataPtr + face * a_Data.RowStride * dstSlice.Height;
@@ -725,7 +744,7 @@ namespace Tridium::OpenGL {
 					GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, dstSlice.MipLevel,
 					dstSlice.OffsetX, dstSlice.OffsetY,
 					dstSlice.Width, dstSlice.Height,
-					texture->GLFormat.Format, texture->GLFormat.Type,
+					texture->GLFormat().Format, texture->GLFormat().Type,
 					pixels );
 			}
 		}
@@ -741,8 +760,8 @@ namespace Tridium::OpenGL {
 		auto* dstTexture = a_DstTexture.As<RHITexture_OpenGLImpl>();
 		auto* srcTexture = a_SrcTexture.As<RHITexture_OpenGLImpl>();
 
-		const GLenum dstTarget = dstTexture->GLTarget;
-		const GLenum srcTarget = srcTexture->GLTarget;
+		const GLenum dstTarget = dstTexture->GLTarget();
+		const GLenum srcTarget = srcTexture->GLTarget();
 
 		const auto dstSlice = a_DstSlice.Resolve( dstTexture->Desc() );
 		const auto srcSlice = a_SrcSlice.Resolve( srcTexture->Desc() );
@@ -750,33 +769,33 @@ namespace Tridium::OpenGL {
 		const size_t height = Math::Min( dstSlice.Height, srcSlice.Height );
 		const size_t depth = Math::Min( dstSlice.Depth, srcSlice.Depth );
 
-		//ScopedTextureBinding dstBinding( dstTarget, dstTexture->TextureObj );
-		//ScopedTextureBinding srcBinding( srcTarget, srcTexture->TextureObj );
+		//ScopedTextureBinding dstBinding( dstTarget, dstTexture->GLHandle() );
+		//ScopedTextureBinding srcBinding( srcTarget, srcTexture->GLHandle() );
 
 		if ( dstTarget == GL_TEXTURE_1D )
 		{
 			OpenGL4::CopyImageSubData(
-				srcTexture->TextureObj, GL_TEXTURE_1D, srcSlice.MipLevel,
+				srcTexture->GLHandle(), GL_TEXTURE_1D, srcSlice.MipLevel,
 				srcSlice.OffsetX, 0, 0,
-				dstTexture->TextureObj, GL_TEXTURE_1D, dstSlice.MipLevel,
+				dstTexture->GLHandle(), GL_TEXTURE_1D, dstSlice.MipLevel,
 				dstSlice.OffsetX, 0, 0,
 				width, 1, 1 );
 		}
 		else if ( dstTarget == GL_TEXTURE_2D )
 		{
 			OpenGL4::CopyImageSubData(
-				srcTexture->TextureObj, GL_TEXTURE_2D, srcSlice.MipLevel,
+				srcTexture->GLHandle(), GL_TEXTURE_2D, srcSlice.MipLevel,
 				srcSlice.OffsetX, srcSlice.OffsetY, 0,
-				dstTexture->TextureObj, GL_TEXTURE_2D, dstSlice.MipLevel,
+				dstTexture->GLHandle(), GL_TEXTURE_2D, dstSlice.MipLevel,
 				dstSlice.OffsetX, dstSlice.OffsetY, 0,
 				width, height, 1 );
 		}
 		else if ( dstTarget == GL_TEXTURE_3D )
 		{
 			OpenGL4::CopyImageSubData(
-				srcTexture->TextureObj, GL_TEXTURE_3D, srcSlice.MipLevel,
+				srcTexture->GLHandle(), GL_TEXTURE_3D, srcSlice.MipLevel,
 				srcSlice.OffsetX, srcSlice.OffsetY, srcSlice.OffsetZ,
-				dstTexture->TextureObj, GL_TEXTURE_3D, dstSlice.MipLevel,
+				dstTexture->GLHandle(), GL_TEXTURE_3D, dstSlice.MipLevel,
 				dstSlice.OffsetX, dstSlice.OffsetY, dstSlice.OffsetZ,
 				width, height, depth );
 		}
@@ -785,12 +804,46 @@ namespace Tridium::OpenGL {
 			for ( uint32_t face = 0; face < 6; ++face )
 			{
 				OpenGL4::CopyImageSubData(
-					srcTexture->TextureObj, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, srcSlice.MipLevel,
-					srcSlice.OffsetX, srcSlice.OffsetY, 0,
-					dstTexture->TextureObj, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, dstSlice.MipLevel,
-					dstSlice.OffsetX, dstSlice.OffsetY, 0,
+					srcTexture->GLHandle(), GL_TEXTURE_CUBE_MAP, srcSlice.MipLevel,
+					srcSlice.OffsetX, srcSlice.OffsetY, face,
+					dstTexture->GLHandle(), GL_TEXTURE_CUBE_MAP, dstSlice.MipLevel,
+					dstSlice.OffsetX, dstSlice.OffsetY, face,
 					width, height, 1 );
 			}
+		}
+		else if ( dstTarget == GL_BUFFER )
+		{
+			OpenGL1::BindBuffer( GL_PIXEL_PACK_BUFFER, dstTexture->GLHandle() );
+
+			const GLenum srcTarget = srcTexture->GLTarget();
+			const auto& glFormat = srcTexture->GLFormat();
+
+			const GLint mip = srcSlice.MipLevel;
+			const GLsizei width = static_cast<GLsizei>( srcSlice.Width );
+			const GLsizei height = static_cast<GLsizei>( srcSlice.Height );
+			const GLsizei depth = static_cast<GLsizei>( srcSlice.Depth );
+
+			const uint32_t bytesPerPixel = GetRHIFormatInfo( srcTexture->Desc().Format ).Bytes();
+
+			// Compute the offset into the PBO
+			const GLsizei dstOffset = dstTexture->GetSubresourceRange( dstSlice ).Offset;
+
+			OpenGL4::GetTextureSubImage(
+				srcTexture->GLHandle(),
+				mip,
+				srcSlice.OffsetX,
+				srcSlice.OffsetY,
+				srcSlice.OffsetZ + srcSlice.ArraySlice,
+				width,
+				height,
+				depth,
+				glFormat.Format,
+				glFormat.Type,
+				dstTexture->GetTotalSizeInBytes(),
+				(void*)( dstOffset )
+			);
+
+			OpenGL1::BindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
 		}
 		else
 		{

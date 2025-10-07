@@ -45,8 +45,6 @@ static const float PI = 3.14159265f;
 
 #if defined( __PSSL__ )
 	// Defined elsewhere
-#elif defined( __spirv_opengl__ )
-	#define INLINED_CONSTANTS( _Name, _Type ) ConstantBuffer< _Type > _Name## : register( b0, INLINED_CONSTANTS_SPACE )
 #elif defined( __spirv__ )
 	#define INLINED_CONSTANTS( _Name, _Type ) ConstantBuffer< _Type > _Name : register( b0, INLINED_CONSTANTS_SPACE )
 #else

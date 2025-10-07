@@ -38,7 +38,7 @@ namespace Tridium::OpenGL {
 			OpenGL3::BindFramebuffer( GL_FRAMEBUFFER, framebuffer );
 
 			OpenGL3::FramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
-										   GL_TEXTURE_2D, a_RenderTarget->As<RHITexture_OpenGLImpl>()->TextureObj, 0 );
+										   GL_TEXTURE_2D, *a_RenderTarget->NativePtrAs<GLuint>(), 0);
 
 			OpenGL2::DrawBuffer( GL_COLOR_ATTACHMENT0 );
 
