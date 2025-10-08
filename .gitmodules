@@ -1,0 +1,3 @@
+[submodule "Tridium/Originals/assimp"]
+	path = Tridium/Originals/assimp/assimp
+	url = https://github.com/assimp/assimp

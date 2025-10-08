@@ -3,6 +3,7 @@
 #Bin/
 Bin-Int/
 __pycache__/
+intermediate/
 
 # Files
 *.sln
