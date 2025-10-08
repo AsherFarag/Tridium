@@ -66,19 +66,36 @@ namespace Tridium {
 	{
 	public:
 
+		//=============================================================================================
+		// LOD: Level of Detail data for the static mesh.
+		//=============================================================================================
 		struct LOD
 		{
 			Array<Vertex> Vertices{};
 			Array<uint32_t> Indices{};
 		};
 
+		//=============================================================================================
 		bool Valid() const override { return !m_SubMeshes.Empty() && !m_Materials.Empty(); }
 
+		//=============================================================================================
 		const auto& LODs() const { return m_LODs; }
 		const auto& SubMeshes() const { return m_SubMeshes; }
 		const auto& Materials() const { return m_Materials; }
 		const auto& BoundingBox() const { return m_BoundingBox; }
 
+		//=============================================================================================
+		bool HasIndices( uint32_t a_LODIndex = 0 ) const
+		{
+			if ( a_LODIndex >= m_LODs.Size() )
+			{
+				return false;
+			}
+
+			return !m_LODs[ a_LODIndex ].Indices.Empty();
+		}
+
+		//=============================================================================================
 		AssetRef<class Material> GetMaterial( uint32_t a_Index ) const
 		{
 			if ( a_Index >= m_Materials.Size() )
@@ -89,6 +106,7 @@ namespace Tridium {
 			return m_Materials[ a_Index ];
 		}
 
+		//=============================================================================================
 		AssetRef<class Material> GetMaterial( const SubMesh& a_SubMesh ) const
 		{
 			return GetMaterial( a_SubMesh.MaterialIndex );

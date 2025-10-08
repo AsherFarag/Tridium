@@ -35,6 +35,7 @@ namespace Tridium {
 		aiProcessPreset_TargetRealtime_MaxQuality | // We only import assets in the editor, so import-time performance doesn't matter
 		aiProcess_ConvertToLeftHanded             | // DirectX style
 		aiProcess_RemoveComponent                 | // Removes unneeded components for better performance
+		//aiProcess_PreTransformVertices            | // Apply node transformations to vertices
 		aiProcess_GlobalScale;
 
 	// Components to remove from the imported scene for better performance
@@ -315,11 +316,18 @@ namespace Tridium {
 				if ( aiMat->Get( AI_MATKEY_COLOR_DIFFUSE, color ) == aiReturn_SUCCESS )
 				{
 					TODO( "Do we need to convert from linear to sRGB?" );
+					LOG( LogCategory::Asset, Info, "Albedo color: R={} G={} B={}", color.r, color.g, color.b );
 					material->SetAlbedoColor( Color( color.r, color.g, color.b, 1.0f ) );
 				}
 
 				// Texture
-				material->SetAlbedoMap( GetOrLoadTexture( aiMat, aiTextureType_DIFFUSE ) );
+				auto albedoTex = GetOrLoadTexture( aiMat, aiTextureType_BASE_COLOR );
+				if ( !albedoTex )
+				{
+					albedoTex = GetOrLoadTexture( aiMat, aiTextureType_DIFFUSE ); // Fallback to diffuse if base color is not available
+				}
+
+				material->SetAlbedoMap( albedoTex );
 			}
 
 			// Normal
@@ -328,28 +336,34 @@ namespace Tridium {
 				material->SetNormalMap( GetOrLoadTexture( aiMat, aiTextureType_NORMALS ) );
 			}
 
-			// Metallic (Reflectivity)
+			// Metallic
 			{
 				// Intensity
 				float metalness = 0.0f;
-				aiMat->Get( AI_MATKEY_REFLECTIVITY, metalness );
-				metalness = metalness < 0.5f ? 0.0f : 1.0f; // Convert to binary metalness (for now?)
+				if ( aiMat->Get( AI_MATKEY_METALLIC_FACTOR, metalness ) != aiReturn_SUCCESS )
+				{
+					metalness = 0.0f;
+				}
+
 				material->SetMetallicIntensity( metalness );
 
 				// Texture
-				material->SetMetallicMap( GetOrLoadTexture( aiMat, aiTextureType_REFLECTION ) );
+				material->SetMetallicMap( GetOrLoadTexture( aiMat, aiTextureType_METALNESS ) );
 			}
 
-			// Roughness (Shininess)
+			// Roughness
 			{
 				// Intensity
 				float roughness = 0.4f;
-				aiMat->Get( AI_MATKEY_SHININESS_STRENGTH, roughness );
+				if ( aiMat->Get( AI_MATKEY_ROUGHNESS_FACTOR, roughness ) != aiReturn_SUCCESS )
+				{
+					roughness = 0.4f;
+				}
+
 				material->SetRoughnessIntensity( roughness );
 
 				// Texture
-				TODO( "We only have a shininess map in assimp, need to invert it to get roughness" );
-				material->SetRoughnessMap( GetOrLoadTexture( aiMat, aiTextureType_SHININESS ) );
+				material->SetRoughnessMap( GetOrLoadTexture( aiMat, aiTextureType_DIFFUSE_ROUGHNESS ) );
 			}
 
 			// Emission
@@ -363,13 +377,18 @@ namespace Tridium {
 				}
 
 				// Texture
-				material->SetEmissiveMap( GetOrLoadTexture( aiMat, aiTextureType_EMISSIVE ) );
+				auto emissiveTex = GetOrLoadTexture( aiMat, aiTextureType_EMISSION_COLOR );
+				if ( !emissiveTex )
+				{
+					emissiveTex = GetOrLoadTexture( aiMat, aiTextureType_EMISSIVE ); // Fallback to emissive if emission color is not available
+				}
+				material->SetEmissiveMap( emissiveTex );
 			}
 
 			// Ambient Occlusion (Lightmap)
 			{
 				// Texture
-				material->SetAmbientOcclusionMap( GetOrLoadTexture( aiMat, aiTextureType_LIGHTMAP ) );
+				material->SetAmbientOcclusionMap( GetOrLoadTexture( aiMat, aiTextureType_AMBIENT_OCCLUSION ) );
 			}
 
 			// Opacity

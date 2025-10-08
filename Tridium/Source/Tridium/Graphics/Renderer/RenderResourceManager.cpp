@@ -227,6 +227,7 @@ namespace Tridium {
 		}
 
 		// Create index buffer
+		if ( a_Asset->HasIndices() )
 		{
 			const auto bufferDesc = RHIBufferDesc{}
 				.SetName( std::format( "StaticMesh_{}_IndexBuffer", a_Asset->ID() ) )
@@ -475,7 +476,10 @@ namespace Tridium {
 				.SetMips( 0 ) TODO( "Support mipmaps" )
 				.SetFormat( a_Asset->Format() )
 				.SetHeapType( ERHIHeapType::Default )
-				.SetBindFlags( ERHIBindFlags::ShaderResource );
+				.SetBindFlags( ERHIBindFlags::ShaderResource )
+				.SetDefaultSampler( RHISampler{}
+									.SetFilter( ERHISamplerFilter::MinMagMipLinear )
+				);
 
 			const auto initialData = RHITextureSubresourceData{}
 				.SetData( a_Asset->PixelData().Data() )

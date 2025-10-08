@@ -387,18 +387,20 @@ namespace Tridium::Math {
 	template<Concepts::Arithmetic _Gen>
 	inline Matrix4 RecomposeTransform( const Vector<3, _Gen>& a_Pos, const TQuaternion<_Gen>& a_Rot, const Vector<3, _Gen>& a_Scale )
 	{
-		return glm::recompose( 
-			a_Scale, a_Rot, Cast<const glm::vec<3, _Gen>&>( a_Pos ), glm::vec<3, _Gen>( 0 ), glm::vec<4, _Gen>( 0 ) 
-		);
+		//return glm::recompose( 
+		//	a_Scale, a_Rot, Cast<const glm::vec<3, _Gen>&>( a_Pos ), glm::vec<3, _Gen>( 0 ), glm::vec<4, _Gen>( 0 ) 
+		//);
+		return {};
 	}
 
 	// Recomposes a transformation matrix from a previously decomposed matrix.
 	template<Concepts::Arithmetic _Gen>
 	inline Matrix4 RecomposeTransform( const Vector<3, _Gen>& a_Pos, const Vector<3, _Gen>& a_Rot, const Vector<3, _Gen>& a_Scale )
 	{
-		return glm::recompose( 
-			a_Scale, glm::qua<_Gen>( a_Rot ), Cast<const glm::vec<3, _Gen>&>( a_Pos ), glm::vec<3, _Gen>( 0 ), glm::vec<4, _Gen>( 0 ) 
-		);
+		//return glm::recompose( 
+		//	a_Scale, glm::qua<_Gen>( a_Rot ), Cast<const glm::vec<3, _Gen>&>( a_Pos ), glm::vec<3, _Gen>( 0 ), glm::vec<4, _Gen>( 0 ) 
+		//);
+		return {};
 	}
 
 	// Recomposes a transformation matrix from a previously decomposed matrix.
@@ -407,10 +409,11 @@ namespace Tridium::Math {
 		const Vector<3, _Gen>& a_Pos, const TQuaternion<_Gen>& a_Rot, const Vector<3, _Gen>& a_Scale,
 		const Vector<3, _Gen>& a_Skew, const Vector<3, _Gen>& a_Perspective )
 	{
-		return glm::recompose(
-			a_Scale, a_Rot, Cast<const glm::vec<3, _Gen>&>( a_Pos ),
-			Cast<const glm::vec<3, _Gen>&>( a_Skew ), Cast<const glm::vec<4, _Gen>&>( a_Perspective )
-		);
+		//return glm::recompose(
+		//	a_Scale, a_Rot, Cast<const glm::vec<3, _Gen>&>( a_Pos ),
+		//	Cast<const glm::vec<3, _Gen>&>( a_Skew ), Cast<const glm::vec<4, _Gen>&>( a_Perspective )
+		//);
+		return {};
 	}
 
 #pragma endregion // Matrix

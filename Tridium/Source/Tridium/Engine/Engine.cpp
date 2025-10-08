@@ -19,6 +19,11 @@
 
 namespace Tridium {
 
+	GameInstance* CreateGameInstance()
+	{
+		return new GameInstance();
+	}
+
 	Engine* Engine::s_Instance = nullptr;
 
 	//////////////////////////////////////////////////////////////////////////

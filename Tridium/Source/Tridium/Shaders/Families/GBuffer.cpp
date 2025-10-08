@@ -90,9 +90,9 @@ namespace Tridium {
 
         // Metallic, Roughness, AO
         float metallic = u_MaterialProps.MetallicIntensity;
-        metallic *= SampleTexture( MetallicMap, a_Input.UV ).r;
+        metallic *= SampleTexture( MetallicMap, a_Input.UV ).b;
         float roughness = u_MaterialProps.RoughnessIntensity;
-        roughness *= SampleTexture( RoughnessMap, a_Input.UV ).r;
+        roughness *= SampleTexture( RoughnessMap, a_Input.UV ).g;
         float ao = SampleTexture( AmbientOcclusionMap, a_Input.UV ).r;
         output.MetalRoughAO = float4( metallic, roughness, ao, 1.0f );
 

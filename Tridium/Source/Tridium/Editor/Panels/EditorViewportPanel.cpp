@@ -160,7 +160,7 @@ namespace Tridium {
 			{
 
 				//TEMP
-				const FilePath assetFilePath = "TestProject/Content/Sponza/glTF/Sponza.gltf";
+				const FilePath assetFilePath = "TestProject/Content/damagedhelmet/DamagedHelmet.gltf";
 				//const FilePath assetFilePath = "TestProject/Content/troll/troll/TrollApose_low.fbx";
 				auto modelImporter = AssetFactory::GetImporter( assetFilePath.GetExtension().ToString() );
 				static bool imported = false;
@@ -181,6 +181,8 @@ namespace Tridium {
 					}
 
 					{
+						//const FilePath assetFilePath = "TestProject/Content/spider.fbx";
+						//const FilePath assetFilePath = "TestProject/Content/Charles/Barrel_EdgeNormals.fbx";
 						const FilePath assetFilePath = "TestProject/Content/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX";
 						std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
 						AssetImportContext context;
@@ -189,7 +191,16 @@ namespace Tridium {
 						auto endTime = std::chrono::high_resolution_clock::now();
 						std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>( endTime - startTime );
 						LOG( LogCategory::Debug, Info, "Import took {} seconds", duration.count() );
-						importedAsset2 = SharedPtrCast<StaticMesh>( context.m_CreatedAssets.Back().second );
+
+						for ( const auto& [metaData, asset] : context.m_CreatedAssets )
+						{
+							LOG( LogCategory::Debug, Info, "Created Asset: {}", metaData.Name );
+							if ( asset->Type() == StaticMesh::StaticType() )
+							{
+								importedAsset2 = SharedPtrCast<StaticMesh>( asset );
+							}
+						}
+
 					}
 				}
 
@@ -200,7 +211,7 @@ namespace Tridium {
 				renderer.SubmitStaticMesh( importedAsset2,
 										   Math::Translate( Vector3( 0.0f, 1.0f, 0.0f ) ) *
 										   Math::Rotate( Matrix4( 1.0f ), 90.0f, Vector3( 0.0f, 1.0f, 0.0f ) ) *
-										   Math::Scale( Vector3( 0.01f ) )
+										   Math::Scale( Vector3( 0.05f ) )
 				);
 				renderer.Close();
 

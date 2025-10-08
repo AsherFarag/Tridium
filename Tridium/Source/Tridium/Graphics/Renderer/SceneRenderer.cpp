@@ -439,7 +439,14 @@ namespace Tridium {
 			.SetFormat( ERHIFormat::RGBA16_FLOAT )
 			.SetBindFlags( ERHIBindFlags::RenderTarget | ERHIBindFlags::ShaderResource )
 			.SetClearValue( RHIClearValue{} )
-			.SetUseClearValue( true );
+			.SetUseClearValue( true )
+			.SetDefaultSampler(
+				RHISampler{}
+					.SetFilter( ERHISamplerFilter::MinMagMipLinear )
+					.SetAddressU( ERHISamplerAddressMode::Clamp )
+					.SetAddressV( ERHISamplerAddressMode::Clamp )
+					.SetAddressW( ERHISamplerAddressMode::Clamp )
+			);
 
 		m_Position.second = RHI::CreateTexture( texDesc.SetName( "GBuffer Position" ) );
 		m_Albedo.second = RHI::CreateTexture( texDesc.SetName( "GBuffer Albedo" ) );
@@ -638,13 +645,13 @@ namespace Tridium {
 
 				InlinedConstants_LitDefault constants;
 				constants.CameraPosition = GetSceneRenderer().GetSceneCamera().Position;
-				constants.NumPointLights = Cast<uint32_t>( s_PointLights.Size() );
+				constants.NumPointLights = 0;// Cast<uint32_t>( s_PointLights.Size() );
 
 				// Directional Light
 				{
 					constants.DirectionalLight.Direction = Vector3{ -0.5f, -1.0f, -0.5f }.Normalized();
 					constants.DirectionalLight.Color = Vector3{ 1.0f, 1.0f, 1.0f };
-					constants.DirectionalLight.Intensity = 1.0f;
+					constants.DirectionalLight.Intensity = 0.0f;
 				}
 
 				a_CommandList.SetInlinedConstants( constants );

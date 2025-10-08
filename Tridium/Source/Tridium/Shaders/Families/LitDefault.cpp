@@ -193,6 +193,12 @@ namespace Tridium {
 
         // Apply AO + emission
         float3 color = lighting * ao + emission;
+
+        // Exposure tone mapping
+        color = float3(1.0, 1.0, 1.0) - exp(-color);
+        // Gamma correction
+        const float3 gamma = float3(1.0/2.2, 1.0/2.2, 1.0/2.2); 
+        color = pow(color, gamma); // Gamma correction
     
         return float4(color, 1.0);
     }
