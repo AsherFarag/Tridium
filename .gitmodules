@@ -1,3 +1,7 @@
 [submodule "Tridium/Originals/assimp"]
 	path = Tridium/Originals/assimp/assimp
 	url = https://github.com/assimp/assimp
+[submodule "Tridium/Originals/glfw/glfw"]
+	path = Tridium/Originals/glfw/glfw
+	url = https://github.com/glfw/glfw
+	branch = 3.3-stable

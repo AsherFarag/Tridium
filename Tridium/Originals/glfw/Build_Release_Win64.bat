@@ -1,0 +1,28 @@
+@echo off
+
+set PLATFORM=x64
+set CONFIG=Release
+set SOLUTION=%~dp0\intermediate\build_win\glfw.sln
+set PROJECT=assimp
+set CMAKE_PATH=%~dp0\..\..\..\Dependencies\Cmake\bin\cmake.exe
+set PROJECT_SOURCE_PATH=%~dp0\glfw
+set PROJECT_OUTPUT_PATH=%~dp0\intermediate\build_win
+set BINARY_SOURCE_PATH=%~dp0\intermediate\build_win\lib\%CONFIG%
+set BINARY_OUTPUT_PATH=%~dp0\..\..\Dependencies\glfw\bin\windows\Debug
+
+rd /s /q %PROJECT_OUTPUT_PATH%
+mkdir %PROJECT_OUTPUT_PATH%
+
+%CMAKE_PATH% -S %PROJECT_SOURCE_PATH% -B %PROJECT_OUTPUT_PATH% ^
+	-DBUILD_SHARED_LIBS=OFF ^
+	-DGLFW_BUILD_EXAMPLES=OFF ^
+	-DGLFW_BUILD_TESTS=OFF ^
+	-DGLFW_BUILD_DOCS=OFF ^
+	-DGLFW_INSTALL=OFF ^
+	-DUSE_STATIC_CRT=ON
+
+devenv %SOLUTION% /build "%CONFIG%|%PLATFORM%" /project %PROJECT%
+
+rd /s /q %BINARY_OUTPUT_PATH%
+mkdir %BINARY_OUTPUT_PATH%
+xcopy /s %BINARY_SOURCE_PATH% %BINARY_OUTPUT_PATH%
