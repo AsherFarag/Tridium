@@ -1,6 +1,6 @@
 # Directories
 .vs/
-Bin/
+#Bin/
 Bin-Int/
 __pycache__/
 
