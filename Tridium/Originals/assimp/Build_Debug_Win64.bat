@@ -8,7 +8,7 @@ set CMAKE_PATH=%~dp0\..\..\..\Dependencies\Cmake\bin\cmake.exe
 set PROJECT_SOURCE_PATH=%~dp0\assimp
 set PROJECT_OUTPUT_PATH=%~dp0\intermediate\build_win
 set BINARY_SOURCE_PATH=%~dp0\intermediate\build_win\lib\%CONFIG%
-set BINARY_OUTPUT_PATH=%~dp0\..\..\Dependencies\assimp\bin\windows\Debug
+set BINARY_OUTPUT_PATH=%~dp0\..\..\Dependencies\assimp\bin\windows\%CONFIG%
 
 rd /s /q %PROJECT_OUTPUT_PATH%
 mkdir %PROJECT_OUTPUT_PATH%

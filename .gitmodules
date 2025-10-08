@@ -5,3 +5,6 @@
 	path = Tridium/Originals/glfw/glfw
 	url = https://github.com/glfw/glfw
 	branch = 3.3-stable
+[submodule "Tridium/Originals/yaml-cpp/yaml-cpp"]
+	path = Tridium/Originals/yaml-cpp/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp

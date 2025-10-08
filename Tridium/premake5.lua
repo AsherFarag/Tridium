@@ -58,9 +58,9 @@ local dependencies = {
 	glfw = {
 		includeDir = path.join(depsDir, "glfw", "include"),
 		windows = {
-			libName = "GLFW.lib",
+			libName = "glfw3.lib",
 			libDir = path.join(depsDir, "glfw", "bin", "windows", "Release"),
-			debugLibName = "GLFW.lib",
+			debugLibName = "glfw3.lib",
 			debugLibDir = path.join(depsDir, "glfw", "bin", "windows", "Debug")
 		}
 	},
@@ -121,13 +121,8 @@ local dependencies = {
 	},
 	-- SPIRV-Cross: A library for parsing and converting SPIR-V to GLSL - Used to convert HLSL to GLSL
 	SPIRVCross = {
-		includeDir = path.join(depsDir, "SPIRV-Cross"),
-		windows = {
-			libName = "SPIRV-Cross.lib",
-			libDir = path.join(depsDir, "SPIRV-Cross", "bin", "windows", "Release"),
-			debugLibName = "SPIRV-Cross.lib",
-			debugLibDir = path.join(depsDir, "SPIRV-Cross", "bin", "windows", "Debug")
-		}
+		includeDir = path.join(depsDir, "SPIRV-Cross", "include"),
+		sourceDir = path.join(depsDir, "SPIRV-Cross", "include", "SPIRV-Cross"),
 	},
 	-- stb_image: A header only image loading library
 	stbi = {
@@ -145,6 +140,12 @@ local dependencies = {
 	yamlcpp = {
 		includeDir = path.join(depsDir, "yaml-cpp", "include"),
 		sourceDir = path.join(depsDir, "yaml-cpp", "src"),
+		windows = {
+			libName = "yaml-cpp.lib",
+			libDir = path.join(depsDir, "yaml-cpp", "bin", "windows", "Release"),
+			debugLibName = "yaml-cppd.lib",
+			debugLibDir = path.join(depsDir, "yaml-cpp", "bin", "windows", "Debug")
+		}
 	},
 	-- zlib: A compression library used by Assimp
 	zlib = {

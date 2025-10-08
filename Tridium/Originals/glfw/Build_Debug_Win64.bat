@@ -2,13 +2,13 @@
 
 set PLATFORM=x64
 set CONFIG=Debug
-set SOLUTION=%~dp0\intermediate\build_win\glfw.sln
-set PROJECT=assimp
+set SOLUTION=%~dp0\intermediate\build_win\GLFW.sln
+set PROJECT=GLFW
 set CMAKE_PATH=%~dp0\..\..\..\Dependencies\Cmake\bin\cmake.exe
 set PROJECT_SOURCE_PATH=%~dp0\glfw
 set PROJECT_OUTPUT_PATH=%~dp0\intermediate\build_win
-set BINARY_SOURCE_PATH=%~dp0\intermediate\build_win\lib\%CONFIG%
-set BINARY_OUTPUT_PATH=%~dp0\..\..\Dependencies\glfw\bin\windows\Debug
+set BINARY_SOURCE_PATH=%~dp0\intermediate\build_win\src\%CONFIG%
+set BINARY_OUTPUT_PATH=%~dp0\..\..\Dependencies\glfw\bin\windows\%CONFIG%
 
 rd /s /q %PROJECT_OUTPUT_PATH%
 mkdir %PROJECT_OUTPUT_PATH%

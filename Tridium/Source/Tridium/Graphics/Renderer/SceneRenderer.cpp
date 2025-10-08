@@ -436,7 +436,7 @@ namespace Tridium {
 			.SetDimension( ERHITextureDimension::Texture2D )
 			.SetWidth( a_Width )
 			.SetHeight( a_Height )
-			.SetFormat( ERHIFormat::RGBA16_FLOAT )
+			.SetFormat( ERHIFormat::RGBA32_FLOAT )
 			.SetBindFlags( ERHIBindFlags::RenderTarget | ERHIBindFlags::ShaderResource )
 			.SetClearValue( RHIClearValue{} )
 			.SetUseClearValue( true )
@@ -451,7 +451,7 @@ namespace Tridium {
 		m_Position.second = RHI::CreateTexture( texDesc.SetName( "GBuffer Position" ) );
 		m_Albedo.second = RHI::CreateTexture( texDesc.SetName( "GBuffer Albedo" ) );
 		m_Normal.second = RHI::CreateTexture( texDesc.SetName( "GBuffer Normal" ) );
-		m_MetallicRoughnessAO.second = RHI::CreateTexture( texDesc.SetName( "GBuffer MetallicRoughnessAO" ) );
+		m_MetallicRoughnessAO.second = RHI::CreateTexture( texDesc.SetName( "GBuffer MetallicRoughnessAO" ).SetFormat( ERHIFormat::RGBA8_UNORM ) );
 		m_Emission.second = RHI::CreateTexture( texDesc.SetName( "GBuffer Emission" ) );
 		m_Depth.second = RHI::CreateTexture( texDesc
 			.SetFormat( ERHIFormat::D32_FLOAT )
@@ -645,7 +645,7 @@ namespace Tridium {
 
 				InlinedConstants_LitDefault constants;
 				constants.CameraPosition = GetSceneRenderer().GetSceneCamera().Position;
-				constants.NumPointLights = 0;// Cast<uint32_t>( s_PointLights.Size() );
+				constants.NumPointLights = Cast<uint32_t>( s_PointLights.Size() );
 
 				// Directional Light
 				{

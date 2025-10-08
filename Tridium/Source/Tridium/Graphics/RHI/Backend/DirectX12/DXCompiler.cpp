@@ -7,8 +7,8 @@
 
 #include <dxcapi.h>  // DXC Compiler API
 #include <d3d12shader.h>  // D3D12 Shader Reflection
-#include <spirv_cross.hpp>
-#include <spirv_glsl.hpp>
+#include <SPIRV-Cross/spirv_cross.hpp>
+#include <SPIRV-Cross/spirv_glsl.hpp>
 
 #pragma comment(lib, "dxcompiler.lib")
 
