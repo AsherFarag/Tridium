@@ -10,7 +10,5 @@ intermediate/
 *.user
 *.vcxproj
 *.vcxproj.filters
-Tridium/Tridium.vcxproj.filters
-*.vcxitems
 *.vcxitems
 *.filters
