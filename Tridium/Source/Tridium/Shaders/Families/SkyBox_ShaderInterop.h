@@ -1,20 +1,16 @@
 #ifndef SKYBOX_SHADERINTEROP
 #define SKYBOX_SHADERINTEROP
 
-#include "../ShaderInterop.h"
+#include "ShaderInterop.h"
 
-#ifdef __cplusplus
-namespace Tridium {
-#endif
+BEGIN_TRIDIUM_NAMESPACE
 
-	struct CPP_ALIGN_TO_HLSL InlinedConstants_SkyBox
-	{
-		float4x4 Projection;
-		float4x4 View;
-	};
+struct CPP_ALIGN_TO_HLSL InlinedConstants_SkyBox
+{
+	float4x4 Projection;
+	float4x4 View;
+};
 
-#if __cplusplus
-} // namespace Tridium
-#endif // __cplusplus
+END_TRIDIUM_NAMESPACE
 
 #endif // !SKYBOX_SHADERINTEROP

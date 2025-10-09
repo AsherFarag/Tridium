@@ -4,7 +4,7 @@
 namespace Tridium {
 
 	static constexpr StringView VS = R"(
-    #include "Globals.hlsli"
+    #include "Core.hlsli"
 
     struct VS_INPUT
     {
@@ -33,7 +33,7 @@ namespace Tridium {
         #define GGX_HIGH_QUALITY
     #endif
 
-    #include "Globals.hlsli"
+    #include "Core.hlsli"
     #include "Lighting/GGX.hlsli"
     #include "LitDefault_ShaderInterop.h"
 

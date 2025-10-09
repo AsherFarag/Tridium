@@ -3,6 +3,9 @@
 
 #ifdef __cplusplus
 
+#define BEGIN_TRIDIUM_NAMESPACE namespace Tridium {
+#define END_TRIDIUM_NAMESPACE }
+
 #include <Tridium/Math/Math.h>
 #include <Tridium/IO/FilePath.h>
 
@@ -35,33 +38,12 @@ using float4x4 = Tridium::Matrix<4, 4, Tridium::float32_t>;
 
 #else
 
-static const float PI = 3.14159265f;
+#define BEGIN_TRIDIUM_NAMESPACE
+#define END_TRIDIUM_NAMESPACE
 
 #define CPP_ALIGN_TO_HLSL
 #define INLINED_CONSTANTS_SPACE space9999
 #define DEFAULT_VALUE( ... )
-
-#define CONSTANT_BUFFER( _Name, _Type, _Slot ) ConstantBuffer< _Type > _Name : register( b##_Slot )
-
-#if defined( __PSSL__ )
-	// Defined elsewhere
-#elif defined( __spirv__ )
-	#define INLINED_CONSTANTS( _Name, _Type ) ConstantBuffer< _Type > _Name : register( b0, INLINED_CONSTANTS_SPACE )
-#else
-	#define INLINED_CONSTANTS( _Name, _Type ) ConstantBuffer< _Type > _Name : register( b0, INLINED_CONSTANTS_SPACE )
-#endif
-
-#define STRUCTURED_BUFFER( _Name, _Type, _Slot ) StructuredBuffer< _Type > _Name : register( t##_Slot )
-
-#define COMBINED_SAMPLER( _Name, _Type, _Slot ) \
-	_Type _Name : register( t##_Slot ); \
-	SamplerState _Name##_Sampler : register( s##_Slot )
-
-#define GetCombinedSampler( _Texture ) _Texture##_Sampler
-
-// Use for sampling combined samplers
-#define SampleTexture( _Texture, _UV ) _Texture.Sample( GetCombinedSampler( _Texture ), _UV )
-#define SampleTextureLod( _Texture, _UV, _Lod ) _Texture.SampleLevel( GetCombinedSampler( _Texture ), _UV, _Lod )
 
 #endif // __cplusplus
 

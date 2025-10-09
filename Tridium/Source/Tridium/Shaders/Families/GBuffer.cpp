@@ -4,7 +4,7 @@
 namespace Tridium {
 
     static constexpr StringView VS = R"(
-    #include "Globals.hlsli"
+    #include "Core.hlsli"
     #include "GBuffer_ShaderInterop.h"
 
     INLINED_CONSTANTS( Constants, InlinedConstants_GBuffer );
@@ -42,7 +42,7 @@ namespace Tridium {
 	)";
 
     static constexpr StringView PS = R"(
-    #include "Globals.hlsli"
+    #include "Core.hlsli"
     #include "Material.hlsli"
 
     struct PS_INPUT

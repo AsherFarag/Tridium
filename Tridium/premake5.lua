@@ -169,6 +169,8 @@ project "Tridium"
 
 	includedirs {
 		tridium_source,
+		-- We add 'Tridium/Shaders' so files being compiled by the Shader Compiler and C++ Compiler can have the same include path.
+		path.join(tridium_source, "Tridium", "Shaders"),
 	}
 
 	files {

@@ -78,7 +78,9 @@ function registerDependencies( dependenciesList, configurations )
 	end
 end
 
--- Recursive copy utility
+-- ==========================================================
+-- Helper: copydir (safe recursive copy)
+-- ==========================================================
 function copydir(src, dst)
 	if not os.isdir(src) then
 		print("Error: Source directory '" .. src .. "' does not exist.")
@@ -93,28 +95,32 @@ function copydir(src, dst)
 		end
 	end
 
-	for _, file in ipairs(os.matchfiles(src .. "/*")) do
+	local entries = os.matchfiles(path.join(src, "*"))
+	for _, file in ipairs(entries) do
 		local filename = path.getname(file)
 		local destFile = path.join(dst, filename)
-		local ok, err = pcall(os.copyfile, file, destFile)
-		if not ok then
+		local success, err = pcall(os.copyfile, file, destFile)
+		if not success then
 			print("Error copying file: " .. file .. " -> " .. destFile .. "\nReason: " .. tostring(err))
 		end
 	end
 
-	for _, dir in ipairs(os.matchdirs(src .. "/*")) do
+	local subDirs = os.matchdirs(path.join(src, "*"))
+	for _, dir in ipairs(subDirs) do
 		local dirname = path.getname(dir)
-		copydir(dir, path.join(dst, dirname))
+		local subDst = path.join(dst, dirname)
+		copydir(dir, subDst)
 	end
 end
 
--- Install templates
+-- ==========================================================
+-- Action: install-templates
+-- ==========================================================
 newaction {
 	trigger     = "install-templates",
 	description = "Install local Visual Studio item templates for Tridium Engine",
 	execute = function()
-		-- Use current working directory as base
-		local repoRoot = os.getcwd()  -- <- this is safe when running from BAT
+		local repoRoot = os.getcwd()
 		local sourceTemplates = path.join(repoRoot, "Extra", "Templates")
 
 		local userProfile = os.getenv("USERPROFILE")
@@ -123,8 +129,7 @@ newaction {
 			return
 		end
 
-		local userTemplates = path.join(userProfile, "Documents/Visual Studio 2022/Templates/ItemTemplates/Tridium")
-
+		local userTemplates = path.join(userProfile, "Documents", "Visual Studio 2022", "Templates", "ItemTemplates", "Tridium")
 		os.mkdir(userTemplates)
 
 		if not os.isdir(sourceTemplates) then
@@ -132,13 +137,39 @@ newaction {
 			return
 		end
 
-		print("Copying templates from: " .. sourceTemplates)
-		copydir(sourceTemplates, userTemplates)
-		print("Installed Tridium templates to: " .. userTemplates)
+		print("Building zipped Visual Studio templates...")
+		local folders = os.matchdirs(path.join(sourceTemplates, "*"))
+		for _, dir in ipairs(folders) do
+			local templateName = path.getname(dir)
+			local zipPath = path.join(sourceTemplates, templateName .. ".zip")
+
+			local cmd = string.format(
+				'powershell -Command "Compress-Archive -Path \\"%s\\*\\" -DestinationPath \\"%s\\" -Force"',
+				dir, zipPath
+			)
+			os.execute(cmd)
+			print("  Created " .. zipPath)
+		end
+
+		print("\nMoving templates to Visual Studio directory...")
+		local zips = os.matchfiles(path.join(sourceTemplates, "*.zip"))
+		for _, zipFile in ipairs(zips) do
+			local dest = path.join(userTemplates, path.getname(zipFile))
+			os.copyfile(zipFile, dest)
+			os.remove(zipFile)
+			print("  Installed " .. path.getname(zipFile))
+		end
+
+		print("\nInstalled Tridium templates to:")
+		print("  " .. userTemplates)
+		print("Restart Visual Studio to refresh templates.")
 	end
 }
 
--- Uninstall templates
+
+-- ==========================================================
+-- Action: uninstall-templates
+-- ==========================================================
 newaction {
 	trigger     = "uninstall-templates",
 	description = "Uninstall local Visual Studio item templates for Tridium Engine",
@@ -149,7 +180,7 @@ newaction {
 			return
 		end
 
-		local userTemplates = path.join(userProfile, "Documents/Visual Studio 2022/Templates/ItemTemplates/Tridium")
+		local userTemplates = path.join(userProfile, "Documents", "Visual Studio 2022", "Templates", "ItemTemplates", "Tridium")
 
 		if os.isdir(userTemplates) then
 			print("Removing templates from: " .. userTemplates)

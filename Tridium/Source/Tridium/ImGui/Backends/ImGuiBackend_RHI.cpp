@@ -25,7 +25,7 @@ namespace Tridium {
 	static constexpr size_t c_MaxCachedBindingSets = 1;
 
     static const char* s_ImGuiVertShader = R"(
-    #include "Globals.hlsli"
+    #include "Core.hlsli"
 
     struct InlinedConstants
     {
@@ -58,7 +58,7 @@ namespace Tridium {
     } )";
 
     static const char* s_ImGuiPixelShader = R"(
-    #include "Globals.hlsli"
+    #include "Core.hlsli"
 
     struct PS_INPUT
     {
@@ -474,7 +474,7 @@ namespace Tridium {
 
 		if ( vertexShaderOutput.IsError() )
         {
-            LOG( LogCategory::Editor, Error, "Failed to compile vertex shader for ImGui backend! Error: %s", vertexShaderOutput.Error().c_str() );
+            LOG( LogCategory::Editor, Error, "Failed to compile vertex shader for ImGui backend! Error: {}", vertexShaderOutput.Error() );
             return false;
 		}
 

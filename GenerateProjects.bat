@@ -12,13 +12,9 @@ set SCRIPT_DIR=Scripts
 echo Generating Visual Studio 2022 solution...
 call "%PREMAKE_EXE%" vs2022 --scripts="%SCRIPT_DIR%"
 
-:: --- Install custom Visual Studio templates ---
-echo Installing Visual Studio templates...
-call "%PREMAKE_EXE%" install-templates --scripts="%SCRIPT_DIR%"
-
 echo.
 echo -----------------------------
-echo Done! Templates and solution generated.
+echo Done! Solution generated.
 echo -----------------------------
 
 endlocal

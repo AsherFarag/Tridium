@@ -40,7 +40,7 @@ namespace Tridium {
 
 	// Irradiance Convolution Shader
 	static constexpr StringView IrradianceVS = R"(
-	#include "Globals.hlsli"
+    #include "Core.hlsli"
 
 	struct InlinedConstants_Irradiance
 	{
@@ -71,7 +71,7 @@ namespace Tridium {
 	)";
 
 	static constexpr StringView IrradiancePS = R"(
-	#include "Globals.hlsli"
+    #include "Core.hlsli"
 
 	struct PS_INPUT
 	{
@@ -130,7 +130,7 @@ namespace Tridium {
 
 	// Radiance Convolution Shader
 	static constexpr StringView RadianceVS = R"(
-	#include "Globals.hlsli"
+    #include "Core.hlsli"
 
 	struct InlinedConstants_Radiance
 	{
@@ -163,7 +163,7 @@ namespace Tridium {
 	)";
 
 	static constexpr StringView RadiancePS = R"(
-	#include "Globals.hlsli"
+    #include "Core.hlsli"
 
 	struct InlinedConstants_Radiance
 	{

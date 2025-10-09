@@ -1,0 +1,13 @@
+<VSTemplate Version="3.0.0" Type="Item" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005">
+  <TemplateData>
+    <Name>ShaderInterop (.h)</Name>
+    <Description>Tridium Engine shader-interoperable include file template</Description>
+    <DefaultName>NewFile_ShaderInterop.h</DefaultName>
+    <ProjectType>VC</ProjectType>
+    <SortOrder>1000</SortOrder>
+    <Icon>icon.png</Icon> <!-- optional -->
+  </TemplateData>
+  <TemplateContent>
+    <ProjectItem ReplaceParameters="true">ShaderInterop.h</ProjectItem>
+  </TemplateContent>
+</VSTemplate>

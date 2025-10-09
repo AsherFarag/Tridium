@@ -4,7 +4,7 @@
 namespace Tridium {
 
     static constexpr StringView VS = R"(
-    #include "Globals.hlsli"
+    #include "Core.hlsli"
     #include "SkyBox_ShaderInterop.h"
 
     INLINED_CONSTANTS( Constants, InlinedConstants_SkyBox );
@@ -33,7 +33,7 @@ namespace Tridium {
 	)";
 
     static constexpr StringView PS = R"(
-    #include "Globals.hlsli"
+    #include "Core.hlsli"
 
     struct PS_INPUT
     {
