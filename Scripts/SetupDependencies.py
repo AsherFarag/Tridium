@@ -1,3 +1,4 @@
+import os
 import subprocess
 import Utils
 import SetupVulkanSDK as VulkanSetup
@@ -35,13 +36,23 @@ def SetupDependencies():
     print("Vulkan SDK is properly set up.")
 
     # Build dependencies in the Originals folder
+
+    currDir = os.getcwd()
     print("Building dependencies...")
-    result = subprocess.run(["../Tridium/Originals/BuildAll.bat"], shell=True)
-    if result.returncode != 0:
-        print("Failed to build dependencies.")
+    try:
+        os.chdir('Tridium/Originals')
+        subprocess.check_call(["BuildAll.bat"], shell=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to build dependencies: {e}")
+        os.chdir(currDir)
         return False
+    
+    os.chdir(currDir)
     
     print("Dependencies built successfully.")
 
+    print("===================================================")
     print("Dependencies setup complete.")
+    print("===================================================")
+
     return True
