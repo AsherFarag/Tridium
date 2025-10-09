@@ -67,12 +67,16 @@ cd Tridium
 # 1. Setup dependencies
 # 2. Validated your Vulkan SDK (if invalid, it gives you the option to install it)
 # 3. Generates the Visual Studio projects with premake
-# 4. Adds custom Visual Studio Item templates (These can be removed with UninstallTemplates.bat)
 Setup
 ```
 
 **3.** Open the generated .sln file in Visual Studio 2022 and build the project.
 > ⚠️ **Important:** Set the build config to either Debug-Editor or Release-Editor. The other configurations are unstable and may not build.
+
+**Optional: 4.** Adds custom Visual Studio Item templates (These can be removed with UninstallTemplates.bat)
+```bash
+InstallTemplates
+```
 
 ## Credits & Dependencies
 
