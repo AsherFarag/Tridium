@@ -18,6 +18,10 @@ def ValidateVulkanSDK():
         print("Vulkan SDK is not installed")
         return False
 
+    if VulkanSDK and not os.path.exists(VulkanSDK):
+        print(f"Path {VulkanSDK} does not exist, environment variable is stale.")
+        return False
+
     # Check if the current version is >= RequiredVulkanVersion
     current_version = get_vulkan_sdk_version(VulkanSDK)
     if current_version == "Version not found":
