@@ -1,6 +1,6 @@
 # Tridium <img width="30" height="30" alt="EngineIcon" src="https://github.com/user-attachments/assets/7d278b18-99f9-4553-bbad-07164aab1872" /></br>
 
-**Tridium** is a modern 3D game engine built in C++ with a focus on flexibility, performance, and editor-driven development. It features an integrated Editor, Physics, ECS (Entity Component System), runtime C++ reflection, serialization, physically-based rendering (PBR), and a dynamically-bound Rendering Hardware Interface (RHI) supporting **OpenGL** and **DirectX 12**.
+**Tridium** is a modern 3D game engine built in C++20 with a focus on flexibility, performance, and simplicity. It features an integrated Editor, Physics, ECS (Entity Component System), runtime C++ reflection, serialization, physically-based rendering (PBR), and a dynamically-bound Rendering Hardware Interface (RHI) supporting **OpenGL** and **DirectX 12**. It is still in development with a lot features planned.
 
 > ⚠️ **Important:** This project is currently under active development. Expect bugs and incomplete features.
 
@@ -15,11 +15,11 @@ https://github.com/user-attachments/assets/53f32f6c-01aa-46b6-8b29-28ce7284153f
 
 ## Features
 
-- **Editor:** Full-featured game editor for asset management and scene building.  
+- **Editor:** Editor for asset management and scene building inspired by engines like UE5.
 - **Physics:** Integrated physics system for 3D simulations using JoltPhysics.
 - **ECS:** Efficient Entity Component System for organizing game objects using EnTT.
 - **C++ Runtime Reflection:** Dynamic runtime type information for classes, properties, and serialization built on top of EnTT. 
-- **Serialization:** Easy-to-use system for saving/loading game data.  
+- **Serialization:** Saving/loading game data.
 - **Graphics:** PBR rendering pipeline built with render-graphs and support for advanced materials.
 - **RHI (Rendering Hardware Interface):** Abstracted graphics API layer supporting OpenGL and DirectX 12 (Vulkan support coming soon).
 
