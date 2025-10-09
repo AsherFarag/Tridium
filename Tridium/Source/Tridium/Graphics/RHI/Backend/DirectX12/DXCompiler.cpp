@@ -589,7 +589,6 @@ namespace Tridium::D3D12 {
 		shaderPath = shaderPath / "../Tridium/Source/Tridium/Shaders";
 		args.EmplaceBack( L"-I" ); args.EmplaceBack( shaderPath.ToWString() );
 		args.EmplaceBack( L"-I" ); args.EmplaceBack( ( shaderPath / "Families" ).ToWString());
-		args.EmplaceBack( L"-I" ); args.EmplaceBack( ( shaderPath / "Libraries" ).ToWString() );
 		for ( const auto& includeDir : a_Input.IncludeDirectories )
 		{
 			args.EmplaceBack( L"-I" );
