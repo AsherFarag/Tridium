@@ -584,14 +584,12 @@ namespace Tridium::D3D12 {
 		////////////////////////////////////////
 
 		// Set up the include directories.
-		args.EmplaceBack( L"-I" );
 		TODO( "Temp" );
 		FilePath shaderPath = FilePath::CurrentPath();
 		shaderPath = shaderPath / "../Tridium/Source/Tridium/Shaders";
-		args.EmplaceBack( shaderPath.ToWString() );
-		args.EmplaceBack( L"-I" );
-		TODO( "Temp" );
-		args.EmplaceBack( ( shaderPath / "Families" ).ToWString());
+		args.EmplaceBack( L"-I" ); args.EmplaceBack( shaderPath.ToWString() );
+		args.EmplaceBack( L"-I" ); args.EmplaceBack( ( shaderPath / "Families" ).ToWString());
+		args.EmplaceBack( L"-I" ); args.EmplaceBack( ( shaderPath / "Libraries" ).ToWString() );
 		for ( const auto& includeDir : a_Input.IncludeDirectories )
 		{
 			args.EmplaceBack( L"-I" );

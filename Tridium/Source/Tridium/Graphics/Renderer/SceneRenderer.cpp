@@ -483,7 +483,7 @@ namespace Tridium {
 				.SetVertexLayout( RHIVertexLayout::From<ViewportQuadVertex>() )
 				.SetTopology( ERHITopology::Triangle )
 				.SetFramebufferInfo( RHIFramebufferInfo{}.SetColorFormats( { GetSceneRenderer().GetOutputTexture()->Desc().Format } ) );
-			ShaderLibrary::GetOrCreateVariant( "LitDefault"_H )->Apply( lightingPassPSODesc );
+			ShaderLibrary::GetOrCreateVariant( "LitDefault"_H, { "HIGH_QUALITY" } )->Apply(lightingPassPSODesc);
 
 			m_PipelineState = PipelineStateCache::GetOrCreatePSO(
 				lightingPassPSODesc
