@@ -16,6 +16,8 @@ def SetupDependencies():
         print(f"Failed to initialize Git submodules: {e}")
         return False
 
+    print("Git submodules are up to date.")
+
     # Check Vulkan SDK
     if not VulkanSetup.ValidateVulkanSDK():
         print("Vulkan SDK validation failed.")
@@ -24,6 +26,17 @@ def SetupDependencies():
                 print("Failed to install Vulkan SDK.")
                 return False
         return False
+    
+    print("Vulkan SDK is properly set up.")
+
+    # Build dependencies in the Originals folder
+    print("Building dependencies...")
+    result = subprocess.run(["../Tridium/Originals/BuildAll.bat"], shell=True)
+    if result.returncode != 0:
+        print("Failed to build dependencies.")
+        return False
+    
+    print("Dependencies built successfully.")
 
     print("Dependencies setup complete.")
     return True

@@ -8,7 +8,6 @@ if errorlevel 1 (
     exit /b 1
 )
 
-:: Run your Python script
 python Scripts/Setup.py
 
 endlocal

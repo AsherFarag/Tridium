@@ -1,0 +1,13 @@
+<VSTemplate Version="3.0.0" Type="Item" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005">
+  <TemplateData>
+    <Name>HLSL Header (.hlsli)</Name>
+    <Description>Tridium Engine shader include file template</Description>
+    <DefaultName>NewShaderInclude.hlsli</DefaultName>
+    <ProjectType>VC</ProjectType>
+    <SortOrder>1000</SortOrder>
+    <Icon>icon.png</Icon> <!-- optional -->
+  </TemplateData>
+  <TemplateContent>
+    <ProjectItem ReplaceParameters="true">HLSLHeader.hlsli</ProjectItem>
+  </TemplateContent>
+</VSTemplate>

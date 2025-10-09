@@ -1,5 +1,3 @@
-include "Dependencies.lua"
-
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 workspace "Tridium"

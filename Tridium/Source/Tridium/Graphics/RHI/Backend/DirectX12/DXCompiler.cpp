@@ -23,6 +23,13 @@ namespace Tridium::D3D12 {
 
 		DXCInternalState( const String& a_Modifier = "" )
 		{
+			TODO( "Hacky. How should we decide and get the directory?" );
+		#if CONFIG_SHIPPING
+			const FilePath pathToDXC = ""; // Shipping builds should have DXC packaged in the same directory as the executable.
+		#else
+			const FilePath pathToDXC = "../Dependencies/dxc/bin/x64";
+		#endif
+
 		#if CONFIG_PLATFORM_WINDOWS
 			const String fileName = "dxcompiler" + a_Modifier + ".dll";
 		#elif CONFIG_PLATFORM_LINUX
@@ -32,7 +39,7 @@ namespace Tridium::D3D12 {
 		#endif
 
 			// Load the DXC DLL.
-			Platform::Module dxcModule = Platform::LoadDynamicLibrary( fileName.c_str() );
+			Platform::Module dxcModule = Platform::LoadDynamicLibrary( ( pathToDXC / fileName ).ToString().c_str() );
 			if ( dxcModule == nullptr )
 			{
 				LOG( LogCategory::DirectX, Error, "Failed to load {0}", fileName );

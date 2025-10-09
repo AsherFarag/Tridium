@@ -1,4 +1,4 @@
-require ("utils")
+require ("Scripts/utils")
 
 tridium_source = "%{wks.location}/Tridium/Source"
 
@@ -29,6 +29,7 @@ end
 		- debugLibDir: The directory to link for debug libraries (if different)
 		- debugLibName: The name of the debug library to link (if different)
 ]]
+-- TODO: Add a way so dependencies can add their own defines.
 local dependencies = {
 	-- Assimp: Used for raw model importing and processing (OBJ, FBX, glTF, etc.)
 	assimp = {
