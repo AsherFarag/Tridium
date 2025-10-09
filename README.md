@@ -51,7 +51,7 @@ Developing the RHI and integrating  it into the engine is a big job and requires
 > [!NOTE]
 > **Visual Studio 2022** is required.
 
-1. Clone the repository:
+**1.** Clone the repository:
 ```bash
 # This will clone the RHI branch repo into "Your/Path/To/Tridium"
 git clone -b RHI --single-branch https://github.com/AsherFarag/Tridium.git
@@ -60,7 +60,7 @@ git clone -b RHI --single-branch https://github.com/AsherFarag/Tridium.git
 cd Tridium
 ```
 
-2. Run the setup script to generate the Visual Studio 2022 solution:
+**2.** Run the setup script to generate the Visual Studio 2022 solution:
 > *Note: Downloading and building the dependencies can take a while.*
 ```bash
 # Invokes the Setup.bat script which:
@@ -71,7 +71,8 @@ cd Tridium
 Setup
 ```
 
-3. Open the generated .sln file in Visual Studio 2022 and build the project.
+**3.** Open the generated .sln file in Visual Studio 2022 and build the project.
+> ⚠️ **Important:** Set the build config to either Debug-Editor or Release-Editor. The other configurations are unstable and may not build.
 
 ## Credits & Dependencies
 
