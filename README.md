@@ -9,7 +9,7 @@
 <img width="1831" height="937" alt="Screenshot 2025-10-09 114927" src="https://github.com/user-attachments/assets/2e178b90-1288-4094-8a0d-be0d8b66234b" /></br>
 
 https://github.com/user-attachments/assets/53f32f6c-01aa-46b6-8b29-28ce7284153f
-> *Note:* This demo video was from before the RHI branch was created.
+> *Note: This demo video was from before the RHI branch was created.*
 
 ---
 
@@ -61,6 +61,7 @@ cd Tridium
 ```
 
 2. Run the setup script to generate the Visual Studio 2022 solution:
+> *Note: Downloading and building the dependencies can take a while.*
 ```bash
 # Invokes the Setup.bat script which:
 # 1. Setup dependencies
@@ -71,6 +72,27 @@ Setup
 ```
 
 3. Open the generated .sln file in Visual Studio 2022 and build the project.
+
+## Credits & Dependencies
+
+Tridium uses a number of open-source libraries and tools. We gratefully acknowledge the authors and contributors of these projects:
+
+- **[Assimp](https://www.assimp.org/)** – Open Asset Import Library for importing 3D models.  
+- **[EnTT](https://github.com/skypjack/entt)** – Fast and flexible Entity Component System (ECS) for C++.  
+- **[GLAD](https://glad.dav1d.de/)** – OpenGL loader library.  
+- **[GLFW](https://www.glfw.org/)** – Library for creating windows, contexts, and handling input.  
+- **[GLM](https://github.com/g-truc/glm)** – Header-only C++ mathematics library for graphics software.  
+- **[ImGui](https://github.com/ocornut/imgui)** – Immediate mode GUI library.  
+- **[ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo)** – 3D gizmo manipulator for ImGui.  
+- **[ImTextEdit](https://github.com/ChemistAion/ImTextEdit)** – Script editor for ImGui.
+- **[Jolt Physics](https://github.com/jrouwe/JoltPhysics)** – Physics engine for rigid body dynamics.  
+- **[Lua](https://www.lua.org/)** – Lightweight scripting language.  
+- **[Refl-Cpp](https://github.com/veselink1/refl-cpp)** – C++ reflection library.  
+- **[Sol2](https://github.com/ThePhD/sol2)** – C++ library binding for Lua.  
+- **[spdlog](https://github.com/gabime/spdlog)** – Fast C++ logging library.  
+- **[SPIRV-Cross](https://github.com/KhronosGroup/SPIRV-Cross)** – Shader cross-compiler for SPIR-V to other shading languages.  
+- **[yaml-cpp](https://github.com/jbeder/yaml-cpp)** – YAML parser and emitter in C++.  
+- **[zlib](https://zlib.net/)** – Compression library for data streams.  
 
 ## License
 Code released under
