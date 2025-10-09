@@ -15,7 +15,7 @@
 #include <Tridium/Graphics/RHI/RHIDescriptorAllocator.h>
 #include <Tridium/Graphics/RHI/RHIStateTracker.h>
 
-#include <Vulkan/vulkan.h>
+#include <vulkan/vulkan.h>
 
 namespace Tridium::Vulkan {
 
