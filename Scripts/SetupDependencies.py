@@ -21,11 +21,16 @@ def SetupDependencies():
     # Check Vulkan SDK
     if not VulkanSetup.ValidateVulkanSDK():
         print("Vulkan SDK validation failed.")
-        if Utils.AskYesOrNo("Do you want to install the Vulkan SDK?"):
-            if not InstallVulkan.InstallVulkanSDK():
-                print("Failed to install Vulkan SDK.")
-                return False
-        return False
+        if not Utils.AskYesOrNo("Do you want to install the Vulkan SDK?"):
+            return False
+
+        if not InstallVulkan.InstallVulkanSDK():
+            print("Failed to install Vulkan SDK.")
+            return False
+        
+        if not VulkanSetup.ValidateVulkanSDK():
+            print("Vulkan SDK validation failed after installation - try installing the Vulkan SDK manually.")
+            return False
     
     print("Vulkan SDK is properly set up.")
 

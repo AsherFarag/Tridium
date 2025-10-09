@@ -44,8 +44,10 @@ def InstallVulkanSDK():
         print(f"Failed to run Vulkan SDK installer: {e}")
         return False
 
-    setup_bat_path = os.path.abspath(os.path.join(VulkanSDKLocalPath, "SetupVulkanSDK.bat"))
-    print(f"Please run '{setup_bat_path}' to complete the Vulkan SDK installation.")
+    # Wait for user confirmation
+    print("Please complete the Vulkan SDK installation using the installer that was launched.")
+    input("Press Enter after completing the installation...")
+
     return True
 
 
