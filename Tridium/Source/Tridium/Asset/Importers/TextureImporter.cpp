@@ -6,6 +6,7 @@
 #include <Tridium/Asset/TextureAsset.h>
 
 #include <stb_image.h>
+#include <imageinfo/imageinfo.hpp>
 
 
 namespace Tridium {
@@ -20,7 +21,7 @@ namespace Tridium {
 
 	Expected<void, String> TextureImporter::LoadFromFile( const char* a_FilePath,
 						   Array<byte_t>& o_Data, uint32_t& o_Width, uint32_t& o_Height, ERHIFormat& o_Format, bool& o_IsFloat,
-						   bool a_FlipOnLoad, int a_DesiredChannels )
+						   bool a_FlipOnLoad, int a_DesiredChannels, bool a_LoadAsSRGB )
 	{
 		PROFILE_FUNCTION( ProfilerCategory::AssetStreaming );
 
@@ -33,7 +34,10 @@ namespace Tridium {
 
 		// Get info about the texture
 		int width, height, channels;
-		stbi_info( a_FilePath, &width, &height, &channels );
+		if ( !stbi_info( a_FilePath, &width, &height, &channels ) )
+		{
+			return Unexpected( std::format( "Failed to get info for texture file '{}': {}", a_FilePath, stbi_failure_reason() ) );
+		}
 		channels = a_DesiredChannels == 0 ? channels : a_DesiredChannels;
 
 		o_IsFloat = stbi_is_hdr( a_FilePath );
@@ -87,7 +91,7 @@ namespace Tridium {
 			{
 				case 1: o_Format = ERHIFormat::R8_UNORM; break;
 				case 2: o_Format = ERHIFormat::RG8_UNORM; break;
-				case 4: o_Format = ERHIFormat::RGBA8_UNORM; break;
+				case 4: o_Format = a_LoadAsSRGB ? ERHIFormat::SRGBA8_UNORM : ERHIFormat::RGBA8_UNORM; break;
 				default: return Unexpected( std::format( "Unsupported number of channels in texture: {}", channels ) );
 			}
 

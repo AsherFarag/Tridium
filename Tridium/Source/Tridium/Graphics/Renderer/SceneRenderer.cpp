@@ -675,7 +675,9 @@ namespace Tridium {
 	{
 		if ( !s_DefaultEnvironmentMap.Valid() )
 		{
-			const FilePath assetFilePath = "TestProject/Content/resting_place_2_4k.hdr";
+			//const FilePath assetFilePath = "TestProject/Content/resting_place_2_4k.hdr";
+			const FilePath assetFilePath = "TestProject/Content/studio_small.hdr";
+			//const FilePath assetFilePath = "TestProject/Content/park_music_stage_4k.hdr";
 			auto envMapImporter = AssetFactory::GetImporter( assetFilePath.GetExtension().ToString() );
 			static AssetRef<EnvironmentMap> importedEnvMapAsset;
 			AssetImportContext context;

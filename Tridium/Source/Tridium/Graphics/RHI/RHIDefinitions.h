@@ -1,6 +1,7 @@
 #pragma once
 #include "RHIConstants.h"
 #include "RHIConfig.h"
+#include "RHIForward.h"
 #include <Tridium/Core/Types.h>
 #include <Tridium/Core/Assert.h>
 #include <Tridium/Core/Memory.h>
@@ -1145,7 +1146,7 @@ namespace Tridium {
 			return color;
 		}
 
-		inline void ConvertFromColor( Span<uint8_t> a_Data, const Color& a_Color ) const noexcept
+		constexpr void ConvertFromColor( Span<uint8_t> a_Data, const Color& a_Color ) const noexcept
 		{
 			static_assert( size_t( ERHIFormat::COUNT ) == 43 );
 
@@ -1363,11 +1364,31 @@ namespace Tridium {
 		return s_FormatInfos[size_t( a_Format )];
 	}
 
+	//=================================================================================================
+	// RHI Draw Arguments
+	//=================================================================================================
+	struct RHIDrawArgs
+	{
+		uint32_t VertexCount = 0;          // Number of vertices to draw
+		uint32_t IndexCount = 0;           // Number of indices to draw. 0 means non-indexed draw.
+		uint32_t InstanceCount = 1;        // Number of instances to draw
+		uint32_t BaseVertex = 0;           // Starting vertex index
+		uint32_t BaseIndex = 0;            // Starting index for indexed drawing
+		uint32_t BaseInstance = 0;         // Starting instance index
 
+		constexpr bool IsIndexed() const { return IndexCount > 0; }
 
-	//===========================================================
-	// RHI Framebuffer Info
-	//  Used to describe a framebuffer and its compatibility with a render pass.
+		constexpr auto& SetVertexCount( uint32_t a_Count ) { VertexCount = a_Count; return *this; }
+		constexpr auto& SetIndexCount( uint32_t a_Count ) { IndexCount = a_Count; return *this; }
+		constexpr auto& SetInstanceCount( uint32_t a_Count ) { InstanceCount = a_Count; return *this; }
+		constexpr auto& SetBaseVertex( uint32_t a_BaseVertex ) { BaseVertex = a_BaseVertex; return *this; }
+		constexpr auto& SetBaseIndex( uint32_t a_BaseIndex ) { BaseIndex = a_BaseIndex; return *this; }
+		constexpr auto& SetBaseInstance( uint32_t a_BaseInstance ) { BaseInstance = a_BaseInstance; return *this; }
+	};
+
+	//=================================================================================================
+	// RHI Framebuffer Info: Used to describe a framebuffer and its compatibility with a render pass.
+	//=================================================================================================
 	struct RHIFramebufferInfo
 	{
 		InlineArray<ERHIFormat, RHIConstants::MaxColorTargets> ColorFormats{};
@@ -1429,13 +1450,10 @@ namespace Tridium {
 			return *this;
 		}
 	};
-	//===========================================================
 
-
-
-	//===========================================================
-	// RHI Vertex Element Formats
-	//  A collection of valid RHI vertex element formats.
+	//=================================================================================================
+	// RHI Vertex Element Formats: A collection of valid RHI vertex element formats.
+	//=================================================================================================
 	namespace RHIVertexElementFormats {
 		// Halfs
 		inline constexpr ERHIFormat Half1 = ERHIFormat::R16_FLOAT;
@@ -1472,12 +1490,9 @@ namespace Tridium {
 		inline constexpr ERHIFormat ColorSRGB = ERHIFormat::SRGBA8_UNORM;
 	}
 
-
-
-	//====================================
-	// RHI Data Type
-	//  An enumeration of primitive data types that can be used in the RHI. 
-	//====================================
+	//=================================================================================================
+	// RHI Data Type: An enumeration of primitive data types that can be used in the RHI.
+	//=================================================================================================
 	enum class ERHIDataType : uint8_t
 	{
 		Unknown,
@@ -1497,17 +1512,18 @@ namespace Tridium {
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHIDataType );
 
-	//==========================================================
+	//=================================================================================================
 	// RHI Data Type Traits
 	//  Provides information about a data type, if a specialization of this template exists.
 	template<typename T>
 	struct RHIDataTypeTraits {};
-	//==========================================================
 
+	//=================================================================================================
 	// Tests if a valid specialization of RHIDataTypeTraits exists for the given type.
 	template<typename T>
 	concept IsRHIDataType = requires { RHIDataTypeTraits<T>::Type; };
 
+	//=================================================================================================
 	// Returns the number of bytes for a given RHI Data Type.
 	// Returns 0 if the type is unknown.
 	// E.g. A float is 4 bytes, so 4 is returned.
@@ -1531,22 +1547,25 @@ namespace Tridium {
 		return 0;
 	}
 
+	//=================================================================================================
 	// Get the ERHIDataType for a given type.
 	// E.g. GetRHIDataType<float>() returns ERHIDataType::Float32.
 	template<typename T> requires IsRHIDataType<T>
 	constexpr ERHIDataType GetRHIDataType() { return RHIDataTypeTraits<T>::Type; }
 
-	//==========================================================
+	//=================================================================================================
 	// RHI Tensor Type Traits
-	//  Provides information about a tensor type, if a specialization of this template exists.
-	//  A Tensor type can be a scalar, vector, or matrix.
-	//  E.g. Valid tensor types are float, Vector3, Matrix3, etc.
+	// Provides information about a tensor type, if a specialization of this template exists.
+	// A Tensor type can be a scalar, vector, or matrix.
+	// E.g. Valid tensor types are float, Vector3, Matrix3, etc.
+	//=================================================================================================
 	template<typename T>
 	struct RHITensorTypeTraits;
-	//==========================================================
 
+	//=================================================================================================
 	// A specialization of RHITensorTypeTraits for scalar types.
 	// Scalars are single values such as float, int, etc.
+	//=================================================================================================
 	template<IsRHIDataType T>
 	struct RHITensorTypeTraits<T>
 	{
@@ -1555,13 +1574,14 @@ namespace Tridium {
 		static constexpr uint8_t ElementCountY = 1;
 	};
 
+	//=================================================================================================
 	// Tests if a valid specialization of RHITensorTypeTraits exists for the given type.
 	template<typename T>
 	concept IsRHITensorType = requires { RHITensorTypeTraits<T>::ElementType; };
 
-	//==========================================================
-	// RHI Tensor Data Type
-	//  Specifies the type of data stored which can be a scalar, vector, or matrix.
+	//=================================================================================================
+	// RHI Tensor Data Type: Specifies the type of data stored which can be a scalar, vector, or matrix.
+	//=================================================================================================
 	struct RHITensorType
 	{
 		ERHIDataType ElementType = ERHIDataType::Unknown;
@@ -1585,16 +1605,19 @@ namespace Tridium {
 		}
 	};
 
+	//=================================================================================================
 	// Get the ERHIFormat for a given type.
 	// E.g. GetRHIFormatFromType<float>() returns ERHIFormat::Float1.
 	// Note: An existing specialization of this template must exist for the given type.
 	template<typename T>
 	constexpr ERHIFormat GetRHIFormatFromType();
 
+	//=================================================================================================
+	// Tests if a valid specialization of GetRHIFormatFromType exists for the given type.
 	template<typename T>
 	concept IsRHIFormat = requires { GetRHIFormatFromType<T>(); };
 
-	//==========================================================
+	//=================================================================================================
 
 	template<> struct RHIDataTypeTraits<uint8_t>   { static constexpr ERHIDataType Type = ERHIDataType::UInt8; };
 	template<> struct RHIDataTypeTraits<uint16_t>  { static constexpr ERHIDataType Type = ERHIDataType::UInt16; };
@@ -1607,7 +1630,7 @@ namespace Tridium {
 	template<> struct RHIDataTypeTraits<float32_t> { static constexpr ERHIDataType Type = ERHIDataType::Float32; };
 	template<> struct RHIDataTypeTraits<float64_t> { static constexpr ERHIDataType Type = ERHIDataType::Float64; };
 
-	//==========================================================
+	//=================================================================================================
 
 	template<> constexpr ERHIFormat GetRHIFormatFromType<uint8_t>()            { return ERHIFormat::R8_UINT; }
 	template<> constexpr ERHIFormat GetRHIFormatFromType<uint16_t>()           { return ERHIFormat::R16_UINT; }
@@ -1632,7 +1655,7 @@ namespace Tridium {
 	template<> constexpr ERHIFormat GetRHIFormatFromType<uVector3>()           { return ERHIFormat::RGB32_UINT; }
 	template<> constexpr ERHIFormat GetRHIFormatFromType<uVector4>()           { return ERHIFormat::RGBA32_UINT; }
 
-	//==========================================================
+	//=================================================================================================
 
 	template<size_t _CountX, Concepts::Arithmetic T>
 	struct RHITensorTypeTraits<Vector<_CountX, T>>
@@ -1658,7 +1681,7 @@ namespace Tridium {
 		static constexpr uint8_t ElementCountY = 1;
 	};
 
-	//==========================================================
+	//=================================================================================================
 
 
 } // namespace Tridium

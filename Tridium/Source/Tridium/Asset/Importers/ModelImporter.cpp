@@ -184,7 +184,7 @@ namespace Tridium {
 
 		// Will check if the requested texture has already been loaded,
 		// and if not, will load it and store it in the loadedTextures map.
-		const auto GetOrLoadTexture = [&]( const aiMaterial* a_AssimpMat, aiTextureType a_TextureType ) -> AssetRef<Texture>
+		const auto GetOrLoadTexture = [&]( const aiMaterial* a_AssimpMat, aiTextureType a_TextureType, bool a_LoadAsSRGB = false ) -> AssetRef<Texture>
 		{
 			// Get the texture path from the material
 			aiString path;
@@ -237,7 +237,10 @@ namespace Tridium {
 					textureWidth,
 					textureHeight,
 					textureFormat,
-					isFloat
+					isFloat,
+					false,
+					0,
+					a_LoadAsSRGB
 				);
 
 				if ( output.IsError() )
@@ -321,10 +324,10 @@ namespace Tridium {
 				}
 
 				// Texture
-				auto albedoTex = GetOrLoadTexture( aiMat, aiTextureType_BASE_COLOR );
+				auto albedoTex = GetOrLoadTexture( aiMat, aiTextureType_BASE_COLOR, true );
 				if ( !albedoTex )
 				{
-					albedoTex = GetOrLoadTexture( aiMat, aiTextureType_DIFFUSE ); // Fallback to diffuse if base color is not available
+					albedoTex = GetOrLoadTexture( aiMat, aiTextureType_DIFFUSE, true ); // Fallback to diffuse if base color is not available
 				}
 
 				material->SetAlbedoMap( albedoTex );
@@ -377,10 +380,10 @@ namespace Tridium {
 				}
 
 				// Texture
-				auto emissiveTex = GetOrLoadTexture( aiMat, aiTextureType_EMISSION_COLOR );
+				auto emissiveTex = GetOrLoadTexture( aiMat, aiTextureType_EMISSION_COLOR, true );
 				if ( !emissiveTex )
 				{
-					emissiveTex = GetOrLoadTexture( aiMat, aiTextureType_EMISSIVE ); // Fallback to emissive if emission color is not available
+					emissiveTex = GetOrLoadTexture( aiMat, aiTextureType_EMISSIVE, true ); // Fallback to emissive if emission color is not available
 				}
 				material->SetEmissiveMap( emissiveTex );
 			}

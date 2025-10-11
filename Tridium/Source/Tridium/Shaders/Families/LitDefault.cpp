@@ -30,11 +30,12 @@ namespace Tridium {
 	static constexpr StringView PS = R"(
 
     #ifdef HIGH_QUALITY
-        #define GGX_HIGH_QUALITY
+        #define BRDF_HIGH_QUALITY
     #endif
 
     #include "Core.hlsli"
-    #include "Lighting/GGX.hlsli"
+    #include "Lighting/BRDF.hlsli"
+    #include "Lighting/Lighting.hlsli"
     #include "LitDefault_ShaderInterop.h"
 
     struct PS_INPUT
@@ -54,12 +55,6 @@ namespace Tridium {
     COMBINED_SAMPLER( RadianceMap, TextureCube, 6 );
     STRUCTURED_BUFFER( PointLights, PointLight, 7 );
     STRUCTURED_BUFFER( SpotLights, SpotLight, 8 );
-
-    float3 FresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
-    {
-        const float shinyness = 1.0 - roughness;
-        return F0 + (max(float3(shinyness,shinyness,shinyness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
-    }
 
     float2 ApproxBRDF(float NdotV, float roughness)
     {
@@ -93,36 +88,34 @@ namespace Tridium {
         {
             DirectionalLight light = Constants.DirectionalLight;
             float3 L = normalize(-light.Direction);
-            float NdotL = max(dot(N, L), 0.001);
+            float NoL = max(dot(N, L), 0.001);
             float VoL   = dot(V, L);
     
-            float3 spec = DirLightGGX(albedo, roughness, metallic, N, V, L, NdotL, VoL);
+            float3 spec = CalcDirLightBRDF(albedo, roughness, metallic, N, V, L, NoL, VoL);
             float3 radiance = light.Color * light.Intensity;
     
             float3 diffuse = albedo / PI;
     
-            lighting += (diffuse * 0.0001 + spec) * radiance * NdotL;
+            lighting += (diffuse * 0.0001 + spec) * radiance * NoL;
         }
     
         // --- Point lights ---
         [loop]
         for (uint i = 0; i < Constants.NumPointLights; ++i)
         {
-            PointLight light = PointLights[i];
-            float distance = length(light.Position - position);
-            float attenuation = saturate(1.0 - (distance / light.Radius));
-    
+            const PointLight light = PointLights[i];
+            const float distance = length(light.Position - position);
+            const float attenuation = AttenuateCusp(distance, light.Radius, light.Intensity, light.Falloff);
+
             float3 L = normalize(light.Position - position);
             float3 V = normalize(Constants.CameraPosition - position);
-            float NdotL = max(dot(N, L), 0.001);
+            float NoL = max(dot(N, L), 0.001);
             float VoL   = dot(V, L);
             
-            float3 spec = PointLightGGX(albedo, roughness, metallic, N, V, L, NdotL, VoL);
+            float3 brdf = CalcPointLightBRDF(albedo, roughness, metallic, N, V, L, NoL, VoL);
             float3 radiance = light.Color * light.Intensity * attenuation;
-    
-            float3 diffuse = albedo / PI;
-    
-            lighting += (diffuse + spec) * radiance * NdotL;
+            
+            lighting += brdf * radiance * NoL;
         }
     
         // --- Image-based lighting (IBL) ---

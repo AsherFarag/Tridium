@@ -36,6 +36,9 @@ namespace Tridium {
 
         RenderResourceManager::Init();
 		ShaderLibrary::Init();
+
+		//Application::AddOnTick( TickGroups::BeginRender, []() { RendererModule::Get()->BeginFrame(); } );
+		//Application::AddOnTick( TickGroups::EndRender, []() { RendererModule::Get()->EndFrame(); } );
     }
 
     void RendererModule::Shutdown()
@@ -51,5 +54,19 @@ namespace Tridium {
         }
 
     }
+
+    void RendererModule::BeginFrame()
+    {
+        m_DynamicRHI->BeginFrame();
+        m_PipelineManager.BeginFrame();
+    }
+
+    void RendererModule::EndFrame()
+    {
+        m_PipelineManager.EndFrame();
+		m_DynamicRHI->EndFrame();
+
+        m_FrameIndex = ( m_FrameIndex + 1 ) % RHI::GetDynamicRHI()->MaxFramesInFlight();
+	}
 
 } // namespace Tridium

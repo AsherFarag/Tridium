@@ -57,25 +57,6 @@ namespace Tridium {
     {
 	};
 
-    struct RHIDrawArgs
-    {
-        uint32_t VertexCount = 0;          // Number of vertices to draw
-		uint32_t IndexCount = 0;           // Number of indices to draw. 0 means non-indexed draw.
-        uint32_t InstanceCount = 1;        // Number of instances to draw
-        uint32_t BaseVertex = 0;           // Starting vertex index
-        uint32_t BaseIndex = 0;            // Starting index for indexed drawing
-        uint32_t BaseInstance = 0;         // Starting instance index
-
-		constexpr bool IsIndexed() const { return IndexCount > 0; }
-
-		constexpr auto& SetVertexCount( uint32_t a_Count ) { VertexCount = a_Count; return *this; }
-		constexpr auto& SetIndexCount( uint32_t a_Count ) { IndexCount = a_Count; return *this; }
-        constexpr auto& SetInstanceCount( uint32_t a_Count ) { InstanceCount = a_Count; return *this; }
-        constexpr auto& SetBaseVertex( uint32_t a_BaseVertex ) { BaseVertex = a_BaseVertex; return *this; }
-        constexpr auto& SetBaseIndex( uint32_t a_BaseIndex ) { BaseIndex = a_BaseIndex; return *this; }
-        constexpr auto& SetBaseInstance( uint32_t a_BaseInstance ) { BaseInstance = a_BaseInstance; return *this; }
-    };
-
     //======================================================================================================
     // RHI Command List
     //  Command lists are used to submit work to the GPU.

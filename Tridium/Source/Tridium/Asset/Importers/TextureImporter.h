@@ -29,7 +29,7 @@ namespace Tridium {
 		TODO( "Probably temp and should be moved to a utility class" );
 		Expected<void, String> LoadFromFile( const char* a_FilePath,
 						   Array<byte_t>& o_Data, uint32_t& o_Width, uint32_t& o_Height, ERHIFormat& o_Format, bool& o_IsFloat,
-						   bool a_FlipOnLoad = false, int a_DesiredChannels = 0 );
+						   bool a_FlipOnLoad = false, int a_DesiredChannels = 0, bool a_LoadAsSRGB = false );
 
 	};
 

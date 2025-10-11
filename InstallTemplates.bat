@@ -9,7 +9,7 @@ set PREMAKE_EXE=Dependencies\premake\premake5.exe
 set SCRIPT_DIR=Scripts
 
 :: --- install custom Visual Studio templates ---
-echo Uninstalling Visual Studio templates...
+echo Installing Visual Studio templates...
 call "%PREMAKE_EXE%" install-templates --scripts="%SCRIPT_DIR%"
 
 echo.

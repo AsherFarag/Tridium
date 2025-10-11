@@ -208,11 +208,11 @@ namespace Tridium {
 				renderer.SetViewportSize( ( uint32_t )m_ViewportSize.X, ( uint32_t )m_ViewportSize.Y );
 				renderer.Open( *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position );
 				renderer.SubmitStaticMesh( importedAsset, Matrix4( 1.0f ) );
-				renderer.SubmitStaticMesh( importedAsset2,
-										   Math::Translate( Vector3( 0.0f, 1.0f, 0.0f ) ) *
-										   Math::Rotate( Matrix4( 1.0f ), 90.0f, Vector3( 0.0f, 1.0f, 0.0f ) ) *
-										   Math::Scale( Vector3( 0.05f ) )
-				);
+				//renderer.SubmitStaticMesh( importedAsset2,
+				//						   Math::Translate( Vector3( 0.0f, 1.0f, 0.0f ) ) *
+				//						   Math::Rotate( Matrix4( 1.0f ), 90.0f, Vector3( 0.0f, 1.0f, 0.0f ) ) *
+				//						   Math::Scale( Vector3( 0.05f ) )
+				//);
 				renderer.Close();
 
 				ImTextureID textureID = ( ImTextureID )( renderer.GetOutputTexture().get() );

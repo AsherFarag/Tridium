@@ -2,6 +2,7 @@
 #include <Tridium/Core/Application.h>
 #include <Tridium/Engine/EngineModule.h>
 #include <Tridium/Graphics/RHI/DynamicRHI.h>
+#include <Tridium/Graphics/Renderer/RenderPipeline.h>
 
 namespace Tridium {
 
@@ -18,14 +19,22 @@ namespace Tridium {
 		//=========================================================================================
 		IDynamicRHI* DynamicRHI() { return m_DynamicRHI; }
 
+		//=========================================================================================
+		static uint32_t GetFrameIndex() { return Valid() ? Get()->m_FrameIndex : 0; }
+
 	private:
 
 		//=========================================================================================
 		IDynamicRHI* m_DynamicRHI;
+		uint32_t m_FrameIndex = 0;
+		RenderPipelineManager m_PipelineManager;
 
 		//=========================================================================================
 		void Init() override;
 		void Shutdown() override;
+
+		void BeginFrame();
+		void EndFrame();
 
 	};
 
