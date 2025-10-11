@@ -5,8 +5,9 @@
 > ⚠️ **Important:** This project is currently under active development. Expect bugs and incomplete features.
 
 ---
-
-<img width="1831" height="937" alt="Screenshot 2025-10-09 114927" src="https://github.com/user-attachments/assets/2e178b90-1288-4094-8a0d-be0d8b66234b" /></br>
+<img width="1920" height="1007" alt="TridiumScreenShotBright" src="https://github.com/user-attachments/assets/4570a0a9-f8a0-47fa-9ac9-ba8fa756900e" />
+<br></br>
+<img width="1849" height="928" alt="TridiumScreenShotDark" src="https://github.com/user-attachments/assets/0c35ff74-ad92-42ba-8427-36860b9b9c33" />
 
 https://github.com/user-attachments/assets/53f32f6c-01aa-46b6-8b29-28ce7284153f
 > *Note: This demo video was from before the RHI branch was created.*
