@@ -213,8 +213,8 @@ namespace Tridium {
 						Math::Random::Range( 0.0f, 1.0f ),
 						Math::Random::Range( 0.0f, 1.0f )
 					};
-					light.Intensity = Math::Random::Range( 1.0f, 2.5f );
-					light.Radius = Math::Random::Range( 5.0f, 15.0f );
+					light.Intensity = Math::Random::Range( 2.0f, 5.0f );
+					light.Radius = Math::Random::Range( 1.0f, 5.0f ) + light.Intensity * 0.5f;
 					lights.PushBack( light );
 				}
 

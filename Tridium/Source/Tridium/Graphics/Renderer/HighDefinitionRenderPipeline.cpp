@@ -146,7 +146,7 @@ namespace Tridium {
 						InlinedConstants_DebugLightCaster constants;
 						constants.PVM = a_View.Constants.ViewProjectionMatrix * 
 							Math::Translate( light.Position ) *
-							Math::Scale( Vector3( 0.1f ) );
+							Math::Scale( Vector3( 0.025f * light.Intensity ) );
 						constants.Color = light.Color * light.Intensity;
 
 						a_CommandList.SetInlinedConstants( constants, 0 );
