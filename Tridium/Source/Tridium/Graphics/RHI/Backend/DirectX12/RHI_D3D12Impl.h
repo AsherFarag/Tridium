@@ -479,7 +479,7 @@ namespace Tridium::D3D12 {
 	struct DescriptorHeapManagerDesc
 	{
 		uint32_t NumGlobalResourceDescriptors     = 16384; // Number of resource descriptors in their static heap. (SRV, UAV, CBV).
-		uint32_t NumGlobalSamplerDescriptors      = 1024;  // Number of sampler descriptors in their static heap.
+		uint32_t NumGlobalSamplerDescriptors      = 2048;  // Number of sampler descriptors in their static heap.
 		uint32_t NumGlobalRenderTargetDescriptors = 1024;  // Number of render target descriptors in their static heap.
 		uint32_t NumGlobalDepthStencilDescriptors = 1024;  // Number of depth stencil descriptors in their static heap.
 	};

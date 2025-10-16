@@ -33,7 +33,11 @@ namespace Tridium {
 		IDynamicRHI* Device() const { return m_Device; }
 
 		// Releases the this device object, freeing it from the parent device.
-		virtual bool Release() = 0;
+		virtual bool Release() 
+		{
+			m_Device = nullptr;
+			return true;
+		}
 
 		// Returns the type of the resource.
 		virtual ERHIObjectType Type() const = 0;
@@ -102,6 +106,7 @@ namespace Tridium {
 		virtual ~IRHIObject();
 
 	private:
+		friend IDynamicRHI;
 		IDynamicRHI* m_Device = nullptr; // Pointer to the RHI device that owns this object.
 	};
 

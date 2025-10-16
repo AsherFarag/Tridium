@@ -108,6 +108,9 @@ namespace Tridium {
 			m_Window->OnUpdate();
 		}
 
+		TODO( "Probably remove layers" );
+		m_LayerStack = {};
+
 		m_Engine.reset();
 		return m_ExitCode;
 	}

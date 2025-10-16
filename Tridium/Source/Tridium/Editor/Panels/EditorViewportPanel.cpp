@@ -31,6 +31,7 @@
 #include <Tridium/Asset/Importers/ModelImporter.h>
 #include <Tridium/Asset/Importers/EnvironmentMapImporter.h>
 #include <Tridium/Graphics/Renderer/RenderResourceManager.h>
+#include <Tridium/Graphics/Renderer/HighDefinitionRenderPipeline.h>
 
 namespace Tridium {
 
@@ -133,6 +134,8 @@ namespace Tridium {
 	}
 
 	static RenderViewID s_ViewID = 0;
+	static Array<AssetRef<StaticMesh>> s_ImportedAssets;
+	static uint32_t importedAssetIndex = 0;
 
 	void EditorViewportPanel::OnUpdate( float a_DeltaTime )
 	{
@@ -156,51 +159,36 @@ namespace Tridium {
 
 		{
 			//TEMP
-			const FilePath assetFilePath = "TestProject/Content/damagedhelmet/DamagedHelmet.gltf";
 			//const FilePath assetFilePath = "TestProject/Content/troll/troll/TrollApose_low.fbx";
-			auto modelImporter = AssetFactory::GetImporter( assetFilePath.GetExtension().ToString() );
+			auto modelImporter = AssetFactory::GetImporter( ".fbx" );
 			static bool imported = false;
-			static AssetRef<StaticMesh> importedAsset;
-			static AssetRef<StaticMesh> importedAsset2;
+
 			if ( modelImporter && !imported )
 			{
 				imported = true;
-				{
-					std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
-					AssetImportContext context;
-					context.m_AssetPath = assetFilePath;
-					modelImporter->OnImport( context );
-					auto endTime = std::chrono::high_resolution_clock::now();
-					std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>( endTime - startTime );
-					LOG( LogCategory::Debug, Info, "Import took {} seconds", duration.count() );
-					importedAsset = SharedPtrCast<StaticMesh>( context.m_CreatedAssets.Back().second );
-				}
 
+				const auto ImportAsset = [&]( const FilePath& path )
 				{
-					//const FilePath assetFilePath = "TestProject/Content/spider.fbx";
-					//const FilePath assetFilePath = "TestProject/Content/Charles/Barrel_EdgeNormals.fbx";
-					const FilePath assetFilePath = "TestProject/Content/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX";
-					std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
 					AssetImportContext context;
-					context.m_AssetPath = assetFilePath;
+					context.m_AssetPath = path;
 					modelImporter->OnImport( context );
-					auto endTime = std::chrono::high_resolution_clock::now();
-					std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>( endTime - startTime );
-					LOG( LogCategory::Debug, Info, "Import took {} seconds", duration.count() );
-
 					for ( const auto& [metaData, asset] : context.m_CreatedAssets )
 					{
 						LOG( LogCategory::Debug, Info, "Created Asset: {}", metaData.Name );
 						if ( asset->Type() == StaticMesh::StaticType() )
 						{
-							importedAsset2 = SharedPtrCast<StaticMesh>( asset );
+							s_ImportedAssets.PushBack( SharedPtrCast<StaticMesh>( asset ) );
 						}
 					}
+				};
 
-				}
+				ImportAsset( "TestProject/Content/damagedhelmet/DamagedHelmet.gltf" );
+				ImportAsset( "TestProject/Content/Sponza2/Sponza/glTF/Sponza.gltf" );
+			}
 
-				RendererModule::GetPipelineManager()->SubmitStaticMesh( importedAsset, Matrix4( 1.0f ) );
-
+			if ( s_ImportedAssets.IsValidIndex( importedAssetIndex ) )
+			{
+				RendererModule::GetPipelineManager()->SubmitStaticMesh( s_ImportedAssets[importedAssetIndex], Matrix4{ 1.0f } );
 			}
 		}
 
@@ -360,40 +348,54 @@ namespace Tridium {
 		m_EditorCamera->Focused = m_IsFocused && !ImGuizmo::IsUsingAny();
 		ImGui::End();
 
-		ImGui::Begin( "Scene Renderer Debug" );
+		ImGui::Begin( "Render Pipeline Debug" );
 		{
-			//GBufferPass* pass = renderer.GetRenderPass<GBufferPass>( SceneRenderer::Passes::GBuffer );
-			//if ( pass )
-			//{
-			//	ImVec2 size = { (float)pass->GetAlbedoTexture()->Desc().Width, (float)pass->GetAlbedoTexture()->Desc().Height };
-			//	const ImVec2 maxSize = ImGui::GetContentRegionAvail();
-			//	if ( size.x > maxSize.x )
-			//	{
-			//		float aspect = size.y / size.x;
-			//		size.x = maxSize.x;
-			//		size.y = size.x * aspect;
-			//	}
-			//
-			//	if ( size.y > maxSize.y )
-			//	{
-			//		float aspect = size.x / size.y;
-			//		size.y = maxSize.y;
-			//		size.x = size.y * aspect;
-			//	}
-			//
-			//	ImGui::Text( "GBuffer Pass Textures:" );
-			//	ImGui::Separator();
-			//	ImGui::Text( "Position:" );
-			//	ImGui::Image( (ImTextureID)pass->GetPositionTexture().get(), size );
-			//	ImGui::Text( "Albedo:" );
-			//	ImGui::Image( (ImTextureID)pass->GetAlbedoTexture().get(), size );
-			//	ImGui::Text( "Normal:" );
-			//	ImGui::Image( (ImTextureID)pass->GetNormalTexture().get(), size );
-			//	ImGui::Text( "MetallicRoughnessAO:" );
-			//	ImGui::Image( (ImTextureID)pass->GetMRAOTexture().get(), size );
-			//	ImGui::Text( "Emission:" );
-			//	ImGui::Image( (ImTextureID)pass->GetEmissionTexture().get(), size );
-			//}
+			using Passes = HighDefinitionRenderPipeline::Passes;
+			auto& renderer = *RendererModule::GetPipelineManager()->GetRenderPipeline();
+			auto* pass = renderer.GetRenderPass<GBufferPipelinePass>( Passes::GBuffer );
+			if ( pass && pass->GetAlbedoTexture() )
+			{
+				ImVec2 size = { (float)pass->GetAlbedoTexture()->Desc().Width, (float)pass->GetAlbedoTexture()->Desc().Height };
+				const ImVec2 maxSize = ImGui::GetContentRegionAvail();
+				if ( size.x > maxSize.x )
+				{
+					float aspect = size.y / size.x;
+					size.x = maxSize.x;
+					size.y = size.x * aspect;
+				}
+			
+				if ( size.y > maxSize.y )
+				{
+					float aspect = size.x / size.y;
+					size.y = maxSize.y;
+					size.x = size.y * aspect;
+				}
+			
+				ImGui::Text( "GBuffer Pass Textures:" );
+				ImGui::Separator();
+				ImGui::Text( "Position:" );
+				ImGui::Image( (ImTextureID)pass->GetPositionTexture().get(), size );
+				ImGui::Text( "Albedo:" );
+				ImGui::Image( (ImTextureID)pass->GetAlbedoTexture().get(), size );
+				ImGui::Text( "Normal:" );
+				ImGui::Image( (ImTextureID)pass->GetNormalTexture().get(), size );
+				ImGui::Text( "MetallicRoughnessAO:" );
+				ImGui::Image( (ImTextureID)pass->GetMRAOTexture().get(), size );
+				ImGui::Text( "Emission:" );
+				ImGui::Image( (ImTextureID)pass->GetEmissionTexture().get(), size );
+			}
+		}
+		ImGui::End();
+
+		if ( ImGui::Begin( "Render Debug" ) )
+		{
+			ImGui::Checkbox( "Enable Lights", &g_TestLightEnable );
+			ImGui::Checkbox( "Draw Debug Lights", &g_TestDrawLights );
+
+			int assetindex = (int)importedAssetIndex;
+			ImGui::InputInt( "Imported Asset Index", &assetindex );
+			importedAssetIndex = (uint32_t)assetindex;
+			importedAssetIndex = s_ImportedAssets.Size() > 0 ? importedAssetIndex % s_ImportedAssets.Size() : 0;
 		}
 		ImGui::End();
 	}

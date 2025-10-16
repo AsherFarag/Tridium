@@ -223,6 +223,8 @@ namespace Tridium {
 
 	void RenderPipelineManager::EndFrame()
 	{
+		m_RenderContext.m_DrawPackets.Clear();
+		m_RenderContext.m_ViewOutputs.clear();
 	}
 
 	void RenderPipelineManager::Reset()

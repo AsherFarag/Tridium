@@ -6,6 +6,10 @@ namespace Tridium {
 
 	IRHIObject::~IRHIObject()
 	{
-		Device()->UnregisterRHIObject( *this );
+		TODO( "This" );
+		if ( RHI::GetDynamicRHI() )
+		{
+			Device()->UnregisterRHIObject( *this );
+		}
 	}
 }
