@@ -68,6 +68,10 @@ namespace Tridium::OpenGL {
 						a_Desc.Width, a_Desc.Height
 					);
 
+					// Keep OpenGL happy by specifying the mip range
+					OpenGL1::TexParameteri( m_GLTarget, GL_TEXTURE_BASE_LEVEL, 0 );
+					OpenGL1::TexParameteri( m_GLTarget, GL_TEXTURE_MAX_LEVEL, m_Desc.Mips - 1 );
+
 					if ( a_SubResourcesData.empty() )
 					{
 						break;

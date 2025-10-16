@@ -7,11 +7,16 @@
 
 namespace Tridium::Math {
 
+	using DefaultGenType = float32_t;
+
+	template<Concepts::Arithmetic _Gen>
+	using NumericLimits = std::numeric_limits<_Gen>;
+
 	// Returns the machine epsilon, that is,
 	// the difference between 1.0 and the next value representable by the floating-point type _Gen.
 	// ( From cppreference on std::numeric_limits )
-	template<Concepts::Arithmetic _Gen>
-	constexpr inline _Gen Epsilon() { return std::numeric_limits<_Gen>::epsilon(); }
+	template<Concepts::Arithmetic _Gen = DefaultGenType>
+	constexpr inline _Gen Epsilon() { return NumericLimits<_Gen>::epsilon(); }
 
 	// Returns true if two values are approximately equal within a given epsilon.
 	// This is useful for comparing floating point values.

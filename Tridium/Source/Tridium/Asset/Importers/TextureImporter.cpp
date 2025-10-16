@@ -6,7 +6,6 @@
 #include <Tridium/Asset/TextureAsset.h>
 
 #include <stb_image.h>
-#include <imageinfo/imageinfo.hpp>
 
 
 namespace Tridium {

@@ -9,12 +9,14 @@
 #include <Tridium/Editor/EditorUtil.h>
 #include <Tridium/Editor/EditorCamera.h>
 #include <Tridium/Editor/EditorStyle.h>
+#include <Tridium/Graphics/Renderer/RendererModule.h>
 #include <Tridium/Graphics/RHI/RHI.h>
 #include <Tridium/Scene/Scene.h>
 
 #include <ImGuizmo.h>
 
 // TEMP ?
+#include <Tridium/Math/Random.h>
 #include <Tridium/Graphics/oldRendering/SceneRenderer.h>
 #include <Tridium/oldAsset/EditorAssetManager.h>
 #include "Tridium/oldAsset/AssetManager.h"
@@ -130,13 +132,136 @@ namespace Tridium {
 		return false;
 	}
 
+	static RenderViewID s_ViewID = 0;
+
+	void EditorViewportPanel::OnUpdate( float a_DeltaTime )
+	{
+		if ( !m_EditorCamera || m_ViewportSize.X <= 0 || m_ViewportSize.Y <= 0 )
+			return;
+
+		RenderView view
+		{
+			.Constants{
+				m_EditorCamera->GetViewMatrix(),
+				m_EditorCamera->GetProjection(),
+				Vector4{ m_EditorCamera->Position, 1.0f },
+				Vector2{ m_ViewportSize.X, m_ViewportSize.Y },
+				m_EditorCamera->GetPerspectiveFarClip(),
+				m_EditorCamera->GetPerspectiveNearClip()
+			},
+			.Type = ERenderViewType::Camera,
+			.Enabled = true,
+			.Camera = {.OutputFormat = ERHIFormat::RGBA16_UNORM }
+		};
+
+		{
+			//TEMP
+			const FilePath assetFilePath = "TestProject/Content/damagedhelmet/DamagedHelmet.gltf";
+			//const FilePath assetFilePath = "TestProject/Content/troll/troll/TrollApose_low.fbx";
+			auto modelImporter = AssetFactory::GetImporter( assetFilePath.GetExtension().ToString() );
+			static bool imported = false;
+			static AssetRef<StaticMesh> importedAsset;
+			static AssetRef<StaticMesh> importedAsset2;
+			if ( modelImporter && !imported )
+			{
+				imported = true;
+				{
+					std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
+					AssetImportContext context;
+					context.m_AssetPath = assetFilePath;
+					modelImporter->OnImport( context );
+					auto endTime = std::chrono::high_resolution_clock::now();
+					std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>( endTime - startTime );
+					LOG( LogCategory::Debug, Info, "Import took {} seconds", duration.count() );
+					importedAsset = SharedPtrCast<StaticMesh>( context.m_CreatedAssets.Back().second );
+				}
+
+				{
+					//const FilePath assetFilePath = "TestProject/Content/spider.fbx";
+					//const FilePath assetFilePath = "TestProject/Content/Charles/Barrel_EdgeNormals.fbx";
+					const FilePath assetFilePath = "TestProject/Content/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX";
+					std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
+					AssetImportContext context;
+					context.m_AssetPath = assetFilePath;
+					modelImporter->OnImport( context );
+					auto endTime = std::chrono::high_resolution_clock::now();
+					std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>( endTime - startTime );
+					LOG( LogCategory::Debug, Info, "Import took {} seconds", duration.count() );
+
+					for ( const auto& [metaData, asset] : context.m_CreatedAssets )
+					{
+						LOG( LogCategory::Debug, Info, "Created Asset: {}", metaData.Name );
+						if ( asset->Type() == StaticMesh::StaticType() )
+						{
+							importedAsset2 = SharedPtrCast<StaticMesh>( asset );
+						}
+					}
+
+				}
+
+				RendererModule::GetPipelineManager()->SubmitStaticMesh( importedAsset, Matrix4( 1.0f ) );
+
+			}
+		}
+
+		// Temp
+		static bool SetLightEnv = []() -> bool
+		{
+			static Array<PointLight> s_PointLights = []() -> Array<PointLight>
+			{
+				Array<PointLight> lights;
+				lights.Reserve( 32 );
+
+				for ( int i = 0; i < 32; i++ )
+				{
+					PointLight light;
+					light.Position = Vector3{
+						Math::Random::Range( -10.0f, 10.0f ),
+						Math::Random::Range( 0.0f, 5.0f ),
+						Math::Random::Range( -10.0f, 10.0f )
+					};
+					light.Color = Vector3{
+						Math::Random::Range( 0.0f, 1.0f ),
+						Math::Random::Range( 0.0f, 1.0f ),
+						Math::Random::Range( 0.0f, 1.0f )
+					};
+					light.Intensity = Math::Random::Range( 1.0f, 2.5f );
+					light.Radius = Math::Random::Range( 5.0f, 15.0f );
+					lights.PushBack( light );
+				}
+
+				return lights;
+			}( );
+
+			LightEnvironment lightEnv;
+			lightEnv.PointLights = std::move( s_PointLights );
+
+			{
+				//const FilePath assetFilePath = "TestProject/Content/resting_place_2_4k.hdr";
+				//const FilePath assetFilePath = "TestProject/Content/studio_small.hdr";
+				const FilePath assetFilePath = "TestProject/Content/park_music_stage_4k.hdr";
+				auto envMapImporter = AssetFactory::GetImporter( assetFilePath.GetExtension().ToString() );
+				static AssetRef<EnvironmentMap> importedEnvMapAsset;
+				AssetImportContext context;
+				context.m_AssetPath = assetFilePath;
+				envMapImporter->OnImport( context );
+				importedEnvMapAsset = SharedPtrCast<EnvironmentMap>( context.m_CreatedAssets.Back().second );
+
+				lightEnv.Sky.EnvironmentMap = RenderResourceManager::GetOrCreateEnvironmentMap( importedEnvMapAsset );
+			}
+
+			RendererModule::GetPipelineManager()->SetLightEnvironment( std::move( lightEnv ) );
+
+			return true;
+		}( );
+
+		s_ViewID = RendererModule::GetPipelineManager()->AddView( view );
+	}
+
 	void EditorViewportPanel::OnImGuiDraw()
 	{
 		if ( !m_EditorCamera )
 			return;
-
-
-		static SceneRenderer renderer( nullptr );
 
 		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2( 2.f, 2.f ) );
 
@@ -157,67 +282,73 @@ namespace Tridium {
 			m_EditorCamera->SetViewportSize( m_ViewportSize.X, m_ViewportSize.Y );
 			m_EditorCamera->OnUpdate();
 
+			ImTextureID textureID = (ImTextureID)( RendererModule::GetPipelineManager()->GetViewOutput( s_ViewID ).get() );
+			if ( textureID )
 			{
-
-				//TEMP
-				const FilePath assetFilePath = "TestProject/Content/damagedhelmet/DamagedHelmet.gltf";
-				//const FilePath assetFilePath = "TestProject/Content/troll/troll/TrollApose_low.fbx";
-				auto modelImporter = AssetFactory::GetImporter( assetFilePath.GetExtension().ToString() );
-				static bool imported = false;
-				static AssetRef<StaticMesh> importedAsset;
-				static AssetRef<StaticMesh> importedAsset2;
-				if ( modelImporter && !imported )
-				{
-					imported = true;
-					{
-						std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
-						AssetImportContext context;
-						context.m_AssetPath = assetFilePath;
-						modelImporter->OnImport( context );
-						auto endTime = std::chrono::high_resolution_clock::now();
-						std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>( endTime - startTime );
-						LOG( LogCategory::Debug, Info, "Import took {} seconds", duration.count() );
-						importedAsset = SharedPtrCast<StaticMesh>( context.m_CreatedAssets.Back().second );
-					}
-
-					{
-						//const FilePath assetFilePath = "TestProject/Content/spider.fbx";
-						//const FilePath assetFilePath = "TestProject/Content/Charles/Barrel_EdgeNormals.fbx";
-						const FilePath assetFilePath = "TestProject/Content/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX";
-						std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
-						AssetImportContext context;
-						context.m_AssetPath = assetFilePath;
-						modelImporter->OnImport( context );
-						auto endTime = std::chrono::high_resolution_clock::now();
-						std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>( endTime - startTime );
-						LOG( LogCategory::Debug, Info, "Import took {} seconds", duration.count() );
-
-						for ( const auto& [metaData, asset] : context.m_CreatedAssets )
-						{
-							LOG( LogCategory::Debug, Info, "Created Asset: {}", metaData.Name );
-							if ( asset->Type() == StaticMesh::StaticType() )
-							{
-								importedAsset2 = SharedPtrCast<StaticMesh>( asset );
-							}
-						}
-
-					}
-				}
-
-
-				renderer.SetViewportSize( ( uint32_t )m_ViewportSize.X, ( uint32_t )m_ViewportSize.Y );
-				renderer.Open( *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position );
-				renderer.SubmitStaticMesh( importedAsset, Matrix4( 1.0f ) );
-				//renderer.SubmitStaticMesh( importedAsset2,
-				//						   Math::Translate( Vector3( 0.0f, 1.0f, 0.0f ) ) *
-				//						   Math::Rotate( Matrix4( 1.0f ), 90.0f, Vector3( 0.0f, 1.0f, 0.0f ) ) *
-				//						   Math::Scale( Vector3( 0.05f ) )
-				//);
-				renderer.Close();
-
-				ImTextureID textureID = ( ImTextureID )( renderer.GetOutputTexture().get() );
 				ImGui::Image( textureID, ImGui::GetContentRegionAvail() );
 			}
+
+			//{
+			//
+			//	//TEMP
+			//	const FilePath assetFilePath = "TestProject/Content/damagedhelmet/DamagedHelmet.gltf";
+			//	//const FilePath assetFilePath = "TestProject/Content/troll/troll/TrollApose_low.fbx";
+			//	auto modelImporter = AssetFactory::GetImporter( assetFilePath.GetExtension().ToString() );
+			//	static bool imported = false;
+			//	static AssetRef<StaticMesh> importedAsset;
+			//	static AssetRef<StaticMesh> importedAsset2;
+			//	if ( modelImporter && !imported )
+			//	{
+			//		imported = true;
+			//		{
+			//			std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
+			//			AssetImportContext context;
+			//			context.m_AssetPath = assetFilePath;
+			//			modelImporter->OnImport( context );
+			//			auto endTime = std::chrono::high_resolution_clock::now();
+			//			std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>( endTime - startTime );
+			//			LOG( LogCategory::Debug, Info, "Import took {} seconds", duration.count() );
+			//			importedAsset = SharedPtrCast<StaticMesh>( context.m_CreatedAssets.Back().second );
+			//		}
+			//
+			//		{
+			//			//const FilePath assetFilePath = "TestProject/Content/spider.fbx";
+			//			//const FilePath assetFilePath = "TestProject/Content/Charles/Barrel_EdgeNormals.fbx";
+			//			const FilePath assetFilePath = "TestProject/Content/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX";
+			//			std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
+			//			AssetImportContext context;
+			//			context.m_AssetPath = assetFilePath;
+			//			modelImporter->OnImport( context );
+			//			auto endTime = std::chrono::high_resolution_clock::now();
+			//			std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>( endTime - startTime );
+			//			LOG( LogCategory::Debug, Info, "Import took {} seconds", duration.count() );
+			//
+			//			for ( const auto& [metaData, asset] : context.m_CreatedAssets )
+			//			{
+			//				LOG( LogCategory::Debug, Info, "Created Asset: {}", metaData.Name );
+			//				if ( asset->Type() == StaticMesh::StaticType() )
+			//				{
+			//					importedAsset2 = SharedPtrCast<StaticMesh>( asset );
+			//				}
+			//			}
+			//
+			//		}
+			//	}
+			//
+			//
+			//	renderer.SetViewportSize( ( uint32_t )m_ViewportSize.X, ( uint32_t )m_ViewportSize.Y );
+			//	renderer.Open( *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position );
+			//	renderer.SubmitStaticMesh( importedAsset, Matrix4( 1.0f ) );
+			//	//renderer.SubmitStaticMesh( importedAsset2,
+			//	//						   Math::Translate( Vector3( 0.0f, 1.0f, 0.0f ) ) *
+			//	//						   Math::Rotate( Matrix4( 1.0f ), 90.0f, Vector3( 0.0f, 1.0f, 0.0f ) ) *
+			//	//						   Math::Scale( Vector3( 0.05f ) )
+			//	//);
+			//	renderer.Close();
+			//
+			//	ImTextureID textureID = ( ImTextureID )( renderer.GetOutputTexture().get() );
+			//	ImGui::Image( textureID, ImGui::GetContentRegionAvail() );
+			//}
 
 			//DragDropTarget();
 
@@ -231,38 +362,38 @@ namespace Tridium {
 
 		ImGui::Begin( "Scene Renderer Debug" );
 		{
-			GBufferPass* pass = renderer.GetRenderPass<GBufferPass>( SceneRenderer::Passes::GBuffer );
-			if ( pass )
-			{
-				ImVec2 size = { (float)pass->GetAlbedoTexture()->Desc().Width, (float)pass->GetAlbedoTexture()->Desc().Height };
-				const ImVec2 maxSize = ImGui::GetContentRegionAvail();
-				if ( size.x > maxSize.x )
-				{
-					float aspect = size.y / size.x;
-					size.x = maxSize.x;
-					size.y = size.x * aspect;
-				}
-
-				if ( size.y > maxSize.y )
-				{
-					float aspect = size.x / size.y;
-					size.y = maxSize.y;
-					size.x = size.y * aspect;
-				}
-
-				ImGui::Text( "GBuffer Pass Textures:" );
-				ImGui::Separator();
-				ImGui::Text( "Position:" );
-				ImGui::Image( (ImTextureID)pass->GetPositionTexture().get(), size );
-				ImGui::Text( "Albedo:" );
-				ImGui::Image( (ImTextureID)pass->GetAlbedoTexture().get(), size );
-				ImGui::Text( "Normal:" );
-				ImGui::Image( (ImTextureID)pass->GetNormalTexture().get(), size );
-				ImGui::Text( "MetallicRoughnessAO:" );
-				ImGui::Image( (ImTextureID)pass->GetMRAOTexture().get(), size );
-				ImGui::Text( "Emission:" );
-				ImGui::Image( (ImTextureID)pass->GetEmissionTexture().get(), size );
-			}
+			//GBufferPass* pass = renderer.GetRenderPass<GBufferPass>( SceneRenderer::Passes::GBuffer );
+			//if ( pass )
+			//{
+			//	ImVec2 size = { (float)pass->GetAlbedoTexture()->Desc().Width, (float)pass->GetAlbedoTexture()->Desc().Height };
+			//	const ImVec2 maxSize = ImGui::GetContentRegionAvail();
+			//	if ( size.x > maxSize.x )
+			//	{
+			//		float aspect = size.y / size.x;
+			//		size.x = maxSize.x;
+			//		size.y = size.x * aspect;
+			//	}
+			//
+			//	if ( size.y > maxSize.y )
+			//	{
+			//		float aspect = size.x / size.y;
+			//		size.y = maxSize.y;
+			//		size.x = size.y * aspect;
+			//	}
+			//
+			//	ImGui::Text( "GBuffer Pass Textures:" );
+			//	ImGui::Separator();
+			//	ImGui::Text( "Position:" );
+			//	ImGui::Image( (ImTextureID)pass->GetPositionTexture().get(), size );
+			//	ImGui::Text( "Albedo:" );
+			//	ImGui::Image( (ImTextureID)pass->GetAlbedoTexture().get(), size );
+			//	ImGui::Text( "Normal:" );
+			//	ImGui::Image( (ImTextureID)pass->GetNormalTexture().get(), size );
+			//	ImGui::Text( "MetallicRoughnessAO:" );
+			//	ImGui::Image( (ImTextureID)pass->GetMRAOTexture().get(), size );
+			//	ImGui::Text( "Emission:" );
+			//	ImGui::Image( (ImTextureID)pass->GetEmissionTexture().get(), size );
+			//}
 		}
 		ImGui::End();
 	}

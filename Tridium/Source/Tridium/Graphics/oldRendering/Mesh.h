@@ -33,7 +33,7 @@ namespace Tridium {
 		Matrix4 Transform{ 1.0f };
 		Matrix4 LocalTransform{ 1.0f }; // Do we need this?
 		std::string Name;
-		AABB BoundingBox;
+		AABBOld BoundingBox;
 		SharedPtr<MeshCollider> Collider;
 		void GenerateMeshCollider();
 	};
@@ -55,12 +55,12 @@ namespace Tridium {
 		std::vector<OldSubMesh>& GetSubMeshes() { return m_SubMeshes; }
 		const std::vector<OldSubMesh>& GetSubMeshes() const { return m_SubMeshes; }
 		const std::vector<MaterialHandle>& GetMaterials() const { return m_Materials; }
-		const AABB& GetBoundingBox() const { return m_BoundingBox; }
+		const AABBOld& GetBoundingBox() const { return m_BoundingBox; }
 
 	private:
 		std::vector<OldSubMesh> m_SubMeshes;
 		std::vector<MaterialHandle> m_Materials;
-		AABB m_BoundingBox;
+		AABBOld m_BoundingBox;
 
 		friend class AssimpImporter;
 		friend class MeshSourceImporterPanel;
@@ -91,14 +91,14 @@ namespace Tridium {
 		void SetMaterials( const std::vector<MaterialHandle>& a_Materials ) { m_Materials = a_Materials; }
 		auto& GetMaterials() { return m_Materials; }
 		const auto& GetMaterials() const { return m_Materials; }
-		void SetBoundingBox( const AABB& a_BoundingBox ) { m_BoundingBox = a_BoundingBox; }
-		const AABB& GetBoundingBox() const { return m_BoundingBox; }
+		void SetBoundingBox( const AABBOld& a_BoundingBox ) { m_BoundingBox = a_BoundingBox; }
+		const AABBOld& GetBoundingBox() const { return m_BoundingBox; }
 
 	private:
 		MeshSourceHandle m_MeshSource;
 		std::vector<uint32_t> m_SubMeshes;
 		std::vector<MaterialHandle> m_Materials;
-		AABB m_BoundingBox;
+		AABBOld m_BoundingBox;
 	};
 
 	// - Mesh Factory -

@@ -10,22 +10,27 @@
 
 namespace Tridium {
 
-	// Forward Declarations
 	class GameObject;
 
-	//===========================================================================================
-	// Editor
-	//  The global editor class
+	DEFINE_TICK_GROUP( EditorTick );
+	DEFINE_TICK_GROUP( EditorRender );
+
+	//=================================================================================================
+	// Editor: The main editor application class, derived from the core Application class.
+	//=================================================================================================
 	class Editor final : public Application
 	{
 	public:
-		//=======================================================================================
+
+		//=============================================================================================
 		// Global editor events that can be subscribed and invoked from anywhere in the editor.
+		//=============================================================================================
 		struct Events
 		{
 			static MulticastDelegate<void( GameObject )> OnGameObjectSelected;
 		};
 
+		//=============================================================================================
 		static Editor* Get() { return Cast<Editor*>( s_Instance ); }
 		static EditorPayloadManager& GetPayloadManager() { return Get()->m_PayloadManager; }
 		static EditorLayer* GetEditorLayer() { return Get()->m_EditorLayer; }
@@ -33,16 +38,22 @@ namespace Tridium {
 		static CommandManager& GetCommandManager() { return Get()->m_CommandManager; }
 
 	private:
+
+		//=============================================================================================
 		EditorLayer* m_EditorLayer;
 		EditorPayloadManager m_PayloadManager;
 		EditorStyle m_Style;
 		CommandManager m_CommandManager;
 
 	public:
+
+		//=============================================================================================
 		Editor( CmdLineArgs a_CmdLine );
 		~Editor();
 
 		void OnUpdate() override;
+
+		void Tick();
 	};
 
 };

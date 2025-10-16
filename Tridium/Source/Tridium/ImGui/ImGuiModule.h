@@ -6,20 +6,28 @@
 
 namespace Tridium {
 
+	//=================================================================================================
+	// ImGui Module: Manages the ImGui Layer and platform/renderer backends.
+	//=================================================================================================
 	DEFINE_ENGINE_MODULE( ImGuiModule, EEngineModuleCategory::Client, "RendererModule" )
 	{
 	public:
+
+		//=============================================================================================
 		static IPlatformImGuiInterface* GetPlatformBackend() { return Get()->m_PlatformBackend.get(); }
 		static const RHICommandListRef& GetCommandList() { return Get()->m_CmdList; }
 		static ImGuiLayer* GetImGuiLayer() { return Get()->m_ImGuiLayer; }
 
 	private:
+
+		//=============================================================================================
 		UniquePtr<IPlatformImGuiInterface> m_PlatformBackend;
 		RHICommandListRef m_CmdList;
 		ImGuiLayer* m_ImGuiLayer = nullptr;
 
 		void Init() override;
 		void Shutdown() override;
+		void Render();
 	};
 
 }

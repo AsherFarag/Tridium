@@ -28,7 +28,7 @@ namespace Tridium {
 			if ( result.Hit )
 			{
 				TODO( "Draw a sphere at the hit position" );
-				AABB aabb = { result.Position - Vector3( 0.1f ), result.Position + Vector3( 0.1f ) };
+				AABBOld aabb = { result.Position - Vector3( 0.1f ), result.Position + Vector3( 0.1f ) };
 				Debug::DrawAABBFilled( aabb, a_DebugHitColor, a_DrawDurationType, a_DebugDrawDuration );
 			}
 		}

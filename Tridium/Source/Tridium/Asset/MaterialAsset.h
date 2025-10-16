@@ -2,6 +2,7 @@
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/Asset/TextureAsset.h>
 #include <Tridium/Graphics/Color.h>
+#include <Tridium/Graphics/Renderer/Material.h>
 
 namespace Tridium {
 
@@ -30,7 +31,7 @@ namespace Tridium {
 	//=================================================================================================
 	// Material: A pipeline state and set of textures that define how a mesh is rendered.
 	//=================================================================================================
-	DEFINE_ASSET_TYPE( Material )
+	DEFINE_ASSET_TYPE( Material ), IMaterialInterface
 	{
 	public:
 
@@ -66,6 +67,10 @@ namespace Tridium {
 		void SetRoughnessIntensity( float a_Intensity ) { m_RoughnessIntensity = a_Intensity; }
 		void SetEmissiveIntensity( float a_Intensity ) { m_EmissiveIntensity = a_Intensity; }
 
+		void SetProperty( HashedString a_Name, MaterialPropertyVariant a_Value ) override
+		{
+		}
+
 		bool Transparent() const { return m_Flags.HasFlag( EMaterialFlags::Transparent ); }
 		bool CastsShadows() const { return !m_Flags.HasFlag( EMaterialFlags::DisableShadowCasting ); }
 
@@ -74,6 +79,7 @@ namespace Tridium {
 		//=============================================================================================
 		String m_ShaderFamily;
 		EnumFlags<EMaterialFlags> m_Flags{ EMaterialFlags::None };
+		UnorderedMap<String, MaterialPropertyVariant> m_Properties;
 
 		//=============================================================================================
 		// Material Properties

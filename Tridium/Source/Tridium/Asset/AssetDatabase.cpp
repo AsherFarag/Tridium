@@ -18,7 +18,7 @@ namespace Tridium {
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
-		auto assetID = Get()->m_AssetPathMap.find( a_Path );
+		auto assetID = Get()->m_AssetPathMap.find(a_Path);
 
 		if (assetID == Get()->m_AssetPathMap.end())
 			return AssetID::InvalidID;

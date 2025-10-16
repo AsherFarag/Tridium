@@ -24,6 +24,9 @@
 
 namespace Tridium {
 
+	REGISTER_TICK_GROUP( EditorTick, "BeginAppUpdate"_H );
+	REGISTER_TICK_GROUP( EditorRender, "Render"_H );
+
 	//=======================================================================================
 	// Editor Events
 	MulticastDelegate<void( GameObject )> Editor::Events::OnGameObjectSelected{};
@@ -38,6 +41,8 @@ namespace Tridium {
 		m_Window->SetIcon( ( Engine::Get()->GetEngineAssetsDirectory() / "Editor/Icons/EngineIcon.png" ).ToString() );
 
 		m_Style.SetTheme( EditorStyle::ETheme::Midnight );
+
+		Application::AddOnTick( TickGroups::EditorTick, []() { Editor::Get()->Tick(); } );
 	}
 
 	Editor::~Editor()
@@ -47,6 +52,15 @@ namespace Tridium {
 
 	void Editor::OnUpdate()
 	{
+	}
+
+	void Editor::Tick()
+	{
+		for ( auto it = m_EditorLayer->m_PanelStack.begin(); it != m_EditorLayer->m_PanelStack.end(); it++ )
+		{
+			TODO( "Delta Time" );
+			it->second->OnUpdate( 0.0f );
+		}
 	}
 
 }

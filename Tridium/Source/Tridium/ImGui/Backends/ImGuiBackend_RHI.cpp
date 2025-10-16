@@ -352,7 +352,7 @@ namespace Tridium {
                     graphicsState.BindingSets[ 0 ] = bd->GetOrCreateBindingSet( ( IRHITexture* )pcmd->GetTexID() ).get();
 
                     cmdList->SetGraphicsState( graphicsState );
-                    cmdList->SetInlinedConstants( inlinedConstants );
+                    cmdList->SetInlinedConstants( inlinedConstants, 0 );
                     cmdList->SetViewportState( vpState );
                     cmdList->Draw( drawArgs );
                 }

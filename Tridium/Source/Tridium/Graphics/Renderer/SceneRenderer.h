@@ -1,4 +1,5 @@
 #pragma once
+#if 0
 #include <Tridium/Asset/MeshAsset.h>
 #include <Tridium/Asset/MaterialAsset.h>
 #include <Tridium/Graphics/RHI/RHIForward.h>
@@ -218,7 +219,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		// Custom and built-in scene render passes added to the renderer.
-		UnorderedMap<String, UniquePtr<ISceneRenderPass>, TransparentStringHash, TransparentStringEqual> m_RenderPasses;
+		UnorderedMap<String, UniquePtr<ISceneRenderPass>> m_RenderPasses;
 
 		//=============================================================================================
 		// Camera Data for rendering.
@@ -413,3 +414,5 @@ namespace Tridium {
 	}
 
 } // namespace Tridium
+
+#endif

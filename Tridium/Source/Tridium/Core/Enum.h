@@ -1,26 +1,26 @@
 #pragma once
-#include <type_traits>
+#include <Tridium/Utils/TypeTraits.h>
 #include <Tridium/Core/Cast.h>
 
 #define DEFINE_ENUM_BITMASK_OPERATORS(EnumType) \
     inline constexpr EnumType operator|(EnumType lhs, EnumType rhs) { \
         return Cast<EnumType>( \
-            Cast<std::underlying_type_t<EnumType>>(lhs) | \
-            Cast<std::underlying_type_t<EnumType>>(rhs)); \
+            Cast<::Tridium::UnderlyingTypeT<EnumType>>(lhs) | \
+            Cast<::Tridium::UnderlyingTypeT<EnumType>>(rhs)); \
     } \
     inline constexpr EnumType operator&(EnumType lhs, EnumType rhs) { \
         return Cast<EnumType>( \
-            Cast<std::underlying_type_t<EnumType>>(lhs) & \
-            Cast<std::underlying_type_t<EnumType>>(rhs)); \
+            Cast<::Tridium::UnderlyingTypeT<EnumType>>(lhs) & \
+            Cast<::Tridium::UnderlyingTypeT<EnumType>>(rhs)); \
     } \
     inline constexpr EnumType operator^(EnumType lhs, EnumType rhs) { \
         return Cast<EnumType>( \
-            Cast<std::underlying_type_t<EnumType>>(lhs) ^ \
-            Cast<std::underlying_type_t<EnumType>>(rhs)); \
+            Cast<::Tridium::UnderlyingTypeT<EnumType>>(lhs) ^ \
+            Cast<::Tridium::UnderlyingTypeT<EnumType>>(rhs)); \
     } \
     inline constexpr EnumType operator~(EnumType val) { \
         return Cast<EnumType>( \
-            ~Cast<std::underlying_type_t<EnumType>>(val)); \
+            ~Cast<::Tridium::UnderlyingTypeT<EnumType>>(val)); \
     } \
     inline EnumType& operator|=(EnumType& lhs, EnumType rhs) { \
         return lhs = (lhs | rhs); \
@@ -37,7 +37,7 @@ namespace Tridium {
 	template<typename _Enum>
 	struct EnumFlags
 	{
-		using EnumType = std::underlying_type_t<_Enum>;
+		using EnumType = ::Tridium::UnderlyingTypeT<_Enum>;
 		EnumType Value;
 
 		constexpr EnumFlags() = default;

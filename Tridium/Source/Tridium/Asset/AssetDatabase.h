@@ -106,7 +106,7 @@ namespace Tridium {
 	private:
 
 		//=============================================================================================
-		UnorderedMap<String, AssetID, TransparentStringHash, std::equal_to<>> m_AssetPathMap;
+		UnorderedMap<String, AssetID> m_AssetPathMap;
 		UnorderedMap<AssetID, Pair<AssetMetadata, SharedPtr<IAsset>>> m_Assets;
 
 		//=============================================================================================

@@ -221,9 +221,15 @@ namespace Tridium {
 
 		Delegate() = default;
 		Delegate( std::nullptr_t ) noexcept {}
-
 		Delegate( const Delegate& a_Other ) { CopyFrom( a_Other ); }
 		Delegate( Delegate&& a_Other ) noexcept { MoveFrom( std::move( a_Other ) ); }
+
+		template <typename _Callable>
+			requires std::is_invocable_r_v<ReturnType, _Callable, _Args...>
+		Delegate( _Callable&& a_Callable )
+		{
+			Bind( std::forward<_Callable>( a_Callable ) );
+		}
 
 		Delegate& operator=( const Delegate& a_Other )
 		{

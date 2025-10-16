@@ -794,6 +794,8 @@ namespace Tridium::D3D12 {
 
 		void ResourceBarriers( Span<const RHIResourceBarrier> a_Barriers, RHI_DEBUG_SRC_LOC_PARAM ) override;
 
+		void ClearTexture( IRHITexture& a_Texture, const RHITextureSubresourceSet& a_Subresources, RHIClearValue a_ClearValue, ERHIClearFlags a_ClearFlags = ERHIClearFlags::All, RHI_DEBUG_SRC_LOC_PARAM ) override;
+
 		void UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM ) override;
 		void CopyBuffer( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange, RHI_DEBUG_SRC_LOC_PARAM ) override;
 

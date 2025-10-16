@@ -16,7 +16,7 @@ namespace Tridium {
 		return nullptr;
 	}
 
-	SharedPtr<MeshCollider> MeshCollider::Create( const std::vector<Vector3>& a_Vertices, const std::vector<uint32_t>& a_Indices, const AABB& a_BoundingBox )
+	SharedPtr<MeshCollider> MeshCollider::Create( const std::vector<Vector3>& a_Vertices, const std::vector<uint32_t>& a_Indices, const AABBOld& a_BoundingBox )
     {
 		switch ( s_PhysicsAPI )
 		{

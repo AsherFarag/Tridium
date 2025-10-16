@@ -194,6 +194,131 @@ namespace Tridium::D3D12 {
 		CommitBarriers();
 	}
 
+	void RHICommandList_D3D12Impl::ClearTexture( IRHITexture& a_Texture, const RHITextureSubresourceSet& a_Subresources, RHIClearValue a_ClearValue, ERHIClearFlags a_ClearFlags, RHI_DEBUG_SRC_LOC_PARAM )
+	{
+		IRHICommandList::ClearTexture( a_Texture, a_Subresources, a_ClearValue, a_ClearFlags, RHI_DEBUG_SRC_LOC );
+
+		RHI_DEV_CHECK( a_Texture.Valid(), "Invalid texture!" );
+
+		auto* texture = a_Texture.As<RHITexture_D3D12Impl>();
+
+		const auto subresources = a_Subresources.Resolve( texture->Desc(), false );
+		const bool isRenderTarget = EnumFlags( texture->Desc().BindFlags ).HasFlag( ERHIBindFlags::RenderTarget );
+		const bool isDepthStencil = EnumFlags( texture->Desc().BindFlags ).HasFlag( ERHIBindFlags::DepthStencil );
+		const bool isUAV          = EnumFlags( texture->Desc().BindFlags ).HasFlag( ERHIBindFlags::UnorderedAccess );
+
+		if ( isRenderTarget )
+		{
+			if ( IsAutomaticResourceStateTransitionEnabled() )
+			{
+				m_ResourceStateTracker.RequireTextureState( a_Texture, ERHIResourceStates::RenderTarget );
+			}
+
+			CommitBarriers();
+
+			// Allocate a temporary RTV descriptor
+			DescriptorHeapRef rtvHeap = AllocateHeap( ERHIDescriptorHeapType::RenderTarget, 1, EDescriptorHeapFlags::Poolable );
+			D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUHandle( 0 );
+
+			for ( uint32_t mipLevel = subresources.BaseMipLevel; mipLevel < subresources.BaseMipLevel + subresources.NumMipLevels; ++mipLevel )
+			{
+				// Create the RTV view into that descriptor slot
+				D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+				rtvDesc.Format = Translate( texture->Desc().Format );
+				if ( texture->Desc().IsArray() )
+				{
+					rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
+					rtvDesc.Texture2DArray.MipSlice = subresources.BaseMipLevel;
+					rtvDesc.Texture2DArray.FirstArraySlice = subresources.BaseArraySlice;
+					rtvDesc.Texture2DArray.ArraySize = subresources.NumArraySlices;
+				}
+				else
+				{
+					rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+					rtvDesc.Texture2D.MipSlice = subresources.BaseMipLevel;
+					rtvDesc.Texture2D.PlaneSlice = 0;
+				}
+
+				auto* resource = texture->NativePtrAs<ID3D12Resource>();
+				Device()->GetD3D12Device()->CreateRenderTargetView( resource, &rtvDesc, rtvHandle );
+
+				m_ActiveCmdList.CmdList->ClearRenderTargetView( rtvHandle, &a_ClearValue.Color[0], 0, nullptr );
+			}
+		}
+		else if ( isDepthStencil )
+		{
+			if ( !EnumFlags( a_ClearFlags ).HasFlag( ERHIClearFlags::Depth ) &&
+				 !EnumFlags( a_ClearFlags ).HasFlag( ERHIClearFlags::Stencil ) )
+			{
+				RHI_DEV_WARN( false, "ClearTexture called with DepthStencil texture but no Depth or Stencil clear flag set." );
+				return;
+			}
+
+			if ( IsAutomaticResourceStateTransitionEnabled() )
+			{
+				m_ResourceStateTracker.RequireTextureState( a_Texture, ERHIResourceStates::DepthStencilWrite );
+			}
+
+			CommitBarriers();
+
+			// Allocate a temporary DSV descriptor
+			DescriptorHeapRef dsvHeap = AllocateHeap( ERHIDescriptorHeapType::DepthStencil, 1, EDescriptorHeapFlags::Poolable );
+			D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvHeap->GetCPUHandle( 0 );
+
+			// Create the DSV view into that descriptor slot
+			D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+			dsvDesc.Format = Translate( texture->Desc().Format );
+
+			if ( texture->Desc().IsArray() )
+			{
+				dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
+				dsvDesc.Texture2DArray.MipSlice = subresources.BaseMipLevel;
+				dsvDesc.Texture2DArray.FirstArraySlice = subresources.BaseArraySlice;
+				dsvDesc.Texture2DArray.ArraySize = subresources.NumArraySlices;
+			}
+			else
+			{
+				dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+				dsvDesc.Texture2D.MipSlice = subresources.BaseMipLevel;
+			}
+
+			dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+			if ( !EnumFlags( a_ClearFlags ).HasFlag( ERHIClearFlags::Depth ) )
+			{
+				dsvDesc.Flags |= D3D12_DSV_FLAG_READ_ONLY_DEPTH;
+			}
+			if ( !EnumFlags( a_ClearFlags ).HasFlag( ERHIClearFlags::Stencil ) )
+			{
+				dsvDesc.Flags |= D3D12_DSV_FLAG_READ_ONLY_STENCIL;
+			}
+
+			auto* resource = texture->NativePtrAs<ID3D12Resource>();
+			Device()->GetD3D12Device()->CreateDepthStencilView( resource, &dsvDesc, dsvHandle );
+
+			const D3D12_CLEAR_FLAGS clearFlags = Translate( a_ClearFlags );
+			m_ActiveCmdList.CmdList->ClearDepthStencilView( dsvHandle, clearFlags, a_ClearValue.Depth, (UINT8)a_ClearValue.Stencil, 0, nullptr );
+		}
+		else if ( isUAV )
+		{
+			if ( IsAutomaticResourceStateTransitionEnabled() )
+			{
+				m_ResourceStateTracker.RequireTextureState( a_Texture, ERHIResourceStates::UnorderedAccess );
+			}
+
+			CommitBarriers();
+
+			NOT_IMPLEMENTED;
+		}
+		else
+		{
+			ASSERT( false, "Attempting to clear a texture that is not a Render Target, Depth Stencil or UAV!" );
+			return;
+		}
+
+		// Keep a reference to the texture resource
+		m_CmdContext.ReferencedResources.EmplaceBack( a_Texture.Shared() );
+	}
+
 	void RHICommandList_D3D12Impl::UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes, RHI_DEBUG_SRC_LOC_PARAM ) 
 	{
 		RHIBuffer_D3D12Impl* buffer = a_Buffer.As<RHIBuffer_D3D12Impl>();

@@ -161,6 +161,20 @@ namespace Tridium {
 		}
 
         //=============================================================================================
+		// Clears the specified subresources of 'a_Texture' to 'a_ClearValue'.
+		// This can be used to clear color, depth, and stencil textures.
+        virtual void ClearTexture( IRHITexture& a_Texture, const RHITextureSubresourceSet& a_Subresources, RHIClearValue a_ClearValue, ERHIClearFlags a_ClearFlags = ERHIClearFlags::All, RHI_DEBUG_SRC_LOC_PARAM )
+        {
+            RHI_ADD_DEBUG_CMD_INFO( "ClearTexture", {}, RHI_DEBUG_RES_INFO( a_Texture ) );
+            RHI_DEV_CHECK( IsOpen(),
+						   "Attempting to call a command on a command list that is not open!" );
+            RHI_DEV_WARN( a_Texture.Desc().UseClearValue, 
+						   "Clearing a texture '{}' that was not created with a clear value may be slow!", a_Texture.Desc().Name );
+			//RHI_DEV_WARN( !a_Texture.Desc().UseClearValue || a_Texture.Desc().ClearValue == a_ClearValue,
+			//			  "Clearing a texture '{}' with a different clear value than it was created with may be slow!", a_Texture.Desc().Name );
+		}
+
+        //=============================================================================================
         // Writes 'a_Data' from CPU memory into the GPU buffer 'a_Buffer' at the specified 'a_OffsetBytes' offset.
         virtual void UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM )
         { 
@@ -265,7 +279,7 @@ namespace Tridium {
 		// - OpenGL: This maps to using a small GL_UNIFORM_BUFFER.
 		// - DX12: This maps to setting the root constants in the root signature via SetGraphicsRoot32BitConstants or SetComputeRoot32BitConstants.
 		// - Vulkan: This maps to setting the push constants via vkCmdPushConstants.
-        virtual void SetInlinedConstants( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM )
+        virtual void SetInlinedConstants( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes, RHI_DEBUG_SRC_LOC_PARAM )
         {
             RHI_ADD_DEBUG_CMD_INFO( "SetInlinedConstants" );
             RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
@@ -276,7 +290,7 @@ namespace Tridium {
 		// Template overload for SetInlinedConstants that automatically converts a POD type to a byte array.
 		// See SetInlinedConstants( const void*, uint32_t, uint32_t, RHI_DEBUG_SRC_LOC_PARAM ) for details.
         template<class T>
-        void SetInlinedConstants( const T& a_Data, uint32_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM )
+        void SetInlinedConstants( const T& a_Data, uint32_t a_DstOffsetBytes, RHI_DEBUG_SRC_LOC_PARAM )
         {
             SetInlinedConstants( Cast<const void*>( &a_Data ), sizeof(T), a_DstOffsetBytes, RHI_DEBUG_SRC_LOC);
 		}

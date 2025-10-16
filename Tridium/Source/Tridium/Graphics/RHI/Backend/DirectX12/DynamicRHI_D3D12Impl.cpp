@@ -142,6 +142,7 @@ namespace Tridium::D3D12 {
 			.pAllocationCallbacks = nullptr,
 			.pAdapter = m_DXGIAdapter.Get()
 		};
+
 		if ( FAILED( D3D12MA::CreateAllocator( &allocatorDesc, m_Allocator.GetAddressOf() ) ) )
 		{
 			return false;

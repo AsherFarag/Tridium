@@ -1,6 +1,7 @@
 #pragma once
-#include "Types.h"
-#include "Cast.h"
+#include <Tridium/Core/Types.h>
+#include <Tridium/Core/Cast.h>
+#include <Tridium/Containers/String.h>
 #include <Tridium/Utils/TypeTraits.h>
 #include <ctype.h>
 
@@ -10,7 +11,8 @@ namespace Tridium {
 	using name_t = hash64_t;
 
 	namespace HashAlgorithms {
-		TRIDIUM_NODISCARD constexpr hash_t fnv1a( const char* a_String, hash_t a_Hash = 2166136261U )
+
+		[[nodiscard]] constexpr hash_t fnv1a( const char* a_String, hash_t a_Hash = 2166136261U )
 		{
 			for ( ; *a_String; ++a_String )
 			{
@@ -20,7 +22,7 @@ namespace Tridium {
 			return a_Hash;
 		}
 
-		TRIDIUM_NODISCARD constexpr hash_t fnv1a( const uint8_t* a_Data, size_t a_Length, hash_t a_Hash = 2166136261U )
+		[[nodiscard]] constexpr hash_t fnv1a( const uint8_t* a_Data, size_t a_Length, hash_t a_Hash = 2166136261U )
 		{
 			for ( size_t i = 0; i < a_Length; ++i )
 			{
@@ -29,7 +31,8 @@ namespace Tridium {
 			}
 			return a_Hash;
 		}
-	}
+
+	} // namespace HashAlgorithms
 
 	//========================================
 	// Basic Hashed String
@@ -111,7 +114,7 @@ namespace Tridium {
 		// Example:
 		//   uint32_t myData[] = { 1, 2, 3, 4, 5 };
 		//   Hash( (const uint8_t*)myData, sizeof( myData ) / sizeof( uint32_t ) );
-		TRIDIUM_NODISCARD inline constexpr hash_t Hash( const uint8_t* a_Data, size_t a_Length )
+		[[nodiscard]] inline constexpr hash_t Hash( const uint8_t* a_Data, size_t a_Length )
 		{
 			return HashAlgorithms::fnv1a( a_Data, a_Length );
 		}
@@ -120,7 +123,7 @@ namespace Tridium {
 		// Uses the FNV-1a algorithm.
 		// Example:
 		//   HashString( "Hello, World!" );
-		TRIDIUM_NODISCARD inline constexpr HashedString HashString( StringView a_String )
+		[[nodiscard]] inline constexpr HashedString HashString( StringView a_String )
 		{
 			return HashedString( a_String );
 		}
@@ -129,19 +132,19 @@ namespace Tridium {
 		// Uses the FNV-1a algorithm.
 		// Example:
 		//   HashString( L"Hello, World!" );
-		TRIDIUM_NODISCARD inline constexpr HashedWString HashString( WStringView a_String )
+		[[nodiscard]] inline constexpr HashedWString HashString( WStringView a_String )
 		{
 			return HashedWString( a_String );
 		}
 
 		// Combines two hashes into a single hash.
-		TRIDIUM_NODISCARD inline constexpr hash_t HashCombine( hash_t a_Left, hash_t a_Right )
+		[[nodiscard]] inline constexpr hash_t HashCombine( hash_t a_Left, hash_t a_Right )
 		{
 			return a_Left ^ ( a_Right + 0x9e3779b9 + ( a_Left << 6 ) + ( a_Left >> 2 ) );
 		}
 
 		template<typename T>
-		TRIDIUM_NODISCARD constexpr hash64_t HashCombine( hash64_t a_Seed, const T& a_Value )
+		[[nodiscard]] constexpr hash64_t HashCombine( hash64_t a_Seed, const T& a_Value )
 		{
 			a_Seed ^= std::hash<T>{}( a_Value ) + 0x9e3779b9 + ( a_Seed << 6 ) + ( a_Seed >> 2 );
 			return a_Seed;
@@ -162,7 +165,7 @@ namespace Tridium {
 		}
 
 		template <typename T>
-		TRIDIUM_NODISCARD constexpr HashedString TypeHash()
+		[[nodiscard]] constexpr HashedString TypeHash()
 		{
 			return HashString( GetTypeName<T>() );
 		}

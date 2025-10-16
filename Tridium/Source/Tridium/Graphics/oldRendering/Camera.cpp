@@ -9,7 +9,7 @@ namespace Tridium {
 		RecalculateProjection();
 	}
 
-	Frustum Camera::GetFrustum( const Vector3& a_Position, Vector3 a_Forward ) const
+	OldFrustum Camera::GetFrustum( const Vector3& a_Position, Vector3 a_Forward ) const
 	{
 		switch ( m_ProjectionType )
 		{
@@ -20,14 +20,14 @@ namespace Tridium {
 		}
 
 		ASSERT( false, "Invalid Projection Type!" );
-		return Frustum();
+		return OldFrustum();
 	}
 
-	Frustum Camera::GetPerspectiveFrustum( const Vector3& a_Position, Vector3 a_Forward ) const
+	OldFrustum Camera::GetPerspectiveFrustum( const Vector3& a_Position, Vector3 a_Forward ) const
 	{
 		// Ensure forward is normalized
 		const Vector3 normal = a_Forward.Normalized();
-		Frustum frustum;
+		OldFrustum frustum;
 		const float halfVSide = m_Perspective.Far * glm::tan( glm::radians( m_Perspective.FOV ) * 0.5f );
 		const float halfHSide = halfVSide * GetAspectRatio();
 		const Vector3 frontMultFar = normal * m_Perspective.Far;
@@ -52,10 +52,10 @@ namespace Tridium {
 	}
 
 
-	Frustum Camera::GetOrthographicFrustum( const Vector3& a_Position, Vector3 a_Forward ) const
+	OldFrustum Camera::GetOrthographicFrustum( const Vector3& a_Position, Vector3 a_Forward ) const
 	{
 		ASSERT( false, "Orthographic Frustum not implemented!" );
-		return Frustum();
+		return OldFrustum();
 	}
 
 	void Camera::SetPerspective()

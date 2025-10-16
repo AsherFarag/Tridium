@@ -383,7 +383,7 @@ namespace Tridium {
 							return;
 
 						// Get the mesh bounds
-						AABB meshBounds = mesh->GetBoundingBox().Transform( transform.GetWorldTransform() );
+						AABBOld meshBounds = mesh->GetBoundingBox().Transform( transform.GetWorldTransform() );
 
 						//Debug::DrawAABB( meshBounds, Debug::Colors::Red, Debug::EDrawDuration::OneFrame);
 

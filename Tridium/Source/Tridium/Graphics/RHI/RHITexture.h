@@ -268,6 +268,8 @@ namespace Tridium {
 				else
 					ASSERT( false, "Invalid texture dimension" );
 			}
+
+			m_Desc.Mips = Math::Max( 1u, m_Desc.Mips );
 		}
 
 		virtual ~IRHITexture() = default;

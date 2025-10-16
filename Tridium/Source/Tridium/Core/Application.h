@@ -56,6 +56,8 @@ namespace Tridium {
 	#define REGISTER_TICK_GROUP( ... ) EXPAND( SELECT_MACRO_2( __VA_ARGS__, REGISTER_TICK_GROUP_1, REGISTER_TICK_GROUP_0 )(__VA_ARGS__) )
 
 	DEFINE_TICK_GROUP( BeginTick );
+	DEFINE_TICK_GROUP( BeginAppUpdate );
+	DEFINE_TICK_GROUP( EndAppUpdate );
 	DEFINE_TICK_GROUP( EndTick );
 
 	//=================================================================================================
@@ -110,6 +112,10 @@ namespace Tridium {
 			ENSURE( GetTickGroups().contains( a_TickGroup ), "Tick group '{}' does not exist!", a_TickGroup.String() );
 			GetTickGroups()[ a_TickGroup ].Callbacks.EmplaceBack( std::forward<_OnTick>( a_OnTick ) );
 		}
+
+		//=============================================================================================
+		// TEMP: Fix this layer crap
+		static auto& GetLayerStack() { return Get()->m_LayerStack; }
 
 	protected:
 		bool              m_Running = false;

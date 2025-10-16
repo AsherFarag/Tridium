@@ -17,7 +17,7 @@ namespace Tridium {
 	{
 		//=============================================================================================
 		// The set of switches.
-		UnorderedSet<String, TransparentStringHash, TransparentStringEqual> Switches;
+		UnorderedSet<String> Switches;
 
 		//=============================================================================================
 		ShaderSwitchSet() = default;

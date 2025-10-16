@@ -33,7 +33,7 @@ namespace Tridium {
 		size_t IndexCount = 0;          
 		uint32_t MaterialIndex = 0;     
 		Matrix4 Transform{ 1.0f };
-		AABB BoundingBox{};             
+		AABBOld BoundingBox{};             
 		String Name{};                  
 
 		void CalculateBoundingBox( Span<const Vertex> a_Vertices, Span<const uint32_t> a_Indices )
@@ -119,7 +119,7 @@ namespace Tridium {
 		Array<LOD> m_LODs{};
 		Array<SubMesh> m_SubMeshes{};
 		Array<AssetRef<class Material>> m_Materials{};
-		AABB m_BoundingBox{};
+		AABBOld m_BoundingBox{};
 
 		void UpdateBoundingBox();
 	};

@@ -15,7 +15,7 @@ namespace Tridium {
 		AliasTransients();
 	}
 
-	void RenderGraph::Execute( IRHICommandList& a_CommandList )
+	void RenderGraph::Execute( IRHICommandList& a_CommandList, const RenderContext& a_Context, RenderViewID a_ViewID, const RenderView& a_View )
 	{
 		PROFILE_FUNCTION( ProfilerCategory::Rendering );
 
@@ -25,8 +25,8 @@ namespace Tridium {
 
 			if ( pass.m_Execute )
 			{
-				a_CommandList.PushDebugGroup( pass.m_Name.c_str() );
-				pass.m_Execute( a_CommandList, *this );
+				a_CommandList.PushDebugGroup( pass.m_Name );
+				pass.m_Execute( a_CommandList, *this, a_Context, a_ViewID, a_View );
 				a_CommandList.PopDebugGroup();
 			}
 		}

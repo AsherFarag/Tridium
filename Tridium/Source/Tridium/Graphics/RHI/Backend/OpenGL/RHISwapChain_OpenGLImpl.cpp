@@ -3,164 +3,6 @@
 
 namespace Tridium::OpenGL {
 
-	static void ResetOpenGLState( const int32_t a_Width, const int32_t a_Height )
-	{
-		// Viewport & scissor
-		glViewport( 0, 0, a_Width, a_Height );
-		glScissor( 0, 0, a_Width, a_Height );
-		glDisable( GL_SCISSOR_TEST );
-
-		// Framebuffer binding
-		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-
-		glEnable( GL_FRAMEBUFFER_SRGB );
-
-		// Depth / stencil
-		glDisable( GL_DEPTH_TEST );
-		glDepthMask( GL_TRUE );
-		glDepthFunc( GL_LESS );
-		glDisable( GL_STENCIL_TEST );
-		glStencilMask( 0xFF );
-		glStencilFunc( GL_ALWAYS, 0, 0xFF );
-		glStencilOp( GL_KEEP, GL_KEEP, GL_KEEP );
-
-		// Blending
-		glDisable( GL_BLEND );
-		glBlendFunc( GL_ONE, GL_ZERO );
-		glBlendEquation( GL_FUNC_ADD );
-
-		// Rasterizer state
-		glDisable( GL_CULL_FACE );
-		glCullFace( GL_BACK );
-		glFrontFace( GL_CCW );
-
-		// Color writes
-		glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
-
-		// Polygon mode
-		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-
-		// Line width / point size (set back to sane defaults)
-		glLineWidth( 1.0f );
-		glPointSize( 1.0f );
-
-		// Active texture unit
-		glActiveTexture( GL_TEXTURE0 );
-
-		// Unbind VAO, buffers, program, texture
-		glBindVertexArray( 0 );
-		glBindBuffer( GL_ARRAY_BUFFER, 0 );
-		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
-		glBindBuffer( GL_UNIFORM_BUFFER, 0 );
-		glBindTexture( GL_TEXTURE_2D, 0 );
-		glUseProgram( 0 );
-	}
-
-	// Simple checkerboard texture
-	GLuint MakeTestTexture()
-	{
-		const int W = 2, H = 2;
-		unsigned char pixels[ W * H * 3 ] = {
-			255,   0,   0,    0, 255,   0,
-			  0, 255,   0,  255,   0,   0
-		};
-
-		GLuint tex;
-		glGenTextures( 1, &tex );
-		glBindTexture( GL_TEXTURE_2D, tex );
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, W, H, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels );
-
-
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-
-		glBindTexture( GL_TEXTURE_2D, 0 );
-
-		return tex;
-	}
-
-	// Create fullscreen quad VAO/VBO/EBO
-	GLuint CreateFullscreenQuad()
-	{
-		static const float vertices[] = {
-			// positions   // texcoords
-			-1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
-			 1.0f, -1.0f, 0.0f,  1.0f, 0.0f,
-			 1.0f,  1.0f, 0.0f,  1.0f, 1.0f,
-			-1.0f,  1.0f, 0.0f,  0.0f, 1.0f
-		};
-
-		static const uint32_t indices[] = {
-			0, 1, 2,
-			2, 3, 0
-		};
-
-		GLuint VAO, VBO, EBO;
-		glGenVertexArrays( 1, &VAO );
-		glGenBuffers( 1, &VBO );
-		glGenBuffers( 1, &EBO );
-
-		glBindVertexArray( VAO );
-
-		glBindBuffer( GL_ARRAY_BUFFER, VBO );
-		glBufferData( GL_ARRAY_BUFFER, sizeof( vertices ), vertices, GL_STATIC_DRAW );
-
-		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, EBO );
-		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( indices ), indices, GL_STATIC_DRAW );
-
-		// Position
-		glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof( float ), ( void* )0 );
-		glEnableVertexAttribArray( 0 );
-
-		// TexCoord
-		glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof( float ), ( void* )( 3 * sizeof( float ) ) );
-		glEnableVertexAttribArray( 1 );
-
-		glBindVertexArray( 0 );
-		return VAO;
-	}
-
-
-	void Present( GLuint framebufferColorTex, GLuint a_QuadVAO, GLuint screenShader, int width, int height )
-	{
-		// Bind default framebuffer (the actual window)
-		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-		glViewport( 0, 0, width, height );
-
-		// Clear to see if the draw works
-		glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
-		glClear( GL_COLOR_BUFFER_BIT );
-
-		// State setup for fullscreen quad
-		glDisable( GL_DEPTH_TEST );
-		glDisable( GL_STENCIL_TEST );
-		glDisable( GL_BLEND );
-
-		// Use screen blit shader
-		glUseProgram( screenShader );
-
-		static GLuint testTex = MakeTestTexture();
-		static GLuint quadVAO = CreateFullscreenQuad();
-
-		// Bind FBO color texture to unit 0
-		glActiveTexture( GL_TEXTURE0 );
-		glBindTexture( GL_TEXTURE_2D, testTex );
-		glUniform1i( glGetUniformLocation( screenShader, "u_Texture" ), 0 );
-
-		// Draw fullscreen quad
-		glBindVertexArray( quadVAO );
-		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
-
-		// Unbind
-		glBindVertexArray( 0 );
-		glBindTexture( GL_TEXTURE_2D, 0 );
-		glUseProgram( 0 );
-	}
-
-
     bool RHISwapChain_OpenGLImpl::Present()
     {
 		if ( Window )
@@ -180,16 +22,18 @@ namespace Tridium::OpenGL {
 				
 				// Draw the textured quad onto the screen
 				OpenGL2::UseProgram( m_Framebuffer.ShaderID );
-				glActiveTexture( GL_TEXTURE0 );
-				glBindTexture( GL_TEXTURE_2D, *m_Framebuffer.BackBufferTexture->NativePtrAs<GLuint>() );
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0 );
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0 );
 
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+				OpenGL1::ActiveTexture( GL_TEXTURE0 );
+				OpenGL1::BindTexture( GL_TEXTURE_2D, *m_Framebuffer.BackBufferTexture->NativePtrAs<GLuint>() );
+				OpenGL1::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+				OpenGL1::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+				OpenGL1::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0 );
+				OpenGL1::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0 );
+				OpenGL1::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+				OpenGL1::TexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+
 				OpenGL2::Uniform1i( OpenGL2::GetUniformLocation( m_Framebuffer.ShaderID, "u_Texture" ), 0 );
+
 				OpenGL3::BindVertexArray( m_Framebuffer.ScreenQuad.VAO );
 				OpenGL3::DrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr );
 				OpenGL3::BindVertexArray( 0 );
@@ -315,7 +159,7 @@ namespace Tridium::OpenGL {
 			out vec4 o_Color;
 			void main()
 			{
-				vec2 flippedTexCoord = vec2(v_TexCoord.x, 1.0 - v_TexCoord.y);
+				vec2 flippedTexCoord = vec2(v_TexCoord.x, /*1.0 - */v_TexCoord.y);
 				vec3 color = texture(u_Texture, flippedTexCoord).rgb;
 				o_Color = vec4(color, 1.0);
 			}

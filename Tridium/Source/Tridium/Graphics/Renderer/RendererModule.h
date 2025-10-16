@@ -7,6 +7,7 @@
 namespace Tridium {
 
 	DEFINE_TICK_GROUP( BeginRender );
+	DEFINE_TICK_GROUP( Render );
 	DEFINE_TICK_GROUP( EndRender );
 
 	//=============================================================================================
@@ -21,6 +22,9 @@ namespace Tridium {
 
 		//=========================================================================================
 		static uint32_t GetFrameIndex() { return Valid() ? Get()->m_FrameIndex : 0; }
+
+		//=========================================================================================
+		static RenderPipelineManager* GetPipelineManager() { return Valid() ? &Get()->m_PipelineManager : nullptr; }
 
 	private:
 

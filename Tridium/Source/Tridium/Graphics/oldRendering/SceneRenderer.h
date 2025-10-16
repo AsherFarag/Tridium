@@ -26,7 +26,7 @@ namespace Tridium {
 		Matrix4 Transform;
 	};
 
-	struct LightEnvironment
+	struct OldLightEnvironment
 	{
 		OldPointLight PointLights[MAX_POINT_LIGHTS];
 		OldSpotLight SpotLights[MAX_SPOT_LIGHTS];
@@ -128,10 +128,10 @@ namespace Tridium {
 			Matrix4 ViewProjectionMatrix;
 			Vector3 CameraPosition;
 			Camera Camera;
-			Frustum CameraFrustum;
+			OldFrustum CameraFrustum;
 		} m_SceneInfo;
 		DrawList m_DrawList;
-		LightEnvironment m_LightEnvironment;
+		OldLightEnvironment m_LightEnvironment;
 		SharedPtr<Framebuffer> m_RenderTarget;
 		RenderStats m_RenderStats;
 		// ---------------

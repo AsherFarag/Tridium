@@ -2,6 +2,7 @@
 #include "ImGuiModule.h"
 #include <Tridium/Core/Application.h>
 #include <Tridium/Engine/Engine.h>
+#include <Tridium/Graphics/Renderer/RendererModule.h>
 #include <Tridium/ImGui/Backends/ImGuiBackend_RHI.h>
 
 namespace Tridium {
@@ -25,7 +26,7 @@ namespace Tridium {
 		{
 			style.WindowRounding = 4.f;
 			style.FrameRounding = 2.f;
-			style.Colors[ ImGuiCol_WindowBg ].w = 1.f;
+			style.Colors[ImGuiCol_WindowBg].w = 1.f;
 		}
 
 		// Set up Platform/Render bindings
@@ -67,6 +68,8 @@ namespace Tridium {
 		m_CmdList = RHI::CreateCommandList( cmdListDesc );
 
 		m_ImGuiLayer = Application::PushOverlay<ImGuiLayer>();
+
+		Application::AddOnTick( TickGroups::Render, []() { ImGuiModule::Get()->Render(); } );
 	}
 
 	void ImGuiModule::Shutdown()
@@ -83,4 +86,15 @@ namespace Tridium {
 
 		ImGui::DestroyContext();
 	}
-}
+
+	void ImGuiModule::Render()
+	{
+		GetImGuiLayer()->Begin();
+
+		for ( const auto& layer : Application::GetLayerStack() )
+			layer->OnImGuiDraw();
+
+		GetImGuiLayer()->End();
+	}
+
+} // namespace Tridium

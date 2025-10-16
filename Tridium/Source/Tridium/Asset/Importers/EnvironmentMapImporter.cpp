@@ -440,7 +440,7 @@ namespace Tridium {
 
 			a_CmdList->ClearRenderTargets( ERHIClearFlags::All, RHIClearValue{} );
 
-			a_CmdList->SetInlinedConstants( inlinedConstants );
+			a_CmdList->SetInlinedConstants( inlinedConstants, 0 );
 
 			a_CmdList->Draw( RHIDrawArgs{}
 						   .SetVertexCount( vertexBuffer->Desc().Size / sizeof( IrradianceVertex ) )
@@ -637,7 +637,7 @@ namespace Tridium {
 					.AddViewportAndScissor( RHIViewport{ 0.0f, 0.0f, (float)mipSize, (float)mipSize, 0.0f, 1.0f } )
 				);
 				a_CmdList->ClearRenderTargets( ERHIClearFlags::All, RHIClearValue{} );
-				a_CmdList->SetInlinedConstants( inlinedConstants );
+				a_CmdList->SetInlinedConstants( inlinedConstants, 0 );
 				a_CmdList->Draw( RHIDrawArgs{}
 							   .SetVertexCount( vertexBuffer->Desc().Size / sizeof( IrradianceVertex ) )
 							   .SetIndexCount( indexBuffer->Desc().Size / sizeof( uint16_t ) )

@@ -34,8 +34,8 @@ namespace Tridium::Debug {
 
 		void DrawLine( const Vector3& a_Start, const Vector3& a_End, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
 		void DrawTriangle( const Vector3& a_A, const Vector3& a_B, const Vector3& a_C, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
-		void DrawAABB( const AABB& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
-		void DrawAABBFilled( const AABB& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
+		void DrawAABB( const AABBOld& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
+		void DrawAABBFilled( const AABBOld& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
 		void DrawSphere( const Vector3& a_Center, float a_Radius, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
 		void DrawSphereFilled( const Vector3& a_Center, float a_Radius, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
 		void DrawBox( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
@@ -95,12 +95,12 @@ namespace Tridium::Debug {
 		DebugDrawer::Get()->DrawTriangle( a_A, a_B, a_C, a_Color, a_DrawDuration, a_Duration );
 	}
 
-	static inline void DrawAABB( const AABB& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
+	static inline void DrawAABB( const AABBOld& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
 	{
 		DebugDrawer::Get()->DrawAABB( a_AABB, a_Color, a_DrawDuration, a_Duration );
 	}
 
-	static inline void DrawAABBFilled( const AABB& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
+	static inline void DrawAABBFilled( const AABBOld& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
 	{
 		DebugDrawer::Get()->DrawAABBFilled( a_AABB, a_Color, a_DrawDuration, a_Duration );
 	}
@@ -138,8 +138,8 @@ namespace Tridium::Debug {
 
 	static inline void DrawLine( const Vector3& a_Start, const Vector3& a_End, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
 	static inline void DrawTriangle( const Vector3& a_A, const Vector3& a_B, const Vector3& a_C, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
-	static inline void DrawAABB( const AABB& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
-	static inline void DrawAABBFilled( const AABB& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
+	static inline void DrawAABB( const AABBOld& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
+	static inline void DrawAABBFilled( const AABBOld& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
 	static inline void DrawSphere( const Vector3& a_Center, float a_Radius, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
 	static inline void DrawSphereFilled( const Vector3& a_Center, float a_Radius, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
 	static inline void DrawBox( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}

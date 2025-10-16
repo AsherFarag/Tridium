@@ -34,6 +34,7 @@ namespace Tridium {
 
     static constexpr StringView PS = R"(
     #include "Core.hlsli"
+    #include "Lighting/Tonemapping.hlsli"
 
     struct PS_INPUT
     {
@@ -48,7 +49,8 @@ namespace Tridium {
         float3 direction = normalize(input.LocalPosition);
         float3 color = SampleTexture(SkyboxMap, direction).rgb;
 
-        color = color / (color + 1.0f); // Tone mapping (Reinhard)
+        //color = Tonemap_ACESFilm(color); // Tone mapping
+        color = Tonemap_AGX(color); // Tone mapping
         color = pow(color, 1.0f / 2.2f); // Gamma correction
 
         return float4(color, 1.0f);

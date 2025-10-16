@@ -84,6 +84,7 @@ namespace Tridium {
 		UIToolBar m_UIToolBar;
 
 		friend class Application;
+		friend class Editor;
 	};
 
 	template<typename T, typename ...Args>

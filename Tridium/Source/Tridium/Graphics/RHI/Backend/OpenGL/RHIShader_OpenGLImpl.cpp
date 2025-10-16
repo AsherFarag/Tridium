@@ -15,7 +15,8 @@ namespace Tridium::OpenGL {
 		OpenGL2::CompileShader( m_ShaderID );
 
 	#if RHI_DEBUG_ENABLED
-		std::cout << "RHIShaderModule_OpenGLImpl::Commit: Compiling shader '\n" << StringView( glslSource, glslLength ) << "'" << std::endl;
+
+		LOG( LogCategory::OpenGL, Trace, "RHIShaderModule_OpenGLImpl::Commit: Compiling shader '{}'", StringView( glslSource, glslLength ) );
 
 		// Check for compilation errors
 		GLint success = 0;

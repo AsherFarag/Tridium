@@ -68,7 +68,7 @@ namespace Tridium::Debug {
 		}
 	}
 
-	void DebugDrawer::DrawAABB( const AABB& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
+	void DebugDrawer::DrawAABB( const AABBOld& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
 	{
 		Vector3 min = a_AABB.Min;
 		Vector3 max = a_AABB.Max;
@@ -110,7 +110,7 @@ namespace Tridium::Debug {
 		DrawLine( b4, t1, a_Color, a_DrawDuration, a_Duration );
 	}
 
-	void DebugDrawer::DrawAABBFilled( const AABB& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
+	void DebugDrawer::DrawAABBFilled( const AABBOld& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
 	{
 		Vector3 min = a_AABB.Min;
 		Vector3 max = a_AABB.Max;

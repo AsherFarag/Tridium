@@ -102,7 +102,7 @@ namespace Tridium {
 				{
 					// We need to convert the bounding box to world space
 					const OldSubMesh& subMesh = meshSourceRef->GetSubMesh( subMeshIndex );
-					AABB subMeshBounds = subMesh.BoundingBox;
+					AABBOld subMeshBounds = subMesh.BoundingBox;
 					subMeshBounds.Transform( subMesh.Transform );
 					m_BoundingBox.Expand( subMeshBounds );
 				}

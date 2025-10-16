@@ -4,18 +4,18 @@
 namespace Tridium {
 
 	// 3D Axis Aligned Bounding Box
-	struct AABB
+	struct AABBOld
 	{
 		Vector3 Min{0.0f};
 		Vector3 Max{0.0f};
 
-		static constexpr AABB MaxAABB()
+		static constexpr AABBOld MaxAABB()
 		{
-			return AABB( Vector3( std::numeric_limits<float>::min() ),
-					     Vector3( std::numeric_limits<float>::max() ) );
+			return AABBOld( Vector3( Math::NumericLimits<float>::min() ),
+					     Vector3( Math::NumericLimits<float>::max() ) );
 		}
 
-		AABB Transform( const Matrix4& a_Transform ) const
+		AABBOld Transform( const Matrix4& a_Transform ) const
 		{
 			Vector3 corners[8] = {
 				Vector3( Min.X, Min.Y, Min.Z ),
@@ -42,7 +42,7 @@ namespace Tridium {
 			return { min, max };
 		}
 
-		bool Intersects( const AABB& a_Other ) const
+		bool Intersects( const AABBOld& a_Other ) const
 		{
 			return ( Min.X <= a_Other.Max.X && Max.X >= a_Other.Min.X ) &&
 				   ( Min.Y <= a_Other.Max.Y && Max.Y >= a_Other.Min.Y ) &&
@@ -67,7 +67,7 @@ namespace Tridium {
 						   Max.Z > a_Point.Z ? Max.Z : a_Point.Z );
 		}
 
-		void Expand( const AABB& a_Other )
+		void Expand( const AABBOld& a_Other )
 		{
 			Min = Vector3( Min.X < a_Other.Min.X ? Min.X : a_Other.Min.X,
 				           Min.Y < a_Other.Min.Y ? Min.Y : a_Other.Min.Y,

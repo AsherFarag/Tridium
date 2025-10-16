@@ -39,8 +39,6 @@
 // Public macro
 #define COMMA_IF_ARGS(...) EXPAND(_COMMA_IF_ARGS_IMPL(_HAS_ARGS(__VA_ARGS__), __VA_ARGS__))
 
-#define TRIDIUM_NODISCARD [[nodiscard]]
-
 #if defined( _MSC_VER )
 	#define _FUNCTION_ EXPAND( __FUNCTION__ )
 	#define _FUNCTION_SIG_ EXPAND( __FUNCSIG__ )

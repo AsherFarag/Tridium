@@ -107,6 +107,7 @@ namespace Tridium {
 
 	void EditorLayer::OnUpdate()
 	{
+
 		if ( Scene* scene = SceneManager::GetActiveScene() )
 		{
 			switch ( CurrentSceneState )

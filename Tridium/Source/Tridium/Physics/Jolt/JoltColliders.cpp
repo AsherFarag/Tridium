@@ -4,12 +4,12 @@
 
 namespace Tridium {
 
-	JoltMeshCollider::JoltMeshCollider( const std::vector<Vector3> a_Vertices, const std::vector<uint32_t>& a_Indices, const AABB& a_BoundingBox )
+	JoltMeshCollider::JoltMeshCollider( const std::vector<Vector3> a_Vertices, const std::vector<uint32_t>& a_Indices, const AABBOld& a_BoundingBox )
 	{
 		Generate( a_Vertices, a_Indices, a_BoundingBox );
 	}
 
-	void JoltMeshCollider::Generate( const std::vector<Vector3>& a_Vertices, const std::vector<uint32_t>& a_Indices, const AABB& a_BoundingBox )
+	void JoltMeshCollider::Generate( const std::vector<Vector3>& a_Vertices, const std::vector<uint32_t>& a_Indices, const AABBOld& a_BoundingBox )
 	{
 		// Convert the vertices to Jolt's format
 		JPH::VertexList vertices;

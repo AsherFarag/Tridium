@@ -23,7 +23,8 @@ namespace Tridium {
 		EditorViewportPanel( const SharedPtr<EditorCamera>& editorCamera );
 		virtual ~EditorViewportPanel();
 
-		virtual void OnImGuiDraw() override;
+		void OnUpdate( float a_DeltaTime ) override;
+		void OnImGuiDraw() override;
 
 	protected:
 		virtual bool OnKeyPressed( KeyPressedEvent& e ) override;

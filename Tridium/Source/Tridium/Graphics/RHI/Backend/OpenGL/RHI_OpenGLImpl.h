@@ -375,6 +375,7 @@ namespace Tridium::OpenGL {
 		FixedArray<UnorderedMap<uint32_t, Uniform>, RHIConstants::MaxBindingLayouts> Layouts;
 		Uniform InlinedConstants; // Special uniform for inlined constants UBO
 
+		const Uniform* GetUniform( uint32_t a_BindingSetIndex, ERHIBindingType a_BindingType, uint32_t a_BindingSlot ) const;
 		void SetLayout( uint32_t a_LayoutIndex, const IRHIBindingLayout& a_Layout, GLuint a_ShaderProgramID );
 	};
 
@@ -456,6 +457,8 @@ namespace Tridium::OpenGL {
 
 		void ResourceBarriers( Span<const RHIResourceBarrier> a_Barriers, RHI_DEBUG_SRC_LOC_PARAM ) override;
 
+		void ClearTexture( IRHITexture& a_Texture, const RHITextureSubresourceSet& a_Subresources, RHIClearValue a_ClearValue, ERHIClearFlags a_ClearFlags = ERHIClearFlags::All, RHI_DEBUG_SRC_LOC_PARAM ) override;
+
 		void UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM ) override;
 		void CopyBuffer( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange, RHI_DEBUG_SRC_LOC_PARAM ) override;
 
@@ -495,6 +498,14 @@ namespace Tridium::OpenGL {
 		//  Is not used if the RHICommandList is immediate.
 		struct CommandBuffer
 		{
+			struct ClearTexture
+			{
+				IRHITexture* Texture;
+				RHITextureSubresourceSet Subresources;
+				RHIClearValue ClearValue;
+				ERHIClearFlags Flags;
+			};
+
 			struct UpdateBuffer
 			{
 				RHIBufferRef Buffer;
@@ -571,6 +582,7 @@ namespace Tridium::OpenGL {
 			};
 
 			using Command = Variant<
+				ClearTexture,
 				UpdateBuffer,
 				CopyBuffer,
 				UpdateTexture,
@@ -588,7 +600,8 @@ namespace Tridium::OpenGL {
 			// Matches the index into the Command variant
 			enum class CommandType
 			{
-				UpdateBuffer = 0,
+				ClearTexture = 0,
+				UpdateBuffer,
 				CopyBuffer,
 				UpdateTexture,
 				CopyTexture,
@@ -620,6 +633,7 @@ namespace Tridium::OpenGL {
 		void FlushCommandBuffer();
 
 		// Command Implementations
+		void ClearTexture_Impl( IRHITexture& a_Texture, const RHITextureSubresourceSet& a_Subresources, RHIClearValue a_ClearValue, ERHIClearFlags a_ClearFlags );
 		void UpdateBuffer_Impl( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes );
 		void CopyBuffer_Impl( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange );
 		void UpdateTexture_Impl( IRHITexture& a_Texture, const RHITextureSlice& a_DstSlice, RHITextureSubresourceData a_Data );

@@ -51,6 +51,27 @@ namespace Tridium::OpenGL {
 		IRHICommandList::ResourceBarriers( a_Barriers, RHI_DEBUG_SRC_LOC );
 	}
 
+	void RHICommandList_OpenGLImpl::ClearTexture( IRHITexture& a_Texture, const RHITextureSubresourceSet& a_Subresources, RHIClearValue a_ClearValue, ERHIClearFlags a_ClearFlags, RHI_DEBUG_SRC_LOC_PARAM )
+	{
+		IRHICommandList::ClearTexture( a_Texture, a_Subresources, a_ClearValue, a_ClearFlags, RHI_DEBUG_SRC_LOC );
+
+		m_ReferencedObjects.EmplaceBack( a_Texture.SharedFromThis() );
+
+		if ( IsImmediate() )
+		{
+			ClearTexture_Impl( a_Texture, a_Subresources, a_ClearValue, a_ClearFlags );
+		}
+		else
+		{
+			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::ClearTexture{ 
+				.Texture = &a_Texture, 
+				.Subresources = a_Subresources, 
+				.ClearValue = a_ClearValue, 
+				.Flags = a_ClearFlags 
+			} );
+		}
+	}
+
 	void RHICommandList_OpenGLImpl::UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes, RHI_DEBUG_SRC_LOC_PARAM )
 	{
 		IRHICommandList::UpdateBuffer( a_Buffer, a_Data, a_DataSizeBytes, a_DstOffsetBytes, RHI_DEBUG_SRC_LOC );
@@ -553,13 +574,13 @@ namespace Tridium::OpenGL {
 			for ( const auto& bindingDesc : bindingLayout->Desc().Bindings )
 			{
 				// Find the corresponding uniform in the pipeline's uniform layout
-				auto uniformIt = uniformLayout.Layouts[bindingSetIndex].find( bindingDesc.Slot );
-				if ( uniformIt == uniformLayout.Layouts[bindingSetIndex].end() )
+				const Uniform* uniformPtr = uniformLayout.GetUniform( bindingSetIndex, bindingDesc.Type(), bindingDesc.Slot );
+				if ( uniformPtr == nullptr )
 				{
 					continue;
 				}
 
-				const Uniform& uniform = uniformIt->second;
+				const Uniform& uniform = *uniformPtr;
 				const GLint bindingPoint = uniform.BindingPoint;
 
 				if ( bindingPoint < 0 )
@@ -678,6 +699,207 @@ namespace Tridium::OpenGL {
 	//
 	// === Command Implementations ===
 	//
+
+	void RHICommandList_OpenGLImpl::ClearTexture_Impl( IRHITexture& a_Texture, const RHITextureSubresourceSet& a_Subresources, RHIClearValue a_ClearValue, ERHIClearFlags a_ClearFlags )
+	{
+		auto* texture = a_Texture.As<RHITexture_OpenGLImpl>();
+		const auto& desc = texture->Desc();
+		const auto subresources = a_Subresources.Resolve( desc, false );
+		const bool isRenderTarget = EnumFlags( texture->Desc().BindFlags ).HasFlag( ERHIBindFlags::RenderTarget );
+		const bool isDepthStencil = EnumFlags( texture->Desc().BindFlags ).HasFlag( ERHIBindFlags::DepthStencil );
+		const bool isUAV = EnumFlags( texture->Desc().BindFlags ).HasFlag( ERHIBindFlags::UnorderedAccess );
+
+		if ( !isRenderTarget && !isDepthStencil && !isUAV )
+		{
+			RHI_DEV_CHECK( false, "Clearing a texture that is neither a render target, depth-stencil, or UAV!" );
+			return;
+		}
+
+		const auto CalcMipSize = +[]( uint32_t a_Size, uint32_t a_MipLevel ) -> GLint
+		{
+			return Cast<GLint>( Math::Max( a_Size >> a_MipLevel, 1u ) );
+		};
+
+		// Clear UAVs with glClearTexSubImage
+		if ( isUAV && !isRenderTarget && !isDepthStencil )
+		{
+			for ( uint32_t mip = subresources.BaseMipLevel; mip < subresources.BaseMipLevel + subresources.NumMipLevels; ++mip )
+			{
+				const GLint w = CalcMipSize( desc.Width, mip );
+				const GLint h = CalcMipSize( desc.Height, mip );
+
+				for ( uint32_t layer = subresources.BaseArraySlice; layer < subresources.BaseArraySlice + subresources.NumArraySlices; ++layer )
+				{
+					OpenGL4::ClearTexSubImage(
+						texture->GLHandle(),
+						Cast<GLint>( mip ),
+						0, 0, Cast<GLint>( layer ),
+						w, h, 1,
+						texture->GLFormat().Format,
+						texture->GLFormat().Type,
+						&a_ClearValue.Color[0]
+					);
+				}
+			}
+
+			return;
+		}
+
+		GLint prevFBO = 0;
+		OpenGL3::GetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &prevFBO);
+
+		GLuint scratchFBO = 0;
+		OpenGL3::GenFramebuffers(1, &scratchFBO);
+		OpenGL3::BindFramebuffer(GL_FRAMEBUFFER, scratchFBO);
+
+		// Precompute whether we can attach the whole level (all array slices)
+		const bool isArray = desc.IsArray();
+		const bool attachWholeLevelIfRequested = isArray &&
+		    subresources.BaseArraySlice == 0 &&
+			subresources.NumArraySlices == desc.DepthOrArraySize;
+
+		// Determine clear mask / values for depth/stencil and color
+		const bool clearDepth   = EnumFlags( a_ClearFlags ).HasFlag( ERHIClearFlags::Depth );
+		const bool clearStencil = EnumFlags( a_ClearFlags ).HasFlag( ERHIClearFlags::Stencil );
+		const bool clearColor   = EnumFlags( a_ClearFlags ).HasFlag( ERHIClearFlags::Color ) || isRenderTarget;
+
+		// Color clears: set clear color once
+		if ( clearColor && isRenderTarget )
+		{
+			OpenGL1::ColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE ); // Ensure color mask allows writing
+		    OpenGL1::ClearColor( a_ClearValue.Color[0], a_ClearValue.Color[1], a_ClearValue.Color[2], a_ClearValue.Color[3] );
+		}
+
+		const RHIFormatInfo formatInfo = GetRHIFormatInfo( desc.Format );
+
+		// Depth / Stencil clears: set values once
+		if ( isDepthStencil )
+		{
+			if ( clearDepth )
+			{
+				OpenGL1::DepthMask( GL_TRUE ); // Ensure depth mask allows writing
+				OpenGL4::ClearDepthf( 1.0 /* a_ClearValue.Depth */);
+			}
+
+			if ( clearStencil && formatInfo.HasStencil )
+			{
+				OpenGL1::StencilMask( 0xFF ); // Ensure stencil mask allows writing
+				OpenGL1::ClearStencil( Cast<GLint>( a_ClearValue.Stencil ) );
+			}
+		}
+
+		const GLenum attachment = isDepthStencil
+			? ( formatInfo.HasStencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT )
+			: GL_COLOR_ATTACHMENT0;
+
+		// Attach & clear loop
+		for ( uint32_t mip = subresources.BaseMipLevel; mip < subresources.BaseMipLevel + subresources.NumMipLevels; ++mip )
+		{
+			if ( attachWholeLevelIfRequested )
+		    {
+		        // Attach the entire level (layered framebuffer). This may allow clearing all layers at once.
+		        // Use glFramebufferTexture to attach all layers at the given mip level.
+				OpenGL3::FramebufferTexture( GL_FRAMEBUFFER, attachment, texture->GLHandle(), Cast<GLint>( mip ) );
+
+		        // Check completeness
+				const GLenum status = OpenGL3::CheckFramebufferStatus( GL_FRAMEBUFFER );
+				if ( status == GL_FRAMEBUFFER_COMPLETE )
+		        {
+		            GLbitfield mask = 0;
+
+					if ( isRenderTarget && clearColor )
+					{
+						mask |= GL_COLOR_BUFFER_BIT;
+					}
+
+		            if (isDepthStencil)
+		            {
+		                if (clearDepth)   mask |= GL_DEPTH_BUFFER_BIT;
+		                if (clearStencil) mask |= GL_STENCIL_BUFFER_BIT;
+		            }
+
+		            if (mask != 0)
+					{
+						OpenGL1::Viewport( 0, 0, CalcMipSize( desc.Width, mip ), CalcMipSize( desc.Height, mip ) );
+						OpenGL1::Scissor( 0, 0, CalcMipSize( desc.Width, mip ), CalcMipSize( desc.Height, mip ) );
+						OpenGL1::Clear( mask );
+					}
+		        }
+
+		        // Detach the attachment to avoid keeping references (optional but tidy)
+		        // Re-attach null by calling FramebufferTexture with 0
+				OpenGL3::FramebufferTexture( GL_FRAMEBUFFER, attachment, 0, 0 );
+		    }
+		    else
+		    {
+		        // Per-layer / per-slice clearing (attach each layer individually).
+				for ( uint32_t layer = subresources.BaseArraySlice; layer < subresources.BaseArraySlice + subresources.NumArraySlices; ++layer )
+		        {
+					// Attach the layer
+					GLenum target = texture->GLTarget();
+					if ( target == GL_TEXTURE_2D_ARRAY || target == GL_TEXTURE_3D )
+					{
+						// Layered types
+						OpenGL3::FramebufferTextureLayer( GL_FRAMEBUFFER, attachment, texture->GLHandle(), mip, layer );
+					}
+					else if ( target == GL_TEXTURE_CUBE_MAP || target == GL_TEXTURE_CUBE_MAP_ARRAY )
+					{
+						// Cubemaps: select a face via arraySlice or subresource mapping
+						GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer;
+						OpenGL3::FramebufferTexture2D( GL_FRAMEBUFFER, attachment, face, texture->GLHandle(), mip );
+					}
+					else
+					{
+						// Regular 2D texture
+						OpenGL3::FramebufferTexture2D( GL_FRAMEBUFFER, attachment, target, texture->GLHandle(), mip );
+					}
+
+
+		            const GLenum status = OpenGL3::CheckFramebufferStatus(GL_FRAMEBUFFER);
+					if ( RHI_DEV_CHECK( status == GL_FRAMEBUFFER_COMPLETE,
+										"Framebuffer incomplete when trying to clear texture! Status: {}", status ) )
+		            {
+		                GLbitfield mask = 0;
+
+						if ( isRenderTarget && clearColor )
+						{
+							mask |= GL_COLOR_BUFFER_BIT;
+						}
+
+						if ( isDepthStencil )
+		                {
+							if ( clearDepth ) mask |= GL_DEPTH_BUFFER_BIT;
+							if ( clearStencil && formatInfo.HasStencil ) mask |= GL_STENCIL_BUFFER_BIT;
+		                }
+
+						if ( mask != 0 )
+						{
+							OpenGL1::Viewport( 0, 0, CalcMipSize( desc.Width, mip ), CalcMipSize( desc.Height, mip ) );
+							OpenGL1::Scissor( 0, 0, CalcMipSize( desc.Width, mip ), CalcMipSize( desc.Height, mip ) );
+							OpenGL1::Clear( mask );
+						}
+		            }
+
+		            // Detach the layer
+					if ( target == GL_TEXTURE_2D_ARRAY || target == GL_TEXTURE_3D )
+						OpenGL3::FramebufferTextureLayer( GL_FRAMEBUFFER, attachment, 0, 0, 0 );
+					else
+						OpenGL3::FramebufferTexture2D( GL_FRAMEBUFFER, attachment, 0, 0, 0 );
+		        }
+		    }
+		}
+
+		// Restore previous FBO binding and delete scratch FBO
+		OpenGL3::BindFramebuffer( GL_FRAMEBUFFER, Cast<GLuint>( prevFBO ) );
+		OpenGL3::DeleteFramebuffers( 1, &scratchFBO );
+
+		// Reset viewport and scissor to previous state
+		bool gfxStateValid = m_GraphicsStateValid;
+		TODO( "Dirty hack because SetViewportState_Impl checks if gfx state is valid and Im too lazy to fix it properly" );
+		m_GraphicsStateValid = true;
+		SetViewportState_Impl( m_ViewportState );
+		m_GraphicsStateValid = gfxStateValid;
+	}
 
 	void RHICommandList_OpenGLImpl::UpdateBuffer_Impl( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes )
 	{
@@ -990,7 +1212,12 @@ namespace Tridium::OpenGL {
 			{
 				const RHIScissorRect& scissor = a_ViewportState.Scissors[ i ];
 				// We already flip the Y coordinate in the shader, so no need to do it here.
-				OpenGL4::ScissorIndexed( i, scissor.Left, scissor.Top, scissor.Width(), scissor.Height() );
+				// Not anymore, so we need to flip it again here
+				const GLint flippedTop = m_CurrentGraphicsState.Framebuffer ?
+					m_CurrentGraphicsState.Framebuffer.ColorAttachments[0].Texture->Desc().Height - ( scissor.Top + scissor.Height() ) :
+					0;
+
+				OpenGL4::ScissorIndexed( i, scissor.Left, flippedTop, scissor.Width(), scissor.Height() );
 			}
 		}
 		else
@@ -1093,6 +1320,12 @@ namespace Tridium::OpenGL {
 			using enum CommandBuffer::CommandType;
 			switch ( Cast<CommandBuffer::CommandType>( cmdVariant.index() ) )
 			{
+			case ClearTexture:
+			{
+				const auto& cmd = std::get<CommandBuffer::ClearTexture>( cmdVariant );
+				ClearTexture_Impl( *cmd.Texture, cmd.Subresources, cmd.ClearValue, cmd.Flags );
+				break;
+			}
 			case UpdateBuffer:
 			{
 				const auto& cmd = std::get<CommandBuffer::UpdateBuffer>( cmdVariant );

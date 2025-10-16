@@ -21,6 +21,8 @@
 namespace Tridium {
 
 	REGISTER_TICK_GROUP( BeginTick );
+	REGISTER_TICK_GROUP( BeginAppUpdate );
+	REGISTER_TICK_GROUP( EndAppUpdate, "BeginAppUpdate"_H );
 	REGISTER_TICK_GROUP( EndTick );
 
 	decltype( Application::s_Instance ) Application::s_Instance = nullptr;
@@ -58,8 +60,6 @@ namespace Tridium {
 	{
 		s_Instance = nullptr;
 	}
-
-
 	
 	EAppExitCode Application::Run()
 	{
@@ -98,36 +98,12 @@ namespace Tridium {
 
 			FlushEventQueue();
 
-			RHI::BeginFrame();
+			TODO( "Probably remove layers" );
+			for ( const auto& layer : Application::GetLayerStack() )
+				layer->OnUpdate();
 
 			// Invoke the tick groups
 			s_TickCallback.Broadcast();
-
-			// Layers =============================================================================================
-
-			for ( const auto& layer : m_LayerStack )
-				layer->OnUpdate();
-
-			// - Tool UI -
-			if ( ImGuiModule::Get() )
-			{
-				ImGuiModule::GetImGuiLayer()->Begin();
-			
-				for ( int i = 0; i < m_LayerStack.NumLayers(); i++ )
-					m_LayerStack[ i ]->OnImGuiDraw();
-			
-				ImGuiModule::GetImGuiLayer()->End();
-			}
-			// ---------
-
-			// ====================================================================================================
-
-			RHI::EndFrame();
-
-			RHI::WaitForIdle();
-			RHI::CollectGarbage();
-
-			RHI::Present();
 
 			m_Window->OnUpdate();
 		}
@@ -188,6 +164,14 @@ namespace Tridium {
 			s_TickCallback.Add( tickFn );
 		}
 
+	#define LOG_TICK_GROUP( _Name ) LOG( LogCategory::Application, Info, "	- {}", _Name )
+
+		LOG( LogCategory::Application, Info, "Setting up Tick Groups..." );
+		// Log tick group order
+
+		LOG( LogCategory::Application, Info, "Tick Group Order:" );
+		LOG_TICK_GROUP( "BeginTick" );
+
 		for ( const auto& [name, tickGroup] : GetTickGroups() )
 		{
 			if ( name == TickGroups::BeginTick || name == TickGroups::EndTick )
@@ -221,6 +205,8 @@ namespace Tridium {
 			TickGroupNode* node = queue.front();
 			queue.pop();
 
+			LOG_TICK_GROUP( node->Name.String() );
+
 			// We want to add to the delegate in the order of the tick groups.
 			const auto it = GetTickGroups().find( node->Name );
 
@@ -240,6 +226,8 @@ namespace Tridium {
 		{
 			s_TickCallback.Add( tickFn );
 		}
+
+		LOG_TICK_GROUP( "EndTick" );
 	}
 
 	bool Application::OnWindowResized( const WindowResizeEvent& a_Event )

@@ -14,6 +14,7 @@ namespace Tridium {
 		virtual ~Panel() = default;
 
 		void OnEvent( Event& e );
+		virtual void OnUpdate( float a_DeltaTime ) {}
 		virtual void OnImGuiDraw() = 0;
 
 		inline const void Focus() const { ImGui::SetWindowFocus( m_Name.c_str() ); }

@@ -1,200 +1,270 @@
 #pragma once
+#include <Tridium/Asset/MeshAsset.h>
+#include <Tridium/Asset/MaterialAsset.h>
 #include <Tridium/Containers/Array.h>
 #include <Tridium/Containers/String.h>
-#include <Tridium/Graphics/Renderer/RenderPassTag.h>
-#include <Tridium/Graphics/RHI/RHIDefinitions.h>
-#include <Tridium/Shaders/RenderView_ShaderInterop.h>
-
-#include <algorithm>
-#include <ranges>
+#include <Tridium/Graphics/Renderer/RenderGraph.h>
+#include <Tridium/Graphics/Renderer/RenderPipelinePass.h>
 
 namespace Tridium {
 
-	//=============================================================================================
-	// Draw Item: A singular draw call with all required state to issue it.
-	//=============================================================================================
-	struct DrawItem
+	struct RenderPipelineOutput
 	{
-		IRHIGraphicsPipelineState* PipelineState = nullptr;
-		IRHIBindingSet* BindingSet = nullptr;
-		IRHIBuffer* VertexBuffer = nullptr;
-		IRHIBuffer* IndexBuffer = nullptr;
-		RHIDrawArgs DrawArgs{};
-		RenderPassTagMask PassTags{};
-		AABB Bounds{};
+		RHIFenceValue FenceValue = 0;
+		UnorderedMap<RenderViewID, RHITextureRef> ViewOutputs;
 	};
 
-	//=============================================================================================
-	// Render View: Represents a specific viewpoint or camera through which draw items are rendered.
-	//=============================================================================================
-	struct RenderView
-	{
-		enum EType : uint8_t
-		{
-			None = 0,
-			Camera = 1 << 0,
-			Shadow = 1 << 1,
-			Custom = 1 << 2,
-		};
-
-		RenderViewConstants Constants{};
-		String Name{};
-		EType Type = EType::None;
-		bool Enabled = true;
-	};
-
-	//=============================================================================================
-	// Render View List: A collection of render views, categorized by type.
-	// Provides methods to filter and retrieve views based on their type.
-	// Automatically filters out disabled views.
-	//=============================================================================================
-	struct RenderViewList
-	{
-		//=========================================================================================
-		Span<const Pair<RenderView, RHIBufferRef>> RawViews{};
-
-		//=========================================================================================
-		// Computes the number of enabled views in the list.
-		[[nodiscard]] size_t Count() const 
-		{ 
-			return std::ranges::count_if( RawViews, []( const auto& a_View ) 
-			{ 
-				return a_View.first.Enabled; 
-			} );
-		}
-
-		//=========================================================================================
-		// Returns a filtered view of only the enabled views.
-		auto Views() const
-		{
-			return RawViews | std::views::filter( []( const auto& a_View ) 
-			{ 
-				return a_View.first.Enabled; 
-			} );
-		}
-
-		//=========================================================================================
-		// Returns a filtered view of only the enabled views of the specified type.
-		auto ViewsOf( RenderView::EType a_Type ) const
-		{
-			return RawViews | std::views::filter( [a_Type]( const auto& a_View ) 
-			{ 
-				return ( a_View.first.Type & a_Type ) != 0 && a_View.first.Enabled;
-			} );
-		}
-
-		//=========================================================================================
-		// Returns a filtered view of only the enabled camera views.
-		auto Cameras() const
-		{
-			return ViewsOf( RenderView::Camera );
-		}
-
-		//=========================================================================================
-		// Returns a filtered view of only the enabled shadow views.
-		auto Shadows() const
-		{
-			return ViewsOf( RenderView::Shadow );
-		}
-
-		//=========================================================================================
-		// Returns a filtered view of only the enabled custom views.
-		auto CustomViews() const
-		{
-			return ViewsOf( RenderView::Custom );
-		}
-	};
-
-	//=============================================================================================
+	//=================================================================================================
 	// IRenderPipeline Interface: Manages the sequence of rendering operations,
 	// including multiple render passes, and handles the rendering of views and draw items.
 	// There's a render pipeline instance for each frame in flight, up to RHIConstants::MaxFramesInFlight.
-	//=============================================================================================
+	//=================================================================================================
 	class IRenderPipeline
 	{
 	public:
 
-		//=========================================================================================
+		struct Passes
+		{
+			static constexpr HashedString Root = "Root"_H;
+		};
+
+		//=============================================================================================
 		NON_COPYABLE_OR_MOVABLE( IRenderPipeline );
 		IRenderPipeline() = default;
 		virtual ~IRenderPipeline() = default;
 
+		//=============================================================================================
+		// Adds a custom render pass to the renderer.
+		// Returns true if the pass was added, false if a pass with the same name already exists
+		// and 'a_Overwrite' is false.
+		bool AddRenderPass( String a_Name, UniquePtr<IRenderPipelinePass> a_Pass, bool a_Overwrite = false )
+		{
+			if ( a_Pass == nullptr )
+			{
+				return false;
+			}
+
+			if ( !a_Overwrite && m_RenderPasses.contains( a_Name ) )
+			{
+				return false;
+			}
+
+			a_Pass->m_RenderPipeline = this;
+			m_RenderPasses[a_Name] = std::move( a_Pass );
+			m_RenderGraphRequiresRebuild = true;
+
+			return true;
+		}
+
+		//=============================================================================================
+		// Adds a custom render pass to the renderer.
+		template<Concepts::Derived<IRenderPipelinePass> T, typename... _Args>
+		T* AddRenderPass( String a_Name, const _Args&... a_Args )
+		{
+			if ( m_RenderPasses.contains( a_Name ) )
+			{
+				return nullptr;
+			}
+
+			T* pass = new T( a_Args... );
+			AddRenderPass( std::move( a_Name ), UniquePtr<T>( pass ), true );
+			return pass;
+		}
+
+		//=============================================================================================
+		// Retrieves a render pass by name. Returns nullptr if not found.
+		[[nodiscard]] IRenderPipelinePass* GetRenderPass( HashedString a_Name ) const
+		{
+			const auto it = m_RenderPasses.find( a_Name.String() );
+
+			if ( it != m_RenderPasses.end() )
+			{
+				return it->second.get();
+			}
+
+			return nullptr;
+		}
+
+		//=============================================================================================
+		// Retrieves a render pass by name and casts it to the specified type.
+		template<Concepts::Derived<IRenderPipelinePass> T>
+		[[nodiscard]] T* GetRenderPass( HashedString a_Name ) const { return DynamicCast<T*>( GetRenderPass( a_Name ) ); }
+
 	protected:
 
-		//=========================================================================================
-		friend class RenderPipelineManager;
-
-		//=========================================================================================
+		//=============================================================================================
 		// Used by the RendererModule to create a new instance of the render pipeline per frame in flight.
 		virtual UniquePtr<IRenderPipeline> Create() const = 0;
 
-		//=========================================================================================
+		//=============================================================================================
+		// Sets up the render pipeline, including initializing render passes and resources.
+		// Called once when the pipeline is created.
+		virtual bool Setup() = 0;
+
+		//=============================================================================================
+		// This is called after 'Setup' which builds and compiles the render graph and all passes.
+		void BuildRenderGraph();
+
+		//=============================================================================================
+		RenderPipelineOutput Flush( const RenderContext& a_Context, RenderViewList a_Views );
+
+		//=============================================================================================
 		// Renders all views and returns a fence value that signals when rendering is complete.
-		virtual RHIFenceValue Render( RenderViewList a_Views ) = 0;
+		virtual RHIFenceValue Render( const RenderContext& a_Context, RenderViewList a_Views ) = 0;
+
+		//=============================================================================================
+		// Helper method to render a shadow map for a given view.
+		void RenderShadowMap( const RenderContext& a_Context, const RenderView& a_View );
+
+		//=============================================================================================
+		// Tracks an RHI object to ensure it remains alive for the duration of the frame.
+		void TrackObject( RHIObjectRef a_Object )
+		{
+			if ( a_Object != nullptr )
+			{
+				m_TrackedObjects[a_Object.get()] = std::move( a_Object );
+			}
+
+		}
 
 	protected:
 
-		//=========================================================================================
+		//=============================================================================================
+		friend class RenderPipelineManager;
+
+		//=============================================================================================
+		// Custom and built-in render passes added to the renderer.
+		UnorderedMap<String, UniquePtr<IRenderPipelinePass>> m_RenderPasses;
+
+		//=============================================================================================
 		// Referenced resources used by the draw items.
 		UnorderedMap<IRHIObject*, RHIObjectRef> m_TrackedObjects{};
 
-		//=========================================================================================
-		// The draw items to be rendered by the pipeline.
-		Array<DrawItem> m_DrawItems{};
+		//=============================================================================================
+		// The render graph used to manage render passes and resource dependencies.
+		RenderGraph m_RenderGraph{};
+		bool m_RenderGraphRequiresRebuild = true;
 
 	};
 
-	//=============================================================================================
+	//=================================================================================================
 	// Render Pipeline Manager:
-	//=============================================================================================
+	//=================================================================================================
 	class RenderPipelineManager final
 	{
 	public:
 
-		//=========================================================================================
+		//=============================================================================================
 		// Returns the render pipeline for the specified frame index (or the current frame if ~0u).
 		// WARNING: Do not hold onto this pointer beyond the current frame,
 		// as it may become invalid in the next frame.
-		IRenderPipeline* GetRenderPipeline( uint32_t a_FrameIndex = ~0u );
+		[[nodiscard]] IRenderPipeline* GetRenderPipeline( uint32_t a_FrameIndex = ~0u );
 
-		//=========================================================================================
+		//=============================================================================================
+		bool SetRenderPipeline( UniquePtr<IRenderPipeline> a_Pipeline );
+
+		//=============================================================================================
 		// Adds a new view to be rendered by the pipeline.
 		// Only effective before the first call to Render().
-		void AddView( const RenderView& a_View );
+		[[nodiscard]] RenderViewID AddView( RenderView a_View );
+
+		//=============================================================================================
+		// Returns the output texture of the specified view, or nullptr if not found or not rendered.
+		[[nodiscard]] RHITextureRef GetViewOutput( RenderViewID a_ViewID ) const
+		{
+			auto it = m_ViewOutputs.find( a_ViewID );
+			if ( it != m_ViewOutputs.end() )
+				return it->second;
+
+			return nullptr;
+		}
+
+		//=============================================================================================
+		// Adds a custom render pass to the pipelines in flight.
+		template<Concepts::Derived<IRenderPipelinePass> T, typename... _Args>
+		void AddRenderPass( String a_Name, const _Args&... a_Args )
+		{
+			for ( RenderPipelineInFlight& pipelineInFlight : m_RenderPipelines )
+			{
+				pipelineInFlight.Pipeline->AddRenderPass( a_Name, MakeUnique<T>( a_Args... ) );
+			}
+		}
+
+		//=============================================================================================
+		// Renders the current frame.
+		RHIFenceValue Render();
+
+		//=============================================================================================
+		void SubmitDrawPacket( DrawPacket a_Packet )
+		{ 
+			m_RenderContext.m_DrawPackets.EmplaceBack( std::move( a_Packet ) ); 
+		}
+
+		//=============================================================================================
+		// Creates and submits a draw packet for the given static mesh with the specified transform.
+		void SubmitStaticMesh( AssetRef<StaticMesh> a_Mesh, const Matrix4& a_Transform );
+
+		//=============================================================================================
+		//
+		void SetLightEnvironment( LightEnvironment a_LightEnv )
+		{
+			m_LightEnvironmentDirty = true;
+			m_RenderContext.m_Lighting = std::move( a_LightEnv );
+		}
 
 	private:
 
-		//=========================================================================================
+		//=============================================================================================
 		friend class RendererModule;
 
-		//=========================================================================================
+		//=============================================================================================
 		void BeginFrame();
 		void EndFrame();
 
+		//=============================================================================================
+		void Reset();
+
 	private:
 
-		//=========================================================================================
-		using RenderViewStorage = Array<Pair<RenderView, RHIBufferRef>>;
+		//=============================================================================================
+		using RenderViewStorage = Array<Pair<RenderViewID, RenderView>>;
 
-		//=========================================================================================
+		//=============================================================================================
 		struct RenderPipelineInFlight
 		{
 			RHIFenceValue FenceValue = 0;
 			UniquePtr<IRenderPipeline> Pipeline;
 		};
 
-		//=========================================================================================
+		//=============================================================================================
 		// A list of render pipelines, one per frame in flight.
 		InlineArray<RenderPipelineInFlight, RHIConstants::MaxFramesInFlight> m_RenderPipelines;
 
-		//=========================================================================================
-		// The views to render from, along with their associated constant buffers.
+		//=============================================================================================
+		// Monotonically increasing ID for assigning to new views.
+		RenderViewID::ValueType m_NextViewID = 0;
+
+		//=============================================================================================
+		// The views to render from for the current frame.
 		RenderViewStorage m_Views{};
 
-		//=========================================================================================
+		//=============================================================================================
 		// Any views added while rendering is in progress are stored here to be applied next frame.
 		RenderViewStorage m_ViewsNextFrame{};
 
+		//=============================================================================================
+		// The output textures of the views rendered in the last frame.
+		UnorderedMap<RenderViewID, RHITextureRef> m_ViewOutputs{};
+
+		//=============================================================================================
+		bool m_LightEnvironmentDirty = false;
+
+		//=============================================================================================
+		RenderContext m_RenderContext{};
+
+		//=============================================================================================
+		DrawPacketBuilder m_DrawPacketBuilder{};
+
 	};
 
-}
+} // namespace Tridium

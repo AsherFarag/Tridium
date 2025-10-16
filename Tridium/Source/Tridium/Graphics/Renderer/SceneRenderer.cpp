@@ -1,4 +1,5 @@
 ﻿#include "tripch.h"
+#if 0
 #include "SceneRenderer.h"
 #include <Tridium/Math/Random.h>
 #include <Tridium/Graphics/RHI/RHI.h>
@@ -822,3 +823,5 @@ namespace Tridium {
 	}
 
 } // namespace Tridium
+
+#endif

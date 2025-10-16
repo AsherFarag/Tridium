@@ -2,6 +2,7 @@
 #include <Tridium/Common/Function.h>
 #include <Tridium/Containers/Array.h>
 #include <Tridium/Containers/UnorderedMap.h>
+#include <Tridium/Graphics/Renderer/RenderContext.h>
 #include <Tridium/Graphics/RHI/RHITexture.h>
 #include <Tridium/Graphics/RHI/RHIBuffer.h>
 
@@ -11,6 +12,7 @@ namespace Tridium {
 	class RenderPass;
 	class RenderPassBuilder;
 	class RenderGraph;
+	using RenderPassExecute = void( IRHICommandList&, RenderGraph&, const RenderContext&, RenderViewID, const RenderView& );
 
 	//=================================================================================================
 	enum class RenderPassID : uint32_t { Invalid = Cast<uint32_t>( ~0 ) };
@@ -52,7 +54,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		template<typename _ResourceID>
-		using ResourceMap = UnorderedMap<String, _ResourceID, TransparentStringHash, TransparentStringEqual>;
+		using ResourceMap = UnorderedMap<String, _ResourceID>;
 
 		//=============================================================================================
 		// Name of the render pass.
@@ -64,7 +66,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		// User function to execute the render pass.
-		Delegate<void( IRHICommandList&, RenderGraph& )> m_Execute;
+		Delegate<RenderPassExecute> m_Execute;
 
 		//=============================================================================================
 		ResourceMap<RenderPassTextureID> m_Textures{};
@@ -105,8 +107,8 @@ namespace Tridium {
 		// Set the execution function for the render pass.
 		// WARNING: This function should not capture any variables from the setup function by reference.
 		// The render graph may be executed at a later time when those references are no longer valid.
-		// If you need to capture variables, use value captures.
-		template<std::invocable< IRHICommandList&, RenderGraph&> _Func>
+		// If you need to capture variables, use value captures (e.g., [=]).
+		template<std::invocable<IRHICommandList&, RenderGraph&, const RenderContext&, RenderViewID, const RenderView&> _Func>
 		void Execute( _Func&& a_ExecuteFunc );
 
 	private:
@@ -162,7 +164,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		// Execute the render graph on the given command list.
-		void Execute( IRHICommandList& a_CommandList );
+		void Execute( IRHICommandList& a_CommandList, const RenderContext& a_Context, RenderViewID a_ViewID, const RenderView& a_View );
 
 		//=============================================================================================
 		// Clear temporary state.
@@ -350,7 +352,7 @@ namespace Tridium {
 		pass.Writes.EmplaceBack( RenderGraph::ResourceEdge{ m_PassID, Cast<uint32_t>( a_Resource ), ERHIObjectType::Buffer, a_Usage, true } );
 	}
 
-	template<std::invocable<IRHICommandList&, RenderGraph&> _Func>
+	template<std::invocable<IRHICommandList&, RenderGraph&, const RenderContext&, RenderViewID, const RenderView&> _Func>
 	inline void RenderPassBuilder::Execute( _Func&& a_ExecuteFunc )
 	{
 

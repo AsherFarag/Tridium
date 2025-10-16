@@ -12,7 +12,7 @@ namespace Tridium {
 		float Distance;
 	};
 
-	struct Frustum
+	struct OldFrustum
 	{
 		Plane Top;
 		Plane Bottom;
@@ -23,7 +23,7 @@ namespace Tridium {
 		Plane Far;
 		Plane Near;
 
-		bool Intersects( const AABB& a_AABB ) const
+		bool Intersects( const AABBOld& a_AABB ) const
 		{
 			const Vector3& min = a_AABB.Min;
 			const Vector3& max = a_AABB.Max;

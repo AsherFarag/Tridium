@@ -3,6 +3,22 @@
 
 namespace Tridium::OpenGL {
 
+	const Uniform* UniformLayout::GetUniform( uint32_t a_BindingSetIndex, ERHIBindingType a_BindingType, uint32_t a_BindingSlot ) const
+	{
+		if ( a_BindingType == ERHIBindingType::InlinedConstants )
+		{
+			return &InlinedConstants;
+		}
+
+		auto it = Layouts[a_BindingSetIndex].find( a_BindingSlot + (uint32_t)a_BindingType * 1000u );
+		if ( it != Layouts[a_BindingSetIndex].end() )
+		{
+			return &it->second;
+		}
+
+		return nullptr;
+	}
+
 	void UniformLayout::SetLayout( uint32_t a_LayoutIndex, const IRHIBindingLayout& a_Layout, GLuint a_ShaderProgramID )
 	{
 		auto& layout = Layouts[a_LayoutIndex];
@@ -10,10 +26,9 @@ namespace Tridium::OpenGL {
 		for ( uint32_t i = 0; i < a_Layout.Desc().Bindings.Size(); ++i )
 		{
 			const RHIShaderBinding& binding = a_Layout.Desc().Bindings[i];
-
 			Uniform& uniform = binding.Type() == ERHIBindingType::InlinedConstants
 				? InlinedConstants
-				: layout[binding.Slot];
+				: layout[binding.Slot + binding.PackedType * 1000]; // Simple hash to avoid collisions between types
 
 			if ( binding.Type() == ERHIBindingType::StructuredBuffer )
 			{

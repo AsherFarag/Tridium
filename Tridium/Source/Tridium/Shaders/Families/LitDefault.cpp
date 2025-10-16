@@ -36,6 +36,7 @@ namespace Tridium {
     #include "Core.hlsli"
     #include "Lighting/BRDF.hlsli"
     #include "Lighting/Lighting.hlsli"
+    #include "Lighting/Tonemapping.hlsli"
     #include "LitDefault_ShaderInterop.h"
 
     struct PS_INPUT
@@ -68,6 +69,8 @@ namespace Tridium {
 
     float4 PSMain(PS_INPUT a_Input) : SV_TARGET0
     {
+        const float3 camPosition = u_RenderView.ViewPosition.xyz;
+
         // Sample G-buffer textures
         float3 position = SampleTexture(PositionMap, a_Input.UV).xyz;
         float3 albedo   = SampleTexture(AlbedoMap, a_Input.UV).xyz;
@@ -80,7 +83,7 @@ namespace Tridium {
         float ao        = mra.b;
     
         float3 N = normal;
-        float3 V = normalize(Constants.CameraPosition - position);
+        float3 V = normalize(camPosition - position);
     
         float3 lighting = 0;
     
@@ -108,7 +111,7 @@ namespace Tridium {
             const float attenuation = AttenuateCusp(distance, light.Radius, light.Intensity, light.Falloff);
 
             float3 L = normalize(light.Position - position);
-            float3 V = normalize(Constants.CameraPosition - position);
+            float3 V = normalize(camPosition - position);
             float NoL = max(dot(N, L), 0.001);
             float VoL   = dot(V, L);
             
@@ -142,7 +145,8 @@ namespace Tridium {
         float3 color = lighting * ao + emission;
     
         // --- Tone mapping ---
-        color = 1.0 - exp(-color);
+        color = Tonemap_AGX(color);
+        //color = Tonemap_ACESFilm(color);
     
         // --- Gamma correction ---
         const float3 gamma = float3(1.0/2.2, 1.0/2.2, 1.0/2.2);

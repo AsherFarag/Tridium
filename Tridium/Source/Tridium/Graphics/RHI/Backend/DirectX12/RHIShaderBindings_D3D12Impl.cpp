@@ -445,20 +445,29 @@ namespace Tridium::D3D12 {
                     // Create appropriate NULL view based on range.RangeType (SRV/UAV/CBV)
                     if ( range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV )
                     {
-                        const RHIShaderBinding& binding = layout->Desc().Bindings[layout->SRVBindingOffset + slot];
-
                         D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
                         srvDesc.Format = DXGI_FORMAT_R32_UINT;
                         srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-                        if ( binding.Type() == ERHIBindingType::StructuredBuffer )
+						TODO( "Bit sketchy here, revisit the -1" );
+                        const size_t bindingIndex = layout->SRVBindingOffset + slot - 1;
+						if ( layout->Desc().Bindings.IsValidIndex( bindingIndex ) )
                         {
-                            srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+                            const RHIShaderBinding& binding = layout->Desc().Bindings[bindingIndex];
+                            if ( binding.Type() == ERHIBindingType::StructuredBuffer )
+                            {
+                                srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+                            }
+                            else
+                            {
+                                srvDesc.ViewDimension = To<D3D12_SRV_DIMENSION>::From( binding.TextureDimension() );
+                            }
                         }
                         else
                         {
-							srvDesc.ViewDimension = To<D3D12_SRV_DIMENSION>::From( binding.TextureDimension() );
-						}
+							//RHI_DEV_CHECK( false, "Invalid binding index for null SRV creation" );
+							srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+                        }
 
                         Device()->GetD3D12Device()->CreateShaderResourceView( nullptr, &srvDesc, handle );
                     }
