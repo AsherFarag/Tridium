@@ -24,6 +24,7 @@
 #pragma once
 #include "ReflectionImpl.h"
 
+#if 0
 #define BEGIN_REFLECT(...) _BEGIN_REFLECT_SELECTOR(__VA_ARGS__)
 	#define BASE(...) _BASE(__VA_ARGS__)
 	#define PROPERTY(...) _PROPERTY_SELECTOR(__VA_ARGS__)
@@ -38,3 +39,19 @@
 #define BEGIN_REFLECT_ENUM( Enum ) _BEGIN_REFLECT_ENUM(Enum)
 	#define ENUM_VALUE( Value ) _ENUM_VALUE(Value)
 #define END_REFLECT_ENUM( Enum ) _END_REFLECT_ENUM(Enum)
+#endif
+
+#define BEGIN_REFLECT(...) 
+#define BASE(...) 
+#define PROPERTY(...) 
+#define FUNCTION(...) 
+#define META( Key, Value )
+#define OVERRIDE( MetaProp, Override )
+#define END_REFLECT( Class )
+
+#define BEGIN_REFLECT_COMPONENT(...)
+#define END_REFLECT_COMPONENT( Class )
+
+#define BEGIN_REFLECT_ENUM( Enum )
+#define ENUM_VALUE( Value )
+#define END_REFLECT_ENUM( Enum )

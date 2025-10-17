@@ -5,18 +5,7 @@
 
 #pragma once
 #include <Tridium/Core/Types.h>
-
-// Forward declarations
-namespace entt {
-	struct type_info;
-	struct meta_data;
-	struct meta_func;
-	struct meta_prop;
-	class  meta_any;
-	struct meta_handle;
-
-}
-// -------------------
+#include <entt/meta/meta.hpp>
 
 namespace Tridium::Refl {
 
@@ -40,7 +29,7 @@ namespace Tridium::Refl {
 	// MetaAttribute is a property that is stored in a class's metadata.
 	// It can be any type of data, and be retrieved at runtime to perform various operations.
 	// This can be used to store additional information about a class that is not directly related to the class itself.
-	using MetaAttribute = entt::meta_prop;
+	using MetaAttribute = entt::meta_custom;
 
 	// MetaAny acts like an std::any, but also stores the MetaType of the data it holds.
 	using MetaAny = entt::meta_any;

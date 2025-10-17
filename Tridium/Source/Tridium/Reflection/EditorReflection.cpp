@@ -97,15 +97,17 @@ namespace Tridium {
             Props::DrawPropertyProp::Type keyDrawFunc = nullptr;
 			Props::DrawPropertyProp::Type valueDrawFunc = nullptr;
 
-            if ( auto meta = keyType.GetMetaAttribute( Props::DrawPropertyProp::ID ) )
-                keyDrawFunc = meta.value().cast<Props::DrawPropertyProp::Type>();
-            else
-                return false;
+            return false;
+            TODO("This");
+   //         if ( auto meta = keyType.GetMetaAttribute( Props::DrawPropertyProp::ID ) )
+   //             keyDrawFunc = meta.value().cast<Props::DrawPropertyProp::Type>();
+   //         else
+   //             return false;
 
-			if ( auto meta = valueType.GetMetaAttribute( Props::DrawPropertyProp::ID ) )
-                valueDrawFunc = meta.value().cast<Props::DrawPropertyProp::Type>();
-			else
-				return false;
+			//if ( auto meta = valueType.GetMetaAttribute( Props::DrawPropertyProp::ID ) )
+   //             valueDrawFunc = meta.value().cast<Props::DrawPropertyProp::Type>();
+			//else
+			//	return false;
 
 
             // Iterate through each element of the map
@@ -191,8 +193,8 @@ namespace Tridium {
 
 			Props::DrawPropertyProp::Type drawFunc = nullptr;
 
-			if ( auto meta = elemType.GetMetaAttribute( Props::DrawPropertyProp::ID ) )
-				drawFunc = meta.value().cast<Props::DrawPropertyProp::Type>();
+			//if ( auto meta = elemType.GetMetaAttribute( Props::DrawPropertyProp::ID ) )
+			//	drawFunc = meta.value().cast<Props::DrawPropertyProp::Type>();
 
             if ( drawFunc )
             {
@@ -264,25 +266,29 @@ namespace Tridium {
 
             for ( auto&& [id, metaData] : a_MetaType.Properties() )
             {
+
+                continue;
+
+            #if 0
                 bool memberWasChanged = false;
                 EPropertyFlags drawFlag = EPropertyFlags::EPF_None;
 
                 // Get the appropiate draw flag
                 // If the draw flag is none, skip the property
-                if ( EnumFlags( metaData.propFlags() ).HasFlag( EditAnywhere )
-                    && a_OverrideFlag != VisibleAnywhere )
-                {
-                    drawFlag = EditAnywhere;
-                }
-                else if ( EnumFlags( metaData.propFlags() ).HasFlag( VisibleAnywhere )
-                    || a_OverrideFlag == VisibleAnywhere )
-                {
-                    drawFlag = VisibleAnywhere;
-                }
-                else
-                {
-                    continue;
-                }
+                //if ( EnumFlags( metaData.propFlags() ).HasFlag( EditAnywhere )
+                //    && a_OverrideFlag != VisibleAnywhere )
+                //{
+                //    drawFlag = EditAnywhere;
+                //}
+                //else if ( EnumFlags( metaData.propFlags() ).HasFlag( VisibleAnywhere )
+                //    || a_OverrideFlag == VisibleAnywhere )
+                //{
+                //    drawFlag = VisibleAnywhere;
+                //}
+                //else
+                //{
+                //    continue;
+                //}
 
                 // Get a copy of the member data from the handle
                 MetaAny memberData = a_Handle.type().is_pointer_like() ? metaData.get( *a_Handle ) : metaData.get( a_Handle );
@@ -299,36 +305,38 @@ namespace Tridium {
 				ImGui::TableNextColumn();
 				ImGui::PushItemWidth( -1 );
                 {
-					ImGui::PushID( metaData.name().c_str() );
-                    // If the property has a draw function, call it.
-                    if ( auto drawFuncProp = memberType.GetMetaAttribute( Props::DrawPropertyProp::ID ) )
-                    {
-                        auto drawFunc = drawFuncProp.value().cast<Props::DrawPropertyProp::Type>();
-                        memberWasChanged |= drawFunc( "", memberData, drawFlag );
-                    }
-                    // Handle the drawing of associative containers
-                    else if ( metaData.type().is_associative_container() )
-                    {
-                        auto associativeContainer = ( *memberData ).as_associative_container();
-                        if ( associativeContainer.key_only() )
-                        {
-                            TODO( "Add property drawing for key only associative containers!" );
-                        }
-                        else
-                        {
-                            memberWasChanged |= DrawKeyToValueAssociativeContainer( associativeContainer, metaData, drawFlag );
-                        }
-                    }
-                    // Handle the drawing of sequence containers
-                    else if ( metaData.type().is_sequence_container() )
-                    {
-                        auto sequenceContainer = ( *memberData ).as_sequence_container();
-                        memberWasChanged |= DrawSequenceContainer( sequenceContainer, metaData, drawFlag );
-                    }
+					//ImGui::PushID( metaData.name().c_str() );
+                    //// If the property has a draw function, call it.
+                    //if ( auto drawFuncProp = memberType.GetMetaAttribute( Props::DrawPropertyProp::ID ) )
+                    //{
+                    //    auto drawFunc = drawFuncProp.value().cast<Props::DrawPropertyProp::Type>();
+                    //    memberWasChanged |= drawFunc( "", memberData, drawFlag );
+                    //}
+                    //// Handle the drawing of associative containers
+                    //else if ( metaData.type().is_associative_container() )
+                    //{
+                    //    auto associativeContainer = ( *memberData ).as_associative_container();
+                    //    if ( associativeContainer.key_only() )
+                    //    {
+                    //        TODO( "Add property drawing for key only associative containers!" );
+                    //    }
+                    //    else
+                    //    {
+                    //        memberWasChanged |= DrawKeyToValueAssociativeContainer( associativeContainer, metaData, drawFlag );
+                    //    }
+                    //}
+                    //// Handle the drawing of sequence containers
+                    //else if ( metaData.type().is_sequence_container() )
+                    //{
+                    //    auto sequenceContainer = ( *memberData ).as_sequence_container();
+                    //    memberWasChanged |= DrawSequenceContainer( sequenceContainer, metaData, drawFlag );
+                    //}
 					ImGui::PopID();
                 }
 
 				ImGui::PopItemWidth();
+
+            #endif
             }
 
 			ImGui::EndTable();

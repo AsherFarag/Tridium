@@ -27,7 +27,7 @@ namespace Tridium {
 		template<typename T>
 		using MetaFactory = entt::meta_factory<T>;
 		template<typename T>
-		MetaFactory<T> CreateMetaFactory() { return entt::meta<T>(); }
+		MetaFactory<T> CreateMetaFactory() { return entt::meta_factory<T>(); }
 
 		// -- Function Signatures --
 		using TextSerializeFunc				= void (*)( IO::Archive& a_Archive, const MetaAny& a_Data );

@@ -7,12 +7,15 @@ namespace Tridium::Refl::Internal {
     {
         for ( auto&& [id, metaData] : a_MetaType.Properties() )
         {
-            if ( !EnumFlags( metaData.propFlags() ).HasFlag( EPropertyFlags::Serialize ) )
-            {
-                continue;
-            }
+            continue;
 
-            a_Archive << YAML::Key << metaData.name().c_str() << YAML::Value;
+        #if 0
+            //if ( !EnumFlags( metaData.propFlags() ).HasFlag( EPropertyFlags::Serialize ) )
+            //{
+            //    continue;
+            //}
+            //
+            //a_Archive << YAML::Key << metaData.name().c_str() << YAML::Value;
 
             // Ensure memberData is a value reference and not a pointer
             MetaAny memberData = a_Data.type().is_pointer_like() ?
@@ -79,6 +82,8 @@ namespace Tridium::Refl::Internal {
             {
                 a_Archive << std::string( "Refl Error: No serialize function for type <" ) + metaData.type().info().name().data(), +">!";
             }
+
+        #endif 
         }
     }
 
@@ -100,11 +105,14 @@ namespace Tridium::Refl::Internal {
     {
         for ( auto&& [id, metaData] : a_MetaType.Properties() )
         {
+			continue;
+
+        #if 0
             if ( !EnumFlags( metaData.propFlags() ).HasFlag( EPropertyFlags::Serialize ) )
             {
                 continue;
             }
-
+            
             auto propNode = a_Node[metaData.name().c_str()];
             if ( !propNode )
                 continue;
@@ -122,7 +130,6 @@ namespace Tridium::Refl::Internal {
             {
                 deserializePropFunc( propNode, memberData );
             }
-
 
 			// If the type is a sequence container, deserialize each element.
             else if ( metaData.type().is_sequence_container() && propNode.IsSequence() )
@@ -165,6 +172,7 @@ namespace Tridium::Refl::Internal {
                     }
 				}
             }
+        #endif
         }
 
     }

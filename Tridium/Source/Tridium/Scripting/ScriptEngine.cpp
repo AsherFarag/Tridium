@@ -26,12 +26,13 @@ namespace Tridium {
 			if ( !metaType.IsValid() || !EnumFlags( metaType.GetClassFlags() ).HasFlag( Refl::EClassFlags::Scriptable ) )
 				continue;
 
-			Refl::MetaAttribute regFuncAtt = metaType.GetMetaAttribute( Refl::Props::RegisterScriptableProp::ID );
-			if ( !regFuncAtt || !regFuncAtt.value().allow_cast<RegisterScriptableFunc>( ) )
-				continue;
-
-			RegisterScriptableFunc regFunc = regFuncAtt.value().cast<RegisterScriptableFunc>();
-			regFunc( *this );
+			TODO( "Implement scriptable type registration" );
+			//Refl::MetaAttribute regFuncAtt = metaType.GetMetaAttribute( Refl::Props::RegisterScriptableProp::ID );
+			//if ( !regFuncAtt || !regFuncAtt.value().allow_cast<RegisterScriptableFunc>( ) )
+			//	continue;
+			//
+			//RegisterScriptableFunc regFunc = regFuncAtt.value().cast<RegisterScriptableFunc>();
+			//regFunc( *this );
 		}
 
 		return true;

@@ -49,17 +49,17 @@ namespace Tridium {
 			template<typename T>
 			[[nodiscard]] Optional<T> GetMetaAttribute( MetaIDType a_ID ) const
 			{
-				if ( MetaAttribute attribute = GetMetaAttribute( a_ID ) )
-					if ( T* value = attribute.value().try_cast<T>() )
-						return *value;
+				//if ( MetaAttribute attribute = GetMetaAttribute( a_ID ) )
+				//	if ( T* value = attribute.value().try_cast<T>() )
+				//		return *value;
 				return std::nullopt;
 			}
 
 			[[nodiscard]] MetaProp GetProperty( MetaIDType a_ID ) const { return data( a_ID ); }
-			[[nodiscard]] MetaAttribute GetMetaAttribute( MetaIDType a_ID ) const { return prop( a_ID ); }
+			[[nodiscard]] MetaAttribute GetMetaAttribute( MetaIDType a_ID ) const { return MetaAttribute{}/*prop( a_ID )*/; }
 			[[nodiscard]] MetaFunc GetFunction( MetaIDType a_ID ) const { return func( a_ID ); }
 			[[nodiscard]] auto Properties() const { return data(); }
-			[[nodiscard]] auto MetaAttributes() const { return prop(); }
+			[[nodiscard]] auto MetaAttributes() const { return MetaAttribute{}/*prop()*/; }
 			[[nodiscard]] auto Functions() const { return func(); }
 			[[nodiscard]] auto Bases() const { return base(); }
 
@@ -75,8 +75,8 @@ namespace Tridium {
 
 			EClassFlags GetClassFlags() const
 			{
-				if ( MetaAttribute p = prop( Props::ClassFlagsProp::ID ) )
-					return p.value().cast<EClassFlags>();
+				//if ( MetaAttribute p = prop( Props::ClassFlagsProp::ID ) )
+				//	return p.value().cast<EClassFlags>();
 
 				return EClassFlags::ECF_None;
 			}
@@ -88,8 +88,8 @@ namespace Tridium {
 
 			const char* GetCleanTypeName() const
 			{
-				if ( MetaAttribute p = GetMetaAttribute( Props::CleanClassNameProp::ID ) )
-					return p.value().cast<const char*>();
+				//if ( MetaAttribute p = GetMetaAttribute( Props::CleanClassNameProp::ID ) )
+				//	return p.value().cast<const char*>();
 
 				return nullptr;
 			}
@@ -105,16 +105,16 @@ namespace Tridium {
 
 			Props::TextSerializeProp::Type TryGetTextSerializeFunc() const
 			{
-				if ( MetaAttribute p = GetMetaAttribute( Props::TextSerializeProp::ID ) )
-					return p.value().cast<Props::TextSerializeProp::Type>();
+				//if ( MetaAttribute p = GetMetaAttribute( Props::TextSerializeProp::ID ) )
+				//	return p.value().cast<Props::TextSerializeProp::Type>();
 
 				return nullptr;
 			}
 
 			Props::TextDeserializeProp::Type TryGetTextDeserializeFunc() const
 			{
-				if ( MetaAttribute p = GetMetaAttribute( Props::TextDeserializeProp::ID ) )
-					return p.value().cast<Props::TextDeserializeProp::Type>();
+				//if ( MetaAttribute p = GetMetaAttribute( Props::TextDeserializeProp::ID ) )
+				//	return p.value().cast<Props::TextDeserializeProp::Type>();
 
 				return nullptr;
 			}
@@ -147,8 +147,8 @@ namespace Tridium {
 
 			bool IsComponent() const
 			{
-				if ( MetaAttribute p = GetMetaAttribute( Props::IsComponentProp::ID ) )
-					return p.value().cast<bool>();
+				//if ( MetaAttribute p = GetMetaAttribute( Props::IsComponentProp::ID ) )
+				//	return p.value().cast<bool>();
 
 				return false;
 			}
@@ -170,7 +170,7 @@ namespace Tridium {
 		inline auto ResolveMetaTypes() { return entt::resolve(); }
 		inline MetaType ResolveMetaType( const TypeInfo& a_Info ) { return entt::resolve( a_Info ); }
 		inline MetaType ResolveMetaType( MetaIDType a_ID ) { return entt::resolve( a_ID ); }
-		inline MetaType ResolveMetaType( const char* a_Name ) { return entt::resolve( entt::hashed_string(a_Name) ); }
+		inline MetaType ResolveMetaType( const char* a_Name ) { return entt::resolve( entt::hashed_string( a_Name ) ); }
 		template <typename T>
 		inline MetaType ResolveMetaType() { return entt::resolve<T>(); }
 

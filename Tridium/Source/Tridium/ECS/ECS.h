@@ -1,5 +1,5 @@
 #pragma once
-#include "entt.hpp"
+#include <entt/entt.hpp>
 #include <Tridium/Core/Assert.h>
 #include <Tridium/Utils/Concepts.h>
 

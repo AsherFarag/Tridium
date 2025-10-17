@@ -8,3 +8,6 @@
 [submodule "Tridium/Originals/yaml-cpp/yaml-cpp"]
 	path = Tridium/Originals/yaml-cpp/yaml-cpp
 	url = https://github.com/jbeder/yaml-cpp
+[submodule "Tridium/Dependencies/entt"]
+	path = Tridium/Dependencies/entt
+	url = https://github.com/AsherFarag/entt.git

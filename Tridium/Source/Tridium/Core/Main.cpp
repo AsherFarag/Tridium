@@ -13,8 +13,8 @@ int main( int argc, char** argv )
 
 	Log::Init();
 
-	Refl::Internal::ReflectPrimitiveTypes();
-	Refl::Internal::HiddenTypeReflector::ReflectHiddenTypes();
+	//Refl::Internal::ReflectPrimitiveTypes();
+	//Refl::Internal::HiddenTypeReflector::ReflectHiddenTypes();
 
 	CmdLineArgs cmdLineArgs;
 	cmdLineArgs.Args.Reserve( argc );

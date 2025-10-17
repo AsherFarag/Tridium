@@ -43,7 +43,7 @@ local dependencies = {
 	},
 	-- EnTT: A fast and reliable entity-component system (ECS)
 	entt = {
-		includeDir = path.join(depsDir, "entt", "include")
+		includeDir = path.join(depsDir, "entt", "src")
 	},
 	-- Glad: Multi-Language GL/GLES/EGL/GLX/WGL Loader-Generator Based on the Official Specs
 	glad = {

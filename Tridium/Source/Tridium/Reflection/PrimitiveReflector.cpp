@@ -7,6 +7,8 @@
 #include <Tridium/Math/Math.h>
 #include <Tridium/Math/Rotator.h>
 
+#if 0
+
 namespace Tridium::Refl::Internal {
 
 	using namespace entt::literals;
@@ -220,3 +222,4 @@ namespace Tridium::Refl::Internal {
 
 	}
 } // namespace Tridium::Refl::Internal
+#endif 
