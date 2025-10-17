@@ -4,7 +4,7 @@
 
 namespace Tridium {
 
-	class Scene;
+	class OldScene;
 
 	// TEMP?
 	namespace IO { template <typename T> struct Serializer; }
@@ -42,14 +42,14 @@ namespace Tridium {
 		void SetLocalTransform( const Matrix4& a_Transform );
 
 		bool HasParent() const { return m_Parent.IsValid(); }
-		GameObject GetParent() const { return m_Parent; }
-		void AttachToParent( GameObject a_Parent );
+		OldGameObject GetParent() const { return m_Parent; }
+		void AttachToParent( OldGameObject a_Parent );
 		void DetachFromParent();
-		void AttachChild( GameObject a_Child );
-		void DetachChild( GameObject a_Child );
-		GameObject GetChild( const std::string& a_Tag ) const; /* Slow operation, avoid if possible. */
-		std::vector<GameObject>& GetChildren() { return m_Children; }
-		const std::vector<GameObject>& GetChildren() const { return m_Children; }
+		void AttachChild( OldGameObject a_Child );
+		void DetachChild( OldGameObject a_Child );
+		OldGameObject GetChild( const std::string& a_Tag ) const; /* Slow operation, avoid if possible. */
+		std::vector<OldGameObject>& GetChildren() { return m_Children; }
+		const std::vector<OldGameObject>& GetChildren() const { return m_Children; }
 
 	public:
 		Vector3 Position = Vector3( 0.0f );
@@ -57,16 +57,16 @@ namespace Tridium {
 		Vector3 Scale = Vector3( 1.0f );
 
 	private:
-		void SetParent( GameObject a_Parent = GameObject() ) { m_Parent = a_Parent; }
-		void RemoveChild( GameObject a_Child );
+		void SetParent( OldGameObject a_Parent = OldGameObject() ) { m_Parent = a_Parent; }
+		void RemoveChild( OldGameObject a_Child );
 
 	private:
 		// - Heirarchy - 
-		GameObject m_Parent; // The gameobject this is a child of.
-		std::vector<GameObject> m_Children;
+		OldGameObject m_Parent; // The gameobject this is a child of.
+		std::vector<OldGameObject> m_Children;
 
-		friend bool IO::DeserializeFromText<Scene>( const YAML::Node& a_Node, Scene& a_Data );
-		friend struct IO::Serializer<GameObject>;
-		friend class Scene;
+		friend bool IO::DeserializeFromText<OldScene>( const YAML::Node& a_Node, OldScene& a_Data );
+		friend struct IO::Serializer<OldGameObject>;
+		friend class OldScene;
 	};
 }

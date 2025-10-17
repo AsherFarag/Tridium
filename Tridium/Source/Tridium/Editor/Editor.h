@@ -10,7 +10,7 @@
 
 namespace Tridium {
 
-	class GameObject;
+	class OldGameObject;
 
 	DEFINE_TICK_GROUP( EditorTick );
 	DEFINE_TICK_GROUP( EditorRender );
@@ -27,7 +27,7 @@ namespace Tridium {
 		//=============================================================================================
 		struct Events
 		{
-			static MulticastDelegate<void( GameObject )> OnGameObjectSelected;
+			static MulticastDelegate<void( OldGameObject )> OnGameObjectSelected;
 		};
 
 		//=============================================================================================

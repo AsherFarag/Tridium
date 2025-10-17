@@ -616,7 +616,7 @@ namespace Tridium::ToolUI {
 	}
 
 	template<>
-	bool DrawProperty( const char* a_Name, GameObject& a_Value, EDrawPropertyFlags a_Flags )
+	bool DrawProperty( const char* a_Name, OldGameObject& a_Value, EDrawPropertyFlags a_Flags )
 	{
 		IS_DISABLED( a_Flags );
 
@@ -641,7 +641,7 @@ namespace Tridium::ToolUI {
 			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_GAME_OBJECT, ImGuiDragDropFlags_::ImGuiDragDropFlags_SourceAllowNullID );
 			if ( payload )
 			{
-				GameObject gameObject( *(GameObject*)payload->Data );
+				OldGameObject gameObject( *(OldGameObject*)payload->Data );
 				modified |= gameObject != a_Value;
 				a_Value = gameObject;
 			}
@@ -661,7 +661,7 @@ namespace Tridium::ToolUI {
 			auto view = SceneManager::GetActiveScene()->GetECS().View<TagComponent>();
 			view.each( [&]( const entt::entity& entity, TagComponent& tag )
 				{
-					GameObject gameObject( entity );
+					OldGameObject gameObject( entity );
 					ImGui::ScopedID id( gameObject );
 					if ( ImGui::Selectable( tag.Tag.c_str(), gameObject == a_Value ) )
 					{

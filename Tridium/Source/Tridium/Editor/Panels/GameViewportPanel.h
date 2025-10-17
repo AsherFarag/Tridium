@@ -13,7 +13,7 @@ namespace Tridium {
 	class GameViewportPanel : public ViewportPanel
 	{
 	public:
-		GameViewportPanel( GameObject camera = GameObject() );
+		GameViewportPanel( OldGameObject camera = OldGameObject() );
 		virtual ~GameViewportPanel() = default;
 
 		virtual void OnImGuiDraw() override;
@@ -22,7 +22,7 @@ namespace Tridium {
 		std::optional< std::tuple<Camera&, Matrix4, Vector3> > GetSceneCamera() const;
 
 	private:
-		GameObject m_Camera;
+		OldGameObject m_Camera;
 	};
 
 }

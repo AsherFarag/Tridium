@@ -152,7 +152,7 @@ namespace Tridium::IO {
 	}
 
 	template<> 
-	void SerializeToText( Archive& a_Archive, const GameObject& a_Value )
+	void SerializeToText( Archive& a_Archive, const OldGameObject& a_Value )
 	{
 		a_Archive << Cast<EntityIDType>( a_Value.ID() );
 	}
@@ -381,11 +381,11 @@ namespace Tridium::IO {
 	}
 
 	template<> 
-	bool DeserializeFromText( const YAML::Node& a_Node, GameObject& o_Value )
+	bool DeserializeFromText( const YAML::Node& a_Node, OldGameObject& o_Value )
 	{
 		if ( a_Node && a_Node.IsScalar() )
 		{
-			o_Value = GameObject( a_Node.as<EntityIDType>() );
+			o_Value = OldGameObject( a_Node.as<EntityIDType>() );
 			return true;
 		}
 		return false;

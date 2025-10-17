@@ -10,7 +10,7 @@
 
 namespace Tridium {
 
-	GameViewportPanel::GameViewportPanel( GameObject camera )
+	GameViewportPanel::GameViewportPanel( OldGameObject camera )
 		: ViewportPanel("Game##GameViewportPanel"), m_Camera(camera)
 	{
 		FramebufferSpecification FBOspecification;

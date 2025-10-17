@@ -22,7 +22,7 @@ namespace Tridium {
 		Vector2 TexCoord;
 	};
 
-	SceneRenderer::SceneRenderer( SharedPtr<Scene> a_Scene, const SceneRendererOptions& a_Options )
+	SceneRenderer::SceneRenderer( SharedPtr<OldScene> a_Scene, const SceneRendererOptions& a_Options )
 		: m_Scene( std::move( a_Scene ) ),
 		  m_Options( a_Options )
 	{
@@ -199,7 +199,7 @@ namespace Tridium {
 		return nullptr;
 	}
 
-	void SceneRenderer::SetScene( SharedPtr<Scene> a_Scene )
+	void SceneRenderer::SetScene( SharedPtr<OldScene> a_Scene )
 	{
 		if ( !ASSERT( IsOpen(), "Cannot set scene while renderer is open. Call Close() first." ) )
 		{

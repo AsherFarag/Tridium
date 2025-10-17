@@ -4,13 +4,13 @@
 namespace Tridium {
 
 	// Forward declarations
-	class Scene;
+	class OldScene;
 	// -------------------
 
-	class ISceneSystem
+	class OldISceneSystem
 	{
 	public:
-		virtual ~ISceneSystem() = default;
+		virtual ~OldISceneSystem() = default;
 
 		// Called after a scene is loaded just before BeginPlay is called.
 		virtual void Init() {}
@@ -22,11 +22,11 @@ namespace Tridium {
 		virtual void OnSceneEvent( const SceneEventPayload& a_Event ) {}
 
 		// Get the scene that owns this system.
-		Scene* GetOwningScene() const { return m_Scene; }
+		OldScene* GetOwningScene() const { return m_Scene; }
 
 	private:
-		Scene* m_Scene = nullptr;
-		friend class Scene;
+		OldScene* m_Scene = nullptr;
+		friend class OldScene;
 	};
 
 }

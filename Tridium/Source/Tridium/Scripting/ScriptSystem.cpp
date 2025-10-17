@@ -113,7 +113,7 @@ namespace Tridium {
 		a_Component.m_Environment.set_on( scriptFunc );
 
 		// Add local variables to the environment.
-		a_Component.m_Environment["gameObject"] = Cast<GameObject>( a_Component.GetGameObject() );
+		a_Component.m_Environment["gameObject"] = Cast<OldGameObject>( a_Component.GetGameObject() );
 		TransformComponent& transform = a_Component.GetGameObject().GetTransform();
 		a_Component.m_Environment["transform"] = &transform;
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <entt/entt.hpp>
 #include <Tridium/ECS/ECS.h>
 #include "ReflectionFwd.h"
 #include <Tridium/Core/Types.h>
@@ -9,9 +10,9 @@
 namespace Tridium {
 
 	// Forward Declarations
-	class Scene;
+	class OldScene;
 	class Component;
-	class GameObject;
+	class OldGameObject;
 	// -------------------
 
 	namespace Refl {

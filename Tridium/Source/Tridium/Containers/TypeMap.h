@@ -1,20 +1,27 @@
 #pragma once
-#include "Map.h"
+#include <Tridium/Containers/UnorderedMap.h>
+#include <Tridium/Utils/TypeTraits.h>
 
 namespace Tridium {
 
-	template<typename T, typename _Storage = UnorderedMap<size_t, T>>
-	class TypeMap
+	template<typename _Value>
+	class TypeMap : public UnorderedMap<HashedString, _Value>
 	{
 	public:
-		TypeMap() = default;
-		~TypeMap() = default;
 
-		_Storage& GetStorage() { return m_Storage; }
-		const _Storage& GetStorage() const { return m_Storage; }
+		template<typename T>
+		T* find()
+		{
+			constexpr size_t typeHash = Hashing::TypeHash<T>();
+			auto it = UnorderedMap<HashedString, _Value>::find( typeHash );
+			if ( it != UnorderedMap<HashedString, _Value>::end() )
+			{
+				return Cast<T*>( &( it->second ) );
+			}
 
-	private:
-		_Storage m_Storage;
+			return nullptr;
+		}
+
 	};
 
-}
+} // namespace Tridium

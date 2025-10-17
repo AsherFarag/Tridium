@@ -90,6 +90,28 @@ float DisneyDiffuseFactor(float a_NoV, float a_NoL, float a_VoH, float a_Roughne
     return FresnelSchlick90(a_NoL, 0.04, F90) * FresnelSchlick90(a_NoV, 0.04, F90);
 }
 
+// Oren-Nayar diffuse BRDF
+float3 OrenNayarDiffuse(float3 a_Albedo, float a_Roughness, float a_NoV, float a_NoL, float a_VoH)
+{
+    // Convert roughness to standard deviation in radians
+    float sigma = a_Roughness * PI * 0.5;
+    float sigma2 = sigma * sigma;
+    
+    // Oren-Nayar coefficients
+    float A = 1.0 - 0.5 * (sigma2 / (sigma2 + 0.33));
+    float B = 0.45 * (sigma2 / (sigma2 + 0.09));
+
+    // Angles
+    float alpha = max(a_NoV, a_NoL);
+    float beta  = min(a_NoV, a_NoL);
+    
+    
+    float cosPhiDiff = a_VoH; // Approximation for cos(phi_i - phi_r)
+
+    float orenNayar = A + B * max(0.0, cosPhiDiff) * sin(alpha) * tan(beta);
+    return a_Albedo * orenNayar / PI;
+}
+
 // GGX specular BRDF for different light types
 // @param a_Albedo: base color of the material
 // @param a_Roughness: surface a_Roughness [0,1]
@@ -128,20 +150,25 @@ float3 CalculateBRDF(float3 a_Albedo, float a_Roughness, float a_Metallic, float
 
     // GGX specular BRDF
     const float G = GeometrySmith(NoV, NoL, a_Roughness);
-    const float3 F = FresnelSchlickRoughness(VoH, lerp(float3(0.04, 0.04, 0.04), a_Albedo, a_Metallic), a_Roughness);
+    const float3 F0 = lerp(float3(0.04, 0.04, 0.04), a_Albedo, a_Metallic);
+    const float3 F = FresnelSchlickRoughness(VoH, F0, a_Roughness);
     float3 numerator = D * G * F;
     float3 denominator = 4.0 * NoV * NoL + 0.001;
     float3 specular = numerator / denominator;
-
-    // Diffuse
-    float3 kD = float3(1.0, 1.0, 1.0) - specular; // energy conservation
-    kD *= (1.0 - a_Metallic); // non-metallic surface has diffuse component
     
 #ifdef BRDF_HIGH_QUALITY
-    kD *= DisneyDiffuseFactor(NoV, NoL, VoH, a_Roughness);
+    
+    // Oren-Nayar diffuse BRDF
+    const float3 kD = (1.0 - F) * (1.0 - a_Metallic);
+    const float3 diffuse = kD * OrenNayarDiffuse(a_Albedo, a_Roughness, NoV, NoL, VoH);
+    
+#else 
+    
+    // Lambertian diffuse BRDF with Disney diffuse factor
+    float3 diffuse = (1.0 - a_Metallic) * a_Albedo / PI * DisneyDiffuseFactor(NoV, NoL, VoH, a_Roughness);
+    
 #endif
-
-    const float3 diffuse = kD * a_Albedo / PI;
+    
     return diffuse + specular;
 }
 

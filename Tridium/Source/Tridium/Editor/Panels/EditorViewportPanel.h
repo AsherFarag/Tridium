@@ -36,13 +36,13 @@ namespace Tridium {
 		void RenderGameObjectIDs();
 		void RenderSelectionOutline();
 
-		void SetSelectedGameObject( GameObject gameObject ) { m_SelectedGameObject = gameObject; }
+		void SetSelectedGameObject( OldGameObject gameObject ) { m_SelectedGameObject = gameObject; }
 
 	private:
 		EGizmoState m_GizmoState = EGizmoState::Translate;
 		SharedPtr<EditorCamera> m_EditorCamera;
 
-		GameObject m_SelectedGameObject;
+		OldGameObject m_SelectedGameObject;
 		DelegateHandle m_OnGameObjectSelectedHandle;
 
 		SharedPtr<Framebuffer> m_IDFBO;

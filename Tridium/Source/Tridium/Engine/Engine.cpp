@@ -117,14 +117,14 @@ namespace Tridium {
 		if ( false )
 		{
 			LOG( LogCategory::Engine, Info, "Loading start scene" );
-			if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( m_ActiveProject.Config.StartScene ) )
+			if ( SharedPtr<OldScene> scene = AssetManager::GetAsset<OldScene>( m_ActiveProject.Config.StartScene ) )
 			{
 				SceneManager::SetActiveScene( scene.get() );
 			}
 			else
 			{
 				LOG( LogCategory::Engine, Warn, "Failed to load start scene! - Creating new scene" );
-				SceneManager::SetActiveScene( MakeShared<Scene>().get() );
+				SceneManager::SetActiveScene( MakeShared<OldScene>().get() );
 			}
 		}
 

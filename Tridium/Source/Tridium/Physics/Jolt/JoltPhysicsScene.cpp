@@ -170,15 +170,15 @@ namespace Tridium {
 		++m_CurrentStep;
 	}
 
-	GameObject JoltPhysicsScene::GetGameObjectFromPhysicsBody( PhysicsBodyID a_BodyID ) const
+	OldGameObject JoltPhysicsScene::GetGameObjectFromPhysicsBody( PhysicsBodyID a_BodyID ) const
 	{
 		if ( const EntityID* go = m_BodyToGameObjectMap.FindValue( a_BodyID ) )
-			return GameObject( *go );
+			return OldGameObject( *go );
 
-		return GameObject();
+		return OldGameObject();
 	}
 
-	PhysicsBodyID JoltPhysicsScene::GetPhysicsBodyFromGameObject( GameObject a_GameObject ) const
+	PhysicsBodyID JoltPhysicsScene::GetPhysicsBodyFromGameObject( OldGameObject a_GameObject ) const
 	{
 		if ( const PhysicsBodyID* bodyID = m_BodyToGameObjectMap.FindKey( a_GameObject ) )
 			return *bodyID;
@@ -191,7 +191,7 @@ namespace Tridium {
 		JPH::RRayCast ray( Util::ToJoltVec3( a_Start ), Util::ToJoltVec3( a_End ) );
 		JPH::RayCastResult rayResult;
 
-		RayCastResult hit = { false, Vector3(0.0f), Vector3( 0.0f ), 0.0f, a_Start, a_End, GameObject() };
+		RayCastResult hit = { false, Vector3(0.0f), Vector3( 0.0f ), 0.0f, a_Start, a_End, OldGameObject() };
 
 		if ( m_PhysicsSystem.GetNarrowPhaseQuery().CastRay( ray, rayResult, {}, JoltObjectLayerFilter(a_Channel), JoltBodyFilter(a_BodyFilter)) )
 		{
@@ -226,7 +226,7 @@ namespace Tridium {
 		m_BodyToGameObjectMap.EraseKey( a_RigidBody.GetBodyProxy().GetBodyID() );
 	}
 
-	bool JoltPhysicsScene::AddPhysicsBody( const GameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent )
+	bool JoltPhysicsScene::AddPhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent )
 	{
 		TE_CORE_ASSERT( m_Initialised );
 		if ( !m_Initialised )
@@ -390,7 +390,7 @@ namespace Tridium {
 		return true;
 	}
 
-	bool JoltPhysicsScene::UpdatePhysicsBody( const GameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent )
+	bool JoltPhysicsScene::UpdatePhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent )
 	{
 		RemovePhysicsBody( a_RigidBody );
 		return AddPhysicsBody( a_GameObject, a_RigidBody, a_TransformComponent );

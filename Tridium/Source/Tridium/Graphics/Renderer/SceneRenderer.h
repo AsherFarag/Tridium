@@ -102,7 +102,7 @@ namespace Tridium {
 		};
 
 		//=============================================================================================
-		SceneRenderer( AssetRef<Scene> a_Scene, const SceneRendererOptions& a_Options = SceneRendererOptions() );
+		SceneRenderer( AssetRef<OldScene> a_Scene, const SceneRendererOptions& a_Options = SceneRendererOptions() );
 		SceneRenderer( const SceneRenderer& a_Other ) = delete;
 		SceneRenderer( SceneRenderer&& a_Other ) = default;
 		SceneRenderer& operator=( const SceneRenderer& a_Other ) = delete;
@@ -133,7 +133,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		// Sets the scene to be rendered. Cannot be called while the renderer is open.
-		void SetScene( AssetRef<Scene> a_Scene );
+		void SetScene( AssetRef<OldScene> a_Scene );
 
 		//=============================================================================================
 		uint32_t GetViewportWidth() const { return m_Viewport.Width; }
@@ -215,7 +215,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		// The scene being rendered.
-		AssetRef<Scene> m_Scene;
+		AssetRef<OldScene> m_Scene;
 
 		//=============================================================================================
 		// Custom and built-in scene render passes added to the renderer.

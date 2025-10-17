@@ -11,7 +11,7 @@
 namespace Tridium {
 
 	// Forward declarations
-	class Scene;
+	class OldScene;
 	struct SceneEnvironment;
 	class VertexArray;
 	class TextureOld;
@@ -61,7 +61,7 @@ namespace Tridium {
 	class OldSceneRenderer
 	{
 	public:
-		OldSceneRenderer( Scene& a_Scene );
+		OldSceneRenderer( OldScene& a_Scene );
 
 		void Render( const SharedPtr<Framebuffer>& a_RenderTarget, const Camera& a_Camera, const Matrix4& a_View, const Vector3& a_CameraPosition );
 
@@ -98,7 +98,7 @@ namespace Tridium {
 	private:
 		RenderSettings m_RenderSettings;
 
-		Scene& m_Scene;
+		OldScene& m_Scene;
 		SceneEnvironment& m_SceneEnvironment;
 
 		// Default assets
@@ -153,7 +153,7 @@ namespace Tridium {
 		SharedPtr<Shader> m_ShadowCubeMapShader;
 		// -------
 		
-		friend class Scene;
+		friend class OldScene;
 		friend class SceneRendererPanel;
 	};
 

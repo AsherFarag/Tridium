@@ -14,9 +14,9 @@ namespace Tridium {
 	{
 	}
 
-	GameObject Component::GetGameObject() const
+	OldGameObject Component::GetGameObject() const
 	{
-		return GameObject( m_EntityID );
+		return OldGameObject( m_EntityID );
 	}
 
 }

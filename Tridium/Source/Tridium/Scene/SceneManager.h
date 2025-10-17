@@ -8,20 +8,20 @@ namespace Tridium {
 	{
 	public:
 		// Gets the currently active Scene.
-		static Scene* GetActiveScene() { return Get()->m_ActiveScene.get(); }
+		static OldScene* GetActiveScene() { return Get()->m_ActiveScene.get(); }
 		// Gets a weak ptr to the currently active Scene.
-		static WeakPtr<Scene> GetActiveSceneWeak() { return Get()->m_ActiveScene; }
+		static WeakPtr<OldScene> GetActiveSceneWeak() { return Get()->m_ActiveScene; }
 		// Set the scene to be active.
-		static void SetActiveScene( Scene* a_Scene ) { Get()->m_ActiveScene = SharedPtrCast<Scene>( a_Scene->shared_from_this() ); }
+		static void SetActiveScene( OldScene* a_Scene ) { Get()->m_ActiveScene = SharedPtrCast<OldScene>( a_Scene->shared_from_this() ); }
 		// Will attempt to load the scene.
-		static Scene* LoadScene( const FilePath& a_FilePath );
+		static OldScene* LoadScene( const FilePath& a_FilePath );
 		// Will attempt to load the scene.
-		static Scene* LoadScene( SceneHandle a_SceneAssetHandle );
+		static OldScene* LoadScene( SceneHandle a_SceneAssetHandle );
 		// Unload the specified scene.
-		static void UnloadScene( Scene* a_Scene ) {}
+		static void UnloadScene( OldScene* a_Scene ) {}
 
 	private:
-		SharedPtr<Scene> m_ActiveScene;
+		SharedPtr<OldScene> m_ActiveScene;
 	};
 
 }

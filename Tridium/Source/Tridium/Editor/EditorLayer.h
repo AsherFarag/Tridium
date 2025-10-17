@@ -10,14 +10,14 @@
 namespace Tridium {
 
 	// Forward Declarations
-	class Scene;
+	class OldScene;
 	class EditorCamera;
 	class ContentBrowserPanel;
 	class SceneHeirarchyPanel;
 	class EditorViewportPanel;
 	class GameViewportPanel;
 
-	enum class ESceneState
+	enum class EEditorSceneState
 	{
 		None = 0,
 		Edit,		// The scene does not update but the Editor Camera can move and interact with the scene
@@ -63,7 +63,7 @@ namespace Tridium {
 		void OnBeginScene();
 		void OnEndScene();
 
-		ESceneState CurrentSceneState = ESceneState::Edit;
+		EEditorSceneState CurrentSceneState = EEditorSceneState::Edit;
 
 	private:
 		bool OnKeyPressed( const KeyPressedEvent& e );
@@ -72,7 +72,7 @@ namespace Tridium {
 	private:
 		// Used as a temporary storage for the current scene when in a PIE session.
 		// Once a PIE session is ended, the scene is restored to the active scene.
-		SharedPtr<Scene> m_SceneSnapshot;
+		SharedPtr<OldScene> m_SceneSnapshot;
 
 		SharedPtr<EditorCamera> m_EditorCamera;
 

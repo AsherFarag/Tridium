@@ -193,16 +193,16 @@ namespace Tridium::Refl::Internal {
 
 			// GameObject
 			{
-				Refl::CreateMetaFactory<GameObject>()
-					.type( entt::type_hash<GameObject>::value() )
+				Refl::CreateMetaFactory<OldGameObject>()
+					.type( entt::type_hash<OldGameObject>::value() )
 					.prop( Props::CleanClassNameProp::ID, "GameObject" )
 					.prop( Props::ClassFlagsProp::ID, EClassFlags::Scriptable )
-					.prop( Props::TextSerializeProp::ID, +[]( IO::Archive& a_Archive, const MetaAny& a_Data ) { SerializePrimitive<GameObject>( a_Archive, a_Data ); } )
-					.prop( Props::TextDeserializeProp::ID, +[]( const YAML::Node& a_Node, MetaAny& a_Data ) { DeserializePrimitive<GameObject>( a_Node, a_Data ); } )
+					.prop( Props::TextSerializeProp::ID, +[]( IO::Archive& a_Archive, const MetaAny& a_Data ) { SerializePrimitive<OldGameObject>( a_Archive, a_Data ); } )
+					.prop( Props::TextDeserializeProp::ID, +[]( const YAML::Node& a_Node, MetaAny& a_Data ) { DeserializePrimitive<OldGameObject>( a_Node, a_Data ); } )
 #if IS_EDITOR
-					.prop( Props::DrawPropertyProp::ID, +[]( const char* a_Name, MetaAny& a_Handle, EPropertyFlags a_Flags ) { return DrawBasicType<GameObject>( a_Name, a_Handle, a_Flags ); } )
+					.prop( Props::DrawPropertyProp::ID, +[]( const char* a_Name, MetaAny& a_Handle, EPropertyFlags a_Flags ) { return DrawBasicType<OldGameObject>( a_Name, a_Handle, a_Flags ); } )
 #endif // IS_EDITOR
-					.prop( Props::RegisterScriptableProp::ID, +[]( ScriptEngine& a_ScriptEngine ) { Scriptable<GameObject>::RegisterType( a_ScriptEngine ); } );
+					.prop( Props::RegisterScriptableProp::ID, +[]( ScriptEngine& a_ScriptEngine ) { Scriptable<OldGameObject>::RegisterType( a_ScriptEngine ); } );
 			}
 
 			REFLECT_PRIM( GUID )FLAGS_PRIM( EClassFlags::Scriptable )SERIALIZE( GUID )DRAW_PROP( GUID )END_PRIM;

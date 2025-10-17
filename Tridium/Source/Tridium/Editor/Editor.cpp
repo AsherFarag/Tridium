@@ -29,7 +29,7 @@ namespace Tridium {
 
 	//=======================================================================================
 	// Editor Events
-	MulticastDelegate<void( GameObject )> Editor::Events::OnGameObjectSelected{};
+	MulticastDelegate<void( OldGameObject )> Editor::Events::OnGameObjectSelected{};
 
 	Editor::Editor( CmdLineArgs a_CmdLine )
 		: Application( std::move( a_CmdLine ) )

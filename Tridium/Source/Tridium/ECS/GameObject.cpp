@@ -5,7 +5,7 @@
 
 namespace Tridium {
 
-    Array<Pair<Refl::MetaType, Component*>> GameObject::GetAllComponents() const
+    Array<Pair<Refl::MetaType, Component*>> OldGameObject::GetAllComponents() const
     {
         Array<Pair<Refl::MetaType, Component*>> components;
 		// Reserve a magic number of components
@@ -23,17 +23,17 @@ namespace Tridium {
         return components;
     }
 
-    GUID GameObject::GetGUID() const 
+    GUID OldGameObject::GetGUID() const 
     {
         return GetComponent<GUIDComponent>().GetID();
     }
 
-    TagComponent* GameObject::GetTagComponent() const
+    TagComponent* OldGameObject::GetTagComponent() const
     {
         return TryGetComponent<TagComponent>();
     }
 
-    const String& GameObject::GetTag() const
+    const String& OldGameObject::GetTag() const
     {
 		if ( auto* tagComponent = GetTagComponent() )
 			return tagComponent->Tag;
@@ -46,14 +46,14 @@ namespace Tridium {
 	// GameObject Flags
 	//////////////////////////////////////////////////////////////////////////
 
-    EnumFlags<EGameObjectFlags> GameObject::GetFlags()
+    EnumFlags<EGameObjectFlags> OldGameObject::GetFlags()
     {
 		if ( auto* flagsComponent = TryGetComponent<GameObjectFlagsComponent>() )
 			return flagsComponent->Flags;
 		return AddComponent<GameObjectFlagsComponent>( EGameObjectFlags::Enabled ).Flags;
     }
 
-    void GameObject::SetActive( bool a_Active, bool a_PropagateToChildren )
+    void OldGameObject::SetActive( bool a_Active, bool a_PropagateToChildren )
     {
 		static const Refl::MetaType NativeScriptComponentType = Refl::ResolveMetaType<NativeScriptComponent>();
 
@@ -69,7 +69,7 @@ namespace Tridium {
         }
     }
 
-    void GameObject::SetVisible( bool a_Visible, bool a_PropagateToChildren )
+    void OldGameObject::SetVisible( bool a_Visible, bool a_PropagateToChildren )
     {
         static const Refl::MetaType NativeScriptComponentType = Refl::ResolveMetaType<NativeScriptComponent>();
 
@@ -85,7 +85,7 @@ namespace Tridium {
 		}
     }
 
-    void GameObject::SetEnabled( bool a_Enabled, bool a_PropagateToChildren )
+    void OldGameObject::SetEnabled( bool a_Enabled, bool a_PropagateToChildren )
     {
         static const Refl::MetaType NativeScriptComponentType = Refl::ResolveMetaType<NativeScriptComponent>();
 
@@ -105,62 +105,62 @@ namespace Tridium {
 	// Transform Functions
 	//////////////////////////////////////////////////////////////////////////
 
-    TransformComponent& GameObject::GetTransform() const 
+    TransformComponent& OldGameObject::GetTransform() const 
     {
         return GetComponent<TransformComponent>();
     }
 
-    Matrix4 GameObject::GetWorldTransform() const 
+    Matrix4 OldGameObject::GetWorldTransform() const 
     {
         return GetTransform().GetWorldTransform();
     }
 
-    Matrix4 GameObject::GetLocalTransform() const 
+    Matrix4 OldGameObject::GetLocalTransform() const 
     {
         return GetTransform().GetLocalTransform();
     }
 
-    bool GameObject::HasParent() const 
+    bool OldGameObject::HasParent() const 
     {
         return GetParent().IsValid();
     }
 
-    GameObject GameObject::GetParent() const 
+    OldGameObject OldGameObject::GetParent() const 
     {
         return GetTransform().GetParent();
     }
 
-    void GameObject::AttachToParent( GameObject a_Parent ) 
+    void OldGameObject::AttachToParent( OldGameObject a_Parent ) 
     {
         GetTransform().AttachToParent( a_Parent );
     }
 
-    void GameObject::DetachFromParent() 
+    void OldGameObject::DetachFromParent() 
     {
         GetTransform().DetachFromParent();
     }
 
-    void GameObject::AttachChild( GameObject a_Child )
+    void OldGameObject::AttachChild( OldGameObject a_Child )
     {
         GetTransform().AttachChild( a_Child );
     }
 
-    void GameObject::DetachChild( GameObject a_Child )
+    void OldGameObject::DetachChild( OldGameObject a_Child )
     {
         GetTransform().DetachChild( a_Child );
     }
 
-    GameObject GameObject::GetChild( const std::string& a_Tag ) const
+    OldGameObject OldGameObject::GetChild( const std::string& a_Tag ) const
     {
         return GetTransform().GetChild( a_Tag );
     }
 
-    std::vector<GameObject>& GameObject::GetChildren() 
+    std::vector<OldGameObject>& OldGameObject::GetChildren() 
     {
         return GetTransform().GetChildren();
     }
 
-    const std::vector<GameObject>& GameObject::GetChildren() const
+    const std::vector<OldGameObject>& OldGameObject::GetChildren() const
     {
 		return GetTransform().GetChildren();
     }

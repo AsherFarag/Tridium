@@ -34,15 +34,15 @@ namespace Tridium {
 		virtual void Shutdown() override;
 		virtual void Tick( float a_TimeStep ) override;
 
-		virtual GameObject GetGameObjectFromPhysicsBody( PhysicsBodyID a_BodyID ) const override;
-		virtual PhysicsBodyID GetPhysicsBodyFromGameObject( GameObject a_GameObject ) const override;
+		virtual OldGameObject GetGameObjectFromPhysicsBody( PhysicsBodyID a_BodyID ) const override;
+		virtual PhysicsBodyID GetPhysicsBodyFromGameObject( OldGameObject a_GameObject ) const override;
 
 		virtual RayCastResult CastRay( const Vector3& a_Start, const Vector3& a_End, ERayCastChannel a_Channel, const PhysicsBodyFilter& a_BodyFilter ) override;
 
 		virtual void RemovePhysicsBody( PhysicsBodyID a_PhysicsBodyID ) override;
 		virtual void RemovePhysicsBody( RigidBodyComponent& a_RigidBody ) override;
-		virtual bool AddPhysicsBody( const GameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent ) override;
-		virtual bool UpdatePhysicsBody( const GameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent ) override;
+		virtual bool AddPhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent ) override;
+		virtual bool UpdatePhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent ) override;
 
 		virtual void UpdatePhysicsBodyTransform( const RigidBodyComponent& a_RigidBody, const TransformComponent& a_TransformComponent ) override;
 

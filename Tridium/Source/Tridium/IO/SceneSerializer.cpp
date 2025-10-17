@@ -55,30 +55,30 @@ namespace Tridium::IO {
 
 	struct DeserializedGameObject
 	{
-		GameObject GameObject;
+		OldGameObject GameObject;
 		std::optional<EntityID> Parent = {};
 		std::vector<EntityID> Children;
 	};
 
 	template<>
-	struct Serializer<GameObject>
+	struct Serializer<OldGameObject>
 	{
-		static void SerializeGameObject( Archive& out, GameObject go );
-		static bool DeserializeGameObject( const YAML::Node& a_Node, Scene& a_Scene );
+		static void SerializeGameObject( Archive& out, OldGameObject go );
+		static bool DeserializeGameObject( const YAML::Node& a_Node, OldScene& a_Scene );
 	};
 
-	static void SerializeGameObject( Archive& out, GameObject go )
+	static void SerializeGameObject( Archive& out, OldGameObject go )
 	{
-		Serializer<GameObject>::SerializeGameObject( out, go );
+		Serializer<OldGameObject>::SerializeGameObject( out, go );
 	}
 
-	static bool DeserializeGameObject( const YAML::Node& a_Node, Scene& a_Scene )
+	static bool DeserializeGameObject( const YAML::Node& a_Node, OldScene& a_Scene )
 	{
-		return Serializer<GameObject>::DeserializeGameObject( a_Node, a_Scene );
+		return Serializer<OldGameObject>::DeserializeGameObject( a_Node, a_Scene );
 	}
 
 	template<>
-	void SerializeToText( Archive& a_Archive, const Scene& a_Data )
+	void SerializeToText( Archive& a_Archive, const OldScene& a_Data )
 	{
 		a_Archive << YAML::BeginMap;
 		a_Archive << YAML::Key << "Scene";
@@ -116,7 +116,7 @@ namespace Tridium::IO {
 			auto gameObjects = a_Data.GetECS().View<GUIDComponent>();
 			for ( auto it = gameObjects.rbegin(); it < gameObjects.rend(); it++ )
 			{
-				SerializeGameObject( a_Archive, GameObject( *it ) );
+				SerializeGameObject( a_Archive, OldGameObject( *it ) );
 			}
 		}
 		a_Archive << YAML::EndSeq;
@@ -125,7 +125,7 @@ namespace Tridium::IO {
 	}
 
 	template<>
-	bool DeserializeFromText( const YAML::Node& a_Node, Scene& a_Data )
+	bool DeserializeFromText( const YAML::Node& a_Node, OldScene& a_Data )
 	{
 		if ( auto sceneNameNode = a_Node["Scene"] )
 			a_Data.SetName( sceneNameNode.as<std::string>() );
@@ -163,7 +163,7 @@ namespace Tridium::IO {
 		return true;
 	}
 
-	void Serializer<GameObject>::SerializeGameObject( Archive& out, GameObject go )
+	void Serializer<OldGameObject>::SerializeGameObject( Archive& out, OldGameObject go )
 	{
 		if ( !go.IsValid() || !go.TryGetComponent<GUIDComponent>() )
 		{
@@ -228,12 +228,12 @@ namespace Tridium::IO {
 		out << YAML::EndMap; // End GameObject
 	}
 
-	bool Serializer<GameObject>::DeserializeGameObject( const YAML::Node& a_Node, Scene& a_Scene )
+	bool Serializer<OldGameObject>::DeserializeGameObject( const YAML::Node& a_Node, OldScene& a_Scene )
 	{
-		GameObject go;
+		OldGameObject go;
 		if ( auto gameObjectIDNode = a_Node["GameObject"]; gameObjectIDNode.IsScalar() )
 		{
-			go = GameObject( gameObjectIDNode.as<EntityID>() );
+			go = OldGameObject( gameObjectIDNode.as<EntityID>() );
 		}
 		else
 		{

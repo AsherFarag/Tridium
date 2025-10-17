@@ -53,7 +53,7 @@ namespace Tridium {
 			}
 
 			// Render Stats
-			if ( Scene* scene = SceneManager::GetActiveScene() )
+			if ( OldScene* scene = SceneManager::GetActiveScene() )
 			{
 				const RenderStats& renderStats = scene->GetSceneRenderer().GetRenderStats();
 

@@ -23,26 +23,26 @@ namespace Tridium {
 	//  They provide a user-friendly interface for interacting for
 	//  interacting with a scene and its ECS.
 	//================================================================
-	class GameObject
+	class OldGameObject
 	{
-		REFLECT( GameObject );
+		REFLECT( OldGameObject );
 	public:
-		GameObject() : m_ID( NullEntity ) {}
-		GameObject( EntityID a_ID ) : m_ID( a_ID ) {}
-		GameObject( EntityIDType a_ID ) : m_ID( Cast<EntityID>( a_ID ) ) {}
-		~GameObject() = default;
+		OldGameObject() : m_ID( NullEntity ) {}
+		OldGameObject( EntityID a_ID ) : m_ID( a_ID ) {}
+		OldGameObject( EntityIDType a_ID ) : m_ID( Cast<EntityID>( a_ID ) ) {}
+		~OldGameObject() = default;
 
 		operator EntityID () { return m_ID; }
 		operator const EntityID() const { return m_ID; }
 		operator bool () { return IsValid(); }
 		operator const bool() const { return IsValid(); }
-		bool operator ==( const GameObject& other ) const { return m_ID == other.m_ID; }
-		bool operator !=( const GameObject& other ) const { return m_ID != other.m_ID; }
+		bool operator ==( const OldGameObject& other ) const { return m_ID == other.m_ID; }
+		bool operator !=( const OldGameObject& other ) const { return m_ID != other.m_ID; }
 
-		static GameObject Create() { return SceneManager::GetActiveScene()->InstantiateGameObject(); }
-		static GameObject Create( GUID a_GUID, const std::string& a_Name ) { return SceneManager::GetActiveScene()->InstantiateGameObject( a_GUID, a_Name ); }
+		static OldGameObject Create() { return SceneManager::GetActiveScene()->InstantiateGameObject(); }
+		static OldGameObject Create( GUID a_GUID, const std::string& a_Name ) { return SceneManager::GetActiveScene()->InstantiateGameObject( a_GUID, a_Name ); }
 		inline void Destroy() { SceneManager::GetActiveScene()->DestroyGameObject( *this ); }
-		inline void CopyFrom( GameObject a_Other ) { SceneManager::GetActiveScene()->CopyGameObject( *this, a_Other ); }
+		inline void CopyFrom( OldGameObject a_Other ) { SceneManager::GetActiveScene()->CopyGameObject( *this, a_Other ); }
 
 		GUID GetGUID() const;
 		EntityID ID() const { return m_ID; }
@@ -98,14 +98,14 @@ namespace Tridium {
 		Matrix4 GetWorldTransform() const;
 		Matrix4 GetLocalTransform() const;
 		bool HasParent() const;
-		GameObject GetParent() const;
-		void AttachToParent( GameObject a_Parent );
+		OldGameObject GetParent() const;
+		void AttachToParent( OldGameObject a_Parent );
 		void DetachFromParent();
-		void AttachChild( GameObject a_Child );
-		void DetachChild( GameObject a_Child );
-		GameObject GetChild( const std::string& a_Tag ) const; /* Slow operation, avoid if possible. */
-		std::vector<GameObject>& GetChildren();
-		const std::vector<GameObject>& GetChildren() const;
+		void AttachChild( OldGameObject a_Child );
+		void DetachChild( OldGameObject a_Child );
+		OldGameObject GetChild( const std::string& a_Tag ) const; /* Slow operation, avoid if possible. */
+		std::vector<OldGameObject>& GetChildren();
+		const std::vector<OldGameObject>& GetChildren() const;
 		//================================================================
 
 	private:
@@ -115,15 +115,15 @@ namespace Tridium {
 		template <typename T>
 		inline T* Internal_TryGetComponentInChildren() const;
 
-		friend class Scene;
+		friend class OldScene;
 	};
 }
 
 namespace std {
 	template<>
-	struct hash<Tridium::GameObject>
+	struct hash<Tridium::OldGameObject>
 	{
-		inline size_t operator()( const Tridium::GameObject& go ) const 
+		inline size_t operator()( const Tridium::OldGameObject& go ) const 
 		{
 			return hash<Tridium::EntityID>()( go.ID() );
 		}

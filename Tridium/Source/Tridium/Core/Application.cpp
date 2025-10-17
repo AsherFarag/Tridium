@@ -53,6 +53,17 @@ namespace Tridium {
 		// Initialise the Engine
 		EngineConfig engineConfig;
 		m_Engine = Engine::Create( engineConfig );
+
+		struct Dummy
+		{
+			int A;
+			float B;
+		};
+
+		struct Dummy2
+		{
+			String Name;
+		};
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////

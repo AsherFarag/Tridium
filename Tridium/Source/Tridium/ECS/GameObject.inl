@@ -4,34 +4,34 @@
 namespace Tridium {
 
 	template <typename T, typename... Args>
-	inline T& GameObject::AddComponent( Args&&... args )
+	inline T& OldGameObject::AddComponent( Args&&... args )
 	{
 		return SceneManager::GetActiveScene()->AddComponentToGameObject<T>( *this, std::forward<Args>( args )... );
 	}
 
 	template <typename T, typename... Args>
-	inline T* GameObject::TryAddComponent( Args&&... args )
+	inline T* OldGameObject::TryAddComponent( Args&&... args )
 	{
 		return SceneManager::GetActiveScene()->TryAddComponentToGameObject<T>( *this, std::forward<Args>( args )... );
 	}
 
 	template <typename T>
-	inline T& GameObject::GetComponent() const
+	inline T& OldGameObject::GetComponent() const
 	{
 		ASSERT( HasComponent<T>(), "GameObject does not have this component!" );
 		return SceneManager::GetActiveScene()->GetComponentFromGameObject<T>( *this );
 	}
 
 	template <typename T>
-	inline T* GameObject::TryGetComponent() const
+	inline T* OldGameObject::TryGetComponent() const
 	{
 		return SceneManager::GetActiveScene()->TryGetComponentFromGameObject<T>( *this );
 	}
 
 	template<typename T>
-	inline T* GameObject::TryGetComponentInChildren() const
+	inline T* OldGameObject::TryGetComponentInChildren() const
 	{
-		const std::vector<GameObject>& children = GetChildren();
+		const std::vector<OldGameObject>& children = GetChildren();
 		for ( auto child : children )
 		{
 			if ( T* foundComponent = child.Internal_TryGetComponentInChildren<T>() )
@@ -42,7 +42,7 @@ namespace Tridium {
 	}
 
 	template<typename T>
-	inline T* GameObject::Internal_TryGetComponentInChildren() const
+	inline T* OldGameObject::Internal_TryGetComponentInChildren() const
 	{
 		if ( T* foundComponent = TryGetComponent<T>() )
 			return foundComponent;
@@ -57,18 +57,18 @@ namespace Tridium {
 	}
 
 	template <typename T>
-	inline bool GameObject::HasComponent() const
+	inline bool OldGameObject::HasComponent() const
 	{
 		return SceneManager::GetActiveScene()->GameObjectHasComponent<T>( *this );
 	}
 
 	template <typename T>
-	inline void GameObject::RemoveComponent()
+	inline void OldGameObject::RemoveComponent()
 	{
 		SceneManager::GetActiveScene()->RemoveComponentFromGameObject<T>( *this );
 	}
 
-	inline bool Tridium::GameObject::IsValid() const
+	inline bool Tridium::OldGameObject::IsValid() const
 	{
 		if ( m_ID == NullEntity )
 			return false;

@@ -18,10 +18,10 @@
 namespace Tridium {
 
 	// Forward Declarations
-	class Scene;
+	class OldScene;
 	class RigidBodyComponent;
 	class TransformComponent;
-	class GameObject;
+	class OldGameObject;
 	struct RayCastResult;
 	// --------------------
 
@@ -67,15 +67,15 @@ namespace Tridium {
 		virtual void Shutdown() = 0;
 		virtual void Tick( float a_TimeStep ) = 0;
 
-		virtual GameObject GetGameObjectFromPhysicsBody( PhysicsBodyID a_BodyID ) const = 0;
-		virtual PhysicsBodyID GetPhysicsBodyFromGameObject( GameObject a_GameObject ) const = 0;
+		virtual OldGameObject GetGameObjectFromPhysicsBody( PhysicsBodyID a_BodyID ) const = 0;
+		virtual PhysicsBodyID GetPhysicsBodyFromGameObject( OldGameObject a_GameObject ) const = 0;
 
 		virtual RayCastResult CastRay( const Vector3& a_Start, const Vector3& a_End, ERayCastChannel a_Channel = ERayCastChannel::Visibility, const PhysicsBodyFilter& a_BodyFilter = {} ) = 0;
 
 		virtual void RemovePhysicsBody( PhysicsBodyID a_PhysicsBodyID ) = 0;
 		virtual void RemovePhysicsBody( RigidBodyComponent& a_RigidBody ) = 0;
-		virtual bool AddPhysicsBody( const GameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent ) = 0;
-		virtual bool UpdatePhysicsBody( const GameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent ) = 0;
+		virtual bool AddPhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent ) = 0;
+		virtual bool UpdatePhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent ) = 0;
 
 		virtual void UpdatePhysicsBodyTransform( const RigidBodyComponent& a_RigidBody, const TransformComponent& a_TransformComponent ) = 0;
 
@@ -98,11 +98,11 @@ namespace Tridium {
 	#endif
 
 	protected:
-		Scene* m_Scene;
-		friend Scene;
+		OldScene* m_Scene;
+		friend OldScene;
 	};
 
-	class PhysicsSceneSystem : public ISceneSystem
+	class PhysicsSceneSystem : public OldISceneSystem
 	{
 	public:
 		virtual void Init() override;

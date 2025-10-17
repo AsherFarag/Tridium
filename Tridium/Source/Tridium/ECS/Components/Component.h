@@ -21,8 +21,8 @@
 		REFLECT( _Class );	              \
 	public:                               \
 		using Super = _Parent;            \
-		friend class ::Tridium::Scene;	  \
-		friend class ::Tridium::GameObject; 
+		friend class ::Tridium::OldScene; \
+		friend class ::Tridium::OldGameObject; 
 
 namespace Tridium {		  
 
@@ -36,13 +36,13 @@ namespace Tridium {
 	class Component
 	{
 		REFLECT( Component );
-		friend class Scene;
-		friend class GameObject;
+		friend class OldScene;
+		friend class OldGameObject;
 	public:
 		Component();
 		~Component() = default;
 
-		GameObject GetGameObject() const;
+		OldGameObject GetGameObject() const;
 
 	private:
 		EntityID m_EntityID;

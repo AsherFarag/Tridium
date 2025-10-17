@@ -14,7 +14,7 @@
 
 namespace Tridium {
 
-	OldSceneRenderer::OldSceneRenderer( Scene& a_Scene )
+	OldSceneRenderer::OldSceneRenderer( OldScene& a_Scene )
 		: m_Scene( a_Scene ), m_SceneEnvironment( a_Scene.GetSceneEnvironment() )
 	{
 		Clear();

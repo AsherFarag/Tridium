@@ -14,12 +14,12 @@ namespace Tridium {
 	// GameObject
 	//////////////////////////////////////////////////////////////////////////
 
-	void Scriptable<GameObject>::RegisterType( ScriptEngine& a_ScriptEngine )
+	void Scriptable<OldGameObject>::RegisterType( ScriptEngine& a_ScriptEngine )
 	{
-		auto type = a_ScriptEngine.RegisterNewType<GameObject>( "GameObject" );
-		type["GetTransform"] = &GameObject::GetTransform;
-		type["GetName"] = []( GameObject& a_GameObject ) -> std::string { return a_GameObject.GetTag(); };
-		type["Destroy"] = &GameObject::Destroy;
+		auto type = a_ScriptEngine.RegisterNewType<OldGameObject>( "GameObject" );
+		type["GetTransform"] = &OldGameObject::GetTransform;
+		type["GetName"] = []( OldGameObject& a_GameObject ) -> std::string { return a_GameObject.GetTag(); };
+		type["Destroy"] = &OldGameObject::Destroy;
 	}
 
 	//////////////////////////////////////////////////////////////////////////

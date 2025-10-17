@@ -3,14 +3,14 @@
 
 namespace Tridium {
 
-	class Scene;
+	class OldScene;
 
 	namespace IO {
 
 		template<>
-		void SerializeToText( Archive& a_Archive, const Scene& a_Data );
+		void SerializeToText( Archive& a_Archive, const OldScene& a_Data );
 
 		template<>
-		bool DeserializeFromText( const YAML::Node& a_Node, Scene& a_Data );
+		bool DeserializeFromText( const YAML::Node& a_Node, OldScene& a_Data );
 	}
 }

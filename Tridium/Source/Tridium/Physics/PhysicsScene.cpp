@@ -90,7 +90,7 @@ namespace Tridium {
 		};
 
 		Refl::MetaType componentType = Refl::ResolveMetaType( a_Event.ComponentTypeID );
-		GameObject gameObject = a_Event.GameObjectID;
+		OldGameObject gameObject = a_Event.GameObjectID;
 
 		// Only handle RigidBody and Collider components
 		if ( componentType != RigidBodyComponentType && !ColliderComponentTypes.contains( componentType.ID() ) )

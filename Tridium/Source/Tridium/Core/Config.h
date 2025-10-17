@@ -42,6 +42,9 @@
 	#define WITH_EDITOR 0
 #endif // CONFIG_USE_EDITOR
 
+// For headless server builds
+#define CONFIG_HEADLESS 0
+
 //=================================================================================================
 // Asset System Configuration
 #define USE_ASSET_IMPORTERS ( WITH_EDITOR )

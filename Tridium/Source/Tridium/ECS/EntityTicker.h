@@ -61,14 +61,14 @@ namespace Tridium {
 	public:
 		virtual void OnBeginPlay() {}
 		virtual void OnUpdate( float a_DeltaTime ) = 0;
-		EntityComponentSystem* GetECS() const { return m_ECS; }
+		OldEntityComponentSystem* GetECS() const { return m_ECS; }
 
 		TODO( "This will most likely be removed once proper component initialization exists" )
 		virtual UniquePtr<IEntityTicker> Clone() const = 0;
 
 	private:
-		EntityComponentSystem* m_ECS = nullptr;
-		friend class Scene;
+		OldEntityComponentSystem* m_ECS = nullptr;
+		friend class OldScene;
 	};
 
 	//================================================================
@@ -136,7 +136,7 @@ namespace Tridium {
 			return MakeUnique<ComponentTicker<T>>();
 		}
 
-		friend class Scene;
+		friend class OldScene;
 	};
 
 

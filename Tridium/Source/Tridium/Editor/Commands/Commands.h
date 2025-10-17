@@ -22,8 +22,8 @@ namespace Tridium {
 				GameObject = Scene.lock()->InstantiateGameObject();
 			}
 
-			WeakPtr<Scene> Scene;
-			GameObject GameObject;
+			WeakPtr<OldScene> Scene;
+			OldGameObject GameObject;
 			Array<Refl::MetaAny> Components;
 		};
 
@@ -44,8 +44,8 @@ namespace Tridium {
 				Scene.lock()->DestroyGameObject( GameObject );
 			}
 
-			WeakPtr<Scene> Scene;
-			GameObject GameObject;
+			WeakPtr<OldScene> Scene;
+			OldGameObject GameObject;
 		};
 
 

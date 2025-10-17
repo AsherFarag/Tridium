@@ -108,16 +108,16 @@ namespace Tridium {
 	void EditorLayer::OnUpdate()
 	{
 
-		if ( Scene* scene = SceneManager::GetActiveScene() )
+		if ( OldScene* scene = SceneManager::GetActiveScene() )
 		{
 			switch ( CurrentSceneState )
 			{
-			case ESceneState::Edit:
+			case EEditorSceneState::Edit:
 			{
 				m_EditorCamera->OnUpdate();
 				break;
 			}
-			case ESceneState::Play:
+			case EEditorSceneState::Play:
 			{
 				m_EditorCamera->OnUpdate();
 
@@ -191,15 +191,15 @@ namespace Tridium {
 
 	void EditorLayer::OnBeginScene()
 	{
-		Scene* scene = SceneManager::GetActiveScene();
+		OldScene* scene = SceneManager::GetActiveScene();
 		// Store a copy of the current scene in storage
-		m_SceneSnapshot = MakeShared<Scene>( *scene );
+		m_SceneSnapshot = MakeShared<OldScene>( *scene );
 
 		scene->OnBeginPlay();
 		scene->SetPaused( false );
 
 		m_GameViewportPanel->Focus();
-		CurrentSceneState = ESceneState::Play;
+		CurrentSceneState = EEditorSceneState::Play;
 
 		Input::SetInputMode( EInputMode::Cursor, EInputModeValue::Cursor_Disabled );
 	}
@@ -208,7 +208,7 @@ namespace Tridium {
 	{
 		SceneManager::GetActiveScene()->OnEndPlay();
 
-		CurrentSceneState = ESceneState::Edit;
+		CurrentSceneState = EEditorSceneState::Edit;
 		m_EditorViewportPanel->Focus();
 
 		// Restore the scene from storage
@@ -258,7 +258,7 @@ namespace Tridium {
 		}
 		case EInputKey::Escape:
 		{
-			if ( CurrentSceneState == ESceneState::Play )
+			if ( CurrentSceneState == EEditorSceneState::Play )
 			{
 				OnEndScene();
 				return true;
@@ -267,7 +267,7 @@ namespace Tridium {
 		}
 		case EInputKey::Tab:
 		{
-			if ( CurrentSceneState == ESceneState::Play )
+			if ( CurrentSceneState == EEditorSceneState::Play )
 			{
 				TODO( "Bruh" );
 				static bool s_MouseIsCaptured = false;
@@ -349,7 +349,7 @@ namespace Tridium {
 						};
 
 						TODO( "REplace this with a scene manager function" );
-						SharedPtr<Scene> scene = MakeShared<Scene>();
+						SharedPtr<OldScene> scene = MakeShared<OldScene>();
 						scene->SetName( metaData.Name );
 						if ( assetManager->CreateAsset( metaData, scene ) )
 							SceneManager::SetActiveScene( scene.get() );
@@ -364,13 +364,13 @@ namespace Tridium {
 					{
 						auto assetManager = AssetManager::Get<EditorAssetManager>();
 						const OldAssetMetaData& sceneMetaData = assetManager->GetAssetMetaData( path );
-						if ( auto scene = AssetManager::GetAsset<Scene>( sceneMetaData.Handle ) )
+						if ( auto scene = AssetManager::GetAsset<OldScene>( sceneMetaData.Handle ) )
 							SceneManager::SetActiveScene( scene.get() );
 					});
 			}
 			if ( ImGui::MenuItem( TE_ICON_FLOPPY_DISK "Save Scene", "Ctrl + S" ) )
 			{
-				if ( Scene* scene = SceneManager::GetActiveScene() )
+				if ( OldScene* scene = SceneManager::GetActiveScene() )
 				{
 					auto assetManager = AssetManager::Get<EditorAssetManager>();
 					if ( !assetManager->SaveAsset( scene->GetHandle() ) )
@@ -481,7 +481,7 @@ namespace Tridium {
 
 	void UIToolBar::OnImGuiDraw()
 	{
-		Scene* scene = SceneManager::GetActiveScene();
+		OldScene* scene = SceneManager::GetActiveScene();
 		if ( !scene )
 			return;
 
@@ -499,10 +499,10 @@ namespace Tridium {
 		const ImVec2 buttonSize( textSize, textSize );
 
 		EditorLayer* editor = Editor::GetEditorLayer();
-		ESceneState sceneState = editor->CurrentSceneState;
-		bool hasPlayButton = ( sceneState == ESceneState::Edit ) || ( sceneState == ESceneState::Play && scene->IsPaused() );
-		bool hasPauseButton = ( sceneState == ESceneState::Play ) && ( !scene->IsPaused() );
-		bool hasStopButton = sceneState == ESceneState::Play;
+		EEditorSceneState sceneState = editor->CurrentSceneState;
+		bool hasPlayButton = ( sceneState == EEditorSceneState::Edit ) || ( sceneState == EEditorSceneState::Play && scene->IsPaused() );
+		bool hasPauseButton = ( sceneState == EEditorSceneState::Play ) && ( !scene->IsPaused() );
+		bool hasStopButton = sceneState == EEditorSceneState::Play;
 
 		float totalButtonSizeX = buttonSize.x + ( buttonPadding.x * 2.f ) + ImGui::GetStyle().ItemSpacing.x;
 		float groupSizeX = ( totalButtonSizeX * hasPlayButton ) + ( totalButtonSizeX * hasPauseButton ) + ( totalButtonSizeX * hasStopButton );

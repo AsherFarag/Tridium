@@ -5,7 +5,7 @@
 
 namespace Tridium {
 
-	class GameObject;
+	class OldGameObject;
 
 }
 
@@ -87,7 +87,7 @@ namespace Tridium::IO {
 	// ---------- Tridium Types -----------
 
 	 template<> void SerializeToText( Archive& a_Archive, const GUID& a_Data );
-	 template<> void SerializeToText( Archive& a_Archive, const GameObject& );
+	 template<> void SerializeToText( Archive& a_Archive, const OldGameObject& );
 	 template<> void SerializeToText( Archive& a_Archive, const SceneHandle& );
 	 template<> void SerializeToText( Archive& a_Archive, const MaterialHandle& );
 	 template<> void SerializeToText( Archive& a_Archive, const MeshSourceHandle& );
@@ -205,7 +205,7 @@ namespace Tridium::IO {
 	// ---------- Tridium Types -----------
 
 	template<> bool DeserializeFromText( const YAML::Node& a_Node, GUID& o_Data );
-	template<> bool DeserializeFromText( const YAML::Node& a_Node, GameObject& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, OldGameObject& o_Data );
 	template<> bool DeserializeFromText( const YAML::Node& a_Node, SceneHandle& o_Data );
 	template<> bool DeserializeFromText( const YAML::Node& a_Node, MaterialHandle& o_Data );
 	template<> bool DeserializeFromText( const YAML::Node& a_Node, MeshSourceHandle& o_Data );

@@ -31,7 +31,7 @@ namespace Tridium {
 		DrawSceneHeirarchy();
 	}
 
-	void SceneHeirarchyPanel::SetSelectedGameObject( GameObject gameObject )
+	void SceneHeirarchyPanel::SetSelectedGameObject( OldGameObject gameObject )
 	{
 		m_SelectedGameObject = gameObject;
 	}
@@ -55,7 +55,7 @@ namespace Tridium {
 			if ( m_SelectedGameObject.IsValid() )
 			{
 				m_SelectedGameObject.Destroy();
-				Editor::Events::OnGameObjectSelected.Broadcast( GameObject{} );
+				Editor::Events::OnGameObjectSelected.Broadcast( OldGameObject{} );
 				return true;
 			}
 			break;
@@ -104,10 +104,10 @@ namespace Tridium {
 					EditorPayload* payload = Editor::GetPayloadManager().GetPayload( "GameObject" );
 					if ( payload && !payload->IsEmpty() )
 					{
-						GameObject copiedGO = payload->As<GameObject>();
+						OldGameObject copiedGO = payload->As<OldGameObject>();
 						if ( copiedGO.IsValid() && SceneManager::GetActiveScene() )
 						{
-							GameObject newGO = SceneManager::GetActiveScene()->InstantiateGameObjectFrom(copiedGO);
+							OldGameObject newGO = SceneManager::GetActiveScene()->InstantiateGameObjectFrom(copiedGO);
 							Editor::Events::OnGameObjectSelected.Broadcast( newGO );
 							return true;
 						}
@@ -123,7 +123,7 @@ namespace Tridium {
 
 	void SceneHeirarchyPanel::DrawSceneHeirarchy()
 	{
-		Scene* scene = SceneManager::GetActiveScene();
+		OldScene* scene = SceneManager::GetActiveScene();
 		if ( !scene )
 			return;
 
@@ -179,7 +179,7 @@ namespace Tridium {
 			ImGuiTextFilter filter( m_SearchBuffer.c_str() );
 			for ( int i = 0; i < gameObjects.size(); ++i )
 			{
-				GameObject go = gameObjects.begin()[i];
+				OldGameObject go = gameObjects.begin()[i];
 				// We are only drawing root objects in this loop
 				if ( go.GetParent().IsValid() )
 					continue;
@@ -202,11 +202,11 @@ namespace Tridium {
 		ImGui::OpenPopup( "Add##SceneHierachy" );
 	}
 
-	void SceneHeirarchyPanel::DrawAddPopUp( GameObject gameObject )
+	void SceneHeirarchyPanel::DrawAddPopUp( OldGameObject gameObject )
 	{
-		GameObject newGO = {};
+		OldGameObject newGO = {};
 
-		Scene* scene = SceneManager::GetActiveScene();
+		OldScene* scene = SceneManager::GetActiveScene();
 		if ( !scene )
 			return;
 
@@ -337,7 +337,7 @@ namespace Tridium {
 		}
 	}
 
-	void SceneHeirarchyPanel::DrawSceneNode( GameObject go )
+	void SceneHeirarchyPanel::DrawSceneNode( OldGameObject go )
 	{
 		if ( !go.IsValid() || !go.HasComponent<TagComponent>() )
 		{
@@ -377,7 +377,7 @@ namespace Tridium {
 			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_GAME_OBJECT );
 			if ( payload )
 			{
-				GameObject payloadGO = *(GameObject*)payload->Data;
+				OldGameObject payloadGO = *(OldGameObject*)payload->Data;
 				if ( payloadGO != go )
 				{
 					if ( payloadGO.HasParent() && payloadGO.GetParent() == go )
@@ -398,7 +398,7 @@ namespace Tridium {
 
 		if ( drawChildren )
 		{
-			std::vector<GameObject>& children = go.GetChildren();
+			std::vector<OldGameObject>& children = go.GetChildren();
 			for ( auto& child : children )
 			{
 				DrawSceneNode( child );

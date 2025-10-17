@@ -369,7 +369,7 @@ namespace Tridium {
 
 
 
-	void InspectorPanel::SetInspectedGameObject( GameObject gameObject )
+	void InspectorPanel::SetInspectedGameObject( OldGameObject gameObject )
 	{
 		const bool isSameGameObject = InspectedGameObject == gameObject;
 		InspectedGameObject = gameObject;
@@ -460,8 +460,8 @@ namespace Tridium {
 					Editor::GetCommandManager().Execute( Commands::GameObjectDestroyed{ SceneManager::GetActiveSceneWeak(), InspectedGameObject } );
 
 					InspectedGameObject.Destroy();
-					InspectedGameObject = GameObject();
-					Editor::Events::OnGameObjectSelected.Broadcast( GameObject() );
+					InspectedGameObject = OldGameObject();
+					Editor::Events::OnGameObjectSelected.Broadcast( OldGameObject() );
 				}
 			}
 
@@ -476,7 +476,7 @@ namespace Tridium {
 
 
 
-	void InspectorPanel::DrawComponents( GameObject a_GO )
+	void InspectorPanel::DrawComponents( OldGameObject a_GO )
 	{
 		ImGuiStyle& style = ImGui::GetStyle();
 		const ImVec2 rowSpacing = ImVec2( style.ItemSpacing.x, 1.0f );
@@ -722,7 +722,7 @@ namespace Tridium {
 
 
 	template <typename T, typename... Args>
-	void AddComponentToGameObject( GameObject go, Args&&... args )
+	void AddComponentToGameObject( OldGameObject go, Args&&... args )
 	{
 		if ( go.TryAddComponent<T>( std::forward<Args>( args )... ) == nullptr )
 			LOG_ERROR( "{0} already has a [{1}]!", go.GetTag(), typeid( T ).name() );

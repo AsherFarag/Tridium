@@ -6,10 +6,10 @@
 namespace Tridium {
 
 	// Forward Declarations
-	class Scene;
+	class OldScene;
 	class ScriptEngine;
 	class Component;
-	class GameObject;
+	class OldGameObject;
 
 	namespace Script {
 		class ScriptEngine;
@@ -33,9 +33,9 @@ namespace Tridium {
 		using TextSerializeFunc				= void (*)( IO::Archive& a_Archive, const MetaAny& a_Data );
 		using TextDeserializeFunc			= void (*)( const YAML::Node& a_Node, MetaAny& a_Data );
 		using RegisterScriptableFunc		= void (*)( ScriptEngine& a_ScriptEngine );
-		using AddToGameObjectFunc			= Component* (*)( Scene& a_Scene, EntityID a_GameObject );
-		using RemoveFromGameObjectFunc		= void (*)( Scene& a_Scene, EntityID a_GameObject );
-		using InitComponentFunc				= void (*)( Scene& a_Scene );
+		using AddToGameObjectFunc			= Component* (*)( OldScene& a_Scene, EntityID a_GameObject );
+		using RemoveFromGameObjectFunc		= void (*)( OldScene& a_Scene, EntityID a_GameObject );
+		using InitComponentFunc				= void (*)( OldScene& a_Scene );
 
 
 		#ifdef IS_EDITOR

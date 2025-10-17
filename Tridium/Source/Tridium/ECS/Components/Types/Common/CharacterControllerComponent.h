@@ -17,8 +17,8 @@ namespace Tridium {
 		void AddLookInput( const Vector2& a_Input );
 		void Jump();
 
-		GameObject GetCameraGameObject() const { return m_CameraGameObject; }
-		void SetCameraGameObject( GameObject a_CameraGameObject ) { m_CameraGameObject = a_CameraGameObject; }
+		OldGameObject GetCameraGameObject() const { return m_CameraGameObject; }
+		void SetCameraGameObject( OldGameObject a_CameraGameObject ) { m_CameraGameObject = a_CameraGameObject; }
 
 	protected:
 		float m_Friction = 10.0f; // The friction of the character
@@ -32,7 +32,7 @@ namespace Tridium {
 		bool m_CanJump = true;
 
 	private:
-		GameObject m_CameraGameObject;
+		OldGameObject m_CameraGameObject;
 		Vector2 m_LastMousePosition = Vector2( 0.0f );
 	};
 }

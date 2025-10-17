@@ -10,7 +10,7 @@ namespace Tridium {
     void SceneLoader::SaveAsset( const OldAssetMetaData& a_MetaData, const SharedPtr<Asset>& a_Asset )
     {
 		YAML::Emitter out;
-		IO::SerializeToText( out, *( SharedPtrCast<Scene>( a_Asset ) ) );
+		IO::SerializeToText( out, *( SharedPtrCast<OldScene>( a_Asset ) ) );
 
         std::string path = AssetManager::Get<EditorAssetManager>()->GetAbsolutePath( a_MetaData.Path ).ToString();
 		std::ofstream file( path.c_str() );
@@ -32,7 +32,7 @@ namespace Tridium {
 			return nullptr;
 		}
 
-		SharedPtr<Scene> scene = MakeShared<Scene>();
+		SharedPtr<OldScene> scene = MakeShared<OldScene>();
 		if ( !IO::DeserializeFromText( data, *scene ) )
 		{
 			LOG( LogCategory::Asset, Error, "Failed to deserialize scene file '{0}'", path );

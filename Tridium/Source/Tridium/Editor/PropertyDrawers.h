@@ -10,7 +10,7 @@
 namespace Tridium {
 
 	// Forward declarations
-	class GameObject;
+	class OldGameObject;
 
 	enum class EDrawPropertyFlags : uint8_t
 	{
@@ -143,7 +143,7 @@ namespace Tridium {
 		bool DrawProperty( const char* a_Name, LuaScriptHandle& a_Value, EDrawPropertyFlags a_Flags );
 
 		template<>
-		bool DrawProperty( const char* a_Name, GameObject& a_Value, EDrawPropertyFlags a_Flags );
+		bool DrawProperty( const char* a_Name, OldGameObject& a_Value, EDrawPropertyFlags a_Flags );
 
 		// Temp ?
 		template<>

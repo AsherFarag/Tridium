@@ -4,7 +4,7 @@
 
 namespace Tridium {
 
-	class ScriptSystem final : public ISceneSystem
+	class ScriptSystem final : public OldISceneSystem
 	{
 	public:
 		virtual void Init() override {}

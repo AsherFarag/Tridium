@@ -5,7 +5,7 @@
 #include <Tridium/ECS/GameObject.h>
 #include <Tridium/Common/Function.h>
 
-namespace Tridium { class Scene; }
+namespace Tridium { class OldScene; }
 
 namespace Tridium {
 
@@ -17,19 +17,19 @@ namespace Tridium {
 
 		virtual void OnImGuiDraw() override;
 
-		GameObject GetSelectedGameObject() const { return m_SelectedGameObject; }
-		void SetSelectedGameObject( GameObject gameObject );
+		OldGameObject GetSelectedGameObject() const { return m_SelectedGameObject; }
+		void SetSelectedGameObject( OldGameObject gameObject );
 
 	private:
 		virtual bool OnKeyPressed( const KeyPressedEvent& e ) override;
 
 		void DrawSceneHeirarchy();
 		void OpenAddPopUp();
-		void DrawAddPopUp( GameObject go = {} );
-		void DrawSceneNode( GameObject go );
+		void DrawAddPopUp( OldGameObject go = {} );
+		void DrawSceneNode( OldGameObject go );
 
 	private:
-		GameObject m_SelectedGameObject;
+		OldGameObject m_SelectedGameObject;
 		std::string m_SearchBuffer;
 
 		DelegateHandle m_OnGameObjectSelectedHandle;

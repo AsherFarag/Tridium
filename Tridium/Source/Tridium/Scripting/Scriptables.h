@@ -5,7 +5,7 @@
 
 // Forward declarations
 namespace Tridium {
-	class GameObject;
+	class OldGameObject;
 }
 // --------------------
 
@@ -32,7 +32,7 @@ namespace Tridium {
 	//////////////////////////////////////////////////////////////////////////
 
 	template <>
-	struct Scriptable<GameObject>
+	struct Scriptable<OldGameObject>
 	{
 		static void RegisterType( ScriptEngine& a_ScriptEngine );
 	};

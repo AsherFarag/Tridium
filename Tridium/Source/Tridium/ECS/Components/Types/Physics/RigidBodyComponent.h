@@ -52,7 +52,7 @@ namespace Tridium {
 		LinearMotionConstraint m_LinearMotionConstraint;
 		AngularMotionConstraint m_AngularMotionConstraint;
 
-		friend class Scene;
+		friend class OldScene;
 	};
 
 }

@@ -99,7 +99,7 @@ namespace Tridium {
     
             float3 diffuse = albedo / PI;
     
-            lighting += (diffuse * 0.0001 + spec) * radiance * NoL;
+            lighting += (diffuse + spec) * radiance * NoL;
         }
     
         // --- Point lights ---

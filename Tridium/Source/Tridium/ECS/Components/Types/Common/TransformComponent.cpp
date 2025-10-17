@@ -172,7 +172,7 @@ namespace Tridium {
 		Rotation.SetFromQuaternion( rotation );
 	}
 
-	void TransformComponent::AttachToParent( GameObject a_Parent )
+	void TransformComponent::AttachToParent( OldGameObject a_Parent )
 	{
 		a_Parent.GetTransform().AttachChild(GetGameObject());
 	}
@@ -183,7 +183,7 @@ namespace Tridium {
 			GetParent().GetTransform().DetachChild(GetGameObject());
 	}
 
-	void TransformComponent::AttachChild( GameObject a_Child )
+	void TransformComponent::AttachChild( OldGameObject a_Child )
 	{
 		TransformComponent& childTransform = a_Child.GetTransform();
 		if ( childTransform.GetParent() != GetGameObject() && a_Child != GetParent() )
@@ -194,7 +194,7 @@ namespace Tridium {
 		}
 	}
 
-	void TransformComponent::DetachChild( GameObject a_Child )
+	void TransformComponent::DetachChild( OldGameObject a_Child )
 	{
 		auto& childTransform = a_Child.GetTransform();
 		if ( childTransform.GetParent() == GetGameObject() )
@@ -208,9 +208,9 @@ namespace Tridium {
 		}
 	}
 
-	GameObject TransformComponent::GetChild( const std::string& a_Tag ) const
+	OldGameObject TransformComponent::GetChild( const std::string& a_Tag ) const
 	{
-		for ( GameObject child : m_Children )
+		for ( OldGameObject child : m_Children )
 		{
 			if ( child.GetTag() == a_Tag )
 			{
@@ -218,10 +218,10 @@ namespace Tridium {
 			}
 		}
 
-		return GameObject();
+		return OldGameObject();
 	}
 
-	void TransformComponent::RemoveChild( GameObject a_Child )
+	void TransformComponent::RemoveChild( OldGameObject a_Child )
 	{
 		m_Children.erase( std::find( m_Children.begin(), m_Children.end(), a_Child ) );
 	}

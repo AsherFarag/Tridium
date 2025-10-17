@@ -14,14 +14,14 @@ namespace Tridium {
 
 		virtual void OnImGuiDraw() override;
 
-		void SetInspectedGameObject( GameObject gameObject );
+		void SetInspectedGameObject( OldGameObject gameObject );
 
 	private:
 		void DrawInspectedGameObject();
-		void DrawComponents( GameObject a_GO );
+		void DrawComponents( OldGameObject a_GO );
 		void DrawAddComponentButton();
 
-		GameObject InspectedGameObject;
+		OldGameObject InspectedGameObject;
 		DelegateHandle m_OnGameObjectSelectedHandle;
 	};
 

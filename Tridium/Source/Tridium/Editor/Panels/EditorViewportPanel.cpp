@@ -111,8 +111,8 @@ namespace Tridium {
 					EditorPayload* payload = Editor::GetPayloadManager().GetPayload( "GameObject" );
 					if ( payload && !payload->IsEmpty() )
 					{
-						GameObject go = payload->As<GameObject>();
-						GameObject newGO = SceneManager::GetActiveScene()->InstantiateGameObjectFrom(go);
+						OldGameObject go = payload->As<OldGameObject>();
+						OldGameObject newGO = SceneManager::GetActiveScene()->InstantiateGameObjectFrom(go);
 						Editor::Events::OnGameObjectSelected.Broadcast( newGO );
 					}
 				}
@@ -123,7 +123,7 @@ namespace Tridium {
 				if ( m_SelectedGameObject )
 				{
 					m_SelectedGameObject.Destroy();
-					Editor::Events::OnGameObjectSelected.Broadcast( GameObject() );
+					Editor::Events::OnGameObjectSelected.Broadcast( OldGameObject() );
 				}
 				return true;
 			}
@@ -418,7 +418,7 @@ namespace Tridium {
 		{
 		case EAssetTypeOld::Scene:
 		{
-			if ( SharedPtr<Scene> scene = AssetManager::GetAsset<Scene>( assetHandle ) )
+			if ( SharedPtr<OldScene> scene = AssetManager::GetAsset<OldScene>( assetHandle ) )
 			{
 				SceneManager::GetActiveScene()->Clear();
 				// Load the scene
@@ -430,7 +430,7 @@ namespace Tridium {
 		{
 			if ( SharedPtr<OldStaticMesh> mesh = AssetManager::GetAsset<OldStaticMesh>( assetHandle ) )
 			{
-				GameObject go = SceneManager::GetActiveScene()->InstantiateGameObject();
+				OldGameObject go = SceneManager::GetActiveScene()->InstantiateGameObject();
 				go.AddComponent<StaticMeshComponent>().Mesh = mesh->GetHandle();
 
 				Vector3 position = m_EditorCamera->Position + m_EditorCamera->GetForwardDirection() * 5.0f;

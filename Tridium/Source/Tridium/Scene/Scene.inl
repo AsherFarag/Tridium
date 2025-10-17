@@ -1,5 +1,5 @@
 #include "Scene.h"
-
+#include <entt/entt.hpp>
 namespace Tridium {
 
 	// Forward declarations
@@ -12,8 +12,8 @@ namespace Tridium {
 	// Scene Systems
 	//////////////////////////////////////////////////////////////////////////
 
-	template<typename T, typename ...Args> requires Concepts::IsBaseOf<ISceneSystem, T>
-	inline SharedPtr<T> Scene::AddSystem( Args && ...a_Args )
+	template<typename T, typename ...Args> requires Concepts::IsBaseOf<OldISceneSystem, T>
+	inline SharedPtr<T> OldScene::AddSystem( Args && ...a_Args )
 	{
 		static constexpr size_t s_TypeHash = entt::type_hash<T>::value();
 		auto it = m_Systems.find( s_TypeHash );
@@ -28,10 +28,10 @@ namespace Tridium {
 		return system;
 	}
 
-	template<typename T> requires Concepts::IsBaseOf<ISceneSystem, T>
-	inline SharedPtr<T> Scene::GetSystem()
+	template<typename T> requires Concepts::IsBaseOf<OldISceneSystem, T>
+	inline SharedPtr<T> OldScene::GetSystem()
 	{
-		static_assert( std::is_base_of_v<ISceneSystem, T>, "T must be a derived class of ISceneSystem!" );
+		static_assert( std::is_base_of_v<OldISceneSystem, T>, "T must be a derived class of ISceneSystem!" );
 		static const size_t s_TypeHash = typeid( T ).hash_code();
 		auto it = m_Systems.find( s_TypeHash );
 		if ( it != m_Systems.end() )
@@ -48,9 +48,9 @@ namespace Tridium {
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	inline void Scene::OnComponentCreated( entt::registry& a_Registry, entt::entity a_Entity )
+	inline void OldScene::OnComponentCreated( entt::registry& a_Registry, entt::entity a_Entity )
 	{
-		GameObject gameObject( a_Entity );
+		OldGameObject gameObject( a_Entity );
 		T& component = a_Registry.get<T>( a_Entity );
 
 		// Set the GameObject for the component
@@ -85,7 +85,7 @@ namespace Tridium {
 	}
 
 	template<typename T>
-	inline void Scene::OnComponentDestroyed( entt::registry& a_Registry, entt::entity a_Entity )
+	inline void OldScene::OnComponentDestroyed( entt::registry& a_Registry, entt::entity a_Entity )
 	{
 		// Send an OnComponentDestroyed event to all scene systems
 		{
@@ -113,10 +113,10 @@ namespace Tridium {
 	}
 
 	template<typename T>
-	inline bool Scene::__InitComponentType()
+	inline bool OldScene::__InitComponentType()
 	{
-		m_ECS.GetRegistry().on_construct<T>().connect<&Scene::OnComponentCreated<T>>( *this );
-		m_ECS.GetRegistry().on_destroy<T>().connect<&Scene::OnComponentDestroyed<T>>( *this );
+		m_ECS.GetRegistry().on_construct<T>().connect<&OldScene::OnComponentCreated<T>>( *this );
+		m_ECS.GetRegistry().on_destroy<T>().connect<&OldScene::OnComponentDestroyed<T>>( *this );
 
 		// Add a component ticker if the component is a NativeScriptComponent and has an OnUpdate or OnBeginPlay function
 		if constexpr ( Concepts::HasOnUpdateFunction<T> || Concepts::HasOnBeginPlayFunction<T> )
@@ -128,7 +128,7 @@ namespace Tridium {
 	}
 
 	template<typename T, typename ..._Args>
-	inline void Scene::AddEntityTicker( _Args && ...a_Args )
+	inline void OldScene::AddEntityTicker( _Args && ...a_Args )
 	{
 		UniquePtr<IEntityTicker> ticker;
 		ticker.reset( new T( std::forward<_Args>( a_Args )... ) );
@@ -137,7 +137,7 @@ namespace Tridium {
 	}
 
 	template <typename T, typename... Args>
-	inline T& Scene::AddComponentToGameObject( GameObject a_GameObject, Args&&... args )
+	inline T& OldScene::AddComponentToGameObject( OldGameObject a_GameObject, Args&&... args )
 	{
 		ASSERT( !GameObjectHasComponent<T>( a_GameObject ), "GameObject already has this component!" );
 		T& component = m_ECS.AddComponentToEntity<T>( a_GameObject, std::forward<Args>( args )... );
@@ -145,7 +145,7 @@ namespace Tridium {
 	}
 
 	template <typename T, typename... Args>
-	inline T* Scene::TryAddComponentToGameObject( GameObject a_GameObject, Args&&... args )
+	inline T* OldScene::TryAddComponentToGameObject( OldGameObject a_GameObject, Args&&... args )
 	{
 		if ( T* existingComponent = TryGetComponentFromGameObject<T>( a_GameObject ) )
 		{
@@ -156,26 +156,26 @@ namespace Tridium {
 	}
 
 	template<typename T>
-	inline T& Scene::GetComponentFromGameObject( GameObject a_GameObject )
+	inline T& OldScene::GetComponentFromGameObject( OldGameObject a_GameObject )
 	{
 		ASSERT( GameObjectHasComponent<T>( a_GameObject ), "GameObject does not have this component!" );
 		return m_ECS.GetComponentFromEntity<T>( a_GameObject );
 	}
 
 	template<typename T>
-	inline T* Scene::TryGetComponentFromGameObject( GameObject a_GameObject )
+	inline T* OldScene::TryGetComponentFromGameObject( OldGameObject a_GameObject )
 	{
 		return m_ECS.TryGetComponentFromEntity<T>( a_GameObject );
 	}
 
 	template<typename T>
-	inline bool Scene::GameObjectHasComponent( GameObject a_GameObject ) const
+	inline bool OldScene::GameObjectHasComponent( OldGameObject a_GameObject ) const
 	{
 		return m_ECS.EntityHasComponent<T>( a_GameObject );
 	}
 
 	template<typename T>
-	inline void Scene::RemoveComponentFromGameObject( GameObject a_GameObject )
+	inline void OldScene::RemoveComponentFromGameObject( OldGameObject a_GameObject )
 	{
 		ASSERT( GameObjectHasComponent<T>( a_GameObject ), "GameObject does not have this component!" );
 		m_ECS.RemoveComponentFromEntity<T>( a_GameObject );
