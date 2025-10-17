@@ -130,7 +130,7 @@ namespace Tridium {
 						.SetIndexBuffer( this->m_CubeIndexBuffer.get() )
 						.SetFramebuffer( RHIFramebuffer{}
 							.AddColorAttachment( lightingOutputTex )
-							.SetDepthStencilAttachment( depthTex, true )
+							.SetDepthStencilAttachment( depthTex )
 						);
 
 					a_CommandList.SetGraphicsState( graphicsState );
