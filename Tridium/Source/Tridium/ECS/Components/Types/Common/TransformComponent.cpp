@@ -7,15 +7,15 @@
 
 namespace Tridium {
 
-	BEGIN_REFLECT_COMPONENT( TransformComponent, Scriptable )
+	BEGIN_REFLECT_COMPONENT( OldTransformComponent, Scriptable )
 		OVERRIDE( Props::RegisterScriptableProp, +[]( ScriptEngine& a_ScriptEngine )
 			{
-				auto type = a_ScriptEngine.RegisterNewType<TransformComponent>( "TransformComponent" );
-				type["gameObject"] = sol::property( &TransformComponent::GetGameObject );
-				type["GetLocalPosition"] = &TransformComponent::GetLocalPosition;
-				type["GetWorldPosition"] = &TransformComponent::GetWorldPosition;
-				type["SetLocalPosition"] = &TransformComponent::SetLocalPosition;
-				type["SetWorldPosition"] = &TransformComponent::SetWorldPosition;
+				auto type = a_ScriptEngine.RegisterNewType<OldTransformComponent>( "TransformComponent" );
+				type["gameObject"] = sol::property( &OldTransformComponent::GetGameObject );
+				type["GetLocalPosition"] = &OldTransformComponent::GetLocalPosition;
+				type["GetWorldPosition"] = &OldTransformComponent::GetWorldPosition;
+				type["SetLocalPosition"] = &OldTransformComponent::SetLocalPosition;
+				type["SetWorldPosition"] = &OldTransformComponent::SetWorldPosition;
 			} )
 		BASE( Component )
 		PROPERTY( Position, Serialize | EditAnywhere )
@@ -23,12 +23,12 @@ namespace Tridium {
 		PROPERTY( Scale, Serialize | EditAnywhere )
 		PROPERTY( m_Parent, Serialize )
 		PROPERTY( m_Children, Serialize )
-	END_REFLECT_COMPONENT( TransformComponent )
+	END_REFLECT_COMPONENT( OldTransformComponent )
 
-	TransformComponent::TransformComponent( const Vector3& a_Translation )
+	OldTransformComponent::OldTransformComponent( const Vector3& a_Translation )
 		: Position( a_Translation ) {}
 
-	void TransformComponent::OnEndPlay()
+	void OldTransformComponent::OnEndPlay()
 	{
 		DetachFromParent();
 
@@ -38,7 +38,7 @@ namespace Tridium {
 		}
 	}
 
-	Matrix4 TransformComponent::GetWorldTransform() const
+	Matrix4 OldTransformComponent::GetWorldTransform() const
 	{
 		if ( m_Parent.IsValid() )
 			return m_Parent.GetWorldTransform() * GetLocalTransform();
@@ -46,7 +46,7 @@ namespace Tridium {
 			return GetLocalTransform();
 	}
 
-	Matrix4 TransformComponent::GetLocalTransform() const
+	Matrix4 OldTransformComponent::GetLocalTransform() const
 	{
 		Matrix4 rotationMatrix = Math::ToMat4( Rotation.Quat );
 
@@ -57,7 +57,7 @@ namespace Tridium {
 			* Math::Scale( identity, Scale );
 	}
 
-	Vector3 TransformComponent::GetForward() const
+	Vector3 OldTransformComponent::GetForward() const
 	{
 		Vector3 forward = Rotation.Quat * Vector3( 0.0f, 0.0f, 1.0f );
 
@@ -69,7 +69,7 @@ namespace Tridium {
 		return forward.Normalized();
 	}
 
-	Vector3 TransformComponent::GetRight() const
+	Vector3 OldTransformComponent::GetRight() const
 	{
 		if ( m_Parent.IsValid() )
 			return m_Parent.GetTransform().GetRight() * Rotation.Quat * Vector3( 1.0f, 0.0f, 0.0f );
@@ -77,7 +77,7 @@ namespace Tridium {
 			return Rotation.Quat * Vector3( 1.0f, 0.0f, 0.0f );
 	}
 
-	Vector3 TransformComponent::GetUp() const
+	Vector3 OldTransformComponent::GetUp() const
 	{
 		if ( m_Parent.IsValid() )
 			return m_Parent.GetTransform().GetUp() * Rotation.Quat * Vector3( 0.0f, 1.0f, 0.0f );
@@ -85,7 +85,7 @@ namespace Tridium {
 			return Rotation.Quat * Vector3( 0.0f, 1.0f, 0.0f );
 	}
 
-	Quaternion TransformComponent::GetOrientation() const
+	Quaternion OldTransformComponent::GetOrientation() const
 	{
 		if ( m_Parent.IsValid() )
 			return m_Parent.GetTransform().GetOrientation() * Rotation.Quat;
@@ -93,7 +93,7 @@ namespace Tridium {
 			return Rotation.Quat;
 	}
 
-	Vector3 TransformComponent::GetWorldScale() const
+	Vector3 OldTransformComponent::GetWorldScale() const
 	{
 		if ( m_Parent.IsValid() )
 			return m_Parent.GetTransform().GetWorldScale() * Scale;
@@ -101,7 +101,7 @@ namespace Tridium {
 			return Scale;
 	}
 
-	void TransformComponent::SetWorldPosition( const Vector3& a_Position )
+	void OldTransformComponent::SetWorldPosition( const Vector3& a_Position )
 	{
 		if ( m_Parent.IsValid() )
 		{
@@ -114,12 +114,12 @@ namespace Tridium {
 		}
 	}
 
-	void TransformComponent::SetLocalPosition( const Vector3& a_Position )
+	void OldTransformComponent::SetLocalPosition( const Vector3& a_Position )
 	{
 		Position = a_Position;
 	}
 
-	void TransformComponent::SetWorldScale( const Vector3& a_Scale )
+	void OldTransformComponent::SetWorldScale( const Vector3& a_Scale )
 	{
 		if ( m_Parent.IsValid() )
 			Scale = a_Scale / m_Parent.GetTransform().GetWorldScale();
@@ -127,12 +127,12 @@ namespace Tridium {
 			Scale = a_Scale;
 	}
 
-	void TransformComponent::SetLocalScale( const Vector3& a_Scale )
+	void OldTransformComponent::SetLocalScale( const Vector3& a_Scale )
 	{
 		Scale = a_Scale;
 	}
 
-	void TransformComponent::SetWorldRotation( const Quaternion& a_Rotation )
+	void OldTransformComponent::SetWorldRotation( const Quaternion& a_Rotation )
 	{
 		if ( m_Parent.IsValid() )
 			Rotation = a_Rotation * glm::inverse( m_Parent.GetTransform().GetOrientation() );
@@ -140,12 +140,12 @@ namespace Tridium {
 			Rotation = a_Rotation;
 	}
 
-	void TransformComponent::SetLocalRotation( const Quaternion& a_Rotation )
+	void OldTransformComponent::SetLocalRotation( const Quaternion& a_Rotation )
 	{
 		Rotation = a_Rotation;
 	}
 
-	void TransformComponent::SetWorldTransform( const Matrix4& a_Transform )
+	void OldTransformComponent::SetWorldTransform( const Matrix4& a_Transform )
 	{
 		if ( m_Parent.IsValid() )
 		{
@@ -165,27 +165,27 @@ namespace Tridium {
 		}
 	}
 
-	void TransformComponent::SetLocalTransform( const Matrix4& a_Transform )
+	void OldTransformComponent::SetLocalTransform( const Matrix4& a_Transform )
 	{
 		Quaternion rotation;
 		Math::DecomposeTransform( a_Transform, Position, rotation, Scale );
 		Rotation.SetFromQuaternion( rotation );
 	}
 
-	void TransformComponent::AttachToParent( OldGameObject a_Parent )
+	void OldTransformComponent::AttachToParent( OldGameObject a_Parent )
 	{
 		a_Parent.GetTransform().AttachChild(GetGameObject());
 	}
 
-	void TransformComponent::DetachFromParent()
+	void OldTransformComponent::DetachFromParent()
 	{
 		if ( HasParent() )
 			GetParent().GetTransform().DetachChild(GetGameObject());
 	}
 
-	void TransformComponent::AttachChild( OldGameObject a_Child )
+	void OldTransformComponent::AttachChild( OldGameObject a_Child )
 	{
-		TransformComponent& childTransform = a_Child.GetTransform();
+		OldTransformComponent& childTransform = a_Child.GetTransform();
 		if ( childTransform.GetParent() != GetGameObject() && a_Child != GetParent() )
 		{
 			childTransform.DetachFromParent();
@@ -194,7 +194,7 @@ namespace Tridium {
 		}
 	}
 
-	void TransformComponent::DetachChild( OldGameObject a_Child )
+	void OldTransformComponent::DetachChild( OldGameObject a_Child )
 	{
 		auto& childTransform = a_Child.GetTransform();
 		if ( childTransform.GetParent() == GetGameObject() )
@@ -208,7 +208,7 @@ namespace Tridium {
 		}
 	}
 
-	OldGameObject TransformComponent::GetChild( const std::string& a_Tag ) const
+	OldGameObject OldTransformComponent::GetChild( const std::string& a_Tag ) const
 	{
 		for ( OldGameObject child : m_Children )
 		{
@@ -221,7 +221,7 @@ namespace Tridium {
 		return OldGameObject();
 	}
 
-	void TransformComponent::RemoveChild( OldGameObject a_Child )
+	void OldTransformComponent::RemoveChild( OldGameObject a_Child )
 	{
 		m_Children.erase( std::find( m_Children.begin(), m_Children.end(), a_Child ) );
 	}

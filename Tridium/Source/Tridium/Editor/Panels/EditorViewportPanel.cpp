@@ -463,7 +463,7 @@ namespace Tridium {
 		if ( m_SelectedGameObject.IsValid() )
 		{
 			// Selected Game Object
-			TransformComponent& goTransform = m_SelectedGameObject.GetTransform();
+			OldTransformComponent& goTransform = m_SelectedGameObject.GetTransform();
 			Matrix4 goWorldTransform = goTransform.GetWorldTransform();
 
 			bool shouldSnap = Input::IsKeyPressed( EInputKey::LeftControl );
@@ -528,9 +528,9 @@ namespace Tridium {
 
 		Matrix4 pvm = m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix();
 
-		auto meshComponents = SceneManager::GetActiveScene()->GetECS().View<StaticMeshComponent, TransformComponent>();
+		auto meshComponents = SceneManager::GetActiveScene()->GetECS().View<StaticMeshComponent, OldTransformComponent>();
 		meshComponents.each( 
-			[&]( auto go, StaticMeshComponent& meshComponent, TransformComponent& transform )
+			[&]( auto go, StaticMeshComponent& meshComponent, OldTransformComponent& transform )
 			{
 				if ( !meshComponent.Mesh.IsValid() )
 					return;

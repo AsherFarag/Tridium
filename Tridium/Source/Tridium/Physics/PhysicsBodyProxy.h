@@ -12,7 +12,7 @@ namespace Tridium {
 			m_BodyID( INVALID_PHYSICS_BODY_ID )
 		{}
 
-		PhysicsBodyProxy( const SharedPtr<PhysicsScene>& a_PhysicsScene, PhysicsBodyID a_BodyID )
+		PhysicsBodyProxy( const SharedPtr<IPhysicsScene>& a_PhysicsScene, PhysicsBodyID a_BodyID )
 			: m_PhysicsScene( a_PhysicsScene )
 			, m_BodyID( a_BodyID )
 		{}
@@ -26,8 +26,8 @@ namespace Tridium {
 		}
 
 
-		WeakPtr<PhysicsScene> GetPhysicsScene() const { return m_PhysicsScene; }
-		void SetPhysicsScene( const SharedPtr<PhysicsScene>& a_PhysicsScene ) { m_PhysicsScene = a_PhysicsScene; }
+		WeakPtr<IPhysicsScene> GetPhysicsScene() const { return m_PhysicsScene; }
+		void SetPhysicsScene( const SharedPtr<IPhysicsScene>& a_PhysicsScene ) { m_PhysicsScene = a_PhysicsScene; }
 		PhysicsBodyID GetBodyID() const { return m_BodyID; }
 		void SetBodyID( PhysicsBodyID a_BodyID ) { m_BodyID = a_BodyID; }
 
@@ -166,7 +166,7 @@ namespace Tridium {
 		}
 
 	private:
-		WeakPtr<PhysicsScene> m_PhysicsScene;
+		WeakPtr<IPhysicsScene> m_PhysicsScene;
 		PhysicsBodyID m_BodyID;
 	};
 

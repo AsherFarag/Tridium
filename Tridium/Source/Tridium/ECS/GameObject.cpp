@@ -25,12 +25,12 @@ namespace Tridium {
 
     GUID OldGameObject::GetGUID() const 
     {
-        return GetComponent<GUIDComponent>().GetID();
+        return GetComponent<OldGUIDComponent>().GetID();
     }
 
-    TagComponent* OldGameObject::GetTagComponent() const
+    OldTagComponent* OldGameObject::GetTagComponent() const
     {
-        return TryGetComponent<TagComponent>();
+        return TryGetComponent<OldTagComponent>();
     }
 
     const String& OldGameObject::GetTag() const
@@ -105,9 +105,9 @@ namespace Tridium {
 	// Transform Functions
 	//////////////////////////////////////////////////////////////////////////
 
-    TransformComponent& OldGameObject::GetTransform() const 
+    OldTransformComponent& OldGameObject::GetTransform() const 
     {
-        return GetComponent<TransformComponent>();
+        return GetComponent<OldTransformComponent>();
     }
 
     Matrix4 OldGameObject::GetWorldTransform() const 

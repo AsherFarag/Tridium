@@ -15,10 +15,29 @@
 #include <Tridium/Asset/Importers/ModelImporter.h>
 #include <iostream>
 #include <fstream>
-
+#include <Tridium/Reflection/Meta.h>
+#include <Tridium/Reflection/MetaAttributes.h>
 #include <stb_image.h>
 
 namespace Tridium {
+
+	struct Dummy
+	{
+		bool A;
+		bool Getter() { return true; }
+		void Setter( bool val ) { printf( "\n Hello! \n" ); A = val; }
+	};
+
+	namespace Meta {
+
+		template<>
+		struct Reflector<Dummy>
+		{
+			Field<&Dummy::A, Getter<&Dummy::Getter>, Setter<&Dummy::Setter>, DisplayName<"Tes">> IsDummy;
+		};
+
+	}
+
 
 	REGISTER_TICK_GROUP( BeginTick );
 	REGISTER_TICK_GROUP( BeginAppUpdate );
@@ -54,16 +73,25 @@ namespace Tridium {
 		EngineConfig engineConfig;
 		m_Engine = Engine::Create( engineConfig );
 
-		struct Dummy
-		{
-			int A;
-			float B;
-		};
+		constexpr auto refl = Meta::Reflector<Dummy>{};
 
-		struct Dummy2
+		Dummy dummy{};
+		bool fieldVal = Meta::GetFieldValue( refl.IsDummy, dummy );
+		std::cout << "Field Value: " << fieldVal << std::endl;
+		Meta::SetFieldValue( refl.IsDummy, dummy, false );
+
+		ForEachField( refl, []( const auto& fieldName, const auto& field )
 		{
-			String Name;
-		};
+			if constexpr ( field.template Has<Meta::DisplayName>() )
+			{
+				const auto displayName = field.template Get<Meta::DisplayName>();
+				std::cout << "Field: " << fieldName << " has DisplayName: " << displayName.Value << std::endl;
+			}
+			else
+			{
+				std::cout << "Field: " << fieldName << " has no DisplayName attribute." << std::endl;
+			}
+		} );
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////

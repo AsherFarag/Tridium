@@ -4,12 +4,12 @@
 
 namespace Tridium {
 
-	BEGIN_REFLECT_COMPONENT( GUIDComponent, Scriptable )
+	BEGIN_REFLECT_COMPONENT( OldGUIDComponent, Scriptable )
 		BASE( Component )
 		PROPERTY( m_ID, Serialize | VisibleAnywhere )
-	END_REFLECT_COMPONENT( GUIDComponent )
+	END_REFLECT_COMPONENT( OldGUIDComponent )
 
-	GUIDComponent::GUIDComponent( GUID a_ID )
+	OldGUIDComponent::OldGUIDComponent( GUID a_ID )
 		: m_ID( a_ID ) {}
 
 }

@@ -226,7 +226,7 @@ namespace Tridium {
 		m_BodyToGameObjectMap.EraseKey( a_RigidBody.GetBodyProxy().GetBodyID() );
 	}
 
-	bool JoltPhysicsScene::AddPhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent )
+	bool JoltPhysicsScene::AddPhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent )
 	{
 		TE_CORE_ASSERT( m_Initialised );
 		if ( !m_Initialised )
@@ -390,13 +390,13 @@ namespace Tridium {
 		return true;
 	}
 
-	bool JoltPhysicsScene::UpdatePhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent )
+	bool JoltPhysicsScene::UpdatePhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent )
 	{
 		RemovePhysicsBody( a_RigidBody );
 		return AddPhysicsBody( a_GameObject, a_RigidBody, a_TransformComponent );
 	}
 
-	void JoltPhysicsScene::UpdatePhysicsBodyTransform( const RigidBodyComponent& a_RigidBody, const TransformComponent& a_TransformComponent )
+	void JoltPhysicsScene::UpdatePhysicsBodyTransform( const RigidBodyComponent& a_RigidBody, const OldTransformComponent& a_TransformComponent )
 	{
 		m_BodyInterface.SetPositionAndRotation( 
 			JPH::BodyID( a_RigidBody.GetBodyProxy().GetBodyID() ),

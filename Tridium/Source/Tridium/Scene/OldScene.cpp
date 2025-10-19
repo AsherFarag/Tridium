@@ -59,7 +59,7 @@ namespace Tridium {
 			const entt::registry& src = a_Other.GetECS().GetRegistry();
 
 			// Step 1: Create entities
-			for ( auto entity : src.view<GUIDComponent>() ) 
+			for ( auto entity : src.view<OldGUIDComponent>() ) 
 			{
 				entt::entity newEntity = m_ECS.CreateEntity( entity );
 			}
@@ -113,7 +113,7 @@ namespace Tridium {
 
 	bool OldScene::Initialize()
 	{
-		m_PhysicsScene = PhysicsScene::Create();
+		m_PhysicsScene = IPhysicsScene::Create();
 		m_PhysicsScene->m_Scene = this;
 
 		InitSystems();
@@ -148,11 +148,11 @@ namespace Tridium {
 			m_PhysicsScene->Init();
 
 			// Add all GameObjects with RigidBodyComponent to the physics scene
-			auto view = m_ECS.View<RigidBodyComponent, TransformComponent>();
+			auto view = m_ECS.View<RigidBodyComponent, OldTransformComponent>();
 			for ( auto entity : view )
 			{
 				auto& rb = view.get<RigidBodyComponent>( entity );
-				auto& tc = view.get<TransformComponent>( entity );
+				auto& tc = view.get<OldTransformComponent>( entity );
 
 				if ( m_PhysicsScene->AddPhysicsBody( OldGameObject( entity ), rb, tc ) )
 					rb.GetBodyProxy().SetPhysicsScene( m_PhysicsScene );
@@ -185,11 +185,11 @@ namespace Tridium {
 			PROFILE_SCOPE( "Physics Update", ProfilerCategory::Physics );
 			TODO( "We should not be constantly updating transforms unless they are dirty." );
 
-			auto view = m_ECS.View<RigidBodyComponent, TransformComponent>();
+			auto view = m_ECS.View<RigidBodyComponent, OldTransformComponent>();
 
 			// Update the transforms in the physics scene
 			{
-				view.each( [&]( auto entity, RigidBodyComponent& rb, TransformComponent& tc )
+				view.each( [&]( auto entity, RigidBodyComponent& rb, OldTransformComponent& tc )
 					{
 						m_PhysicsScene->UpdatePhysicsBodyTransform( rb, tc );
 					} );
@@ -198,7 +198,7 @@ namespace Tridium {
 			m_PhysicsScene->Tick( Time::DeltaTime() );
 
 			// Update the transforms from the physics scene
-			view.each( [&]( auto entity, RigidBodyComponent& rb, TransformComponent& tc )
+			view.each( [&]( auto entity, RigidBodyComponent& rb, OldTransformComponent& tc )
 				{
 					tc.Position = rb.m_BodyProxy.GetPosition();
 					tc.Rotation.SetFromQuaternion( rb.m_BodyProxy.GetRotation() );
@@ -272,10 +272,10 @@ namespace Tridium {
 	OldGameObject OldScene::InstantiateGameObject( GUID a_GUID, const String& a_Name )
 	{
 		auto go = OldGameObject( m_ECS.CreateEntity() );
-		AddComponentToGameObject<GUIDComponent>( go, a_GUID );
-		AddComponentToGameObject<TagComponent>( go, a_Name );
+		AddComponentToGameObject<OldGUIDComponent>( go, a_GUID );
+		AddComponentToGameObject<OldTagComponent>( go, a_Name );
 		AddComponentToGameObject<GameObjectFlagsComponent>( go, EGameObjectFlags::Enabled );
-		AddComponentToGameObject<TransformComponent>( go );
+		AddComponentToGameObject<OldTransformComponent>( go );
 
 		// Send OnGameObjectCreated Event to all systems
 		{
@@ -296,16 +296,16 @@ namespace Tridium {
 
 	OldGameObject OldScene::InstantiateGameObjectFrom( OldGameObject a_Source )
 	{
-		static const Refl::MetaType GUIDComponentType = Refl::ResolveMetaType<GUIDComponent>();
-		static const Refl::MetaType TagComponentType = Refl::ResolveMetaType<TagComponent>();
+		static const Refl::MetaType GUIDComponentType = Refl::ResolveMetaType<OldGUIDComponent>();
+		static const Refl::MetaType TagComponentType = Refl::ResolveMetaType<OldTagComponent>();
 		static const Refl::MetaType GameObjectFlagsComponentType = Refl::ResolveMetaType<GameObjectFlagsComponent>();
-		static const Refl::MetaType TransformComponentType = Refl::ResolveMetaType<TransformComponent>();
+		static const Refl::MetaType TransformComponentType = Refl::ResolveMetaType<OldTransformComponent>();
 
 		OldGameObject dst( m_ECS.CreateEntity() );
-		AddComponentToGameObject<GUIDComponent>( dst );
-		AddComponentToGameObject<TagComponent>( dst, a_Source.GetTag() );
+		AddComponentToGameObject<OldGUIDComponent>( dst );
+		AddComponentToGameObject<OldTagComponent>( dst, a_Source.GetTag() );
 		AddComponentToGameObject<GameObjectFlagsComponent>( dst, a_Source.GetFlags() );
-		TransformComponent& tc = AddComponentToGameObject<TransformComponent>( dst );
+		OldTransformComponent& tc = AddComponentToGameObject<OldTransformComponent>( dst );
 		tc.Position = a_Source.GetTransform().Position;
 		tc.Rotation = a_Source.GetTransform().Rotation;
 		tc.Scale = a_Source.GetTransform().Scale;
@@ -356,7 +356,7 @@ namespace Tridium {
 		if ( !IsGameObjectValid( a_Destination ) || !IsGameObjectValid( a_Source ) )
 			return;
 
-		TransformComponent& tc = GetComponentFromGameObject<TransformComponent>( a_Destination );
+		OldTransformComponent& tc = GetComponentFromGameObject<OldTransformComponent>( a_Destination );
 		tc.Position = a_Source.GetTransform().Position;
 		tc.Rotation = a_Source.GetTransform().Rotation;
 		tc.Scale = a_Source.GetTransform().Scale;
@@ -366,13 +366,13 @@ namespace Tridium {
 			if ( !storage.contains( a_Source ) )
 				continue;
 
-			if ( storage.type() == Refl::ResolveMetaType<GUIDComponent>().Info() )
+			if ( storage.type() == Refl::ResolveMetaType<OldGUIDComponent>().Info() )
 				continue;
 
-			if ( storage.type() == Refl::ResolveMetaType<TagComponent>().Info() )
+			if ( storage.type() == Refl::ResolveMetaType<OldTagComponent>().Info() )
 				continue;
 
-			if ( storage.type() == Refl::ResolveMetaType<TransformComponent>().Info() )
+			if ( storage.type() == Refl::ResolveMetaType<OldTransformComponent>().Info() )
 				continue;
 
 			if ( storage.contains( a_Destination ) )
@@ -408,7 +408,7 @@ namespace Tridium {
 
 	OldGameObject OldScene::FindGameObjectByTag( const String& a_Tag ) const
 	{
-		auto view = GetECS().View<TagComponent>();
+		auto view = GetECS().View<OldTagComponent>();
 		for ( auto&& [ entity, tagComponent ] : view.each() )
 		{
 			if ( tagComponent.Tag == a_Tag )
@@ -423,7 +423,7 @@ namespace Tridium {
 		std::vector<OldGameObject> gameObjects;
 		// Reserve an arbitrary amount of space for the vector
 		gameObjects.reserve( 8 );
-		auto view = m_ECS.View<TagComponent>();
+		auto view = m_ECS.View<OldTagComponent>();
 		for ( const auto&& [entity, Tag] : view.each() )
 		{
 			if ( Tag.Tag == a_Tag )

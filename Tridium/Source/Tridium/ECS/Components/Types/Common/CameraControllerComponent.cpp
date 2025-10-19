@@ -16,11 +16,11 @@ namespace Tridium {
 	void CameraControllerComponent::OnUpdate( float dt )
 	{
 		auto go = GetGameObject();
-		if ( !go.HasComponent<TransformComponent>() )
+		if ( !go.HasComponent<OldTransformComponent>() )
 			return;
 		
 		constexpr auto up = Vector3::Up();
-		auto& transform = GetGameObject().GetComponent<TransformComponent>();
+		auto& transform = GetGameObject().GetComponent<OldTransformComponent>();
 		auto forward = transform.GetForward();
 		auto right = Math::Cross( forward, up );
 

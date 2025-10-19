@@ -24,7 +24,7 @@
 
 namespace Tridium {
 
-	class JoltPhysicsScene final : public PhysicsScene
+	class JoltPhysicsScene final : public IPhysicsScene
 	{
 	public:
 		JoltPhysicsScene();
@@ -41,10 +41,10 @@ namespace Tridium {
 
 		virtual void RemovePhysicsBody( PhysicsBodyID a_PhysicsBodyID ) override;
 		virtual void RemovePhysicsBody( RigidBodyComponent& a_RigidBody ) override;
-		virtual bool AddPhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent ) override;
-		virtual bool UpdatePhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent ) override;
+		virtual bool AddPhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent ) override;
+		virtual bool UpdatePhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent ) override;
 
-		virtual void UpdatePhysicsBodyTransform( const RigidBodyComponent& a_RigidBody, const TransformComponent& a_TransformComponent ) override;
+		virtual void UpdatePhysicsBodyTransform( const RigidBodyComponent& a_RigidBody, const OldTransformComponent& a_TransformComponent ) override;
 
 		virtual Vector3 GetPhysicsBodyPosition( PhysicsBodyID a_BodyID ) const override;
 		virtual Quaternion GetPhysicsBodyRotation( PhysicsBodyID a_BodyID ) const override;

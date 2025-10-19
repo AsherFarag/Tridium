@@ -3,16 +3,16 @@
 #include <Tridium/Reflection/Reflection.h>
 
 namespace Tridium {
-	BEGIN_REFLECT_COMPONENT( TagComponent, Scriptable )
+	BEGIN_REFLECT_COMPONENT( OldTagComponent, Scriptable )
 		BASE( Component )
 		PROPERTY( Tag, Serialize | EditAnywhere )
 		FUNCTION( MaxSize )
-	END_REFLECT( TagComponent )
+	END_REFLECT( OldTagComponent )
 
-	TagComponent::TagComponent() 
+	OldTagComponent::OldTagComponent() 
 		: Tag() {}
-	TagComponent::TagComponent( const std::string& a_Tag ) 
+	OldTagComponent::OldTagComponent( const std::string& a_Tag ) 
 		: Tag( a_Tag ) {}
-	TagComponent::TagComponent( std::string&& a_Tag ) 
+	OldTagComponent::OldTagComponent( std::string&& a_Tag ) 
 		: Tag( a_Tag ) {}
 }

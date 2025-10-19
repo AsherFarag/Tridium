@@ -36,7 +36,7 @@ namespace Tridium {
 
 		rigidBody->SetFriction( m_Friction );
 
-		SharedPtr<PhysicsScene> scene = rigidBody->GetBodyProxy().GetPhysicsScene().lock();
+		SharedPtr<IPhysicsScene> scene = rigidBody->GetBodyProxy().GetPhysicsScene().lock();
 		Vector3 rayBegin = GetGameObject().GetTransform().Position;
 		CapsuleColliderComponent* capsuleCollider = GetGameObject().TryGetComponent<CapsuleColliderComponent>();
 		const float BodyHeight = capsuleCollider ? capsuleCollider->GetHalfHeight() + capsuleCollider->GetRadius() : 1.0f;
@@ -112,13 +112,13 @@ namespace Tridium {
 			}
 		}
 
-		TransformComponent& transform = GetGameObject().GetTransform();
+		OldTransformComponent& transform = GetGameObject().GetTransform();
 		Quaternion rotation = transform.Rotation.GetQuaternion();
 		Quaternion yawRotation = Quaternion( Vector3( 0.0f, -glm::radians( a_Input.X * m_LookSensitivity ), 0.0f ) );
 		rotation = yawRotation * rotation;
 		transform.Rotation.SetFromQuaternion( rotation );
 
-		TransformComponent& cameraTransform = m_CameraGameObject.GetTransform();
+		OldTransformComponent& cameraTransform = m_CameraGameObject.GetTransform();
 		Vector3 cameraRotation = cameraTransform.Rotation.GetEuler();
 		cameraRotation.X -= glm::radians( a_Input.Y * m_LookSensitivity );
 		cameraRotation.X = glm::clamp( cameraRotation.X, glm::radians( -89.0f ), glm::radians( 89.0f ) );

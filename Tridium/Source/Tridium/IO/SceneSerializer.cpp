@@ -113,7 +113,7 @@ namespace Tridium::IO {
 		a_Archive << YAML::Key << "GameObjects";
 		a_Archive << YAML::Value << YAML::BeginSeq;
 		{
-			auto gameObjects = a_Data.GetECS().View<GUIDComponent>();
+			auto gameObjects = a_Data.GetECS().View<OldGUIDComponent>();
 			for ( auto it = gameObjects.rbegin(); it < gameObjects.rend(); it++ )
 			{
 				SerializeGameObject( a_Archive, OldGameObject( *it ) );
@@ -165,7 +165,7 @@ namespace Tridium::IO {
 
 	void Serializer<OldGameObject>::SerializeGameObject( Archive& out, OldGameObject go )
 	{
-		if ( !go.IsValid() || !go.TryGetComponent<GUIDComponent>() )
+		if ( !go.IsValid() || !go.TryGetComponent<OldGUIDComponent>() )
 		{
 			ASSERT( false, "GameObject is invalid or does not have a GUIDComponent!" );
 			return;
@@ -177,19 +177,19 @@ namespace Tridium::IO {
 		out << YAML::Key << "GameObject"; out << YAML::Value << go.ID();
 
 		// GUIDComponent
-		if ( auto gc = go.TryGetComponent<GUIDComponent>() )
+		if ( auto gc = go.TryGetComponent<OldGUIDComponent>() )
 		{
 			out << YAML::Key << "GUID" << YAML::Value << gc->GetID();
 		}
 
 		// TagComponent
-		if ( auto tc = go.TryGetComponent<TagComponent>() )
+		if ( auto tc = go.TryGetComponent<OldTagComponent>() )
 		{
 			out << YAML::Key << "Tag" << YAML::Value << tc->Tag;
 		}
 
 		// TransformComponent
-		if ( auto tc = go.TryGetComponent<TransformComponent>() )
+		if ( auto tc = go.TryGetComponent<OldTransformComponent>() )
 		{
 			out << YAML::Key << "Transform" << YAML::Value << YAML::BeginMap;
 			{
@@ -253,16 +253,16 @@ namespace Tridium::IO {
 			return false;
 
 		ASSERT( a_Scene.GetECS().CreateEntity( go.ID() ) == go.ID(), "The created GameObject should be the same as the hint!" );
-		a_Scene.AddComponentToGameObject<GUIDComponent>( go, guid );
-		a_Scene.AddComponentToGameObject<TagComponent>( go, std::move( tag ) );
-		a_Scene.AddComponentToGameObject<TransformComponent>( go );
+		a_Scene.AddComponentToGameObject<OldGUIDComponent>( go, guid );
+		a_Scene.AddComponentToGameObject<OldTagComponent>( go, std::move( tag ) );
+		a_Scene.AddComponentToGameObject<OldTransformComponent>( go );
 
 		DeserializedGameObject deserializedGO;
 		deserializedGO.GameObject = go;
 
 		if ( auto transformNode = a_Node["Transform"] )
 		{
-			TransformComponent& tc = a_Scene.GetComponentFromGameObject<TransformComponent>( go );
+			OldTransformComponent& tc = a_Scene.GetComponentFromGameObject<OldTransformComponent>( go );
 			tc.Position = transformNode["Position"].as<Vector3>();
 			tc.Rotation.SetFromEuler( transformNode["Rotation"].as<Vector3>() );
 			tc.Scale = transformNode["Scale"].as<Vector3>();

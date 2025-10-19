@@ -68,9 +68,9 @@ namespace Tridium {
 			{
 				if ( m_SelectedGameObject.IsValid() )
 				{
-					if ( m_SelectedGameObject.HasComponent<TransformComponent>() )
+					if ( m_SelectedGameObject.HasComponent<OldTransformComponent>() )
 					{
-						auto& goTransform = m_SelectedGameObject.GetComponent<TransformComponent>();
+						auto& goTransform = m_SelectedGameObject.GetComponent<OldTransformComponent>();
 						auto editorCam = Editor::GetEditorLayer()->GetEditorCamera();
 						editorCam->LerpTo( goTransform.Position - ( editorCam->GetForwardDirection() * 5.f ) );
 						return true;
@@ -174,7 +174,7 @@ namespace Tridium {
 
 		if ( ImGui::BeginChild( "SceneHeirarchy", { 0, 0 }, ImGuiChildFlags_FrameStyle ) )
 		{
-			auto gameObjects = scene->GetECS().View<TagComponent>();
+			auto gameObjects = scene->GetECS().View<OldTagComponent>();
 			ImGui::ScopedStyleVar itemSpacing( ImGuiStyleVar_::ImGuiStyleVar_ItemSpacing, ImVec2( 0, 1 ) );
 			ImGuiTextFilter filter( m_SearchBuffer.c_str() );
 			for ( int i = 0; i < gameObjects.size(); ++i )
@@ -339,7 +339,7 @@ namespace Tridium {
 
 	void SceneHeirarchyPanel::DrawSceneNode( OldGameObject go )
 	{
-		if ( !go.IsValid() || !go.HasComponent<TagComponent>() )
+		if ( !go.IsValid() || !go.HasComponent<OldTagComponent>() )
 		{
 			LOG( LogCategory::Editor, Warn, "Attempting to draw an invalid Game Object node!" );
 			return;

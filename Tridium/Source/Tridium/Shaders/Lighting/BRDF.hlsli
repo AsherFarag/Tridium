@@ -112,7 +112,7 @@ float3 OrenNayarDiffuse(float3 a_Albedo, float a_Roughness, float a_NoV, float a
     return a_Albedo * orenNayar / PI;
 }
 
-// GGX specular BRDF for different light types
+// Calculates the combined specular and diffuse BRDF using GGX microfacet model and area-light approximation
 // @param a_Albedo: base color of the material
 // @param a_Roughness: surface a_Roughness [0,1]
 // @param a_Metallic: a_Metallic factor [0,1]
@@ -122,7 +122,7 @@ float3 OrenNayarDiffuse(float3 a_Albedo, float a_Roughness, float a_NoV, float a
 // @param a_NoL: max(dot(a_N, a_L), 0)
 // @param a_VoL: dot(a_V, a_L)
 // @param a_RadiusTan: tangent of the light's angular radius (radius / distance to surface point)
-// @return: specular reflection color
+// @return: Specular + Diffuse BRDF value
 float3 CalculateBRDF(float3 a_Albedo, float a_Roughness, float a_Metallic, float3 a_N, float3 a_V, float3 a_L, float a_NoL, float a_VoL, float a_RadiusTan)
 {
     // Clamp a_Roughness to avoid singularities
@@ -136,6 +136,7 @@ float3 CalculateBRDF(float3 a_Albedo, float a_Roughness, float a_Metallic, float
     
     // Area-light approximation
 #ifdef BRDF_HIGH_QUALITY
+    // Use Horizon Zero Dawn's accurate approximation
     const float NoH2 = GetNoHSquared(a_RadiusTan, a_NoL, NoV, a_VoL);
 #else
     // Sebastian Lagarde's approximation for small lights

@@ -1,9 +1,27 @@
 #pragma once
+#include <Tridium/ECS/ECS.h>
+#include <Tridium/Debug/DebugDrawer.h>
 #include <Tridium/Math/Math.h>
 #include <Tridium/Physics/PhysicsBody.h>
-#include <Tridium/ECS/ECS.h>
+#include <Tridium/Physics/PhysicsFilter.h>
+#include <Tridium/Physics/PhysicsLayer.h>
 
 namespace Tridium {
+
+	struct RayCastParams
+	{
+		const PhysicsBodyFilter& BodyFilter{};
+		ERayCastChannel Channel;
+		bool DrawDebug = false;
+
+		struct
+		{
+			Debug::EDrawDuration DrawDurationType = Debug::EDrawDuration::OneFrame;
+			float DrawDuration = 0.0f;
+			Color LineColor = Color::Red();
+			Color HitColor = Color::Green();
+		} Debug;
+	};
 
 	struct RayCastResult
 	{

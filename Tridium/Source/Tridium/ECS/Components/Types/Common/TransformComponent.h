@@ -9,12 +9,12 @@ namespace Tridium {
 	// TEMP?
 	namespace IO { template <typename T> struct Serializer; }
 
-	class TransformComponent : public NativeScriptComponent
+	class OldTransformComponent : public NativeScriptComponent
 	{
-		REFLECT(TransformComponent);
+		REFLECT(OldTransformComponent);
 	public:
-		TransformComponent() = default;
-		TransformComponent( const Vector3& a_Position );
+		OldTransformComponent() = default;
+		OldTransformComponent( const Vector3& a_Position );
 
 		void OnEndPlay();
 

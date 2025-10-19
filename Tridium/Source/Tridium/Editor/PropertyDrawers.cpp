@@ -626,7 +626,7 @@ namespace Tridium::ToolUI {
 		const char* gameObjectName = "None";
 		if ( a_Value.IsValid() )
 		{
-			if ( TagComponent* tag = a_Value.TryGetComponent<TagComponent>() )
+			if ( OldTagComponent* tag = a_Value.TryGetComponent<OldTagComponent>() )
 			{
 				gameObjectName = tag->Tag.c_str();
 			}
@@ -658,8 +658,8 @@ namespace Tridium::ToolUI {
 
 			ImGui::Separator();
 
-			auto view = SceneManager::GetActiveScene()->GetECS().View<TagComponent>();
-			view.each( [&]( const entt::entity& entity, TagComponent& tag )
+			auto view = SceneManager::GetActiveScene()->GetECS().View<OldTagComponent>();
+			view.each( [&]( const entt::entity& entity, OldTagComponent& tag )
 				{
 					OldGameObject gameObject( entity );
 					ImGui::ScopedID id( gameObject );

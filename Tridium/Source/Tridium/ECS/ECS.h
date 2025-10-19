@@ -1,19 +1,11 @@
 #pragma once
-#include <entt/entity/registry.hpp>
 #include <Tridium/Core/Assert.h>
+#include <Tridium/ECS/ECSFwd.h>
 #include <Tridium/Utils/Concepts.h>
 
+#include <entt/entity/registry.hpp>
+
 namespace Tridium {
-
-	using EntityIDType = uint32_t;
-	using EntityID = entt::entity;
-	using EntityVersion = entt::entt_traits<EntityID>::version_type;
-	constexpr EntityID NullEntity = entt::null;
-
-	template<typename... _Exclude>
-	using EntityExcludeType = entt::exclude_t<_Exclude...>;
-	template<typename... _Exclude>
-	static constexpr EntityExcludeType<_Exclude...> EntityExclude{};
 
 	//=================================================================================================
 	// Entity View: A wrapper around an EnTT view to provide additional functionality.
@@ -81,12 +73,77 @@ namespace Tridium {
 	template<typename _UnderlyingType> auto end( const EntityView<_UnderlyingType>& a_View ) { return a_View.End(); }
 
 	//=================================================================================================
+	// Entity Event Handle: A scoped handle which manages the lifetime of an entity event conntection.
+	//=================================================================================================
+	class EntityEventHandle
+	{
+	public:
+
+		//=============================================================================================
+		// Helper struct for function aliasing.
+		// For internal use only.
+		template<typename T, auto _Method>
+		struct alignas( std::remove_cvref_t<T> ) Wrapper
+		{
+			void Invoke( entt::registry& a_Registry, entt::entity a_Entity )
+			{
+				T* instance = ReinterpretCast<T*>( this );
+				auto& registry = ReinterpretCast<class EntityComponentRegistry&>( a_Registry );
+				EntityID entity = ReinterpretCast<EntityID>( a_Entity );
+				( instance->*_Method )( registry, entity );
+			}
+
+			void Invoke( entt::registry& a_Registry, entt::entity a_Entity ) const
+			{
+				const T* instance = ReinterpretCast<T*>( this );
+				auto& registry = ReinterpretCast<class EntityComponentRegistry&>( a_Registry );
+				EntityID entity = ReinterpretCast<EntityID>( a_Entity );
+				( instance->*_Method )( registry, entity );
+			}
+
+		};
+
+
+		//=============================================================================================
+		EntityEventHandle() = default;
+		explicit EntityEventHandle( entt::scoped_connection&& a_Connection ) : m_Connection( std::move( a_Connection ) ) {}
+
+
+		//=============================================================================================
+		operator bool() const
+		{
+			return Valid();
+		}
+
+		//=============================================================================================
+		bool Valid() const
+		{
+			return Cast<bool>( m_Connection );
+		}
+
+		//=============================================================================================
+		void Release()
+		{
+			m_Connection.release();
+		}
+
+	private:
+
+		//=============================================================================================
+		entt::scoped_connection m_Connection;
+
+	};
+
+	//=================================================================================================
 	// Entity Component Registry (ECR): Stores and manages entities and their components,
 	// in an Entity Component System (ECS) architecture.
 	//=================================================================================================
 	class EntityComponentRegistry
 	{
 	public:
+
+		//=============================================================================================
+		using UnderlyingType = entt::registry;
 
 		//=============================================================================================
 		// Checks if the entity is valid (i.e., currently in use).
@@ -245,6 +302,98 @@ namespace Tridium {
 		}
 
 		//=============================================================================================
+		// Returns a Scoped Delegate Handle object for listening to 
+		// component construction events of type _Component.
+		// NOTE: The returned handle must be kept alive to maintain the connection.
+		template<typename _Component, auto _Func>
+		[[nodiscard]] EntityEventHandle OnConstruct()
+		{
+			// Wrap the user's callback into EnTT's expected signature.
+			return EntityEventHandle{ m_Registry
+				.template on_construct<_Component>()
+				.connect(
+					[]( auto& a_Registry, auto a_Entity )
+					{
+						_Func( ReinterpretCast<EntityComponentRegistry&>( a_Registry ), Cast<EntityID>( a_Entity ) );
+					} ) };
+		}
+
+		//=============================================================================================
+		// Returns a Scoped Delegate Handle object for listening to
+		// component construction events of type _Component.
+		// NOTE: The returned handle must be kept alive to maintain the connection.
+		template<typename _Component, auto _Method, typename T>
+		[[nodiscard]] EntityEventHandle OnConstruct( T& a_Instance )
+		{
+			using Wrapper = EntityEventHandle::Wrapper<T, _Method>;
+
+			return EntityEventHandle{ m_Registry
+				.template on_construct<_Component>()
+				.template connect<&Wrapper::Invoke>( ReinterpretCast<Wrapper&>( a_Instance ) ) };
+		}
+
+
+		//=============================================================================================
+		// Returns a Scoped Delegate Handle object for listening to
+		// component construction events of type _Component.
+		// NOTE: The returned handle must be kept alive to maintain the connection.
+		template<typename _Component, auto _Method, typename T>
+		[[nodiscard]] EntityEventHandle OnConstruct( T* a_Instance )
+		{
+			using Wrapper = EntityEventHandle::Wrapper<T, _Method>;
+
+			return EntityEventHandle{ m_Registry
+				.template on_construct<_Component>()
+				.template connect<&Wrapper::Invoke>( ReinterpretCast<Wrapper*>( a_Instance ) ) };
+		}
+
+		//=============================================================================================
+		// Returns a Scoped Delegate Handle object for listening to
+		// component destruction events of type _Component.
+		// NOTE: The returned handle must be kept alive to maintain the connection.
+		template<typename _Component, auto _Func>
+		[[nodiscard]] EntityEventHandle OnDestruct()
+		{
+			// Wrap the user's callback into EnTT's expected signature.
+			return EntityEventHandle{ m_Registry
+				.template on_destroy<_Component>()
+				.connect(
+					[]( auto& a_Registry, auto a_Entity )
+					{
+						_Func( ReinterpretCast<EntityComponentRegistry&>( a_Registry ), Cast<EntityID>( a_Entity ) );
+					} ) };
+		}
+
+		//=============================================================================================
+		// Returns a Scoped Delegate Handle object for listening to
+		// component destruction events of type _Component.
+		// NOTE: The returned handle must be kept alive to maintain the connection.
+		template<typename _Component, auto _Method, typename T>
+		[[nodiscard]] EntityEventHandle OnDestruct( T& a_Instance )
+		{
+			using Wrapper = EntityEventHandle::Wrapper<T, _Method>;
+
+			return EntityEventHandle{ m_Registry
+				.template on_destroy<_Component>()
+				.template connect<&Wrapper::Invoke>( ReinterpretCast<Wrapper&>( a_Instance ) ) };
+		}
+
+
+		//=============================================================================================
+		// Returns a Scoped Delegate Handle object for listening to
+		// component destruction events of type _Component.
+		// NOTE: The returned handle must be kept alive to maintain the connection.
+		template<typename _Component, auto _Method, typename T>
+		[[nodiscard]] EntityEventHandle OnDestruct( T* a_Instance )
+		{
+			using Wrapper = EntityEventHandle::Wrapper<T, _Method>;
+
+			return EntityEventHandle{ m_Registry
+				.template on_destroy<_Component>()
+				.template connect<&Wrapper::Invoke>( ReinterpretCast<Wrapper*>( a_Instance ) ) };
+		}
+
+		//=============================================================================================
 		// Access the underlying EnTT registry.
 		auto& Underlying() { return m_Registry; }
 		const auto& Underlying() const { return m_Registry; }
@@ -258,14 +407,6 @@ namespace Tridium {
 
 		//=============================================================================================
 		entt::registry m_Registry;
-
-	};
-
-	//=================================================================================================
-	// Entity Component System Interface: Base class for interacting with entity component registries.
-	//=================================================================================================
-	class IEntityComponentSystem
-	{
 
 	};
 

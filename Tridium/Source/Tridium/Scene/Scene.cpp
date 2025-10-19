@@ -101,7 +101,7 @@ namespace Tridium {
 		{
 			if ( system->GetTickGroup() == a_TickGroup )
 			{
-				system->OnTick( a_DeltaTime );
+				system->OnUpdate( a_DeltaTime );
 			}
 		}
 	}

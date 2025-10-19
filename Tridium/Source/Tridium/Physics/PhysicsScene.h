@@ -1,4 +1,7 @@
 #pragma once
+#include <Tridium/Scene/Scene.h>
+
+// Old
 #include <Tridium/Core/Memory.h>
 #include <Tridium/Math/Math.h>
 #include <Tridium/Scene/SceneSystem.h>
@@ -20,7 +23,7 @@ namespace Tridium {
 	// Forward Declarations
 	class OldScene;
 	class RigidBodyComponent;
-	class TransformComponent;
+	class OldTransformComponent;
 	class OldGameObject;
 	struct RayCastResult;
 	// --------------------
@@ -58,10 +61,16 @@ namespace Tridium {
 		float TwistLimit = 0.0f;
 	};
 
-	class PhysicsScene
+	//=================================================================================================
+	// Physics Scene Interface: Base class for physics engine implementations.
+	// Works as a bridge between the Scene and the physics engine.
+	//=================================================================================================
+	class IPhysicsScene
 	{
 	public:
-		static UniquePtr<PhysicsScene> Create();
+
+		//=============================================================================================
+		static UniquePtr<IPhysicsScene> Create();
 
 		virtual void Init() = 0;
 		virtual void Shutdown() = 0;
@@ -74,10 +83,10 @@ namespace Tridium {
 
 		virtual void RemovePhysicsBody( PhysicsBodyID a_PhysicsBodyID ) = 0;
 		virtual void RemovePhysicsBody( RigidBodyComponent& a_RigidBody ) = 0;
-		virtual bool AddPhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent ) = 0;
-		virtual bool UpdatePhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, TransformComponent& a_TransformComponent ) = 0;
+		virtual bool AddPhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent ) = 0;
+		virtual bool UpdatePhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent ) = 0;
 
-		virtual void UpdatePhysicsBodyTransform( const RigidBodyComponent& a_RigidBody, const TransformComponent& a_TransformComponent ) = 0;
+		virtual void UpdatePhysicsBodyTransform( const RigidBodyComponent& a_RigidBody, const OldTransformComponent& a_TransformComponent ) = 0;
 
 		virtual Vector3 GetPhysicsBodyPosition( PhysicsBodyID a_BodyID ) const = 0;
 		virtual Quaternion GetPhysicsBodyRotation( PhysicsBodyID a_BodyID ) const = 0;
@@ -98,11 +107,18 @@ namespace Tridium {
 	#endif
 
 	protected:
-		OldScene* m_Scene;
+
+		//=============================================================================================
+		friend class PhysicsSceneSystem;
+		class Scene* m_OwningScene = nullptr;
+
+		//=============================================================================================
 		friend OldScene;
+		OldScene* m_Scene;
+
 	};
 
-	class PhysicsSceneSystem : public OldISceneSystem
+	class OldPhysicsSceneSystem : public OldISceneSystem
 	{
 	public:
 		virtual void Init() override;
@@ -113,7 +129,41 @@ namespace Tridium {
 		void OnComponentCreated( const OnComponentCreatedEvent& a_Event );
 
 	private:
-		PhysicsScene* m_PhysicsScene;
+		IPhysicsScene* m_PhysicsScene;
+	};
+
+	//=================================================================================================
+	// PhysicsSceneSystem: Scene system that manages the physics scene.
+	//=================================================================================================
+	class PhysicsSceneSystem : public ISceneSystem
+	{
+	public:
+
+		//=============================================================================================
+		IPhysicsScene* PhysicsScene() const { return m_PhysicsScene.get(); }
+
+		//=============================================================================================
+		RayCastResult CastRay( const Vector3& a_Start, const Vector3& a_End, const RayCastParams& a_Params ) const;
+
+	protected:
+
+		//=============================================================================================
+		void Init() override;
+		void Shutdown() override;
+
+		//=============================================================================================
+		void OnRigidBodyComponentCreated( EntityComponentRegistry& a_Registry, EntityID a_Entity );
+		void OnRigidBodyComponentDestroyed( EntityComponentRegistry& a_Registry, EntityID a_Entity );
+
+	protected:
+
+		//=============================================================================================
+		UniquePtr<IPhysicsScene> m_PhysicsScene;
+
+		//=============================================================================================
+		EntityEventHandle m_OnRigidBodyComponentCreatedHandle;
+		EntityEventHandle m_OnRigidBodyComponentDestroyedHandle;
+
 	};
 
 } // namespace Tridium

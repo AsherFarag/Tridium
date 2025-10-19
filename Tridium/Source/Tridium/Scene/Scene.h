@@ -1,5 +1,6 @@
 #pragma once
 #include <Tridium/Containers/TypeMap.h>
+#include <Tridium/Scene/Component.h>
 
 // TEMP
 #include <Tridium/ECS/ECS.h>
@@ -7,9 +8,9 @@
 #include <Tridium/oldAsset/Asset.h>
 #include <Tridium/Graphics/oldRendering/Lights.h>
 #include <Tridium/Graphics/oldRendering/SceneRenderer.h>
-#include <Tridium/Physics/PhysicsScene.h>
 #include "SceneEnvironment.h"
 #include "SceneSystem.h"
+#include <Tridium/Physics/RayCast.h>
 
 
 #include <Tridium/Debug/DebugDrawer.h>
@@ -164,7 +165,7 @@ namespace Tridium {
 		EntityID m_MainCamera;
 
 		OldSceneRenderer m_SceneRenderer;
-		SharedPtr<PhysicsScene> m_PhysicsScene;
+		SharedPtr<class IPhysicsScene> m_PhysicsScene;
 
 		friend OldSceneRenderer;
 		friend class OldGameObject;
@@ -172,41 +173,9 @@ namespace Tridium {
 
 #pragma endregion
 
-	struct GameObject;
 	class Scene;
 	class ISceneSystem;
-
-	namespace Concepts {
-
-		template<typename T>
-		concept Component = true;
-
-	} // namespace Concepts
-
-	//=================================================================================================
-	// Scene Tick Groups:
-	//=================================================================================================
-	enum class ESceneTickGroup : uint8_t
-	{
-		Unknown = 0,
-
-		// Ticking occurs before physics simulation.
-		PrePhysics,
-
-		// Ticking occurs after physics simulation.
-		PostPhysics,
-
-		// Ticking occurs before rendering work has been submitted.
-		PreRender,
-
-		// Ticking occurs after rendering work has been submitted.
-		PostRender,
-
-		// Total number of tick groups.
-		COUNT,
-
-		Default = PrePhysics
-	};
+	struct GameObject;
 
 	//=================================================================================================
 	// Scene State:
@@ -228,17 +197,17 @@ namespace Tridium {
 	public:
 
 		//=============================================================================================
-		ISceneSystem() = default;
-		virtual ~ISceneSystem() = default;
-
-		//=============================================================================================
 		// Get the scene that owns this system.
-		Scene* OwningScene() const { return m_Scene; }
+		Scene& OwningScene() const { return m_Scene; }
 
 		//=============================================================================================
 		virtual ESceneTickGroup GetTickGroup() const { return ESceneTickGroup::Default; }
 
 	protected:
+
+		//=============================================================================================
+		ISceneSystem( Scene& a_Scene ) : m_Scene( a_Scene ) {}
+		virtual ~ISceneSystem() = default;
 
 		//=============================================================================================
 		// Called when a scene is being initialized, just before BeginPlay is called.
@@ -256,7 +225,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		// Called every frame while the scene is playing.
-		virtual void OnTick( float a_DeltaTime ) {}
+		virtual void OnUpdate( float a_DeltaTime ) {}
 
 		//=============================================================================================
 		// Called when the scene is ending play.
@@ -271,7 +240,69 @@ namespace Tridium {
 
 		//=============================================================================================
 		friend class Scene;
-		Scene* m_Scene = nullptr;
+		Scene& m_Scene;
+
+	};
+
+	//=================================================================================================
+	// Component System: An automatically generated scene system for a specific component type T.
+	// This system handles lifecycle events for all components of type T that require it.
+	// A component system will be created for any component that implements OnBeginPlay, OnUpdate, or OnEndPlay.
+	//=================================================================================================
+	template<Concepts::Component::HasLifecycleEvents T>
+	class ComponentSystem : public ISceneSystem
+	{
+	public:
+
+		//=============================================================================================
+		using ComponentTraits = ComponentTraits<T>;
+
+		//=============================================================================================
+		ESceneTickGroup GetTickGroup() const override
+		{
+			return ComponentTraits::TickGroup;
+		}
+
+	protected:
+
+		//=============================================================================================
+		virtual void OnBeginPlay() override
+		{
+			if constexpr ( Concepts::HasOnBeginPlayFunction<T> )
+			{
+				auto components = OwningScene().Registry().View<T>();
+				components.each( []( T& component )
+				{
+					component.OnBeginPlay();
+				} );
+			}
+		}
+
+		//=============================================================================================
+		virtual void OnUpdate(float a_DeltaTime) override
+		{
+			if constexpr ( Concepts::HasOnUpdateFunction<T> )
+			{
+				auto components = OwningScene().Registry().View<T>();
+				components.each( [a_DeltaTime]( T& component )
+				{
+					component.OnUpdate( a_DeltaTime );
+				} );
+			}
+		}
+
+		//=============================================================================================
+		virtual void OnEndPlay() override
+		{
+			if constexpr ( Concepts::HasOnEndPlayFunction<T> )
+			{
+				auto components = OwningScene().Registry().View<T>();
+				components.each( []( T& component )
+				{
+					component.OnEndPlay();
+				} );
+			}
+		}
 
 	};
 
@@ -295,7 +326,27 @@ namespace Tridium {
 		// Returns a const reference to the EntityComponentRegistry used by this Scene.
 		const auto& Registry() const { return m_Registry; }
 
-	#pragma region GameObject Management
+		//=============================================================================================
+		// Gets a scene system of the specified type T.
+		// Returns nullptr if the system does not exist.
+		template<Concepts::Derived<ISceneSystem> T>
+		T* GetSceneSystem()
+		{
+			return m_SceneSystems.find<T>();
+		}
+
+		//=============================================================================================
+		// Gets a ComponentSystem of the specified component type T.
+		template<Concepts::Component::HasLifecycleEvents T>
+		ComponentSystem<T>* GetComponentSystem()
+		{
+			return m_SceneSystems.find<ComponentSystem<T>>();
+		}
+
+		//=============================================================================================
+		// Gives access to the PhysicsSceneSystem.
+		// NOTE: This can be nullptr.
+		class PhysicsSceneSystem* Physics() { return m_PhysicsSceneSystem; }
 
 		//=============================================================================================
 		// Creates a new GameObject in the scene and returns it.
@@ -303,14 +354,12 @@ namespace Tridium {
 
 		//=============================================================================================
 		// Creates a new GameObject with the specified components in the scene and returns it.
-		template<Concepts::Component... T>
+		template<typename... T>
 		GameObject InstantiateGameObject();
 
 		//=============================================================================================
 		// Destroys the specified GameObject and removes all its components.
 		void DestroyGameObject( GameObject a_GameObject );
-
-	#pragma endregion
 
 	protected:
 
@@ -342,6 +391,10 @@ namespace Tridium {
 		TypeMap<UniquePtr<ISceneSystem>> m_SceneSystems;
 
 		//=============================================================================================
+		// Cached pointer to the PhysicsSceneSystem.
+		class PhysicsSceneSystem* m_PhysicsSceneSystem = nullptr;
+
+		//=============================================================================================
 		// The registry that manages all entities and components in this Scene.
 		EntityComponentRegistry m_Registry;
 
@@ -356,124 +409,8 @@ namespace Tridium {
 
 	};
 
-	//=================================================================================================
-	// GameObject: Simple struct containing an EntityID and a pointer to the owning Scene.
-	// Since GameObjects are small, simple POD types, they can be passed around by value.
-	//=================================================================================================
-	struct GameObject final
-	{
-	private:
-
-		//=============================================================================================
-		Scene* m_Scene = nullptr;
-		EntityID m_EntityID = NullEntity;
-
-	public:
-
-		//=============================================================================================
-		GameObject() = default;
-		GameObject( Scene* a_Scene, EntityID a_EntityID ) : m_Scene( a_Scene ), m_EntityID( a_EntityID ) {}
-		~GameObject() = default;
-
-		//=============================================================================================
-		operator EntityID() const { return m_EntityID; }
-
-		//=============================================================================================
-		// Returns the underlying EntityID of this GameObject.
-		[[nodiscard]] EntityID ID() const { return m_EntityID; }
-
-		//=============================================================================================
-		// Returns a pointer to the Scene that owns this GameObject.
-		[[nodiscard]] Scene* Scene() const { return m_Scene; }
-
-		//=============================================================================================
-		// Checks if this GameObject is valid and usable.
-		[[nodiscard]] bool Valid() const 
-		{ 
-			return m_Scene && m_EntityID != NullEntity && m_Scene->Registry().Valid( m_EntityID ); 
-		}
-
-		//=============================================================================================
-		// Constructs a new component of type T with the passed in arguments,
-		// adds it to the GameObject and returns a reference to it.
-		// This will assert if the component already exists.
-		template<Concepts::Component T, typename... _Args>
-		T& Add( _Args&&... a_Args )
-		{
-			return m_Scene->Registry().Emplace<T>( m_EntityID, std::forward<_Args>( a_Args )... );
-		}
-
-		//=============================================================================================
-		// Returns references to the components of types T... associated with the specified entity.
-		template<Concepts::Component... T>
-		[[nodiscard]] decltype( auto ) Get() const
-		{
-			return m_Scene->Registry().Get<T...>( m_EntityID );
-		}
-
-		//=============================================================================================
-		// Returns pointers to the components of types T...
-		template<Concepts::Component... T>
-		[[nodiscard]] decltype( auto ) TryGet() const
-		{
-			return m_Scene->Registry().TryGet<T...>( m_EntityID );
-		}
-
-		//=============================================================================================
-		// Checks if the GameObject has the specified components.
-		template<Concepts::Component T>
-		[[nodiscard]] bool Has() const
-		{
-			return m_Scene->Registry().AnyOf<T>( m_EntityID );
-		}
-
-		//=============================================================================================
-		// Checks if the GameObject has any of the specified components.
-		template<Concepts::Component... T>
-		[[nodiscard]] bool HasAny() const
-		{
-			return m_Scene->Registry().AnyOf<T...>( m_EntityID );
-		}
-
-		//=============================================================================================
-		// Checks if the GameObject has all of the specified components.
-		template<Concepts::Component... T>
-		[[nodiscard]] bool HasAll() const
-		{
-			return m_Scene->Registry().AllOf<T...>( m_EntityID );
-		}
-
-		//=============================================================================================
-		// Removes the specified components from the GameObject.
-		template<Concepts::Component... T>
-		void Remove()
-		{
-			m_Scene->Registry().Remove<T...>( m_EntityID );
-		}
-
-	};
-
-	inline GameObject Scene::InstantiateGameObject()
-	{
-		return GameObject( this, m_Registry.Create() );
-	}
-
-	template<Concepts::Component... T>
-	inline GameObject Scene::InstantiateGameObject()
-	{
-		EntityID entity = m_Registry.Create();
-		( m_Registry.Emplace<T>( entity ), ... );
-		return GameObject( this, entity );
-	}
-
-	inline void Scene::DestroyGameObject( GameObject a_GameObject )
-	{
-		if ( a_GameObject.ID() != NullEntity && a_GameObject.Scene() == this )
-		{
-			m_Registry.Destroy( a_GameObject.ID() );
-		}
-	}
-
 } // namespace Tridium
 
+
+#include "GameObject.h"
 #include "Scene.inl"

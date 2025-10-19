@@ -67,7 +67,7 @@ namespace Tridium {
 		if ( !camera )
 			return {};
 
-		TransformComponent* transform = camera->GetGameObject().TryGetComponent<TransformComponent>();
+		OldTransformComponent* transform = camera->GetGameObject().TryGetComponent<OldTransformComponent>();
 		if ( !transform )
 			return {};
 

@@ -399,9 +399,9 @@ namespace Tridium {
 		ImGui::SameLine( 0.0f, style.ItemInnerSpacing.x );
 
 		// Draw gameobject name as editable text input field
-		if ( TagComponent* tagComponent = InspectedGameObject.TryGetComponent<TagComponent>() )
+		if ( OldTagComponent* tagComponent = InspectedGameObject.TryGetComponent<OldTagComponent>() )
 		{
-			String tag = InspectedGameObject.GetComponent<TagComponent>().Tag;
+			String tag = InspectedGameObject.GetComponent<OldTagComponent>().Tag;
 			if ( ImGui::InputText( TE_ICON_PENCIL "##Tag", &tag, ImGuiInputTextFlags_EnterReturnsTrue ) )
 			{
 				tagComponent->Tag = std::move(tag);
@@ -482,7 +482,7 @@ namespace Tridium {
 		const ImVec2 rowSpacing = ImVec2( style.ItemSpacing.x, 1.0f );
 
 		// Draw TransformComponent first
-		if ( TransformComponent* tc = a_GO.TryGetComponent<TransformComponent>() )
+		if ( OldTransformComponent* tc = a_GO.TryGetComponent<OldTransformComponent>() )
 		{
 			if ( Helpers::DrawComponentTreeNode( {
 				.Icon = TE_ICON_CUBES, .Name = "Transform",

@@ -3,12 +3,12 @@
 
 namespace Tridium {
 
-	class GUIDComponent : public Component
+	class OldGUIDComponent : public Component
 	{
-		REFLECT( GUIDComponent );
+		REFLECT( OldGUIDComponent );
 	public:
-		GUIDComponent() : m_ID( GUID::Create() ) {}
-		GUIDComponent( GUID a_ID );
+		OldGUIDComponent() : m_ID( GUID::Create() ) {}
+		OldGUIDComponent( GUID a_ID );
 
 		void SetID(GUID id) { m_ID = id; }
 		GUID GetID() const { return m_ID; }

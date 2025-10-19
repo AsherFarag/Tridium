@@ -9,9 +9,9 @@ namespace Tridium {
 
 	// Forward declarations
 	class Component;
-	class TagComponent;
-	class GUIDComponent;
-	class TransformComponent;
+	class OldTagComponent;
+	class OldGUIDComponent;
+	class OldTransformComponent;
 
 	//================================================================
 	// GameObject
@@ -46,7 +46,7 @@ namespace Tridium {
 
 		GUID GetGUID() const;
 		EntityID ID() const { return m_ID; }
-		TagComponent* GetTagComponent() const;
+		OldTagComponent* GetTagComponent() const;
 		const String& GetTag() const;
 
 		//================================================================
@@ -94,7 +94,7 @@ namespace Tridium {
 
 		//================================================================
 		// Transform Functions
-		TransformComponent& GetTransform() const;
+		OldTransformComponent& GetTransform() const;
 		Matrix4 GetWorldTransform() const;
 		Matrix4 GetLocalTransform() const;
 		bool HasParent() const;

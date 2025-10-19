@@ -1,6 +1,30 @@
 #include "Scene.h"
 #include <entt/entt.hpp>
+
 namespace Tridium {
+
+	inline GameObject Scene::InstantiateGameObject()
+	{
+		return GameObject( this, m_Registry.Create() );
+	}
+
+	template<typename... T>
+	inline GameObject Scene::InstantiateGameObject()
+	{
+		EntityID entity = m_Registry.Create();
+		( m_Registry.Emplace<T>( entity ), ... );
+		return GameObject( this, entity );
+	}
+
+	inline void Scene::DestroyGameObject( GameObject a_GameObject )
+	{
+		if ( a_GameObject.ID() != NullEntity && a_GameObject.Scene() == this )
+		{
+			m_Registry.Destroy( a_GameObject.ID() );
+		}
+	}
+
+	// OLD
 
 	// Forward declarations
 	class Component;

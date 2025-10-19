@@ -16,10 +16,11 @@ namespace Tridium {
 
 	void Scriptable<OldGameObject>::RegisterType( ScriptEngine& a_ScriptEngine )
 	{
+		TODO( "This" );
 		auto type = a_ScriptEngine.RegisterNewType<OldGameObject>( "GameObject" );
-		type["GetTransform"] = &OldGameObject::GetTransform;
-		type["GetName"] = []( OldGameObject& a_GameObject ) -> std::string { return a_GameObject.GetTag(); };
-		type["Destroy"] = &OldGameObject::Destroy;
+		//type["GetTransform"] = &OldGameObject::GetTransform;
+		//type["GetName"] = []( OldGameObject& a_GameObject ) -> std::string { return a_GameObject.GetTag(); };
+		//type["Destroy"] = &OldGameObject::Destroy;
 	}
 
 	//////////////////////////////////////////////////////////////////////////

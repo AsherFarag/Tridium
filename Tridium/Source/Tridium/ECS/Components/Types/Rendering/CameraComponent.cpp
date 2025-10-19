@@ -11,7 +11,7 @@ namespace Tridium {
 
 	Matrix4 CameraComponent::GetView()
 	{
-		TransformComponent& transform = GetGameObject().GetTransform();
+		OldTransformComponent& transform = GetGameObject().GetTransform();
 
 		// Step 1: Convert quaternion to rotation matrix
 		Matrix4 rotationMatrix = Math::ToMat4( transform.GetOrientation() );

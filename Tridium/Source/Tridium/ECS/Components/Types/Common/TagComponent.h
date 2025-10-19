@@ -3,14 +3,14 @@
 
 namespace Tridium {
 
-	class TagComponent : public Component
+	class OldTagComponent : public Component
 	{
-		REFLECT( TagComponent );
+		REFLECT( OldTagComponent );
 
 	public:
-		TagComponent();
-		TagComponent( const std::string& a_Tag );
-		TagComponent( std::string&& a_Tag );
+		OldTagComponent();
+		OldTagComponent( const std::string& a_Tag );
+		OldTagComponent( std::string&& a_Tag );
 		static inline const uint32_t MaxSize() { return 255u; }
 
 		std::string Tag;

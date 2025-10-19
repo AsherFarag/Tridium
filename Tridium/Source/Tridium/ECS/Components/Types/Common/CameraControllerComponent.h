@@ -3,7 +3,7 @@
 
 namespace Tridium {
 	
-	class TransformComponent;
+	class OldTransformComponent;
 
 	class CameraControllerComponent : public NativeScriptComponent
 	{
