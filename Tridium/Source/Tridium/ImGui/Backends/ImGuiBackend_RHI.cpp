@@ -1,9 +1,6 @@
 #include "tripch.h"
-#include "imgui.h"
-
-#ifndef IMGUI_DISABLE
-
 #include "ImGuiBackend_RHI.h"
+
 #include <stdint.h>     // intptr_t
 
 // Clang warnings with -Weverything
@@ -578,5 +575,3 @@ namespace Tridium {
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
-
-#endif // #ifndef IMGUI_DISABLE

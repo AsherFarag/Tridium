@@ -4,8 +4,8 @@
 #include <Tridium/Core/Application.h>
 #include <GLFW/glfw3.h>
 
-TODO( "TEMP?! " );
-#include <imgui.h>
+// TEMP
+#include <Tridium/ImGui/ImGui.h>
 
 namespace Tridium {
 

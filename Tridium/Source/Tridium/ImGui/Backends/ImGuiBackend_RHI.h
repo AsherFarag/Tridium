@@ -1,5 +1,5 @@
 #pragma once
-#include <imgui.h>
+#include <Tridium/ImGui/ImGui.h>
 #include <Tridium/Graphics/RHI/RHIForward.h>
 
 namespace Tridium {

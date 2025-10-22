@@ -16,7 +16,7 @@ namespace Tridium::GLFW {
         {
             case EImGuiRenderer::OpenGL:
             {
-                if ( !ImGui_ImplGlfw_InitForOpenGL( Window, a_InstallCallbacks ) )
+               // if ( !ImGui_ImplGlfw_InitForOpenGL( Window, a_InstallCallbacks ) )
                 {
                     ENSURE( false, "Failed to initialize ImGui GLFW backend!" );
                     return false;
@@ -25,7 +25,7 @@ namespace Tridium::GLFW {
             }
             case EImGuiRenderer::Vulkan:
             {
-                if ( !ImGui_ImplGlfw_InitForVulkan( Window, a_InstallCallbacks ) )
+                //if ( !ImGui_ImplGlfw_InitForVulkan( Window, a_InstallCallbacks ) )
                 {
                     ENSURE( false, "Failed to initialize ImGui GLFW Vulkan backend!" );
                     return false;
@@ -44,21 +44,21 @@ namespace Tridium::GLFW {
 
     void PlatformImGuiInterface_GLFW::Shutdown()
     {
-		ImGui_ImplGlfw_Shutdown();
+		//ImGui_ImplGlfw_Shutdown();
     }
 
     void PlatformImGuiInterface_GLFW::NewFrame()
     {
-        ImGui_ImplGlfw_NewFrame();
+        //ImGui_ImplGlfw_NewFrame();
 	}
 
     void PlatformImGuiInterface_GLFW::InstallCallbacks()
     {
-        ImGui_ImplGlfw_InstallCallbacks( Window );
+        //ImGui_ImplGlfw_InstallCallbacks( Window );
     }
 
     void PlatformImGuiInterface_GLFW::RestoreCallbacks()
     {
-        ImGui_ImplGlfw_RestoreCallbacks( Window );
+        //ImGui_ImplGlfw_RestoreCallbacks( Window );
 	}
 }

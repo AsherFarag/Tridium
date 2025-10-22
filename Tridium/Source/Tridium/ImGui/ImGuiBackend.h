@@ -34,7 +34,7 @@ namespace Tridium {
 	class IRendererImGuiInterface
 	{
 	public:
-		static UniquePtr<IRendererImGuiInterface> Create( EImGuiRenderer a_Renderer );
+		static UniquePtr<IRendererImGuiInterface> Create( EImGuiRenderer a_Renderer ) { return nullptr; }
 		virtual bool Init( class IDynamicRHI* a_RHI ) = 0;
 		virtual void Shutdown() = 0;
 		virtual void NewFrame() = 0;

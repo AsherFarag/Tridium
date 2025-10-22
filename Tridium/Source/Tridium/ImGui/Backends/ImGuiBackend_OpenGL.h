@@ -2,7 +2,8 @@
 #include <Tridium/ImGui/ImGuiBackend.h>
 #include <Tridium/Graphics/RHI/DynamicRHI.h>
 #include <Tridium/Graphics/RHI/Backend/OpenGL/RHI_OpenGLImpl.h>
-#include <backends/imgui_impl_opengl3.cpp>
+#if 0
+//#include <backends/imgui_impl_opengl3.cpp>
 
 namespace Tridium::OpenGL {
 
@@ -51,3 +52,5 @@ namespace Tridium::OpenGL {
 	};
 
 } // namespace Tridium
+
+#endif

@@ -3,7 +3,6 @@
 #if IS_EDITOR
 
 #include "SceneHeirarchyPanel.h"
-#include "imgui.h"
 
 #include <Tridium/Editor/Editor.h>
 #include <Tridium/Editor/EditorCamera.h>

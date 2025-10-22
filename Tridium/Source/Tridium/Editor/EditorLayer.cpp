@@ -2,7 +2,6 @@
 
 #if IS_EDITOR
 #include "EditorLayer.h"
-#include "imgui.h"
 
 #include "Editor.h"
 #include "EditorCamera.h"

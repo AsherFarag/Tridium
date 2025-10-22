@@ -11,3 +11,9 @@
 [submodule "Tridium/Dependencies/entt"]
 	path = Tridium/Dependencies/entt
 	url = https://github.com/AsherFarag/entt.git
+[submodule "Tridium/Originals/imgui"]
+	path = Tridium/Originals/imgui/imgui
+	url = https://github.com/ocornut/imgui.git
+	branch = docking
+[submodule "Tridium/Originals/imgui/imgui"]
+	branch = docking

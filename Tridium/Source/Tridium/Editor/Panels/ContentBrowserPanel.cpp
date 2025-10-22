@@ -15,7 +15,6 @@
 #include "ScriptEditorPanel.h"
 #include "Asset/MaterialEditorPanel.h"
 
-#include "imgui_internal.h"
 #include <thread>
 #include <fstream>
 

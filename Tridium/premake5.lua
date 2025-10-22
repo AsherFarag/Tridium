@@ -72,12 +72,7 @@ local dependencies = {
 	-- ImGui: Immediate Mode Graphical User interface
 	ImGui = {
 		includeDir = path.join(depsDir, "ImGui"),
-		windows = {
-			libName = "ImGui.lib",
-			libDir = path.join(depsDir, "ImGui", "bin", "windows", "Release"),
-			debugLibName = "ImGui.lib",
-			debugLibDir = path.join(depsDir, "ImGui", "bin", "windows", "Debug")
-		}
+		sourceDir = path.join(depsDir, "ImGui")
 	},
 	-- ImGuizmo: Immediate Mode 3D Gizmo for Dear ImGui - Used for object manipulation in the editor
 	ImGuizmo = {

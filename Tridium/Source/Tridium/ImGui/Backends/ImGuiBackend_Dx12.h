@@ -1,6 +1,6 @@
 #pragma once
+#if 0
 #include <Tridium/ImGui/ImGuiBackend.h>
-#include <backends/imgui_impl_dx12.cpp>
 #include <Tridium/Graphics/RHI/DynamicRHI.h>
 #include <Tridium/Graphics/RHI/Backend/DirectX12/RHI_D3D12Impl.h>
 
@@ -138,3 +138,5 @@ namespace Tridium::D3D12 {
 	};
 
 } // namespace Tridium
+
+#endif
