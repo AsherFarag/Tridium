@@ -3,7 +3,7 @@
 #include <Tridium/Reflection/Reflection.h>
 
 namespace Tridium {
-	BEGIN_REFLECT_COMPONENT( RigidBodyComponent, Scriptable )
+	BEGIN_REFLECT_COMPONENT( OldRigidBodyComponent, Scriptable )
 		BASE( Component )
 		PROPERTY( m_BodyProxy )
 		PROPERTY( m_PhysicsLayer, EditAnywhere | Serialize )
@@ -13,13 +13,13 @@ namespace Tridium {
 		PROPERTY( m_Restitution, EditAnywhere | Serialize )
 		PROPERTY( m_LinearMotionConstraint, EditAnywhere | Serialize )
 		PROPERTY( m_AngularMotionConstraint, EditAnywhere | Serialize )
-	END_REFLECT( RigidBodyComponent )
+	END_REFLECT( OldRigidBodyComponent )
 
-	RigidBodyComponent::RigidBodyComponent()
+	OldRigidBodyComponent::OldRigidBodyComponent()
 	{
 	}
 
-	RigidBodyComponent::RigidBodyComponent( const RigidBodyComponent& a_Other )
+	OldRigidBodyComponent::OldRigidBodyComponent( const OldRigidBodyComponent& a_Other )
 		: m_PhysicsLayer( a_Other.m_PhysicsLayer )
 		, m_MotionType( a_Other.m_MotionType )
 		, m_Mass( a_Other.m_Mass )
@@ -30,7 +30,7 @@ namespace Tridium {
 	{
 	}
 
-	RigidBodyComponent::RigidBodyComponent( RigidBodyComponent&& a_Other ) noexcept
+	OldRigidBodyComponent::OldRigidBodyComponent( OldRigidBodyComponent&& a_Other ) noexcept
 		: m_BodyProxy( std::move( a_Other.m_BodyProxy ) )
 		, m_PhysicsLayer( a_Other.m_PhysicsLayer )
 		, m_MotionType( a_Other.m_MotionType )
@@ -42,7 +42,7 @@ namespace Tridium {
 	{
 	}
 
-	RigidBodyComponent& RigidBodyComponent::operator=( const RigidBodyComponent& a_Other )
+	OldRigidBodyComponent& OldRigidBodyComponent::operator=( const OldRigidBodyComponent& a_Other )
 	{
 		m_BodyProxy = a_Other.m_BodyProxy;
 		m_PhysicsLayer = a_Other.m_PhysicsLayer;

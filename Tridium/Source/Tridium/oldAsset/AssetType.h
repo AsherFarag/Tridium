@@ -17,64 +17,64 @@ namespace Tridium {
 		LuaScript,
 	};
 
-    using AssetHandle = GUID;
+    using OldAssetHandle = GUID;
 
 	namespace Internal {
 
 		template <EAssetTypeOld _AssetType>
-		class TypedAssetHandle : public AssetHandle
+		class TypedAssetHandle : public OldAssetHandle
 		{
 		public:
 			static constexpr EAssetTypeOld AssetType = _AssetType;
 
 			TypedAssetHandle() = default;
-			TypedAssetHandle( const AssetHandle& a_Handle ) : AssetHandle( a_Handle ) {}
-			TypedAssetHandle( AssetHandle::Type a_Handle ) : AssetHandle( a_Handle ) {}
+			TypedAssetHandle( const OldAssetHandle& a_Handle ) : OldAssetHandle( a_Handle ) {}
+			TypedAssetHandle( OldAssetHandle::Type a_Handle ) : OldAssetHandle( a_Handle ) {}
 
-			TypedAssetHandle& operator=( const AssetHandle& a_Handle )
+			TypedAssetHandle& operator=( const OldAssetHandle& a_Handle )
 			{
-				AssetHandle::operator=( a_Handle );
+				OldAssetHandle::operator=( a_Handle );
 				return *this;
 			}
 
-			bool operator==( const AssetHandle& a_Handle ) const
+			bool operator==( const OldAssetHandle& a_Handle ) const
 			{
-				return AssetHandle::operator==( a_Handle );
+				return OldAssetHandle::operator==( a_Handle );
 			}
 
-			bool operator!=( const AssetHandle& a_Handle ) const
+			bool operator!=( const OldAssetHandle& a_Handle ) const
 			{
-				return AssetHandle::operator!=( a_Handle );
+				return OldAssetHandle::operator!=( a_Handle );
 			}
 
-			bool operator<( const AssetHandle& a_Handle ) const
+			bool operator<( const OldAssetHandle& a_Handle ) const
 			{
-				return AssetHandle::operator<( a_Handle );
+				return OldAssetHandle::operator<( a_Handle );
 			}
 
-			bool operator>( const AssetHandle& a_Handle ) const
+			bool operator>( const OldAssetHandle& a_Handle ) const
 			{
-				return AssetHandle::operator>( a_Handle );
+				return OldAssetHandle::operator>( a_Handle );
 			}
 
-			bool operator<=( const AssetHandle& a_Handle ) const
+			bool operator<=( const OldAssetHandle& a_Handle ) const
 			{
-				return AssetHandle::operator<=( a_Handle );
+				return OldAssetHandle::operator<=( a_Handle );
 			}
 
-			bool operator>=( const AssetHandle& a_Handle ) const
+			bool operator>=( const OldAssetHandle& a_Handle ) const
 			{
-				return AssetHandle::operator>=( a_Handle );
+				return OldAssetHandle::operator>=( a_Handle );
 			}
 
 			operator GUID() const
 			{
-				return AssetHandle::operator GUID();
+				return OldAssetHandle::operator GUID();
 			}
 
 			operator const GUID() const
 			{
-				return AssetHandle::operator const GUID();
+				return OldAssetHandle::operator const GUID();
 			}
 		};
 	}
@@ -129,7 +129,7 @@ namespace std {
 	{
 		size_t operator()( const Tridium::Internal::TypedAssetHandle<_AssetType>& a_Handle ) const
 		{
-			return std::hash<Tridium::AssetHandle>()( a_Handle );
+			return std::hash<Tridium::OldAssetHandle>()( a_Handle );
 		}
 	};
 }

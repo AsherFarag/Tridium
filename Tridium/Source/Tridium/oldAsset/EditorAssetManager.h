@@ -14,22 +14,22 @@ namespace Tridium {
 		// - Inherited via AssetManagerBase -
 		void Init() override;
 		void Shutdown() override;
-		SharedPtr<Asset> GetAsset( AssetHandle a_Handle ) override;
+		SharedPtr<Asset> GetAsset( OldAssetHandle a_Handle ) override;
 		SharedPtr<Asset> GetAsset( const FilePath& a_Path ) override;
-		SharedPtr<Asset> GetMemoryOnlyAsset( AssetHandle a_Handle ) override;
+		SharedPtr<Asset> GetMemoryOnlyAsset( OldAssetHandle a_Handle ) override;
 		AssetStorageIterator GetAssets() override;
-		bool AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset ) override;
-		bool HasAsset( AssetHandle a_Handle ) override;
-		void RemoveAsset( AssetHandle a_Handle ) override;
-		EAssetTypeOld GetAssetType( AssetHandle a_Handle ) override;
-		bool IsMemoryAsset( AssetHandle a_Handle ) override;
-		void RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) override;
-		void UnregisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) override;
+		bool AddMemoryOnlyAsset( OldAssetHandle a_Handle, SharedPtr<Asset> a_Asset ) override;
+		bool HasAsset( OldAssetHandle a_Handle ) override;
+		void RemoveAsset( OldAssetHandle a_Handle ) override;
+		EAssetTypeOld GetAssetType( OldAssetHandle a_Handle ) override;
+		bool IsMemoryAsset( OldAssetHandle a_Handle ) override;
+		void RegisterDependency( OldAssetHandle a_Dependent, OldAssetHandle a_Dependency ) override;
+		void UnregisterDependency( OldAssetHandle a_Dependent, OldAssetHandle a_Dependency ) override;
 
 		// - Editor -
 		static auto Get() { return AssetManager::Get<EditorAssetManager>(); }
 
-		const OldAssetMetaData& GetAssetMetaData( AssetHandle a_Handle ) const;
+		const OldAssetMetaData& GetAssetMetaData( OldAssetHandle a_Handle ) const;
 		const OldAssetMetaData& GetAssetMetaData( const FilePath& a_Path ) const;
 		void SetAssetMetaData( const OldAssetMetaData& a_MetaData );
 
@@ -37,8 +37,8 @@ namespace Tridium {
 		const AssetStorageType& GetMemoryAssets() const { return m_MemoryAssets; }
 		const AssetRegistry& GetAssetRegistry() const { return m_AssetRegistry; }
 
-		bool SaveAsset( AssetHandle a_Handle );
-		AssetHandle ImportAsset( const FilePath& a_Path );
+		bool SaveAsset( OldAssetHandle a_Handle );
+		OldAssetHandle ImportAsset( const FilePath& a_Path );
 		bool CreateAsset( const OldAssetMetaData& a_MetaData, SharedPtr<Asset> a_Asset );
 
 		template<typename T>
@@ -46,7 +46,7 @@ namespace Tridium {
 		{
 			OldAssetMetaData metaData
 			{
-				.Handle = AssetHandle::Create(),
+				.Handle = OldAssetHandle::Create(),
 				.AssetType = T::StaticType(),
 				.Path = a_Path,
 				.Name = a_Path.GetFilenameWithoutExtension(),

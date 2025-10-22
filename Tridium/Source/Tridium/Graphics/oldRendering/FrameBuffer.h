@@ -8,7 +8,7 @@ namespace Tridium {
 	{
 		None = 0,
 
-		// Color
+		// Color4
 		RGB8,
 		RGBA8,
 		RED_INT,

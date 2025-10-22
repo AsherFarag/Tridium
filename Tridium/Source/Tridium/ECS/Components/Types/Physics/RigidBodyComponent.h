@@ -5,14 +5,14 @@
 
 namespace Tridium {
 
-	class RigidBodyComponent : public Component
+	class OldRigidBodyComponent : public Component
 	{
-		REFLECT( RigidBodyComponent )
+		REFLECT( OldRigidBodyComponent )
 	public:
-		RigidBodyComponent();
-		RigidBodyComponent( const RigidBodyComponent& a_Other );
-		RigidBodyComponent( RigidBodyComponent&& a_Other ) noexcept;
-		RigidBodyComponent& operator=( const RigidBodyComponent& a_Other );
+		OldRigidBodyComponent();
+		OldRigidBodyComponent( const OldRigidBodyComponent& a_Other );
+		OldRigidBodyComponent( OldRigidBodyComponent&& a_Other ) noexcept;
+		OldRigidBodyComponent& operator=( const OldRigidBodyComponent& a_Other );
 
 		bool IsSleeping() const { return m_BodyProxy.IsSleeping(); }
 

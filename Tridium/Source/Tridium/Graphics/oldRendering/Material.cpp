@@ -11,7 +11,7 @@ namespace Tridium {
 
 	}
 
-	Material::Material( const AssetHandle& a_Shader )
+	Material::Material( const OldAssetHandle& a_Shader )
 		: Material()
 	{
 		m_Shader = a_Shader;
@@ -48,9 +48,9 @@ namespace Tridium {
 		//		m_Shader->SetFloat( name.c_str(), arr.size(), arr.data() );
 		//		break;
 		//	}
-		//	case EPropertyType::Color:
+		//	case EPropertyType::Color4:
 		//	{
-		//		m_Shader->SetFloat4( name.c_str(), std::get<Color>( prop.Value ) );
+		//		m_Shader->SetFloat4( name.c_str(), std::get<Color4>( prop.Value ) );
 		//		break;
 		//	}
 		//	case EPropertyType::ColorArray:
@@ -148,12 +148,12 @@ namespace Tridium {
 		GET_PROPERTY_BODY( FloatArray );
 	}
 
-	Color* Material::GetColor( const std::string& a_Name )
+	Color4* Material::GetColor( const std::string& a_Name )
 	{
-		GET_PROPERTY_BODY( Color );
+		GET_PROPERTY_BODY( Color4 );
 	}
 
-	std::vector<Color>* Material::GetColorArray( const std::string& a_Name )
+	std::vector<Color4>* Material::GetColorArray( const std::string& a_Name )
 	{
 		GET_PROPERTY_BODY( ColorArray );
 	}
@@ -178,7 +178,7 @@ namespace Tridium {
 		GET_PROPERTY_BODY( Matrix4Array );
 	}
 
-	AssetHandle* Material::GetTexture( const std::string& a_Name )
+	OldAssetHandle* Material::GetTexture( const std::string& a_Name )
 	{
 		GET_PROPERTY_BODY( Texture );
 	}
@@ -224,12 +224,12 @@ namespace Tridium {
 		SET_PROPERTY_BODY( FloatArray );
 	}
 
-	bool Material::SetColor( const std::string& a_Name, const Color& a_Value )
+	bool Material::SetColor( const std::string& a_Name, const Color4& a_Value )
 	{
-		SET_PROPERTY_BODY( Color );
+		SET_PROPERTY_BODY( Color4 );
 	}
 
-	bool Material::SetColorArray( const std::string& a_Name, const std::vector<Color>& a_Value )
+	bool Material::SetColorArray( const std::string& a_Name, const std::vector<Color4>& a_Value )
 	{
 		SET_PROPERTY_BODY( ColorArray );
 	}
@@ -254,7 +254,7 @@ namespace Tridium {
 		SET_PROPERTY_BODY( Matrix4Array );
 	}
 
-	bool Material::SetTexture( const std::string& a_Name, const AssetHandle& a_Value )
+	bool Material::SetTexture( const std::string& a_Name, const OldAssetHandle& a_Value )
 	{
 		SET_PROPERTY_BODY( Texture );
 	}

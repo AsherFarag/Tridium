@@ -189,7 +189,7 @@ public:
 	JPH_OVERRIDE_NEW_DELETE
 
 	const char *				mName;																///< User defined name of this item
-	uint32						mColor;																///< Color to use for this sample
+	uint32						mColor;																///< Color4 to use for this sample
 	uint8						mDepth;																///< Calculated depth
 	uint8						mUnused[3];
 	uint64						mStartCycle;														///< Cycle counter at start of measurement

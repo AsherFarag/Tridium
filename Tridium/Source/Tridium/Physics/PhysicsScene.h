@@ -21,11 +21,14 @@
 namespace Tridium {
 
 	// Forward Declarations
-	class OldScene;
+	struct RayCastResult;
 	class RigidBodyComponent;
+
+	// OLD
+	class OldScene;
+	class OldRigidBodyComponent;
 	class OldTransformComponent;
 	class OldGameObject;
-	struct RayCastResult;
 	// --------------------
 
 	enum class ESixDOFConstraintMotion : uint8_t
@@ -76,17 +79,22 @@ namespace Tridium {
 		virtual void Shutdown() = 0;
 		virtual void Tick( float a_TimeStep ) = 0;
 
-		virtual OldGameObject GetGameObjectFromPhysicsBody( PhysicsBodyID a_BodyID ) const = 0;
-		virtual PhysicsBodyID GetPhysicsBodyFromGameObject( OldGameObject a_GameObject ) const = 0;
-
 		virtual RayCastResult CastRay( const Vector3& a_Start, const Vector3& a_End, ERayCastChannel a_Channel = ERayCastChannel::Visibility, const PhysicsBodyFilter& a_BodyFilter = {} ) = 0;
 
+		virtual PhysicsBodyID CreatePhysicsBody( GameObject a_GameObject, const RigidBodyComponent& a_RigidBody ) = 0;
+		virtual void DestroyPhysicsBody( PhysicsBodyID a_BodyID ) = 0;
+		virtual bool HasPhysicsBody( PhysicsBodyID a_BodyID ) const = 0;
+		virtual bool UpdatePhysicsBodyShape( GameObject a_GameObject, const RigidBodyComponent& a_RigidBody ) = 0;
+		
+		// OLD
+		virtual OldGameObject GetGameObjectFromPhysicsBody( PhysicsBodyID a_BodyID ) const = 0;
+		virtual PhysicsBodyID GetPhysicsBodyFromGameObject( OldGameObject a_GameObject ) const = 0;
 		virtual void RemovePhysicsBody( PhysicsBodyID a_PhysicsBodyID ) = 0;
-		virtual void RemovePhysicsBody( RigidBodyComponent& a_RigidBody ) = 0;
-		virtual bool AddPhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent ) = 0;
-		virtual bool UpdatePhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent ) = 0;
-
-		virtual void UpdatePhysicsBodyTransform( const RigidBodyComponent& a_RigidBody, const OldTransformComponent& a_TransformComponent ) = 0;
+		virtual void RemovePhysicsBody( OldRigidBodyComponent& a_RigidBody ) = 0;
+		virtual bool AddPhysicsBody( const OldGameObject& a_GameObject, OldRigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent ) = 0;
+		virtual bool UpdatePhysicsBody( const OldGameObject& a_GameObject, OldRigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent ) = 0;
+		virtual void UpdatePhysicsBodyTransform( const OldRigidBodyComponent& a_RigidBody, const OldTransformComponent& a_TransformComponent ) = 0;
+		// /OLD
 
 		virtual Vector3 GetPhysicsBodyPosition( PhysicsBodyID a_BodyID ) const = 0;
 		virtual Quaternion GetPhysicsBodyRotation( PhysicsBodyID a_BodyID ) const = 0;
@@ -113,6 +121,7 @@ namespace Tridium {
 		class Scene* m_OwningScene = nullptr;
 
 		//=============================================================================================
+		// OLD
 		friend OldScene;
 		OldScene* m_Scene;
 
@@ -152,8 +161,10 @@ namespace Tridium {
 		void Shutdown() override;
 
 		//=============================================================================================
-		void OnRigidBodyComponentCreated( EntityComponentRegistry& a_Registry, EntityID a_Entity );
-		void OnRigidBodyComponentDestroyed( EntityComponentRegistry& a_Registry, EntityID a_Entity );
+		void OnRigidBodyCreated( EntityComponentRegistry& a_Registry, EntityID a_Entity );
+		void OnRigidBodyDestroyed( EntityComponentRegistry& a_Registry, EntityID a_Entity );
+		void OnColliderCreated( EntityComponentRegistry& a_Registry, EntityID a_Entity );
+		void OnColliderDestroyed( EntityComponentRegistry& a_Registry, EntityID a_Entity );
 
 	protected:
 
@@ -161,8 +172,10 @@ namespace Tridium {
 		UniquePtr<IPhysicsScene> m_PhysicsScene;
 
 		//=============================================================================================
-		EntityEventHandle m_OnRigidBodyComponentCreatedHandle;
-		EntityEventHandle m_OnRigidBodyComponentDestroyedHandle;
+		EntityEventHandle m_OnRigidBodyCreatedHandle;
+		EntityEventHandle m_OnRigidBodyDestroyedHandle;
+		EntityEventHandle m_OnColliderCreatedHandle;
+		EntityEventHandle m_OnColliderDestroyedHandle;
 
 	};
 

@@ -91,6 +91,13 @@ namespace Tridium {
 		static constexpr BasicColor Blue()   { return { T(0), T(0), T(1), T(1) }; }
 	};
 
-	using Color = BasicColor<float>;
+	using Color4 = BasicColor<float>;
 
-}
+	struct Color3 : Vector3 
+	{
+		Color3() : Vector3( 0.0f ) {}
+		Color3( float a_Scalar ) : Vector3( a_Scalar ) {}
+		Color3( float a_Red, float a_Green, float a_Blue ) : Vector3( a_Red, a_Green, a_Blue ) {}
+	};
+
+} // namespace Tridium

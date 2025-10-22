@@ -10,7 +10,7 @@ JPH_SUPPRESS_WARNINGS_STD_BEGIN
 #include <random>
 JPH_SUPPRESS_WARNINGS_STD_END
 
-// Create a std::hash for Vec3
+// Create a std::hash/JPH::Hash for Vec3
 JPH_MAKE_HASHABLE(JPH::Vec3, t.GetX(), t.GetY(), t.GetZ())
 
 JPH_NAMESPACE_BEGIN
@@ -64,9 +64,7 @@ Vec3::Vec3(const Float3 &inV)
 	mF32[0] = inV[0];
 	mF32[1] = inV[1];
 	mF32[2] = inV[2];
-	#ifdef JPH_FLOATING_POINT_EXCEPTIONS_ENABLED
-		mF32[3] = inV[2];
-	#endif
+	mF32[3] = inV[2]; // Not strictly needed when JPH_FLOATING_POINT_EXCEPTIONS_ENABLED is off but prevents warnings about uninitialized variables
 #endif
 }
 
@@ -82,9 +80,7 @@ Vec3::Vec3(float inX, float inY, float inZ)
 	mF32[0] = inX;
 	mF32[1] = inY;
 	mF32[2] = inZ;
-	#ifdef JPH_FLOATING_POINT_EXCEPTIONS_ENABLED
-		mF32[3] = inZ;
-	#endif
+	mF32[3] = inZ; // Not strictly needed when JPH_FLOATING_POINT_EXCEPTIONS_ENABLED is off but prevents warnings about uninitialized variables
 #endif
 }
 
@@ -124,6 +120,11 @@ Vec3 Vec3::sReplicate(float inV)
 #else
 	return Vec3(inV, inV, inV);
 #endif
+}
+
+Vec3 Vec3::sOne()
+{
+	return sReplicate(1.0f);
 }
 
 Vec3 Vec3::sNaN()
@@ -588,7 +589,7 @@ Vec3 Vec3::Abs() const
 
 Vec3 Vec3::Reciprocal() const
 {
-	return sReplicate(1.0f) / mValue;
+	return sOne() / mValue;
 }
 
 Vec3 Vec3::Cross(Vec3Arg inV2) const
@@ -721,7 +722,10 @@ Vec3 Vec3::NormalizedOr(Vec3Arg inZeroValue) const
 {
 #if defined(JPH_USE_SSE4_1) && !defined(JPH_PLATFORM_WASM) // _mm_blendv_ps has problems on FireFox
 	Type len_sq = _mm_dp_ps(mValue, mValue, 0x7f);
-	Type is_zero = _mm_cmpeq_ps(len_sq, _mm_setzero_ps());
+	// clang with '-ffast-math' (which you should not use!) can generate _mm_rsqrt_ps
+	// instructions which produce INFs/NaNs when they get a denormal float as input.
+	// We therefore treat denormals as zero here.
+	Type is_zero = _mm_cmple_ps(len_sq, _mm_set1_ps(FLT_MIN));
 #ifdef JPH_FLOATING_POINT_EXCEPTIONS_ENABLED
 	if (_mm_movemask_ps(is_zero) == 0xf)
 		return inZeroValue;
@@ -733,13 +737,12 @@ Vec3 Vec3::NormalizedOr(Vec3Arg inZeroValue) const
 #elif defined(JPH_USE_NEON)
 	float32x4_t mul = vmulq_f32(mValue, mValue);
 	mul = vsetq_lane_f32(0, mul, 3);
-	float32x4_t sum = vdupq_n_f32(vaddvq_f32(mul));
-	float32x4_t len = vsqrtq_f32(sum);
-	uint32x4_t is_zero = vceqq_f32(len, vdupq_n_f32(0));
-	return vbslq_f32(is_zero, inZeroValue.mValue, vdivq_f32(mValue, len));
+	float32x4_t len_sq = vdupq_n_f32(vaddvq_f32(mul));
+	uint32x4_t is_zero = vcleq_f32(len_sq, vdupq_n_f32(FLT_MIN));
+	return vbslq_f32(is_zero, inZeroValue.mValue, vdivq_f32(mValue, vsqrtq_f32(len_sq)));
 #else
 	float len_sq = LengthSq();
-	if (len_sq == 0.0f)
+	if (len_sq <= FLT_MIN)
 		return inZeroValue;
 	else
 		return *this / sqrt(len_sq);
@@ -852,6 +855,84 @@ Vec3 Vec3::GetSign() const
 				std::signbit(mF32[1])? -1.0f : 1.0f,
 				std::signbit(mF32[2])? -1.0f : 1.0f);
 #endif
+}
+
+template <int X, int Y, int Z>
+JPH_INLINE Vec3 Vec3::FlipSign() const
+{
+	static_assert(X == 1 || X == -1, "X must be 1 or -1");
+	static_assert(Y == 1 || Y == -1, "Y must be 1 or -1");
+	static_assert(Z == 1 || Z == -1, "Z must be 1 or -1");
+	return Vec3::sXor(*this, Vec3(X > 0? 0.0f : -0.0f, Y > 0? 0.0f : -0.0f, Z > 0? 0.0f : -0.0f));
+}
+
+uint32 Vec3::CompressUnitVector() const
+{
+	constexpr float cOneOverSqrt2 = 0.70710678f;
+	constexpr uint cNumBits = 14;
+	constexpr uint cMask = (1 << cNumBits) - 1;
+
+	// Store sign bit
+	Vec3 v = *this;
+	uint32 max_element = v.Abs().GetHighestComponentIndex();
+	uint32 value = 0;
+	if (v[max_element] < 0.0f)
+	{
+		value = 0x80000000u;
+		v = -v;
+	}
+
+	// Store highest component
+	value |= max_element << 29;
+
+	// Store the other two components in a compressed format
+	UVec4 compressed = Vec3::sClamp((v + Vec3::sReplicate(cOneOverSqrt2)) * (float(cMask) / (2.0f * cOneOverSqrt2)) + Vec3::sReplicate(0.5f), Vec3::sZero(), Vec3::sReplicate(cMask)).ToInt();
+	switch (max_element)
+	{
+	case 0:
+		compressed = compressed.Swizzle<SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_UNUSED, SWIZZLE_UNUSED>();
+		break;
+
+	case 1:
+		compressed = compressed.Swizzle<SWIZZLE_X, SWIZZLE_Z, SWIZZLE_UNUSED, SWIZZLE_UNUSED>();
+		break;
+	}
+
+	value |= compressed.GetX();
+	value |= compressed.GetY() << cNumBits;
+	return value;
+}
+
+Vec3 Vec3::sDecompressUnitVector(uint32 inValue)
+{
+	constexpr float cOneOverSqrt2 = 0.70710678f;
+	constexpr uint cNumBits = 14;
+	constexpr uint cMask = (1u << cNumBits) - 1;
+
+	// Restore two components
+	Vec3 v = Vec3(UVec4(inValue & cMask, (inValue >> cNumBits) & cMask, 0, 0).ToFloat()) * (2.0f * cOneOverSqrt2 / float(cMask)) - Vec3(cOneOverSqrt2, cOneOverSqrt2, 0.0f);
+	JPH_ASSERT(v.GetZ() == 0.0f);
+
+	// Restore the highest component
+	v.SetZ(sqrt(max(1.0f - v.LengthSq(), 0.0f)));
+
+	// Extract sign
+	if ((inValue & 0x80000000u) != 0)
+		v = -v;
+
+	// Swizzle the components in place
+	switch ((inValue >> 29) & 3)
+	{
+	case 0:
+		v = v.Swizzle<SWIZZLE_Z, SWIZZLE_X, SWIZZLE_Y>();
+		break;
+
+	case 1:
+		v = v.Swizzle<SWIZZLE_X, SWIZZLE_Z, SWIZZLE_Y>();
+		break;
+	}
+
+	return v;
 }
 
 JPH_NAMESPACE_END

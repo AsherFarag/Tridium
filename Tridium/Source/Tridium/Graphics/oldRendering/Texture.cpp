@@ -67,28 +67,28 @@ namespace Tridium {
 		GetNormalTexture();
 	}
 
-	AssetHandle TextureFactory::GetWhiteTexture()
+	OldAssetHandle TextureFactory::GetWhiteTexture()
 	{
 		static SharedPtr<TextureOld> s_WhiteTexture = TextureLoader::LoadTexture( Engine::Get()->GetEngineAssetsDirectory() / "Textures/White.tga" );
-		static AssetHandle s_WhiteTextureHandle = ( s_WhiteTexture->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_WhiteTexture->GetHandle() );
+		static OldAssetHandle s_WhiteTextureHandle = ( s_WhiteTexture->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_WhiteTexture->GetHandle() );
 		static bool s_TextureInitialized = AssetManager::AddMemoryOnlyAsset( s_WhiteTextureHandle, s_WhiteTexture );
 
 		return s_WhiteTextureHandle;
 	}
 
-	AssetHandle TextureFactory::GetBlackTexture()
+	OldAssetHandle TextureFactory::GetBlackTexture()
 	{
 		static SharedPtr<TextureOld> s_BlackTexture = TextureLoader::LoadTexture( Engine::Get()->GetEngineAssetsDirectory() / "Textures/Black.tga" );
-		static AssetHandle s_BlackTextureHandle = ( s_BlackTexture->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_BlackTexture->GetHandle() );
+		static OldAssetHandle s_BlackTextureHandle = ( s_BlackTexture->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_BlackTexture->GetHandle() );
 		static bool s_TextureInitialized = AssetManager::AddMemoryOnlyAsset( s_BlackTextureHandle, s_BlackTexture );
 
 		return s_BlackTextureHandle;
 	}
 
-	AssetHandle TextureFactory::GetNormalTexture()
+	OldAssetHandle TextureFactory::GetNormalTexture()
 	{
 		static SharedPtr<TextureOld> s_NormalTexture = TextureLoader::LoadTexture( Engine::Get()->GetEngineAssetsDirectory() / "Textures/Normal.tga" );
-		static AssetHandle s_NormalTextureHandle = ( s_NormalTexture->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_NormalTexture->GetHandle() );
+		static OldAssetHandle s_NormalTextureHandle = ( s_NormalTexture->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_NormalTexture->GetHandle() );
 		static bool s_TextureInitialized = AssetManager::AddMemoryOnlyAsset( s_NormalTextureHandle, s_NormalTexture );
 
 		return s_NormalTextureHandle;

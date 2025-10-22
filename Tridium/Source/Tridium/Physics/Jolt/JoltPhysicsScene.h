@@ -16,6 +16,7 @@
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
+#include <Jolt/Physics/Collision/Shape/MutableCompoundShape.h>
 
 // STL includes
 #include <iostream>
@@ -39,12 +40,17 @@ namespace Tridium {
 
 		virtual RayCastResult CastRay( const Vector3& a_Start, const Vector3& a_End, ERayCastChannel a_Channel, const PhysicsBodyFilter& a_BodyFilter ) override;
 
-		virtual void RemovePhysicsBody( PhysicsBodyID a_PhysicsBodyID ) override;
-		virtual void RemovePhysicsBody( RigidBodyComponent& a_RigidBody ) override;
-		virtual bool AddPhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent ) override;
-		virtual bool UpdatePhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent ) override;
+		PhysicsBodyID CreatePhysicsBody( GameObject a_GameObject, const RigidBodyComponent& a_RigidBody );
+		void DestroyPhysicsBody( PhysicsBodyID a_BodyID );
+		bool HasPhysicsBody( PhysicsBodyID a_BodyID ) const;
+		bool UpdatePhysicsBodyShape( GameObject a_GameObject, const RigidBodyComponent& a_RigidBody );
 
-		virtual void UpdatePhysicsBodyTransform( const RigidBodyComponent& a_RigidBody, const OldTransformComponent& a_TransformComponent ) override;
+		virtual void RemovePhysicsBody( PhysicsBodyID a_PhysicsBodyID ) override;
+		virtual void RemovePhysicsBody( OldRigidBodyComponent& a_RigidBody ) override;
+		virtual bool AddPhysicsBody( const OldGameObject& a_GameObject, OldRigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent ) override;
+		virtual bool UpdatePhysicsBody( const OldGameObject& a_GameObject, OldRigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent ) override;
+
+		virtual void UpdatePhysicsBodyTransform( const OldRigidBodyComponent& a_RigidBody, const OldTransformComponent& a_TransformComponent ) override;
 
 		virtual Vector3 GetPhysicsBodyPosition( PhysicsBodyID a_BodyID ) const override;
 		virtual Quaternion GetPhysicsBodyRotation( PhysicsBodyID a_BodyID ) const override;
@@ -63,6 +69,10 @@ namespace Tridium {
 	#if USE_DEBUG_RENDERER
 		virtual void RenderDebug( const Matrix4& a_ViewProjection ) override;
 	#endif
+
+	protected:
+
+		JPH::Ref<JPH::MutableCompoundShapeSettings> CreateShapeSettings( GameObject a_GameObject, const RigidBodyComponent& a_RigidBody, JPH::MassProperties& o_MassProps ) const;
 
 	protected:
 		bool m_Initialised = false;

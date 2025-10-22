@@ -18,26 +18,125 @@
 #include <Tridium/Reflection/Meta.h>
 #include <Tridium/Reflection/MetaAttributes.h>
 #include <stb_image.h>
+#include <entt/meta/meta.hpp>
 
 namespace Tridium {
 
-	struct Dummy
-	{
-		bool A;
-		bool Getter() { return true; }
-		void Setter( bool val ) { printf( "\n Hello! \n" ); A = val; }
-	};
-
+	// TEST
 	namespace Meta {
 
-		template<>
-		struct Reflector<Dummy>
+		template<typename T>
+		constexpr void ReflectType()
 		{
-			Field<&Dummy::A, Getter<&Dummy::Getter>, Setter<&Dummy::Setter>, DisplayName<"Tes">> IsDummy;
-		};
+			auto factory = entt::meta_factory<T>{};
+			constexpr auto refl = Meta::Reflector<T>{};
+
+			// Set type info
+			{
+				auto type = ::Tridium::Meta::GetType( refl );
+				StringView typeName;
+				if constexpr ( type.template Has<DisplayName>() )
+					typeName = type.template Get<DisplayName>().Value;
+				else
+					typeName = GetTypeName<T>();
+
+				factory.type( typeName.data() );
+			}
+
+			::Tridium::Meta::ForEachBase( refl, [&]( const auto& a_Base )
+			{
+				using BaseType = std::remove_const_t<std::remove_reference_t<decltype( a_Base )>>;
+				factory.base<BaseType>();
+			} );
+
+			::Tridium::Meta::ForEachField( refl, [&]( const auto& a_FieldName, const auto& a_Field )
+			{
+				using Type = std::remove_const_t<std::remove_reference_t<decltype( a_Field )>>;
+				constexpr StringView name = a_Field.template Has<DisplayName>() 
+					? a_Field.template Get<DisplayName>().Value 
+					: a_FieldName;
+
+				if constexpr ( Type::Accessor::RawAccess )
+				{
+					factory.data<Type::Accessor::RawAccess>( name.data() );
+				}
+				else
+				{
+					factory.data<Type::Accessor::Setter, Type::Accessor::Getter>( name.data() );
+				}
+			} );
+
+			::Tridium::Meta::ForEachFunction( refl, [&]( const auto& a_FunctionName, const auto& a_Function )
+			{
+				constexpr StringView name = a_Function.template Has<DisplayName>()
+					? a_Function.template Get<DisplayName>().Value
+					: a_FunctionName;
+
+				factory.func<a_Function.FunctionPtr>( name.data() );
+			} );
+		}
 
 	}
 
+	template<typename T, Meta::IsField _Field>
+	bool DrawField( T& a_Instance, StringView a_FieldName, _Field a_Field )
+	{
+		using FieldType = typename _Field::MemberType;
+		constexpr bool isEditable = _Field::template Has<Meta::Editable>();
+		if constexpr ( std::is_same_v<FieldType, int> )
+		{
+			int value = a_Field.GetValue( a_Instance );
+			ImGui::TextUnformatted( a_FieldName.data() );
+			if ( isEditable )
+			{
+				if ( ImGui::InputInt( "##input", &value ) )
+				{
+					a_Field.SetValue( a_Instance, value );
+					return true;
+				}
+			}
+			else
+			{
+				ImGui::SameLine();
+				ImGui::TextUnformatted( std::to_string( value ).c_str() );
+			}
+		}
+		else if constexpr ( std::is_same_v<FieldType, float> )
+		{
+			float value = a_Field.GetValue( a_Instance );
+			ImGui::TextUnformatted( a_FieldName.data() );
+			if ( isEditable )
+			{
+				if ( ImGui::InputFloat( "##input", &value ) )
+				{
+					a_Field.SetValue( a_Instance, value );
+					return true;
+				}
+			}
+			else
+			{
+				ImGui::SameLine();
+				ImGui::TextUnformatted( std::to_string( value ).c_str() );
+			}
+		}
+		else
+		{
+			return false;
+		}
+
+		if constexpr ( a_Field.template Has<Meta::Tooltip>() )
+		{
+			if ( ImGui::BeginItemTooltip() )
+			{
+				constexpr StringView tooltip = a_Field.template Get<Meta::Tooltip>().Value;
+				ImGui::TextUnformatted( tooltip.data(), tooltip.data() + tooltip.size() );
+				ImGui::EndTooltip();
+			}
+		}
+
+		// Add more type handlers as needed
+		return false;
+	}
 
 	REGISTER_TICK_GROUP( BeginTick );
 	REGISTER_TICK_GROUP( BeginAppUpdate );
@@ -54,6 +153,25 @@ namespace Tridium {
 		Get()->m_ExitCode = a_ExitCode;
 		Get()->m_Running = false;
 	}
+
+	class TestLayer : public Layer
+	{
+	public:
+		ZombieComponent zombie{};
+
+		void OnImGuiDraw() override
+		{
+			auto refl = Meta::Reflector<ZombieComponent>{};
+			ImGui::Begin( "Test Layer" );
+
+			Meta::ForEachField( refl, [&]( const auto& a_FieldName, const auto& a_Field )
+			{
+				DrawField( zombie, a_FieldName, a_Field );
+			} );
+
+			ImGui::End();
+		}
+	};
 
 	Application::Application( CmdLineArgs a_CmdLine )
 	{
@@ -73,25 +191,15 @@ namespace Tridium {
 		EngineConfig engineConfig;
 		m_Engine = Engine::Create( engineConfig );
 
-		constexpr auto refl = Meta::Reflector<Dummy>{};
+		constexpr auto refl = Meta::Reflector<ZombieComponent>{};
+		ZombieComponent dummy{};
 
-		Dummy dummy{};
-		bool fieldVal = Meta::GetFieldValue( refl.IsDummy, dummy );
-		std::cout << "Field Value: " << fieldVal << std::endl;
-		Meta::SetFieldValue( refl.IsDummy, dummy, false );
+		Meta::ReflectType<ZombieComponent>();
 
-		ForEachField( refl, []( const auto& fieldName, const auto& field )
-		{
-			if constexpr ( field.template Has<Meta::DisplayName>() )
-			{
-				const auto displayName = field.template Get<Meta::DisplayName>();
-				std::cout << "Field: " << fieldName << " has DisplayName: " << displayName.Value << std::endl;
-			}
-			else
-			{
-				std::cout << "Field: " << fieldName << " has no DisplayName attribute." << std::endl;
-			}
-		} );
+		auto meta = entt::resolve<ZombieComponent>();
+		LOG( LogCategory::AI, Debug, meta.name() );
+
+		m_LayerStack.PushLayer( new TestLayer );
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////
@@ -668,7 +776,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 
 			// Temp
 			float time = 0.0f;
-			const Color clearColor = Color{ 0.2f, 0.35f, 0.5f, 1.0f };
+			const Color4 clearColor = Color4{ 0.2f, 0.35f, 0.5f, 1.0f };
 			const RHIClearValue clearValue{ clearColor };
 			int f{};
 
@@ -727,12 +835,12 @@ float4 PSMain( VSOutput input ) : SV_Target
 						float r = ( Math::Sin( a_Speed * a_Time ) + 1.0f ) / 2.0f;
 						float g = ( Math::Sin( a_Speed * a_Time + 2.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
 						float b = ( Math::Sin( a_Speed * a_Time + 4.0f * Math::PI() / 3.0f ) + 1.0f ) / 2.0f;
-						return Color( r, g, b, 1.0f );
+						return Color4( r, g, b, 1.0f );
 						};
 
 					Constants constants{};
 					Light light;
-					light.Colour = Color( 1, 0, 0, 1 );
+					light.Colour = Color4( 1, 0, 0, 1 );
 					light.Position = Vector3( 0.0f, 0.0f, 2.0f );
 					light.Intensity = 1;
 					constants.LightData = light;
@@ -755,7 +863,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 						.SetAddressW( ERHISamplerAddressMode::Border )
 						.SetFilter( ERHISamplerFilter::Anisotropic )
 						.SetMaxAnisotropy( 16 )
-						.SetBorderColor( Color( 1, 1, 0, 1.0f ) );
+						.SetBorderColor( Color4( 1, 1, 0, 1.0f ) );
 
 					bindingSetDesc.AddTexture( "Texture"_H, RenderResourceManager::Get()->GetTexture( lionTexID ).Texture.get(), &sampler );
 					RHIBindingSetRef bindingSet = RHI::CreateBindingSet( bindingSetDesc );
@@ -806,7 +914,7 @@ float4 PSMain( VSOutput input ) : SV_Target
 					inlinedConstants.PVM = projection * view * inlinedConstants.Model;
 					cmdList->SetInlinedConstants( inlinedConstants );
 
-					constants.LightData.Colour = Color( 0, 1, 0, 1 );
+					constants.LightData.Colour = Color4( 0, 1, 0, 1 );
 					cmdList->UpdateBuffer( *constantsBuffer, ReinterpretCast<const void*>( &constants ), sizeof( constants ) );
 					cmdList->Draw( drawArgs );
 

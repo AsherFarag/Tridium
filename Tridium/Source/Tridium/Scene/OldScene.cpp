@@ -16,7 +16,7 @@ namespace Tridium {
 	template<typename... _Types>
 	using ViewType = decltype( entt::registry::view<_Types...> );
 
-	RayCastResult OldScene::CastRay( const Vector3& a_Start, const Vector3& a_End, ERayCastChannel a_RayCastChannel, const PhysicsBodyFilter& a_BodyFilter, bool a_DrawDebug, Debug::EDrawDuration a_DrawDurationType, float a_DebugDrawDuration, Color a_DebugLineColor, Color a_DebugHitColor ) const
+	RayCastResult OldScene::CastRay( const Vector3& a_Start, const Vector3& a_End, ERayCastChannel a_RayCastChannel, const PhysicsBodyFilter& a_BodyFilter, bool a_DrawDebug, Debug::EDrawDuration a_DrawDurationType, float a_DebugDrawDuration, Color4 a_DebugLineColor, Color4 a_DebugHitColor ) const
 	{
 		RayCastResult result = m_PhysicsScene->CastRay( a_Start, a_End, a_RayCastChannel, a_BodyFilter );
 
@@ -148,10 +148,10 @@ namespace Tridium {
 			m_PhysicsScene->Init();
 
 			// Add all GameObjects with RigidBodyComponent to the physics scene
-			auto view = m_ECS.View<RigidBodyComponent, OldTransformComponent>();
+			auto view = m_ECS.View<OldRigidBodyComponent, OldTransformComponent>();
 			for ( auto entity : view )
 			{
-				auto& rb = view.get<RigidBodyComponent>( entity );
+				auto& rb = view.get<OldRigidBodyComponent>( entity );
 				auto& tc = view.get<OldTransformComponent>( entity );
 
 				if ( m_PhysicsScene->AddPhysicsBody( OldGameObject( entity ), rb, tc ) )
@@ -185,11 +185,11 @@ namespace Tridium {
 			PROFILE_SCOPE( "Physics Update", ProfilerCategory::Physics );
 			TODO( "We should not be constantly updating transforms unless they are dirty." );
 
-			auto view = m_ECS.View<RigidBodyComponent, OldTransformComponent>();
+			auto view = m_ECS.View<OldRigidBodyComponent, OldTransformComponent>();
 
 			// Update the transforms in the physics scene
 			{
-				view.each( [&]( auto entity, RigidBodyComponent& rb, OldTransformComponent& tc )
+				view.each( [&]( auto entity, OldRigidBodyComponent& rb, OldTransformComponent& tc )
 					{
 						m_PhysicsScene->UpdatePhysicsBodyTransform( rb, tc );
 					} );
@@ -198,7 +198,7 @@ namespace Tridium {
 			m_PhysicsScene->Tick( Time::DeltaTime() );
 
 			// Update the transforms from the physics scene
-			view.each( [&]( auto entity, RigidBodyComponent& rb, OldTransformComponent& tc )
+			view.each( [&]( auto entity, OldRigidBodyComponent& rb, OldTransformComponent& tc )
 				{
 					tc.Position = rb.m_BodyProxy.GetPosition();
 					tc.Rotation.SetFromQuaternion( rb.m_BodyProxy.GetRotation() );

@@ -1,11 +1,19 @@
 #include "tripch.h"
 #include "Scene.h"
+#include <Tridium/Physics/PhysicsScene.h>
+#include <Tridium/Graphics/Renderer/RendererSceneSystem.h>
+
 
 namespace Tridium {
 
 	void Scene::Init()
 	{
 		PROFILE_FUNCTION( ProfilerCategory::Scene );
+
+		m_State = {};
+
+		m_PhysicsSystem = AddSystem<PhysicsSceneSystem>();
+		m_RendererSystem = AddSystem<RendererSceneSystem>();
 
 		// Initialize Scene Systems
 		{
@@ -15,6 +23,8 @@ namespace Tridium {
 			{
 				system->Init();
 			}
+
+			m_State.HasInit = true;
 		}
 
 		// Post Initialize Scene Systems
@@ -25,12 +35,16 @@ namespace Tridium {
 			{
 				system->PostInit();
 			}
+
+			m_State.HasPostInit = true;
 		}
 	}
 
-	void Scene::OnBeginPlay()
+	void Scene::OnBeginPlay( EScenePlayMode a_PlayMode )
 	{
 		PROFILE_FUNCTION( ProfilerCategory::Scene );
+
+		m_State.PlayMode = a_PlayMode;
 
 		// OnBeginPlay Scene Systems
 		{
@@ -45,15 +59,15 @@ namespace Tridium {
 
 	void Scene::OnTick( float a_DeltaTime )
 	{
-		if ( m_IsPaused || m_SceneState == ESceneState::None )
-			return;
-
 		PROFILE_FUNCTION( ProfilerCategory::Scene );
 
 		a_DeltaTime *= m_TimeScale;
 
+		const bool isPlaying = ( m_State.PlayMode == EScenePlayMode::Play ) && !m_State.IsPaused;
+		const bool isSimulating = ( m_State.PlayMode == EScenePlayMode::Simulate );
+
 		// Prephysics Tick
-		if ( m_SceneState == ESceneState::Play )
+		if ( isPlaying )
 		{
 			PROFILE_SCOPE( "PrePhysics Tick", ProfilerCategory::Scene );
 
@@ -61,12 +75,14 @@ namespace Tridium {
 		}
 
 		// Physics Tick
+		if ( m_PhysicsSystem && ( isPlaying || isSimulating ) )
 		{
 			PROFILE_SCOPE( "Physics Tick", ProfilerCategory::Scene );
+
 		}
 
 		// Postphysics Tick
-		if ( m_SceneState == ESceneState::Play )
+		if ( isPlaying )
 		{
 			PROFILE_SCOPE( "PostPhysics Tick", ProfilerCategory::Scene );
 
@@ -74,7 +90,7 @@ namespace Tridium {
 		}
 
 		// Prerender Tick
-		if ( m_SceneState == ESceneState::Play )
+		if ( isPlaying )
 		{
 			PROFILE_SCOPE( "PreRender Tick", ProfilerCategory::Scene );
 
@@ -84,10 +100,12 @@ namespace Tridium {
 		// Render Tick
 		{
 			PROFILE_SCOPE( "Render Tick", ProfilerCategory::Scene );
+
+			TickSceneSystems( ESceneTickGroup::Render, a_DeltaTime );
 		}
 
 		// Postrender Tick
-		if ( m_SceneState == ESceneState::Play )
+		if ( isPlaying )
 		{
 			PROFILE_SCOPE( "PostRender Tick", ProfilerCategory::Scene );
 

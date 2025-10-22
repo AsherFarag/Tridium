@@ -13,7 +13,7 @@ namespace Tridium {
 	struct OldPointLight
 	{
 		Vector3 Position;
-		Color Color;
+		Color4 Color;
 		float Intensity;
 		float FalloffExponent;
 		float AttenuationRadius;
@@ -31,7 +31,7 @@ namespace Tridium {
 	{
 		Vector3 Position;
 		Vector3 Direction;
-		Color Color;
+		Color4 Color;
 		float Intensity;
 		float FalloffExponent;
 		float AttenuationRadius;
@@ -50,7 +50,7 @@ namespace Tridium {
 	struct OldDirectionalLight
 	{
 		Vector3 Direction;
-		Color Color;
+		Color4 Color;
 		float Intensity;
 		bool CastsShadows;
 		Matrix4 LightSpaceMatrix;

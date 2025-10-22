@@ -6,7 +6,7 @@
 #include <Tridium/Core/Application.h>
 
 namespace Tridium {
-    AssetHandle AssetImporter::ImportAsset( const FilePath& a_FilePath )
+    OldAssetHandle AssetImporter::ImportAsset( const FilePath& a_FilePath )
     {
         FilePath absolutePath = EditorAssetManager::Get()->GetAbsolutePath( a_FilePath );
 		EAssetTypeOld assetType = GetAssetTypeFromFileExtension( absolutePath.GetExtension().ToString() );
@@ -40,7 +40,7 @@ namespace Tridium {
             break;
         }
 
-		return AssetHandle::InvalidID;
+		return OldAssetHandle::InvalidID;
     }
 }
 

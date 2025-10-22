@@ -21,7 +21,7 @@ namespace Tridium {
 			break;
 		}
 		
-		shader->m_Handle = AssetHandle::Create();
+		shader->m_Handle = OldAssetHandle::Create();
 		return shader;
 	} 
 

@@ -93,13 +93,13 @@ namespace Tridium {
 				( instance->*_Method )( registry, entity );
 			}
 
-			void Invoke( entt::registry& a_Registry, entt::entity a_Entity ) const
-			{
-				const T* instance = ReinterpretCast<T*>( this );
-				auto& registry = ReinterpretCast<class EntityComponentRegistry&>( a_Registry );
-				EntityID entity = ReinterpretCast<EntityID>( a_Entity );
-				( instance->*_Method )( registry, entity );
-			}
+			//void Invoke( entt::registry& a_Registry, entt::entity a_Entity ) const
+			//{
+			//	const T* instance = ReinterpretCast<T*>( this );
+			//	auto& registry = ReinterpretCast<class EntityComponentRegistry&>( a_Registry );
+			//	EntityID entity = ReinterpretCast<EntityID>( a_Entity );
+			//	( instance->*_Method )( registry, entity );
+			//}
 
 		};
 

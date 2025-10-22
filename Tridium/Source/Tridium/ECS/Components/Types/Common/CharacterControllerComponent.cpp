@@ -18,7 +18,7 @@ namespace Tridium {
 
 	void CharacterControllerComponent::OnBeginPlay()
 	{
-		RigidBodyComponent* rigidBody = GetGameObject().TryGetComponent<RigidBodyComponent>();
+		OldRigidBodyComponent* rigidBody = GetGameObject().TryGetComponent<OldRigidBodyComponent>();
 		if ( !rigidBody )
 		{
 			LOG( LogCategory::GameLogic, Warn, "'%s' does not have a RigidBodyComponent, which the CharacterControllerComponent requires!", GetGameObject().GetTag().c_str() );
@@ -29,7 +29,7 @@ namespace Tridium {
 
 	void CharacterControllerComponent::OnUpdate( float a_DeltaTime )
 	{
-		RigidBodyComponent* rigidBody = GetGameObject().TryGetComponent<RigidBodyComponent>();
+		OldRigidBodyComponent* rigidBody = GetGameObject().TryGetComponent<OldRigidBodyComponent>();
 		if ( !rigidBody )
 			return;
 
@@ -38,7 +38,7 @@ namespace Tridium {
 
 		SharedPtr<IPhysicsScene> scene = rigidBody->GetBodyProxy().GetPhysicsScene().lock();
 		Vector3 rayBegin = GetGameObject().GetTransform().Position;
-		CapsuleColliderComponent* capsuleCollider = GetGameObject().TryGetComponent<CapsuleColliderComponent>();
+		OldCapsuleColliderComponent* capsuleCollider = GetGameObject().TryGetComponent<OldCapsuleColliderComponent>();
 		const float BodyHeight = capsuleCollider ? capsuleCollider->GetHalfHeight() + capsuleCollider->GetRadius() : 1.0f;
 		Vector3 rayEnd = rayBegin - Vector3( 0.0f, 2.0f + BodyHeight, 0.0f );
 		RayCastResult hitResult = scene->CastRay( rayBegin, rayEnd, ERayCastChannel::Camera, { rigidBody->GetBodyProxy().GetBodyID() });
@@ -78,7 +78,7 @@ namespace Tridium {
 
 	void CharacterControllerComponent::AddMovementInput( const Vector2& a_Input )
 	{
-		RigidBodyComponent* rigidBody = GetGameObject().TryGetComponent<RigidBodyComponent>();
+		OldRigidBodyComponent* rigidBody = GetGameObject().TryGetComponent<OldRigidBodyComponent>();
 		if ( !rigidBody )
 			return;
 
@@ -127,7 +127,7 @@ namespace Tridium {
 
 	void CharacterControllerComponent::Jump()
 	{
-		RigidBodyComponent* rigidBody = GetGameObject().TryGetComponent<RigidBodyComponent>();
+		OldRigidBodyComponent* rigidBody = GetGameObject().TryGetComponent<OldRigidBodyComponent>();
 		if ( !rigidBody )
 			return;
 

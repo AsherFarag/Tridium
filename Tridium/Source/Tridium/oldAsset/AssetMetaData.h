@@ -9,7 +9,7 @@ namespace Tridium {
 	{
 		REFLECT(OldAssetMetaData);
 
-		AssetHandle Handle;
+		OldAssetHandle Handle;
 		EAssetTypeOld AssetType;
 		FilePath Path;
 		std::string Name;

@@ -1,5 +1,8 @@
 #include "tripch.h"
 #include "PhysicsScene.h"
+#include <Tridium/Physics/PhysicsComponents.h>
+
+// Old
 #include "PhysicsAPI.h"
 #include "Jolt/JoltPhysicsScene.h"
 #include <Tridium/Reflection/Reflection.h>
@@ -79,14 +82,14 @@ namespace Tridium {
 
 	void OldPhysicsSceneSystem::OnComponentCreated( const OnComponentCreatedEvent& a_Event )
 	{
-		static const Refl::MetaType RigidBodyComponentType = Refl::ResolveMetaType<RigidBodyComponent>();
+		static const Refl::MetaType RigidBodyComponentType = Refl::ResolveMetaType<OldRigidBodyComponent>();
 		static const UnorderedSet<Refl::MetaIDType> ColliderComponentTypes =
 		{
-			Refl::ResolveMetaType<SphereColliderComponent>().ID(),
-			Refl::ResolveMetaType<BoxColliderComponent>().ID(),
-			Refl::ResolveMetaType<CapsuleColliderComponent>().ID(),
-			Refl::ResolveMetaType<CylinderColliderComponent>().ID(),
-			Refl::ResolveMetaType<MeshColliderComponent>().ID()
+			Refl::ResolveMetaType<OldSphereColliderComponent>().ID(),
+			Refl::ResolveMetaType<OldBoxColliderComponent>().ID(),
+			Refl::ResolveMetaType<OldCapsuleColliderComponent>().ID(),
+			Refl::ResolveMetaType<OldCylinderColliderComponent>().ID(),
+			Refl::ResolveMetaType<OldMeshColliderComponent>().ID()
 		};
 
 		Refl::MetaType componentType = Refl::ResolveMetaType( a_Event.ComponentTypeID );
@@ -98,7 +101,7 @@ namespace Tridium {
 			return;
 		}
 
-		if ( RigidBodyComponent* rigidBody = gameObject.TryGetComponent<RigidBodyComponent>() )
+		if ( OldRigidBodyComponent* rigidBody = gameObject.TryGetComponent<OldRigidBodyComponent>() )
 		{
 			if ( OldTransformComponent* transform = gameObject.TryGetComponent<OldTransformComponent>() )
 			{
@@ -129,20 +132,79 @@ namespace Tridium {
 
 	void PhysicsSceneSystem::Init()
 	{
+		// Create the physics scene and initialize it
 		m_PhysicsScene = IPhysicsScene::Create();
 		m_PhysicsScene->m_OwningScene = &OwningScene();
+		m_PhysicsScene->Init();
 
-		TODO( "Iterate over physics components and set them up" );
+		// Set up entity event handlers
+		m_OnRigidBodyCreatedHandle = OwningScene().Registry().OnConstruct<RigidBodyComponent, &PhysicsSceneSystem::OnRigidBodyCreated>( this );
+		m_OnRigidBodyDestroyedHandle = OwningScene().Registry().OnDestruct<RigidBodyComponent, &PhysicsSceneSystem::OnRigidBodyDestroyed>( this );
+		m_OnColliderCreatedHandle = OwningScene().Registry().OnConstruct<SphereColliderComponent, &PhysicsSceneSystem::OnColliderCreated>( this );
+		m_OnColliderDestroyedHandle = OwningScene().Registry().OnDestruct<SphereColliderComponent, &PhysicsSceneSystem::OnColliderDestroyed>( this );	
 	}
 
 	void PhysicsSceneSystem::Shutdown()
 	{
+		// NOTE: Since the physics scene can be shut down before any entities are destroyed,
+		// we need to manually clear the physics scene reference from all rigid bodies.
+		// This prevents dangling pointers in the RigidBodyComponents.
+		auto rigidBodies = OwningScene().Registry().View<RigidBodyComponent>();
+		rigidBodies.Each( [this]( EntityID a_Entity, RigidBodyComponent& a_RigidBody )
+		{
+			a_RigidBody.m_PhysicsScene = nullptr;
+			a_RigidBody.m_BodyID = NullPhysicsBodyID;
+		} );
+
+		// Release entity event handlers
+		m_OnRigidBodyCreatedHandle.Release();
+		m_OnRigidBodyDestroyedHandle.Release(); 
+		m_OnColliderCreatedHandle.Release(); 
+		m_OnColliderDestroyedHandle.Release(); 
+
 		m_PhysicsScene->Shutdown();
 		m_PhysicsScene.reset();
 	}
 
-	void PhysicsSceneSystem::OnRigidBodyComponentCreated( EntityComponentRegistry& a_Registry, EntityID a_Entity )
+	void PhysicsSceneSystem::OnRigidBodyCreated( EntityComponentRegistry& a_Registry, EntityID a_Entity )
 	{
+		RigidBodyComponent& rigidBody = a_Registry.Get<RigidBodyComponent>( a_Entity );
+
+		rigidBody.m_PhysicsScene = m_PhysicsScene.get();
+		rigidBody.m_BodyID = m_PhysicsScene->CreatePhysicsBody( GameObject( OwningScene(), a_Entity ), rigidBody );
 	}
 
-}
+	void PhysicsSceneSystem::OnRigidBodyDestroyed( EntityComponentRegistry& a_Registry, EntityID a_Entity )
+	{
+		RigidBodyComponent& rigidBody = a_Registry.Get<RigidBodyComponent>( a_Entity );
+		if ( rigidBody.Valid() )
+		{
+			rigidBody.m_PhysicsScene->DestroyPhysicsBody( rigidBody.m_BodyID );
+			rigidBody.m_BodyID = NullPhysicsBodyID;
+			rigidBody.m_PhysicsScene = nullptr;
+		}
+	}
+
+	void PhysicsSceneSystem::OnColliderCreated( EntityComponentRegistry& a_Registry, EntityID a_Entity )
+	{
+		if ( RigidBodyComponent* rigidBody = a_Registry.TryGet<RigidBodyComponent>( a_Entity ) )
+		{
+			if ( rigidBody->Valid() )
+			{
+				m_PhysicsScene->UpdatePhysicsBodyShape( GameObject( OwningScene(), a_Entity ), *rigidBody );
+			}
+		}
+	}
+
+	void PhysicsSceneSystem::OnColliderDestroyed( EntityComponentRegistry& a_Registry, EntityID a_Entity )
+	{
+		if ( RigidBodyComponent* rigidBody = a_Registry.TryGet<RigidBodyComponent>( a_Entity ) )
+		{
+			if ( rigidBody->Valid() )
+			{
+				m_PhysicsScene->UpdatePhysicsBodyShape( GameObject( OwningScene(), a_Entity ), *rigidBody );
+			}
+		}
+	}
+
+} // namespace Tridium

@@ -56,7 +56,7 @@ namespace Tridium {
 		return &it->second.first;
 	}
 
-	IAsset* AssetDatabase::GetAsset( AssetID a_AssetID )
+	AssetHandle<IAsset> AssetDatabase::GetAsset( AssetID a_AssetID )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
@@ -67,10 +67,10 @@ namespace Tridium {
 		if ( it == Get()->m_Assets.end() )
 			return nullptr; // Asset does not exist
 
-		return it->second.second.get();
+		return it->second.second;
 	}
 
-	IAsset* AssetDatabase::GetOrLoadAsset( AssetID a_AssetID )
+	AssetHandle<IAsset> AssetDatabase::GetOrLoadAsset( AssetID a_AssetID )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
@@ -86,7 +86,7 @@ namespace Tridium {
 		if ( asset )
 		{
 			// Asset is already loaded
-			return asset.get();
+			return asset;
 		}
 
 		// The asset exists but is not loaded, attempt to load it.
@@ -141,7 +141,7 @@ namespace Tridium {
 			return nullptr;
 		}
 
-		return asset.get();
+		return asset;
 	}
 
 	bool AssetDatabase::IsAssetLoaded( AssetID a_AssetID )

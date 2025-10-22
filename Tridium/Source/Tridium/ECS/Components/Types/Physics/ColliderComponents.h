@@ -4,11 +4,11 @@
 
 namespace Tridium {
 
-	class SphereColliderComponent : public Component
+	class OldSphereColliderComponent : public Component
 	{
-		REFLECT( SphereColliderComponent )
+		REFLECT( OldSphereColliderComponent )
 	public:
-		SphereColliderComponent();
+		OldSphereColliderComponent();
 
 		void SetRadius( float a_Radius ) { m_Radius = a_Radius; }
 		float GetRadius() const { return m_Radius; }
@@ -25,11 +25,11 @@ namespace Tridium {
 		float m_Radius = 0.5f;
 	};
 
-	class BoxColliderComponent : public Component
+	class OldBoxColliderComponent : public Component
 	{
-		REFLECT( BoxColliderComponent )
+		REFLECT( OldBoxColliderComponent )
 	public:
-		BoxColliderComponent();
+		OldBoxColliderComponent();
 
 		void SetHalfExtents( const Vector3& a_HalfExtents ) { m_HalfExtents = a_HalfExtents; }
 		const Vector3& GetHalfExtents() const { return m_HalfExtents; }
@@ -46,11 +46,11 @@ namespace Tridium {
 		Vector3 m_HalfExtents = { 0.5f, 0.5f, 0.5f };
 	};
 
-	class CapsuleColliderComponent : public Component
+	class OldCapsuleColliderComponent : public Component
 	{
-		REFLECT( CapsuleColliderComponent )
+		REFLECT( OldCapsuleColliderComponent )
 	public:
-		CapsuleColliderComponent();
+		OldCapsuleColliderComponent();
 
 		void SetRadius( float a_Radius ) { m_Radius = a_Radius; }
 		float GetRadius() const { return m_Radius; }
@@ -71,11 +71,11 @@ namespace Tridium {
 		float m_HalfHeight = 0.5f;
 	};
 
-	class CylinderColliderComponent : public Component
+	class OldCylinderColliderComponent : public Component
 	{
-		REFLECT( CylinderColliderComponent )
+		REFLECT( OldCylinderColliderComponent )
 	public:
-		CylinderColliderComponent();
+		OldCylinderColliderComponent();
 
 		void SetRadius( float a_Radius ) { m_Radius = a_Radius; }
 		float GetRadius() const { return m_Radius; }
@@ -96,11 +96,11 @@ namespace Tridium {
 		float m_HalfHeight = 0.5f;
 	};
 
-	class MeshColliderComponent : public Component
+	class OldMeshColliderComponent : public Component
 	{
-		REFLECT( MeshColliderComponent )
+		REFLECT( OldMeshColliderComponent )
 	public:
-		MeshColliderComponent();
+		OldMeshColliderComponent();
 
 		void SetMesh( StaticMeshHandle a_Mesh ) { m_Mesh = a_Mesh; }
 		StaticMeshHandle GetMesh() const { return m_Mesh; }

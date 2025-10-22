@@ -124,14 +124,14 @@ namespace Tridium {
 			+[]( Rotator& a_Rotator, const Vector3& a_Value ) { a_Rotator.SetFromQuaternion( Math::QuatLookAt( Vector3::Forward(), a_Value) ); });
 	}
 
-	void Scriptable<Color>::RegisterType( ScriptEngine& a_ScriptEngine )
+	void Scriptable<Color4>::RegisterType( ScriptEngine& a_ScriptEngine )
 	{
-		auto type = a_ScriptEngine.RegisterNewType<Color>( "Color" );
-		type["new"] = sol::constructors<Color(), Color( float ), Color( float, float, float, float )>();
-		type["r"] = sol::property( &Color::r, &Color::r );
-		type["g"] = sol::property( &Color::g, &Color::g );
-		type["b"] = sol::property( &Color::b, &Color::b );
-		type["a"] = sol::property( &Color::a, &Color::a );
+		auto type = a_ScriptEngine.RegisterNewType<Color4>( "Color" );
+		type["new"] = sol::constructors<Color4(), Color4( float ), Color4( float, float, float, float )>();
+		type["r"] = sol::property( &Color4::r, &Color4::r );
+		type["g"] = sol::property( &Color4::g, &Color4::g );
+		type["b"] = sol::property( &Color4::b, &Color4::b );
+		type["a"] = sol::property( &Color4::a, &Color4::a );
 	}
 
 	//////////////////////////////////////////////////////////////////////////

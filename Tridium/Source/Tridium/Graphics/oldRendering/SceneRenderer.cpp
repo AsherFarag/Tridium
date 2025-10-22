@@ -195,10 +195,10 @@ namespace Tridium {
 		// - Submit Directional Lights -
 		{
 			PROFILE_SCOPE( "Submit Directional Lights", ProfilerCategory::Rendering );
-			auto directionalLightComponents = m_Scene.GetECS().View<GameObjectFlagsComponent, DirectionalLightComponent, OldTransformComponent>();
+			auto directionalLightComponents = m_Scene.GetECS().View<GameObjectFlagsComponent, OldDirectionalLightComponent, OldTransformComponent>();
 			m_LightEnvironment.NumDirectionalLights = 0;
 			directionalLightComponents.each(
-				[&]( auto go, const GameObjectFlagsComponent& a_Flags, DirectionalLightComponent& lightComponent, OldTransformComponent& transform )
+				[&]( auto go, const GameObjectFlagsComponent& a_Flags, OldDirectionalLightComponent& lightComponent, OldTransformComponent& transform )
 				{
 					if ( m_LightEnvironment.NumDirectionalLights >= MAX_DIRECTIONAL_LIGHTS )
 						return;
@@ -252,10 +252,10 @@ namespace Tridium {
 		// - Submit Point Lights -
 		{
 			PROFILE_SCOPE( "Submit Point Lights", ProfilerCategory::Rendering );
-			auto pointLightComponents = m_Scene.GetECS().View<GameObjectFlagsComponent, PointLightComponent, OldTransformComponent>();
+			auto pointLightComponents = m_Scene.GetECS().View<GameObjectFlagsComponent, OldPointLightComponent, OldTransformComponent>();
 			m_LightEnvironment.NumPointLights = 0;
 			pointLightComponents.each(
-				[&]( auto go, GameObjectFlagsComponent& a_Flags, PointLightComponent& lightComponent, OldTransformComponent& transform )
+				[&]( auto go, GameObjectFlagsComponent& a_Flags, OldPointLightComponent& lightComponent, OldTransformComponent& transform )
 				{
 					if ( m_LightEnvironment.NumPointLights >= MAX_POINT_LIGHTS )
 						return;
@@ -311,10 +311,10 @@ namespace Tridium {
 		// - Submit Spot Lights -
 		{
 			PROFILE_SCOPE( "Submit Spot Lights", ProfilerCategory::Rendering );
-			auto spotLightComponents = m_Scene.GetECS().View<GameObjectFlagsComponent, SpotLightComponent, OldTransformComponent>();
+			auto spotLightComponents = m_Scene.GetECS().View<GameObjectFlagsComponent, OldSpotLightComponent, OldTransformComponent>();
 			m_LightEnvironment.NumSpotLights = 0;
 			spotLightComponents.each(
-				[&]( auto go, GameObjectFlagsComponent& a_Flags, SpotLightComponent& lightComponent, OldTransformComponent& transform )
+				[&]( auto go, GameObjectFlagsComponent& a_Flags, OldSpotLightComponent& lightComponent, OldTransformComponent& transform )
 				{
 					if ( m_LightEnvironment.NumSpotLights >= MAX_SPOT_LIGHTS )
 						return;
@@ -363,8 +363,8 @@ namespace Tridium {
 		// - Submit Static Mesh Components to the Draw List -
 		{
 			PROFILE_SCOPE( "Submit Static Mesh Components", ProfilerCategory::Rendering );
-			auto meshComponents = m_Scene.GetECS().View<GameObjectFlagsComponent, StaticMeshComponent, OldTransformComponent>();
-			meshComponents.each( [&]( auto go, GameObjectFlagsComponent& a_Flags, StaticMeshComponent& meshComponent, OldTransformComponent& transform )
+			auto meshComponents = m_Scene.GetECS().View<GameObjectFlagsComponent, OldStaticMeshComponent, OldTransformComponent>();
+			meshComponents.each( [&]( auto go, GameObjectFlagsComponent& a_Flags, OldStaticMeshComponent& meshComponent, OldTransformComponent& transform )
 				{
 					if ( !a_Flags.Flags.HasFlag( EGameObjectFlags::Visible )
 						|| !meshComponent.Flags().HasFlag( EComponentFlags::Visible ) )

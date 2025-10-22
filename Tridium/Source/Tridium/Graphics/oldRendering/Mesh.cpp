@@ -36,7 +36,7 @@ namespace Tridium {
 
 	MeshSource::MeshSource( const std::vector<OldVertex>& a_Vertices, const std::vector<uint32_t>& a_Indices, const Matrix4& a_Transform )
 	{
-		m_Handle = AssetHandle::Create();
+		m_Handle = OldAssetHandle::Create();
 
 		OldSubMesh& submesh = m_SubMeshes.emplace_back();
 		submesh.Vertices = a_Vertices;
@@ -73,7 +73,7 @@ namespace Tridium {
 	OldStaticMesh::OldStaticMesh( MeshSourceHandle a_MeshSource )
 		: m_MeshSource( a_MeshSource )
 	{
-		m_Handle = AssetHandle::Create();
+		m_Handle = OldAssetHandle::Create();
 		
 		if ( auto meshSourceRef = AssetManager::GetAsset<MeshSource>( a_MeshSource ) )
 		{
@@ -91,7 +91,7 @@ namespace Tridium {
 	OldStaticMesh::OldStaticMesh( MeshSourceHandle a_MeshSource, const std::vector<uint32_t>& a_SubMeshes )
 		: m_MeshSource( a_MeshSource )
 	{
-		m_Handle = AssetHandle::Create();
+		m_Handle = OldAssetHandle::Create();
 
 		if ( auto meshSourceRef = AssetManager::GetAsset<MeshSource>( a_MeshSource ) )
 		{
@@ -663,92 +663,92 @@ namespace Tridium {
 		return meshSource;
 	}
 
-	AssetHandle MeshFactory::GetDefaultQuad()
+	OldAssetHandle MeshFactory::GetDefaultQuad()
 	{
 		static SharedPtr<MeshSource> s_QuadSource = CreateQuad();
-		static AssetHandle s_QuadSourceHandle = AssetHandle::Create();
+		static OldAssetHandle s_QuadSourceHandle = OldAssetHandle::Create();
 		static bool s_QuadSourceInit = AssetManager::AddMemoryOnlyAsset( s_QuadSourceHandle, s_QuadSource );
 
 		static SharedPtr<OldStaticMesh> s_StaticMesh = MakeShared<OldStaticMesh>( s_QuadSourceHandle );
-		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
+		static OldAssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
 		return s_StaticMeshHandle;
 	}
 
-	AssetHandle MeshFactory::GetDefaultCube()
+	OldAssetHandle MeshFactory::GetDefaultCube()
 	{
 		static SharedPtr<MeshSource> s_CubeSource = CreateCube();
-		static AssetHandle s_CubeSourceHandle = AssetHandle::Create();
+		static OldAssetHandle s_CubeSourceHandle = OldAssetHandle::Create();
 		static bool s_CubeSourceInit = AssetManager::AddMemoryOnlyAsset( s_CubeSourceHandle, s_CubeSource );
 
 		static SharedPtr<OldStaticMesh> s_StaticMesh = MakeShared<OldStaticMesh>( s_CubeSourceHandle );
-		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
+		static OldAssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
 		return s_StaticMeshHandle;
 	}
 
-	AssetHandle MeshFactory::GetDefaultSphere()
+	OldAssetHandle MeshFactory::GetDefaultSphere()
 	{
 		static SharedPtr<MeshSource> s_SphereSource = CreateSphere();
-		static AssetHandle s_SphereSourceHandle = AssetHandle::Create();
+		static OldAssetHandle s_SphereSourceHandle = OldAssetHandle::Create();
 		static bool s_SphereSourceInit = AssetManager::AddMemoryOnlyAsset( s_SphereSourceHandle, s_SphereSource );
 
 		static SharedPtr<OldStaticMesh> s_StaticMesh = MakeShared<OldStaticMesh>( s_SphereSourceHandle );
-		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
+		static OldAssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
 		return s_StaticMeshHandle;
 	}
 
-	AssetHandle MeshFactory::GetDefaultCylinder()
+	OldAssetHandle MeshFactory::GetDefaultCylinder()
 	{
 		static SharedPtr<MeshSource> s_CylinderSource = CreateCylinder();
-		static AssetHandle s_CylinderSourceHandle = AssetHandle::Create();
+		static OldAssetHandle s_CylinderSourceHandle = OldAssetHandle::Create();
 		static bool s_CylinderSourceInit = AssetManager::AddMemoryOnlyAsset( s_CylinderSourceHandle, s_CylinderSource );
 
 		static SharedPtr<OldStaticMesh> s_StaticMesh = MakeShared<OldStaticMesh>( s_CylinderSourceHandle );
-		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
+		static OldAssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
 		return s_StaticMeshHandle;
 	}
 
-	AssetHandle MeshFactory::GetDefaultCapsule()
+	OldAssetHandle MeshFactory::GetDefaultCapsule()
 	{
 		static SharedPtr<MeshSource> s_CapsuleSource = CreateCapsule();
-		static AssetHandle s_CapsuleSourceHandle = AssetHandle::Create();
+		static OldAssetHandle s_CapsuleSourceHandle = OldAssetHandle::Create();
 		static bool s_CapsuleSourceInit = AssetManager::AddMemoryOnlyAsset( s_CapsuleSourceHandle, s_CapsuleSource );
 
 		static SharedPtr<OldStaticMesh> s_StaticMesh = MakeShared<OldStaticMesh>( s_CapsuleSourceHandle );
-		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
+		static OldAssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
 		return s_StaticMeshHandle;
 	}
 
-	AssetHandle MeshFactory::GetDefaultCone()
+	OldAssetHandle MeshFactory::GetDefaultCone()
 	{
 		static SharedPtr<MeshSource> s_ConeSource = CreateCone();
-		static AssetHandle s_ConeSourceHandle = AssetHandle::Create();
+		static OldAssetHandle s_ConeSourceHandle = OldAssetHandle::Create();
 		static bool s_ConeSourceInit = AssetManager::AddMemoryOnlyAsset( s_ConeSourceHandle, s_ConeSource );
 
 		static SharedPtr<OldStaticMesh> s_StaticMesh = MakeShared<OldStaticMesh>( s_ConeSourceHandle );
-		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
+		static OldAssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
 		return s_StaticMeshHandle;
 	}
 
-	AssetHandle MeshFactory::GetDefaultTorus()
+	OldAssetHandle MeshFactory::GetDefaultTorus()
 	{
 		static SharedPtr<MeshSource> s_TorusSource = CreateTorus();
-		static AssetHandle s_TorusSourceHandle = AssetHandle::Create();
+		static OldAssetHandle s_TorusSourceHandle = OldAssetHandle::Create();
 		static bool s_TorusSourceInit = AssetManager::AddMemoryOnlyAsset( s_TorusSourceHandle, s_TorusSource );
 
 		static SharedPtr<OldStaticMesh> s_StaticMesh = MakeShared<OldStaticMesh>( s_TorusSourceHandle );
-		static AssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
+		static OldAssetHandle s_StaticMeshHandle = ( s_StaticMesh->SetHandle( AssetManager::GetNextMemoryAssetHandle() ), s_StaticMesh->GetHandle() );
 		static bool s_StaticMeshInit = AssetManager::AddMemoryOnlyAsset( s_StaticMeshHandle, s_StaticMesh );
 
 		return s_StaticMeshHandle;

@@ -33,7 +33,7 @@ namespace Tridium {
 
 		//	if ( material )
 		//	{
-		//		m_Modified |= ImGui::ColorEdit3( "Albedo Color", &material->AlbedoColor[0] );
+		//		m_Modified |= ImGui::ColorEdit3( "Albedo Color4", &material->AlbedoColor[0] );
 		//		m_Modified |= ImGui::SliderFloat( "Metallic Intensity", &material->MetallicIntensity, 0.0f, 1.0f );
 		//		m_Modified |= ImGui::SliderFloat( "Roughness Intensity", &material->RoughnessIntensity, 0.0f, 1.0f );
 		//		m_Modified |= ImGui::SliderFloat( "Emissive Intensity", &material->EmissiveIntensity, 0.0f, 1.0f );

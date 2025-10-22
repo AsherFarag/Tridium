@@ -419,18 +419,18 @@ namespace Tridium::ToolUI {
 	}
 
 	template<>
-	bool DrawProperty( const char* a_Name, Color& a_Value, EDrawPropertyFlags a_Flags )
+	bool DrawProperty( const char* a_Name, Color4& a_Value, EDrawPropertyFlags a_Flags )
 	{
 		IS_DISABLED( a_Flags );
 		return ImGui::ColorEdit4( a_Name, &a_Value.r );
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	// AssetHandle
+	// OldAssetHandle
 	//////////////////////////////////////////////////////////////////////////
 
 	template <EAssetTypeOld _AssetType>
-	bool _DrawAssetHandleProperty( const char* a_Name, AssetHandle& a_Value, EDrawPropertyFlags a_Flags )
+	bool _DrawAssetHandleProperty( const char* a_Name, OldAssetHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
 		OldAssetMetaData assetMetaData = EditorAssetManager::Get()->GetAssetMetaData(a_Value);
 		const char* assetName = "None";
@@ -448,7 +448,7 @@ namespace Tridium::ToolUI {
 			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_ASSET_HANDLE, ImGuiDragDropFlags_::ImGuiDragDropFlags_SourceAllowNullID );
 			if ( payload )
 			{
-				AssetHandle assetHandle( *(AssetHandle*)payload->Data );
+				OldAssetHandle assetHandle( *(OldAssetHandle*)payload->Data );
 				const OldAssetMetaData& assetMetaData = EditorAssetManager::Get()->GetAssetMetaData( assetHandle );
 				if ( assetMetaData.IsValid() && assetMetaData.AssetType == _AssetType )
 				{
@@ -460,9 +460,9 @@ namespace Tridium::ToolUI {
 
 		if ( open )
 		{
-			if ( ImGui::Selectable( "None###Internal", a_Value == AssetHandle::InvalidID ) )
+			if ( ImGui::Selectable( "None###Internal", a_Value == OldAssetHandle::InvalidID ) )
 			{
-				a_Value = AssetHandle::InvalidID;
+				a_Value = OldAssetHandle::InvalidID;
 				ImGui::EndCombo();
 				return true;
 			}
@@ -501,7 +501,7 @@ namespace Tridium::ToolUI {
 	}
 
 	template<>
-	bool DrawProperty( const char* a_Name, AssetHandle& a_Value, EDrawPropertyFlags a_Flags )
+	bool DrawProperty( const char* a_Name, OldAssetHandle& a_Value, EDrawPropertyFlags a_Flags )
 	{
 		OldAssetMetaData assetMetaData = EditorAssetManager::Get()->GetAssetMetaData( a_Value );
 		const char* assetName = "None";
@@ -520,7 +520,7 @@ namespace Tridium::ToolUI {
 			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( TE_PAYLOAD_ASSET_HANDLE, ImGuiDragDropFlags_::ImGuiDragDropFlags_SourceAllowNullID );
 			if ( payload )
 			{
-				AssetHandle assetHandle( *(AssetHandle*)payload->Data );
+				OldAssetHandle assetHandle( *(OldAssetHandle*)payload->Data );
 				const OldAssetMetaData& assetMetaData = EditorAssetManager::Get()->GetAssetMetaData( assetHandle );
 				if ( assetMetaData.IsValid() )
 				{
@@ -532,9 +532,9 @@ namespace Tridium::ToolUI {
 
 		if ( open )
 		{
-			if ( ImGui::Selectable( "None###Internal", a_Value == AssetHandle::InvalidID ) )
+			if ( ImGui::Selectable( "None###Internal", a_Value == OldAssetHandle::InvalidID ) )
 			{
-				a_Value = AssetHandle::InvalidID;
+				a_Value = OldAssetHandle::InvalidID;
 				ImGui::EndCombo();
 				return true;
 			}

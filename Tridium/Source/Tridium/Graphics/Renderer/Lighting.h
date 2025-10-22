@@ -7,6 +7,11 @@ namespace Tridium {
 
 	constexpr size_t c_MaxDirectionLights = 4;
 
+	//=============================================================================================
+	// Light ID: A unique identifier for lights in the scene.
+	//=============================================================================================
+	using LightID = int32_t;
+
 	enum class ELightType : uint8_t
 	{
 		Unknown = 0,

@@ -6,9 +6,9 @@ namespace Tridium {
 
 	struct AssetRegistry
 	{
-		std::unordered_map<AssetHandle, OldAssetMetaData> AssetMetaData;
+		std::unordered_map<OldAssetHandle, OldAssetMetaData> AssetMetaData;
 		// Key: Dependent, Value: Dependencies
-		std::unordered_map<AssetHandle, std::unordered_set<AssetHandle>> AssetDependencies;
+		std::unordered_map<OldAssetHandle, std::unordered_set<OldAssetHandle>> AssetDependencies;
 	};
 
 }

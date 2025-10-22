@@ -15,7 +15,7 @@ namespace Tridium {
 		~SpriteComponent() = default;
 
 		TextureHandle GetTexture() { return m_Texture; }
-		void SetTexture( AssetHandle a_Texture ) { m_Texture = a_Texture; }
+		void SetTexture( OldAssetHandle a_Texture ) { m_Texture = a_Texture; }
 
 	private:
 		TextureHandle m_Texture;

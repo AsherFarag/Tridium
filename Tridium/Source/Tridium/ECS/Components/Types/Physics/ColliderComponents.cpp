@@ -3,53 +3,53 @@
 #include <Tridium/Reflection/Reflection.h>
 
 namespace Tridium {
-	BEGIN_REFLECT_COMPONENT( SphereColliderComponent, Scriptable )
+	BEGIN_REFLECT_COMPONENT( OldSphereColliderComponent, Scriptable )
 		PROPERTY( m_Center, EditAnywhere | Serialize )
 		PROPERTY( m_Rotation, EditAnywhere | Serialize )
 		PROPERTY( m_Radius, EditAnywhere | Serialize )
-	END_REFLECT( SphereColliderComponent )
+	END_REFLECT( OldSphereColliderComponent )
 
-	BEGIN_REFLECT_COMPONENT( BoxColliderComponent, Scriptable )
+	BEGIN_REFLECT_COMPONENT( OldBoxColliderComponent, Scriptable )
 		PROPERTY( m_Center, EditAnywhere | Serialize )
 		PROPERTY( m_Rotation, EditAnywhere | Serialize )
 		PROPERTY( m_HalfExtents, EditAnywhere | Serialize )
-	END_REFLECT_COMPONENT( BoxColliderComponent )
+	END_REFLECT_COMPONENT( OldBoxColliderComponent )
 
-	BEGIN_REFLECT_COMPONENT( CapsuleColliderComponent, Scriptable )
+	BEGIN_REFLECT_COMPONENT( OldCapsuleColliderComponent, Scriptable )
 		PROPERTY( m_Center, EditAnywhere | Serialize )
 		PROPERTY( m_Rotation, EditAnywhere | Serialize )
 		PROPERTY( m_Radius, EditAnywhere | Serialize )
 		PROPERTY( m_HalfHeight, EditAnywhere | Serialize )
-	END_REFLECT_COMPONENT( CapsuleColliderComponent )
+	END_REFLECT_COMPONENT( OldCapsuleColliderComponent )
 
-	BEGIN_REFLECT_COMPONENT( CylinderColliderComponent, Scriptable )
+	BEGIN_REFLECT_COMPONENT( OldCylinderColliderComponent, Scriptable )
 		PROPERTY( m_Center, EditAnywhere | Serialize )
 		PROPERTY( m_Rotation, EditAnywhere | Serialize )
 		PROPERTY( m_Radius, EditAnywhere | Serialize )
 		PROPERTY( m_HalfHeight, EditAnywhere | Serialize )
-	END_REFLECT_COMPONENT( CylinderColliderComponent )
+	END_REFLECT_COMPONENT( OldCylinderColliderComponent )
 
-	BEGIN_REFLECT_COMPONENT( MeshColliderComponent, Scriptable )
+	BEGIN_REFLECT_COMPONENT( OldMeshColliderComponent, Scriptable )
 		PROPERTY( m_Mesh, EditAnywhere | Serialize )
-	END_REFLECT_COMPONENT( MeshColliderComponent )
+	END_REFLECT_COMPONENT( OldMeshColliderComponent )
 
-	SphereColliderComponent::SphereColliderComponent()
+	OldSphereColliderComponent::OldSphereColliderComponent()
 	{
 	}
 
-	BoxColliderComponent::BoxColliderComponent()
+	OldBoxColliderComponent::OldBoxColliderComponent()
 	{
 	}
 
-	CapsuleColliderComponent::CapsuleColliderComponent()
+	OldCapsuleColliderComponent::OldCapsuleColliderComponent()
 	{
 	}
 
-	CylinderColliderComponent::CylinderColliderComponent()
+	OldCylinderColliderComponent::OldCylinderColliderComponent()
 	{
 	}
 
-	MeshColliderComponent::MeshColliderComponent()
+	OldMeshColliderComponent::OldMeshColliderComponent()
 	{
 	}
 }

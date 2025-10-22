@@ -20,6 +20,7 @@ namespace Tridium {
 		//=============================================================================================
 		GameObject() = default;
 		GameObject( Scene* a_Scene, EntityID a_EntityID ) : m_Scene( a_Scene ), m_EntityID( a_EntityID ) {}
+		GameObject( Scene& a_Scene, EntityID a_EntityID ) : m_Scene( &a_Scene ), m_EntityID( a_EntityID ) {}
 		~GameObject() = default;
 
 		//=============================================================================================
@@ -63,6 +64,16 @@ namespace Tridium {
 		[[nodiscard]] decltype( auto ) Get() const
 		{
 			return m_Scene->Registry().Get<T...>( m_EntityID );
+		}
+
+		//=============================================================================================
+		// Checks if the GameObject has the component,
+		// if not it creates a new component with the passed in arguments and returns a reference to it.
+		// If the component already exists, it returns a reference to the existing component.
+		template<typename T, typename... _Args>
+		T& GetOrAdd( _Args&&... a_Args )
+		{
+			return m_Scene->Registry().GetOrEmplace<T>( m_EntityID, std::forward<_Args>( a_Args )... );
 		}
 
 		//=============================================================================================
@@ -145,13 +156,13 @@ namespace Tridium {
 		// Sets the parent of this GameObject to the specified new parent.
 		void SetParent( const GameObject& a_NewParent )
 		{
-			HierarchyComponent& hierarchy = Get<HierarchyComponent>();
+			HierarchyComponent& hierarchy = GetOrAdd<HierarchyComponent>();
 
 			// Remove from current parent if exists
 			if ( hierarchy.Parent != NullEntity )
 			{
 				GameObject currentParent( m_Scene, hierarchy.Parent );
-				HierarchyComponent& parentHierarchy = currentParent.Get<HierarchyComponent>();
+				HierarchyComponent& parentHierarchy = currentParent.GetOrAdd<HierarchyComponent>();
 
 				if ( parentHierarchy.FirstChild == m_EntityID )
 				{

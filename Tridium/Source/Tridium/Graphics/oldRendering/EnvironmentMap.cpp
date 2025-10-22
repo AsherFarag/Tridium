@@ -51,7 +51,7 @@ namespace Tridium {
 		return Create( equirectangularTexture );
 	}
 
-	SharedPtr<EnvironmentMapOld> EnvironmentMapOld::Create( AssetHandle a_Handle )
+	SharedPtr<EnvironmentMapOld> EnvironmentMapOld::Create( OldAssetHandle a_Handle )
 	{
 		TODO( "Editor only!" );
 		auto assetManager = AssetManager::Get<EditorAssetManager>();

@@ -84,7 +84,7 @@ namespace Tridium {
 	};
 
 	template<>
-	struct Scriptable<Color>
+	struct Scriptable<Color4>
 	{
 		static void RegisterType( ScriptEngine& a_ScriptEngine );
 	};

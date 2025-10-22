@@ -99,7 +99,7 @@ namespace Tridium {
                 .SetMipLODBias( 0.0f )
                 .SetMaxAnisotropy( 0 )
                 .SetComparisonFunc( ERHIComparison::Never )
-                .SetBorderColor( Color::Black() )
+                .SetBorderColor( Color4::Black() )
                 .SetMinLOD( 0.0f )
                 .SetMaxLOD( 0.0f );
 

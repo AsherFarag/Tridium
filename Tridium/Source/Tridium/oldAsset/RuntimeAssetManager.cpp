@@ -2,7 +2,7 @@
 #include "RuntimeAssetManager.h"
 
 namespace Tridium {
-	SharedPtr<Asset> RuntimeAssetManager::GetAsset( AssetHandle a_Handle )
+	SharedPtr<Asset> RuntimeAssetManager::GetAsset( OldAssetHandle a_Handle )
 	{
 		return SharedPtr<Asset>();
 	}
@@ -10,7 +10,7 @@ namespace Tridium {
 	{
 		return SharedPtr<Asset>();
 	}
-	SharedPtr<Asset> RuntimeAssetManager::GetMemoryOnlyAsset( AssetHandle a_Handle )
+	SharedPtr<Asset> RuntimeAssetManager::GetMemoryOnlyAsset( OldAssetHandle a_Handle )
 	{
 		return SharedPtr<Asset>();
 	}
@@ -18,29 +18,29 @@ namespace Tridium {
 	{
 		return AssetStorageIterator( m_LoadedAssets, m_MemoryAssets );
 	}
-	bool RuntimeAssetManager::AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset )
+	bool RuntimeAssetManager::AddMemoryOnlyAsset( OldAssetHandle a_Handle, SharedPtr<Asset> a_Asset )
 	{
 		return false;
 	}
-	bool RuntimeAssetManager::HasAsset( AssetHandle a_Handle )
+	bool RuntimeAssetManager::HasAsset( OldAssetHandle a_Handle )
 	{
 		return false;
 	}
-	void RuntimeAssetManager::RemoveAsset( AssetHandle a_Handle )
+	void RuntimeAssetManager::RemoveAsset( OldAssetHandle a_Handle )
 	{
 	}
-	EAssetTypeOld RuntimeAssetManager::GetAssetType( AssetHandle a_Handle )
+	EAssetTypeOld RuntimeAssetManager::GetAssetType( OldAssetHandle a_Handle )
 	{
 		return EAssetTypeOld();
 	}
-	bool RuntimeAssetManager::IsMemoryAsset( AssetHandle a_Handle )
+	bool RuntimeAssetManager::IsMemoryAsset( OldAssetHandle a_Handle )
 	{
 		return false;
 	}
-	void RuntimeAssetManager::RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency )
+	void RuntimeAssetManager::RegisterDependency( OldAssetHandle a_Dependent, OldAssetHandle a_Dependency )
 	{
 	}
-	void RuntimeAssetManager::UnregisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency )
+	void RuntimeAssetManager::UnregisterDependency( OldAssetHandle a_Dependent, OldAssetHandle a_Dependency )
 	{
 	}
 } // namespace Tridium

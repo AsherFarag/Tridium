@@ -5,7 +5,6 @@
 #pragma once
 
 #include <Jolt/Core/NonCopyable.h>
-#include <Jolt/Core/FPException.h>
 #include <Jolt/Geometry/ClosestPoint.h>
 #include <Jolt/Geometry/ConvexSupport.h>
 
@@ -368,14 +367,14 @@ public:
 
 #ifdef JPH_GJK_DEBUG
 			// Draw -ioV to show the closest point to the origin from the previous simplex
-			DebugRenderer::sInstance->DrawArrow(mOffset, mOffset - ioV, Color::sOrange, 0.05f);
+			DebugRenderer::sInstance->DrawArrow(mOffset, mOffset - ioV, Color4::sOrange, 0.05f);
 
 			// Draw ioV to show where we're probing next
-			DebugRenderer::sInstance->DrawArrow(mOffset, mOffset + ioV, Color::sCyan, 0.05f);
+			DebugRenderer::sInstance->DrawArrow(mOffset, mOffset + ioV, Color4::sCyan, 0.05f);
 
 			// Draw w, the support point
-			DebugRenderer::sInstance->DrawArrow(mOffset, mOffset + w, Color::sGreen, 0.05f);
-			DebugRenderer::sInstance->DrawMarker(mOffset + w, Color::sGreen, 1.0f);
+			DebugRenderer::sInstance->DrawArrow(mOffset, mOffset + w, Color4::sGreen, 0.05f);
+			DebugRenderer::sInstance->DrawMarker(mOffset + w, Color4::sGreen, 1.0f);
 
 			// Draw the simplex and the Minkowski difference around it
 			DrawState();
@@ -477,11 +476,11 @@ public:
 		Trace("Return: v = [%s], |v| = %g", ConvertToString(ioV).c_str(), (double)ioV.Length());
 
 		// Draw -ioV to show the closest point to the origin from the previous simplex
-		DebugRenderer::sInstance->DrawArrow(mOffset, mOffset - ioV, Color::sOrange, 0.05f);
+		DebugRenderer::sInstance->DrawArrow(mOffset, mOffset - ioV, Color4::sOrange, 0.05f);
 
 		// Draw the closest points
-		DebugRenderer::sInstance->DrawMarker(mOffset + outPointA, Color::sGreen, 1.0f);
-		DebugRenderer::sInstance->DrawMarker(mOffset + outPointB, Color::sPurple, 1.0f);
+		DebugRenderer::sInstance->DrawMarker(mOffset + outPointA, Color4::sGreen, 1.0f);
+		DebugRenderer::sInstance->DrawMarker(mOffset + outPointB, Color4::sPurple, 1.0f);
 
 		// Draw the simplex and the Minkowski difference around it
 		DrawState();
@@ -552,7 +551,7 @@ public:
 #ifdef JPH_GJK_DEBUG
 				Trace("v . r = %g", (double)v_dot_r);
 #endif
-				if (v_dot_r >= 0.0f)
+				if (v_dot_r >= -1.0e-18f) // Instead of checking >= 0, check with epsilon as we don't want the division below to overflow to infinity as it can cause a float exception
 					return false;
 
 				// Update the lower bound for lambda
@@ -745,7 +744,7 @@ public:
 #ifdef JPH_GJK_DEBUG
 				Trace("v . r = %g", (double)v_dot_r);
 #endif
-				if (v_dot_r >= 0.0f)
+				if (v_dot_r >= -1.0e-18f) // Instead of checking >= 0, check with epsilon as we don't want the division below to overflow to infinity as it can cause a float exception
 					return false;
 
 				// Update the lower bound for lambda
@@ -900,19 +899,19 @@ private:
 		DebugRenderer::sInstance->DrawCoordinateSystem(origin, 1.0f);
 
 		// Draw the hull
-		DebugRenderer::sInstance->DrawGeometry(origin, mGeometry->mBounds.Transformed(origin), mGeometry->mBounds.GetExtent().LengthSq(), Color::sYellow, mGeometry);
+		DebugRenderer::sInstance->DrawGeometry(origin, mGeometry->mBounds.Transformed(origin), mGeometry->mBounds.GetExtent().LengthSq(), Color4::sYellow, mGeometry);
 
 		// Draw Y
 		for (int i = 0; i < mNumPoints; ++i)
 		{
 			// Draw support point
 			RVec3 y_i = origin * mY[i];
-			DebugRenderer::sInstance->DrawMarker(y_i, Color::sRed, 1.0f);
+			DebugRenderer::sInstance->DrawMarker(y_i, Color4::sRed, 1.0f);
 			for (int j = i + 1; j < mNumPoints; ++j)
 			{
 				// Draw edge
 				RVec3 y_j = origin * mY[j];
-				DebugRenderer::sInstance->DrawLine(y_i, y_j, Color::sRed);
+				DebugRenderer::sInstance->DrawLine(y_i, y_j, Color4::sRed);
 				for (int k = j + 1; k < mNumPoints; ++k)
 				{
 					// Make sure triangle faces the origin
@@ -920,9 +919,9 @@ private:
 					RVec3 center = (y_i + y_j + y_k) / Real(3);
 					RVec3 normal = (y_j - y_i).Cross(y_k - y_i);
 					if (normal.Dot(center) < Real(0))
-						DebugRenderer::sInstance->DrawTriangle(y_i, y_j, y_k, Color::sLightGrey);
+						DebugRenderer::sInstance->DrawTriangle(y_i, y_j, y_k, Color4::sLightGrey);
 					else
-						DebugRenderer::sInstance->DrawTriangle(y_i, y_k, y_j, Color::sLightGrey);
+						DebugRenderer::sInstance->DrawTriangle(y_i, y_k, y_j, Color4::sLightGrey);
 				}
 			}
 		}

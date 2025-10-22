@@ -333,6 +333,13 @@ namespace Tridium::Math {
 		return glm::perspective( a_FovY, a_Aspect, a_ZNear, a_ZFar );
 	}
 
+	// Creates an orthographic projection matrix.
+	template<Concepts::Arithmetic _Gen>
+	constexpr inline Matrix4x4<_Gen> Orthographic( const _Gen& a_Left, const _Gen& a_Right, const _Gen& a_Bottom, const _Gen& a_Top, const _Gen& a_ZNear, const _Gen& a_ZFar )
+	{
+		return glm::ortho( a_Left, a_Right, a_Bottom, a_Top, a_ZNear, a_ZFar );
+	}
+
 	// Inverts a matrix.
 	template<size_t _CountX, size_t _CountY, typename _Gen>
 	constexpr inline Matrix<_CountX, _CountY, _Gen> Inverse( const Matrix<_CountX, _CountY, _Gen>& a_Matrix )

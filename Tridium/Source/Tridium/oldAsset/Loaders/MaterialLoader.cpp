@@ -64,18 +64,18 @@ namespace Tridium {
 		} \
 
 		SharedPtr<OldMaterial> material = MakeShared<OldMaterial>();
-		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, Shader );
-		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, AlbedoTexture );
+		LOAD_MATERIAL_PROPERTY( OldAssetHandle::Type, Shader );
+		LOAD_MATERIAL_PROPERTY( OldAssetHandle::Type, AlbedoTexture );
 		LOAD_MATERIAL_PROPERTY( Vector3, AlbedoColor );
-		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, MetallicTexture );
+		LOAD_MATERIAL_PROPERTY( OldAssetHandle::Type, MetallicTexture );
 		LOAD_MATERIAL_PROPERTY( float, MetallicIntensity );
-		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, RoughnessTexture );
+		LOAD_MATERIAL_PROPERTY( OldAssetHandle::Type, RoughnessTexture );
 		LOAD_MATERIAL_PROPERTY( float, RoughnessIntensity );
-		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, NormalTexture );
-		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, OpacityTexture );
-		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, EmissiveTexture );
+		LOAD_MATERIAL_PROPERTY( OldAssetHandle::Type, NormalTexture );
+		LOAD_MATERIAL_PROPERTY( OldAssetHandle::Type, OpacityTexture );
+		LOAD_MATERIAL_PROPERTY( OldAssetHandle::Type, EmissiveTexture );
 		LOAD_MATERIAL_PROPERTY( float, EmissiveIntensity );
-		LOAD_MATERIAL_PROPERTY( AssetHandle::Type, AOTexture );
+		LOAD_MATERIAL_PROPERTY( OldAssetHandle::Type, AOTexture );
 
 		return material;
 	}

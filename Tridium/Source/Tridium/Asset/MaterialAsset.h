@@ -50,7 +50,7 @@ namespace Tridium {
 		const auto& EmissiveMap() const { return m_EmissiveMap; }
 		const auto& AmbientOcclusionMap() const { return m_AmbientOcclusionMap; }
 		const auto& OpacityMap() const { return m_OpacityMap; }
-		Color AlbedoColor() const { return m_AlbedoColor; }
+		Color4 AlbedoColor() const { return m_AlbedoColor; }
 		float MetallicIntensity() const { return m_MetallicIntensity; }
 		float RoughnessIntensity() const { return m_RoughnessIntensity; }
 		float EmissiveIntensity() const { return m_EmissiveIntensity; }
@@ -62,7 +62,7 @@ namespace Tridium {
 		void SetEmissiveMap( AssetRef<Texture> a_Texture ) { m_EmissiveMap = std::move( a_Texture ); }
 		void SetAmbientOcclusionMap( AssetRef<Texture> a_Texture ) { m_AmbientOcclusionMap = std::move( a_Texture ); }
 		void SetOpacityMap( AssetRef<Texture> a_Texture ) { m_OpacityMap = std::move( a_Texture ); }
-		void SetAlbedoColor( Color a_Color ) { m_AlbedoColor = a_Color; }
+		void SetAlbedoColor( Color4 a_Color ) { m_AlbedoColor = a_Color; }
 		void SetMetallicIntensity( float a_Intensity ) { m_MetallicIntensity = a_Intensity; }
 		void SetRoughnessIntensity( float a_Intensity ) { m_RoughnessIntensity = a_Intensity; }
 		void SetEmissiveIntensity( float a_Intensity ) { m_EmissiveIntensity = a_Intensity; }
@@ -91,7 +91,7 @@ namespace Tridium {
 		AssetRef<Texture> m_AmbientOcclusionMap;
 		AssetRef<Texture> m_OpacityMap;
 
-		Color m_AlbedoColor = Color::White();
+		Color4 m_AlbedoColor = Color4::White();
 		float m_MetallicIntensity = 0.0f;
 		float m_RoughnessIntensity = 1.0f;
 		float m_EmissiveIntensity = 1.0f;

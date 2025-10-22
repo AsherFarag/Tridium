@@ -1,14 +1,11 @@
 #include "tripch.h"
-#include "JoltPhysicsScene.h"
-#include "JoltUtil.h"
-#include "JoltColliders.h"
-#include "JoltPhysicsFilter.h"
-#include "JoltDebugRenderer.h"
-
-#include <Tridium/ECS/Components/Types.h>
-#include <Tridium/oldAsset/AssetManager.h>
-#include <Tridium/Graphics/oldRendering/Mesh.h>
+#include <Tridium/Physics/PhysicsComponents.h>
 #include <Tridium/Physics/PhysicsLayer.h>
+#include <Tridium/Physics/Jolt/JoltPhysicsScene.h>
+#include <Tridium/Physics/Jolt/JoltUtil.h>
+#include <Tridium/Physics/Jolt/JoltColliders.h>
+#include <Tridium/Physics/Jolt/JoltPhysicsFilter.h>
+#include <Tridium/Physics/Jolt/JoltDebugRenderer.h>
 
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
@@ -16,12 +13,16 @@
 #include <Jolt/Physics/Collision/Shape/CylinderShape.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #include <Jolt/Physics/Collision/Shape/CompoundShape.h>
-#include <Jolt/Physics/Collision/Shape/MutableCompoundShape.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Constraints/Constraint.h>
 #include <Jolt/Physics/Constraints/SixDOFConstraint.h>
 #include <Jolt/Physics/Collision/RayCast.h>
 #include <Jolt/Physics/Collision/CastResult.h>
+
+// OLD
+#include <Tridium/ECS/Components/Types.h>
+#include <Tridium/oldAsset/AssetManager.h>
+#include <Tridium/Graphics/oldRendering/Mesh.h>
 
 namespace Tridium {
 	namespace Layers {
@@ -206,6 +207,139 @@ namespace Tridium {
 		return hit;
 	}
 
+	PhysicsBodyID JoltPhysicsScene::CreatePhysicsBody( GameObject a_GameObject, const RigidBodyComponent& a_RigidBody )
+	{
+		ASSERT( m_Initialised );
+
+		if ( !a_GameObject.HasAny<SphereColliderComponent, BoxColliderComponent, CapsuleColliderComponent, CylinderColliderComponent, MeshColliderComponent>() )
+		{
+			return NullPhysicsBodyID;
+		}
+
+		const JPH::Vec3 position = {};//Util::ToJoltVec3( a_TransformComponent.GetWorldPosition() );
+		const JPH::Quat rotation = {};//Util::ToJoltQuat( a_TransformComponent.GetOrientation() );
+		const JPH::Vec3 scale    = {};//Util::ToJoltVec3( a_TransformComponent.GetWorldScale() );
+
+		JPH::MassProperties massProperties;
+		JPH::Ref<JPH::MutableCompoundShapeSettings> compoundSettings = CreateShapeSettings( a_GameObject, a_RigidBody, massProperties );
+
+		if ( !compoundSettings )
+		{
+			return NullPhysicsBodyID;
+		}
+
+		massProperties.Scale( Util::ToJoltVec3( Vector3( a_RigidBody.MassScale() ) ) );
+
+		// Create the body creation settings
+		const JPH::EMotionType motionType = Util::ToJoltMotionType( a_RigidBody.MotionType() );
+		const JPH::ObjectLayer layer = Cast<JPH::ObjectLayer>( a_RigidBody.PhysicsLayer() );
+		JPH::BodyCreationSettings bodySettings( compoundSettings, position, rotation, motionType, layer );
+		bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::MassAndInertiaProvided;
+		bodySettings.mMassPropertiesOverride = massProperties;
+		bodySettings.mRestitution = a_RigidBody.Restitution();
+
+		JPH::Body* body = m_BodyInterface.CreateBody( bodySettings );
+
+		if ( !body )
+		{
+			// Failed to create body
+			return NullPhysicsBodyID;
+		}
+
+		// Successfully created body
+
+		// Set six degrees of freedom constraint
+		{
+			bool needsConstraint = false;
+			const LinearMotionConstraint& linearMotionConstraint = a_RigidBody.LinearMotionConstraint();
+			needsConstraint |= linearMotionConstraint.XMotion != ESixDOFConstraintMotion::Free;
+			needsConstraint |= linearMotionConstraint.YMotion != ESixDOFConstraintMotion::Free;
+			needsConstraint |= linearMotionConstraint.ZMotion != ESixDOFConstraintMotion::Free;
+
+			const AngularMotionConstraint& angularMotionConstraint = a_RigidBody.AngularMotionConstraint();
+			needsConstraint |= angularMotionConstraint.Swing1Motion != ESixDOFConstraintMotion::Free;
+			needsConstraint |= angularMotionConstraint.Swing2Motion != ESixDOFConstraintMotion::Free;
+			needsConstraint |= angularMotionConstraint.TwistMotion != ESixDOFConstraintMotion::Free;
+			if ( needsConstraint )
+			{
+				JPH::SixDOFConstraintSettings* constraintSettings = new JPH::SixDOFConstraintSettings();
+
+				if ( angularMotionConstraint.Swing1Motion == ESixDOFConstraintMotion::Locked )
+					constraintSettings->SetLimitedAxis( JPH::SixDOFConstraintSettings::RotationX, 0.0f, 0.0f );
+
+				if ( angularMotionConstraint.Swing2Motion == ESixDOFConstraintMotion::Locked )
+					constraintSettings->SetLimitedAxis( JPH::SixDOFConstraintSettings::RotationY, 0.0f, 0.0f );
+
+				if ( angularMotionConstraint.TwistMotion == ESixDOFConstraintMotion::Locked )
+					constraintSettings->SetLimitedAxis( JPH::SixDOFConstraintSettings::RotationZ, 0.0f, 0.0f );
+
+
+				// Add the constraint to the body
+				JPH::Constraint* constraint = m_BodyInterface.CreateConstraint( constraintSettings, body->GetID(), JPH::BodyID() );
+				m_PhysicsSystem.AddConstraint( constraint );
+			}
+		}
+
+		if ( a_RigidBody.MotionType() != EMotionType::Static )
+		{
+			body->GetMotionProperties()->SetGravityFactor( a_RigidBody.GravityScale() );
+		}
+
+		m_BodyInterface.AddBody( body->GetID(), JPH::EActivation::Activate );
+		m_BodyInterface.SetUserData( body->GetID(), Cast<uint64_t>( a_GameObject.ID() ) );
+		return body->GetID().GetIndexAndSequenceNumber();
+	}
+
+	void JoltPhysicsScene::DestroyPhysicsBody( PhysicsBodyID a_BodyID )
+	{
+		ASSERT( m_Initialised );
+
+		if ( a_BodyID == JPH::BodyID::cInvalidBodyID )
+			return;
+
+		m_BodyInterface.RemoveBody( JPH::BodyID( a_BodyID ) );
+		m_BodyInterface.DestroyBody( JPH::BodyID( a_BodyID ) );
+	}
+
+	bool JoltPhysicsScene::HasPhysicsBody( PhysicsBodyID a_BodyID ) const
+	{
+		ASSERT( m_Initialised );
+
+		if ( a_BodyID == JPH::BodyID::cInvalidBodyID )
+			return false;
+
+		// Jolt doesn't have a way to check if a body exists so just return true if it is valid.
+		return true;
+	}
+
+	bool JoltPhysicsScene::UpdatePhysicsBodyShape( GameObject a_GameObject, const RigidBodyComponent& a_RigidBody )
+	{
+		ASSERT( m_Initialised );
+		
+		if ( !a_RigidBody.Valid() )
+		{
+			return false;
+		}
+
+		JPH::MassProperties massProperties;
+		JPH::Ref<JPH::MutableCompoundShapeSettings> compoundSettings = CreateShapeSettings( a_GameObject, a_RigidBody, massProperties );
+
+		if ( !compoundSettings )
+		{
+			return false;
+		}
+
+		massProperties.Scale( Util::ToJoltVec3( Vector3( a_RigidBody.MassScale() ) ) );
+
+		JPH::Ref<JPH::Shape> shape = compoundSettings->Create().Get();
+
+		m_BodyInterface.SetShape( JPH::BodyID( a_RigidBody.BodyID() ), shape.GetPtr(), false, JPH::EActivation::Activate );
+
+		return true;
+	}
+
+	// OLD
+
 	void JoltPhysicsScene::RemovePhysicsBody( PhysicsBodyID a_PhysicsBodyID )
 	{
 		//TE_CORE_ASSERT( m_Initialised );
@@ -219,14 +353,14 @@ namespace Tridium {
 		m_BodyInterface.DestroyBody( JPH::BodyID( a_PhysicsBodyID ) );
 	}
 
-	void JoltPhysicsScene::RemovePhysicsBody( RigidBodyComponent& a_RigidBody )
+	void JoltPhysicsScene::RemovePhysicsBody( OldRigidBodyComponent& a_RigidBody )
 	{
 		RemovePhysicsBody( a_RigidBody.GetBodyProxy().GetBodyID() );
 		a_RigidBody.GetBodyProxy().SetBodyID( JPH::BodyID::cInvalidBodyID );
 		m_BodyToGameObjectMap.EraseKey( a_RigidBody.GetBodyProxy().GetBodyID() );
 	}
 
-	bool JoltPhysicsScene::AddPhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent )
+	bool JoltPhysicsScene::AddPhysicsBody( const OldGameObject& a_GameObject, OldRigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent )
 	{
 		TE_CORE_ASSERT( m_Initialised );
 		if ( !m_Initialised )
@@ -246,7 +380,7 @@ namespace Tridium {
 		// Add all ColliderComponents to the compound shape
 		{
 			// Sphere Collider
-			if ( auto* sc = m_Scene->TryGetComponentFromGameObject<SphereColliderComponent>( a_GameObject ) )
+			if ( auto* sc = m_Scene->TryGetComponentFromGameObject<OldSphereColliderComponent>( a_GameObject ) )
 			{
 				const JPH::Ref<JPH::SphereShape> sphereShape = new JPH::SphereShape( sc->GetRadius() );
 				const JPH::Vec3 center = Util::ToJoltVec3( sc->GetCenter() );
@@ -257,7 +391,7 @@ namespace Tridium {
 				++numShapes;
 			}
 			// Box Collider
-			if ( auto* bc = m_Scene->TryGetComponentFromGameObject<BoxColliderComponent>( a_GameObject ) )
+			if ( auto* bc = m_Scene->TryGetComponentFromGameObject<OldBoxColliderComponent>( a_GameObject ) )
 			{
 				const JPH::Vec3 halfExtents = JPH::Vec3( bc->GetHalfExtents().X * scale.GetX(), bc->GetHalfExtents().Y * scale.GetY(), bc->GetHalfExtents().Z * scale.GetZ() );
 				const JPH::Ref<JPH::BoxShape> boxShape = new JPH::BoxShape( halfExtents );
@@ -269,7 +403,7 @@ namespace Tridium {
 				++numShapes;
 			}
 			// Capsule Collider
-			if ( auto* cc = m_Scene->TryGetComponentFromGameObject<CapsuleColliderComponent>( a_GameObject ) )
+			if ( auto* cc = m_Scene->TryGetComponentFromGameObject<OldCapsuleColliderComponent>( a_GameObject ) )
 			{
 				const JPH::Ref<JPH::CapsuleShape> capsuleShape = new JPH::CapsuleShape( cc->GetHalfHeight(), cc->GetRadius() );
 				const JPH::Vec3 center = Util::ToJoltVec3( cc->GetCenter() );
@@ -281,7 +415,7 @@ namespace Tridium {
 			}
 
 			// Cylinder Collider
-			if ( auto* cc = m_Scene->TryGetComponentFromGameObject<CylinderColliderComponent>( a_GameObject ) )
+			if ( auto* cc = m_Scene->TryGetComponentFromGameObject<OldCylinderColliderComponent>( a_GameObject ) )
 			{
 				const JPH::Ref<JPH::CylinderShape> cylinderShape = new JPH::CylinderShape( cc->GetHalfHeight(), cc->GetRadius() );
 				const JPH::Vec3 center = Util::ToJoltVec3( cc->GetCenter() );
@@ -293,7 +427,7 @@ namespace Tridium {
 			}
 
 			// Mesh Collider
-			if ( auto* mc = m_Scene->TryGetComponentFromGameObject<MeshColliderComponent>( a_GameObject ) )
+			if ( auto* mc = m_Scene->TryGetComponentFromGameObject<OldMeshColliderComponent>( a_GameObject ) )
 			{
 				if ( auto staticMesh = AssetManager::GetAsset<OldStaticMesh>( mc->GetMesh() ) )
 				{
@@ -390,13 +524,13 @@ namespace Tridium {
 		return true;
 	}
 
-	bool JoltPhysicsScene::UpdatePhysicsBody( const OldGameObject& a_GameObject, RigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent )
+	bool JoltPhysicsScene::UpdatePhysicsBody( const OldGameObject& a_GameObject, OldRigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent )
 	{
 		RemovePhysicsBody( a_RigidBody );
 		return AddPhysicsBody( a_GameObject, a_RigidBody, a_TransformComponent );
 	}
 
-	void JoltPhysicsScene::UpdatePhysicsBodyTransform( const RigidBodyComponent& a_RigidBody, const OldTransformComponent& a_TransformComponent )
+	void JoltPhysicsScene::UpdatePhysicsBodyTransform( const OldRigidBodyComponent& a_RigidBody, const OldTransformComponent& a_TransformComponent )
 	{
 		m_BodyInterface.SetPositionAndRotation( 
 			JPH::BodyID( a_RigidBody.GetBodyProxy().GetBodyID() ),
@@ -492,6 +626,104 @@ namespace Tridium {
 
 			Cast<JoltDebugRenderer*>( JPH::DebugRenderer::sInstance )->Render( a_ViewProjection );
 		}
+	}
+
+	JPH::Ref<JPH::MutableCompoundShapeSettings> JoltPhysicsScene::CreateShapeSettings( GameObject a_GameObject, const RigidBodyComponent& a_RigidBody, JPH::MassProperties& o_MassProps ) const
+	{
+		JPH::Ref<JPH::MutableCompoundShapeSettings> result = new JPH::MutableCompoundShapeSettings();
+
+		uint32_t numShapes = 0;
+
+		// Add all ColliderComponents to the compound shape
+		{
+			// Sphere Collider
+			if ( auto* sc = a_GameObject.TryGet<SphereColliderComponent>() )
+			{
+				const JPH::Ref<JPH::SphereShape> sphereShape = new JPH::SphereShape( sc->Radius() );
+				const JPH::Vec3 center = Util::ToJoltVec3( sc->Center() );
+				const JPH::Quat rotation = Util::ToJoltQuat( sc->Rotation().Quat );
+				result->AddShape( center, rotation, sphereShape );
+				o_MassProps.mMass += sphereShape->GetMassProperties().mMass;
+				o_MassProps.mInertia += sphereShape->GetMassProperties().mInertia;
+				++numShapes;
+			}
+
+			// Box Collider
+			if ( auto* bc = a_GameObject.TryGet<BoxColliderComponent>() )
+			{
+				const JPH::Vec3 halfExtents = Util::ToJoltVec3( bc->HalfExtents() );
+				const JPH::Ref<JPH::BoxShape> boxShape = new JPH::BoxShape( halfExtents );
+				const JPH::Vec3 center = Util::ToJoltVec3( bc->Center() );
+				const JPH::Quat rotation = Util::ToJoltQuat( bc->Rotation().Quat );
+				result->AddShape( center, rotation, boxShape );
+				o_MassProps.mMass += boxShape->GetMassProperties().mMass;
+				o_MassProps.mInertia += boxShape->GetMassProperties().mInertia;
+				++numShapes;
+			}
+
+			// Capsule Collider
+			if ( auto* cc = a_GameObject.TryGet<CapsuleColliderComponent>() )
+			{
+				const JPH::Ref<JPH::CapsuleShape> capsuleShape = new JPH::CapsuleShape( cc->HalfHeight(), cc->Radius() );
+				const JPH::Vec3 center = Util::ToJoltVec3( cc->Center() );
+				const JPH::Quat rotation = Util::ToJoltQuat( cc->Rotation().Quat );
+				result->AddShape( center, rotation, capsuleShape );
+				o_MassProps.mMass += capsuleShape->GetMassProperties().mMass;
+				o_MassProps.mInertia += capsuleShape->GetMassProperties().mInertia;
+				++numShapes;
+			}
+
+			// Cylinder Collider
+			if ( auto* cc = a_GameObject.TryGet<CylinderColliderComponent>() )
+			{
+				const JPH::Ref<JPH::CylinderShape> cylinderShape = new JPH::CylinderShape( cc->HalfHeight(), cc->Radius() );
+				const JPH::Vec3 center = Util::ToJoltVec3( cc->Center() );
+				const JPH::Quat rotation = Util::ToJoltQuat( cc->Rotation().Quat );
+				result->AddShape( center, rotation, cylinderShape );
+				o_MassProps.mMass += cylinderShape->GetMassProperties().mMass;
+				o_MassProps.mInertia += cylinderShape->GetMassProperties().mInertia;
+				++numShapes;
+			}
+
+			// Mesh Collider
+			//if ( auto* mc = a_GameObject.TryGet<MeshColliderComponent>() )
+			if ( false )
+			{
+				TODO( "Implement MeshColliderComponent support in JoltPhysicsScene::CreatePhysicsBody" );
+				NOT_IMPLEMENTED;
+				//if ( auto staticMesh = AssetManager::GetAsset<OldStaticMesh>( mc->GetMesh() ) )
+				//{
+				//	if ( auto meshSource = AssetManager::GetAsset<MeshSource>( staticMesh->GetMeshSource() ) )
+				//	{
+				//		for ( uint32_t subMeshIndex : staticMesh->GetSubMeshes() )
+				//		{
+				//			const OldSubMesh& subMesh = meshSource->GetSubMesh( subMeshIndex );
+				//			SharedPtr<JoltMeshCollider> meshCollider = SharedPtrCast<JoltMeshCollider>( subMesh.Collider );
+				//			if ( !meshCollider || !meshCollider->IsValid() )
+				//				continue;
+
+				//			Vector3 meshPosition;
+				//			Quaternion meshRotation;
+				//			Vector3 meshScale;
+				//			Math::DecomposeTransform( subMesh.Transform, meshPosition, meshRotation, meshScale );
+				//			meshCollider->GetMeshShape()->ScaleShape( scale );
+				//			result->AddShape( Util::ToJoltVec3( meshPosition ), Util::ToJoltQuat( meshRotation ), meshCollider->GetMeshShape() );
+				//			o_MassProps.mMass += meshCollider->GetMassProperties().mMass;
+				//			o_MassProps.mInertia += meshCollider->GetMassProperties().mInertia;
+				//			++numShapes;
+				//		}
+				//	}
+				//}
+			}
+		}
+
+
+		if ( numShapes == 0 )
+		{
+			return nullptr;
+		}
+
+		return result;
 	}
 
 #endif

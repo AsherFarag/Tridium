@@ -136,7 +136,7 @@ namespace Tridium::IO {
 		{
 			if ( auto hdriNode = sceneEnvironmentNode["HDRI"] )
 			{
-				a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle = hdriNode["EnvironmentMapHandle"].as<AssetHandle>();
+				a_Data.GetSceneEnvironment().HDRI.EnvironmentMapHandle = hdriNode["EnvironmentMapHandle"].as<OldAssetHandle>();
 				a_Data.GetSceneEnvironment().HDRI.Exposure = hdriNode["Exposure"].as<float>();
 				a_Data.GetSceneEnvironment().HDRI.Gamma = hdriNode["Gamma"].as<float>();
 				a_Data.GetSceneEnvironment().HDRI.Blur = hdriNode["Blur"].as<float>();

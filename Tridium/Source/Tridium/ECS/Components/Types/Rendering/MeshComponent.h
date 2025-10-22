@@ -5,12 +5,12 @@
 
 namespace Tridium {
 
-	class StaticMeshComponent : public NativeScriptComponent
+	class OldStaticMeshComponent : public NativeScriptComponent
 	{
-		REFLECT( StaticMeshComponent );
+		REFLECT( OldStaticMeshComponent );
 	public:
-		StaticMeshComponent();
-		~StaticMeshComponent() = default;
+		OldStaticMeshComponent();
+		~OldStaticMeshComponent() = default;
 
 		StaticMeshHandle Mesh;
 		std::vector<MaterialHandle> Materials;

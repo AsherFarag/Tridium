@@ -10,7 +10,7 @@
 
 namespace Tridium::Debug { 
 
-	void DebugDrawer::DrawLine( const Vector3& a_Start, const Vector3& a_End, const Color& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
+	void DebugDrawer::DrawLine( const Vector3& a_Start, const Vector3& a_End, const Color4& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
 	{
 		DebugLine line = { { a_Start, a_Color }, { a_End, a_Color } };
 		switch ( a_DrawDuration )
@@ -39,7 +39,7 @@ namespace Tridium::Debug {
 		}
 	}
 
-	void DebugDrawer::DrawTriangle( const Vector3& a_A, const Vector3& a_B, const Vector3& a_C, const Color& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
+	void DebugDrawer::DrawTriangle( const Vector3& a_A, const Vector3& a_B, const Vector3& a_C, const Color4& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
 	{
 		DebugTri tri = { { a_A, a_Color }, { a_B, a_Color }, { a_C, a_Color } };
 		switch ( a_DrawDuration )
@@ -68,7 +68,7 @@ namespace Tridium::Debug {
 		}
 	}
 
-	void DebugDrawer::DrawAABB( const AABBOld& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
+	void DebugDrawer::DrawAABB( const AABBOld& a_AABB, const Color4& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
 	{
 		Vector3 min = a_AABB.Min;
 		Vector3 max = a_AABB.Max;
@@ -110,7 +110,7 @@ namespace Tridium::Debug {
 		DrawLine( b4, t1, a_Color, a_DrawDuration, a_Duration );
 	}
 
-	void DebugDrawer::DrawAABBFilled( const AABBOld& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
+	void DebugDrawer::DrawAABBFilled( const AABBOld& a_AABB, const Color4& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
 	{
 		Vector3 min = a_AABB.Min;
 		Vector3 max = a_AABB.Max;
@@ -160,7 +160,7 @@ namespace Tridium::Debug {
 
 	}
 
-	void DebugDrawer::DrawSphere( const Vector3& a_Center, float a_Radius, const Color& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
+	void DebugDrawer::DrawSphere( const Vector3& a_Center, float a_Radius, const Color4& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
 	{
 		constexpr int segments = 16;
 		constexpr float angle = 2.0f * glm::pi<float>() / segments;
@@ -196,7 +196,7 @@ namespace Tridium::Debug {
 		}
 	}
 
-	void DebugDrawer::DrawSphereFilled( const Vector3& a_Center, float a_Radius, const Color& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
+	void DebugDrawer::DrawSphereFilled( const Vector3& a_Center, float a_Radius, const Color4& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
 	{
 		constexpr int segments = 16;
 		constexpr float angle = 2.0f * glm::pi<float>() / segments;
@@ -231,7 +231,7 @@ namespace Tridium::Debug {
 		}
 	}
 
-	void DebugDrawer::DrawBox( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
+	void DebugDrawer::DrawBox( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color4& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
 	{
 		Vector3 corners[8];
 		corners[0] = a_Center + a_Rotation * Vector3{ -a_HalfExtents.X, -a_HalfExtents.Y, -a_HalfExtents.Z };
@@ -259,7 +259,7 @@ namespace Tridium::Debug {
 		DrawLine( corners[3], corners[7], a_Color, a_DrawDuration, a_Duration );
 	}
 
-	void DebugDrawer::DrawBoxFilled( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
+	void DebugDrawer::DrawBoxFilled( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color4& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
 	{
 		Vector3 corners[8];
 		corners[0] = a_Center + a_Rotation * Vector3{ -a_HalfExtents.X, -a_HalfExtents.Y, -a_HalfExtents.Z };
@@ -290,7 +290,7 @@ namespace Tridium::Debug {
 		DrawTriangle( corners[3], corners[4], corners[0], a_Color, a_DrawDuration, a_Duration );
 	}
 
-	void DebugDrawer::DrawFrustum( const Matrix4& a_ViewProjection, const Color& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
+	void DebugDrawer::DrawFrustum( const Matrix4& a_ViewProjection, const Color4& a_Color, EDrawDuration a_DrawDuration, float a_Duration )
 	{
 		Matrix4 invViewProjection = glm::inverse( a_ViewProjection );
 

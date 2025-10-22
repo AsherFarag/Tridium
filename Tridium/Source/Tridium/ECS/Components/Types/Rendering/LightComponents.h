@@ -7,13 +7,13 @@ namespace Tridium {
 	class Framebuffer;
 	class CubeMap;
 
-	class PointLightComponent : public NativeScriptComponent
+	class OldPointLightComponent : public NativeScriptComponent
 	{
-		REFLECT( PointLightComponent );
+		REFLECT( OldPointLightComponent );
 	public:
-		PointLightComponent() = default;
-		PointLightComponent( const PointLightComponent& a_Other );
-		PointLightComponent& operator=( const PointLightComponent& a_Other )
+		OldPointLightComponent() = default;
+		OldPointLightComponent( const OldPointLightComponent& a_Other );
+		OldPointLightComponent& operator=( const OldPointLightComponent& a_Other )
 		{
 			LightColor = a_Other.LightColor;
 			Intensity = a_Other.Intensity;
@@ -25,7 +25,7 @@ namespace Tridium {
 			return *this;
 		}
 
-		Color LightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+		Color4 LightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 		float Intensity = 1.0f;
 		float FalloffExponent = 2.0f;
 		float AttenuationRadius = 10.0f;
@@ -36,16 +36,16 @@ namespace Tridium {
 		SharedPtr<Framebuffer> ShadowMap;
 	};
 
-	class SpotLightComponent : public NativeScriptComponent
+	class OldSpotLightComponent : public NativeScriptComponent
 	{
-		REFLECT( SpotLightComponent );
+		REFLECT( OldSpotLightComponent );
 	public:
-		SpotLightComponent() = default;
-		SpotLightComponent( const SpotLightComponent& a_Other )
+		OldSpotLightComponent() = default;
+		OldSpotLightComponent( const OldSpotLightComponent& a_Other )
 			: LightColor( a_Other.LightColor ), Intensity( a_Other.Intensity ), FalloffExponent( a_Other.FalloffExponent ),
 			AttenuationRadius( a_Other.AttenuationRadius ), InnerConeAngle( a_Other.InnerConeAngle ), OuterConeAngle( a_Other.OuterConeAngle ),
 			CastsShadows( a_Other.CastsShadows ), ShadowMapSize( a_Other.ShadowMapSize ), ShadowMap( nullptr ) {}
-		SpotLightComponent& operator=( const SpotLightComponent& a_Other )
+		OldSpotLightComponent& operator=( const OldSpotLightComponent& a_Other )
 		{
 			LightColor = a_Other.LightColor;
 			Intensity = a_Other.Intensity;
@@ -59,7 +59,7 @@ namespace Tridium {
 			return *this;
 		}
 
-		Color LightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+		Color4 LightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 		float Intensity = 1.0f;
 		float FalloffExponent = 2.0f;
 		float AttenuationRadius = 10.0f;
@@ -72,15 +72,15 @@ namespace Tridium {
 		SharedPtr<Framebuffer> ShadowMap;
 	};
 
-	class DirectionalLightComponent : public NativeScriptComponent
+	class OldDirectionalLightComponent : public NativeScriptComponent
 	{
-		REFLECT( DirectionalLightComponent );
+		REFLECT( OldDirectionalLightComponent );
 	public:
-		DirectionalLightComponent() = default;
-		DirectionalLightComponent( const DirectionalLightComponent& a_Other )
+		OldDirectionalLightComponent() = default;
+		OldDirectionalLightComponent( const OldDirectionalLightComponent& a_Other )
 			: LightColor( a_Other.LightColor ), Intensity( a_Other.Intensity ), CastsShadows( a_Other.CastsShadows ),
 			ShadowMapSize( a_Other.ShadowMapSize ), ShadowMap( nullptr ) {}
-		DirectionalLightComponent& operator=( const DirectionalLightComponent& a_Other )
+		OldDirectionalLightComponent& operator=( const OldDirectionalLightComponent& a_Other )
 		{
 			LightColor = a_Other.LightColor;
 			Intensity = a_Other.Intensity;
@@ -90,7 +90,7 @@ namespace Tridium {
 			return *this;
 		}
 
-		Color LightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+		Color4 LightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 		float Intensity = 1.0f;
 		bool CastsShadows = true;
 

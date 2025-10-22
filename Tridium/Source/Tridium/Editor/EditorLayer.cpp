@@ -341,7 +341,7 @@ namespace Tridium {
 						auto assetManager = AssetManager::Get<EditorAssetManager>();
 						OldAssetMetaData metaData =
 						{
-								AssetHandle::Create(),
+								OldAssetHandle::Create(),
 								EAssetTypeOld::Scene,
 								path,
 								FilePath( path ).GetFilenameWithoutExtension(),

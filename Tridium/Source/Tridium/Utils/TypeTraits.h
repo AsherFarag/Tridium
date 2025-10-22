@@ -3,6 +3,63 @@
 
 namespace Tridium {
 
+	// Primary template (unspecialized)
+	template <typename T>
+	struct MemberPointerTraits
+	{
+		using ClassType = void;
+		using MemberType = void;
+	};
+
+	// Specialization for data member pointers: T C::*
+	template <typename _ClassType, typename _MemberType>
+	struct MemberPointerTraits<_MemberType _ClassType::*>
+	{
+		using ClassType = _ClassType;
+		using MemberType = _MemberType;
+	};
+
+	// Specialization for member function pointers: Ret (C::*)(Args...)
+	template <typename _ClassType, typename _Ret, typename... _Args>
+	struct MemberPointerTraits<_Ret( _ClassType::* )( _Args... )>
+	{
+		using ClassType = _ClassType;
+		using MemberType = _Ret( _Args... );
+	};
+
+	// Const-qualified member function pointers
+	template <typename _ClassType, typename _Ret, typename... _Args>
+	struct MemberPointerTraits<_Ret( _ClassType::* )( _Args... ) const>
+	{
+		using ClassType = _ClassType;
+		using MemberType = _Ret( _Args... );
+	};
+
+	template<typename> 
+	struct MemberFunctionTraits;
+
+	template <typename _Return, typename _Object, typename... _Args>
+	struct MemberFunctionTraits<_Return( _Object::* )( _Args... )>
+	{
+		using ReturnType = _Return;
+		using ClassType = _Object;
+		using ClassReference = _Object&;
+		using ArgumentList = std::tuple<_Args...>;
+
+		static constexpr size_t ArgCount = sizeof...( _Args );
+	};
+
+	template <typename _Return, typename _Object, typename... _Args>
+	struct MemberFunctionTraits<_Return( _Object::* )( _Args... ) const>
+	{
+		using ReturnType = _Return;
+		using ClassType = _Object;
+		using ClassReference = const _Object&;
+		using ArgumentList = std::tuple<_Args...>;
+
+		static constexpr size_t ArgCount = sizeof...( _Args );
+	};
+
 	template<typename T>
 	struct UnderlyingType
 	{

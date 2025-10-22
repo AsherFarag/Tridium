@@ -8,7 +8,7 @@
 
 namespace Tridium {
 
-	Optional<Color> Texture::TryGetPixel( uint32_t a_X, uint32_t a_Y, uint32_t a_Z ) const
+	Optional<Color4> Texture::TryGetPixel( uint32_t a_X, uint32_t a_Y, uint32_t a_Z ) const
 	{
 		if ( m_PixelData.Empty() || a_X >= m_Width || a_Y >= m_Height || a_Z >= m_DepthOrArraySize )
 		{

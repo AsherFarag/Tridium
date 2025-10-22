@@ -94,4 +94,57 @@ namespace Tridium {
 
 	};
 
+	//=================================================================================================
+	// Asset Handle: A handle to an asset that can either store an AssetID or a direct reference to the asset.
+	// This allows for lazy loading of assets, where the asset is only loaded when needed.
+	// Load functions are defined in AssetDatabase.h.
+	//=================================================================================================
+	template<Concepts::Derived<IAsset> T>
+	struct AssetHandle
+	{
+	private:
+
+		//=============================================================================================
+		AssetRef<T> m_Ref;
+		AssetID m_ID;
+
+	public:
+
+		//=============================================================================================
+		using AssetType = T;
+
+		//=============================================================================================
+		AssetHandle() : m_ID( AssetID::InvalidID ), m_Ref( nullptr ) {}
+		AssetHandle( AssetID a_AssetID ) : m_ID( a_AssetID ), m_Ref( nullptr ) {}
+		AssetHandle( AssetRef<T> a_AssetRef ) : m_ID( AssetID::InvalidID ), m_Ref( std::move( a_AssetRef ) ) {}
+		AssetHandle( std::nullptr_t ) : m_ID( AssetID::InvalidID ), m_Ref( nullptr ) {}
+
+		//=============================================================================================
+		bool Valid() const { return m_Ref ? true : m_ID != AssetID::InvalidID; }
+
+		//=============================================================================================
+		AssetID ID() const { return m_Ref ? m_Ref->ID() : m_ID; }
+
+		//=============================================================================================
+		const AssetRef<T>& Get() const { return m_Ref; }
+		const AssetRef<T>& GetOrLoad();
+
+		//=============================================================================================
+		template<Concepts::Derived<IAsset> U>
+		AssetHandle<U> Cast()
+		{
+			if ( m_Ref )
+			{
+				TODO( "Should be a dynamic cast with error checking." );
+				return AssetHandle<U>( SharedPtrCast<U>( m_Ref ) );
+			}
+			else
+			{
+				return AssetHandle<U>( m_ID );
+			}
+		
+		}
+
+	};
+
 } // namespace Tridium

@@ -199,7 +199,7 @@ bool PulleyConstraint::SolvePositionConstraint(float inDeltaTime, float inBaumga
 #ifdef JPH_DEBUG_RENDERER
 void PulleyConstraint::DrawConstraint(DebugRenderer *inRenderer) const
 {
-	// Color according to length vs min/max length
+	// Color4 according to length vs min/max length
 	float current_length = GetCurrentLength();
 	Color color = Color::sGreen;
 	if (current_length < mMinLength)

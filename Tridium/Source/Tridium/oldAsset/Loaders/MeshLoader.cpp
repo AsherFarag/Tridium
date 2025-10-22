@@ -62,7 +62,7 @@ namespace Tridium {
 			return nullptr;
 		}
 
-		AssetHandle meshSourceHandle = AssetHandle( node["MeshSource"].as<AssetHandle::Type>() );
+		OldAssetHandle meshSourceHandle = OldAssetHandle( node["MeshSource"].as<OldAssetHandle::Type>() );
 		std::vector<uint32_t> subMeshes;
 		if ( auto subMeshesNode = node["SubMeshes"] )
 		{
@@ -74,10 +74,10 @@ namespace Tridium {
 			return nullptr;
 		}
 
-		std::vector<AssetHandle::Type> materials;
+		std::vector<OldAssetHandle::Type> materials;
 		if ( auto materialsNode = node["Materials"] )
 		{
-			materials = materialsNode.as<std::vector<AssetHandle::Type>>();
+			materials = materialsNode.as<std::vector<OldAssetHandle::Type>>();
 		}
 		else
 		{

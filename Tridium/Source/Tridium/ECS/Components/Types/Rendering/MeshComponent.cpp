@@ -5,15 +5,15 @@
 
 namespace Tridium {
 
-	BEGIN_REFLECT_COMPONENT( StaticMeshComponent, Scriptable )
+	BEGIN_REFLECT_COMPONENT( OldStaticMeshComponent, Scriptable )
 		BASE( NativeScriptComponent )
 		PROPERTY( Mesh, Serialize | EditAnywhere )
 		PROPERTY( Materials, Serialize | EditAnywhere )
 		PROPERTY( CastShadows, Serialize | EditAnywhere )
-	END_REFLECT_COMPONENT( StaticMeshComponent )
+	END_REFLECT_COMPONENT( OldStaticMeshComponent )
 
-	StaticMeshComponent::StaticMeshComponent()
-		: Mesh( AssetHandle::InvalidID )
+	OldStaticMeshComponent::OldStaticMeshComponent()
+		: Mesh( OldAssetHandle::InvalidID )
 	{
 
 	}

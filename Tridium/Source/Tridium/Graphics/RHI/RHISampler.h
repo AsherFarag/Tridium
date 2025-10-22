@@ -42,7 +42,7 @@ namespace Tridium {
 		// Offset from the calculated mipmap level. Sample Level = Calculated Mip Level + MipLODBias.
 		float MipLODBias = 0.0f;
 		// Border color used when the address mode is set to Border. NOTE: This color is packed into 4 16-bit unsigned integers (0-65535).
-		Color BorderColor = Color::White();
+		Color4 BorderColor = Color4::White();
 		// Clamps the minimum mipmap level that can be sampled. Must be less than or equal to MaxLOD.
 		float MinLOD = 0.0f;
 		// Clamps the maximum mipmap level that can be sampled. Must be greater than or equal to MinLOD.
@@ -57,7 +57,7 @@ namespace Tridium {
 		constexpr auto& SetComparisonFunc( ERHIComparison a_Comparison ) { ComparisonFunc = a_Comparison; return *this; }
 		constexpr auto& SetFlags( ERHISamplerFlags a_Flags ) { Flags = a_Flags; return *this; }
 		constexpr auto& SetFlag( ERHISamplerFlags a_Flag, bool a_Enabled = true ) { Flags = EnumFlags( Flags ).SetFlag( a_Flag, a_Enabled ); return *this; }
-		constexpr auto& SetBorderColor( const Color& a_Color ) { BorderColor = a_Color; return *this; }
+		constexpr auto& SetBorderColor( const Color4& a_Color ) { BorderColor = a_Color; return *this; }
 		constexpr auto& SetMinLOD( float a_LOD ) { MinLOD = a_LOD; return *this; }
 		constexpr auto& SetMaxLOD( float a_LOD ) { MaxLOD = a_LOD; return *this; }
 

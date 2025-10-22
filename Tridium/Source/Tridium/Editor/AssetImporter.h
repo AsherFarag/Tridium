@@ -12,7 +12,7 @@ namespace Tridium {
 		// Will attempt to return a valid asset handle. 
 		// However, some assets may open a panel to import the asset.
 		// In this case, the function will return an invalid asset handle.
-		static AssetHandle ImportAsset( const FilePath& a_FilePath );
+		static OldAssetHandle ImportAsset( const FilePath& a_FilePath );
 	};
 
 }

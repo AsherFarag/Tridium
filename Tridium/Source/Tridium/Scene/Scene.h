@@ -1,6 +1,7 @@
 #pragma once
 #include <Tridium/Containers/TypeMap.h>
 #include <Tridium/Scene/Component.h>
+#include <Tridium/Utils/Log.h>
 
 // TEMP
 #include <Tridium/ECS/ECS.h>
@@ -87,7 +88,7 @@ namespace Tridium {
 			ERayCastChannel a_RayCastChannel, const PhysicsBodyFilter& a_BodyFilter = {},
 			bool a_DrawDebug = false, 
 			Debug::EDrawDuration a_DrawDurationType = Debug::EDrawDuration::OneFrame, float a_DebugDrawDuration = 0.0f,
-			Color a_DebugLineColor = Color::Red(), Color a_DebugHitColor = Color::Green() ) const;
+			Color4 a_DebugLineColor = Color4::Red(), Color4 a_DebugHitColor = Color4::Green() ) const;
 
 		//////////////////////////////////////////////////////////////////////////
 		// ECS
@@ -180,9 +181,8 @@ namespace Tridium {
 	//=================================================================================================
 	// Scene State:
 	//=================================================================================================
-	enum class ESceneState
+	enum class EScenePlayMode
 	{
-		None = 0,
 		Simulate,
 		Play,
 	};
@@ -197,17 +197,17 @@ namespace Tridium {
 	public:
 
 		//=============================================================================================
+		ISceneSystem() = default;
+		virtual ~ISceneSystem() = default;
+
+		//=============================================================================================
 		// Get the scene that owns this system.
-		Scene& OwningScene() const { return m_Scene; }
+		Scene& OwningScene() const { return *m_Scene; }
 
 		//=============================================================================================
 		virtual ESceneTickGroup GetTickGroup() const { return ESceneTickGroup::Default; }
 
 	protected:
-
-		//=============================================================================================
-		ISceneSystem( Scene& a_Scene ) : m_Scene( a_Scene ) {}
-		virtual ~ISceneSystem() = default;
 
 		//=============================================================================================
 		// Called when a scene is being initialized, just before BeginPlay is called.
@@ -240,7 +240,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		friend class Scene;
-		Scene& m_Scene;
+		Scene* m_Scene;
 
 	};
 
@@ -327,12 +327,25 @@ namespace Tridium {
 		const auto& Registry() const { return m_Registry; }
 
 		//=============================================================================================
+		// If the scene already has a system of type T, this will return the existing system.
+		// Otherwise, it will create a new system of type T and add it to the scene.
+		template<Concepts::Derived<ISceneSystem> T, typename... _Args>
+		T* AddSystem( _Args&&... a_Args );
+
+		//=============================================================================================
+		// Adds a system of type T to the scene, replacing any existing system of the same type.
+		// Returns the newly added system.
+		template<Concepts::Derived<ISceneSystem> T, typename... _Args>
+		T* AddOrReplaceSystem( _Args&&... a_Args );
+
+		//=============================================================================================
 		// Gets a scene system of the specified type T.
 		// Returns nullptr if the system does not exist.
 		template<Concepts::Derived<ISceneSystem> T>
-		T* GetSceneSystem()
-		{
-			return m_SceneSystems.find<T>();
+		T* GetSystem() 
+		{ 
+			UniquePtr<ISceneSystem>* systemPtr = m_SceneSystems.find<T>();
+			return systemPtr ? Cast<T*>( systemPtr->get() ) : nullptr;
 		}
 
 		//=============================================================================================
@@ -340,13 +353,18 @@ namespace Tridium {
 		template<Concepts::Component::HasLifecycleEvents T>
 		ComponentSystem<T>* GetComponentSystem()
 		{
-			return m_SceneSystems.find<ComponentSystem<T>>();
+			return GetSystem<ComponentSystem<T>>();
 		}
 
 		//=============================================================================================
 		// Gives access to the PhysicsSceneSystem.
 		// NOTE: This can be nullptr.
-		class PhysicsSceneSystem* Physics() { return m_PhysicsSceneSystem; }
+		class PhysicsSceneSystem* Physics() { return m_PhysicsSystem; }
+
+		//=============================================================================================
+		// Gives access to the RendererSceneSystem.
+		// NOTE: This can be nullptr.
+		class RendererSceneSystem* Renderer() { return m_RendererSystem; }
 
 		//=============================================================================================
 		// Creates a new GameObject in the scene and returns it.
@@ -370,7 +388,7 @@ namespace Tridium {
 		void Init();
 
 		//=============================================================================================
-		void OnBeginPlay();
+		void OnBeginPlay( EScenePlayMode a_PlayMode );
 
 		//=============================================================================================
 		void OnTick( float a_DeltaTime );
@@ -388,20 +406,39 @@ namespace Tridium {
 
 		//=============================================================================================
 		// The map that stores all scene systems.
-		TypeMap<UniquePtr<ISceneSystem>> m_SceneSystems;
+		TypeMap<ISceneSystem, UniquePtr<ISceneSystem>> m_SceneSystems;
 
 		//=============================================================================================
 		// Cached pointer to the PhysicsSceneSystem.
-		class PhysicsSceneSystem* m_PhysicsSceneSystem = nullptr;
+		class PhysicsSceneSystem* m_PhysicsSystem = nullptr;
+
+		//=============================================================================================
+		// Cached pointer to the RendererSceneSystem.
+		class RendererSceneSystem* m_RendererSystem = nullptr;
 
 		//=============================================================================================
 		// The registry that manages all entities and components in this Scene.
 		EntityComponentRegistry m_Registry;
 
 		//=============================================================================================
-		// The current state of the Scene.
-		ESceneState m_SceneState = ESceneState::None;
-		bool m_IsPaused = false;
+		struct
+		{
+			// Are we updating the scene in Play mode or Simulate mode?
+			EScenePlayMode PlayMode = EScenePlayMode::Play;
+
+			// Is the scene currently paused?
+			bool IsPaused = false;
+
+			// Has the scene initialized scene systems?
+			bool HasInit = false;
+
+			// Has the scene post-initialized scene systems?
+			bool HasPostInit = false;
+
+			// Is the scene currently running and BeginPlay has been called?
+			bool HasBegunPlay = false;
+
+		} m_State;
 
 		//=============================================================================================
 		// Scales the delta time passed to Scene tick functions.

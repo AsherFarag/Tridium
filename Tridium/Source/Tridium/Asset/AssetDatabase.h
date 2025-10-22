@@ -61,9 +61,9 @@ namespace Tridium {
 
 		//=============================================================================================
 		// Retrieves an asset by its AssetID if it exists and is loaded.
-		static IAsset* GetAsset( AssetID a_AssetID );
+		static AssetHandle<IAsset> GetAsset( AssetID a_AssetID );
 		// Retrieves an asset by its AssetID, loading it if it is not already loaded.
-		static IAsset* GetOrLoadAsset( AssetID a_AssetID );
+		static AssetHandle<IAsset> GetOrLoadAsset( AssetID a_AssetID );
 		// Returns true if the asset exists and is valid.
 		static bool IsAssetLoaded( AssetID a_AssetID );
 		// Returns true if the asset exists in the database, regardless of whether it is loaded or not.
@@ -72,10 +72,10 @@ namespace Tridium {
 		//=============================================================================================
 		// Returns the asset of type T if it exists and is loaded.
 		template<Concepts::Derived<IAsset> T>
-		static T* GetAsset( AssetID a_AssetID ) { return DynamicCast<T*>( GetAsset( a_AssetID ) ); }
+		static AssetHandle<T> GetAsset( AssetID a_AssetID ) { return GetAsset( a_AssetID ).Cast<T>(); }
 		// Returns the asset of type T if it exists and is loaded, or loads it if not already loaded.
 		template<Concepts::Derived<IAsset> T>
-		static T* GetOrLoadAsset( AssetID a_AssetID ) { return DynamicCast<T*>( GetOrLoadAsset( a_AssetID ) ); }
+		static AssetHandle<T> GetOrLoadAsset( AssetID a_AssetID ) { return GetOrLoadAsset( a_AssetID ).Cast<T>(); }
 
 		//=============================================================================================
 		// Registers an asset to the database.
@@ -120,5 +120,16 @@ namespace Tridium {
 
 		friend class Engine;
 	};
+
+	template<Concepts::Derived<IAsset> T>
+	inline const AssetRef<T>& AssetHandle<T>::GetOrLoad()
+	{
+		if ( !m_Ref && m_ID != AssetID::InvalidID )
+		{
+			*this = AssetDatabase::GetOrLoadAsset<T>( m_ID );
+		}
+
+		return m_Ref;
+	}
 
 } // namespace Tridium

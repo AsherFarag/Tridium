@@ -28,12 +28,12 @@ namespace Tridium {
 
 		//=============================================================================================
 		// Returns the pixel color at the specified coordinates.
-		Optional<Color> TryGetPixel( uint32_t a_X, uint32_t a_Y = 0, uint32_t a_Z = 0 ) const;
+		Optional<Color4> TryGetPixel( uint32_t a_X, uint32_t a_Y = 0, uint32_t a_Z = 0 ) const;
 
 		//=============================================================================================
 		// Returns the pixel color at the specified coordinates,
 		// Black if out of bounds or the texture is not stored on the CPU.
-		Color GetPixel( uint32_t a_X, uint32_t a_Y = 0, uint32_t a_Z = 0 ) const { return TryGetPixel( a_X, a_Y, a_Z ).value_or( Color::Black() ); }
+		Color4 GetPixel( uint32_t a_X, uint32_t a_Y = 0, uint32_t a_Z = 0 ) const { return TryGetPixel( a_X, a_Y, a_Z ).value_or( Color4::Black() ); }
 
 		//=============================================================================================
 		// Clears the pixel data stored on the CPU, but does not modify the RHI texture.

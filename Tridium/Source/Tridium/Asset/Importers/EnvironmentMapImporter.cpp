@@ -932,7 +932,7 @@ namespace Tridium {
 		return result;
 	}
 
-	Color SampleEnvironmentCubemap( ERHIFormat a_Format, const CubeMap& a_Env, const Vector3& a_Dir )
+	Color4 SampleEnvironmentCubemap( ERHIFormat a_Format, const CubeMap& a_Env, const Vector3& a_Dir )
 	{
 		// Determine the major axis direction
 		const Vector3 absDir = Vector3( fabsf( a_Dir.X ), fabsf( a_Dir.Y ), fabsf( a_Dir.Z ) );
@@ -1064,11 +1064,11 @@ namespace Tridium {
 		return Vector3( (float)a_i / (float)a_N, rdi, 0.0f );
 	}
 
-	Color GetPixelFromCubemap( const CubeMap& a_CubeMap, uint32_t a_Face, uint32_t a_X, uint32_t a_Y, ERHIFormat a_Format )
+	Color4 GetPixelFromCubemap( const CubeMap& a_CubeMap, uint32_t a_Face, uint32_t a_X, uint32_t a_Y, ERHIFormat a_Format )
 	{
 		if ( a_Face >= 6 || a_X >= a_CubeMap.FaceWidth || a_Y >= a_CubeMap.FaceWidth )
 		{
-			return Color( 0.0f );
+			return Color4( 0.0f );
 		}
 
 		const RHIFormatInfo formatInfo = GetRHIFormatInfo( a_Format );
@@ -1080,7 +1080,7 @@ namespace Tridium {
 		return formatInfo.ConvertToColor( pixelData );
 	}
 
-	void SetPixelOnCubemap( CubeMap& a_CubeMap, uint32_t a_Face, uint32_t a_X, uint32_t a_Y, const Color& a_Color, ERHIFormat a_Format )
+	void SetPixelOnCubemap( CubeMap& a_CubeMap, uint32_t a_Face, uint32_t a_X, uint32_t a_Y, const Color4& a_Color, ERHIFormat a_Format )
 	{
 		if ( a_Face >= 6 || a_X >= a_CubeMap.FaceWidth || a_Y >= a_CubeMap.FaceWidth )
 		{
@@ -1122,7 +1122,7 @@ namespace Tridium {
 
 					if ( NdotL > 0.0f )
 					{
-						const Color envColor = SampleEnvironmentCubemap( a_Format, a_Env, L );
+						const Color4 envColor = SampleEnvironmentCubemap( a_Format, a_Env, L );
 						sum += Vector3( envColor.r, envColor.g, envColor.b ) * NdotL;
 						totalWeight += NdotL;
 					}
@@ -1130,7 +1130,7 @@ namespace Tridium {
 
 
 				sum = sum / Math::Max( totalWeight, 1e-4f );
-				SetPixelOnCubemap( irradiance, face, x, y, Color( sum.X, sum.Y, sum.Z, 1.0f ), a_Format );
+				SetPixelOnCubemap( irradiance, face, x, y, Color4( sum.X, sum.Y, sum.Z, 1.0f ), a_Format );
 			}
 		}
 
@@ -1185,7 +1185,7 @@ namespace Tridium {
 						const float NdotL = Math::Dot( N, L );
 						if ( NdotL > 0.0f )
 						{
-							const Color envColor = SampleEnvironmentCubemap( a_Format, a_Env, L );
+							const Color4 envColor = SampleEnvironmentCubemap( a_Format, a_Env, L );
 							prefilteredColor += Vector3( envColor.r, envColor.g, envColor.b ) * NdotL;
 							totalWeight += NdotL;
 						}
@@ -1193,7 +1193,7 @@ namespace Tridium {
 
 					prefilteredColor = prefilteredColor / Math::Max( totalWeight, 1e-4f );
 
-					SetPixelOnCubemap( cube, face, x, y, Color(
+					SetPixelOnCubemap( cube, face, x, y, Color4(
 						prefilteredColor.X,
 						prefilteredColor.Y,
 						prefilteredColor.Z,

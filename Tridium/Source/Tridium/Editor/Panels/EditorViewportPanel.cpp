@@ -184,6 +184,8 @@ namespace Tridium {
 
 				ImportAsset( "TestProject/Content/damagedhelmet/DamagedHelmet.gltf" );
 				ImportAsset( "TestProject/Content/Sponza2/Sponza/glTF/Sponza.gltf" );
+				ImportAsset( "TestProject/Content/helljumper/scene.gltf" );
+				ImportAsset( "TestProject/Content/halo_5_recruit/scene.gltf" );
 			}
 
 			if ( s_ImportedAssets.IsValidIndex( importedAssetIndex ) )
@@ -410,7 +412,7 @@ namespace Tridium {
 		if ( !payload )
 			return;
 
-		AssetHandle assetHandle( *(AssetHandle*)payload->Data );
+		OldAssetHandle assetHandle( *(OldAssetHandle*)payload->Data );
 
 		const OldAssetMetaData& assetMetaData = EditorAssetManager::Get()->GetAssetMetaData( assetHandle );
 
@@ -431,7 +433,7 @@ namespace Tridium {
 			if ( SharedPtr<OldStaticMesh> mesh = AssetManager::GetAsset<OldStaticMesh>( assetHandle ) )
 			{
 				OldGameObject go = SceneManager::GetActiveScene()->InstantiateGameObject();
-				go.AddComponent<StaticMeshComponent>().Mesh = mesh->GetHandle();
+				go.AddComponent<OldStaticMeshComponent>().Mesh = mesh->GetHandle();
 
 				Vector3 position = m_EditorCamera->Position + m_EditorCamera->GetForwardDirection() * 5.0f;
 
@@ -528,9 +530,9 @@ namespace Tridium {
 
 		Matrix4 pvm = m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix();
 
-		auto meshComponents = SceneManager::GetActiveScene()->GetECS().View<StaticMeshComponent, OldTransformComponent>();
+		auto meshComponents = SceneManager::GetActiveScene()->GetECS().View<OldStaticMeshComponent, OldTransformComponent>();
 		meshComponents.each( 
-			[&]( auto go, StaticMeshComponent& meshComponent, OldTransformComponent& transform )
+			[&]( auto go, OldStaticMeshComponent& meshComponent, OldTransformComponent& transform )
 			{
 				if ( !meshComponent.Mesh.IsValid() )
 					return;
@@ -567,7 +569,7 @@ namespace Tridium {
 		if ( !m_FBO || !m_SelectedGameObject.IsValid() )
 			return;
 
-		StaticMeshComponent* meshComponent = m_SelectedGameObject.TryGetComponent<StaticMeshComponent>();
+		OldStaticMeshComponent* meshComponent = m_SelectedGameObject.TryGetComponent<OldStaticMeshComponent>();
 		if ( !meshComponent )
 			return;
 

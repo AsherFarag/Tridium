@@ -19,7 +19,7 @@ namespace Tridium {
 		}
 
 		template<typename T> requires Concepts::IsBaseOf<Asset, T>
-		static SharedPtr<T> GetAsset( AssetHandle a_Handle )
+		static SharedPtr<T> GetAsset( OldAssetHandle a_Handle )
 		{
 			SharedPtr<Asset> asset = Get()->GetAsset( a_Handle );
 			return SharedPtrCast<T>( asset );
@@ -33,14 +33,14 @@ namespace Tridium {
 		}
 
 		template<typename T> requires Concepts::IsBaseOf<Asset, T>
-		static SharedPtr<T> GetMemoryOnlyAsset( AssetHandle a_Handle )
+		static SharedPtr<T> GetMemoryOnlyAsset( OldAssetHandle a_Handle )
 		{
 			SharedPtr<Asset> asset = Get()->GetMemoryOnlyAsset( a_Handle );
 			return SharedPtrCast<T>( asset );
 		}
 
 		template<typename T> requires Concepts::IsBaseOf<Asset, T>
-		static bool AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<T> a_Asset ) 
+		static bool AddMemoryOnlyAsset( OldAssetHandle a_Handle, SharedPtr<T> a_Asset ) 
 		{
 			return Get()->AddMemoryOnlyAsset( a_Handle, SharedPtrCast<Asset>( a_Asset ) );
 		}
@@ -49,13 +49,13 @@ namespace Tridium {
 		static FilteredAssetStorageIterator<T> GetAssetsOfType() { return FilteredAssetStorageIterator<T>( Get()->GetAssets() ); }
 
 		static AssetStorageIterator GetAssets() { return Get()->GetAssets(); }
-		static bool HasAsset( AssetHandle a_Handle ) { return Get()->HasAsset( a_Handle ); }
-		static void RemoveAsset( AssetHandle a_Handle ) { Get()->RemoveAsset( a_Handle ); }
-		static EAssetTypeOld GetAssetType( AssetHandle a_Handle ) { return Get()->GetAssetType( a_Handle ); }
-		static bool IsMemoryAsset( AssetHandle a_Handle ) { return Get()->IsMemoryAsset( a_Handle ); }
-		static void RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) { Get()->RegisterDependency( a_Dependent, a_Dependency ); }
-		static void UnregisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) { Get()->UnregisterDependency( a_Dependent, a_Dependency ); }
+		static bool HasAsset( OldAssetHandle a_Handle ) { return Get()->HasAsset( a_Handle ); }
+		static void RemoveAsset( OldAssetHandle a_Handle ) { Get()->RemoveAsset( a_Handle ); }
+		static EAssetTypeOld GetAssetType( OldAssetHandle a_Handle ) { return Get()->GetAssetType( a_Handle ); }
+		static bool IsMemoryAsset( OldAssetHandle a_Handle ) { return Get()->IsMemoryAsset( a_Handle ); }
+		static void RegisterDependency( OldAssetHandle a_Dependent, OldAssetHandle a_Dependency ) { Get()->RegisterDependency( a_Dependent, a_Dependency ); }
+		static void UnregisterDependency( OldAssetHandle a_Dependent, OldAssetHandle a_Dependency ) { Get()->UnregisterDependency( a_Dependent, a_Dependency ); }
 
-		static AssetHandle GetNextMemoryAssetHandle() { static AssetHandle::Type s_NextHandle = 0; return ++s_NextHandle; }
+		static OldAssetHandle GetNextMemoryAssetHandle() { static OldAssetHandle::Type s_NextHandle = 0; return ++s_NextHandle; }
 	};
 }

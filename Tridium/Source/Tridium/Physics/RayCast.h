@@ -18,8 +18,8 @@ namespace Tridium {
 		{
 			Debug::EDrawDuration DrawDurationType = Debug::EDrawDuration::OneFrame;
 			float DrawDuration = 0.0f;
-			Color LineColor = Color::Red();
-			Color HitColor = Color::Green();
+			Color4 LineColor = Color4::Red();
+			Color4 HitColor = Color4::Green();
 		} Debug;
 	};
 

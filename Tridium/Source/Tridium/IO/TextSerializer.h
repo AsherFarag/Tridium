@@ -36,7 +36,7 @@ namespace Tridium::IO {
 	template<> void SerializeToText( Archive& a_Archive, const iVector2& a_Data );
 	template<> void SerializeToText( Archive& a_Archive, const iVector3& a_Data );
 	template<> void SerializeToText( Archive& a_Archive, const iVector4& a_Data );
-	template<> void SerializeToText( Archive& a_Archive, const Color& a_Data );
+	template<> void SerializeToText( Archive& a_Archive, const Color4& a_Data );
 	template<> void SerializeToText( Archive& a_Archive, const Quaternion& a_Data );
 	template<> void SerializeToText( Archive& a_Archive, const Matrix3& a_Data );
 	template<> void SerializeToText( Archive& a_Archive, const Matrix4& a_Data );
@@ -123,7 +123,7 @@ namespace Tridium::IO {
 	template<> bool DeserializeFromText( const YAML::Node& a_Node, iVector2& o_Data );
 	template<> bool DeserializeFromText( const YAML::Node& a_Node, iVector3& o_Data );
 	template<> bool DeserializeFromText( const YAML::Node& a_Node, iVector4& o_Data );
-	template<> bool DeserializeFromText( const YAML::Node& a_Node, Color& o_Data );
+	template<> bool DeserializeFromText( const YAML::Node& a_Node, Color4& o_Data );
 	template<> bool DeserializeFromText( const YAML::Node& a_Node, Quaternion& o_Data );
 	template<> bool DeserializeFromText( const YAML::Node& a_Node, Matrix3& o_Data );
 	template<> bool DeserializeFromText( const YAML::Node& a_Node, Matrix4& o_Data );

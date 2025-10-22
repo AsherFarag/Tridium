@@ -226,7 +226,7 @@ namespace Tridium {
 			if ( ImGui::MenuItem( TE_ICON_CUBE " Static Mesh" ) )
 			{
 				newGO = scene->InstantiateGameObject( "Static Mesh" );
-				newGO.AddComponent<StaticMeshComponent>();
+				newGO.AddComponent<OldStaticMeshComponent>();
 				SetSelectedGameObject( newGO );
 			}
 
@@ -235,50 +235,50 @@ namespace Tridium {
 				if ( ImGui::MenuItem( "Cube" ) )
 				{
 					newGO = scene->InstantiateGameObject( "Cube" );
-					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCube();
-					newGO.AddComponent<BoxColliderComponent>();
-					newGO.AddComponent<RigidBodyComponent>();
+					newGO.AddComponent<OldStaticMeshComponent>().Mesh = MeshFactory::GetDefaultCube();
+					newGO.AddComponent<OldBoxColliderComponent>();
+					newGO.AddComponent<OldRigidBodyComponent>();
 					SetSelectedGameObject( newGO );
 				}
 
 				if ( ImGui::MenuItem( "Sphere" ) )
 				{
 					newGO = scene->InstantiateGameObject( "Sphere" );
-					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultSphere();
-					newGO.AddComponent<SphereColliderComponent>();
-					newGO.AddComponent<RigidBodyComponent>();
+					newGO.AddComponent<OldStaticMeshComponent>().Mesh = MeshFactory::GetDefaultSphere();
+					newGO.AddComponent<OldSphereColliderComponent>();
+					newGO.AddComponent<OldRigidBodyComponent>();
 					SetSelectedGameObject( newGO );
 				}
 
 				if ( ImGui::MenuItem( "Cylinder" ) )
 				{
 					newGO = scene->InstantiateGameObject( "Cylinder" );
-					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCylinder();
-					newGO.AddComponent<CylinderColliderComponent>();
-					newGO.AddComponent<RigidBodyComponent>();
+					newGO.AddComponent<OldStaticMeshComponent>().Mesh = MeshFactory::GetDefaultCylinder();
+					newGO.AddComponent<OldCylinderColliderComponent>();
+					newGO.AddComponent<OldRigidBodyComponent>();
 					SetSelectedGameObject( newGO );
 				}
 
 				if ( ImGui::MenuItem( "Capsule" ) )
 				{
 					newGO = scene->InstantiateGameObject( "Capsule" );
-					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCapsule();
-					newGO.AddComponent<CapsuleColliderComponent>();
-					newGO.AddComponent<RigidBodyComponent>();
+					newGO.AddComponent<OldStaticMeshComponent>().Mesh = MeshFactory::GetDefaultCapsule();
+					newGO.AddComponent<OldCapsuleColliderComponent>();
+					newGO.AddComponent<OldRigidBodyComponent>();
 					SetSelectedGameObject( newGO );
 				}
 
 				if ( ImGui::MenuItem( "Cone" ) )
 				{
 					newGO = scene->InstantiateGameObject( "Cone" );
-					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultCone();
+					newGO.AddComponent<OldStaticMeshComponent>().Mesh = MeshFactory::GetDefaultCone();
 					SetSelectedGameObject( newGO );
 				}
 
 				if ( ImGui::MenuItem( "Torus" ) )
 				{
 					newGO = scene->InstantiateGameObject( "Torus" );
-					newGO.AddComponent<StaticMeshComponent>().Mesh = MeshFactory::GetDefaultTorus();
+					newGO.AddComponent<OldStaticMeshComponent>().Mesh = MeshFactory::GetDefaultTorus();
 					SetSelectedGameObject( newGO );
 				}
 
@@ -290,21 +290,21 @@ namespace Tridium {
 			if ( ImGui::MenuItem( TE_ICON_LIGHTBULB " Point Light" ) )
 			{
 				newGO = scene->InstantiateGameObject( "Point Light" );
-				newGO.AddComponent<PointLightComponent>();
+				newGO.AddComponent<OldPointLightComponent>();
 				SetSelectedGameObject( newGO );
 			}
 
 			if ( ImGui::MenuItem( TE_ICON_LIGHTBULB " Spot Light" ) )
 			{
 				newGO = scene->InstantiateGameObject( "Spot Light" );
-				newGO.AddComponent<SpotLightComponent>();
+				newGO.AddComponent<OldSpotLightComponent>();
 				SetSelectedGameObject( newGO );
 			}
 
 			if ( ImGui::MenuItem( TE_ICON_LIGHTBULB " Directional Light" ) )
 			{
 				newGO = scene->InstantiateGameObject( "Directional Light" );
-				newGO.AddComponent<DirectionalLightComponent>();
+				newGO.AddComponent<OldDirectionalLightComponent>();
 				SetSelectedGameObject( newGO );
 			}
 

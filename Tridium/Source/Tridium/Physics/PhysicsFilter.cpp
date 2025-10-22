@@ -4,16 +4,16 @@
 
 namespace Tridium {
 
-	PhysicsBodyFilter::PhysicsBodyFilter( const RigidBodyComponent& a_RigidBodyComponent )
+	PhysicsBodyFilter::PhysicsBodyFilter( const OldRigidBodyComponent& a_RigidBodyComponent )
 		: std::unordered_set<PhysicsBodyID>()
 	{
 		insert( a_RigidBodyComponent.GetBodyProxy().GetBodyID() );
 	}
 
-	PhysicsBodyFilter::PhysicsBodyFilter( const std::initializer_list<RigidBodyComponent>& a_RigidBodyComponents )
+	PhysicsBodyFilter::PhysicsBodyFilter( const std::initializer_list<OldRigidBodyComponent>& a_RigidBodyComponents )
 		: std::unordered_set<PhysicsBodyID>()
 	{
-		for ( const RigidBodyComponent& rigidBody : a_RigidBodyComponents )
+		for ( const OldRigidBodyComponent& rigidBody : a_RigidBodyComponents )
 		{
 			insert( rigidBody.GetBodyProxy().GetBodyID() );
 		}

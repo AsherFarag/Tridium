@@ -50,6 +50,16 @@ inline Mat44 MotionProperties::GetLocalSpaceInverseInertiaUnchecked() const
 	return rotation.Multiply3x3RightTransposed(rotation_mul_scale_transposed);
 }
 
+inline void MotionProperties::ScaleToMass(float inMass)
+{
+	JPH_ASSERT(mInvMass > 0.0f, "Body must have finite mass");
+	JPH_ASSERT(inMass > 0.0f, "New mass cannot be zero");
+
+	float new_inv_mass = 1.0f / inMass;
+	mInvInertiaDiagonal *= new_inv_mass / mInvMass;
+	mInvMass = new_inv_mass;
+}
+
 inline Mat44 MotionProperties::GetLocalSpaceInverseInertia() const
 {
 	JPH_ASSERT(mCachedMotionType == EMotionType::Dynamic);
@@ -97,13 +107,13 @@ void MotionProperties::ApplyGyroscopicForceInternal(QuatArg inBodyRotation, floa
 
 	// Calculate local space inertia tensor (a diagonal in local space)
 	UVec4 is_zero = Vec3::sEquals(mInvInertiaDiagonal, Vec3::sZero());
-	Vec3 denominator = Vec3::sSelect(mInvInertiaDiagonal, Vec3::sReplicate(1.0f), is_zero);
-	Vec3 nominator = Vec3::sSelect(Vec3::sReplicate(1.0f), Vec3::sZero(), is_zero);
+	Vec3 denominator = Vec3::sSelect(mInvInertiaDiagonal, Vec3::sOne(), is_zero);
+	Vec3 nominator = Vec3::sSelect(Vec3::sOne(), Vec3::sZero(), is_zero);
 	Vec3 local_inertia = nominator / denominator; // Avoid dividing by zero, inertia in this axis will be zero
 
 	// Calculate local space angular momentum
 	Quat inertia_space_to_world_space = inBodyRotation * mInertiaRotation;
-	Vec3 local_angular_velocity = inertia_space_to_world_space.Conjugated() * mAngularVelocity;
+	Vec3 local_angular_velocity = inertia_space_to_world_space.InverseRotate(mAngularVelocity);
 	Vec3 local_momentum = local_inertia * local_angular_velocity;
 
 	// The gyroscopic force applies a torque: T = -w x I w where w is angular velocity and I the inertia tensor

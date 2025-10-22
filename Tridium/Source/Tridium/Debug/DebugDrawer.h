@@ -32,15 +32,15 @@ namespace Tridium::Debug {
 	public:
 		void Draw( const Matrix4& a_ViewProjection );
 
-		void DrawLine( const Vector3& a_Start, const Vector3& a_End, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
-		void DrawTriangle( const Vector3& a_A, const Vector3& a_B, const Vector3& a_C, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
-		void DrawAABB( const AABBOld& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
-		void DrawAABBFilled( const AABBOld& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
-		void DrawSphere( const Vector3& a_Center, float a_Radius, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
-		void DrawSphereFilled( const Vector3& a_Center, float a_Radius, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
-		void DrawBox( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
-		void DrawBoxFilled( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
-		void DrawFrustum( const Matrix4& a_ViewProjection, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
+		void DrawLine( const Vector3& a_Start, const Vector3& a_End, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
+		void DrawTriangle( const Vector3& a_A, const Vector3& a_B, const Vector3& a_C, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
+		void DrawAABB( const AABBOld& a_AABB, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
+		void DrawAABBFilled( const AABBOld& a_AABB, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
+		void DrawSphere( const Vector3& a_Center, float a_Radius, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
+		void DrawSphereFilled( const Vector3& a_Center, float a_Radius, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
+		void DrawBox( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
+		void DrawBoxFilled( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
+		void DrawFrustum( const Matrix4& a_ViewProjection, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f );
 
 		virtual void OnSingletonConstructed() override;
 
@@ -56,7 +56,7 @@ namespace Tridium::Debug {
 		struct DebugVertex
 		{
 			Vector3 Position;
-			Color Color;
+			Color4 Color;
 		};
 
 		struct DebugLine
@@ -85,47 +85,47 @@ namespace Tridium::Debug {
 		friend class Engine;
 	};
 
-	static inline void DrawLine( const Vector3& a_Start, const Vector3& a_End, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
+	static inline void DrawLine( const Vector3& a_Start, const Vector3& a_End, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
 	{
 		DebugDrawer::Get()->DrawLine( a_Start, a_End, a_Color, a_DrawDuration, a_Duration );
 	}
 
-	static inline void DrawTriangle( const Vector3& a_A, const Vector3& a_B, const Vector3& a_C, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
+	static inline void DrawTriangle( const Vector3& a_A, const Vector3& a_B, const Vector3& a_C, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
 	{
 		DebugDrawer::Get()->DrawTriangle( a_A, a_B, a_C, a_Color, a_DrawDuration, a_Duration );
 	}
 
-	static inline void DrawAABB( const AABBOld& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
+	static inline void DrawAABB( const AABBOld& a_AABB, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
 	{
 		DebugDrawer::Get()->DrawAABB( a_AABB, a_Color, a_DrawDuration, a_Duration );
 	}
 
-	static inline void DrawAABBFilled( const AABBOld& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
+	static inline void DrawAABBFilled( const AABBOld& a_AABB, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
 	{
 		DebugDrawer::Get()->DrawAABBFilled( a_AABB, a_Color, a_DrawDuration, a_Duration );
 	}
 
-	static inline void DrawSphere( const Vector3& a_Center, float a_Radius, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
+	static inline void DrawSphere( const Vector3& a_Center, float a_Radius, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
 	{
 		DebugDrawer::Get()->DrawSphere( a_Center, a_Radius, a_Color, a_DrawDuration, a_Duration );
 	}
 
-	static inline void DrawSphereFilled( const Vector3& a_Center, float a_Radius, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
+	static inline void DrawSphereFilled( const Vector3& a_Center, float a_Radius, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
 	{
 		DebugDrawer::Get()->DrawSphereFilled( a_Center, a_Radius, a_Color, a_DrawDuration, a_Duration );
 	}
 
-	static inline void DrawBox( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
+	static inline void DrawBox( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
 	{
 		DebugDrawer::Get()->DrawBox( a_Center, a_Rotation, a_HalfExtents, a_Color, a_DrawDuration, a_Duration );
 	}
 
-	static inline void DrawBoxFilled( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
+	static inline void DrawBoxFilled( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
 	{
 		DebugDrawer::Get()->DrawBoxFilled( a_Center, a_Rotation, a_HalfExtents, a_Color, a_DrawDuration, a_Duration );
 	}
 
-	static inline void DrawFrustum( const Matrix4& a_ViewProjection, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
+	static inline void DrawFrustum( const Matrix4& a_ViewProjection, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f )
 	{
 		DebugDrawer::Get()->DrawFrustum( a_ViewProjection, a_Color, a_DrawDuration, a_Duration );
 	}
@@ -136,15 +136,15 @@ namespace Tridium::Debug {
 
 namespace Tridium::Debug {
 
-	static inline void DrawLine( const Vector3& a_Start, const Vector3& a_End, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
-	static inline void DrawTriangle( const Vector3& a_A, const Vector3& a_B, const Vector3& a_C, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
-	static inline void DrawAABB( const AABBOld& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
-	static inline void DrawAABBFilled( const AABBOld& a_AABB, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
-	static inline void DrawSphere( const Vector3& a_Center, float a_Radius, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
-	static inline void DrawSphereFilled( const Vector3& a_Center, float a_Radius, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
-	static inline void DrawBox( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
-	static inline void DrawBoxFilled( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
-	static inline void DrawFrustum( const Matrix4& a_ViewProjection, const Color& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
+	static inline void DrawLine( const Vector3& a_Start, const Vector3& a_End, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
+	static inline void DrawTriangle( const Vector3& a_A, const Vector3& a_B, const Vector3& a_C, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
+	static inline void DrawAABB( const AABBOld& a_AABB, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
+	static inline void DrawAABBFilled( const AABBOld& a_AABB, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
+	static inline void DrawSphere( const Vector3& a_Center, float a_Radius, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
+	static inline void DrawSphereFilled( const Vector3& a_Center, float a_Radius, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
+	static inline void DrawBox( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
+	static inline void DrawBoxFilled( const Vector3& a_Center, const Quaternion& a_Rotation, const Vector3& a_HalfExtents, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
+	static inline void DrawFrustum( const Matrix4& a_ViewProjection, const Color4& a_Color, EDrawDuration a_DrawDuration = EDrawDuration::OneFrame, float a_Duration = 0.0f ) {}
 
 } // namespace Tridium::Debug
 

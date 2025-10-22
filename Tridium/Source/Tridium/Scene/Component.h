@@ -1,7 +1,10 @@
 #pragma once
+#include <Tridium/Core/GUID.h>
+#include <Tridium/ECS/ECSFwd.h>
+#include <Tridium/Math/Math.h>
+#include <Tridium/Reflection/Meta.h>
 #include <Tridium/Utils/TypeTraits.h>
 #include <Tridium/Utils/Concepts.h>
-#include <Tridium/ECS/ECSFwd.h>
 
 namespace Tridium {
 
@@ -10,7 +13,8 @@ namespace Tridium {
 	//=================================================================================================
 	enum class ESceneTickGroup : uint8_t
 	{
-		Unknown = 0,
+		// Will not be ticked.
+		None = 0,
 
 		// Ticking occurs before physics simulation.
 		PrePhysics,
@@ -20,6 +24,10 @@ namespace Tridium {
 
 		// Ticking occurs before rendering work has been submitted.
 		PreRender,
+
+		// Ticking occurs during the rendering phase.
+		// NOTE: Rendering is not done in this phase, this is for submitting rendering work only.
+		Render,
 
 		// Ticking occurs after rendering work has been submitted.
 		PostRender,
@@ -157,3 +165,75 @@ namespace Tridium {
 	};
 
 } // namespace Tridium
+
+namespace Tridium::Meta {
+
+	//=================================================================================================
+	// GUIDComponent
+	//=================================================================================================
+	template<>
+	struct Reflector<GUIDComponent>
+	{
+		// Fields
+
+		Property<&GUIDComponent::ID, nullptr, Serializable> 
+		ID;
+	};
+
+	//=================================================================================================
+	// TagComponent
+	//=================================================================================================
+	template<>
+	struct Reflector<TagComponent>
+	{
+		// Fields
+
+		Field<&TagComponent::Tag, Editable, Serializable> 
+		Tag;
+	};
+
+	//=================================================================================================
+	// HierarchyComponent
+	//=================================================================================================
+	template<>
+	struct Reflector<HierarchyComponent>
+	{
+		// Fields
+
+		Field<&HierarchyComponent::Parent, Serializable> 
+		Parent;
+
+		Field<&HierarchyComponent::FirstChild, Serializable> 
+		FirstChild;
+
+		Field<&HierarchyComponent::PrevSibling, Serializable> 
+		PrevSibling;
+
+		Field<&HierarchyComponent::NextSibling, Serializable> 
+		NextSibling;
+	};
+
+	//=================================================================================================
+	// TransformComponent
+	//=================================================================================================
+	template<>
+	struct Reflector<TransformComponent>
+	{
+		// Fields
+
+		Property<&TransformComponent::LocalPosition, &TransformComponent::SetLocalPosition, Editable, Serializable> 
+		LocalPosition;
+
+		Property<&TransformComponent::LocalRotationEuler, &TransformComponent::SetLocalRotationEuler, Editable, Serializable>
+		LocalRotationEuler;
+
+		Property<&TransformComponent::LocalScale, &TransformComponent::SetLocalScale, Editable, Serializable>
+		LocalScale;
+
+		// Functions
+
+		Function<&TransformComponent::LocalTransform> 
+		LocalTransform;
+	};
+
+} // namespace Tridium::Meta

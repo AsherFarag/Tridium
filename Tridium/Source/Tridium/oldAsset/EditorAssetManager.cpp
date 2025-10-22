@@ -38,7 +38,7 @@ namespace Tridium {
 		//SerializeAssetRegistry();
 	}
 
-	SharedPtr<Asset> EditorAssetManager::GetAsset( AssetHandle a_Handle )
+	SharedPtr<Asset> EditorAssetManager::GetAsset( OldAssetHandle a_Handle )
     {
 		SharedPtr<Asset> asset;
 
@@ -112,7 +112,7 @@ namespace Tridium {
 		return GetAsset( metaData.Handle );
 	}
 
-	SharedPtr<Asset> EditorAssetManager::GetMemoryOnlyAsset( AssetHandle a_Handle )
+	SharedPtr<Asset> EditorAssetManager::GetMemoryOnlyAsset( OldAssetHandle a_Handle )
 	{
 		if ( auto it = m_MemoryAssets.find( a_Handle ); it != m_MemoryAssets.end() )
 			return it->second;
@@ -125,7 +125,7 @@ namespace Tridium {
 		return AssetStorageIterator( m_LoadedAssets, m_MemoryAssets );
 	}
 
-	bool EditorAssetManager::AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset )
+	bool EditorAssetManager::AddMemoryOnlyAsset( OldAssetHandle a_Handle, SharedPtr<Asset> a_Asset )
 	{
 		ASSERT( a_Asset, "[AssetManager] Asset is nullptr" );
 
@@ -141,12 +141,12 @@ namespace Tridium {
 		return true;
 	}
 
-	bool EditorAssetManager::HasAsset( AssetHandle a_Handle )
+	bool EditorAssetManager::HasAsset( OldAssetHandle a_Handle )
 	{
 		return GetMemoryOnlyAsset( a_Handle ) || GetAssetMetaData( a_Handle ).IsValid();
 	}
 
-	void EditorAssetManager::RemoveAsset( AssetHandle a_Handle )
+	void EditorAssetManager::RemoveAsset( OldAssetHandle a_Handle )
 	{
 		// Remove memory only asset
 		if ( auto it = m_MemoryAssets.find( a_Handle ); it != m_MemoryAssets.end() )
@@ -174,7 +174,7 @@ namespace Tridium {
 		}
 	}
 
-	EAssetTypeOld EditorAssetManager::GetAssetType( AssetHandle a_Handle )
+	EAssetTypeOld EditorAssetManager::GetAssetType( OldAssetHandle a_Handle )
 	{
 		if ( auto memAsset = GetMemoryOnlyAsset( a_Handle ) )
 			return memAsset->AssetType();
@@ -186,18 +186,18 @@ namespace Tridium {
 		return EAssetTypeOld::None;
 	}
 
-	bool EditorAssetManager::IsMemoryAsset( AssetHandle a_Handle )
+	bool EditorAssetManager::IsMemoryAsset( OldAssetHandle a_Handle )
 	{
 		return m_MemoryAssets.contains( a_Handle );
 	}
 
-	void EditorAssetManager::RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency )
+	void EditorAssetManager::RegisterDependency( OldAssetHandle a_Dependent, OldAssetHandle a_Dependency )
 	{
 		//LOG_INFO( "[AssetManager] Registering dependency: {0} -> {1}", a_Dependent.ID(), a_Dependency.ID() );
 		m_AssetRegistry.AssetDependencies[a_Dependent].insert( a_Dependency );
 	}
 
-	void EditorAssetManager::UnregisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency )
+	void EditorAssetManager::UnregisterDependency( OldAssetHandle a_Dependent, OldAssetHandle a_Dependency )
 	{
 		if ( auto it = m_AssetRegistry.AssetDependencies.find( a_Dependent ); it != m_AssetRegistry.AssetDependencies.end() )
 		{
@@ -210,7 +210,7 @@ namespace Tridium {
 	// Editor Only
 	//////////////////////////////////////////////////////////////////////////
 
-	const OldAssetMetaData& EditorAssetManager::GetAssetMetaData( AssetHandle a_Handle ) const
+	const OldAssetMetaData& EditorAssetManager::GetAssetMetaData( OldAssetHandle a_Handle ) const
 	{
 		if ( auto it = m_AssetRegistry.AssetMetaData.find( a_Handle ); it != m_AssetRegistry.AssetMetaData.end() )
 			return it->second;
@@ -239,7 +239,7 @@ namespace Tridium {
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	bool EditorAssetManager::SaveAsset( AssetHandle a_Handle )
+	bool EditorAssetManager::SaveAsset( OldAssetHandle a_Handle )
 	{
 		const OldAssetMetaData& metaData = GetAssetMetaData( a_Handle );
 		if ( !metaData.IsValid() )
@@ -261,7 +261,7 @@ namespace Tridium {
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	AssetHandle EditorAssetManager::ImportAsset( const FilePath& a_Path )
+	OldAssetHandle EditorAssetManager::ImportAsset( const FilePath& a_Path )
 	{
 		if ( auto metaData = GetAssetMetaData( a_Path ); metaData.IsValid() )
 			return metaData.Handle;
@@ -271,25 +271,25 @@ namespace Tridium {
 		if ( !absolutePath.Exists() )
 		{
 			LOG( LogCategory::Asset, Error, "Failed to import asset: {0}, file does not exist", a_Path.ToString() );
-			return AssetHandle::InvalidID;
+			return OldAssetHandle::InvalidID;
 		}
 
 		if ( !absolutePath.HasExtension() )
 		{
 			LOG( LogCategory::Asset, Error, "Failed to import asset: {0}, missing file extension", a_Path.ToString() );
-			return AssetHandle::InvalidID;
+			return OldAssetHandle::InvalidID;
 		}
 
 		EAssetTypeOld assetType = GetAssetTypeFromFileExtension( a_Path.GetExtension().ToString() );
 		if ( assetType == EAssetTypeOld::None )
 		{
 			LOG( LogCategory::Asset, Error, "Failed to import asset: {0}, unsupported file extension", a_Path.ToString() );
-			return AssetHandle::InvalidID;
+			return OldAssetHandle::InvalidID;
 		}
 
 		// Create new asset meta data
 		OldAssetMetaData metaData;
-		metaData.Handle = AssetHandle::Create();
+		metaData.Handle = OldAssetHandle::Create();
 		metaData.AssetType = assetType;
 		metaData.Path = a_Path;
 		metaData.Name = a_Path.GetFilenameWithoutExtension();
@@ -447,7 +447,7 @@ namespace Tridium {
 		{
 			for ( const auto& assetDependency : assetDependencies )
 			{
-				AssetHandle dependent = assetDependency.first.as<uint64_t>();
+				OldAssetHandle dependent = assetDependency.first.as<uint64_t>();
 				for ( const auto& dependency : assetDependency.second )
 				{
 					RegisterDependency( dependent, dependency.as<uint64_t>() );

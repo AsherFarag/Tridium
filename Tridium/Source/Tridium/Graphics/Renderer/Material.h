@@ -13,7 +13,7 @@ namespace Tridium {
 	using MaterialPropertyVariant = Variant<
 		int32_t, uint32_t,
 		float, double,
-		Color,
+		Color4,
 		Vector2, Vector3, Vector4,
 		Matrix2, Matrix3, Matrix4,
 		MaterialTextureProperty

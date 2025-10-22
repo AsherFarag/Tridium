@@ -164,13 +164,13 @@ namespace Tridium::Refl::Internal {
 					.data<&iVector4::W>( "W"_hs, EPropertyFlags::ScriptReadWrite, "W", {} );
 			}
 
-			// Color
+			// Color4
 			{
-				ReflectVectorType<Color>( "Color" )
-					.data<&Color::r>( "r"_hs, EPropertyFlags::ScriptReadWrite, "r", {} )
-					.data<&Color::g>( "g"_hs, EPropertyFlags::ScriptReadWrite, "g", {} )
-					.data<&Color::b>( "b"_hs, EPropertyFlags::ScriptReadWrite, "b", {} )
-					.data<&Color::a>( "a"_hs, EPropertyFlags::ScriptReadWrite, "a", {} );
+				ReflectVectorType<Color4>( "Color" )
+					.data<&Color4::r>( "r"_hs, EPropertyFlags::ScriptReadWrite, "r", {} )
+					.data<&Color4::g>( "g"_hs, EPropertyFlags::ScriptReadWrite, "g", {} )
+					.data<&Color4::b>( "b"_hs, EPropertyFlags::ScriptReadWrite, "b", {} )
+					.data<&Color4::a>( "a"_hs, EPropertyFlags::ScriptReadWrite, "a", {} );
 			}
 
 			// Rotator 
@@ -206,7 +206,7 @@ namespace Tridium::Refl::Internal {
 			}
 
 			REFLECT_PRIM( GUID )FLAGS_PRIM( EClassFlags::Scriptable )SERIALIZE( GUID )DRAW_PROP( GUID )END_PRIM;
-			REFLECT_PRIM( AssetHandle )SERIALIZE( AssetHandle )DRAW_PROP( AssetHandle )END_PRIM;
+			REFLECT_PRIM( OldAssetHandle )SERIALIZE( OldAssetHandle )DRAW_PROP( OldAssetHandle )END_PRIM;
 			REFLECT_PRIM( SceneHandle )SERIALIZE( SceneHandle )DRAW_PROP( SceneHandle )END_PRIM;
 			REFLECT_PRIM( MaterialHandle )SERIALIZE( MaterialHandle )DRAW_PROP( MaterialHandle )END_PRIM;
 			REFLECT_PRIM( TextureHandle )SERIALIZE( TextureHandle )DRAW_PROP( TextureHandle )END_PRIM;

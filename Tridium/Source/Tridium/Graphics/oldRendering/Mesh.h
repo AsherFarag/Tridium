@@ -116,12 +116,12 @@ namespace Tridium {
 		static SharedPtr<MeshSource> CreateCone( float a_Radius = 0.5f, float a_Height = 1.0f, uint32_t a_Stacks = 16, uint32_t a_Slices = 16 ) { return CreateCylinder( a_Radius, 0.0f, a_Height, a_Stacks, a_Slices ); }
 		static SharedPtr<MeshSource> CreateTorus( float a_Radius = 0.5f, float a_Radius2 = 0.25f, uint32_t a_Stacks = 32, uint32_t a_Slices = 32 );
 
-		static AssetHandle GetDefaultQuad();
-		static AssetHandle GetDefaultCube();
-		static AssetHandle GetDefaultSphere();
-		static AssetHandle GetDefaultCylinder();
-		static AssetHandle GetDefaultCapsule();
-		static AssetHandle GetDefaultCone();
-		static AssetHandle GetDefaultTorus();
+		static OldAssetHandle GetDefaultQuad();
+		static OldAssetHandle GetDefaultCube();
+		static OldAssetHandle GetDefaultSphere();
+		static OldAssetHandle GetDefaultCylinder();
+		static OldAssetHandle GetDefaultCapsule();
+		static OldAssetHandle GetDefaultCone();
+		static OldAssetHandle GetDefaultTorus();
 	};
 }

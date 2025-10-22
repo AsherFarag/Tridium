@@ -92,12 +92,7 @@ local dependencies = {
 	-- Jolt Physics: A robust C++ physics engine for games
 	JoltPhysics = {
 		includeDir = path.join(depsDir, "JoltPhysics"),
-		windows = {
-			libName = "JoltPhysics.lib",
-			libDir = path.join(depsDir, "JoltPhysics", "bin", "windows", "Release"),
-			debugLibName = "JoltPhysics.lib",
-			debugLibDir = path.join(depsDir, "JoltPhysics", "bin", "windows", "Debug")
-		}
+		sourceDir = path.join(depsDir, "JoltPhysics", "Jolt")
 	},
 	-- Lua: A powerful, efficient, lightweight, embeddable scripting language
 	lua = {

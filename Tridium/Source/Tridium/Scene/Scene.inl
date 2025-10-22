@@ -3,6 +3,78 @@
 
 namespace Tridium {
 
+	template<Concepts::Derived<ISceneSystem> T, typename... _Args>
+	inline T* Scene::AddSystem( _Args&&... a_Args )
+	{
+		if ( T* existingSystem = GetSystem<T>() )
+		{
+			return existingSystem;
+		}
+
+		auto system = UniquePtr<T>( std::forward<_Args>( a_Args )... );
+		ISceneSystem* systemPtr = system.get();
+		system->m_Scene = this;
+
+		m_SceneSystems[Hashing::TypeHash<T>()] = std::move( system );
+
+		if ( m_State.HasInit )
+		{
+			systemPtr->Init();
+		}
+
+		if ( m_State.HasPostInit )
+		{
+			systemPtr->PostInit();
+		}
+
+		if ( m_State.HasBegunPlay )
+		{
+			systemPtr->OnBeginPlay();
+		}
+
+		return Cast<T*>( systemPtr );
+	}
+
+	template<Concepts::Derived<ISceneSystem> T, typename... _Args>
+	inline T* Scene::AddOrReplaceSystem( _Args&&... a_Args )
+	{
+		if ( ISceneSystem* existingSystem = GetSystem<T>() )
+		{
+			if ( m_State.HasBegunPlay )
+			{
+				existingSystem->OnEndPlay();
+			}
+
+			if ( m_State.HasInit )
+			{
+				existingSystem->Shutdown();
+			}
+		}
+
+		auto system = UniquePtr<T>( std::forward<_Args>( a_Args )... );
+		ISceneSystem* systemPtr = system.get();
+		system->m_Scene = this;
+
+		m_SceneSystems[Hashing::TypeHash<T>()] = std::move( system );
+
+		if ( m_State.HasInit )
+		{
+			systemPtr->Init();
+		}
+
+		if ( m_State.HasPostInit )
+		{
+			systemPtr->PostInit();
+		}
+
+		if ( m_State.HasBegunPlay )
+		{
+			systemPtr->OnBeginPlay();
+		}
+
+		return Cast<T*>( systemPtr );
+	}
+
 	inline GameObject Scene::InstantiateGameObject()
 	{
 		return GameObject( this, m_Registry.Create() );

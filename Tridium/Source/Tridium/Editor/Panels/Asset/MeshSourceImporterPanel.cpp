@@ -88,7 +88,7 @@ namespace Tridium {
 		auto assetManager = AssetManager::Get<EditorAssetManager>();
 		OldAssetMetaData meshSourceMetaData =
 		{
-			AssetHandle::Create(),
+			OldAssetHandle::Create(),
 			EAssetTypeOld::MeshSource,
 			m_Path,
 			m_Path.GetFilename().ToString(),
@@ -102,7 +102,7 @@ namespace Tridium {
 		SharedPtr<OldStaticMesh> mesh = MakeShared<OldStaticMesh>( m_MeshSource->GetHandle() );
 
 		OldAssetMetaData metaData;
-		metaData.Handle = AssetHandle::Create();
+		metaData.Handle = OldAssetHandle::Create();
 		metaData.AssetType = EAssetTypeOld::StaticMesh;
 		metaData.Path = m_Path.GetParentPath();
 		metaData.Path.Append( meshSourceMetaData.Name + ".tmesh" );
@@ -142,7 +142,7 @@ namespace Tridium {
 		//	SharedPtr<StaticMesh> mesh = MakeShared<StaticMesh>( m_MeshSource->GetHandle(), subMeshes);
 
 		//	AssetMetaData metaData;
-		//	metaData.Handle = AssetHandle::Create();
+		//	metaData.Handle = OldAssetHandle::Create();
 		//	metaData.AssetType = EAssetTypeOld::StaticMesh;
 		//	metaData.Path = m_Path.GetParentPath();
 		//	metaData.Path.Append( m_MeshSource->m_MeshNodes[i].Name + ".tmesh" );

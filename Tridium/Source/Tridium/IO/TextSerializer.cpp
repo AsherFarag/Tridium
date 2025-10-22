@@ -77,7 +77,7 @@ namespace Tridium::IO {
 	}
 
 	template<> 
-	void SerializeToText( Archive& a_Archive, const Color& a_Value )
+	void SerializeToText( Archive& a_Archive, const Color4& a_Value )
 	{
 		a_Archive << YAML::Flow;
 		a_Archive << YAML::BeginSeq;
@@ -293,7 +293,7 @@ namespace Tridium::IO {
 	}
 
 	template<>
-	bool DeserializeFromText( const YAML::Node& a_Node, Color& o_Value )
+	bool DeserializeFromText( const YAML::Node& a_Node, Color4& o_Value )
 	{
 		if ( a_Node && a_Node.IsSequence() && a_Node.size() == 4 )
 		{

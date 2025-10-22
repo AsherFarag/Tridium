@@ -11,6 +11,7 @@
 //#define JPH_EPA_CONVEX_BUILDER_DRAW
 
 #include <Jolt/Core/NonCopyable.h>
+#include <Jolt/Core/BinaryHeap.h>
 
 #ifdef JPH_EPA_CONVEX_BUILDER_DRAW
 	#include <Jolt/Renderer/DebugRenderer.h>
@@ -197,7 +198,7 @@ public:
 			inT->mInQueue = true;
 
 			// Resort heap
-			std::push_heap(begin(), end(), sTriangleSorter);
+			BinaryHeapPush(begin(), end(), sTriangleSorter);
 		}
 
 		/// Peek the next closest triangle without removing it
@@ -210,7 +211,7 @@ public:
 		Triangle *		PopClosest()
 		{
 			// Move closest to end
-			std::pop_heap(begin(), end(), sTriangleSorter);
+			BinaryHeapPop(begin(), end(), sTriangleSorter);
 
 			// Remove last triangle
 			Triangle *t = back();
@@ -309,7 +310,7 @@ public:
 
 #ifdef JPH_EPA_CONVEX_BUILDER_DRAW
 		// Draw new support point
-		DrawMarker(pos, Color::sYellow, 1.0f);
+		DrawMarker(pos, Color4::sYellow, 1.0f);
 #endif
 
 #ifdef JPH_EPA_CONVEX_BUILDER_VALIDATE
@@ -547,8 +548,8 @@ private:
 		for (int i = 0; i < (int)outEdges.size(); ++i)
 		{
 			RVec3 edge_start = cDrawScale * (mOffset + mPositions[outEdges[i].mStartIdx]);
-			DebugRenderer::sInstance->DrawArrow(edge_start, cDrawScale * (mOffset + mPositions[outEdges[(i + 1) % outEdges.size()].mStartIdx]), Color::sYellow, 0.01f);
-			DebugRenderer::sInstance->DrawText3D(edge_start, ConvertToString(outEdges[i].mStartIdx), Color::sWhite);
+			DebugRenderer::sInstance->DrawArrow(edge_start, cDrawScale * (mOffset + mPositions[outEdges[(i + 1) % outEdges.size()].mStartIdx]), Color4::sYellow, 0.01f);
+			DebugRenderer::sInstance->DrawText3D(edge_start, ConvertToString(outEdges[i].mStartIdx), Color4::sWhite);
 		}
 
 		// Draw the state with the facing triangles removed
@@ -626,14 +627,14 @@ public:
 				RVec3 p3 = cDrawScale * (mOffset + mPositions[t->mEdge[2].mStartIdx]);
 
 				// Draw triangle
-				DebugRenderer::sInstance->DrawTriangle(p1, p2, p3, Color::sGetDistinctColor(t->mIteration));
-				DebugRenderer::sInstance->DrawWireTriangle(p1, p2, p3, Color::sGrey);
+				DebugRenderer::sInstance->DrawTriangle(p1, p2, p3, Color4::sGetDistinctColor(t->mIteration));
+				DebugRenderer::sInstance->DrawWireTriangle(p1, p2, p3, Color4::sGrey);
 
 				// Draw normal
 				RVec3 centroid = cDrawScale * (mOffset + t->mCentroid);
 				float len = t->mNormal.Length();
 				if (len > 0.0f)
-					DebugRenderer::sInstance->DrawArrow(centroid, centroid + t->mNormal / len, Color::sDarkGreen, 0.01f);
+					DebugRenderer::sInstance->DrawArrow(centroid, centroid + t->mNormal / len, Color4::sDarkGreen, 0.01f);
 			}
 
 		// Determine max position
@@ -652,7 +653,7 @@ public:
 	/// Draw a label to indicate the next stage in the algorithm
 	void				DrawLabel(const string_view &inText)
 	{
-		DebugRenderer::sInstance->DrawText3D(cDrawScale * mOffset, inText, Color::sWhite, 0.1f * cDrawScale);
+		DebugRenderer::sInstance->DrawText3D(cDrawScale * mOffset, inText, Color4::sWhite, 0.1f * cDrawScale);
 
 		mOffset += Vec3(5.0f, 0.0f, 0.0f);
 	}

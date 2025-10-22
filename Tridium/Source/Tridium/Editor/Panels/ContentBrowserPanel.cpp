@@ -163,7 +163,7 @@ namespace Tridium {
 			OldAssetMetaData metaData = EditorAssetManager::Get()->GetAssetMetaData( filePath );
 
 			bool isImported = metaData.IsValid();
-			AssetHandle handle = metaData.Handle;
+			OldAssetHandle handle = metaData.Handle;
 
 			bool isLeaf = true;
 			if ( directoryEntry.is_directory() )
@@ -403,7 +403,7 @@ namespace Tridium {
 
 								OldAssetMetaData metaData =
 								{
-									.Handle = AssetHandle::Create(),
+									.Handle = OldAssetHandle::Create(),
 									.AssetType = EAssetTypeOld::Material,
 									.Path = m_CurrentDirectory / a_FilePath,
 									.Name = a_FilePath,
@@ -645,7 +645,7 @@ namespace Tridium {
 		//	icon = ContentItemIcons::s_UnimportedAssetIcon;
 
 		//const AssetTypeInfo& typeInfo = AssetTypeManager::GetAssetTypeInfo( Cast<EAssetTypeOld>( Type ) );
-		//ImVec4 color = ImVec4( typeInfo.Color.X, typeInfo.Color.Y, typeInfo.Color.Z, typeInfo.Color.W );
+		//ImVec4 color = ImVec4( typeInfo.Color4.X, typeInfo.Color4.Y, typeInfo.Color4.Z, typeInfo.Color4.W );
 
 		//RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), color, a_Size );
 		//// If the item is double clicked, open it
@@ -660,7 +660,7 @@ namespace Tridium {
 		//if ( ImGui::BeginDragDropSource() )
 		//{
 		//	String filePath = ( Owner.GetDirectory() / Name ).ToString();
-		//	ImGui::SetDragDropPayload( TE_PAYLOAD_ASSET_HANDLE, &Handle, sizeof( AssetHandle ) );
+		//	ImGui::SetDragDropPayload( TE_PAYLOAD_ASSET_HANDLE, &Handle, sizeof( OldAssetHandle ) );
 
 		//	RenderContentBrowserThumbnail( Name.c_str(), (ImTextureID)icon->GetRendererID(), FileTypeToString( Type ), color, a_Size );
 

@@ -763,7 +763,7 @@ namespace Tridium::OpenGL {
 		const bool clearStencil = EnumFlags( a_ClearFlags ).HasFlag( ERHIClearFlags::Stencil );
 		const bool clearColor   = EnumFlags( a_ClearFlags ).HasFlag( ERHIClearFlags::Color ) || isRenderTarget;
 
-		// Color clears: set clear color once
+		// Color4 clears: set clear color once
 		if ( clearColor && isRenderTarget )
 		{
 			OpenGL1::ColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE ); // Ensure color mask allows writing

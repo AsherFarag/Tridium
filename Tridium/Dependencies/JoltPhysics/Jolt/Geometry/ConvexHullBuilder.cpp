@@ -10,9 +10,11 @@
 #include <Jolt/Core/StringTools.h>
 #include <Jolt/Core/UnorderedSet.h>
 
+#ifdef JPH_CONVEX_BUILDER_DUMP_SHAPE
 JPH_SUPPRESS_WARNINGS_STD_BEGIN
 #include <fstream>
 JPH_SUPPRESS_WARNINGS_STD_END
+#endif // JPH_CONVEX_BUILDER_DUMP_SHAPE
 
 #ifdef JPH_CONVEX_BUILDER_DEBUG
 	#include <Jolt/Renderer/DebugRenderer.h>
@@ -247,6 +249,7 @@ float ConvexHullBuilder::DetermineCoplanarDistance() const
 int ConvexHullBuilder::GetNumVerticesUsed() const
 {
 	UnorderedSet<int> used_verts;
+	used_verts.reserve(UnorderedSet<int>::size_type(mPositions.size()));
 	for (Face *f : mFaces)
 	{
 		Edge *e = f->mFirstEdge;
@@ -465,7 +468,7 @@ ConvexHullBuilder::EResult ConvexHullBuilder::Initialize(int inMaxVertices, floa
 
 	// Ensure the planes are facing outwards
 	if (max_dist < 0.0f)
-		swap(idx2, idx3);
+		std::swap(idx2, idx3);
 
 	// Create tetrahedron
 	Face *t1 = CreateTriangle(idx1, idx2, idx4);
@@ -551,7 +554,7 @@ ConvexHullBuilder::EResult ConvexHullBuilder::Initialize(int inMaxVertices, floa
 				}
 
 				// Swap it to the end
-				swap(mCoplanarList[best_idx], mCoplanarList.back());
+				std::swap(mCoplanarList[best_idx], mCoplanarList.back());
 
 				// Remove it
 				furthest_point_idx = mCoplanarList.back().mPositionIdx;
@@ -623,8 +626,8 @@ void ConvexHullBuilder::AddPoint(Face *inFacingFace, int inIdx, float inCoplanar
 
 #ifdef JPH_CONVEX_BUILDER_DEBUG
 	// Draw point to be added
-	DebugRenderer::sInstance->DrawMarker(cDrawScale * (mOffset + pos), Color::sYellow, 0.1f);
-	DebugRenderer::sInstance->DrawText3D(cDrawScale * (mOffset + pos), ConvertToString(inIdx), Color::sWhite);
+	DebugRenderer::sInstance->DrawMarker(cDrawScale * (mOffset + pos), Color4::sYellow, 0.1f);
+	DebugRenderer::sInstance->DrawText3D(cDrawScale * (mOffset + pos), ConvertToString(inIdx), Color4::sWhite);
 #endif
 
 #ifdef JPH_ENABLE_ASSERTS
@@ -858,7 +861,7 @@ void ConvexHullBuilder::FindEdge(Face *inFacingFace, Vec3Arg inVertex, FullEdges
 #ifdef JPH_CONVEX_BUILDER_DEBUG
 	// Draw edge of facing faces
 	for (int i = 0; i < (int)outEdges.size(); ++i)
-		DebugRenderer::sInstance->DrawArrow(cDrawScale * (mOffset + mPositions[outEdges[i].mStartIdx]), cDrawScale * (mOffset + mPositions[outEdges[i].mEndIdx]), Color::sWhite, 0.01f);
+		DebugRenderer::sInstance->DrawArrow(cDrawScale * (mOffset + mPositions[outEdges[i].mStartIdx]), cDrawScale * (mOffset + mPositions[outEdges[i].mEndIdx]), Color4::sWhite, 0.01f);
 	DrawState();
 #endif
 }
@@ -880,8 +883,8 @@ void ConvexHullBuilder::MergeFaces(Edge *inEdge)
 	JPH_ASSERT(face != other_face);
 
 #ifdef JPH_CONVEX_BUILDER_DEBUG
-	DrawWireFace(face, Color::sGreen);
-	DrawWireFace(other_face, Color::sRed);
+	DrawWireFace(face, Color4::sGreen);
+	DrawWireFace(other_face, Color4::sRed);
 	DrawState();
 #endif
 
@@ -932,7 +935,7 @@ void ConvexHullBuilder::MergeFaces(Edge *inEdge)
 	other_face->mConflictList.clear();
 
 #ifdef JPH_CONVEX_BUILDER_DEBUG
-	DrawWireFace(face, Color::sWhite);
+	DrawWireFace(face, Color4::sWhite);
 	DrawState();
 #endif
 }
@@ -1038,7 +1041,7 @@ void ConvexHullBuilder::RemoveInvalidEdges(Face *inFace, Faces &ioAffectedFaces)
 				{
 					// This edge leads back to the starting point, this means the edge is interior and needs to be removed
 #ifdef JPH_CONVEX_BUILDER_DEBUG
-					DrawWireFace(inFace, Color::sBlue);
+					DrawWireFace(inFace, Color4::sBlue);
 					DrawState();
 #endif
 
@@ -1051,7 +1054,7 @@ void ConvexHullBuilder::RemoveInvalidEdges(Face *inFace, Faces &ioAffectedFaces)
 					delete next_edge;
 
 #ifdef JPH_CONVEX_BUILDER_DEBUG
-					DrawWireFace(inFace, Color::sGreen);
+					DrawWireFace(inFace, Color4::sGreen);
 					DrawState();
 #endif
 
@@ -1069,8 +1072,8 @@ void ConvexHullBuilder::RemoveInvalidEdges(Face *inFace, Faces &ioAffectedFaces)
 			{
 				// There are two edges that connect to the same face, we will remove the second one
 #ifdef JPH_CONVEX_BUILDER_DEBUG
-				DrawWireFace(inFace, Color::sYellow);
-				DrawWireFace(neighbour_face, Color::sRed);
+				DrawWireFace(inFace, Color4::sYellow);
+				DrawWireFace(neighbour_face, Color4::sRed);
 				DrawState();
 #endif
 
@@ -1091,8 +1094,8 @@ void ConvexHullBuilder::RemoveInvalidEdges(Face *inFace, Faces &ioAffectedFaces)
 				delete next_edge;
 
 #ifdef JPH_CONVEX_BUILDER_DEBUG
-				DrawWireFace(inFace, Color::sYellow);
-				DrawWireFace(neighbour_face, Color::sGreen);
+				DrawWireFace(inFace, Color4::sYellow);
+				DrawWireFace(neighbour_face, Color4::sGreen);
 				DrawState();
 #endif
 
@@ -1137,7 +1140,7 @@ bool ConvexHullBuilder::RemoveTwoEdgeFace(Face *inFace, Faces &ioAffectedFaces) 
 	if (next_edge->mNextEdge == edge)
 	{
 #ifdef JPH_CONVEX_BUILDER_DEBUG
-		DrawWireFace(inFace, Color::sRed);
+		DrawWireFace(inFace, Color4::sRed);
 		DrawState();
 #endif
 
@@ -1367,7 +1370,7 @@ void ConvexHullBuilder::DetermineMaxError(Face *&outFaceWithMaxError, float &out
 void ConvexHullBuilder::DrawState(bool inDrawConflictList) const
 {
 	// Draw origin
-	DebugRenderer::sInstance->DrawMarker(cDrawScale * mOffset, Color::sRed, 0.2f);
+	DebugRenderer::sInstance->DrawMarker(cDrawScale * mOffset, Color4::sRed, 0.2f);
 
 	int face_idx = 0;
 
@@ -1375,8 +1378,8 @@ void ConvexHullBuilder::DrawState(bool inDrawConflictList) const
 	for (const Face *f : mFaces)
 		if (!f->mRemoved)
 		{
-			Color iteration_color = Color::sGetDistinctColor(f->mIteration);
-			Color face_color = Color::sGetDistinctColor(face_idx++);
+			Color4 iteration_color = Color4::sGetDistinctColor(f->mIteration);
+			Color4 face_color = Color4::sGetDistinctColor(face_idx++);
 
 			// First point
 			const Edge *e = f->mFirstEdge;
@@ -1387,7 +1390,7 @@ void ConvexHullBuilder::DrawState(bool inDrawConflictList) const
 			RVec3 p2 = cDrawScale * (mOffset + mPositions[e->mStartIdx]);
 
 			// First line
-			DebugRenderer::sInstance->DrawLine(p1, p2, Color::sGrey);
+			DebugRenderer::sInstance->DrawLine(p1, p2, Color4::sGrey);
 
 			do
 			{
@@ -1397,7 +1400,7 @@ void ConvexHullBuilder::DrawState(bool inDrawConflictList) const
 
 				DebugRenderer::sInstance->DrawTriangle(p1, p2, p3, iteration_color);
 
-				DebugRenderer::sInstance->DrawLine(p2, p3, Color::sGrey);
+				DebugRenderer::sInstance->DrawLine(p2, p3, Color4::sGrey);
 
 				p2 = p3;
 			}

@@ -5,7 +5,7 @@
 namespace Tridium {
 
 	// Forward declarations
-	class RigidBodyComponent;
+	class OldRigidBodyComponent;
 	// -------------------
 
 	class PhysicsBodyFilter : public std::unordered_set<PhysicsBodyID>
@@ -22,8 +22,8 @@ namespace Tridium {
 		{
 		}
 
-		PhysicsBodyFilter( const RigidBodyComponent& a_RigidBodyComponent );
-		PhysicsBodyFilter( const std::initializer_list<RigidBodyComponent>& a_RigidBodyComponents );
+		PhysicsBodyFilter( const OldRigidBodyComponent& a_RigidBodyComponent );
+		PhysicsBodyFilter( const std::initializer_list<OldRigidBodyComponent>& a_RigidBodyComponents );
 	};
 
 }

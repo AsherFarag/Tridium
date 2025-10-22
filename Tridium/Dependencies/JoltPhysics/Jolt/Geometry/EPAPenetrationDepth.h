@@ -103,11 +103,13 @@ public:
 	template <typename AE, typename BE>
 	EStatus				GetPenetrationDepthStepGJK(const AE &inAExcludingConvexRadius, float inConvexRadiusA, const BE &inBExcludingConvexRadius, float inConvexRadiusB, float inTolerance, Vec3 &ioV, Vec3 &outPointA, Vec3 &outPointB)
 	{
-		JPH_PROFILE_FUNCTION();
-
 		JPH_IF_ENABLE_ASSERTS(mGJKTolerance = inTolerance;)
 
-		// Don't supply a zero ioV, we only want to get points on the hull of the Minkowsky sum and not internal points
+		// Don't supply a zero ioV, we only want to get points on the hull of the Minkowsky sum and not internal points.
+		//
+		// Note that if the assert below triggers, it is very likely that you have a MeshShape that contains a degenerate triangle (e.g. a sliver).
+		// Go up a couple of levels in the call stack to see if we're indeed testing a triangle and if it is degenerate.
+		// If this is the case then fix the triangles you supply to the MeshShape.
 		JPH_ASSERT(!ioV.IsNearZero());
 
 		// Get closest points
@@ -233,7 +235,7 @@ public:
 		// Generate the hull of the Minkowski difference for visualization
 		MinkowskiDifference diff(inAIncludingConvexRadius, inBIncludingConvexRadius);
 		DebugRenderer::GeometryRef geometry = DebugRenderer::sInstance->CreateTriangleGeometryForConvex([&diff](Vec3Arg inDirection) { return diff.GetSupport(inDirection); });
-		hull.DrawGeometry(geometry, Color::sYellow);
+		hull.DrawGeometry(geometry, Color4::sYellow);
 
 		hull.DrawLabel("Ensure origin in hull");
 #endif
@@ -281,8 +283,8 @@ public:
 
 #ifdef JPH_EPA_CONVEX_BUILDER_DRAW
 			// Draw the point that we're adding
-			hull.DrawMarker(w, Color::sRed, 1.0f);
-			hull.DrawWireTriangle(*t, Color::sRed);
+			hull.DrawMarker(w, Color4::sRed, 1.0f);
+			hull.DrawWireTriangle(*t, Color4::sRed);
 			hull.DrawState();
 #endif
 
@@ -369,8 +371,8 @@ public:
 #endif
 #ifdef JPH_EPA_CONVEX_BUILDER_DRAW
 			// Draw the point that we're adding
-			hull.DrawMarker(w, Color::sPurple, 1.0f);
-			hull.DrawWireTriangle(*t, Color::sPurple);
+			hull.DrawMarker(w, Color4::sPurple, 1.0f);
+			hull.DrawWireTriangle(*t, Color4::sPurple);
 			hull.DrawState();
 #endif
 
@@ -436,8 +438,8 @@ public:
 
 #ifdef JPH_EPA_CONVEX_BUILDER_DRAW
 		hull.DrawLabel("Closest found");
-		hull.DrawWireTriangle(*last, Color::sWhite);
-		hull.DrawArrow(last->mCentroid, last->mCentroid + last->mNormal.NormalizedOr(Vec3::sZero()), Color::sWhite, 0.1f);
+		hull.DrawWireTriangle(*last, Color4::sWhite);
+		hull.DrawArrow(last->mCentroid, last->mCentroid + last->mNormal.NormalizedOr(Vec3::sZero()), Color4::sWhite, 0.1f);
 		hull.DrawState();
 #endif
 
@@ -536,9 +538,9 @@ public:
 				|| contact_normal_invalid))
 		{
 			// If we're initially intersecting, we need to run the EPA algorithm in order to find the deepest contact point
-			AddConvexRadius<A> add_convex_a(inA, inConvexRadiusA);
-			AddConvexRadius<B> add_convex_b(inB, inConvexRadiusB);
-			TransformedConvexObject<AddConvexRadius<A>> transformed_a(inStart, add_convex_a);
+			AddConvexRadius add_convex_a(inA, inConvexRadiusA);
+			AddConvexRadius add_convex_b(inB, inConvexRadiusB);
+			TransformedConvexObject transformed_a(inStart, add_convex_a);
 			if (!GetPenetrationDepthStepEPA(transformed_a, add_convex_b, inPenetrationTolerance, outContactNormal, outPointA, outPointB))
 				return false;
 		}

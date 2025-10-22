@@ -573,7 +573,7 @@ namespace Tridium {
 						Math::Random::Range( 0.0f, 5.0f ),
 						Math::Random::Range( -10.0f, 10.0f )
 					};
-					light.Color = Vector3{
+					light.Color4 = Vector3{
 						Math::Random::Range( 0.0f, 1.0f ),
 						Math::Random::Range( 0.0f, 1.0f ),
 						Math::Random::Range( 0.0f, 1.0f )
@@ -642,7 +642,7 @@ namespace Tridium {
 											(float)GetSceneRenderer().GetViewportHeight() } )
 				);
 
-				a_CommandList.ClearRenderTargets( ERHIClearFlags::Color, RHIClearValue{} );
+				a_CommandList.ClearRenderTargets( ERHIClearFlags::Color4, RHIClearValue{} );
 
 				InlinedConstants_LitDefault constants;
 				constants.CameraPosition = GetSceneRenderer().GetSceneCamera().Position;
@@ -651,7 +651,7 @@ namespace Tridium {
 				// Directional Light
 				{
 					constants.DirectionalLight.Direction = Vector3{ -0.5f, -1.0f, -0.5f }.Normalized();
-					constants.DirectionalLight.Color = Vector3{ 1.0f, 1.0f, 1.0f };
+					constants.DirectionalLight.Color4 = Vector3{ 1.0f, 1.0f, 1.0f };
 					constants.DirectionalLight.Intensity = 0.0f;
 				}
 

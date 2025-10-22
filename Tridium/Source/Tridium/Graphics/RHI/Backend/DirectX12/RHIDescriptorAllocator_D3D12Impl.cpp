@@ -10,7 +10,7 @@ namespace Tridium::D3D12 {
 
     DescriptorHeap::DescriptorHeap( ID3D12Device* a_Device, ComPtr<ID3D12DescriptorHeap>&& a_Heap,
         uint32_t a_NumDescriptors, ERHIDescriptorHeapType a_Type,
-        EDescriptorHeapFlags a_Flags, bool a_IsGlobal )
+        EDescriptorHeapFlags a_Flags, bool a_IsGlobal, WString a_DebugName )
 		: DeviceChild( a_Device )
 		, m_Heap( std::move( a_Heap ) )
 		, m_Type( a_Type )
@@ -22,6 +22,7 @@ namespace Tridium::D3D12 {
 		, m_Offet( 0u )
 		, m_NumDescriptors( a_NumDescriptors )
 		, m_DescriptorSize( a_Device->GetDescriptorHandleIncrementSize( Translate( a_Type ) ) )
+		, m_DebugName( std::move( a_DebugName ) )
     {
     }
 
@@ -65,11 +66,17 @@ namespace Tridium::D3D12 {
 		HRESULT hr = a_Device->CreateDescriptorHeap( &desc, IID_PPV_ARGS( heap.GetAddressOf() ) );
 		ENSURE( SUCCEEDED( hr ), "Failed to create descriptor heap!" );
 
-		D3D12_SET_DEBUG_NAME( heap.Get(), a_DebugName, L"Unnamed DescriptorHeap" );
+		WString debugName;
+		if ( RHI::IsDebug() && Cast<bool>( heap.Get() ) )
+		{
+			debugName = !a_DebugName.empty() ? WString( a_DebugName.begin(), a_DebugName.end() ) : WString( L"Unnamed DescriptorHeap" );
+			heap.Get()->SetName( debugName.c_str() );
+		}
+
 		LOG( LogCategory::RHI, Debug, "Heap Created - Name: {0}, Type: {1}, NumDescriptors: {2}",
 			a_DebugName, RHIDescriptorHeapTypeToString( a_Type ), a_NumDescriptors );
 
-		return MakeShared<DescriptorHeap>( a_Device, std::move( heap ), a_NumDescriptors, a_Type, a_Flags, a_IsGlobal );
+		return MakeShared<DescriptorHeap>( a_Device, std::move( heap ), a_NumDescriptors, a_Type, a_Flags, a_IsGlobal, std::move( debugName ) );
 	}
 
 

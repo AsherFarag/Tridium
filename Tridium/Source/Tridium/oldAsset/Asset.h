@@ -15,11 +15,11 @@ namespace Tridium {
         ASSET_CLASS_TYPE( None );
 		virtual ~Asset() = default;
 
-        AssetHandle GetHandle() const { return m_Handle; }
-		void SetHandle( AssetHandle a_Handle ) { m_Handle = a_Handle; }
+        OldAssetHandle GetHandle() const { return m_Handle; }
+		void SetHandle( OldAssetHandle a_Handle ) { m_Handle = a_Handle; }
 
     protected:
-        AssetHandle m_Handle;
+        OldAssetHandle m_Handle;
 
         friend class RuntimeAssetManager;
         friend class EditorAssetManager;

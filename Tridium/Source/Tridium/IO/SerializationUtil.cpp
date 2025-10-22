@@ -9,7 +9,7 @@ namespace Tridium {
 		return out;
 	}
 
-	YAML::Emitter& operator<<( YAML::Emitter& out, const Color& v )
+	YAML::Emitter& operator<<( YAML::Emitter& out, const Color4& v )
 	{
 		out << YAML::Flow;
 		out << YAML::BeginSeq << v.r << v.g << v.b << v.a << YAML::EndSeq;

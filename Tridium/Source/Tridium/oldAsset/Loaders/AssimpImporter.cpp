@@ -203,7 +203,7 @@ namespace Tridium {
 			material->EmissiveTexture = ExtractTexture( (void*)a_Scene, aiMat, aiTextureType_EMISSIVE );
 
 
-			AssetHandle matAssetHandle = AssetHandle::Create();
+			OldAssetHandle matAssetHandle = OldAssetHandle::Create();
 			AssetManager::AddMemoryOnlyAsset( matAssetHandle, material );
 			a_MeshSource->m_Materials[i] = matAssetHandle;
 		}
@@ -218,9 +218,9 @@ namespace Tridium {
 		aiString aiTexturePath;
 
 		if ( aiMat->GetTexture( aiTexType, 0, &aiTexturePath ) == AI_FAILURE )
-			return AssetHandle::InvalidID;
+			return OldAssetHandle::InvalidID;
 
-		TextureHandle texHandle = AssetHandle::Create();
+		TextureHandle texHandle = OldAssetHandle::Create();
 
 		if ( auto aiEmbeddedTexture = aiScn->GetEmbeddedTexture( aiTexturePath.C_Str() ) )
 		{

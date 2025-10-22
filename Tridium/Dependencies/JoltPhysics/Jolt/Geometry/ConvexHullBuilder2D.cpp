@@ -169,7 +169,7 @@ ConvexHullBuilder2D::EResult ConvexHullBuilder2D::Initialize(int inIdx1, int inI
 	// Start with the initial indices in counter clockwise order
 	float z = (mPositions[inIdx2] - mPositions[inIdx1]).Cross(mPositions[inIdx3] - mPositions[inIdx1]).GetZ();
 	if (z < 0.0f)
-		swap(inIdx1, inIdx2);
+		std::swap(inIdx1, inIdx2);
 
 	// Create and link edges
 	Edge *e1 = new Edge(inIdx1);
@@ -314,11 +314,11 @@ void ConvexHullBuilder2D::DrawState()
 		const Edge *next = edge->mNextEdge;
 
 		// Get unique color per edge
-		Color color = Color::sGetDistinctColor(color_idx++);
+		Color4 color = Color4::sGetDistinctColor(color_idx++);
 
 		// Draw edge and normal
 		DebugRenderer::sInstance->DrawArrow(cDrawScale * (mOffset + mPositions[edge->mStartIdx]), cDrawScale * (mOffset + mPositions[next->mStartIdx]), color, 0.1f);
-		DebugRenderer::sInstance->DrawArrow(cDrawScale * (mOffset + edge->mCenter), cDrawScale * (mOffset + edge->mCenter) + edge->mNormal.NormalizedOr(Vec3::sZero()), Color::sGreen, 0.1f);
+		DebugRenderer::sInstance->DrawArrow(cDrawScale * (mOffset + edge->mCenter), cDrawScale * (mOffset + edge->mCenter) + edge->mNormal.NormalizedOr(Vec3::sZero()), Color4::sGreen, 0.1f);
 
 		// Draw points that belong to this edge in the same color
 		for (int idx : edge->mConflictList)

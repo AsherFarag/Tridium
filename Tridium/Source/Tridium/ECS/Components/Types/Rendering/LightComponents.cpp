@@ -4,7 +4,7 @@
 
 namespace Tridium {
 
-	BEGIN_REFLECT_COMPONENT( PointLightComponent, Scriptable )
+	BEGIN_REFLECT_COMPONENT( OldPointLightComponent, Scriptable )
 		BASE( NativeScriptComponent )
 		PROPERTY( LightColor, Serialize | EditAnywhere )
 		PROPERTY( Intensity, Serialize | EditAnywhere )
@@ -13,10 +13,10 @@ namespace Tridium {
 		PROPERTY( CastsShadows, Serialize | EditAnywhere )
 		PROPERTY( ShadowMapSize, Serialize | EditAnywhere )
 		PROPERTY( ShadowMap, VisibleAnywhere )
-	END_REFLECT_COMPONENT( PointLightComponent );
+	END_REFLECT_COMPONENT( OldPointLightComponent );
 
 	
-	BEGIN_REFLECT_COMPONENT( SpotLightComponent, Scriptable )
+	BEGIN_REFLECT_COMPONENT( OldSpotLightComponent, Scriptable )
 		BASE( NativeScriptComponent )
 		PROPERTY( LightColor,       Serialize | EditAnywhere )
 		PROPERTY( Intensity,        Serialize | EditAnywhere )
@@ -27,18 +27,18 @@ namespace Tridium {
 		PROPERTY( CastsShadows,		Serialize | EditAnywhere )
 		PROPERTY( ShadowMapSize,	Serialize | EditAnywhere )
 		PROPERTY( ShadowMap,		VisibleAnywhere )
-	END_REFLECT_COMPONENT( SpotLightComponent );
+	END_REFLECT_COMPONENT( OldSpotLightComponent );
 
-	BEGIN_REFLECT_COMPONENT( DirectionalLightComponent, Scriptable )
+	BEGIN_REFLECT_COMPONENT( OldDirectionalLightComponent, Scriptable )
 		BASE( NativeScriptComponent )
 		PROPERTY( LightColor,    Serialize | EditAnywhere )
 		PROPERTY( Intensity,     Serialize | EditAnywhere )
 		PROPERTY( CastsShadows,  Serialize | EditAnywhere )
 		PROPERTY( ShadowMapSize, Serialize | EditAnywhere )
 		PROPERTY( ShadowMap,     VisibleAnywhere )
-	END_REFLECT_COMPONENT( DirectionalLightComponent );
+	END_REFLECT_COMPONENT( OldDirectionalLightComponent );
 
-	PointLightComponent::PointLightComponent( const PointLightComponent& a_Other )
+	OldPointLightComponent::OldPointLightComponent( const OldPointLightComponent& a_Other )
 		: LightColor( a_Other.LightColor ), Intensity( a_Other.Intensity ), FalloffExponent( a_Other.FalloffExponent ),
 		AttenuationRadius( a_Other.AttenuationRadius ), CastsShadows( a_Other.CastsShadows ), ShadowMapSize( a_Other.ShadowMapSize ), ShadowMap( nullptr ) {}
 }

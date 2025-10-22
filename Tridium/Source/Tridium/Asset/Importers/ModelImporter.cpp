@@ -154,7 +154,10 @@ namespace Tridium {
 		const Matrix4 localTransform = Mat4FromAIMatrix4x4( a_Node->mTransformation );
 		const Matrix4 transform = a_ParentTransform * localTransform;
 
-		ProcessStaticMesh( a_Context, a_Scene, a_Node, transform );
+		if ( a_Node->mNumMeshes > 0 )
+		{
+			ProcessStaticMesh( a_Context, a_Scene, a_Node, transform );
+		}
 
 		// Recurse for each child node and process their meshes
 		for ( uint32_t i = 0; i < a_Node->mNumChildren; ++i )
@@ -314,13 +317,13 @@ namespace Tridium {
 
 			// Albedo (Diffuse)
 			{
-				// Color
+				// Color4
 				aiColor3D color( 1.0f, 1.0f, 1.0f );
 				if ( aiMat->Get( AI_MATKEY_COLOR_DIFFUSE, color ) == aiReturn_SUCCESS )
 				{
 					TODO( "Do we need to convert from linear to sRGB?" );
 					LOG( LogCategory::Asset, Info, "Albedo color: R={} G={} B={}", color.r, color.g, color.b );
-					material->SetAlbedoColor( Color( color.r, color.g, color.b, 1.0f ) );
+					material->SetAlbedoColor( Color4( color.r, color.g, color.b, 1.0f ) );
 				}
 
 				// Texture

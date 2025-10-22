@@ -7,6 +7,7 @@
 #include <Tridium/Core/Memory.h>
 #include <Tridium/Core/Enum.h>
 #include <Tridium/Math/Math.h>
+#include <Tridium/Utils/Log.h>
 
 DECLARE_LOG_CATEGORY( RHI );
 
@@ -395,11 +396,11 @@ namespace Tridium {
 	//=================================================================================================
 	struct RHIClearValue
 	{
-		Color Color = Color::Black();
+		Color4 Color = Color4::Black();
 		float Depth = 1.0f;
 		uint8_t Stencil = 0;
 
-		constexpr auto& SetColor( const ::Tridium::Color& a_Color ) noexcept { Color = a_Color; return *this; }
+		constexpr auto& SetColor( const ::Tridium::Color4& a_Color ) noexcept { Color = a_Color; return *this; }
 		constexpr auto& SetDepth( float a_Depth ) noexcept { Depth = a_Depth; return *this; }
 		constexpr auto& SetStencil( uint8_t a_Stencil ) noexcept { Stencil = a_Stencil; return *this; }
 	};
@@ -785,7 +786,7 @@ namespace Tridium {
 	RHI_ENUM_SIZE_ASSERT( ERHIBlendOp );
 
 	//=================================================================================================
-	// RHI Color Mask: Defines which color channels are written to.
+	// RHI Color4 Mask: Defines which color channels are written to.
 	//=================================================================================================
 	enum class ERHIColorMask : uint8_t
 	{
@@ -1041,16 +1042,16 @@ namespace Tridium {
 		bool IsSRGB : 1;
 
 		constexpr uint32_t Bytes() const noexcept { return BytesPerBlock * Blocks; }
-		constexpr Color ConvertToColor( Span<const uint8_t> a_Data ) const noexcept 
+		constexpr Color4 ConvertToColor( Span<const uint8_t> a_Data ) const noexcept 
 		{
 			static_assert(size_t( ERHIFormat::COUNT ) == 43);
 
 			const int numChannels = (int)HasRed + (int)HasGreen + (int)HasBlue + (int)HasAlpha;
 			if ( numChannels == 0 )
-				return Color{ 0,0,0,1 }; // depth/stencil not handled here
+				return Color4{ 0,0,0,1 }; // depth/stencil not handled here
 
 			const int bytesPerChannel = Bytes() / numChannels;
-			Color color{};
+			Color4 color{};
 			uint32_t offset = 0;
 
 			const auto readFloat = [&]( int bytes ) -> float 
@@ -1146,7 +1147,7 @@ namespace Tridium {
 			return color;
 		}
 
-		constexpr void ConvertFromColor( Span<uint8_t> a_Data, const Color& a_Color ) const noexcept
+		constexpr void ConvertFromColor( Span<uint8_t> a_Data, const Color4& a_Color ) const noexcept
 		{
 			static_assert( size_t( ERHIFormat::COUNT ) == 43 );
 
@@ -1642,7 +1643,7 @@ namespace Tridium {
 	template<> constexpr ERHIFormat GetRHIFormatFromType<Vector2>()            { return ERHIFormat::RG32_FLOAT; }
 	template<> constexpr ERHIFormat GetRHIFormatFromType<Vector3>()            { return ERHIFormat::RGB32_FLOAT; }
 	template<> constexpr ERHIFormat GetRHIFormatFromType<Vector4>()            { return ERHIFormat::RGBA32_FLOAT; }
-	template<> constexpr ERHIFormat GetRHIFormatFromType<Color>()              { return ERHIFormat::RGBA8_UNORM; }
+	template<> constexpr ERHIFormat GetRHIFormatFromType<Color4>()              { return ERHIFormat::RGBA8_UNORM; }
 	template<> constexpr ERHIFormat GetRHIFormatFromType<TVector4<byte_t>>()     { return ERHIFormat::RGBA8_UNORM; }
 	template<> constexpr ERHIFormat GetRHIFormatFromType<TVector2<int16_t>>()  { return ERHIFormat::RG16_SINT; }
 	template<> constexpr ERHIFormat GetRHIFormatFromType<TVector4<int16_t>>()  { return ERHIFormat::RGBA16_SINT; }
@@ -1674,7 +1675,7 @@ namespace Tridium {
 	};
 
 	template<>
-	struct RHITensorTypeTraits<Color>
+	struct RHITensorTypeTraits<Color4>
 	{
 		static constexpr ERHIDataType ElementType = ERHIDataType::Float32;
 		static constexpr uint8_t ElementCountX = 4;

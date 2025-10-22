@@ -8,17 +8,17 @@ namespace Tridium {
 	public:
 
 		// Inherited via AssetManagerBase
-		SharedPtr<Asset> GetAsset( AssetHandle a_Handle ) override;
+		SharedPtr<Asset> GetAsset( OldAssetHandle a_Handle ) override;
 		SharedPtr<Asset> GetAsset( const FilePath& a_Path ) override;
-		SharedPtr<Asset> GetMemoryOnlyAsset( AssetHandle a_Handle ) override;
+		SharedPtr<Asset> GetMemoryOnlyAsset( OldAssetHandle a_Handle ) override;
 		AssetStorageIterator GetAssets() override;
-		bool AddMemoryOnlyAsset( AssetHandle a_Handle, SharedPtr<Asset> a_Asset ) override;
-		bool HasAsset( AssetHandle a_Handle ) override;
-		void RemoveAsset( AssetHandle a_Handle ) override;
-		EAssetTypeOld GetAssetType( AssetHandle a_Handle ) override;
-		bool IsMemoryAsset( AssetHandle a_Handle ) override;
-		void RegisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) override;
-		void UnregisterDependency( AssetHandle a_Dependent, AssetHandle a_Dependency ) override;
+		bool AddMemoryOnlyAsset( OldAssetHandle a_Handle, SharedPtr<Asset> a_Asset ) override;
+		bool HasAsset( OldAssetHandle a_Handle ) override;
+		void RemoveAsset( OldAssetHandle a_Handle ) override;
+		EAssetTypeOld GetAssetType( OldAssetHandle a_Handle ) override;
+		bool IsMemoryAsset( OldAssetHandle a_Handle ) override;
+		void RegisterDependency( OldAssetHandle a_Dependent, OldAssetHandle a_Dependency ) override;
+		void UnregisterDependency( OldAssetHandle a_Dependent, OldAssetHandle a_Dependency ) override;
 
 	private:
 		AssetStorageType m_LoadedAssets;

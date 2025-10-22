@@ -80,13 +80,13 @@ namespace Tridium {
 				a_Storage.RegisterType( doc );
 			}
 
-			// StaticMeshComponent
+			// OldStaticMeshComponent
 			{
 				TypeDocumentation doc;
 				doc.Name = "StaticMeshComponent";
 				doc.Description = "A component that represents a static mesh that can be rendered in the scene.";
 				doc.Members = {
-					{ "Mesh", "The mesh asset to render.", "AssetHandle<StaticMesh>"  },
+					{ "Mesh", "The mesh asset to render.", "OldAssetHandle<StaticMesh>"  },
 					{ "Materials", "The material asset to use when rendering the mesh.", "Array<MaterialHandle>" }
 				};
 				doc.Functions = { };

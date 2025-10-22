@@ -26,9 +26,8 @@ DECLARE_LOG_CATEGORY( DirectX );
 	do { \
 		if ( RHI::IsDebug() && static_cast<bool>( _Object ) ) \
 		{ \
-			::Tridium::WString wName = !_Name.empty() ? WString( _Name.begin(), _Name.end() ) : WString( _DefaultName ); \
-			_Object->SetName( wName.c_str() ); \
-			::Tridium::D3D12::D3D12Context::Get()->StringStorage.EmplaceBack( std::move( wName ) ); \
+			m_DebugName = !_Name.empty() ? WString( _Name.begin(), _Name.end() ) : WString( _DefaultName ); \
+			_Object->SetName( m_DebugName.c_str() ); \
 		} \
 	} while ( false )
 #else
@@ -390,7 +389,7 @@ namespace Tridium::D3D12 {
 		// Create a new descriptor heap with its own D3D12 descriptor heap.
 		DescriptorHeap( ID3D12Device* a_Device, ComPtr<ID3D12DescriptorHeap>&& a_Heap,
 			uint32_t a_NumDescriptors, ERHIDescriptorHeapType a_Type,
-			EDescriptorHeapFlags a_Flags, bool a_IsGlobal = false );
+			EDescriptorHeapFlags a_Flags, bool a_IsGlobal = false, WString a_DebugName = WString{} );
 		// Create a new descriptor heap that is a suballocation of a larger heap.
 		DescriptorHeap( DescriptorHeap& a_ParentHeap, uint32_t a_Offset, uint32_t a_NumDescriptors );
 		~DescriptorHeap();
@@ -432,6 +431,8 @@ namespace Tridium::D3D12 {
 		const uint32_t m_DescriptorSize;
 		// The total number of descriptors in the heap.
 		const uint32_t m_NumDescriptors;
+
+		WString m_DebugName;
 	};
 	using DescriptorHeapRef = SharedPtr<DescriptorHeap>;
 
@@ -537,17 +538,6 @@ namespace Tridium::D3D12 {
 		ComPtr<ID3D12DescriptorHeap> AcquirePooledHeap( ERHIDescriptorHeapType a_Type, uint32_t a_NumDescriptors, EDescriptorHeapFlags a_Flags );
 	};
 
-	//=======================================================
-	// D3D12 Context
-	//  A context for global D3D12 data.
-	class D3D12Context : public ISingleton<D3D12Context, /* _ExplicitSetup */ false>
-	{
-	public:
-		// A global storage for Wide Strings
-		// Work around for owning strings as Tridium uses Strings instead of Wide Strings
-		Array<WString> StringStorage;
-	};
-
 #pragma region D3D12 RHI IMPLEMENTATIONS
 
 	//=================================================================================================
@@ -585,6 +575,7 @@ namespace Tridium::D3D12 {
 
 		Array<uint64_t> m_SubresourceOffsets;
 		D3D12_PLACED_SUBRESOURCE_FOOTPRINT m_MappedFootprint;
+		WString m_DebugName{};
 	};
 
 	//=================================================================================================
@@ -614,6 +605,10 @@ namespace Tridium::D3D12 {
 
 		//=============================================================================================
 		ManagedResource ManagedBuffer{};
+
+	private:
+
+		WString m_DebugName{};
 
 	};
 
@@ -727,6 +722,10 @@ namespace Tridium::D3D12 {
 		SharedPtr<RootSignature> RootSig;
 		ComPtr<ID3D12PipelineState> PSO;
 		InlineArray<D3D12_INPUT_ELEMENT_DESC, RHIConstants::MaxVertexAttributes> VertexLayout;
+
+	private:
+
+		WString m_DebugName{};
 
 	};
 
@@ -852,6 +851,8 @@ namespace Tridium::D3D12 {
 
 
 		Array<ID3D12DescriptorHeap*> m_ActiveDescriptorHeaps{}; // The currently bound descriptor heaps.
+
+		WString m_DebugName{};
 
 	private:
 

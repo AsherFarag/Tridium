@@ -2,6 +2,8 @@
 #include <Tridium/Core/Types.h>
 #include <Tridium/Core/GUID.h>
 #include <Tridium/Core/Enum.h>
+#include <Tridium/Core/Version.h>
+#include <Tridium/Graphics/Color.h>
 
 namespace Tridium {
 
@@ -55,7 +57,7 @@ namespace Tridium {
 	{
 		AssetTypeID ID = InvalidAssetTypeID;
 		String Name{};
-		Color Color{ 1.0f, 1.0f, 1.0f, 1.0f };
+		Color4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
 		StringView Icon{};
 	};
 

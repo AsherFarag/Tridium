@@ -113,10 +113,10 @@ namespace Tridium {
 		bool DrawProperty( const char* a_Name, Rotator& a_Value, EDrawPropertyFlags a_Flags );
 
 		template<>
-		bool DrawProperty( const char* a_Name, Color& a_Value, EDrawPropertyFlags a_Flags );
+		bool DrawProperty( const char* a_Name, Color4& a_Value, EDrawPropertyFlags a_Flags );
 
 		template<>
-		bool DrawProperty( const char* a_Name, AssetHandle& a_Value, EDrawPropertyFlags a_Flags );
+		bool DrawProperty( const char* a_Name, OldAssetHandle& a_Value, EDrawPropertyFlags a_Flags );
 
 		template<>
 		bool DrawProperty( const char* a_Name, SceneHandle& a_Value, EDrawPropertyFlags a_Flags );

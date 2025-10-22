@@ -126,8 +126,8 @@ namespace Tridium {
 	public:
 		static void Init();
 
-		static AssetHandle GetWhiteTexture();
-		static AssetHandle GetBlackTexture();
-		static AssetHandle GetNormalTexture();
+		static OldAssetHandle GetWhiteTexture();
+		static OldAssetHandle GetBlackTexture();
+		static OldAssetHandle GetNormalTexture();
 	};
 }

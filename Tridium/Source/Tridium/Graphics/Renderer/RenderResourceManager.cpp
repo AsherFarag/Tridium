@@ -352,7 +352,7 @@ namespace Tridium {
 			// Set material properties
 			struct MaterialProperties
 			{
-				Color AlbedoColor = Color::White();
+				Color4 AlbedoColor = Color4::White();
 				float MetallicIntensity = 1.0f;
 				float RoughnessIntensity = 1.0f;
 				float EmissiveIntensity = 1.0f;

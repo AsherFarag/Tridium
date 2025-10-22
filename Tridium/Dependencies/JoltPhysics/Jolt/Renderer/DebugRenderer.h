@@ -125,7 +125,7 @@ public:
 	/// @param inPerpendicular Perpendicular vector to inAxis.
 	/// @param inHalfAngle Specifies the cone angle in radians (angle measured between inAxis and cone surface).
 	/// @param inLength The length of the cone.
-	/// @param inColor Color to use for drawing the cone.
+	/// @param inColor Color4 to use for drawing the cone.
 	/// @param inCastShadow determines if this geometry should cast a shadow or not.
 	/// @param inDrawMode determines if we draw the geometry solid or in wireframe.
 	void					DrawOpenCone(RVec3Arg inTop, Vec3Arg inAxis, Vec3Arg inPerpendicular, float inHalfAngle, float inLength, ColorArg inColor, ECastShadow inCastShadow = ECastShadow::On, EDrawMode inDrawMode = EDrawMode::Solid);
@@ -135,7 +135,7 @@ public:
 	/// @param inSwingYHalfAngle See SwingTwistConstraintPart
 	/// @param inSwingZHalfAngle See SwingTwistConstraintPart
 	/// @param inEdgeLength Size of the edge of the cone shape
-	/// @param inColor Color to use for drawing the cone.
+	/// @param inColor Color4 to use for drawing the cone.
 	/// @param inCastShadow determines if this geometry should cast a shadow or not.
 	/// @param inDrawMode determines if we draw the geometry solid or in wireframe.
 	void					DrawSwingConeLimits(RMat44Arg inMatrix, float inSwingYHalfAngle, float inSwingZHalfAngle, float inEdgeLength, ColorArg inColor, ECastShadow inCastShadow = ECastShadow::On, EDrawMode inDrawMode = EDrawMode::Solid);
@@ -147,7 +147,7 @@ public:
 	/// @param inMinSwingZAngle See SwingTwistConstraintPart
 	/// @param inMaxSwingZAngle See SwingTwistConstraintPart
 	/// @param inEdgeLength Size of the edge of the cone shape
-	/// @param inColor Color to use for drawing the cone.
+	/// @param inColor Color4 to use for drawing the cone.
 	/// @param inCastShadow determines if this geometry should cast a shadow or not.
 	/// @param inDrawMode determines if we draw the geometry solid or in wireframe.
 	void					DrawSwingPyramidLimits(RMat44Arg inMatrix, float inMinSwingYAngle, float inMaxSwingYAngle, float inMinSwingZAngle, float inMaxSwingZAngle, float inEdgeLength, ColorArg inColor, ECastShadow inCastShadow = ECastShadow::On, EDrawMode inDrawMode = EDrawMode::Solid);
@@ -159,7 +159,7 @@ public:
 	/// @param inAxis The axis that defines an angle of 0 radians.
 	/// @param inMinAngle The pie will be drawn between [inMinAngle, inMaxAngle] (in radians).
 	/// @param inMaxAngle The pie will be drawn between [inMinAngle, inMaxAngle] (in radians).
-	/// @param inColor Color to use for drawing the pie.
+	/// @param inColor Color4 to use for drawing the pie.
 	/// @param inCastShadow determines if this geometry should cast a shadow or not.
 	/// @param inDrawMode determines if we draw the geometry solid or in wireframe.
 	void					DrawPie(RVec3Arg inCenter, float inRadius, Vec3Arg inNormal, Vec3Arg inAxis, float inMinAngle, float inMaxAngle, ColorArg inColor, ECastShadow inCastShadow = ECastShadow::On, EDrawMode inDrawMode = EDrawMode::Solid);
@@ -170,7 +170,7 @@ public:
 	/// @param inBottom Bottom of cylinder (along Y axis)
 	/// @param inTopRadius Radius at the top
 	/// @param inBottomRadius Radius at the bottom
-	/// @param inColor Color to use for drawing the pie.
+	/// @param inColor Color4 to use for drawing the pie.
 	/// @param inCastShadow determines if this geometry should cast a shadow or not.
 	/// @param inDrawMode determines if we draw the geometry solid or in wireframe.
 	void					DrawTaperedCylinder(RMat44Arg inMatrix, float inTop, float inBottom, float inTopRadius, float inBottomRadius, ColorArg inColor, ECastShadow inCastShadow = ECastShadow::On, EDrawMode inDrawMode = EDrawMode::Solid);
@@ -218,7 +218,7 @@ public:
 
 		/// Constructor
 							Geometry(const AABox &inBounds) : mBounds(inBounds) { }
-							Geometry(const Batch &inBatch, const AABox &inBounds) : mBounds(inBounds) { mLODs.push_back({ inBatch, FLT_MAX }); }
+							Geometry(const Batch &inBatch, const AABox &inBounds) : mBounds(inBounds) { mLODs.push_back({ inBatch, cLargeFloat }); }
 
 		/// Determine which LOD to render
 		/// @param inCameraPosition Current position of the camera

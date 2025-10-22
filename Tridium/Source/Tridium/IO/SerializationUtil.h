@@ -53,9 +53,9 @@ namespace YAML {
 	};
 
 	template<>
-	struct convert<Tridium::Color>
+	struct convert<Tridium::Color4>
 	{
-		static Node encode( const Tridium::Color& rhs )
+		static Node encode( const Tridium::Color4& rhs )
 		{
 			Node node;
 			node.push_back( rhs.r );
@@ -65,7 +65,7 @@ namespace YAML {
 			return node;
 		}
 
-		static bool decode( const Node& node, Tridium::Color& rhs )
+		static bool decode( const Node& node, Tridium::Color4& rhs )
 		{
 			if ( !node.IsSequence() || node.size() != 4 )
 				return false;
@@ -126,7 +126,7 @@ namespace Tridium {
 		return out;
 	}
 
-	YAML::Emitter& operator<<( YAML::Emitter& out, const Color& v );
+	YAML::Emitter& operator<<( YAML::Emitter& out, const Color4& v );
 	
 	YAML::Emitter& operator<<( YAML::Emitter& out, const Matrix4& v );
 

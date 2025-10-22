@@ -1,4 +1,7 @@
 #pragma once
+#include <Tridium/Utils/Concepts.h>
+#include <Tridium/Core/Assert.h>
+
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -7,7 +10,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 #undef GLM_ENABLE_EXPERIMENTAL
-#include <Tridium/Utils/Concepts.h>
 
 namespace Tridium {
 

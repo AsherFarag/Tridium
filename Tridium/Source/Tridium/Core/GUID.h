@@ -1,10 +1,12 @@
 #pragma once
 #include <Tridium/Core/Types.h>
+#include <Tridium/Utils/Format.h>
+
 
 namespace Tridium {
 
 	template<typename T>
-	T GenerateRandomID() { static_assert( true, "GenerateRandomID not implemented for this type" ); }
+	T GenerateRandomID();
 
 	template<>
 	int16_t GenerateRandomID<int16_t>();
