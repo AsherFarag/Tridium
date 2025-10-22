@@ -154,6 +154,7 @@ namespace Tridium {
 		Get()->m_Running = false;
 	}
 
+
 	Application::Application( CmdLineArgs a_CmdLine )
 	{
 		ENSURE( !s_Instance, "An Application instance already exists!" );

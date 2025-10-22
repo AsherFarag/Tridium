@@ -63,7 +63,7 @@ namespace Tridium {
 	{
 		if ( SceneManager::GetActiveScene() == nullptr )
 			return {};
-		CameraComponent* camera = SceneManager::GetActiveScene()->GetMainCamera();
+		OldCameraComponent* camera = SceneManager::GetActiveScene()->GetMainCamera();
 		if ( !camera )
 			return {};
 

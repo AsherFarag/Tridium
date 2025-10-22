@@ -46,7 +46,7 @@ namespace Tridium {
 		// Mouse Scroll Zoom
 		//if ( Input::GetMouseScrollYOffset() != m_LastMouseScroll )
 		//{
-		//	if ( CameraComponent* cam = go.TryGetComponent<CameraComponent>() )
+		//	if ( OldCameraComponent* cam = go.TryGetComponent<OldCameraComponent>() )
 		//	{
 		//		float fov = glm::degrees( cam->SceneCamera.GetPerspectiveFOV() );
 		//		fov -= ( Input::GetMouseScrollYOffset() - m_LastMouseScroll ) * 2;

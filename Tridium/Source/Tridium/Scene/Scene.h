@@ -22,7 +22,7 @@ namespace Tridium {
 
 	// Forward Declarations
 	class Camera;
-	class CameraComponent;
+	class OldCameraComponent;
 	class EnvironmentMapOld;
 
 	struct SceneState
@@ -56,7 +56,7 @@ namespace Tridium {
 		bool IsRunning() const { return m_State.IsRunning; }
 		bool HasBegunPlay() const { return m_State.HasBegunPlay; }
 
-		CameraComponent* GetMainCamera();
+		OldCameraComponent* GetMainCamera();
 		OldGameObject GetMainCameraGameObject() const;
 		void SetMainCamera( OldGameObject a_CameraGameObject );
 
@@ -380,6 +380,7 @@ namespace Tridium {
 		void DestroyGameObject( GameObject a_GameObject );
 
 	protected:
+	public: // TODO : Make protected later
 
 		//=============================================================================================
 		friend class SceneManager;

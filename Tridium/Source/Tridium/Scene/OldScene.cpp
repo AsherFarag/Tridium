@@ -485,30 +485,30 @@ namespace Tridium {
 
 	//////////////////////////////////////////////////////////////////////////
 
-	CameraComponent* OldScene::GetMainCamera()
+	OldCameraComponent* OldScene::GetMainCamera()
 	{
 		if ( IsGameObjectValid( m_MainCamera ) )
 		{
-			if ( auto* camera = TryGetComponentFromGameObject<CameraComponent>( m_MainCamera ) )
+			if ( auto* camera = TryGetComponentFromGameObject<OldCameraComponent>( m_MainCamera ) )
 				return camera;
 		}
 
 		m_MainCamera = NullEntity;
-		auto cameras = m_ECS.View<CameraComponent>();
-		CameraComponent* mainCamera = nullptr;
+		auto cameras = m_ECS.View<OldCameraComponent>();
+		OldCameraComponent* mainCamera = nullptr;
 		for ( OldGameObject camera : cameras )
 		{
-			if ( cameras.get<CameraComponent>( camera ).IsMainCamera )
+			if ( cameras.get<OldCameraComponent>( camera ).IsMainCamera )
 			{
 				m_MainCamera = camera;
-				mainCamera = &cameras.get<CameraComponent>( camera );
+				mainCamera = &cameras.get<OldCameraComponent>( camera );
 			}
 		}
 
 		if ( !IsGameObjectValid( m_MainCamera ) && !cameras.empty() )
 		{
 			m_MainCamera = cameras.front();
-			mainCamera = &cameras.get<CameraComponent>( m_MainCamera );
+			mainCamera = &cameras.get<OldCameraComponent>( m_MainCamera );
 		}
 
 		return mainCamera;

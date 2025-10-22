@@ -16,6 +16,7 @@
 #include <ImGuizmo.h>
 
 // TEMP ?
+#include <Tridium/Graphics/Renderer/RendererComponents.h>
 #include <Tridium/Math/Random.h>
 #include <Tridium/Graphics/oldRendering/SceneRenderer.h>
 #include <Tridium/oldAsset/EditorAssetManager.h>
@@ -136,11 +137,25 @@ namespace Tridium {
 	static RenderViewID s_ViewID = 0;
 	static Array<AssetRef<StaticMesh>> s_ImportedAssets;
 	static uint32_t importedAssetIndex = 0;
+	static Scene s_TestScene;
+	static GameObject s_TestGO;
 
 	void EditorViewportPanel::OnUpdate( float a_DeltaTime )
 	{
 		if ( !m_EditorCamera || m_ViewportSize.X <= 0 || m_ViewportSize.Y <= 0 )
 			return;
+
+		static GameObject TestGO = []()
+		{
+			s_TestScene.Init();
+			GameObject test = s_TestScene.InstantiateGameObject();
+			test.Add<TransformComponent>();
+			test.Add<StaticMeshComponent>();
+
+			s_TestScene.OnBeginPlay( EScenePlayMode::Play );
+			s_TestGO = test;
+			return test;
+		}( );
 
 		RenderView view
 		{
@@ -190,8 +205,11 @@ namespace Tridium {
 
 			if ( s_ImportedAssets.IsValidIndex( importedAssetIndex ) )
 			{
-				RendererModule::GetPipelineManager()->SubmitStaticMesh( s_ImportedAssets[importedAssetIndex], Matrix4{ 1.0f } );
+				TestGO.Get<StaticMeshComponent>().Mesh = AssetHandle<StaticMesh>( s_ImportedAssets[importedAssetIndex] );
+				//RendererModule::GetPipelineManager()->SubmitStaticMesh( s_ImportedAssets[importedAssetIndex], Matrix4{ 1.0f } );
 			}
+
+			s_TestScene.OnTick( a_DeltaTime );
 		}
 
 		// Temp
@@ -271,78 +289,13 @@ namespace Tridium {
 			m_ViewportSize = regionAvail;
 			m_EditorCamera->SetViewportSize( m_ViewportSize.X, m_ViewportSize.Y );
 			m_EditorCamera->OnUpdate();
-
 			ImTextureID textureID = (ImTextureID)( RendererModule::GetPipelineManager()->GetViewOutput( s_ViewID ).get() );
 			if ( textureID )
 			{
 				ImGui::Image( textureID, ImGui::GetContentRegionAvail() );
 			}
 
-			//{
-			//
-			//	//TEMP
-			//	const FilePath assetFilePath = "TestProject/Content/damagedhelmet/DamagedHelmet.gltf";
-			//	//const FilePath assetFilePath = "TestProject/Content/troll/troll/TrollApose_low.fbx";
-			//	auto modelImporter = AssetFactory::GetImporter( assetFilePath.GetExtension().ToString() );
-			//	static bool imported = false;
-			//	static AssetRef<StaticMesh> importedAsset;
-			//	static AssetRef<StaticMesh> importedAsset2;
-			//	if ( modelImporter && !imported )
-			//	{
-			//		imported = true;
-			//		{
-			//			std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
-			//			AssetImportContext context;
-			//			context.m_AssetPath = assetFilePath;
-			//			modelImporter->OnImport( context );
-			//			auto endTime = std::chrono::high_resolution_clock::now();
-			//			std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>( endTime - startTime );
-			//			LOG( LogCategory::Debug, Info, "Import took {} seconds", duration.count() );
-			//			importedAsset = SharedPtrCast<StaticMesh>( context.m_CreatedAssets.Back().second );
-			//		}
-			//
-			//		{
-			//			//const FilePath assetFilePath = "TestProject/Content/spider.fbx";
-			//			//const FilePath assetFilePath = "TestProject/Content/Charles/Barrel_EdgeNormals.fbx";
-			//			const FilePath assetFilePath = "TestProject/Content/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX";
-			//			std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
-			//			AssetImportContext context;
-			//			context.m_AssetPath = assetFilePath;
-			//			modelImporter->OnImport( context );
-			//			auto endTime = std::chrono::high_resolution_clock::now();
-			//			std::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>( endTime - startTime );
-			//			LOG( LogCategory::Debug, Info, "Import took {} seconds", duration.count() );
-			//
-			//			for ( const auto& [metaData, asset] : context.m_CreatedAssets )
-			//			{
-			//				LOG( LogCategory::Debug, Info, "Created Asset: {}", metaData.Name );
-			//				if ( asset->Type() == StaticMesh::StaticType() )
-			//				{
-			//					importedAsset2 = SharedPtrCast<StaticMesh>( asset );
-			//				}
-			//			}
-			//
-			//		}
-			//	}
-			//
-			//
-			//	renderer.SetViewportSize( ( uint32_t )m_ViewportSize.X, ( uint32_t )m_ViewportSize.Y );
-			//	renderer.Open( *m_EditorCamera, m_EditorCamera->GetViewMatrix(), m_EditorCamera->Position );
-			//	renderer.SubmitStaticMesh( importedAsset, Matrix4( 1.0f ) );
-			//	//renderer.SubmitStaticMesh( importedAsset2,
-			//	//						   Math::Translate( Vector3( 0.0f, 1.0f, 0.0f ) ) *
-			//	//						   Math::Rotate( Matrix4( 1.0f ), 90.0f, Vector3( 0.0f, 1.0f, 0.0f ) ) *
-			//	//						   Math::Scale( Vector3( 0.05f ) )
-			//	//);
-			//	renderer.Close();
-			//
-			//	ImTextureID textureID = ( ImTextureID )( renderer.GetOutputTexture().get() );
-			//	ImGui::Image( textureID, ImGui::GetContentRegionAvail() );
-			//}
-
-			//DragDropTarget();
-
-			//DrawManipulationGizmos( viewportBoundsMin, viewportBoundsMax );
+			DrawManipulationGizmos( viewportBoundsMin, viewportBoundsMax );
 		}
 
 		m_IsHovered = ImGui::IsWindowHovered();
@@ -450,7 +403,6 @@ namespace Tridium {
 
 	void EditorViewportPanel::DrawManipulationGizmos( const Vector2& viewportBoundsMin, const Vector2& viewportBoundsMax )
 	{
-		// Editor Camera
 		const Matrix4& camProjection = m_EditorCamera->GetProjection();
 		const Matrix4 oldCamView = m_EditorCamera->GetViewMatrix();
 		Matrix4 camView = oldCamView;
@@ -459,14 +411,19 @@ namespace Tridium {
 		SetImGuizmoColors();
 		ImGuizmo::SetOrthographic( false );
 		ImGuizmo::SetDrawlist();
-		ImGuizmo::SetRect( viewportBoundsMin.X, viewportBoundsMin.X,
-			viewportBoundsMax.X - viewportBoundsMin.X, viewportBoundsMax.X - viewportBoundsMin.X );
+		ImGuizmo::SetRect(
+			viewportBoundsMin.X,
+			viewportBoundsMin.Y,
+			viewportBoundsMax.X - viewportBoundsMin.X,
+			viewportBoundsMax.Y - viewportBoundsMin.Y
+		);
 
-		if ( m_SelectedGameObject.IsValid() )
+
+		if ( s_TestGO )
 		{
 			// Selected Game Object
-			OldTransformComponent& goTransform = m_SelectedGameObject.GetTransform();
-			Matrix4 goWorldTransform = goTransform.GetWorldTransform();
+			TransformComponent& goTransform = s_TestGO.Get<TransformComponent>();
+			Matrix4 goWorldTransform = goTransform.LocalTransform();
 
 			bool shouldSnap = Input::IsKeyPressed( EInputKey::LeftControl );
 
@@ -497,12 +454,13 @@ namespace Tridium {
 
 			if ( ImGuizmo::IsUsingAny() )
 			{
-				if ( goTransform.GetParent() )
-					goWorldTransform = glm::inverse( goTransform.GetParent().GetWorldTransform() ) * goWorldTransform;
-
-				Quaternion rotation = goTransform.Rotation.Quat;
-				Math::DecomposeTransform( goWorldTransform, goTransform.Position, rotation, goTransform.Scale );
-				goTransform.Rotation.SetFromQuaternion( rotation );
+				Quaternion rotation;
+				Vector3 position;
+				Vector3 scale;
+				Math::DecomposeTransform( goWorldTransform, position, rotation, scale );
+				goTransform.SetLocalPosition( position );
+				goTransform.SetLocalRotation( rotation );
+				goTransform.SetLocalScale( scale );
 			}
 		}
 		else

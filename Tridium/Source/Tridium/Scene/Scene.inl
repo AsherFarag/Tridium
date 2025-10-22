@@ -11,7 +11,7 @@ namespace Tridium {
 			return existingSystem;
 		}
 
-		auto system = UniquePtr<T>( std::forward<_Args>( a_Args )... );
+		auto system = MakeUnique<T>( std::forward<_Args>( a_Args )... );
 		ISceneSystem* systemPtr = system.get();
 		system->m_Scene = this;
 
@@ -51,7 +51,7 @@ namespace Tridium {
 			}
 		}
 
-		auto system = UniquePtr<T>( std::forward<_Args>( a_Args )... );
+		auto system = MakeUnique<T>( std::forward<_Args>( a_Args )... );
 		ISceneSystem* systemPtr = system.get();
 		system->m_Scene = this;
 

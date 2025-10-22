@@ -98,10 +98,10 @@ namespace Tridium {
 
 	void CharacterControllerComponent::AddLookInput( const Vector2& a_Input )
 	{
-		CameraComponent* camera = m_CameraGameObject.TryGetComponent<CameraComponent>();
+		OldCameraComponent* camera = m_CameraGameObject.TryGetComponent<OldCameraComponent>();
 		if ( !camera )
 		{
-			if ( camera = GetGameObject().TryGetComponentInChildren<CameraComponent>() )
+			if ( camera = GetGameObject().TryGetComponentInChildren<OldCameraComponent>() )
 			{
 				m_CameraGameObject = camera->GetGameObject();
 			}

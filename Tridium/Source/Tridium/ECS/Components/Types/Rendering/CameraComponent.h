@@ -4,12 +4,12 @@
 
 namespace Tridium {
 
-	class CameraComponent : public Component
+	class OldCameraComponent : public Component
 	{
-		REFLECT(CameraComponent);
+		REFLECT(OldCameraComponent);
 	public:
-		CameraComponent() = default;
-		~CameraComponent();
+		OldCameraComponent() = default;
+		~OldCameraComponent();
 
 		Matrix4 GetView();
 

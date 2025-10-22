@@ -12,7 +12,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		// This class is ticked manually by the Scene.
-		ESceneTickGroup GetTickGroup() const override { return ESceneTickGroup::None; }
+		ESceneTickGroup GetTickGroup() const override { return ESceneTickGroup::Render; }
 
 	protected:
 

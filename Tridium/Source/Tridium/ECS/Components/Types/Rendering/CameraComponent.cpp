@@ -5,11 +5,11 @@
 
 namespace Tridium {
 
-	CameraComponent::~CameraComponent()
+	OldCameraComponent::~OldCameraComponent()
 	{
 	}
 
-	Matrix4 CameraComponent::GetView()
+	Matrix4 OldCameraComponent::GetView()
 	{
 		OldTransformComponent& transform = GetGameObject().GetTransform();
 
@@ -24,8 +24,8 @@ namespace Tridium {
 	}
 
 
-	BEGIN_REFLECT_COMPONENT( CameraComponent, Scriptable )
+	BEGIN_REFLECT_COMPONENT( OldCameraComponent, Scriptable )
 		PROPERTY( SceneCamera, Serialize | EditAnywhere )
 		PROPERTY( IsMainCamera, Serialize | EditAnywhere )
-	END_REFLECT_COMPONENT( CameraComponent )
+	END_REFLECT_COMPONENT( OldCameraComponent )
 }
