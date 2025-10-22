@@ -154,25 +154,6 @@ namespace Tridium {
 		Get()->m_Running = false;
 	}
 
-	class TestLayer : public Layer
-	{
-	public:
-		ZombieComponent zombie{};
-
-		void OnImGuiDraw() override
-		{
-			auto refl = Meta::Reflector<ZombieComponent>{};
-			ImGui::Begin( "Test Layer" );
-
-			Meta::ForEachField( refl, [&]( const auto& a_FieldName, const auto& a_Field )
-			{
-				DrawField( zombie, a_FieldName, a_Field );
-			} );
-
-			ImGui::End();
-		}
-	};
-
 	Application::Application( CmdLineArgs a_CmdLine )
 	{
 		ENSURE( !s_Instance, "An Application instance already exists!" );
@@ -190,16 +171,6 @@ namespace Tridium {
 		// Initialise the Engine
 		EngineConfig engineConfig;
 		m_Engine = Engine::Create( engineConfig );
-
-		constexpr auto refl = Meta::Reflector<ZombieComponent>{};
-		ZombieComponent dummy{};
-
-		Meta::ReflectType<ZombieComponent>();
-
-		auto meta = entt::resolve<ZombieComponent>();
-		LOG( LogCategory::AI, Debug, meta.name() );
-
-		m_LayerStack.PushLayer( new TestLayer );
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////
