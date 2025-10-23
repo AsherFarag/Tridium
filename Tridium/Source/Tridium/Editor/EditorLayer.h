@@ -17,14 +17,6 @@ namespace Tridium {
 	class EditorViewportPanel;
 	class GameViewportPanel;
 
-	enum class EEditorSceneState
-	{
-		None = 0,
-		Edit,		// The scene does not update but the Editor Camera can move and interact with the scene
-		//Simulate,	// The scene updates and the Editor Camera can move and interact with the scene
-		Play		// The scene updates and runs from the scenes main camera
-	};
-
 	struct UIToolBar
 	{
 		SharedPtr<TextureOld> PlayButtonIcon;

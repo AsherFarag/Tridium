@@ -183,6 +183,7 @@ namespace Tridium {
 	//=================================================================================================
 	enum class EScenePlayMode
 	{
+		None,
 		Simulate,
 		Play,
 	};
@@ -448,7 +449,6 @@ namespace Tridium {
 	};
 
 } // namespace Tridium
-
 
 #include "GameObject.h"
 #include "Scene.inl"

@@ -1,48 +1,35 @@
 #include "tripch.h"
-#if IS_EDITOR
 #include "Editor.h"
-#include "EditorStyle.h"
 
-#include <Tridium/ImGui/ImGuiLayer.h>
+#if WITH_EDITOR
 
-#include <Tridium/oldAsset/AssetManager.h>
-
-// Assets
-#include <Tridium/Graphics/oldRendering/Mesh.h>
-#include <Tridium/Graphics/oldRendering/Texture.h>
-#include <Tridium/Graphics/oldRendering/Shader.h>
-#include <Tridium/Graphics/oldRendering/Material.h>
+#include <Tridium/Engine/Engine.h>
 
 // Panels
-#include "Panels/EditorPreferencesPanel.h"
-#include "Panels/ContentBrowserPanel.h"
-#include "Panels/SceneHeirarchyPanel.h"
-#include "Panels/ScriptEditorPanel.h"
-#include "Panels/EditorViewportPanel.h"
-#include "Panels/GameViewportPanel.h"
-#include "Panels/Asset/MaterialEditorPanel.h"
+#include <Tridium/Editor/UI/EditorViewportPanel.h>
 
 namespace Tridium {
 
 	REGISTER_TICK_GROUP( EditorTick, "BeginAppUpdate"_H );
 	REGISTER_TICK_GROUP( EditorRender, "Render"_H );
 
-	//=======================================================================================
-	// Editor Events
-	MulticastDelegate<void( OldGameObject )> Editor::Events::OnGameObjectSelected{};
+	Editor* Editor::s_Instance = nullptr;
+	decltype( Editor::Events::OnGameObjectSelected ) Editor::Events::OnGameObjectSelected{};
 
-	Editor::Editor( CmdLineArgs a_CmdLine )
-		: Application( std::move( a_CmdLine ) )
+	Editor::Editor() : Layer( "Editor" )
 	{
-		m_EditorLayer = PushOverlay<EditorLayer>();
+		ENSURE( !s_Instance, "Editor instance already exists!" );
+
+		s_Instance = this;
 
 		// Set Window title and icon
-		m_Window->SetTitle( "Tridium Editor" );
-		m_Window->SetIcon( ( Engine::Get()->GetEngineAssetsDirectory() / "Editor/Icons/EngineIcon.png" ).ToString() );
+		Application::GetWindow().SetTitle("Tridium Editor");
+		Application::GetWindow().SetIcon( ( Engine::Get()->GetEngineAssetsDirectory() / "Editor/Icons/EngineIcon.png" ).ToString() );
 
 		m_Style.SetTheme( EditorStyle::ETheme::Midnight );
 
 		Application::AddOnTick( TickGroups::EditorTick, []() { Editor::Get()->Tick(); } );
+		Application::AddOnTick( TickGroups::DrawUI, []() { Editor::Get()->GetUIManager().DrawUI(); } );
 	}
 
 	Editor::~Editor()
@@ -50,19 +37,284 @@ namespace Tridium {
 		s_Instance = nullptr;
 	}
 
-	void Editor::OnUpdate()
+	void Editor::Tick()
+	{
+		TODO( "Delta Time" );
+		m_UIManager.UpdateUI( 0.0f );
+	}
+
+	void Editor::DrawUI()
+	{
+		UI_DrawMenuBar();
+		UI_DrawToolBar();
+
+		m_UIManager.DrawUI();
+	}
+
+	void Editor::OnAttach()
+	{
+		// Panels
+		m_UIManager.CreatePanel<EditorViewportPanel>( "EditorViewportPanel", true );
+	}
+
+	void Editor::OnDetach()
 	{
 	}
 
-	void Editor::Tick()
+	void Editor::OnEvent( Event& a_Event )
 	{
-		for ( auto it = m_EditorLayer->m_PanelStack.begin(); it != m_EditorLayer->m_PanelStack.end(); it++ )
+		m_UIManager.OnEvent( a_Event );
+
+		if ( a_Event.Handled )
+			return;
+
+		EventDispatcher dispatcher( a_Event );
+		dispatcher.Dispatch<KeyPressedEvent>( [this]( const KeyPressedEvent& a_Event ) -> bool { return Event_KeyPressed( a_Event ); } );
+	}
+
+	void Editor::UI_DrawMenuBar()
+	{
+		if ( !ImGui::BeginMainMenuBar() )
+			return;
+
+		if ( ImGui::BeginMenu( "File" ) )
 		{
-			TODO( "Delta Time" );
-			it->second->OnUpdate( 0.0f );
+			// Project
+			if ( ImGui::MenuItem( TE_ICON_FILE "New Project", nullptr, nullptr, false ) )
+				LOG( LogCategory::Editor, Info, "New Project" );
+
+			if ( ImGui::MenuItem( TE_ICON_FOLDER "Open Project", nullptr, nullptr, false ) )
+				LOG( LogCategory::Editor, Info, "Open Project" );
+
+			if ( ImGui::MenuItem( TE_ICON_FLOPPY_DISK "Save Project", nullptr, nullptr, false ) )
+				LOG( LogCategory::Editor, Info, "Save Project" );
+
+			ImGui::Separator();
+
+			// Scene
+			if ( ImGui::MenuItem( TE_ICON_FILE "New Scene" ) )
+			{
+			}
+
+			if ( ImGui::MenuItem( TE_ICON_FOLDER "Open Scene" ) )
+			{
+			}
+
+			if ( ImGui::MenuItem( TE_ICON_FLOPPY_DISK "Save Scene", "Ctrl + S" ) )
+			{
+			}
+
+			ImGui::EndMenu();
 		}
+
+		ImGui::Separator();
+
+		if ( ImGui::BeginMenu( "Edit" ) )
+		{
+			if ( ImGui::MenuItem( "Editor Preferences" ) )
+			{
+
+			}
+
+			if ( ImGui::MenuItem( "Project Settings" ) )
+			{
+
+			}
+
+			ImGui::EndMenu();
+		}
+
+		if ( ImGui::BeginMenu( "View" ) )
+		{
+			if ( ImGui::BeginMenu( "Panels" ) )
+			{
+				if ( ImGui::MenuItem( "Content Browser" ) ) {}
+				if ( ImGui::MenuItem( "Stats" ) ) {}
+				if ( ImGui::MenuItem( "Asset Registry" ) ) {}
+				if ( ImGui::MenuItem( "Scene Renderer" ) ) {}
+				if ( ImGui::MenuItem( "Script Editor" ) ) {}
+				if ( ImGui::MenuItem( "Profiler" ) ) {};
+
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMenu();
+		}
+
+		if ( ImGui::BeginMenu( "Script" ) )
+		{
+			if ( ImGui::MenuItem( "Open Script Editor" ) )
+			{
+			}
+
+			if ( ImGui::MenuItem( "Recompile", "Ctrl+R" ) )
+			{
+			}
+
+			ImGui::EndMenu();
+		}
+
+		ImGui::Separator();
+
+		if ( ImGui::BeginMenu( "Other" ) )
+		{
+			if ( ImGui::MenuItem( "Recompile Shaders" ) ) {}
+
+			ImGui::EndMenu();
+		}
+
+		// Project Name
+		{
+			const char* projectName = Engine::Get()->GetActiveProject().Config.Name.c_str();
+			const float paddingFromRight = 10.0f;
+			ImGui::SameLine( ImGui::GetContentRegionMax().x - ImGui::CalcTextSize( projectName ).x - paddingFromRight );
+
+			ImGui::Separator();
+
+			ImGui::PushFont( ImGui::GetExtraBoldFont() );
+			ImGui::Text( projectName );
+			ImGui::PopFont();
+		}
+
+		ImGui::EndMainMenuBar();
+	}
+
+	void Editor::UI_DrawToolBar()
+	{
+		OldScene* scene = SceneManager::GetActiveScene();
+		if ( !scene )
+			return;
+
+		float winPaddingY = 5.0f;
+		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_WindowPadding, { 0, winPaddingY } );
+
+		ImGui::Begin( "##UIToolBar", nullptr,
+			ImGuiWindowFlags_NoDecoration
+			| ImGuiWindowFlags_NoScrollbar
+			| ImGuiWindowFlags_NoScrollWithMouse
+			| ImGuiWindowFlags_NoTitleBar );
+
+		const ImVec2 buttonPadding( 0, 0 );
+		const float textSize = ImGui::GetTextLineHeight();
+		const ImVec2 buttonSize( textSize, textSize );
+
+		TODO( "This " );
+		EScenePlayMode sceneState = EScenePlayMode::None;
+		bool hasPlayButton = ( sceneState == EScenePlayMode::None ) || ( sceneState == EScenePlayMode::Play && scene->IsPaused() );
+		bool hasPauseButton = ( sceneState == EScenePlayMode::Play ) && ( !scene->IsPaused() );
+		bool hasStopButton = sceneState == EScenePlayMode::Play;
+
+		float totalButtonSizeX = buttonSize.x + ( buttonPadding.x * 2.f ) + ImGui::GetStyle().ItemSpacing.x;
+		float groupSizeX = ( totalButtonSizeX * hasPlayButton ) + ( totalButtonSizeX * hasPauseButton ) + ( totalButtonSizeX * hasStopButton );
+		ImGui::SetCursorPosX( ( ImGui::GetWindowWidth() * 0.5f ) - groupSizeX * 0.5f );
+		ImGui::SetCursorPosY( ImGui::GetWindowHeight() * 0.5f - buttonSize.y * 0.5f );
+
+		ImGui::BeginGroup();
+		{
+			ImGui::ScopedStyleVar padding( ImGuiStyleVar_FramePadding, buttonPadding );
+			if ( hasPlayButton )
+			{
+				ImGui::ScopedStyleCol buttonCol( ImGuiCol_Text, ImVec4( Editor::GetStyle().Colors.Green ) );
+				if ( ImGui::IconButton( TE_ICON_PLAY ) )
+				{
+					if ( scene->IsPaused() )
+						scene->SetPaused( false );
+					//else
+						//editor->OnBeginScene();
+				}
+			}
+
+			if ( hasPauseButton )
+			{
+				if ( ImGui::IconButton( TE_ICON_PAUSE ) )
+				{
+					SceneManager::GetActiveScene()->SetPaused( true );
+				}
+			}
+
+			ImGui::SameLine();
+
+			if ( hasStopButton )
+			{
+				ImGui::ScopedStyleCol buttonCol( ImGuiCol_Text, ImVec4( Editor::GetStyle().Colors.Red ) );
+				if ( ImGui::IconButton( TE_ICON_STOP ) )
+				{
+					//editor->OnEndScene();
+				}
+			}
+
+		}
+		ImGui::EndGroup();
+
+		ImGui::End();
+	}
+
+	bool Editor::Event_KeyPressed( const KeyPressedEvent& a_Event )
+	{
+		if ( a_Event.IsRepeat )
+			return false;
+
+		bool control = Input::IsKeyPressed( EInputKey::LeftControl );
+		bool alt = Input::IsKeyPressed( EInputKey::LeftAlt );
+
+		switch ( a_Event.KeyCode )
+		{
+			case EInputKey::S:
+			{
+				if ( control )
+				{
+					if ( SceneManager::GetActiveScene() )
+					{
+						//if ( m_ActiveScene->GetPath().length() == 0 )
+						//	Util::OpenSaveFileDialog( "Untitled.tscene", [this](const std::string& path) { SaveScene(path); });
+						//else
+						//	SaveScene( m_ActiveScene->GetPath() );
+					}
+
+					return true;
+				}
+				break;
+			}
+			case EInputKey::R:
+			{
+				if ( control )
+				{
+					return true;
+				}
+				break;
+			}
+			case EInputKey::Escape:
+			{
+				break;
+			}
+			case EInputKey::Tab:
+			{
+			}
+			// Redo
+			case EInputKey::Y:
+			{
+				if ( control )
+				{
+					m_CommandManager.Redo();
+					return true;
+				}
+				break;
+			}
+			// Undo
+			case EInputKey::Z:
+			{
+				if ( control )
+				{
+					m_CommandManager.Undo();
+					return true;
+				}
+				break;
+			}
+		}
+
+		return false;
 	}
 
 }
 
-#endif //  IS_EDITOR
+#endif // WITH_EDITOR

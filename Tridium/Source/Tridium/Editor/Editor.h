@@ -1,12 +1,14 @@
 #pragma once
-#if IS_EDITOR
-#include "EditorConfig.h"
-#include "EditorLayer.h"
-#include "EditorPayload.h"
-#include "EditorStyle.h"
+#include <Tridium/Editor/Config.h>
+
+#if WITH_EDITOR
+
+#include <Tridium/Editor/EditorPayload.h>
+#include <Tridium/Editor/EditorStyle.h>
 #include <Tridium/Core/Application.h>
 #include <Tridium/Common/Function.h>
-#include "Commands/CommandManager.h"
+#include <Tridium/Editor/Commands/CommandManager.h>
+#include <Tridium/UI/UIManager.h>
 
 namespace Tridium {
 
@@ -16,11 +18,15 @@ namespace Tridium {
 	DEFINE_TICK_GROUP( EditorRender );
 
 	//=================================================================================================
-	// Editor: The main editor application class, derived from the core Application class.
+	// Editor:
 	//=================================================================================================
-	class Editor final : public Application
+	class Editor final : public Layer
 	{
 	public:
+
+		//=============================================================================================
+		Editor();
+		~Editor();
 
 		//=============================================================================================
 		// Global editor events that can be subscribed and invoked from anywhere in the editor.
@@ -31,29 +37,36 @@ namespace Tridium {
 		};
 
 		//=============================================================================================
-		static Editor* Get() { return Cast<Editor*>( s_Instance ); }
+		static Editor* Get() { return s_Instance; }
 		static EditorPayloadManager& GetPayloadManager() { return Get()->m_PayloadManager; }
-		static EditorLayer* GetEditorLayer() { return Get()->m_EditorLayer; }
 		static EditorStyle& GetStyle() { return Get()->m_Style; }
 		static CommandManager& GetCommandManager() { return Get()->m_CommandManager; }
+		static UIManager& GetUIManager() { return Get()->m_UIManager; }
 
 	private:
 
 		//=============================================================================================
-		EditorLayer* m_EditorLayer;
+		static Editor* s_Instance;
+
+		//=============================================================================================
 		EditorPayloadManager m_PayloadManager;
 		EditorStyle m_Style;
 		CommandManager m_CommandManager;
+		UIManager m_UIManager;
 
-	public:
-
-		//=============================================================================================
-		Editor( CmdLineArgs a_CmdLine );
-		~Editor();
-
-		void OnUpdate() override;
+	private:
 
 		void Tick();
+		void DrawUI();
+
+		void OnAttach() override;
+		void OnDetach() override;
+		void OnEvent( Event& a_Event ) override;
+
+		void UI_DrawMenuBar();
+		void UI_DrawToolBar();
+
+		bool Event_KeyPressed( const KeyPressedEvent& a_Event );
 	};
 
 };

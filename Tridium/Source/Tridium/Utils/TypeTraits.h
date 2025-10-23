@@ -1,5 +1,6 @@
 #pragma once
 #include <type_traits>
+#include <memory>
 
 namespace Tridium {
 
@@ -44,7 +45,7 @@ namespace Tridium {
 		using ReturnType = _Return;
 		using ClassType = _Object;
 		using ClassReference = _Object&;
-		using ArgumentList = std::tuple<_Args...>;
+		using ArgumentList = void;
 
 		static constexpr size_t ArgCount = sizeof...( _Args );
 	};
@@ -55,7 +56,7 @@ namespace Tridium {
 		using ReturnType = _Return;
 		using ClassType = _Object;
 		using ClassReference = const _Object&;
-		using ArgumentList = std::tuple<_Args...>;
+		using ArgumentList = void;
 
 		static constexpr size_t ArgCount = sizeof...( _Args );
 	};

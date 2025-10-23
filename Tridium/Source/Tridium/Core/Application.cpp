@@ -172,6 +172,10 @@ namespace Tridium {
 		// Initialise the Engine
 		EngineConfig engineConfig;
 		m_Engine = Engine::Create( engineConfig );
+
+	#if WITH_EDITOR
+		PushOverlay<Editor>();
+	#endif // WITH_EDITOR
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////

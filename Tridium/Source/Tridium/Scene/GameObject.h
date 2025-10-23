@@ -79,9 +79,14 @@ namespace Tridium {
 		//=============================================================================================
 		// Returns pointers to the components of types T...
 		template<typename... T>
-		[[nodiscard]] decltype( auto ) TryGet() const
+		[[nodiscard]] auto TryGet() const -> decltype( m_Scene->Registry().TryGet<T...>( m_EntityID ) )
 		{
-			return m_Scene->Registry().TryGet<T...>( m_EntityID );
+			if ( Valid() )
+			{
+				return m_Scene->Registry().TryGet<T...>( m_EntityID );
+			}
+
+			return {};
 		}
 
 		//=============================================================================================

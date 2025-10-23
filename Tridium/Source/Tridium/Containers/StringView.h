@@ -1,5 +1,6 @@
 #pragma once
 #include <string_view>
+#include <Tridium/Utils/TypeTraits.h>
 
 namespace Tridium {
 

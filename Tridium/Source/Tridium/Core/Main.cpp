@@ -1,10 +1,6 @@
 #include "tripch.h"
 #ifdef TE_PLATFORM_WINDOWS
 #include <Tridium/Core/Application.h>
-#include <Tridium/Editor/Editor.h>
-#include <Tridium/Reflection/PrimitiveReflector.h>
-#include <Tridium/Reflection/ReflectorInitializer.h>
-
 using namespace Tridium;
 
 int main( int argc, char** argv )
@@ -23,18 +19,8 @@ int main( int argc, char** argv )
 		cmdLineArgs.Args.EmplaceBack( argv[i] );
 	}
 
-#if 0
-	RHITest();
-	return 0;
-#endif
-
-#if IS_EDITOR
-	Editor app( std::move( cmdLineArgs ) );
-	app.Run();
-#else
 	Application app( cmdLineArgs );
 	app.Run();
-#endif // IS_EDITOR
 
 	return 0;
 }

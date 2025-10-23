@@ -18,7 +18,7 @@ namespace Tridium {
 	SceneHeirarchyPanel::SceneHeirarchyPanel()
 		: Panel( "Scene Heirarchy" )
 	{
-		m_OnGameObjectSelectedHandle = Editor::Events::OnGameObjectSelected.Add<&SceneHeirarchyPanel::SetSelectedGameObject>( this );
+		//m_OnGameObjectSelectedHandle = Editor::Events::OnGameObjectSelected.Add<&SceneHeirarchyPanel::SetSelectedGameObject>( this );
 	}
 
 	SceneHeirarchyPanel::~SceneHeirarchyPanel()
@@ -27,14 +27,9 @@ namespace Tridium {
 
 	void SceneHeirarchyPanel::OnImGuiDraw()
 	{
-		DrawSceneHeirarchy();
 	}
 
-	void SceneHeirarchyPanel::SetSelectedGameObject( OldGameObject gameObject )
-	{
-		m_SelectedGameObject = gameObject;
-	}
-
+#if 0
 
 	bool SceneHeirarchyPanel::OnKeyPressed( const KeyPressedEvent& e )
 	{
@@ -406,6 +401,8 @@ namespace Tridium {
 			ImGui::TreePop();
 		}
 	}
+
+#endif
 
 }
 

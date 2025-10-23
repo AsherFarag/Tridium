@@ -1,10 +1,12 @@
 #pragma once
+#include <Tridium/Math/Vector.h>
+#include <Tridium/Editor/EditorIcons.h>
+
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
 #include "imgui_internal.h"	
 #include "imgui_stdlib.h"
-#include "IconsFontAwesome6.h"
-//#undef IMGUI_DEFINE_MATH_OPERATORS
+#undef IMGUI_DEFINE_MATH_OPERATORS
 
 #define TE_PAYLOAD_CONTENT_BROWSER_ITEM "ContentBrowserItem"
 #define TE_PAYLOAD_ASSET_HANDLE "AssetHandle"
@@ -16,7 +18,17 @@ namespace Tridium {
 
 }
 
+inline ImVec2 operator*( const float lhs, const ImVec2& rhs )
+{
+	return ImVec2( lhs * rhs.x, lhs * rhs.y );
+}
+
 namespace ImGui {
+
+	inline ImVec2 Convert( const Tridium::Vector2& a_Vec ) { return ImVec2( a_Vec.X, a_Vec.Y ); }
+	inline ImVec4 Convert( const Tridium::Vector4& a_Vec ) { return ImVec4( a_Vec.X, a_Vec.Y, a_Vec.Z, a_Vec.W ); }
+	inline Tridium::Vector2 Convert( const ImVec2& a_Vec ) { return Tridium::Vector2( a_Vec.x, a_Vec.y ); }
+	inline Tridium::Vector4 Convert( const ImVec4& a_Vec ) { return Tridium::Vector4( a_Vec.x, a_Vec.y, a_Vec.z, a_Vec.w ); }
 
 	template<typename _Func>
 	struct FunctionScope

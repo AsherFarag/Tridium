@@ -60,5 +60,5 @@ constexpr int current_build_month()
                           (current_build_year() == year && current_build_month() < month)),        \
         "FIXME: " msg)
 
-#define FIXME(Message)	PRAGMA(message(__FILE__ "(" $LINE ") : FIXME: " Message))
-#define TODO(Message)	PRAGMA(message(__FILE__ "(" $LINE ") : TODO: " Message))
+#define FIXME(Message)	//PRAGMA(message(__FILE__ "(" $LINE ") : FIXME: " Message))
+#define TODO(Message)	//PRAGMA(message(__FILE__ "(" $LINE ") : TODO: " Message))

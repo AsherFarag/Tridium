@@ -27,7 +27,9 @@ namespace Tridium {
 
 		void Init() override;
 		void Shutdown() override;
+		void BeginRender();
 		void Render();
+		void EndRender();
 	};
 
 }
