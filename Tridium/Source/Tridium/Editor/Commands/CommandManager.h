@@ -4,9 +4,14 @@
 
 namespace Tridium {
 
+	struct NoCommand
+	{
+		void Redo() {}
+		void Undo() {}
+	};
+
 	using CommandManager = AbstractCommandManager<
-		Commands::GameObjectCreated,
-		Commands::GameObjectDestroyed
+		NoCommand
 	>;
 
 } // namespace Tridium

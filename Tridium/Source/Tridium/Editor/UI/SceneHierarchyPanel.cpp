@@ -3,6 +3,7 @@
 #if WITH_EDITOR
 
 #include <Tridium/Editor/Editor.h>
+#include <Tridium/Engine/Engine.h>
 
 namespace Tridium {
 

@@ -3,10 +3,6 @@
 
 #include <Tridium/Events/Event.h>
 
-#include <Platform/OpenGL/OpenGLContext.h>
-
-#include <Tridium/Graphics/oldRendering/RenderCommand.h>
-
 // TEMP?
 #include "stb_image.h"
 #include <Tridium/Graphics/RHI/RHI.h>

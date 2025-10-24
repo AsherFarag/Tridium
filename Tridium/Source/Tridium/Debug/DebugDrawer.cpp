@@ -2,8 +2,6 @@
 #include "DebugDrawer.h"
 
 #if !CONFIG_SHIPPING
-#include <Tridium/Graphics/oldRendering/VertexArray.h>
-#include <Tridium/Graphics/oldRendering/Shader.h>
 
 // TEMP!
 #include <glad/glad.h>
@@ -364,45 +362,6 @@ namespace Tridium::Debug {
 					o_Colour = v_Colour;
 				}
 			)";
-
-			m_Shader.reset( Shader::Create( vertexSrc, fragmentSrc ) );
-		}
-
-		TODO( "TEMP OPENGL CALLS" );
-		// Initialize Vertex Arrays and Buffers
-		{
-			glGenVertexArrays( 1, &m_LineVAO );
-			glGenBuffers( 1, &m_LineVBO );
-
-			glBindVertexArray( m_LineVAO );
-			glBindBuffer( GL_ARRAY_BUFFER, m_LineVBO );
-			glBufferData( GL_ARRAY_BUFFER, sizeof( DebugLine ) * 1024, nullptr, GL_DYNAMIC_DRAW );
-
-			glEnableVertexAttribArray( 0 );
-			glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( DebugVertex ), (void*)0 );
-
-			glEnableVertexAttribArray( 1 );
-			glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, sizeof( DebugVertex ), (void*)offsetof( DebugVertex, Color ) );
-
-
-			glBindVertexArray( 0 );
-		}
-
-		{
-			glGenVertexArrays( 1, &m_TriVAO );
-			glGenBuffers( 1, &m_TriVBO );
-
-			glBindVertexArray( m_TriVAO );
-			glBindBuffer( GL_ARRAY_BUFFER, m_TriVBO );
-			glBufferData( GL_ARRAY_BUFFER, sizeof( DebugTri ) * 1024, nullptr, GL_DYNAMIC_DRAW );
-
-			glEnableVertexAttribArray( 0 );
-			glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( DebugVertex ), (void*)0 );
-
-			glEnableVertexAttribArray( 1 );
-			glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, sizeof( DebugVertex ), (void*)offsetof( DebugVertex, Color ) );
-
-			glBindVertexArray( 0 );
 		}
 	}
 
@@ -437,67 +396,8 @@ namespace Tridium::Debug {
 			}
 		}
 
-		m_Shader->Bind();
-		m_Shader->SetMatrix4( "u_ViewProjection", a_ViewProjection );
-
-		glLineWidth( 2.0f );
-
-		// Draw lines
-		{
-			glBindVertexArray( m_LineVAO );
-			glBindBuffer( GL_ARRAY_BUFFER, m_LineVBO );
-
-			// Draw permenant lines
-			glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof( DebugLine ) * m_Lines.Permenant.size(), m_Lines.Permenant.data() );
-			glDrawArrays( GL_LINES, 0, m_Lines.Permenant.size() * 2 );
-
-			// Draw one frame lines
-			glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof( DebugLine ) * m_Lines.OneFrame.size(), m_Lines.OneFrame.data() );
-			glDrawArrays( GL_LINES, 0, m_Lines.OneFrame.size() * 2 );
-
-			// Draw for duration lines
-			std::vector<DebugLine> lines;
-			lines.reserve( m_Lines.ForDuration.size() );
-			for ( auto&& [_, line] : m_Lines.ForDuration )
-			{
-				lines.push_back( line );
-			}
-			glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof( DebugLine ) * lines.size(), lines.data() );
-			glDrawArrays( GL_LINES, 0, lines.size() * 2 );
-
-			glBindVertexArray( 0 );
-		}
-
-		// Draw triangles
-		{
-			glBindVertexArray( m_TriVAO );
-			glBindBuffer( GL_ARRAY_BUFFER, m_TriVBO );
-
-			// Draw permenant tris
-			glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof( DebugTri ) * m_Tris.Permenant.size(), m_Tris.Permenant.data() );
-			glDrawArrays( GL_TRIANGLES, 0, m_Tris.Permenant.size() * 3 );
-
-			// Draw one frame tris
-			glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof( DebugTri ) * m_Tris.OneFrame.size(), m_Tris.OneFrame.data() );
-			glDrawArrays( GL_TRIANGLES, 0, m_Tris.OneFrame.size() * 3 );
-
-			// Draw for duration tris
-			std::vector<DebugTri> tris;
-			tris.reserve( m_Tris.ForDuration.size() );
-			for ( auto&& [_, tri] : m_Tris.ForDuration )
-			{
-				tris.push_back( tri );
-			}
-			glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof( DebugTri ) * tris.size(), tris.data() );
-			glDrawArrays( GL_TRIANGLES, 0, tris.size() * 3 );
-
-			glBindVertexArray( 0 );
-		}
-
 		m_Lines.OneFrame.clear();
 		m_Tris.OneFrame.clear();
-
-		m_Shader->Unbind();
 	}
 }
 

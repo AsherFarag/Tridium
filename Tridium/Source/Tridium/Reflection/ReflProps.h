@@ -30,8 +30,6 @@ namespace Tridium {
 		MetaFactory<T> CreateMetaFactory() { return entt::meta_factory<T>(); }
 
 		// -- Function Signatures --
-		using TextSerializeFunc				= void (*)( IO::Archive& a_Archive, const MetaAny& a_Data );
-		using TextDeserializeFunc			= void (*)( const YAML::Node& a_Node, MetaAny& a_Data );
 		using RegisterScriptableFunc		= void (*)( ScriptEngine& a_ScriptEngine );
 		using AddToGameObjectFunc			= Component* (*)( OldScene& a_Scene, EntityID a_GameObject );
 		using RemoveFromGameObjectFunc		= void (*)( OldScene& a_Scene, EntityID a_GameObject );
@@ -69,9 +67,6 @@ namespace Tridium {
 			using ClassFlagsProp = MetaDataProperty<Internal( "ClassFlags" ), EClassFlags>;
 
 			// -- Serialization Properties --
-
-			using TextSerializeProp = MetaDataProperty<Internal( "TextSerialize" ), TextSerializeFunc, true>;
-			using TextDeserializeProp = MetaDataProperty<Internal( "TextDeserialize" ), TextDeserializeFunc, true>;
 
 			// -- GameObject Component Properties --
 

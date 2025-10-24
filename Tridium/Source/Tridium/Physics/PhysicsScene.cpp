@@ -7,7 +7,6 @@
 #include "Jolt/JoltPhysicsScene.h"
 #include <Tridium/Reflection/Reflection.h>
 #include <Tridium/Containers/Set.h>
-#include <Tridium/ECS/Components/Types.h>
 
 namespace Tridium {
 
@@ -45,69 +44,6 @@ namespace Tridium {
 
 		ASSERT( false, "Unknown Physics API" );
 		return nullptr;
-	}
-
-	void OldPhysicsSceneSystem::Init()
-	{
-		m_PhysicsScene = GetOwningScene()->GetPhysicsScene().get();
-	}
-
-	void OldPhysicsSceneSystem::Shutdown()
-	{
-		m_PhysicsScene = nullptr;
-	}
-
-	void OldPhysicsSceneSystem::OnSceneEvent( const SceneEventPayload& a_EventPayload )
-	{
-		if ( !GetOwningScene()->IsRunning() )
-			return;
-
-		switch ( a_EventPayload.EventType )
-		{
-		case ESceneEventType::OnComponentCreated:
-		{
-			const OnComponentCreatedEvent& event = std::get<OnComponentCreatedEvent>( a_EventPayload.EventData );
-			OnComponentCreated( event );
-			break;
-		}
-
-		case ESceneEventType::OnComponentDestroyed:
-		{
-			break;
-		}
-		default:
-			break;
-		}
-	}
-
-	void OldPhysicsSceneSystem::OnComponentCreated( const OnComponentCreatedEvent& a_Event )
-	{
-		static const Refl::MetaType RigidBodyComponentType = Refl::ResolveMetaType<OldRigidBodyComponent>();
-		static const UnorderedSet<Refl::MetaIDType> ColliderComponentTypes =
-		{
-			Refl::ResolveMetaType<OldSphereColliderComponent>().ID(),
-			Refl::ResolveMetaType<OldBoxColliderComponent>().ID(),
-			Refl::ResolveMetaType<OldCapsuleColliderComponent>().ID(),
-			Refl::ResolveMetaType<OldCylinderColliderComponent>().ID(),
-			Refl::ResolveMetaType<OldMeshColliderComponent>().ID()
-		};
-
-		Refl::MetaType componentType = Refl::ResolveMetaType( a_Event.ComponentTypeID );
-		OldGameObject gameObject = a_Event.GameObjectID;
-
-		// Only handle RigidBody and Collider components
-		if ( componentType != RigidBodyComponentType && !ColliderComponentTypes.contains( componentType.ID() ) )
-		{
-			return;
-		}
-
-		if ( OldRigidBodyComponent* rigidBody = gameObject.TryGetComponent<OldRigidBodyComponent>() )
-		{
-			if ( OldTransformComponent* transform = gameObject.TryGetComponent<OldTransformComponent>() )
-			{
-				m_PhysicsScene->UpdatePhysicsBody( gameObject, *rigidBody, *transform );
-			}
-		}
 	}
 
 	RayCastResult PhysicsSceneSystem::CastRay( const Vector3& a_Start, const Vector3& a_End, const RayCastParams& a_Params ) const

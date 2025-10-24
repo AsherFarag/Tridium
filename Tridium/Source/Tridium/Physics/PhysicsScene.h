@@ -24,13 +24,6 @@ namespace Tridium {
 	struct RayCastResult;
 	class RigidBodyComponent;
 
-	// OLD
-	class OldScene;
-	class OldRigidBodyComponent;
-	class OldTransformComponent;
-	class OldGameObject;
-	// --------------------
-
 	enum class ESixDOFConstraintMotion : uint8_t
 	{
 		Locked,
@@ -85,16 +78,6 @@ namespace Tridium {
 		virtual void DestroyPhysicsBody( PhysicsBodyID a_BodyID ) = 0;
 		virtual bool HasPhysicsBody( PhysicsBodyID a_BodyID ) const = 0;
 		virtual bool UpdatePhysicsBodyShape( GameObject a_GameObject, const RigidBodyComponent& a_RigidBody ) = 0;
-		
-		// OLD
-		virtual OldGameObject GetGameObjectFromPhysicsBody( PhysicsBodyID a_BodyID ) const = 0;
-		virtual PhysicsBodyID GetPhysicsBodyFromGameObject( OldGameObject a_GameObject ) const = 0;
-		virtual void RemovePhysicsBody( PhysicsBodyID a_PhysicsBodyID ) = 0;
-		virtual void RemovePhysicsBody( OldRigidBodyComponent& a_RigidBody ) = 0;
-		virtual bool AddPhysicsBody( const OldGameObject& a_GameObject, OldRigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent ) = 0;
-		virtual bool UpdatePhysicsBody( const OldGameObject& a_GameObject, OldRigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent ) = 0;
-		virtual void UpdatePhysicsBodyTransform( const OldRigidBodyComponent& a_RigidBody, const OldTransformComponent& a_TransformComponent ) = 0;
-		// /OLD
 
 		virtual Vector3 GetPhysicsBodyPosition( PhysicsBodyID a_BodyID ) const = 0;
 		virtual Quaternion GetPhysicsBodyRotation( PhysicsBodyID a_BodyID ) const = 0;
@@ -125,20 +108,6 @@ namespace Tridium {
 		friend OldScene;
 		OldScene* m_Scene;
 
-	};
-
-	class OldPhysicsSceneSystem : public OldISceneSystem
-	{
-	public:
-		virtual void Init() override;
-		virtual void Shutdown() override;
-		virtual void OnSceneEvent( const SceneEventPayload& a_Event ) override;
-
-	private:
-		void OnComponentCreated( const OnComponentCreatedEvent& a_Event );
-
-	private:
-		IPhysicsScene* m_PhysicsScene;
 	};
 
 	//=================================================================================================

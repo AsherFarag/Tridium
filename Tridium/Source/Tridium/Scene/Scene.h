@@ -1,178 +1,10 @@
 #pragma once
 #include <Tridium/Containers/TypeMap.h>
 #include <Tridium/Scene/Component.h>
+#include <Tridium/ECS/ECS.h>
 #include <Tridium/Utils/Log.h>
 
-// TEMP
-#include <Tridium/ECS/ECS.h>
-#include <Tridium/ECS/EntityTicker.h>
-#include <Tridium/oldAsset/Asset.h>
-#include <Tridium/Graphics/oldRendering/Lights.h>
-#include <Tridium/Graphics/oldRendering/SceneRenderer.h>
-#include "SceneEnvironment.h"
-#include "SceneSystem.h"
-#include <Tridium/Physics/RayCast.h>
-
-
-#include <Tridium/Debug/DebugDrawer.h>
-
 namespace Tridium {
-
-#pragma region Old
-
-	// Forward Declarations
-	class Camera;
-	class OldCameraComponent;
-	class EnvironmentMapOld;
-
-	struct SceneState
-	{
-		bool IsPaused = false;
-		bool IsRunning = false;
-		bool HasBegunPlay = false;
-	};
-
-	class OldScene final : public Asset
-	{
-		using SystemStorage = std::unordered_map<size_t, SharedPtr<OldISceneSystem>>;
-	public:
-		OldScene( const String& a_Name = "Untitled");
-		OldScene( const OldScene& a_Other );
-		~OldScene();
-
-		// Called before the first update
-		void OnBeginPlay();
-		// Called every frame
-		void OnUpdate();
-		// Called when the scene is destroyed
-		void OnEndPlay();
-
-		const String& GetName() const { return m_Name; }
-		void SetName( const String& a_Name ) { m_Name = a_Name; }
-
-		const SceneState& GetState() const { return m_State; }
-		void SetPaused( bool a_NewPaused ) { m_State.IsPaused = a_NewPaused; }
-		bool IsPaused() const { return m_State.IsPaused; }
-		bool IsRunning() const { return m_State.IsRunning; }
-		bool HasBegunPlay() const { return m_State.HasBegunPlay; }
-
-		OldCameraComponent* GetMainCamera();
-		OldGameObject GetMainCameraGameObject() const;
-		void SetMainCamera( OldGameObject a_CameraGameObject );
-
-		SceneEnvironment& GetSceneEnvironment() { return m_SceneEnvironment; }
-		const SceneEnvironment& GetSceneEnvironment() const { return m_SceneEnvironment; }
-		OldSceneRenderer& GetSceneRenderer() { return m_SceneRenderer; }
-
-		//////////////////////////////////////////////////////////////////////////
-		// Scene Systems
-		//////////////////////////////////////////////////////////////////////////
-
-		void InitSystems();
-		void ShutdownSystems();
-		void SendSceneEvent( const SceneEventPayload& a_EventPayload );
-
-		template <typename T, typename... Args> requires Concepts::IsBaseOf<OldISceneSystem, T>
-		SharedPtr<T> AddSystem( Args&&... a_Args );
-
-		template <typename T> requires Concepts::IsBaseOf<OldISceneSystem, T>
-		SharedPtr<T> GetSystem();
-
-		//////////////////////////////////////////////////////////////////////////
-		// Physics
-		//////////////////////////////////////////////////////////////////////////
-
-		const auto& GetPhysicsScene() { return m_PhysicsScene; }
-
-		RayCastResult CastRay( const Vector3& a_Start, const Vector3& a_End,
-			ERayCastChannel a_RayCastChannel, const PhysicsBodyFilter& a_BodyFilter = {},
-			bool a_DrawDebug = false, 
-			Debug::EDrawDuration a_DrawDurationType = Debug::EDrawDuration::OneFrame, float a_DebugDrawDuration = 0.0f,
-			Color4 a_DebugLineColor = Color4::Red(), Color4 a_DebugHitColor = Color4::Green() ) const;
-
-		//////////////////////////////////////////////////////////////////////////
-		// ECS
-		//////////////////////////////////////////////////////////////////////////
-
-		auto& GetECS() { return m_ECS; }
-		auto& GetECS() const { return m_ECS; }
-		void Clear();
-
-		template<typename T, typename... _Args>
-		void AddEntityTicker( _Args&&... a_Args );
-
-		void DestroyGameObject( OldGameObject a_GameObject );
-		OldGameObject InstantiateGameObject( const String& a_Name = "GameObject" );
-		OldGameObject InstantiateGameObject( GUID a_GUID, const String& a_Name = "GameObject" );
-		OldGameObject InstantiateGameObjectFrom( OldGameObject a_Source );
-		void CopyGameObject( OldGameObject a_Destination, OldGameObject a_Source );
-		bool IsGameObjectValid( OldGameObject a_GameObject ) const;
-		OldGameObject FindGameObjectByTag( const String& a_Tag ) const;
-		std::vector<OldGameObject> FindAllGameObjectsByTag( const String& a_Tag ) const;
-
-		template <typename T, typename... Args>
-		T& AddComponentToGameObject( OldGameObject a_GameObject, Args&&... args );
-
-		template <typename T, typename... Args>
-		T* TryAddComponentToGameObject( OldGameObject a_GameObject, Args&&... args );
-
-		template <typename T>
-		inline T& GetComponentFromGameObject( OldGameObject a_GameObject );
-
-		template <typename T>
-		inline T* TryGetComponentFromGameObject( OldGameObject a_GameObject );
-
-		template <typename T>
-		inline bool GameObjectHasComponent( OldGameObject a_GameObject ) const;
-
-		template <typename T>
-		inline void RemoveComponentFromGameObject( OldGameObject a_GameObject );
-
-		// === For internal use only ===
-		// Registers a component ticker for the specified component type
-		// and connects OnComponentCreated and OnComponentDestroyed callbacks
-		template <typename T>
-		bool __InitComponentType();
-
-	private:
-		bool Initialize();
-
-		//////////////////////////////////////////////////////////////////////////
-		// ECS
-		//////////////////////////////////////////////////////////////////////////
-
-		void InitAllComponentTypes();
-
-		// EnTT Callbacks
-		template <typename T>
-		void OnComponentCreated( entt::registry& a_Registry, entt::entity a_Entity );
-		template <typename T>
-		void OnComponentDestroyed( entt::registry& a_Registry, entt::entity a_Entity );
-
-		//////////////////////////////////////////////////////////////////////////
-
-	private:
-		String m_Name;
-		SceneEnvironment m_SceneEnvironment;
-		SystemStorage m_Systems;
-
-		// ======= ECS =======
-		OldEntityComponentSystem m_ECS;
-		std::vector<UniquePtr<IEntityTicker>> m_EntityTickers;
-		// ===================
-
-		SceneState m_State;
-
-		EntityID m_MainCamera;
-
-		OldSceneRenderer m_SceneRenderer;
-		SharedPtr<class IPhysicsScene> m_PhysicsScene;
-
-		friend OldSceneRenderer;
-		friend class OldGameObject;
-	};
-
-#pragma endregion
 
 	class Scene;
 	class ISceneSystem;
@@ -269,7 +101,7 @@ namespace Tridium {
 		//=============================================================================================
 		virtual void OnBeginPlay() override
 		{
-			if constexpr ( Concepts::HasOnBeginPlayFunction<T> )
+			if constexpr ( Concepts::Component::HasOnBeginPlay<T> )
 			{
 				auto components = OwningScene().Registry().View<T>();
 				components.each( []( T& component )
@@ -282,7 +114,7 @@ namespace Tridium {
 		//=============================================================================================
 		virtual void OnUpdate(float a_DeltaTime) override
 		{
-			if constexpr ( Concepts::HasOnUpdateFunction<T> )
+			if constexpr ( Concepts::Component::HasOnUpdate<T> )
 			{
 				auto components = OwningScene().Registry().View<T>();
 				components.each( [a_DeltaTime]( T& component )
@@ -295,7 +127,7 @@ namespace Tridium {
 		//=============================================================================================
 		virtual void OnEndPlay() override
 		{
-			if constexpr ( Concepts::HasOnEndPlayFunction<T> )
+			if constexpr ( Concepts::Component::HasOnEndPlay<T> )
 			{
 				auto components = OwningScene().Registry().View<T>();
 				components.each( []( T& component )

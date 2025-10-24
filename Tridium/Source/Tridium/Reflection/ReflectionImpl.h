@@ -3,9 +3,6 @@
 #include "MetaTypes.h"
 #include <Tridium/Utils/Macro.h>
 #include <Tridium/Scene/Scene.h>
-#include <Tridium/ECS/GameObject.h>
-#include <Tridium/ECS/Components/Component.h>
-#include "EditorReflection.h"
 
 #include <any>
 #include <map>
@@ -29,26 +26,6 @@ namespace Tridium::Refl::Internal {
 		static_assert(
 			!( _HasFlag( _Flags, EPropertyFlags::ScriptReadOnly ) && _HasFlag( _Flags, EPropertyFlags::ScriptReadWrite ) ),
 			"Property cannot be both ScriptReadOnly and ScriptReadWrite." );
-	}
-
-	// Helper Serialize Functions
-
-	void SerializeClass( IO::Archive& a_Archive, const MetaAny& a_Data, const MetaType& a_MetaType );
-
-	template <typename T>
-	void SerializeClass( IO::Archive& a_Archive, const MetaAny& a_Data )
-	{
-		static const MetaType metaType = ResolveMetaType<T>();
-		SerializeClass( a_Archive, a_Data, metaType );
-	}
-
-	void DeserializeClass( const YAML::Node& a_Node, MetaAny& a_Data, const MetaType& a_MetaType );
-
-	template <typename T>
-	void DeserializeClass( const YAML::Node& a_Node, MetaAny& a_Data )
-	{
-		static const MetaType metaType = ResolveMetaType<T>();
-		DeserializeClass( a_Node, a_Data, metaType );
 	}
 
 } // namespace Tridium::Refl::Internal

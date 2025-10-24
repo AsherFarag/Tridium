@@ -1,7 +1,6 @@
 #pragma once
 #include <Tridium/Scene/Component.h>
 #include <Tridium/Physics/MotionType.h>
-#include <Tridium/Physics/PhysicsBodyProxy.h>
 #include <Tridium/Physics/PhysicsScene.h>
 
 namespace Tridium {

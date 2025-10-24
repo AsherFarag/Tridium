@@ -3,7 +3,6 @@
 #include <Tridium/Physics/PhysicsScene.h>
 #include <Tridium/Physics/PhysicsLayer.h>
 #include <Tridium/Containers/BidirectionalMap.h>
-#include <Tridium/ECS/GameObject.h>
 
 #include <Jolt/Jolt.h>
 #include <Jolt/RegisterTypes.h>
@@ -18,7 +17,6 @@
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 #include <Jolt/Physics/Collision/Shape/MutableCompoundShape.h>
 
-// STL includes
 #include <iostream>
 #include <cstdarg>
 #include <thread>
@@ -35,22 +33,12 @@ namespace Tridium {
 		virtual void Shutdown() override;
 		virtual void Tick( float a_TimeStep ) override;
 
-		virtual OldGameObject GetGameObjectFromPhysicsBody( PhysicsBodyID a_BodyID ) const override;
-		virtual PhysicsBodyID GetPhysicsBodyFromGameObject( OldGameObject a_GameObject ) const override;
-
 		virtual RayCastResult CastRay( const Vector3& a_Start, const Vector3& a_End, ERayCastChannel a_Channel, const PhysicsBodyFilter& a_BodyFilter ) override;
 
 		PhysicsBodyID CreatePhysicsBody( GameObject a_GameObject, const RigidBodyComponent& a_RigidBody );
 		void DestroyPhysicsBody( PhysicsBodyID a_BodyID );
 		bool HasPhysicsBody( PhysicsBodyID a_BodyID ) const;
 		bool UpdatePhysicsBodyShape( GameObject a_GameObject, const RigidBodyComponent& a_RigidBody );
-
-		virtual void RemovePhysicsBody( PhysicsBodyID a_PhysicsBodyID ) override;
-		virtual void RemovePhysicsBody( OldRigidBodyComponent& a_RigidBody ) override;
-		virtual bool AddPhysicsBody( const OldGameObject& a_GameObject, OldRigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent ) override;
-		virtual bool UpdatePhysicsBody( const OldGameObject& a_GameObject, OldRigidBodyComponent& a_RigidBody, OldTransformComponent& a_TransformComponent ) override;
-
-		virtual void UpdatePhysicsBodyTransform( const OldRigidBodyComponent& a_RigidBody, const OldTransformComponent& a_TransformComponent ) override;
 
 		virtual Vector3 GetPhysicsBodyPosition( PhysicsBodyID a_BodyID ) const override;
 		virtual Quaternion GetPhysicsBodyRotation( PhysicsBodyID a_BodyID ) const override;

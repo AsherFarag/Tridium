@@ -3,18 +3,9 @@
 #include <Tridium/Math/Rotator.h>
 #include <Tridium/Graphics/Color.h>
 
-// Forward declarations
-namespace Tridium {
-	class OldGameObject;
-}
-// --------------------
-
 namespace Tridium {
 
-	// Forward declaration
 	class ScriptEngine;
-	// -------------------
-
 
 	template <typename T>
 	struct Scriptable 
@@ -25,16 +16,6 @@ namespace Tridium {
 		{
 			//static_assert( false, "RegisterType must be specialized for this type" );
 		}
-	};
-
-	//////////////////////////////////////////////////////////////////////////
-	// GameObject
-	//////////////////////////////////////////////////////////////////////////
-
-	template <>
-	struct Scriptable<OldGameObject>
-	{
-		static void RegisterType( ScriptEngine& a_ScriptEngine );
 	};
 
 	//////////////////////////////////////////////////////////////////////////

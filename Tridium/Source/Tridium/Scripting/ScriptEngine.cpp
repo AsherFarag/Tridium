@@ -1,13 +1,9 @@
 #include "tripch.h"
 #include "ScriptEngine.h"
 
-#include "Tridium/oldAsset/AssetManager.h"
-#include <Tridium/ECS/Components/Types.h>
-
 #include <any>
 
 // TEMP!
-#include <Tridium/oldAsset/EditorAssetManager.h>
 #include <fstream>
 
 namespace Tridium {
@@ -116,24 +112,7 @@ namespace Tridium {
 
 	void ScriptEngine::RecompileAllScripts()
 	{
-		TODO( "TEMP EDITOR ONLY HERE" );
-		EditorAssetManager* assetManager = EditorAssetManager::Get();
-		for ( SharedPtr<ScriptAsset> script : AssetManager::GetAssetsOfType<ScriptAsset>() )
-		{
-			const OldAssetMetaData& assetData = assetManager->GetAssetMetaData( script->GetHandle() );
-			if ( assetData.IsValid() )
-			{
-				std::string path = assetManager->GetAbsolutePath( assetData.Path ).ToString();
-				std::ifstream file( path );
-				if ( file.is_open() )
-				{
-					std::string source( ( std::istreambuf_iterator<char>( file ) ), std::istreambuf_iterator<char>() );
-					script->m_Source = std::move( source );
-					RecompileScript( *script );
-					LOG( LogCategory::Script, Info, "Recompiled script: {0}", assetData.Name );
-				}
-			}
-		}
+		TODO();
 	}
 
 	const StringView ScriptEngine::GetUserDataTypeName( sol::userdata a_UserData )

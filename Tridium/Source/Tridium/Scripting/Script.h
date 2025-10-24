@@ -1,5 +1,4 @@
 #pragma once
-#include <Tridium/oldAsset/Asset.h>
 #include "ScriptProperty.h"
 #include "sol/sol.hpp"
 
@@ -14,10 +13,9 @@ namespace Tridium {
 	using ScriptInstance = sol::environment;
 
 	// A script is a single Lua file that has been compiled and loaded into memory.
-	class ScriptAsset : public Asset
+	class ScriptAsset
 	{
 	public:
-		ASSET_CLASS_TYPE( LuaScript );
 		ScriptAsset( const std::string& a_Source ) : m_Source( a_Source ) {}
 		ScriptAsset( std::string&& a_Source ) : m_Source( std::move( a_Source ) ) {}
 		virtual ~ScriptAsset() = default;

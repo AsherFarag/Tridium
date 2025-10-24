@@ -1,24 +1,9 @@
 #pragma once
 #include <Tridium/Asset/AssetDatabase.h>
+#include <Tridium/IO/FilePath.h>
 #include <Tridium/Scene/SceneManager.h>
 
-// OLD
-#include <Tridium/IO/FilePath.h>
-#include <Tridium/Project/ProjectConfig.h>
-
 namespace Tridium {
-
-	struct OldProject
-	{
-		OldProjectConfig Config;
-
-		FilePath GetAssetDirectory() const { return Config.Editor.ProjectDirectory / Config.Editor.AssetDirectory; }
-		const FilePath& GetWorkingDirectory() const { return Config.WorkingDirectory; }
-
-		OldProject() = default;
-		OldProject( const String& a_Name, const FilePath& a_AssetDirectory, SceneHandle a_StartScene );
-		~OldProject();
-	};
 
 	//=============================================================================================
 	// Project Config:

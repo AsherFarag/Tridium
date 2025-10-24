@@ -2,14 +2,7 @@
 #include "JoltDebugRenderer.h"
 #ifdef JPH_DEBUG_RENDERER
 
-#include <Tridium/Graphics/oldRendering/Shader.h>
-#include <Tridium/Graphics/oldRendering/VertexArray.h>
-
 #include "JoltUtil.h"
-
-TODO( "Stop using OpenGL calls and use the RHI instead" );
-#include <glad/glad.h>
-#include <Tridium/Graphics/oldRendering/RenderCommand.h>
 
 using namespace JPH;
 using Batch = JPH::DebugRenderer::Batch;
@@ -46,25 +39,6 @@ namespace Tridium {
 			}
 		)";
 
-		m_Shader.reset( Shader::Create( vertexShader, fragmentShader ) );
-
-		// Create Line VBO
-		glGenBuffers( 1, &m_LineVBO );
-		glBindBuffer( GL_ARRAY_BUFFER, m_LineVBO );
-		glBufferData( GL_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW );
-
-		// Create Line VAO
-		glGenVertexArrays( 1, &m_LineVAO );
-		glBindVertexArray( m_LineVAO );
-		glBindBuffer( GL_ARRAY_BUFFER, m_LineVBO );
-		glEnableVertexAttribArray( 0 );
-		glEnableVertexAttribArray( 1 );
-		glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, sizeof( GizmoVertex ), 0 );
-		glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, sizeof( GizmoVertex ), (void*)16 );
-
-		glBindVertexArray( 0 );
-		glBindBuffer( GL_ARRAY_BUFFER, 0 );
-
 		// GEOMETRY
 
 		std::string geometryVertexShader = R"(
@@ -86,20 +60,11 @@ namespace Tridium {
 				o_FragColor = u_Color;
 			}
 		)";
-
-		m_GeometryShader.reset( Shader::Create( geometryVertexShader, geometryFragmentShader ) );
-
-		glGenVertexArrays( 1, &m_Geometry.VAO );
-		glGenBuffers( 1, &m_Geometry.VBO );
-		glGenBuffers( 1, &m_Geometry.IBO );
     }
 
 	JoltDebugRenderer::~JoltDebugRenderer()
 	{
 		return;
-
-		glDeleteBuffers( 1, &m_LineVBO );
-		glDeleteVertexArrays( 1, &m_LineVAO );
 	}
 
     void JoltDebugRenderer::Render( const Matrix4& a_ViewProjection )
@@ -111,67 +76,17 @@ namespace Tridium {
 		if ( m_Lines.empty() )
 			return;
 
-		glLineWidth( 4.0f );
-
-		m_Shader->Bind();
-		m_Shader->SetMatrix4( "u_ViewProjection", a_ViewProjection );
-
-		glBindBuffer( GL_ARRAY_BUFFER, m_LineVBO );
-		glBufferData( GL_ARRAY_BUFFER, m_Lines.size() * sizeof( Line ), m_Lines.data(), GL_DYNAMIC_DRAW );
-
-		glBindVertexArray( m_LineVAO );
-		glDrawArrays( GL_LINES, 0, m_Lines.size() * 2 );
-
-		m_Shader->Unbind();
-
-		// Draw geometry
-
-		m_GeometryShader->Bind();
-		m_GeometryShader->SetFloat4( "u_Color", Vector4( 0.72f, 0.90f, 0.65f, 1.0f ) );
-
-		RenderCommand::SetPolygonMode( EFaces::FrontAndBack, EPolygonMode::Line );
-
 		for ( auto& call : m_GeometryCalls )
 		{
-			m_GeometryShader->SetMatrix4( "u_ViewProjection", a_ViewProjection * call.ModelMatrix );
 			TriangleData* data = call.TriangleBatch;
 
 			if ( data->HasIndices )
 			{
-				glBindVertexArray( m_Geometry.VAO );
-
-				glBindBuffer( GL_ARRAY_BUFFER, m_Geometry.VBO );
-				glBufferData( GL_ARRAY_BUFFER, data->Vertices.size() * sizeof( float ),
-					&data->Vertices.front(), GL_STATIC_DRAW );
-
-				glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, m_Geometry.IBO );
-				glBufferData( GL_ELEMENT_ARRAY_BUFFER, data->Indices.size() * sizeof( JPH::uint32 ),
-					&data->Indices.front(), GL_STATIC_DRAW );
-
-				glEnableVertexAttribArray( 0 );
-				glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof( float ), (void*)0 );
-
-
-				glDrawElements( GL_TRIANGLES, data->Indices.size(), GL_UNSIGNED_INT, nullptr );
 			}
 			else
 			{
-				glBindVertexArray( m_Geometry.VAO );
-
-				glBindBuffer( GL_ARRAY_BUFFER, m_Geometry.VBO );
-				glBufferData( GL_ARRAY_BUFFER, data->TriVerts.size() * sizeof( float ),
-					&data->TriVerts.front(), GL_STATIC_DRAW );
-
-				glEnableVertexAttribArray( 0 );
-				glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof( float ), (void*)0 );
-
-				glDrawArrays( GL_TRIANGLES, 0, data->NumTriangles * 3 );
 			}
 		}
-
-		m_GeometryShader->Unbind();
-
-		RenderCommand::SetPolygonMode( EFaces::FrontAndBack, EPolygonMode::Fill );
 
 		Clear();
 		NextFrame();

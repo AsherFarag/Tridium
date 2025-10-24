@@ -1,14 +1,10 @@
 #pragma once
-#include <unordered_set>
-#include "PhysicsBody.h"
+#include <Tridium/Physics/PhysicsBody.h>
+#include <Tridium/Containers/UnorderedSet.h>
 
 namespace Tridium {
 
-	// Forward declarations
-	class OldRigidBodyComponent;
-	// -------------------
-
-	class PhysicsBodyFilter : public std::unordered_set<PhysicsBodyID>
+	class PhysicsBodyFilter : public UnorderedSet<PhysicsBodyID>
 	{
 	public:
 		PhysicsBodyFilter() = default;
@@ -18,12 +14,9 @@ namespace Tridium {
 		}
 
 		PhysicsBodyFilter( const std::initializer_list<PhysicsBodyID>& a_BodyIDs )
-			: std::unordered_set<PhysicsBodyID>( a_BodyIDs )
+			: UnorderedSet<PhysicsBodyID>( a_BodyIDs )
 		{
 		}
-
-		PhysicsBodyFilter( const OldRigidBodyComponent& a_RigidBodyComponent );
-		PhysicsBodyFilter( const std::initializer_list<OldRigidBodyComponent>& a_RigidBodyComponents );
 	};
 
 }

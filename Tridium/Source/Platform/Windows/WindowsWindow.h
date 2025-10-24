@@ -1,8 +1,6 @@
 #pragma once
 #include <Tridium/Core/Window.h>
-
 #include <GLFW/glfw3.h>
-#include <Tridium/Graphics/oldRendering/RenderingContext.h>
 
 namespace Tridium {
 
@@ -47,7 +45,6 @@ namespace Tridium {
         };
 
         WindowData m_Data;
-        UniquePtr<RenderingContext> m_RenderingContext;
     };
 
 }

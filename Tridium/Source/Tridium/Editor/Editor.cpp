@@ -175,7 +175,7 @@ namespace Tridium {
 
 		// Project Name
 		{
-			const char* projectName = Engine::Get()->GetActiveProject().Config.Name.c_str();
+			const char* projectName = Engine::ActiveProject().Config().General.Name.c_str();
 			const float paddingFromRight = 10.0f;
 			ImGui::SameLine( ImGui::GetContentRegionMax().x - ImGui::CalcTextSize( projectName ).x - paddingFromRight );
 
@@ -191,8 +191,7 @@ namespace Tridium {
 
 	void Editor::UI_DrawToolBar()
 	{
-		OldScene* scene = OldSceneManager::GetActiveScene();
-		if ( !scene )
+		if ( true )
 			return;
 
 		float winPaddingY = 5.0f;
@@ -210,12 +209,12 @@ namespace Tridium {
 
 		TODO( "This " );
 		EScenePlayMode sceneState = EScenePlayMode::None;
-		bool hasPlayButton = ( sceneState == EScenePlayMode::None ) || ( sceneState == EScenePlayMode::Play && scene->IsPaused() );
-		bool hasPauseButton = ( sceneState == EScenePlayMode::Play ) && ( !scene->IsPaused() );
+		bool hasPlayButton = ( sceneState == EScenePlayMode::None ) || ( sceneState == EScenePlayMode::Play /*&& scene->IsPaused()*/ );
+		//bool hasPauseButton = ( sceneState == EScenePlayMode::Play ) && (/* !scene->IsPaused()*/ );
 		bool hasStopButton = sceneState == EScenePlayMode::Play;
 
 		float totalButtonSizeX = buttonSize.x + ( buttonPadding.x * 2.f ) + ImGui::GetStyle().ItemSpacing.x;
-		float groupSizeX = ( totalButtonSizeX * hasPlayButton ) + ( totalButtonSizeX * hasPauseButton ) + ( totalButtonSizeX * hasStopButton );
+		float groupSizeX = ( totalButtonSizeX * hasPlayButton ) + ( totalButtonSizeX /** hasPauseButton*/ ) + ( totalButtonSizeX * hasStopButton );
 		ImGui::SetCursorPosX( ( ImGui::GetWindowWidth() * 0.5f ) - groupSizeX * 0.5f );
 		ImGui::SetCursorPosY( ImGui::GetWindowHeight() * 0.5f - buttonSize.y * 0.5f );
 
@@ -227,18 +226,13 @@ namespace Tridium {
 				ImGui::ScopedStyleCol buttonCol( ImGuiCol_Text, ImVec4( Editor::GetStyle().Colors.Green ) );
 				if ( ImGui::IconButton( TE_ICON_PLAY ) )
 				{
-					if ( scene->IsPaused() )
-						scene->SetPaused( false );
-					//else
-						//editor->OnBeginScene();
 				}
 			}
 
-			if ( hasPauseButton )
+			if ( /*hasPauseButton*/ false )
 			{
 				if ( ImGui::IconButton( TE_ICON_PAUSE ) )
 				{
-					OldSceneManager::GetActiveScene()->SetPaused( true );
 				}
 			}
 
@@ -249,7 +243,6 @@ namespace Tridium {
 				ImGui::ScopedStyleCol buttonCol( ImGuiCol_Text, ImVec4( Editor::GetStyle().Colors.Red ) );
 				if ( ImGui::IconButton( TE_ICON_STOP ) )
 				{
-					//editor->OnEndScene();
 				}
 			}
 
@@ -273,13 +266,6 @@ namespace Tridium {
 			{
 				if ( control )
 				{
-					if ( OldSceneManager::GetActiveScene() )
-					{
-						//if ( m_ActiveScene->GetPath().length() == 0 )
-						//	Util::OpenSaveFileDialog( "Untitled.tscene", [this](const std::string& path) { SaveScene(path); });
-						//else
-						//	SaveScene( m_ActiveScene->GetPath() );
-					}
 
 					return true;
 				}

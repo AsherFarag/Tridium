@@ -3,7 +3,6 @@
 #include <Tridium/ECS/ECS.h>
 #include "ReflectionFwd.h"
 #include <Tridium/Core/Types.h>
-#include <Tridium/IO/TextSerializer.h>
 #include "ReflProps.h"
 #include <Tridium/Containers/Optional.h>
 
@@ -103,44 +102,6 @@ namespace Tridium {
 			//////////////////////////////////////////////////////////////////////////
 			// Serialization
 			//////////////////////////////////////////////////////////////////////////
-
-			Props::TextSerializeProp::Type TryGetTextSerializeFunc() const
-			{
-				//if ( MetaAttribute p = GetMetaAttribute( Props::TextSerializeProp::ID ) )
-				//	return p.value().cast<Props::TextSerializeProp::Type>();
-
-				return nullptr;
-			}
-
-			Props::TextDeserializeProp::Type TryGetTextDeserializeFunc() const
-			{
-				//if ( MetaAttribute p = GetMetaAttribute( Props::TextDeserializeProp::ID ) )
-				//	return p.value().cast<Props::TextDeserializeProp::Type>();
-
-				return nullptr;
-			}
-
-			bool TrySerialize( IO::Archive& a_Archive, const MetaAny& a_Data ) const
-			{
-				if ( auto func = TryGetTextSerializeFunc() )
-				{
-					func( a_Archive, a_Data );
-					return true;
-				}
-
-				return false;
-			}
-
-			bool TryDeserialize( const YAML::Node& a_Node, MetaAny& a_Data ) const
-			{
-				if ( auto func = TryGetTextDeserializeFunc() )
-				{
-					func( a_Node, a_Data );
-					return true;
-				}
-
-				return false;
-			}
 
 			//////////////////////////////////////////////////////////////////////////
 			// GameObject

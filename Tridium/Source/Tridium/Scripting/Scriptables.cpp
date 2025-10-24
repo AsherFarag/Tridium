@@ -2,26 +2,10 @@
 #include "Scriptables.h"
 #include "ScriptEngine.h"
 
-#include <Tridium/ECS/GameObject.h>
-#include <Tridium/ECS/Components/Types.h>
-
 #include <Tridium/Math/Math.h>
 #include <Tridium/Math/Rotator.h>
 
 namespace Tridium {
-
-	//////////////////////////////////////////////////////////////////////////
-	// GameObject
-	//////////////////////////////////////////////////////////////////////////
-
-	void Scriptable<OldGameObject>::RegisterType( ScriptEngine& a_ScriptEngine )
-	{
-		TODO( "This" );
-		auto type = a_ScriptEngine.RegisterNewType<OldGameObject>( "GameObject" );
-		//type["GetTransform"] = &OldGameObject::GetTransform;
-		//type["GetName"] = []( OldGameObject& a_GameObject ) -> std::string { return a_GameObject.GetTag(); };
-		//type["Destroy"] = &OldGameObject::Destroy;
-	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Math

@@ -3,10 +3,6 @@
 #include <Tridium/Core/Application.h>
 #include <Tridium/Debug/DebugDrawer.h>
 
-#include <Tridium/oldAsset/AssetManager.h>
-#include <Tridium/oldAsset/EditorAssetManager.h>
-#include <Tridium/oldAsset/RuntimeAssetManager.h>
-
 #include <Tridium/Editor/Editor.h>
 
 #include <Tridium/Graphics/Renderer/RendererModule.h>
@@ -14,7 +10,6 @@
 #include <Tridium/Scripting/ScriptModule.h>
 
 // Temp ?
-#include <Tridium/IO/ProjectSerializer.h>
 #include <Tridium/IO/FileManager.h>
 
 namespace Tridium {
@@ -26,28 +21,6 @@ namespace Tridium {
 
 	Engine* Engine::s_Instance = nullptr;
 
-	//////////////////////////////////////////////////////////////////////////
-	// HELPER FUNCTIONS
-	//////////////////////////////////////////////////////////////////////////
-
-	AssetManagerBase* CreateAssetManager()
-	{
-		#if WITH_EDITOR
-			return new EditorAssetManager();
-		#else
-			return new RuntimeAssetManager();
-		#endif // IS_EDITOR
-
-		// TEMP
-		return new EditorAssetManager();
-	};
-
-	//////////////////////////////////////////////////////////////////////////
-	//
-	// PUBLIC FUNCTIONS
-	//
-	//////////////////////////////////////////////////////////////////////////
-
 	IEngineModule* Engine::GetModule( hash_t a_TypeHash )
 	{
 		auto it = Get()->m_EngineModules.find( a_TypeHash );
@@ -55,12 +28,6 @@ namespace Tridium {
 			return it->second.get();
 		return nullptr;
 	}
-
-	//////////////////////////////////////////////////////////////////////////
-	//
-	// PRIVATE FUNCTIONS
-	//
-	//////////////////////////////////////////////////////////////////////////
 
 	//////////////////////////////////////////////////////////////////////////
 	// Engine Initialization
@@ -188,9 +155,6 @@ namespace Tridium {
 			module->Init();
 		}
 
-		// Initialize Scene Manager
-		OldSceneManager::Singleton::Construct();
-
 		// Initialize Game Instance
 		m_GameInstance.reset( CreateGameInstance() );
 		m_GameInstance->Init();
@@ -206,9 +170,6 @@ namespace Tridium {
 	{
 		// Shutdown Game Instance
 		m_GameInstance->Shutdown();
-
-		// Shutdown Scene Manager
-		OldSceneManager::Singleton::Destroy();
 
 		// Shutdown Modules
 		{

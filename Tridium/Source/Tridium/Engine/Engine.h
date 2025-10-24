@@ -1,10 +1,8 @@
 #pragma once
-#include "EngineConfig.h"
 #include <Tridium/Core/Core.h>
 #include <Tridium/Core/Hash.h>
-#include <Tridium/Utils/Singleton.h>
+#include <Tridium/Engine/EngineConfig.h>
 #include <Tridium/Project/Project.h>
-#include <Tridium/oldAsset/AssetManagerBase.h>
 
 // Engine Modules
 #include "EngineModule.h"

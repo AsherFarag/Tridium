@@ -4,6 +4,8 @@
 
 namespace Tridium {
 
+	// TODO This is old code, delete it later
+
 	struct PerspectiveData
 	{
 		REFLECT( PerspectiveData );
