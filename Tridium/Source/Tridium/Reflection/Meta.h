@@ -384,55 +384,78 @@ namespace Tridium::Meta {
 	template<auto _Getter, auto _Setter = _Getter>
 	struct Accessor
 	{
-		using MemberPointerTraits = std::conditional_t< _Getter != nullptr,
-			MemberPointerTraits<decltype( _Getter )>,
-			MemberPointerTraits<decltype( _Setter )>>;
-
 		using GetterType = decltype( _Getter );
 		using SetterType = decltype( _Setter );
-		using ObjectType = typename MemberPointerTraits::ClassType;
-		using MemberType = typename MemberPointerTraits::MemberType;
+
+		using GetterTraits = MemberPointerTraits<GetterType>;
+		using SetterTraits = MemberPointerTraits<SetterType>;
+
+		using ObjectType = std::conditional_t<
+			std::is_same_v<typename GetterTraits::ClassType, void>,
+			typename SetterTraits::ClassType,
+			typename GetterTraits::ClassType>;
+
+		using MemberType = std::conditional_t<
+			std::is_same_v<typename GetterTraits::MemberType, void>,
+			typename SetterTraits::MemberType,
+			typename GetterTraits::MemberType>;
+
 		static constexpr auto Getter = _Getter;
 		static constexpr auto Setter = _Setter;
-		static constexpr bool CanGet = true;
-		static constexpr bool CanSet = _Setter != nullptr;
-		static constexpr auto RawAccess = std::is_same_v<GetterType, SetterType> ? Getter : nullptr;
 
-		constexpr static decltype( auto ) Get( ObjectType& a_Object ) requires ( CanGet )
+		static constexpr bool HasGetter = !std::is_same_v<GetterType, std::nullptr_t>;
+		static constexpr bool HasSetter = !std::is_same_v<SetterType, std::nullptr_t>;
+		static constexpr bool CanGet = HasGetter;
+		static constexpr bool CanSet = HasSetter;
+
+		static constexpr bool IsMemberGetter = HasGetter && std::is_member_function_pointer_v<GetterType>;
+		static constexpr bool IsMemberSetter = HasSetter && std::is_member_function_pointer_v<SetterType>;
+
+		static constexpr auto RawAccess =
+			( HasGetter && HasSetter &&
+			 std::is_same_v<GetterType, SetterType> &&
+			 std::is_member_object_pointer_v<GetterType> )
+			? Getter
+			: nullptr;
+
+		//=========================================================================
+		// Getter
+		//=========================================================================
+		constexpr static decltype( auto ) Get( auto& a_Object )
+			requires ( CanGet )
 		{
 			if constexpr ( std::is_member_function_pointer_v<GetterType> )
-			{
 				return ( a_Object.*_Getter )( );
-			}
-			else
-			{
+			else if constexpr ( std::is_member_object_pointer_v<GetterType> )
 				return a_Object.*_Getter;
-			}
+			else
+				return _Getter( a_Object );
 		}
 
-		constexpr static decltype( auto ) Get( const ObjectType& a_Object ) requires ( CanGet )
+		constexpr static decltype( auto ) Get( const auto& a_Object )
+			requires ( CanGet )
 		{
 			if constexpr ( std::is_member_function_pointer_v<GetterType> )
-			{
 				return ( a_Object.*_Getter )( );
-			}
-			else
-			{
+			else if constexpr ( std::is_member_object_pointer_v<GetterType> )
 				return a_Object.*_Getter;
-			}
+			else
+				return _Getter( a_Object );
 		}
 
+		//=========================================================================
+		// Setter
+		//=========================================================================
 		template<typename _Value>
-		constexpr static void Set( ObjectType& a_Object, _Value&& a_Value ) requires ( CanSet )
+		constexpr static void Set( auto& a_Object, _Value&& a_Value )
+			requires ( CanSet )
 		{
 			if constexpr ( std::is_member_function_pointer_v<SetterType> )
-			{
 				( a_Object.*_Setter )( std::forward<_Value>( a_Value ) );
-			}
-			else
-			{
+			else if constexpr ( std::is_member_object_pointer_v<SetterType> )
 				a_Object.*_Setter = std::forward<_Value>( a_Value );
-			}
+			else
+				_Setter( a_Object, std::forward<_Value>( a_Value ) );
 		}
 	};
 
@@ -500,24 +523,40 @@ namespace Tridium::Meta {
 	struct Field : MetaMember, AttributeList<_FieldAttributes...>
 	{
 		using Attributes = AttributeList<_FieldAttributes...>;
-		using Accessor = std::conditional_t<IsInstantiationOfAuto<Accessor, decltype( _Accessor )>::value, decltype( _Accessor ), Accessor<_Accessor>>;
-		using ObjectType = typename Accessor::ObjectType;
-		using MemberType = typename Accessor::MemberType;
 
-		constexpr static decltype( auto ) GetValue( ObjectType& a_Instance ) requires ( Accessor::CanGet )
+		// Detect if _Accessor is already an Accessor<...> type
+		using AccessorType = std::conditional_t<
+			IsInstantiationOfAuto<Accessor, std::decay_t<decltype( _Accessor )>>::value,
+			std::decay_t<decltype( _Accessor )>,
+			Accessor<_Accessor>
+		>;
+
+		using ObjectType = typename AccessorType::ObjectType;
+		using MemberType = typename AccessorType::MemberType;
+
+		constexpr static bool CanGet = AccessorType::CanGet;
+		constexpr static bool CanSet = AccessorType::CanSet;
+
+		//==============================================================
+		// Getters
+		//==============================================================
+		constexpr static decltype( auto ) GetValue( auto& a_Instance ) requires ( CanGet )
 		{
-			return Accessor::Get( a_Instance );
+			return AccessorType::Get( a_Instance );
 		}
 
-		constexpr static decltype( auto ) GetValue( const ObjectType& a_Instance ) requires ( Accessor::CanGet )
+		constexpr static decltype( auto ) GetValue( const auto& a_Instance ) requires ( CanGet )
 		{
-			return Accessor::Get( a_Instance );
+			return AccessorType::Get( a_Instance );
 		}
 
+		//==============================================================
+		// Setter
+		//==============================================================
 		template<typename _Value>
-		constexpr static void SetValue( ObjectType& a_Instance, _Value&& a_Value ) requires ( Accessor::CanSet )
+		constexpr static void SetValue( auto& a_Instance, _Value&& a_Value ) requires ( CanSet )
 		{
-			Accessor::Set( a_Instance, std::forward<_Value>( a_Value ) );
+			AccessorType::Set( a_Instance, std::forward<_Value>( a_Value ) );
 		}
 	};
 
@@ -602,6 +641,9 @@ namespace Tridium::Meta {
 #pragma endregion
 
 #pragma region Is Meta Member
+
+	template<typename T>
+	concept IsAttributeList = IsInstantiationOf<AttributeList, T>::value;
 
 	template<typename T>
 	concept IsMeta = Concepts::Derived<T, MetaMember>;

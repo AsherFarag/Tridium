@@ -112,25 +112,28 @@ namespace Tridium::Meta {
 	//=================================================================================================
 	struct CallInEditor : FunctionAttribute {};
 
-	template<auto _Min, auto _Max> requires Concepts::Arithmetic<decltype( _Min )> && Concepts::Arithmetic<decltype( _Max )>
+	template<auto _Min, auto _Max, bool _HasMin = true, bool _HasMax = true>
+		requires Concepts::Arithmetic<decltype( _Min )> && Concepts::Arithmetic<decltype( _Max )>
 	struct Range : FieldAttribute
 	{
 		using ValueType = decltype( _Min );
 		static constexpr auto Min = _Min;
 		static constexpr auto Max = _Max;
+		static constexpr bool HasMin = _HasMin;
+		static constexpr bool HasMax = _HasMax;
 	};
 
 	//=================================================================================================
 	// Min: Defines a minimum value for a field.
 	//=================================================================================================
 	template<auto _Min> requires Concepts::Arithmetic<decltype( _Min )>
-	using Min = Range<_Min, Math::NumericLimits<decltype( _Min )>::max()>;
+	using Min = Range<_Min, Math::NumericLimits<decltype( _Min )>::max(), true, false>;
 
 	//=================================================================================================
 	// Max: Defines a maximum value for a field.
 	//=================================================================================================
 	template<auto _Max> requires Concepts::Arithmetic<decltype( _Max )>
-	using Max = Range<Math::NumericLimits<decltype( _Max )>::min(), _Max>;
+	using Max = Range<Math::NumericLimits<decltype( _Max )>::min(), _Max, false, true>;
 
 	//=================================================================================================
 	// Text Area: Marks a string field to be displayed as a multi-line text area in the editor.

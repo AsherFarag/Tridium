@@ -116,7 +116,6 @@ namespace Tridium::D3D12 {
 							if ( globalHeap.IsHeapAChild( *a_Heap ) )
 							{
 								globalHeap.Free( a_Heap->Offset(), a_Heap->NumDescriptors() );
-								return;
 							}
 						}
 

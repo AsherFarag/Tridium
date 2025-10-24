@@ -17,7 +17,7 @@ namespace Tridium {
 		}
 	};
 
-	template<typename T>
+	template<typename T, Meta::IsAttributeList _Attributes = Meta::AttributeList<>>
 	struct UIPropertyDrawer
 	{
 		static bool Draw( StringView a_Label, T& a_Value, bool a_CanWrapInTreeNode = true )
@@ -29,26 +29,44 @@ namespace Tridium {
 			}
 			else if constexpr ( Concepts::AggregateReflectable<T> )
 			{
-				bool modified = false;
-
-				if ( a_CanWrapInTreeNode )
-					if ( !UI::BeginTree( a_Label ) )
-						return false; // Early out if the tree node is not open
-
-				UI::BeginPropertyGrid();
-
-				ForEachField( a_Value, [&]( StringView a_FieldName, auto& a_Field )
+				const auto DrawFunc = [&]()
 				{
-					using Drawer = UIPropertyDrawer<std::decay_t<decltype( a_Field )>>;
-					modified |= Drawer::Draw( a_FieldName, a_Field );
-				} );
+					bool modified = false;
 
-				UI::EndPropertyGrid();
+					StringView treeLabel = UI::IsPropertyGridOpen() ? a_Label : GetStrippedTypeName<T>();
 
-				if ( a_CanWrapInTreeNode )
-					UI::EndTree();
+					if ( a_CanWrapInTreeNode )
+					{
+						// In case we are not editable, we still want the tree node to be shown
+						UI::ScopedOverrideEnable enableTreeNode{};
+						if ( !UI::BeginTree( treeLabel ) )
+							return false; // Early out if the tree node is not open
+					}
 
-				return modified;
+					UI::BeginPropertyGrid();
+
+					ForEachField( a_Value, [&]( StringView a_FieldName, auto& a_Field )
+					{
+						using Drawer = UIPropertyDrawer<std::decay_t<decltype( a_Field )>>;
+						modified |= Drawer::Draw( a_FieldName, a_Field );
+					} );
+
+					UI::EndPropertyGrid();
+
+					if ( a_CanWrapInTreeNode )
+						UI::EndTree();
+
+					return modified;
+				};
+
+				if ( UI::IsPropertyGridOpen() )
+				{
+					return UI::DrawGridProperty( a_Label, DrawFunc );
+				}
+				else
+				{
+					return DrawFunc();
+				}
 			}
 			else
 			{
@@ -69,21 +87,27 @@ namespace Tridium {
 
 				Meta::Reflector<T> reflector{};
 
+				StringView treeLabel = a_Label;
+
 				if ( UI::IsPropertyGridOpen() )
 				{
 					if constexpr ( Meta::GetType<T>().template Has<Meta::DisplayName>() )
 					{
-						a_Label = Meta::GetType<T>().template Get<Meta::DisplayName>().Value;
+						treeLabel = Meta::GetType<T>().template Get<Meta::DisplayName>().Value;
 					}
 					else
 					{
-						a_Label = GetStrippedTypeName<T>();
+						treeLabel = GetStrippedTypeName<T>();
 					}
 				}
 
 				if ( a_CanWrapInTreeNode )
-					if ( !UI::BeginTree( a_Label ) )
+				{
+						// In case we are not editable, we still want the tree node to be shown
+					UI::ScopedOverrideEnable enableTreeNode{};
+					if ( !UI::BeginTree( treeLabel ) )
 						return false; // Early out if the tree node is not open
+				}
 
 				UI::BeginPropertyGrid();
 
@@ -111,17 +135,88 @@ namespace Tridium {
 		}
 	};
 
-#pragma region Math Drawers
 
-	template<size_t N, typename T>
-	struct UIPropertyDrawer<Vector<N, T>>
+
+#pragma region Drawers
+
+	template<Meta::IsAttributeList _Attributes>
+	struct UIPropertyDrawer<bool, _Attributes>
 	{
-		static bool Draw( StringView a_Label, Vector<N, T>& a_Vector,
-						  const T* a_Min = nullptr, const T* a_Max = nullptr )
+		using Attributes = _Attributes;
+		static bool Draw( StringView a_Label, bool& a_Bool )
 		{
-			return UI::DrawVector( a_Label, a_Vector,
-								   a_Min,
-								   a_Max );
+			return UI::DrawCheckbox( a_Label, a_Bool );
+		}
+	};
+
+	template<Concepts::Arithmetic T, Meta::IsAttributeList _Attributes>
+	struct UIPropertyDrawer<T, _Attributes>
+	{
+		using Attributes = _Attributes;
+		static bool Draw( StringView a_Label, T& a_Value )
+		{
+			if constexpr ( Attributes::template Has<Meta::Range>() )
+			{
+				constexpr auto rangeAttr = Attributes::template Get<Meta::Range>();
+				const T min = Cast<float>( rangeAttr.Min );
+				const T max = Cast<T>( rangeAttr.Max );
+				bool modified = UI::DrawScalar( a_Label, a_Value,
+									   rangeAttr.HasMin ? &min : nullptr,
+									   rangeAttr.HasMax ? &max : nullptr );
+
+				if constexpr ( rangeAttr.HasMax ) a_Value = Math::Min( a_Value, max );
+				if constexpr ( rangeAttr.HasMin ) a_Value = Math::Max( a_Value, min );
+
+				return modified;
+			}
+			else
+			{
+				return UI::DrawScalar( a_Label, a_Value );
+			}
+		}
+	};
+
+	template<size_t N, typename _GenType, Meta::IsAttributeList _Attributes>
+	struct UIPropertyDrawer<Vector<N, _GenType>, _Attributes>
+	{
+		using Attributes = _Attributes;
+		static bool Draw( StringView a_Label, Vector<N, _GenType>& a_Vector )
+		{
+			if constexpr ( Attributes::template Has<Meta::Range>() )
+			{
+				constexpr auto rangeAttr = Attributes::template Get<Meta::Range>();
+				const _GenType min = Cast<_GenType>( rangeAttr.Min );
+				const _GenType max = Cast<_GenType>( rangeAttr.Max );
+				bool modified = UI::DrawVector( a_Label, a_Vector,
+									   rangeAttr.HasMin ? &min : nullptr,
+									   rangeAttr.HasMax ? &max : nullptr );
+
+				if constexpr ( rangeAttr.HasMax ) a_Vector = Math::Min( a_Vector, Vector<N, _GenType>( max ) );
+				if constexpr ( rangeAttr.HasMin ) a_Vector = Math::Max( a_Vector, Vector<N, _GenType>( min ) );
+
+				return modified;
+			}
+			else
+			{
+				return UI::DrawVector( a_Label, a_Vector );
+			}
+		}
+	};
+
+	template<Meta::IsAttributeList _Attributes>
+	struct UIPropertyDrawer<String, _Attributes>
+	{
+		using Attributes = _Attributes;
+		static bool Draw( StringView a_Label, String& a_String )
+		{
+			if constexpr ( Attributes::template Has<Meta::MultilineText>() )
+			{
+				return UI::DrawInputTextMultiline( a_Label, a_String );
+			}
+			else
+			{
+				return UI::DrawInputText( a_Label, a_String );
+			}
 		}
 	};
 
@@ -150,22 +245,50 @@ namespace Tridium {
 				a_DefaultLabel = FieldType::template Get<Meta::DisplayName>().Value;
 			}
 
+			bool modified = false;
+
 			if constexpr ( FieldType::template Has<Meta::Editable>() )
 			{
+				ImGui::BeginGroup(); 
 				auto value = FieldType::GetValue( a_Instance );
-				if ( UIPropertyDrawer<std::decay_t<decltype( value )>>::Draw( a_DefaultLabel, value ) )
+				using Drawer = UIPropertyDrawer<std::decay_t<decltype( value )>, Meta::AttributeList<_Attributes...>>;
+
+				if ( Drawer::Draw( a_DefaultLabel, value ) )
 				{
 					FieldType::SetValue( a_Instance, value );
-					return true;
+					modified = true;
 				}
+				ImGui::EndGroup();
+			}
+			else if constexpr ( FieldType::template Has<Meta::Visible>() )
+			{
+				ImGui::BeginGroup();
+				UI::BeginDisabled();
 
-				return false;
+				auto value = FieldType::GetValue( a_Instance );
+				using Drawer = UIPropertyDrawer<std::decay_t<decltype( value )>, Meta::AttributeList<_Attributes...>>;
+				Drawer::Draw( a_DefaultLabel, value );
+
+				UI::EndDisabled();
+				ImGui::EndGroup();
 			}
 			else
 			{
 				// Not editable
 				return false;
 			}
+
+			if constexpr ( FieldType::template Has<Meta::Tooltip>() )
+			{
+				if ( ImGui::BeginItemTooltip() )
+				{
+					constexpr StringView tooltip = FieldType::template Get<Meta::Tooltip>().Value;
+					ImGui::TextUnformatted( tooltip.data(), tooltip.data() + tooltip.size() );
+					ImGui::EndTooltip();
+				}
+			}
+
+			return modified;
 		}
 	};
 
@@ -199,6 +322,16 @@ namespace Tridium {
 				UI::EndPropertyGrid();
 
 				bool invoked = ImGui::Button( a_DefaultLabel.data() );
+
+				if constexpr ( FunctionType::template Has<Meta::Tooltip>() )
+				{
+					if ( ImGui::BeginItemTooltip() )
+					{
+						constexpr StringView tooltip = FunctionType::template Get<Meta::Tooltip>().Value;
+						ImGui::TextUnformatted( tooltip.data(), tooltip.data() + tooltip.size() );
+						ImGui::EndTooltip();
+					}
+				}
 
 				UI::BeginPropertyGrid();
 

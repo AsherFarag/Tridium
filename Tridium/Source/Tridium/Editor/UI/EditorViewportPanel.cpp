@@ -114,8 +114,8 @@ namespace Tridium {
 				}
 			};
 
-			ImportAsset( "TestProject/Content/damagedhelmet/DamagedHelmet.gltf" );
-			ImportAsset( "TestProject/Content/Sponza2/Sponza/glTF/Sponza.gltf" );
+			//ImportAsset( "TestProject/Content/damagedhelmet/DamagedHelmet.gltf" );
+			//ImportAsset( "TestProject/Content/Sponza2/Sponza/glTF/Sponza.gltf" );
 			//ImportAsset( "TestProject/Content/helljumper/scene.gltf" );
 			//ImportAsset( "TestProject/Content/halo_5_recruit/scene.gltf" );
 		}

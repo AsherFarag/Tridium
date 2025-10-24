@@ -4,36 +4,51 @@
 
 namespace Tridium {
 
-	// Primary template (unspecialized)
-	template <typename T>
+	template<typename T>
 	struct MemberPointerTraits
 	{
 		using ClassType = void;
 		using MemberType = void;
 	};
 
-	// Specialization for data member pointers: T C::*
-	template <typename _ClassType, typename _MemberType>
-	struct MemberPointerTraits<_MemberType _ClassType::*>
+	// Member variable pointer
+	template<typename Class, typename Member>
+	struct MemberPointerTraits<Member Class::*>
 	{
-		using ClassType = _ClassType;
-		using MemberType = _MemberType;
+		using ClassType = Class;
+		using MemberType = Member;
 	};
 
-	// Specialization for member function pointers: Ret (C::*)(Args...)
-	template <typename _ClassType, typename _Ret, typename... _Args>
-	struct MemberPointerTraits<_Ret( _ClassType::* )( _Args... )>
+	// Member function pointer
+	template<typename Class, typename Ret, typename... Args>
+	struct MemberPointerTraits<Ret( Class::* )( Args... )>
 	{
-		using ClassType = _ClassType;
-		using MemberType = _Ret( _Args... );
+		using ClassType = Class;
+		using MemberType = Ret;
 	};
 
-	// Const-qualified member function pointers
-	template <typename _ClassType, typename _Ret, typename... _Args>
-	struct MemberPointerTraits<_Ret( _ClassType::* )( _Args... ) const>
+	// Const member function pointer
+	template<typename Class, typename Ret, typename... Args>
+	struct MemberPointerTraits<Ret( Class::* )( Args... ) const>
 	{
-		using ClassType = _ClassType;
-		using MemberType = _Ret( _Args... );
+		using ClassType = Class;
+		using MemberType = Ret;
+	};
+
+	// Static/free function taking object by reference
+	template<typename Ret, typename Obj, typename... Args>
+	struct MemberPointerTraits<Ret( * )( Obj&, Args... )>
+	{
+		using ClassType = std::remove_cvref_t<Obj>;
+		using MemberType = Ret;
+	};
+
+	// Static/free function taking object by pointer
+	template<typename Ret, typename Obj, typename... Args>
+	struct MemberPointerTraits<Ret( * )( Obj*, Args... )>
+	{
+		using ClassType = std::remove_cvref_t<Obj>;
+		using MemberType = Ret;
 	};
 
 	template<typename> 

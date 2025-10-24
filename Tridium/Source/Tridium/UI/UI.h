@@ -77,6 +77,12 @@ namespace UI {
 		// Used to track if a property grid is currently open, for proper ID management.
 		int32_t PropertyGridStackCounter = 0;
 
+		bool IsDisabled() const
+		{
+			ImGuiContext& g = *GImGui;
+			return g.CurrentItemFlags & ImGuiItemFlags_Disabled;
+		}
+
 		bool IsPropertyGridOpen() const
 		{
 			return PropertyGridStackCounter > 0;
@@ -94,6 +100,27 @@ namespace UI {
 	// WARNING: PushID must have a matching PopID call.
 	void PushID();
 	void PopID();
+	struct ScopedID
+	{
+		ScopedID() { PushID(); }
+		~ScopedID() { PopID(); }
+	};
+
+	//=============================================================================================
+	inline void BeginDisabled( bool a_Disabled = true ) { ImGui::BeginDisabled( a_Disabled ); }
+	inline void EndDisabled() { ImGui::EndDisabled(); }
+	struct ScopedDisabled
+	{
+		ScopedDisabled( bool a_Disabled = true ) { ImGui::BeginDisabled( a_Disabled ); }
+		~ScopedDisabled() { ImGui::EndDisabled(); }
+	};
+
+	struct ScopedOverrideEnable
+	{
+		ScopedOverrideEnable() { WasDisabled = UI::GetUIState().IsDisabled(); if ( WasDisabled ) ImGui::BeginDisabledOverrideReenable(); }
+		~ScopedOverrideEnable() { if ( WasDisabled ) ImGui::EndDisabledOverrideReenable(); }
+		bool WasDisabled = false;
+	};
 
 	//=============================================================================================
 	// Draw Functions
@@ -167,7 +194,11 @@ namespace UI {
 		ImGui::TableNextRow();
 		ImGui::TableSetColumnIndex( 0 );
 		ImGui::AlignTextToFramePadding();
-		ImGui::TextUnformatted( a_Name.data(), a_Name.data() + a_Name.size() );
+
+		{
+			ScopedOverrideEnable enableLabel{};
+			ImGui::TextUnformatted( a_Name.data(), a_Name.data() + a_Name.size() );
+		}
 
 		ImGui::TableSetColumnIndex( 1 );
 		ImGui::PushItemWidth( -FLT_MIN );
@@ -180,6 +211,26 @@ namespace UI {
 		return modified;
 	}
 
+	//=============================================================================================
+	bool DrawCheckbox( StringView a_Label, bool& a_Value );
+
+	//=============================================================================================
+	bool DrawInputText( StringView a_Label, String& a_Text );
+	bool DrawInputTextMultiline( StringView a_Label, String& a_Text );
+
+
+	//=============================================================================================
+	bool DrawScalar( StringView a_Label, EArithmeticKind a_Kind, void* a_Data,
+					 const void* a_Min = nullptr, const void* a_Max = nullptr );
+
+	template<typename T>
+	bool DrawScalar( StringView a_Label, T& a_Value,
+					 const T* a_Min = nullptr, const T* a_Max = nullptr )
+	{
+		return DrawScalar( a_Label, GetArithmeticKind<T>(), Cast<void*>( &a_Value ),
+						   a_Min ? Cast<const void*>( a_Min ) : nullptr,
+						   a_Max ? Cast<const void*>( a_Max ) : nullptr );
+	}
 
 	//=============================================================================================
 	bool DrawVector( StringView a_Label, EArithmeticKind a_Kind, void* a_Data, uint32_t a_ComponentCount,

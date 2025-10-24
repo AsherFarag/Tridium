@@ -129,7 +129,7 @@ namespace Tridium::UI {
 		ImGui::PopID();
 	}
 
-	const char* GenerateID()
+	static const char* GenerateID()
 	{
 		static thread_local char s_IDBuffer[16 + 2 + 1] = "##";
 		snprintf( s_IDBuffer + 2, 16, "%u", GetUIState().IDCounter++ );
@@ -152,7 +152,7 @@ namespace Tridium::UI {
 	{
 		ImGui::EndTable();
 		ImGui::PopStyleVar();
-		DrawUnderline();
+		//DrawUnderline();
 		ImGui::Dummy( {} );
 		PopID();
 
@@ -244,6 +244,81 @@ namespace Tridium::UI {
 		ImGui::TreePop();
 	}
 
+	bool DrawCheckbox( StringView a_Label, bool& a_Value )
+	{
+		if ( !GetUIState().IsPropertyGridOpen() )
+		{
+			return ImGui::Checkbox( a_Label.data(), &a_Value );
+		}
+		else
+		{
+			return DrawGridProperty( a_Label, [&]() { return ImGui::Checkbox( GenerateID(), &a_Value ); } );
+		}
+	}
+
+	bool DrawInputText( StringView a_Label, String& a_Text )
+	{
+		if ( !GetUIState().IsPropertyGridOpen() )
+		{
+			return ImGui::InputText( a_Label.data(), &a_Text );
+		}
+		else
+		{
+			return DrawGridProperty( a_Label, [&]() { return ImGui::InputText( GenerateID(), &a_Text ); } );
+		}
+	}
+
+	bool DrawInputTextMultiline( StringView a_Label, String& a_Text )
+	{
+		if ( !GetUIState().IsPropertyGridOpen() )
+		{
+			return ImGui::InputTextMultiline( a_Label.data(), &a_Text );
+		}
+		else
+		{
+			return DrawGridProperty( a_Label, [&]() { return ImGui::InputTextMultiline( GenerateID(), &a_Text ); } );
+		}
+	}
+
+	bool DrawScalar( StringView a_Label, EArithmeticKind a_Kind, void* a_Data, const void* a_Min, const void* a_Max )
+	{
+		const auto DrawScalar = [&]()
+		{
+			const ImGuiDataType imGuiType = ToImGui( a_Kind );
+			const bool isSlider = ( a_Min && a_Max );
+
+			if ( ImGui::GetCurrentWindow()->SkipItems )
+				return false;
+
+			const char* ID = GenerateID();
+			bool valueChanged = isSlider
+				? ImGui::SliderScalar( ID, imGuiType, a_Data, a_Min, a_Max )
+				: ImGui::DragScalar( ID, imGuiType, a_Data );
+
+			// If we are not in a property grid, we can draw the label after the scalar.
+			if ( !GetUIState().IsPropertyGridOpen() )
+			{
+				const char* LabelEnd = ImGui::FindRenderedTextEnd( a_Label.data(), a_Label.data() + a_Label.size() );
+				if ( a_Label.data() != LabelEnd )
+				{
+					ImGui::SameLine( 0, GImGui->Style.ItemInnerSpacing.x );
+					ImGui::TextEx( a_Label.data(), LabelEnd );
+				}
+			}
+
+			return valueChanged;
+		};
+
+		if ( !GetUIState().IsPropertyGridOpen() )
+		{
+			return DrawScalar();
+		}
+		else
+		{
+			return DrawGridProperty( a_Label, DrawScalar );
+		}
+	}
+
 	bool DrawVector( StringView a_Label, EArithmeticKind a_Type, void* a_Data, uint32_t a_Count, const void* a_Min, const void* a_Max )
 	{
 		static constexpr uint32_t MaxComponents = 4; // Max components for a vector (X, Y, Z, W)
@@ -252,7 +327,7 @@ namespace Tridium::UI {
 		const auto DrawVector = [&]()
 		{
 			const ImGuiDataType imGuiType = ToImGui( a_Type );
-			const bool isSlider = ( a_Min || a_Max );
+			const bool isSlider = ( a_Min && a_Max );
 			const uint32_t imGuiTypeSize = (uint32_t)GetSize( a_Type );
 
 			if ( ImGui::GetCurrentWindow()->SkipItems )
