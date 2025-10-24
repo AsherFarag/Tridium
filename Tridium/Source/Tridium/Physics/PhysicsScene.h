@@ -103,11 +103,6 @@ namespace Tridium {
 		friend class PhysicsSceneSystem;
 		class Scene* m_OwningScene = nullptr;
 
-		//=============================================================================================
-		// OLD
-		friend OldScene;
-		OldScene* m_Scene;
-
 	};
 
 	//=================================================================================================

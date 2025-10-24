@@ -8,12 +8,6 @@
 
 namespace Tridium {
 
-	// Forward Declarations
-	class OldScene;
-	class Component;
-	class OldGameObject;
-	// -------------------
-
 	namespace Refl {
 
 		// A MetaType stores information about a type.
