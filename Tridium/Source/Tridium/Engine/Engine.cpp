@@ -68,9 +68,13 @@ namespace Tridium {
 
 	bool Engine::InitProject()
 	{
-		m_ActiveProject = {};
+		TODO( "Handle project initialization" );
+	#if CONFIG_SHIPPING
+		m_Config.EngineAssetsDirectory = "EngineAssets";
+	#else
+		m_Config.EngineAssetsDirectory = "../Tridium/EngineAssets";
+	#endif // !CONFIG_SHIPPING
 
-		// Retrieve the project path from the command line arguments
 		FilePath projectPath;
 		const CmdLineArgs& cmdLineArgs = Application::Get()->GetCommandLineArgs();
 		TODO( "Handle project path from command line arguments" );
@@ -79,55 +83,23 @@ namespace Tridium {
 			projectPath = FilePath( cmdLineArgs.Args[1] );
 		}
 
-		// If a project path was provided, load the project
-		if ( projectPath.Exists() )
-		{
-			ProjectSerializer::DeserializeText( m_ActiveProject.Config, projectPath);
-			m_ActiveProject.Config.Editor.ProjectDirectory = FilePath( projectPath ).GetParentPath();
-		}
-		// Otherwise, attempt to find a project file in the current directory
-		else
-		{
-			LOG( LogCategory::Engine, Trace, "No project path provided - searching for project file in '{0}'", IO::FileManager::GetWorkingDirectory().ToString() );
-			FilePath projectPath = IO::FileManager::GetWorkingDirectory() / "Project.tproject"; //FileManager::FindFileWithExtension( ".tproject" );
-			if ( projectPath.Exists() )
-			{
-				LOG( LogCategory::Engine, Trace, "Project file found at '{0}'", projectPath.ToString() );
-				ProjectSerializer::DeserializeText( m_ActiveProject.Config, projectPath );
-				m_ActiveProject.Config.Editor.ProjectDirectory = projectPath.GetParentPath();
-			}
-			else
-			{
-				LOG( LogCategory::Engine, Warn, "No project file found!" );
-			}
-		}
+		ProjectConfig projectConfig;
+		projectConfig.General.WorkingDirectory = IO::FileManager::GetWorkingDirectory();
+		projectConfig.Assets.AssetDirectory = projectConfig.General.WorkingDirectory / "Content";
 
-		TODO( "Handle project initialization" );
-		#if CONFIG_SHIPPING
-		m_Config.EngineAssetsDirectory = "EngineAssets";
-		#else
-		m_Config.EngineAssetsDirectory = "../Tridium/EngineAssets";
-		#endif // !CONFIG_SHIPPING
+		if ( auto error = m_Project.Init( std::move( projectConfig ) ); error.IsError() )
+		{
+			LOG( LogCategory::Engine, Error, "Engine::Init: Failed to initialize project: {0}", error.Error() );
+			TODO( "Handle fatal error" );
+
+			return false;
+		}
 
 		return true;
 	}
 
 	bool Engine::InitScene()
 	{
-		if ( false )
-		{
-			LOG( LogCategory::Engine, Info, "Loading start scene" );
-			if ( SharedPtr<OldScene> scene = AssetManager::GetAsset<OldScene>( m_ActiveProject.Config.StartScene ) )
-			{
-				OldSceneManager::SetActiveScene( scene.get() );
-			}
-			else
-			{
-				LOG( LogCategory::Engine, Warn, "Failed to load start scene! - Creating new scene" );
-				OldSceneManager::SetActiveScene( MakeShared<OldScene>().get() );
-			}
-		}
-
 		return true;
 	}
 
@@ -214,13 +186,6 @@ namespace Tridium {
 		{
 			LOG( LogCategory::Engine, Info, "Initializing module: {0}", module->GetModuleInfo().Name.String() );
 			module->Init();
-		}
-
-		// Initialize Asset Database
-		if ( auto error = AssetDatabase::Init(); error.IsError() )
-		{
-			LOG( LogCategory::Engine, Error, "Engine::Init: Failed to initialize Asset Database: {0}", error.Error() );
-			TODO( "Handle fatal error" );
 		}
 
 		// Initialize Scene Manager

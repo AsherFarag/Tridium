@@ -6,8 +6,8 @@ namespace Tridium {
 	class ProjectSerializer
 	{
 	public:
-		static void SerializeText( const ProjectConfig& a_Project, const FilePath& a_Path );
-		static bool DeserializeText( ProjectConfig& o_Project, const FilePath& a_Path );
+		static void SerializeText( const OldProjectConfig& a_Project, const FilePath& a_Path );
+		static bool DeserializeText( OldProjectConfig& o_Project, const FilePath& a_Path );
 	};
 
 }

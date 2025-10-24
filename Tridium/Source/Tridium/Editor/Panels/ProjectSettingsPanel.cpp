@@ -30,7 +30,7 @@ namespace Tridium {
 
 		if ( ImGui::Button( "Save" ) )
 		{
-			Project& project = Engine::Get()->GetActiveProject();
+			OldProject& project = Engine::Get()->GetActiveProject();
 			project.Config = m_ProjectConfig;
 			ProjectSerializer::SerializeText( project.Config, project.Config.Editor.ProjectDirectory / project.Config.Editor.ProjectName );
 			m_Modified = false;

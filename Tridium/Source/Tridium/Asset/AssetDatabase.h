@@ -38,9 +38,10 @@ namespace Tridium {
 
 	//=================================================================================================
 	// Asset Database: Global, centralized database for managing assets.
-	// This class is responsible for importing, loading, unloading, and keeping track of all assets in the game.
+	// This class is responsible for importing, loading, unloading,
+	// and keeping track of all assets in the game.
 	//=================================================================================================
-	class AssetDatabase
+	class AssetDatabase final
 	{
 	public:
 
@@ -115,12 +116,13 @@ namespace Tridium {
 
 		//=============================================================================================
 		static AssetDatabase* s_Instance;
-		static Expected<void, String> Init();
-		static Expected<void, String> Shutdown();
+		Expected<void, String> Init();
+		Expected<void, String> Shutdown();
 
-		friend class Engine;
+		friend class Project;
 	};
 
+	//=================================================================================================
 	template<Concepts::Derived<IAsset> T>
 	inline const AssetRef<T>& AssetHandle<T>::GetOrLoad()
 	{

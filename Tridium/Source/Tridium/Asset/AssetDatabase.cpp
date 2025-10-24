@@ -293,6 +293,9 @@ namespace Tridium {
 		if ( !s_Instance )
 			return Unexpected( "AssetDatabase is not initialized." );
 
+		if ( s_Instance != this )
+			return Unexpected( "AssetDatabase instance mismatch during shutdown." );
+
 		delete s_Instance;
 		s_Instance = nullptr;
 

@@ -14,7 +14,7 @@ namespace Tridium {
         virtual void OnImGuiDraw() override;
 
     protected:
-		ProjectConfig m_ProjectConfig;
+		OldProjectConfig m_ProjectConfig;
 		bool m_Modified = false;
     };
 

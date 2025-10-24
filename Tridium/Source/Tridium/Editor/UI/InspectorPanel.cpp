@@ -113,7 +113,7 @@ namespace Tridium {
 			UIPropertyDrawer<TransformComponent>::Draw( "Transform", transform, false );
 			UI::EndTree();
 		}
-
+		
 		static MyCustomComponent player{};
 		static String playerComponentName = std::format( "{} Player Component", StringView( EditorIcons::Person ), player.Name );
 

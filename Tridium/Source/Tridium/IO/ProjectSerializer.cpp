@@ -6,7 +6,7 @@
 
 namespace Tridium {
 
-	void ProjectSerializer::SerializeText( const ProjectConfig& a_Project, const FilePath& a_Path )
+	void ProjectSerializer::SerializeText( const OldProjectConfig& a_Project, const FilePath& a_Path )
 	{
 		YAML::Emitter out;
 
@@ -31,7 +31,7 @@ namespace Tridium {
 		outFile.close();
 	}
 
-	bool ProjectSerializer::DeserializeText( ProjectConfig& o_Project, const FilePath& a_Path )
+	bool ProjectSerializer::DeserializeText( OldProjectConfig& o_Project, const FilePath& a_Path )
 	{
 		YAML::Node data;
 

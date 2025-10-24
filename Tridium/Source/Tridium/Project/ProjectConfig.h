@@ -6,7 +6,7 @@
 
 namespace Tridium {
 
-	struct ProjectConfig
+	struct OldProjectConfig
 	{
 		String Name = "Untitled";
 		SceneHandle StartScene;
