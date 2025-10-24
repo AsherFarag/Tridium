@@ -99,9 +99,9 @@ namespace Tridium {
 					if ( payload && !payload->IsEmpty() )
 					{
 						OldGameObject copiedGO = payload->As<OldGameObject>();
-						if ( copiedGO.IsValid() && SceneManager::GetActiveScene() )
+						if ( copiedGO.IsValid() && OldSceneManager::GetActiveScene() )
 						{
-							OldGameObject newGO = SceneManager::GetActiveScene()->InstantiateGameObjectFrom(copiedGO);
+							OldGameObject newGO = OldSceneManager::GetActiveScene()->InstantiateGameObjectFrom(copiedGO);
 							Editor::Events::OnGameObjectSelected.Broadcast( newGO );
 							return true;
 						}
@@ -117,7 +117,7 @@ namespace Tridium {
 
 	void SceneHeirarchyPanel::DrawSceneHeirarchy()
 	{
-		OldScene* scene = SceneManager::GetActiveScene();
+		OldScene* scene = OldSceneManager::GetActiveScene();
 		if ( !scene )
 			return;
 
@@ -200,7 +200,7 @@ namespace Tridium {
 	{
 		OldGameObject newGO = {};
 
-		OldScene* scene = SceneManager::GetActiveScene();
+		OldScene* scene = OldSceneManager::GetActiveScene();
 		if ( !scene )
 			return;
 

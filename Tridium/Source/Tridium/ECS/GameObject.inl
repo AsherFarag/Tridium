@@ -6,26 +6,26 @@ namespace Tridium {
 	template <typename T, typename... Args>
 	inline T& OldGameObject::AddComponent( Args&&... args )
 	{
-		return SceneManager::GetActiveScene()->AddComponentToGameObject<T>( *this, std::forward<Args>( args )... );
+		return OldSceneManager::GetActiveScene()->AddComponentToGameObject<T>( *this, std::forward<Args>( args )... );
 	}
 
 	template <typename T, typename... Args>
 	inline T* OldGameObject::TryAddComponent( Args&&... args )
 	{
-		return SceneManager::GetActiveScene()->TryAddComponentToGameObject<T>( *this, std::forward<Args>( args )... );
+		return OldSceneManager::GetActiveScene()->TryAddComponentToGameObject<T>( *this, std::forward<Args>( args )... );
 	}
 
 	template <typename T>
 	inline T& OldGameObject::GetComponent() const
 	{
 		ASSERT( HasComponent<T>(), "GameObject does not have this component!" );
-		return SceneManager::GetActiveScene()->GetComponentFromGameObject<T>( *this );
+		return OldSceneManager::GetActiveScene()->GetComponentFromGameObject<T>( *this );
 	}
 
 	template <typename T>
 	inline T* OldGameObject::TryGetComponent() const
 	{
-		return SceneManager::GetActiveScene()->TryGetComponentFromGameObject<T>( *this );
+		return OldSceneManager::GetActiveScene()->TryGetComponentFromGameObject<T>( *this );
 	}
 
 	template<typename T>
@@ -59,13 +59,13 @@ namespace Tridium {
 	template <typename T>
 	inline bool OldGameObject::HasComponent() const
 	{
-		return SceneManager::GetActiveScene()->GameObjectHasComponent<T>( *this );
+		return OldSceneManager::GetActiveScene()->GameObjectHasComponent<T>( *this );
 	}
 
 	template <typename T>
 	inline void OldGameObject::RemoveComponent()
 	{
-		SceneManager::GetActiveScene()->RemoveComponentFromGameObject<T>( *this );
+		OldSceneManager::GetActiveScene()->RemoveComponentFromGameObject<T>( *this );
 	}
 
 	inline bool Tridium::OldGameObject::IsValid() const
@@ -73,7 +73,7 @@ namespace Tridium {
 		if ( m_ID == NullEntity )
 			return false;
 
-		return SceneManager::GetActiveScene()->IsGameObjectValid( *this );
+		return OldSceneManager::GetActiveScene()->IsGameObjectValid( *this );
 	}
 
 }

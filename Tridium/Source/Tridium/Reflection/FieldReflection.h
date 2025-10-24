@@ -884,6 +884,13 @@ namespace field_reflection
 
 namespace Tridium {
 
+    namespace Concepts {
+
+        template <typename T>
+		concept AggregateReflectable = field_reflection::field_referenceable<std::remove_cvref_t<T>>;
+
+    }
+
 	// Get the number of fields in a class or struct
     template<typename T>
 	constexpr size_t GetFieldCount()

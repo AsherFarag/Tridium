@@ -23,7 +23,7 @@ namespace Tridium {
 			return;
 		}
 
-		OldScene* scene = SceneManager::GetActiveScene();
+		OldScene* scene = OldSceneManager::GetActiveScene();
 
 		if ( !scene )
 		{

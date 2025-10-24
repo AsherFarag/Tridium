@@ -109,7 +109,7 @@ namespace Tridium {
 			panelData.Name = std::move( a_Name );
 			panelData.IsOpen = a_Open;
 			panelData.Panel = panel;
-			m_Panels[a_Name] = std::move( panelData );
+			m_Panels[panelData.Name] = std::move( panelData );
 
 			return panel;
 		}

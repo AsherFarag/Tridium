@@ -7,6 +7,8 @@
 
 // Panels
 #include <Tridium/Editor/UI/EditorViewportPanel.h>
+#include <Tridium/Editor/UI/InspectorPanel.h>
+#include <Tridium/Editor/UI/SceneHierarchyPanel.h>
 
 namespace Tridium {
 
@@ -29,7 +31,10 @@ namespace Tridium {
 		m_Style.SetTheme( EditorStyle::ETheme::Midnight );
 
 		Application::AddOnTick( TickGroups::EditorTick, []() { Editor::Get()->Tick(); } );
-		Application::AddOnTick( TickGroups::DrawUI, []() { Editor::Get()->GetUIManager().DrawUI(); } );
+		Application::AddOnTick( TickGroups::DrawUI, []() { Editor::Get()->DrawUI(); } );
+
+		// TEMP!
+		SceneManager::SetActiveScene( MakeShared<Scene>() );
 	}
 
 	Editor::~Editor()
@@ -39,6 +44,9 @@ namespace Tridium {
 
 	void Editor::Tick()
 	{
+		// TEMP!
+		SceneManager::ActiveScene()->OnTick( 0.016f );
+
 		TODO( "Delta Time" );
 		m_UIManager.UpdateUI( 0.0f );
 	}
@@ -54,7 +62,9 @@ namespace Tridium {
 	void Editor::OnAttach()
 	{
 		// Panels
-		m_UIManager.CreatePanel<EditorViewportPanel>( "EditorViewportPanel", true );
+		m_UIManager.CreatePanel<EditorViewportPanel>( TE_ICON_TV " Editor", true );
+		m_UIManager.CreatePanel<SceneHierarchyPanel>( TE_ICON_MOUNTAIN_SUN " Hierarchy", true );
+		m_UIManager.CreatePanel<InspectorPanel>( TE_ICON_MAGNIFYING_GLASS " Inspector", true );
 	}
 
 	void Editor::OnDetach()
@@ -181,7 +191,7 @@ namespace Tridium {
 
 	void Editor::UI_DrawToolBar()
 	{
-		OldScene* scene = SceneManager::GetActiveScene();
+		OldScene* scene = OldSceneManager::GetActiveScene();
 		if ( !scene )
 			return;
 
@@ -228,7 +238,7 @@ namespace Tridium {
 			{
 				if ( ImGui::IconButton( TE_ICON_PAUSE ) )
 				{
-					SceneManager::GetActiveScene()->SetPaused( true );
+					OldSceneManager::GetActiveScene()->SetPaused( true );
 				}
 			}
 
@@ -263,7 +273,7 @@ namespace Tridium {
 			{
 				if ( control )
 				{
-					if ( SceneManager::GetActiveScene() )
+					if ( OldSceneManager::GetActiveScene() )
 					{
 						//if ( m_ActiveScene->GetPath().length() == 0 )
 						//	Util::OpenSaveFileDialog( "Untitled.tscene", [this](const std::string& path) { SaveScene(path); });

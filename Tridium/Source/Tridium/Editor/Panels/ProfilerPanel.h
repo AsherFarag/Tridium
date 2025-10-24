@@ -50,7 +50,7 @@ namespace Tridium {
 			float Height = 100.0f;
 			Range ZoomRange = { 0.1f, 1000.0f };
 			float ZoomFactor = 1.0f;
-			int64_t PanOffset = 0.0f;
+			int64_t PanOffset = 0;
 			uint32_t MaxDepth = 0u;
 			float FontSize = 1;
 

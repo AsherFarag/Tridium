@@ -3,14 +3,20 @@
 
 namespace Tridium {
 
-    OldScene* SceneManager::LoadScene( const FilePath& a_FilePath )
+    OldScene* OldSceneManager::LoadScene( const FilePath& a_FilePath )
     {
         return nullptr;
     }
 
-    OldScene* SceneManager::LoadScene( SceneHandle a_SceneAssetHandle )
+    OldScene* OldSceneManager::LoadScene( SceneHandle a_SceneAssetHandle )
     {
         return nullptr;
     }
 
-}
+    SceneManager* SceneManager::Get()
+    {
+        static SceneManager instance;
+        return &instance;
+	}
+
+} // namespace Tridium

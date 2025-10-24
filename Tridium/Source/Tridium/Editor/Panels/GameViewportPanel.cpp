@@ -39,7 +39,7 @@ namespace Tridium {
 			camera.SetViewportSize( regionAvail.X, regionAvail.Y );
 			//m_FBO->Resize( regionAvail.X, regionAvail.Y );
 
-			SceneManager::GetActiveScene()->GetSceneRenderer().Render( m_FBO, camera, view, position );
+			OldSceneManager::GetActiveScene()->GetSceneRenderer().Render( m_FBO, camera, view, position );
 
 			// Draw Debug Lines
 			{
@@ -61,9 +61,9 @@ namespace Tridium {
 
 	std::optional< std::tuple<Camera&, Matrix4, Vector3> > GameViewportPanel::GetSceneCamera() const
 	{
-		if ( SceneManager::GetActiveScene() == nullptr )
+		if ( OldSceneManager::GetActiveScene() == nullptr )
 			return {};
-		OldCameraComponent* camera = SceneManager::GetActiveScene()->GetMainCamera();
+		OldCameraComponent* camera = OldSceneManager::GetActiveScene()->GetMainCamera();
 		if ( !camera )
 			return {};
 

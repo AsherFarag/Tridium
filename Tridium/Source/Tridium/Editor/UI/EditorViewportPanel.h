@@ -5,10 +5,8 @@
 
 #include <Tridium/Editor/EditorCamera.h>
 #include <Tridium/Graphics/Renderer/RenderView.h>
-#include <Tridium/Scene/Scene.h>
 
 namespace Tridium {
-
 
 	class EditorViewportPanel : public IUIPanel
 	{
@@ -46,7 +44,6 @@ namespace Tridium {
 		EditorCamera m_EditorCamera{};
 		RenderViewID m_ViewID{};
 		Vector2 m_ViewportSize = { 1280, 720 };
-		GameObject m_SelectedGameObject{};
 
 	};
 

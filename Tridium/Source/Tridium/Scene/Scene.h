@@ -368,13 +368,20 @@ namespace Tridium {
 		class RendererSceneSystem* Renderer() { return m_RendererSystem; }
 
 		//=============================================================================================
+		// Creates a new empty GameObject in the scene and returns it.
+		// An empty GameObject has no components.
+		GameObject CreateEmptyGameObject();
+
+		//=============================================================================================
 		// Creates a new GameObject in the scene and returns it.
-		GameObject InstantiateGameObject();
+		// GameObject's are created with core components by default, (TransformComponent, etc).
+		GameObject CreateGameObject( String a_Tag = {}, const Vector3& a_Position = Vector3::Zero() );
 
 		//=============================================================================================
 		// Creates a new GameObject with the specified components in the scene and returns it.
+		// The game object will be created with core components by default, (TransformComponent, etc).
 		template<typename... T>
-		GameObject InstantiateGameObject();
+		GameObject CreateGameObject( String a_Tag = {}, const Vector3& a_Position = Vector3::Zero() );
 
 		//=============================================================================================
 		// Destroys the specified GameObject and removes all its components.

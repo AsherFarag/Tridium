@@ -5,7 +5,6 @@
 #include "InspectorPanel.h"
 #include <Tridium/Editor/Editor.h>
 #include <Tridium/Editor/EditorUtil.h>
-#include <Tridium/Editor/EditorDocumentation.h>
 
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Core/Application.h>
@@ -74,69 +73,6 @@ namespace Tridium {
 
 			IMGUI_TEST_ENGINE_ITEM_INFO( id, label, g.LastItemData.StatusFlags );
 			return pressed;
-		}
-
-		void DrawDocumentation( TypeDocumentation* a_Documentation )
-		{
-
-			if ( !a_Documentation )
-			{
-				return;
-			}
-
-			ImGuiWindow* window = ImGui::GetCurrentWindow();
-
-			ImGui::TextUnformatted( a_Documentation->Description.c_str() );
-
-			if ( !a_Documentation->Members.Empty() &&
-				ImGui::TreeNode( "Members" ) )
-			{
-				for ( const VariableDocumentation& member : a_Documentation->Members )
-				{
-					if ( ImGui::TreeNode( member.Name.c_str() ) )
-					{
-						ImGui::TextUnformatted( member.Type.c_str() );
-						ImGui::TextUnformatted( member.Description.c_str() );
-
-						ImGui::TreePop();
-					}
-				}
-
-				ImGui::TreePop();
-			}
-
-			if ( !a_Documentation->Functions.Empty() &&
-				ImGui::TreeNode( "Functions" ) )
-			{
-				for ( const FunctionDocumentation& function : a_Documentation->Functions )
-				{
-					if ( ImGui::TreeNode( function.Name.c_str() ) )
-					{
-						ImGui::TextUnformatted( function.ReturnType.c_str() );
-						ImGui::TextUnformatted( function.Description.c_str() );
-						if ( !function.Parameters.Empty() &&
-							ImGui::TreeNode( "Parameters" ) )
-						{
-							for ( const VariableDocumentation& param : function.Parameters )
-							{
-								if ( ImGui::TreeNode( param.Name.c_str() ) )
-								{
-									ImGui::TextUnformatted( param.Type.c_str() );
-									ImGui::TextUnformatted( param.Description.c_str() );
-
-									ImGui::TreePop();
-								}
-							}
-
-							ImGui::TreePop();
-						}
-
-						ImGui::TreePop();
-					}
-				}
-
-				ImGui::TreePop();
-			}
 		}
 
 		// Add spaces between words in a class name
@@ -266,37 +202,6 @@ namespace Tridium {
 						*a_Node.OptionsPressed = true;
 				}
 
-				// Draw Documentation button
-				if ( a_Node.DocumentationButton )
-				{
-					if ( TypeDocumentation* documentation = EditorDocumentation::Get()->GetType( a_Node.DocumentationKey ) )
-					{
-						ImGui::SameLine(
-							ImGui::GetContentRegionAvail().x
-							- ( 4 * (smallButtonSize - style.ItemInnerSpacing.x ) ) );
-
-						ImVec2 pos = ImGui::GetCursorScreenPos() + ImVec2( 0.0f, ( 0.5f * ( ImGui::GetFrameHeight() ) ) - ( 0.5f * smallButtonSize ) );
-						ImGui::SetCursorScreenPos( pos );
-						if ( Helpers::DrawSmallButton( TE_ICON_CIRCLE_QUESTION ) )
-						{
-							ImGui::OpenPopup( "DocumentationPopup" );
-						}
-
-						if ( ImGui::BeginPopup( "DocumentationPopup" ) )
-						{
-							ImGui::PushFont( ImGui::GetBoldFont() );
-							ImGui::Text( a_Node.Name );
-							ImGui::PopFont();
-
-							ImGui::Separator();
-
-							DrawDocumentation( documentation );
-
-							ImGui::EndPopup();
-						}
-					}
-
-				}
 			}
 			ImGui::EndGroup();
 			ImGui::PopID();
@@ -334,21 +239,21 @@ namespace Tridium {
 
 
 
-	InspectorPanel::InspectorPanel()
+	OldInspectorPanel::OldInspectorPanel()
 		: Panel( "Inspector" )
 	{
-		m_OnGameObjectSelectedHandle = Editor::Events::OnGameObjectSelected.Add<&InspectorPanel::SetInspectedGameObject>( this );
+		m_OnGameObjectSelectedHandle = Editor::Events::OnGameObjectSelected.Add<&OldInspectorPanel::SetInspectedGameObject>( this );
 	}
 
 
 
-	InspectorPanel::~InspectorPanel()
+	OldInspectorPanel::~OldInspectorPanel()
 	{
 	}
 
 
 
-	void InspectorPanel::OnImGuiDraw()
+	void OldInspectorPanel::OnImGuiDraw()
 	{
 		// Early out if there is no GameObject to inspect
 		if ( !ImGui::Begin( TE_ICON_MAGNIFYING_GLASS " Inspector" ) || !InspectedGameObject.IsValid() )
@@ -369,7 +274,7 @@ namespace Tridium {
 
 
 
-	void InspectorPanel::SetInspectedGameObject( OldGameObject gameObject )
+	void OldInspectorPanel::SetInspectedGameObject( OldGameObject gameObject )
 	{
 		const bool isSameGameObject = InspectedGameObject == gameObject;
 		InspectedGameObject = gameObject;
@@ -383,7 +288,7 @@ namespace Tridium {
 
 
 
-	void InspectorPanel::DrawInspectedGameObject()
+	void OldInspectorPanel::DrawInspectedGameObject()
 	{
 		const ImGuiStyle& style = ImGui::GetStyle();
 
@@ -417,21 +322,6 @@ namespace Tridium {
 
 		// Draw GameObject documentation button
 		ImGui::SameLine( ImGui::GetContentRegionAvail().x - optionsButtonSize - style.ItemInnerSpacing.x - optionsButtonSize - style.ItemInnerSpacing.x );
-		if ( ImGui::Button( TE_ICON_CIRCLE_QUESTION ) )
-		{
-			ImGui::OpenPopup( "GameObjectInfo" );
-		}
-
-		if ( ImGui::BeginPopup( "GameObjectInfo" ) )
-		{
-			ImGui::TextUnformatted( "Game Object" );
-			if ( TypeDocumentation* documentation = EditorDocumentation::Get()->GetType( "GameObject" ) )
-			{
-				Helpers::DrawDocumentation( documentation );
-			}
-
-			ImGui::EndPopup();
-		}
 
 		if ( ImGui::BeginPopup( "GameObjectOptions" ) )
 		{
@@ -457,7 +347,7 @@ namespace Tridium {
 				ImGui::ScopedStyleCol redText( ImGuiCol_Text, ImVec4( Editor::GetStyle().Colors.Red ) );
 				if ( ImGui::MenuItem( TE_ICON_TRASH_CAN " Delete" ) )
 				{
-					Editor::GetCommandManager().Execute( Commands::GameObjectDestroyed{ SceneManager::GetActiveSceneWeak(), InspectedGameObject } );
+					Editor::GetCommandManager().Execute( Commands::GameObjectDestroyed{ OldSceneManager::GetActiveSceneWeak(), InspectedGameObject } );
 
 					InspectedGameObject.Destroy();
 					InspectedGameObject = OldGameObject();
@@ -476,7 +366,7 @@ namespace Tridium {
 
 
 
-	void InspectorPanel::DrawComponents( OldGameObject a_GO )
+	void OldInspectorPanel::DrawComponents( OldGameObject a_GO )
 	{
 		ImGuiStyle& style = ImGui::GetStyle();
 		const ImVec2 rowSpacing = ImVec2( style.ItemSpacing.x, 1.0f );
@@ -699,7 +589,7 @@ namespace Tridium {
 						{
 							auto removeFromGameObjectFunc = metaType.GetMetaAttribute<Refl::Props::RemoveFromGameObjectProp::Type>( Refl::Props::RemoveFromGameObjectProp::ID );
 							if ( ASSERT( removeFromGameObjectFunc.has_value() ) )
-								removeFromGameObjectFunc.value()( *SceneManager::GetActiveScene(), a_GO );
+								removeFromGameObjectFunc.value()( *OldSceneManager::GetActiveScene(), a_GO );
 						}
 					}
 
@@ -730,7 +620,7 @@ namespace Tridium {
 
 
 
-	void InspectorPanel::DrawAddComponentButton()
+	void OldInspectorPanel::DrawAddComponentButton()
 	{
 		ImGuiStyle& style = ImGui::GetStyle();
 
@@ -773,7 +663,7 @@ namespace Tridium {
 
 				auto addToGameObjectFunc = metaType.GetMetaAttribute<Refl::Props::AddToGameObjectProp::Type>( Refl::Props::AddToGameObjectProp::ID );
 				if ( ASSERT( addToGameObjectFunc.has_value() ) )
-					addToGameObjectFunc.value()( *SceneManager::GetActiveScene(), InspectedGameObject );
+					addToGameObjectFunc.value()( *OldSceneManager::GetActiveScene(), InspectedGameObject );
 
 				break;
 			}

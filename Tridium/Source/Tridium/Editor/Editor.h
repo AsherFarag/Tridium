@@ -17,6 +17,11 @@ namespace Tridium {
 	DEFINE_TICK_GROUP( EditorTick );
 	DEFINE_TICK_GROUP( EditorRender );
 
+	struct SelectionContext
+	{
+		GameObject SelectedObject;
+	};
+
 	//=================================================================================================
 	// Editor:
 	//=================================================================================================
@@ -42,6 +47,7 @@ namespace Tridium {
 		static EditorStyle& GetStyle() { return Get()->m_Style; }
 		static CommandManager& GetCommandManager() { return Get()->m_CommandManager; }
 		static UIManager& GetUIManager() { return Get()->m_UIManager; }
+		static SelectionContext& GetSelectionContext() { return Get()->m_SelectionContext; }
 
 	private:
 
@@ -53,6 +59,7 @@ namespace Tridium {
 		EditorStyle m_Style;
 		CommandManager m_CommandManager;
 		UIManager m_UIManager;
+		SelectionContext m_SelectionContext;
 
 	private:
 

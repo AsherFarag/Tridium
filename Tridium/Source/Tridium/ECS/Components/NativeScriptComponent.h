@@ -44,7 +44,7 @@ namespace Tridium {
 		//================================================================
 		// Utility functions that wrap up the GameObject's functions.
 
-		const OldScene* GetScene() const { return SceneManager::GetActiveScene(); }
+		const OldScene* GetScene() const { return OldSceneManager::GetActiveScene(); }
 
 		template<typename T>
 		bool HasComponent() const { return GetGameObject().HasComponent<T>(); }

@@ -11,7 +11,7 @@ namespace Tridium {
 		// Reserve a magic number of components
 		components.Reserve( 16 );
 
-		for ( auto&& [id, componentStorage] : SceneManager::GetActiveScene()->GetECS().Storage() )
+		for ( auto&& [id, componentStorage] : OldSceneManager::GetActiveScene()->GetECS().Storage() )
 		{
             if ( componentStorage.contains( m_ID ) )
                 components.EmplaceBack( 

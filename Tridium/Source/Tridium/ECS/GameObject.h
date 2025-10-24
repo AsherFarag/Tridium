@@ -39,10 +39,10 @@ namespace Tridium {
 		bool operator ==( const OldGameObject& other ) const { return m_ID == other.m_ID; }
 		bool operator !=( const OldGameObject& other ) const { return m_ID != other.m_ID; }
 
-		static OldGameObject Create() { return SceneManager::GetActiveScene()->InstantiateGameObject(); }
-		static OldGameObject Create( GUID a_GUID, const std::string& a_Name ) { return SceneManager::GetActiveScene()->InstantiateGameObject( a_GUID, a_Name ); }
-		inline void Destroy() { SceneManager::GetActiveScene()->DestroyGameObject( *this ); }
-		inline void CopyFrom( OldGameObject a_Other ) { SceneManager::GetActiveScene()->CopyGameObject( *this, a_Other ); }
+		static OldGameObject Create() { return OldSceneManager::GetActiveScene()->InstantiateGameObject(); }
+		static OldGameObject Create( GUID a_GUID, const std::string& a_Name ) { return OldSceneManager::GetActiveScene()->InstantiateGameObject( a_GUID, a_Name ); }
+		inline void Destroy() { OldSceneManager::GetActiveScene()->DestroyGameObject( *this ); }
+		inline void CopyFrom( OldGameObject a_Other ) { OldSceneManager::GetActiveScene()->CopyGameObject( *this, a_Other ); }
 
 		GUID GetGUID() const;
 		EntityID ID() const { return m_ID; }

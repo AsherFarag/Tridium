@@ -658,7 +658,7 @@ namespace Tridium::ToolUI {
 
 			ImGui::Separator();
 
-			auto view = SceneManager::GetActiveScene()->GetECS().View<OldTagComponent>();
+			auto view = OldSceneManager::GetActiveScene()->GetECS().View<OldTagComponent>();
 			view.each( [&]( const entt::entity& entity, OldTagComponent& tag )
 				{
 					OldGameObject gameObject( entity );

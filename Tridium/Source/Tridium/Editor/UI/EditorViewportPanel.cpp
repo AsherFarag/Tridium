@@ -2,7 +2,9 @@
 
 #if WITH_EDITOR
 
+#include <Tridium/Editor/Editor.h>
 #include <Tridium/Graphics/Renderer/RendererModule.h>
+#include <Tridium/Scene/Scene.h>
 #include <ImGuizmo.h>
 
 // TEMP
@@ -18,9 +20,8 @@ namespace Tridium {
 	// TEMP
 	static Array<AssetRef<StaticMesh>> s_ImportedAssets;
 	static uint32_t importedAssetIndex = 0;
-	static Scene s_TestScene;
 
-	void SetImGuizmoColors()
+	static void SetImGuizmoColors()
 	{
 		ImGuizmo::GetStyle() = ImGuizmo::Style();
 		UITheme& theme = UI::GetTheme();
@@ -118,13 +119,6 @@ namespace Tridium {
 			//ImportAsset( "TestProject/Content/helljumper/scene.gltf" );
 			//ImportAsset( "TestProject/Content/halo_5_recruit/scene.gltf" );
 		}
-
-		s_TestScene.Init();
-		m_SelectedGameObject = s_TestScene.InstantiateGameObject();
-		m_SelectedGameObject.Add<TransformComponent>();
-		m_SelectedGameObject.Add<StaticMeshComponent>();
-
-		s_TestScene.OnBeginPlay( EScenePlayMode::Play );
 	}
 
 	void EditorViewportPanel::OnEvent( Event& a_Event )
@@ -135,9 +129,6 @@ namespace Tridium {
 
 	void EditorViewportPanel::OnUpdate( float a_DeltaTime )
 	{
-		// TEMP
-		s_TestScene.OnTick( a_DeltaTime );
-
 		RenderView view
 		{
 			.Constants{
@@ -207,7 +198,7 @@ namespace Tridium {
 		);
 
 
-		if ( TransformComponent* tc = m_SelectedGameObject.TryGet<TransformComponent>() )
+		if ( TransformComponent* tc = Editor::GetSelectionContext().SelectedObject.TryGet<TransformComponent>() )
 		{
 			// Selected Game Object
 			Matrix4 worldTransform = tc->LocalTransform();
@@ -278,19 +269,6 @@ namespace Tridium {
 					else
 						m_GizmoState = EGizmoState::Scale;
 
-					return true;
-				}
-
-				//TEMP
-				case EInputKey::F:
-				{
-					m_SelectedGameObject = s_TestScene.InstantiateGameObject();
-					m_SelectedGameObject.Add<TransformComponent>();
-					m_SelectedGameObject.Add<StaticMeshComponent>();
-					if ( s_ImportedAssets.IsValidIndex( importedAssetIndex ) )
-					{
-						m_SelectedGameObject.Get<StaticMeshComponent>().Mesh = AssetHandle<StaticMesh>( s_ImportedAssets[importedAssetIndex] );
-					}
 					return true;
 				}
 			}

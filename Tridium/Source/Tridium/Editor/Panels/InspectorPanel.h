@@ -6,11 +6,11 @@
 
 namespace Tridium {
 
-	class InspectorPanel : public Panel
+	class OldInspectorPanel : public Panel
 	{
 	public:
-		InspectorPanel();
-		virtual ~InspectorPanel();
+		OldInspectorPanel();
+		virtual ~OldInspectorPanel();
 
 		virtual void OnImGuiDraw() override;
 

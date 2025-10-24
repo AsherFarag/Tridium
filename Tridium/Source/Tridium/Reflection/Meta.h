@@ -437,9 +437,9 @@ namespace Tridium::Meta {
 	};
 
 	//=================================================================================================
-	// MetaProperty: Meta properties are members of a Reflector specialization.
+	// MetaMember: Meta properties are members of a Reflector specialization.
 	//=================================================================================================
-	struct MetaProperty {};
+	struct MetaMember {};
 
 	//=================================================================================================
 	// Type: Used for declaring type-level attributes.
@@ -452,7 +452,7 @@ namespace Tridium::Meta {
 	//  };
 	//=================================================================================================
 	template<typename T, IsTypeAttribute... _TypeAttributes>
-	struct Type : MetaProperty, AttributeList<_TypeAttributes...>
+	struct Type : MetaMember, AttributeList<_TypeAttributes...>
 	{
 		using ClassType = T;
 		using Attributes = AttributeList<_TypeAttributes...>;
@@ -472,7 +472,7 @@ namespace Tridium::Meta {
 	// 	};
 	//=================================================================================================
 	template<typename T, IsBaseAttribute... _BaseAttributes>
-	struct Base : MetaProperty, AttributeList<_BaseAttributes...> {};
+	struct Base : MetaMember, AttributeList<_BaseAttributes...> {};
 
 	//=================================================================================================
 	// Field: Used for declaring member variables within a type along with any attributes.
@@ -497,7 +497,7 @@ namespace Tridium::Meta {
 	// 	};
 	//=================================================================================================
 	template<auto _Accessor, IsFieldAttribute... _FieldAttributes> 
-	struct Field : MetaProperty, AttributeList<_FieldAttributes...>
+	struct Field : MetaMember, AttributeList<_FieldAttributes...>
 	{
 		using Attributes = AttributeList<_FieldAttributes...>;
 		using Accessor = std::conditional_t<IsInstantiationOfAuto<Accessor, decltype( _Accessor )>::value, decltype( _Accessor ), Accessor<_Accessor>>;
@@ -558,7 +558,7 @@ namespace Tridium::Meta {
 	// 	};
 	//=================================================================================================
 	template<auto _FunctionPtr, IsFunctionAttribute... _FunctionAttributes>
-	struct Function : MetaProperty, AttributeList<_FunctionAttributes...>
+	struct Function : MetaMember, AttributeList<_FunctionAttributes...>
 	{
 		using Attributes = AttributeList<_FunctionAttributes...>;
 		using FunctionType = decltype( _FunctionPtr );
@@ -573,24 +573,38 @@ namespace Tridium::Meta {
 		using _WorkAround = std::conditional_t<IsStatic, void*, ClassType>;
 
 		template<typename... _Args, typename = std::enable_if_t<!IsStatic>>
-		constexpr static decltype( auto ) operator()( _WorkAround& a_Instance, _Args&&... a_Args ) requires ( !IsStatic )
+		constexpr decltype( auto ) operator()( _WorkAround& a_Instance, _Args&&... a_Args ) requires ( !IsStatic )
 		{
 			return ( a_Instance.*FunctionPtr )( std::forward<_Args>( a_Args )... );
 		}
 
 		template<typename... _Args>
-		constexpr static decltype( auto ) operator()( _Args&&... a_Args ) requires ( IsStatic )
+		constexpr decltype( auto ) operator()( _Args&&... a_Args ) requires ( IsStatic )
 		{
 			return FunctionPtr( std::forward<_Args>( a_Args )... );
 		}
 	};
 
+	//=================================================================================================
+	// Header: Used for defining a header/separator in the reflector.
+	// E.g.,
+	// 	template<>
+	// 	struct Reflector<Player>
+	// 	{
+	//		Header HealthStats;
+	//		...
+	//		
+	//		Header MovementStats;
+	//	    ...
+	// 	};
+	struct Header : MetaMember {};
+
 #pragma endregion
 
-#pragma region Is Meta Property
+#pragma region Is Meta Member
 
 	template<typename T>
-	concept IsMeta = Concepts::Derived<T, MetaProperty>;
+	concept IsMeta = Concepts::Derived<T, MetaMember>;
 
 	template<typename T>
 	struct IsBaseT : std::false_type {};
@@ -683,7 +697,7 @@ namespace Tridium::Meta {
 	// Checks if the reflector has a 'Type' property defined.
 	// Otherwise, the default 'Type<T>' will be used.
 	template<typename T>
-	constexpr auto GetType( const T& )
+	constexpr auto GetType()
 	{
 		if constexpr ( requires { typename Reflector<T>::Type; } )
 		{

@@ -1,10 +1,5 @@
 #include "tripch.h"
 #include "ImGuiBackend_GLFW.h"
-#include <GLFW/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
-#undef GLFW_EXPOSE_NATIVE_WIN32
-#include <backends/imgui_impl_glfw.cpp>
 
 namespace Tridium::GLFW {
     bool PlatformImGuiInterface_GLFW::Init( void* a_Data, bool a_InstallCallbacks, EImGuiRenderer a_Renderer )

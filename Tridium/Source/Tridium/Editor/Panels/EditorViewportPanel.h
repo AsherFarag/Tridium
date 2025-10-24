@@ -17,11 +17,11 @@ namespace Tridium {
 		UniversalScale
 	};
 
-	class EditorViewportPanel : public ViewportPanel
+	class OldEditorViewportPanel : public ViewportPanel
 	{
 	public:
-		EditorViewportPanel( const SharedPtr<EditorCamera>& editorCamera );
-		virtual ~EditorViewportPanel();
+		OldEditorViewportPanel( const SharedPtr<EditorCamera>& editorCamera );
+		virtual ~OldEditorViewportPanel();
 
 		void OnUpdate( float a_DeltaTime ) override;
 		void OnImGuiDraw() override;

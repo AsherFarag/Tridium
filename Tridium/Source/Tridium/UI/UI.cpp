@@ -84,22 +84,27 @@ namespace Util {
 
 namespace Tridium::UI {
 
-	struct UIState
+	static ImGuiDataType ToImGui( EArithmeticKind a_Type )
 	{
-		// Unique ID that is incremented and decremented with each PushID/PopID call.
-		int UniqueIDStack = 0;
-		int IDCounter = 0;
-
-		// Used to track if a property grid is currently open, for proper ID management.
-		int32_t PropertyGridStackCounter = 0;
-
-		bool IsPropertyGridOpen() const
+		switch ( a_Type )
 		{
-			return PropertyGridStackCounter > 0;
+			default:
+			case EArithmeticKind::None: ASSERT( false, "Invalid scalar type" ); return ImGuiDataType_::ImGuiDataType_Float;
+			case EArithmeticKind::Bool:		 return ImGuiDataType_Bool;
+			case EArithmeticKind::Float32:   return ImGuiDataType_Float;
+			case EArithmeticKind::Float64:   return ImGuiDataType_Double;
+			case EArithmeticKind::Int8: 	 return ImGuiDataType_S8;
+			case EArithmeticKind::Int16: 	 return ImGuiDataType_S16;
+			case EArithmeticKind::Int32: 	 return ImGuiDataType_S32;
+			case EArithmeticKind::Int64: 	 return ImGuiDataType_S64;
+			case EArithmeticKind::UInt8: 	 return ImGuiDataType_U8;
+			case EArithmeticKind::UInt16:	 return ImGuiDataType_U16;
+			case EArithmeticKind::UInt32: 	 return ImGuiDataType_U32;
+			case EArithmeticKind::UInt64: 	 return ImGuiDataType_U64;
 		}
-	};
+	}
 
-	static UIState& GetUIState()
+	UIState& GetUIState()
 	{
 		static UIState s_ToolUIState;
 		return s_ToolUIState;
@@ -133,23 +138,29 @@ namespace Tridium::UI {
 
 	void BeginPropertyGrid( uint32_t a_NumColumns )
 	{
-		GetUIState().PropertyGridStackCounter++;
-
 		PushID();
-		ImGui::Columns( a_NumColumns );
+		ImGui::PushStyleVar( ImGuiStyleVar_CellPadding, ImVec2( 8, 4 ) );
+
+		if ( ImGui::BeginTable( "", a_NumColumns,
+								ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_Resizable ) )
+		{
+			GetUIState().PropertyGridStackCounter++;
+		}
 	}
 
 	void EndPropertyGrid()
 	{
-		ImGui::Columns( 1 );
+		ImGui::EndTable();
+		ImGui::PopStyleVar();
 		DrawUnderline();
-		ShiftCursor( 0.0f, 18.0f );
+		ImGui::Dummy( {} );
 		PopID();
 
 		GetUIState().PropertyGridStackCounter--;
-
-		ASSERT( GetUIState().PropertyGridStackCounter >= 0, "EndPropertyGrid called more times than BeginPropertyGrid" );
+		ASSERT( GetUIState().PropertyGridStackCounter >= 0,
+			"EndPropertyGrid called more times than BeginPropertyGrid" );
 	}
+
 
 	void DrawUnderline( bool a_SpanFullWidth, float a_OffsetX, float a_OffsetY )
 	{
@@ -221,6 +232,88 @@ namespace Tridium::UI {
 			ImGui::Convert( a_Point ), ImGui::Convert( a_Start ),
 			ImGui::Convert( p11 ), ImGui::Convert( p22 ),
 			ImGui::Convert( a_End ) ).Distance < a_Radius;
+	}
+
+	bool BeginTree( StringView a_Label, ETreeFlags a_Flags )
+	{
+		return ImGui::TreeNodeEx( a_Label.data(), Cast<ImGuiTreeNodeFlags>( a_Flags ), "%.*s", (int)a_Label.size(), a_Label.data() );
+	}
+
+	void EndTree()
+	{
+		ImGui::TreePop();
+	}
+
+	bool DrawVector( StringView a_Label, EArithmeticKind a_Type, void* a_Data, uint32_t a_Count, const void* a_Min, const void* a_Max )
+	{
+		static constexpr uint32_t MaxComponents = 4; // Max components for a vector (X, Y, Z, W)
+		ASSERT( a_Count > 0 && a_Count <= MaxComponents, "Invalid vector count: {}", a_Count );
+
+		const auto DrawVector = [&]()
+		{
+			const ImGuiDataType imGuiType = ToImGui( a_Type );
+			const bool isSlider = ( a_Min || a_Max );
+			const uint32_t imGuiTypeSize = (uint32_t)GetSize( a_Type );
+
+			if ( ImGui::GetCurrentWindow()->SkipItems )
+				return false;
+
+			bool valueChanged = false;
+
+			ImGui::BeginGroup();
+			{
+				ImGui::ScopedStyleVar ScopedStyleBorderSize{ ImGuiStyleVar_FrameBorderSize, 1.0f };
+				const ImU32 VectorColors[MaxComponents] = {
+					GetTheme().Red,   // X
+					GetTheme().Green, // Y
+					GetTheme().Blue,  // Z
+					GetTheme().Orange // W
+				};
+
+				ImGui::PushMultiItemsWidths( a_Count, ImGui::CalcItemWidth() );
+
+				// Render each component of the vector. X, Y, Z, W
+				for ( uint32_t i = 0; i < a_Count; i++ )
+				{
+					ImGui::ScopedStyleCol ScopedStyleCol{ ImGuiCol_Border, VectorColors[i] };
+
+					void* ComponentValue = Cast<uint8_t*>( a_Data ) + ( i * imGuiTypeSize );
+					const char* ID = GenerateID();
+
+					if ( i > 0 ) ImGui::SameLine( 0, GImGui->Style.ItemInnerSpacing.x );
+
+					valueChanged |= isSlider
+						? ImGui::SliderScalar( ID, imGuiType, ComponentValue, a_Min, a_Max )
+						: ImGui::DragScalar( ID, imGuiType, ComponentValue );
+
+					ImGui::PopItemWidth();
+				}
+
+				// If we are not in a property grid, we can draw the label after the vector components.
+				if ( !GetUIState().IsPropertyGridOpen() )
+				{
+					const char* LabelEnd = ImGui::FindRenderedTextEnd( a_Label.data(), a_Label.data() + a_Label.size() );
+
+					if ( a_Label.data() != LabelEnd )
+					{
+						ImGui::SameLine( 0, GImGui->Style.ItemInnerSpacing.x );
+						ImGui::TextEx( a_Label.data(), LabelEnd );
+					}
+				}
+			}
+			ImGui::EndGroup();
+
+			return valueChanged;
+		};
+
+		if ( !GetUIState().IsPropertyGridOpen() )
+		{
+			return DrawVector();
+		}
+		else
+		{
+			return DrawGridProperty( a_Label, DrawVector );
+		}
 	}
 
 } // namespace Tridium::UI

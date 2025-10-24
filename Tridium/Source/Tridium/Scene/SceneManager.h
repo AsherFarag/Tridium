@@ -1,10 +1,12 @@
 #pragma once
+#include <Tridium/Scene/Scene.h>
+
+// TEMP
 #include <Tridium/Utils/Singleton.h>
-#include "Scene.h"
 
 namespace Tridium {
 
-	class SceneManager final : public ISingleton<SceneManager, /* _ExplicitSetup */ false>
+	class OldSceneManager final : public ISingleton<OldSceneManager, /* _ExplicitSetup */ false>
 	{
 	public:
 		// Gets the currently active Scene.
@@ -22,6 +24,27 @@ namespace Tridium {
 
 	private:
 		SharedPtr<OldScene> m_ActiveScene;
+	};
+
+	//=================================================================================================
+	// SceneManager: Handles the loading, unloading, and management of scenes.
+	//=================================================================================================
+	class SceneManager
+	{
+	public:
+
+		//=============================================================================================
+		static SceneManager* Get();
+
+		//=============================================================================================
+		static const SharedPtr<Scene>& ActiveScene() { return Get()->m_ActiveScene; }
+		static void SetActiveScene( const SharedPtr<Scene>& a_Scene ) { Get()->m_ActiveScene = a_Scene; }
+
+	private:
+
+		//=============================================================================================
+		SharedPtr<Scene> m_ActiveScene;
+
 	};
 
 }

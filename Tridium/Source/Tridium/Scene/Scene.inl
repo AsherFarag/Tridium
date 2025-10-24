@@ -75,17 +75,26 @@ namespace Tridium {
 		return Cast<T*>( systemPtr );
 	}
 
-	inline GameObject Scene::InstantiateGameObject()
+	inline GameObject Scene::CreateEmptyGameObject()
 	{
 		return GameObject( this, m_Registry.Create() );
 	}
 
-	template<typename... T>
-	inline GameObject Scene::InstantiateGameObject()
+	inline GameObject Scene::CreateGameObject( String a_Tag, const Vector3& a_Position )
 	{
-		EntityID entity = m_Registry.Create();
-		( m_Registry.Emplace<T>( entity ), ... );
-		return GameObject( this, entity );
+		GameObject gameObject = CreateEmptyGameObject();
+		gameObject.Add<TagComponent>().Tag = std::move( a_Tag );
+		gameObject.Add<TransformComponent>().SetLocalPosition( a_Position );
+		gameObject.Add<HierarchyComponent>();
+		return gameObject;
+	}
+
+	template<typename... T>
+	inline GameObject Scene::CreateGameObject( String a_Tag, const Vector3& a_Position )
+	{
+		GameObject gameObject = CreateGameObject( std::move( a_Tag ), a_Position );
+		( gameObject.Add<T>(), ... );
+		return gameObject;
 	}
 
 	inline void Scene::DestroyGameObject( GameObject a_GameObject )

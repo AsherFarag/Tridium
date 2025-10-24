@@ -56,17 +56,17 @@ namespace Tridium {
 		ImGuizmo::GetStyle().ScaleLineThickness *= 2.0f;
 	}
 
-	EditorViewportPanel::EditorViewportPanel( const SharedPtr<EditorCamera>& editorCamera )
+	OldEditorViewportPanel::OldEditorViewportPanel( const SharedPtr<EditorCamera>& editorCamera )
 		: ViewportPanel( "Scene##EditorViewportPanel" ), m_EditorCamera( editorCamera )
 	{
-		m_OnGameObjectSelectedHandle = Editor::Events::OnGameObjectSelected.Add<&EditorViewportPanel::SetSelectedGameObject>( this );
+		m_OnGameObjectSelectedHandle = Editor::Events::OnGameObjectSelected.Add<&OldEditorViewportPanel::SetSelectedGameObject>( this );
 	}
 
-	EditorViewportPanel::~EditorViewportPanel()
+	OldEditorViewportPanel::~OldEditorViewportPanel()
 	{
 	}
 
-	bool EditorViewportPanel::OnKeyPressed( KeyPressedEvent& e )
+	bool OldEditorViewportPanel::OnKeyPressed( KeyPressedEvent& e )
 	{
 		if ( e.IsRepeat )
 			return false;
@@ -113,7 +113,7 @@ namespace Tridium {
 					if ( payload && !payload->IsEmpty() )
 					{
 						OldGameObject go = payload->As<OldGameObject>();
-						OldGameObject newGO = SceneManager::GetActiveScene()->InstantiateGameObjectFrom(go);
+						OldGameObject newGO = OldSceneManager::GetActiveScene()->InstantiateGameObjectFrom(go);
 						Editor::Events::OnGameObjectSelected.Broadcast( newGO );
 					}
 				}
@@ -140,7 +140,7 @@ namespace Tridium {
 	static Scene s_TestScene;
 	static GameObject s_TestGO;
 
-	void EditorViewportPanel::OnUpdate( float a_DeltaTime )
+	void OldEditorViewportPanel::OnUpdate( float a_DeltaTime )
 	{
 		if ( !m_EditorCamera || m_ViewportSize.X <= 0 || m_ViewportSize.Y <= 0 )
 			return;
@@ -148,7 +148,7 @@ namespace Tridium {
 		static GameObject TestGO = []()
 		{
 			s_TestScene.Init();
-			GameObject test = s_TestScene.InstantiateGameObject();
+			GameObject test = s_TestScene.CreateEmptyGameObject();
 			test.Add<TransformComponent>();
 			test.Add<StaticMeshComponent>();
 
@@ -266,7 +266,7 @@ namespace Tridium {
 		s_ViewID = RendererModule::GetPipelineManager()->AddView( view );
 	}
 
-	void EditorViewportPanel::OnImGuiDraw()
+	void OldEditorViewportPanel::OnImGuiDraw()
 	{
 		if ( !m_EditorCamera )
 			return;
@@ -355,7 +355,7 @@ namespace Tridium {
 		ImGui::End();
 	}
 
-	void EditorViewportPanel::DragDropTarget()
+	void OldEditorViewportPanel::DragDropTarget()
 	{
 		ImGui::ScopedDragDropTarget scopedDragDropTarget;
 		if ( !( scopedDragDropTarget ) )
@@ -375,9 +375,9 @@ namespace Tridium {
 		{
 			if ( SharedPtr<OldScene> scene = AssetManager::GetAsset<OldScene>( assetHandle ) )
 			{
-				SceneManager::GetActiveScene()->Clear();
+				OldSceneManager::GetActiveScene()->Clear();
 				// Load the scene
-				SceneManager::SetActiveScene( scene.get() );
+				OldSceneManager::SetActiveScene( scene.get() );
 			}
 			break;
 		}
@@ -385,7 +385,7 @@ namespace Tridium {
 		{
 			if ( SharedPtr<OldStaticMesh> mesh = AssetManager::GetAsset<OldStaticMesh>( assetHandle ) )
 			{
-				OldGameObject go = SceneManager::GetActiveScene()->InstantiateGameObject();
+				OldGameObject go = OldSceneManager::GetActiveScene()->InstantiateGameObject();
 				go.AddComponent<OldStaticMeshComponent>().Mesh = mesh->GetHandle();
 
 				Vector3 position = m_EditorCamera->Position + m_EditorCamera->GetForwardDirection() * 5.0f;
@@ -401,7 +401,7 @@ namespace Tridium {
 		}
 	}
 
-	void EditorViewportPanel::DrawManipulationGizmos( const Vector2& viewportBoundsMin, const Vector2& viewportBoundsMax )
+	void OldEditorViewportPanel::DrawManipulationGizmos( const Vector2& viewportBoundsMin, const Vector2& viewportBoundsMax )
 	{
 		const Matrix4& camProjection = m_EditorCamera->GetProjection();
 		const Matrix4 oldCamView = m_EditorCamera->GetViewMatrix();
@@ -476,7 +476,7 @@ namespace Tridium {
 			m_EditorCamera->SetViewMatrix( camView );
 	}
 
-	void EditorViewportPanel::RenderGameObjectIDs()
+	void OldEditorViewportPanel::RenderGameObjectIDs()
 	{
 		RenderCommand::SetDepthTest( true );
 		RenderCommand::SetDepthCompare( EDepthCompareOperator::Less );
@@ -488,7 +488,7 @@ namespace Tridium {
 
 		Matrix4 pvm = m_EditorCamera->GetProjection() * m_EditorCamera->GetViewMatrix();
 
-		auto meshComponents = SceneManager::GetActiveScene()->GetECS().View<OldStaticMeshComponent, OldTransformComponent>();
+		auto meshComponents = OldSceneManager::GetActiveScene()->GetECS().View<OldStaticMeshComponent, OldTransformComponent>();
 		meshComponents.each( 
 			[&]( auto go, OldStaticMeshComponent& meshComponent, OldTransformComponent& transform )
 			{
@@ -521,7 +521,7 @@ namespace Tridium {
 		m_GameObjectIDShader->Unbind();
 	}
 
-	void EditorViewportPanel::RenderSelectionOutline()
+	void OldEditorViewportPanel::RenderSelectionOutline()
 	{
 	#if 0
 		if ( !m_FBO || !m_SelectedGameObject.IsValid() )

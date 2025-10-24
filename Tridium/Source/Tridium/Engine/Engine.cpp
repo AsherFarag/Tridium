@@ -119,12 +119,12 @@ namespace Tridium {
 			LOG( LogCategory::Engine, Info, "Loading start scene" );
 			if ( SharedPtr<OldScene> scene = AssetManager::GetAsset<OldScene>( m_ActiveProject.Config.StartScene ) )
 			{
-				SceneManager::SetActiveScene( scene.get() );
+				OldSceneManager::SetActiveScene( scene.get() );
 			}
 			else
 			{
 				LOG( LogCategory::Engine, Warn, "Failed to load start scene! - Creating new scene" );
-				SceneManager::SetActiveScene( MakeShared<OldScene>().get() );
+				OldSceneManager::SetActiveScene( MakeShared<OldScene>().get() );
 			}
 		}
 
@@ -224,7 +224,7 @@ namespace Tridium {
 		}
 
 		// Initialize Scene Manager
-		SceneManager::Singleton::Construct();
+		OldSceneManager::Singleton::Construct();
 
 		// Initialize Game Instance
 		m_GameInstance.reset( CreateGameInstance() );
@@ -243,7 +243,7 @@ namespace Tridium {
 		m_GameInstance->Shutdown();
 
 		// Shutdown Scene Manager
-		SceneManager::Singleton::Destroy();
+		OldSceneManager::Singleton::Destroy();
 
 		// Shutdown Modules
 		{

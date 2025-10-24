@@ -549,15 +549,11 @@ namespace Tridium {
 				SharedPtr<OldMaterial> material = AssetManager::GetAsset<OldMaterial>( a_Item.Handle );
 				if ( material )
 				{
-					Editor::GetEditorLayer()->GetOrEmplacePanel<MaterialEditorPanel>()->SetMaterial( a_Item.Handle );
 				}
 				break;
 			}
 			case EFileType::LuaScript:
 			{
-				ScriptEditorPanel* panel = Editor::GetEditorLayer()->GetOrEmplacePanel<ScriptEditorPanel>();
-				panel->OpenFile( m_CurrentDirectory / a_Item.Name );
-				panel->Focus();
 				break;
 			}
 		}
