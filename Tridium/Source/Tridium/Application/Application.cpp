@@ -58,8 +58,9 @@ namespace Tridium {
 		m_Engine = Engine::Create( engineConfig );
 
 	#if WITH_EDITOR
-		PushOverlay<Editor>();
+		m_LayerStack.EmplaceOverlay<Editor>();
 	#endif // WITH_EDITOR
+
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////
@@ -105,9 +106,7 @@ namespace Tridium {
 
 			FlushEventQueue();
 
-			TODO( "Probably remove layers" );
-			for ( const auto& layer : Application::GetLayerStack() )
-				layer->OnUpdate();
+			m_LayerStack.OnUpdate( Cast<float>( Time::DeltaTime() ) );
 
 			// Invoke the tick groups
 			s_TickCallback.Broadcast();
@@ -121,16 +120,6 @@ namespace Tridium {
 		m_Engine.reset();
 		return m_ExitCode;
 	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////
-	void Application::OnUpdate()
-	{
-	#if !WITH_EDITOR
-
-
-
-	#endif
-	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////
 	void Application::FlushEventQueue()
@@ -142,13 +131,8 @@ namespace Tridium {
 			EventDispatcher dispatcher( event );
 			dispatcher.Dispatch<WindowCloseEvent>( [this]( const WindowCloseEvent& a_Event ) -> bool { return OnWindowClosed( a_Event ); } );
 			dispatcher.Dispatch<WindowResizeEvent>( [this]( const WindowResizeEvent& a_Event ) -> bool { return OnWindowResized( a_Event ); } );
-			for ( auto it = m_LayerStack.end(); it != m_LayerStack.begin(); )
-			{
-				if ( event.Handled )
-					break;
 
-				(*--it)->OnEvent( event );
-			}
+			m_LayerStack.OnEvent( event );
 
 			m_EventQueue.pop();
 		}

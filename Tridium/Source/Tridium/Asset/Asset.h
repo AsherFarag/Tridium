@@ -114,13 +114,13 @@ namespace Tridium {
 		using AssetType = T;
 
 		//=============================================================================================
-		AssetHandle() : m_ID( AssetID::InvalidID ), m_Ref( nullptr ) {}
+		AssetHandle() : m_ID( InvalidAssetID ), m_Ref( nullptr ) {}
 		AssetHandle( AssetID a_AssetID ) : m_ID( a_AssetID ), m_Ref( nullptr ) {}
-		AssetHandle( AssetRef<T> a_AssetRef ) : m_ID( AssetID::InvalidID ), m_Ref( std::move( a_AssetRef ) ) {}
-		AssetHandle( std::nullptr_t ) : m_ID( AssetID::InvalidID ), m_Ref( nullptr ) {}
+		AssetHandle( AssetRef<T> a_AssetRef ) : m_ID( InvalidAssetID ), m_Ref( std::move( a_AssetRef ) ) {}
+		AssetHandle( std::nullptr_t ) : m_ID( InvalidAssetID ), m_Ref( nullptr ) {}
 
 		//=============================================================================================
-		bool Valid() const { return m_Ref ? true : m_ID != AssetID::InvalidID; }
+		bool Valid() const { return m_Ref ? true : m_ID != InvalidAssetID; }
 
 		//=============================================================================================
 		AssetID ID() const { return m_Ref ? m_Ref->ID() : m_ID; }

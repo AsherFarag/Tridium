@@ -3,7 +3,7 @@
 
 #include "EditorCamera.h"
 #include <Tridium/Input/Input.h>
-#include <Tridium/Core/Application.h>
+#include <Tridium/Application/Application.h>
 
 namespace Tridium {
 

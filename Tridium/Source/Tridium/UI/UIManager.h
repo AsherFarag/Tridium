@@ -3,7 +3,7 @@
 
 #if CONFIG_ENABLE_TOOL_UI
 
-#include <Tridium/Core/Application.h>
+#include <Tridium/Application/Application.h>
 #include <Tridium/Containers/String.h>
 #include <Tridium/Containers/UnorderedMap.h>
 #include <Tridium/Core/Memory.h>

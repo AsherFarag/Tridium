@@ -1,7 +1,7 @@
 #include "tripch.h"
 #include "Instrumentor.h"
 #include <chrono>
-#include <Tridium/Core/Application.h>
+#include <Tridium/Application/Application.h>
 
 namespace Tridium {
 

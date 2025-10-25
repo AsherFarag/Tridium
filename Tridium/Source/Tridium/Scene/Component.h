@@ -1,5 +1,4 @@
 #pragma once
-#include <Tridium/Core/GUID.h>
 #include <Tridium/ECS/ECSFwd.h>
 #include <Tridium/Math/Math.h>
 #include <Tridium/Reflection/Meta.h>
@@ -83,14 +82,6 @@ namespace Tridium {
 	};
 
 	//=================================================================================================
-	// GUID Component: Stores a globally unique identifier for a game object.
-	//=================================================================================================
-	struct GUIDComponent
-	{
-		GUID ID;
-	};
-
-	//=================================================================================================
 	// Tag Component: Used to assign a name or tag to a game object.
 	//=================================================================================================
 	struct TagComponent
@@ -168,18 +159,6 @@ namespace Tridium {
 } // namespace Tridium
 
 namespace Tridium::Meta {
-
-	//=================================================================================================
-	// GUIDComponent
-	//=================================================================================================
-	template<>
-	struct Reflector<GUIDComponent>
-	{
-		// Fields
-
-		Property<&GUIDComponent::ID, nullptr, Serializable> 
-		ID;
-	};
 
 	//=================================================================================================
 	// TagComponent

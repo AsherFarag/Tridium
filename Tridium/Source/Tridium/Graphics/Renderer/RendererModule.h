@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/Core/Application.h>
+#include <Tridium/Application/Application.h>
 #include <Tridium/Engine/EngineModule.h>
 #include <Tridium/Graphics/RHI/DynamicRHI.h>
 #include <Tridium/Graphics/Renderer/RenderPipeline.h>

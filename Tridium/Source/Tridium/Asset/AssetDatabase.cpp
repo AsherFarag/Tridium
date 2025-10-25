@@ -20,8 +20,8 @@ namespace Tridium {
 
 		auto assetID = Get()->m_AssetPathMap.find(a_Path);
 
-		if (assetID == Get()->m_AssetPathMap.end())
-			return AssetID::InvalidID;
+		if ( assetID == Get()->m_AssetPathMap.end() )
+			return InvalidAssetID;
 
 		return assetID->second;
 	}
@@ -30,7 +30,7 @@ namespace Tridium {
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
-		if ( !a_AssetID.IsValid() )
+		if ( !a_AssetID.Valid() )
 			return {};
 
 		auto it = Get()->m_Assets.find( a_AssetID );
@@ -46,7 +46,7 @@ namespace Tridium {
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
-		if ( !a_AssetID.IsValid() )
+		if ( !a_AssetID.Valid() )
 			return nullptr;
 
 		auto it = Get()->m_Assets.find( a_AssetID );
@@ -60,7 +60,7 @@ namespace Tridium {
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
-		if ( !a_AssetID.IsValid() )
+		if ( !a_AssetID.Valid() )
 			return nullptr;
 
 		auto it = Get()->m_Assets.find( a_AssetID );
@@ -148,7 +148,7 @@ namespace Tridium {
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
-		if ( !a_AssetID.IsValid() )
+		if ( !a_AssetID.Valid() )
 			return false;
 
 		auto it = Get()->m_Assets.find( a_AssetID );
@@ -163,7 +163,7 @@ namespace Tridium {
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
-		if ( !a_AssetID.IsValid() )
+		if ( !a_AssetID.Valid() )
 			return false;
 
 		auto it = Get()->m_Assets.find( a_AssetID );

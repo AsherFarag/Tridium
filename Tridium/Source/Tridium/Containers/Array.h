@@ -513,7 +513,6 @@ namespace Tridium {
 		size_t Capacity() const { return m_Data.capacity(); }
 		bool Empty() const { return m_Data.empty(); }
 		bool IsValidIndex( size_t a_Index ) const { return a_Index < m_Data.size(); }
-		void Fill( const T& a_Value ) { m_Data.fill( a_Value ); }
 		void Swap( Array& a_Other ) { m_Data.swap( a_Other.m_Data ); }
 		void Resize( size_t a_Size ) { m_Data.resize( a_Size ); }
 		void Resize( size_t a_Size, const T& a_Value ) { m_Data.resize( a_Size, a_Value ); }
@@ -522,6 +521,9 @@ namespace Tridium {
 		void Clear() { m_Data.clear(); }
 		void PushBack( const T& a_Value ) { m_Data.push_back( a_Value ); }
 		void PopBack() { m_Data.pop_back(); }
+
+		template<typename... _Args>
+		Iterator Emplace( Iterator a_Position, _Args&&... a_Args ) { return m_Data.emplace( a_Position, std::forward<_Args>( a_Args )... ); }
 
 		template<typename... _Args>
 		auto& EmplaceBack( _Args&&... a_Args ) { return m_Data.emplace_back( std::forward<_Args>( a_Args )... ); }

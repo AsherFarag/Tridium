@@ -24,7 +24,7 @@ namespace Tridium {
 	static void SetImGuizmoColors()
 	{
 		ImGuizmo::GetStyle() = ImGuizmo::Style();
-		UITheme& theme = UI::GetTheme();
+		const UITheme& theme = UI::GetTheme();
 
 		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::DIRECTION_X] = theme.Red;
 		ImGuizmo::GetStyle().Colors[ImGuizmo::COLOR::DIRECTION_Y] = theme.Green;

@@ -93,7 +93,7 @@ namespace Tridium {
 
 			AssetMetadata metaData
 			{
-				.ID = AssetID::Create(),
+				.ID = AssetID::Generate(),
 				.Type = T::StaticType(),
 				.Name = std::move( a_Name ),
 				.Path = std::move( a_Path ),
@@ -124,7 +124,7 @@ namespace Tridium {
 		// Registers a dependency between two assets.
 		bool RegisterDependency( AssetID a_Dependent, AssetID a_Dependency )
 		{
-			if ( !a_Dependent.IsValid() || !a_Dependency.IsValid() )
+			if ( !a_Dependent.Valid() || !a_Dependency.Valid() )
 			{
 				ASSERT( false, "Invalid AssetID provided when registering dependency." );
 				return false;

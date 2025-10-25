@@ -61,7 +61,8 @@ namespace Tridium {
 
 	namespace UI {
 
-		UITheme& GetTheme();
+		const UITheme& GetTheme();
+		void ApplyTheme( const UITheme& a_Theme );
 
 	} // namespace UI
 

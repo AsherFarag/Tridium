@@ -11,7 +11,7 @@ namespace Tridium {
 	//=================================================================================================
 	struct AssetMetadata
 	{
-		AssetID ID = AssetID::InvalidID;
+		AssetID ID = InvalidAssetID;
 		AssetTypeID Type = InvalidAssetTypeID;
 		EAssetLoadPolicy LoadPolicy = EAssetLoadPolicy::Default;
 		String Name{};
@@ -126,7 +126,7 @@ namespace Tridium {
 	template<Concepts::Derived<IAsset> T>
 	inline const AssetRef<T>& AssetHandle<T>::GetOrLoad()
 	{
-		if ( !m_Ref && m_ID != AssetID::InvalidID )
+		if ( !m_Ref && m_ID != InvalidAssetID )
 		{
 			*this = AssetDatabase::GetOrLoadAsset<T>( m_ID );
 		}

@@ -18,7 +18,7 @@ namespace Tridium {
 	Editor* Editor::s_Instance = nullptr;
 	decltype( Editor::Events::OnGameObjectSelected ) Editor::Events::OnGameObjectSelected{};
 
-	Editor::Editor() : Layer( "Editor" )
+	Editor::Editor() : IAppLayer( "Editor" )
 	{
 		ENSURE( !s_Instance, "Editor instance already exists!" );
 
@@ -27,8 +27,6 @@ namespace Tridium {
 		// Set Window title and icon
 		Application::GetWindow().SetTitle("Tridium Editor");
 		Application::GetWindow().SetIcon( ( Engine::Get()->GetEngineAssetsDirectory() / "Editor/Icons/EngineIcon.png" ).ToString() );
-
-		m_Style.SetTheme( EditorStyle::ETheme::Midnight );
 
 		Application::AddOnTick( TickGroups::EditorTick, []() { Editor::Get()->Tick(); } );
 		Application::AddOnTick( TickGroups::DrawUI, []() { Editor::Get()->DrawUI(); } );
@@ -117,8 +115,6 @@ namespace Tridium {
 			ImGui::EndMenu();
 		}
 
-		ImGui::Separator();
-
 		if ( ImGui::BeginMenu( "Edit" ) )
 		{
 			if ( ImGui::MenuItem( "Editor Preferences" ) )
@@ -164,8 +160,6 @@ namespace Tridium {
 			ImGui::EndMenu();
 		}
 
-		ImGui::Separator();
-
 		if ( ImGui::BeginMenu( "Other" ) )
 		{
 			if ( ImGui::MenuItem( "Recompile Shaders" ) ) {}
@@ -193,6 +187,8 @@ namespace Tridium {
 	{
 		if ( true )
 			return;
+
+	#if 0
 
 		float winPaddingY = 5.0f;
 		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_WindowPadding, { 0, winPaddingY } );
@@ -250,6 +246,8 @@ namespace Tridium {
 		ImGui::EndGroup();
 
 		ImGui::End();
+
+	#endif
 	}
 
 	bool Editor::Event_KeyPressed( const KeyPressedEvent& a_Event )

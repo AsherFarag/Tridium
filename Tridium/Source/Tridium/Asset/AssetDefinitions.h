@@ -1,6 +1,6 @@
 #pragma once
 #include <Tridium/Core/Types.h>
-#include <Tridium/Core/GUID.h>
+#include <Tridium/Core/UUID.h>
 #include <Tridium/Core/Enum.h>
 #include <Tridium/Core/Version.h>
 #include <Tridium/Graphics/Color.h>
@@ -11,8 +11,8 @@ namespace Tridium {
 	// Asset ID: Unique identifier for an asset. Generated when the asset is created/imported.
 	// Can be used to look up the asset in the AssetDatabase.
 	//=================================================================================================
-	using AssetID = GUID;
-	inline constexpr AssetID InvalidAssetID = AssetID::InvalidID;
+	using AssetID = UUID;
+	inline constexpr AssetID InvalidAssetID = AssetID{};
 
 	//=================================================================================================
 	// Asset Type ID: Hash of the asset type (e.g., Tridium::Texture, Tridium::Material, etc.)

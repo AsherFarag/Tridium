@@ -1,6 +1,6 @@
 #include "tripch.h"
 #ifdef TE_PLATFORM_WINDOWS
-#include <Tridium/Core/Application.h>
+#include <Tridium/Application/Application.h>
 using namespace Tridium;
 
 int main( int argc, char** argv )

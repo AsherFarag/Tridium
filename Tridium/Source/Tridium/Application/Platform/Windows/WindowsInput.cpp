@@ -1,7 +1,7 @@
 #include "tripch.h"
 #include "WindowsInput.h"
 
-#include <Tridium/Core/Application.h>
+#include <Tridium/Application/Application.h>
 #include <GLFW/glfw3.h>
 
 // TEMP

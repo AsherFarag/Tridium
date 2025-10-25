@@ -28,7 +28,7 @@ namespace Tridium {
 	struct AssetLoadData
 	{
 		AssetHeader Header{};
-		AssetID ID = AssetID::InvalidID;
+		AssetID ID = InvalidAssetID;
 		Span<const byte_t> Data{};
 	};
 

@@ -3,11 +3,11 @@
 
 #if WITH_EDITOR
 
-#include <Tridium/Editor/EditorPayload.h>
-#include <Tridium/Editor/EditorStyle.h>
-#include <Tridium/Core/Application.h>
+#include <Tridium/Application/Application.h>
 #include <Tridium/Common/Function.h>
+#include <Tridium/Editor/EditorPayload.h>
 #include <Tridium/Editor/Commands/CommandManager.h>
+#include <Tridium/Scene/Scene.h>
 #include <Tridium/UI/UIManager.h>
 
 namespace Tridium {
@@ -23,7 +23,7 @@ namespace Tridium {
 	//=================================================================================================
 	// Editor:
 	//=================================================================================================
-	class Editor final : public Layer
+	class Editor final : public IAppLayer
 	{
 	public:
 
@@ -42,7 +42,6 @@ namespace Tridium {
 		//=============================================================================================
 		static Editor* Get() { return s_Instance; }
 		static EditorPayloadManager& GetPayloadManager() { return Get()->m_PayloadManager; }
-		static EditorStyle& GetStyle() { return Get()->m_Style; }
 		static CommandManager& GetCommandManager() { return Get()->m_CommandManager; }
 		static UIManager& GetUIManager() { return Get()->m_UIManager; }
 		static SelectionContext& GetSelectionContext() { return Get()->m_SelectionContext; }
@@ -54,7 +53,6 @@ namespace Tridium {
 
 		//=============================================================================================
 		EditorPayloadManager m_PayloadManager;
-		EditorStyle m_Style;
 		CommandManager m_CommandManager;
 		UIManager m_UIManager;
 		SelectionContext m_SelectionContext;

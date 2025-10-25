@@ -1,6 +1,6 @@
 #include "tripch.h"
 #include "Engine.h"
-#include <Tridium/Core/Application.h>
+#include <Tridium/Application/Application.h>
 #include <Tridium/Debug/DebugDrawer.h>
 
 #include <Tridium/Editor/Editor.h>

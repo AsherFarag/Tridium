@@ -4,7 +4,7 @@
 //
 
 #pragma once
-#include "Tridium/Core/Application.h"
+#include "Tridium/Application/Application.h"
 #include <Tridium/Containers/Array.h>
 #include <Tridium/Containers/Map.h>
 #include <Tridium/Containers/Optional.h>

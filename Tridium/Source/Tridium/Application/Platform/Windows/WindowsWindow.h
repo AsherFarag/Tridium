@@ -1,5 +1,5 @@
 #pragma once
-#include <Tridium/Core/Window.h>
+#include <Tridium/Application/Window.h>
 #include <GLFW/glfw3.h>
 
 namespace Tridium {
