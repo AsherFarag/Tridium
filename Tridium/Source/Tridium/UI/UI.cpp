@@ -153,7 +153,7 @@ namespace Tridium::UI {
 		ImGui::EndTable();
 		ImGui::PopStyleVar();
 		//DrawUnderline();
-		ImGui::Dummy( {} );
+		//ImGui::Dummy( {} );
 		PopID();
 
 		GetUIState().PropertyGridStackCounter--;

@@ -1,6 +1,7 @@
 #include "tripch.h"
 #include "RendererModule.h"
 #include <Tridium/Graphics/RHI/RHI.h>
+#include <Tridium/Graphics/Renderer/PipelineStateCache.h>
 #include <Tridium/Graphics/Renderer/ShaderLibrary.h>
 #include <Tridium/Graphics/Renderer/RenderResourceManager.h>
 
@@ -38,8 +39,9 @@ namespace Tridium {
 
         m_DynamicRHI = RHI::GetDynamicRHI();
 
-        RenderResourceManager::Init();
 		ShaderLibrary::Init();
+        PipelineStateCache::Init();
+        RenderResourceManager::Init();
 
 	    Application::AddOnTick( TickGroups::BeginRender, []() { RendererModule::Get()->BeginFrame(); } );
 	    Application::AddOnTick( TickGroups::EndRender, []() { RendererModule::Get()->EndFrame(); } );
@@ -49,8 +51,14 @@ namespace Tridium {
 
     void RendererModule::Shutdown()
     {
+        m_PipelineManager = {};
+
+        RHI::WaitForIdle();
+		RHI::CollectGarbage();
+
+        RenderResourceManager::Shutdown();
+		PipelineStateCache::Shutdown();
         ShaderLibrary::Shutdown();
-		RenderResourceManager::Shutdown();
 
         // Shutdown the Dynamic RHI
         if ( !ASSERT( RHI::Shutdown(), "Failed to shutdown the RHI" ) )
@@ -58,7 +66,6 @@ namespace Tridium {
             m_DynamicRHI = nullptr;
             return;
         }
-
     }
 
     void RendererModule::BeginFrame()

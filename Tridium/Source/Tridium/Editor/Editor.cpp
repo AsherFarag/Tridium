@@ -6,6 +6,7 @@
 #include <Tridium/Engine/Engine.h>
 
 // Panels
+#include <Tridium/Editor/UI/AssetBrowserPanel.h>
 #include <Tridium/Editor/UI/EditorViewportPanel.h>
 #include <Tridium/Editor/UI/InspectorPanel.h>
 #include <Tridium/Editor/UI/SceneHierarchyPanel.h>
@@ -60,6 +61,7 @@ namespace Tridium {
 	void Editor::OnAttach()
 	{
 		// Panels
+		m_UIManager.CreatePanel<AssetBrowserPanel>( TE_ICON_FOLDER_OPEN " Assets", true );
 		m_UIManager.CreatePanel<EditorViewportPanel>( TE_ICON_TV " Editor", true );
 		m_UIManager.CreatePanel<SceneHierarchyPanel>( TE_ICON_MOUNTAIN_SUN " Hierarchy", true );
 		m_UIManager.CreatePanel<InspectorPanel>( TE_ICON_MAGNIFYING_GLASS " Inspector", true );

@@ -192,6 +192,7 @@ namespace Tridium::D3D12 {
 		}
 		LOG( LogCategory::RHI, Info, "Released {0} resources", numResources );
 
+		m_RootSignatureCache.clear();
 		m_UploadBuffer.Release();
 		m_Allocator.Reset();
 
@@ -207,7 +208,6 @@ namespace Tridium::D3D12 {
 		}
 
 		RHI_DEBUG_OP( DumpDebug() );
-
 
 		if ( ULONG refCount = m_Device.Reset() )
 		{
@@ -473,7 +473,7 @@ namespace Tridium::D3D12 {
         {
             OutputDebugStringW( L"DirectX12 Debug Dump:\n" );
             m_DXGIDebug->ReportLiveObjects(
-                DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL
+				DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_DETAIL
             );
 			OutputDebugStringW( L"End of DirectX12 Debug Dump\n" );
         }

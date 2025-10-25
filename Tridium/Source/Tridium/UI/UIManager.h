@@ -117,7 +117,7 @@ namespace Tridium {
 	protected:
 
 		//=============================================================================================
-		UnorderedMap<StringView, UIPanelData> m_Panels;
+		UnorderedMap<String, UIPanelData> m_Panels;
 
 	};
 

@@ -12,6 +12,7 @@ namespace Tridium {
 	{
 		String Name = "Player";
 		String Description = "This is the player component.";
+		TransformComponent Transform{};
 		float Health = 100.0f;
 		static constexpr float MaxHealth = 100.0f;
 		float HealthRegenRate = 5.0f;
@@ -48,6 +49,9 @@ namespace Tridium {
 
 			Field<&MyCustomComponent::Description, Editable, Serializable, MultilineText>
 			Description;
+
+			Field<&MyCustomComponent::Transform, Editable, Serializable>
+			Transform;
 
 			Header HealthStats;
 
@@ -112,6 +116,8 @@ namespace Tridium {
 		{
 			UIPropertyDrawer<TransformComponent>::Draw( "Transform", transform, false );
 			UI::EndTree();
+
+			ImGui::Separator();
 		}
 		
 		static MyCustomComponent player{};
@@ -121,6 +127,8 @@ namespace Tridium {
 		{
 			UIPropertyDrawer<MyCustomComponent>::Draw( playerComponentName, player, false /* Don't draw a tree node */ );
 			UI::EndTree();
+
+			ImGui::Separator();
 		}
 
 		if ( player.IsDead() )
