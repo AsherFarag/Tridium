@@ -14,19 +14,19 @@ namespace Tridium {
 		return a_Name.empty() ? "<UNNAMED>" : a_Name;
 	}
 
-	AssetID AssetDatabase::GetAssetIDFromPath( StringView a_Path )
+	UUID AssetDatabase::GetAssetIDFromPath( StringView a_Path )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
 		auto assetID = Get()->m_AssetPathMap.find(a_Path);
 
 		if ( assetID == Get()->m_AssetPathMap.end() )
-			return InvalidAssetID;
+			return {};
 
 		return assetID->second;
 	}
 
-	StringView AssetDatabase::GetAssetPathFromID( AssetID a_AssetID )
+	StringView AssetDatabase::GetAssetPathFromID( UUID a_AssetID )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
@@ -38,11 +38,11 @@ namespace Tridium {
 		if ( it == Get()->m_Assets.end() )
 			return {};
 
-		const AssetMetadata& metadata = it->second.first;
-		return metadata.Path;
+		// Gets the path from the asset info
+		return it->second.first->Path;
 	}
 
-	const AssetMetadata* AssetDatabase::GetAssetMetadata( AssetID a_AssetID )
+	const AssetInfo* AssetDatabase::GetAssetInfo( UUID a_AssetID )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
@@ -53,10 +53,10 @@ namespace Tridium {
 		if ( it == Get()->m_Assets.end() )
 			return nullptr;
 
-		return &it->second.first;
+		return it->second.first.get();
 	}
 
-	AssetHandle<IAsset> AssetDatabase::GetAsset( AssetID a_AssetID )
+	AssetHandle<IAsset> AssetDatabase::GetAsset( UUID a_AssetID )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
@@ -70,7 +70,7 @@ namespace Tridium {
 		return it->second.second;
 	}
 
-	AssetHandle<IAsset> AssetDatabase::GetOrLoadAsset( AssetID a_AssetID )
+	AssetHandle<IAsset> AssetDatabase::GetOrLoadAsset( UUID a_AssetID )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
@@ -90,21 +90,20 @@ namespace Tridium {
 		}
 
 		// The asset exists but is not loaded, attempt to load it.
-		AssetMetadata& metadata = assetIt->second.first;
-		IAssetLoader* loader = AssetFactory::GetLoader( metadata.Type );
+		SharedPtr<AssetInfo>& assetInfo = assetIt->second.first;
+		IAssetLoader* loader = AssetFactory::GetLoader( assetInfo->Type );
 
 		if ( loader == nullptr )
 		{
 			LOG( LogCategory::Asset, Error, "No loader found for asset type '{}' while loading asset '{}'",
-				 AssetFactory::GetAssetTypeInfo( metadata.Type ).Name, NameIfNotNull( metadata.Name ) );
+				 AssetFactory::GetAssetTypeInfo( assetInfo->Type ).Name, NameIfNotNull( assetInfo->Name ) );
 
 			return nullptr;
 		}
 
 		// Create the asset
 		asset = loader->Create();
-		asset->m_AssetID = metadata.ID;
-		asset->m_AssetFlags.SetFlag( EAssetFlags::LoadedFromDisk );
+		asset->m_Info = assetInfo;
 
 		// We need to fill the load data for the asset loader.
 		// If we use asset bundles, we can load the data from there.
@@ -118,7 +117,7 @@ namespace Tridium {
 	#else
 
 		// Get the raw asset data from disk
-		switch ( metadata.LoadPolicy )
+		switch ( assetInfo->LoadPolicy )
 		{
 			case EAssetLoadPolicy::Default:
 			{
@@ -137,14 +136,14 @@ namespace Tridium {
 		if ( loadResult.IsError() )
 		{
 			LOG( LogCategory::Asset, Error, "Failed to load asset '{}' from path '{}': {}",
-				 NameIfNotNull( metadata.Name ), metadata.Path, loadResult.Error());
+				 NameIfNotNull( assetInfo->Name ), assetInfo->Path, loadResult.Error());
 			return nullptr;
 		}
 
 		return asset;
 	}
 
-	bool AssetDatabase::IsAssetLoaded( AssetID a_AssetID )
+	bool AssetDatabase::IsAssetLoaded( UUID a_AssetID )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
@@ -159,7 +158,7 @@ namespace Tridium {
 		return asset && asset->Valid();
 	}
 
-	bool AssetDatabase::DoesAssetExist( AssetID a_AssetID )
+	bool AssetDatabase::DoesAssetExist( UUID a_AssetID )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
@@ -170,64 +169,78 @@ namespace Tridium {
 		return it != Get()->m_Assets.end();
 	}
 
-	bool AssetDatabase::RegisterAsset( SharedPtr<IAsset> a_Asset, AssetMetadata a_Metadata )
+	bool AssetDatabase::RegisterAsset( SharedPtr<IAsset> a_Asset )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
+
 		if ( a_Asset == nullptr )
+		{
+			CHECK( false, "Cannot register a null asset." );
 			return false;
+		}
 
-		const AssetID assetID = a_Asset->ID();
+		const UUID assetID = a_Asset->ID();
 		if ( DoesAssetExist( assetID ) )
+		{
 			return false; // Asset already exists
+		}
 
-		AssetMetadata metadata = a_Metadata;
-		metadata.ID = assetID;
-		metadata.Type = a_Asset->Type();
-		Get()->m_Assets[ assetID ] = { std::move( metadata ), std::move( a_Asset ) };
+		// Sanitize the asset type
+		a_Asset->Type();
+
+		// Map the asset path to the asset ID
+		if ( !a_Asset->Info()->Path.empty() )
+		{
+			Get()->m_AssetPathMap[a_Asset->Info()->Path] = assetID;
+		}
+
+		// Map the asset ID to the asset
+		Get()->m_Assets[ assetID ] = { a_Asset->Info(), std::move( a_Asset ) };
+
 		return true;
 	}
 
-	bool AssetDatabase::UnregisterAsset( AssetID a_AssetID )
+	bool AssetDatabase::UnregisterAsset( UUID a_AssetID )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
 		auto it = Get()->m_Assets.find( a_AssetID );
 		if ( it != Get()->m_Assets.end() )
 		{
-			Get()->m_AssetPathMap.erase( it->second.first.Path ); // Remove the asset path mapping
+			Get()->m_AssetPathMap.erase( it->second.first->Path ); // Remove the asset path mapping
 			Get()->m_Assets.erase( it );
 			return true;
 		}
 		return false; // Asset was not found
 	}
 
-	void AssetDatabase::RegisterDependency( AssetID a_Dependant, AssetID a_Dependency )
+	void AssetDatabase::RegisterDependency( UUID a_Dependant, UUID a_Dependency )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 		if ( DoesAssetExist( a_Dependant ) == false || DoesAssetExist( a_Dependency ) == false )
 			return;
 
-		AssetMetadata& dependantMetadata = Get()->m_Assets[a_Dependant].first;
-		dependantMetadata.Dependencies.insert( a_Dependency );
+		AssetInfo* dependantMetadata = Get()->m_Assets[a_Dependant].first.get();
+		dependantMetadata->Dependencies.insert( a_Dependency );
 	}
 
-	void AssetDatabase::UnregisterDependency( AssetID a_Dependant, AssetID a_Dependency )
+	void AssetDatabase::UnregisterDependency( UUID a_Dependant, UUID a_Dependency )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 		if ( DoesAssetExist( a_Dependant ) == false || DoesAssetExist( a_Dependency ) == false )
 			return;
 
-		AssetMetadata& dependantMetadata = Get()->m_Assets[a_Dependant].first;
-		dependantMetadata.Dependencies.erase( a_Dependency );
+		AssetInfo* dependantMetadata = Get()->m_Assets[a_Dependant].first.get();
+		dependantMetadata->Dependencies.insert( a_Dependency );
 	}
 
 #if WITH_EDITOR
 
-	AssetID AssetDatabase::ImportAsset( StringView a_Path )
+	UUID AssetDatabase::ImportAsset( StringView a_Path )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 		NOT_IMPLEMENTED;
-		return AssetID{};
+		return UUID{};
 	}
 
 	bool AssetDatabase::CreateAsset( IAsset* a_Asset, StringView a_Path )
@@ -243,7 +256,7 @@ namespace Tridium {
 		return false;
 	}
 
-	bool AssetDatabase::DeleteAsset( AssetID a_AssetID )
+	bool AssetDatabase::DeleteAsset( UUID a_AssetID )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 		
@@ -267,11 +280,11 @@ namespace Tridium {
 
 #endif
 
-	StringView AssetDatabase::GetAssetName( AssetID a_AssetID )
+	StringView AssetDatabase::GetAssetName( UUID a_AssetID )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
 
-		const AssetMetadata* metadata = GetAssetMetadata( a_AssetID );
+		const AssetInfo* metadata = GetAssetInfo( a_AssetID );
 		if ( metadata && !metadata->Name.empty() )
 			return metadata->Name;
 

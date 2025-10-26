@@ -1107,6 +1107,9 @@ namespace Tridium::D3D12 {
 			{
 				for ( const RHIBindingSetItem& binding : bindingSet->Desc().Bindings )
 				{
+					if ( !binding.Resource )
+						continue;
+
 					switch ( binding.Type )
 					{
 						case ERHIBindingType::InlinedConstants:

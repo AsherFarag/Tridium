@@ -17,7 +17,7 @@ namespace Tridium {
 				view.Type = ERenderViewType::Camera;
 				view.Name = String( a_Name );
 				TODO( "Im not sure if the renderviews should store the rhi format. And how should we get it?" );
-				view.Camera.OutputFormat = ERHIFormat::RGBA16_UNORM;
+				//view.Camera.OutputFormat = ERHIFormat::RGBA16_UNORM;
 
 				view.Constants.ViewMatrix = a_ViewMatrix;
 				view.Constants.ProjectionMatrix = a_Camera.CalculateProjection();

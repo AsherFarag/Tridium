@@ -19,7 +19,7 @@ namespace Tridium {
 			{
 				panelData.Panel->OnEvent( a_Event );
 
-				if ( a_Event.Handled )
+				if ( a_Event.IsConsumed() )
 				{
 					return;
 				}

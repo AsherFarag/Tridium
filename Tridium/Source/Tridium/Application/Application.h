@@ -3,14 +3,10 @@
 #include <Tridium/Application/Window.h>
 #include <Tridium/Core/CommandLine.h>
 #include <Tridium/Common/Function.h>
-#include <Tridium/Events/Event.h>
+#include <Tridium/Application/Event.h>
 #include <Tridium/Utils/StaticInitializer.h>
 
 namespace Tridium {
-
-	// Forward Declarations
-	class Engine;
-	class ImGuiLayer;
 
 	struct FrameInfo
 	{
@@ -118,11 +114,10 @@ namespace Tridium {
 		EAppExitCode      m_ExitCode = EAppExitCode::Success;
 		CmdLineArgs       m_CommandLineArgs{};
 		UniquePtr<Window> m_Window = nullptr;
-		AppLayerStack        m_LayerStack{};
+		AppLayerStack     m_LayerStack{};
 		FrameInfo         m_PrevFrameInfo{};
 		uint32_t          m_MaxFPS = 144u;
 		Queue<Event>      m_EventQueue;
-		UniquePtr<Engine> m_Engine = nullptr;
 
 		struct TickGroup
 		{

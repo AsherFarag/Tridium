@@ -1,4 +1,5 @@
 #pragma once
+#include <Tridium/Application/Event.h>
 #include <Tridium/Core/Hash.h>
 #include <Tridium/Core/Assert.h>
 #include <Tridium/Core/Enum.h>
@@ -80,7 +81,9 @@ namespace Tridium {
 		friend class Engine;
 		virtual void Init() {}
 		virtual void Shutdown() {}
+		virtual void OnEvent( Event& ) {}
 		virtual bool Validate() const { return true; }
+
 	};
 
 	//=============================================================================================

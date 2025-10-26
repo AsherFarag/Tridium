@@ -3,7 +3,7 @@
 #include "tripch.h"
 
 #include "Tridium/Core/Core.h"
-#include "Tridium/Events/Event.h"
+#include "Tridium/Application/Event.h"
 
 #include <sstream>
 

@@ -12,7 +12,7 @@ namespace Tridium {
 	class RenderPass;
 	class RenderPassBuilder;
 	class RenderGraph;
-	using RenderPassExecute = void( IRHICommandList&, RenderGraph&, const RenderContext&, RenderViewID, const RenderView& );
+	using RenderPassExecute = void( IRHICommandList&, RenderGraph&, const RenderContext&, const RenderView& );
 
 	//=================================================================================================
 	enum class RenderPassID : uint32_t { Invalid = Cast<uint32_t>( ~0 ) };
@@ -108,7 +108,7 @@ namespace Tridium {
 		// WARNING: This function should not capture any variables from the setup function by reference.
 		// The render graph may be executed at a later time when those references are no longer valid.
 		// If you need to capture variables, use value captures (e.g., [=]).
-		template<std::invocable<IRHICommandList&, RenderGraph&, const RenderContext&, RenderViewID, const RenderView&> _Func>
+		template<std::invocable<IRHICommandList&, RenderGraph&, const RenderContext&, const RenderView&> _Func>
 		void Execute( _Func&& a_ExecuteFunc );
 
 	private:
@@ -164,7 +164,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		// Execute the render graph on the given command list.
-		void Execute( IRHICommandList& a_CommandList, const RenderContext& a_Context, RenderViewID a_ViewID, const RenderView& a_View );
+		void Execute( IRHICommandList& a_CommandList, const RenderContext& a_Context, const RenderView& a_View );
 
 		//=============================================================================================
 		// Clear temporary state.
@@ -352,7 +352,7 @@ namespace Tridium {
 		pass.Writes.EmplaceBack( RenderGraph::ResourceEdge{ m_PassID, Cast<uint32_t>( a_Resource ), ERHIObjectType::Buffer, a_Usage, true } );
 	}
 
-	template<std::invocable<IRHICommandList&, RenderGraph&, const RenderContext&, RenderViewID, const RenderView&> _Func>
+	template<std::invocable<IRHICommandList&, RenderGraph&, const RenderContext&, const RenderView&> _Func>
 	inline void RenderPassBuilder::Execute( _Func&& a_ExecuteFunc )
 	{
 

@@ -3,8 +3,13 @@
 #include <Tridium/Physics/PhysicsScene.h>
 #include <Tridium/Graphics/Renderer/RendererSceneSystem.h>
 
-
 namespace Tridium {
+
+	REGISTER_ASSET_TYPE( Scene,
+		AssetTypeInfo{}
+			.SetName( "Scene" )
+			.SetIcon( EditorIcons::MountainSun )
+	);
 
 	void Scene::Init()
 	{

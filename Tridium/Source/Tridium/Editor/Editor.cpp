@@ -27,13 +27,18 @@ namespace Tridium {
 
 		// Set Window title and icon
 		Application::GetWindow().SetTitle("Tridium Editor");
-		Application::GetWindow().SetIcon( ( Engine::Get()->GetEngineAssetsDirectory() / "Editor/Icons/EngineIcon.png" ).ToString() );
+		Application::GetWindow().SetIcon( ( Engine::Get()->EngineAssetsDirectory() / "Editor/Icons/EngineIcon.png" ).ToString() );
 
 		Application::AddOnTick( TickGroups::EditorTick, []() { Editor::Get()->Tick(); } );
 		Application::AddOnTick( TickGroups::DrawUI, []() { Editor::Get()->DrawUI(); } );
 
 		// TEMP!
-		SceneManager::SetActiveScene( MakeShared<Scene>() );
+		SceneManager::SetActiveScene( Scene::Create( MakeShared<AssetInfo>(
+			AssetInfo{
+				.ID = UUID::Generate(),
+				.Name = "Untilted"
+			}
+		) ) );
 	}
 
 	Editor::~Editor()
@@ -75,7 +80,7 @@ namespace Tridium {
 	{
 		m_UIManager.OnEvent( a_Event );
 
-		if ( a_Event.Handled )
+		if ( a_Event.IsConsumed() )
 			return;
 
 		EventDispatcher dispatcher( a_Event );
@@ -171,7 +176,7 @@ namespace Tridium {
 
 		// Project Name
 		{
-			const char* projectName = Engine::ActiveProject().Config().General.Name.c_str();
+			const char* projectName = Engine::Get()->ActiveProject().Config().General.Name.c_str();
 			const float paddingFromRight = 10.0f;
 			ImGui::SameLine( ImGui::GetContentRegionMax().x - ImGui::CalcTextSize( projectName ).x - paddingFromRight );
 
@@ -254,9 +259,6 @@ namespace Tridium {
 
 	bool Editor::Event_KeyPressed( const KeyPressedEvent& a_Event )
 	{
-		if ( a_Event.IsRepeat )
-			return false;
-
 		bool control = Input::IsKeyPressed( EInputKey::LeftControl );
 		bool alt = Input::IsKeyPressed( EInputKey::LeftAlt );
 
@@ -291,7 +293,7 @@ namespace Tridium {
 			{
 				if ( control )
 				{
-					m_CommandManager.Redo();
+					m_UserActionManager.Redo();
 					return true;
 				}
 				break;
@@ -301,7 +303,7 @@ namespace Tridium {
 			{
 				if ( control )
 				{
-					m_CommandManager.Undo();
+					m_UserActionManager.Undo();
 					return true;
 				}
 				break;

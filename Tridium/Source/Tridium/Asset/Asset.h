@@ -1,14 +1,15 @@
 #pragma once
 #include <Tridium/Asset/AssetDefinitions.h>
+#include <Tridium/Asset/AssetFactory.h>
+#include <Tridium/Common/TimeStamp.h>
+#include <Tridium/Containers/String.h>
+#include <Tridium/Containers/UnorderedSet.h>
 #include <Tridium/Core/Hash.h>
 #include <Tridium/Core/Memory.h>
 #include <Tridium/Utils/Concepts.h>
-#include <Tridium/Containers/String.h>
+#include <Tridium/Utils/StaticInitializer.h>
 
 namespace Tridium {
-
-	#define ASSET_EXTENSION_NAME "tasset"
-	constexpr StringView AssetExtensionName = ASSET_EXTENSION_NAME;
 
 	//=================================================================================================
 	// Define an Asset Type class.
@@ -18,7 +19,7 @@ namespace Tridium {
 	//=================================================================================================
 	// Register an Asset Type with the Asset Factory.
 	#define REGISTER_ASSET_TYPE( _Class, _AssetTypeInfo ) \
-		DECLARE_INITIALIZER( AssetType_##_Class ) \
+		DECLARE_INITIALIZER( AssetType_##_Class ); \
 		DEFINE_INITIALIZER( AssetType_##_Class ) \
 		{ \
 			::Tridium::AssetFactory::RegisterAssetType<_Class>( _AssetTypeInfo ); \
@@ -29,6 +30,34 @@ namespace Tridium {
 
 	template<typename T>
 	using AssetWeakRef = WeakPtr<T>;
+
+	//=================================================================================================
+	// Asset Info: Serialized metadata for an asset.
+	//=================================================================================================
+	struct AssetInfo
+	{
+		UUID ID{};
+		AssetTypeID Type = InvalidAssetTypeID;
+		EAssetLoadPolicy LoadPolicy = EAssetLoadPolicy::Default;
+		EnumFlags<EAssetFlags> m_AssetFlags{};
+		String Name{};
+		String Path{};
+		UnorderedSet<UUID> Dependencies{};
+
+	#if WITH_EDITOR
+		struct
+		{
+			// The original source file path from which the asset was imported from.
+			String SourceFilePath{};
+			// The timestamp of when the asset was created.
+			TimeStamp CreationTime{};
+			// The timestamp of when the asset was last modified.
+			TimeStamp LastModifiedTime{};
+		} Editor{};
+	#endif
+
+		bool Valid() const { return ID.Valid() && Type != InvalidAssetTypeID; }
+	};
 
 	//=================================================================================================
 	// Asset Interface: Base class for all assets.
@@ -44,30 +73,26 @@ namespace Tridium {
 		NON_COPYABLE_OR_MOVABLE( IAsset );
 		virtual ~IAsset() = default;
 
-		auto ID() const { return m_AssetID; }
-		auto Flags() const { return m_AssetFlags; }
+		//=============================================================================================
+		const SharedPtr<AssetInfo>& Info() const { return m_Info; }
+		UUID ID() const { return m_Info->ID; }
 
+		//=============================================================================================
 		virtual AssetTypeID Type() const = 0;
-		virtual bool Valid() const { return true; }
-		virtual void OnDependencyUpdated( AssetID a_DependencyID ) {}
-
-		virtual bool operator==( const IAsset& a_Other ) const { return m_AssetID == a_Other.m_AssetID; }
-		virtual bool operator!=( const IAsset& a_Other ) const { return !(*this == a_Other); }
+		virtual bool Valid() const { return m_Info != nullptr && m_Info->Valid(); }
+		virtual void OnDependencyUpdated( UUID a_DependencyID ) {}
 
 	protected:
 
 		//=============================================================================================
 		IAsset() = default;
 
-	protected:
-
 		//=============================================================================================
 		friend class AssetDatabase;
 		friend class AssetFactory;
 
 		//=============================================================================================
-		AssetID m_AssetID{};
-		EnumFlags<EAssetFlags> m_AssetFlags{};
+		SharedPtr<AssetInfo> m_Info{};
 
 	};
 
@@ -80,11 +105,12 @@ namespace Tridium {
 	public:
 
 		//=============================================================================================
-		static AssetRef<T> Create( const AssetID a_AssetID, const EAssetFlags a_AssetFlags = EAssetFlags::None )
+		static AssetRef<T> Create( SharedPtr<AssetInfo> a_Info )
 		{
-			auto asset = MakeShared<T>();
-			asset->m_AssetID = a_AssetID;
-			asset->m_AssetFlags = a_AssetFlags;
+			// Sanity check the asset type
+			a_Info->Type = T::StaticType();
+			AssetRef<T> asset = MakeShared<T>();
+			asset->m_Info = std::move( a_Info );
 			return asset;
 		}
 
@@ -106,7 +132,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		AssetRef<T> m_Ref;
-		AssetID m_ID;
+		UUID m_ID;
 
 	public:
 
@@ -114,16 +140,16 @@ namespace Tridium {
 		using AssetType = T;
 
 		//=============================================================================================
-		AssetHandle() : m_ID( InvalidAssetID ), m_Ref( nullptr ) {}
-		AssetHandle( AssetID a_AssetID ) : m_ID( a_AssetID ), m_Ref( nullptr ) {}
-		AssetHandle( AssetRef<T> a_AssetRef ) : m_ID( InvalidAssetID ), m_Ref( std::move( a_AssetRef ) ) {}
-		AssetHandle( std::nullptr_t ) : m_ID( InvalidAssetID ), m_Ref( nullptr ) {}
+		AssetHandle() : m_ID(), m_Ref( nullptr ) {}
+		AssetHandle( UUID a_AssetID ) : m_ID( a_AssetID ), m_Ref( nullptr ) {}
+		AssetHandle( AssetRef<T> a_AssetRef ) : m_ID(), m_Ref( std::move( a_AssetRef ) ) {}
+		AssetHandle( std::nullptr_t ) : m_ID(), m_Ref( nullptr ) {}
 
 		//=============================================================================================
-		bool Valid() const { return m_Ref ? true : m_ID != InvalidAssetID; }
+		bool Valid() const { return m_Ref ? true : m_ID.Valid(); }
 
 		//=============================================================================================
-		AssetID ID() const { return m_Ref ? m_Ref->ID() : m_ID; }
+		UUID ID() const { return m_Ref ? m_Ref->ID() : m_ID; }
 
 		//=============================================================================================
 		const AssetRef<T>& Get() const { return m_Ref; }

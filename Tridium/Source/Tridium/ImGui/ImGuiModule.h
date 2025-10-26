@@ -1,4 +1,8 @@
 #pragma once
+#include <Tridium/UI/Config.h>
+
+#if CONFIG_ENABLE_TOOL_UI
+
 #include <Tridium/ImGui/ImGuiBackend.h>
 #include <Tridium/Graphics/RHI/RHI.h>
 #include <Tridium/Engine/EngineModule.h>
@@ -30,3 +34,5 @@ namespace Tridium {
 	};
 
 } // namespace Tridium
+
+#endif // CONFIG_ENABLE_TOOL_UI

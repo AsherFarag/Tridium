@@ -7,13 +7,6 @@
 namespace Tridium {
 
 	//=============================================================================================
-	// Render View ID: A unique identifier for views in the scene.
-	// These IDs are assigned when views are created 
-	// and can be used to retrieve the output of specific views.
-	//=============================================================================================
-	using RenderViewID = Handle<uint32_t>;
-
-	//=============================================================================================
 	// Render View Type: The type of render view,
 	// which determines how it is processed by the render pipeline.
 	// Custom views can be defined for specialized rendering tasks, 
@@ -53,15 +46,13 @@ namespace Tridium {
 		bool Enabled = true;
 
 		//=========================================================================================
+		// The render target texture where the view will be rendered.
+		RHITextureRef OutputTexture = nullptr;
+
+		//=========================================================================================
 		// Additional data depending on the view type.
 		union
 		{
-			//=====================================================================================
-			struct
-			{
-				ERHIFormat OutputFormat = ERHIFormat::Unknown;
-			} Camera;
-
 			//=====================================================================================
 			struct
 			{

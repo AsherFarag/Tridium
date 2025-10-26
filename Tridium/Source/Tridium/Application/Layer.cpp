@@ -49,22 +49,13 @@ namespace Tridium {
 		}
 	}
 
-	void AppLayerStack::OnUpdate( float a_DeltaTime )
-	{
-		// Update layers from top to bottom
-		for ( auto it = m_Layers.RBegin(); it != m_Layers.REnd(); ++it )
-		{
-			( *it )->OnUpdate();
-		}
-	}
-
 	void AppLayerStack::OnEvent( Event& a_Event )
 	{
 		// Propagate events from top to bottom
 		for ( auto it = m_Layers.RBegin(); it != m_Layers.REnd(); ++it )
 		{
 			( *it )->OnEvent( a_Event );
-			if ( a_Event.Handled )
+			if ( a_Event.IsConsumed() )
 				break;
 		}
 	}

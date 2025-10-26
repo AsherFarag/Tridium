@@ -450,7 +450,7 @@ namespace Tridium::D3D12 {
                         srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
 						TODO( "Bit sketchy here, revisit the -1" );
-                        const size_t bindingIndex = layout->SRVBindingOffset + slot - 1;
+                        const size_t bindingIndex = layout->SRVBindingOffset + slot;
 						if ( layout->Desc().Bindings.IsValidIndex( bindingIndex ) )
                         {
                             const RHIShaderBinding& binding = layout->Desc().Bindings[bindingIndex];

@@ -14,28 +14,28 @@ namespace Tridium {
 	public:
 
 		//=============================================================================================
-		static RenderResourceStaticMesh GetStaticMesh( AssetID a_AssetID, RenderResourceID a_VariantID = 0 );
+		static RenderResourceStaticMesh GetStaticMesh( UUID a_AssetID, RenderResourceID a_VariantID = 0 );
 		static RenderResourceStaticMesh GetOrCreateStaticMesh( const AssetRef<class StaticMesh>& a_Asset, RenderResourceID a_VariantID = 0 );
 		static bool AddStaticMesh( const RenderResourceStaticMesh& a_StaticMesh, bool a_ForceReplace = false );
-		static bool RemoveStaticMesh( AssetID a_AssetID, RenderResourceID a_VariantID = InvalidRenderResourceID );
+		static bool RemoveStaticMesh( UUID a_AssetID, RenderResourceID a_VariantID = InvalidRenderResourceID );
 
 		//=============================================================================================
-		static RenderResourceMaterial GetMaterial( AssetID a_AssetID, RenderResourceID a_VariantID = 0 );
+		static RenderResourceMaterial GetMaterial( UUID a_AssetID, RenderResourceID a_VariantID = 0 );
 		static RenderResourceMaterial GetOrCreateMaterial( const AssetRef<class Material>& a_Asset, RenderResourceID a_VariantID = 0 );
 		static bool AddMaterial( const RenderResourceMaterial& a_Material, bool a_ForceReplace = false );
-		static bool RemoveMaterial( AssetID a_AssetID, RenderResourceID a_VariantID = InvalidRenderResourceID );
+		static bool RemoveMaterial( UUID a_AssetID, RenderResourceID a_VariantID = InvalidRenderResourceID );
 
 		//=============================================================================================
-		static RenderResourceTexture GetTexture( AssetID a_AssetID, RenderResourceID a_VariantID = 0 );
+		static RenderResourceTexture GetTexture( UUID a_AssetID, RenderResourceID a_VariantID = 0 );
 		static RenderResourceTexture GetOrCreateTexture( const AssetRef<class Texture>& a_Asset, RenderResourceID a_VariantID = 0 );
 		static bool AddTexture( const RenderResourceTexture& a_Texture, bool a_ForceReplace = false );
-		static bool RemoveTexture( AssetID a_AssetID, RenderResourceID a_VariantID = InvalidRenderResourceID );
+		static bool RemoveTexture( UUID a_AssetID, RenderResourceID a_VariantID = InvalidRenderResourceID );
 
 		//=============================================================================================
-		static RenderResourceEnvironmentMap GetEnvironmentMap( AssetID a_AssetID, RenderResourceID a_VariantID = 0 );
+		static RenderResourceEnvironmentMap GetEnvironmentMap( UUID a_AssetID, RenderResourceID a_VariantID = 0 );
 		static RenderResourceEnvironmentMap GetOrCreateEnvironmentMap( const AssetRef<class EnvironmentMap>& a_Asset, RenderResourceID a_VariantID = 0 );
 		static bool AddEnvironmentMap( const RenderResourceEnvironmentMap& a_EnvMap, bool a_ForceReplace = false );
-		static bool RemoveEnvironmentMap( AssetID a_AssetID, RenderResourceID a_VariantID = InvalidRenderResourceID );
+		static bool RemoveEnvironmentMap( UUID a_AssetID, RenderResourceID a_VariantID = InvalidRenderResourceID );
 
 		//=============================================================================================
 		static const RHITextureRef& GetWhiteTexture2D();

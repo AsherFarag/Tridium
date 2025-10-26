@@ -1,6 +1,6 @@
 #pragma once
+#include <Tridium/Application/Event.h>
 #include <Tridium/Containers/String.h>
-#include <Tridium/Events/Event.h>
 
 namespace Tridium {
 
@@ -28,8 +28,6 @@ namespace Tridium {
 		//=============================================================================================
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
-		virtual void OnUpdate() {}
-		virtual void OnImGuiDraw() {}
 		virtual void OnEvent( Event& a_Event ) {}
 
 	protected:
@@ -80,7 +78,6 @@ namespace Tridium {
 		size_t Size() const { return m_Layers.Size(); }
 
 		//=============================================================================================
-		void OnUpdate( float a_DeltaTime );
 		void OnEvent( Event& a_Event );
 
 	private:

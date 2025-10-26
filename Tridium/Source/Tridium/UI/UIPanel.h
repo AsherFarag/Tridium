@@ -4,7 +4,7 @@
 #if CONFIG_ENABLE_TOOL_UI
 
 #include <Tridium/Containers/StringView.h>
-#include <Tridium/Events/Event.h>
+#include <Tridium/Application/Event.h>
 
 namespace Tridium {
 

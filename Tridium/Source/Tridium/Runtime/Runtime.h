@@ -1,34 +1,42 @@
 #pragma once
-#include <Tridium/Scene/Scene.h>
+#include <Tridium/Application/Layer.h>
+
+#if CONFIG_RUNTIME
 
 namespace Tridium {
 
 	//=================================================================================================
-	// SceneManager: Handles the loading, unloading, and management of scenes.
+	// Runtime: The runtime layer is used for executable game builds.
+	// It handles updating the scene and game logic.
 	//=================================================================================================
-	class SceneManager
+	class Runtime final : public IAppLayer
 	{
 	public:
 
 		//=============================================================================================
-		static SceneManager* Get();
+		Runtime() : IAppLayer( "Runtime" ) {}
+		~Runtime() override = default;
 
 		//=============================================================================================
-		static const SharedPtr<Scene>& ActiveScene() { return Get()->m_ActiveScene; }
-		static void SetActiveScene( const SharedPtr<Scene>& a_Scene ) { Get()->m_ActiveScene = a_Scene; }
-
-		//=============================================================================================
-		static SharedPtr<Scene> GetSceneByID( UUID a_SceneID )
-		{
-			//TODO( "Extend SceneManager to support multiple loaded scenes." );
-			return Get()->m_ActiveScene && Get()->m_ActiveScene->ID() == a_SceneID ? Get()->m_ActiveScene : nullptr;
-		}
+		static Runtime* Get() { return s_Instance; }
 
 	private:
 
 		//=============================================================================================
-		SharedPtr<Scene> m_ActiveScene;
+		void OnAttach() override;
+		void OnDetach() override;
+		void OnEvent( Event& a_Event ) override;
+
+		//=============================================================================================
+		void OnUpdate();
+
+	private:
+
+		//=============================================================================================
+		static Runtime* s_Instance;
 
 	};
 
 } // namespace Tridium
+
+#endif // CONFIG_RUNTIME

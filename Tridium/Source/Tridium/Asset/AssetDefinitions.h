@@ -7,12 +7,8 @@
 
 namespace Tridium {
 
-	//=================================================================================================
-	// Asset ID: Unique identifier for an asset. Generated when the asset is created/imported.
-	// Can be used to look up the asset in the AssetDatabase.
-	//=================================================================================================
-	using AssetID = UUID;
-	inline constexpr AssetID InvalidAssetID = AssetID{};
+	#define ASSET_EXTENSION_NAME "tasset"
+	constexpr StringView AssetExtensionName = ASSET_EXTENSION_NAME;
 
 	//=================================================================================================
 	// Asset Type ID: Hash of the asset type (e.g., Tridium::Texture, Tridium::Material, etc.)
@@ -59,6 +55,10 @@ namespace Tridium {
 		String Name{};
 		Color4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
 		StringView Icon{};
+
+		auto& SetName( String a_Name ) { Name = std::move( a_Name ); return *this; }
+		auto& SetColor( const Color4& a_Color ) { Color = a_Color; return *this; }
+		auto& SetIcon( StringView a_Icon ) { Icon = a_Icon; return *this; }
 	};
 
 	//=================================================================================================

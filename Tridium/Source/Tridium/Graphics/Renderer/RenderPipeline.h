@@ -8,12 +8,6 @@
 
 namespace Tridium {
 
-	struct RenderPipelineOutput
-	{
-		RHIFenceValue FenceValue = 0;
-		UnorderedMap<RenderViewID, RHITextureRef> ViewOutputs;
-	};
-
 	//=================================================================================================
 	// IRenderPipeline Interface: Manages the sequence of rendering operations,
 	// including multiple render passes, and handles the rendering of views and draw items.
@@ -106,7 +100,7 @@ namespace Tridium {
 		void BuildRenderGraph();
 
 		//=============================================================================================
-		RenderPipelineOutput Flush( const RenderContext& a_Context, RenderViewList a_Views );
+		RHIFenceValue Flush( const RenderContext& a_Context, RenderViewList a_Views );
 
 		//=============================================================================================
 		// Renders all views and returns a fence value that signals when rendering is complete.
@@ -166,17 +160,9 @@ namespace Tridium {
 		//=============================================================================================
 		// Adds a new view to be rendered by the pipeline.
 		// Only effective before the first call to Render().
-		[[nodiscard]] RenderViewID AddView( RenderView a_View );
-
-		//=============================================================================================
-		// Returns the output texture of the specified view, or nullptr if not found or not rendered.
-		[[nodiscard]] RHITextureRef GetViewOutput( RenderViewID a_ViewID ) const
+		void AddView( RenderView a_View )
 		{
-			auto it = m_ViewOutputs.find( a_ViewID );
-			if ( it != m_ViewOutputs.end() )
-				return it->second;
-
-			return nullptr;
+			m_ViewsNextFrame.EmplaceBack( std::move( a_View ) );
 		}
 
 		//=============================================================================================
@@ -195,7 +181,7 @@ namespace Tridium {
 		RHIFenceValue Render();
 
 		//=============================================================================================
-		void SubmitDrawPacket( DrawPacket a_Packet )
+		void SubmitDrawPacket( DrawPacket&& a_Packet )
 		{ 
 			m_RenderContext.m_DrawPackets.EmplaceBack( std::move( a_Packet ) ); 
 		}
@@ -227,9 +213,6 @@ namespace Tridium {
 	private:
 
 		//=============================================================================================
-		using RenderViewStorage = Array<Pair<RenderViewID, RenderView>>;
-
-		//=============================================================================================
 		struct RenderPipelineInFlight
 		{
 			RHIFenceValue FenceValue = 0;
@@ -241,20 +224,12 @@ namespace Tridium {
 		InlineArray<RenderPipelineInFlight, RHIConstants::MaxFramesInFlight> m_RenderPipelines;
 
 		//=============================================================================================
-		// Monotonically increasing ID for assigning to new views.
-		RenderViewID::ValueType m_NextViewID = 0;
-
-		//=============================================================================================
 		// The views to render from for the current frame.
-		RenderViewStorage m_Views{};
+		Array<RenderView> m_Views{};
 
 		//=============================================================================================
 		// Any views added while rendering is in progress are stored here to be applied next frame.
-		RenderViewStorage m_ViewsNextFrame{};
-
-		//=============================================================================================
-		// The output textures of the views rendered in the last frame.
-		UnorderedMap<RenderViewID, RHITextureRef> m_ViewOutputs{};
+		Array<RenderView> m_ViewsNextFrame{};
 
 		//=============================================================================================
 		bool m_LightEnvironmentDirty = false;

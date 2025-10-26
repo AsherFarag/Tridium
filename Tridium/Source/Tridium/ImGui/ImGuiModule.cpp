@@ -1,5 +1,8 @@
 #include "tripch.h"
 #include "ImGuiModule.h"
+
+#if CONFIG_ENABLE_TOOL_UI
+
 #include <Tridium/Application/Application.h>
 #include <Tridium/Engine/Engine.h>
 #include <Tridium/Graphics/Renderer/RendererModule.h>
@@ -24,7 +27,7 @@ namespace Tridium {
 
 		ImGuiIO& io = ImGui::GetIO();
 		io.Fonts->AddFontFromFileTTF(
-			( Engine::Get()->GetEngineAssetsDirectory() / "Fonts" / FONT_ICON_FILE_NAME_FAS ).ToString().c_str(),
+			( Engine::Get()->EngineAssetsDirectory() / "Fonts" / FONT_ICON_FILE_NAME_FAS ).ToString().c_str(),
 			iconFontSize, &icons_config, icons_ranges );
 	}
 
@@ -141,7 +144,7 @@ namespace Tridium {
 		}
 
 		ImGui::PushStyleVar( ImGuiStyleVar_WindowPadding, ImVec2( 0.0f, 0.0f ) );
-		ImGui::Begin( Engine::ActiveProject().Config().General.Name.c_str(), nullptr, window_flags);
+		ImGui::Begin( Engine::Get()->ActiveProject().Config().General.Name.c_str(), nullptr, window_flags);
 		ImGui::PopStyleVar();
 
 		if ( opt_Fullscreen )
@@ -323,3 +326,5 @@ namespace Tridium {
 	}
 
 } // namespace Tridium
+
+#endif // CONFIG_ENABLE_TOOL_UI

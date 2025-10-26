@@ -3,7 +3,6 @@
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/Asset/MeshAsset.h>
 #include <Tridium/Graphics/Color.h>
-#include <Tridium/Graphics/Renderer/RenderView.h>
 
 namespace Tridium {
 
@@ -14,7 +13,6 @@ namespace Tridium {
 	{
 		enum class EProjectionType { Perspective = 0, Orthographic = 1 };
 
-		RenderViewID ViewID{};
 		EProjectionType ProjectionType = EProjectionType::Perspective;
 		Vector2 ViewportSize{};
 

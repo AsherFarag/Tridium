@@ -1,5 +1,7 @@
 #pragma once
 #include <Tridium/Asset/AssetDefinitions.h>
+#include <Tridium/Containers/UnorderedMap.h>
+#include <Tridium/Core/Memory.h>
 #include <Tridium/Core/Config.h>
 #include <Tridium/Core/Types.h>
 #include <Tridium/Core/Hash.h>

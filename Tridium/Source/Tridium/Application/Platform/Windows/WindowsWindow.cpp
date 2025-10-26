@@ -1,7 +1,7 @@
 #include "tripch.h"
 #include "WindowsWindow.h"
 
-#include <Tridium/Events/Event.h>
+#include <Tridium/Application/Event.h>
 
 // TEMP?
 #include "stb_image.h"

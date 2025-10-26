@@ -14,7 +14,7 @@ namespace Tridium {
 	using ResourceVariants = SmallArray<T, 8>;
 
 	template<Concepts::Derived<RenderResource> T>
-	using ResourceMap = UnorderedMap<AssetID, ResourceVariants<T>>;
+	using ResourceMap = UnorderedMap<UUID, ResourceVariants<T>>;
 
 	//=============================================================================================
 	static ResourceMap<RenderResourceStaticMesh> s_StaticMeshes;
@@ -42,7 +42,7 @@ namespace Tridium {
 	}
 
 	template<Concepts::Derived<RenderResource> T>
-	static T GetResource( ResourceMap<T>& a_ResourceMap, AssetID a_AssetID, RenderResourceID a_VariantID )
+	static T GetResource( ResourceMap<T>& a_ResourceMap, UUID a_AssetID, RenderResourceID a_VariantID )
 	{
 		auto variantsIt = a_ResourceMap.find( a_AssetID );
 		if ( variantsIt == a_ResourceMap.end() )
@@ -83,7 +83,7 @@ namespace Tridium {
 	}
 
 	template<Concepts::Derived<RenderResource> T>
-	static bool RemoveResource( ResourceMap<T>& a_ResourceMap, AssetID a_AssetID, RenderResourceID a_VariantID )
+	static bool RemoveResource( ResourceMap<T>& a_ResourceMap, UUID a_AssetID, RenderResourceID a_VariantID )
 	{
 		auto variantsIt = a_ResourceMap.find( a_AssetID );
 		if ( variantsIt == a_ResourceMap.end() )
@@ -200,7 +200,7 @@ namespace Tridium {
 		s_BRDFLUTTex2D = nullptr;
     }
 
-	RenderResourceStaticMesh RenderResourceManager::GetStaticMesh( AssetID a_AssetID, RenderResourceID a_VariantID )
+	RenderResourceStaticMesh RenderResourceManager::GetStaticMesh( UUID a_AssetID, RenderResourceID a_VariantID )
 	{
 		return GetResource( s_StaticMeshes, a_AssetID, a_VariantID );
 	}
@@ -271,14 +271,14 @@ namespace Tridium {
 		return AddResource( s_StaticMeshes, a_StaticMesh, a_ForceReplace );
 	}
 
-	bool RenderResourceManager::RemoveStaticMesh( AssetID a_AssetID, RenderResourceID a_VariantID )
+	bool RenderResourceManager::RemoveStaticMesh( UUID a_AssetID, RenderResourceID a_VariantID )
 	{
 		return RemoveResource( s_StaticMeshes, a_AssetID, a_VariantID );
 	}
 
 	//=============================================================================================
 
-	RenderResourceMaterial RenderResourceManager::GetMaterial( AssetID a_AssetID, RenderResourceID a_VariantID )
+	RenderResourceMaterial RenderResourceManager::GetMaterial( UUID a_AssetID, RenderResourceID a_VariantID )
 	{
 		return GetResource( s_Materials, a_AssetID, a_VariantID );
 	}
@@ -432,14 +432,14 @@ namespace Tridium {
 		return AddResource( s_Materials, a_Material, a_ForceReplace );
 	}
 
-	bool RenderResourceManager::RemoveMaterial( AssetID a_AssetID, RenderResourceID a_VariantID )
+	bool RenderResourceManager::RemoveMaterial( UUID a_AssetID, RenderResourceID a_VariantID )
 	{
 		return RemoveResource( s_Materials, a_AssetID, a_VariantID );
 	}
 
 	//=============================================================================================
 
-	RenderResourceTexture RenderResourceManager::GetTexture( AssetID a_AssetID, RenderResourceID a_VariantID )
+	RenderResourceTexture RenderResourceManager::GetTexture( UUID a_AssetID, RenderResourceID a_VariantID )
 	{
 		return GetResource( s_Textures, a_AssetID, a_VariantID );
 	}
@@ -503,12 +503,12 @@ namespace Tridium {
 		return AddResource( s_Textures, a_Texture, a_ForceReplace );
 	}
 
-	bool RenderResourceManager::RemoveTexture( AssetID a_AssetID, RenderResourceID a_VariantID )
+	bool RenderResourceManager::RemoveTexture( UUID a_AssetID, RenderResourceID a_VariantID )
 	{
 		return RemoveResource( s_Textures, a_AssetID, a_VariantID );
 	}
 
-	RenderResourceEnvironmentMap RenderResourceManager::GetEnvironmentMap( AssetID a_AssetID, RenderResourceID a_VariantID )
+	RenderResourceEnvironmentMap RenderResourceManager::GetEnvironmentMap( UUID a_AssetID, RenderResourceID a_VariantID )
 	{
 		return GetResource( s_EnvironmentMaps, a_AssetID, a_VariantID );
 	}

@@ -185,15 +185,15 @@ namespace Tridium {
 	struct RenderViewList
 	{
 		//=========================================================================================
-		Span<const Pair<RenderViewID, RenderView>> RawViews{};
+		Span<const RenderView> RawViews{};
 
 		//=========================================================================================
 		// Computes the number of enabled views in the list.
 		[[nodiscard]] size_t Count() const
 		{
-			return std::ranges::count_if( RawViews, []( const Pair<RenderViewID, RenderView>& a_View )
+			return std::ranges::count_if( RawViews, []( const RenderView& a_View )
 			{
-				return a_View.second.Enabled;
+				return a_View.Enabled;
 			} );
 		}
 
@@ -201,9 +201,9 @@ namespace Tridium {
 		// Returns a filtered view of only the enabled views.
 		auto Views() const
 		{
-			return RawViews | std::views::filter( []( const Pair<RenderViewID, RenderView>& a_View )
+			return RawViews | std::views::filter( []( const RenderView& a_View )
 			{
-				return a_View.second.Enabled;
+				return a_View.Enabled;
 			} );
 		}
 
@@ -211,9 +211,9 @@ namespace Tridium {
 		// Returns a filtered view of only the enabled views of the specified type.
 		auto ViewsOf( ERenderViewType a_Type ) const
 		{
-			return RawViews | std::views::filter( [a_Type]( const Pair<RenderViewID, RenderView>& a_View )
+			return RawViews | std::views::filter( [a_Type]( const RenderView& a_View )
 			{
-				return a_View.second.Enabled && a_View.second.Type == a_Type;
+				return a_View.Enabled && a_View.Type == a_Type;
 			} );
 		}
 
@@ -250,19 +250,6 @@ namespace Tridium {
 		//=========================================================================================
 		const auto& DrawPackets() const { return m_DrawPackets; }
 		const auto& Lighting() const { return m_Lighting; }
-		const auto& ViewOutputs() const { return m_ViewOutputs; }
-
-		//=========================================================================================
-		const RHITextureRef& GetViewOutput( RenderViewID a_ViewID ) const
-		{
-			static const RHITextureRef s_NullTexture = nullptr;
-
-			auto it = m_ViewOutputs.find( a_ViewID );
-			if ( it != m_ViewOutputs.end() )
-				return it->second;
-
-			return s_NullTexture;
-		}
 
 		//=========================================================================================
 		const DirectionalLight* GetDirectionalLight( LightID a_ID )
@@ -299,7 +286,6 @@ namespace Tridium {
 		//=========================================================================================
 		Array<DrawPacket> m_DrawPackets{};
 		LightEnvironment m_Lighting{};
-		UnorderedMap<RenderViewID, RHITextureRef> m_ViewOutputs{};
 
 	};
 

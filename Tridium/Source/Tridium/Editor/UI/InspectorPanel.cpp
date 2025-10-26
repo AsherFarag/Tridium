@@ -3,7 +3,9 @@
 #if WITH_EDITOR
 
 #include <Tridium/Editor/Editor.h>
+#include <Tridium/Editor/UserActions/SceneActions.h>
 #include <Tridium/Scene/Scene.h>
+#include <Tridium/Scene/SceneManager.h>
 #include <Tridium/UI/PropertyDrawers.h>
 
 namespace Tridium {
@@ -120,24 +122,31 @@ namespace Tridium {
 			ImGui::Separator();
 		}
 		
-		static MyCustomComponent player{};
-		static String playerComponentName = std::format( "{} Player Component", StringView( EditorIcons::Person ), player.Name );
+		static String playerComponentName = std::format( "{} Player Component", StringView( EditorIcons::Person ) );
 
-		if ( UI::BeginTree( playerComponentName, UI::ETreeFlags::DefaultOpen | UI::ETreeFlags::Framed ) )
+		static GameObject player = SceneManager::Get()->ActiveScene()->CreateGameObject( "Player", Vector3::Zero() );
+		static MyCustomComponent* playerComp = &player.Add<MyCustomComponent>();
+		playerComp = player.TryGet<MyCustomComponent>();
+
+		if ( playerComp && UI::BeginTree( playerComponentName, UI::ETreeFlags::DefaultOpen | UI::ETreeFlags::Framed ) )
 		{
-			UIPropertyDrawer<MyCustomComponent>::Draw( playerComponentName, player, false /* Don't draw a tree node */ );
+			ImGui::BeginGroup();
+			bool modified = UIPropertyDrawer<MyCustomComponent>::Draw( playerComponentName, *playerComp, false );
+			ImGui::EndGroup();
+
+			if ( ImGui::IsItemActivated() )
+			{
+				Editor::GetUserActionManager().Push( MakeUnique<ComponentUserAction<MyCustomComponent>>(
+						player.Scene()->ID(),
+						player.ID(),
+						EComponentUserActionType::Modify,
+						*playerComp )
+				);
+			}
+
 			UI::EndTree();
 
 			ImGui::Separator();
-		}
-
-		if ( player.IsDead() )
-		{
-			player.TimeDead += 0.016f; // Simulate time dead increment
-		}
-		else
-		{
-			player.TimeDead = 0.0f; // Reset time dead if alive
 		}
 	}
 

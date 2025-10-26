@@ -48,13 +48,11 @@ namespace Tridium {
 			a_Builder.Write( m_Output.first, ERHIResourceStates::RenderTarget );
 			a_Builder.Write( m_Depth.first, ERHIResourceStates::DepthStencilWrite );
 
-			a_Builder.Execute( [=]( IRHICommandList& a_CommandList, RenderGraph& a_Graph, const RenderContext& a_Context, RenderViewID a_ViewID, const RenderView& a_View )
+			a_Builder.Execute( [=]( IRHICommandList& a_CommandList, RenderGraph& a_Graph, const RenderContext& a_Context, const RenderView& a_View )
 			{
 				PROFILE_SCOPE( "RenderPass: Root", ProfilerCategory::Rendering );
 
-				TODO( "Add clearing textures without graphics state" );
-
-				m_Output.second = a_Context.GetViewOutput( a_ViewID );
+				m_Output.second = a_View.OutputTexture;
 				a_Graph.UpdateTexture( m_Output.first, m_Output.second );
 
 				m_Depth.second = RHI::CreateTexture( RHITextureDesc{}
@@ -128,7 +126,7 @@ namespace Tridium {
 			a_Builder.Write( m_Emission.first, ERHIResourceStates::RenderTarget );
 			a_Builder.Write( m_Depth.first, ERHIResourceStates::DepthStencilWrite );
 
-			a_Builder.Execute( [this]( IRHICommandList& a_CommandList, RenderGraph& a_Graph, const RenderContext& a_Context, RenderViewID a_ViewID, const RenderView& a_View )
+			a_Builder.Execute( [this]( IRHICommandList& a_CommandList, RenderGraph& a_Graph, const RenderContext& a_Context, const RenderView& a_View )
 			{
 				PROFILE_SCOPE( "RenderPass: Geometry Pass - StaticMesh", ProfilerCategory::Rendering );
 
@@ -309,7 +307,7 @@ namespace Tridium {
 			a_Builder.Read( m_Depth, ERHIResourceStates::DepthStencilRead );
 			a_Builder.Write( m_Output, ERHIResourceStates::RenderTarget );
 
-			a_Builder.Execute( [=]( IRHICommandList& a_CommandList, RenderGraph& a_Graph, const RenderContext& a_Context, RenderViewID a_ViewID, const RenderView& a_View )
+			a_Builder.Execute( [=]( IRHICommandList& a_CommandList, RenderGraph& a_Graph, const RenderContext& a_Context, const RenderView& a_View )
 			{
 				PROFILE_SCOPE( "RenderPass: Skybox", ProfilerCategory::Rendering );
 

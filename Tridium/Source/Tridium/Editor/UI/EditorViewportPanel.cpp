@@ -4,6 +4,7 @@
 
 #include <Tridium/Editor/Editor.h>
 #include <Tridium/Graphics/Renderer/RendererModule.h>
+#include <Tridium/Graphics/RHI/RHI.h>
 #include <Tridium/Scene/Scene.h>
 #include <ImGuizmo.h>
 
@@ -84,7 +85,7 @@ namespace Tridium {
 				AssetImportContext context;
 				context.m_AssetPath = assetFilePath;
 				envMapImporter->OnImport( context );
-				importedEnvMapAsset = SharedPtrCast<EnvironmentMap>( context.m_CreatedAssets.Back().second );
+				importedEnvMapAsset = SharedPtrCast<EnvironmentMap>( context.m_CreatedAssets.Back() );
 
 				lightEnv.Sky.EnvironmentMap = RenderResourceManager::GetOrCreateEnvironmentMap( importedEnvMapAsset );
 			}
@@ -104,9 +105,9 @@ namespace Tridium {
 				AssetImportContext context;
 				context.m_AssetPath = path;
 				modelImporter->OnImport( context );
-				for ( const auto& [metaData, asset] : context.m_CreatedAssets )
+				for ( const auto& asset : context.m_CreatedAssets )
 				{
-					LOG( LogCategory::Debug, Info, "Created Asset: {}", metaData.Name );
+					LOG( LogCategory::Debug, Info, "Created Asset: {}", asset->Info()->Name );
 					if ( asset->Type() == StaticMesh::StaticType() )
 					{
 						s_ImportedAssets.PushBack( SharedPtrCast<StaticMesh>( asset ) );
@@ -129,6 +130,21 @@ namespace Tridium {
 
 	void EditorViewportPanel::OnUpdate( float a_DeltaTime )
 	{
+		if ( !m_ViewportTexture || 
+			 m_ViewportTexture->Desc().Width != Cast<uint32_t>( m_ViewportSize.X ) || 
+			 m_ViewportTexture->Desc().Height != Cast<uint32_t>( m_ViewportSize.Y ) )
+		{
+			RHITextureDesc textureDesc;
+			textureDesc.Dimension = ERHITextureDimension::Texture2D;
+			textureDesc.Width = Cast<uint32_t>( m_ViewportSize.X );
+			textureDesc.Height = Cast<uint32_t>( m_ViewportSize.Y );
+			textureDesc.Format = ERHIFormat::RGBA8_UNORM;
+			textureDesc.BindFlags = ERHIBindFlags::RenderTarget | ERHIBindFlags::ShaderResource;
+			textureDesc.UseClearValue = true;
+			textureDesc.Name = "Editor Viewport Texture";
+			m_ViewportTexture = RHI::CreateTexture( textureDesc );
+		}
+
 		RenderView view
 		{
 			.Constants{
@@ -141,10 +157,10 @@ namespace Tridium {
 			},
 			.Type = ERenderViewType::Camera,
 			.Enabled = true,
-			.Camera = {.OutputFormat = ERHIFormat::RGBA16_UNORM }
+			.OutputTexture = m_ViewportTexture,
 		};
 
-		m_ViewID = RendererModule::GetPipelineManager()->AddView( view );
+		RendererModule::GetPipelineManager()->AddView( view );
 	}
 
 	void EditorViewportPanel::OnDraw( StringView a_Name, bool& o_Open )
@@ -168,7 +184,7 @@ namespace Tridium {
 			m_EditorCamera.SetViewportSize( m_ViewportSize.X, m_ViewportSize.Y );
 			m_EditorCamera.OnUpdate();
 
-			ImTextureID textureID = (ImTextureID)( RendererModule::GetPipelineManager()->GetViewOutput( m_ViewID ).get() );
+			ImTextureID textureID = (ImTextureID)( m_ViewportTexture.get() );
 			if ( textureID )
 			{
 				ImGui::Image( textureID, ImGui::GetContentRegionAvail() );

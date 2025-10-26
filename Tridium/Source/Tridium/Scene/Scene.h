@@ -1,5 +1,7 @@
 #pragma once
+#include <Tridium/Asset/Asset.h>
 #include <Tridium/Containers/TypeMap.h>
+#include <Tridium/Core/Memory.h>
 #include <Tridium/Scene/Component.h>
 #include <Tridium/ECS/ECS.h>
 #include <Tridium/Utils/Log.h>
@@ -73,7 +75,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		friend class Scene;
-		Scene* m_Scene;
+		Scene* m_Scene = nullptr;
 
 	};
 
@@ -142,14 +144,9 @@ namespace Tridium {
 	//=================================================================================================
 	// Scene:
 	//=================================================================================================
-	class Scene
+	DEFINE_ASSET_TYPE( Scene )
 	{
 	public:
-
-		//=============================================================================================
-		NON_COPYABLE_OR_MOVABLE( Scene );
-		Scene() = default;
-		~Scene() = default;
 
 		//=============================================================================================
 		// Returns a reference to the EntityComponentRegistry used by this Scene.
@@ -220,9 +217,10 @@ namespace Tridium {
 		void DestroyGameObject( GameObject a_GameObject );
 
 	protected:
-	public: // TODO : Make protected later
 
 		//=============================================================================================
+		friend class Editor;
+		friend class Runtime;
 		friend class SceneManager;
 
 		//=============================================================================================

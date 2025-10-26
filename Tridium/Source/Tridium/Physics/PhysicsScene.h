@@ -1,10 +1,9 @@
 #pragma once
 #include <Tridium/Scene/Scene.h>
+#include <Tridium/Core/Memory.h>
+#include <Tridium/Math/Vector.h>
 
 // Old
-#include <Tridium/Core/Memory.h>
-#include <Tridium/Math/Math.h>
-#include <Tridium/Scene/SceneSystem.h>
 #include <Tridium/Reflection/ReflectionFwd.h>
 
 #include "RayCast.h"

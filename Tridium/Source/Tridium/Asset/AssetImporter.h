@@ -91,21 +91,20 @@ namespace Tridium {
 			// This is done so we can wait until the entire import process is complete and all assets are created.
 			// So, if the import fails, we don't end up with partially imported assets in the database.
 
-			AssetMetadata metaData
+			SharedPtr<AssetInfo> info = MakeShared<AssetInfo>();
 			{
-				.ID = AssetID::Generate(),
-				.Type = T::StaticType(),
-				.Name = std::move( a_Name ),
-				.Path = std::move( a_Path ),
-				.Editor
-				{ 
-					.SourceFilePath = a_SourceAssetPath.empty() ? m_AssetPath.ToString() : a_SourceAssetPath,
-					.CreationTime = TimeStamp::Now(),
-					.LastModifiedTime = TimeStamp::Now()
-				}
-			};
+				info->ID = UUID::Generate();
+				info->Type = T::StaticType();
+				info->Name = std::move( a_Name );
+				info->Path = std::move( a_Path );
+			#if WITH_EDITOR
+				info->Editor.SourceFilePath = a_SourceAssetPath.empty() ? m_AssetPath.ToString() : a_SourceAssetPath;
+				info->Editor.CreationTime = TimeStamp::Now();
+				info->Editor.LastModifiedTime = TimeStamp::Now();
+			#endif
+			}
 
-			AssetRef<T> asset = T::Create( metaData.ID );
+			AssetRef<T> asset = T::Create( info );
 
 			// Check if the asset was created successfully
 			if ( !asset )
@@ -115,14 +114,14 @@ namespace Tridium {
 			}
 
 			// Store the created asset and its metadata for later registration
-			m_CreatedAssets.EmplaceBack( std::move( metaData ), asset );
+			m_CreatedAssets.EmplaceBack( asset );
 
 			return asset;
 		}
 
 		//=============================================================================================
 		// Registers a dependency between two assets.
-		bool RegisterDependency( AssetID a_Dependent, AssetID a_Dependency )
+		bool RegisterDependency( UUID a_Dependent, UUID a_Dependency )
 		{
 			if ( !a_Dependent.Valid() || !a_Dependency.Valid() )
 			{
@@ -131,11 +130,11 @@ namespace Tridium {
 			}
 
 			// Find the created asset that matches the dependent AssetID
-			for ( auto& [meta, asset] : m_CreatedAssets )
+			for ( AssetRef<IAsset>& asset : m_CreatedAssets )
 			{
-				if ( meta.ID == a_Dependent )
+				if ( asset->ID() == a_Dependent )
 				{
-					meta.Dependencies.insert( a_Dependency );
+					asset->Info()->Dependencies.insert( a_Dependency );
 					return true;
 				}
 			}
@@ -150,7 +149,7 @@ namespace Tridium {
 		FilePath m_AssetPath{};
 		FilePath m_DestinationPath{};
 		Span<const byte_t> m_FileData{};
-		List<Pair<AssetMetadata, AssetRef<IAsset>>> m_CreatedAssets{};
+		Array<AssetRef<IAsset>> m_CreatedAssets{};
 
 		Array<String> m_Warnings{};
 		bool m_HasFailed = false;

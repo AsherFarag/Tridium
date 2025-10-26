@@ -89,13 +89,6 @@ namespace Tridium {
 		return true;
 	}
 
-	RenderViewID RenderPipelineManager::AddView( RenderView a_View )
-	{
-		RenderViewID id{ m_NextViewID++ };
-		m_ViewsNextFrame.EmplaceBack( id, std::move( a_View ) );
-		return id;
-	}
-
 	RHIFenceValue RenderPipelineManager::Render()
 	{
 		RenderPipelineInFlight& pipelineInFlight = m_RenderPipelines[RendererModule::GetFrameIndex()];
@@ -105,8 +98,13 @@ namespace Tridium {
 		
 		const RenderViewList viewList{ .RawViews = m_Views };
 
-		for ( auto& [viewID, view] : m_Views | std::views::filter( []( const auto& a_View ) { return a_View.second.Enabled; } ) )
+		for ( RenderView& view : m_Views  )
 		{
+			if ( !view.Enabled )
+			{
+				continue;
+			}
+
 			// Create the constant buffer for this view if it doesn't already exist.
 			if ( view.ConstantsBuffer == nullptr )
 			{
@@ -117,42 +115,9 @@ namespace Tridium {
 					.SetBindFlags( ERHIBindFlags::ConstantBuffer ),
 					Span{ (const byte_t*)&view.Constants, sizeof( RenderViewConstants ) } );
 			}
-
-			// Create the output texture for this view if it doesn't already exist.
-			auto texDesc = RHITextureDesc{}.SetName( std::format( "ViewOutput_{}", view.Name ) )
-				.SetDimension( ERHITextureDimension::Texture2D )
-				.SetWidth( view.Constants.ViewportSize.X )
-				.SetHeight( view.Constants.ViewportSize.Y )
-				.SetClearValue( RHIClearValue{} )
-				.SetUseClearValue( true )
-				.SetBindFlags( ERHIBindFlags::RenderTarget | ERHIBindFlags::ShaderResource );
-
-			if ( view.Type == ERenderViewType::Camera )
-			{
-				texDesc.SetFormat( view.Camera.OutputFormat );
-			}
-			else if ( view.Type == ERenderViewType::Shadow )
-			{
-				if ( view.Shadow.LightType == ELightType::Point )
-				{
-					texDesc.SetDimension( ERHITextureDimension::TextureCube );
-					texDesc.SetArraySize( 6 );
-				}
-
-				texDesc.SetFormat( ERHIFormat::D32_FLOAT );
-				texDesc.SetBindFlags( ERHIBindFlags::DepthStencil | ERHIBindFlags::ShaderResource );
-			}
-			else
-			{
-				texDesc.SetFormat( ERHIFormat::RGBA8_UNORM );
-			}
-
-			m_RenderContext.m_ViewOutputs[viewID] = RHI::CreateTexture( texDesc );
 		}
 
 		pipelineInFlight.FenceValue = pipelineInFlight.Pipeline->Render( m_RenderContext, viewList );
-
-		m_ViewOutputs = std::move( m_RenderContext.m_ViewOutputs );
 
 		return pipelineInFlight.FenceValue;
 	}
@@ -173,7 +138,7 @@ namespace Tridium {
 			// Use the override material if it exists, otherwise use the material from the source mesh
 			AssetRef<Material> material = a_Mesh->GetMaterial( subMesh );
 			const RenderResourceMaterial materialResource = RenderResourceManager::GetOrCreateMaterial( material );
-			if ( !CHECK( materialResource.Valid(), "Material render resource is not valid for material '{}'", material->ID() ) )
+			if ( !CHECK( materialResource.Valid(), "Material render resource is not valid for material '{}'", material->Info()->Name ) )
 			{
 				continue;
 			}
@@ -224,7 +189,6 @@ namespace Tridium {
 	void RenderPipelineManager::EndFrame()
 	{
 		m_RenderContext.m_DrawPackets.Clear();
-		m_RenderContext.m_ViewOutputs.clear();
 	}
 
 	void RenderPipelineManager::Reset()
@@ -232,7 +196,6 @@ namespace Tridium {
 		m_RenderPipelines.Clear();
 		m_Views.Clear();
 		m_RenderContext.m_DrawPackets.Clear();
-		m_RenderContext.m_ViewOutputs.clear();
 	}
 
 } // namespace Tridium

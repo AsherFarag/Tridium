@@ -93,10 +93,11 @@ namespace Tridium {
 
 				// Random lights for testing
 
-				a_Builder.Execute( [=, this]( IRHICommandList& a_CommandList, RenderGraph& a_Graph, const RenderContext& a_Context, RenderViewID a_ViewID, const RenderView& a_View )
+				a_Builder.Execute( [=, this]( IRHICommandList& a_CommandList, RenderGraph& a_Graph, const RenderContext& a_Context, const RenderView& a_View )
 				{
 					if ( !g_TestLightEnable || !g_TestDrawLights )
 						return;
+
 					PROFILE_SCOPE( "RenderPass: Lighting Pass", ProfilerCategory::Rendering );
 
 					struct DebugLightCasterVertex
@@ -116,7 +117,7 @@ namespace Tridium {
 							.SetDepthWriteEnabled( true )
 							.SetComparison( ERHIComparison::LessEqual ) )
 						.SetFramebufferInfo( RHIFramebufferInfo{}
-											 .SetColorFormats( { a_View.Camera.OutputFormat } )
+											 .SetColorFormats( { a_View.OutputTexture->Desc().Format } )
 											 .SetDepthStencilFormat( depthTex->Desc().Format ) );
 					ShaderLibrary::GetOrCreateVariant( "DebugLightCaster"_H )->Apply( lightingPassPSODesc );
 
@@ -212,14 +213,14 @@ namespace Tridium {
 		m_GfxCmdList->Open();
 		m_GfxCmdList->PushDebugGroup( "HighDefinitionRenderPipeline Render" );
 
-		for ( const auto& [id, view] : a_Views.Shadows() )
+		for ( const RenderView& view : a_Views.Shadows() )
 		{
 			RenderShadowMap( a_Context, view );
 		}
 
-		for ( const auto& [id, view] : a_Views.Cameras() )
+		for ( const RenderView& view : a_Views.Cameras() )
 		{
-			m_RenderGraph.Execute( *m_GfxCmdList, a_Context, id, view );
+			m_RenderGraph.Execute( *m_GfxCmdList, a_Context, view );
 		}
 
 		m_GfxCmdList->PopDebugGroup();
@@ -303,35 +304,40 @@ namespace Tridium {
 			m_Output = rootPass->GetOutputID();
 			a_Builder.Write( m_Output, ERHIResourceStates::RenderTarget );
 
-			// Random lights for testing
 
-			a_Builder.Execute( [=, this]( IRHICommandList& a_CommandList, RenderGraph& a_Graph, const RenderContext& a_Context, RenderViewID a_ViewID, const RenderView& a_View )
+			a_Builder.Execute( [=, this]( IRHICommandList& a_CommandList, RenderGraph& a_Graph, const RenderContext& a_Context, const RenderView& a_View )
 			{
 				PROFILE_SCOPE( "RenderPass: Lighting Pass", ProfilerCategory::Rendering );
 
+				TODO( "This" );
 				static RHIBufferRef pointLightBuffer;
-				if ( !pointLightBuffer || !pointLightBuffer->Valid() ||
-					 pointLightBuffer->Desc().Size < sizeof( PointLight ) * a_Context.Lighting().PointLights.Size() )
+				if ( a_Context.Lighting().PointLights.Size() > 0 )
 				{
-												// Create structured buffer for point lights
-					RHIBufferDesc pointLightBufferDesc = RHIBufferDesc{}
-						.SetName( "SceneRenderer Point Light Buffer" )
-						.SetType( ERHIBufferType::Structured )
-						.SetHeapType( ERHIHeapType::Dynamic )
-						.SetBindFlags( ERHIBindFlags::ShaderResource )
-						.SetSize( sizeof( PointLight ) * a_Context.Lighting().PointLights.Size() )
-						.SetStride( sizeof( PointLight ) );
+					if ( !pointLightBuffer || !pointLightBuffer->Valid() ||
+						 pointLightBuffer->Desc().Size < sizeof( PointLight ) * a_Context.Lighting().PointLights.Size() )
+					{
+													// Create structured buffer for point lights
+						RHIBufferDesc pointLightBufferDesc = RHIBufferDesc{}
+							.SetName( "SceneRenderer Point Light Buffer" )
+							.SetType( ERHIBufferType::Structured )
+							.SetHeapType( ERHIHeapType::Dynamic )
+							.SetBindFlags( ERHIBindFlags::ShaderResource )
+							.SetSize( sizeof( PointLight ) * a_Context.Lighting().PointLights.Size() )
+							.SetStride( sizeof( PointLight ) );
 
-					pointLightBuffer = RHI::CreateBuffer( pointLightBufferDesc,
-														  AsBytes( Span{ a_Context.Lighting().PointLights.Data(),
-																   a_Context.Lighting().PointLights.Size() } ) );
+						pointLightBuffer = RHI::CreateBuffer( pointLightBufferDesc,
+															  AsBytes( Span{ a_Context.Lighting().PointLights.Data(),
+																	   a_Context.Lighting().PointLights.Size() } ) );
+					}
 				}
 
 				auto lightingPassPSODesc = RHIGraphicsPipelineStateDesc{}
 					.SetName( "SceneRenderer Lighting Pass Pipeline State" )
 					.SetVertexLayout( RHIVertexLayout::From<ViewportQuadVertex>() )
 					.SetTopology( ERHITopology::Triangle )
-					.SetFramebufferInfo( RHIFramebufferInfo{}.SetColorFormats( { a_View.Camera.OutputFormat } ) );
+					.SetFramebufferInfo( RHIFramebufferInfo{}
+						.SetColorFormats( { a_View.OutputTexture->Desc().Format } ) 
+					);
 				ShaderLibrary::GetOrCreateVariant( "LitDefault"_H, { "HIGH_QUALITY" } )->Apply( lightingPassPSODesc );
 
 				auto PSO = PipelineStateCache::GetOrCreatePSO(
@@ -351,8 +357,10 @@ namespace Tridium {
 					.AddTexture( "AlbedoMap"_H, albedoTex.get() )
 					.AddTexture( "NormalMap"_H, normalTex.get() )
 					.AddTexture( "MetalRoughAOMap"_H, metalRoughAOTex.get() )
-					.AddTexture( "EmissionMap"_H, emissionTex.get() )
-					.AddStructuredBuffer( "PointLights"_H, pointLightBuffer.get() );
+					.AddTexture( "EmissionMap"_H, emissionTex.get() );
+
+				if ( pointLightBuffer && pointLightBuffer->Valid() )
+					bindingSetDesc.AddStructuredBuffer( "PointLights"_H, pointLightBuffer.get() );
 
 				if ( const auto& environmentMap = a_Context.Lighting().Sky.EnvironmentMap; environmentMap.Valid() )
 				{

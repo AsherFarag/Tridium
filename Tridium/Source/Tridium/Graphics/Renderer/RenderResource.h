@@ -21,9 +21,9 @@ namespace Tridium {
 		RenderResourceID VariantID = 0;
 		// The ID of the Asset this RenderResource is associated with.
 		// NOTE: The Asset owns the RenderResource.
-		AssetID AssetID = InvalidAssetID;
+		UUID AssetID{};
 
-		virtual bool Valid() const { return VariantID != InvalidRenderResourceID && AssetID != InvalidAssetID; }
+		virtual bool Valid() const { return VariantID != InvalidRenderResourceID && AssetID.Valid(); }
 	};
 
 	struct RenderResourceStaticMesh : RenderResource

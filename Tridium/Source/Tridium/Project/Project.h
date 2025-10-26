@@ -13,7 +13,7 @@ namespace Tridium {
 		struct GeneralData
 		{
 			String Name = "Untitled";
-			AssetID StartScene;
+			UUID StartScene;
 			FilePath WorkingDirectory;
 		} General;
 

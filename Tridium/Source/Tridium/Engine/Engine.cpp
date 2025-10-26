@@ -1,13 +1,6 @@
 #include "tripch.h"
 #include "Engine.h"
 #include <Tridium/Application/Application.h>
-#include <Tridium/Debug/DebugDrawer.h>
-
-#include <Tridium/Editor/Editor.h>
-
-#include <Tridium/Graphics/Renderer/RendererModule.h>
-#include <Tridium/Physics/PhysicsModule.h>
-#include <Tridium/Scripting/ScriptModule.h>
 
 // Temp ?
 #include <Tridium/IO/FileManager.h>
@@ -29,9 +22,16 @@ namespace Tridium {
 		return nullptr;
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-	// Engine Initialization
-	//////////////////////////////////////////////////////////////////////////
+	void Engine::OnEvent( Event& a_Event )
+	{
+		// Propagate events to engine modules
+		for ( const auto& [hash, module] : m_EngineModules )
+		{
+			module->OnEvent( a_Event );
+			if ( a_Event.IsConsumed() )
+				break;
+		}
+	}
 
 	bool Engine::InitProject()
 	{
@@ -62,11 +62,6 @@ namespace Tridium {
 			return false;
 		}
 
-		return true;
-	}
-
-	bool Engine::InitScene()
-	{
 		return true;
 	}
 
@@ -125,16 +120,12 @@ namespace Tridium {
 		return result;
 	}
 
-	UniquePtr<Engine> Engine::Create( const EngineConfig& a_Config )
+	Engine::Engine( EngineConfig a_Config )
+		: IAppLayer( "Engine" )
 	{
-		ENSURE( !s_Instance, "An Engine instance already exists!" );
-		return UniquePtr<Engine>( new Engine( a_Config ) );
-	}
-
-	Engine::Engine( const EngineConfig& a_Config )
-	{
+		ASSERT( s_Instance == nullptr, "Engine instance already exists!" );
 		s_Instance = this;
-		m_Config = a_Config;
+		m_Config = std::move( a_Config );
 
 		// Create Modules
 		for ( const auto& [key, moduleInfo] : EngineModuleFactory::ModuleTypes() )
@@ -158,12 +149,6 @@ namespace Tridium {
 		// Initialize Game Instance
 		m_GameInstance.reset( CreateGameInstance() );
 		m_GameInstance->Init();
-
-		// Init Scene
-		if ( !InitScene() )
-		{
-			ENSURE( false, "Engine::Init: Failed to initialize scene" );
-		}
 	}
 
 	Engine::~Engine()

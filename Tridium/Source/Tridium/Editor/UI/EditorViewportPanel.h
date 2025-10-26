@@ -42,11 +42,11 @@ namespace Tridium {
 		//=============================================================================================
 		EGizmoState m_GizmoState = EGizmoState::Translate;
 		EditorCamera m_EditorCamera{};
-		RenderViewID m_ViewID{};
+		RHITextureRef m_ViewportTexture;
 		Vector2 m_ViewportSize = { 1280, 720 };
 
 	};
 
 }
 
-#endif // IS_EDITOR
+#endif // WITH_EDITOR

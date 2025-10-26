@@ -1,6 +1,5 @@
 #pragma once
-
-#include <Tridium/Core/Core.h>
+#include <Tridium/Core/Assert.h>
 #include <Tridium/Core/Enum.h>
 #include <Tridium/Containers/Variant.h>
 #include <Tridium/Utils/TypeTraits.h>
@@ -230,27 +229,47 @@ namespace Tridium {
 
 	struct Event
 	{
-		EventVariant Data{};
-		bool Handled = false;
+	private:
+
+		//=============================================================================================
+		EventVariant m_Data{};
+		bool m_Consumed = false;
+
+	public:
+
+		//=============================================================================================
+		Event() = default;
+
+		//=============================================================================================
+		template<IsEventType T>
+		Event( const T& a_Event ) : m_Data( a_Event ) {}
+
+		//=============================================================================================
+		bool IsConsumed() const { return m_Consumed; }
+		void Consume( bool a_Consume = true )
+		{
+			ASSERT( !m_Consumed || !a_Consume, "Consuming an already consumed event - {}", Name() );
+			m_Consumed = a_Consume;
+		}
 
 		EEventType Type() const
 		{
-			return std::visit( []( const auto& a_Event ) { return a_Event.Type; }, Data );
+			return std::visit( []( const auto& a_Event ) { return a_Event.Type; }, m_Data );
 		}
 
 		StringView Name() const
 		{
-			return std::visit( []( const auto& a_Event ) { return a_Event.Name; }, Data );
+			return std::visit( []( const auto& a_Event ) { return a_Event.Name; }, m_Data );
 		}
 
 		EEventCategory Category() const
 		{
-			return std::visit( []( const auto& a_Event ) { return a_Event.Category; }, Data );
+			return std::visit( []( const auto& a_Event ) { return a_Event.Category; }, m_Data );
 		}
 
 		String ToString() const
 		{
-			return std::visit( []( const auto& a_Event ) { return a_Event.ToString(); }, Data );
+			return std::visit( []( const auto& a_Event ) { return a_Event.ToString(); }, m_Data );
 		}
 
 		bool IsInCategory( EEventCategory a_Category ) const
@@ -261,56 +280,58 @@ namespace Tridium {
 		template<IsEventType T>
 		bool Is() const
 		{
-			return std::holds_alternative<T>( Data );
+			return std::holds_alternative<T>( m_Data );
 		}
 
-		template<EEventType _Type>
+		template<EEventType T>
 		bool Is() const
 		{
-			return std::holds_alternative<Cast<size_t>( _Type )>( Data );
+			return std::holds_alternative<Cast<size_t>( T )>( m_Data );
 		}
 
 		template<IsEventType T>
 		T& Get()
 		{
-			return std::get<T>( Data );
+			return std::get<T>( m_Data );
 		}
 
 		template<IsEventType T>
 		const T& Get() const
 		{
-			return std::get<T>( Data );
+			return std::get<T>( m_Data );
 		}
 
 		template<EEventType _Type>
 		const auto& Get() const
 		{
-			return std::get<Cast<size_t>( _Type )>( Data );
+			return std::get<Cast<size_t>( _Type )>( m_Data );
 		}
-
-		Event() = default;
-
-		template<IsEventType T>
-		Event( const T& a_Event ) 
-			: Data( a_Event ) {}
 	};
 
 	class EventDispatcher
 	{
 	public:
+
+		//=============================================================================================
 		EventDispatcher( Event& a_Event ) : m_Event( a_Event ) {}
 		
+		//=============================================================================================
 		template<IsEventType _EventType, typename _Func>
-		bool Dispatch( const _Func& a_Func )
+		bool Dispatch( _Func&& a_Func )
 		{
 			if ( m_Event.Is<_EventType>() )
 			{
-				m_Event.Handled |= a_Func( m_Event.Get<_EventType>() );
+				m_Event.Consume( a_Func( m_Event.Get<_EventType>() ) );
 				return true;
 			}
+
 			return false;
 		}
+
 	private:
+
+		//=============================================================================================
 		Event& m_Event;
+
 	};
 }

@@ -1,11 +1,10 @@
 #pragma once
+#include <Tridium/Application/Layer.h>
 #include <Tridium/Core/Core.h>
 #include <Tridium/Core/Hash.h>
 #include <Tridium/Engine/EngineConfig.h>
+#include <Tridium/Engine/EngineModule.h>
 #include <Tridium/Project/Project.h>
-
-// Engine Modules
-#include "EngineModule.h"
 
 // Gameplay Frameworks
 #include <Tridium/GameFramework/GameInstance.h>
@@ -19,26 +18,28 @@ namespace Tridium {
 	GameInstance* CreateGameInstance();
 	//================================================================
 
-	// Forward Declarations
-	class AssetManagerBase;
-	class ImGuiLayer;
-
 	//=============================================================================================
 	// Engine: This class serves as the layer above the Application class and is the core of the engine.
 	// It is responsible for initialization and shutdown of the engine and its modules.
 	//=============================================================================================
-	class Engine final
+	class Engine final : public IAppLayer
 	{
 	public:
 
 		//=========================================================================================
 		using ModuleStorage = UnorderedMap<hash64_t, UniquePtr<IEngineModule>>;
 
+		//=========================================================================================
+		Engine( EngineConfig a_Config );
+		~Engine() override;
+
+		//=========================================================================================
 		static Engine* Get() { return s_Instance; }
-		static Project& ActiveProject() { return Get()->m_Project; }
-		static const EngineConfig& GetConfig() { return Get()->m_Config; }
-		static void SetConfig( const EngineConfig& a_Config ) { Get()->m_Config = a_Config; }
-		static const FilePath& GetEngineAssetsDirectory() { return GetConfig().EngineAssetsDirectory; }
+
+		//=========================================================================================
+		Project& ActiveProject() { return m_Project; }
+		const auto& Config() const { return m_Config; }
+		const auto& EngineAssetsDirectory() const { return Config().EngineAssetsDirectory; }
 
 		//=========================================================================================
 		// Get a module by its type hash. E.g. Hashing::TypeHash<MyModule>()
@@ -48,47 +49,36 @@ namespace Tridium {
 		//=========================================================================================
 		// Get an engine module by its type.
 		template<Concepts::Derived<IEngineModule> T>
-		static T* GetModule();
+		static T* GetModule()
+		{
+			constexpr hash_t hash = Hashing::TypeHash<T>();
+			return Cast<T*>( GetModule( hash ) );
+		}
 
 	private:
-		Project m_Project;
-		EngineConfig				m_Config;
-		ModuleStorage               m_EngineModules;
-		UniquePtr<GameInstance>     m_GameInstance;
 
-	protected:
+		//=============================================================================================
+		void OnAttach() override {}
+		void OnDetach() override {}
+		void OnEvent( Event& a_Event ) override;
+
+		//=========================================================================================
+		bool InitProject();
+		Array<IEngineModule*> GetInitOrderedModules();
+
+	private:
 
 		//=========================================================================================
 		friend class Application;
 		friend class Editor;
 		static Engine* s_Instance;
 
-		static UniquePtr<Engine> Create( const EngineConfig& a_Config );
+		//=========================================================================================
+		Project m_Project;
+		EngineConfig m_Config;
+		ModuleStorage m_EngineModules;
+		UniquePtr<GameInstance> m_GameInstance;
 
-		//============================
-		// Engine Initialization
-		bool InitProject();
-		bool InitScene();
-		//============================
-
-		Array<IEngineModule*> GetInitOrderedModules();
-
-	public:
-		Engine( const EngineConfig& a_Config );
-		~Engine();
 	};
-
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Inline Definitions
-	//////////////////////////////////////////////////////////////////////////
-
-	template<Concepts::Derived<IEngineModule> T>
-	inline T* Engine::GetModule()
-	{
-		constexpr hash_t hash = Hashing::TypeHash<T>();
-		return Cast<T*>( GetModule( hash ) );
-	}
 
 } // namespace Tridium

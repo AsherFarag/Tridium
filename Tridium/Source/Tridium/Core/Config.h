@@ -45,6 +45,9 @@
 // For headless server builds
 #define CONFIG_HEADLESS 0
 
+// For executable game builds
+#define CONFIG_RUNTIME ( !CONFIG_USE_EDITOR )
+
 //=================================================================================================
 // Asset System Configuration
 #define USE_ASSET_IMPORTERS ( WITH_EDITOR )

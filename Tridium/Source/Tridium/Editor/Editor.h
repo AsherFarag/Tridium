@@ -6,7 +6,7 @@
 #include <Tridium/Application/Application.h>
 #include <Tridium/Common/Function.h>
 #include <Tridium/Editor/EditorPayload.h>
-#include <Tridium/Editor/Commands/CommandManager.h>
+#include <Tridium/Editor/UserActions/UserAction.h>
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/UI/UIManager.h>
 
@@ -42,7 +42,7 @@ namespace Tridium {
 		//=============================================================================================
 		static Editor* Get() { return s_Instance; }
 		static EditorPayloadManager& GetPayloadManager() { return Get()->m_PayloadManager; }
-		static CommandManager& GetCommandManager() { return Get()->m_CommandManager; }
+		static UserActionManager& GetUserActionManager() { return Get()->m_UserActionManager; }
 		static UIManager& GetUIManager() { return Get()->m_UIManager; }
 		static SelectionContext& GetSelectionContext() { return Get()->m_SelectionContext; }
 
@@ -53,7 +53,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		EditorPayloadManager m_PayloadManager;
-		CommandManager m_CommandManager;
+		UserActionManager m_UserActionManager;
 		UIManager m_UIManager;
 		SelectionContext m_SelectionContext;
 
