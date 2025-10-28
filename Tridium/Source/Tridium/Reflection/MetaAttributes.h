@@ -56,6 +56,12 @@ namespace Tridium::Meta {
 	};
 
 	//=================================================================================================
+	// Hide In Inspector: Hides a component from being displayed in the editor inspector.
+	// Does nothing if the type is not a component.
+	//=================================================================================================
+	struct HideInInspector : TypeAttribute {};
+
+	//=================================================================================================
 	// Display If: Conditionally displays a field in the editor based on the result of a function.
 	// The function must be a member function,
 	// or a free function that takes in an instance of the containing type and returns a bool.

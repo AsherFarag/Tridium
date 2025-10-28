@@ -9,7 +9,7 @@ namespace Tridium {
 	// Rigid Body Component: Component that adds a rigid body to an entity for physics simulation.
 	// For a game object to be affected by physics, it must have a RigidBodyComponent.
 	//=================================================================================================
-	struct RigidBodyComponent
+	struct RigidBodyComponent : Component
 	{
 	private:
 
@@ -62,7 +62,7 @@ namespace Tridium {
 	// Sphere Collider Component: Adds a sphere collider to an entity for physics simulation.
 	// Performance Cost: Low
 	//=================================================================================================
-	struct SphereColliderComponent
+	struct SphereColliderComponent : Component
 	{
 	private:
 
@@ -89,7 +89,7 @@ namespace Tridium {
 	// Box Collider Component: Adds a box collider to an entity for physics simulation.
 	// Performance Cost: Low
 	//=================================================================================================
-	struct BoxColliderComponent
+	struct BoxColliderComponent : Component
 	{
 	private:
 
@@ -116,7 +116,7 @@ namespace Tridium {
 	// Capsule Collider Component: Adds a capsule collider to an entity for physics simulation.
 	// Performance Cost: Medium
 	//=================================================================================================
-	struct CapsuleColliderComponent
+	struct CapsuleColliderComponent : Component
 	{
 	private:
 
@@ -146,7 +146,7 @@ namespace Tridium {
 	// Cylinder Collider Component: Adds a cylinder collider to an entity for physics simulation.
 	// Performance Cost: Medium-High
 	//=================================================================================================
-	struct CylinderColliderComponent
+	struct CylinderColliderComponent : Component
 	{
 	private:
 
@@ -176,7 +176,7 @@ namespace Tridium {
 	// Mesh Collider Component: Adds a mesh collider to an entity for physics simulation.
 	// Performance Cost: High
 	//=================================================================================================
-	struct MeshColliderComponent
+	struct MeshColliderComponent : Component
 	{
 	};
 

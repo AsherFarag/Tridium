@@ -129,13 +129,6 @@ namespace Tridium::UI {
 		ImGui::PopID();
 	}
 
-	static const char* GenerateID()
-	{
-		static thread_local char s_IDBuffer[16 + 2 + 1] = "##";
-		snprintf( s_IDBuffer + 2, 16, "%u", GetUIState().IDCounter++ );
-		return s_IDBuffer;
-	}
-
 	void BeginPropertyGrid( uint32_t a_NumColumns )
 	{
 		PushID();
@@ -234,9 +227,21 @@ namespace Tridium::UI {
 			ImGui::Convert( a_End ) ).Distance < a_Radius;
 	}
 
-	bool BeginTree( StringView a_Label, ETreeFlags a_Flags )
+	bool BeginTree( StringView a_Label, ETreeFlags a_Flags, float a_Width )
 	{
-		return ImGui::TreeNodeEx( a_Label.data(), Cast<ImGuiTreeNodeFlags>( a_Flags ), "%.*s", (int)a_Label.size(), a_Label.data() );
+		if ( a_Width <= 0.0f )
+		{
+			return ImGui::TreeNodeEx( a_Label.data(), Cast<ImGuiTreeNodeFlags>( a_Flags ), "%.*s", (int)a_Label.size(), a_Label.data() );
+		}
+
+		ImGuiContext& g = *GImGui;
+		ImGuiWindow* window = g.CurrentWindow;
+		ImGui::SetNextItemWidth( a_Width );
+		float backupWorkMaxX = window->WorkRect.Max.x;
+		window->WorkRect.Max.x = window->DC.CursorPos.x + ImGui::CalcItemWidth();
+		bool ret = ImGui::TreeNodeEx( a_Label.data(), Cast<ImGuiTreeNodeFlags>( a_Flags ), "%.*s", (int)a_Label.size(), a_Label.data() );
+		window->WorkRect.Max.x = backupWorkMaxX;
+		return ret;
 	}
 
 	void EndTree()

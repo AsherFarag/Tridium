@@ -19,9 +19,16 @@ namespace Tridium {
 		void OnDraw( StringView a_Name, bool& o_Open ) override;
 
 		//=============================================================================================
+		void UI_DrawHeader();
 		void UI_DrawComponents();
+		void UI_DrawAddComponent();
 
 	protected:
+
+		//=============================================================================================
+		GameObject m_InspectedObject;
+		ImGuiTextFilter m_ComponentFilter;
+		bool m_LockInspector = false;
 
 	};
 

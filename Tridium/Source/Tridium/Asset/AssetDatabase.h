@@ -92,6 +92,20 @@ namespace Tridium {
 
 	//=================================================================================================
 	template<Concepts::Derived<IAsset> T>
+	inline const AssetInfo* AssetHandle<T>::Info() const
+	{
+		if ( m_Ref )
+		{
+			return m_Ref->Info().get();
+		}
+		else
+		{
+			return AssetDatabase::GetAssetInfo( m_ID );
+		}
+	}
+
+	//=================================================================================================
+	template<Concepts::Derived<IAsset> T>
 	inline const AssetRef<T>& AssetHandle<T>::GetOrLoad()
 	{
 		if ( !m_Ref && m_ID.Valid() )

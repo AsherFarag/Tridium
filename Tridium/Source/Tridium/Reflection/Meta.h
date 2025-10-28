@@ -5,14 +5,6 @@
 
 namespace Tridium::Meta {
 
-	//=================================================================================================
-	// This macro registers a type into the runtime reflection system.
-	// This allows the type to be discovered and used at runtime for things like
-	// serialization, scripting, editor integration, etc.
-	// NOTE: The type must be Reflectable 
-	// (i.e., have a Reflector specialization or be an aggregate type) to be registered.
-	#define REGISTER_TYPE( _Type )
-
 	//TODO( "Move these helpers into type traits. (And give them better names)" );
 	template<template<class...> class _Template, class T>
 	struct IsInstantiationOf : std::false_type {};
@@ -694,46 +686,6 @@ namespace Tridium::Meta {
 	//=================================================================================================
 	template<typename T>
 	concept Reflectable = HasReflector<T> || Concepts::Aggregate<T>;
-
-	template<Reflectable T>
-	struct ReflectableInterface;
-
-	template<Reflectable T> requires HasReflector<T>
-	struct ReflectableInterface<T>
-	{
-		static constexpr Reflector<T> Reflector{};
-		T* Instance;
-
-		template<typename _Func>
-		constexpr void ForEach( _Func&& a_Callback ) const
-		{
-		}
-	};
-
-	template<Reflectable T> requires ( !HasReflector<T> )
-	struct ReflectableInterface<T>
-	{
-		T* Instance;
-
-		template<typename _Func>
-		constexpr void ForEach( _Func&& a_Callback ) const
-		{
-		}
-	};
-
-
-	//=================================================================================================
-	template<Reflectable T>
-	constexpr ReflectableInterface<T> AsReflectable( T& a_Instance )
-	{
-		return ReflectableInterface<T>{ &a_Instance };
-	}
-
-	template<typename T>
-	constexpr ReflectableInterface<const T> AsReflectable( const T& a_Type )
-	{
-		return {};
-	}
 
 	//=================================================================================================
 	// Checks if the reflector has a 'Type' property defined.

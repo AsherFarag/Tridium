@@ -43,9 +43,9 @@ namespace Tridium {
 			{
 				StringView name;
 
-				if ( auto* tag = OwningScene().Registry().TryGet<TagComponent>( entity ) )
+				if ( auto* tag = OwningScene().Registry().TryGet<NameComponent>( entity ) )
 				{
-					name = tag->Tag;
+					name = tag->Name;
 				}
 
 				Matrix4 viewMatrix;

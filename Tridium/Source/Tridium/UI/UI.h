@@ -107,6 +107,14 @@ namespace UI {
 	};
 
 	//=============================================================================================
+	inline const char* GenerateID()
+	{
+		static thread_local char s_IDBuffer[16 + 2 + 1] = "##";
+		snprintf( s_IDBuffer + 2, 16, "%u", GetUIState().IDCounter++ );
+		return s_IDBuffer;
+	}
+
+	//=============================================================================================
 	inline void BeginDisabled( bool a_Disabled = true ) { ImGui::BeginDisabled( a_Disabled ); }
 	inline void EndDisabled() { ImGui::EndDisabled(); }
 	struct ScopedDisabled
@@ -158,6 +166,14 @@ namespace UI {
 	inline bool IsPropertyGridOpen() { return GetUIState().IsPropertyGridOpen(); }
 
 	//=============================================================================================
+	inline Vector2 CalcButtonSize( StringView a_Label )
+	{
+		ImVec2 textSize = ImGui::CalcTextSize( a_Label.data(), a_Label.data() + a_Label.size() );
+		ImVec2 padding = ImGui::GetStyle().FramePadding;
+		return Vector2( textSize.x + padding.x * 2.0f, textSize.y + padding.y * 2.0f );
+	}
+
+	//=============================================================================================
 	enum class ETreeFlags
 	{
 		None = ImGuiTreeNodeFlags_None,
@@ -184,7 +200,7 @@ namespace UI {
 	DEFINE_ENUM_BITMASK_OPERATORS( ETreeFlags );
 
 	//=============================================================================================
-	bool BeginTree( StringView a_Label, ETreeFlags a_Flags = ETreeFlags::None );
+	bool BeginTree( StringView a_Label, ETreeFlags a_Flags = ETreeFlags::None, float a_Width = 0.0f );
 	void EndTree();
 
 	//=============================================================================================

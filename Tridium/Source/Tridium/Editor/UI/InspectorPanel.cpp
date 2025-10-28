@@ -6,147 +6,202 @@
 #include <Tridium/Editor/UserActions/SceneActions.h>
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/Scene/SceneManager.h>
+#include <Tridium/Reflection/RuntimeMeta.h>
 #include <Tridium/UI/PropertyDrawers.h>
 
 namespace Tridium {
 
-	struct MyCustomComponent
-	{
-		String Name = "Player";
-		String Description = "This is the player component.";
-		TransformComponent Transform{};
-		float Health = 100.0f;
-		static constexpr float MaxHealth = 100.0f;
-		float HealthRegenRate = 5.0f;
-		float TimeDead = 0.0f;
-		int32_t Damage = 10;
-		float AttackSpeed = 1.0f;
-		Vector3 WeaponOffset{};
-		Vector3 Color{ 0.0f, 0.0f, 1.0f };
-
-		bool IsDead() const 
-		{ 
-			return Health <= 0.0f; 
-		}
-
-		void Attack() 
-		{ 
-			LOG( LogCategory::GameLogic, Debug, "Player attacked for {} damage!", Damage ); 
-		}
-	};
-
-	namespace Meta {
-
-		template<>
-		struct Reflector<MyCustomComponent>
-		{
-			// This declares custom type attributes the reflection system can use.
-			using Type = Type<MyCustomComponent, DisplayName<"Player Component">, Icon<EditorIcons::Person>>;
-
-			// This will display a seperator in the editor called "General"
-			Header General;
-			
-			Field<&MyCustomComponent::Name, Editable, Serializable>
-			Name;
-
-			Field<&MyCustomComponent::Description, Editable, Serializable, MultilineText>
-			Description;
-
-			Field<&MyCustomComponent::Transform, Editable, Serializable>
-			Transform;
-
-			Header HealthStats;
-
-			Field<&MyCustomComponent::Health, Editable, Serializable, Range<0.0f, MyCustomComponent::MaxHealth>>
-			Health;
-
-			Field<&MyCustomComponent::HealthRegenRate, Editable, Serializable>
-			HealthRegenRate;
-
-			// Meta members can be hidden using the DisplayIf attribute.
-			// This will only display the attribute if the function returns true.
-			Field<&MyCustomComponent::TimeDead, Visible,
-			DisplayIf<&MyCustomComponent::IsDead>,
-			Tooltip<"I'm only shown if the player is dead.">>
-			TimeDead;
-
-			Header CombatStats;
-
-			Field<&MyCustomComponent::Damage, Editable, Serializable, Min<0>>
-			Damage;
-
-			Field<&MyCustomComponent::AttackSpeed, Editable, Serializable, Min<0.1f>>
-			AttackSpeed;
-
-			Field<&MyCustomComponent::WeaponOffset, Editable, Serializable,
-			Tooltip<"The offset position of the weapon relative to the player.">>
-			WeaponOffset;
-
-			Header Misc;
-
-			// Properties also allow free functions!
-			// I'm able to construct a lambda and pass it in as a getter. 
-			Property<[]( MyCustomComponent& c ){ return !c.IsDead(); }, nullptr, Visible,
-			DisplayName<"Am I alive?">>
-			IsAlive;
-
-			// Functions are also reflectable.
-			// With the CallInEditor attribute, this function can show up in the editor and be invocable.
-			// (Only works on functions with no arguments.)
-			Function<&MyCustomComponent::Attack, CallInEditor,
-			DisplayName<"Do an Attack!">,
-			Tooltip<"Makes the player perform an attack action.">>
-			Attack;
-		};
-	}
-
 	void InspectorPanel::OnDraw( StringView a_Name, bool& o_Open )
 	{
+		m_ComponentFilter.Build();
+
+		if ( !m_LockInspector )
+		{
+			m_InspectedObject = Editor::Get()->GetSelectionContext().SelectedObject;
+		}
+
 		if ( ImGui::Begin( a_Name.data(), &o_Open ) )
 		{
-			UI_DrawComponents();
+			if ( m_InspectedObject.Valid() )
+			{
+				UI_DrawHeader();
+				ImGui::Separator();
+				UI_DrawComponents();
+				ImGui::Separator();
+				UI_DrawAddComponent();
+			}
+			else
+			{
+				const float textWidth = ImGui::CalcTextSize( "No game object selected." ).x;
+				ImGui::SetCursorPosX( ( ImGui::GetContentRegionMax().x - textWidth ) * 0.5f );
+				ImGui::SetCursorPosY( ImGui::GetCursorPosY() + ImGui::GetContentRegionMax().y * 0.5f - ImGui::GetTextLineHeightWithSpacing() * 0.5f );
+				ImGui::TextDisabled( "No game object selected." );
+			}
 		}
 
 		ImGui::End();
 	}
 
+	void InspectorPanel::UI_DrawHeader()
+	{
+		const float lockButtonWidth = UI::CalcButtonSize( m_LockInspector ? EditorIcons::Lock : EditorIcons::LockOpen ).X;
+
+		ImGui::SetNextItemWidth( ImGui::GetContentRegionAvail().x - lockButtonWidth - ImGui::GetStyle().ItemSpacing.x );
+		if ( ImGui::InputTextWithHint( "##ComponentSearchBar", TE_ICON_MAGNIFYING_GLASS " Search for Component...", m_ComponentFilter.InputBuf, IM_ARRAYSIZE( m_ComponentFilter.InputBuf ) ) )
+			m_ComponentFilter.Build();
+
+		ImGui::SameLine();
+		if ( ImGui::Button( m_LockInspector ? EditorIcons::Lock.Data : EditorIcons::LockOpen.Data ) )
+		{
+			m_LockInspector = !m_LockInspector;
+		}
+	}
+
 	void InspectorPanel::UI_DrawComponents()
 	{
-		static TransformComponent transform{};
-
-		if ( UI::BeginTree( "Transform", UI::ETreeFlags::DefaultOpen | UI::ETreeFlags::Framed ) )
+		const auto BeginComponentTree = []( StringView a_Name, bool& o_Delete )
 		{
-			UIPropertyDrawer<TransformComponent>::Draw( "Transform", transform, false );
-			UI::EndTree();
+			const float contentWidth = ImGui::GetContentRegionAvail().x;
+			const float buttonWidth = UI::CalcButtonSize( TE_ICON_TRASH_CAN ).X;
 
-			ImGui::Separator();
-		}
-		
-		static String playerComponentName = std::format( "{} Player Component", StringView( EditorIcons::Person ) );
+			ImVec2 cursorPos = ImGui::GetCursorPos();
+			ImGui::SetCursorPosX( ImGui::GetContentRegionMax().x - buttonWidth );
 
-		static GameObject player = SceneManager::Get()->ActiveScene()->CreateGameObject( "Player", Vector3::Zero() );
-		static MyCustomComponent* playerComp = &player.Add<MyCustomComponent>();
-		playerComp = player.TryGet<MyCustomComponent>();
+			ImGui::PushID( UI::GenerateID() );
+			o_Delete = ImGui::Button( TE_ICON_TRASH );
+			ImGui::PopID();
 
-		if ( playerComp && UI::BeginTree( playerComponentName, UI::ETreeFlags::DefaultOpen | UI::ETreeFlags::Framed ) )
+			ImGui::SetCursorPos( cursorPos );
+			const float treeWidth = contentWidth - buttonWidth - ImGui::GetStyle().ItemSpacing.x;
+			bool opened = UI::BeginTree( a_Name, UI::ETreeFlags::DefaultOpen | UI::ETreeFlags::Framed, treeWidth );
+
+			return opened;
+		};
+
+		const auto DrawComponent = [&]( const Meta::RuntimeMetaInfo* metaData, void* componentData, bool( *drawFunc )() = nullptr )
 		{
-			ImGui::BeginGroup();
-			bool modified = UIPropertyDrawer<MyCustomComponent>::Draw( playerComponentName, *playerComp, false );
-			ImGui::EndGroup();
+			StringView displayName = metaData->Editor.DisplayName;
 
-			if ( ImGui::IsItemActivated() )
+			if ( !m_ComponentFilter.PassFilter( displayName.data(),
+											    displayName.data() + displayName.size() ) )
 			{
-				Editor::GetUserActionManager().Push( MakeUnique<ComponentUserAction<MyCustomComponent>>(
-						player.Scene()->ID(),
-						player.ID(),
-						EComponentUserActionType::Modify,
-						*playerComp )
-				);
+				return;
 			}
 
-			UI::EndTree();
+			bool remove = false;
 
-			ImGui::Separator();
+			if ( BeginComponentTree( displayName, remove ) )
+			{
+				ImGui::BeginGroup();
+				bool modified = drawFunc ? drawFunc() : metaData->Editor.Draw( {}, componentData );
+				ImGui::EndGroup();
+
+				if ( ImGui::IsItemActivated() )
+				{
+					Editor::GetUserActionManager().Push( 
+						metaData->Editor.Component.CreateUserAction( m_InspectedObject, EComponentUserActionType::Modify ) 
+					);
+				}
+
+				UI::EndTree();
+			}
+
+			if ( remove )
+			{
+				Editor::GetUserActionManager().Push(
+					metaData->Editor.Component.CreateUserAction( m_InspectedObject, EComponentUserActionType::Remove )
+				);
+
+				metaData->Component.Remove( m_InspectedObject.Scene()->Registry(), m_InspectedObject );
+			}
+		};
+
+		// We want to always draw the Name and Transform components first.
+		if ( IconComponent* icon = m_InspectedObject.TryGet<IconComponent>() )
+		{
+			DrawComponent( Meta::GetRuntimeMetaInfo<IconComponent>(), icon,
+			+[]() -> bool
+			{
+				return false;
+			} );
+		}
+
+		if ( UUIDComponent* uuid = m_InspectedObject.TryGet<UUIDComponent>() )
+		{
+			DrawComponent( Meta::GetRuntimeMetaInfo<UUIDComponent>(), uuid );
+		}
+
+		if ( NameComponent* name = m_InspectedObject.TryGet<NameComponent>() )
+		{
+			DrawComponent( Meta::GetRuntimeMetaInfo<NameComponent>(), name );
+		}
+
+		if ( TransformComponent* transform = m_InspectedObject.TryGet<TransformComponent>() )
+		{
+			DrawComponent( Meta::GetRuntimeMetaInfo<TransformComponent>(), transform );
+		}
+
+		// Iterates over all component storages in the registry,
+		// and draws the ones that the inspected object has.
+		for ( auto [id, storage] : m_InspectedObject.Scene()->Registry().Storage() )
+		{
+			if ( !storage.contains( m_InspectedObject ) )
+			{
+				continue;
+			}
+
+			const Meta::RuntimeMetaInfo* metaData = Meta::GetRuntimeMetaInfo( id );
+
+			// Skip non-component types.
+			if ( !metaData || !metaData->Component.IsComponent )
+			{
+				continue;
+			}
+
+			// Skip components that are hidden in the inspector.
+			if ( metaData->Editor.Component.HideInInspector )
+			{
+				continue;
+			}
+
+			// If we can get the component data, draw it.
+			if ( void* componentData = metaData->Component.TryGet( m_InspectedObject.Scene()->Registry(), m_InspectedObject ) )
+			{
+				DrawComponent( metaData, componentData );
+			}
+		}
+	}
+
+	void InspectorPanel::UI_DrawAddComponent()
+	{
+		// Center the button horizontally.
+		ImGui::SetCursorPosX( ( ImGui::GetContentRegionAvail().x - UI::CalcButtonSize( "Add Component" ).X ) * 0.5f );
+		if ( ImGui::Button( "Add Component" ) )
+		{
+			ImGui::OpenPopup( "AddComponentPopup" );
+		}
+
+		if ( ImGui::BeginPopup( "AddComponentPopup" ) )
+		{
+			for ( auto [id, type] : entt::resolve() )
+			{
+				const Meta::RuntimeMetaInfo* metaType = Meta::GetRuntimeMetaInfo( id );
+
+				if ( !metaType->Component.IsComponent )
+					continue; // Not a component, skip.
+
+				if ( metaType->Component.Has( m_InspectedObject.Scene()->Registry(), m_InspectedObject ) )
+					continue; // Already has component, skip.
+
+				if ( ImGui::MenuItem( metaType->Editor.DisplayName.data() ) )
+				{
+					metaType->Component.EmplaceOrReplace( m_InspectedObject.Scene()->Registry(), m_InspectedObject );
+					Editor::GetUserActionManager().Push( metaType->Editor.Component.CreateUserAction( m_InspectedObject, EComponentUserActionType::Add ) );
+					break;
+				}
+			}
+
+			ImGui::EndMenu();
 		}
 	}
 

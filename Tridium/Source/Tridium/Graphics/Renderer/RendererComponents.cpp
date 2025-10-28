@@ -1,4 +1,6 @@
+#include "tripch.h"
 #include "RendererComponents.h"
+#include <Tridium/Reflection/RuntimeMeta.h>
 
 namespace Tridium {
 

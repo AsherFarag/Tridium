@@ -38,6 +38,8 @@ namespace Tridium {
 
 	void Runtime::OnUpdate()
 	{
+		RHI::WaitForIdle();
+
 		RHITextureRef backBuffer = RHI::GetSwapChain()->GetBackBuffer();
 
 		// TEMP!

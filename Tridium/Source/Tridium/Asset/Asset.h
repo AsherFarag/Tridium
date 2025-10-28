@@ -152,6 +152,9 @@ namespace Tridium {
 		UUID ID() const { return m_Ref ? m_Ref->ID() : m_ID; }
 
 		//=============================================================================================
+		const AssetInfo* Info() const;
+
+		//=============================================================================================
 		const AssetRef<T>& Get() const { return m_Ref; }
 		const AssetRef<T>& GetOrLoad();
 

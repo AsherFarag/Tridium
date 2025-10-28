@@ -66,10 +66,16 @@ namespace Tridium {
 
 		for ( EntityID entity : registry.View<EntityID>() )
 		{
-			StringView name = "No Tag";
-			if ( TagComponent* tag = registry.TryGet<TagComponent>( entity ) )
+			StringView name = "No Name";
+			if ( NameComponent* tag = registry.TryGet<NameComponent>( entity ) )
 			{
-				name = tag->Tag;
+				name = tag->Name;
+			}
+
+			StringView icon = " ";
+			if ( IconComponent* iconComp = registry.TryGet<IconComponent>( entity ) )
+			{
+				icon = iconComp->Icon;
 			}
 
 			if ( !m_SearchFilter.PassFilter( name.data() ) )
@@ -83,7 +89,7 @@ namespace Tridium {
 			nodeFlags |= hierarchy && hierarchy->FirstChild != NullEntity ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_Leaf;
 			nodeFlags |= Editor::GetSelectionContext().SelectedObject == GameObject( *activeScene, entity ) ? ImGuiTreeNodeFlags_Selected : ImGuiTreeNodeFlags_None;
 
-			if ( ImGui::TreeNodeEx( (void*)(uintptr_t)(uint32_t)entity, nodeFlags, TE_ICON_CUBE " %s", name.data() ) )
+			if ( ImGui::TreeNodeEx( (void*)(uintptr_t)(uint32_t)entity, nodeFlags, "%s %s", icon.data(), name.data() ) )
 			{
 				ImGui::TreePop();
 			}
@@ -128,6 +134,25 @@ namespace Tridium {
 			if ( ImGui::BeginItemTooltip() )
 			{
 				ImGui::TextUnformatted( "Creates a new GameObject with some core components. Equivalent to Scene::CreateGameObject()." );
+				ImGui::EndTooltip();
+			}
+		}
+
+		// Folder
+		{
+			if ( ImGui::MenuItem( "Folder" ) )
+			{
+				GameObject folder = activeScene->CreateEmptyGameObject();
+				folder.Add<HierarchyComponent>();
+				folder.Add<NameComponent>().Name = "Folder";
+				folder.Add<IconComponent>().Icon = EditorIcons::Folder;
+
+				ImGui::CloseCurrentPopup();
+			}
+
+			if ( ImGui::BeginItemTooltip() )
+			{
+				ImGui::TextUnformatted( "Creates a new GameObject intended to be used as a folder in the hierarchy. Equivalent to Scene::CreateGameObject()." );
 				ImGui::EndTooltip();
 			}
 		}

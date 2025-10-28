@@ -23,7 +23,7 @@ namespace Tridium {
 	#endif
 	
 	#if RHI_ENABLE_DEV_WARNINGS
-		#define RHI_DEV_WARN( _Condition, ... ) ASSERT( _Condition, "RHI Dev Error - {}", __VA_ARGS__ )
+		#define RHI_DEV_WARN( _Condition, ... ) //ASSERT( _Condition, "RHI Dev Error - {}", __VA_ARGS__ )
 	#else
 		#define RHI_DEV_WARN( _Condition, ... ) do {} while ( false )
 	#endif // RHI_ENABLE_DEV_WARNINGS

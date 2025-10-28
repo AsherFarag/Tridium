@@ -4,6 +4,7 @@
 #if CONFIG_ENABLE_TOOL_UI
 
 #include <Tridium/Reflection/MetaAttributes.h>
+#include <Tridium/Asset/AssetDatabase.h>
 
 namespace Tridium {
 
@@ -75,6 +76,8 @@ namespace Tridium {
 			}
 		}
 	};
+
+
 
 	template<typename T>
 	struct UIPropertyDrawer<Meta::Reflector<T>>
@@ -216,6 +219,111 @@ namespace Tridium {
 			else
 			{
 				return UI::DrawInputText( a_Label, a_String );
+			}
+		}
+	};
+
+	template<Meta::IsAttributeList _Attributes>
+	struct UIPropertyDrawer<Color3, _Attributes>
+	{
+		using Attributes = _Attributes;
+		static bool Draw( StringView a_Label, Color3& a_Color )
+		{
+			//return UI::DrawColor3( a_Label, a_Color );
+			return false;
+		}
+	};
+
+	template<Meta::IsAttributeList _Attributes>
+	struct UIPropertyDrawer<UUID, _Attributes>
+	{
+		using Attributes = _Attributes;
+		static bool Draw( StringView a_Label, UUID& a_UUID )
+		{
+			if ( UI::IsPropertyGridOpen() )
+			{
+				UI::DrawGridProperty( a_Label, [&]() 
+				{
+					ImGui::TextUnformatted( std::format( "{}", a_UUID ).c_str() );
+					return false;
+				} );
+			}
+			else
+			{
+				ImGui::TextUnformatted( std::format( "{}: {}", a_Label, a_UUID ).c_str() );
+			}
+
+			return false;
+		}
+	};
+
+	template<typename _Type, Meta::IsAttributeList _Attributes>
+	struct UIPropertyDrawer<AssetHandle<_Type>, _Attributes>
+	{
+		using Attributes = _Attributes;
+		static bool Draw( StringView a_Label, AssetHandle<_Type>& a_AssetHandle )
+		{
+			const auto DrawFunc = [&]( StringView a_Label ) -> bool
+			{
+				bool modified = false;
+
+				StringView assetName = "None";
+				if ( const AssetInfo* assetInfo = a_AssetHandle.Info() )
+				{
+					assetName = !assetInfo->Name.empty() ? assetInfo->Name : "<UNNAMED>";
+				}
+
+				const bool open = ImGui::BeginCombo( a_Label.data(), assetName.data() );
+
+				if ( open )
+				{
+					if ( ImGui::Selectable( "None###Internal", !a_AssetHandle.Valid() ) )
+					{
+						a_AssetHandle = AssetHandle<_Type>{};
+						ImGui::EndCombo();
+						return true;
+					}
+
+					ImGui::Separator();
+
+					//for ( const auto& [handle, assetMetaData] : AssetDatabase::
+					//{
+					//	if ( assetMetaData.AssetType != _AssetType )
+					//		continue;
+					//
+					//
+					//	std::string name = !assetMetaData.Name.empty() ? assetMetaData.Name : assetMetaData.Path.ToString();
+					//	ImGui::ScopedID id( handle.ID() );
+					//	bool selected = a_Value == handle;
+					//	if ( ImGui::Selectable( name.c_str(), selected ) && !selected )
+					//	{
+					//		a_Value = handle;
+					//		modified = true;
+					//		break;
+					//	}
+					//
+					//	if ( ImGui::BeginItemTooltip() )
+					//	{
+					//		ImGui::Text( "Asset Type: %s", AssetTypeToString( assetMetaData.AssetType ) );
+					//		ImGui::Text( "Path: %s", assetMetaData.Path.ToString().c_str() );
+					//
+					//		ImGui::EndTooltip();
+					//	}
+					//}
+
+					ImGui::EndCombo();
+				}
+
+				return modified;
+			};
+
+			if ( UI::IsPropertyGridOpen() )
+			{
+				return UI::DrawGridProperty( a_Label, [&]() { return DrawFunc( UI::GenerateID() ); } );
+			}
+			else
+			{
+				return DrawFunc( a_Label );
 			}
 		}
 	};

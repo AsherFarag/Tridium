@@ -1,4 +1,5 @@
 #pragma once
+#include <Tridium/Core/UUID.h>
 #include <Tridium/ECS/ECSFwd.h>
 #include <Tridium/Math/Math.h>
 #include <Tridium/Reflection/Meta.h>
@@ -82,17 +83,41 @@ namespace Tridium {
 	};
 
 	//=================================================================================================
-	// Tag Component: Used to assign a name or tag to a game object.
+	// Base Component: All components should derive from this struct.
+	// Components by default do not use virtual polymorphism.
 	//=================================================================================================
-	struct TagComponent
+	struct Component
 	{
-		String Tag;
+	};
+
+	//=================================================================================================
+	// UUID Component: Provides a unique identifier for a game object.
+	//=================================================================================================
+	struct UUIDComponent : Component
+	{
+		UUID ID = UUID::Generate();
+	};
+
+	//=================================================================================================
+	// Name Component: Used to assign a name or tag to a game object.
+	//=================================================================================================
+	struct NameComponent : Component
+	{
+		String Name = "GameObject";
+	};
+
+	//=================================================================================================
+	// Icon Component: Used to assign an icon to a game object in the editor.
+	//=================================================================================================
+	struct IconComponent : Component
+	{
+		String Icon;
 	};
 
 	//=================================================================================================
 	// Hierarchy Component: Manages parent-child relationships between game objects.
 	//=================================================================================================
-	struct HierarchyComponent
+	struct HierarchyComponent : Component
 	{
 		EntityID Parent = NullEntity;
 		EntityID FirstChild = NullEntity;
@@ -104,7 +129,7 @@ namespace Tridium {
 	// Transform Component: Stores the local position, rotation, and scale data for a game object.
 	// This component does not handle parent-child relationships.
 	//=================================================================================================
-	struct TransformComponent
+	struct TransformComponent : Component
 	{
 	private:
 
@@ -161,15 +186,38 @@ namespace Tridium {
 namespace Tridium::Meta {
 
 	//=================================================================================================
-	// TagComponent
+	// UUIDComponent
 	//=================================================================================================
 	template<>
-	struct Reflector<TagComponent>
+	struct Reflector<UUIDComponent>
 	{
-		// Fields
+		using Type = Type<UUIDComponent, HideInInspector>;
+		Field<&UUIDComponent::ID, Visible, Serializable>
+		ID;
+	};
 
-		Field<&TagComponent::Tag, Editable, Serializable> 
-		Tag;
+	//=================================================================================================
+	// NameComponent
+	//=================================================================================================
+	template<>
+	struct Reflector<NameComponent>
+	{
+		using Type = Type<NameComponent, HideInInspector>;
+
+		Field<&NameComponent::Name, Editable, Serializable> 
+		Name;
+	};
+
+	//=================================================================================================
+	// IconComponent
+	//=================================================================================================
+	template<>
+	struct Reflector<IconComponent>
+	{
+		using Type = Type<IconComponent, HideInInspector>;
+
+		Field<&IconComponent::Icon, Serializable> 
+		Icon;
 	};
 
 	//=================================================================================================
@@ -178,7 +226,7 @@ namespace Tridium::Meta {
 	template<>
 	struct Reflector<HierarchyComponent>
 	{
-		// Fields
+		using Type = Type<HierarchyComponent, HideInInspector>;
 
 		Field<&HierarchyComponent::Parent, Serializable> 
 		Parent;
@@ -199,7 +247,7 @@ namespace Tridium::Meta {
 	template<>
 	struct Reflector<TransformComponent>
 	{
-		// Fields
+		using Type = Type<TransformComponent, HideInInspector>;
 
 		Property<&TransformComponent::LocalPosition, &TransformComponent::SetLocalPosition, Editable, Serializable, DisplayName<"Position">>
 		LocalPosition;

@@ -61,6 +61,7 @@ namespace Tridium {
 		{
 			m_Warnings.EmplaceBack( std::vformat( a_Fmt, std::make_format_args( std::forward<const _Args>( a_Args )... ) ) );
 		}
+
 		//=============================================================================================
 		// Returns the list of warnings that were logged during the import process.
 		const auto& Warnings() const { return m_Warnings; }

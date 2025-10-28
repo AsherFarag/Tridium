@@ -82,7 +82,7 @@ namespace Tridium {
 	inline GameObject Scene::CreateGameObject( String a_Tag, const Vector3& a_Position )
 	{
 		GameObject gameObject = CreateEmptyGameObject();
-		gameObject.Add<TagComponent>().Tag = std::move( a_Tag );
+		gameObject.Add<NameComponent>().Name = std::move( a_Tag );
 		gameObject.Add<TransformComponent>().SetLocalPosition( a_Position );
 		gameObject.Add<HierarchyComponent>();
 		return gameObject;

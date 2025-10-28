@@ -9,7 +9,7 @@ namespace Tridium {
 	//=================================================================================================
 	// Camera Component: Defines a camera in the scene.
 	//=================================================================================================
-	struct CameraComponent
+	struct CameraComponent : Component
 	{
 		enum class EProjectionType { Perspective = 0, Orthographic = 1 };
 
@@ -39,7 +39,7 @@ namespace Tridium {
 	//=================================================================================================
 	// Static Mesh Component: Renders a static mesh in the scene.
 	//=================================================================================================
-	struct StaticMeshComponent
+	struct StaticMeshComponent : Component
 	{
 		AssetHandle<StaticMesh> Mesh;
 		bool CastShadows = true;
@@ -48,7 +48,7 @@ namespace Tridium {
 	//=================================================================================================
 	// Directional Light Component: A light that has a direction but no specific position.
 	//=================================================================================================
-	struct DirectionalLightComponent
+	struct DirectionalLightComponent : Component
 	{
 		// The color of the light, represented as RGB values.
 		Color3 Color{ 1.0f, 1.0f, 1.0f };
@@ -68,7 +68,7 @@ namespace Tridium {
 	// Point Light Component: 
 	// A light that emits light uniformly in all directions from a single point in space.
 	//=================================================================================================
-	struct PointLightComponent
+	struct PointLightComponent : Component
 	{
 		// The color of the light, represented as RGB values.
 		Color3 Color{ 1.0f, 1.0f, 1.0f };
@@ -99,7 +99,7 @@ namespace Tridium {
 	// Spot Light Component: A light that emits light in a specific direction within a cone,
 	// simulating a flashlight or spotlight.
 	//=================================================================================================
-	struct SpotLightComponent
+	struct SpotLightComponent : Component
 	{
 		// The color of the light, represented as RGB values.
 		Color3 Color{ 1.0f, 1.0f, 1.0f };
