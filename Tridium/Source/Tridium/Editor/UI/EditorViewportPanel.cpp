@@ -213,46 +213,53 @@ namespace Tridium {
 			a_ViewportBoundsMax.Y - a_ViewportBoundsMin.Y
 		);
 
-
-		if ( TransformComponent* tc = Editor::GetSelectionContext().SelectedObject.TryGet<TransformComponent>() )
+		for ( const Selectable& selectedObject : SelectionManager::Get().Selections( ESelectionContext::Scene ) )
 		{
-			// Selected Game Object
-			Matrix4 worldTransform = tc->LocalTransform();
+			if ( !std::holds_alternative<GameObject>( selectedObject ) )
+				continue;
 
-			bool shouldSnap = Input::IsKeyPressed( EInputKey::LeftControl );
+			GameObject gameObject = std::get<GameObject>( selectedObject );
 
-			Vector3 snapVals( 0.25f );
-			if ( m_GizmoState == EGizmoState::Rotate )
-				snapVals = Vector3( 45.0f );
-
-			// Convert the Gizmo operation to ImGuizmo operation
-			ImGuizmo::OPERATION gizmoOperation;
-			switch ( m_GizmoState )
+			if ( TransformComponent* tc = gameObject.TryGet<TransformComponent>() )
 			{
-				case EGizmoState::Translate: gizmoOperation = ImGuizmo::TRANSLATE; break;
-				case EGizmoState::Rotate: gizmoOperation = ImGuizmo::ROTATE; break;
-				case EGizmoState::Scale: gizmoOperation = ImGuizmo::SCALE; break;
-				case EGizmoState::UniversalScale: gizmoOperation = ImGuizmo::SCALEU; break;
-				default: gizmoOperation = (ImGuizmo::OPERATION)0; break;
-			}
+				// Selected Game Object
+				Matrix4 worldTransform = tc->LocalTransform();
 
-			// Create a Manipulation Gizmo that allows the user to easily modify the Game-Object's transform
-			ImGuizmo::Manipulate(
-				&camView[0][0], &camProjection[0][0],
-				gizmoOperation, ImGuizmo::LOCAL,
-				&worldTransform[0][0], nullptr,
-				shouldSnap ? &snapVals[0] : nullptr
-			);
+				bool shouldSnap = Input::IsKeyPressed( EInputKey::LeftControl );
 
-			if ( ImGuizmo::IsUsingAny() )
-			{
-				Quaternion rotation;
-				Vector3 position;
-				Vector3 scale;
-				Math::DecomposeTransform( worldTransform, position, rotation, scale );
-				tc->SetLocalPosition( position );
-				tc->SetLocalRotation( rotation );
-				tc->SetLocalScale( scale );
+				Vector3 snapVals( 0.25f );
+				if ( m_GizmoState == EGizmoState::Rotate )
+					snapVals = Vector3( 45.0f );
+
+				// Convert the Gizmo operation to ImGuizmo operation
+				ImGuizmo::OPERATION gizmoOperation;
+				switch ( m_GizmoState )
+				{
+					case EGizmoState::Translate: gizmoOperation = ImGuizmo::TRANSLATE; break;
+					case EGizmoState::Rotate: gizmoOperation = ImGuizmo::ROTATE; break;
+					case EGizmoState::Scale: gizmoOperation = ImGuizmo::SCALE; break;
+					case EGizmoState::UniversalScale: gizmoOperation = ImGuizmo::SCALEU; break;
+					default: gizmoOperation = (ImGuizmo::OPERATION)0; break;
+				}
+
+				// Create a Manipulation Gizmo that allows the user to easily modify the Game-Object's transform
+				ImGuizmo::Manipulate(
+					&camView[0][0], &camProjection[0][0],
+					gizmoOperation, ImGuizmo::LOCAL,
+					&worldTransform[0][0], nullptr,
+					shouldSnap ? &snapVals[0] : nullptr
+				);
+
+				if ( ImGuizmo::IsUsingAny() )
+				{
+					Quaternion rotation;
+					Vector3 position;
+					Vector3 scale;
+					Math::DecomposeTransform( worldTransform, position, rotation, scale );
+					tc->SetLocalPosition( position );
+					tc->SetLocalRotation( rotation );
+					tc->SetLocalScale( scale );
+				}
 			}
 		}
 

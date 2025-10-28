@@ -17,12 +17,25 @@ namespace Tridium {
 
 		if ( !m_LockInspector )
 		{
-			m_InspectedObject = Editor::Get()->GetSelectionContext().SelectedObject;
+			m_InspectedObjects.Clear();
+
+			for ( const Selectable& selected : SelectionManager::Get().Selections( ESelectionContext::Scene ) )
+			{
+				if ( !std::holds_alternative<GameObject>( selected ) )
+					continue;
+
+				GameObject gameObject = std::get<GameObject>( selected );
+
+				if ( !gameObject.Valid() )
+					continue;
+
+				m_InspectedObjects.PushBack( gameObject );
+			}
 		}
 
 		if ( ImGui::Begin( a_Name.data(), &o_Open ) )
 		{
-			if ( m_InspectedObject.Valid() )
+			if ( m_InspectedObjects.Size() == 1 )
 			{
 				UI_DrawHeader();
 				ImGui::Separator();
@@ -32,10 +45,11 @@ namespace Tridium {
 			}
 			else
 			{
-				const float textWidth = ImGui::CalcTextSize( "No game object selected." ).x;
+				const char* message = m_InspectedObjects.Size() > 1 ? "Only one game object can be inspected at a time." : "No game object selected.";
+				const float textWidth = ImGui::CalcTextSize( message ).x;
 				ImGui::SetCursorPosX( ( ImGui::GetContentRegionMax().x - textWidth ) * 0.5f );
 				ImGui::SetCursorPosY( ImGui::GetCursorPosY() + ImGui::GetContentRegionMax().y * 0.5f - ImGui::GetTextLineHeightWithSpacing() * 0.5f );
-				ImGui::TextDisabled( "No game object selected." );
+				ImGui::TextDisabled( message );
 			}
 		}
 
@@ -59,6 +73,9 @@ namespace Tridium {
 
 	void InspectorPanel::UI_DrawComponents()
 	{
+		TODO( "Support multi-object editing in the inspector." );
+		GameObject inspectedObject = m_InspectedObjects[0];
+
 		const auto BeginComponentTree = []( StringView a_Name, bool& o_Delete )
 		{
 			const float contentWidth = ImGui::GetContentRegionAvail().x;
@@ -99,7 +116,7 @@ namespace Tridium {
 				if ( ImGui::IsItemActivated() )
 				{
 					Editor::GetUserActionManager().Push( 
-						metaData->Editor.Component.CreateUserAction( m_InspectedObject, EComponentUserActionType::Modify ) 
+						metaData->Editor.Component.CreateUserAction( inspectedObject, EComponentUserActionType::Modify )
 					);
 				}
 
@@ -109,15 +126,15 @@ namespace Tridium {
 			if ( remove )
 			{
 				Editor::GetUserActionManager().Push(
-					metaData->Editor.Component.CreateUserAction( m_InspectedObject, EComponentUserActionType::Remove )
+					metaData->Editor.Component.CreateUserAction( inspectedObject, EComponentUserActionType::Remove )
 				);
 
-				metaData->Component.Remove( m_InspectedObject.Scene()->Registry(), m_InspectedObject );
+				metaData->Component.Remove( inspectedObject.Scene()->Registry(), inspectedObject );
 			}
 		};
 
 		// We want to always draw the Name and Transform components first.
-		if ( IconComponent* icon = m_InspectedObject.TryGet<IconComponent>() )
+		if ( IconComponent* icon = inspectedObject.TryGet<IconComponent>() )
 		{
 			DrawComponent( Meta::GetRuntimeMetaInfo<IconComponent>(), icon,
 			+[]() -> bool
@@ -126,26 +143,26 @@ namespace Tridium {
 			} );
 		}
 
-		if ( UUIDComponent* uuid = m_InspectedObject.TryGet<UUIDComponent>() )
+		if ( UUIDComponent* uuid = inspectedObject.TryGet<UUIDComponent>() )
 		{
 			DrawComponent( Meta::GetRuntimeMetaInfo<UUIDComponent>(), uuid );
 		}
 
-		if ( NameComponent* name = m_InspectedObject.TryGet<NameComponent>() )
+		if ( NameComponent* name = inspectedObject.TryGet<NameComponent>() )
 		{
 			DrawComponent( Meta::GetRuntimeMetaInfo<NameComponent>(), name );
 		}
 
-		if ( TransformComponent* transform = m_InspectedObject.TryGet<TransformComponent>() )
+		if ( TransformComponent* transform = inspectedObject.TryGet<TransformComponent>() )
 		{
 			DrawComponent( Meta::GetRuntimeMetaInfo<TransformComponent>(), transform );
 		}
 
 		// Iterates over all component storages in the registry,
 		// and draws the ones that the inspected object has.
-		for ( auto [id, storage] : m_InspectedObject.Scene()->Registry().Storage() )
+		for ( auto [id, storage] : inspectedObject.Scene()->Registry().Storage() )
 		{
-			if ( !storage.contains( m_InspectedObject ) )
+			if ( !storage.contains( inspectedObject ) )
 			{
 				continue;
 			}
@@ -165,7 +182,7 @@ namespace Tridium {
 			}
 
 			// If we can get the component data, draw it.
-			if ( void* componentData = metaData->Component.TryGet( m_InspectedObject.Scene()->Registry(), m_InspectedObject ) )
+			if ( void* componentData = metaData->Component.TryGet( inspectedObject.Scene()->Registry(), inspectedObject ) )
 			{
 				DrawComponent( metaData, componentData );
 			}
@@ -174,6 +191,9 @@ namespace Tridium {
 
 	void InspectorPanel::UI_DrawAddComponent()
 	{
+		TODO( "Support multi-object editing in the inspector." );
+		GameObject inspectedObject = m_InspectedObjects[0];
+
 		// Center the button horizontally.
 		ImGui::SetCursorPosX( ( ImGui::GetContentRegionAvail().x - UI::CalcButtonSize( "Add Component" ).X ) * 0.5f );
 		if ( ImGui::Button( "Add Component" ) )
@@ -190,13 +210,13 @@ namespace Tridium {
 				if ( !metaType->Component.IsComponent )
 					continue; // Not a component, skip.
 
-				if ( metaType->Component.Has( m_InspectedObject.Scene()->Registry(), m_InspectedObject ) )
+				if ( metaType->Component.Has( inspectedObject.Scene()->Registry(), inspectedObject ) )
 					continue; // Already has component, skip.
 
 				if ( ImGui::MenuItem( metaType->Editor.DisplayName.data() ) )
 				{
-					metaType->Component.EmplaceOrReplace( m_InspectedObject.Scene()->Registry(), m_InspectedObject );
-					Editor::GetUserActionManager().Push( metaType->Editor.Component.CreateUserAction( m_InspectedObject, EComponentUserActionType::Add ) );
+					metaType->Component.EmplaceOrReplace( inspectedObject.Scene()->Registry(), inspectedObject );
+					Editor::GetUserActionManager().Push( metaType->Editor.Component.CreateUserAction( inspectedObject, EComponentUserActionType::Add ) );
 					break;
 				}
 			}

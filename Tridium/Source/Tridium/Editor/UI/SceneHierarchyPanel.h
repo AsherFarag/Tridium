@@ -23,7 +23,8 @@ namespace Tridium {
 		void UI_DrawAddButton();
 		void UI_DrawSearchBar();
 		void UI_DrawHierarchy();
-		void UI_DrawAddGameObjectMenu();
+		void UI_DrawHierarchyNode( GameObject a_GameObject );
+		void UI_DrawAddGameObjectMenu( GameObject a_Parent );
 
 	protected:
 

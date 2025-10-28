@@ -5,7 +5,9 @@
 #include "TextureImporter.h"
 #include <Tridium/Asset/TextureAsset.h>
 
+#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#undef STB_IMAGE_IMPLEMENTATION
 
 
 namespace Tridium {

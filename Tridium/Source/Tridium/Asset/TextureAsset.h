@@ -13,10 +13,6 @@ namespace Tridium {
 	public:
 
 		//=============================================================================================
-		// Attempts to load a texture from the specified file path, returns a error message if it fails.
-		static Expected<AssetRef<Texture>, String> Load( const char* a_FilePath );
-
-		//=============================================================================================
 		bool Valid() const override { return !m_PixelData.Empty() && m_Width > 0; }
 
 		const auto& PixelData() const { return m_PixelData; }

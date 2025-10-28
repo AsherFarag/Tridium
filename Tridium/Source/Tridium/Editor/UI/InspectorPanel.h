@@ -26,7 +26,7 @@ namespace Tridium {
 	protected:
 
 		//=============================================================================================
-		GameObject m_InspectedObject;
+		Array<GameObject> m_InspectedObjects;
 		ImGuiTextFilter m_ComponentFilter;
 		bool m_LockInspector = false;
 

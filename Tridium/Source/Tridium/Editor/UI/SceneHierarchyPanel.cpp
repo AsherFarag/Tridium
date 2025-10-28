@@ -32,10 +32,14 @@ namespace Tridium {
 			{
 				UI_DrawHierarchy();
 
+				if ( ImGui::BeginPopupContextWindow( nullptr, ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems ) )
+				{
+					UI_DrawAddGameObjectMenu( {} );
+					ImGui::EndPopup();
+				}
+
 				ImGui::EndChild();
 			}
-
-			UI_DrawAddGameObjectMenu();
 		}
 
 		ImGui::End();
@@ -47,6 +51,12 @@ namespace Tridium {
 		if ( ImGui::Button( TE_ICON_PLUS "##AddButton" ) )
 		{
 			ImGui::OpenPopup( "AddGameObjectMenu" );
+		}
+
+		if ( ImGui::BeginPopup( "AddGameObjectMenu" ) )
+		{
+			UI_DrawAddGameObjectMenu( {} );
+			ImGui::EndPopup();
 		}
 	}
 
@@ -61,51 +71,62 @@ namespace Tridium {
 	void SceneHierarchyPanel::UI_DrawHierarchy()
 	{
 		const auto& activeScene = SceneManager::ActiveScene();
-
 		auto& registry = activeScene->Registry();
 
 		for ( EntityID entity : registry.View<EntityID>() )
 		{
-			StringView name = "No Name";
-			if ( NameComponent* tag = registry.TryGet<NameComponent>( entity ) )
+			GameObject gameObject( activeScene.get(), entity );
+			auto* hierarchy = gameObject.TryGet<HierarchyComponent>();
+
+			// Only draw root nodes here; children will be drawn recursively
+			if ( hierarchy == nullptr || hierarchy->Parent == NullEntity )
 			{
-				name = tag->Name;
-			}
-
-			StringView icon = " ";
-			if ( IconComponent* iconComp = registry.TryGet<IconComponent>( entity ) )
-			{
-				icon = iconComp->Icon;
-			}
-
-			if ( !m_SearchFilter.PassFilter( name.data() ) )
-			{
-				continue; // Skip this GameObject if it doesn't match the search filter
-			}
-
-			auto* hierarchy = registry.TryGet<HierarchyComponent>( entity );
-
-			ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_FramePadding;
-			nodeFlags |= hierarchy && hierarchy->FirstChild != NullEntity ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_Leaf;
-			nodeFlags |= Editor::GetSelectionContext().SelectedObject == GameObject( *activeScene, entity ) ? ImGuiTreeNodeFlags_Selected : ImGuiTreeNodeFlags_None;
-
-			if ( ImGui::TreeNodeEx( (void*)(uintptr_t)(uint32_t)entity, nodeFlags, "%s %s", icon.data(), name.data() ) )
-			{
-				ImGui::TreePop();
-			}
-
-			if ( ImGui::IsItemClicked() )
-			{
-				Editor::GetSelectionContext().SelectedObject = GameObject( *activeScene, entity );
+				UI_DrawHierarchyNode( gameObject );
 			}
 		}
 	}
 
-	void SceneHierarchyPanel::UI_DrawAddGameObjectMenu()
+	void SceneHierarchyPanel::UI_DrawHierarchyNode( GameObject a_GameObject )
 	{
-		if ( !ImGui::BeginPopup( "AddGameObjectMenu" ) )
-			return; // Early out if the popup is not open or there is no active scene
+		StringView name = "No Name";
+		if ( NameComponent* nameComponent = a_GameObject.TryGet<NameComponent>() )
+		{
+			name = nameComponent->Name;
+		}
 
+		if ( !m_SearchFilter.PassFilter( name.data() ) )
+		{
+			return; // Skip this GameObject if it doesn't match the search filter
+		}
+
+		StringView icon = EditorIcons::Cube;
+		if ( IconComponent* iconComp = a_GameObject.TryGet<IconComponent>() )
+		{
+			icon = iconComp->Icon;
+		}
+
+		auto* hierarchy = a_GameObject.TryGet<HierarchyComponent>();
+
+		ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_FramePadding;
+		nodeFlags |= hierarchy && hierarchy->FirstChild != NullEntity ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_Leaf;
+		nodeFlags |= SelectionManager::Get().IsSelected( a_GameObject ) ? ImGuiTreeNodeFlags_Selected : ImGuiTreeNodeFlags_None;
+
+		if ( ImGui::TreeNodeEx( (void*)(uintptr_t)(uint32_t)a_GameObject.ID(), nodeFlags, name.data() ) )
+		{
+			ImGui::TreePop();
+		}
+
+		if ( ImGui::IsItemClicked()  )
+		{
+			if ( !Input::IsKeyPressed( EInputKey::LeftControl ) )
+				SelectionManager::Get().DeselectAll( ESelectionContext::Scene );
+
+			SelectionManager::Get().Select( ESelectionContext::Scene, a_GameObject );
+		}
+	}
+
+	void SceneHierarchyPanel::UI_DrawAddGameObjectMenu( GameObject a_Parent )
+	{
 		const auto& activeScene = SceneManager::ActiveScene();
 
 		// Empty GameObject
@@ -156,8 +177,6 @@ namespace Tridium {
 				ImGui::EndTooltip();
 			}
 		}
-
-		ImGui::EndPopup();
 	}
 
 } // namespace Tridium

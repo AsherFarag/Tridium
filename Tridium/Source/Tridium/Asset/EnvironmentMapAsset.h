@@ -25,7 +25,7 @@ namespace Tridium {
 		};
 
 		//=============================================================================================
-		bool Valid() const override;
+		bool Valid() const override { return m_Format != ERHIFormat::Unknown && !m_RadianceMips.Empty() && m_Irradiance.FaceWidth > 0; }
 
 		//=============================================================================================
 		// Returns the RHI format for all pixels in the cubemaps.

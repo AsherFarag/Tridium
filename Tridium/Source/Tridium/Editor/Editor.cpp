@@ -18,6 +18,7 @@ namespace Tridium {
 
 	Editor* Editor::s_Instance = nullptr;
 	decltype( Editor::Events::OnGameObjectSelected ) Editor::Events::OnGameObjectSelected{};
+	decltype( Editor::Events::OnSelectionChanged ) Editor::Events::OnSelectionChanged{};
 
 	Editor::Editor() : IAppLayer( "Editor" )
 	{

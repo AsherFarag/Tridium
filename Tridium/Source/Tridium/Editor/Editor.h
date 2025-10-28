@@ -6,6 +6,7 @@
 #include <Tridium/Application/Application.h>
 #include <Tridium/Common/Function.h>
 #include <Tridium/Editor/EditorPayload.h>
+#include <Tridium/Editor/SelectionManager.h>
 #include <Tridium/Editor/UserActions/UserAction.h>
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/UI/UIManager.h>
@@ -14,11 +15,6 @@ namespace Tridium {
 
 	DEFINE_TICK_GROUP( EditorTick );
 	DEFINE_TICK_GROUP( EditorRender );
-
-	struct SelectionContext
-	{
-		GameObject SelectedObject;
-	};
 
 	//=================================================================================================
 	// Editor:
@@ -37,6 +33,7 @@ namespace Tridium {
 		struct Events
 		{
 			static MulticastDelegate<void( class GameObject )> OnGameObjectSelected;
+			static MulticastDelegate<void( ESelectionContext, const Selectable&, bool )> OnSelectionChanged;
 		};
 
 		//=============================================================================================
@@ -44,7 +41,7 @@ namespace Tridium {
 		static EditorPayloadManager& GetPayloadManager() { return Get()->m_PayloadManager; }
 		static UserActionManager& GetUserActionManager() { return Get()->m_UserActionManager; }
 		static UIManager& GetUIManager() { return Get()->m_UIManager; }
-		static SelectionContext& GetSelectionContext() { return Get()->m_SelectionContext; }
+		static SelectionManager& GetSelectionManager() { return Get()->m_SelectionManager; }
 
 	private:
 
@@ -55,7 +52,7 @@ namespace Tridium {
 		EditorPayloadManager m_PayloadManager;
 		UserActionManager m_UserActionManager;
 		UIManager m_UIManager;
-		SelectionContext m_SelectionContext;
+		SelectionManager m_SelectionManager;
 
 	private:
 

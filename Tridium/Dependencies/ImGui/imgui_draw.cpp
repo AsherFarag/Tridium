@@ -5837,6 +5837,7 @@ begin:
 // Render an arrow aimed to be aligned with text (p_min is a position in the same space text would be positioned). To e.g. denote expanded/collapsed state
 void ImGui::RenderArrow(ImDrawList* draw_list, ImVec2 pos, ImU32 col, ImGuiDir dir, float scale)
 {
+#if 0
     const float h = draw_list->_Data->FontSize * 1.00f;
     float r = h * 0.40f * scale;
     ImVec2 center = pos + ImVec2(h * 0.50f, h * 0.50f * scale);
@@ -5864,6 +5865,41 @@ void ImGui::RenderArrow(ImDrawList* draw_list, ImVec2 pos, ImU32 col, ImGuiDir d
         break;
     }
     draw_list->AddTriangleFilled(center + a, center + b, center + c, col);
+#else // Tridium
+
+    const float h = draw_list->_Data->FontSize * 1.00f;
+    float r = h * 0.40f * scale;
+    ImVec2 center = pos + ImVec2( h * 0.50f, h * 0.50f * scale );
+
+    ImVec2 a, b, c, offset;
+    switch ( dir )
+    {
+        case ImGuiDir_Up:
+        case ImGuiDir_Down:
+            if ( dir == ImGuiDir_Up ) r = -r;
+            a = ImVec2( +0.000f, +0.450f ) * r;
+            b = ImVec2( -0.800f, -0.450f ) * r;
+            c = ImVec2( +0.800f, -0.450f ) * r;
+            offset = ImVec2( 1.0f, 0.0f );
+            break;
+        case ImGuiDir_Left:
+        case ImGuiDir_Right:
+            if ( dir == ImGuiDir_Left ) r = -r;
+            a = ImVec2( +0.450f, +0.000f ) * r;
+            b = ImVec2( -0.450f, +0.800f ) * r;
+            c = ImVec2( -0.450f, -0.800f ) * r;
+            offset = ImVec2( 0.0f, -1.0f );
+            break;
+        case ImGuiDir_None:
+        case ImGuiDir_COUNT:
+            IM_ASSERT( 0 );
+            break;
+    }
+
+    draw_list->AddLine( center + a + offset, center + b, col, 2.0f );
+    draw_list->AddLine( center + a - offset, center + c, col, 2.0f );
+
+#endif // /Tridium
 }
 
 void ImGui::RenderBullet(ImDrawList* draw_list, ImVec2 pos, ImU32 col)
