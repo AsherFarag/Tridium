@@ -17,4 +17,3 @@
 #include <Tridium/Math/Rotator.h>
 #include <Tridium/Math/AABB.h>
 #include <Tridium/Utils/Macro.h>
-#include <Tridium/Reflection/ReflectionFwd.h>

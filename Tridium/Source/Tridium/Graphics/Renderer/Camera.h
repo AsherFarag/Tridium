@@ -1,5 +1,4 @@
 #pragma once
-#include <Tridium/Reflection/ReflectionFwd.h>
 #include <Tridium/Math/Frustum.h>
 
 namespace Tridium {
@@ -8,14 +7,12 @@ namespace Tridium {
 
 	struct PerspectiveData
 	{
-		REFLECT( PerspectiveData );
 		float FOV = 45.0f;
 		float Near = 0.01f, Far = 1000.0f;
 	};
 
 	struct OrthographicData
 	{
-		REFLECT( OrthographicData );
 		float Size = 10.0f;
 		float Near = -1000.0f, Far = 1000.0f;
 	};
@@ -24,8 +21,6 @@ namespace Tridium {
 
 	class Camera
 	{
-		REFLECT( Camera );
-
 	public:
 		Camera();
 		~Camera() = default;

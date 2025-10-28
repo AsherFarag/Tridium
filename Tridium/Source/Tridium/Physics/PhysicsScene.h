@@ -3,9 +3,6 @@
 #include <Tridium/Core/Memory.h>
 #include <Tridium/Math/Vector.h>
 
-// Old
-#include <Tridium/Reflection/ReflectionFwd.h>
-
 #include "RayCast.h"
 #include "PhysicsBody.h"
 #include "PhysicsLayer.h"
@@ -32,8 +29,6 @@ namespace Tridium {
 
 	struct LinearMotionConstraint
 	{
-		REFLECT( LinearMotionConstraint );
-
 		ESixDOFConstraintMotion XMotion = ESixDOFConstraintMotion::Free;
 		ESixDOFConstraintMotion YMotion = ESixDOFConstraintMotion::Free;
 		ESixDOFConstraintMotion ZMotion = ESixDOFConstraintMotion::Free;
@@ -45,8 +40,6 @@ namespace Tridium {
 
 	struct AngularMotionConstraint
 	{
-		REFLECT( AngularMotionConstraint );
-
 		ESixDOFConstraintMotion Swing1Motion = ESixDOFConstraintMotion::Free;
 		ESixDOFConstraintMotion Swing2Motion = ESixDOFConstraintMotion::Free;
 		ESixDOFConstraintMotion TwistMotion = ESixDOFConstraintMotion::Free;

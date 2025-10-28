@@ -1,6 +1,5 @@
 #include "tripch.h"
 #include "Camera.h"
-#include <Tridium/Reflection/Reflection.h>
 
 namespace Tridium {
 
@@ -111,30 +110,5 @@ namespace Tridium {
 		}
 
 	}
-
-	BEGIN_REFLECT_ENUM( EProjectionType )
-		ENUM_VALUE( Perspective )
-		ENUM_VALUE( Orthographic )
-	END_REFLECT_ENUM( EProjectionType )
-
-	BEGIN_REFLECT( PerspectiveData, Scriptable )
-		PROPERTY( FOV, Serialize | EditAnywhere )
-		PROPERTY( Near, Serialize | EditAnywhere )
-		PROPERTY( Far, Serialize | EditAnywhere )
-	END_REFLECT( PerspectiveData );
-
-	BEGIN_REFLECT( OrthographicData, Scriptable )
-		PROPERTY( Size, Serialize | EditAnywhere )
-		PROPERTY( Near, Serialize | EditAnywhere )
-		PROPERTY( Far, Serialize | EditAnywhere )
-	END_REFLECT( OrthographicData )
-
-	BEGIN_REFLECT( Camera, Scriptable )
-		PROPERTY( m_Perspective, Serialize | EditAnywhere )
-		PROPERTY( m_Orthographic, Serialize | EditAnywhere )
-		PROPERTY( m_ProjectionType, Serialize | EditAnywhere )
-		PROPERTY( m_Projection, Serialize | EditAnywhere )
-		PROPERTY( m_ViewportSize, Serialize | EditAnywhere )
-	END_REFLECT( Camera )
 
 } // namespace Tridium

@@ -10,26 +10,9 @@ namespace Tridium {
 
 	bool ScriptEngine::Init()
 	{
-		using RegisterScriptableFunc = Refl::Props::RegisterScriptableProp::Type;
-
 		// Open the standard libraries
 		m_LuaState.open_libraries( sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::table, sol::lib::math, sol::lib::os, sol::lib::io );
 
-		// Register reflected types into the Lua state
-		for ( const auto&& [id, type] : Refl::ResolveMetaTypes() )
-		{
-			Refl::MetaType metaType = type;
-			if ( !metaType.IsValid() || !EnumFlags( metaType.GetClassFlags() ).HasFlag( Refl::EClassFlags::Scriptable ) )
-				continue;
-
-			TODO( "Implement scriptable type registration" );
-			//Refl::MetaAttribute regFuncAtt = metaType.GetMetaAttribute( Refl::Props::RegisterScriptableProp::ID );
-			//if ( !regFuncAtt || !regFuncAtt.value().allow_cast<RegisterScriptableFunc>( ) )
-			//	continue;
-			//
-			//RegisterScriptableFunc regFunc = regFuncAtt.value().cast<RegisterScriptableFunc>();
-			//regFunc( *this );
-		}
 
 		return true;
 	}
@@ -87,10 +70,10 @@ namespace Tridium {
 				case sol::type::userdata:
 				{
 					const StringView typeName = GetUserDataTypeName( value );
-					if ( Refl::MetaType type = Refl::ResolveMetaType( typeName.data() ) )
-					{
-						a_Script.m_Variables[name] = ScriptVariable( type.FromVoid( value.pointer() ) );
-					}
+					//if ( Refl::MetaType type = Refl::ResolveMetaType( typeName.data() ) )
+					//{
+					//	a_Script.m_Variables[name] = ScriptVariable( type.FromVoid( value.pointer() ) );
+					//}
 					break;
 				}
 				case sol::type::function:
