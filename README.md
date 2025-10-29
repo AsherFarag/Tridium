@@ -102,4 +102,4 @@ Tridium uses a number of open-source libraries and tools. We gratefully acknowle
 
 ## License
 Code released under
-[the MIT license](https://github.com/AsherFarag/Tridium/blob/main/LICENSE).<br/>
+[the Apache 2.0 license](https://github.com/AsherFarag/Tridium/blob/main/LICENSE).<br/>
