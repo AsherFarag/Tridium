@@ -54,6 +54,10 @@ namespace Tridium {
 		UIManager m_UIManager;
 		SelectionManager m_SelectionManager;
 
+		//=============================================================================================
+		bool m_IsTitleBarHovered = false;
+		EScenePlayMode m_ScenePlayMode = EScenePlayMode::None;
+
 	private:
 
 		void Tick();
@@ -63,8 +67,9 @@ namespace Tridium {
 		void OnDetach() override;
 		void OnEvent( Event& a_Event ) override;
 
-		void UI_DrawMenuBar();
-		void UI_DrawToolBar();
+		void UI_DrawTitleBar();
+		void UI_DrawMenuBar( Vector2 a_Min, Vector2 a_Max );
+		void UI_DrawPlayBar( float a_Height );
 
 		bool Event_KeyPressed( const KeyPressedEvent& a_Event );
 	};

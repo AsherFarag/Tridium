@@ -28,12 +28,23 @@ namespace Tridium {
 		s_Instance = this;
 		m_CommandLineArgs = std::move( a_CmdLine );
 
-		// Initialise the Window
-		WindowProps props;
-		props.Width = 1280;
-		props.Height = 720;
-		m_Window = Window::Create( props );
-		m_Window->SetEventCallback( [ this ]( const Event& a_Event ) { this->EnqueueEvent( a_Event ); } );
+		PlatformSettings platformSettings;
+		m_PlatformInterface = IPlatformInterface::Create( platformSettings );
+		ENSURE( m_PlatformInterface, "Failed to create platform interface!" );
+
+		// Create the main window
+		PlatformWindowProps windowProps;
+		windowProps.Width = 1280;
+		windowProps.Height = 720;
+		windowProps.EventCallback = +[]( const Event& a_Event ) { Application::Get()->EnqueueEvent(a_Event); };
+	#if WITH_EDITOR
+		windowProps.Decorated = false;
+	#endif // WITH_EDITOR
+
+		m_Window = m_PlatformInterface->CreateWindow( windowProps );
+		ENSURE( m_Window, "Failed to create platform window!" );
+
+		m_Window->SetPosition( 100, 100 );
 
 		// Initialise the Engine
 		EngineConfig engineConfig;
@@ -96,7 +107,7 @@ namespace Tridium {
 			// Invoke the tick groups
 			s_TickCallback.Broadcast();
 
-			m_Window->OnUpdate();
+			m_PlatformInterface->PollEvents();
 		}
 
 		m_LayerStack = {};

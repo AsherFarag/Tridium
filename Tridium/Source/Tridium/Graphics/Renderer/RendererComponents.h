@@ -6,6 +6,33 @@
 
 namespace Tridium {
 
+	enum class EAspectRatioMode : uint8_t
+	{
+		// No constraint — freely resizes with the window.
+		Free = 0,
+
+		// Keeps a fixed aspect ratio (e.g., 16:9 or 4:3), adding letterboxing or pillarboxing as needed.
+		Fixed,
+
+		// Matches the width, adjusting height to maintain content scaling.
+		MatchWidth,
+
+		// Matches the height, adjusting width to maintain content scaling.
+		MatchHeight,
+
+		// Expands to fill the entire viewport, possibly distorting the image.
+		Stretch,
+
+		// Maintains aspect ratio but crops content to fill the viewport.
+		Crop,
+
+		// Scales uniformly to fit the viewport within bounds (no cropping, black bars possible).
+		Fit,
+
+		// Scales uniformly to fill the viewport entirely (cropping possible).
+		Fill,
+	};
+
 	//=================================================================================================
 	// Camera Component: Defines a camera in the scene.
 	//=================================================================================================
@@ -14,7 +41,7 @@ namespace Tridium {
 		enum class EProjectionType { Perspective = 0, Orthographic = 1 };
 
 		EProjectionType ProjectionType = EProjectionType::Perspective;
-		Vector2 ViewportSize{};
+		Vector2 ViewportSize{ 1280, 720 };
 
 		struct PerspectiveData
 		{
@@ -30,6 +57,8 @@ namespace Tridium {
 			float Size = 10.0f;
 		} Orthographic;
 
+		float NearPlane() const { return ProjectionType == EProjectionType::Perspective ? Perspective.NearPlane : Orthographic.NearPlane; }
+		float FarPlane() const { return ProjectionType == EProjectionType::Perspective ? Perspective.FarPlane : Orthographic.FarPlane; }
 		float AspectRatio() const { return ViewportSize.X / ViewportSize.Y; }
 		Matrix4 CalculatePerspective() const;
 		Matrix4 CalculateOrthographic() const;
@@ -140,7 +169,7 @@ namespace Tridium::Meta {
 		Tooltip<"The projection type of the camera.">>
 		ProjectionType;
 
-		Field<&CameraComponent::ViewportSize, Serializable, Editable, Scriptable,
+		Field<&CameraComponent::ViewportSize, Serializable, Editable, Scriptable, Min<1.0f>,
 		Tooltip<"The size of the camera viewport in pixels.">>
 		ViewportSize;
 
@@ -163,11 +192,11 @@ namespace Tridium::Meta {
 	{
 		using Type = Type<CameraComponent::EProjectionType, Scriptable>;
 
-		//Field<CameraComponent::EProjectionType::Perspective, Scriptable>
-		//Perspective;
-		//
-		//Field<CameraComponent::EProjectionType::Orthographic, Scriptable>
-		//Orthographic;
+		Constant<CameraComponent::EProjectionType::Perspective, Scriptable>
+		Perspective;
+		
+		Constant<CameraComponent::EProjectionType::Orthographic, Scriptable>
+		Orthographic;
 	};
 
 	template<>

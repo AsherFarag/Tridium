@@ -48,15 +48,16 @@ namespace Tridium {
 
 		// Titlebar
 		UIColor Titlebar{ UI_COLOR_FROM_U8( 26, 26, 30, 255 ) };
-		UIColor TitlebarGradientTopLeft{ UI_COLOR_FROM_U8( 26, 26, 30, 0 ) };
-		UIColor TitlebarGradientTopRight{ UI_COLOR_FROM_U8( 26, 75, 40, 255 ) };
-		UIColor TitlebarGradientBottomLeft{ UI_COLOR_FROM_U8( 26, 26, 30, 0 ) };
-		UIColor TitlebarGradientBottomRight{ UI_COLOR_FROM_U8( 26, 26, 30, 0 ) };
 
 		UIColor WindowBorder{ UI_COLOR_FROM_U8( 51, 51, 51, 255 ) };
 
 		UIColor Underline{ UI_COLOR_FROM_U8( 26, 26, 30, 255 ) };
 		UIColor Accent{ UI_COLOR_FROM_U8( 255, 90, 110, 255 ) };
+
+		// Selection
+		UIColor Selected{ Orange };
+		float SelectedBorderSize = 2.0f;
+		float SelectedRounding = 4.0f;
 	};
 
 	namespace UI {

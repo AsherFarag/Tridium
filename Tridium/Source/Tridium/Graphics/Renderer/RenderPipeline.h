@@ -166,6 +166,25 @@ namespace Tridium {
 		}
 
 		//=============================================================================================
+		void AddCameraView( RHITextureRef a_OutputTexture, Vector2 a_ViewportSize, Vector3 a_Position,
+							const Matrix4& a_ViewMatrix, const Matrix4& a_ProjectionMatrix,
+							float a_NearClip = 0.1f, float a_FarClip = 1000.0f, String a_Name = {} )
+		{
+			RenderView view{};
+			view.Type = ERenderViewType::Camera;
+			view.Name = std::move( a_Name );
+			view.OutputTexture = std::move( a_OutputTexture );
+			view.Constants.ViewportSize = a_ViewportSize;
+			view.Constants.ViewPosition = Vector4( a_Position, 1.0f );
+			view.Constants.ViewMatrix = a_ViewMatrix;
+			view.Constants.ProjectionMatrix = a_ProjectionMatrix;
+			view.Constants.ViewProjectionMatrix = a_ProjectionMatrix * a_ViewMatrix;
+			view.Constants.NearPlane = a_NearClip;
+			view.Constants.FarPlane = a_FarClip;
+			m_ViewsNextFrame.EmplaceBack( std::move( view ) );
+		}
+
+		//=============================================================================================
 		// Adds a custom render pass to the pipelines in flight.
 		template<Concepts::Derived<IRenderPipelinePass> T, typename... _Args>
 		void AddRenderPass( String a_Name, const _Args&... a_Args )

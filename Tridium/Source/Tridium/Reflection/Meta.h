@@ -43,6 +43,8 @@ namespace Tridium::Meta {
 
 	struct FunctionAttribute : Attribute { static constexpr bool IsFunctionAttribute = true; };
 
+	struct ConstantAttribute : Attribute { static constexpr bool IsConstantAttribute = true; };
+
 #pragma endregion
 
 #pragma region Is Attribute
@@ -61,6 +63,9 @@ namespace Tridium::Meta {
 
 	template<typename T>
 	concept IsFunctionAttribute = Concepts::Derived<T, FunctionAttribute> || Concepts::IsSame<T, FunctionAttribute>;
+
+	template<typename T>
+	concept IsConstantAttribute = Concepts::Derived<T, ConstantAttribute> || Concepts::IsSame<T, ConstantAttribute>;
 
 #pragma endregion
 
@@ -617,6 +622,17 @@ namespace Tridium::Meta {
 	};
 
 	//=================================================================================================
+	// Constant: Used for defining compile-time constant values in the reflector.
+	// Useful for defining enum values or other constant properties.
+	//=================================================================================================
+	template<auto _Value, IsConstantAttribute... _ConstantAttributes>
+	struct Constant : MetaMember, AttributeList<_ConstantAttributes...>
+	{
+		using ValueType = decltype( _Value );
+		static constexpr auto Value = _Value;
+	};
+
+	//=================================================================================================
 	// Header: Used for defining a header/separator in the reflector.
 	// E.g.,
 	// 	template<>
@@ -628,6 +644,7 @@ namespace Tridium::Meta {
 	//		Header MovementStats;
 	//	    ...
 	// 	};
+	//=================================================================================================
 	struct Header : MetaMember {};
 
 #pragma endregion
@@ -660,6 +677,13 @@ namespace Tridium::Meta {
 	struct IsFunctionT<Function<_FunctionPtr, _FunctionAttributes...>> : std::true_type {};
 	template<typename T>
 	concept IsFunction = IsFunctionT<std::remove_const_t<std::remove_reference_t<T>>>::value;
+
+	template<typename T>
+	struct IsConstantT : std::false_type {};
+	template<auto _Value, IsConstantAttribute... _ConstantAttributes>
+	struct IsConstantT<Constant<_Value, _ConstantAttributes...>> : std::true_type {};
+	template<typename T>
+	concept IsConstant = IsConstantT<std::remove_const_t<std::remove_reference_t<T>>>::value;
 
 #pragma endregion
 

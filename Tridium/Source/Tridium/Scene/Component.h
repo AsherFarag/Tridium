@@ -154,10 +154,13 @@ namespace Tridium {
 		const Vector3& LocalRotationEuler() const { return m_LocalEulerAngles; }
 		void SetLocalRotationEuler( const Vector3& a_EulerAngles )
 		{ 
-			printf( std::format( "\n Setting Local Rotation Euler Angles to: X={} Y={} Z={}", a_EulerAngles.X, a_EulerAngles.Y, a_EulerAngles.Z ).c_str() );
 			m_LocalEulerAngles = a_EulerAngles; 
 			m_LocalRotation = Quaternion( a_EulerAngles );
 		}
+
+		//=============================================================================================
+		Vector3 LocalRotationEulerDeg() const { return Math::Degrees( m_LocalEulerAngles ); }
+		void SetLocalRotationEulerDeg( const Vector3& a_EulerAnglesDeg ) { SetLocalRotationEuler( Math::Radians( a_EulerAnglesDeg ) ); }
 
 		//=============================================================================================
 		const Quaternion& LocalRotation() const { return m_LocalRotation; }
@@ -252,7 +255,7 @@ namespace Tridium::Meta {
 		Property<&TransformComponent::LocalPosition, &TransformComponent::SetLocalPosition, Editable, Serializable, DisplayName<"Position">>
 		LocalPosition;
 
-		Property<&TransformComponent::LocalRotationEuler, &TransformComponent::SetLocalRotationEuler, Editable, Serializable, DisplayName<"Rotation">>
+		Property<&TransformComponent::LocalRotationEulerDeg, &TransformComponent::SetLocalRotationEulerDeg, Editable, Serializable, DisplayName<"Rotation">>
 		LocalRotationEuler;
 
 		Property<&TransformComponent::LocalScale, &TransformComponent::SetLocalScale, Editable, Serializable, DisplayName<"Scale">>

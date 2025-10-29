@@ -1,6 +1,6 @@
 #pragma once
 #include <Tridium/Application/Layer.h>
-#include <Tridium/Application/Window.h>
+#include <Tridium/Application/PlatformInterface.h>
 #include <Tridium/Core/CommandLine.h>
 #include <Tridium/Common/Function.h>
 #include <Tridium/Application/Event.h>
@@ -76,7 +76,7 @@ namespace Tridium {
 		// Gets the static application instance.
 		static Application* Get() { ASSERT( s_Instance ); return s_Instance; }
 		static const CmdLineArgs& GetCommandLineArgs() { return Get()->m_CommandLineArgs; }
-		static Window& GetWindow() { return *Get()->m_Window; }
+		static IPlatformWindow& GetWindow() { return *Get()->m_Window; }
 		static uint32_t GetFPS() { return Get()->m_PrevFrameInfo.FPS; }
 		static double GetFrameTime() { return 1000.0 / Get()->m_PrevFrameInfo.FPS; }
 		static const FrameInfo& GetFrameInfo() { return Get()->m_PrevFrameInfo; }
@@ -110,14 +110,15 @@ namespace Tridium {
 		static Application* s_Instance;
 
 		//=============================================================================================
-		bool              m_Running = false;
-		EAppExitCode      m_ExitCode = EAppExitCode::Success;
-		CmdLineArgs       m_CommandLineArgs{};
-		UniquePtr<Window> m_Window = nullptr;
-		AppLayerStack     m_LayerStack{};
-		FrameInfo         m_PrevFrameInfo{};
-		uint32_t          m_MaxFPS = 144u;
-		Queue<Event>      m_EventQueue;
+		bool m_Running = false;
+		EAppExitCode m_ExitCode = EAppExitCode::Success;
+		CmdLineArgs m_CommandLineArgs{};
+		UniquePtr<IPlatformWindow> m_Window = nullptr;
+		UniquePtr<IPlatformInterface> m_PlatformInterface = nullptr;
+		AppLayerStack m_LayerStack{};
+		FrameInfo m_PrevFrameInfo{};
+		uint32_t m_MaxFPS = 144u;
+		Queue<Event> m_EventQueue;
 
 		struct TickGroup
 		{

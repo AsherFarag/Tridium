@@ -15,7 +15,7 @@ namespace Tridium::Meta {
 	// Scriptable: This property is exposed to the scripting system for read/write access.
 	// For a field or function to be scriptable, the type must also be scriptable.
 	//=================================================================================================
-	struct Scriptable : TypeAttribute, FieldAttribute, FunctionAttribute {};
+	struct Scriptable : TypeAttribute, FieldAttribute, FunctionAttribute, ConstantAttribute {};
 
 	//=================================================================================================
 	// Script Read Only: This property is exposed to the scripting system for read-only access.
@@ -89,7 +89,7 @@ namespace Tridium::Meta {
 	// If specified, this name will be used in editors instead of the field's actual name.
 	//=================================================================================================
 	template<StringLiteral _Name>
-	struct DisplayName : TypeAttribute, FieldAttribute, FunctionAttribute
+	struct DisplayName : TypeAttribute, FieldAttribute, FunctionAttribute, ConstantAttribute
 	{
 		static constexpr StringView Value = _Name;
 	};
@@ -108,7 +108,7 @@ namespace Tridium::Meta {
 	// Tooltip: Provides a tooltip description for a field or function in the editor.
 	//=================================================================================================
 	template<StringLiteral _Tooltip>
-	struct Tooltip : FieldAttribute, FunctionAttribute
+	struct Tooltip : FieldAttribute, FunctionAttribute, ConstantAttribute
 	{
 		static constexpr StringView Value = _Tooltip;
 	};

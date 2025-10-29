@@ -130,6 +130,32 @@ namespace Tridium {
 
 	void EditorViewportPanel::OnUpdate( float a_DeltaTime )
 	{
+		m_PreviewObject = {};
+		if ( const auto& selections = SelectionManager::Get().Selections( ESelectionContext::Scene ); selections.Size() > 0 )
+		{
+			// Find the first selected GameObject with a Camera component
+			for ( const Selectable& selected : selections )
+			{
+				if ( !std::holds_alternative<GameObject>( selected ) )
+					continue;
+
+				GameObject gameObject = std::get<GameObject>( selected );
+				if ( !gameObject.Valid() )
+					continue;
+
+				if ( gameObject.Has<CameraComponent>() )
+				{
+					m_PreviewObject = gameObject;
+					break;
+				}
+			}
+		}
+
+		m_EditorCamera.Focused = m_ViewportFocused;
+		m_EditorCamera.SetViewportSize( m_ViewportSize.X, m_ViewportSize.Y );
+		m_EditorCamera.OnUpdate();
+
+		// Create or resize the viewport texture if needed
 		if ( !m_ViewportTexture || 
 			 m_ViewportTexture->Desc().Width != Cast<uint32_t>( m_ViewportSize.X ) || 
 			 m_ViewportTexture->Desc().Height != Cast<uint32_t>( m_ViewportSize.Y ) )
@@ -145,32 +171,70 @@ namespace Tridium {
 			m_ViewportTexture = RHI::CreateTexture( textureDesc );
 		}
 
-		RenderView view
+		// Submit the render view for the editor camera
 		{
-			.Constants{
-				m_EditorCamera.GetViewMatrix(),
-				m_EditorCamera.GetProjection(),
-				Vector4{ m_EditorCamera.Position, 1.0f },
-				Vector2{ m_ViewportSize.X, m_ViewportSize.Y },
-				m_EditorCamera.GetPerspectiveFarClip(),
-				m_EditorCamera.GetPerspectiveNearClip()
-			},
-			.Type = ERenderViewType::Camera,
-			.Enabled = true,
-			.OutputTexture = m_ViewportTexture,
-		};
+			RenderView view
+			{
+				.Constants{
+					m_EditorCamera.GetViewMatrix(),
+					m_EditorCamera.GetProjection(),
+					Vector4{ m_EditorCamera.Position, 1.0f },
+					Vector2{ m_ViewportSize.X, m_ViewportSize.Y },
+					m_EditorCamera.GetPerspectiveFarClip(),
+					m_EditorCamera.GetPerspectiveNearClip()
+				},
+				.Type = ERenderViewType::Camera,
+				.Enabled = true,
+				.OutputTexture = m_ViewportTexture,
+			};
 
-		RendererModule::GetPipelineManager()->AddView( view );
+			RendererModule::GetPipelineManager()->AddView( view );
+		}
+
+		m_PreviewTexture = nullptr;
+		if ( m_PreviewObject.Valid() )
+		{
+			if ( CameraComponent* cameraComp = m_PreviewObject.TryGet<CameraComponent>() )
+			{
+				Vector2 viewportSize = cameraComp->ViewportSize * 0.2f;
+				viewportSize = Math::Max( Vector2::One(), viewportSize );
+
+				RHITextureDesc previewTextureDesc;
+				previewTextureDesc.Dimension = ERHITextureDimension::Texture2D;
+				previewTextureDesc.Width = Cast<uint32_t>( viewportSize.X );
+				previewTextureDesc.Height = Cast<uint32_t>( viewportSize.Y );
+				previewTextureDesc.Format = ERHIFormat::RGBA8_UNORM;
+				previewTextureDesc.BindFlags = ERHIBindFlags::RenderTarget | ERHIBindFlags::ShaderResource;
+				previewTextureDesc.UseClearValue = true;
+				previewTextureDesc.Name = "Editor Preview Viewport Texture";
+				m_PreviewTexture = RHI::CreateTexture( previewTextureDesc );
+
+				RendererModule::GetPipelineManager()->AddCameraView(
+					m_PreviewTexture,
+					viewportSize,
+					m_PreviewObject.GetWorldPosition(),
+					m_PreviewObject.GetWorldTransform(),
+					cameraComp->CalculateProjection(),
+					cameraComp->NearPlane(),
+					cameraComp->FarPlane(),
+					"Editor Preview Camera View"
+				);
+			}
+		}
 	}
 
 	void EditorViewportPanel::OnDraw( StringView a_Name, bool& o_Open )
 	{
-		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2( 2.f, 2.f ) );
+		ImGui::ScopedStyleVar winPadding( ImGuiStyleVar_WindowPadding, ImVec2( 2.f, 2.f ) );
 
 		if ( ImGui::Begin( a_Name.data() ) )
 		{
-			if ( ImGui::IsWindowHovered() && ImGui::IsMouseClicked( ImGuiMouseButton_Right ) )
+			if ( ImGui::IsWindowHovered() && ( ImGui::IsMouseClicked( ImGuiMouseButton_Left ) || ImGui::IsMouseClicked( ImGuiMouseButton_Right ) ) )
+			{
 				ImGui::SetWindowFocus();
+			}
+
+			m_ViewportFocused = ImGui::IsWindowFocused();
 
 			const Vector2 regionAvail = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
 			const auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
@@ -181,8 +245,6 @@ namespace Tridium {
 
 			// Update the viewport size
 			m_ViewportSize = regionAvail;
-			m_EditorCamera.SetViewportSize( m_ViewportSize.X, m_ViewportSize.Y );
-			m_EditorCamera.OnUpdate();
 
 			ImTextureID textureID = (ImTextureID)( m_ViewportTexture.get() );
 			if ( textureID )
@@ -190,7 +252,41 @@ namespace Tridium {
 				ImGui::Image( textureID, ImGui::GetContentRegionAvail() );
 			}
 
+			// Draw camera preview 
+			if ( m_PreviewObject.Valid() && m_PreviewTexture )
+			{
+				Vector2 previewViewportSize = m_ViewportSize;
+				previewViewportSize *= 0.2f; // 20% of the main viewport size
+
+				const Vector2 previewViewportMin = viewportBoundsMax - previewViewportSize - Vector2( 10.0f );
+				const Vector2 previewViewportMax = viewportBoundsMax - Vector2( 10.0f );
+
+				ImGui::SetCursorScreenPos( ImGui::Convert( previewViewportMin ) );
+
+				ImGui::Image( m_PreviewTexture.get(), ImGui::Convert( previewViewportSize ) );
+
+				// Add a border to the preview viewport
+				const UITheme& theme = UI::GetTheme();
+				ImDrawList* drawList = ImGui::GetWindowDrawList();
+				drawList->AddRect( ImGui::Convert( previewViewportMin ) - ImVec2( theme.SelectedBorderSize / 2, theme.SelectedBorderSize / 2 ),
+								   ImGui::Convert( previewViewportMax ) + ImVec2( theme.SelectedBorderSize / 2, theme.SelectedBorderSize / 2 ),
+								   theme.BrightText, theme.SelectedRounding, 0, theme.SelectedBorderSize );
+			}
+
+			// Draw transformation gizmos
 			UI_DrawGizmo( viewportBoundsMin, viewportBoundsMax );
+
+			// Draw a border around the viewport if it's focused
+			if ( m_ViewportFocused )
+			{
+				const UITheme& theme = UI::GetTheme();
+
+				ImDrawList* drawList = ImGui::GetForegroundDrawList( ImGui::GetCurrentWindow() );
+				ImVec2 borderOffset = ImVec2( theme.SelectedBorderSize / 2, theme.SelectedBorderSize / 2 );
+				drawList->AddRect( ImGui::Convert( viewportBoundsMin ) - borderOffset,
+								   ImGui::Convert( viewportBoundsMax ) + borderOffset,
+								   theme.Selected, theme.SelectedRounding, 0, theme.SelectedBorderSize );
+			}
 		}
 
 		ImGui::End();

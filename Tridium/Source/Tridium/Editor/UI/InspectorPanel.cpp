@@ -46,10 +46,15 @@ namespace Tridium {
 			else
 			{
 				const char* message = m_InspectedObjects.Size() > 1 ? "Only one game object can be inspected at a time." : "No game object selected.";
-				const float textWidth = ImGui::CalcTextSize( message ).x;
+				float textWidth = ImGui::CalcTextSize( message ).x;
+				textWidth = Math::Min( textWidth, ImGui::GetContentRegionMax().x );
+
 				ImGui::SetCursorPosX( ( ImGui::GetContentRegionMax().x - textWidth ) * 0.5f );
 				ImGui::SetCursorPosY( ImGui::GetCursorPosY() + ImGui::GetContentRegionMax().y * 0.5f - ImGui::GetTextLineHeightWithSpacing() * 0.5f );
-				ImGui::TextDisabled( message );
+
+				ImGui::BeginDisabled();
+				ImGui::TextWrapped( message );
+				ImGui::EndDisabled();
 			}
 		}
 
@@ -134,15 +139,6 @@ namespace Tridium {
 		};
 
 		// We want to always draw the Name and Transform components first.
-		if ( IconComponent* icon = inspectedObject.TryGet<IconComponent>() )
-		{
-			DrawComponent( Meta::GetRuntimeMetaInfo<IconComponent>(), icon,
-			+[]() -> bool
-			{
-				return false;
-			} );
-		}
-
 		if ( UUIDComponent* uuid = inspectedObject.TryGet<UUIDComponent>() )
 		{
 			DrawComponent( Meta::GetRuntimeMetaInfo<UUIDComponent>(), uuid );
@@ -156,6 +152,26 @@ namespace Tridium {
 		if ( TransformComponent* transform = inspectedObject.TryGet<TransformComponent>() )
 		{
 			DrawComponent( Meta::GetRuntimeMetaInfo<TransformComponent>(), transform );
+		}
+
+		if ( HierarchyComponent* hierarchy = inspectedObject.TryGet<HierarchyComponent>() )
+		{
+			DrawComponent( Meta::GetRuntimeMetaInfo<HierarchyComponent>(), hierarchy,
+			+[]() -> bool
+			{
+				TODO( "Implement HierarchyComponent property drawer." );
+				ImGui::TextDisabled( "HierarchyComponent editor not implemented yet." );
+				return false;
+			} );
+		}
+
+		if ( IconComponent* icon = inspectedObject.TryGet<IconComponent>() )
+		{
+			DrawComponent( Meta::GetRuntimeMetaInfo<IconComponent>(), icon,
+			+[]() -> bool
+			{
+				return false;
+			} );
 		}
 
 		// Iterates over all component storages in the registry,

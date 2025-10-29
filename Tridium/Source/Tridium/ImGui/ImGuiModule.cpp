@@ -124,35 +124,6 @@ namespace Tridium {
 		ImGui_ImplRHI_NewFrame();
 		ImGuiModule::GetPlatformBackend()->NewFrame();
 		ImGui::NewFrame();
-
-		static bool opt_Fullscreen = true;
-		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration;
-		if ( opt_Fullscreen )
-		{
-			const ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImGui::SetNextWindowPos( viewport->WorkPos );
-			ImGui::SetNextWindowSize( viewport->WorkSize );
-			ImGui::SetNextWindowViewport( viewport->ID );
-
-			ImGui::PushStyleVar( ImGuiStyleVar_WindowRounding, 0.0f );
-			ImGui::PushStyleVar( ImGuiStyleVar_WindowBorderSize, 0.0f );
-
-			window_flags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-		}
-
-		ImGui::PushStyleVar( ImGuiStyleVar_WindowPadding, ImVec2( 0.0f, 0.0f ) );
-		ImGui::Begin( Engine::Get()->ActiveProject().Config().General.Name.c_str(), nullptr, window_flags);
-		ImGui::PopStyleVar();
-
-		if ( opt_Fullscreen )
-			ImGui::PopStyleVar( 2 );
-
-		// Init Dock Space
-		static const ImGuiID dockspace_id = ImGui::GetID( "EditorDockSpace" );
-		ImGui::DockSpace( dockspace_id, ImVec2( 0.0f, 0.0f ), dockspace_flags );
 	}
 
 	void ImGuiModule::Render()
@@ -161,11 +132,11 @@ namespace Tridium {
 
 	void ImGuiModule::EndRender()
 	{
-		ImGui::End();
 
 		// Size Initialization
 		ImGuiIO& io = ImGui::GetIO();
-		io.DisplaySize = ImVec2( Application::Get()->GetWindow().GetWidth(), Application::Get()->GetWindow().GetHeight() );
+		auto [width, height] = Application::Get()->GetWindow().GetSize();
+		io.DisplaySize = ImVec2( width, height );
 
 		ImGui::Render();
 

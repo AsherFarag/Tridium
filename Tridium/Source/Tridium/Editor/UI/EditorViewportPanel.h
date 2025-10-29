@@ -5,6 +5,7 @@
 
 #include <Tridium/Editor/EditorCamera.h>
 #include <Tridium/Graphics/Renderer/RenderView.h>
+#include <Tridium/Scene/Scene.h>
 
 namespace Tridium {
 
@@ -40,10 +41,22 @@ namespace Tridium {
 	protected:
 
 		//=============================================================================================
+		enum class ECameraMode
+		{
+			EditorCamera,
+			SelectedCamera
+		};
+
+		//=============================================================================================
 		EGizmoState m_GizmoState = EGizmoState::Translate;
 		EditorCamera m_EditorCamera{};
 		RHITextureRef m_ViewportTexture;
 		Vector2 m_ViewportSize = { 1280, 720 };
+		bool m_ViewportFocused = false;
+
+		//=============================================================================================
+		GameObject m_PreviewObject;
+		RHITextureRef m_PreviewTexture;
 
 	};
 

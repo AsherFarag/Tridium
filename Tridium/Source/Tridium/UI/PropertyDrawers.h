@@ -138,7 +138,86 @@ namespace Tridium {
 		}
 	};
 
+	template<typename T> requires std::is_enum_v<T>
+	struct UIPropertyDrawer<Meta::Reflector<T>>
+	{
+		static bool Draw( StringView a_Label, T& a_Enum, bool a_CanWrapInTreeNode = true )
+		{
+			const auto DrawFunc = [&]() -> bool
+			{
+				Meta::Reflector<T> reflector{};
+				bool modified = false;
+				StringView previewValue{};
 
+				// Get preview value
+				ForEachField( reflector, [&]( StringView a_FieldName, auto& a_Field )
+				{
+					using ConstantType = std::decay_t<decltype( a_Field )>;
+					if constexpr ( Meta::IsConstant<ConstantType> )
+					{
+						if constexpr ( a_Field.template Has<Meta::DisplayName>() )
+						{
+							a_FieldName = a_Field.template Get<Meta::DisplayName>().Value;
+						}
+
+						const T enumValue = static_cast<T>( a_Field.Value );
+						const bool isSelected = ( a_Enum == enumValue );
+
+						if ( isSelected )
+						{
+							previewValue = a_FieldName;
+						}
+					}
+				} );
+
+				const bool open = ImGui::BeginCombo( UI::IsPropertyGridOpen() ? a_Label.data() : UI::GenerateID(),
+												   previewValue.data(),
+												   ImGuiComboFlags_None );
+
+				if ( open )
+				{
+					ForEachField( reflector, [&]( StringView a_FieldName, auto& a_Field )
+					{
+						using ConstantType = std::decay_t<decltype( a_Field )>;
+						if constexpr ( Meta::IsConstant<ConstantType> )
+						{
+							if constexpr ( a_Field.template Has<Meta::DisplayName>() )
+							{
+								a_FieldName = a_Field.template Get<Meta::DisplayName>().Value;
+							}
+
+							const T enumValue = static_cast<T>( a_Field.Value );
+							const bool isSelected = ( a_Enum == enumValue );
+
+							if ( ImGui::Selectable( a_FieldName.data(), isSelected ) )
+							{
+								a_Enum = enumValue;
+								modified = true;
+							}
+
+							if ( isSelected )
+							{
+								ImGui::SetItemDefaultFocus();
+							}
+						}
+					} );
+
+					ImGui::EndCombo();
+				}
+
+				return modified;
+			};
+
+			if ( UI::IsPropertyGridOpen() )
+			{
+				return UI::DrawGridProperty( a_Label, DrawFunc );
+			}
+			else
+			{
+				return DrawFunc();
+			}
+		}
+	};
 
 #pragma region Drawers
 

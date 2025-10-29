@@ -170,9 +170,9 @@ namespace Tridium {
 			Array<RHITextureSubresourceData> subresources;
 			subresources.Resize( texDesc.Mips * 6 );
 
-			for ( UINT mip = 0; mip < texDesc.Mips; ++mip )
+			for ( uint32_t mip = 0; mip < texDesc.Mips; ++mip )
 			{
-				for ( UINT face = 0; face < 6; ++face )
+				for ( uint32_t face = 0; face < 6; ++face )
 				{
 					auto& sr = subresources[mip * 6 + face];
 					sr.SetData( faceData ); // pointer to one-pixel buffer (same for all faces)

@@ -122,6 +122,59 @@ namespace Tridium {
 		}
 
 		//=============================================================================================
+		// Computes and returns the world position of this GameObject by traversing up the hierarchy.
+		Vector3 GetWorldPosition() const
+		{
+			TransformComponent* transform = TryGet<TransformComponent>();
+			if ( !transform )
+			{
+				return Vector3::Zero();
+			}
+
+			Vector3 worldPosition = transform->LocalPosition();
+			GameObject currentParent = GetParent();
+
+			while ( currentParent.Valid() )
+			{
+				TransformComponent* parentTransform = currentParent.TryGet<TransformComponent>();
+				if ( parentTransform )
+				{
+					worldPosition = parentTransform->LocalPosition() + worldPosition;
+				}
+				currentParent = currentParent.GetParent();
+			}
+
+			return worldPosition;
+		}
+
+		//=============================================================================================
+		// Computes and returns the world transform matrix of this GameObject by traversing up the hierarchy.
+		Matrix4 GetWorldTransform() const
+		{
+			TransformComponent* transform = TryGet<TransformComponent>();
+			if ( !transform )
+			{
+				return Matrix4( 1.0f );
+			}
+
+			Matrix4 worldTransform = transform->LocalTransform();
+			GameObject currentParent = GetParent();
+
+			while ( currentParent.Valid() )
+			{
+				TransformComponent* parentTransform = currentParent.TryGet<TransformComponent>();
+				if ( parentTransform )
+				{
+					worldTransform = parentTransform->LocalTransform() * worldTransform;
+				}
+
+				currentParent = currentParent.GetParent();
+			}
+
+			return worldTransform;
+		}
+
+		//=============================================================================================
 		// Returns the parent GameObject, or a null GameObject if there is no parent.
 		// Requires HierarchyComponent.
 		GameObject GetParent() const
