@@ -60,16 +60,18 @@ namespace Tridium {
 				system->OnBeginPlay();
 			}
 		}
+
+		m_State.HasBegunPlay = true;
 	}
 
-	void Scene::OnTick( float a_DeltaTime )
+	void Scene::OnUpdate( float a_DeltaTime )
 	{
 		PROFILE_FUNCTION( ProfilerCategory::Scene );
 
 		a_DeltaTime *= m_TimeScale;
 
-		const bool isPlaying = ( m_State.PlayMode == EScenePlayMode::Play ) && !m_State.IsPaused;
-		const bool isSimulating = ( m_State.PlayMode == EScenePlayMode::Simulate );
+		const bool isPlaying = m_State.HasBegunPlay && ( m_State.PlayMode == EScenePlayMode::Play ) && !m_State.IsPaused;
+		const bool isSimulating = m_State.HasBegunPlay && ( m_State.PlayMode == EScenePlayMode::Simulate );
 
 		// Prephysics Tick
 		if ( isPlaying )
@@ -84,6 +86,7 @@ namespace Tridium {
 		{
 			PROFILE_SCOPE( "Physics Tick", ProfilerCategory::Scene );
 
+			( (ISceneSystem*)m_PhysicsSystem )->OnUpdate( a_DeltaTime );
 		}
 
 		// Postphysics Tick
@@ -101,21 +104,13 @@ namespace Tridium {
 
 			TickSceneSystems( ESceneTickGroup::PreRender, a_DeltaTime );
 		}
+	}
 
-		// Render Tick
-		{
-			PROFILE_SCOPE( "Render Tick", ProfilerCategory::Scene );
+	void Scene::OnRender( float a_DeltaTime )
+	{
+		PROFILE_FUNCTION( ProfilerCategory::Scene );
 
-			TickSceneSystems( ESceneTickGroup::Render, a_DeltaTime );
-		}
-
-		// Postrender Tick
-		if ( isPlaying )
-		{
-			PROFILE_SCOPE( "PostRender Tick", ProfilerCategory::Scene );
-
-			TickSceneSystems( ESceneTickGroup::PostRender, a_DeltaTime );
-		}
+		TickSceneSystems( ESceneTickGroup::Render, a_DeltaTime );
 	}
 
 	void Scene::TickSceneSystems( ESceneTickGroup a_TickGroup, float a_DeltaTime )
@@ -140,6 +135,8 @@ namespace Tridium {
 				system->OnEndPlay();
 			}
 		}
+
+		m_State.HasBegunPlay = false;
 	}
 
 	void Scene::Shutdown()
@@ -153,6 +150,9 @@ namespace Tridium {
 				system->Shutdown();
 			}
 		}
+
+		m_State.HasPostInit = false;
+		m_State.HasInit = false;
 	}
 
 } // namespace Tridium

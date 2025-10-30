@@ -3,7 +3,12 @@
 #if WITH_EDITOR
 
 #include <Tridium/Editor/Editor.h>
+#include <Tridium/Editor/UserActions/SceneActions.h>
 #include <Tridium/Engine/Engine.h>
+
+// Components
+#include <Tridium/Graphics/Renderer/RendererComponents.h>
+#include <Tridium/Physics/PhysicsComponents.h>
 
 namespace Tridium {
 
@@ -113,7 +118,65 @@ namespace Tridium {
 
 		if ( ImGui::TreeNodeEx( (void*)(uintptr_t)(uint32_t)a_GameObject.ID(), nodeFlags, name.data() ) )
 		{
+			// Draw children
+			if ( hierarchy )
+			{
+				EntityID childEntity = hierarchy->FirstChild;
+				while ( childEntity != NullEntity )
+				{
+					GameObject childGameObject( a_GameObject.Scene(), childEntity );
+					UI_DrawHierarchyNode( childGameObject );
+					auto* childHierarchy = childGameObject.TryGet<HierarchyComponent>();
+					if ( childHierarchy )
+					{
+						childEntity = childHierarchy->NextSibling;
+					}
+					else
+					{
+						break; // No more siblings
+					}
+				}
+			}
+
 			ImGui::TreePop();
+		}
+
+		// Handle payloads for drag and drop game objects
+		bool isDragDropSource = false;
+		if ( ImGui::BeginDragDropSource() )
+		{
+			isDragDropSource = true;
+
+			ImGui::SetDragDropPayload( "SceneHierarchyGameObject", &a_GameObject, sizeof( GameObject ) );
+			ImGui::TextUnformatted( name.data() );
+			ImGui::EndDragDropSource();
+		}
+
+		if ( !isDragDropSource && ImGui::BeginDragDropTarget() )
+		{
+			if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( "SceneHierarchyGameObject" ) )
+			{
+				if ( payload->IsDelivery() )
+				{
+					GameObject draggedGameObject = *(GameObject*)payload->Data;
+
+					// Reparent the dragged GameObject to be a child of this GameObject
+					auto& parentHierarchy = a_GameObject.GetOrAdd<HierarchyComponent>();
+					auto& childHierarchy = draggedGameObject.GetOrAdd<HierarchyComponent>();
+					// Set parent
+					childHierarchy.Parent = a_GameObject.ID();
+					// Insert as first child
+					childHierarchy.NextSibling = parentHierarchy.FirstChild;
+					if ( parentHierarchy.FirstChild != NullEntity )
+					{
+						auto& firstChildHierarchy = GameObject( a_GameObject.Scene(), parentHierarchy.FirstChild ).Get<HierarchyComponent>();
+						firstChildHierarchy.PrevSibling = draggedGameObject.ID();
+					}
+					parentHierarchy.FirstChild = draggedGameObject.ID();
+				}
+			}
+
+			ImGui::EndDragDropTarget();
 		}
 
 		if ( ImGui::IsItemClicked()  )
@@ -129,53 +192,131 @@ namespace Tridium {
 	{
 		const auto& activeScene = SceneManager::ActiveScene();
 
-		// Empty GameObject
-		{
-			if ( ImGui::MenuItem( "Empty GameObject" ) )
-			{
-				activeScene->CreateEmptyGameObject();
-				ImGui::CloseCurrentPopup();
-			}
-
-			if ( ImGui::BeginItemTooltip() )
-			{
-				ImGui::TextUnformatted( "Creates an empty GameObject with no components. Equivalent to Scene::CreateEmptyGameObject()." );
-				ImGui::EndTooltip();
-			}
-		}
+		GameObject createdGameObject;
 
 		// GameObject
 		{
-			if ( ImGui::MenuItem( "GameObject" ) )
+			if ( ImGui::MenuItem( TE_ICON_CUBE " GameObject" ) )
 			{
-				activeScene->CreateGameObject( "GameObject" );
+				createdGameObject = activeScene->CreateGameObject( "GameObject" );
 				ImGui::CloseCurrentPopup();
 			}
 
 			if ( ImGui::BeginItemTooltip() )
 			{
-				ImGui::TextUnformatted( "Creates a new GameObject with some core components. Equivalent to Scene::CreateGameObject()." );
+				ImGui::TextUnformatted( "Creates a new GameObject with some core components." );
 				ImGui::EndTooltip();
 			}
 		}
 
-		// Folder
+		#pragma region Lighting
+
+		ImGui::SeparatorText( "Lighting" );
+
+		// Sky Box
+		if ( ImGui::MenuItem( TE_ICON_CLOUD_SUN " Sky Box" ) )
 		{
-			if ( ImGui::MenuItem( "Folder" ) )
-			{
-				GameObject folder = activeScene->CreateEmptyGameObject();
-				folder.Add<HierarchyComponent>();
-				folder.Add<NameComponent>().Name = "Folder";
-				folder.Add<IconComponent>().Icon = EditorIcons::Folder;
+			createdGameObject = activeScene->CreateGameObject( "Sky Box" );
+			createdGameObject.Add<SkyboxComponent>();
+			ImGui::CloseCurrentPopup();
+		}
 
-				ImGui::CloseCurrentPopup();
+		// Directional Light
+		if ( ImGui::MenuItem( TE_ICON_SUN " Directional Light" ) )
+		{
+			createdGameObject = activeScene->CreateGameObject( "Directional Light" );
+			createdGameObject.Add<DirectionalLightComponent>();
+			ImGui::CloseCurrentPopup();
+		}
+
+		// Point Light
+		if ( ImGui::MenuItem( TE_ICON_LIGHTBULB " Point Light" ) )
+		{
+			createdGameObject = activeScene->CreateGameObject( "Point Light" );
+			createdGameObject.Add<PointLightComponent>();
+			ImGui::CloseCurrentPopup();
+		}
+
+		// Spot Light
+		if ( ImGui::MenuItem( TE_ICON_LIGHTBULB " Spot Light" ) )
+		{
+			createdGameObject = activeScene->CreateGameObject( "Spot Light" );
+			createdGameObject.Add<SpotLightComponent>();
+			ImGui::CloseCurrentPopup();
+		}
+
+		#pragma endregion
+
+		#pragma region Physics
+
+		ImGui::SeparatorText( "Physics" );
+
+		if ( ImGui::MenuItem( TE_ICON_CIRCLE " Physics Sphere" ) )
+		{
+			createdGameObject = activeScene->CreateGameObject( "Physics Sphere" );
+			createdGameObject.Add<RigidBodyComponent>();
+			createdGameObject.Add<SphereColliderComponent>();
+			ImGui::CloseCurrentPopup();
+		}
+
+		if ( ImGui::MenuItem( TE_ICON_CUBE " Physics Cube" ) )
+		{
+			createdGameObject = activeScene->CreateGameObject( "Physics Cube" );
+			createdGameObject.Add<RigidBodyComponent>();
+			createdGameObject.Add<BoxColliderComponent>();
+			ImGui::CloseCurrentPopup();
+		}
+
+		#pragma endregion
+
+		#pragma region Other
+
+		ImGui::SeparatorText( "Other" );
+
+		if ( ImGui::MenuItem( TE_ICON_FOLDER_OPEN " Folder" ) )
+		{
+			createdGameObject = activeScene->CreateEmptyGameObject();
+			createdGameObject.Add<HierarchyComponent>();
+			createdGameObject.Add<NameComponent>().Name = "Folder";
+			createdGameObject.Add<IconComponent>().Icon = TE_ICON_FOLDER_OPEN;
+
+			ImGui::CloseCurrentPopup();
+		}
+
+		if ( ImGui::BeginItemTooltip() )
+		{
+			ImGui::TextUnformatted( "Creates a new GameObject intended to be used as a folder in the hierarchy." );
+			ImGui::EndTooltip();
+		}
+
+		#pragma endregion
+
+
+		// If a GameObject was created, set up its hierarchy and selection
+		if ( createdGameObject )
+		{
+			// If a parent is specified, set up the hierarchy
+			if ( a_Parent )
+			{
+				auto& parentHierarchy = a_Parent.Get<HierarchyComponent>();
+				auto& childHierarchy = createdGameObject.GetOrAdd<HierarchyComponent>();
+				// Set parent
+				childHierarchy.Parent = a_Parent.ID();
+				// Insert as first child
+				childHierarchy.NextSibling = parentHierarchy.FirstChild;
+				if ( parentHierarchy.FirstChild != NullEntity )
+				{
+					auto& firstChildHierarchy = GameObject( activeScene.get(), parentHierarchy.FirstChild ).Get<HierarchyComponent>();
+					firstChildHierarchy.PrevSibling = createdGameObject.ID();
+				}
+				parentHierarchy.FirstChild = createdGameObject.ID();
 			}
 
-			if ( ImGui::BeginItemTooltip() )
-			{
-				ImGui::TextUnformatted( "Creates a new GameObject intended to be used as a folder in the hierarchy. Equivalent to Scene::CreateGameObject()." );
-				ImGui::EndTooltip();
-			}
+			// Select the newly created GameObject
+			SelectionManager::Get().DeselectAll( ESelectionContext::Scene );
+			SelectionManager::Get().Select( ESelectionContext::Scene, createdGameObject );
+
+			Editor::GetUserActionManager().Push( MakeUnique<GameObjectUserAction>( createdGameObject, GameObjectUserAction::EActionType::Create ) );
 		}
 	}
 

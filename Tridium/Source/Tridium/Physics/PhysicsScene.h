@@ -79,6 +79,7 @@ namespace Tridium {
 
 		virtual void SetPhysicsBodyPosition( PhysicsBodyID a_BodyID, const Vector3& a_Position ) = 0;
 		virtual void SetPhysicsBodyRotation( PhysicsBodyID a_BodyID, const Quaternion& a_Rotation ) = 0;
+		virtual void SetPhysicsBodyPositionAndRotation( PhysicsBodyID a_BodyID, const Vector3& a_Position, const Quaternion& a_Rotation ) = 0;
 		virtual void SetPhysicsBodyFriction( PhysicsBodyID a_BodyID, float a_Friciton ) = 0;
 		virtual void SetPhysicsBodyLinearVelocity( PhysicsBodyID a_BodyID, const Vector3& a_LinearVelocity ) = 0;
 		virtual void SetPhysicsBodyAngularVelocity( PhysicsBodyID a_BodyID, const Vector3& a_AngularVelocity ) = 0;
@@ -114,6 +115,9 @@ namespace Tridium {
 
 		//=============================================================================================
 		void Init() override;
+		void OnBeginPlay() override;
+		void OnUpdate( float a_DeltaTime ) override;
+		void OnEndPlay() override;
 		void Shutdown() override;
 
 		//=============================================================================================

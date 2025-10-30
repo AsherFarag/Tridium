@@ -48,30 +48,11 @@ namespace Tridium {
 			{
 				existingSystem->Shutdown();
 			}
+
+			m_SceneSystems.erase( Hashing::TypeHash<T>() );
 		}
 
-		auto system = MakeUnique<T>( std::forward<_Args>( a_Args )... );
-		ISceneSystem* systemPtr = system.get();
-		system->m_Scene = this;
-
-		m_SceneSystems[Hashing::TypeHash<T>()] = std::move( system );
-
-		if ( m_State.HasInit )
-		{
-			systemPtr->Init();
-		}
-
-		if ( m_State.HasPostInit )
-		{
-			systemPtr->PostInit();
-		}
-
-		if ( m_State.HasBegunPlay )
-		{
-			systemPtr->OnBeginPlay();
-		}
-
-		return Cast<T*>( systemPtr );
+		return AddSystem<T>( std::forward<_Args>( a_Args )... );
 	}
 
 	inline GameObject Scene::CreateEmptyGameObject()

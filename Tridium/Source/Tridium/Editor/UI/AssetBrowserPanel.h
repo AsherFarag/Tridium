@@ -19,6 +19,24 @@ namespace Tridium {
 	protected:
 
 		//=============================================================================================
+		void UI_DrawFolderHierarchy();
+		void UI_DrawAssetBrowserHeader();
+		void UI_DrawAssetItems();
+
+	protected:
+
+		//=============================================================================================
+		struct
+		{
+			bool DirectoryInputActive = false;
+			String CurrentDirectory = "Dummy/File/Path";
+			ImGuiTextFilter SearchFilter;
+		} m_Browser;
+
+		//=============================================================================================
+		struct
+		{
+		} m_FolderHierarchy;
 
 	};
 

@@ -236,11 +236,46 @@ namespace Tridium {
 
 #if WITH_EDITOR
 
-	UUID AssetDatabase::ImportAsset( StringView a_Path )
+	Expected<void, String> AssetDatabase::ImportAsset( const FilePath& a_Path )
 	{
 		CHECK( s_Instance, "AssetDatabase is not initialized." );
-		NOT_IMPLEMENTED;
-		return UUID{};
+
+		String ext = a_Path.GetExtension().ToString();
+		IAssetImporter* importer = AssetFactory::GetImporter( ext );
+
+		if ( importer == nullptr )
+		{
+			return Unexpected{ std::format( "Unable to find importer for extension {}", ext ) };
+		}
+
+		AssetImportContext importContext{ a_Path };
+
+		if ( !importer->OnImport( importContext ) )
+		{
+			return Unexpected{ importContext.ErrorMessage() };
+		}
+
+		if ( !importContext.Warnings().Empty() )
+		{
+			LOG( LogCategory::Asset, Info, "Encountered warnings while importing '{}'", a_Path.ToString() );
+
+			for ( StringView warning : importContext.Warnings() )
+			{
+				LOG( LogCategory::Asset, Warn, warning );
+			}
+
+			LOG( LogCategory::Asset, Info, "End of asset warning dump" );
+		}
+
+		for ( const SharedPtr<IAsset>& createdAsset : importContext.CreatedAssets() )
+		{
+			if ( !RegisterAsset( createdAsset ) )
+			{
+				LOG( LogCategory::Asset, Error, "Failed to register imported asset '{}'", NameIfNotNull( createdAsset->Info()->Name ) );
+			}
+		}
+
+		return {};
 	}
 
 	bool AssetDatabase::CreateAsset( IAsset* a_Asset, StringView a_Path )
@@ -250,7 +285,6 @@ namespace Tridium {
 			return false; // corrected return type
 
 		SharedPtr<IAsset> asset = a_Asset->Shared();
-
 
 		NOT_IMPLEMENTED;
 		return false;

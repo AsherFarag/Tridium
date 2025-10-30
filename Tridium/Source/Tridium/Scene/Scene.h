@@ -149,6 +149,10 @@ namespace Tridium {
 	public:
 
 		//=============================================================================================
+		bool IsPaused() const { return m_State.IsPaused; }
+		void SetPaused( bool a_Paused ) { m_State.IsPaused = a_Paused; }
+
+		//=============================================================================================
 		// Returns a reference to the EntityComponentRegistry used by this Scene.
 		auto& Registry() { return m_Registry; }
 
@@ -230,7 +234,10 @@ namespace Tridium {
 		void OnBeginPlay( EScenePlayMode a_PlayMode );
 
 		//=============================================================================================
-		void OnTick( float a_DeltaTime );
+		void OnUpdate( float a_DeltaTime );
+
+		//=============================================================================================
+		void OnRender( float a_DeltaTime );
 
 		//=============================================================================================
 		void TickSceneSystems( ESceneTickGroup a_TickGroup, float a_DeltaTime );
@@ -244,7 +251,7 @@ namespace Tridium {
 	protected:
 
 		//=============================================================================================
-		// The map that stores all scene systems.
+		// The map that stores all scene systems and their clone functions.
 		TypeMap<ISceneSystem, UniquePtr<ISceneSystem>> m_SceneSystems;
 
 		//=============================================================================================

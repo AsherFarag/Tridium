@@ -49,6 +49,17 @@ namespace Tridium {
 		}
 
 		//=============================================================================================
+		void Destroy()
+		{
+			if ( Valid() )
+			{
+				m_Scene->DestroyGameObject( *this );
+				m_EntityID = NullEntity;
+				m_Scene = nullptr;
+			}
+		}
+
+		//=============================================================================================
 		// Constructs a new component of type T with the passed in arguments,
 		// adds it to the GameObject and returns a reference to it.
 		// This will assert if the component already exists.

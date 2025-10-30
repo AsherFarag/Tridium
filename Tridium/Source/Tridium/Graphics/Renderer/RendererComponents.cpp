@@ -12,6 +12,7 @@ namespace Tridium {
 	REGISTER_TYPE( DirectionalLightComponent );
 	REGISTER_TYPE( PointLightComponent );
 	REGISTER_TYPE( SpotLightComponent );
+	REGISTER_TYPE( SkyboxComponent );
 
 	Matrix4 CameraComponent::CalculatePerspective() const
 	{

@@ -40,19 +40,20 @@ namespace Tridium {
 		bool HasPhysicsBody( PhysicsBodyID a_BodyID ) const;
 		bool UpdatePhysicsBodyShape( GameObject a_GameObject, const RigidBodyComponent& a_RigidBody );
 
-		virtual Vector3 GetPhysicsBodyPosition( PhysicsBodyID a_BodyID ) const override;
-		virtual Quaternion GetPhysicsBodyRotation( PhysicsBodyID a_BodyID ) const override;
-		virtual Vector3 GetPhysicsBodyLinearVelocity( PhysicsBodyID a_BodyID ) const override;
-		virtual Vector3 GetPhysicsBodyAngularVelocity( PhysicsBodyID a_BodyID ) const override;
-		virtual bool IsPhysicsBodySleeping( PhysicsBodyID a_BodyID ) const override;
+		Vector3 GetPhysicsBodyPosition( PhysicsBodyID a_BodyID ) const override;
+		Quaternion GetPhysicsBodyRotation( PhysicsBodyID a_BodyID ) const override;
+		Vector3 GetPhysicsBodyLinearVelocity( PhysicsBodyID a_BodyID ) const override;
+		Vector3 GetPhysicsBodyAngularVelocity( PhysicsBodyID a_BodyID ) const override;
+		bool IsPhysicsBodySleeping( PhysicsBodyID a_BodyID ) const override;
 
-		virtual void SetPhysicsBodyPosition( PhysicsBodyID a_BodyID, const Vector3& a_Position ) override;
-		virtual void SetPhysicsBodyRotation( PhysicsBodyID a_BodyID, const Quaternion& a_Rotation ) override;
-		virtual void SetPhysicsBodyFriction( PhysicsBodyID a_BodyID, float a_Friction ) override;
-		virtual void SetPhysicsBodyLinearVelocity( PhysicsBodyID a_BodyID, const Vector3& a_LinearVelocity ) override;
-		virtual void SetPhysicsBodyAngularVelocity( PhysicsBodyID a_BodyID, const Vector3& a_AngularVelocity ) override;
-		virtual void AddImpulseToPhysicsBody( PhysicsBodyID a_BodyID, const Vector3& a_Impulse ) override;
-		virtual void AddImpulseToPhysicsBody( PhysicsBodyID a_BodyID, const Vector3& a_Impulse, const Vector3& a_Position ) override;
+		void SetPhysicsBodyPosition( PhysicsBodyID a_BodyID, const Vector3& a_Position ) override;
+		void SetPhysicsBodyRotation( PhysicsBodyID a_BodyID, const Quaternion& a_Rotation ) override;
+		void SetPhysicsBodyPositionAndRotation( PhysicsBodyID a_BodyID, const Vector3& a_Position, const Quaternion& a_Rotation ) override;
+		void SetPhysicsBodyFriction( PhysicsBodyID a_BodyID, float a_Friction ) override;
+		void SetPhysicsBodyLinearVelocity( PhysicsBodyID a_BodyID, const Vector3& a_LinearVelocity ) override;
+		void SetPhysicsBodyAngularVelocity( PhysicsBodyID a_BodyID, const Vector3& a_AngularVelocity ) override;
+		void AddImpulseToPhysicsBody( PhysicsBodyID a_BodyID, const Vector3& a_Impulse ) override;
+		void AddImpulseToPhysicsBody( PhysicsBodyID a_BodyID, const Vector3& a_Impulse, const Vector3& a_Position ) override;
 
 	#if USE_DEBUG_RENDERER
 		virtual void RenderDebug( const Matrix4& a_ViewProjection ) override;

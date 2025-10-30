@@ -33,6 +33,9 @@ namespace Tridium {
 
 		//=============================================================================================
 		AssetImportContext() = default;
+		AssetImportContext( FilePath a_AssetPath, Span<const byte_t> a_Data = {}, FilePath a_Destination = {} )
+			: m_AssetPath( std::move( a_AssetPath ) ), m_FileData( a_Data ), m_DestinationPath( std::move( a_Destination ) )
+		{}
 
 		//=============================================================================================
 		// The path of the source asset file to be imported.
@@ -82,6 +85,9 @@ namespace Tridium {
 			m_HasFailed = true;
 			m_ErrorMessage = std::move( a_ErrorMessage );
 		}
+
+		//=============================================================================================
+		const auto& CreatedAssets() const { return m_CreatedAssets; }
 
 		//=============================================================================================
 		// Creates a new asset that will be serialized into its own file.
@@ -144,7 +150,7 @@ namespace Tridium {
 			return false;
 		}
 
-	public:
+	private:
 
 		//=============================================================================================
 		FilePath m_AssetPath{};

@@ -43,6 +43,9 @@ namespace Tridium {
 		static UIManager& GetUIManager() { return Get()->m_UIManager; }
 		static SelectionManager& GetSelectionManager() { return Get()->m_SelectionManager; }
 
+		//=============================================================================================
+		static EScenePlayMode GetScenePlayMode() { return Get()->m_ScenePlayMode; }
+
 	private:
 
 		//=============================================================================================
@@ -53,10 +56,13 @@ namespace Tridium {
 		UserActionManager m_UserActionManager;
 		UIManager m_UIManager;
 		SelectionManager m_SelectionManager;
+		bool m_IsTitleBarHovered = false;
 
 		//=============================================================================================
-		bool m_IsTitleBarHovered = false;
+		bool m_ScenePaused = false;
+		int32_t m_SceneStepFrames = 0;
 		EScenePlayMode m_ScenePlayMode = EScenePlayMode::None;
+		EntityComponentRegistry m_SceneSnapshot;
 
 	private:
 
@@ -66,6 +72,11 @@ namespace Tridium {
 		void OnAttach() override;
 		void OnDetach() override;
 		void OnEvent( Event& a_Event ) override;
+
+		void BeginPlay( EScenePlayMode a_PlayMode );
+		void Pause( bool a_Pause = true );
+		void Step();
+		void EndPlay();
 
 		void UI_DrawTitleBar();
 		void UI_DrawMenuBar( Vector2 a_Min, Vector2 a_Max );

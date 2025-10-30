@@ -77,6 +77,7 @@ namespace Tridium {
 		static Application* Get() { ASSERT( s_Instance ); return s_Instance; }
 		static const CmdLineArgs& GetCommandLineArgs() { return Get()->m_CommandLineArgs; }
 		static IPlatformWindow& GetWindow() { return *Get()->m_Window; }
+		static float GetDeltaTime() { return Get()->m_PrevFrameInfo.FPS ? ( 1.0f / static_cast<float>( Get()->m_PrevFrameInfo.FPS ) ) : 0.0f; }
 		static uint32_t GetFPS() { return Get()->m_PrevFrameInfo.FPS; }
 		static double GetFrameTime() { return 1000.0 / Get()->m_PrevFrameInfo.FPS; }
 		static const FrameInfo& GetFrameInfo() { return Get()->m_PrevFrameInfo; }

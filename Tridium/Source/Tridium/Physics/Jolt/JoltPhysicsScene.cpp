@@ -198,8 +198,8 @@ namespace Tridium {
 		}
 
 		const JPH::Vec3 position = {};//Util::ToJoltVec3( a_TransformComponent.GetWorldPosition() );
-		const JPH::Quat rotation = {};//Util::ToJoltQuat( a_TransformComponent.GetOrientation() );
-		const JPH::Vec3 scale    = {};//Util::ToJoltVec3( a_TransformComponent.GetWorldScale() );
+		const JPH::Quat rotation = Util::ToJoltQuat( Quaternion( Vector3() ) );//a_TransformComponent.GetWorldRotation() );
+		const JPH::Vec3 scale    = { 1.0f, 1.0f , 1.0f };//Util::ToJoltVec3( a_TransformComponent.GetWorldScale() );
 
 		JPH::MassProperties massProperties;
 		JPH::Ref<JPH::MutableCompoundShapeSettings> compoundSettings = CreateShapeSettings( a_GameObject, a_RigidBody, massProperties );
@@ -361,6 +361,12 @@ namespace Tridium {
 		m_BodyInterface.SetRotation( JPH::BodyID( a_BodyID ), Util::ToJoltQuat( a_Rotation ), JPH::EActivation::Activate );
 	}
 
+	void JoltPhysicsScene::SetPhysicsBodyPositionAndRotation( PhysicsBodyID a_BodyID, const Vector3& a_Position, const Quaternion& a_Rotation )
+	{
+		ASSERT( a_BodyID != JPH::BodyID::cInvalidBodyID );
+		m_BodyInterface.SetPositionAndRotation( JPH::BodyID( a_BodyID ), Util::ToJoltVec3( a_Position ), Util::ToJoltQuat( a_Rotation ), JPH::EActivation::Activate );
+	}
+
 	void JoltPhysicsScene::SetPhysicsBodyFriction( PhysicsBodyID a_BodyID, float a_Friction )
 	{
 		ASSERT( a_BodyID != JPH::BodyID::cInvalidBodyID );
@@ -407,6 +413,8 @@ namespace Tridium {
 			Cast<JoltDebugRenderer*>( JPH::DebugRenderer::sInstance )->Render( a_ViewProjection );
 		}
 	}
+
+#endif
 
 	JPH::Ref<JPH::MutableCompoundShapeSettings> JoltPhysicsScene::CreateShapeSettings( GameObject a_GameObject, const RigidBodyComponent& a_RigidBody, JPH::MassProperties& o_MassProps ) const
 	{
@@ -505,7 +513,5 @@ namespace Tridium {
 
 		return result;
 	}
-
-#endif
 
 } // namespace Tridium

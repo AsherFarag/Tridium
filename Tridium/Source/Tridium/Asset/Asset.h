@@ -70,7 +70,9 @@ namespace Tridium {
 	public:
 
 		//=============================================================================================
-		NON_COPYABLE_OR_MOVABLE( IAsset );
+		NON_COPYABLE( IAsset );
+		IAsset( IAsset&& ) = default;
+		IAsset& operator=( IAsset&& ) = default;
 		virtual ~IAsset() = default;
 
 		//=============================================================================================

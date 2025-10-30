@@ -223,7 +223,7 @@ namespace Tridium {
 			{
 				const Meta::RuntimeMetaInfo* metaType = Meta::GetRuntimeMetaInfo( id );
 
-				if ( !metaType->Component.IsComponent )
+				if ( !metaType || !metaType->Component.IsComponent )
 					continue; // Not a component, skip.
 
 				if ( metaType->Component.Has( inspectedObject.Scene()->Registry(), inspectedObject ) )

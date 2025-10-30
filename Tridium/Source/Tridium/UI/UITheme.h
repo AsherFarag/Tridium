@@ -48,6 +48,10 @@ namespace Tridium {
 
 		// Titlebar
 		UIColor Titlebar{ UI_COLOR_FROM_U8( 26, 26, 30, 255 ) };
+		UIColor TitlebarGradientTopLeft{ UI_COLOR_FROM_U8( 26, 26, 30, 0 ) };
+		UIColor TitlebarGradientTopRight{ UI_COLOR_FROM_U8( 26, 26, 30, 0 ) };
+		UIColor TitlebarGradientBottomLeft{ UI_COLOR_FROM_U8( 26, 26, 30, 0 ) };
+		UIColor TitlebarGradientBottomRight{ UI_COLOR_FROM_U8( 26, 26, 30, 0 ) };
 
 		UIColor WindowBorder{ UI_COLOR_FROM_U8( 51, 51, 51, 255 ) };
 

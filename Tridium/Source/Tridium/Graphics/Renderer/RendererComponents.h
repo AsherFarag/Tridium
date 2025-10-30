@@ -2,6 +2,7 @@
 #include <Tridium/Scene/Component.h>
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/Asset/MeshAsset.h>
+#include <Tridium/Asset/EnvironmentMapAsset.h>
 #include <Tridium/Graphics/Color.h>
 
 namespace Tridium {
@@ -154,6 +155,18 @@ namespace Tridium {
 
 		// Whether the light casts shadows in the scene.
 		bool CastShadows = true;
+	};
+
+	//=================================================================================================
+	// Skybox Component: Renders a skybox in the scene using an environment map.
+	//=================================================================================================
+	struct SkyboxComponent : Component
+	{
+		AssetHandle<EnvironmentMap> EnvironmentMap;
+		float Exposure = 1.0f;
+		float Gamma = 2.2f;
+		float Blur = 0.0f;
+		float Intensity = 1.0f;
 	};
 
 } // namespace Tridium
@@ -345,6 +358,32 @@ namespace Tridium::Meta {
 		Field<&SpotLightComponent::CastShadows, Serializable, Editable, Scriptable,
 		Tooltip<"Whether the light casts shadows.">>
 		CastShadows;
+	};
+
+	template<>
+	struct Reflector<SkyboxComponent>
+	{
+		using Type = Type<SkyboxComponent, Scriptable, Icon<EditorIcons::CloudSun>>;
+
+		Field<&SkyboxComponent::EnvironmentMap, Serializable, Editable, Scriptable,
+		Tooltip<"The environment map asset used for the skybox.">>
+		EnvironmentMap;
+
+		Field<&SkyboxComponent::Exposure, Serializable, Editable, Scriptable,
+		Tooltip<"The exposure level of the skybox.">>
+		Exposure;
+
+		Field<&SkyboxComponent::Gamma, Serializable, Editable, Scriptable,
+		Tooltip<"The gamma correction applied to the skybox.">>
+		Gamma;
+
+		Field<&SkyboxComponent::Blur, Serializable, Editable, Scriptable,
+		Tooltip<"The amount of blur applied to the skybox.">>
+		Blur;
+
+		Field<&SkyboxComponent::Intensity, Serializable, Editable, Scriptable,
+		Tooltip<"The intensity multiplier for the skybox.">>
+		Intensity;
 	};
 
 } // namespace Tridium::Meta

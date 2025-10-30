@@ -1,6 +1,11 @@
 #pragma once
 #include <Tridium/Asset/Asset.h>
-#include <Tridium/Core/Core.h>
+#include <Tridium/Core/UUID.h>
+#include <Tridium/Containers/Expected.h>
+#include <Tridium/Containers/String.h>
+#include <Tridium/Containers/Tuple.h>
+#include <Tridium/Containers/UnorderedMap.h>
+#include <Tridium/IO/FilePath.h>
 
 namespace Tridium {
 
@@ -60,7 +65,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		// Imports and creates an asset from the specified path and returns the created AssetID.
-		static UUID ImportAsset( StringView a_Path );
+		static Expected<void, String> ImportAsset( const FilePath& a_Path );
 		// Registers the asset to the database and serializes it to disk.
 		static bool CreateAsset( IAsset* a_Asset, StringView a_Path );
 		// Unregisters an asset from the database and deletes it from disk.
@@ -71,6 +76,29 @@ namespace Tridium {
 		//=============================================================================================
 		// Returns the name of the asset.
 		static StringView GetAssetName( UUID a_AssetID );
+
+		//=============================================================================================
+		template<std::invocable<const AssetInfo&, const IAsset*> _Func>
+		static void ForEachAsset( _Func&& a_Func )
+		{
+			for ( auto& [id, assetPair] : s_Instance->m_Assets )
+			{
+				a_Func( *assetPair.first, assetPair.second.get() );
+			}
+		}
+
+		//=============================================================================================
+		template<Concepts::Derived<IAsset> _Asset, std::invocable<const AssetInfo&, const _Asset*> _Func>
+		static void ForEachAssetOfType( _Func&& a_Func )
+		{
+			for ( auto& [id, assetPair] : s_Instance->m_Assets )
+			{
+				if ( assetPair.first->Type == _Asset::StaticType() )
+				{
+					a_Func( *assetPair.first, Cast<_Asset*>( assetPair.second.get() ) );
+				}
+			}
+		}
 
 	private:
 

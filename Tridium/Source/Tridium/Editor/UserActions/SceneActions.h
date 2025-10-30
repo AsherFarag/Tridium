@@ -3,11 +3,12 @@
 
 #if WITH_EDITOR
 
+#include <Tridium/Scene/Prefab.h>
 #include <Tridium/Scene/SceneManager.h>
 
 namespace Tridium {
 
-	//=============================================================================================
+	//=================================================================================================
 	enum class EComponentUserActionType
 	{
 		Add,
@@ -19,6 +20,18 @@ namespace Tridium {
 	class ComponentUserAction : public IUserAction
 	{
 	public:
+
+		//=============================================================================================
+		ComponentUserAction( GameObject a_GameObject, EComponentUserActionType a_ActionType )
+			: m_SceneID( a_GameObject.Scene()->ID() )
+			, m_EntityID( a_GameObject.ID() )
+			, m_ActionType( a_ActionType )
+		{
+			if ( a_ActionType != EComponentUserActionType::Add )
+			{
+				m_Data = std::move( a_GameObject.Get<T>() );
+			}
+		}
 
 		//=============================================================================================
 		ComponentUserAction( UUID a_SceneID, EntityID a_EntityID, EComponentUserActionType a_ActionType, T& a_Data )
@@ -105,6 +118,93 @@ namespace Tridium {
 
 	};
 
+	//=================================================================================================
+	// User action for creating or deleting a game object.
+	//=================================================================================================
+	class GameObjectUserAction : public IUserAction
+	{
+	public:
+
+		//=============================================================================================
+		enum class EActionType
+		{
+			Create,
+			Delete
+		};
+
+		//=============================================================================================
+		GameObjectUserAction( GameObject a_GameObject, EActionType a_ActionType )
+		{
+			ASSERT( a_GameObject.Valid(), "Invalid GameObject for UserAction" );
+
+			m_SceneID = a_GameObject.Scene()->ID();
+			m_ActionType = a_ActionType;
+			if ( m_ActionType == EActionType::Delete )
+			{
+				m_GameObjectData = Prefab::Build( a_GameObject.Scene()->Registry(), a_GameObject.ID() );
+				ASSERT( m_GameObjectData.Valid(), "Failed to build Prefab for GameObjectUserAction" );
+			}
+			else if ( m_ActionType == EActionType::Create )
+			{
+				m_GameObjectID = a_GameObject.ID();
+			}
+		}
+
+		//=============================================================================================
+		~GameObjectUserAction() override = default;
+
+		//=============================================================================================
+		void Undo() override
+		{
+			SharedPtr<Scene> scene = SceneManager::Get()->GetSceneByID( m_SceneID );
+
+			if ( !scene )
+			{
+				LOG( LogCategory::Editor, Warn, "Failed to undo game object action: Scene not found." );
+				return;
+			}
+
+			switch ( m_ActionType )
+			{
+				case EActionType::Create:
+				{
+					GameObject gameObject{ *scene, m_GameObjectID };
+
+					if ( gameObject.Valid() )
+					{
+						m_GameObjectData = Prefab::Build( scene->Registry(), m_GameObjectID );
+						gameObject.Destroy();
+					}
+
+					m_ActionType = EActionType::Delete;
+
+					break;
+				}
+				case EActionType::Delete:
+				{
+					EntityID newEntityID = m_GameObjectData.Instantiate( scene->Registry() );
+					m_GameObjectID = newEntityID;
+					m_ActionType = EActionType::Create;
+					break;
+				}
+			}
+		}
+
+		//=============================================================================================
+		void Redo() override
+		{
+			Undo();
+		}
+
+	private:
+
+		//=============================================================================================
+		UUID m_SceneID;
+		EntityID m_GameObjectID;
+		Prefab m_GameObjectData;
+		EActionType m_ActionType;
+
+	};
 
 } // namespace Tridium
 

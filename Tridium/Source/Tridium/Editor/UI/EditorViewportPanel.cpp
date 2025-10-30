@@ -3,18 +3,15 @@
 #if WITH_EDITOR
 
 #include <Tridium/Editor/Editor.h>
+#include <Tridium/Editor/UserActions/SceneActions.h>
 #include <Tridium/Graphics/Renderer/RendererModule.h>
 #include <Tridium/Graphics/RHI/RHI.h>
 #include <Tridium/Scene/Scene.h>
 #include <ImGuizmo.h>
 
 // TEMP
-#include <Tridium/Math/Random.h>
 #include <Tridium/Asset/AssetDatabase.h>
-#include <Tridium/Asset/Importers/ModelImporter.h>
 #include <Tridium/Graphics/Renderer/RendererComponents.h>
-#include <Tridium/Asset/Importers/EnvironmentMapImporter.h>
-#include <Tridium/Graphics/Renderer/RenderResourceManager.h>
 
 namespace Tridium {
 
@@ -44,82 +41,12 @@ namespace Tridium {
 
 	EditorViewportPanel::EditorViewportPanel()
 	{
-				// TEMP
-
-		{
-			static Array<PointLight> s_PointLights = []() -> Array<PointLight>
-			{
-				Array<PointLight> lights;
-				lights.Reserve( 32 );
-
-				for ( int i = 0; i < 32; i++ )
-				{
-					PointLight light;
-					light.Position = Vector3{
-						Math::Random::Range( -10.0f, 10.0f ),
-						Math::Random::Range( 0.0f, 5.0f ),
-						Math::Random::Range( -10.0f, 10.0f )
-					};
-					light.Color = Vector3{
-						Math::Random::Range( 0.0f, 1.0f ),
-						Math::Random::Range( 0.0f, 1.0f ),
-						Math::Random::Range( 0.0f, 1.0f )
-					};
-					light.Intensity = Math::Random::Range( 2.0f, 5.0f );
-					light.Radius = Math::Random::Range( 1.0f, 5.0f ) + light.Intensity * 0.5f;
-					lights.PushBack( light );
-				}
-
-				return lights;
-			}( );
-
-			LightEnvironment lightEnv;
-			lightEnv.PointLights = std::move( s_PointLights );
-
-			{
-				//const FilePath assetFilePath = "TestProject/Content/resting_place_2_4k.hdr";
-				//const FilePath assetFilePath = "TestProject/Content/studio_small.hdr";
-				const FilePath assetFilePath = "TestProject/Content/park_music_stage_4k.hdr";
-				auto envMapImporter = AssetFactory::GetImporter( assetFilePath.GetExtension().ToString() );
-				static AssetRef<EnvironmentMap> importedEnvMapAsset;
-				AssetImportContext context;
-				context.m_AssetPath = assetFilePath;
-				envMapImporter->OnImport( context );
-				importedEnvMapAsset = SharedPtrCast<EnvironmentMap>( context.m_CreatedAssets.Back() );
-
-				lightEnv.Sky.EnvironmentMap = RenderResourceManager::GetOrCreateEnvironmentMap( importedEnvMapAsset );
-			}
-
-			RendererModule::GetPipelineManager()->SetLightEnvironment( std::move( lightEnv ) );
-		}
-
-		auto modelImporter = AssetFactory::GetImporter( ".fbx" );
-		static bool imported = false;
-
-		if ( modelImporter && !imported )
-		{
-			imported = true;
-
-			const auto ImportAsset = [&]( const FilePath& path )
-			{
-				AssetImportContext context;
-				context.m_AssetPath = path;
-				modelImporter->OnImport( context );
-				for ( const auto& asset : context.m_CreatedAssets )
-				{
-					LOG( LogCategory::Debug, Info, "Created Asset: {}", asset->Info()->Name );
-					if ( asset->Type() == StaticMesh::StaticType() )
-					{
-						s_ImportedAssets.PushBack( SharedPtrCast<StaticMesh>( asset ) );
-					}
-				}
-			};
-
-			//ImportAsset( "TestProject/Content/damagedhelmet/DamagedHelmet.gltf" );
-			//ImportAsset( "TestProject/Content/Sponza2/Sponza/glTF/Sponza.gltf" );
-			//ImportAsset( "TestProject/Content/helljumper/scene.gltf" );
-			//ImportAsset( "TestProject/Content/halo_5_recruit/scene.gltf" );
-		}
+		// TEMP
+		AssetDatabase::ImportAsset( "TestProject/Content/park_music_stage_4k.hdr" );
+		AssetDatabase::ImportAsset( "TestProject/Content/damagedhelmet/DamagedHelmet.gltf" );
+		//AssetDatabase::ImportAsset( "TestProject/Content/Sponza2/Sponza/glTF/Sponza.gltf" );
+		//AssetDatabase::ImportAsset( "TestProject/Content/helljumper/scene.gltf" );
+		//AssetDatabase::ImportAsset( "TestProject/Content/halo_5_recruit/scene.gltf" );
 	}
 
 	void EditorViewportPanel::OnEvent( Event& a_Event )
@@ -246,10 +173,10 @@ namespace Tridium {
 			// Update the viewport size
 			m_ViewportSize = regionAvail;
 
-			ImTextureID textureID = (ImTextureID)( m_ViewportTexture.get() );
-			if ( textureID )
+			// Draw the viewport texture
+			if ( m_ViewportTexture )
 			{
-				ImGui::Image( textureID, ImGui::GetContentRegionAvail() );
+				ImGui::Image( (ImTextureID)( m_ViewportTexture.get() ), ImGui::GetContentRegionAvail() );
 			}
 
 			// Draw camera preview 
@@ -348,6 +275,18 @@ namespace Tridium {
 
 				if ( ImGuizmo::IsUsingAny() )
 				{
+					if ( !m_WasUsingGizmoLastFrame )
+					{
+						Editor::GetUserActionManager().Push( 
+							MakeUnique<ComponentUserAction<TransformComponent>>( 
+								gameObject, 
+								EComponentUserActionType::Modify 
+							)
+						);
+
+						m_WasUsingGizmoLastFrame = true;
+					}
+
 					Quaternion rotation;
 					Vector3 position;
 					Vector3 scale;
@@ -355,6 +294,10 @@ namespace Tridium {
 					tc->SetLocalPosition( position );
 					tc->SetLocalRotation( rotation );
 					tc->SetLocalScale( scale );
+				}
+				else
+				{
+					m_WasUsingGizmoLastFrame = false;
 				}
 			}
 		}

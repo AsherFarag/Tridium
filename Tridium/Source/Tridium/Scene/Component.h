@@ -29,9 +29,6 @@ namespace Tridium {
 		// NOTE: Rendering is not done in this phase, this is for submitting rendering work only.
 		Render,
 
-		// Ticking occurs after rendering work has been submitted.
-		PostRender,
-
 		// Total number of tick groups.
 		COUNT,
 
@@ -135,7 +132,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		Vector3 m_LocalPosition{};
-		Quaternion m_LocalRotation{};
+		Quaternion m_LocalRotation{ 1.0f, 0.0f, 0.0f, 0.0f };
 		Vector3 m_LocalEulerAngles{};
 		Vector3 m_LocalScale{ 1.0f };
 

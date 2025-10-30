@@ -310,25 +310,20 @@ namespace Tridium {
 				PROFILE_SCOPE( "RenderPass: Lighting Pass", ProfilerCategory::Rendering );
 
 				TODO( "This" );
-				static RHIBufferRef pointLightBuffer;
+				RHIBufferRef pointLightBuffer;
 				if ( a_Context.Lighting().PointLights.Size() > 0 )
 				{
-					if ( !pointLightBuffer || !pointLightBuffer->Valid() ||
-						 pointLightBuffer->Desc().Size < sizeof( PointLight ) * a_Context.Lighting().PointLights.Size() )
-					{
-													// Create structured buffer for point lights
-						RHIBufferDesc pointLightBufferDesc = RHIBufferDesc{}
-							.SetName( "SceneRenderer Point Light Buffer" )
-							.SetType( ERHIBufferType::Structured )
-							.SetHeapType( ERHIHeapType::Dynamic )
-							.SetBindFlags( ERHIBindFlags::ShaderResource )
-							.SetSize( sizeof( PointLight ) * a_Context.Lighting().PointLights.Size() )
-							.SetStride( sizeof( PointLight ) );
+					RHIBufferDesc pointLightBufferDesc = RHIBufferDesc{}
+						.SetName( "SceneRenderer Point Light Buffer" )
+						.SetType( ERHIBufferType::Structured )
+						.SetHeapType( ERHIHeapType::Dynamic )
+						.SetBindFlags( ERHIBindFlags::ShaderResource )
+						.SetSize( sizeof( PointLight ) * a_Context.Lighting().PointLights.Size() )
+						.SetStride( sizeof( PointLight ) );
 
-						pointLightBuffer = RHI::CreateBuffer( pointLightBufferDesc,
-															  AsBytes( Span{ a_Context.Lighting().PointLights.Data(),
-																	   a_Context.Lighting().PointLights.Size() } ) );
-					}
+					pointLightBuffer = RHI::CreateBuffer( pointLightBufferDesc,
+														  AsBytes( Span{ a_Context.Lighting().PointLights.Data(),
+																   a_Context.Lighting().PointLights.Size() } ) );
 				}
 
 				auto lightingPassPSODesc = RHIGraphicsPipelineStateDesc{}
@@ -391,7 +386,7 @@ namespace Tridium {
 				a_CommandList.ClearRenderTargets( ERHIClearFlags::Color, RHIClearValue{} );
 
 				InlinedConstants_LitDefault constants;
-				constants.NumPointLights = g_TestLightEnable * Cast<uint32_t>( a_Context.Lighting().PointLights.Size());
+				constants.NumPointLights = Cast<uint32_t>( a_Context.Lighting().PointLights.Size());
 
 				// Directional Light
 				{

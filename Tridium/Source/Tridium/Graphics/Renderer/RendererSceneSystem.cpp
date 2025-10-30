@@ -1,6 +1,7 @@
 #include "RendererSceneSystem.h"
 #include <Tridium/Graphics/Renderer/RendererComponents.h>
 #include <Tridium/Graphics/Renderer/RendererModule.h>
+#include <Tridium/Graphics/Renderer/RenderResourceManager.h>
 #include <Tridium/Asset/AssetDatabase.h>
 
 namespace Tridium {
@@ -9,52 +10,39 @@ namespace Tridium {
 	{
 		RenderPipelineManager* renderPipeline = RendererModule::GetPipelineManager();
 
-		if ( false )
+		// Set up lighting environment
 		{
-			const auto AddCameraView = [renderPipeline]( StringView a_Name, const CameraComponent& a_Camera, const Matrix4 a_ViewMatrix )
+			LightEnvironment lightEnv;
+
+			// Set up skybox
+			auto skyboxes = OwningScene().Registry().View<SkyboxComponent>();
+			for ( EntityID entity : skyboxes )
 			{
-				RenderView view{};
-				view.Type = ERenderViewType::Camera;
-				view.Name = String( a_Name );
-				TODO( "Im not sure if the renderviews should store the rhi format. And how should we get it?" );
-				//view.Camera.OutputFormat = ERHIFormat::RGBA16_UNORM;
+				SkyboxComponent& skybox = skyboxes.Get<SkyboxComponent>( entity );
 
-				view.Constants.ViewMatrix = a_ViewMatrix;
-				view.Constants.ProjectionMatrix = a_Camera.CalculateProjection();
-				view.Constants.ViewProjectionMatrix = view.Constants.ProjectionMatrix * view.Constants.ViewMatrix;
-
-				// Set view constants
-				if ( a_Camera.ProjectionType == CameraComponent::EProjectionType::Perspective )
+				if ( const auto& environmentMap = skybox.EnvironmentMap.GetOrLoad() )
 				{
-					view.Constants.NearPlane = a_Camera.Perspective.NearPlane;
-					view.Constants.FarPlane = a_Camera.Perspective.FarPlane;
-				}
-				else
-				{
-					view.Constants.NearPlane = a_Camera.Orthographic.NearPlane;
-					view.Constants.FarPlane = a_Camera.Orthographic.FarPlane;
+					lightEnv.Sky.EnvironmentMap = RenderResourceManager::GetOrCreateEnvironmentMap( environmentMap );
+					lightEnv.Sky.Exposure = skybox.Exposure;
+					lightEnv.Sky.Gamma = skybox.Gamma;
+					lightEnv.Sky.Blur = skybox.Blur;
+					lightEnv.Sky.Intensity = skybox.Intensity;
 				}
 
-				renderPipeline->AddView( std::move( view ) );
-			};
+				break; // Only use the first skybox found
+			}
 
-			auto cameras = OwningScene().Registry().View<TransformComponent, CameraComponent>();
-			cameras.Each( [&]( EntityID entity, TransformComponent& transform, CameraComponent& camera )
+			OwningScene().Registry().View<TransformComponent, PointLightComponent>().Each( [&]( EntityID entity, const TransformComponent& transform, const PointLightComponent& pointLightComp )
 			{
-				StringView name;
-
-				if ( auto* tag = OwningScene().Registry().TryGet<NameComponent>( entity ) )
-				{
-					name = tag->Name;
-				}
-
-				Matrix4 viewMatrix;
-
-				TODO( "Handle world transforms" );
-				viewMatrix = Math::Inverse( transform.LocalTransform() );
-
-				AddCameraView( name, camera, viewMatrix );
+				PointLight pointLight;
+				pointLight.Position = transform.LocalPosition();
+				pointLight.Color = pointLightComp.Color;
+				pointLight.Intensity = pointLightComp.Intensity;
+				pointLight.Radius = pointLightComp.Radius;
+				lightEnv.PointLights.PushBack( pointLight );
 			} );
+
+			RendererModule::GetPipelineManager()->SetLightEnvironment( std::move( lightEnv ) );
 		}
 
 		// Submit all static meshes to the render pipeline

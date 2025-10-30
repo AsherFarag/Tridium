@@ -695,6 +695,11 @@ namespace Tridium::D3D12 {
 		}
 
 		BindGraphicsBindings( a_GraphicsState.BindingSets, bindingsUpdateMask, pso->RootSig );
+		for ( const auto& bindingSet : a_GraphicsState.BindingSets )
+		{
+			if ( bindingSet )
+				m_CmdContext.ReferencedResources.EmplaceBack( bindingSet->Shared() );
+		}
 
 		if ( updateIndexBuffer )
 		{

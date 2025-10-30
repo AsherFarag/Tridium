@@ -308,7 +308,44 @@ namespace Tridium {
 		using Attributes = _Attributes;
 		static bool Draw( StringView a_Label, Color3& a_Color )
 		{
-			//return UI::DrawColor3( a_Label, a_Color );
+			if ( UI::IsPropertyGridOpen() )
+			{
+				return UI::DrawGridProperty( a_Label, [&]() 
+				{
+					bool modified = ImGui::ColorEdit3( UI::GenerateID(), reinterpret_cast<float*>( &a_Color ), ImGuiColorEditFlags_None );
+					return modified;
+				} );
+			}
+			else
+			{
+				bool modified = ImGui::ColorEdit3( a_Label.data(), reinterpret_cast<float*>( &a_Color ), ImGuiColorEditFlags_None );
+				return modified;
+			}
+
+			return false;
+		}
+	};
+
+	template<Meta::IsAttributeList _Attributes>
+	struct UIPropertyDrawer<Color4, _Attributes>
+	{
+		using Attributes = _Attributes;
+		static bool Draw( StringView a_Label, Color4& a_Color )
+		{
+			if ( UI::IsPropertyGridOpen() )
+			{
+				return UI::DrawGridProperty( a_Label, [&]()
+				{
+					bool modified = ImGui::ColorEdit4( UI::GenerateID(), reinterpret_cast<float*>( &a_Color ), ImGuiColorEditFlags_None );
+					return modified;
+				} );
+			}
+			else
+			{
+				bool modified = ImGui::ColorEdit4( a_Label.data(), reinterpret_cast<float*>( &a_Color ), ImGuiColorEditFlags_None );
+				return modified;
+			}
+
 			return false;
 		}
 	};
@@ -347,9 +384,9 @@ namespace Tridium {
 				bool modified = false;
 
 				StringView assetName = "None";
-				if ( const AssetInfo* assetInfo = a_AssetHandle.Info() )
+				if ( const AssetInfo* assetInfo = a_AssetHandle.Info(); assetInfo && !assetInfo->Name.empty() )
 				{
-					assetName = !assetInfo->Name.empty() ? assetInfo->Name : "<UNNAMED>";
+					assetName = assetInfo->Name;
 				}
 
 				const bool open = ImGui::BeginCombo( a_Label.data(), assetName.data() );
@@ -365,30 +402,20 @@ namespace Tridium {
 
 					ImGui::Separator();
 
-					//for ( const auto& [handle, assetMetaData] : AssetDatabase::
-					//{
-					//	if ( assetMetaData.AssetType != _AssetType )
-					//		continue;
-					//
-					//
-					//	std::string name = !assetMetaData.Name.empty() ? assetMetaData.Name : assetMetaData.Path.ToString();
-					//	ImGui::ScopedID id( handle.ID() );
-					//	bool selected = a_Value == handle;
-					//	if ( ImGui::Selectable( name.c_str(), selected ) && !selected )
-					//	{
-					//		a_Value = handle;
-					//		modified = true;
-					//		break;
-					//	}
-					//
-					//	if ( ImGui::BeginItemTooltip() )
-					//	{
-					//		ImGui::Text( "Asset Type: %s", AssetTypeToString( assetMetaData.AssetType ) );
-					//		ImGui::Text( "Path: %s", assetMetaData.Path.ToString().c_str() );
-					//
-					//		ImGui::EndTooltip();
-					//	}
-					//}
+					int idx = 0;
+					AssetDatabase::ForEachAssetOfType<_Type>( [&]( const AssetInfo& a_AssetInfo, const _Type* a_Asset )
+					{
+						StringView name = !a_AssetInfo.Name.empty() ? a_AssetInfo.Name : a_AssetInfo.Path;
+
+						ImGui::ScopedID id( idx++ );
+
+						bool selected = a_AssetHandle.ID() == a_AssetInfo.ID;
+						if ( ImGui::Selectable( name.data(), selected ) && !selected )
+						{
+							a_AssetHandle = AssetHandle<_Type>( a_AssetInfo.ID );
+							modified = true;
+						}
+					} );
 
 					ImGui::EndCombo();
 				}

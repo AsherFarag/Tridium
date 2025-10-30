@@ -55,6 +55,45 @@ namespace Tridium {
 		m_OnColliderDestroyedHandle = OwningScene().Registry().OnDestruct<SphereColliderComponent, &PhysicsSceneSystem::OnColliderDestroyed>( this );	
 	}
 
+	void PhysicsSceneSystem::OnBeginPlay()
+	{
+		TODO( "Temp fix for resetting physics state" );
+
+		OwningScene().Registry().View<RigidBodyComponent, TransformComponent>()
+		.Each( [&]( auto entity, const RigidBodyComponent& rb, const TransformComponent& tc )
+		{
+			if ( !rb.Valid() ) return;
+			m_PhysicsScene->SetPhysicsBodyAngularVelocity( rb.BodyID(), Vector3::Zero() );
+			m_PhysicsScene->SetPhysicsBodyLinearVelocity( rb.BodyID(), Vector3::Zero() );
+		} );
+	}
+
+	void PhysicsSceneSystem::OnUpdate( float a_DeltaTime )
+	{
+		auto view = OwningScene().Registry().View<RigidBodyComponent, TransformComponent>();
+
+		// Update the transforms in the physics scene
+		view.Each( [&]( auto entity, const RigidBodyComponent& rb, const TransformComponent& tc )
+		{
+			if ( !rb.Valid() ) return;
+			m_PhysicsScene->SetPhysicsBodyPositionAndRotation( rb.BodyID(), tc.LocalPosition(), tc.LocalRotation() );
+		} );
+
+		m_PhysicsScene->Tick( Time::DeltaTime() );
+
+		// Update the transforms from the physics scene
+		view.Each( [&]( auto entity, RigidBodyComponent& rb, TransformComponent& tc )
+		{
+			if ( !rb.Valid() ) return;
+			tc.SetLocalPosition( m_PhysicsScene->GetPhysicsBodyPosition( rb.BodyID() ) );
+			tc.SetLocalRotation( m_PhysicsScene->GetPhysicsBodyRotation( rb.BodyID() ) );
+		} );
+	}
+
+	void PhysicsSceneSystem::OnEndPlay()
+	{
+	}
+
 	void PhysicsSceneSystem::Shutdown()
 	{
 		// NOTE: Since the physics scene can be shut down before any entities are destroyed,
@@ -104,6 +143,10 @@ namespace Tridium {
 			{
 				m_PhysicsScene->UpdatePhysicsBodyShape( GameObject( OwningScene(), a_Entity ), *rigidBody );
 			}
+			else
+			{
+				rigidBody->m_BodyID = m_PhysicsScene->CreatePhysicsBody( GameObject( OwningScene(), a_Entity ), *rigidBody );
+			}
 		}
 	}
 
@@ -114,6 +157,10 @@ namespace Tridium {
 			if ( rigidBody->Valid() )
 			{
 				m_PhysicsScene->UpdatePhysicsBodyShape( GameObject( OwningScene(), a_Entity ), *rigidBody );
+			}
+			else
+			{
+				rigidBody->m_BodyID = m_PhysicsScene->CreatePhysicsBody( GameObject( OwningScene(), a_Entity ), *rigidBody );
 			}
 		}
 	}

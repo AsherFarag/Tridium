@@ -4,6 +4,8 @@
 
 namespace Tridium {
 
+	REGISTER_ASSET_TYPE( StaticMesh, AssetTypeInfo{} );
+
 	void StaticMesh::UpdateBoundingBox()
 	{
 		m_BoundingBox = {};
@@ -16,4 +18,4 @@ namespace Tridium {
 		}
 	}
 
-}
+} // namespace Tridium

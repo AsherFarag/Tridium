@@ -53,6 +53,7 @@ namespace Tridium {
 		RHITextureRef m_ViewportTexture;
 		Vector2 m_ViewportSize = { 1280, 720 };
 		bool m_ViewportFocused = false;
+		bool m_WasUsingGizmoLastFrame = false;
 
 		//=============================================================================================
 		GameObject m_PreviewObject;

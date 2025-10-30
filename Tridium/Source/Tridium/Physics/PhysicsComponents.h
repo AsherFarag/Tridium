@@ -33,13 +33,13 @@ namespace Tridium {
 		IPhysicsScene* PhysicsScene() const { return m_PhysicsScene; }
 		PhysicsBodyID BodyID() const { return m_BodyID; }
 		bool Valid() const { return m_BodyID != NullPhysicsBodyID && m_PhysicsScene != nullptr; }
-		bool IsSleeping() const { ASSERT( Valid() ); return m_PhysicsScene->IsPhysicsBodySleeping( m_BodyID ); }
+		bool IsSleeping() const { return Valid() ? m_PhysicsScene->IsPhysicsBodySleeping( m_BodyID ) : false; }
 
 		//=============================================================================================
 		EPhysicsLayer PhysicsLayer() const { return m_PhysicsLayer; }
 		EMotionType MotionType() const { return m_MotionType; }
-		Vector3 LinearVelocity() const { ASSERT( Valid() ); return m_PhysicsScene->GetPhysicsBodyLinearVelocity( m_BodyID ); }
-		Vector3 AngularVelocity() const { ASSERT( Valid() ); return m_PhysicsScene->GetPhysicsBodyAngularVelocity( m_BodyID ); }
+		Vector3 LinearVelocity() const { return Valid() ? m_PhysicsScene->GetPhysicsBodyLinearVelocity( m_BodyID ) : Vector3::Zero(); }
+		Vector3 AngularVelocity() const { return Valid() ? m_PhysicsScene->GetPhysicsBodyAngularVelocity( m_BodyID ) : Vector3::Zero(); }
 		float GravityScale() const { return m_GravityScale; }
 		float Restitution() const { return m_Restitution; }
 		float MassScale() const { return m_MassScale; }
@@ -185,6 +185,42 @@ namespace Tridium {
 namespace Tridium::Meta {
 
 	template<>
+	struct Reflector<EPhysicsLayer>
+	{
+		using Type = Type<EPhysicsLayer>;
+
+		Constant<EPhysicsLayer::Static, Scriptable,
+		Tooltip<"Static physics layer. Rigid bodies in this layer should have their MotionType set to Static for better performance.">>
+		Static;
+
+		Constant<EPhysicsLayer::Dynamic, Scriptable,
+		Tooltip<"Dynamic physics layer. Rigid bodies in this layer can move and interact with other dynamic bodies.">>
+		Dynamic;
+
+		Constant<EPhysicsLayer::Player, Scriptable,
+		Tooltip<"Player physics layer. Rigid bodies in this layer are typically used for player-controlled entities.">>
+		Player;
+	};
+
+	template<>
+	struct Reflector<EMotionType>
+	{
+		using Type = Type<EMotionType>;
+
+		Constant<EMotionType::Static, Scriptable,
+		Tooltip<"Static motion type. Rigid bodies with this motion type do not move and are not affected by physics forces.">>
+		Static;
+
+		Constant<EMotionType::Kinematic, Scriptable,
+		Tooltip<"Kinematic motion type. Rigid bodies with this motion type are moved via code and are not affected by physics forces.">>
+		Kinematic;
+
+		Constant<EMotionType::Dynamic, Scriptable,
+		Tooltip<"Dynamic motion type. Rigid bodies with this motion type are affected by physics forces and can move freely.">>
+		Dynamic;
+	};
+
+	template<>
 	struct Reflector<RigidBodyComponent>
 	{
 		using Type = Type<RigidBodyComponent, RequireComponents<TransformComponent>, Icon<TE_ICON_SQUARE_ARROW_UP_RIGHT>>;
@@ -211,13 +247,13 @@ namespace Tridium::Meta {
 		Tooltip<"Defines how bouncy this rigid body is. A value of 0 means no bounce, 1 means full bounce.">>
 		Restitution;
 
-		Property<&RB::LinearMotionConstraint, nullptr, Scriptable, Editable, Serializable,
-		Tooltip<"Defines constraints on the linear motion of this rigid body along the X, Y, and Z axes.">>
-		LinearMotionConstraint;
-
-		Property<&RB::AngularMotionConstraint, nullptr, Scriptable, Editable, Serializable,
-		Tooltip<"Defines constraints on the angular motion of this rigid body around the X, Y, and Z axes.">>
-		AngularMotionConstraint;
+		//Property<&RB::LinearMotionConstraint, nullptr, Scriptable, Editable, Serializable,
+		//Tooltip<"Defines constraints on the linear motion of this rigid body along the X, Y, and Z axes.">>
+		//LinearMotionConstraint;
+		//
+		//Property<&RB::AngularMotionConstraint, nullptr, Scriptable, Editable, Serializable,
+		//Tooltip<"Defines constraints on the angular motion of this rigid body around the X, Y, and Z axes.">>
+		//AngularMotionConstraint;
 
 		Property<&RB::IsSleeping, nullptr, Scriptable, Visible,
 		Tooltip<"Indicates whether the rigid body is currently sleeping (not being simulated).">>
@@ -228,6 +264,20 @@ namespace Tridium::Meta {
 	struct Reflector<SphereColliderComponent>
 	{
 		using Type = Type<SphereColliderComponent, Icon<TE_ICON_CIRCLE>>;
+
+		using SC = SphereColliderComponent;
+
+		Property<&SC::Center, &SC::SetCenter, Scriptable, Editable, Serializable,
+		Tooltip<"The local position of the sphere collider's center relative to the entity's transform.">>
+		Center;
+
+		//Property<&SC::Rotation, &SC::SetRotation, Scriptable, Editable, Serializable,
+		//Tooltip<"The local rotation of the sphere collider relative to the entity's transform.">>
+		//Rotation;
+
+		Property<&SC::Radius, &SC::SetRadius, Scriptable, Editable, Serializable, Min<0.0f>,
+		Tooltip<"The radius of the sphere collider.">>
+		Radius;
 	};
 
 } // namespace Tridium::Meta

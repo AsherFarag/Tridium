@@ -4,6 +4,8 @@
 #include <Tridium/Utils/Concepts.h>
 
 #include <entt/entity/registry.hpp>
+#include <entt/meta/factory.hpp>
+#include <entt/meta/meta.hpp>
 
 namespace Tridium {
 
@@ -28,6 +30,10 @@ namespace Tridium {
 		[[nodiscard]] auto End() noexcept { return m_View.end(); }
 		[[nodiscard]] auto Begin() const noexcept { return m_View.begin(); }
 		[[nodiscard]] auto End() const noexcept { return m_View.end(); }
+		[[nodiscard]] auto RBegin() noexcept { return m_View.rbegin(); }
+		[[nodiscard]] auto REnd() noexcept { return m_View.rend(); }
+		[[nodiscard]] auto RBegin() const noexcept { return m_View.rbegin(); }
+		[[nodiscard]] auto REnd() const noexcept { return m_View.rend(); }
 
 		//=============================================================================================
 		// Access component(s) of type T... for the specified entity.
@@ -134,6 +140,31 @@ namespace Tridium {
 
 	};
 
+	template<typename T>
+	class ComponentStorage : public T
+	{
+	public:
+		using allocator_type = typename T::allocator_type;
+		using element_type = typename T::element_type;
+		explicit ComponentStorage( const allocator_type& a_Allocator );
+	};
+
+	template<typename T, typename _Entity>
+	struct entt::storage_type<T, _Entity>
+	{
+		using type = sigh_mixin<Tridium::ComponentStorage<basic_storage<T, _Entity>>>;
+	};
+
+	template<typename T>
+	ComponentStorage<T>::ComponentStorage( const allocator_type& a_Allocator )
+		: T( a_Allocator )
+	{
+		using namespace entt::literals;
+		entt::meta_factory<element_type>{}
+		// cross registry, same type
+		.template func<entt::overload<entt::storage_for_t<element_type, entt::entity>& ( const entt::id_type )>( &entt::basic_registry<entt::entity>::storage<element_type> ), entt::as_ref_t>( "storage"_hs );
+	}
+
 	//=================================================================================================
 	// Entity Component Registry (ECR): Stores and manages entities and their components,
 	// in an Entity Component System (ECS) architecture.
@@ -154,7 +185,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		// Creates a new entity or recycles an old one and returns its ID.
-		[[nodiscard]] EntityID Create()
+		EntityID Create()
 		{
 			return m_Registry.create();
 		}
@@ -162,7 +193,7 @@ namespace Tridium {
 		//=============================================================================================
 		// If the requested entity isn't in use, the suggested identifier is used.
 		// Otherwise, a new identifier is generated.
-		[[nodiscard]] EntityID Create( const EntityID a_Hint )
+		EntityID Create( const EntityID a_Hint )
 		{
 			return m_Registry.create( a_Hint );
 		}
@@ -302,6 +333,15 @@ namespace Tridium {
 		}
 
 		//=============================================================================================
+		// Returns a const view of entities with components of types T...,
+		// excluding those with components of types _Exclude...
+		template<typename T, typename... _Other, typename... _Exclude>
+		[[nodiscard]] auto View( EntityExcludeType<_Exclude...> = EntityExcludeType{} ) const
+		{
+			return EntityView{ m_Registry.view<T, _Other...>( entt::exclude<_Exclude...> ) };
+		}
+
+		//=============================================================================================
 		// Returns a Scoped Delegate Handle object for listening to 
 		// component construction events of type _Component.
 		// NOTE: The returned handle must be kept alive to maintain the connection.
@@ -402,6 +442,43 @@ namespace Tridium {
 		// Returns an iterable view of all storages in the registry.
 		auto Storage() { return m_Registry.storage(); }
 		auto Storage() const { return m_Registry.storage(); }
+		
+		//=============================================================================================
+		auto Storage( const entt::id_type a_TypeID ) { return m_Registry.storage( a_TypeID ); }
+		auto Storage( const entt::id_type a_TypeID ) const { return m_Registry.storage( a_TypeID ); }
+
+		//=============================================================================================
+		EntityComponentRegistry Clone() const
+		{
+			EntityComponentRegistry dstRegistry;
+
+			// Copy entities
+			auto entities = View<EntityID>();
+			for ( auto it = entities.RBegin(); it != entities.REnd(); ++it )
+			{
+				dstRegistry.Create( *it );
+			}
+
+			for ( const auto& [id, srcStorage] : Storage() )
+			{
+				auto dstStorage = dstRegistry.Storage( id );
+
+				if ( !dstStorage )
+				{
+					using namespace entt::literals;
+					entt::resolve( srcStorage.info() ).invoke( "storage"_hs, {}, entt::forward_as_meta( dstRegistry.Underlying() ), id );
+					dstStorage = dstRegistry.Storage( id );
+				}
+
+				// Copy components
+				for ( const auto entity : srcStorage )
+				{
+					dstStorage->push( entity, srcStorage.value( entity ) );
+				}
+			}
+
+			return dstRegistry;
+		}
 
 	private:
 
