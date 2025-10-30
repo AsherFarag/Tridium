@@ -461,7 +461,14 @@ namespace Tridium {
 
 				if ( ImGui::Button( TE_ICON_PLAY, buttonSize ) )
 				{
-					BeginPlay( EScenePlayMode::Play );
+					if ( !m_ScenePaused )
+					{
+						BeginPlay( EScenePlayMode::Play );
+					}
+					else
+					{
+						Pause( false );
+					}
 				}
 
 				ImGui::PopStyleColor();
@@ -486,7 +493,14 @@ namespace Tridium {
 
 				if ( ImGui::Button( TE_ICON_GEARS, buttonSize ) )
 				{
-					BeginPlay( EScenePlayMode::Simulate );
+					if ( !m_ScenePaused )
+					{
+						BeginPlay( EScenePlayMode::Simulate );
+					}
+					else
+					{
+						Pause( false );
+					}
 				}
 
 				ImGui::PopStyleColor();
