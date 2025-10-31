@@ -18,6 +18,10 @@
 #include <glfw/glfw3native.h>
 #endif // CONFIG_PLATFORM_WINDOWS
 
+// Temp?
+#include <Tridium/Asset/Importers/TextureImporter.h>
+#include <Tridium/Graphics/RHI/RHI.h>
+
 namespace Tridium {
 
 	REGISTER_TICK_GROUP( EditorTick, "BeginAppUpdate"_H );
@@ -67,6 +71,38 @@ namespace Tridium {
 		SetWindowLongPtr( hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>( WindowProc ) );
 
 	#endif // CONFIG_PLATFORM_WINDOWS
+
+		// Load the engine icon texture
+		{
+			String iconPath = FilePath( Engine::Get()->EngineAssetsDirectory() / "Icons/TridiumLogoTight.png" ).ToString();
+			Array<byte_t> imageData;
+			uint32_t width = 0, height = 0;
+			ERHIFormat format = ERHIFormat::Unknown;
+			bool isFloat = false;
+			Expected result = TextureImporter{}.LoadFromFile( iconPath.c_str(), imageData, width, height, format, isFloat );
+
+			if ( result.IsError() )
+			{
+				LOG( LogCategory::Editor, Error, "Failed to load editor icon texture: {}", result.Error() );
+			}
+			else
+			{
+				auto textureDesc = RHITextureDesc{}
+					.SetDimension( ERHITextureDimension::Texture2D )
+					.SetFormat( format )
+					.SetWidth( width )
+					.SetHeight( height )
+					.SetHeapType( ERHIHeapType::Immutable )
+					.SetDefaultSampler( RHISampler{}.SetFilter( ERHISamplerFilter::MinMagMipLinear ) )
+					.SetName( "Editor Icon Texture" );
+
+				m_TridiumIcon = RHI::CreateTexture( textureDesc, 
+						RHITextureSubresourceData{}
+						.SetData( imageData.Data() )
+						.SetRowStride( width * GetRHIFormatInfo( format ).Bytes() )
+					 );
+			}
+		}
 
 		// TEMP!
 		SceneManager::SetActiveScene( Scene::Create( MakeShared<AssetInfo>(
@@ -197,23 +233,23 @@ namespace Tridium {
 
 	void Editor::UI_DrawTitleBar()
 	{
-		const float TitleBarHeight = 57.0f;
-		const ImVec2 WindowPadding = ImGui::GetCurrentWindow()->WindowPadding;
+		const float titleBarHeight = 57.0f;
+		const ImVec2 windowPadding = ImGui::GetCurrentWindow()->WindowPadding;
 
-		ImGui::SetCursorPos( ImVec2( WindowPadding.x, WindowPadding.y ) );
-		const ImVec2 TitlebarMin = ImGui::GetCursorScreenPos();
-		const ImVec2 TitlebarMax = { ImGui::GetCursorScreenPos().x + ImGui::GetWindowWidth() - WindowPadding.y * 2.0f,
-									 ImGui::GetCursorScreenPos().y + TitleBarHeight };
+		ImGui::SetCursorPos( ImVec2( windowPadding.x, windowPadding.y ) );
+		const ImVec2 titlebarMin = ImGui::GetCursorScreenPos();
+		const ImVec2 titlebarMax = { ImGui::GetCursorScreenPos().x + ImGui::GetWindowWidth() - windowPadding.y * 2.0f,
+									 ImGui::GetCursorScreenPos().y + titleBarHeight };
 
-		auto* DrawList = ImGui::GetWindowDrawList();
-		DrawList->AddRectFilled( TitlebarMin, TitlebarMax, UI::GetTheme().Titlebar );
+		auto* drawList = ImGui::GetWindowDrawList();
+		drawList->AddRectFilled( titlebarMin, titlebarMax, UI::GetTheme().Titlebar );
 
 		// Draw animated gradient
 		{
 			static float s_GradientTime = 0.0f;
 			s_GradientTime += (float)Application::GetDeltaTime() * 1.0f; // Adjust speed as needed
 			// Oscillates between 0.25 and 1
-			float GradientMultipler = glm::sin( s_GradientTime ) * 0.375f + 0.625f; // This will give a value between 0.25 and 1
+			float gradientMultiplier = glm::sin( s_GradientTime ) * 0.375f + 0.625f; // This will give a value between 0.25 and 1
 
 			ImVec4 GradientColours[4];
 			GradientColours[0] = UI::GetTheme().TitlebarGradientTopLeft;
@@ -226,22 +262,22 @@ namespace Tridium {
 			if ( m_ScenePlayMode == EScenePlayMode::Play )
 			{
 				GradientColours[1] = UI::GetTheme().Green;
-				GradientColours[1].w = GradientMultipler;
+				GradientColours[1].w = gradientMultiplier;
 			}
 			else if ( m_ScenePlayMode == EScenePlayMode::Simulate )
 			{
 				GradientColours[1] = UI::GetTheme().Blue;
-				GradientColours[1].w = GradientMultipler;
+				GradientColours[1].w = gradientMultiplier;
 			}
 
 			if ( m_ScenePaused && m_ScenePlayMode != EScenePlayMode::None )
 			{
 				GradientColours[0] = UI::GetTheme().Orange;
-				GradientColours[0].w = 1.0f - GradientMultipler;
+				GradientColours[0].w = 1.0f - gradientMultiplier;
 			}
 
-			DrawList->AddRectFilledMultiColor(
-				TitlebarMin, ImVec2( TitlebarMax.x, TitlebarMax.y - TitleBarHeight + ( TitleBarHeight * 0.75f ) ),
+			drawList->AddRectFilledMultiColor(
+				titlebarMin, ImVec2( titlebarMax.x, titlebarMax.y - titleBarHeight + ( titleBarHeight * 0.75f ) ),
 				ImGui::ColorConvertFloat4ToU32( GradientColours[0] ),
 				ImGui::ColorConvertFloat4ToU32( GradientColours[1] ),
 				ImGui::ColorConvertFloat4ToU32( GradientColours[2] ),
@@ -249,31 +285,31 @@ namespace Tridium {
 			);
 		}
 
-		float MenubarOffsetX = TitlebarMin.x + WindowPadding.x;
-		float MenubarOffsetY = 0.0f;
+		float menubarOffsetX = titlebarMin.x + windowPadding.x;
+		float menubarOffsetY = 0.0f;
 
 		// Draw the Apple logo
 		{
-			const float logoSize = ( TitlebarMax.y - TitlebarMin.y ) * 0.6f;
-			const ImVec2 logoRectStart = TitlebarMin + ImVec2( 5.0f, 5.0f );
+			const float logoSize = ( titlebarMax.y - titlebarMin.y ) * 0.6f;
+			const ImVec2 logoRectStart = titlebarMin + ImVec2( 5.0f, 5.0f );
 			const ImVec2 logoRectMax = ImVec2( logoRectStart.x + logoSize, logoRectStart.y + logoSize );
 
 			// Center the menubar with respect to the logo
-			MenubarOffsetY = ( logoRectMax.y - logoRectStart.y ) * 0.5f;
+			menubarOffsetY = ( logoRectMax.y - logoRectStart.y ) * 0.5f;
 
-			DrawList->AddRect( logoRectStart, logoRectMax, IM_COL32( 255, 255, 255, 255 ), 4.0f );
+			drawList->AddImage( m_TridiumIcon.get(), logoRectStart, logoRectMax );
 
-			MenubarOffsetX += logoSize + 10.0f; // Add some space after the logo
+			menubarOffsetX += logoSize + 10.0f; // Add some space after the logo
 		}
 
-		const float ButtonsAreaWidth = 120.0f;
+		const float buttonsAreaWidth = 120.0f;
 
 		// Create the drag zone for the title bar
 		{
 			ImGui::SetNextItemAllowOverlap();
 			ImGui::InvisibleButton(
 				"##TitleBarDragZone",
-				ImVec2( ImGui::GetContentRegionAvail().x - ButtonsAreaWidth, TitleBarHeight ) );
+				ImVec2( ImGui::GetContentRegionAvail().x - buttonsAreaWidth, titleBarHeight ) );
 
 			// Check if the title bar is hovered and is not blocked by overlapping items
 			m_IsTitleBarHovered = ImGui::IsItemHovered();
@@ -282,10 +318,10 @@ namespace Tridium {
 		// Draw Menubar
 		ImGui::BeginGroup();
 		{
-			const float MenubarHeight = ImGui::GetTextLineHeightWithSpacing() + WindowPadding.y * 2.0f;
-			MenubarOffsetY -= 10.0f; TODO( "Make the menu bar, play bar and window buttons aligned without this magic value" );
-			UI_DrawMenuBar( Vector2( MenubarOffsetX, TitlebarMin.y + MenubarOffsetY ),
-						    Vector2( MenubarOffsetX + ImGui::GetWindowWidth() - ButtonsAreaWidth, TitlebarMin.y + MenubarHeight + MenubarOffsetY ) );
+			const float menubarHeight = ImGui::GetTextLineHeightWithSpacing() + windowPadding.y * 2.0f;
+			menubarOffsetY -= 10.0f; TODO( "Make the menu bar, play bar and window buttons aligned without this magic value" );
+			UI_DrawMenuBar( Vector2( menubarOffsetX, titlebarMin.y + menubarOffsetY ),
+						    Vector2( menubarOffsetX + ImGui::GetWindowWidth() - buttonsAreaWidth, titlebarMin.y + menubarHeight + menubarOffsetY ) );
 		}
 		ImGui::EndGroup();
 
@@ -293,7 +329,7 @@ namespace Tridium {
 		// Draw Scene Buttons
 		//=====================================================
 
-		UI_DrawPlayBar( TitleBarHeight );
+		UI_DrawPlayBar( titleBarHeight );
 
 		//=====================================================
 		// Window Buttons
@@ -302,13 +338,13 @@ namespace Tridium {
 		ImGui::PushStyleColor( ImGuiCol_Button, 0u );
 		ImGui::PushStyleVar( ImGuiStyleVar_FrameBorderSize, 0.0f );
 
-		const float WindowButtonSize = TitleBarHeight / 2.0f;
-		ImVec2 CursorPos( ImGui::GetWindowWidth() - ButtonsAreaWidth, WindowPadding.y + 6.0f );
-		ImGui::SetCursorPos( CursorPos );
+		const float windowButtonSize = titleBarHeight / 2.0f;
+		ImVec2 cursorPos{ ImGui::GetWindowWidth() - buttonsAreaWidth, windowPadding.y + 6.0f };
+		ImGui::SetCursorPos( cursorPos );
 
 		// Minimise Button
 		{
-			if ( ImGui::Button( EditorIcons::WindowMinimize.Data, ImVec2( WindowButtonSize, WindowButtonSize ) ) )
+			if ( ImGui::Button( EditorIcons::WindowMinimize.Data, ImVec2( windowButtonSize, windowButtonSize ) ) )
 			{
 				Application::GetWindow().Minimise();
 			}
@@ -328,7 +364,7 @@ namespace Tridium {
 				? TE_ICON_WINDOW_RESTORE "###Maximize"
 				: TE_ICON_WINDOW_MAXIMIZE "###Maximize";
 
-			if ( ImGui::Button( MaximizeIcon, ImVec2( WindowButtonSize, WindowButtonSize ) ) )
+			if ( ImGui::Button( MaximizeIcon, ImVec2( windowButtonSize, windowButtonSize ) ) )
 			{
 				if ( isWindowMaximised )
 				{
@@ -352,7 +388,7 @@ namespace Tridium {
 		{
 			ImGui::PushStyleColor( ImGuiCol_ButtonHovered, (ImVec4)UI::GetTheme().Red );
 
-			if ( ImGui::Button( EditorIcons::Xmark.Data, ImVec2( WindowButtonSize, WindowButtonSize ) ) )
+			if ( ImGui::Button( EditorIcons::Xmark.Data, ImVec2( windowButtonSize, windowButtonSize ) ) )
 			{
 				Application::GetWindow().Close();
 			}
@@ -372,8 +408,8 @@ namespace Tridium {
 
 	void Editor::UI_DrawMenuBar( Vector2 a_Min, Vector2 a_Max )
 	{
-		ImRect MenubarRect( ImVec2( a_Min.X, a_Min.Y ), ImVec2( a_Max.X, a_Max.Y ) );
-		if ( !ImGui::BeginMenuBarEx( MenubarRect ) )
+		ImRect menubarRect( ImVec2( a_Min.X, a_Min.Y ), ImVec2( a_Max.X, a_Max.Y ) );
+		if ( !ImGui::BeginMenuBarEx( menubarRect ) )
 			return;
 
 		if ( ImGui::BeginMenu( "File" ) )

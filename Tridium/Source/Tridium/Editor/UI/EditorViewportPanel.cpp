@@ -39,9 +39,9 @@ namespace Tridium {
 	{
 		// TEMP
 		AssetDatabase::ImportAsset( "TestProject/Content/park_music_stage_4k.hdr" );
-		AssetDatabase::ImportAsset( "TestProject/Content/damagedhelmet/DamagedHelmet.gltf" );
-		//AssetDatabase::ImportAsset( "TestProject/Content/Sponza2/Sponza/glTF/Sponza.gltf" );
-		//AssetDatabase::ImportAsset( "TestProject/Content/helljumper/scene.gltf" );
+		//AssetDatabase::ImportAsset( "TestProject/Content/damagedhelmet/DamagedHelmet.gltf" );
+		AssetDatabase::ImportAsset( "TestProject/Content/Sponza2/Sponza/glTF/Sponza.gltf" );
+		AssetDatabase::ImportAsset( "TestProject/Content/helljumper/scene.gltf" );
 		AssetDatabase::ImportAsset( "TestProject/Content/halo_5_recruit/scene.gltf" );
 	}
 

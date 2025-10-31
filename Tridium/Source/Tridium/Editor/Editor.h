@@ -8,6 +8,7 @@
 #include <Tridium/Editor/EditorPayload.h>
 #include <Tridium/Editor/SelectionManager.h>
 #include <Tridium/Editor/UserActions/UserAction.h>
+#include <Tridium/Graphics/RHI/RHIForward.h>
 #include <Tridium/Scene/Scene.h>
 #include <Tridium/UI/UIManager.h>
 
@@ -63,6 +64,9 @@ namespace Tridium {
 		int32_t m_SceneStepFrames = 0;
 		EScenePlayMode m_ScenePlayMode = EScenePlayMode::None;
 		EntityComponentRegistry m_SceneSnapshot;
+
+		//=============================================================================================
+		RHITextureRef m_TridiumIcon;
 
 	private:
 
