@@ -1,9 +1,5 @@
 # Tridium
 
-<p align="center">
-  <img width="300" height="300" alt="TridiumLogoTight" src="https://github.com/user-attachments/assets/83f10de5-6b27-41e9-8d8c-f0652a940511" />
-</p> 
-
 **Tridium** is a modern 3D game engine built in C++20 with a focus on flexibility, performance, and simplicity. It features an integrated Editor, Physics, ECS (Entity Component System), runtime C++ reflection, serialization, physically-based rendering (PBR), and a dynamically-bound Rendering Hardware Interface (RHI) supporting **OpenGL** and **DirectX 12**. It is still in development with a lot features planned.
 
 > ⚠️ **Important:** This project is currently under active development. Expect bugs and incomplete features.
