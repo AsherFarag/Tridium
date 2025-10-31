@@ -1,4 +1,8 @@
-# Tridium <img width="30" height="30" alt="EngineIcon" src="https://github.com/user-attachments/assets/7d278b18-99f9-4553-bbad-07164aab1872" /></br>
+# Tridium
+
+<p align="center">
+  <img width="300" height="300" alt="TridiumLogoTight" src="https://github.com/user-attachments/assets/83f10de5-6b27-41e9-8d8c-f0652a940511" />
+</p> 
 
 **Tridium** is a modern 3D game engine built in C++20 with a focus on flexibility, performance, and simplicity. It features an integrated Editor, Physics, ECS (Entity Component System), runtime C++ reflection, serialization, physically-based rendering (PBR), and a dynamically-bound Rendering Hardware Interface (RHI) supporting **OpenGL** and **DirectX 12**. It is still in development with a lot features planned.
 
@@ -8,6 +12,10 @@
 <img width="1920" height="1007" alt="TridiumScreenShotBright" src="https://github.com/user-attachments/assets/4570a0a9-f8a0-47fa-9ac9-ba8fa756900e" />
 <br></br>
 <img width="1849" height="928" alt="TridiumScreenShotDark" src="https://github.com/user-attachments/assets/0c35ff74-ad92-42ba-8427-36860b9b9c33" />
+<br></br>
+<img width="1920" height="1032" alt="Spartan by Abel (https://sketchfab.com/abel76)" src="https://github.com/user-attachments/assets/087e1c77-bc83-4edc-b118-1fc1f8c1fc9a" />
+
+> *Halo 5 Spartan Model by Abel https://sketchfab.com/abel76*
 
 https://github.com/user-attachments/assets/53f32f6c-01aa-46b6-8b29-28ce7284153f
 > *Note: This demo video was from before the RHI branch was created.*
@@ -28,28 +36,31 @@ https://github.com/user-attachments/assets/53f32f6c-01aa-46b6-8b29-28ce7284153f
 Developing the RHI and integrating  it into the engine is a big job and requires a rewrite of many systems.
 - [ ] **RHI** - Work in Progress ⚙️
   - [ ] **Features** - Work in Progress ⚙️ 
-    - [x] **Core API** - Done ✅
-    - [ ] **Compute Shaders** - Not Started ❌
-    - [ ] **Raytracing Support** - Not Started ❌
+    - [x] **Core API**
+    - [ ] **Compute Shaders**
+    - [ ] **Raytracing Support**
   - [ ] **Backends** - Work in Progress ⚙️
-    - [x] **DirectX12 support** - Done ✅
-    - [x] **OpenGL support** - Done ✅
+    - [x] **DirectX12 support**
+    - [x] **OpenGL support**
     - [ ] **Vulkan support** - Work in Progress ⚙️
-    - [ ] **Metal support** - Not Started ❌
-    - [ ] **DirectX11 support** - Not Started ❌
+    - [ ] **Metal support**
+    - [ ] **DirectX11 support**
 - [ ] **New Asset System** - Work in Progress ⚙️
-  - [x] **Core API** - Done ✅  
-- [ ] **New Scene Renderer** - Work in Progress ⚙️
-  - [x] **GBuffer** - Done ✅
-  - [ ] **Shadows** - Not Started ❌
+  - [x] **Core API**
+  - [x] **Asset Importing**
+  - [ ] **Editor Asset Features**
+- [ ] **Editor**
+  - [x] **Undo/Redo**
+- [ ] **Runtime** 
+- [ ] **Renderer Pipeline** - Work in Progress ⚙️
+  - [x] **GBuffer**
+  - [ ] **Shadows**
 - [ ] **This TODO list** - Work in Progress ⚙️
 ---
 
 ## Getting Started
 > [!NOTE]
 > **Windows** is the only platform that is currently tested.
-
-> [!NOTE]
 > **Visual Studio 2022** is required.
 
 **1.** Clone the repository:
