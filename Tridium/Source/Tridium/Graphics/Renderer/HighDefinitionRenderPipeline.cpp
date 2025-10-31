@@ -13,13 +13,7 @@
 
 namespace Tridium {
 
-
-
 	using Passes = HighDefinitionRenderPipeline::Passes;
-
-	// TEMP!
-	bool g_TestLightEnable = false;
-	bool g_TestDrawLights = false;
 
 	class TestLightDrawPipelinePass : public IRenderPipelinePass
 	{
@@ -91,13 +85,8 @@ namespace Tridium {
 				m_Output = rootPass->GetOutputID();
 				a_Builder.Write( m_Output, ERHIResourceStates::RenderTarget );
 
-				// Random lights for testing
-
 				a_Builder.Execute( [=, this]( IRHICommandList& a_CommandList, RenderGraph& a_Graph, const RenderContext& a_Context, const RenderView& a_View )
 				{
-					if ( !g_TestLightEnable || !g_TestDrawLights )
-						return;
-
 					PROFILE_SCOPE( "RenderPass: Lighting Pass", ProfilerCategory::Rendering );
 
 					struct DebugLightCasterVertex

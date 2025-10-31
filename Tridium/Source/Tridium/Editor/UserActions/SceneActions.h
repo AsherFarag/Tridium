@@ -83,6 +83,12 @@ namespace Tridium {
 				}
 				case EComponentUserActionType::Modify:
 				{
+					if ( !gameObject.Has<T>() )
+					{
+						LOG( LogCategory::Editor, Warn, "Failed to undo component modification: Component not found on GameObject." );
+						return;
+					}
+
 					std::swap( m_Data, gameObject.Get<T>() );
 				}
 			}
@@ -173,6 +179,12 @@ namespace Tridium {
 					if ( gameObject.Valid() )
 					{
 						m_GameObjectData = Prefab::Build( scene->Registry(), m_GameObjectID );
+
+						if ( auto* hierarchy = gameObject.TryGet<HierarchyComponent>() )
+						{
+							hierarchy->DestroyChildren( scene->Registry(), m_GameObjectID );
+						}
+
 						gameObject.Destroy();
 					}
 

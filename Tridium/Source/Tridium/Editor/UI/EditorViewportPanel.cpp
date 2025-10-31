@@ -15,10 +15,6 @@
 
 namespace Tridium {
 
-	// TEMP
-	static Array<AssetRef<StaticMesh>> s_ImportedAssets;
-	static uint32_t importedAssetIndex = 0;
-
 	static void SetImGuizmoColors()
 	{
 		ImGuizmo::GetStyle() = ImGuizmo::Style();
@@ -46,7 +42,7 @@ namespace Tridium {
 		AssetDatabase::ImportAsset( "TestProject/Content/damagedhelmet/DamagedHelmet.gltf" );
 		//AssetDatabase::ImportAsset( "TestProject/Content/Sponza2/Sponza/glTF/Sponza.gltf" );
 		//AssetDatabase::ImportAsset( "TestProject/Content/helljumper/scene.gltf" );
-		//AssetDatabase::ImportAsset( "TestProject/Content/halo_5_recruit/scene.gltf" );
+		AssetDatabase::ImportAsset( "TestProject/Content/halo_5_recruit/scene.gltf" );
 	}
 
 	void EditorViewportPanel::OnEvent( Event& a_Event )
@@ -136,11 +132,17 @@ namespace Tridium {
 				previewTextureDesc.Name = "Editor Preview Viewport Texture";
 				m_PreviewTexture = RHI::CreateTexture( previewTextureDesc );
 
+				Matrix4 view = Math::Inverse(
+					Math::Translate( m_PreviewObject.GetWorldPosition() )
+					* Math::ToMat4( m_PreviewObject.GetWorldRotation() ) 
+				);
+
+
 				RendererModule::GetPipelineManager()->AddCameraView(
 					m_PreviewTexture,
 					viewportSize,
 					m_PreviewObject.GetWorldPosition(),
-					m_PreviewObject.GetWorldTransform(),
+					view,
 					cameraComp->CalculateProjection(),
 					cameraComp->NearPlane(),
 					cameraComp->FarPlane(),
@@ -246,7 +248,7 @@ namespace Tridium {
 			if ( TransformComponent* tc = gameObject.TryGet<TransformComponent>() )
 			{
 				// Selected Game Object
-				Matrix4 worldTransform = tc->LocalTransform();
+				Matrix4 worldTransform = tc->WorldTransform( gameObject.Scene()->Registry(), gameObject );
 
 				bool shouldSnap = Input::IsKeyPressed( EInputKey::LeftControl );
 
@@ -287,10 +289,26 @@ namespace Tridium {
 						m_WasUsingGizmoLastFrame = true;
 					}
 
+					// Convert the modified world transform back to local transform
+					Matrix4 parentWorldTransform{ 1.0f };
+					if ( const auto* hierarchy = gameObject.TryGet<HierarchyComponent>() )
+					{
+						GameObject parentGameObject{ gameObject.Scene(), hierarchy->Parent };
+						if ( parentGameObject.Valid() )
+						{
+							if ( TransformComponent* parentTc = parentGameObject.TryGet<TransformComponent>() )
+							{
+								parentWorldTransform = parentTc->WorldTransform( parentGameObject.Scene()->Registry(), parentGameObject );
+							}
+						}
+					}
+
+					Matrix4 localTransform = Math::Inverse( parentWorldTransform ) * worldTransform;
+
 					Quaternion rotation;
 					Vector3 position;
 					Vector3 scale;
-					Math::DecomposeTransform( worldTransform, position, rotation, scale );
+					Math::DecomposeTransform( localTransform, position, rotation, scale );
 					tc->SetLocalPosition( position );
 					tc->SetLocalRotation( rotation );
 					tc->SetLocalScale( scale );

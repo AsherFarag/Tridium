@@ -14,4 +14,14 @@ namespace Tridium {
 	template<typename... _Exclude>
 	static constexpr EntityExcludeType<_Exclude...> EntityExclude{};
 
+	inline constexpr EntityIDType ToEntityID( EntityID a_Entity ) noexcept
+	{
+		return static_cast<EntityIDType>( entt::to_entity( a_Entity ) );
+	}
+
+	inline constexpr EntityVersion ToEntityVersion( EntityID a_Entity ) noexcept
+	{
+		return entt::entt_traits<EntityID>::to_version( a_Entity );
+	}
+
 } // namespace Tridium

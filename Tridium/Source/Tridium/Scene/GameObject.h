@@ -159,6 +159,32 @@ namespace Tridium {
 		}
 
 		//=============================================================================================
+		Quaternion GetWorldRotation() const
+		{
+			TransformComponent* transform = TryGet<TransformComponent>();
+
+			if ( !transform )
+			{
+				return Quaternion( 1.0f, 0.0f, 0.0f, 0.0f );
+			}
+
+			Quaternion worldRotation = transform->LocalRotation();
+			GameObject currentParent = GetParent();
+
+			while ( currentParent.Valid() )
+			{
+				TransformComponent* parentTransform = currentParent.TryGet<TransformComponent>();
+				if ( parentTransform )
+				{
+					worldRotation = parentTransform->LocalRotation() * worldRotation;
+				}
+				currentParent = currentParent.GetParent();
+			}
+
+			return worldRotation;
+		}
+
+		//=============================================================================================
 		// Computes and returns the world transform matrix of this GameObject by traversing up the hierarchy.
 		Matrix4 GetWorldTransform() const
 		{

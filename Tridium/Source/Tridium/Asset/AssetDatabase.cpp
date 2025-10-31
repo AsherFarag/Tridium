@@ -179,6 +179,14 @@ namespace Tridium {
 			return false;
 		}
 
+		if ( a_Asset->Info() == nullptr || !a_Asset->Info()->Valid() )
+		{
+			TODO( "This should be an error" );
+			a_Asset->m_Info = MakeShared<AssetInfo>();
+			a_Asset->m_Info->ID = UUID::Generate();
+			a_Asset->m_Info->Type = a_Asset->Type();
+		}
+
 		const UUID assetID = a_Asset->ID();
 		if ( DoesAssetExist( assetID ) )
 		{

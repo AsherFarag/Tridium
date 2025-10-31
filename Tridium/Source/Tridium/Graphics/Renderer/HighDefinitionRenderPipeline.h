@@ -3,9 +3,6 @@
 
 namespace Tridium {
 
-	extern bool g_TestLightEnable;
-	extern bool g_TestDrawLights;
-
 	//=============================================================================================
 	// High-Definition Render Pipeline (HDRP):
 	// An advanced rendering pipeline that supports high-fidelity graphics and effects.

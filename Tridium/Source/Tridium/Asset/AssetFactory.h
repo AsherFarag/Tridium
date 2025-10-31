@@ -27,8 +27,8 @@ namespace Tridium {
 		static const AssetTypeInfo& GetAssetTypeInfo( const AssetTypeID a_TypeID )
 		{
 			static const AssetTypeInfo s_InvalidTypeInfo{ .ID = InvalidAssetTypeID, .Name = "<UNKNOWN>" };
-			auto it = s_AssetTypes.find( a_TypeID );
-			return it != s_AssetTypes.end() ? it->second : s_InvalidTypeInfo;
+			auto it = Get().s_AssetTypes.find( a_TypeID );
+			return it != Get().s_AssetTypes.end() ? it->second : s_InvalidTypeInfo;
 		}
 
 		//=============================================================================================
@@ -52,13 +52,13 @@ namespace Tridium {
 			ASSERT( a_TypeInfo.ID == InvalidAssetTypeID || a_TypeInfo.ID == typeID,
 					"AssetTypeInfo ID does not match the type hash for type '{}'.", GetTypeName<T>() );
 
-			if ( !a_Override && s_AssetTypes.contains( typeID ) )
+			if ( !a_Override && Get().s_AssetTypes.contains( typeID ) )
 			{
 				return false;
 			}
 
 			a_TypeInfo.ID = typeID; // Ensure the ID matches the type hash
-			s_AssetTypes[ typeID ] = std::move( a_TypeInfo );
+			Get().s_AssetTypes[ typeID ] = std::move( a_TypeInfo );
 
 			return true;
 		}
@@ -68,8 +68,8 @@ namespace Tridium {
 		// Attempts to retrieve a registered asset loader by its ID.
 		static IAssetLoader* GetLoader( const AssetTypeID a_LoaderID ) 
 		{ 
-			auto it = s_AssetLoaders.find( a_LoaderID );
-			return it != s_AssetLoaders.end() ? it->second.get() : nullptr; 
+			auto it = Get().s_AssetLoaders.find( a_LoaderID );
+			return it != Get().s_AssetLoaders.end() ? it->second.get() : nullptr;
 		}
 
 		//=============================================================================================
@@ -87,13 +87,13 @@ namespace Tridium {
 		template<Concepts::Derived<IAssetLoader> T>
 		static bool RegisterLoader( const AssetTypeID a_LoaderID )
 		{
-			if ( s_AssetLoaders.contains( a_LoaderID ) )
+			if ( Get().s_AssetLoaders.contains( a_LoaderID ) )
 			{
 				ASSERT( false, "Asset Loader of type '{}' is already registered!", GetTypeName<T>() );
 				return false;
 			}
 
-			s_AssetLoaders[a_LoaderID] = MakeUnique<T>();
+			Get().s_AssetLoaders[a_LoaderID] = MakeUnique<T>();
 
 			return true;
 		}
@@ -106,8 +106,8 @@ namespace Tridium {
 		{
 			const size_t strippedPrefix = a_FileExtension.find_first_not_of( '.' );
 			const StringView removedDot = strippedPrefix != StringView::npos ? a_FileExtension.substr( strippedPrefix ) : a_FileExtension;
-			auto it = s_ExtensionToImporterMap.find( removedDot );
-			return it != s_ExtensionToImporterMap.end() ? it->second : nullptr;
+			auto it = Get().s_ExtensionToImporterMap.find( removedDot );
+			return it != Get().s_ExtensionToImporterMap.end() ? it->second : nullptr;
 		}
 
 		//=============================================================================================
@@ -133,18 +133,23 @@ namespace Tridium {
 	private:
 
 		//=============================================================================================
-		static UnorderedMap<AssetTypeID, AssetTypeInfo> s_AssetTypes;
-		static UnorderedMap<AssetTypeID, SharedPtr<IAssetLoader>> s_AssetLoaders;
+		AssetFactory() = default;
+		~AssetFactory() = default;
+		static AssetFactory& Get();
+
+		//=============================================================================================
+		UnorderedMap<AssetTypeID, AssetTypeInfo> s_AssetTypes;
+		UnorderedMap<AssetTypeID, SharedPtr<IAssetLoader>> s_AssetLoaders;
 		
 	#if WITH_EDITOR
 
 		//=============================================================================================
-		static UnorderedMap<AssetTypeID, SharedPtr<IAssetImporter>> s_AssetImporters;
+		UnorderedMap<AssetTypeID, SharedPtr<IAssetImporter>> s_AssetImporters;
 
 		//=============================================================================================
 		// Map of file extensions to their corresponding asset importers. E.g. "png" -> TextureImporter
 		// Multiple extensions can map to the same importer.
-		static UnorderedMap<StringView, IAssetImporter*> s_ExtensionToImporterMap;
+		UnorderedMap<StringView, IAssetImporter*> s_ExtensionToImporterMap;
 
 		static bool RegisterImporter( HashedString a_TypeHash, UniquePtr<IAssetImporter> a_Importer );
 

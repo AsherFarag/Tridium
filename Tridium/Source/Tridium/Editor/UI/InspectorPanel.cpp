@@ -38,9 +38,24 @@ namespace Tridium {
 			if ( m_InspectedObjects.Size() == 1 )
 			{
 				UI_DrawHeader();
+
 				ImGui::Separator();
-				UI_DrawComponents();
+
+				// Calculate space to leave for bottom UI
+				float bottomReserve =
+					ImGui::GetFrameHeightWithSpacing() + // height of one button row
+					ImGui::GetStyle().ItemSpacing.y * 2 + // extra breathing room
+					4.0f; // small safety margin
+
+				if ( ImGui::BeginChild( "##ComponentList", ImVec2( 0, -bottomReserve ), 0, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoBackground ) )
+				{
+					UI_DrawComponents();
+				}
+
+				ImGui::EndChild();
+
 				ImGui::Separator();
+
 				UI_DrawAddComponent();
 			}
 			else
@@ -74,6 +89,25 @@ namespace Tridium {
 		{
 			m_LockInspector = !m_LockInspector;
 		}
+
+		UI::BeginPropertyGrid();
+
+		ImGui::TableNextRow();
+		ImGui::TableSetColumnIndex( 0 );
+		ImGui::AlignTextToFramePadding();
+
+		EntityID entityID = m_InspectedObjects[0];
+
+		ImGui::Text( "ID: %u", (uint32_t)ToEntityID( entityID ) );
+
+		ImGui::TableSetColumnIndex( 1 );
+		ImGui::PushItemWidth( -FLT_MIN );
+
+		ImGui::Text( "Version: %u", (uint32_t)ToEntityVersion( entityID ) );
+
+		ImGui::PopItemWidth();
+
+		UI::EndPropertyGrid();
 	}
 
 	void InspectorPanel::UI_DrawComponents()

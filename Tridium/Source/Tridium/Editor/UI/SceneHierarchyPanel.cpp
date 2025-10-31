@@ -116,7 +116,68 @@ namespace Tridium {
 		nodeFlags |= hierarchy && hierarchy->FirstChild != NullEntity ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_Leaf;
 		nodeFlags |= SelectionManager::Get().IsSelected( a_GameObject ) ? ImGuiTreeNodeFlags_Selected : ImGuiTreeNodeFlags_None;
 
-		if ( ImGui::TreeNodeEx( (void*)(uintptr_t)(uint32_t)a_GameObject.ID(), nodeFlags, name.data() ) )
+		bool hierarchyOpen = ImGui::TreeNodeEx( (void*)(uintptr_t)(uint32_t)a_GameObject.ID(), nodeFlags, name.data() );
+
+		if ( ImGui::IsItemClicked() )
+		{
+			if ( !Input::IsKeyPressed( EInputKey::LeftControl ) )
+				SelectionManager::Get().DeselectAll( ESelectionContext::Scene );
+
+			SelectionManager::Get().Select( ESelectionContext::Scene, a_GameObject );
+		}
+
+				// Handle payloads for drag and drop game objects
+		bool isDragDropSource = false;
+		if ( ImGui::BeginDragDropSource() )
+		{
+			isDragDropSource = true;
+
+			ImGui::SetDragDropPayload( "SceneHierarchyGameObject", &a_GameObject, sizeof( GameObject ) );
+			ImGui::TextUnformatted( name.data() );
+			ImGui::EndDragDropSource();
+		}
+
+		if ( !isDragDropSource && ImGui::BeginDragDropTarget() )
+		{
+			if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( "SceneHierarchyGameObject" ) )
+			{
+				if ( payload->IsDelivery() )
+				{
+					GameObject draggedGameObject = *(GameObject*)payload->Data;
+
+					UserActionBatch actionBatch{}; 
+
+					// 2 guaranteed for modifying the hierarchies of both game objects
+					// 2 optional for adding hierarchy components if they don't exist
+					actionBatch.Reserve( 4 );
+
+					if ( !a_GameObject.Has<HierarchyComponent>() )
+					{
+						actionBatch.EmplaceBack( MakeUnique<ComponentUserAction<HierarchyComponent>>( a_GameObject, EComponentUserActionType::Add ) );
+					}
+
+					if ( !draggedGameObject.Has<HierarchyComponent>() )
+					{
+						actionBatch.EmplaceBack( MakeUnique<ComponentUserAction<HierarchyComponent>>( draggedGameObject, EComponentUserActionType::Add ) );
+					}
+
+					// Reparent the dragged GameObject to be a child of this GameObject
+					auto& parentHierarchy = a_GameObject.GetOrAdd<HierarchyComponent>();
+					auto& childHierarchy = draggedGameObject.GetOrAdd<HierarchyComponent>();
+
+					actionBatch.EmplaceBack( MakeUnique<ComponentUserAction<HierarchyComponent>>( a_GameObject, EComponentUserActionType::Modify ) );
+					actionBatch.EmplaceBack( MakeUnique<ComponentUserAction<HierarchyComponent>>( draggedGameObject, EComponentUserActionType::Modify ) );
+
+					parentHierarchy.AddChild( a_GameObject.Scene()->Registry(), a_GameObject.ID(), draggedGameObject.ID() );
+
+					Editor::GetUserActionManager().Push( std::move( actionBatch ) );
+				}
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
+		if ( hierarchyOpen )
 		{
 			// Draw children
 			if ( hierarchy )
@@ -139,52 +200,6 @@ namespace Tridium {
 			}
 
 			ImGui::TreePop();
-		}
-
-		// Handle payloads for drag and drop game objects
-		bool isDragDropSource = false;
-		if ( ImGui::BeginDragDropSource() )
-		{
-			isDragDropSource = true;
-
-			ImGui::SetDragDropPayload( "SceneHierarchyGameObject", &a_GameObject, sizeof( GameObject ) );
-			ImGui::TextUnformatted( name.data() );
-			ImGui::EndDragDropSource();
-		}
-
-		if ( !isDragDropSource && ImGui::BeginDragDropTarget() )
-		{
-			if ( const ImGuiPayload* payload = ImGui::AcceptDragDropPayload( "SceneHierarchyGameObject" ) )
-			{
-				if ( payload->IsDelivery() )
-				{
-					GameObject draggedGameObject = *(GameObject*)payload->Data;
-
-					// Reparent the dragged GameObject to be a child of this GameObject
-					auto& parentHierarchy = a_GameObject.GetOrAdd<HierarchyComponent>();
-					auto& childHierarchy = draggedGameObject.GetOrAdd<HierarchyComponent>();
-					// Set parent
-					childHierarchy.Parent = a_GameObject.ID();
-					// Insert as first child
-					childHierarchy.NextSibling = parentHierarchy.FirstChild;
-					if ( parentHierarchy.FirstChild != NullEntity )
-					{
-						auto& firstChildHierarchy = GameObject( a_GameObject.Scene(), parentHierarchy.FirstChild ).Get<HierarchyComponent>();
-						firstChildHierarchy.PrevSibling = draggedGameObject.ID();
-					}
-					parentHierarchy.FirstChild = draggedGameObject.ID();
-				}
-			}
-
-			ImGui::EndDragDropTarget();
-		}
-
-		if ( ImGui::IsItemClicked()  )
-		{
-			if ( !Input::IsKeyPressed( EInputKey::LeftControl ) )
-				SelectionManager::Get().DeselectAll( ESelectionContext::Scene );
-
-			SelectionManager::Get().Select( ESelectionContext::Scene, a_GameObject );
 		}
 	}
 
@@ -287,6 +302,24 @@ namespace Tridium {
 		{
 			ImGui::TextUnformatted( "Creates a new GameObject intended to be used as a folder in the hierarchy." );
 			ImGui::EndTooltip();
+		}
+
+		// Prefab menu option
+		if ( ImGui::BeginMenu( TE_ICON_BOX_ARCHIVE " Prefab" ) )
+		{
+			// List all prefab assets
+			int idx = 0;
+			AssetDatabase::ForEachAssetOfType<Prefab>( [&]( const AssetInfo& a_Info, const Prefab* a_Prefab )
+			{
+				ImGui::ScopedID idScope( idx++ );
+				if ( a_Prefab && ImGui::MenuItem( a_Info.Name.c_str() ) )
+				{
+					createdGameObject = GameObject{ *activeScene, a_Prefab->Instantiate( activeScene->Registry() ) };
+					ImGui::CloseCurrentPopup();
+				}
+			} );
+
+			ImGui::EndMenu();
 		}
 
 		#pragma endregion

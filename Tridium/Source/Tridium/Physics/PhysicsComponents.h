@@ -280,4 +280,23 @@ namespace Tridium::Meta {
 		Radius;
 	};
 
+	template<>
+	struct Reflector<BoxColliderComponent>
+	{
+		using Type = Type<BoxColliderComponent, Icon<TE_ICON_SQUARE>>;
+		using BC = BoxColliderComponent;
+
+		Property<&BC::Center, &BC::SetCenter, Scriptable, Editable, Serializable,
+		Tooltip<"The local position of the box collider's center relative to the entity's transform.">>
+		Center;
+
+		//Property<&BC::Rotation, &BC::SetRotation, Scriptable, Editable, Serializable,
+		//Tooltip<"The local rotation of the box collider relative to the entity's transform.">>
+		//Rotation;
+
+		Property<&BC::HalfExtents, &BC::SetHalfExtents, Scriptable, Editable, Serializable, Min<0.0f>,
+		Tooltip<"The half extents of the box collider along the X, Y, and Z axes.">>
+		HalfExtents;
+	};
+
 } // namespace Tridium::Meta

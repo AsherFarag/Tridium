@@ -7,6 +7,8 @@
 #include <Tridium/Asset/MeshAsset.h>
 #include <Tridium/Asset/MaterialAsset.h>
 #include <Tridium/Asset/TextureAsset.h>
+#include <Tridium/Scene/Prefab.h>
+#include <Tridium/Graphics/Renderer/RendererComponents.h>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -76,7 +78,10 @@ namespace Tridium {
 		void Process( AssetImportContext& a_Context, const aiScene* a_Scene )
 		{
 			ProcessMaterials( a_Context, a_Scene );
-			ProcessNode( a_Context, Matrix4( 1.0f ), a_Scene, a_Scene->mRootNode );
+			ProcessNode( a_Context, m_PrefabBuilder.CreateRoot(), a_Scene, a_Scene->mRootNode );
+
+			String prefabName = a_Scene->mRootNode->mName.C_Str();
+			*a_Context.CreateAsset<Prefab>( prefabName, "TODO" ) = m_PrefabBuilder.Build();
 
 			// Clear cached data
 			Clear();
@@ -85,20 +90,22 @@ namespace Tridium {
 	private:
 
 		Array<AssetRef<Material>> m_Materials;
+		PrefabBuilder m_PrefabBuilder;
 
 		void Clear()
 		{
 			m_Materials.Clear();
+			m_PrefabBuilder = {};
 		}
 
-		void ProcessNode( AssetImportContext& a_Context, const Matrix4& a_ParentTransform, const aiScene* a_Scene, const aiNode* a_Node );
+		void ProcessNode( AssetImportContext& a_Context, PrefabBuilder::EntityNode a_Entity, const aiScene* a_Scene, const aiNode* a_Node );
 		void ProcessMaterials( AssetImportContext& a_Context, const aiScene* a_Scene );
 
-		bool ProcessStaticMesh( AssetImportContext& a_Context, const aiScene* a_Scene, const aiNode* a_Node, const Matrix4& a_Transform );
+		AssetRef<StaticMesh> ProcessStaticMesh( AssetImportContext& a_Context, const aiScene* a_Scene, const aiNode* a_Node, const Matrix4& a_Transform );
 
 	};
 
-	bool ModelImporter::OnImport( AssetImportContext& a_Context )
+	bool ModelImporter::OnImport( AssetImportContext& a_Context, const ModelImportOptions& a_Options )
 	{
 		Assimp::Importer importer;
 		importer.SetPropertyFloat( AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, 1.0f );
@@ -135,7 +142,7 @@ namespace Tridium {
 		return FilePath::UniquePath().ToString(); // Fallback to a unique name if the node has no name
 	}
 
-	void AssimpProcessor::ProcessNode( AssetImportContext& a_Context, const Matrix4& a_ParentTransform, const aiScene* a_Scene, const aiNode* a_Node )
+	void AssimpProcessor::ProcessNode( AssetImportContext& a_Context, PrefabBuilder::EntityNode a_Entity, const aiScene* a_Scene, const aiNode* a_Node )
 	{
 		// A node in Assimp is a scene graph node that can contain meshes and child nodes.
 		// If a node contains meshes, we treat the node as a StaticMesh asset.
@@ -151,18 +158,21 @@ namespace Tridium {
 			return;
 		}
 
-		const Matrix4 localTransform = Mat4FromAIMatrix4x4( a_Node->mTransformation );
-		const Matrix4 transform = a_ParentTransform * localTransform;
+		const Matrix4 transform = Mat4FromAIMatrix4x4( a_Node->mTransformation );
+		a_Entity.AddComponent<TransformComponent>( transform );
 
 		if ( a_Node->mNumMeshes > 0 )
 		{
-			ProcessStaticMesh( a_Context, a_Scene, a_Node, transform );
+			if ( AssetRef<StaticMesh> staticMesh = ProcessStaticMesh( a_Context, a_Scene, a_Node, transform ) )
+			{
+				a_Entity.AddComponent<StaticMeshComponent>( StaticMeshComponent{ .Mesh = staticMesh } );
+			}
 		}
 
 		// Recurse for each child node and process their meshes
 		for ( uint32_t i = 0; i < a_Node->mNumChildren; ++i )
 		{
-			ProcessNode( a_Context, transform, a_Scene, a_Node->mChildren[ i ] );
+			ProcessNode( a_Context, a_Entity.AddChild(), a_Scene, a_Node->mChildren[i]);
 
 			if ( a_Context.ImportFailed() )
 			{
@@ -466,7 +476,7 @@ namespace Tridium {
 		}
 	}
 
-	bool AssimpProcessor::ProcessStaticMesh( AssetImportContext& a_Context, const aiScene* a_Scene, const aiNode* a_Node, const Matrix4& transform )
+	AssetRef<StaticMesh> AssimpProcessor::ProcessStaticMesh( AssetImportContext& a_Context, const aiScene* a_Scene, const aiNode* a_Node, const Matrix4& transform )
 	{
 		// To create a StaticMesh asset from an Assimp node, we need to:
 		// 1. Create a new StaticMesh asset.
@@ -488,7 +498,7 @@ namespace Tridium {
 		if ( !staticMeshRef )
 		{
 			a_Context.FailImport( "Failed to create StaticMesh asset." );
-			return false;
+			return nullptr;
 		}
 
 		// StaticMeshAccessor allows us to modify the protected members of StaticMesh
@@ -583,7 +593,7 @@ namespace Tridium {
 				if ( face.mNumIndices != 3 )
 				{
 					a_Context.FailImport( "Mesh contains non-triangular faces. Ensure the model is triangulated." );
-					return false;
+					return nullptr;
 				}
 
 				lod.Indices.PushBack( face.mIndices[ 0 ] );
@@ -598,7 +608,7 @@ namespace Tridium {
 		// Now we can finally calculate its bounding box.
 		staticMesh->UpdateBoundingBox();
 
-		return true;
+		return staticMeshRef;
 	}
 
 } // namespace Tridium

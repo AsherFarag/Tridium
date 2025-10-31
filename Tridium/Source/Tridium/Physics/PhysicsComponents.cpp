@@ -2,12 +2,12 @@
 #include "PhysicsComponents.h"
 #include <Tridium/Reflection/RuntimeMeta.h>
 
-
 namespace Tridium {
 
 	REGISTER_TYPE( EPhysicsLayer );
 	REGISTER_TYPE( EMotionType );
 	REGISTER_TYPE( RigidBodyComponent );
 	REGISTER_TYPE( SphereColliderComponent );
+	REGISTER_TYPE( BoxColliderComponent );
 
 } // namespace Tridium

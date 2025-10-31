@@ -6,8 +6,7 @@
 
 namespace Tridium {
 
-	// TODO: Fix static initialization order issue with AssetFactory
-    //REGISTER_ASSET_TYPE( Prefab, AssetTypeInfo{}.SetName( "Prefab" ).SetIcon( EditorIcons::BoxArchive ) );
+    REGISTER_ASSET_TYPE( Prefab, AssetTypeInfo{}.SetName( "Prefab" ).SetIcon( EditorIcons::BoxArchive ) );
 
 	//=============================================================================================
     static void RecursiveCopyEntity(

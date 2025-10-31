@@ -52,7 +52,7 @@ namespace Tridium {
 			{
 				if ( staticMesh.Mesh.Valid() )
 				{
-					renderPipeline->SubmitStaticMesh( staticMesh.Mesh.GetOrLoad(), transform.LocalTransform() );
+					renderPipeline->SubmitStaticMesh( staticMesh.Mesh.GetOrLoad(), transform.WorldTransform( OwningScene().Registry(), entity ) );
 				}
 			} );
 		}

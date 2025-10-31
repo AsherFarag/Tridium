@@ -8,6 +8,7 @@
 // Panels
 #include <Tridium/Editor/UI/AssetBrowserPanel.h>
 #include <Tridium/Editor/UI/EditorViewportPanel.h>
+#include <Tridium/Editor/UI/FrameProfilerPanel.h>
 #include <Tridium/Editor/UI/InspectorPanel.h>
 #include <Tridium/Editor/UI/SceneHierarchyPanel.h>
 
@@ -144,6 +145,7 @@ namespace Tridium {
 		m_UIManager.CreatePanel<EditorViewportPanel>( TE_ICON_TV " Editor", true );
 		m_UIManager.CreatePanel<SceneHierarchyPanel>( TE_ICON_MOUNTAIN_SUN " Hierarchy", true );
 		m_UIManager.CreatePanel<InspectorPanel>( TE_ICON_MAGNIFYING_GLASS " Inspector", true );
+		m_UIManager.CreatePanel<FrameProfilerPanel>( TE_ICON_CLOCK " Profiler", true );
 	}
 
 	void Editor::OnDetach()
