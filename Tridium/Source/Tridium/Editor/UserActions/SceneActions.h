@@ -24,7 +24,7 @@ namespace Tridium {
 		//=============================================================================================
 		ComponentUserAction( GameObject a_GameObject, EComponentUserActionType a_ActionType )
 			: m_SceneID( a_GameObject.Scene()->ID() )
-			, m_EntityID( a_GameObject.ID() )
+			, m_Entity( a_GameObject.Entity() )
 			, m_ActionType( a_ActionType )
 		{
 			if ( a_ActionType != EComponentUserActionType::Add )
@@ -34,17 +34,17 @@ namespace Tridium {
 		}
 
 		//=============================================================================================
-		ComponentUserAction( UUID a_SceneID, EntityID a_EntityID, EComponentUserActionType a_ActionType, T& a_Data )
+		ComponentUserAction( UUID a_SceneID, Entity a_Entity, EComponentUserActionType a_ActionType, T& a_Data )
 			: m_SceneID( a_SceneID )
-			, m_EntityID( a_EntityID )
+			, m_Entity( a_Entity )
 			, m_ActionType( a_ActionType )
 			, m_Data( a_Data )
 		{}
 
 		//=============================================================================================
-		ComponentUserAction( UUID a_SceneID, EntityID a_EntityID )
+		ComponentUserAction( UUID a_SceneID, Entity a_Entity )
 			: m_SceneID( a_SceneID )
-			, m_EntityID( a_EntityID )
+			, m_Entity( a_Entity )
 			, m_ActionType( EComponentUserActionType::Add )
 		{}
 
@@ -62,7 +62,7 @@ namespace Tridium {
 				return;
 			}
 
-			GameObject gameObject{ *scene, m_EntityID };
+			GameObject gameObject{ *scene, m_Entity };
 
 			TODO( "Do error handling if the gameobject has been modified in a way we don't know about." );
 
@@ -111,14 +111,14 @@ namespace Tridium {
 			case EComponentUserActionType::Modify: actionName = "Modify"; break;
 			}
 
-			return std::format( "{} Component<{}> on Entity<{}>", actionName, GetTypeName<T>(), Cast<EntityIDType>( m_EntityID ) );
+			return std::format( "{} Component<{}> on Entity<{}>", actionName, GetTypeName<T>(), Cast<EntityUnderlyingType>( m_Entity ) );
 		}
 
 	private:
 
 		//=============================================================================================
 		UUID m_SceneID;
-		EntityID m_EntityID;
+		Entity m_Entity;
 		EComponentUserActionType m_ActionType;
 		T m_Data;
 
@@ -147,12 +147,12 @@ namespace Tridium {
 			m_ActionType = a_ActionType;
 			if ( m_ActionType == EActionType::Delete )
 			{
-				m_GameObjectData = Prefab::Build( a_GameObject.Scene()->Registry(), a_GameObject.ID() );
+				m_GameObjectData = Prefab::Build( a_GameObject.Scene()->Registry(), a_GameObject.Entity() );
 				ASSERT( m_GameObjectData.Valid(), "Failed to build Prefab for GameObjectUserAction" );
 			}
 			else if ( m_ActionType == EActionType::Create )
 			{
-				m_GameObjectID = a_GameObject.ID();
+				m_GameObjectID = a_GameObject.Entity();
 			}
 		}
 
@@ -180,9 +180,9 @@ namespace Tridium {
 					{
 						m_GameObjectData = Prefab::Build( scene->Registry(), m_GameObjectID );
 
-						if ( auto* hierarchy = gameObject.TryGet<HierarchyComponent>() )
+						if ( auto* transform = gameObject.TryGet<TransformComponent>() )
 						{
-							hierarchy->DestroyChildren( scene->Registry(), m_GameObjectID );
+							transform->DestroyChildren( scene->Registry(), m_GameObjectID );
 						}
 
 						gameObject.Destroy();
@@ -194,8 +194,8 @@ namespace Tridium {
 				}
 				case EActionType::Delete:
 				{
-					EntityID newEntityID = m_GameObjectData.Instantiate( scene->Registry() );
-					m_GameObjectID = newEntityID;
+					Entity newEntity = m_GameObjectData.Instantiate( scene->Registry() );
+					m_GameObjectID = newEntity;
 					m_ActionType = EActionType::Create;
 					break;
 				}
@@ -212,7 +212,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		UUID m_SceneID;
-		EntityID m_GameObjectID;
+		Entity m_GameObjectID;
 		Prefab m_GameObjectData;
 		EActionType m_ActionType;
 

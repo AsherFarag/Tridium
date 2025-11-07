@@ -156,15 +156,12 @@ namespace Tridium::D3D12 {
 			argsRaw.PushBack( arg.c_str() );
 		}
 
-		LOG( LogCategory::RHI, Debug, "DXC compile: source bytes = {}, arg count = {}", sourceBuffer.Size, argsRaw.Size());
 		for ( uint32_t i = 0; i < argsRaw.Size(); ++i )
 		{
 			const wchar_t* p = argsRaw[i];
 			size_t len = ( p ? wcslen( p ) : 0 );
 			//LOG( LogCategory::RHI, Debug, "arg[{}] ptr = {:#p}, len = {}", i, p, len );
 		}
-		//LOG( LogCategory::RHI, Debug, std::format( "includeHandler = {:#p}", (void*)includeHandler.Get() ) );
-
 
 		// COMPILE
 		ComPtr<IDxcResult> dxcResult;

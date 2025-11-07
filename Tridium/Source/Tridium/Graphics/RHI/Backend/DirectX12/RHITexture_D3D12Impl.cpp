@@ -116,7 +116,7 @@ namespace Tridium::D3D12 {
 		bool useClearValue = a_Desc.UseClearValue;
 		if ( useClearValue )
 		{
-			clearValue.Format = Translate( a_Desc.Format );
+			clearValue.Format = GetDXGIFormatMap( a_Desc.Format ).RTVFormat;
 			if ( EnumFlags( a_Desc.BindFlags ).HasFlag( ERHIBindFlags::RenderTarget ) )
 			{
 				clearValue.Color[0] = a_Desc.ClearValue.Color[0];
@@ -423,7 +423,7 @@ namespace Tridium::D3D12 {
 		if ( !bindFlags.HasFlag( ERHIBindFlags::ShaderResource ) && bindFlags.HasFlag( ERHIBindFlags::DepthStencil ) )
 			desc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
 
-		desc.Format = D3D12::Translate( m_Desc.Format );
+		desc.Format = GetDXGIFormatMap( m_Desc.Format ).RTVFormat;
 		if ( desc.Format == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB && EnumFlags( desc.Flags ).HasFlag( D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS ) )
 			desc.Format = DXGI_FORMAT_R8G8B8A8_TYPELESS;
 
@@ -438,7 +438,7 @@ namespace Tridium::D3D12 {
 			a_Format = m_Desc.Format;
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-		srvDesc.Format = Translate( a_Format );
+		srvDesc.Format = GetDXGIFormatMap( a_Format ).SRVFormat;
 		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
 		const uint32_t planeSlice = (srvDesc.Format == DXGI_FORMAT_X24_TYPELESS_G8_UINT) ? 1 : 0;

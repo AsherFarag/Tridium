@@ -96,14 +96,14 @@ namespace Tridium {
 		ImGui::TableSetColumnIndex( 0 );
 		ImGui::AlignTextToFramePadding();
 
-		EntityID entityID = m_InspectedObjects[0];
+		Entity entity = m_InspectedObjects[0];
 
-		ImGui::Text( "ID: %u", (uint32_t)ToEntityID( entityID ) );
+		ImGui::Text( "ID: %u", GetEntityID( entity ) );
 
 		ImGui::TableSetColumnIndex( 1 );
 		ImGui::PushItemWidth( -FLT_MIN );
 
-		ImGui::Text( "Version: %u", (uint32_t)ToEntityVersion( entityID ) );
+		ImGui::Text( "Version: %u", (uint32_t)GetEntityVersion( entity ) );
 
 		ImGui::PopItemWidth();
 
@@ -188,17 +188,6 @@ namespace Tridium {
 			DrawComponent( Meta::GetRuntimeMetaInfo<TransformComponent>(), transform );
 		}
 
-		if ( HierarchyComponent* hierarchy = inspectedObject.TryGet<HierarchyComponent>() )
-		{
-			DrawComponent( Meta::GetRuntimeMetaInfo<HierarchyComponent>(), hierarchy,
-			+[]() -> bool
-			{
-				TODO( "Implement HierarchyComponent property drawer." );
-				ImGui::TextDisabled( "HierarchyComponent editor not implemented yet." );
-				return false;
-			} );
-		}
-
 		if ( IconComponent* icon = inspectedObject.TryGet<IconComponent>() )
 		{
 			DrawComponent( Meta::GetRuntimeMetaInfo<IconComponent>(), icon,
@@ -212,7 +201,7 @@ namespace Tridium {
 		// and draws the ones that the inspected object has.
 		for ( auto [id, storage] : inspectedObject.Scene()->Registry().Storage() )
 		{
-			if ( !storage.contains( inspectedObject ) )
+			if ( !storage.contains( inspectedObject.Entity() ) )
 			{
 				continue;
 			}

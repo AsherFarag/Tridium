@@ -252,7 +252,7 @@ namespace Tridium {
 		const auto& Lighting() const { return m_Lighting; }
 
 		//=========================================================================================
-		const DirectionalLight* GetDirectionalLight( LightID a_ID )
+		const DirectionalLight* GetDirectionalLight( LightID a_ID ) const
 		{
 			if ( a_ID < 0 || a_ID >= Cast<LightID>( m_Lighting.DirectionalLights.Size() ) )
 				return nullptr;
@@ -261,7 +261,7 @@ namespace Tridium {
 		}
 
 		//=========================================================================================
-		const PointLight* GetPointLight( LightID a_ID )
+		const PointLight* GetPointLight( LightID a_ID ) const
 		{
 			if ( a_ID < 0 || a_ID >= Cast<LightID>( m_Lighting.PointLights.Size() ) )
 				return nullptr;
@@ -270,7 +270,7 @@ namespace Tridium {
 		}
 
 		//=========================================================================================
-		const SpotLight* GetSpotLight( LightID a_ID )
+		const SpotLight* GetSpotLight( LightID a_ID ) const
 		{
 			if ( a_ID < 0 || a_ID >= Cast<LightID>( m_Lighting.SpotLights.Size() ) )
 				return nullptr;

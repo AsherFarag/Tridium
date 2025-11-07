@@ -39,10 +39,10 @@ namespace Tridium {
 	{
 		// TEMP
 		AssetDatabase::ImportAsset( "TestProject/Content/park_music_stage_4k.hdr" );
-		//AssetDatabase::ImportAsset( "TestProject/Content/damagedhelmet/DamagedHelmet.gltf" );
+		AssetDatabase::ImportAsset( "TestProject/Content/damagedhelmet/DamagedHelmet.gltf" );
 		AssetDatabase::ImportAsset( "TestProject/Content/Sponza2/Sponza/glTF/Sponza.gltf" );
-		AssetDatabase::ImportAsset( "TestProject/Content/helljumper/scene.gltf" );
-		AssetDatabase::ImportAsset( "TestProject/Content/halo_5_recruit/scene.gltf" );
+		//AssetDatabase::ImportAsset( "TestProject/Content/helljumper/scene.gltf" );
+		//AssetDatabase::ImportAsset( "TestProject/Content/halo_5_recruit/scene.gltf" );
 	}
 
 	void EditorViewportPanel::OnEvent( Event& a_Event )
@@ -132,16 +132,23 @@ namespace Tridium {
 				previewTextureDesc.Name = "Editor Preview Viewport Texture";
 				m_PreviewTexture = RHI::CreateTexture( previewTextureDesc );
 
-				Matrix4 view = Math::Inverse(
-					Math::Translate( m_PreviewObject.GetWorldPosition() )
-					* Math::ToMat4( m_PreviewObject.GetWorldRotation() ) 
-				);
+				Matrix4 view{ 1.0f };
+				Vector3 position;
+
+				if ( auto* tc = m_PreviewObject.TryGet<TransformComponent>() )
+				{
+					Quaternion rotation;
+					Vector3 scale;
+					Math::DecomposeTransform( tc->WorldTransform( m_PreviewObject.Scene()->Registry(), m_PreviewObject ), position, rotation, scale );
+
+					view = Math::Inverse( Math::Translate( position ) * Math::ToMat4( rotation ) );
+				} 
 
 
 				RendererModule::GetPipelineManager()->AddCameraView(
 					m_PreviewTexture,
 					viewportSize,
-					m_PreviewObject.GetWorldPosition(),
+					position,
 					view,
 					cameraComp->CalculateProjection(),
 					cameraComp->NearPlane(),
@@ -291,9 +298,9 @@ namespace Tridium {
 
 					// Convert the modified world transform back to local transform
 					Matrix4 parentWorldTransform{ 1.0f };
-					if ( const auto* hierarchy = gameObject.TryGet<HierarchyComponent>() )
+					if ( const auto* transform = gameObject.TryGet<TransformComponent>() )
 					{
-						GameObject parentGameObject{ gameObject.Scene(), hierarchy->Parent };
+						GameObject parentGameObject{ gameObject.Scene(), transform->Parent()};
 						if ( parentGameObject.Valid() )
 						{
 							if ( TransformComponent* parentTc = parentGameObject.TryGet<TransformComponent>() )

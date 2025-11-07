@@ -197,7 +197,7 @@ namespace Tridium::D3D12 {
 			{
 				RHI_DEV_CHECK( a_Format != ERHIFormat::Unknown, "Invalid format for formatted buffer SRV" );
 				RHIFormatInfo formatInfo = GetRHIFormatInfo( a_Format );
-				srvDesc.Format = Translate( a_Format );
+				srvDesc.Format = GetDXGIFormatMap( a_Format ).SRVFormat;
 				srvDesc.Buffer.FirstElement = a_Range.Offset / formatInfo.BytesPerBlock;
 				srvDesc.Buffer.NumElements = a_Range.Size / formatInfo.BytesPerBlock;
 				break;

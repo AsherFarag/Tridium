@@ -70,6 +70,28 @@ namespace Tridium {
       return input.col * SampleTexture( Texture, input.uv );
     } )";
 
+    static const char* s_ImGuiDepthTexturePixelShader = R"(
+    #include "Core.hlsli"
+
+    struct PS_INPUT
+    {
+      float4 pos : SV_POSITION;
+      float4 col : COLOR0;
+      float2 uv  : TEXCOORD0;
+    };
+    COMBINED_SAMPLER( Texture, Texture2D, 0 );
+    
+    float4 PSMain(PS_INPUT input) : SV_Target
+    {
+        float depth = SampleTexture( Texture, input.uv ).r;
+        // Approximate linearization — adjust k to taste
+        const float k = 0.2; // smaller = more contrast near camera, larger = flatter
+        float linearized = pow(depth, k);
+
+        // Visualize it as grayscale
+        return float4(linearized.xxx, 1.0);
+    } )";
+
     // RHI data
     struct ImGui_ImplRHI_Data
     {
@@ -80,6 +102,7 @@ namespace Tridium {
         RHICommandListRef CommandList = nullptr;
         RHIBindingLayoutRef BindingLayout = nullptr;
         RHIGraphicsPipelineStateRef PipelineState = nullptr;
+		RHIGraphicsPipelineStateRef DepthTexturePipelineState = nullptr;
         UnorderedMap<IRHITexture*, RHIBindingSetRef> BindingSetsCache;
 
         const RHIBindingSetRef& GetOrCreateBindingSet( IRHITexture* a_Texture )
@@ -346,7 +369,21 @@ namespace Tridium {
                         .SetBaseVertex( pcmd->VtxOffset + vtxOffset )
                         .SetBaseIndex( pcmd->IdxOffset + idxOffset );
 
-                    graphicsState.BindingSets[ 0 ] = bd->GetOrCreateBindingSet( ( IRHITexture* )pcmd->GetTexID() ).get();
+					IRHITexture* texture = (IRHITexture*)pcmd->GetTexID();
+
+                    graphicsState.BindingSets[ 0 ] = bd->GetOrCreateBindingSet( texture ).get();
+
+					if ( texture && ( 
+                        texture->Desc().Format == ERHIFormat::D32_FLOAT || 
+                        texture->Desc().Format == ERHIFormat::D24_UNORM_S8_UINT ||
+                        texture->Desc().Format == ERHIFormat::D16_UNORM ) )
+                    {
+						graphicsState.SetPipelineState( bd->DepthTexturePipelineState.get() );
+                    }
+                    else
+                    {
+						graphicsState.SetPipelineState( bd->PipelineState.get() );
+                    }
 
                     cmdList->SetGraphicsState( graphicsState );
                     cmdList->SetInlinedConstants( inlinedConstants, 0 );
@@ -484,28 +521,59 @@ namespace Tridium {
 		}
 
 		// Compile pixel shader
-        const ShaderCompilerInput pixelCompilerInput
+        RHIShaderModuleRef pixelShader;
         {
-            .Source = s_ImGuiPixelShader,
-            .ShaderType = ERHIShaderType::Pixel,
-            .Format = RHI::GetShaderFormat(),
-            .Flags = ERHIShaderCompilerFlags::RowMajor
-        };
+            const ShaderCompilerInput pixelCompilerInput
+            {
+                .Source = s_ImGuiPixelShader,
+                .ShaderType = ERHIShaderType::Pixel,
+                .Format = RHI::GetShaderFormat(),
+                .Flags = ERHIShaderCompilerFlags::RowMajor
+            };
 
-		auto pixelShaderOutput = RHIShaderCompiler::Compile( pixelCompilerInput );
+            auto pixelShaderOutput = RHIShaderCompiler::Compile( pixelCompilerInput );
 
-        if ( pixelShaderOutput.IsError() )
-        {
-            LOG( LogCategory::Editor, Error, "Failed to compile pixel shader for ImGui backend! Error: %s", pixelShaderOutput.Error().c_str() );
-            return false;
+            if ( pixelShaderOutput.IsError() )
+            {
+                LOG( LogCategory::Editor, Error, "Failed to compile pixel shader for ImGui backend! Error: %s", pixelShaderOutput.Error().c_str() );
+                return false;
+            }
+
+            // Pixel shader
+            pixelShader = RHI::CreateShaderModule( RHIShaderModuleDesc{}.SetName( "ImGui Pixel Shader" ).SetType( ERHIShaderType::Pixel ).SetBytecode( pixelShaderOutput.Value().ByteCode ).SetSource( s_ImGuiPixelShader ) );
+            if ( pixelShader == nullptr || !pixelShader->Valid() )
+            {
+                LOG( LogCategory::Editor, Error, "Failed to create pixel shader for ImGui backend!" );
+                return false;
+            }
         }
 
-		// Pixel shader
-		RHIShaderModuleRef pixelShader = RHI::CreateShaderModule( RHIShaderModuleDesc{}.SetName( "ImGui Pixel Shader" ).SetType( ERHIShaderType::Pixel ).SetBytecode( pixelShaderOutput.Value().ByteCode ).SetSource( s_ImGuiPixelShader ) );
-        if ( pixelShader == nullptr || !pixelShader->Valid() )
+        // Compile Depth texture pixel shader
+        RHIShaderModuleRef depthPixelShader;
         {
-            LOG( LogCategory::Editor, Error, "Failed to create pixel shader for ImGui backend!" );
-            return false;
+            const ShaderCompilerInput pixelCompilerInput
+            {
+                .Source = s_ImGuiDepthTexturePixelShader,
+                .ShaderType = ERHIShaderType::Pixel,
+                .Format = RHI::GetShaderFormat(),
+                .Flags = ERHIShaderCompilerFlags::RowMajor
+            };
+
+            auto pixelShaderOutput = RHIShaderCompiler::Compile( pixelCompilerInput );
+
+            if ( pixelShaderOutput.IsError() )
+            {
+                LOG( LogCategory::Editor, Error, "Failed to compile depth pixel shader for ImGui backend! Error: %s", pixelShaderOutput.Error().c_str() );
+                return false;
+            }
+
+            // Pixel shader
+            depthPixelShader = RHI::CreateShaderModule( RHIShaderModuleDesc{}.SetName( "ImGui Depth Texture Pixel Shader" ).SetType( ERHIShaderType::Pixel ).SetBytecode( pixelShaderOutput.Value().ByteCode ).SetSource( s_ImGuiDepthTexturePixelShader ) );
+            if ( depthPixelShader == nullptr || !depthPixelShader->Valid() )
+            {
+                LOG( LogCategory::Editor, Error, "Failed to create depth pixel shader for ImGui backend!" );
+                return false;
+            }
         }
 
         struct ImGuiVertex
@@ -515,7 +583,7 @@ namespace Tridium {
 			Vector<4, uint8_t> Color;
         };
 
-        const auto psoDesc = RHIGraphicsPipelineStateDesc{}
+        auto psoDesc = RHIGraphicsPipelineStateDesc{}
             .SetName( "ImGui Pipeline State" )
             .SetVertexShader( vertexShader )
             .SetPixelShader( pixelShader )
@@ -552,6 +620,8 @@ namespace Tridium {
             );
 
         bd->PipelineState = bd->DynamicRHI->CreateGraphicsPipelineState( psoDesc );
+
+        bd->DepthTexturePipelineState = bd->DynamicRHI->CreateGraphicsPipelineState( psoDesc.SetPixelShader( depthPixelShader ) );
 
 		return bd->PipelineState != nullptr && bd->PipelineState->Valid();
     }

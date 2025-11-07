@@ -3,6 +3,7 @@
 
 namespace Tridium {
 
+	//TODO( "Clean up this old crap input system" )
 	class WindowsInput : public Input
 	{
 	protected:

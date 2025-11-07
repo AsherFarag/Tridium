@@ -55,7 +55,7 @@ namespace Tridium::UI {
         const ImVec4 DarkBackgroundColor = ImGui::ColorConvertU32ToFloat4( s_Theme.DarkBackground );
         const ImVec4 SelectedBackgroundColor = ImGui::ColorConvertU32ToFloat4( s_Theme.SelectedBackground );
 
-        const ImVec4 AccentColor = ImGui::ColorConvertU32ToFloat4( s_Theme.Accent );
+        const ImVec4 AccentColor = ImGui::ColorConvertU32ToFloat4( s_Theme.Selected );
 
         // Text colors
         Colors[ImGuiCol_Text] = ImGui::ColorConvertU32ToFloat4( s_Theme.Text );

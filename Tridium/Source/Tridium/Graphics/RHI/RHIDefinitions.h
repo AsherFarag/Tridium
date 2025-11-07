@@ -1,11 +1,13 @@
 #pragma once
-#include "RHIConstants.h"
-#include "RHIConfig.h"
-#include "RHIForward.h"
 #include <Tridium/Core/Types.h>
 #include <Tridium/Core/Assert.h>
-#include <Tridium/Core/Memory.h>
 #include <Tridium/Core/Enum.h>
+#include <Tridium/Containers/Array.h>
+#include <Tridium/Containers/Span.h>
+#include <Tridium/Graphics/Color.h>
+#include <Tridium/Graphics/RHI/RHIConstants.h>
+#include <Tridium/Graphics/RHI/RHIConfig.h>
+#include <Tridium/Graphics/RHI/RHIForward.h>
 #include <Tridium/Math/Math.h>
 #include <Tridium/Utils/Log.h>
 
@@ -400,7 +402,7 @@ namespace Tridium {
 		float Depth = 1.0f;
 		uint8_t Stencil = 0;
 
-		constexpr auto& SetColor( const ::Tridium::Color4& a_Color ) noexcept { Color = a_Color; return *this; }
+		constexpr auto& SetColor( const Color4& a_Color ) noexcept { Color = a_Color; return *this; }
 		constexpr auto& SetDepth( float a_Depth ) noexcept { Depth = a_Depth; return *this; }
 		constexpr auto& SetStencil( uint8_t a_Stencil ) noexcept { Stencil = a_Stencil; return *this; }
 	};
@@ -921,56 +923,37 @@ namespace Tridium {
 		// 8-bit Unsigned-Normalized
 		R8_UNORM,        // DXGI_FORMAT_R8_UNORM / GL_R8 / VK_FORMAT_R8_UNORM
 		RG8_UNORM,       // DXGI_FORMAT_R8G8_UNORM / GL_RG8 / VK_FORMAT_R8G8_UNORM
-		//RGB8_UNORM,      // DXGI_FORMAT_UNKNOWN / GL_RGB8 / VK_FORMAT_R8G8B8_UNORM
 		RGBA8_UNORM,     // DXGI_FORMAT_R8G8B8A8_UNORM / GL_RGBA8 / VK_FORMAT_R8G8B8A8_UNORM
-
-		// 8-bit Float	
-		//R8_FLOAT,        // DXGI_FORMAT_UNKNOWN / GL_R8F / VK_FORMAT_R8_SFLOAT
-		//RG8_FLOAT,       // DXGI_FORMAT_UNKNOWN / GL_RG8F / VK_FORMAT_R8G8_SFLOAT
-		//RGB8_FLOAT,      // DXGI_FORMAT_UNKNOWN / GL_RGB8F / VK_FORMAT_R8G8B8_SFLOAT
-		//RGBA8_FLOAT,     // DXGI_FORMAT_UNKNOWN / GL_RGBA8F / VK_FORMAT_R8G8B8A8_SFLOAT
 
 		// 8-bit Signed-Integer
 		R8_SINT,         // DXGI_FORMAT_R8_SINT / GL_R8I / VK_FORMAT_R8_SINT
 		RG8_SINT,        // DXGI_FORMAT_R8G8_SINT / GL_RG8I / VK_FORMAT_R8G8_SINT
-		//RGB8_SINT,       // DXGI_FORMAT_UNKNOWN / GL_RGB8I / VK_FORMAT_R8G8B8_SINT
 		RGBA8_SINT,      // DXGI_FORMAT_R8G8B8A8_SINT / GL_RGBA8I / VK_FORMAT_R8G8B8A8_SINT
 
 		// 8-bit Unsigned-Integer
 		R8_UINT,         // DXGI_FORMAT_R8_UINT / GL_R8UI / VK_FORMAT_R8_UINT
 		RG8_UINT,        // DXGI_FORMAT_R8G8_UINT / GL_RG8UI / VK_FORMAT_R8G8_UINT
-		//RGB8_UINT,       // DXGI_FORMAT_UNKNOWN / GL_RGB8UI / VK_FORMAT_R8G8B8_UINT
 		RGBA8_UINT,      // DXGI_FORMAT_R8G8B8A8_UINT / GL_RGBA8UI / VK_FORMAT_R8G8B8A8_UINT
 
 		// 16-bit Unsigned-Normalized
 		R16_UNORM,       // DXGI_FORMAT_R16_UNORM / GL_R16 / VK_FORMAT_R16_UNORM
 		RG16_UNORM,      // DXGI_FORMAT_R16G16_UNORM / GL_RG16 / VK_FORMAT_R16G16_UNORM
-		//RGB16_UNORM,     // DXGI_FORMAT_UNKNOWN / GL_RGB16 / VK_FORMAT_R16G16B16_UNORM
 		RGBA16_UNORM,    // DXGI_FORMAT_R16G16B16A16_UNORM / GL_RGBA16 / VK_FORMAT_R16G16B16A16_UNORM
 
 		// 16-bit Float
 		R16_FLOAT,       // DXGI_FORMAT_R16_FLOAT / GL_R16F / VK_FORMAT_R16_SFLOAT
 		RG16_FLOAT,      // DXGI_FORMAT_R16G16_FLOAT / GL_RG16F / VK_FORMAT_R16G16_SFLOAT
-		//RGB16_FLOAT,     // DXGI_FORMAT_UNKNOWN / GL_RGB16F / VK_FORMAT_R16G16B16_SFLOAT
 		RGBA16_FLOAT,    // DXGI_FORMAT_R16G16B16A16_FLOAT / GL_RGBA16F / VK_FORMAT_R16G16B16A16_SFLOAT
 
 		// 16-bit Signed-Integer
 		R16_SINT,        // DXGI_FORMAT_R16_SINT / GL_R16I / VK_FORMAT_R16_SINT
 		RG16_SINT,       // DXGI_FORMAT_R16G16_SINT / GL_RG16I / VK_FORMAT_R16G16_SINT
-		//RGB16_SINT,      // DXGI_FORMAT_UNKNOWN / GL_RGB16I / VK_FORMAT_R16G16B16_SINT
 		RGBA16_SINT,     // DXGI_FORMAT_R16G16B16A16_SINT / GL_RGBA16I / VK_FORMAT_R16G16B16A16_SINT
 
 		// 16-bit Unsigned-Integer
 		R16_UINT,        // DXGI_FORMAT_R16_UINT / GL_R16UI / VK_FORMAT_R16_UINT
 		RG16_UINT,       // DXGI_FORMAT_R16G16_UINT / GL_RG16UI / VK_FORMAT_R16G16_UINT
-		//RGB16_UINT,      // DXGI_FORMAT_UNKNOWN / GL_RGB16UI / VK_FORMAT_R16G16B16_UINT
 		RGBA16_UINT,     // DXGI_FORMAT_R16G16B16A16_UINT / GL_RGBA16UI / VK_FORMAT_R16G16B16A16_UINT
-
-		// 32-bit Unsigned-Normalized
-		//R32_UNORM,       // DXGI_FORMAT_UNKNOWN / GL_R32 / VK_FORMAT_R32_UINT
-		//RG32_UNORM,      // DXGI_FORMAT_UNKNOWN / GL_RG32 / VK_FORMAT_R32G32_UINT
-		//RGB32_UNORM,     // DXGI_FORMAT_UNKNOWN / GL_RGB32 / VK_FORMAT_R32G32B32_UINT
-		//RGBA32_UNORM,    // DXGI_FORMAT_UNKNOWN / GL_RGBA32 / VK_FORMAT_R32G32B32A32_UINT
 
 		// 32-bit Float
 		R32_FLOAT,      // DXGI_FORMAT_R32_FLOAT / GL_R32F / VK_FORMAT_R32_SFLOAT

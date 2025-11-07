@@ -59,7 +59,7 @@ namespace Tridium {
 		UIColor Accent{ UI_COLOR_FROM_U8( 255, 90, 110, 255 ) };
 
 		// Selection
-		UIColor Selected{ Orange };
+		UIColor Selected{ Blue };
 		float SelectedBorderSize = 2.0f;
 		float SelectedRounding = 4.0f;
 	};

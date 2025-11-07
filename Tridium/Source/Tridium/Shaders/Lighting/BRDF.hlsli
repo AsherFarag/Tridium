@@ -7,9 +7,9 @@
 // GGX area light approximation from Horizon Zero Dawn
 //======================================================================
 
-static const float GGX_POINT_LIGHT_RADIUS_TAN = 0.001; // Tangent of the angular radius of a point light (radius / distance to surface point)
-static const float GGX_SPOT_LIGHT_RADIUS_TAN = GGX_POINT_LIGHT_RADIUS_TAN; // Tangent of the angular radius of a spot light (radius / distance to surface point)
-static const float GGX_DIR_LIGHT_RADIUS_TAN = 0.0092; // Tangent of the angular radius of a directional light (radius / distance to surface point)
+static const float BRDF_POINT_LIGHT_RADIUS_TAN = 0.001; // Tangent of the angular radius of a point light (radius / distance to surface point)
+static const float BRDF_SPOT_LIGHT_RADIUS_TAN = BRDF_POINT_LIGHT_RADIUS_TAN; // Tangent of the angular radius of a spot light (radius / distance to surface point)
+static const float BRDF_DIR_LIGHT_RADIUS_TAN = 0.0092; // Tangent of the angular radius of a directional light (radius / distance to surface point)
 
 // Estimates how much the half-angle vector H between the view direction a_V and light direction a_L
 // @param a_RadiusTan: tangent of the light's angular radius (radius / distance to surface point)
@@ -30,6 +30,7 @@ float GetNoHSquared(float a_RadiusTan, float a_NoL, float a_NoV, float a_VoL)
     float NoTr = rOverLengthT * (a_NoV - RoL * a_NoL);
     float VoTr = rOverLengthT * (2.0 * a_NoV * a_NoV - 1.0 - RoL * a_VoL);
 
+    // Rotate (NoTr, VoTr) by the angle theta around the axis defined by the normal
     const float triple = sqrt(clamp(1.0 - a_NoL * a_NoL - a_NoV * a_NoV - a_VoL * a_VoL + 2.0 * a_NoL * a_NoV * a_VoL, 0.0, 1.0));
 
     const float NoBr = rOverLengthT * triple, VoBr = rOverLengthT * (2.0 * triple * a_NoV);
@@ -45,12 +46,20 @@ float GetNoHSquared(float a_RadiusTan, float a_NoL, float a_NoV, float a_VoL)
     NoTr = cosTheta * NoTr + sinTheta * NoBr;
     VoTr = cosTheta * VoTr + sinTheta * VoBr;
 
-    const float newNoL = a_NoL * radiusCos + NoTr;
-    const float newa_VoL = a_VoL * radiusCos + VoTr;
-    const float NoH = a_NoV + newNoL;
-    const float HoH = 2.0 * newa_VoL + 2.0;
+    //
+    a_NoL = a_NoL * radiusCos + NoTr;
+    a_VoL = a_VoL * radiusCos + VoTr;
+    
+    //
+    const float NoH = a_NoV + a_NoL;
+    const float HoH = 2.0 * a_VoL + 2.0;
     
     return clamp(NoH * NoH / HoH, 0.0, 1.0);
+}
+
+float3 ComputeF0(float3 Albedo, float Metallic)
+{
+    return lerp(float3(0.04, 0.04, 0.04), Albedo, Metallic);
 }
 
 float3 FresnelSchlick(float3 a_F0, float a_HoV)
@@ -122,8 +131,9 @@ float3 OrenNayarDiffuse(float3 a_Albedo, float a_Roughness, float a_NoV, float a
 // @param a_NoL: max(dot(a_N, a_L), 0)
 // @param a_VoL: dot(a_V, a_L)
 // @param a_RadiusTan: tangent of the light's angular radius (radius / distance to surface point)
+// @param a_SpecularIntensity: optional multiplier for specular intensity
 // @return: Specular + Diffuse BRDF value
-float3 CalculateBRDF(float3 a_Albedo, float a_Roughness, float a_Metallic, float3 a_N, float3 a_V, float3 a_L, float a_NoL, float a_VoL, float a_RadiusTan)
+float3 CalculateBRDF(float3 a_Albedo, float a_Roughness, float a_Metallic, float3 a_N, float3 a_V, float3 a_L, float a_NoL, float a_VoL, float a_RadiusTan, float a_SpecularIntensity = 1.0)
 {
     // Clamp a_Roughness to avoid singularities
     a_Roughness = max(a_Roughness, 0.05);
@@ -170,25 +180,7 @@ float3 CalculateBRDF(float3 a_Albedo, float a_Roughness, float a_Metallic, float
     
 #endif
     
-    return diffuse + specular;
-}
-
-// See 'CalculateBRDF' for parameter descriptions
-float3 CalcPointLightBRDF(float3 a_Albedo, float a_Roughness, float a_Metallic, float3 a_N, float3 a_V, float3 a_L, float a_NoL, float a_VoL)
-{
-    return CalculateBRDF(a_Albedo, a_Roughness, a_Metallic, a_N, a_V, a_L, a_NoL, a_VoL, GGX_POINT_LIGHT_RADIUS_TAN);
-}
-
-// See 'CalculateBRDF' for parameter descriptions
-float3 CalcSpotLightBRDF(float3 a_Albedo, float a_Roughness, float a_Metallic, float3 a_N, float3 a_V, float3 a_L, float a_NoL, float a_VoL)
-{
-    return CalculateBRDF(a_Albedo, a_Roughness, a_Metallic, a_N, a_V, a_L, a_NoL, a_VoL, GGX_SPOT_LIGHT_RADIUS_TAN);
-}
-
-// See 'CalculateBRDF' for parameter descriptions
-float3 CalcDirLightBRDF(float3 a_Albedo, float a_Roughness, float a_Metallic, float3 a_N, float3 a_V, float3 a_L, float a_NoL, float a_VoL)
-{
-    return CalculateBRDF(a_Albedo, a_Roughness, a_Metallic, a_N, a_V, a_L, a_NoL, a_VoL, GGX_DIR_LIGHT_RADIUS_TAN);
+    return diffuse + specular * a_SpecularIntensity;
 }
 
 #endif // BRDF_HLSLI

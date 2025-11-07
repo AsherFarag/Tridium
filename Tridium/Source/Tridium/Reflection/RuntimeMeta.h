@@ -1,6 +1,6 @@
 #pragma once
 #include <Tridium/Core/Config.h>
-#include <Tridium/ECS/ECS.h>
+#include <Tridium/ECS/Registry.h>
 #include <Tridium/Editor/UserActions/SceneActions.h>
 #include <Tridium/Reflection/Meta.h>
 #include <Tridium/Scene/Component.h>
@@ -50,10 +50,10 @@ namespace Tridium::Meta {
 		struct
 		{
 			bool IsComponent = false;
-			void*( *EmplaceOrReplace )( EntityComponentRegistry& a_Registry, EntityID a_Entity ) = nullptr;
-			void*( *TryGet )( EntityComponentRegistry& a_Registry, EntityID a_Entity ) = nullptr;
-			bool( *Has )( EntityComponentRegistry& a_Registry, EntityID a_Entity ) = nullptr;
-			void( *Remove )( EntityComponentRegistry& a_Registry, EntityID a_Entity ) = nullptr;
+			void*( *EmplaceOrReplace )( EntityComponentRegistry& a_Registry, Entity a_Entity ) = nullptr;
+			void*( *TryGet )( EntityComponentRegistry& a_Registry, Entity a_Entity ) = nullptr;
+			bool( *Has )( EntityComponentRegistry& a_Registry, Entity a_Entity ) = nullptr;
+			void( *Remove )( EntityComponentRegistry& a_Registry, Entity a_Entity ) = nullptr;
 		} Component;
 
 		struct
@@ -91,22 +91,22 @@ namespace Tridium::Meta {
 		{
 			info.Component.IsComponent = true;
 
-			info.Component.EmplaceOrReplace = []( EntityComponentRegistry& a_Registry, EntityID a_Entity ) -> void*
+			info.Component.EmplaceOrReplace = []( EntityComponentRegistry& a_Registry, Entity a_Entity ) -> void*
 			{
 				return &a_Registry.EmplaceOrReplace<T>( a_Entity );
 			};
 
-			info.Component.TryGet = []( EntityComponentRegistry& a_Registry, EntityID a_Entity ) -> void*
+			info.Component.TryGet = []( EntityComponentRegistry& a_Registry, Entity a_Entity ) -> void*
 			{
 				return a_Registry.TryGet<T>( a_Entity );
 			};
 
-			info.Component.Has = []( EntityComponentRegistry& a_Registry, EntityID a_Entity ) -> bool
+			info.Component.Has = []( EntityComponentRegistry& a_Registry, Entity a_Entity ) -> bool
 			{
 				return a_Registry.AnyOf<T>( a_Entity );
 			};
 
-			info.Component.Remove = []( EntityComponentRegistry& a_Registry, EntityID a_Entity )
+			info.Component.Remove = []( EntityComponentRegistry& a_Registry, Entity a_Entity )
 			{
 				a_Registry.Remove<T>( a_Entity );
 			};
@@ -156,11 +156,11 @@ namespace Tridium::Meta {
 
 				if ( a_ActionType == EComponentUserActionType::Add )
 				{
-					return MakeUnique<ComponentUserAction<T>>( a_GameObject.Scene()->ID(), a_GameObject.ID() );
+					return MakeUnique<ComponentUserAction<T>>( a_GameObject.Scene()->ID(), a_GameObject.Entity() );
 				}
 				else if ( T* data = a_GameObject.TryGet<T>() )
 				{
-					return MakeUnique<ComponentUserAction<T>>( a_GameObject.Scene()->ID(), a_GameObject.ID(), a_ActionType, *data );
+					return MakeUnique<ComponentUserAction<T>>( a_GameObject.Scene()->ID(), a_GameObject.Entity(), a_ActionType, *data );
 				}
 				else
 				{

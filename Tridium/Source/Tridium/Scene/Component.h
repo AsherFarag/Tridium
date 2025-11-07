@@ -1,6 +1,6 @@
 #pragma once
 #include <Tridium/Core/UUID.h>
-#include <Tridium/ECS/ECS.h>
+#include <Tridium/ECS/Registry.h>
 #include <Tridium/Math/Math.h>
 #include <Tridium/Reflection/Meta.h>
 #include <Tridium/Utils/TypeTraits.h>
@@ -112,143 +112,24 @@ namespace Tridium {
 	};
 
 	//=================================================================================================
-	// Hierarchy Component: Manages parent-child relationships between game objects.
-	//=================================================================================================
-	struct HierarchyComponent : Component
-	{
-		EntityID Parent = NullEntity;
-		EntityID FirstChild = NullEntity;
-		EntityID PrevSibling = NullEntity;
-		EntityID NextSibling = NullEntity;
-
-		//=============================================================================================
-		// Adds a child to this entity's hierarchy.
-		void AddChild( EntityComponentRegistry& a_Registry, EntityID a_Self, EntityID a_Child )
-		{
-			ASSERT( a_Registry.AllOf<HierarchyComponent>( a_Self ), "Parent entity must have a HierarchyComponent." );
-
-			HierarchyComponent& childHierarchy = a_Registry.GetOrEmplace<HierarchyComponent>( a_Child );
-
-			// Detach from old parent if needed
-			if ( childHierarchy.Parent != NullEntity )
-				DetachFromParent( a_Registry, a_Child );
-
-			childHierarchy.Parent = a_Self;
-			childHierarchy.PrevSibling = NullEntity;
-			childHierarchy.NextSibling = NullEntity;
-
-			if ( FirstChild == NullEntity )
-			{
-				// No children yet
-				FirstChild = a_Child;
-			}
-			else
-			{
-				// Push to the front of the sibling list
-				EntityID sibling = FirstChild;
-				HierarchyComponent& siblingHierarchy = a_Registry.Get<HierarchyComponent>( sibling );
-				siblingHierarchy.PrevSibling = a_Child;
-				childHierarchy.NextSibling = sibling;
-				FirstChild = a_Child;
-			}
-		}
-
-		//=============================================================================================
-		// Removes this entity from its parent's hierarchy (but does NOT destroy the entity).
-		static void DetachFromParent( EntityComponentRegistry& a_Registry, EntityID a_Entity )
-		{
-			HierarchyComponent& self = a_Registry.Get<HierarchyComponent>( a_Entity );
-			if ( self.Parent == NullEntity )
-				return;
-
-			HierarchyComponent& parent = a_Registry.Get<HierarchyComponent>( self.Parent );
-
-			// If we are the first child
-			if ( parent.FirstChild == a_Entity )
-				parent.FirstChild = self.NextSibling;
-
-			// Fix sibling links
-			if ( self.PrevSibling != NullEntity )
-				a_Registry.Get<HierarchyComponent>( self.PrevSibling ).NextSibling = self.NextSibling;
-
-			if ( self.NextSibling != NullEntity )
-				a_Registry.Get<HierarchyComponent>( self.NextSibling ).PrevSibling = self.PrevSibling;
-
-			self.Parent = NullEntity;
-			self.PrevSibling = NullEntity;
-			self.NextSibling = NullEntity;
-		}
-
-		//=============================================================================================
-		// Recursively destroys all children of this entity.
-		static void DestroyChildren( EntityComponentRegistry& a_Registry, EntityID a_Entity )
-		{
-			HierarchyComponent& hierarchy = a_Registry.Get<HierarchyComponent>( a_Entity );
-			EntityID child = hierarchy.FirstChild;
-
-			while ( child != NullEntity )
-			{
-				EntityID next = a_Registry.Get<HierarchyComponent>( child ).NextSibling;
-				DestroyChildren( a_Registry, child ); // Recursive destroy
-				a_Registry.Destroy( child );
-				child = next;
-			}
-
-			hierarchy.FirstChild = NullEntity;
-		}
-
-		//=============================================================================================
-		// Moves this entity under a new parent (detaches from old).
-		void Reparent( EntityComponentRegistry& a_Registry, EntityID a_Self, EntityID a_NewParent )
-		{
-			if ( Parent == a_NewParent )
-				return;
-
-			DetachFromParent( a_Registry, a_Self );
-			if ( a_NewParent != NullEntity )
-				a_Registry.GetOrEmplace<HierarchyComponent>( a_NewParent ).AddChild( a_Registry, a_NewParent, a_Self );
-		}
-
-		//=============================================================================================
-		// Iterates through all direct children.
-		template<typename Func>
-		void ForEachChild( const EntityComponentRegistry& a_Registry, Func&& a_Func ) const
-		{
-			EntityID child = FirstChild;
-			while ( child != NullEntity )
-			{
-				a_Func( child );
-				const HierarchyComponent& childHierarchy = a_Registry.Get<HierarchyComponent>( child );
-				child = childHierarchy.NextSibling;
-			}
-		}
-
-		//=============================================================================================
-		// Recursively iterates all descendants.
-		template<typename Func>
-		void ForEachDescendant( const EntityComponentRegistry& a_Registry, Func&& a_Func ) const
-		{
-			ForEachChild( a_Registry, [&]( EntityID child )
-			{
-				a_Func( child );
-				a_Registry.Get<HierarchyComponent>( child ).ForEachDescendant( a_Registry, a_Func );
-			} );
-		}
-	};
-
-	//=================================================================================================
 	// Transform Component: Stores the local position, rotation, and scale data for a game object.
-	// This component does not handle parent-child relationships.
+	// Also handles hierarchy-based transformations.
 	//=================================================================================================
 	struct TransformComponent : Component
 	{
-	private:
+	protected:
 
 		//=============================================================================================
 		Vector3 m_LocalPosition{};
 		Quaternion m_LocalRotation{ 1.0f, 0.0f, 0.0f, 0.0f };
-		Vector3 m_LocalEulerAngles{};
+		Vector3 m_LocalEulerAngles{ 0.0f };
 		Vector3 m_LocalScale{ 1.0f };
+
+		//=============================================================================================
+		Entity m_Parent = NullEntity;
+		Entity m_FirstChild = NullEntity;
+		Entity m_PrevSibling = NullEntity;
+		Entity m_NextSibling = NullEntity;
 
 	public:
 
@@ -279,6 +160,9 @@ namespace Tridium {
 		void SetLocalRotationEulerDeg( const Vector3& a_EulerAnglesDeg ) { SetLocalRotationEuler( Math::Radians( a_EulerAnglesDeg ) ); }
 
 		//=============================================================================================
+		Vector3 LocalForward() const { return ( m_LocalRotation * Vector3::Forward() ).Normalized(); }
+
+		//=============================================================================================
 		const Quaternion& LocalRotation() const { return m_LocalRotation; }
 		void SetLocalRotation( const Quaternion& a_Rotation ) 
 		{ 
@@ -299,29 +183,170 @@ namespace Tridium {
 		}
 
 		//=============================================================================================
-		Matrix4 WorldTransform( const EntityComponentRegistry& a_Registry, EntityID a_Entity ) const
+		Matrix4 WorldTransform( const EntityComponentRegistry& a_Registry, Entity a_Entity ) const
 		{
 			Matrix4 transform = LocalTransform();
 
-			if ( const HierarchyComponent* hierarchy = a_Registry.TryGet<HierarchyComponent>( a_Entity ) )
+			Entity parentEntity = m_Parent;
+			const TransformComponent* parentTransform = nullptr;
+			while ( parentEntity != NullEntity )
 			{
-				EntityID parentEntity = hierarchy ? hierarchy->Parent : NullEntity;
+				parentTransform = a_Registry.TryGet<TransformComponent>( parentEntity );
+				ASSERT( parentTransform, "Transform has a Parent but the Parent does not have a Transform!" );
+				if ( !parentTransform )
+					break;
 
-				while ( parentEntity != NullEntity )
-				{
-					if ( const TransformComponent* parentTransform = a_Registry.TryGet<TransformComponent>( parentEntity ) )
-					{
-						transform = parentTransform->LocalTransform() * transform;
-					}
-
-					hierarchy = a_Registry.TryGet<HierarchyComponent>( parentEntity );
-					parentEntity = hierarchy ? hierarchy->Parent : NullEntity;
-				}
+				transform = parentTransform->LocalTransform() * transform;
+				parentEntity = parentTransform->Parent();
 			}
 
 			return transform;
 		}
 
+		//=============================================================================================
+		Vector3 WorldPosition( const EntityComponentRegistry& a_Registry, Entity a_Entity ) const
+		{
+			Matrix4 worldTransform = WorldTransform( a_Registry, a_Entity );
+			return Vector3( worldTransform[3].x, worldTransform[3].y, worldTransform[3].z );
+		}
+
+		//=============================================================================================
+		Quaternion WorldRotation( const EntityComponentRegistry& a_Registry, Entity a_Entity ) const
+		{
+			Matrix4 worldTransform = WorldTransform( a_Registry, a_Entity );
+			Vector3 scale;
+			Vector3 position;
+			Quaternion rotation;
+			Math::DecomposeTransform( worldTransform, position, rotation, scale );
+			return rotation;
+		}
+
+		//=============================================================================================
+		Vector3 WorldForward( const EntityComponentRegistry& a_Registry, Entity a_Entity ) const
+		{
+			Quaternion worldRot = WorldRotation( a_Registry, a_Entity );
+			return worldRot * Vector3::Forward();
+		}
+
+		//=============================================================================================
+		Entity Parent() const { return m_Parent; }
+
+		//=============================================================================================
+		bool HasChildren() const { return m_FirstChild != NullEntity; }
+
+		//=============================================================================================
+		// Adds a child to this entity's hierarchy.
+		void AddChild( EntityComponentRegistry& a_Registry, Entity a_Self, Entity a_Child )
+		{
+			ASSERT( a_Registry.AllOf<TransformComponent>( a_Self ), "Parent entity must have a HierarchyComponent." );
+
+			TransformComponent& childHierarchy = a_Registry.GetOrEmplace<TransformComponent>( a_Child );
+
+			// Detach from old parent if needed
+			if ( childHierarchy.Parent() != NullEntity )
+				DetachFromParent( a_Registry, a_Child );
+
+			childHierarchy.m_Parent = a_Self;
+			childHierarchy.m_PrevSibling = NullEntity;
+			childHierarchy.m_NextSibling = NullEntity;
+
+			if ( m_FirstChild == NullEntity )
+			{
+				// No children yet
+				m_FirstChild = a_Child;
+			}
+			else
+			{
+				// Push to the front of the sibling list
+				Entity sibling = m_FirstChild;
+				auto& siblingHierarchy = a_Registry.Get<TransformComponent>( sibling );
+				siblingHierarchy.m_PrevSibling = a_Child;
+				childHierarchy.m_NextSibling = sibling;
+				m_FirstChild = a_Child;
+			}
+		}
+
+		//=============================================================================================
+		// Removes this entity from its parent's hierarchy (but does NOT destroy the entity).
+		static void DetachFromParent( EntityComponentRegistry& a_Registry, Entity a_Entity )
+		{
+			auto& self = a_Registry.Get<TransformComponent>( a_Entity );
+			if ( self.Parent() == NullEntity )
+				return;
+
+			auto& parent = a_Registry.Get<TransformComponent>( self.Parent() );
+
+			// If we are the first child
+			if ( parent.m_FirstChild == a_Entity )
+				parent.m_FirstChild = self.m_NextSibling;
+
+			// Fix sibling links
+			if ( self.m_PrevSibling != NullEntity )
+				a_Registry.Get<TransformComponent>( self.m_PrevSibling ).m_NextSibling = self.m_NextSibling;
+
+			if ( self.m_NextSibling != NullEntity )
+				a_Registry.Get<TransformComponent>( self.m_NextSibling ).m_PrevSibling = self.m_PrevSibling;
+
+			self.m_Parent = NullEntity;
+			self.m_PrevSibling = NullEntity;
+			self.m_NextSibling = NullEntity;
+		}
+
+		//=============================================================================================
+		// Recursively destroys all children of this entity.
+		static void DestroyChildren( EntityComponentRegistry& a_Registry, Entity a_Entity )
+		{
+			auto& hierarchy = a_Registry.Get<TransformComponent>( a_Entity );
+			Entity child = hierarchy.m_FirstChild;
+
+			while ( child != NullEntity )
+			{
+				Entity next = a_Registry.Get<TransformComponent>( child ).m_NextSibling;
+				DestroyChildren( a_Registry, child ); // Recursive destroy
+				a_Registry.Destroy( child );
+				child = next;
+			}
+
+			hierarchy.m_FirstChild = NullEntity;
+		}
+
+		//=============================================================================================
+		// Moves this entity under a new parent (detaches from old).
+		void Reparent( EntityComponentRegistry& a_Registry, Entity a_Self, Entity a_NewParent )
+		{
+			if ( m_Parent == a_NewParent )
+				return;
+
+			DetachFromParent( a_Registry, a_Self );
+			if ( a_NewParent != NullEntity )
+				a_Registry.GetOrEmplace<TransformComponent>( a_NewParent ).AddChild( a_Registry, a_NewParent, a_Self );
+		}
+
+		//=============================================================================================
+		// Iterates through all direct children.
+		template<std::invocable<const EntityComponentRegistry&, Entity> Func>
+		void ForEachChild( const EntityComponentRegistry& a_Registry, Func&& a_Func ) const
+		{
+			Entity child = m_FirstChild;
+			while ( child != NullEntity )
+			{
+				a_Func( a_Registry, child );
+				const auto& childHierarchy = a_Registry.Get<TransformComponent>( child );
+				child = childHierarchy.m_NextSibling;
+			}
+		}
+
+		//=============================================================================================
+		// Recursively iterates all descendants.
+		template<std::invocable<const EntityComponentRegistry&, Entity> Func>
+		void ForEachDescendant( const EntityComponentRegistry& a_Registry, Func&& a_Func ) const
+		{
+			ForEachChild( a_Registry, []( const EntityComponentRegistry& a_Registry, Entity child )
+			{
+				a_Func( a_Registry, child );
+				a_Registry.Get<TransformComponent>( child ).ForEachDescendant( a_Registry, a_Func );
+			} );
+		}
 	};
 
 } // namespace Tridium
@@ -361,27 +386,6 @@ namespace Tridium::Meta {
 
 		Field<&IconComponent::Icon, Serializable> 
 		Icon;
-	};
-
-	//=================================================================================================
-	// HierarchyComponent
-	//=================================================================================================
-	template<>
-	struct Reflector<HierarchyComponent>
-	{
-		using Type = Type<HierarchyComponent, HideInInspector>;
-
-		Field<&HierarchyComponent::Parent, Serializable> 
-		Parent;
-
-		Field<&HierarchyComponent::FirstChild, Serializable> 
-		FirstChild;
-
-		Field<&HierarchyComponent::PrevSibling, Serializable> 
-		PrevSibling;
-
-		Field<&HierarchyComponent::NextSibling, Serializable> 
-		NextSibling;
 	};
 
 	//=================================================================================================

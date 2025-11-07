@@ -267,7 +267,7 @@ namespace Tridium {
 		}
 
 		m_BodyInterface.AddBody( body->GetID(), JPH::EActivation::Activate );
-		m_BodyInterface.SetUserData( body->GetID(), Cast<uint64_t>( a_GameObject.ID() ) );
+		m_BodyInterface.SetUserData( body->GetID(), Cast<uint64_t>( a_GameObject.Entity() ) );
 		return body->GetID().GetIndexAndSequenceNumber();
 	}
 

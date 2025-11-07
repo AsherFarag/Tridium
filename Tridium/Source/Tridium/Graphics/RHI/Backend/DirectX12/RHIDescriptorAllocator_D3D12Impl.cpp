@@ -219,7 +219,7 @@ namespace Tridium::D3D12 {
 		std::lock_guard lock( m_PooledHeapsMutex );
 		for ( auto& pooledHeap : m_PooledHeaps )
 		{
-			if ( ULONG refCount = ForceDeleteIUnknown( pooledHeap.Heap.ReleaseAndGetAddressOf() ) )
+			if ( ULONG refCount = pooledHeap.Heap.Reset() )
 			{
 				LOG( LogCategory::DirectX, Error, "Pooled heap still has {0} references! - Destroying the heap anyway", refCount );
 			}

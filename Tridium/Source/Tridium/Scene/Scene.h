@@ -3,7 +3,7 @@
 #include <Tridium/Containers/TypeMap.h>
 #include <Tridium/Core/Memory.h>
 #include <Tridium/Scene/Component.h>
-#include <Tridium/ECS/ECS.h>
+#include <Tridium/ECS/Registry.h>
 #include <Tridium/Utils/Log.h>
 
 namespace Tridium {

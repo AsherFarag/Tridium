@@ -1,7 +1,5 @@
 #pragma once
-#include <Tridium/Core/Assert.h>
-#include <Tridium/ECS/ECSFwd.h>
-#include <Tridium/Utils/Concepts.h>
+#include <Tridium/ECS/Entity.h>
 
 #include <entt/entity/registry.hpp>
 #include <entt/meta/factory.hpp>
@@ -11,6 +9,11 @@ namespace Tridium {
 
 	//=================================================================================================
 	// Entity View: A wrapper around an EnTT view to provide additional functionality.
+	// Views are a lightweight, non-owning way to iterate over entities with specific components.
+	// Single type views are as fast as can be, as they just iterate over the sparse set of that component.
+	// Multi-type views iterate over the smallest component's sparse set 
+	// and check for the presence of other components.
+	// Consider using groups for better performance with multiple component types.
 	//=================================================================================================
 	template<typename _UnderlyingType>
 	class EntityView
@@ -38,7 +41,7 @@ namespace Tridium {
 		//=============================================================================================
 		// Access component(s) of type T... for the specified entity.
 		template<typename... T>
-		decltype( auto ) Get( const EntityID a_Entity ) const
+		decltype( auto ) Get( const Entity a_Entity ) const
 		{
 			return m_View.template get<T...>( a_Entity );
 		}
@@ -79,6 +82,100 @@ namespace Tridium {
 	template<typename _UnderlyingType> auto end( const EntityView<_UnderlyingType>& a_View ) { return a_View.End(); }
 
 	//=================================================================================================
+	// Entity Group: A wrapper around an EnTT group to provide additional functionality.
+	// A group is a tightly packed, optionally owning view of components 
+	// that improves iteration speed and data locality.
+	// Owning groups reorganize the storage so that the components are tightly packed together.
+	// Non-owning groups do not modify storage layout but still provide fast iteration when iterating
+	// the same combination of components frequently.
+	// Example:
+	// auto group = registry.Group<Transform>(EntityGet<RigidBody, Collider>);
+	// 
+	// - Transform becomes the owning component.
+	// - The registry ensures that all entities that have (Transform, RigidBody, Collider)
+	//   are packed together inside the Transform storage.
+	// - The RigidBody and Collider components are not moved in their own storages,
+	//   the registry just maintains matching indices so iteration is contiguous.
+	// 
+	// Entity layout example:
+	// Transform storage:
+	// [Entity1][Entity2][Entity3] <- tightly packed group entities
+	// [Entity4]                   <- Transform-only (outside the group)
+	// 
+	// RigidBody storage:
+	// [Entity1][Entity3][Entity2] <- may be in different order
+	// 
+	// Collider storage:
+	// [Entity3][Entity1][Entity2]
+	// 
+	//=================================================================================================
+	template<typename _UnderlyingType>
+	class EntityGroup
+	{
+	public:
+
+		//=============================================================================================
+		using UnderlyingType = _UnderlyingType;
+
+		//=============================================================================================
+		EntityGroup() = default;
+		explicit EntityGroup( UnderlyingType&& a_Group ) : m_Group( std::move( a_Group ) ) {}
+
+		//=============================================================================================
+		// Iterator support
+		[[nodiscard]] auto Begin() noexcept { return m_Group.begin(); }
+		[[nodiscard]] auto End() noexcept { return m_Group.end(); }
+		[[nodiscard]] auto Begin() const noexcept { return m_Group.begin(); }
+		[[nodiscard]] auto End() const noexcept { return m_Group.end(); }
+		[[nodiscard]] auto RBegin() noexcept { return m_Group.rbegin(); }
+		[[nodiscard]] auto REnd() noexcept { return m_Group.rend(); }
+		[[nodiscard]] auto RBegin() const noexcept { return m_Group.rbegin(); }
+		[[nodiscard]] auto REnd() const noexcept { return m_Group.rend(); }
+
+		//=============================================================================================
+		// Access component(s) of type T... for the specified entity.
+		template<typename... T>
+		decltype( auto ) Get( const Entity a_Entity ) const
+		{
+			return m_Group.template get<T...>( a_Entity );
+		}
+
+		//=============================================================================================
+		// Returns an iterable object to iterate over each entity and its components.
+		// E.g. , for ( auto [ entity, comp1, comp2 ] : view.Each() ) { ... }
+		[[nodiscard]] decltype( auto ) Each() const noexcept
+		{
+			return m_Group.each();
+		}
+
+		//=============================================================================================
+		// Applies the provided function to each entity and its components.
+		// E.g., view.Each( []( auto entity, auto& comp1, auto& comp2 ) { ... } );
+		template<typename _Func>
+		void Each( _Func&& a_Func ) const
+		{
+			m_Group.each( std::forward<_Func>( a_Func ) );
+		}
+
+		//=============================================================================================
+		UnderlyingType& Underlying() { return m_Group; }
+		const UnderlyingType& Underlying() const { return m_Group; }
+
+	private:
+
+		//=============================================================================================
+		UnderlyingType m_Group;
+
+	};
+
+	//=============================================================================================
+	// begin/end for EntityGroup
+	template<typename _UnderlyingType> auto begin( EntityGroup<_UnderlyingType>& a_Group ) { return a_Group.Begin(); }
+	template<typename _UnderlyingType> auto end( EntityGroup<_UnderlyingType>& a_Group ) { return a_Group.End(); }
+	template<typename _UnderlyingType> auto begin( const EntityGroup<_UnderlyingType>& a_Group ) { return a_Group.Begin(); }
+	template<typename _UnderlyingType> auto end( const EntityGroup<_UnderlyingType>& a_Group ) { return a_Group.End(); }
+
+	//=================================================================================================
 	// Entity Event Handle: A scoped handle which manages the lifetime of an entity event conntection.
 	//=================================================================================================
 	class EntityEventHandle
@@ -93,20 +190,11 @@ namespace Tridium {
 		{
 			void Invoke( entt::registry& a_Registry, entt::entity a_Entity )
 			{
-				T* instance = ReinterpretCast<T*>( this );
-				auto& registry = ReinterpretCast<class EntityComponentRegistry&>( a_Registry );
-				EntityID entity = ReinterpretCast<EntityID>( a_Entity );
+				T* instance = reinterpret_cast<T*>( this );
+				auto& registry = reinterpret_cast<class EntityComponentRegistry&>( a_Registry );
+				Entity entity = a_Entity;
 				( instance->*_Method )( registry, entity );
 			}
-
-			//void Invoke( entt::registry& a_Registry, entt::entity a_Entity ) const
-			//{
-			//	const T* instance = ReinterpretCast<T*>( this );
-			//	auto& registry = ReinterpretCast<class EntityComponentRegistry&>( a_Registry );
-			//	EntityID entity = ReinterpretCast<EntityID>( a_Entity );
-			//	( instance->*_Method )( registry, entity );
-			//}
-
 		};
 
 
@@ -124,7 +212,7 @@ namespace Tridium {
 		//=============================================================================================
 		bool Valid() const
 		{
-			return Cast<bool>( m_Connection );
+			return static_cast<bool>( m_Connection );
 		}
 
 		//=============================================================================================
@@ -140,13 +228,33 @@ namespace Tridium {
 
 	};
 
+	//=================================================================================================
+	// Entity Include Type: A type list representing components to include in views or groups.
+	template<typename... _Include>
+	using EntityIncludeType = entt::type_list<_Include...>;
+	template<typename... _Include>
+	static constexpr EntityIncludeType<_Include...> EntityInclude{};
+
+	//=================================================================================================
+	template<typename... _Exclude>
+	using EntityExcludeType = entt::exclude_t<_Exclude...>;
+	template<typename... _Exclude>
+	static constexpr EntityExcludeType<_Exclude...> EntityExclude{};
+
 	template<typename T>
 	class ComponentStorage : public T
 	{
 	public:
 		using allocator_type = typename T::allocator_type;
 		using element_type = typename T::element_type;
-		explicit ComponentStorage( const allocator_type& a_Allocator );
+
+		explicit ComponentStorage( const allocator_type& a_Allocator ) : T( a_Allocator )
+		{
+			using namespace entt::literals;
+			entt::meta_factory<element_type>{}
+			// cross registry, same type
+			.template func<entt::overload<entt::storage_for_t<element_type, entt::entity>& ( const entt::id_type )>( &entt::basic_registry<entt::entity>::storage<element_type> ), entt::as_ref_t>( "storage"_hs );
+		}
 	};
 
 	template<typename T, typename _Entity>
@@ -154,16 +262,6 @@ namespace Tridium {
 	{
 		using type = sigh_mixin<Tridium::ComponentStorage<basic_storage<T, _Entity>>>;
 	};
-
-	template<typename T>
-	ComponentStorage<T>::ComponentStorage( const allocator_type& a_Allocator )
-		: T( a_Allocator )
-	{
-		using namespace entt::literals;
-		entt::meta_factory<element_type>{}
-		// cross registry, same type
-		.template func<entt::overload<entt::storage_for_t<element_type, entt::entity>& ( const entt::id_type )>( &entt::basic_registry<entt::entity>::storage<element_type> ), entt::as_ref_t>( "storage"_hs );
-	}
 
 	//=================================================================================================
 	// Entity Component Registry (ECR): Stores and manages entities and their components,
@@ -178,14 +276,14 @@ namespace Tridium {
 
 		//=============================================================================================
 		// Checks if the entity is valid (i.e., currently in use).
-		[[nodiscard]] bool Valid( const EntityID a_Entity ) const
+		[[nodiscard]] bool Valid( const Entity a_Entity ) const
 		{
 			return m_Registry.valid( a_Entity );
 		}
 
 		//=============================================================================================
 		// Creates a new entity or recycles an old one and returns its ID.
-		EntityID Create()
+		Entity Create()
 		{
 			return m_Registry.create();
 		}
@@ -193,7 +291,7 @@ namespace Tridium {
 		//=============================================================================================
 		// If the requested entity isn't in use, the suggested identifier is used.
 		// Otherwise, a new identifier is generated.
-		EntityID Create( const EntityID a_Hint )
+		Entity Create( const Entity a_Hint )
 		{
 			return m_Registry.create( a_Hint );
 		}
@@ -209,7 +307,7 @@ namespace Tridium {
 		//=============================================================================================
 		// Destroys the specified entity and removes all its components.
 		// Returns the version of the destroyed entity.
-		EntityVersion Destroy( const EntityID a_Entity )
+		EntityVersion Destroy( const Entity a_Entity )
 		{
 			return m_Registry.destroy( a_Entity );
 		}
@@ -226,7 +324,7 @@ namespace Tridium {
 		// Adds a component of type T to the specified entity with the given arguments.
 		// Returns a reference to the newly added component.
 		template<typename T, typename... _Args>
-		decltype( auto ) Emplace( const EntityID a_Entity, _Args&&... a_Args )
+		decltype( auto ) Emplace( const Entity a_Entity, _Args&&... a_Args )
 		{
 			return m_Registry.emplace<T>( a_Entity, std::forward<_Args>( a_Args )... );
 		}
@@ -235,7 +333,7 @@ namespace Tridium {
 		// Adds or replaces a component of type T on the specified entity with the given arguments.
 		// Returns a reference to the added or replaced component.
 		template<typename T, typename... _Args>
-		decltype( auto ) EmplaceOrReplace( const EntityID a_Entity, _Args&&... a_Args )
+		decltype( auto ) EmplaceOrReplace( const Entity a_Entity, _Args&&... a_Args )
 		{
 			return m_Registry.emplace_or_replace<T>( a_Entity, std::forward<_Args>( a_Args )... );
 		}
@@ -244,7 +342,7 @@ namespace Tridium {
 		// Removes components of types T... from the specified entity.
 		// Returns the number of components removed.
 		template<typename... T>
-		size_t Remove( const EntityID a_Entity )
+		size_t Remove( const Entity a_Entity )
 		{
 			return m_Registry.remove<T...>( a_Entity );
 		}
@@ -261,7 +359,7 @@ namespace Tridium {
 		//=============================================================================================
 		// Returns true if the specified entity has all components of types T...
 		template<typename... T>
-		[[nodiscard]] bool AllOf( const EntityID a_Entity ) const
+		[[nodiscard]] bool AllOf( const Entity a_Entity ) const
 		{
 			return m_Registry.all_of<T...>( a_Entity );
 		}
@@ -269,7 +367,7 @@ namespace Tridium {
 		//=============================================================================================
 		// Returns true if the specified entity has any component of types T...
 		template<typename... T>
-		[[nodiscard]] bool AnyOf( const EntityID a_Entity ) const
+		[[nodiscard]] bool AnyOf( const Entity a_Entity ) const
 		{
 			return m_Registry.any_of<T...>( a_Entity );
 		}
@@ -277,7 +375,7 @@ namespace Tridium {
 		//=============================================================================================
 		// Returns references to the components of types T... associated with the specified entity.
 		template<typename... T>
-		[[nodiscard]] decltype( auto ) Get( const EntityID a_Entity )
+		[[nodiscard]] decltype( auto ) Get( const Entity a_Entity )
 		{
 			return m_Registry.get<T...>( a_Entity );
 		}
@@ -285,7 +383,7 @@ namespace Tridium {
 		//=============================================================================================
 		// Returns const references to the components of types T... associated with the specified entity.
 		template<typename... T>
-		[[nodiscard]] decltype( auto ) Get( const EntityID a_Entity ) const
+		[[nodiscard]] decltype( auto ) Get( const Entity a_Entity ) const
 		{
 			return m_Registry.get<T...>( a_Entity );
 		}
@@ -294,7 +392,7 @@ namespace Tridium {
 		// Returns a reference to the component of type T associated with the specified entity,
 		// or creates and adds it if it doesn't exist.
 		template<typename T, typename... _Args>
-		[[nodiscard]] decltype( auto ) GetOrEmplace( const EntityID a_Entity, _Args&&... a_Args )
+		[[nodiscard]] decltype( auto ) GetOrEmplace( const Entity a_Entity, _Args&&... a_Args )
 		{
 			return m_Registry.get_or_emplace<T>( a_Entity, std::forward<_Args>( a_Args )... );
 		}
@@ -302,7 +400,7 @@ namespace Tridium {
 		//=============================================================================================
 		// Returns pointers to the components of types T... associated with the specified entity.
 		template<typename... T>
-		[[nodiscard]] decltype( auto ) TryGet( const EntityID a_Entity )
+		[[nodiscard]] decltype( auto ) TryGet( const Entity a_Entity )
 		{
 			return m_Registry.try_get<T...>( a_Entity );
 		}
@@ -310,7 +408,7 @@ namespace Tridium {
 		//=============================================================================================
 		// Returns const pointers to the components of types T... associated with the specified entity.
 		template<typename... T>
-		[[nodiscard]] decltype( auto ) TryGet( const EntityID a_Entity ) const
+		[[nodiscard]] decltype( auto ) TryGet( const Entity a_Entity ) const
 		{
 			return m_Registry.try_get<T...>( a_Entity );
 		}
@@ -342,6 +440,13 @@ namespace Tridium {
 		}
 
 		//=============================================================================================
+		template<typename... _Owning, typename... _Include, typename... _Exclude>
+		[[nodiscard]] auto Group( EntityIncludeType<_Include...> = EntityIncludeType{}, EntityExcludeType<_Exclude...> = EntityExcludeType{} )
+		{
+			return EntityGroup{ m_Registry.group<_Owning...>( entt::get<_Include...>, entt::exclude<_Exclude...> ) };
+		}
+
+		//=============================================================================================
 		// Returns a Scoped Delegate Handle object for listening to 
 		// component construction events of type _Component.
 		// NOTE: The returned handle must be kept alive to maintain the connection.
@@ -354,7 +459,7 @@ namespace Tridium {
 				.connect(
 					[]( auto& a_Registry, auto a_Entity )
 					{
-						_Func( ReinterpretCast<EntityComponentRegistry&>( a_Registry ), Cast<EntityID>( a_Entity ) );
+						_Func( ReinterpretCast<EntityComponentRegistry&>( a_Registry ), Cast<Entity>( a_Entity ) );
 					} ) };
 		}
 
@@ -400,7 +505,7 @@ namespace Tridium {
 				.connect(
 					[]( auto& a_Registry, auto a_Entity )
 					{
-						_Func( ReinterpretCast<EntityComponentRegistry&>( a_Registry ), Cast<EntityID>( a_Entity ) );
+						_Func( ReinterpretCast<EntityComponentRegistry&>( a_Registry ), Cast<Entity>( a_Entity ) );
 					} ) };
 		}
 
@@ -442,7 +547,7 @@ namespace Tridium {
 		// Returns an iterable view of all storages in the registry.
 		auto Storage() { return m_Registry.storage(); }
 		auto Storage() const { return m_Registry.storage(); }
-		
+
 		//=============================================================================================
 		auto Storage( const entt::id_type a_TypeID ) { return m_Registry.storage( a_TypeID ); }
 		auto Storage( const entt::id_type a_TypeID ) const { return m_Registry.storage( a_TypeID ); }
@@ -453,7 +558,7 @@ namespace Tridium {
 			EntityComponentRegistry dstRegistry;
 
 			// Copy entities
-			auto entities = View<EntityID>();
+			auto entities = View<Entity>();
 			for ( auto it = entities.RBegin(); it != entities.REnd(); ++it )
 			{
 				dstRegistry.Create( *it );
@@ -479,6 +584,7 @@ namespace Tridium {
 
 			return dstRegistry;
 		}
+
 
 	private:
 

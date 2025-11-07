@@ -65,7 +65,6 @@ namespace Tridium {
 		GameObject gameObject = CreateEmptyGameObject();
 		gameObject.Add<NameComponent>().Name = std::move( a_Tag );
 		gameObject.Add<TransformComponent>().SetLocalPosition( a_Position );
-		gameObject.Add<HierarchyComponent>();
 		return gameObject;
 	}
 
@@ -79,9 +78,9 @@ namespace Tridium {
 
 	inline void Scene::DestroyGameObject( GameObject a_GameObject )
 	{
-		if ( a_GameObject.ID() != NullEntity && a_GameObject.Scene() == this )
+		if ( a_GameObject.Entity() != NullEntity && a_GameObject.Scene() == this )
 		{
-			m_Registry.Destroy( a_GameObject.ID() );
+			m_Registry.Destroy( a_GameObject.Entity() );
 		}
 	}
 

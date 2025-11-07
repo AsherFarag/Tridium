@@ -10,6 +10,8 @@ BEGIN_TRIDIUM_NAMESPACE
 //=================================================================================================
 struct CPP_ALIGN_TO_HLSL DirectionalLight
 {
+	// The light space transformation matrix for shadow mapping.
+	float4x4 LightSpaceMatrix DEFAULT_VALUE( 0.0f );
 	// The direction the light is pointing in (should be normalized).
 	float3 Direction    DEFAULT_VALUE( 0.0f, 0.0f, 0.0f );
 	// The intensity of the light, affecting its brightness.
@@ -52,26 +54,26 @@ struct CPP_ALIGN_TO_HLSL PointLight
 struct CPP_ALIGN_TO_HLSL SpotLight
 {
 	// The position of the light in 3D space.
-	float3 Position        DEFAULT_VALUE( 0.0f, 0.0f, 0.0f );
+	float3 Position DEFAULT_VALUE( 0.0f, 0.0f, 0.0f );
 	// The intensity of the light, affecting its brightness.
-	float Intensity        DEFAULT_VALUE( 0.0f );
+	float Intensity DEFAULT_VALUE( 0.0f );
 	// The direction the light is pointing in (should be normalized).
-	float3 Direction       DEFAULT_VALUE( 0.0f, 0.0f, 0.0f );
-	// The attenuation factor based on the angle between the light's direction and the point being lit.
-	float AngleAttenuation DEFAULT_VALUE( 0.0f );
-	// The color of the light, represented as RGB values.
-	float3 Color           DEFAULT_VALUE( 0.0f, 0.0f, 0.0f );
+	float3 Direction DEFAULT_VALUE( 0.0f, 0.0f, 0.0f );
 	// The minimum radius for light attenuation calculations.
-	float Range            DEFAULT_VALUE( 0.1f );
-	// The angle (in radians) defining the cone of the spotlight.
-	float Angle            DEFAULT_VALUE( 0.0f );
+	float Range DEFAULT_VALUE( 0.1f );
+	// The color of the light, represented as RGB values.
+	float3 Color DEFAULT_VALUE( 0.0f, 0.0f, 0.0f );
+	// The cosine of the inner cone angle defining the spotlight's bright center.
+	float InnerConeCos   DEFAULT_VALUE( 0.1f );
+	// The cosine of the outer cone angle defining the spotlight's outer boundary.
+	float OuterConeCos   DEFAULT_VALUE( 0.2f );
 	// The falloff exponent for light attenuation, controlling how quickly the light diminishes with distance.
-	float Falloff          DEFAULT_VALUE( 1.0f );
+	float Falloff DEFAULT_VALUE( 1.0f );
+	// The size of the light source, affecting soft shadow calculations.
+	float SourceSize DEFAULT_VALUE( 0.1f );
 	// A scale factor for specular highlights produced by the light.
 	// NOTE: Any value other than 1.0f will break energy conservation and is not physically accurate.
-	float SpecularScale    DEFAULT_VALUE( 1.0f );
-
-	float _Padding;
+	float SpecularScale DEFAULT_VALUE( 1.0f );
 };
 
 END_TRIDIUM_NAMESPACE

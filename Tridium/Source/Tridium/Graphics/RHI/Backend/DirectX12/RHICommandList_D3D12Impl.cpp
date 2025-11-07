@@ -224,7 +224,7 @@ namespace Tridium::D3D12 {
 			{
 				// Create the RTV view into that descriptor slot
 				D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-				rtvDesc.Format = Translate( texture->Desc().Format );
+				rtvDesc.Format = GetDXGIFormatMap( texture->Desc().Format ).RTVFormat;
 				if ( texture->Desc().IsArray() )
 				{
 					rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
@@ -267,7 +267,7 @@ namespace Tridium::D3D12 {
 
 			// Create the DSV view into that descriptor slot
 			D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-			dsvDesc.Format = Translate( texture->Desc().Format );
+			dsvDesc.Format = GetDXGIFormatMap( texture->Desc().Format ).RTVFormat;
 
 			if ( texture->Desc().IsArray() )
 			{
@@ -710,7 +710,7 @@ namespace Tridium::D3D12 {
 				TODO( "Add support for index buffer offset" );
 				ibv.BufferLocation = indexBuffer->ManagedBuffer.Resource()->GetGPUVirtualAddress() /* + a_GraphicsState.IndexBufferOffset */;
 				ibv.SizeInBytes = indexBuffer->ManagedBuffer.Resource()->GetDesc().Width /* - a_GraphicsState.IndexBufferOffset */;
-				ibv.Format = D3D12::Translate( indexBuffer->Desc().Format );
+				ibv.Format = GetDXGIFormatMap( indexBuffer->Desc().Format ).RTVFormat;
 				RHI_DEV_CHECK( ibv.Format == DXGI_FORMAT_R16_UINT || ibv.Format == DXGI_FORMAT_R32_UINT, "Invalid index buffer format!" );
 
 				m_CmdContext.ReferencedResources.EmplaceBack( indexBuffer->Shared() );
@@ -930,7 +930,7 @@ namespace Tridium::D3D12 {
 		{
 			const auto slice = a_Slice.Resolve( a_Desc );
 			D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
-			rtvDesc.Format = D3D12::Translate( a_Desc.Format );
+			rtvDesc.Format = GetDXGIFormatMap( a_Desc.Format ).RTVFormat;
 			switch ( a_Desc.Dimension )
 			{
 				case ERHITextureDimension::Texture2D:
@@ -962,7 +962,7 @@ namespace Tridium::D3D12 {
 		{
 			const auto slice = a_Slice.Resolve( a_Desc );
 			D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
-			dsvDesc.Format = D3D12::Translate( a_Desc.Format );
+			dsvDesc.Format = GetDXGIFormatMap( a_Desc.Format ).RTVFormat;
 			switch ( a_Desc.Dimension )
 			{
 				case ERHITextureDimension::Texture2D:

@@ -31,12 +31,12 @@ DECLARE_LOG_CATEGORY( DirectX );
 		} \
 	} while ( false )
 #else
-#define D3D12_SET_DEBUG_NAME( _Object, _Name, _DefaultName ) do {} while ( false )
+	#define D3D12_SET_DEBUG_NAME( _Object, _Name, _DefaultName ) do {} while ( false )
 #endif // RHI_USE_DEBUG_NAMES
 
 namespace Tridium::D3D12 {
 
-	//================================
+	//=============================================================================================
 	// Forward declarations
 	class RHITexture_D3D12Impl;
 	class RHIBuffer_D3D12Impl;
@@ -46,19 +46,21 @@ namespace Tridium::D3D12 {
 	class RHIGraphicsPipelineState_D3D12Impl;
 	class RHICommandList_D3D12Impl;
 	class DynamicRHI_D3D12Impl;
-	//=================================
 
-
+	//=============================================================================================
 	using DescriptorIndex = uint32_t;
 	using RootParameterIndex = uint32_t;
 	constexpr RootParameterIndex c_InvalidRootParameterIndex = ~0u;
 
+	//=============================================================================================
+	// Align Up
 	template<typename T>
 	inline constexpr T AlignUp( T a_Size, T a_Alignment )
 	{
 		return (a_Size + a_Alignment - 1 ) & ~( a_Alignment - 1 );
 	}
 
+	//=============================================================================================
 	inline D3D12_RESOURCE_BARRIER Translate( RHIResourceBarrier a_Barrier )
 	{
 		D3D12_RESOURCE_BARRIER barrier{};
@@ -70,9 +72,8 @@ namespace Tridium::D3D12 {
 		return barrier;
 	}
 
-	//=====================================================================
-	// Descriptor Heap Flags
-	//  Bitmask flags describing the properties of a descriptor heap.
+	//=============================================================================================
+	// Descriptor Heap Flags: Bitmask flags describing the properties of a descriptor heap.
 	enum class EDescriptorHeapFlags : uint8_t
 	{
 		None = 0,
@@ -83,12 +84,34 @@ namespace Tridium::D3D12 {
 	};
 	DEFINE_ENUM_BITMASK_OPERATORS( EDescriptorHeapFlags );
 
+	//=============================================================================================
 	inline D3D12_DESCRIPTOR_HEAP_FLAGS Translate( EDescriptorHeapFlags a_Flags )
 	{
 		return EnumFlags( a_Flags ).HasFlag( EDescriptorHeapFlags::GPUVisible ) 
 			? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	}
 
+	//=============================================================================================
+	// DXGI Format Map: Conversion information for a RHI format to D3D12 formats.
+	//=============================================================================================
+	struct DXGIFormatMap
+	{
+		// The original RHI format
+		ERHIFormat RHIFormat = ERHIFormat::Unknown;
+		// The format used for resource creation
+		DXGI_FORMAT ResourceFormat = DXGI_FORMAT_UNKNOWN;
+		// The format used for SRV creation
+		DXGI_FORMAT SRVFormat = DXGI_FORMAT_UNKNOWN;
+		// The format used for RTV creation
+		DXGI_FORMAT RTVFormat = DXGI_FORMAT_UNKNOWN;
+	};
+
+	//=============================================================================================
+	DXGIFormatMap GetDXGIFormatMap( ERHIFormat a_Format );
+
+	//=============================================================================================
+	// Root Signature: Wrapper around a D3D12 root signature.
+	//=============================================================================================
 	struct RootSignature
 	{
 		hash64_t Hash = 0;
@@ -101,30 +124,21 @@ namespace Tridium::D3D12 {
 		static RootSignature Build( Span<const RHIBindingLayoutRef> a_Layouts, bool a_AllowInputLayout, bool a_IsLocal, Span<const D3D12_ROOT_PARAMETER1> a_CustomParams = {} );
 	};
 
+	//=============================================================================================
+	// D3D12 Tier Info
+	//=============================================================================================
 	struct D3D12TierInfo
 	{
 		size_t MaxShaderVisibleDescriptorHeapSize = 0;
 		size_t MaxShaderVisibleSamplerHeapSize = 0;
 	};
 
+	//=============================================================================================
 	inline const D3D12TierInfo& TierInfo() { return { D3D12_MAX_SHADER_VISIBLE_DESCRIPTOR_HEAP_SIZE_TIER_2, D3D12_MAX_SHADER_VISIBLE_SAMPLER_HEAP_SIZE }; }
 
-	// Returns the Number
-	template<typename T> requires std::is_base_of_v<IUnknown, T>
-	inline ULONG ForceDeleteIUnknown( T** const a_Object )
-	{
-		if ( !a_Object || !(*a_Object) ) return 0;
-		ULONG refCount = (*a_Object)->Release();
-		// Keep calling Release until the reference count is 0
-		if ( refCount )
-			while ( (*a_Object)->Release() ) {}
-		(*a_Object) = nullptr;
-		return refCount;
-	}
-
-	//======================================================================
-	// Device Child
-	//  A base class for an object that is owned by a D3D12 device.
+	//=============================================================================================
+	// Device Child: A base class for an object that is owned by a D3D12 device.
+	//=============================================================================================
 	class DeviceChild
 	{
 	public:
@@ -156,7 +170,9 @@ namespace Tridium::D3D12 {
 		ID3D12Device* m_ParentDevice;
 	};
 
+	//=============================================================================================
 	// Common Heap Properties
+	//=============================================================================================
 	constexpr struct {
 
 		const D3D12_HEAP_PROPERTIES Default = {
@@ -185,9 +201,9 @@ namespace Tridium::D3D12 {
 
 	} HeapProperties;
 
-	//======================================================================
-	// Managed Resource
-	//  A wrapper around a D3D12 resource and its allocation using D3D12MA.
+	//=============================================================================================
+	// Managed Resource: A wrapper around a D3D12 resource and its allocation using D3D12MA.
+	//=============================================================================================
 	struct ManagedResource
 	{
 		ComPtr<D3D12MA::Allocation> Allocation{};
@@ -227,10 +243,10 @@ namespace Tridium::D3D12 {
 			D3D12MA::Allocator* a_Allocator = nullptr );
 	};
 
-	//======================================================================
-	// Command Context
-	//  Represents a command list instance. 
-	//  Contains strong references to all the resources that are used by the command list.
+	//=============================================================================================
+	// Command Context: Represents a command list instance. 
+	// Contains strong references to all the resources that are used by the command list.
+	//=============================================================================================
 	struct CommandContext
 	{
 		ERHICommandQueueType QueueType = ERHICommandQueueType::Graphics;
@@ -254,7 +270,7 @@ namespace Tridium::D3D12 {
 		}
 	};
 
-	//======================================================================
+	//=============================================================================================
 	// Command Queue
 	//  A wrapper around a D3D12 command queue and its associated fence.
 	//  In a Dynamic RHI context, 3 Command Queues are created:
@@ -262,6 +278,7 @@ namespace Tridium::D3D12 {
 	//  - Compute Command Queue
 	//  - Copy Command Queue
 	//  Each command queue has its own fence to track the completion of submitted commands.
+	//=============================================================================================
 	struct CommandQueue
 	{
 		ComPtr<ID3D12CommandQueue> CmdQueue = nullptr;
@@ -308,9 +325,9 @@ namespace Tridium::D3D12 {
 		}
 	};
 
-	//======================================================================
-	// Upload Buffer
-	//  A ring buffer for uploading data to the GPU.
+	//=============================================================================================
+	// Upload Buffer: A ring buffer for uploading data to the GPU.
+	//=============================================================================================
 	class UploadBuffer
 	{
 	public:
@@ -379,9 +396,9 @@ namespace Tridium::D3D12 {
 		std::mutex m_Mutex{};
 	};
 
-	//=====================================================================
-	// Descriptor Heap
-	//  Wrapper around a D3D12 descriptor heap.
+	//=============================================================================================
+	// Descriptor Heap: Wrapper around a D3D12 descriptor heap.
+	//=============================================================================================
 	class DescriptorHeap : public DeviceChild
 	{
 	public:
@@ -436,9 +453,9 @@ namespace Tridium::D3D12 {
 	};
 	using DescriptorHeapRef = SharedPtr<DescriptorHeap>;
 
-	//=====================================================================
-	// Descriptor Manager
-	//  Implementation of RHIHeapDescriptorAllocator.
+	//=============================================================================================
+	// Descriptor Manager: Implementation of RHIHeapDescriptorAllocator.
+	//=============================================================================================
 	class DescriptorManager : public RHIHeapDescriptorAllocator, public DeviceChild
 	{
 	public:
@@ -485,9 +502,9 @@ namespace Tridium::D3D12 {
 		uint32_t NumGlobalDepthStencilDescriptors = 1024;  // Number of depth stencil descriptors in their static heap.
 	};
 
-	//=====================================================================
-	// Descriptor Heap Manager
-	//  The primary descriptor heap manager for the device.
+	//=============================================================================================
+	// Descriptor Heap Manager: The primary descriptor heap manager for the device.
+	//=============================================================================================
 	class DescriptorHeapManager final
 	{
 	public:
@@ -537,8 +554,6 @@ namespace Tridium::D3D12 {
 		// Try to retieve a pooled heap, can return null
 		ComPtr<ID3D12DescriptorHeap> AcquirePooledHeap( ERHIDescriptorHeapType a_Type, uint32_t a_NumDescriptors, EDescriptorHeapFlags a_Flags );
 	};
-
-#pragma region D3D12 RHI IMPLEMENTATIONS
 
 	//=================================================================================================
 	// RHITexture_D3D12Impl
@@ -981,8 +996,6 @@ namespace Tridium::D3D12 {
 		ComPtr<IDXGIDebug1> m_DXGIDebug = nullptr;
 	#endif // RHI_DEBUG_ENABLED
 	};
-
-#pragma endregion
 
 	inline DynamicRHI_D3D12Impl* GetD3D12RHI()
 	{

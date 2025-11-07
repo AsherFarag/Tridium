@@ -80,6 +80,9 @@ namespace Tridium {
 	//=================================================================================================
 	struct DirectionalLightComponent : Component
 	{
+		// Whether the light is used for rendering.
+		bool Enabled = true;
+
 		// The color of the light, represented as RGB values.
 		Color3 Color{ 1.0f, 1.0f, 1.0f };
 
@@ -92,6 +95,12 @@ namespace Tridium {
 
 		// Whether the light casts shadows in the scene.
 		bool CastShadows = true;
+
+		// The resolution of the shadow map texture used for rendering shadows from this light.
+		Vector2 ShadowMapResolution{ 2048, 2048 };
+
+		// The shadow map texture used for rendering shadows from this light.
+		RHITextureRef ShadowMap;
 	};
 
 	//=================================================================================================
@@ -100,27 +109,31 @@ namespace Tridium {
 	//=================================================================================================
 	struct PointLightComponent : Component
 	{
+		// Whether the light is used for rendering.
+		bool Enabled = true;
+
 		// The color of the light, represented as RGB values.
 		Color3 Color{ 1.0f, 1.0f, 1.0f };
 
 		// The intensity of the light, affecting its brightness.
-		float Intensity{ 1.0f };
+		float Intensity = 1.0f;
 
 		// The minimum radius for light attenuation calculations.
-		float MinRadius{ 0.001f };
+		float MinRadius = 0.001f;
 
 		// The maximum radius for light attenuation calculations.
-		float Radius{ 25.0f };
+		float Radius = 5.0f;
+
 		// The falloff exponent for light attenuation, controlling how quickly the light diminishes with distance.
-		float Falloff{ 1.f };
+		float Falloff = 1.f;
 
 		// The size of the light source, affecting soft shadow calculations.
-		float SourceSize{ 0.1f };
+		float SourceSize = 0.001f;
 
 		// A scale factor for specular highlights produced by the light.
 		// NOTE: Any value other than 1.0f will break energy conservation and is not physically accurate.
-		float SpecularScale{ 1.0f };
-		
+		float SpecularScale = 1.0f;
+
 		// Whether the light casts shadows in the scene.
 		bool CastShadows = true;
 	};
@@ -131,27 +144,33 @@ namespace Tridium {
 	//=================================================================================================
 	struct SpotLightComponent : Component
 	{
+		// Whether the light is used for rendering.
+		bool Enabled = true;
+
 		// The color of the light, represented as RGB values.
 		Color3 Color{ 1.0f, 1.0f, 1.0f };
 
 		// The intensity of the light, affecting its brightness.
-		float Intensity{ 1.0f };
+		float Intensity = 1.0f;
 
 		// The minimum radius for light attenuation calculations.
-		float Range{ 0.1f };
+		float Range = 10.0f;
 
-		// The attenuation factor based on the angle between the light's direction and the point being lit.
-		float AngleAttenuation{ 0.0f };
+		// The angle (in degrees) defining the spotlight's bright center.
+		float InnerConeAngleDeg = 30.0f;
 
-		// The angle (in radians) defining the cone of the spotlight.
-		float Angle{ 0.0f };
+		// The angle (in degrees) defining the spotlight's outer edge where light falls off to zero.
+		float OuterConeAngleDeg = 45.0f;
 
 		// The falloff exponent for light attenuation, controlling how quickly the light diminishes with distance.
-		float Falloff{ 1.0f };
+		float Falloff = 1.0f;
+
+		// The size of the light source, affecting soft shadow calculations.
+		float SourceSize = 0.001f;
 
 		// A scale factor for specular highlights produced by the light.
 		// NOTE: Any value other than 1.0f will break energy conservation and is not physically accurate.
-		float SpecularScale{ 1.0f };
+		float SpecularScale = 1.0f;
 
 		// Whether the light casts shadows in the scene.
 		bool CastShadows = true;
@@ -267,21 +286,39 @@ namespace Tridium::Meta {
 	{
 		using Type = Type<DirectionalLightComponent, Scriptable, Icon<EditorIcons::Sun>>;
 
+		Field<&DirectionalLightComponent::Enabled, Serializable, Editable, Scriptable,
+		Tooltip<"Whether the light is enabled.">>
+		Enabled;
+
 		Field<&DirectionalLightComponent::Color, Serializable, Editable, Scriptable,
 		Tooltip<"The color of the light.">>
 		Color;
 
 		Field<&DirectionalLightComponent::Intensity, Serializable, Editable, Scriptable,
+		Min<0.0f>,
 		Tooltip<"The intensity of the light. Color * Intensity defines the final color of the light.">>
 		Intensity;
 
 		Field<&DirectionalLightComponent::SpecularScale, Serializable, Editable, Scriptable,
+		Min<0.0f>,
 		Tooltip<"Multiplier for specular highlights produced by the light. Any value other than 1.0 breaks energy conservation.">>
 		SpecularScale;
+
+		Header Shadow;
 
 		Field<&DirectionalLightComponent::CastShadows, Serializable, Editable, Scriptable,
 		Tooltip<"Whether the light casts shadows.">>
 		CastShadows;
+
+		Field<&DirectionalLightComponent::ShadowMapResolution, Serializable, Editable, Scriptable,
+		DisplayIf<[]( const DirectionalLightComponent& a_Light ) { return a_Light.CastShadows; }>,
+		Tooltip<"The resolution of the shadow map texture used for rendering shadows from this light." >>
+		ShadowMapResolution;
+
+		Field<&DirectionalLightComponent::ShadowMap, Editable, Scriptable,
+		DisplayIf<[]( const DirectionalLightComponent& a_Light ) { return a_Light.CastShadows; } >,
+		Tooltip<"The shadow map texture used for rendering shadows from this light." >>
+		ShadowMap;
 	};
 
 	template<>
@@ -289,31 +326,35 @@ namespace Tridium::Meta {
 	{
 		using Type = Type<PointLightComponent, Scriptable, Icon<EditorIcons::Lightbulb>>;
 
+		Field<&PointLightComponent::Enabled, Serializable, Editable, Scriptable,
+		Tooltip<"Whether the light is enabled.">>
+		Enabled;
+
 		Field<&PointLightComponent::Color, Serializable, Editable, Scriptable,
 		Tooltip<"The color of the light.">>
 		Color;
 
-		Field<&PointLightComponent::Intensity, Serializable, Editable, Scriptable,
+		Field<&PointLightComponent::Intensity, Serializable, Editable, Scriptable, Min<0.0f>,
 		Tooltip<"The intensity of the light. Color * Intensity defines the final color of the light.">>
 		Intensity;
 
-		Field<&PointLightComponent::MinRadius, Serializable, Editable, Scriptable,
+		Field<&PointLightComponent::MinRadius, Serializable, Editable, Scriptable, Min<0.0f>,
 		Tooltip<"The minimum radius for light attenuation calculations.">>
 		MinRadius;
 
-		Field<&PointLightComponent::Radius, Serializable, Editable, Scriptable,
+		Field<&PointLightComponent::Radius, Serializable, Editable, Scriptable, Min<0.0f>,
 		Tooltip<"The maximum radius for light attenuation calculations.">>
 		Radius;
 
-		Field<&PointLightComponent::Falloff, Serializable, Editable, Scriptable,
+		Field<&PointLightComponent::Falloff, Serializable, Editable, Scriptable, Min<0.0f>,
 		Tooltip<"The falloff exponent for light attenuation.">>
 		Falloff;
 
-		Field<&PointLightComponent::SourceSize, Serializable, Editable, Scriptable,
+		Field<&PointLightComponent::SourceSize, Serializable, Editable, Scriptable, Min<0.0f>,
 		Tooltip<"The size of the light source affecting soft shadow calculations.">>
 		SourceSize;
 
-		Field<&PointLightComponent::SpecularScale, Serializable, Editable, Scriptable,
+		Field<&PointLightComponent::SpecularScale, Serializable, Editable, Scriptable, Min<0.0f>,
 		Tooltip<"Multiplier for specular highlights produced by the light. Any value other than 1.0 breaks energy conservation.">>
 		SpecularScale;
 
@@ -327,31 +368,39 @@ namespace Tridium::Meta {
 	{
 		using Type = Type<SpotLightComponent, Scriptable, Icon<EditorIcons::Lightbulb>>;
 
+		Field<&SpotLightComponent::Enabled, Serializable, Editable, Scriptable,
+		Tooltip<"Whether the light is enabled.">>
+		Enabled;
+
 		Field<&SpotLightComponent::Color, Serializable, Editable, Scriptable,
 		Tooltip<"The color of the light.">>
 		Color;
 
-		Field<&SpotLightComponent::Intensity, Serializable, Editable, Scriptable,
+		Field<&SpotLightComponent::Intensity, Serializable, Editable, Scriptable, Min<0.0f>,
 		Tooltip<"The intensity of the light. Color * Intensity defines the final color of the light.">>
 		Intensity;
 
-		Field<&SpotLightComponent::Range, Serializable, Editable, Scriptable,
+		Field<&SpotLightComponent::Range, Serializable, Editable, Scriptable, Min<0.0f>,
 		Tooltip<"The range of the spotlight.">>
 		Range;
 
-		Field<&SpotLightComponent::AngleAttenuation, Serializable, Editable, Scriptable,
-		Tooltip<"The attenuation factor based on the angle between the light's direction and the point being lit.">>
-		AngleAttenuation;
+		Field<&SpotLightComponent::InnerConeAngleDeg, Serializable, Editable, Scriptable, Min<0.0f>,
+		Tooltip<"The inner cone angle (in degrees) defining the spotlight's bright center.">>
+		InnerConeAngleDeg;
 
-		Field<&SpotLightComponent::Angle, Serializable, Editable, Scriptable,
-		Tooltip<"The angle (in radians) defining the cone of the spotlight.">>
-		Angle;
+		Field<&SpotLightComponent::OuterConeAngleDeg, Serializable, Editable, Scriptable, Min<0.0f>,
+		Tooltip<"The outer cone angle (in degrees) defining the spotlight's outer boundary.">>
+		OuterConeAngleDeg;
 
-		Field<&SpotLightComponent::Falloff, Serializable, Editable, Scriptable,
+		Field<&SpotLightComponent::Falloff, Serializable, Editable, Scriptable, Min<0.0f>,
 		Tooltip<"The falloff exponent for light attenuation.">>
 		Falloff;
 
-		Field<&SpotLightComponent::SpecularScale, Serializable, Editable, Scriptable,
+		Field<&SpotLightComponent::SourceSize, Serializable, Editable, Scriptable, Min<0.0f>,
+		Tooltip<"The size of the light source affecting soft shadow calculations.">>
+		SourceSize;
+
+		Field<&SpotLightComponent::SpecularScale, Serializable, Editable, Scriptable, Min<0.0f>,
 		Tooltip<"Multiplier for specular highlights produced by the light. Any value other than 1.0 breaks energy conservation.">>
 		SpecularScale;
 
@@ -377,11 +426,11 @@ namespace Tridium::Meta {
 		Tooltip<"The gamma correction applied to the skybox.">>
 		Gamma;
 
-		Field<&SkyboxComponent::Blur, Serializable, Editable, Scriptable,
+		Field<&SkyboxComponent::Blur, Serializable, Editable, Scriptable, Min<0.0f>,
 		Tooltip<"The amount of blur applied to the skybox.">>
 		Blur;
 
-		Field<&SkyboxComponent::Intensity, Serializable, Editable, Scriptable,
+		Field<&SkyboxComponent::Intensity, Serializable, Editable, Scriptable, Min<0.0f>,
 		Tooltip<"The intensity multiplier for the skybox.">>
 		Intensity;
 	};

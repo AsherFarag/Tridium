@@ -126,7 +126,7 @@ namespace Tridium::D3D12 {
 			VertexLayout.EmplaceBack( D3D12_INPUT_ELEMENT_DESC{
 				.SemanticName = vertexElementNames[i].c_str(),
 				.SemanticIndex = 0,
-				.Format = Translate( element.Type ),
+				.Format = GetDXGIFormatMap( element.Type ).SRVFormat,
 				.InputSlot = 0,
 				.AlignedByteOffset = Cast<UINT>( element.Offset ),
 				.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
@@ -164,7 +164,7 @@ namespace Tridium::D3D12 {
 
 		// Set the depth stencil state
 		psd.DepthStencilState = GetDepthStencilDesc( a_Desc );
-		psd.DSVFormat = Translate( a_Desc.FramebufferInfo.DepthStencilFormat );
+		psd.DSVFormat = GetDXGIFormatMap( a_Desc.FramebufferInfo.DepthStencilFormat ).RTVFormat;
 
 		switch ( a_Desc.Topology )
 		{
@@ -178,8 +178,8 @@ namespace Tridium::D3D12 {
 
 		psd.NumRenderTargets = a_Desc.FramebufferInfo.ColorFormats.Size();
 		for ( size_t i = 0; i < a_Desc.FramebufferInfo.ColorFormats.Size(); ++i )
-			psd.RTVFormats[i] = Translate( a_Desc.FramebufferInfo.ColorFormats[i] );
-		psd.DSVFormat = Translate( a_Desc.FramebufferInfo.DepthStencilFormat );
+			psd.RTVFormats[i] = GetDXGIFormatMap( a_Desc.FramebufferInfo.ColorFormats[i] ).RTVFormat;
+		psd.DSVFormat = GetDXGIFormatMap( a_Desc.FramebufferInfo.DepthStencilFormat ).RTVFormat;
 		psd.SampleDesc.Count = 1;
 		psd.SampleDesc.Quality = 0;
 		psd.NodeMask = 0;

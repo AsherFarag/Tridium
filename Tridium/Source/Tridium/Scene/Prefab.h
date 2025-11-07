@@ -1,7 +1,7 @@
 #pragma once
 #include <Tridium/Asset/Asset.h>
 #include <Tridium/Core/Memory.h>
-#include <Tridium/ECS/ECS.h>
+#include <Tridium/ECS/Registry.h>
 #include <Tridium/Scene/Component.h>
 
 namespace Tridium {
@@ -18,18 +18,18 @@ namespace Tridium {
 
 		//=============================================================================================
 		// Builds a Prefab from the specified root entity in the given registry.
-		static Prefab Build( const EntityComponentRegistry& a_Registry, EntityID a_RootEntity );
+		static Prefab Build( const EntityComponentRegistry& a_Registry, Entity a_RootEntity );
 
 		//=============================================================================================
 		const EntityComponentRegistry& Registry() const { return m_Registry; }
 
 		//=============================================================================================
-		EntityID Root() const { return m_RootEntity; }
+		Entity Root() const { return m_RootEntity; }
 
 		//=============================================================================================
 		// Instantiates the prefab in the given destination registry.
-		// Returns the EntityID of the root entity in the new registry.
-		EntityID Instantiate( EntityComponentRegistry& a_DstRegistry ) const;
+		// Returns the Entity of the root entity in the new registry.
+		Entity Instantiate( EntityComponentRegistry& a_DstRegistry ) const;
 
 	protected:
 
@@ -38,7 +38,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		EntityComponentRegistry m_Registry{};
-		EntityID m_RootEntity{ NullEntity };
+		Entity m_RootEntity{ NullEntity };
 
 	};
 
@@ -50,8 +50,8 @@ namespace Tridium {
 		{
 			//=========================================================================================
 			EntityNode() = default;
-			EntityNode( PrefabBuilder* a_Builder, EntityID a_EntityID )
-				: m_Builder( a_Builder ), m_EntityID( a_EntityID ) {}
+			EntityNode( PrefabBuilder* a_Builder, Entity a_Entity )
+				: m_Builder( a_Builder ), m_Entity( a_Entity ) {}
 
 			//=========================================================================================
 			EntityComponentRegistry& Registry() const 
@@ -61,15 +61,15 @@ namespace Tridium {
 			}
 
 			//=========================================================================================
-			EntityID ID() const { return m_EntityID; }
+			Entity ID() const { return m_Entity; }
 
 			//=========================================================================================
 			EntityNode AddChild()
 			{
 				EntityNode childNode{ m_Builder, Registry().Create() };
 
-				HierarchyComponent& parentHierarchy = Registry().GetOrEmplace<HierarchyComponent>( m_EntityID );
-				parentHierarchy.AddChild( Registry(), m_EntityID, childNode.m_EntityID );
+				TransformComponent& parentTransform = Registry().GetOrEmplace<TransformComponent>( m_Entity );
+				parentTransform.AddChild( Registry(), m_Entity, childNode.m_Entity );
 
 				return childNode;
 			}
@@ -78,7 +78,7 @@ namespace Tridium {
 			template<typename T, typename... _Args>
 			EntityNode& AddComponent( _Args&&... a_Args )
 			{
-				Registry().EmplaceOrReplace<T>( m_EntityID, std::forward<_Args>( a_Args )... );
+				Registry().EmplaceOrReplace<T>( m_Entity, std::forward<_Args>( a_Args )... );
 				return *this;
 			}
 
@@ -86,14 +86,14 @@ namespace Tridium {
 			template<typename T>
 			T& GetComponent() const
 			{
-				return Registry().Get<T>( m_EntityID );
+				return Registry().Get<T>( m_Entity );
 			}
 
 		private:
 
 			//=========================================================================================
 			PrefabBuilder* m_Builder = nullptr;
-			EntityID m_EntityID{ NullEntity };
+			Entity m_Entity{ NullEntity };
 
 		};
 

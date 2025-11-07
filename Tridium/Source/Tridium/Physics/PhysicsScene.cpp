@@ -100,7 +100,7 @@ namespace Tridium {
 		// we need to manually clear the physics scene reference from all rigid bodies.
 		// This prevents dangling pointers in the RigidBodyComponents.
 		auto rigidBodies = OwningScene().Registry().View<RigidBodyComponent>();
-		rigidBodies.Each( [this]( EntityID a_Entity, RigidBodyComponent& a_RigidBody )
+		rigidBodies.Each( [this]( Entity a_Entity, RigidBodyComponent& a_RigidBody )
 		{
 			a_RigidBody.m_PhysicsScene = nullptr;
 			a_RigidBody.m_BodyID = NullPhysicsBodyID;
@@ -116,7 +116,7 @@ namespace Tridium {
 		m_PhysicsScene.reset();
 	}
 
-	void PhysicsSceneSystem::OnRigidBodyCreated( EntityComponentRegistry& a_Registry, EntityID a_Entity )
+	void PhysicsSceneSystem::OnRigidBodyCreated( EntityComponentRegistry& a_Registry, Entity a_Entity )
 	{
 		RigidBodyComponent& rigidBody = a_Registry.Get<RigidBodyComponent>( a_Entity );
 
@@ -124,7 +124,7 @@ namespace Tridium {
 		rigidBody.m_BodyID = m_PhysicsScene->CreatePhysicsBody( GameObject( OwningScene(), a_Entity ), rigidBody );
 	}
 
-	void PhysicsSceneSystem::OnRigidBodyDestroyed( EntityComponentRegistry& a_Registry, EntityID a_Entity )
+	void PhysicsSceneSystem::OnRigidBodyDestroyed( EntityComponentRegistry& a_Registry, Entity a_Entity )
 	{
 		RigidBodyComponent& rigidBody = a_Registry.Get<RigidBodyComponent>( a_Entity );
 		if ( rigidBody.Valid() )
@@ -135,7 +135,7 @@ namespace Tridium {
 		}
 	}
 
-	void PhysicsSceneSystem::OnColliderCreated( EntityComponentRegistry& a_Registry, EntityID a_Entity )
+	void PhysicsSceneSystem::OnColliderCreated( EntityComponentRegistry& a_Registry, Entity a_Entity )
 	{
 		if ( RigidBodyComponent* rigidBody = a_Registry.TryGet<RigidBodyComponent>( a_Entity ) )
 		{
@@ -150,7 +150,7 @@ namespace Tridium {
 		}
 	}
 
-	void PhysicsSceneSystem::OnColliderDestroyed( EntityComponentRegistry& a_Registry, EntityID a_Entity )
+	void PhysicsSceneSystem::OnColliderDestroyed( EntityComponentRegistry& a_Registry, Entity a_Entity )
 	{
 		if ( RigidBodyComponent* rigidBody = a_Registry.TryGet<RigidBodyComponent>( a_Entity ) )
 		{

@@ -5,6 +5,8 @@
 
 #include <Tridium/Reflection/MetaAttributes.h>
 #include <Tridium/Asset/AssetDatabase.h>
+#include <Tridium/Graphics/RHI/RHIForward.h>
+#include <Tridium/Graphics/RHI/RHITexture.h>
 
 namespace Tridium {
 
@@ -431,6 +433,40 @@ namespace Tridium {
 			{
 				return DrawFunc( a_Label );
 			}
+		}
+	};
+
+	template<Meta::IsAttributeList _Attributes>
+	struct UIPropertyDrawer<RHITextureRef, _Attributes>
+	{
+		using Attributes = _Attributes;
+		static bool Draw( StringView a_Label, RHITextureRef& a_Tex )
+		{
+			const auto DrawTex = [&]()
+			{
+				if ( a_Tex )
+				{
+					// Preserve aspect ratio but fit into the max content width available
+					const ImVec2 contentRegion = ImGui::GetContentRegionAvail();
+					const float aspectRatio = Cast<float>( a_Tex->Desc().Width ) / Cast<float>( a_Tex->Desc().Height );
+					ImGui::Image( (ImTextureRef)a_Tex.get(), ImVec2( contentRegion.x, contentRegion.x / aspectRatio ) );
+				}
+			};
+
+			if ( UI::IsPropertyGridOpen() )
+			{
+				UI::DrawGridProperty( a_Label, [&]()
+				{
+					DrawTex();
+					return false;
+				} );
+			}
+			else
+			{
+				DrawTex(); 
+			}
+
+			return false;
 		}
 	};
 

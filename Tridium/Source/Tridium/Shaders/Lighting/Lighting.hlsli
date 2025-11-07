@@ -26,4 +26,41 @@ float AttenuateCusp(float a_Distance, float a_Radius, float a_MaxIntensity, floa
     return a_MaxIntensity * (t * t) / denom;
 }
 
+float SpotLightFactor(float3 L, float3 SpotDirection, float SpotInnerCos, float SpotOuterCos)
+{
+    float cosTheta = dot(L, -SpotDirection);
+    return 1 - saturate(smoothstep(SpotInnerCos, SpotOuterCos, cosTheta));
+}
+
+float SampleDirectionalShadowMap(
+    COMBINED_COMP_SAMPLER_PARAM(ShadowMap, Texture2D),
+    float4 LightSpacePos, float3 Normal, float3 LightDirection
+)
+{
+    // Transform from clip space to texture space
+    float3 proj = LightSpacePos.xyz / LightSpacePos.w;
+    float2 uv = proj.xy * 0.5f + 0.5f;
+
+    // No Z remap here — you already fixed it on the CPU
+    float currentDepth = proj.z;
+
+    // Outside of shadow map bounds
+    if (any(uv < 0.0f) || any(uv > 1.0f))
+        return 1.0f;
+
+    // Bias to prevent shadow acne
+    float bias = max(0.0005f * (1.0f - dot(Normal, LightDirection)), 0.0005f);
+
+    // Hardware PCF sample
+    float shadow = ShadowMap.SampleCmpLevelZero(
+        GetCombinedSampler(ShadowMap),
+        uv,
+        currentDepth - bias
+    );
+
+    return shadow; // 1 = lit, 0 = shadowed
+}
+
+
+
 #endif // Lighting_HLSLI

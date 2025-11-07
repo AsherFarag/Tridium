@@ -36,6 +36,7 @@ namespace Tridium {
     #include "Core.hlsli"
     #include "Lighting/BRDF.hlsli"
     #include "Lighting/Lighting.hlsli"
+    #include "Lighting/ImageBasedLighting.hlsli"
     #include "Lighting/Tonemapping.hlsli"
     #include "LitDefault_ShaderInterop.h"
 
@@ -54,18 +55,9 @@ namespace Tridium {
     COMBINED_SAMPLER( EmissionMap, Texture2D, 4 );
     COMBINED_SAMPLER( IrradianceMap, TextureCube, 5 );
     COMBINED_SAMPLER( RadianceMap, TextureCube, 6 );
-    STRUCTURED_BUFFER( PointLights, PointLight, 7 );
-    STRUCTURED_BUFFER( SpotLights, SpotLight, 8 );
-
-    float2 ApproxBRDF(float NdotV, float roughness)
-    {
-        // Approximation of the integrated BRDF used by UE4 (no LUT)
-        const float4 c0 = float4(-1.0, -0.0275, -0.572, 0.022);
-        const float4 c1 = float4( 1.0,  0.0425,  1.04, -0.04);
-        float4 r = roughness * c0 + c1;
-        float a004 = min(r.x * r.x, exp2(-9.28 * NdotV)) * r.x + r.y;
-        return float2(-1.04, 1.04) * a004 + r.zw;
-    }
+    COMBINED_COMP_SAMPLER( DirectionalShadowMap, Texture2D, 7 );
+    STRUCTURED_BUFFER( PointLights, PointLight, 8 );
+    STRUCTURED_BUFFER( SpotLights, SpotLight, 9 );
 
     float4 PSMain(PS_INPUT a_Input) : SV_TARGET0
     {
@@ -85,7 +77,8 @@ namespace Tridium {
         float3 N = normal;
         float3 V = normalize(camPosition - position);
     
-        float3 lighting = 0;
+        // Direct lighting from light sources such as point, direct and spot lights.
+        float3 directLighting = 0;
     
         // --- Directional light ---
         {
@@ -94,12 +87,27 @@ namespace Tridium {
             float NoL = max(dot(N, L), 0.001);
             float VoL   = dot(V, L);
     
-            float3 spec = CalcDirLightBRDF(albedo, roughness, metallic, N, V, L, NoL, VoL);
             float3 radiance = light.Color * light.Intensity;
-    
             float3 diffuse = albedo / PI;
+
+            float3 brdf = CalculateBRDF(albedo, roughness, metallic,
+                                        N, V, L, NoL, VoL,
+                                        BRDF_DIR_LIGHT_RADIUS_TAN, light.SpecularScale);
     
-            lighting += (diffuse + spec) * radiance * NoL;
+            // Shadowing
+            float4 lightSpacePos = mul(light.LightSpaceMatrix, float4(position, 1.0f));
+            float shadowFactor = SampleDirectionalShadowMap(
+                PassCombinedSampler(DirectionalShadowMap),
+                lightSpacePos, N, light.Direction);
+
+            radiance *= shadowFactor;
+            directLighting += brdf * radiance * NoL;
+
+            // TEMP
+            //directLighting *= 0.0000001f;
+            //float3 proj = lightSpacePos.xyz / lightSpacePos.w;
+            //float2 uv = proj.xy * 0.5f + 0.5f;
+            //directLighting += proj.zzz;
         }
     
         // --- Point lights ---
@@ -115,38 +123,48 @@ namespace Tridium {
             float NoL = max(dot(N, L), 0.001);
             float VoL   = dot(V, L);
             
-            float3 brdf = CalcPointLightBRDF(albedo, roughness, metallic, N, V, L, NoL, VoL);
+            float3 brdf = CalculateBRDF(albedo, roughness, metallic,
+                                        N, V, L, NoL, VoL,
+                                        light.SourceSize, light.SpecularScale);
+
             float3 radiance = light.Color * light.Intensity * attenuation;
             
-            lighting += brdf * radiance * NoL;
+            directLighting += brdf * radiance * NoL;
+        }
+
+        // --- Spot lights --- 
+        [loop]
+        for (uint i = 0; i < Constants.NumSpotLights; ++i)
+        {
+            const SpotLight light = SpotLights[i];
+            const float3 lightToPixel = position - light.Position;
+            const float distance = length(lightToPixel);
+            const float3 L = normalize(-lightToPixel);
+            const float NoL = max(dot(N, L), 0.001);
+            const float VoL   = dot(V, L);
+            const float attenuation = AttenuateCusp(distance, light.Range, light.Intensity, light.Falloff);
+            const float spotFactor = SpotLightFactor(L, light.Direction, light.InnerConeCos, light.OuterConeCos);
+            float3 brdf = CalculateBRDF(albedo, roughness, metallic,
+                                        N, V, L, NoL, VoL,
+                                        light.SourceSize, light.SpecularScale);
+            float3 radiance = light.Color * light.Intensity * attenuation * spotFactor;
+            directLighting += brdf * radiance * NoL;
         }
     
         // --- Image-based lighting (IBL) ---
-        float3 F = FresnelSchlickRoughness(saturate(dot(N, V)), lerp(float3(0.04,0.04,0.04), albedo, metallic), roughness);
-    
-        float3 kS = F;
-        float3 kD = 1.0 - kS;
-        kD *= 1.0 - metallic;
-    
-        // Diffuse IBL
-        float3 irradiance = SampleTexture(IrradianceMap, N).rgb;
-        float3 diffuseIBL = irradiance * albedo;
-    
-        // Specular IBL
-        float3 R = reflect(-V, N);
-        float lod = roughness * roughness * 9.0;
-        float3 prefilteredColor = SampleTextureLod(RadianceMap, R, lod).rgb;
-        float2 brdf = ApproxBRDF(saturate(dot(N, V)), roughness);
-        float3 specularIBL = prefilteredColor * (F * brdf.x + brdf.y);
-    
-        lighting += kD * diffuseIBL + specularIBL;
-    
+        float3 environmentLighting = EvaluateIBL( albedo, roughness, metallic, N, V,
+                                             PassCombinedSampler( IrradianceMap ), 
+                                             PassCombinedSampler( RadianceMap ) );
+
+        // --- Combine lighting ---
+        float3 lighting = directLighting + environmentLighting;
+
         // --- AO + emission ---
         float3 color = lighting * ao + emission;
     
         // --- Tone mapping ---
-        color = Tonemap_AGX(color);
-        //color = Tonemap_ACESFilm(color);
+        //color = Tonemap_AGX(color);
+        color = Tonemap_ACESFilm(color);
     
         // --- Gamma correction ---
         const float3 gamma = float3(1.0/2.2, 1.0/2.2, 1.0/2.2);

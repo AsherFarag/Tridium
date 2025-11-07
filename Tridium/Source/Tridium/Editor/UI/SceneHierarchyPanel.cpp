@@ -78,13 +78,13 @@ namespace Tridium {
 		const auto& activeScene = SceneManager::ActiveScene();
 		auto& registry = activeScene->Registry();
 
-		for ( EntityID entity : registry.View<EntityID>() )
+		for ( Entity entity : registry.View<Entity>() )
 		{
 			GameObject gameObject( activeScene.get(), entity );
-			auto* hierarchy = gameObject.TryGet<HierarchyComponent>();
+			auto* hierarchy = gameObject.TryGet<TransformComponent>();
 
 			// Only draw root nodes here; children will be drawn recursively
-			if ( hierarchy == nullptr || hierarchy->Parent == NullEntity )
+			if ( hierarchy == nullptr || hierarchy->Parent() == NullEntity )
 			{
 				UI_DrawHierarchyNode( gameObject );
 			}
@@ -110,13 +110,13 @@ namespace Tridium {
 			icon = iconComp->Icon;
 		}
 
-		auto* hierarchy = a_GameObject.TryGet<HierarchyComponent>();
+		auto* transform = a_GameObject.TryGet<TransformComponent>();
 
 		ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_FramePadding;
-		nodeFlags |= hierarchy && hierarchy->FirstChild != NullEntity ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_Leaf;
+		nodeFlags |= transform && transform->HasChildren() ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_Leaf;
 		nodeFlags |= SelectionManager::Get().IsSelected( a_GameObject ) ? ImGuiTreeNodeFlags_Selected : ImGuiTreeNodeFlags_None;
 
-		bool hierarchyOpen = ImGui::TreeNodeEx( (void*)(uintptr_t)(uint32_t)a_GameObject.ID(), nodeFlags, name.data() );
+		bool hierarchyOpen = ImGui::TreeNodeEx( (void*)(uintptr_t)(uint32_t)a_GameObject.Entity(), nodeFlags, name.data());
 
 		if ( ImGui::IsItemClicked() )
 		{
@@ -151,24 +151,24 @@ namespace Tridium {
 					// 2 optional for adding hierarchy components if they don't exist
 					actionBatch.Reserve( 4 );
 
-					if ( !a_GameObject.Has<HierarchyComponent>() )
+					if ( !a_GameObject.Has<TransformComponent>() )
 					{
-						actionBatch.EmplaceBack( MakeUnique<ComponentUserAction<HierarchyComponent>>( a_GameObject, EComponentUserActionType::Add ) );
+						actionBatch.EmplaceBack( MakeUnique<ComponentUserAction<TransformComponent>>( a_GameObject, EComponentUserActionType::Add ) );
 					}
 
-					if ( !draggedGameObject.Has<HierarchyComponent>() )
+					if ( !draggedGameObject.Has<TransformComponent>() )
 					{
-						actionBatch.EmplaceBack( MakeUnique<ComponentUserAction<HierarchyComponent>>( draggedGameObject, EComponentUserActionType::Add ) );
+						actionBatch.EmplaceBack( MakeUnique<ComponentUserAction<TransformComponent>>( draggedGameObject, EComponentUserActionType::Add ) );
 					}
 
 					// Reparent the dragged GameObject to be a child of this GameObject
-					auto& parentHierarchy = a_GameObject.GetOrAdd<HierarchyComponent>();
-					auto& childHierarchy = draggedGameObject.GetOrAdd<HierarchyComponent>();
+					auto& parentTransform = a_GameObject.GetOrAdd<TransformComponent>();
+					auto& childTransform = draggedGameObject.GetOrAdd<TransformComponent>();
 
-					actionBatch.EmplaceBack( MakeUnique<ComponentUserAction<HierarchyComponent>>( a_GameObject, EComponentUserActionType::Modify ) );
-					actionBatch.EmplaceBack( MakeUnique<ComponentUserAction<HierarchyComponent>>( draggedGameObject, EComponentUserActionType::Modify ) );
+					actionBatch.EmplaceBack( MakeUnique<ComponentUserAction<TransformComponent>>( a_GameObject, EComponentUserActionType::Modify ) );
+					actionBatch.EmplaceBack( MakeUnique<ComponentUserAction<TransformComponent>>( draggedGameObject, EComponentUserActionType::Modify ) );
 
-					parentHierarchy.AddChild( a_GameObject.Scene()->Registry(), a_GameObject.ID(), draggedGameObject.ID() );
+					parentTransform.AddChild( a_GameObject.Scene()->Registry(), a_GameObject.Entity(), draggedGameObject.Entity() );
 
 					Editor::GetUserActionManager().Push( std::move( actionBatch ) );
 				}
@@ -180,23 +180,13 @@ namespace Tridium {
 		if ( hierarchyOpen )
 		{
 			// Draw children
-			if ( hierarchy )
+			if ( transform )
 			{
-				EntityID childEntity = hierarchy->FirstChild;
-				while ( childEntity != NullEntity )
+				transform->ForEachChild( a_GameObject.Scene()->Registry(), [&]( const auto&, Entity a_Child )
 				{
-					GameObject childGameObject( a_GameObject.Scene(), childEntity );
+					GameObject childGameObject( a_GameObject.Scene(), a_Child );
 					UI_DrawHierarchyNode( childGameObject );
-					auto* childHierarchy = childGameObject.TryGet<HierarchyComponent>();
-					if ( childHierarchy )
-					{
-						childEntity = childHierarchy->NextSibling;
-					}
-					else
-					{
-						break; // No more siblings
-					}
-				}
+				} );
 			}
 
 			ImGui::TreePop();
@@ -291,7 +281,7 @@ namespace Tridium {
 		if ( ImGui::MenuItem( TE_ICON_FOLDER_OPEN " Folder" ) )
 		{
 			createdGameObject = activeScene->CreateEmptyGameObject();
-			createdGameObject.Add<HierarchyComponent>();
+			createdGameObject.Add<TransformComponent>();
 			createdGameObject.Add<NameComponent>().Name = "Folder";
 			createdGameObject.Add<IconComponent>().Icon = TE_ICON_FOLDER_OPEN;
 
@@ -331,18 +321,9 @@ namespace Tridium {
 			// If a parent is specified, set up the hierarchy
 			if ( a_Parent )
 			{
-				auto& parentHierarchy = a_Parent.Get<HierarchyComponent>();
-				auto& childHierarchy = createdGameObject.GetOrAdd<HierarchyComponent>();
-				// Set parent
-				childHierarchy.Parent = a_Parent.ID();
-				// Insert as first child
-				childHierarchy.NextSibling = parentHierarchy.FirstChild;
-				if ( parentHierarchy.FirstChild != NullEntity )
-				{
-					auto& firstChildHierarchy = GameObject( activeScene.get(), parentHierarchy.FirstChild ).Get<HierarchyComponent>();
-					firstChildHierarchy.PrevSibling = createdGameObject.ID();
-				}
-				parentHierarchy.FirstChild = createdGameObject.ID();
+				auto& parentTransform = a_Parent.Get<TransformComponent>();
+				auto& childTransform = createdGameObject.GetOrAdd<TransformComponent>();
+				childTransform.Reparent( a_Parent.Scene()->Registry(), createdGameObject, a_Parent );
 			}
 
 			// Select the newly created GameObject

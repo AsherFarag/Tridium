@@ -121,10 +121,10 @@ namespace Tridium {
 		void Shutdown() override;
 
 		//=============================================================================================
-		void OnRigidBodyCreated( EntityComponentRegistry& a_Registry, EntityID a_Entity );
-		void OnRigidBodyDestroyed( EntityComponentRegistry& a_Registry, EntityID a_Entity );
-		void OnColliderCreated( EntityComponentRegistry& a_Registry, EntityID a_Entity );
-		void OnColliderDestroyed( EntityComponentRegistry& a_Registry, EntityID a_Entity );
+		void OnRigidBodyCreated( EntityComponentRegistry& a_Registry, Entity a_Entity );
+		void OnRigidBodyDestroyed( EntityComponentRegistry& a_Registry, Entity a_Entity );
+		void OnColliderCreated( EntityComponentRegistry& a_Registry, Entity a_Entity );
+		void OnColliderDestroyed( EntityComponentRegistry& a_Registry, Entity a_Entity );
 
 	protected:
 
