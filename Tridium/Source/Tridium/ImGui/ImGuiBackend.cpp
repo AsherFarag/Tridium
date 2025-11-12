@@ -15,10 +15,10 @@ namespace Tridium {
                 {
                     case EImGuiRenderer::OpenGL:
                     case EImGuiRenderer::Vulkan:
-                        return MakeUnique<GLFW::PlatformImGuiInterface_GLFW>();
+                        //return MakeUnique<GLFW::PlatformImGuiInterface_GLFW>();
                     case EImGuiRenderer::DX11:
                     case EImGuiRenderer::DX12:
-                        return MakeUnique<Win32::PlatformImGuiInterface_Win32>();
+						return MakeUnique<Win32::PlatformImGuiInterface_Win32>(); // TODO: This should be GLFW, not Win32!
                     default:
 					    ENSURE( false, "Unknown ImGui renderer!" );
                 }

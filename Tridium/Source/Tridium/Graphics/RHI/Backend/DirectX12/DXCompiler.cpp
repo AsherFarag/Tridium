@@ -506,7 +506,7 @@ namespace Tridium::D3D12 {
 				// Pixel and Compute don't support invert-y
 				if ( a_Input.ShaderType != ERHIShaderType::Pixel && a_Input.ShaderType != ERHIShaderType::Compute )
 				{
-					//args.EmplaceBack( L"-fvk-invert-y" ); // Make vulkan and opengl have the same coordinate system as D3D (Y-up)
+					args.EmplaceBack( L"-fvk-invert-y" ); // Make vulkan and opengl have the same coordinate system as D3D (Y-up)
 				}
 
 				// Shift the registers
@@ -613,6 +613,9 @@ namespace Tridium::D3D12 {
 			options.es = false;
 			glslCompiler.set_common_options( options );
 
+			// Build dummy samplers for combined images to avoid compilation errors.
+			const spirv_cross::VariableID dummySamplerID = glslCompiler.build_dummy_sampler_for_combined_images();
+
 			// OpenGL doesn't support separate textures and samplers, so we need to combine them.
 			glslCompiler.build_combined_image_samplers();
 
@@ -635,21 +638,40 @@ namespace Tridium::D3D12 {
 
 			// Textures and samplers are combined in GLSL, so we need to keep track of them and set the correct names
 			auto combinedSamplers = glslCompiler.get_combined_image_samplers();
-			UnorderedSet<spirv_cross::VariableID> seenImageIDs;
+			UnorderedMap<spirv_cross::VariableID, spirv_cross::VariableID> seenImageIDs;
 			seenImageIDs.reserve( combinedSamplers.size() );
 			for ( auto& sampler : combinedSamplers )
 			{
-				if ( seenImageIDs.contains( sampler.image_id ) )
+				if ( dummySamplerID == sampler.sampler_id )
 				{
-					return Unexpected( "Textures bound to multiple samplers are not supported - Use COMBINED_SAMPLER() in HLSL code." );
+					// Ignore dummy samplers created by SPIRV-Cross for combined image samplers.
+					continue;
 				}
 
-				seenImageIDs.insert( sampler.image_id );
+				if ( seenImageIDs.contains( sampler.image_id ) )
+				{
+					return Unexpected( std::format( "Textures bound to multiple samplers are not supported - Use COMBINED_SAMPLER() in HLSL code."
+						" Sampler : {}, Image: {}", glslCompiler.get_name( sampler.combined_id ), glslCompiler.get_name( sampler.image_id ) ) );
+				}
+
+				seenImageIDs[sampler.image_id] = sampler.sampler_id;
 				const String& texName = glslCompiler.get_name( sampler.image_id );
 				// Set the name of the combined sampler to the texture name.
 				// This is helpful for setting Texture Shader Inputs via the RHICommandList_OpenGLImpl.
 				glslCompiler.set_name( sampler.combined_id, texName );
 			}
+
+			for ( auto& sampler : combinedSamplers )
+			{
+				if ( dummySamplerID != sampler.sampler_id )
+				{
+					continue;
+				}
+				
+				// Remap combined samplers that use dummy samplers to the original combined sampler name.
+				glslCompiler.set_decoration( sampler.combined_id, spv::DecorationBinding, glslCompiler.get_decoration( sampler.image_id, spv::DecorationBinding ) );
+			}
+
 
 			// Get the reflection data if requested.
 			if ( a_Input.GenerateReflectionData )
@@ -723,6 +745,12 @@ namespace Tridium::D3D12 {
 				// Sampled images -> Combined Samplers
 				for ( const auto& c : glslCompiler.get_combined_image_samplers() )
 				{
+					if ( dummySamplerID == c.sampler_id )
+					{
+						// Ignore dummy samplers created by SPIRV-Cross for combined image samplers.
+						continue;
+					}
+
 					ShaderReflectionBinding binding;
 					binding.Name = glslCompiler.get_name( c.combined_id );
 

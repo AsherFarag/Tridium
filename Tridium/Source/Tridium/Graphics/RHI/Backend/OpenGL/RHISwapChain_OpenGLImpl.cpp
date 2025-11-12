@@ -112,13 +112,13 @@ namespace Tridium::OpenGL {
 		}
 
 		// Create VAO, IBO and VBO for the screen quad
-		OpenGL4::CreateVertexArrays( 1, &ScreenQuad.VAO );
+		OpenGL3::GenVertexArrays( 1, &ScreenQuad.VAO );
 
-		OpenGL4::CreateBuffers( 1, &ScreenQuad.VBO );
+		OpenGL3::GenBuffers( 1, &ScreenQuad.VBO );
 		OpenGL3::BindBuffer( GL_ARRAY_BUFFER, ScreenQuad.VBO );
 		OpenGL3::BufferData( GL_ARRAY_BUFFER, sizeof( ScreenQuad.Vertices ), ScreenQuad.Vertices, GL_STATIC_DRAW );
 
-		OpenGL4::CreateBuffers( 1, &ScreenQuad.IBO );
+		OpenGL3::GenBuffers( 1, &ScreenQuad.IBO );
 		OpenGL3::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, ScreenQuad.IBO );
 		OpenGL3::BufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( ScreenQuad.Indices ), ScreenQuad.Indices, GL_STATIC_DRAW );
 
@@ -159,7 +159,7 @@ namespace Tridium::OpenGL {
 			out vec4 o_Color;
 			void main()
 			{
-				vec2 flippedTexCoord = vec2(v_TexCoord.x, /*1.0 - */v_TexCoord.y);
+				vec2 flippedTexCoord = vec2(v_TexCoord.x, 1.0 - v_TexCoord.y);
 				vec3 color = texture(u_Texture, flippedTexCoord).rgb;
 				o_Color = vec4(color, 1.0);
 			}

@@ -361,10 +361,12 @@ namespace Tridium {
 			glfwDefaultWindowHints();
 
 			glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 4 );
-			glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 4 );
+			glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 5 );
 			glfwWindowHint( GLFW_SCALE_TO_MONITOR, GLFW_TRUE );
-			//glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
-			//glfwWindowHint( GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE );
+
+			// TODO: Make these dependant on RHI backend somehow?
+			glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
+			glfwWindowHint( GLFW_OPENGL_DEBUG_CONTEXT, CONFIG_DEBUG );
 
 			glfwWindowHint( GLFW_MAXIMIZED, a_Props.Maximised ? GLFW_TRUE : GLFW_FALSE );
 			glfwWindowHint( GLFW_DECORATED, a_Props.Decorated ? GLFW_TRUE : GLFW_FALSE );

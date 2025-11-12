@@ -15,38 +15,7 @@ namespace Tridium::Win32{
         Window = Cast<GLFWwindow*>( a_Data );
         ENSURE( Window != nullptr, "GLFW window is null!" );
 
-        switch ( a_Renderer )
-        {
-            case EImGuiRenderer::DX11:
-            {
-                NOT_IMPLEMENTED;
-                break;
-            }
-            case EImGuiRenderer::DX12:
-            {
-                //HWND hwnd = glfwGetWin32Window( Window );
-                //if ( hwnd == nullptr )
-                //{
-                //    ENSURE( false, "Failed to get Win32 window from GLFW!" );
-                //    return false;
-                //}
-
-                //if ( !ImGui_ImplWin32_Init( hwnd ) )
-                //{
-                //    ENSURE( false, "Failed to initialize ImGui Win32 backend!" );
-                //    return false;
-                //}
-
-				return ImGui_ImplGlfw_InitForOther( Window, a_InstallCallbacks );
-            }
-            default:
-            {
-                ENSURE( false, "Unknown ImGui renderer!" );
-                break;
-            }
-        }
-
-        return false;
+        return ImGui_ImplGlfw_InitForOther( Window, a_InstallCallbacks );
     }
 
     void PlatformImGuiInterface_Win32::Shutdown()

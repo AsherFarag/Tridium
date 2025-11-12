@@ -630,6 +630,11 @@ namespace Tridium::OpenGL {
 						continue;
 					}
 
+					if ( binding.Resource == nullptr )
+					{
+						continue; // No resource bound for this slot
+					}
+
 					if ( isBufferBinding && binding.Type == bindingDesc.Type() )
 					{
 						if ( auto* buffer = binding.Resource->As<RHIBuffer_OpenGLImpl>() )
@@ -659,7 +664,7 @@ namespace Tridium::OpenGL {
 							RHISampler sampler = binding.Sampler.Valid()
 								? binding.Sampler.Unpack()
 								: texture->Desc().DefaultSampler;
-							const bool isDepth = GetRHIFormatInfo( binding.Format ).HasDepth;
+							const bool isDepth = GetRHIFormatInfo( texture->Desc().Format ).HasDepth;
 							GLuint glSampler = Device()->ResourceCache().GetOrCreateSampler( sampler, isDepth );
 
 							// Bind sampler to same unit
@@ -1133,31 +1138,40 @@ namespace Tridium::OpenGL {
 
 		BindGraphicsBindings( a_GraphicsState );
 
+		// bind the VAO first (VAO will capture element array buffer binding)
 		OpenGL3::BindVertexArray( pso->GetVAO() );
 
-		if ( updateIndexBuffer )
+		// --- ALWAYS bind the element array buffer into the VAO.
+		// Prefer the new state's index buffer; if that's null, fall back to current state's index buffer.
 		{
-			auto* indexBuffer = a_GraphicsState.IndexBuffer ? a_GraphicsState.IndexBuffer->As<RHIBuffer_OpenGLImpl>() : nullptr;
+			auto* indexBuffer = a_GraphicsState.IndexBuffer ? a_GraphicsState.IndexBuffer->As<RHIBuffer_OpenGLImpl>() :
+				( m_CurrentGraphicsState.IndexBuffer ? m_CurrentGraphicsState.IndexBuffer->As<RHIBuffer_OpenGLImpl>() : nullptr );
+
 			if ( indexBuffer )
 				OpenGL1::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, indexBuffer->BufferObj );
 			else
 				OpenGL1::BindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 		}
 
-		if ( updateVertexBuffer )
+		// Ensure the array buffer(s) expected by ApplyVertexLayoutToVAO are bound.
+		// This binds the new vertex buffer if present, otherwise falls back to the currently-bound one.
 		{
-			auto* vertexBuffer = a_GraphicsState.VertexBuffer ? a_GraphicsState.VertexBuffer->As<RHIBuffer_OpenGLImpl>() : nullptr;
+			auto* vertexBuffer = a_GraphicsState.VertexBuffer ? a_GraphicsState.VertexBuffer->As<RHIBuffer_OpenGLImpl>() :
+				( m_CurrentGraphicsState.VertexBuffer ? m_CurrentGraphicsState.VertexBuffer->As<RHIBuffer_OpenGLImpl>() : nullptr );
+
 			if ( vertexBuffer )
 				OpenGL1::BindBuffer( GL_ARRAY_BUFFER, vertexBuffer->BufferObj );
 			else
 				OpenGL1::BindBuffer( GL_ARRAY_BUFFER, 0 );
 		}
 
+		// Now apply the vertex layout (this must happen after the correct GL_ARRAY_BUFFER(s) are bound).
 		pso->ApplyVertexLayoutToVAO( pso->GetVAO() );
 
 		m_CurrentGraphicsState = a_GraphicsState;
 		m_GraphicsStateValid = true;
 	}
+
 
 	void RHICommandList_OpenGLImpl::ClearRenderTargets_Impl( ERHIClearFlags a_Flags, RHIClearValue a_ClearValue, int32_t a_ColorAttachmentIndex )
 	{
@@ -1213,11 +1227,11 @@ namespace Tridium::OpenGL {
 				const RHIScissorRect& scissor = a_ViewportState.Scissors[ i ];
 				// We already flip the Y coordinate in the shader, so no need to do it here.
 				// Not anymore, so we need to flip it again here
-				const GLint flippedTop = m_CurrentGraphicsState.Framebuffer ?
+				const GLint flippedTop = !m_CurrentGraphicsState.Framebuffer.ColorAttachments.Empty() ?
 					m_CurrentGraphicsState.Framebuffer.ColorAttachments[0].Texture->Desc().Height - ( scissor.Top + scissor.Height() ) :
 					0;
 
-				OpenGL4::ScissorIndexed( i, scissor.Left, flippedTop, scissor.Width(), scissor.Height() );
+				OpenGL4::ScissorIndexed( i, scissor.Left, scissor.Top, scissor.Width(), scissor.Height() );
 			}
 		}
 		else

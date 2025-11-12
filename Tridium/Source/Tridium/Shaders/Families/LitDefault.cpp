@@ -102,12 +102,6 @@ namespace Tridium {
 
             radiance *= shadowFactor;
             directLighting += brdf * radiance * NoL;
-
-            // TEMP
-            //directLighting *= 0.0000001f;
-            //float3 proj = lightSpacePos.xyz / lightSpacePos.w;
-            //float2 uv = proj.xy * 0.5f + 0.5f;
-            //directLighting += proj.zzz;
         }
     
         // --- Point lights ---

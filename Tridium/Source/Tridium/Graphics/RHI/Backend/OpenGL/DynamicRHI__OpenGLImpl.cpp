@@ -27,6 +27,11 @@ namespace Tridium::OpenGL {
 			return false;
 		}
 
+		printf( "OpenGL Version: %s\n", glGetString( GL_VERSION ) );
+		printf( "GLSL Version: %s\n", glGetString( GL_SHADING_LANGUAGE_VERSION ) );
+		printf( "Vendor: %s\n", glGetString( GL_VENDOR ) );
+		printf( "Renderer: %s\n", glGetString( GL_RENDERER ) );
+
 	#if RHI_DEBUG_ENABLED
 		if ( a_Config.UseDebug )
 		{

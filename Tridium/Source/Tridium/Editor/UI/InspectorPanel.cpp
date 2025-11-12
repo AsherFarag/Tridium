@@ -11,6 +11,23 @@
 
 namespace Tridium {
 
+	namespace UI {
+
+		void DrawShadow( Vector2 a_Min, Vector2 a_Max, ImGuiDir a_Direction, Color4 a_Color = Color4( 0, 0, 0, 0.25f ) )
+		{
+			const ImU32 imColor = ImGui::ColorConvertFloat4ToU32( ImVec4( a_Color.r, a_Color.g, a_Color.b, a_Color.a ) );
+			ImGui::GetForegroundDrawList( ImGui::GetCurrentWindow() )->AddRectFilledMultiColor(
+				ImVec2( a_Min.X, a_Min.Y ),
+				ImVec2( a_Max.X, a_Max.Y ),
+				a_Direction == ImGuiDir_Right || a_Direction == ImGuiDir_Down ? imColor : IM_COL32( 0, 0, 0, 0 ),
+				a_Direction == ImGuiDir_Left || a_Direction == ImGuiDir_Down ? imColor : IM_COL32( 0, 0, 0, 0 ),
+				a_Direction == ImGuiDir_Left || a_Direction == ImGuiDir_Up ? imColor : IM_COL32( 0, 0, 0, 0 ),
+				a_Direction == ImGuiDir_Right || a_Direction == ImGuiDir_Up ? imColor : IM_COL32( 0, 0, 0, 0 )
+			);
+		}
+
+	}
+
 	void InspectorPanel::OnDraw( StringView a_Name, bool& o_Open )
 	{
 		m_ComponentFilter.Build();
@@ -39,22 +56,29 @@ namespace Tridium {
 			{
 				UI_DrawHeader();
 
-				ImGui::Separator();
-
-				// Calculate space to leave for bottom UI
-				float bottomReserve =
-					ImGui::GetFrameHeightWithSpacing() + // height of one button row
-					ImGui::GetStyle().ItemSpacing.y * 2 + // extra breathing room
-					4.0f; // small safety margin
-
-				if ( ImGui::BeginChild( "##ComponentList", ImVec2( 0, -bottomReserve ), 0, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoBackground ) )
+				// Component List with shadowed separators
 				{
-					UI_DrawComponents();
+					const Vector2 shadowMin = Vector2( ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y );
+					ImGui::Separator();
+					const Vector2 shadowMax = shadowMin + Vector2( ImGui::GetItemRectSize().x, ImGui::GetTextLineHeight() );
+
+					UI::DrawShadow( shadowMin, shadowMax, ImGuiDir_Down );
+
+					// Calculate space to leave for bottom UI
+					float bottomReserve =
+						ImGui::GetFrameHeightWithSpacing() + // height of one button row
+						ImGui::GetStyle().ItemSpacing.y * 2 + // extra breathing room
+						4.0f; // small safety margin
+
+					if ( ImGui::BeginChild( "##ComponentList", ImVec2( 0, -bottomReserve ), 0, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoBackground ) )
+					{
+						UI_DrawComponents();
+					}
+
+					ImGui::EndChild();
+
+					ImGui::Separator();
 				}
-
-				ImGui::EndChild();
-
-				ImGui::Separator();
 
 				UI_DrawAddComponent();
 			}
@@ -119,6 +143,7 @@ namespace Tridium {
 		{
 			const float contentWidth = ImGui::GetContentRegionAvail().x;
 			const float buttonWidth = UI::CalcButtonSize( TE_ICON_TRASH_CAN ).X;
+			const float itemSpacing = ImGui::GetStyle().ItemSpacing.x;
 
 			ImVec2 cursorPos = ImGui::GetCursorPos();
 			ImGui::SetCursorPosX( ImGui::GetContentRegionMax().x - buttonWidth );
@@ -128,7 +153,7 @@ namespace Tridium {
 			ImGui::PopID();
 
 			ImGui::SetCursorPos( cursorPos );
-			const float treeWidth = contentWidth - buttonWidth - ImGui::GetStyle().ItemSpacing.x;
+			const float treeWidth = contentWidth - itemSpacing - buttonWidth;
 			bool opened = UI::BeginTree( a_Name, UI::ETreeFlags::DefaultOpen | UI::ETreeFlags::Framed, treeWidth );
 
 			return opened;
