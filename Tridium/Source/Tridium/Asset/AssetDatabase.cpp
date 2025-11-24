@@ -258,7 +258,7 @@ namespace Tridium {
 
 		AssetImportContext importContext{ a_Path };
 
-		if ( !importer->OnImport( importContext ) )
+		if ( !importer->OnImport( importContext ) || importContext.ImportFailed() )
 		{
 			return Unexpected{ importContext.ErrorMessage() };
 		}

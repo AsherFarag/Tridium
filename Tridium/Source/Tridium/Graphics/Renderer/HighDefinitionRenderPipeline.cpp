@@ -290,11 +290,10 @@ namespace Tridium {
 				const auto& depthTex = a_Graph.GetTexture( depthID );
 
 				constexpr auto shadowMapSampler = RHISampler{}
-					.SetFilter( ERHISamplerFilter::ComparisonMinMagLinearMipPoint )
+					.SetFilter( ERHISamplerFilter::MinMagLinearMipPoint )
 					.SetAddressU( ERHISamplerAddressMode::Border )
 					.SetAddressV( ERHISamplerAddressMode::Border )
 					.SetAddressW( ERHISamplerAddressMode::Border )
-					.SetComparisonFunc( ERHIComparison::LessEqual )
 					.SetBorderColor( Color4::White() );
 
 				auto bindingSetDesc = RHIBindingSetDesc{ PSO->Desc().BindingLayouts[0] }

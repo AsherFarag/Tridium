@@ -13,10 +13,10 @@ namespace Tridium {
 
 	namespace UI {
 
-		void DrawShadow( Vector2 a_Min, Vector2 a_Max, ImGuiDir a_Direction, Color4 a_Color = Color4( 0, 0, 0, 0.25f ) )
+		void DrawShadow( Vector2 a_Min, Vector2 a_Max, ImGuiDir a_Direction, Color4 a_Color = Color4( 0, 0, 0, 0.25f ), ImDrawList* a_DrawList = ImGui::GetWindowDrawList() )
 		{
 			const ImU32 imColor = ImGui::ColorConvertFloat4ToU32( ImVec4( a_Color.r, a_Color.g, a_Color.b, a_Color.a ) );
-			ImGui::GetForegroundDrawList( ImGui::GetCurrentWindow() )->AddRectFilledMultiColor(
+			a_DrawList->AddRectFilledMultiColor(
 				ImVec2( a_Min.X, a_Min.Y ),
 				ImVec2( a_Max.X, a_Max.Y ),
 				a_Direction == ImGuiDir_Right || a_Direction == ImGuiDir_Down ? imColor : IM_COL32( 0, 0, 0, 0 ),
@@ -62,8 +62,6 @@ namespace Tridium {
 					ImGui::Separator();
 					const Vector2 shadowMax = shadowMin + Vector2( ImGui::GetItemRectSize().x, ImGui::GetTextLineHeight() );
 
-					UI::DrawShadow( shadowMin, shadowMax, ImGuiDir_Down );
-
 					// Calculate space to leave for bottom UI
 					float bottomReserve =
 						ImGui::GetFrameHeightWithSpacing() + // height of one button row
@@ -74,6 +72,41 @@ namespace Tridium {
 					{
 						UI_DrawComponents();
 					}
+
+					ImGuiWindow* child = ImGui::GetCurrentWindow();
+					ImDrawList* dl = child->DrawList;
+					const float ShadowSize = 15.0f;
+
+					// Only show fade when some items are hidden above
+					if ( child->Scroll.y > 0.0f )
+					{
+						// Child's clip rect (screen-space)
+						ImVec2 clipMin = dl->GetClipRectMin();
+						ImVec2 clipMax = dl->GetClipRectMax();
+						UI::DrawShadow(
+							Vector2( clipMin.x, clipMin.y - 20.0f ),
+							Vector2( clipMax.x, clipMin.y + ShadowSize ),
+							ImGuiDir_Down,
+							Color4( 0, 0, 0, 0.47f ),
+							dl
+						);
+					}
+
+					// Only show fade when some items are hidden below
+					if ( child->Scroll.y < child->ScrollMax.y )
+					{
+						// Child's clip rect (screen-space)
+						ImVec2 clipMin = dl->GetClipRectMin();
+						ImVec2 clipMax = dl->GetClipRectMax();
+						UI::DrawShadow(
+							Vector2( clipMin.x, clipMax.y - ShadowSize ),
+							Vector2( clipMax.x, clipMax.y + 20.0f ),
+							ImGuiDir_Up,
+							Color4( 0, 0, 0, 0.47f ),
+							dl
+						);
+					}
+
 
 					ImGui::EndChild();
 

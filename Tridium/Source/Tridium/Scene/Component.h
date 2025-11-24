@@ -101,6 +101,9 @@ namespace Tridium {
 	struct NameComponent : Component
 	{
 		String Name = "GameObject";
+
+		NameComponent() = default;
+		NameComponent( String a_Name ) : Name( std::move( a_Name ) ) {}
 	};
 
 	//=================================================================================================
@@ -139,8 +142,7 @@ namespace Tridium {
 		TransformComponent( const Vector3& a_Position ) : m_LocalPosition( a_Position ) {}
 		TransformComponent( const Matrix4& a_Transform )
 		{
-			Math::DecomposeTransform( a_Transform, m_LocalPosition, m_LocalRotation, m_LocalScale );
-			m_LocalEulerAngles = Math::EulerAngles( m_LocalRotation );
+			SetLocalTransform( a_Transform );
 		}
 
 		//=============================================================================================
@@ -173,6 +175,13 @@ namespace Tridium {
 		//=============================================================================================
 		const Vector3& LocalScale() const { return m_LocalScale; }
 		void SetLocalScale( const Vector3& a_Scale ) { m_LocalScale = a_Scale; }
+
+		//=============================================================================================
+		void SetLocalTransform( const Matrix4& a_Transform )
+		{
+			Math::DecomposeTransform( a_Transform, m_LocalPosition, m_LocalRotation, m_LocalScale );
+			m_LocalEulerAngles = Math::EulerAngles( m_LocalRotation );
+		}
 
 		//=============================================================================================
 		Matrix4 LocalTransform() const
@@ -239,16 +248,21 @@ namespace Tridium {
 		void AddChild( EntityComponentRegistry& a_Registry, Entity a_Self, Entity a_Child )
 		{
 			ASSERT( a_Registry.AllOf<TransformComponent>( a_Self ), "Parent entity must have a HierarchyComponent." );
+			ASSERT( a_Self != NullEntity && a_Child != NullEntity, "Cannot add NullEntity as a child." );
 
+			if ( a_Self == a_Child )
+				return;
+			
 			TransformComponent& childHierarchy = a_Registry.GetOrEmplace<TransformComponent>( a_Child );
+
+			if ( childHierarchy.Parent() == a_Self )
+				return; // Already a child of this parent
 
 			// Detach from old parent if needed
 			if ( childHierarchy.Parent() != NullEntity )
 				DetachFromParent( a_Registry, a_Child );
 
 			childHierarchy.m_Parent = a_Self;
-			childHierarchy.m_PrevSibling = NullEntity;
-			childHierarchy.m_NextSibling = NullEntity;
 
 			if ( m_FirstChild == NullEntity )
 			{
@@ -338,6 +352,7 @@ namespace Tridium {
 
 		//=============================================================================================
 		// Recursively iterates all descendants.
+		// This is a depth-first traversal.
 		template<std::invocable<const EntityComponentRegistry&, Entity> Func>
 		void ForEachDescendant( const EntityComponentRegistry& a_Registry, Func&& a_Func ) const
 		{

@@ -86,7 +86,7 @@ namespace Tridium {
 			template<typename T>
 			T& GetComponent() const
 			{
-				return Registry().Get<T>( m_Entity );
+				return Registry().GetOrEmplace<T>( m_Entity );
 			}
 
 		private:
@@ -98,8 +98,9 @@ namespace Tridium {
 		};
 
 		//=============================================================================================
-		Prefab Build()
+		Prefab Build( SharedPtr<AssetInfo> a_Info = nullptr )
 		{
+			m_Prefab.m_Info = std::move( a_Info );
 			return std::move( m_Prefab );
 		}
 
@@ -113,6 +114,12 @@ namespace Tridium {
 			}
 
 			m_Prefab.m_RootEntity = m_Prefab.m_Registry.Create();
+			return { this, m_Prefab.m_RootEntity };
+		}
+
+		//=============================================================================================
+		EntityNode Root()
+		{
 			return { this, m_Prefab.m_RootEntity };
 		}
 

@@ -18,8 +18,8 @@ float3 EvaluateIBL(float3 Albedo, float Roughness, float Metallic, float3 N, flo
                    COMBINED_SAMPLER_PARAM(IrradianceMap, TextureCube),
                    COMBINED_SAMPLER_PARAM(RadianceMap, TextureCube))
 {
-    uint mipLevel; uint width; uint height; uint mipCount;
-    RadianceMap.GetDimensions(mipLevel, width, height, mipCount);
+    uint width; uint height; uint mipCount;
+    RadianceMap.GetDimensions(0, width, height, mipCount);
 
     const float3 F0 = FresnelSchlickRoughness(saturate(dot(N, V)), lerp(float3(0.04, 0.04, 0.04), Albedo, Metallic), Roughness);
     const float NdotV = saturate(dot(N, V));

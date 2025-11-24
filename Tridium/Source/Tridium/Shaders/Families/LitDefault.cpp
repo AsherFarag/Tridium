@@ -55,7 +55,7 @@ namespace Tridium {
     COMBINED_SAMPLER( EmissionMap, Texture2D, 4 );
     COMBINED_SAMPLER( IrradianceMap, TextureCube, 5 );
     COMBINED_SAMPLER( RadianceMap, TextureCube, 6 );
-    COMBINED_COMP_SAMPLER( DirectionalShadowMap, Texture2D, 7 );
+    COMBINED_SAMPLER( DirectionalShadowMap, Texture2D, 7 );
     STRUCTURED_BUFFER( PointLights, PointLight, 8 );
     STRUCTURED_BUFFER( SpotLights, SpotLight, 9 );
 

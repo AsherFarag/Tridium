@@ -33,7 +33,7 @@ float SpotLightFactor(float3 L, float3 SpotDirection, float SpotInnerCos, float 
 }
 
 float SampleDirectionalShadowMap(
-    COMBINED_COMP_SAMPLER_PARAM(ShadowMap, Texture2D),
+    COMBINED_SAMPLER_PARAM(ShadowMap, Texture2D),
     float4 LightSpacePos, float3 Normal, float3 LightDirection
 )
 {
@@ -49,18 +49,26 @@ float SampleDirectionalShadowMap(
         return 1.0f;
 
     // Bias to prevent shadow acne
-    float bias = max(0.0005f * (1.0f - dot(Normal, LightDirection)), 0.0005f);
+    //float bias = max(0.0005f * (1.0f - dot(Normal, LightDirection)), 0.0005f);
+    const float bias = 0.0f;
 
-    // Hardware PCF sample
-    float shadow = ShadowMap.SampleCmpLevelZero(
-        GetCombinedSampler(ShadowMap),
-        uv,
-        currentDepth - bias
-    );
+    // PCF filtering
+    uint width; uint height; uint mipCount;
+    ShadowMap.GetDimensions(0, width, height, mipCount);
 
-    return shadow; // 1 = lit, 0 = shadowed
+    float shadow = 0.0f;
+    const int filterSize = 1; // 3x3 filter
+    for (int x = -filterSize; x <= filterSize; ++x)
+    {
+        for (int y = -filterSize; y <= filterSize; ++y)
+        {
+            float2 offset = float2(x, y) / float2(width, height);
+            shadow += SampleTexture(ShadowMap, uv + offset).r < currentDepth - bias ? 0.0f : 1.0f;
+        }
+    }
+
+    shadow /= pow((filterSize * 2 + 1), 2);
+    return shadow;
 }
-
-
 
 #endif // Lighting_HLSLI

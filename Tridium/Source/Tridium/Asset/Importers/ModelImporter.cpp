@@ -81,9 +81,11 @@ namespace Tridium {
 			ProcessNode( a_Context, m_PrefabBuilder.CreateRoot(), a_Scene, a_Scene->mRootNode );
 
 			String prefabName = a_Scene->mRootNode->mName.C_Str();
-			*a_Context.CreateAsset<Prefab>( prefabName, "TODO" ) = m_PrefabBuilder.Build();
+			m_PrefabBuilder.Root().AddComponent<NameComponent>( prefabName );
+			AssetRef<Prefab> prefab = a_Context.CreateAsset<Prefab>( std::move( prefabName ), "TODO" );
+			const SharedPtr<AssetInfo>& assetInfo = prefab->Info();
+			*prefab = m_PrefabBuilder.Build( assetInfo );
 
-			// Clear cached data
 			Clear();
 		}
 
@@ -158,8 +160,15 @@ namespace Tridium {
 			return;
 		}
 
+		if ( a_Node->mName.length > 0 )
+		{
+			a_Entity.AddComponent<NameComponent>( a_Node->mName.C_Str() );
+		}
+
+		LOG( LogCategory::Asset, Info, "Processing node: '{}'", GetAssimpNodeName( a_Node ) );
+
 		const Matrix4 transform = Mat4FromAIMatrix4x4( a_Node->mTransformation );
-		a_Entity.AddComponent<TransformComponent>( transform );
+		a_Entity.GetComponent<TransformComponent>().SetLocalTransform( transform );
 
 		if ( a_Node->mNumMeshes > 0 )
 		{
@@ -172,7 +181,7 @@ namespace Tridium {
 		// Recurse for each child node and process their meshes
 		for ( uint32_t i = 0; i < a_Node->mNumChildren; ++i )
 		{
-			ProcessNode( a_Context, a_Entity.AddChild(), a_Scene, a_Node->mChildren[i]);
+			ProcessNode( a_Context, a_Entity.AddChild(), a_Scene, a_Node->mChildren[i] );
 
 			if ( a_Context.ImportFailed() )
 			{
