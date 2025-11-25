@@ -78,7 +78,8 @@ namespace Tridium {
 			template<typename T, typename... _Args>
 			EntityNode& AddComponent( _Args&&... a_Args )
 			{
-				Registry().EmplaceOrReplace<T>( m_Entity, std::forward<_Args>( a_Args )... );
+				ASSERT( Registry().AllOf<T>( m_Entity ) == false, "Entity already has component of this type." );
+				Registry().Emplace<T>( m_Entity, std::forward<_Args>( a_Args )... );
 				return *this;
 			}
 
