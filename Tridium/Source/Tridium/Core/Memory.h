@@ -18,11 +18,59 @@ namespace Tridium {
 				delete m_Ptr;
 		}
 
-		T* operator->() const { return m_Ptr; }
-		T& operator*() const { return *m_Ptr; }
+		// Delete copy constructor and copy assignment to prevent double-delete
+		Scope( const Scope& ) = delete;
+		Scope& operator=( const Scope& ) = delete;
+
+		// Move constructor
+		Scope( Scope&& a_Other ) noexcept
+			: m_Ptr( a_Other.m_Ptr ), m_Retired( a_Other.m_Retired )
+		{
+			a_Other.m_Ptr = nullptr;
+			a_Other.m_Retired = false;
+		}
+
+		// Move assignment operator
+		Scope& operator=( Scope&& a_Other ) noexcept
+		{
+			if ( this != &a_Other )
+			{
+				// Clean up existing resource
+				if ( m_Ptr && !m_Retired )
+					delete m_Ptr;
+
+				// Transfer ownership
+				m_Ptr = a_Other.m_Ptr;
+				m_Retired = a_Other.m_Retired;
+				a_Other.m_Ptr = nullptr;
+				a_Other.m_Retired = false;
+			}
+			return *this;
+		}
+
+		T* operator->() const
+		{
+			ASSERT( m_Ptr != nullptr );
+			return m_Ptr;
+		}
+		
+		T& operator*() const
+		{
+			ASSERT( m_Ptr != nullptr );
+			return *m_Ptr;
+		}
 
 		T* Get() const { return m_Ptr; }
-		void Set( T* a_Ptr ) { m_Ptr = a_Ptr; m_Retired = false; }
+		
+		// Set a new pointer, cleaning up the old one if needed
+		void Set( T* a_Ptr )
+		{
+			if ( m_Ptr && !m_Retired )
+				delete m_Ptr;
+			m_Ptr = a_Ptr;
+			m_Retired = false;
+		}
+		
 		bool IsRetired() const { return m_Retired; }
 		void Retire() { m_Retired = true; }
 
