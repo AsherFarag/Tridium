@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <utility>
 #include <Tridium/Core/Assert.h>
 
 namespace Tridium {
@@ -39,10 +40,8 @@ namespace Tridium {
 					delete m_Ptr;
 
 				// Transfer ownership
-				m_Ptr = a_Other.m_Ptr;
-				m_Retired = a_Other.m_Retired;
-				a_Other.m_Ptr = nullptr;
-				a_Other.m_Retired = false;
+				m_Ptr = std::exchange( a_Other.m_Ptr, nullptr );
+				m_Retired = std::exchange( a_Other.m_Retired, false );
 			}
 			return *this;
 		}
