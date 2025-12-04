@@ -11,6 +11,16 @@ namespace Tridium {
 
 	void JoltMeshCollider::Generate( const std::vector<Vector3>& a_Vertices, const std::vector<uint32_t>& a_Indices, const AABBOld& a_BoundingBox )
 	{
+		// Validate input: indices must be a multiple of 3 (triangles)
+		if ( a_Indices.size() % 3 != 0 )
+		{
+			LOG( LogCategory::Physics, Error, "Invalid mesh collider: index count ({}) is not a multiple of 3", a_Indices.size() );
+			m_IsValid = false;
+			m_MeshShape = nullptr;
+			m_MeshShapeSettings = nullptr;
+			return;
+		}
+
 		// Convert the vertices to Jolt's format
 		JPH::VertexList vertices;
 		vertices.reserve( a_Vertices.size() );
@@ -22,7 +32,7 @@ namespace Tridium {
 		// Convert the indices to Jolt's format
 		JPH::IndexedTriangleList triangles;
 		triangles.reserve( a_Indices.size() / 3 );
-		for ( size_t i = 0; i < a_Indices.size(); i += 3 )
+		for ( size_t i = 0; i + 2 < a_Indices.size(); i += 3 )
 		{
 			triangles.emplace_back( a_Indices[i], a_Indices[i + 1], a_Indices[i + 2] );
 		}
