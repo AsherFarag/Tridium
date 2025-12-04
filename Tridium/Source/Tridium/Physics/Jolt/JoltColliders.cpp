@@ -37,9 +37,12 @@ namespace Tridium {
 			triangles.emplace_back( a_Indices[i], a_Indices[i + 1], a_Indices[i + 2] );
 		}
 
+		// NOTE: Raw new is safe here - JPH::Ref<> (used in m_MeshShapeSettings) is a reference-counted 
+		// smart pointer that automatically manages the memory when the ref count reaches zero
 		m_MeshShapeSettings = new JPH::MeshShapeSettings( vertices, triangles );
 
 		JPH::Shape::ShapeResult result;
+		// NOTE: Raw new is safe here - JPH::Ref<> (used in m_MeshShape) automatically manages the memory
 		m_MeshShape = new JPH::MeshShape( *m_MeshShapeSettings, result );
 
 		if ( result.HasError() )

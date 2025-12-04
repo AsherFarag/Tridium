@@ -275,6 +275,8 @@ namespace Tridium {
 			using FnType = std::decay_t<_Callable>;
 			Unbind();
 
+			// NOTE: Raw new/delete is intentional here for type erasure pattern
+			// Memory is managed through m_Deleter function pointer and cleaned up in Unbind()/destructor
 			m_Object = new FnType( std::forward<_Callable>( a_Callable ) );
 
 			m_Invoker = []( void* a_Obj, _Args... a_Args ) -> ReturnType

@@ -15,12 +15,16 @@ namespace Tridium {
 		JPH::RegisterDefaultAllocator();
 
 		// Create a factory, this class is responsible for creating instances of classes based on their name or hash and is mainly used for deserialization of saved data.
+		// NOTE: Raw new/delete is intentional here - this follows Jolt Physics library's singleton pattern
+		// The instance is owned by the library and must be deleted in Shutdown()
 		JPH::Factory::sInstance = new JPH::Factory();
 
 		JPH::RegisterTypes();
 
 	#if USE_DEBUG_RENDERER
 
+		// NOTE: Raw new/delete is intentional here - this follows Jolt Physics library's singleton pattern
+		// The instance is owned by the library and must be deleted in Shutdown()
 		JPH::DebugRenderer::sInstance = new JoltDebugRenderer();
 
 	#endif // USE_DEBUG_RENDERER
