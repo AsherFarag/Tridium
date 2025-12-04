@@ -32,7 +32,8 @@ namespace Tridium {
 		// Convert the indices to Jolt's format
 		JPH::IndexedTriangleList triangles;
 		triangles.reserve( a_Indices.size() / 3 );
-		for ( size_t i = 0; i + 2 < a_Indices.size(); i += 3 )
+		// Note: Validation above ensures a_Indices.size() % 3 == 0, so this loop is safe
+		for ( size_t i = 0; i < a_Indices.size(); i += 3 )
 		{
 			triangles.emplace_back( a_Indices[i], a_Indices[i + 1], a_Indices[i + 2] );
 		}

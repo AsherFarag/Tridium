@@ -24,10 +24,9 @@ namespace Tridium {
 
 		// Move constructor
 		Scope( Scope&& a_Other ) noexcept
-			: m_Ptr( a_Other.m_Ptr ), m_Retired( a_Other.m_Retired )
+			: m_Ptr( std::exchange( a_Other.m_Ptr, nullptr ) )
+			, m_Retired( std::exchange( a_Other.m_Retired, false ) )
 		{
-			a_Other.m_Ptr = nullptr;
-			a_Other.m_Retired = false;
 		}
 
 		// Move assignment operator
