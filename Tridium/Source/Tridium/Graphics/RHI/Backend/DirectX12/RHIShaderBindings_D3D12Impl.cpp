@@ -120,8 +120,10 @@ namespace Tridium::D3D12 {
                         UAVBindingOffset = i;
                         break;
                     case ERHIBindingType::BindlessTextureArray:
-                        // Bindless arrays are treated as SRVs
-                        if ( lastType != ERHIBindingType::ConstantBuffer )
+                        // Bindless arrays are treated as SRVs (like Texture and StructuredBuffer)
+                        if ( lastType != ERHIBindingType::ConstantBuffer
+                            && lastType != ERHIBindingType::StructuredBuffer
+                            && lastType != ERHIBindingType::Texture )
                         {
                             CBVBindingOffset = i;
                         }
@@ -208,7 +210,8 @@ namespace Tridium::D3D12 {
 
                     // For bindless, use unbounded descriptor arrays
                     // This requires Shader Model 6.6+ and Resource Binding Tier 3
-                    // Note: Device feature support is validated during RHI initialization
+                    // Note: Device feature support is validated in DynamicRHI_D3D12Impl::QueryGPUInfo()
+                    // and stored in RHIDeviceFeatures::Shader::BindlessResourcesSupported
                     range.NumDescriptors = BINDLESS_DESCRIPTOR_COUNT;
                     range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
@@ -401,8 +404,10 @@ namespace Tridium::D3D12 {
 
         if ( layout->DescriptorTableSizeRenderResources <= 0 || IsBindlessDescriptorCount( layout->DescriptorTableSizeRenderResources ) )
         {
-			// For bindless arrays, we'll use a GPU-visible heap managed differently
-			// For now, skip the traditional heap allocation
+			// For bindless arrays, we use the global GPU-visible descriptor heap
+			// instead of allocating individual poolable heaps. Bindless descriptors
+			// are managed dynamically and bound via descriptor tables at draw time.
+			// The application is responsible for ensuring bindless resources remain valid.
 			return;
         }
 
