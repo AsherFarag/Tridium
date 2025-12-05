@@ -345,7 +345,46 @@ namespace Tridium::D3D12 {
 		// Create Descriptor Heaps for Samplers and Render Resources
 
 		auto* const layout = a_Desc.Layout->As<RHIBindingLayout_D3D12Impl>();
-        if ( layout->DescriptorTableSizeSamplers > 0 && !IsBindlessDescriptorCount( layout->DescriptorTableSizeSamplers ) )
+
+		// Handle bindless sampler arrays
+		if ( layout->DescriptorTableSizeSamplers > 0 && IsBindlessDescriptorCount( layout->DescriptorTableSizeSamplers ) )
+		{
+			// Count bindless textures that need samplers
+			size_t bindlessSamplerCount = 0;
+			for ( const auto& binding : m_Desc.Bindings )
+			{
+				if ( binding.Type == ERHIBindingType::BindlessTextureArray && binding.Resource )
+				{
+					bindlessSamplerCount++;
+				}
+			}
+
+			if ( bindlessSamplerCount > 0 )
+			{
+				SamplerHeap = Device()->GetDescriptorHeapManager().AllocateHeap(
+					ERHIDescriptorHeapType::Sampler,
+					static_cast<uint32_t>( bindlessSamplerCount ),
+					EDescriptorHeapFlags::GPUVisible
+				);
+
+				uint32_t samplerIndex = 0;
+				for ( const auto& binding : m_Desc.Bindings )
+				{
+					if ( binding.Type == ERHIBindingType::BindlessTextureArray && binding.Resource )
+					{
+						D3D12_CPU_DESCRIPTOR_HANDLE handle = SamplerHeap->GetCPUHandle( samplerIndex );
+						RHISampler sampler = binding.Sampler.Valid()
+							? binding.Sampler.Unpack()
+							: binding.Resource->As<IRHITexture>()->Desc().DefaultSampler;
+
+						D3D12_SAMPLER_DESC d3d12Sampler = Translate<D3D12_SAMPLER_DESC, RHISampler>( sampler );
+						Device()->GetD3D12Device()->CreateSampler( &d3d12Sampler, handle );
+						samplerIndex++;
+					}
+				}
+			}
+		}
+		else if ( layout->DescriptorTableSizeSamplers > 0 )
         {
 			SamplerHeap = Device()->GetDescriptorHeapManager().AllocateHeap(
                 ERHIDescriptorHeapType::Sampler,
@@ -402,14 +441,65 @@ namespace Tridium::D3D12 {
             }
 		}
 
-        if ( layout->DescriptorTableSizeRenderResources <= 0 || IsBindlessDescriptorCount( layout->DescriptorTableSizeRenderResources ) )
+        if ( layout->DescriptorTableSizeRenderResources <= 0 )
         {
-			// For bindless arrays, we use the global GPU-visible descriptor heap
-			// instead of allocating individual poolable heaps. Bindless descriptors
-			// are managed dynamically and bound via descriptor tables at draw time.
-			// The application is responsible for ensuring bindless resources remain valid.
 			return;
         }
+
+		// Handle bindless texture arrays separately
+		if ( IsBindlessDescriptorCount( layout->DescriptorTableSizeRenderResources ) )
+		{
+			// For bindless arrays, we need to create descriptors in a GPU-visible heap
+			// Count how many bindless textures are actually provided
+			size_t bindlessTextureCount = 0;
+			for ( const auto& binding : a_Desc.Bindings )
+			{
+				if ( binding.Type == ERHIBindingType::BindlessTextureArray && binding.Resource )
+				{
+					bindlessTextureCount++;
+				}
+			}
+
+			if ( bindlessTextureCount == 0 )
+			{
+				// No bindless resources provided, nothing to do
+				return;
+			}
+
+			// Allocate a heap for the actual number of bindless textures provided
+			RenderResourceHeap = Device()->GetDescriptorHeapManager().AllocateHeap(
+				ERHIDescriptorHeapType::RenderResource,
+				static_cast<uint32_t>( bindlessTextureCount ),
+				EDescriptorHeapFlags::GPUVisible
+			);
+
+			// Create descriptors for bindless textures
+			uint32_t descriptorIndex = 0;
+			for ( const auto& binding : a_Desc.Bindings )
+			{
+				if ( binding.Type == ERHIBindingType::BindlessTextureArray && binding.Resource )
+				{
+					auto* texture = binding.Resource->As<RHITexture_D3D12Impl>();
+					D3D12_CPU_DESCRIPTOR_HANDLE handle = RenderResourceHeap->GetCPUHandle( descriptorIndex );
+
+					D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = texture->CreateSRVDesc(
+						binding.Format,
+						binding.TextureDimension,
+						binding.Subresources.Resolve( texture->Desc(), false )
+					);
+
+					Device()->GetD3D12Device()->CreateShaderResourceView(
+						texture->Texture.Resource(),
+						&srvDesc,
+						handle
+					);
+
+					descriptorIndex++;
+				}
+			}
+
+			return;
+		}
 
         RenderResourceHeap = Device()->GetDescriptorHeapManager().AllocateHeap(
             ERHIDescriptorHeapType::RenderResource,

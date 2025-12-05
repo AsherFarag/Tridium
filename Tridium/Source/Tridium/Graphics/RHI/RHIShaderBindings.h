@@ -479,6 +479,35 @@ namespace Tridium {
 			return *this;
 		}
 
+		// Add an array of textures for bindless rendering
+		// For bindless texture arrays, each texture gets its own descriptor at consecutive indices
+		// starting from the base slot.
+		auto& AddBindlessTextureArray(
+			uint32_t a_BaseSlot, Span<IRHITexture* const> a_Textures,
+			const RHISampler* a_Sampler = nullptr,
+			ERHIFormat a_Format = ERHIFormat::Unknown,
+			ERHITextureDimension a_TextureDimension = ERHITextureDimension::Unknown )
+		{
+			for ( size_t i = 0; i < a_Textures.size(); ++i )
+			{
+				if ( a_Textures[i] != nullptr )
+				{
+					RHIBindingSetItem& item = Bindings.EmplaceBack( RHIBindingSetItem::None() );
+					item.Resource = a_Textures[i];
+					item.Slot = a_BaseSlot + static_cast<uint32_t>( i );
+					item.Type = ERHIBindingType::BindlessTextureArray;
+					item.Subresources = RHITextureSubresourceSet::All();
+					item.Format = a_Format;
+					item.TextureDimension = a_TextureDimension == ERHITextureDimension::Unknown && a_Textures[i]
+						? a_Textures[i]->Desc().Dimension
+						: a_TextureDimension;
+					if ( a_Sampler )
+						item.Sampler = RHIPackedSampler::Pack( *a_Sampler );
+				}
+			}
+			return *this;
+		}
+
 		//==========================================
 		// Convenience functions for adding bindings by name.
 		// These functions are only available if the layout is set.
@@ -538,6 +567,18 @@ namespace Tridium {
 			auto binding = Layout->Desc().GetBindingFromName( a_Name.Hash() );
 			ValidateBinding( binding, ERHIBindingType::StorageTexture );
 			return AddStorageTexture( binding.Slot, a_Texture, a_Sampler, a_Subresources );
+		}
+
+		auto& AddBindlessTextureArray(
+			HashedString a_Name, Span<IRHITexture* const> a_Textures,
+			const RHISampler* a_Sampler = nullptr,
+			ERHIFormat a_Format = ERHIFormat::Unknown,
+			ERHITextureDimension a_TextureDimension = ERHITextureDimension::Unknown )
+		{
+			RHI_DEV_CHECK( Layout != nullptr, "Layout is null!" );
+			auto binding = Layout->Desc().GetBindingFromName( a_Name.Hash() );
+			ValidateBinding( binding, ERHIBindingType::BindlessTextureArray );
+			return AddBindlessTextureArray( binding.Slot, a_Textures, a_Sampler, a_Format, a_TextureDimension );
 		}
 
 		bool operator==( const RHIBindingSetDesc& a_Other ) const
