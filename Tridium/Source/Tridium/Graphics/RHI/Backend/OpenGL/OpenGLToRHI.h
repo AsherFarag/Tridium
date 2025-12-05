@@ -275,16 +275,17 @@ namespace Tridium::OpenGL {
 		case Geometry:    return GL_GEOMETRY_SHADER_BIT;
 		case Pixel:       return GL_FRAGMENT_SHADER_BIT;
 		case Compute:     return GL_COMPUTE_SHADER_BIT;
-		case Amplification: return GL_ALL_SHADER_BITS; // OpenGL doesn't have mesh shaders
-		case Mesh:        return GL_ALL_SHADER_BITS; // OpenGL doesn't have mesh shaders
-		case RayGeneration: return GL_ALL_SHADER_BITS; // OpenGL doesn't have ray tracing shaders
-		case Intersection: return GL_ALL_SHADER_BITS; // OpenGL doesn't have ray tracing shaders
-		case AnyHit:      return GL_ALL_SHADER_BITS; // OpenGL doesn't have ray tracing shaders
-		case ClosestHit:  return GL_ALL_SHADER_BITS; // OpenGL doesn't have ray tracing shaders
-		case Miss:        return GL_ALL_SHADER_BITS; // OpenGL doesn't have ray tracing shaders
-		case Callable:    return GL_ALL_SHADER_BITS; // OpenGL doesn't have ray tracing shaders
 		case All:         return GL_ALL_SHADER_BITS;
-		default:          return GL_ALL_SHADER_BITS;
+		// OpenGL doesn't support mesh shaders or ray tracing shaders
+		case Amplification:
+		case Mesh:
+		case RayGeneration:
+		case Intersection:
+		case AnyHit:
+		case ClosestHit:
+		case Miss:
+		case Callable:
+		default:          return 0;
 		}
 	}
 

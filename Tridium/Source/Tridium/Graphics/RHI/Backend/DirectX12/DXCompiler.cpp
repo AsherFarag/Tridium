@@ -504,9 +504,11 @@ namespace Tridium::D3D12 {
 			// Amplification shaders require SM 6.5+
 			switch ( a_Model )
 			{
-			default:                      return L"as_6_5";
 			case ERHIShaderModel::SM_6_5: return L"as_6_5";
 			case ERHIShaderModel::SM_6_6: return L"as_6_6";
+			default:
+				ASSERT( false, "GetShaderModelFlag: Amplification shaders require Shader Model 6.5 or higher." );
+				return L"as_6_5"; // Fallback
 			}
 		}
 		case ERHIShaderType::Mesh:
@@ -514,9 +516,11 @@ namespace Tridium::D3D12 {
 			// Mesh shaders require SM 6.5+
 			switch ( a_Model )
 			{
-			default:                      return L"ms_6_5";
 			case ERHIShaderModel::SM_6_5: return L"ms_6_5";
 			case ERHIShaderModel::SM_6_6: return L"ms_6_6";
+			default:
+				ASSERT( false, "GetShaderModelFlag: Mesh shaders require Shader Model 6.5 or higher." );
+				return L"ms_6_5"; // Fallback
 			}
 		}
 		case ERHIShaderType::RayGeneration:
