@@ -291,7 +291,7 @@ namespace Tridium::D3D12 {
 
 			queue->UpdateLastCompletedValue();
 
-			while ( !queue->CmdContextsInFlight.empty() 
+			while ( !queue->CmdContextsInFlight.empty()
 				  && queue->CmdContextsInFlight.back().SubmittedValue <= queue->LastSubmittedValue )
 			{
 				queue->CmdContextsInFlight.pop_back();
@@ -378,11 +378,11 @@ namespace Tridium::D3D12 {
 		deviceFeatures.Multithreading = m_Config.SingleThreaded ? false : true;
 
 		// = Shader Features =
-		
+
 		auto& shaderFeatures = deviceFeatures.Shader;
 
 		D3D_SHADER_MODEL highestShaderModel = D3D_SHADER_MODEL::D3D_SHADER_MODEL_6_0;
-		if ( D3D12_FEATURE_DATA_SHADER_MODEL shaderModel{}; 
+		if ( D3D12_FEATURE_DATA_SHADER_MODEL shaderModel{};
 			SUCCEEDED( m_Device->CheckFeatureSupport( D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof( shaderModel ) ) ) )
 		{
 			highestShaderModel = shaderModel.HighestShaderModel;
@@ -390,17 +390,17 @@ namespace Tridium::D3D12 {
 		}
 
 		shaderFeatures.ComputeShadersSupported = highestShaderModel >= D3D_SHADER_MODEL_5_1;
-		
+
 		if ( D3D12_FEATURE_DATA_D3D12_OPTIONS options{};
 			SUCCEEDED( m_Device->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof( options ) ) ) )
 		{
 			// From: https://microsoft.github.io/DirectX-Specs/d3d/HLSL_SM_6_6_DynamicResources.html
-			shaderFeatures.BindlessResourcesSupported = 
+			shaderFeatures.BindlessResourcesSupported =
 				highestShaderModel >= D3D_SHADER_MODEL::D3D_SHADER_MODEL_6_6
 				&& options.ResourceBindingTier >= D3D12_RESOURCE_BINDING_TIER_3;
 		}
 
-		if ( D3D12_FEATURE_DATA_D3D12_OPTIONS5 options{}; 
+		if ( D3D12_FEATURE_DATA_D3D12_OPTIONS5 options{};
 			SUCCEEDED( m_Device->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS5, &options, sizeof( options ) ) ) )
 		{
 			shaderFeatures.RayTracingSupported = options.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
@@ -458,7 +458,7 @@ namespace Tridium::D3D12 {
 			newRootSignature = MakeShared<RootSignature>( std::move( rootSig ) );
 			m_RootSignatureCache[hash] = newRootSignature;
 		}
-		
+
 		return newRootSignature;
 	}
 

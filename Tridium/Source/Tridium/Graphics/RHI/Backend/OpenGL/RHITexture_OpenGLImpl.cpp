@@ -184,7 +184,7 @@ namespace Tridium::OpenGL {
 		{
 			OpenGL4::ObjectLabel( GL_TEXTURE, m_GLHandle, (GLsizei)m_Desc.Name.size(), m_Desc.Name.c_str() );
 		}
-	#endif	
+	#endif
 
 		const auto samplerProps = Device()->GetGPUInfo().DeviceFeatures.Sampler;
 
@@ -230,7 +230,7 @@ namespace Tridium::OpenGL {
 		void* mappedData = OpenGL3::MapBufferRange( GL_PIXEL_PACK_BUFFER,
 			(GLintptr)subresourceRange.Offset,
 			(GLsizeiptr)subresourceRange.Size,
-			GL_MAP_READ_BIT 
+			GL_MAP_READ_BIT
 		);
 		OpenGL1::BindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
 
@@ -334,7 +334,7 @@ namespace Tridium::OpenGL {
 		{
 			OpenGL4::ObjectLabel( GL_BUFFER, m_GLHandle, (GLsizei)m_Desc.Name.size(), m_Desc.Name.c_str() );
 		}
-	#endif	
+	#endif
 
 		OpenGL1::BindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
 

@@ -105,6 +105,14 @@ namespace Tridium::D3D12 {
                         }
                         UAVBindingOffset = i;
                         break;
+                    case ERHIBindingType::BindlessTextureArray:
+                        // Bindless arrays are treated as SRVs
+                        if ( lastType != ERHIBindingType::ConstantBuffer )
+                        {
+                            CBVBindingOffset = i;
+                        }
+                        SRVBindingOffset = i;
+                        break;
                     default:
                         break;
                     }
@@ -180,6 +188,27 @@ namespace Tridium::D3D12 {
                     range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
                     break;
                 }
+                case ERHIBindingType::BindlessTextureArray:
+                {
+                    range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+
+                    // For bindless, use unbounded descriptor arrays (UINT_MAX descriptors)
+                    // This requires Shader Model 6.6+ and Resource Binding Tier 3
+                    range.NumDescriptors = UINT_MAX;
+                    range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
+
+                    // We combine samplers and textures into a single binding
+                    // For bindless arrays, we also need an unbounded sampler array
+                    D3D12_DESCRIPTOR_RANGE1& samplerRange = DescriptorRangesSamplers.EmplaceBack();
+                    samplerRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+                    samplerRange.NumDescriptors = UINT_MAX;
+                    samplerRange.BaseShaderRegister = binding.Slot;
+                    samplerRange.RegisterSpace = m_Desc.RegisterSpace;
+                    samplerRange.OffsetInDescriptorsFromTableStart = 0;
+                    samplerRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
+                    DescriptorTableSizeSamplers = UINT_MAX;
+                    break;
+                }
                 default:
                 {
                     RHI_DEV_CHECK( false, "Invalid binding type '{}'", ToString( binding.Type() ) );
@@ -187,11 +216,23 @@ namespace Tridium::D3D12 {
                 }
                 }
 
-                range.NumDescriptors = 1;
-                range.BaseShaderRegister = binding.Slot;
-                range.RegisterSpace = m_Desc.RegisterSpace;
-                range.OffsetInDescriptorsFromTableStart = DescriptorTableSizeRenderResources++;
-                range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
+                // For bindless arrays, NumDescriptors is already set to UINT_MAX above
+                if ( binding.Type() != ERHIBindingType::BindlessTextureArray )
+                {
+                    range.NumDescriptors = 1;
+                    range.BaseShaderRegister = binding.Slot;
+                    range.RegisterSpace = m_Desc.RegisterSpace;
+                    range.OffsetInDescriptorsFromTableStart = DescriptorTableSizeRenderResources++;
+                    range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
+                }
+                else
+                {
+                    // Bindless arrays already have their properties set
+                    range.BaseShaderRegister = binding.Slot;
+                    range.RegisterSpace = m_Desc.RegisterSpace;
+                    range.OffsetInDescriptorsFromTableStart = 0;
+                    DescriptorTableSizeRenderResources = UINT_MAX;
+                }
 
                 RenderResourceBindingLayouts.PushBack( binding );
 

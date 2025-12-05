@@ -81,7 +81,7 @@ namespace Tridium {
 	//=========================================================
 	// EGPUVendorID
 	//=========================================================
-	
+
 	static constexpr StringView ToString( EGPUVendorID a_Vendor )
 	{
 		switch ( a_Vendor )

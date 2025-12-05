@@ -8,7 +8,7 @@
 #include <d3d12.h>
 #include "ThirdParty/d3dx12.h"
 #include <dxgi1_6.h>
-	
+
 #if RHI_DEBUG_ENABLED
 	#include <d3d12sdklayers.h>
 	#include <dxgidebug.h>

@@ -231,7 +231,7 @@ namespace Tridium::OpenGL {
 			o_MinFilter = o_MagFilter = GL_LINEAR;
 			o_MipFilter = GL_NEAREST;
 			o_IsComparison = true;
-			break;	
+			break;
 
 		case ComparisonMinMagMipLinear:
 			o_MinFilter = o_MagFilter = o_MipFilter = GL_LINEAR;

@@ -31,7 +31,7 @@ namespace Tridium::D3D12 {
 
 		const D3D12_RESOURCE_DESC d3d12Desc = GetD3D12ResourceDesc();
 		D3D12MA::ALLOCATION_DESC allocDesc{};
-		
+
 		switch ( m_Desc.HeapType )
 		{
 			case ERHIHeapType::Dynamic: // We just treat dynamic as default for now

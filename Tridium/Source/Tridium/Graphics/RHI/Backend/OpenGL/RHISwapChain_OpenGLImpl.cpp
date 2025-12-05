@@ -19,7 +19,7 @@ namespace Tridium::OpenGL {
 				OpenGL1::Scissor( 0, 0, m_Width, m_Height );
 
 				OpenGL1::Disable( GL_DEPTH_TEST );
-				
+
 				// Draw the textured quad onto the screen
 				OpenGL2::UseProgram( m_Framebuffer.ShaderID );
 

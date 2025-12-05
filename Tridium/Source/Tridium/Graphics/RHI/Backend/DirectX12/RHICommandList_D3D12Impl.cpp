@@ -98,10 +98,10 @@ namespace Tridium::D3D12 {
 
 		m_ResourceStateTracker.ResourceBarriers.Clear();
 	}
-	
+
 	// --- Commands ---
 
-	bool RHICommandList_D3D12Impl::Open() 
+	bool RHICommandList_D3D12Impl::Open()
 	{
 		IRHICommandList::Open();
 
@@ -135,7 +135,7 @@ namespace Tridium::D3D12 {
 		}
 		else
 		{
-			// Create a new command list 
+			// Create a new command list
 			const D3D12_COMMAND_LIST_TYPE d3dCmdListType = Translate( m_Desc.QueueType );
 			RHI_DEV_CHECK( d3dCmdListType != D3D12_COMMAND_LIST_TYPE_NONE, "Invalid command list type!" );
 
@@ -319,7 +319,7 @@ namespace Tridium::D3D12 {
 		m_CmdContext.ReferencedResources.EmplaceBack( a_Texture.Shared() );
 	}
 
-	void RHICommandList_D3D12Impl::UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes, RHI_DEBUG_SRC_LOC_PARAM ) 
+	void RHICommandList_D3D12Impl::UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes, RHI_DEBUG_SRC_LOC_PARAM )
 	{
 		RHIBuffer_D3D12Impl* buffer = a_Buffer.As<RHIBuffer_D3D12Impl>();
 
@@ -391,7 +391,7 @@ namespace Tridium::D3D12 {
 		}
 	}
 
-	void RHICommandList_D3D12Impl::CopyBuffer( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange, RHI_DEBUG_SRC_LOC_PARAM ) 
+	void RHICommandList_D3D12Impl::CopyBuffer( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange, RHI_DEBUG_SRC_LOC_PARAM )
 	{
 		IRHICommandList::CopyBuffer( a_DstBuffer, a_DstOffsetBytes, a_SrcBuffer, a_SrcRange, RHI_DEBUG_SRC_LOC );
 
@@ -421,7 +421,7 @@ namespace Tridium::D3D12 {
 		}
 	}
 
-	void RHICommandList_D3D12Impl::UpdateTexture( IRHITexture& a_Texture, const RHITextureSlice& a_DstSlice, RHITextureSubresourceData a_Data, RHI_DEBUG_SRC_LOC_PARAM ) 
+	void RHICommandList_D3D12Impl::UpdateTexture( IRHITexture& a_Texture, const RHITextureSlice& a_DstSlice, RHITextureSubresourceData a_Data, RHI_DEBUG_SRC_LOC_PARAM )
 	{
 		IRHICommandList::UpdateTexture( a_Texture, a_DstSlice, a_Data, RHI_DEBUG_SRC_LOC );
 		TODO( "Handle different texture sizes" );
@@ -535,7 +535,7 @@ namespace Tridium::D3D12 {
 		);
 	}
 
-	void RHICommandList_D3D12Impl::CopyTexture( IRHITexture& a_DstTexture, const RHITextureSlice& a_DstSlice, IRHITexture& a_SrcTexture, const RHITextureSlice& a_SrcSlice, RHI_DEBUG_SRC_LOC_PARAM ) 
+	void RHICommandList_D3D12Impl::CopyTexture( IRHITexture& a_DstTexture, const RHITextureSlice& a_DstSlice, IRHITexture& a_SrcTexture, const RHITextureSlice& a_SrcSlice, RHI_DEBUG_SRC_LOC_PARAM )
 	{
 		IRHICommandList::CopyTexture( a_DstTexture, a_DstSlice, a_SrcTexture, a_SrcSlice, RHI_DEBUG_SRC_LOC );
 
@@ -571,7 +571,7 @@ namespace Tridium::D3D12 {
 		);
 	}
 
-	void RHICommandList_D3D12Impl::SetInlinedConstants( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes, RHI_DEBUG_SRC_LOC_PARAM ) 
+	void RHICommandList_D3D12Impl::SetInlinedConstants( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes, RHI_DEBUG_SRC_LOC_PARAM )
 	{
 		const RootSignature* rootSig = nullptr;
 		bool isGraphics = false;
@@ -592,19 +592,19 @@ namespace Tridium::D3D12 {
 		if ( isGraphics )
 		{
 			m_ActiveCmdList.CmdList->SetGraphicsRoot32BitConstants(
-				rootSig->RootParamInlinedConstants, 
-				NumDWORDsFromBytes( a_SizeBytes ), 
-				a_Data, 
-				NumDWORDsFromBytes( a_DstOffsetBytes ) 
+				rootSig->RootParamInlinedConstants,
+				NumDWORDsFromBytes( a_SizeBytes ),
+				a_Data,
+				NumDWORDsFromBytes( a_DstOffsetBytes )
 			);
 		}
 		else
 		{
 			m_ActiveCmdList.CmdList->SetComputeRoot32BitConstants(
-				rootSig->RootParamInlinedConstants, 
-				NumDWORDsFromBytes( a_SizeBytes ), 
-				a_Data, 
-				NumDWORDsFromBytes( a_DstOffsetBytes ) 
+				rootSig->RootParamInlinedConstants,
+				NumDWORDsFromBytes( a_SizeBytes ),
+				a_Data,
+				NumDWORDsFromBytes( a_DstOffsetBytes )
 			);
 		}
 	}
@@ -616,7 +616,7 @@ namespace Tridium::D3D12 {
 		auto* pso = a_GraphicsState.PipelineState->As<RHIGraphicsPipelineState_D3D12Impl>();
 		RHI_DEV_CHECK( pso, "Invalid graphics pipeline state!" );
 
-		const bool updateRootSig = !m_GraphicsStateValid 
+		const bool updateRootSig = !m_GraphicsStateValid
 			|| m_CurrentGraphicsState.PipelineState == nullptr
 			|| m_CurrentGraphicsState.PipelineState->As<RHIGraphicsPipelineState_D3D12Impl>()->RootSig != pso->RootSig;
 
@@ -809,7 +809,7 @@ namespace Tridium::D3D12 {
 			D3D12_CLEAR_FLAGS clearFlags = D3D12_CLEAR_FLAGS( 0 );
 			if ( EnumFlags( a_Flags ).HasFlag( ERHIClearFlags::Depth ) ) clearFlags |= D3D12_CLEAR_FLAG_DEPTH;
 			if ( EnumFlags( a_Flags ).HasFlag( ERHIClearFlags::Stencil ) ) clearFlags |= D3D12_CLEAR_FLAG_STENCIL;
-			
+
 			if ( clearFlags )
 			{
 				m_ActiveCmdList.CmdList->ClearDepthStencilView(
@@ -832,7 +832,7 @@ namespace Tridium::D3D12 {
 		SetViewportAndScissors( m_ActiveCmdList.CmdList.Get(), m_ViewportState );
 	}
 
-	void RHICommandList_D3D12Impl::Draw( const RHIDrawArgs& a_DrawArgs, RHI_DEBUG_SRC_LOC_PARAM ) 
+	void RHICommandList_D3D12Impl::Draw( const RHIDrawArgs& a_DrawArgs, RHI_DEBUG_SRC_LOC_PARAM )
 	{
 		IRHICommandList::Draw( a_DrawArgs, RHI_DEBUG_SRC_LOC );
 		TODO( "Validation" );
@@ -844,18 +844,18 @@ namespace Tridium::D3D12 {
 
 		if ( a_DrawArgs.IsIndexed() )
 		{
-			m_ActiveCmdList.CmdList->DrawIndexedInstanced( 
-				a_DrawArgs.IndexCount, 
-				a_DrawArgs.InstanceCount, 
-				a_DrawArgs.BaseIndex, 
-				a_DrawArgs.BaseVertex, 
+			m_ActiveCmdList.CmdList->DrawIndexedInstanced(
+				a_DrawArgs.IndexCount,
+				a_DrawArgs.InstanceCount,
+				a_DrawArgs.BaseIndex,
+				a_DrawArgs.BaseVertex,
 				a_DrawArgs.BaseInstance
 			);
 		}
 		else
 		{
 			// Draw non-indexed
-			m_ActiveCmdList.CmdList->DrawInstanced( 
+			m_ActiveCmdList.CmdList->DrawInstanced(
 				a_DrawArgs.VertexCount,
 				a_DrawArgs.InstanceCount,
 				a_DrawArgs.BaseVertex,
@@ -1013,7 +1013,7 @@ namespace Tridium::D3D12 {
 				ERHIDescriptorHeapType::DepthStencil,
 				1,
 				EDescriptorHeapFlags::None,
-				"DSV Heap" 
+				"DSV Heap"
 			).get();
 			ASSERT( m_DSVHeap, "Failed to allocate DSV heap!" );
 
@@ -1178,8 +1178,8 @@ namespace Tridium::D3D12 {
 
 	const SharedPtr<DescriptorHeap>& RHICommandList_D3D12Impl::AllocateHeap( ERHIDescriptorHeapType a_Type, uint32_t a_NumDescriptors, EDescriptorHeapFlags a_Flags, StringView a_DebugName )
 	{
-		return m_CmdContext.DescriptorHeaps.EmplaceBack( 
-			GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap( a_Type, a_NumDescriptors, a_Flags, a_DebugName ) 
+		return m_CmdContext.DescriptorHeaps.EmplaceBack(
+			GetD3D12RHI()->GetDescriptorHeapManager().AllocateHeap( a_Type, a_NumDescriptors, a_Flags, a_DebugName )
 		);
 	}
 

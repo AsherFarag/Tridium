@@ -602,9 +602,9 @@ namespace Tridium::D3D12 {
 			// Create GLSL from the SPIR-V bytecode using SPIRV-Cross
 
 			// We create the compiler on the heap as it's too large for the stack.
-			auto glslCompilerPtr = MakeUnique<spirv_cross::CompilerGLSL>( 
+			auto glslCompilerPtr = MakeUnique<spirv_cross::CompilerGLSL>(
 				ReinterpretCast<const uint32_t*>( a_Output.ByteCode.Data() ),
-				a_Output.ByteCode.Size() / sizeof( uint32_t ) 
+				a_Output.ByteCode.Size() / sizeof( uint32_t )
 			);
 
 			spirv_cross::CompilerGLSL& glslCompiler = *glslCompilerPtr;
@@ -624,7 +624,7 @@ namespace Tridium::D3D12 {
 			{
 				TODO( "We are setting the interface name of the block as I cant use the instance name for shader bindings. Hack" );
 				glslCompiler.set_name( resource.base_type_id,
-					glslCompiler.get_block_fallback_name( resource.id ) 
+					glslCompiler.get_block_fallback_name( resource.id )
 				);
 			}
 
@@ -632,7 +632,7 @@ namespace Tridium::D3D12 {
 			{
 				TODO( "We are setting the interface name of the block as I cant use the instance name for shader bindings. Hack" );
 				glslCompiler.set_name( resource.base_type_id,
-					glslCompiler.get_block_fallback_name( resource.id ) 
+					glslCompiler.get_block_fallback_name( resource.id )
 				);
 			}
 
@@ -667,7 +667,7 @@ namespace Tridium::D3D12 {
 				{
 					continue;
 				}
-				
+
 				// Remap combined samplers that use dummy samplers to the original combined sampler name.
 				glslCompiler.set_decoration( sampler.combined_id, spv::DecorationBinding, glslCompiler.get_decoration( sampler.image_id, spv::DecorationBinding ) );
 			}
@@ -780,7 +780,7 @@ namespace Tridium::D3D12 {
 			TODO( "Vulkan SPIR-V" );
 			NOT_IMPLEMENTED;
 		}
-	
+
 		return {};
 	}
 

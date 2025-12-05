@@ -130,7 +130,7 @@ namespace Tridium::D3D12 {
 				.InputSlot = 0,
 				.AlignedByteOffset = Cast<UINT>( element.Offset ),
 				.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
-				.InstanceDataStepRate = 0 
+				.InstanceDataStepRate = 0
 				} );
 		}
 
@@ -204,14 +204,12 @@ namespace Tridium::D3D12 {
 
 	RootSignature RootSignature::Build( Span<const RHIBindingLayoutRef> a_Layouts, bool a_AllowInputLayout, bool a_IsLocal, Span<const D3D12_ROOT_PARAMETER1> a_CustomParams )
 	{
-		TODO( "Support bindless" );
-
 		HRESULT hr = S_OK;
 		RootSignature rootSig;
 
 		// Visit each binding layout, get the num of bindings and add them to NumParams
 		size_t numParams = a_CustomParams.size();
-		for ( const auto& layout : a_Layouts ) 
+		for ( const auto& layout : a_Layouts )
 			numParams += layout->Desc().Bindings.Size();
 
 		Array<D3D12_ROOT_PARAMETER1> rootParams;
@@ -273,7 +271,7 @@ namespace Tridium::D3D12 {
 			return {};
 		}
 
-		hr = GetD3D12RHI()->GetD3D12Device()->CreateRootSignature( 
+		hr = GetD3D12RHI()->GetD3D12Device()->CreateRootSignature(
 			0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(), IID_PPV_ARGS( rootSig.D3D12Signature.GetAddressOf() )
 		);
 

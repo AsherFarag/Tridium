@@ -17,8 +17,8 @@ namespace Tridium::OpenGL {
 				Create();
 			}
 		}
-		explicit GLObjWrapper( GLuint a_Handle ) 
-			: m_Handle( a_Handle ) 
+		explicit GLObjWrapper( GLuint a_Handle )
+			: m_Handle( a_Handle )
 		{}
 
 		GLObjWrapper( GLObjWrapper&& a_Other ) noexcept : m_Handle( a_Other.m_Handle )
@@ -78,7 +78,7 @@ namespace Tridium::OpenGL {
 			{
 				OpenGL4::ObjectLabel( GLFactory::Type(), m_Handle, a_Name.size(), Cast<const GLchar*>( a_Name.data() ) );
 			}
-		#endif	
+		#endif
 		}
 
 		operator GLuint() const

@@ -599,7 +599,7 @@ namespace Tridium {
 		}
 
 	#pragma endregion
-	
+
 	#pragma region OpenGL 3.3
 
 		static FORCEINLINE void BindFragDataLocationIndexed( GLuint a_Program, GLuint a_ColorNumber, GLuint a_Index, const GLchar* a_Name )

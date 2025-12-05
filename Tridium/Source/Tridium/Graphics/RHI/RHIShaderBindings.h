@@ -130,7 +130,7 @@ namespace Tridium {
 		//=============================================================================================
 		[[nodiscard]] static constexpr RHIShaderBinding ConstantBuffer( const uint32_t a_Slot )
 		{
-			RHIShaderBinding binding; 
+			RHIShaderBinding binding;
 			binding.Slot = a_Slot;
 			binding.SizeOrDimension = 0;
 			binding.PackedType = Cast<uint32_t>( ERHIBindingType::ConstantBuffer );
@@ -143,14 +143,14 @@ namespace Tridium {
 			RHIShaderBinding binding;
 			binding.Slot = a_Slot;
 			binding.SizeOrDimension = 0;
-			binding.PackedType = Cast<uint32_t>( ERHIBindingType::StructuredBuffer ); 
+			binding.PackedType = Cast<uint32_t>( ERHIBindingType::StructuredBuffer );
 			return binding;
 		};
 
 		//=============================================================================================
 		[[nodiscard]] static constexpr RHIShaderBinding StorageBuffer( const uint32_t a_Slot )
 		{
-			RHIShaderBinding binding; 
+			RHIShaderBinding binding;
 			binding.Slot = a_Slot;
 			binding.SizeOrDimension = 0;
 			binding.PackedType = Cast<uint32_t>( ERHIBindingType::StorageBuffer );
@@ -170,10 +170,20 @@ namespace Tridium {
 		//=============================================================================================
 		[[nodiscard]] static constexpr RHIShaderBinding StorageTexture( const uint32_t a_Slot, ERHITextureDimension a_Dimension )
 		{
-			RHIShaderBinding binding; 
+			RHIShaderBinding binding;
 			binding.Slot = a_Slot;
 			binding.SizeOrDimension = Cast<uint32_t>( a_Dimension );
 			binding.PackedType = Cast<uint32_t>( ERHIBindingType::StorageTexture );
+			return binding;
+		}
+
+		//=============================================================================================
+		[[nodiscard]] static constexpr RHIShaderBinding BindlessTextureArray( const uint32_t a_Slot, ERHITextureDimension a_Dimension )
+		{
+			RHIShaderBinding binding;
+			binding.Slot = a_Slot;
+			binding.SizeOrDimension = Cast<uint32_t>( a_Dimension );
+			binding.PackedType = Cast<uint32_t>( ERHIBindingType::BindlessTextureArray );
 			return binding;
 		}
 
@@ -254,7 +264,7 @@ namespace Tridium {
 		}
 
 		//=============================================================================================
-		// Get the index of a binding in the layout. 
+		// Get the index of a binding in the layout.
 		// Returns -1 if the binding does not exist.
 		[[nodiscard]] int32_t GetBindingIndex( hash_t a_Name ) const
 		{

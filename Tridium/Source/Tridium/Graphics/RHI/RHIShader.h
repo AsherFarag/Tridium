@@ -2,7 +2,7 @@
 #include "RHIResource.h"
 
 namespace Tridium {
-	
+
 	//=======================================================
 	// RHI Shader Module
 	//  A shader module represents a compiled shader stage.

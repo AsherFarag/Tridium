@@ -11,7 +11,7 @@ namespace Tridium::D3D12 {
 		size_t Depth = 0;
 		size_t BytesPerPixel = 0;
 	};
-	
+
 	TODO( "Mip generation should be moved to the GPU" );
 	static ImageLevel GenerateNextMip(
 		Span<const uint8_t> a_Data,
@@ -221,14 +221,14 @@ namespace Tridium::D3D12 {
 			for ( uint32_t mip = 1; mip < m_Desc.Mips; ++mip )
 			{
 				// Generate next mip level and add to chain
-				const ImageLevel& nextMip = imageMips.EmplaceBack( 
+				const ImageLevel& nextMip = imageMips.EmplaceBack(
 					GenerateNextMip(
 						Span{ Cast<const uint8_t*>( lastMip.Data ), lastMip.DepthStride },
 						std::max<size_t>( 1, width >> ( mip - 1 ) ),
 						std::max<size_t>( 1, height >> ( mip - 1 ) ),
 						std::max<size_t>( 1, depth >> ( mip - 1 ) ),
-						formatInfo.BytesPerBlock 
-					) 
+						formatInfo.BytesPerBlock
+					)
 				);
 
 				RHITextureSubresourceData nextMipData{};
@@ -496,7 +496,7 @@ namespace Tridium::D3D12 {
 			result.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
 			const auto d3d12Desc = GetD3D12ResourceDesc();
 
-			Device()->GetD3D12Device()->GetCopyableFootprints( 
+			Device()->GetD3D12Device()->GetCopyableFootprints(
 				&d3d12Desc, result.SubresourceIndex, 1,
 				m_SubresourceOffsets[result.SubresourceIndex],
 				&result.PlacedFootprint, nullptr, nullptr, nullptr

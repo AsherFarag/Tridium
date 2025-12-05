@@ -170,11 +170,11 @@ namespace Tridium::D3D12 {
 
 		if ( a_Desc.NumGlobalResourceDescriptors > 0 )
 		{
-			DescriptorHeapRef descHeap = CreateDescriptorHeap( 
+			DescriptorHeapRef descHeap = CreateDescriptorHeap(
 				m_Device,
 				a_Desc.NumGlobalResourceDescriptors,
 				ERHIDescriptorHeapType::RenderResource,
-				EDescriptorHeapFlags::GPUVisible, 
+				EDescriptorHeapFlags::GPUVisible,
 				true, "GlobalResourceDescriptorHeap" );
 
 			m_GlobalHeaps.EmplaceBack( m_Device, std::move( descHeap ) );

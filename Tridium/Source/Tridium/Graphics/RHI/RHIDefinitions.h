@@ -19,21 +19,21 @@ namespace Tridium {
 	// This is undefined at the end of the file.
 	#define RHI_ENUM_SIZE_ASSERT( _Enum ) \
 		static_assert( std::underlying_type_t<_Enum>(_Enum::COUNT) <= ( 1 << std::underlying_type_t<_Enum>(_Enum::NUM_BITS) ), #_Enum "::COUNT exceeds NUM_BITS" )
-	
+
 	#ifndef RHI_ENABLE_DEV_WARNINGS
 		#define RHI_ENABLE_DEV_WARNINGS RHI_DEBUG_ENABLED
 	#endif
-	
+
 	#if RHI_ENABLE_DEV_WARNINGS
 		#define RHI_DEV_WARN( _Condition, ... ) //ASSERT( _Condition, "RHI Dev Error - {}", __VA_ARGS__ )
 	#else
 		#define RHI_DEV_WARN( _Condition, ... ) do {} while ( false )
 	#endif // RHI_ENABLE_DEV_WARNINGS
-	
+
 	#ifndef RHI_ENABLE_DEV_CHECKS
 		#define RHI_ENABLE_DEV_CHECKS RHI_DEBUG_ENABLED
 	#endif
-	
+
 	#if RHI_ENABLE_DEV_CHECKS
 		#define RHI_DEV_CHECK( _Condition, ... ) ASSERT( _Condition, "RHI Dev Error - {}", __VA_ARGS__ )
 	#else
@@ -83,8 +83,8 @@ namespace Tridium {
 
 		Amd			= 0x1002,
 		ImgTec		= 0x1010,
-		Nvidia		= 0x10DE, 
-		Arm			= 0x13B5, 
+		Nvidia		= 0x10DE,
+		Arm			= 0x13B5,
 		Broadcom	= 0x14E4,
 		Qualcomm	= 0x5143,
 		Intel		= 0x8086,
@@ -174,12 +174,9 @@ namespace Tridium {
 
 		struct SamplerFeatures
 		{
-			TODO( "Set this to false" );
-			bool BorderSamplingModeSupported = true;
-			TODO( "Set this to 1" );
-			uint8_t MaxAnisotropy = 16; // Maximum anisotropy supported by the sampler.
-			TODO( "Set this to false" );
-			bool LODBiasSupported = true; // Whether the sampler supports LOD bias.
+			bool BorderSamplingModeSupported = false;
+			uint8_t MaxAnisotropy = 1; // Maximum anisotropy supported by the sampler.
+			bool LODBiasSupported = false; // Whether the sampler supports LOD bias.
 		} Sampler{};
 	};
 
@@ -340,24 +337,24 @@ namespace Tridium {
 		constexpr TBox() noexcept = default;
 
 		constexpr TBox( ScalarType a_MinX, ScalarType a_MaxX ) noexcept
-			: MinX( a_MinX ), MaxX( a_MaxX ), MinY( 0 ), MaxY( 0 ), MinZ( 0 ), MaxZ( 1 ) 
+			: MinX( a_MinX ), MaxX( a_MaxX ), MinY( 0 ), MaxY( 0 ), MinZ( 0 ), MaxZ( 1 )
 		{}
 
 		constexpr TBox( ScalarType a_MinX, ScalarType a_MaxX,
 						  ScalarType a_MinY, ScalarType a_MaxY ) noexcept
-			: MinX( a_MinX ), MaxX( a_MaxX ), MinY( a_MinY ), MaxY( a_MaxY ), MinZ( 0 ), MaxZ( 1 ) 
+			: MinX( a_MinX ), MaxX( a_MaxX ), MinY( a_MinY ), MaxY( a_MaxY ), MinZ( 0 ), MaxZ( 1 )
 		{}
 
 		constexpr TBox( ScalarType a_MinX, ScalarType a_MaxX,
 						  ScalarType a_MinY, ScalarType a_MaxY,
 						  ScalarType a_MinZ, ScalarType a_MaxZ ) noexcept
-			: MinX( a_MinX ), MaxX( a_MaxX ), MinY( a_MinY ), MaxY( a_MaxY ), MinZ( a_MinZ ), MaxZ( a_MaxZ ) 
+			: MinX( a_MinX ), MaxX( a_MaxX ), MinY( a_MinY ), MaxY( a_MaxY ), MinZ( a_MinZ ), MaxZ( a_MaxZ )
 		{}
 
 		template<typename T>
 		constexpr TBox( const TVector3<T>& a_Min, const TVector3<T>& a_Max ) noexcept
 			: MinX( Cast<ScalarType>( a_Min.x ) ), MinY( Cast<ScalarType>( a_Min.y ) ), MinZ( Cast<ScalarType>( a_Min.z ) ),
-			  MaxX( Cast<ScalarType>( a_Max.x ) ), MaxY( Cast<ScalarType>( a_Max.y ) ), MaxZ( Cast<ScalarType>( a_Max.z ) ) 
+			  MaxX( Cast<ScalarType>( a_Max.x ) ), MaxY( Cast<ScalarType>( a_Max.y ) ), MaxZ( Cast<ScalarType>( a_Max.z ) )
 		{}
 
 		constexpr ScalarType Width() const noexcept { return MaxX - MinX; }
@@ -504,13 +501,13 @@ namespace Tridium {
 	//=================================================================================================
 	enum class ERHIResourceStates : uint16_t
 	{
-		// Common states            // D3D12_RESOURCE_STATE_                                | VK_IMAGE_LAYOUT_                  | VK_ACCESS_            
+		// Common states            // D3D12_RESOURCE_STATE_                                | VK_IMAGE_LAYOUT_                  | VK_ACCESS_
 		Unknown = 0,                // n/a                                                  | n/a                               | n/a
 		Common = 1 << 0,            // COMMON                                               | UNDEFINED                         | 0
 		CopySource = 1 << 1,        // COPY_SOURCE                                          | TRANSFER_SRC_OPTIMAL              | TRANSFER_READ
 		CopyDest = 1 << 2,          // COPY_DEST                                            | TRANSFER_DST_OPTIMAL              | TRANSFER_WRITE
 
-		// Render target states				                             				    
+		// Render target states
 		RenderTarget = 1 << 3,      // RENDER_TARGET     	                                | COLOR_ATTACHMENT_OPTIMAL      	| COLOR_ATTACHMENT_READ_BIT|COLOR_ATTACHMENT_WRITE_BIT
 		DepthStencilWrite = 1 << 4, // DEPTH_WRITE                                          | DEPTH_STENCIL_ATTACHMENT_OPTIMAL	| DEPTH_STENCIL_ATTACHMENT_READ_BIT|DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
 		DepthStencilRead = 1 << 5,  // DEPTH_READ        	                                | DEPTH_STENCIL_READ_ONLY_OPTIMAL	| DEPTH_STENCIL_ATTACHMENT_READ_BIT
@@ -806,7 +803,7 @@ namespace Tridium {
 
 
 	//=================================================================================================
-	// RHI Logic Operation: 
+	// RHI Logic Operation:
 	// Specifies a logical operation that is applied to the source and destination colors.
 	//=================================================================================================
 	enum class ERHILogicOp : uint8_t
@@ -911,6 +908,11 @@ namespace Tridium {
 
 		// A read-only texture.
 		Texture,          // (DX12: SRV) / (Vulkan: Sampled Image)
+
+		// Bindless descriptor array - unbounded array of textures or buffers (SM6.6+)
+		// Requires GPU support and is only available with Shader Model 6.6+ on DirectX12
+		// or with ARB_bindless_texture on OpenGL.
+		BindlessTextureArray, // (DX12: Unbounded SRV array) / (OpenGL: Bindless texture handles)
 	};
 
 	//=================================================================================================
@@ -918,7 +920,7 @@ namespace Tridium {
 	//=================================================================================================
 	enum class ERHIFormat : uint8_t
 	{
-		Unknown = 0, 
+		Unknown = 0,
 
 		// 8-bit Unsigned-Normalized
 		R8_UNORM,        // DXGI_FORMAT_R8_UNORM / GL_R8 / VK_FORMAT_R8_UNORM
@@ -1025,7 +1027,7 @@ namespace Tridium {
 		bool IsSRGB : 1;
 
 		constexpr uint32_t Bytes() const noexcept { return BytesPerBlock * Blocks; }
-		constexpr Color4 ConvertToColor( Span<const uint8_t> a_Data ) const noexcept 
+		constexpr Color4 ConvertToColor( Span<const uint8_t> a_Data ) const noexcept
 		{
 			static_assert(size_t( ERHIFormat::COUNT ) == 43);
 
@@ -1037,7 +1039,7 @@ namespace Tridium {
 			Color4 color{};
 			uint32_t offset = 0;
 
-			const auto readFloat = [&]( int bytes ) -> float 
+			const auto readFloat = [&]( int bytes ) -> float
 				{
 					if ( bytes != 4 )
 						return 0.0f; // Unsupported float format size
@@ -1048,20 +1050,20 @@ namespace Tridium {
 					return value;
 				};
 
-			const auto readInt = [&]( int bytes ) -> int32_t 
+			const auto readInt = [&]( int bytes ) -> int32_t
 				{
 					if ( bytes == 1 )
 					{
 						return Cast<int8_t>( a_Data[offset++] );
 					}
-					else if ( bytes == 2 ) 
+					else if ( bytes == 2 )
 					{
 						int16_t val;
 						std::memcpy( &val, &a_Data[offset], 2 );
 						offset += 2;
 						return val;
 					}
-					else if ( bytes == 4 ) 
+					else if ( bytes == 4 )
 					{
 						int32_t val;
 						std::memcpy( &val, &a_Data[offset], 4 );
@@ -1071,9 +1073,9 @@ namespace Tridium {
 					return 0;
 				};
 
-			const auto readUInt = [&]( int bytes ) -> uint32_t 
+			const auto readUInt = [&]( int bytes ) -> uint32_t
 				{
-					if ( bytes == 1 ) 
+					if ( bytes == 1 )
 					{
 						return a_Data[offset++];
 					}
@@ -1084,7 +1086,7 @@ namespace Tridium {
 						offset += 2;
 						return val;
 					}
-					else if ( bytes == 4 ) 
+					else if ( bytes == 4 )
 					{
 						uint32_t val;
 						std::memcpy( &val, &a_Data[offset], 4 );
@@ -1257,82 +1259,82 @@ namespace Tridium {
 			//    Name,            Format,                Kind        Bytes, Blocks,   Red,     Green,   Blue,    Alpha,   Depth,   Stencil,  Signed,   SRGB
 				{ "Unknown",       Unknown,               Int,            0,      0,  false,    false,   false,   false,   false,    false,   false,   false },
 
-				// 8-bit Unsigned-Normalized	  	       		       				 									  
+				// 8-bit Unsigned-Normalized
 				{ "R8_UNORM",      R8_UNORM,              Normalized,     1,      1,  true,     false,   false,   false,   false,    false,   false,   false },
 				{ "RG8_UNORM",     RG8_UNORM,             Normalized,     2,      1,  true,     true,    false,   false,   false,    false,   false,   false },
 				//{ "RGB8_UNORM",    RGB8_UNORM,            Normalized,     3,      1,  true,     true,    true,    false,   false,    false,   false,   false },
 				{ "RGBA8_UNORM",   RGBA8_UNORM,           Normalized,     4,      1,  true,     true,    true,    true,    false,    false,   false,   false },
 
-				// 8-bit Float					          
+				// 8-bit Float
 				//{ "R8_FLOAT",      R8_FLOAT,              Float,          1,      1,  true,     false,   false,   false,   false,    false,   false,   false },
 				//{ "RG8_FLOAT",     RG8_FLOAT,             Float,          2,      1,  true,     true,    false,   false,   false,    false,   false,   false },
 				//{ "RGB8_FLOAT",    RGB8_FLOAT,            Float,          3,      1,  true,     true,    true,    false,   false,    false,   false,   false },
 				//{ "RGBA8_FLOAT",   RGBA8_FLOAT,           Float,          4,      1,  true,     true,    true,    true,    false,    false,   false,   false },
 
-				// 8-bit Signed-Integer			          
+				// 8-bit Signed-Integer
 				{ "R8_SINT",       R8_SINT,               Int,            1,      1,  true,     false,   false,   false,   false,    false,   true,    false },
 				{ "RG8_SINT",      RG8_SINT,              Int,            2,      1,  true,     true,    false,   false,   false,    false,   true,    false },
 				//{ "RGB8_SINT",     RGB8_SINT,             Int,            3,      1,  true,     true,    true,    false,   false,    false,   true,    false },
 				{ "RGBA8_SINT",    RGBA8_SINT,            Int,            4,      1,  true,     true,    true,    true,    false,    false,   true,    false },
 
-				// 8-bit Unsigned-Integer		          
+				// 8-bit Unsigned-Integer
 				{ "R8_UINT",       R8_UINT,               Int,            1,      1,  true,     false,   false,   false,   false,    false,   false,   false },
 				{ "RG8_UINT",      RG8_UINT,              Int,            2,      1,  true,     true,    false,   false,   false,    false,   false,   false },
 				//{ "RGB8_UINT",     RGB8_UINT,             Int,            3,      1,  true,     true,    true,    false,   false,    false,   false,   false },
 				{ "RGBA8_UINT",    RGBA8_UINT,            Int,            4,      1,  true,     true,    true,    true,    false,    false,   false,   false },
 
-				// 16-bit Unsigned-Normalized	          
+				// 16-bit Unsigned-Normalized
 				{ "R16_UNORM",     R16_UNORM,             Normalized,     2,      1,  true,     false,   false,   false,   false,    false,   false,   false },
 				{ "RG16_UNORM",    RG16_UNORM,            Normalized,     4,      1,  true,     true,    false,   false,   false,    false,   false,   false },
 				//{ "RGB16_UNORM",   RGB16_UNORM,           Normalized,     6,      1,  true,     true,    true,    false,   false,    false,   false,   false },
 				{ "RGBA16_UNORM",  RGBA16_UNORM,          Normalized,     8,      1,  true,     true,    true,    true,    false,    false,   false,   false },
 
-				// 16-bit Float					          
+				// 16-bit Float
 				{ "R16_FLOAT",     R16_FLOAT,             Float,          2,      1,  true,     false,   false,   false,   false,    false,   false,   false },
 				{ "RG16_FLOAT",    RG16_FLOAT,            Float,          4,      1,  true,     true,    false,   false,   false,    false,   false,   false },
 				//{ "RGB16_FLOAT",   RGB16_FLOAT,           Float,          6,      1,  true,     true,    true,    false,   false,    false,   false,   false },
 				{ "RGBA16_FLOAT",  RGBA16_FLOAT,          Float,          8,      1,  true,     true,    true,    true,    false,    false,   false,   false },
 
-				// 16-bit Signed-Integer		          
+				// 16-bit Signed-Integer
 				{ "R16_SINT",      R16_SINT,              Int,            2,      1,  true,     false,   false,   false,   false,    false,   true,    false },
 				{ "RG16_SINT",     RG16_SINT,             Int,            4,      1,  true,     true,    false,   false,   false,    false,   true,    false },
 				//{ "RGB16_SINT",    RGB16_SINT,            Int,            6,      1,  true,     true,    true,    false,   false,    false,   true,    false },
 				{ "RGBA16_SINT",   RGBA16_SINT,           Int,            8,      1,  true,     true,    true,    true,    false,    false,   true,    false },
 
-				// 16-bit Unsigned-Integer		          
+				// 16-bit Unsigned-Integer
 				{ "R16_UINT",      R16_UINT,              Int,            2,      1,  true,     false,   false,   false,   false,    false,   false,   false },
 				{ "RG16_UINT",     RG16_UINT,             Int,            4,      1,  true,     true,    false,   false,   false,    false,   false,   false },
 				//{ "RGB16_UINT",    RGB16_UINT,            Int,            6,      1,  true,     true,    true,    false,   false,    false,   false,   false },
 				{ "RGBA16_UINT",   RGBA16_UINT,           Int,            8,      1,  true,     true,    true,    true,    false,    false,   false,   false },
 
-				// 32-bit Unsigned-Normalized	          
+				// 32-bit Unsigned-Normalized
 				//{ "R32_UNORM",     R32_UNORM,             Normalized,     4,      1,  true,     false,   false,   false,   false,    false,   false,   false },
 				//{ "RG32_UNORM",    RG32_UNORM,            Normalized,     8,      1,  true,     true,    false,   false,   false,    false,   false,   false },
 				//{ "RGB32_UNORM",   RGB32_UNORM,           Normalized,    12,      1,  true,     true,    true,    false,   false,    false,   false,   false },
 				//{ "RGBA32_UNORM",  RGBA32_UNORM,          Normalized,    16,      1,  true,     true,    true,    true,    false,    false,   false,   false },
 
-				// 32-bit Float					          
+				// 32-bit Float
 				{ "R32_FLOAT",     R32_FLOAT,             Float,          4,      1,  true,     false,   false,   false,   false,    false,   false,   false },
 				{ "RG32_FLOAT",    RG32_FLOAT,            Float,          8,      1,  true,     true,    false,   false,   false,    false,   false,   false },
 				{ "RGB32_FLOAT",   RGB32_FLOAT,           Float,         12,      1,  true,     true,    true,    false,   false,    false,   false,   false },
 				{ "RGBA32_FLOAT",  RGBA32_FLOAT,          Float,         16,      1,  true,     true,    true,    true,    false,    false,   false,   false },
 
-				// 32-bit Signed-Integer		          
+				// 32-bit Signed-Integer
 				{ "R32_SINT",      R32_SINT,              Int,            4,      1,  true,     false,   false,   false,   false,    false,   true,    false },
 				{ "RG32_SINT",     RG32_SINT,             Int,            8,      1,  true,     true,    false,   false,   false,    false,   true,    false },
 				{ "RGB32_SINT",    RGB32_SINT,            Int,           12,      1,  true,     true,    true,    false,   false,    false,   true,    false },
 				{ "RGBA32_SINT",   RGBA32_SINT,           Int,           16,      1,  true,     true,    true,    true,    false,    false,   true,    false },
 
-				// 32-bit Unsigned-Integer		          
+				// 32-bit Unsigned-Integer
 				{ "R32_UINT",      R32_UINT,              Int,            4,      1,  true,     false,   false,   false,   false,    false,   false,   false },
 				{ "RG32_UINT",     RG32_UINT,             Int,            8,      1,  true,     true,    false,   false,   false,    false,   false,   false },
 				{ "RGB32_UINT",    RGB32_UINT,            Int,           12,      1,  true,     true,    true,    false,   false,    false,   false,   false },
 				{ "RGBA32_UINT",   RGBA32_UINT,           Int,           16,      1,  true,     true,    true,    true,    false,    false,   false,   false },
 
-				// SRGB Formats					          
+				// SRGB Formats
 				{ "SRGBA8_UNORM",  SRGBA8_UNORM,          Normalized,     4,      1,  true,     true,    true,    true,    false,    false,   false,   true },
 
-				// Depth Formats				          
+				// Depth Formats
 				{ "D16_UNORM",     D16_UNORM,             DepthStencil,   2,      1,  false,    false,   false,   false,   true,     false,   false,   false },
 				{ "D32_FLOAT",     D32_FLOAT,             DepthStencil,   4,      1,  false,    false,   false,   false,   true,     false,   false,   false },
 				{ "D24_UNORM_S8_UINT", D24_UNORM_S8_UINT, DepthStencil,   4,      1,  false,    false,   false,   false,   true,     true,    false,   false },

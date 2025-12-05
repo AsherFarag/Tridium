@@ -42,7 +42,7 @@ namespace Tridium {
 	using RHISwapChainRef                 = SharedPtr<IRHISwapChain>;
 
 	using RHIObjectWeakRef                = WeakPtr<IRHIObject>;
-	using RHIResourceWeakRef              = WeakPtr<IRHIResource>;                 
+	using RHIResourceWeakRef              = WeakPtr<IRHIResource>;
 	using RHITextureWeakRef               = WeakPtr<IRHITexture>;
 	using RHIShaderModuleWeakRef          = WeakPtr<IRHIShaderModule>;
 	using RHIBufferWeakRef	              = WeakPtr<IRHIBuffer>;

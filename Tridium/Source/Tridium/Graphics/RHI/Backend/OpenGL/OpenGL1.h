@@ -1522,7 +1522,7 @@ namespace Tridium {
 		{
 			glRotatef( a_Angle, a_X, a_Y, a_Z );
 		}
-			
+
 		static FORCEINLINE void Scaled( GLdouble a_X, GLdouble a_Y, GLdouble a_Z )
 		{
 			glScaled( a_X, a_Y, a_Z );

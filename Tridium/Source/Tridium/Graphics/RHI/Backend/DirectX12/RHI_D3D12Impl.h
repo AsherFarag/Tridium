@@ -87,7 +87,7 @@ namespace Tridium::D3D12 {
 	//=============================================================================================
 	inline D3D12_DESCRIPTOR_HEAP_FLAGS Translate( EDescriptorHeapFlags a_Flags )
 	{
-		return EnumFlags( a_Flags ).HasFlag( EDescriptorHeapFlags::GPUVisible ) 
+		return EnumFlags( a_Flags ).HasFlag( EDescriptorHeapFlags::GPUVisible )
 			? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	}
 
@@ -150,7 +150,7 @@ namespace Tridium::D3D12 {
 		{}
 
 		DeviceChild( DeviceChild&& other ) noexcept
-			: m_ParentDevice( std::exchange( other.m_ParentDevice, nullptr ) ) 
+			: m_ParentDevice( std::exchange( other.m_ParentDevice, nullptr ) )
 		{}
 
 		DeviceChild& operator=( DeviceChild&& other ) noexcept
@@ -214,7 +214,7 @@ namespace Tridium::D3D12 {
 		}
 
 		bool Valid() const { return Allocation; }
-		
+
 		ID3D12Resource* Resource() const { return Valid() ? Allocation->GetResource() : nullptr; }
 		ID3D12Resource** ResourceAddress() { return Valid() ? Allocation->GetResourceAddress() : nullptr; }
 
@@ -244,7 +244,7 @@ namespace Tridium::D3D12 {
 	};
 
 	//=============================================================================================
-	// Command Context: Represents a command list instance. 
+	// Command Context: Represents a command list instance.
 	// Contains strong references to all the resources that are used by the command list.
 	//=============================================================================================
 	struct CommandContext
@@ -464,7 +464,7 @@ namespace Tridium::D3D12 {
 		DescriptorManager( ID3D12Device* a_Device, DescriptorHeapRef&& a_Heap )
 			: RHIHeapDescriptorAllocator( a_Heap->Type(), a_Heap->NumDescriptors() )
 			,DeviceChild( a_Device )
-			, m_Heap( std::move( a_Heap ) ) 
+			, m_Heap( std::move( a_Heap ) )
 		{}
 		DescriptorManager( DescriptorManager&& other ) noexcept = default;
 		DescriptorManager& operator=( DescriptorManager&& other ) noexcept = default;

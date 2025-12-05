@@ -63,11 +63,11 @@ namespace Tridium::OpenGL {
 		}
 		else
 		{
-			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::ClearTexture{ 
-				.Texture = &a_Texture, 
-				.Subresources = a_Subresources, 
-				.ClearValue = a_ClearValue, 
-				.Flags = a_ClearFlags 
+			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::ClearTexture{
+				.Texture = &a_Texture,
+				.Subresources = a_Subresources,
+				.ClearValue = a_ClearValue,
+				.Flags = a_ClearFlags
 			} );
 		}
 	}
@@ -83,11 +83,11 @@ namespace Tridium::OpenGL {
 		}
 		else
 		{
-			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::UpdateBuffer{ 
-				.Buffer = a_Buffer.SharedFromThis(), 
-				.Data = a_Data, 
-				.DataSizeBytes = a_DataSizeBytes, 
-				.DstOffsetBytes = a_DstOffsetBytes 
+			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::UpdateBuffer{
+				.Buffer = a_Buffer.SharedFromThis(),
+				.Data = a_Data,
+				.DataSizeBytes = a_DataSizeBytes,
+				.DstOffsetBytes = a_DstOffsetBytes
 			} );
 		}
 	}
@@ -105,11 +105,11 @@ namespace Tridium::OpenGL {
 		}
 		else
 		{
-			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::CopyBuffer{ 
-				.DstBuffer = a_DstBuffer.SharedFromThis(), 
-				.DstOffsetBytes = a_DstOffsetBytes, 
-				.SrcBuffer = a_SrcBuffer.SharedFromThis(), 
-				.SrcRange = a_SrcRange 
+			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::CopyBuffer{
+				.DstBuffer = a_DstBuffer.SharedFromThis(),
+				.DstOffsetBytes = a_DstOffsetBytes,
+				.SrcBuffer = a_SrcBuffer.SharedFromThis(),
+				.SrcRange = a_SrcRange
 			} );
 		}
 	}
@@ -126,10 +126,10 @@ namespace Tridium::OpenGL {
 		}
 		else
 		{
-			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::UpdateTexture{ 
-				.Texture = a_Texture.SharedFromThis(), 
-				.DstSlice = a_DstSlice, 
-				.Data = a_Data 
+			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::UpdateTexture{
+				.Texture = a_Texture.SharedFromThis(),
+				.DstSlice = a_DstSlice,
+				.Data = a_Data
 			} );
 		}
 	}
@@ -147,16 +147,16 @@ namespace Tridium::OpenGL {
 		}
 		else
 		{
-			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::CopyTexture{ 
-				.DstTexture = a_DstTexture.SharedFromThis(), 
-				.DstSlice = a_DstSlice, 
-				.SrcTexture = a_SrcTexture.SharedFromThis(), 
-				.SrcSlice = a_SrcSlice 
+			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::CopyTexture{
+				.DstTexture = a_DstTexture.SharedFromThis(),
+				.DstSlice = a_DstSlice,
+				.SrcTexture = a_SrcTexture.SharedFromThis(),
+				.SrcSlice = a_SrcSlice
 			} );
 		}
 	}
 
-	void RHICommandList_OpenGLImpl::SetInlinedConstants( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes, RHI_DEBUG_SRC_LOC_PARAM ) 
+	void RHICommandList_OpenGLImpl::SetInlinedConstants( const void* a_Data, uint32_t a_SizeBytes, uint32_t a_DstOffsetBytes, RHI_DEBUG_SRC_LOC_PARAM )
 	{
 		IRHICommandList::SetInlinedConstants( a_Data, a_SizeBytes, a_DstOffsetBytes, RHI_DEBUG_SRC_LOC );
 
@@ -166,8 +166,8 @@ namespace Tridium::OpenGL {
 		}
 		else
 		{
-			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::SetInlinedConstants{ 
-				.Data = Span<const uint8_t>( Cast<const uint8_t*>( a_Data ), a_SizeBytes ), 
+			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::SetInlinedConstants{
+				.Data = Span<const uint8_t>( Cast<const uint8_t*>( a_Data ), a_SizeBytes ),
 				.DstOffsetBytes = a_DstOffsetBytes,
 				.SizeBytes = a_SizeBytes
 			} );
@@ -180,7 +180,7 @@ namespace Tridium::OpenGL {
 
 		m_ReferencedObjects.EmplaceBack( a_GraphicsState.PipelineState->Shared() );
 
-		for ( const auto& attachment : a_GraphicsState.Framebuffer.ColorAttachments ) 
+		for ( const auto& attachment : a_GraphicsState.Framebuffer.ColorAttachments )
 		{
 			if ( attachment.Texture )
 				m_ReferencedObjects.EmplaceBack( attachment.Texture->Shared() );
@@ -206,7 +206,7 @@ namespace Tridium::OpenGL {
 		}
 		else
 		{
-			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::SetGraphicsState{ 
+			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::SetGraphicsState{
 				.GraphicsState = a_GraphicsState,
 				.ClearViewportState = a_ClearViewportState
 			} );
@@ -222,10 +222,10 @@ namespace Tridium::OpenGL {
 		}
 		else
 		{
-			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::ClearRenderTargets{ 
-				.Flags = a_Flags, 
+			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::ClearRenderTargets{
+				.Flags = a_Flags,
 				.ClearValue = a_ClearValue,
-				.ColorAttachmentIndex = a_ColorAttachmentIndex 
+				.ColorAttachmentIndex = a_ColorAttachmentIndex
 			} );
 		}
 	}
@@ -239,8 +239,8 @@ namespace Tridium::OpenGL {
 		}
 		else
 		{
-			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::SetViewportState{ 
-				.Viewports = a_Viewports 
+			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::SetViewportState{
+				.Viewports = a_Viewports
 			} );
 		}
 	}
@@ -254,12 +254,12 @@ namespace Tridium::OpenGL {
 		}
 		else
 		{
-			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::Draw{ 
-				.DrawArgs = a_DrawArgs 
+			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::Draw{
+				.DrawArgs = a_DrawArgs
 			} );
 		}
 	}
-	
+
 	void RHICommandList_OpenGLImpl::PushDebugGroup( StringView a_Name )
 	{
 		if ( IsImmediate() )
@@ -268,8 +268,8 @@ namespace Tridium::OpenGL {
 		}
 		else
 		{
-			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::PushDebugGroup{ 
-				.Name = a_Name 
+			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::PushDebugGroup{
+				.Name = a_Name
 			} );
 		}
 	}
@@ -294,8 +294,8 @@ namespace Tridium::OpenGL {
 		}
 		else
 		{
-			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::InsertDebugMarker{ 
-				.Name = a_Name 
+			m_Deferred.CommandBuffer.Commands.EmplaceBack( CommandBuffer::InsertDebugMarker{
+				.Name = a_Name
 			} );
 		}
 	}
@@ -435,7 +435,7 @@ namespace Tridium::OpenGL {
 				OpenGL3::CullFace( rasterizerState.CullMode == ERHICullMode::Front ? GL_FRONT : GL_BACK );
 			}
 
-			OpenGL3::PolygonMode( GL_FRONT_AND_BACK, 
+			OpenGL3::PolygonMode( GL_FRONT_AND_BACK,
 				  rasterizerState.FillMode == ERHIFillMode::Solid ? GL_FILL        // Solid mode
 				: rasterizerState.FillMode == ERHIFillMode::Wireframe ? GL_LINE    // Wireframe mode
 				: GL_POINT );                                                      // Point mode
@@ -540,9 +540,9 @@ namespace Tridium::OpenGL {
 	#endif
 
 		// Set the draw buffers
-		constexpr GLenum drawBuffers[8] = { 
+		constexpr GLenum drawBuffers[8] = {
 			GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3,
-			GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7 
+			GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7
 		};
 
 		if ( a_Framebuffer.ColorAttachments.Size() > 0 )
@@ -943,7 +943,7 @@ namespace Tridium::OpenGL {
 		else if ( desc.Is2D() )
 		{
 			ScopedTextureBinding textureBinding( GL_TEXTURE_2D, texture->GLHandle() );
-			OpenGL1::TexSubImage2D( 
+			OpenGL1::TexSubImage2D(
 				GL_TEXTURE_2D, dstSlice.MipLevel,
 				dstSlice.OffsetX, dstSlice.OffsetY,
 				dstSlice.Width, dstSlice.Height,
@@ -1254,8 +1254,8 @@ namespace Tridium::OpenGL {
 		{
 			// Indexed Draw
 			const GLenum indexType = GLTextureFormat::From( indexBuffer->Desc().Format ).Type;
-			const void* indexBufferOffset = indexType == GL_UNSIGNED_SHORT ? 
-				ReinterpretCast<const void*>( a_DrawArgs.BaseIndex * sizeof( uint16_t ) ) : 
+			const void* indexBufferOffset = indexType == GL_UNSIGNED_SHORT ?
+				ReinterpretCast<const void*>( a_DrawArgs.BaseIndex * sizeof( uint16_t ) ) :
 				ReinterpretCast<const void*>( a_DrawArgs.BaseIndex * sizeof( uint32_t ) );
 			RHI_DEV_CHECK( indexType == GL_UNSIGNED_SHORT || indexType == GL_UNSIGNED_INT, "Invalid index buffer format! Must be either R16_UINT or R32_UINT." );
 

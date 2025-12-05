@@ -247,7 +247,7 @@ namespace Tridium::OpenGL {
 			{
 				case EGPUVendorID::Nvidia:
 				{
-				#ifndef GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX 
+				#ifndef GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX
 					#define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX 0x9049
 				#endif
 					int vram = 0;
@@ -312,7 +312,7 @@ namespace Tridium::OpenGL {
 				}
 				}
 
-				/*LOG( LogCategory::RHI, Info, 
+				/*LOG( LogCategory::RHI, Info,
 					"OpenGL Shader Model '{0}.{1}', setting Highest Shader Model to 'ERHIShaderModel::{2}'",
 					majorVersion, minorVersion, ToString( gpuInfo.DeviceFeatures.Shader.HighestShaderModel ) );*/
 			}

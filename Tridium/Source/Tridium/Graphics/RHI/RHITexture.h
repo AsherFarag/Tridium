@@ -28,7 +28,7 @@ namespace Tridium {
 	}
 
 	//=================================================================================================
-	// RHI Texture Subresource Data: 
+	// RHI Texture Subresource Data:
 	// A structure that holds the data for copying into a subresource of a texture.
 	//=================================================================================================
 	struct RHITextureSubresourceData
@@ -151,7 +151,7 @@ namespace Tridium {
 		uint32_t Samples = 1;
 
 		//=============================================================================================
-		// Optimised clear value for the Render target/ Depth stencil texture. 
+		// Optimised clear value for the Render target/ Depth stencil texture.
 		// NOTE: 'UseClearValue' must be true for this to be used.
 		RHIClearValue ClearValue{};
 
@@ -299,7 +299,7 @@ namespace Tridium {
 		constexpr RHITextureSubresourceSet( uint32_t a_BaseMipLevel, uint32_t a_NumMipLevels,
 			uint32_t a_BaseArraySlice, uint32_t a_NumArraySlices ) noexcept
 			: BaseMipLevel( a_BaseMipLevel ), NumMipLevels( a_NumMipLevels ),
-			BaseArraySlice( a_BaseArraySlice ), NumArraySlices( a_NumArraySlices ) 
+			BaseArraySlice( a_BaseArraySlice ), NumArraySlices( a_NumArraySlices )
 		{}
 
 		constexpr bool operator==( const RHITextureSubresourceSet& a_Other ) const noexcept
@@ -391,7 +391,7 @@ namespace Tridium {
 			RHI_DEV_CHECK( ColorAttachments.Size() < ColorAttachments.MaxSize(),
 				"Maximum number of color attachments exceeded!" );
 
-			RHI_DEV_CHECK( a_Texture, 
+			RHI_DEV_CHECK( a_Texture,
 				"Color attachment texture is null!" );
 
 			ColorAttachments.PushBack( Attachment{ a_Texture, a_ReadOnly, a_Slice } );
@@ -401,7 +401,7 @@ namespace Tridium {
 
 		auto& SetDepthStencilAttachment( RHITextureRef a_Texture, bool a_ReadOnly = false, RHITextureSlice a_Slice = RHITextureSlice::EntireTexture() )
 		{
-			RHI_DEV_CHECK( a_Texture, 
+			RHI_DEV_CHECK( a_Texture,
 				"Depth stencil attachment texture is null!" );
 
 			DepthStencilAttachment = Attachment{ a_Texture, a_ReadOnly, a_Slice };

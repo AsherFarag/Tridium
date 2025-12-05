@@ -68,7 +68,7 @@ namespace Tridium {
 					constexpr ERHIFormat format = GetRHIFormatFromType<FieldType>();
 					layout.Elements.PushBack( RHIVertexAttribute{ a_FieldName, format, uint16_t( layout.Stride ) } );
 					layout.Stride += GetRHIFormatInfo( format ).Bytes();
-				} 
+				}
 			);
 
 			return layout;

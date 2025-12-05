@@ -22,7 +22,7 @@ namespace Tridium {
 				}
 			}
 		}
-		
+
 		template<Detail::HasSizeMethod T, Detail::HasSizeMethod U>
 		[[nodiscard]] bool CompareArrays(const T& a_A, const U& a_B)
 		{

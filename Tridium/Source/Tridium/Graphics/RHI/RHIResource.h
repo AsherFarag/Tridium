@@ -33,7 +33,7 @@ namespace Tridium {
 		IDynamicRHI* Device() const { return m_Device; }
 
 		// Releases the this device object, freeing it from the parent device.
-		virtual bool Release() 
+		virtual bool Release()
 		{
 			m_Device = nullptr;
 			return true;

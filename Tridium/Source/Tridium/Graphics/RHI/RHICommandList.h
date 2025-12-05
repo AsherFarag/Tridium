@@ -66,7 +66,7 @@ namespace Tridium {
     {
         using ResourceType = class IRHICommandList;
         ERHICommandQueueType QueueType = ERHICommandQueueType::Graphics;
-        // If true, the command list will execute commands immediately, matching OpenGL behavior. 
+        // If true, the command list will execute commands immediately, matching OpenGL behavior.
 		// NOTE: Only one immediate command list can be active at a time.
 		bool EnableImmediateExecution = false;
         String Name{};
@@ -84,7 +84,7 @@ namespace Tridium {
     {
         RHI_OBJECT_INTERFACE_BODY( CommandList );
 
-        IRHICommandList( IDynamicRHI* a_Device, const RHICommandListDesc& a_Desc ) 
+        IRHICommandList( IDynamicRHI* a_Device, const RHICommandListDesc& a_Desc )
             : IRHIObject( a_Device ), m_Desc( a_Desc ) {}
 
         //=============================================================================================
@@ -110,7 +110,7 @@ namespace Tridium {
         //=============================================================================================
         // Opens the command list, preparing it for recording commands.
 		// Returns false if failed to open the command list.
-        virtual bool Open() 
+        virtual bool Open()
         {
 			RHI_DEV_CHECK( !IsOpen(), "Attempting to open a command list that is already open!" );
             m_IsOpen = true;
@@ -120,7 +120,7 @@ namespace Tridium {
         //=============================================================================================
         // Prepares the command list for execution. To execute the command list, call RHI::ExecuteCommandLists(...).
 		// Returns false if failed to close the command list.
-        virtual bool Close() 
+        virtual bool Close()
 		{
 			RHI_DEV_CHECK( IsOpen(), "Attempting to close a command list that is not open!" );
             RHI_DEBUG_OP( m_DebugCommands.Clear() );
@@ -168,7 +168,7 @@ namespace Tridium {
             RHI_ADD_DEBUG_CMD_INFO( "ClearTexture", {}, RHI_DEBUG_RES_INFO( a_Texture ) );
             RHI_DEV_CHECK( IsOpen(),
 						   "Attempting to call a command on a command list that is not open!" );
-            RHI_DEV_WARN( a_Texture.Desc().UseClearValue, 
+            RHI_DEV_WARN( a_Texture.Desc().UseClearValue,
 						   "Clearing a texture '{}' that was not created with a clear value may be slow!", a_Texture.Desc().Name );
 			//RHI_DEV_WARN( !a_Texture.Desc().UseClearValue || a_Texture.Desc().ClearValue == a_ClearValue,
 			//			  "Clearing a texture '{}' with a different clear value than it was created with may be slow!", a_Texture.Desc().Name );
@@ -177,7 +177,7 @@ namespace Tridium {
         //=============================================================================================
         // Writes 'a_Data' from CPU memory into the GPU buffer 'a_Buffer' at the specified 'a_OffsetBytes' offset.
         virtual void UpdateBuffer( IRHIBuffer& a_Buffer, const void* a_Data, size_t a_DataSizeBytes, size_t a_DstOffsetBytes = 0, RHI_DEBUG_SRC_LOC_PARAM )
-        { 
+        {
             RHI_ADD_DEBUG_CMD_INFO( "UpdateBuffer", {}, RHI_DEBUG_RES_INFO( a_Buffer ) );
 
             RHI_DEV_CHECK( IsOpen(),
@@ -199,8 +199,8 @@ namespace Tridium {
 
         //=============================================================================================
         // Copies 'a_SizeBytes' bytes from 'a_SrcBuffer' at 'a_SrcOffsetBytes' to 'a_DstBuffer' at 'a_DstOffsetBytes'.
-        virtual void CopyBuffer( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange, RHI_DEBUG_SRC_LOC_PARAM ) 
-        { 
+        virtual void CopyBuffer( IRHIBuffer& a_DstBuffer, size_t a_DstOffsetBytes, IRHIBuffer& a_SrcBuffer, RHIBufferRange a_SrcRange, RHI_DEBUG_SRC_LOC_PARAM )
+        {
             RHI_ADD_DEBUG_CMD_INFO( "CopyBuffer", {}, RHI_DEBUG_RES_INFO( a_DstBuffer ), RHI_DEBUG_RES_INFO( a_SrcBuffer ) );
 
             RHI_DEV_CHECK( IsOpen(),
@@ -215,7 +215,7 @@ namespace Tridium {
             RHI_DEV_CHECK( a_SrcRange.Size > 0 || a_SrcBuffer.Desc().Size == 0,
                            "Source buffer is empty or invalid!" );
 
-            RHI_DEV_CHECK( a_DstBuffer.Desc().Size > 0, 
+            RHI_DEV_CHECK( a_DstBuffer.Desc().Size > 0,
                            "Destination buffer is invalid!" );
 
             RHI_DEV_CHECK( a_SrcRange.Offset + a_SrcRange.Size <= a_SrcBuffer.Desc().Size,
@@ -232,7 +232,7 @@ namespace Tridium {
             RHI_DEV_CHECK( IsOpen(),
                            "Attempting to call a command on a command list that is not open!" );
 
-			RHI_DEV_CHECK( a_Texture.Desc().HeapType != ERHIHeapType::Staging, 
+			RHI_DEV_CHECK( a_Texture.Desc().HeapType != ERHIHeapType::Staging,
 						   "Cannot update a staging texture! Texture: {}", a_Texture.Desc().Name );
 
 			RHI_DEV_CHECK( a_Texture.Desc().HeapType != ERHIHeapType::Immutable,
@@ -270,7 +270,7 @@ namespace Tridium {
             RHI_DEV_CHECK( a_DstTexture.Desc().Format == a_SrcTexture.Desc().Format,
                            "Source and destination texture formats do not match! Src: {}, Dst: {}",
                            ToString( a_SrcTexture.Desc().Format ),
-						   ToString( a_DstTexture.Desc().Format ) 
+						   ToString( a_DstTexture.Desc().Format )
             );
         }
 
@@ -283,7 +283,7 @@ namespace Tridium {
         {
             RHI_ADD_DEBUG_CMD_INFO( "SetInlinedConstants" );
             RHI_DEV_CHECK( IsOpen(), "Attempting to call a command on a command list that is not open!" );
-            RHI_DEV_CHECK( a_SizeBytes + a_DstOffsetBytes <= RHIConstants::MaxInlinedConstantsSize, 
+            RHI_DEV_CHECK( a_SizeBytes + a_DstOffsetBytes <= RHIConstants::MaxInlinedConstantsSize,
 				"Inlined constants size exceeds the maximum allowed size of {} bytes.", RHIConstants::MaxInlinedConstantsSize );
         }
 
@@ -299,7 +299,7 @@ namespace Tridium {
 		// a_ClearViewportState: If true, the viewport and scissor state will be cleared when setting the graphics state.
 		// If false, the viewport and scissor state will be preserved.
 		// NOTE: This must be called before any draw commands.
-        virtual void SetGraphicsState( const RHIGraphicsState& a_GraphicsState, bool a_ClearViewportState = true, RHI_DEBUG_SRC_LOC_PARAM ) 
+        virtual void SetGraphicsState( const RHIGraphicsState& a_GraphicsState, bool a_ClearViewportState = true, RHI_DEBUG_SRC_LOC_PARAM )
         {
             RHI_DEV_CHECK( a_GraphicsState.PipelineState, "Graphics pipeline state must be valid." );
             RHI_ADD_DEBUG_CMD_INFO( "SetGraphicsState", {}, RHI_DEBUG_RES_INFO( (*a_GraphicsState.PipelineState) ) );
