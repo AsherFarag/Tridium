@@ -509,13 +509,19 @@ namespace Tridium {
 			{
 				switch ( a_Visibility )
 				{
-				case D3D12_SHADER_VISIBILITY_ALL:     return ERHIShaderVisibility::All;
-				case D3D12_SHADER_VISIBILITY_VERTEX:  return ERHIShaderVisibility::Vertex;
-				case D3D12_SHADER_VISIBILITY_HULL:    return ERHIShaderVisibility::Hull;
-				case D3D12_SHADER_VISIBILITY_DOMAIN:  return ERHIShaderVisibility::Domain;
+				case D3D12_SHADER_VISIBILITY_ALL:      return ERHIShaderVisibility::All;
+				case D3D12_SHADER_VISIBILITY_VERTEX:   return ERHIShaderVisibility::Vertex;
+				case D3D12_SHADER_VISIBILITY_HULL:     return ERHIShaderVisibility::Hull;
+				case D3D12_SHADER_VISIBILITY_DOMAIN:   return ERHIShaderVisibility::Domain;
 				case D3D12_SHADER_VISIBILITY_GEOMETRY: return ERHIShaderVisibility::Geometry;
-				case D3D12_SHADER_VISIBILITY_PIXEL:   return ERHIShaderVisibility::Pixel;
-				default:                              return ERHIShaderVisibility::All;
+				case D3D12_SHADER_VISIBILITY_PIXEL:    return ERHIShaderVisibility::Pixel;
+#if defined(D3D12_SHADER_VISIBILITY_AMPLIFICATION)
+				case D3D12_SHADER_VISIBILITY_AMPLIFICATION: return ERHIShaderVisibility::Amplification;
+#endif
+#if defined(D3D12_SHADER_VISIBILITY_MESH)
+				case D3D12_SHADER_VISIBILITY_MESH:     return ERHIShaderVisibility::Mesh;
+#endif
+				default:                               return ERHIShaderVisibility::All;
 				}
 			}
 		};
@@ -534,6 +540,25 @@ namespace Tridium {
 				case ERHIShaderVisibility::Domain:   return D3D12_SHADER_VISIBILITY_DOMAIN;
 				case ERHIShaderVisibility::Geometry: return D3D12_SHADER_VISIBILITY_GEOMETRY;
 				case ERHIShaderVisibility::Pixel:    return D3D12_SHADER_VISIBILITY_PIXEL;
+				case ERHIShaderVisibility::Compute:  return D3D12_SHADER_VISIBILITY_ALL; // Compute doesn't have a specific visibility flag
+#if defined(D3D12_SHADER_VISIBILITY_AMPLIFICATION)
+				case ERHIShaderVisibility::Amplification: return D3D12_SHADER_VISIBILITY_AMPLIFICATION;
+#else
+				case ERHIShaderVisibility::Amplification: return D3D12_SHADER_VISIBILITY_ALL;
+#endif
+#if defined(D3D12_SHADER_VISIBILITY_MESH)
+				case ERHIShaderVisibility::Mesh:     return D3D12_SHADER_VISIBILITY_MESH;
+#else
+				case ERHIShaderVisibility::Mesh:     return D3D12_SHADER_VISIBILITY_ALL;
+#endif
+				// Ray tracing shaders don't have traditional visibility flags
+				case ERHIShaderVisibility::RayGeneration:
+				case ERHIShaderVisibility::Intersection:
+				case ERHIShaderVisibility::AnyHit:
+				case ERHIShaderVisibility::ClosestHit:
+				case ERHIShaderVisibility::Miss:
+				case ERHIShaderVisibility::Callable:
+					return D3D12_SHADER_VISIBILITY_ALL;
 				default:                             return D3D12_SHADER_VISIBILITY_ALL;
 				}
 			}

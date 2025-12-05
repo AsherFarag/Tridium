@@ -591,8 +591,13 @@ namespace Tridium::D3D12 {
 				args.EmplaceBack( L"-fvk-use-dx-layout" );         // Use DX layout
 				args.EmplaceBack( L"-fvk-use-dx-position-w" );     // Use DX position.w for SV_Position
 
-				// Pixel and Compute don't support invert-y
-				if ( a_Input.ShaderType != ERHIShaderType::Pixel && a_Input.ShaderType != ERHIShaderType::Compute )
+				// Only vertex-like shaders (Vertex, Hull, Domain, Geometry) support invert-y
+				// Pixel, Compute, Mesh, Amplification, and Ray Tracing shaders don't support invert-y
+				const bool supportsInvertY = ( a_Input.ShaderType == ERHIShaderType::Vertex ||
+				                               a_Input.ShaderType == ERHIShaderType::Hull ||
+				                               a_Input.ShaderType == ERHIShaderType::Domain ||
+				                               a_Input.ShaderType == ERHIShaderType::Geometry );
+				if ( supportsInvertY )
 				{
 					args.EmplaceBack( L"-fvk-invert-y" ); // Make vulkan and opengl have the same coordinate system as D3D (Y-up)
 				}
