@@ -608,7 +608,7 @@ namespace Tridium {
 		Callable,
 		
 		COUNT,
-		NUM_BITS = 5, // Updated to support up to 32 values (2^5 = 32)
+		NUM_BITS = 5, // Supports up to 32 values (2^5 = 32). Currently using 15 values, allowing room for future shader types.
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHIShaderType );
 
