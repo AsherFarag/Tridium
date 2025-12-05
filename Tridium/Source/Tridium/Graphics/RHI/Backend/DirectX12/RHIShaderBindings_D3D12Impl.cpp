@@ -4,6 +4,15 @@
 
 namespace Tridium::D3D12 {
 
+    // Descriptor count used for bindless/unbounded descriptor arrays
+    static constexpr uint32_t BINDLESS_DESCRIPTOR_COUNT = UINT_MAX;
+
+    // Helper to check if a descriptor count indicates a bindless array
+    static constexpr bool IsBindlessDescriptorCount( uint32_t a_Count )
+    {
+        return a_Count == BINDLESS_DESCRIPTOR_COUNT;
+    }
+
     static constexpr bool AreBindingsCompatible( ERHIBindingType a_First, ERHIBindingType a_Second )
     {
         using enum ERHIBindingType;
@@ -197,21 +206,22 @@ namespace Tridium::D3D12 {
                 {
                     range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 
-                    // For bindless, use unbounded descriptor arrays (UINT_MAX descriptors)
+                    // For bindless, use unbounded descriptor arrays
                     // This requires Shader Model 6.6+ and Resource Binding Tier 3
-                    range.NumDescriptors = UINT_MAX;
+                    // Note: Device feature support is validated during RHI initialization
+                    range.NumDescriptors = BINDLESS_DESCRIPTOR_COUNT;
                     range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
                     // We combine samplers and textures into a single binding
                     // For bindless arrays, we also need an unbounded sampler array
                     D3D12_DESCRIPTOR_RANGE1& samplerRange = DescriptorRangesSamplers.EmplaceBack();
                     samplerRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-                    samplerRange.NumDescriptors = UINT_MAX;
+                    samplerRange.NumDescriptors = BINDLESS_DESCRIPTOR_COUNT;
                     samplerRange.BaseShaderRegister = binding.Slot;
                     samplerRange.RegisterSpace = m_Desc.RegisterSpace;
                     samplerRange.OffsetInDescriptorsFromTableStart = 0;
                     samplerRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
-                    DescriptorTableSizeSamplers = UINT_MAX;
+                    DescriptorTableSizeSamplers = BINDLESS_DESCRIPTOR_COUNT;
                     break;
                 }
                 default:
@@ -221,7 +231,7 @@ namespace Tridium::D3D12 {
                 }
                 }
 
-                // For bindless arrays, NumDescriptors is already set to UINT_MAX above
+                // For bindless arrays, NumDescriptors is already set above
                 if ( binding.Type() != ERHIBindingType::BindlessTextureArray )
                 {
                     range.NumDescriptors = 1;
@@ -236,7 +246,7 @@ namespace Tridium::D3D12 {
                     range.BaseShaderRegister = binding.Slot;
                     range.RegisterSpace = m_Desc.RegisterSpace;
                     range.OffsetInDescriptorsFromTableStart = 0;
-                    DescriptorTableSizeRenderResources = UINT_MAX;
+                    DescriptorTableSizeRenderResources = BINDLESS_DESCRIPTOR_COUNT;
                 }
 
                 RenderResourceBindingLayouts.PushBack( binding );
@@ -332,7 +342,7 @@ namespace Tridium::D3D12 {
 		// Create Descriptor Heaps for Samplers and Render Resources
 
 		auto* const layout = a_Desc.Layout->As<RHIBindingLayout_D3D12Impl>();
-        if ( layout->DescriptorTableSizeSamplers > 0 && layout->DescriptorTableSizeSamplers != UINT_MAX )
+        if ( layout->DescriptorTableSizeSamplers > 0 && !IsBindlessDescriptorCount( layout->DescriptorTableSizeSamplers ) )
         {
 			SamplerHeap = Device()->GetDescriptorHeapManager().AllocateHeap(
                 ERHIDescriptorHeapType::Sampler,
@@ -343,7 +353,7 @@ namespace Tridium::D3D12 {
             for ( const auto& range : layout->DescriptorRangesSamplers )
             {
                 // Skip bindless arrays - they don't need pre-initialization
-                if ( range.NumDescriptors == UINT_MAX )
+                if ( IsBindlessDescriptorCount( range.NumDescriptors ) )
                     continue;
 
                 for ( uint32_t i = 0; i < range.NumDescriptors; ++i )
@@ -389,9 +399,9 @@ namespace Tridium::D3D12 {
             }
 		}
 
-        if ( layout->DescriptorTableSizeRenderResources <= 0 || layout->DescriptorTableSizeRenderResources == UINT_MAX )
+        if ( layout->DescriptorTableSizeRenderResources <= 0 || IsBindlessDescriptorCount( layout->DescriptorTableSizeRenderResources ) )
         {
-			// For bindless arrays (UINT_MAX), we'll use a GPU-visible heap managed differently
+			// For bindless arrays, we'll use a GPU-visible heap managed differently
 			// For now, skip the traditional heap allocation
 			return;
         }
@@ -405,7 +415,7 @@ namespace Tridium::D3D12 {
         for ( const auto& range : layout->DescriptorRangesRenderResources )
         {
             // Skip bindless arrays - they don't need pre-initialization
-            if ( range.NumDescriptors == UINT_MAX )
+            if ( IsBindlessDescriptorCount( range.NumDescriptors ) )
                 continue;
 
             for ( uint32_t i = 0; i < range.NumDescriptors; ++i )
