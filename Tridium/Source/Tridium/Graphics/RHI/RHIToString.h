@@ -289,14 +289,15 @@ namespace Tridium {
 	{
 		switch ( a_Type )
 		{
-		case ERHIBindingType::Unknown:          return "Unknown";
-		case ERHIBindingType::InlinedConstants: return "InlinedConstants";
-		case ERHIBindingType::ConstantBuffer:   return "ConstantBuffer";
-		case ERHIBindingType::StructuredBuffer: return "StructuredBuffer";
-		case ERHIBindingType::StorageBuffer:    return "StorageBuffer";
-		case ERHIBindingType::Texture:          return "Texture";
-		case ERHIBindingType::StorageTexture:   return "StorageTexture";
-		default:                                return "<INVALID>";
+		case ERHIBindingType::Unknown:              return "Unknown";
+		case ERHIBindingType::InlinedConstants:     return "InlinedConstants";
+		case ERHIBindingType::ConstantBuffer:       return "ConstantBuffer";
+		case ERHIBindingType::StructuredBuffer:     return "StructuredBuffer";
+		case ERHIBindingType::StorageBuffer:        return "StorageBuffer";
+		case ERHIBindingType::Texture:              return "Texture";
+		case ERHIBindingType::StorageTexture:       return "StorageTexture";
+		case ERHIBindingType::BindlessTextureArray: return "BindlessTextureArray";
+		default:                                    return "<INVALID>";
 		}
 	}
 

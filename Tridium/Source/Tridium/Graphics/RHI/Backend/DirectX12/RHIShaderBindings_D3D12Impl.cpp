@@ -16,6 +16,11 @@ namespace Tridium::D3D12 {
             || ( a_Second == StructuredBuffer && a_First == Texture ) )
             return true;
 
+        // Bindless texture arrays are compatible with other SRV types
+        if (   ( a_First == BindlessTextureArray && ( a_Second == Texture || a_Second == StructuredBuffer ) )
+            || ( a_Second == BindlessTextureArray && ( a_First == Texture || a_First == StructuredBuffer ) ) )
+            return true;
+
         // UAV
         if (   ( a_First == StorageBuffer && a_Second == StorageTexture )
             || ( a_Second == StorageBuffer && a_First == StorageTexture) )
@@ -327,7 +332,7 @@ namespace Tridium::D3D12 {
 		// Create Descriptor Heaps for Samplers and Render Resources
 
 		auto* const layout = a_Desc.Layout->As<RHIBindingLayout_D3D12Impl>();
-        if ( layout->DescriptorTableSizeSamplers > 0 )
+        if ( layout->DescriptorTableSizeSamplers > 0 && layout->DescriptorTableSizeSamplers != UINT_MAX )
         {
 			SamplerHeap = Device()->GetDescriptorHeapManager().AllocateHeap(
                 ERHIDescriptorHeapType::Sampler,
@@ -337,6 +342,10 @@ namespace Tridium::D3D12 {
 
             for ( const auto& range : layout->DescriptorRangesSamplers )
             {
+                // Skip bindless arrays - they don't need pre-initialization
+                if ( range.NumDescriptors == UINT_MAX )
+                    continue;
+
                 for ( uint32_t i = 0; i < range.NumDescriptors; ++i )
                 {
                     const uint32_t slot = range.BaseShaderRegister + i;
@@ -380,8 +389,10 @@ namespace Tridium::D3D12 {
             }
 		}
 
-        if ( layout->DescriptorTableSizeRenderResources <= 0 )
+        if ( layout->DescriptorTableSizeRenderResources <= 0 || layout->DescriptorTableSizeRenderResources == UINT_MAX )
         {
+			// For bindless arrays (UINT_MAX), we'll use a GPU-visible heap managed differently
+			// For now, skip the traditional heap allocation
 			return;
         }
 
@@ -393,6 +404,10 @@ namespace Tridium::D3D12 {
 
         for ( const auto& range : layout->DescriptorRangesRenderResources )
         {
+            // Skip bindless arrays - they don't need pre-initialization
+            if ( range.NumDescriptors == UINT_MAX )
+                continue;
+
             for ( uint32_t i = 0; i < range.NumDescriptors; ++i )
             {
                 const uint32_t slot = range.BaseShaderRegister + i;
