@@ -584,14 +584,31 @@ namespace Tridium {
 	enum class ERHIShaderType : uint8_t
 	{
 		Unknown = 0,
+		
+		// Traditional Graphics Pipeline
 		Vertex,
 		Hull,     // Vulkan == Tessellation Control
 		Domain,   // Vulkan == Tessellation Evaluation
 		Geometry,
 		Pixel,    // Vulkan == Fragment
+		
+		// Compute Pipeline
 		Compute,
+		
+		// Mesh Shading Pipeline (DirectX 12 and Vulkan)
+		Amplification, // Vulkan == Task Shader
+		Mesh,
+		
+		// Ray Tracing Pipeline (DirectX 12 DXR and Vulkan Ray Tracing)
+		RayGeneration,
+		Intersection,  // Custom intersection shader
+		AnyHit,
+		ClosestHit,
+		Miss,
+		Callable,
+		
 		COUNT,
-		NUM_BITS = 3,
+		NUM_BITS = 5, // Updated to support up to 32 values (2^5 = 32)
 	};
 	RHI_ENUM_SIZE_ASSERT( ERHIShaderType );
 
@@ -607,6 +624,15 @@ namespace Tridium {
 		Domain,
 		Geometry,
 		Pixel,
+		Compute,
+		Amplification,
+		Mesh,
+		RayGeneration,
+		Intersection,
+		AnyHit,
+		ClosestHit,
+		Miss,
+		Callable,
 		All
 	};
 

@@ -321,12 +321,20 @@ namespace Tridium::D3D12 {
 				// Set the entry point to the default one for the shader type.
 				switch ( a_Input.ShaderType )
 				{
-				case ERHIShaderType::Vertex:   entryPoint = "VSMain"; break;
-				case ERHIShaderType::Hull:     entryPoint = "HSMain"; break;
-				case ERHIShaderType::Domain:   entryPoint = "DSMain"; break;
-				case ERHIShaderType::Geometry: entryPoint = "GSMain"; break;
-				case ERHIShaderType::Pixel:    entryPoint = "PSMain"; break;
-				case ERHIShaderType::Compute:  entryPoint = "CSMain"; break;
+				case ERHIShaderType::Vertex:        entryPoint = "VSMain"; break;
+				case ERHIShaderType::Hull:          entryPoint = "HSMain"; break;
+				case ERHIShaderType::Domain:        entryPoint = "DSMain"; break;
+				case ERHIShaderType::Geometry:      entryPoint = "GSMain"; break;
+				case ERHIShaderType::Pixel:         entryPoint = "PSMain"; break;
+				case ERHIShaderType::Compute:       entryPoint = "CSMain"; break;
+				case ERHIShaderType::Amplification: entryPoint = "ASMain"; break;
+				case ERHIShaderType::Mesh:          entryPoint = "MSMain"; break;
+				case ERHIShaderType::RayGeneration: entryPoint = "RGMain"; break;
+				case ERHIShaderType::Intersection:  entryPoint = "ISMain"; break;
+				case ERHIShaderType::AnyHit:        entryPoint = "AHMain"; break;
+				case ERHIShaderType::ClosestHit:    entryPoint = "CHMain"; break;
+				case ERHIShaderType::Miss:          entryPoint = "MissMain"; break;
+				case ERHIShaderType::Callable:      entryPoint = "CallMain"; break;
 				default: ASSERT( false ); return Unexpected( "Unknown shader type" );
 				}
 
@@ -365,6 +373,38 @@ namespace Tridium::D3D12 {
 			else if ( entryPoint.starts_with( "CS" ) )
 			{
 				shaderType = ERHIShaderType::Compute;
+			}
+			else if ( entryPoint.starts_with( "AS" ) )
+			{
+				shaderType = ERHIShaderType::Amplification;
+			}
+			else if ( entryPoint.starts_with( "MS" ) )
+			{
+				shaderType = ERHIShaderType::Mesh;
+			}
+			else if ( entryPoint.starts_with( "RG" ) )
+			{
+				shaderType = ERHIShaderType::RayGeneration;
+			}
+			else if ( entryPoint.starts_with( "IS" ) )
+			{
+				shaderType = ERHIShaderType::Intersection;
+			}
+			else if ( entryPoint.starts_with( "AH" ) )
+			{
+				shaderType = ERHIShaderType::AnyHit;
+			}
+			else if ( entryPoint.starts_with( "CH" ) )
+			{
+				shaderType = ERHIShaderType::ClosestHit;
+			}
+			else if ( entryPoint.starts_with( "Miss" ) )
+			{
+				shaderType = ERHIShaderType::Miss;
+			}
+			else if ( entryPoint.starts_with( "Call" ) )
+			{
+				shaderType = ERHIShaderType::Callable;
 			}
 			else
 			{
@@ -444,6 +484,54 @@ namespace Tridium::D3D12 {
 			case ERHIShaderModel::SM_6_5: return L"ps_6_5";
 			case ERHIShaderModel::SM_6_6: return L"ps_6_6";
 			}
+		}
+		case ERHIShaderType::Compute:
+		{
+			switch ( a_Model )
+			{
+			default:                      return L"cs_6_0";
+			case ERHIShaderModel::SM_6_0: return L"cs_6_0";
+			case ERHIShaderModel::SM_6_1: return L"cs_6_1";
+			case ERHIShaderModel::SM_6_2: return L"cs_6_2";
+			case ERHIShaderModel::SM_6_3: return L"cs_6_3";
+			case ERHIShaderModel::SM_6_4: return L"cs_6_4";
+			case ERHIShaderModel::SM_6_5: return L"cs_6_5";
+			case ERHIShaderModel::SM_6_6: return L"cs_6_6";
+			}
+		}
+		case ERHIShaderType::Amplification:
+		{
+			// Amplification shaders require SM 6.5+
+			switch ( a_Model )
+			{
+			default:                      return L"as_6_5";
+			case ERHIShaderModel::SM_6_5: return L"as_6_5";
+			case ERHIShaderModel::SM_6_6: return L"as_6_6";
+			}
+		}
+		case ERHIShaderType::Mesh:
+		{
+			// Mesh shaders require SM 6.5+
+			switch ( a_Model )
+			{
+			default:                      return L"ms_6_5";
+			case ERHIShaderModel::SM_6_5: return L"ms_6_5";
+			case ERHIShaderModel::SM_6_6: return L"ms_6_6";
+			}
+		}
+		case ERHIShaderType::RayGeneration:
+		{
+			// Ray tracing shaders require SM 6.3+
+			return L"lib_6_3";
+		}
+		case ERHIShaderType::Intersection:
+		case ERHIShaderType::AnyHit:
+		case ERHIShaderType::ClosestHit:
+		case ERHIShaderType::Miss:
+		case ERHIShaderType::Callable:
+		{
+			// All ray tracing shaders use library target
+			return L"lib_6_3";
 		}
 		}
 
